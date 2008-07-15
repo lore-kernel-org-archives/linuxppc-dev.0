@@ -1,15 +1,15 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id DF1F5DDF24
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 09:08:45 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Comiler error compiling 2.6.26
-Date: Tue, 15 Jul 2008 18:09:01 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B04B342D4@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id 021A7DDF86
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 09:59:06 +1000 (EST)
+From: Nathan Lynch <ntl@pobox.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] elf loader support for auxvec base platform string
+Date: Tue, 15 Jul 2008 18:58:50 -0500
+Message-Id: <1216166331-14810-2-git-send-email-ntl@pobox.com>
+In-Reply-To: <1216166331-14810-1-git-send-email-ntl@pobox.com>
+References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, roland@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,54 +19,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Trying to cross-compile arch/powerpc for an freescale 8280:
+Some IBM POWER-based platforms have the ability to run in a
+mode which mostly appears to the OS as a different processor from the
+actual hardware.  For example, a Power6 system may appear to be a
+Power5+, which makes the AT_PLATFORM value "power5+".  This means that
+programs are restricted to the ISA supported by Power5+;
+Power6-specific instructions are treated as illegal.
 
-Gcc 4.1.2
-Binutils 2.17
+However, some applications (virtual machines, optimized libraries) can
+benefit from knowledge of the underlying CPU model.  A new aux vector
+entry, AT_BASE_PLATFORM, will denote the actual hardware.  For
+example, on a Power6 system in Power5+ compatibility mode, AT_PLATFORM
+will be "power5+" and AT_BASE_PLATFORM will be "power6".  The idea is
+that AT_PLATFORM indicates the instruction set supported, while
+AT_BASE_PLATFORM indicates the underlying microarchitecture.
 
-BFD: ./vmlinux.strip.7812: section .text lma 0xc0000000 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section .ref.text lma 0xc024f000 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section .rodata lma 0xc0251000 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section .pci_fixup lma 0xc02dd2f0 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section __ksymtab lma 0xc02dd930 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section __ksymtab_gpl lma 0xc02e2088 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section __ksymtab_strings lma 0xc02e3a20
-overlaps previous sections
-BFD: ./vmlinux.strip.7812: section __param lma 0xc02f08cc overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section __ex_table lma 0xc02f1000 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section __bug_table lma 0xc02f22b8 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section .init.text lma 0xc02f8000 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section .exit.text lma 0xc030f908 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section .init.data lma 0xc0310468 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section .init.setup lma 0xc0315b70 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section .initcall.init lma 0xc0315e28
-overlaps previous sections
-BFD: ./vmlinux.strip.7812: section .con_initcall.init lma 0xc0316050
-overlaps previous sections
-BFD: ./vmlinux.strip.7812: section __ftr_fixup lma 0xc0316058 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section .machine.desc lma 0xc0317000 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section .data lma 0xc0318000 overlaps
-previous sections
-BFD: ./vmlinux.strip.7812: section .data.init_task lma 0xc0330000
-overlaps previous sections
-BFD: ./vmlinux.strip.7812: section .data.page_aligned lma 0xc0332000
-overlaps previous sections
-BFD: ./vmlinux.strip.7812: section .data.cacheline_aligned lma
-0xc0335000 overlaps previous sections
-BFD: ./vmlinux.strip.7812: section .data.read_mostly lma 0xc0335820
-overlaps previous sections
+If the architecture has defined ELF_BASE_PLATFORM, copy that value to
+the user stack in the same manner as ELF_PLATFORM.
+
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ fs/binfmt_elf.c        |   23 +++++++++++++++++++++++
+ include/linux/auxvec.h |    5 ++++-
+ 2 files changed, 27 insertions(+), 1 deletions(-)
+
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index d48ff5f..834c2c4 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -131,6 +131,10 @@ static int padzero(unsigned long elf_bss)
+ #define STACK_ALLOC(sp, len) ({ sp -= len ; sp; })
+ #endif
+ 
++#ifndef ELF_BASE_PLATFORM
++#define ELF_BASE_PLATFORM NULL
++#endif
++
+ static int
+ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 		unsigned long load_addr, unsigned long interp_load_addr)
+@@ -142,7 +146,9 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 	elf_addr_t __user *envp;
+ 	elf_addr_t __user *sp;
+ 	elf_addr_t __user *u_platform;
++	elf_addr_t __user *u_base_platform;
+ 	const char *k_platform = ELF_PLATFORM;
++	const char *k_base_platform = ELF_BASE_PLATFORM;
+ 	int items;
+ 	elf_addr_t *elf_info;
+ 	int ei_index = 0;
+@@ -172,6 +178,19 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 			return -EFAULT;
+ 	}
+ 
++	/*
++	 * If this architecture has a "base" platform capability
++	 * string, copy it to userspace.
++	 */
++	u_base_platform = NULL;
++	if (k_base_platform) {
++		size_t len = strlen(k_base_platform) + 1;
++
++		u_base_platform = (elf_addr_t __user *)STACK_ALLOC(p, len);
++		if (__copy_to_user(u_base_platform, k_base_platform, len))
++			return -EFAULT;
++	}
++
+ 	/* Create the ELF interpreter info */
+ 	elf_info = (elf_addr_t *)current->mm->saved_auxv;
+ 	/* update AT_VECTOR_SIZE_BASE if the number of NEW_AUX_ENT() changes */
+@@ -208,6 +227,10 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 		NEW_AUX_ENT(AT_PLATFORM,
+ 			    (elf_addr_t)(unsigned long)u_platform);
+ 	}
++	if (k_base_platform) {
++		NEW_AUX_ENT(AT_BASE_PLATFORM,
++			    (elf_addr_t)(unsigned long)u_base_platform);
++	}
+ 	if (bprm->interp_flags & BINPRM_FLAGS_EXECFD) {
+ 		NEW_AUX_ENT(AT_EXECFD, bprm->interp_data);
+ 	}
+diff --git a/include/linux/auxvec.h b/include/linux/auxvec.h
+index ad89545..1adc61d 100644
+--- a/include/linux/auxvec.h
++++ b/include/linux/auxvec.h
+@@ -26,8 +26,11 @@
+ 
+ #define AT_SECURE 23   /* secure mode boolean */
+ 
++#define AT_BASE_PLATFORM 38	/* string identifying real platform, may
++				 * differ from AT_PLATFORM. */
++
+ #ifdef __KERNEL__
+-#define AT_VECTOR_SIZE_BASE (14 + 2) /* NEW_AUX_ENT entries in auxiliary table */
++#define AT_VECTOR_SIZE_BASE (14 + 3) /* NEW_AUX_ENT entries in auxiliary table */
+ #endif
+ 
+ #endif /* _LINUX_AUXVEC_H */
+-- 
+1.5.6.2
