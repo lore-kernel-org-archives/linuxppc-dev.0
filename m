@@ -2,14 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 78DC0DDED9
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 11:35:00 +1000 (EST)
-Subject: [git pull] Please pull from powerpc.git merge branch
+	by ozlabs.org (Postfix) with ESMTPS id F3078DDE1F
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 11:49:08 +1000 (EST)
+Subject: Re: [git pull] Please pull from powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 16 Jul 2008 11:34:03 +1000
-Message-Id: <1216172043.7740.136.camel@pasglop>
+In-Reply-To: <1216172043.7740.136.camel@pasglop>
+References: <1216172043.7740.136.camel@pasglop>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 11:48:18 +1000
+Message-Id: <1216172898.7740.138.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	akpm <akpm@linux-foundation.org>,
@@ -24,28 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Wed, 2008-07-16 at 11:34 +1000, Benjamin Herrenschmidt wrote:
+> Linus,
+> 
+> I apologize in advance for the couple of merge commits in there. I
+> merged your tree yesterday in order to fix a (fairly minor) conflict,
+> and waited for our autobuilder to test a whole bunch of configs
+> overnight before asking you to pull, at which point, sfr informed me of
+> a bunch of this time non-trivial conflicts with whatever you pulled in
+> the meantime...
 
-I apologize in advance for the couple of merge commits in there. I
-merged your tree yesterday in order to fix a (fairly minor) conflict,
-and waited for our autobuilder to test a whole bunch of configs
-overnight before asking you to pull, at which point, sfr informed me of
-a bunch of this time non-trivial conflicts with whatever you pulled in
-the meantime...
-
-So here it is with 2 merge csets at the top, I'll try to do better next
-time. I don't want to rebase or my sub-maintainers will hate me.
-
-So please pull from:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-﻿This is the first batch of powerpc merges for this merge window.
-There's a few morsels left for a second batch, probably next week, but
-let's get that one in first. Note that it removes arch/ppc (finally !)
-
-Thanks,
-Ben.
+And here's the non-wrapped version of the stat & log... oops.
 
  Documentation/kprobes.txt                          |    1 
  Documentation/powerpc/booting-without-of.txt       | 1082 --------
@@ -166,8 +157,7 @@ Ben.
  arch/powerpc/configs/83xx/mpc836x_rdk_defconfig    | 1128 ++++++++
  arch/powerpc/configs/85xx/tqm8548_defconfig        | 1225 +++++++++
  arch/powerpc/configs/asp8347_defconfig             | 1214 +++++++++
- arch/powerpc/configs/c2k_defconfig                 | 1872
-++++++++++++++
+ arch/powerpc/configs/c2k_defconfig                 | 1872 ++++++++++++++
  arch/powerpc/configs/mpc8536_ds_defconfig          | 1637 ++++++++++++
  arch/powerpc/configs/ppc44x_defconfig              |  149 +
  arch/powerpc/configs/pseries_defconfig             |    1 
@@ -362,19 +352,16 @@ Ben.
  arch/powerpc/xmon/xmon.c                           |   66 
  arch/ppc/.gitignore                                |    1 
  arch/ppc/4xx_io/Makefile                           |    6 
- arch/ppc/4xx_io/serial_sicc.c                      | 2005
----------------
+ arch/ppc/4xx_io/serial_sicc.c                      | 2005 ---------------
  arch/ppc/8260_io/Kconfig                           |   65 
  arch/ppc/8260_io/Makefile                          |    6 
  arch/ppc/8260_io/enet.c                            |  865 ------
- arch/ppc/8260_io/fcc_enet.c                        | 2379
------------------
+ arch/ppc/8260_io/fcc_enet.c                        | 2379 -----------------
  arch/ppc/8xx_io/Kconfig                            |  134 -
  arch/ppc/8xx_io/Makefile                           |    9 
  arch/ppc/8xx_io/commproc.c                         |  432 ---
  arch/ppc/8xx_io/enet.c                             |  982 -------
- arch/ppc/8xx_io/fec.c                              | 1983
----------------
+ arch/ppc/8xx_io/fec.c                              | 1983 ---------------
  arch/ppc/8xx_io/micropatch.c                       |  743 -----
  arch/ppc/Kconfig                                   | 1186 ---------
  arch/ppc/Kconfig.debug                             |   66 
@@ -698,8 +685,7 @@ Ben.
  arch/ppc/syslib/mpc8xx_devices.c                   |  243 --
  arch/ppc/syslib/mpc8xx_sys.c                       |   61 
  arch/ppc/syslib/mv64360_pic.c                      |  423 ---
- arch/ppc/syslib/mv64x60.c                          | 2485
-------------------
+ arch/ppc/syslib/mv64x60.c                          | 2485 ------------------
  arch/ppc/syslib/mv64x60_dbg.c                      |  121 -
  arch/ppc/syslib/mv64x60_win.c                      | 1165 ---------
  arch/ppc/syslib/ocp.c                              |  482 ----
@@ -730,8 +716,7 @@ Ben.
  arch/ppc/xmon/ansidecl.h                           |  141 -
  arch/ppc/xmon/nonstdio.h                           |   22 
  arch/ppc/xmon/ppc-dis.c                            |  190 -
- arch/ppc/xmon/ppc-opc.c                            | 2720
---------------------
+ arch/ppc/xmon/ppc-opc.c                            | 2720 --------------------
  arch/ppc/xmon/ppc.h                                |  240 --
  arch/ppc/xmon/privinst.h                           |   90 -
  arch/ppc/xmon/setjmp.c                             |   29 
@@ -931,31 +916,19 @@ Ben.
  875 files changed, 27827 insertions(+), 145692 deletions(-)
  create mode 100644 Documentation/powerpc/bootwrapper.txt
  create mode 100644 Documentation/powerpc/dts-bindings/fsl/board.txt
- create mode 100644
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm.txt
- create mode 100644
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/brg.txt
- create mode 100644
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/i2c.txt
- create mode 100644
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/pic.txt
- create mode 100644
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/usb.txt
- create mode 100644
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/network.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/brg.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/i2c.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/pic.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/usb.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/network.txt
  create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
- create mode 100644
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe/firmware.txt
- create mode 100644
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe/par_io.txt
- create mode 100644
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe/pincfg.txt
- create mode 100644
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe/ucc.txt
- create mode 100644
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe/usb.txt
- create mode 100644
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/serial.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe/firmware.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe/par_io.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe/pincfg.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe/ucc.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe/usb.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/serial.txt
  create mode 100644 Documentation/powerpc/dts-bindings/fsl/diu.txt
  create mode 100644 Documentation/powerpc/dts-bindings/fsl/dma.txt
  create mode 100644 Documentation/powerpc/dts-bindings/fsl/gtm.txt
@@ -1241,10 +1214,8 @@ Documentation/powerpc/dts-bindings/fsl/cpm_qe/serial.txt
  delete mode 100644 arch/ppc/platforms/4xx/xilinx_ml300.c
  delete mode 100644 arch/ppc/platforms/4xx/xilinx_ml403.c
  delete mode 100644 arch/ppc/platforms/4xx/xparameters/xparameters.h
- delete mode 100644
-arch/ppc/platforms/4xx/xparameters/xparameters_ml300.h
- delete mode 100644
-arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h
+ delete mode 100644 arch/ppc/platforms/4xx/xparameters/xparameters_ml300.h
+ delete mode 100644 arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h
  delete mode 100644 arch/ppc/platforms/4xx/yucca.c
  delete mode 100644 arch/ppc/platforms/4xx/yucca.h
  delete mode 100644 arch/ppc/platforms/Makefile
@@ -1484,8 +1455,7 @@ Andre Schwarz (1):
       powerpc/mpc5200: PCI write combine timer
 
 Andrew Lewis (1):
-      powerpc: Prevent memory corruption due to cache invalidation of
-unaligned DMA buffer
+      powerpc: Prevent memory corruption due to cache invalidation of unaligned DMA buffer
 
 Andy Whitcroft (1):
       powerpc: Add 64 bit version of huge_ptep_set_wrprotect
@@ -1513,8 +1483,7 @@ Arnd Bergmann (5):
       powerpc: support for latencytop
 
 Bart Van Assche (1):
-      powerpc: Make sure that include/asm-powerpc/spinlock.h does not
-trigger compilation warnings
+      powerpc: Make sure that include/asm-powerpc/spinlock.h does not trigger compilation warnings
 
 Becky Bruce (4):
       [POWERPC] Delete unused fec_8xx net driver
@@ -1547,8 +1516,7 @@ Dave Kleikamp (7):
       powerpc/mm: Add SAO Feature bit to the cputable
       powerpc/mm: Add Strong Access Ordering support
       powerpc/mm: Don't clear _PAGE_COHERENT when _PAGE_SAO is set
-      powerpc: Remove unnecessary condition when sanity-checking WIMG
-bits
+      powerpc: Remove unnecessary condition when sanity-checking WIMG bits
 
 David Gibson (1):
       [POWERPC] Convert remaining dts-v0 files to v1
@@ -1573,13 +1541,11 @@ Grant Erickson (2):
 Grant Likely (7):
       powerpc/bootwrapper: Add documentation of boot wrapper targets
       powerpc/bootwrapper: add missing bit of simpleImage target
-      powerpc/bootwrapper: Allow user to specify additional default
-targets
+      powerpc/bootwrapper: Allow user to specify additional default targets
       powerpc/440: Convert Virtex ML507 device tree to dts-v1
       powerpc/mpc5200: Add PSC helpers for bestcomm engine
       powerpc/mpc5200: fix compile warnings in bestcomm driver
-      powerpc: Modify MPC52xx maintainers entry to cover all MPC5xxx
-parts
+      powerpc: Modify MPC52xx maintainers entry to cover all MPC5xxx parts
 
 Imre Kaloz (1):
       powerpc/4xx: MTD support for the AMCC Taishan Board
@@ -1609,15 +1575,13 @@ Joel Schopp (2):
 
 John Linn (5):
       powerpc/virtex: add dts file for ML507 reference design
-      powerpc/virtex: Fix booting of Xilinx FPGAs with 16550 for 405 and
-440
+      powerpc/virtex: Fix booting of Xilinx FPGAs with 16550 for 405 and 440
       powerpc/virtex: add Xilinx Virtex 5 ppc440 platform support
       powerpc/virtex: add Xilinx 440 cpu to the cputable
       powerpc/virtex: add defconfig for virtex 5 platforms
 
 John Rigby (4):
-      powerpc/mpc5121: Update device tree for MPC5121ADS evaluation
-board
+      powerpc/mpc5121: Update device tree for MPC5121ADS evaluation board
       powerpc/mpc5121: Add clock driver
       powerpc/mpc5121: Add generic board support for MPC5121 platforms
       powerpc/mpc5121: Add support for CPLD on MPC5121ADS board
@@ -1636,12 +1600,10 @@ Julia Lawall (1):
       drivers/macintosh/smu.c: Improve error handling
 
 Kim Phillips (1):
-      powerpc/fsl: update crypto node definition and device tree
-instances
+      powerpc/fsl: update crypto node definition and device tree instances
 
 Kumar Gala (29):
-      [POWERPC] Set lower flag bits in regs->trap to indicate debug
-level exception
+      [POWERPC] Set lower flag bits in regs->trap to indicate debug level exception
       [POWERPC] mpic: Deal with bogus NIRQ in Feature Reporting Register
       [POWERPC] Cleanup mpic nodes in .dts
       [POWERPC] 85xx: Add next-level-cache property
@@ -1669,16 +1631,14 @@ level exception
       powerpc/booke: don't reinitialize time base
       powerpc: Add 82xx/83xx/86xx to 6xx Multiplatform
       powerpc/fsl: Refactor device bindings
-      powerpc: Fix pte_update for CONFIG_PTE_64BIT and !
-PTE_ATOMIC_UPDATES
+      powerpc: Fix pte_update for CONFIG_PTE_64BIT and !PTE_ATOMIC_UPDATES
 
 Laurent Pinchart (1):
       cpm_uart: Support uart_wait_until_sent()
 
 Luke Browning (2):
       powerpc/spufs: provide context debug file
-      powerpc/spufs: don't extend time time slice if context is not in
-spu_run
+      powerpc/spufs: don't extend time time slice if context is not in spu_run
 
 Mark Nelson (4):
       powerpc/dma: Add struct iommu_table argument to iommu_map_sg()
@@ -1698,34 +1658,27 @@ Michael Ellerman (32):
       [POWERPC] Add a declaration for xmon()
       [POWERPC] Move xmon_irq() declaration into xmon.h
       [POWERPC] Fix sparse warnings in xmon.c
-      [POWERPC] Make cpus_in_xmon static and remove extern mess from
-hvc_console.c
+      [POWERPC] Make cpus_in_xmon static and remove extern mess from hvc_console.c
       [POWERPC] Fix sparse warnings in arch/powerpc/kernel
       [POWERPC] pseries/firmware.c should include pseries/pseries.h
       [POWERPC] Fix sparse warnings in arch/powerpc/platforms/pseries
       [POWERPC] Add debugging trigger to Axon MSI code
       [POWERPC] Remove unnecessary cast in arch_deref_entry_point()
-      powerpc: Rework Axon MSI setup so we can avoid freeing the
-irq_host
+      powerpc: Rework Axon MSI setup so we can avoid freeing the irq_host
       powerpc: Rework ipic_init() so we can avoid freeing the irq_host
       powerpc: Rework qe_ic_init() so we can avoid freeing the irq_host
       powerpc: Fix irq_alloc_host() reference counting and callers
-      powerpc: Move code patching code into
-arch/powerpc/lib/code-patching.c
+      powerpc: Move code patching code into arch/powerpc/lib/code-patching.c
       powerpc: Allow create_branch() to return errors
-      powerpc: Make create_branch() return errors if the branch target
-is too large
-      powerpc: Add ppc_function_entry() which gets the entry point for a
-function
+      powerpc: Make create_branch() return errors if the branch target is too large
+      powerpc: Add ppc_function_entry() which gets the entry point for a function
       powerpc: Add new code patching routines
       powerpc: Add tests of the code patching routines
-      powerpc: Add PPC_NOP_INSTR, a hash define for the preferred nop
-instruction
+      powerpc: Add PPC_NOP_INSTR, a hash define for the preferred nop instruction
       powerpc: Split out do_feature_fixups() from cputable.c
       powerpc: Consolidate CPU and firmware feature fixup macros
       powerpc: Consolidate feature fixup macros for 64/32 bit
-      powerpc: Introduce infrastructure for feature sections with
-alternatives
+      powerpc: Introduce infrastructure for feature sections with alternatives
       powerpc: Add logic to patch alternative feature sections
       powerpc: Add self-tests of the feature fixup code
       powerpc: Use an alternative feature section in entry_64.S
@@ -1733,8 +1686,7 @@ alternatives
 Michael Neuling (19):
       powerpc: Add cputable entry for POWER7
       powerpc: Fix MSR setting in 32 bit signal code
-      powerpc: Add macros to access floating point registers in
-thread_struct.
+      powerpc: Add macros to access floating point registers in thread_struct.
       powerpc: Move altivec_unavailable
       powerpc: Make load_up_fpu and load_up_altivec callable
       powerpc: Introduce VSX thread_struct and CONFIG_VSX
@@ -1747,8 +1699,7 @@ thread_struct.
       powerpc: Fix compile warning in init_thread
       powerpc: Clean up copy_to/from_user for vsx and fpr
       powerpc: Remove old dump_task_* functions
-      powerpc: fix swapcontext backwards compat. with VSX ucontext
-changes
+      powerpc: fix swapcontext backwards compat. with VSX ucontext changes
       powerpc: remove unused variable in emulate_fp_pair
       powerpc: fix giveup_vsx to save registers correctly
       powerpc: Add VSX load/store alignment exception handler
@@ -1757,15 +1708,11 @@ Mike Mason (1):
       powerpc/eeh: PERR/SERR bit settings during EEH device recovery
 
 Nathan Fontenot (5):
-      powerpc/pseries: Allow phandle to be specified in formats other
-than decimal
-      powerpc/pseries: Use base address to derive starting page frame
-number
-      powerpc/pseries: Update the device tree correctly for drconf
-memory add/remove
+      powerpc/pseries: Allow phandle to be specified in formats other than decimal
+      powerpc/pseries: Use base address to derive starting page frame number
+      powerpc/pseries: Update the device tree correctly for drconf memory add/remove
       powerpc/pseries: Split code into helper routines for drconf memory
-      powerpc/pseries: Update numa association of hotplug memory add for
-drconf memory
+      powerpc/pseries: Update numa association of hotplug memory add for drconf memory
 
 Nathan Lynch (1):
       powerpc: Add PPC_FEATURE_PSERIES_PERFMON_COMPAT
@@ -1784,8 +1731,7 @@ Paul Gortmaker (1):
       powerpc/ibmebus: more meaningful variable name
 
 Paul Mackerras (3):
-      [POWERPC] Defer processing of interrupts when the CPU wakes from
-sleep mode
+      [POWERPC] Defer processing of interrupts when the CPU wakes from sleep mode
       powerpc: Remove arch/ppc and include/asm-ppc
       powerpc: Only demote individual slices rather than whole process
 
@@ -1834,8 +1780,7 @@ Srinivasa Ds (1):
       powerpc: Implement task_pt_regs() accessor
 
 Stefan Roese (2):
-      powerpc/4xx: PCIe driver now detects if a port is disabled via the
-dev-tree
+      powerpc/4xx: PCIe driver now detects if a port is disabled via the dev-tree
       powerpc: Fix problems with 32bit PPC's running with >= 4GB of RAM
 
 Stephen Neuendorffer (1):
@@ -1861,17 +1806,13 @@ Takashi Iwai (1):
       powerpc: Fix a build problem on ppc32 with new DMA_ATTRs
 
 Timur Tabi (3):
-      [POWERPC] fsl: Add warning for unrecognized I2C nodes in the
-device tree
+      [POWERPC] fsl: Add warning for unrecognized I2C nodes in the device tree
       [POWERPC] fsl: Add CS4270 i2c data to fsl_soc.c
-      [POWERPC] fsl: Update fsl_soc to use cell-index property of I2C
-nodes
+      [POWERPC] fsl: Update fsl_soc to use cell-index property of I2C nodes
 
 Tony Breeds (2):
-      powerpc: Change the default link address for pSeries zImage
-kernels
-      powerpc: Fix building of arch/powerpc/mm/mem.o when
-MEMORY_HOTPLUG=y and SPARSEMEM=n
+      powerpc: Change the default link address for pSeries zImage kernels
+      powerpc: Fix building of arch/powerpc/mm/mem.o when MEMORY_HOTPLUG=y and SPARSEMEM=n
 
 Trent Piepho (1):
       powerpc: Improve (in|out)_[bl]eXX() asm code
@@ -1883,8 +1824,7 @@ Vitaly Bordug (1):
       powerpc/85xx: Update pin setup for 8560ads
 
 Wolfgang Grandegger (6):
-      powerpc/85xx: correct vendor prefix in DTS files for TQM85xx
-modules
+      powerpc/85xx: correct vendor prefix in DTS files for TQM85xx modules
       powerpc/85xx: add board support for the TQM8548 modules
       powerpc/85xx: support for the TQM8548 module using the big Flash
       powerpc/85xx: add local bus nodes for Flash and CAN to tqm8560.dts
