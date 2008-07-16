@@ -1,19 +1,17 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 93CC5DE6A9
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 00:40:58 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Comiler error compiling 2.6.26
-Date: Wed, 16 Jul 2008 09:41:24 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B04B3447A@ismail.innsys.innovsys.com>
-In-Reply-To: <189c557681b0bc758b2e7c31afcd4df6@kernel.crashing.org>
-References: <DCEAAC0833DD314AB0B58112AD99B93B04B342D4@ismail.innsys.innovsys.com>
-	<189c557681b0bc758b2e7c31afcd4df6@kernel.crashing.org>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>,
-	<linuxppc-dev@ozlabs.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Date: Wed, 16 Jul 2008 10:37:52 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] Add AMCC Arches 460GT eval board support to platforms/44x
+Message-ID: <20080716103752.463e00cb@zod.rchland.ibm.com>
+In-Reply-To: <20080716141539.GC24045@secretlab.ca>
+References: <1216186406-27993-1-git-send-email-fkan@amcc.com>
+	<20080716075025.0bca152c@zod.rchland.ibm.com>
+	<20080716141539.GC24045@secretlab.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallard@amcc.com>, fkan@amcc.com,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,1114 +21,116 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->> Trying to cross-compile arch/powerpc for an freescale 8280:
->>=20
->> Gcc 4.1.2
->> Binutils 2.17
->>=20
->> BFD: ./vmlinux.strip.7812: section .text lma 0xc0000000 overlaps
->> previous sections
->=20
-> [etc]
->=20
-> Could you try with binutils 2.18? =20
-Not easilly, I would have to rebuild the cross compiler.
-I did try an older compiler (3.4.3 with binutils 2.15.94). That compiles
-but doesn't boot.
+On Wed, 16 Jul 2008 08:15:39 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
->If not, or if that doesn't help,
-> we'll need to see your .config .
+> On Wed, Jul 16, 2008 at 07:50:25AM -0400, Josh Boyer wrote:
+> > On Tue, 15 Jul 2008 22:33:26 -0700
+> > fkan@amcc.com wrote:
+> > 
+> > > From: Victor Gallardo <vgallard@amcc.com>
+> > > 
+> > > ppc4xx: Add AMCC Arches 460GT eval board support 
+> > > 
+> > > Signed-off-by: Victor Gallardo <vgallard@amcc.com>
+> > 
+> > From what I can tell, you don't even need this patch or the defconfig.
+> > Nothing differs at this point from Glacier other than the DTS.  Since
+> > U-Boot is your loader, it should be able to pass the different DTS to a
+> > kernel that supports Cayonlands and have no issues.
+> > 
+> > > ---
+> > >  arch/powerpc/platforms/44x/Kconfig  |   18 ++++++++
+> > >  arch/powerpc/platforms/44x/Makefile |    1 +
+> > >  arch/powerpc/platforms/44x/arches.c |   76 +++++++++++++++++++++++++++++++++++
+> > >  3 files changed, 95 insertions(+), 0 deletions(-)
+> > >  create mode 100644 arch/powerpc/platforms/44x/arches.c
+> > > 
+> > > diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+> > > index 6abe913..95d1217 100644
+> > > --- a/arch/powerpc/platforms/44x/Kconfig
+> > > +++ b/arch/powerpc/platforms/44x/Kconfig
+> > > @@ -77,6 +77,16 @@ config CANYONLANDS
+> > >  	help
+> > >  	  This option enables support for the AMCC PPC460EX evaluation board.
+> > > 
+> > > +config ARCHES
+> > > +	bool "Arches"
+> > > +	depends on 44x
+> > > +	default n
+> > > +	select 460GT
+> > > +	select PCI
+> > > +	select PPC4xx_PCI_EXPRESS
+> > > +	help
+> > > +	  This option enables support for the AMCC PPC460GT Arches board.
+> > 
+> > If you do want to have explicit support for Arches, that's fine.  Look
+> > at how Yosemite is supported.  It just reuses Bamboo.  You could do the
+> > same.
+> > 
+> > >  config YOSEMITE
+> > >  	bool "Yosemite"
+> > >  	depends on 44x
+> > > @@ -149,6 +159,14 @@ config 460EX
+> > >  	select IBM_NEW_EMAC_ZMII
+> > >  	select IBM_NEW_EMAC_TAH
+> > > 
+> > > +config 460GT
+> > > +	bool
+> > > +	select PPC_FPU
+> > > +	select IBM_NEW_EMAC_EMAC4
+> > > +	select IBM_NEW_EMAC_RGMII
+> > > +	select IBM_NEW_EMAC_ZMII
+> > > +	select IBM_NEW_EMAC_TAH
+> > 
+> > I don't see a reason to add this at all.  460EX and 460GT select the
+> > same set of options.
+> > 
+> > >  # 44x errata/workaround config symbols, selected by the CPU models above
+> > >  config IBM440EP_ERR42
+> > >  	bool
+> > > diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
+> > > index 774165f..86a4823 100644
+> > > --- a/arch/powerpc/platforms/44x/Makefile
+> > > +++ b/arch/powerpc/platforms/44x/Makefile
+> > > @@ -9,3 +9,4 @@ obj-$(CONFIG_RAINIER)	+= rainier.o
+> > >  obj-$(CONFIG_WARP)	+= warp.o
+> > >  obj-$(CONFIG_WARP)	+= warp-nand.o
+> > >  obj-$(CONFIG_CANYONLANDS) += canyonlands.o
+> > > +obj-$(CONFIG_ARCHES)	+= arches.o
+> > 
+> > Here you would just have:
+> > 
+> > obj-$(CONFIG_ARCHES) += cayonlands.o
+> > 
+> > > diff --git a/arch/powerpc/platforms/44x/arches.c b/arch/powerpc/platforms/44x/arches.c
+> > > new file mode 100644
+> > > index 0000000..6d6aa66
+> > > --- /dev/null
+> > > +++ b/arch/powerpc/platforms/44x/arches.c
+> > 
+> > And then you don't need this file at all.  Just add a
+> > "amcc,canyonlands" string to your root node compatible property.
+> 
+> No!  Don't do this because it is not true!
 
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.26
-# Tue Jul 15 17:52:27 2008
-#
-# CONFIG_PPC64 is not set
+Meh. You're splitting hairs.  It _is_ true from a kernel perspective.
 
-#
-# Processor support
-#
-CONFIG_6xx=3Dy
-# CONFIG_PPC_85xx is not set
-# CONFIG_PPC_8xx is not set
-# CONFIG_40x is not set
-# CONFIG_44x is not set
-# CONFIG_E200 is not set
-CONFIG_PPC_FPU=3Dy
-CONFIG_PPC_STD_MMU=3Dy
-CONFIG_PPC_STD_MMU_32=3Dy
-# CONFIG_PPC_MM_SLICES is not set
-# CONFIG_SMP is not set
-CONFIG_PPC32=3Dy
-CONFIG_WORD_SIZE=3D32
-CONFIG_PPC_MERGE=3Dy
-CONFIG_MMU=3Dy
-CONFIG_GENERIC_CMOS_UPDATE=3Dy
-CONFIG_GENERIC_TIME=3Dy
-CONFIG_GENERIC_TIME_VSYSCALL=3Dy
-CONFIG_GENERIC_CLOCKEVENTS=3Dy
-CONFIG_GENERIC_HARDIRQS=3Dy
-# CONFIG_HAVE_SETUP_PER_CPU_AREA is not set
-CONFIG_IRQ_PER_CPU=3Dy
-CONFIG_STACKTRACE_SUPPORT=3Dy
-CONFIG_LOCKDEP_SUPPORT=3Dy
-CONFIG_RWSEM_XCHGADD_ALGORITHM=3Dy
-CONFIG_ARCH_HAS_ILOG2_U32=3Dy
-CONFIG_GENERIC_HWEIGHT=3Dy
-CONFIG_GENERIC_CALIBRATE_DELAY=3Dy
-CONFIG_GENERIC_FIND_NEXT_BIT=3Dy
-# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
-CONFIG_PPC=3Dy
-CONFIG_EARLY_PRINTK=3Dy
-CONFIG_GENERIC_NVRAM=3Dy
-CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=3Dy
-CONFIG_ARCH_MAY_HAVE_PC_FDC=3Dy
-CONFIG_PPC_OF=3Dy
-CONFIG_OF=3Dy
-# CONFIG_PPC_UDBG_16550 is not set
-# CONFIG_GENERIC_TBSYNC is not set
-CONFIG_AUDIT_ARCH=3Dy
-CONFIG_GENERIC_BUG=3Dy
-CONFIG_DEFAULT_UIMAGE=3Dy
-# CONFIG_PPC_DCR_NATIVE is not set
-# CONFIG_PPC_DCR_MMIO is not set
-CONFIG_DEFCONFIG_LIST=3D"/lib/modules/$UNAME_RELEASE/.config"
+> Instead, add your board name to canyonlands.c in canyonlands_probe().
+> It's not the most scalable solution, but it keeps you from lying about
+> your hardware in the .dts file.
 
-#
-# General setup
-#
-CONFIG_EXPERIMENTAL=3Dy
-CONFIG_BROKEN_ON_SMP=3Dy
-CONFIG_LOCK_KERNEL=3Dy
-CONFIG_INIT_ENV_ARG_LIMIT=3D32
-CONFIG_LOCALVERSION=3D""
-# CONFIG_LOCALVERSION_AUTO is not set
-# CONFIG_SWAP is not set
-CONFIG_SYSVIPC=3Dy
-CONFIG_SYSVIPC_SYSCTL=3Dy
-# CONFIG_POSIX_MQUEUE is not set
-# CONFIG_BSD_PROCESS_ACCT is not set
-# CONFIG_TASKSTATS is not set
-# CONFIG_AUDIT is not set
-# CONFIG_IKCONFIG is not set
-CONFIG_LOG_BUF_SHIFT=3D14
-# CONFIG_CGROUPS is not set
-CONFIG_GROUP_SCHED=3Dy
-# CONFIG_FAIR_GROUP_SCHED is not set
-# CONFIG_RT_GROUP_SCHED is not set
-CONFIG_USER_SCHED=3Dy
-# CONFIG_CGROUP_SCHED is not set
-CONFIG_SYSFS_DEPRECATED=3Dy
-CONFIG_SYSFS_DEPRECATED_V2=3Dy
-# CONFIG_RELAY is not set
-# CONFIG_NAMESPACES is not set
-# CONFIG_BLK_DEV_INITRD is not set
-CONFIG_CC_OPTIMIZE_FOR_SIZE=3Dy
-CONFIG_SYSCTL=3Dy
-CONFIG_EMBEDDED=3Dy
-CONFIG_SYSCTL_SYSCALL=3Dy
-CONFIG_SYSCTL_SYSCALL_CHECK=3Dy
-CONFIG_KALLSYMS=3Dy
-CONFIG_KALLSYMS_ALL=3Dy
-# CONFIG_KALLSYMS_EXTRA_PASS is not set
-# CONFIG_HOTPLUG is not set
-CONFIG_PRINTK=3Dy
-CONFIG_BUG=3Dy
-CONFIG_ELF_CORE=3Dy
-CONFIG_COMPAT_BRK=3Dy
-CONFIG_BASE_FULL=3Dy
-CONFIG_FUTEX=3Dy
-CONFIG_ANON_INODES=3Dy
-CONFIG_EPOLL=3Dy
-CONFIG_SIGNALFD=3Dy
-CONFIG_TIMERFD=3Dy
-CONFIG_EVENTFD=3Dy
-CONFIG_SHMEM=3Dy
-CONFIG_VM_EVENT_COUNTERS=3Dy
-CONFIG_SLUB_DEBUG=3Dy
-# CONFIG_SLAB is not set
-CONFIG_SLUB=3Dy
-# CONFIG_SLOB is not set
-# CONFIG_PROFILING is not set
-# CONFIG_MARKERS is not set
-CONFIG_HAVE_OPROFILE=3Dy
-# CONFIG_KPROBES is not set
-CONFIG_HAVE_KPROBES=3Dy
-CONFIG_HAVE_KRETPROBES=3Dy
-# CONFIG_HAVE_DMA_ATTRS is not set
-CONFIG_PROC_PAGE_MONITOR=3Dy
-CONFIG_SLABINFO=3Dy
-CONFIG_RT_MUTEXES=3Dy
-# CONFIG_TINY_SHMEM is not set
-CONFIG_BASE_SMALL=3D0
-CONFIG_MODULES=3Dy
-# CONFIG_MODULE_FORCE_LOAD is not set
-CONFIG_MODULE_UNLOAD=3Dy
-CONFIG_MODULE_FORCE_UNLOAD=3Dy
-# CONFIG_MODVERSIONS is not set
-# CONFIG_MODULE_SRCVERSION_ALL is not set
-# CONFIG_KMOD is not set
-CONFIG_BLOCK=3Dy
-# CONFIG_LBD is not set
-# CONFIG_BLK_DEV_IO_TRACE is not set
-# CONFIG_LSF is not set
-# CONFIG_BLK_DEV_BSG is not set
+That could also be done.  Frankly though, if you look at the existing
+board.c files in there now, none of them are special.  The device tree
+really provides the differences these days, not the C code.  I'm this
+|| close to just killing them all and doing a 4xx_board.c file that
+does the right thing based on the few boards that have differences.
 
-#
-# IO Schedulers
-#
-CONFIG_IOSCHED_NOOP=3Dy
-CONFIG_IOSCHED_AS=3Dy
-CONFIG_IOSCHED_DEADLINE=3Dy
-CONFIG_IOSCHED_CFQ=3Dy
-CONFIG_DEFAULT_AS=3Dy
-# CONFIG_DEFAULT_DEADLINE is not set
-# CONFIG_DEFAULT_CFQ is not set
-# CONFIG_DEFAULT_NOOP is not set
-CONFIG_DEFAULT_IOSCHED=3D"anticipatory"
-CONFIG_CLASSIC_RCU=3Dy
+> I'm working on a more scalable solution for this, but for now just add
+> your specific board to canyonlands_probe().
 
-#
-# Platform support
-#
-# CONFIG_PPC_MULTIPLATFORM is not set
-CONFIG_PPC_82xx=3Dy
-# CONFIG_PPC_83xx is not set
-# CONFIG_PPC_86xx is not set
-# CONFIG_PPC_MPC512x is not set
-# CONFIG_PPC_MPC5121 is not set
-# CONFIG_PPC_CELL is not set
-# CONFIG_PPC_CELL_NATIVE is not set
-# CONFIG_MPC8272_ADS is not set
-# CONFIG_PQ2FADS is not set
-# CONFIG_EP8248E is not set
-CONFIG_INNSYS_APMAX=3Dy
-# CONFIG_PQ2ADS is not set
-CONFIG_8260=3Dy
-CONFIG_APMAX_PCI_INT=3Dy
-CONFIG_INNSYS_CPU1=3Dy
-# CONFIG_INNSYS_CPU2 is not set
-CONFIG_INNSYS_REV=3D0x20
-CONFIG_INNSYS_DEVCOM_PTR=3Dy
-CONFIG_INNSYS_DEVCOM_SIZE=3D24
-CONFIG_INNSYS_BYPASS_TTY=3Dy
-# CONFIG_IPIC is not set
-# CONFIG_MPIC is not set
-# CONFIG_MPIC_WEIRD is not set
-# CONFIG_PPC_I8259 is not set
-# CONFIG_PPC_RTAS is not set
-# CONFIG_MMIO_NVRAM is not set
-# CONFIG_PPC_MPC106 is not set
-# CONFIG_PPC_970_NAP is not set
-# CONFIG_PPC_INDIRECT_IO is not set
-# CONFIG_GENERIC_IOMAP is not set
-# CONFIG_CPU_FREQ is not set
-CONFIG_CPM2=3Dy
-CONFIG_PPC_CPM_NEW_BINDING=3Dy
-# CONFIG_FSL_ULI1575 is not set
-CONFIG_CPM=3Dy
+Glad to hear it.  Care to share your thoughts?  It seems to me that
+adding board.c files that differ only in board name is pretty silly, so
+if your solution avoids that I'll be happy.
 
-#
-# Kernel options
-#
-CONFIG_HIGHMEM=3Dy
-CONFIG_TICK_ONESHOT=3Dy
-# CONFIG_NO_HZ is not set
-CONFIG_HIGH_RES_TIMERS=3Dy
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=3Dy
-# CONFIG_HZ_100 is not set
-# CONFIG_HZ_250 is not set
-# CONFIG_HZ_300 is not set
-CONFIG_HZ_1000=3Dy
-CONFIG_HZ=3D1000
-# CONFIG_SCHED_HRTICK is not set
-# CONFIG_PREEMPT_NONE is not set
-# CONFIG_PREEMPT_VOLUNTARY is not set
-CONFIG_PREEMPT=3Dy
-# CONFIG_PREEMPT_RCU is not set
-CONFIG_BINFMT_ELF=3Dy
-# CONFIG_BINFMT_MISC is not set
-# CONFIG_IOMMU_HELPER is not set
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=3Dy
-CONFIG_ARCH_HAS_WALK_MEMORY=3Dy
-CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=3Dy
-CONFIG_ARCH_FLATMEM_ENABLE=3Dy
-CONFIG_ARCH_POPULATES_NODE_MAP=3Dy
-CONFIG_SELECT_MEMORY_MODEL=3Dy
-CONFIG_FLATMEM_MANUAL=3Dy
-# CONFIG_DISCONTIGMEM_MANUAL is not set
-# CONFIG_SPARSEMEM_MANUAL is not set
-CONFIG_FLATMEM=3Dy
-CONFIG_FLAT_NODE_MEM_MAP=3Dy
-# CONFIG_SPARSEMEM_STATIC is not set
-# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
-CONFIG_PAGEFLAGS_EXTENDED=3Dy
-CONFIG_SPLIT_PTLOCK_CPUS=3D4
-# CONFIG_RESOURCES_64BIT is not set
-CONFIG_ZONE_DMA_FLAG=3D1
-CONFIG_BOUNCE=3Dy
-CONFIG_VIRT_TO_BUS=3Dy
-CONFIG_FORCE_MAX_ZONEORDER=3D11
-CONFIG_PROC_DEVICETREE=3Dy
-# CONFIG_CMDLINE_BOOL is not set
-# CONFIG_PM is not set
-CONFIG_SECCOMP=3Dy
-CONFIG_ISA_DMA_API=3Dy
-
-#
-# Bus options
-#
-CONFIG_ZONE_DMA=3Dy
-CONFIG_PPC_INDIRECT_PCI=3Dy
-CONFIG_FSL_SOC=3Dy
-CONFIG_PCI=3Dy
-CONFIG_PCI_DOMAINS=3Dy
-CONFIG_PCI_SYSCALL=3Dy
-CONFIG_PCI_8260=3Dy
-# CONFIG_8260_PCI9 is not set
-# CONFIG_PCIEPORTBUS is not set
-CONFIG_ARCH_SUPPORTS_MSI=3Dy
-# CONFIG_PCI_MSI is not set
-CONFIG_PCI_LEGACY=3Dy
-CONFIG_PCI_DEBUG=3Dy
-# CONFIG_HAS_RAPIDIO is not set
-
-#
-# Advanced setup
-#
-# CONFIG_ADVANCED_OPTIONS is not set
-
-#
-# Default settings for advanced configuration options are used
-#
-CONFIG_LOWMEM_SIZE=3D0x30000000
-CONFIG_PAGE_OFFSET=3D0xc0000000
-CONFIG_KERNEL_START=3D0xc0000000
-CONFIG_PHYSICAL_START=3D0x00000000
-CONFIG_TASK_SIZE=3D0xc0000000
-
-#
-# Networking
-#
-CONFIG_NET=3Dy
-
-#
-# Networking options
-#
-CONFIG_PACKET=3Dy
-# CONFIG_PACKET_MMAP is not set
-CONFIG_UNIX=3Dy
-# CONFIG_NET_KEY is not set
-CONFIG_INET=3Dy
-CONFIG_IP_MULTICAST=3Dy
-# CONFIG_IP_ADVANCED_ROUTER is not set
-CONFIG_IP_FIB_HASH=3Dy
-CONFIG_IP_PNP=3Dy
-# CONFIG_IP_PNP_DHCP is not set
-# CONFIG_IP_PNP_BOOTP is not set
-# CONFIG_IP_PNP_RARP is not set
-# CONFIG_NET_IPIP is not set
-# CONFIG_NET_IPGRE is not set
-# CONFIG_IP_MROUTE is not set
-# CONFIG_ARPD is not set
-CONFIG_SYN_COOKIES=3Dy
-# CONFIG_INET_AH is not set
-# CONFIG_INET_ESP is not set
-# CONFIG_INET_IPCOMP is not set
-# CONFIG_INET_XFRM_TUNNEL is not set
-# CONFIG_INET_TUNNEL is not set
-# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-# CONFIG_INET_XFRM_MODE_BEET is not set
-# CONFIG_INET_LRO is not set
-# CONFIG_INET_DIAG is not set
-# CONFIG_TCP_CONG_ADVANCED is not set
-CONFIG_TCP_CONG_CUBIC=3Dy
-CONFIG_DEFAULT_TCP_CONG=3D"cubic"
-# CONFIG_TCP_MD5SIG is not set
-# CONFIG_IP_VS is not set
-# CONFIG_IPV6 is not set
-# CONFIG_NETWORK_SECMARK is not set
-CONFIG_NETFILTER=3Dy
-# CONFIG_NETFILTER_DEBUG is not set
-CONFIG_NETFILTER_ADVANCED=3Dy
-
-#
-# Core Netfilter Configuration
-#
-# CONFIG_NETFILTER_NETLINK_QUEUE is not set
-# CONFIG_NETFILTER_NETLINK_LOG is not set
-CONFIG_NF_CONNTRACK=3Dm
-# CONFIG_NF_CT_ACCT is not set
-# CONFIG_NF_CONNTRACK_MARK is not set
-# CONFIG_NF_CONNTRACK_EVENTS is not set
-# CONFIG_NF_CT_PROTO_DCCP is not set
-# CONFIG_NF_CT_PROTO_SCTP is not set
-# CONFIG_NF_CT_PROTO_UDPLITE is not set
-# CONFIG_NF_CONNTRACK_AMANDA is not set
-CONFIG_NF_CONNTRACK_FTP=3Dm
-# CONFIG_NF_CONNTRACK_H323 is not set
-# CONFIG_NF_CONNTRACK_IRC is not set
-# CONFIG_NF_CONNTRACK_NETBIOS_NS is not set
-# CONFIG_NF_CONNTRACK_PPTP is not set
-# CONFIG_NF_CONNTRACK_SANE is not set
-# CONFIG_NF_CONNTRACK_SIP is not set
-# CONFIG_NF_CONNTRACK_TFTP is not set
-# CONFIG_NF_CT_NETLINK is not set
-CONFIG_NETFILTER_XTABLES=3Dy
-# CONFIG_NETFILTER_XT_TARGET_CLASSIFY is not set
-# CONFIG_NETFILTER_XT_TARGET_MARK is not set
-# CONFIG_NETFILTER_XT_TARGET_NFQUEUE is not set
-# CONFIG_NETFILTER_XT_TARGET_NFLOG is not set
-# CONFIG_NETFILTER_XT_TARGET_RATEEST is not set
-# CONFIG_NETFILTER_XT_TARGET_TCPMSS is not set
-# CONFIG_NETFILTER_XT_MATCH_COMMENT is not set
-# CONFIG_NETFILTER_XT_MATCH_CONNBYTES is not set
-# CONFIG_NETFILTER_XT_MATCH_CONNLIMIT is not set
-# CONFIG_NETFILTER_XT_MATCH_CONNMARK is not set
-# CONFIG_NETFILTER_XT_MATCH_CONNTRACK is not set
-# CONFIG_NETFILTER_XT_MATCH_DCCP is not set
-# CONFIG_NETFILTER_XT_MATCH_DSCP is not set
-# CONFIG_NETFILTER_XT_MATCH_ESP is not set
-CONFIG_NETFILTER_XT_MATCH_HELPER=3Dm
-CONFIG_NETFILTER_XT_MATCH_IPRANGE=3Dm
-# CONFIG_NETFILTER_XT_MATCH_LENGTH is not set
-# CONFIG_NETFILTER_XT_MATCH_LIMIT is not set
-# CONFIG_NETFILTER_XT_MATCH_MAC is not set
-# CONFIG_NETFILTER_XT_MATCH_MARK is not set
-# CONFIG_NETFILTER_XT_MATCH_OWNER is not set
-# CONFIG_NETFILTER_XT_MATCH_MULTIPORT is not set
-# CONFIG_NETFILTER_XT_MATCH_PKTTYPE is not set
-# CONFIG_NETFILTER_XT_MATCH_QUOTA is not set
-# CONFIG_NETFILTER_XT_MATCH_RATEEST is not set
-# CONFIG_NETFILTER_XT_MATCH_REALM is not set
-# CONFIG_NETFILTER_XT_MATCH_SCTP is not set
-CONFIG_NETFILTER_XT_MATCH_STATE=3Dm
-# CONFIG_NETFILTER_XT_MATCH_STATISTIC is not set
-# CONFIG_NETFILTER_XT_MATCH_STRING is not set
-# CONFIG_NETFILTER_XT_MATCH_TCPMSS is not set
-# CONFIG_NETFILTER_XT_MATCH_TIME is not set
-# CONFIG_NETFILTER_XT_MATCH_U32 is not set
-# CONFIG_NETFILTER_XT_MATCH_HASHLIMIT is not set
-
-#
-# IP: Netfilter Configuration
-#
-# CONFIG_NF_CONNTRACK_IPV4 is not set
-# CONFIG_IP_NF_QUEUE is not set
-CONFIG_IP_NF_IPTABLES=3Dm
-# CONFIG_IP_NF_MATCH_RECENT is not set
-# CONFIG_IP_NF_MATCH_ECN is not set
-# CONFIG_IP_NF_MATCH_AH is not set
-# CONFIG_IP_NF_MATCH_TTL is not set
-# CONFIG_IP_NF_MATCH_ADDRTYPE is not set
-CONFIG_IP_NF_FILTER=3Dm
-# CONFIG_IP_NF_TARGET_REJECT is not set
-# CONFIG_IP_NF_TARGET_LOG is not set
-# CONFIG_IP_NF_TARGET_ULOG is not set
-# CONFIG_IP_NF_MANGLE is not set
-# CONFIG_IP_NF_RAW is not set
-CONFIG_IP_NF_ARPTABLES=3Dy
-CONFIG_IP_NF_ARPFILTER=3Dy
-# CONFIG_IP_NF_ARP_MANGLE is not set
-# CONFIG_IP_DCCP is not set
-# CONFIG_IP_SCTP is not set
-CONFIG_TIPC=3Dm
-CONFIG_TIPC_ADVANCED=3Dy
-CONFIG_TIPC_NETID=3D4711
-CONFIG_TIPC_REMOTE_MNG=3Dy
-CONFIG_TIPC_PORTS=3D8191
-CONFIG_TIPC_NODES=3D255
-CONFIG_TIPC_CLUSTERS=3D8
-CONFIG_TIPC_ZONES=3D4
-CONFIG_TIPC_REMOTES=3D8
-CONFIG_TIPC_PUBL=3D10000
-CONFIG_TIPC_SUBSCR=3D2000
-CONFIG_TIPC_LOG=3D0
-CONFIG_TIPC_UNICLUSTER_FRIENDLY=3Dy
-CONFIG_TIPC_MULTIPLE_LINKS=3Dy
-CONFIG_TIPC_CONFIG_SERVICE=3Dy
-CONFIG_TIPC_SOCKET_API=3Dy
-CONFIG_TIPC_SYSTEM_MSGS=3Dy
-CONFIG_TIPC_DEBUG=3Dy
-# CONFIG_ATM is not set
-# CONFIG_BRIDGE is not set
-# CONFIG_VLAN_8021Q is not set
-# CONFIG_DECNET is not set
-# CONFIG_LLC2 is not set
-# CONFIG_IPX is not set
-# CONFIG_ATALK is not set
-# CONFIG_X25 is not set
-# CONFIG_LAPB is not set
-# CONFIG_ECONET is not set
-# CONFIG_WAN_ROUTER is not set
-# CONFIG_NET_SCHED is not set
-
-#
-# Network testing
-#
-# CONFIG_NET_PKTGEN is not set
-# CONFIG_HAMRADIO is not set
-# CONFIG_CAN is not set
-# CONFIG_IRDA is not set
-# CONFIG_BT is not set
-# CONFIG_AF_RXRPC is not set
-
-#
-# Wireless
-#
-# CONFIG_CFG80211 is not set
-# CONFIG_WIRELESS_EXT is not set
-# CONFIG_MAC80211 is not set
-# CONFIG_IEEE80211 is not set
-# CONFIG_RFKILL is not set
-# CONFIG_NET_9P is not set
-
-#
-# Device Drivers
-#
-
-#
-# Generic Driver Options
-#
-CONFIG_STANDALONE=3Dy
-CONFIG_PREVENT_FIRMWARE_BUILD=3Dy
-# CONFIG_DEBUG_DRIVER is not set
-# CONFIG_DEBUG_DEVRES is not set
-# CONFIG_SYS_HYPERVISOR is not set
-# CONFIG_CONNECTOR is not set
-CONFIG_MTD=3Dy
-# CONFIG_MTD_DEBUG is not set
-# CONFIG_MTD_CONCAT is not set
-CONFIG_MTD_PARTITIONS=3Dy
-# CONFIG_MTD_REDBOOT_PARTS is not set
-# CONFIG_MTD_CMDLINE_PARTS is not set
-CONFIG_MTD_OF_PARTS=3Dy
-# CONFIG_MTD_AR7_PARTS is not set
-
-#
-# User Modules And Translation Layers
-#
-CONFIG_MTD_CHAR=3Dy
-# CONFIG_MTD_BLKDEVS is not set
-# CONFIG_MTD_BLOCK is not set
-# CONFIG_MTD_BLOCK_RO is not set
-# CONFIG_FTL is not set
-# CONFIG_NFTL is not set
-# CONFIG_INFTL is not set
-# CONFIG_RFD_FTL is not set
-# CONFIG_SSFDC is not set
-# CONFIG_MTD_OOPS is not set
-
-#
-# RAM/ROM/Flash chip drivers
-#
-CONFIG_MTD_CFI=3Dy
-CONFIG_MTD_JEDECPROBE=3Dy
-CONFIG_MTD_GEN_PROBE=3Dy
-# CONFIG_MTD_CFI_ADV_OPTIONS is not set
-CONFIG_MTD_MAP_BANK_WIDTH_1=3Dy
-CONFIG_MTD_MAP_BANK_WIDTH_2=3Dy
-CONFIG_MTD_MAP_BANK_WIDTH_4=3Dy
-# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
-# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
-# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
-CONFIG_MTD_CFI_I1=3Dy
-CONFIG_MTD_CFI_I2=3Dy
-# CONFIG_MTD_CFI_I4 is not set
-# CONFIG_MTD_CFI_I8 is not set
-# CONFIG_MTD_CFI_INTELEXT is not set
-CONFIG_MTD_CFI_AMDSTD=3Dy
-# CONFIG_MTD_CFI_STAA is not set
-CONFIG_MTD_CFI_UTIL=3Dy
-CONFIG_MTD_RAM=3Dy
-# CONFIG_MTD_ROM is not set
-# CONFIG_MTD_ABSENT is not set
-
-#
-# Mapping drivers for chip access
-#
-# CONFIG_MTD_COMPLEX_MAPPINGS is not set
-# CONFIG_MTD_PHYSMAP is not set
-CONFIG_MTD_PHYSMAP_OF=3Dy
-# CONFIG_MTD_SBC8240 is not set
-# CONFIG_MTD_INTEL_VR_NOR is not set
-# CONFIG_MTD_PLATRAM is not set
-
-#
-# Self-contained MTD device drivers
-#
-# CONFIG_MTD_PMC551 is not set
-# CONFIG_MTD_SLRAM is not set
-# CONFIG_MTD_PHRAM is not set
-# CONFIG_MTD_MTDRAM is not set
-# CONFIG_MTD_BLOCK2MTD is not set
-
-#
-# Disk-On-Chip Device Drivers
-#
-# CONFIG_MTD_DOC2000 is not set
-# CONFIG_MTD_DOC2001 is not set
-# CONFIG_MTD_DOC2001PLUS is not set
-# CONFIG_MTD_NAND is not set
-# CONFIG_MTD_ONENAND is not set
-
-#
-# UBI - Unsorted block images
-#
-# CONFIG_MTD_UBI is not set
-CONFIG_OF_DEVICE=3Dy
-# CONFIG_PARPORT is not set
-# CONFIG_BLK_DEV is not set
-# CONFIG_MISC_DEVICES is not set
-CONFIG_HAVE_IDE=3Dy
-# CONFIG_IDE is not set
-
-#
-# SCSI device support
-#
-# CONFIG_RAID_ATTRS is not set
-CONFIG_SCSI=3Dy
-CONFIG_SCSI_DMA=3Dy
-# CONFIG_SCSI_TGT is not set
-# CONFIG_SCSI_NETLINK is not set
-CONFIG_SCSI_PROC_FS=3Dy
-
-#
-# SCSI support type (disk, tape, CD-ROM)
-#
-CONFIG_BLK_DEV_SD=3Dy
-# CONFIG_CHR_DEV_ST is not set
-# CONFIG_CHR_DEV_OSST is not set
-# CONFIG_BLK_DEV_SR is not set
-# CONFIG_CHR_DEV_SG is not set
-# CONFIG_CHR_DEV_SCH is not set
-
-#
-# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-#
-# CONFIG_SCSI_MULTI_LUN is not set
-# CONFIG_SCSI_CONSTANTS is not set
-# CONFIG_SCSI_LOGGING is not set
-# CONFIG_SCSI_SCAN_ASYNC is not set
-CONFIG_SCSI_WAIT_SCAN=3Dm
-
-#
-# SCSI Transports
-#
-# CONFIG_SCSI_SPI_ATTRS is not set
-# CONFIG_SCSI_FC_ATTRS is not set
-# CONFIG_SCSI_ISCSI_ATTRS is not set
-# CONFIG_SCSI_SAS_LIBSAS is not set
-# CONFIG_SCSI_SRP_ATTRS is not set
-# CONFIG_SCSI_LOWLEVEL is not set
-CONFIG_ATA=3Dy
-# CONFIG_ATA_NONSTANDARD is not set
-CONFIG_SATA_PMP=3Dy
-# CONFIG_SATA_AHCI is not set
-CONFIG_SATA_SIL24=3Dy
-# CONFIG_SATA_FSL is not set
-CONFIG_ATA_SFF=3Dy
-# CONFIG_SATA_SVW is not set
-# CONFIG_ATA_PIIX is not set
-# CONFIG_SATA_MV is not set
-# CONFIG_SATA_NV is not set
-# CONFIG_PDC_ADMA is not set
-# CONFIG_SATA_QSTOR is not set
-# CONFIG_SATA_PROMISE is not set
-# CONFIG_SATA_SX4 is not set
-# CONFIG_SATA_SIL is not set
-# CONFIG_SATA_SIS is not set
-# CONFIG_SATA_ULI is not set
-# CONFIG_SATA_VIA is not set
-# CONFIG_SATA_VITESSE is not set
-# CONFIG_SATA_INIC162X is not set
-# CONFIG_PATA_ALI is not set
-# CONFIG_PATA_AMD is not set
-# CONFIG_PATA_ARTOP is not set
-# CONFIG_PATA_ATIIXP is not set
-# CONFIG_PATA_CMD640_PCI is not set
-# CONFIG_PATA_CMD64X is not set
-# CONFIG_PATA_CS5520 is not set
-# CONFIG_PATA_CS5530 is not set
-# CONFIG_PATA_CYPRESS is not set
-# CONFIG_PATA_EFAR is not set
-# CONFIG_ATA_GENERIC is not set
-# CONFIG_PATA_HPT366 is not set
-# CONFIG_PATA_HPT37X is not set
-# CONFIG_PATA_HPT3X2N is not set
-# CONFIG_PATA_HPT3X3 is not set
-# CONFIG_PATA_IT821X is not set
-# CONFIG_PATA_IT8213 is not set
-# CONFIG_PATA_JMICRON is not set
-# CONFIG_PATA_TRIFLEX is not set
-# CONFIG_PATA_MARVELL is not set
-# CONFIG_PATA_MPIIX is not set
-# CONFIG_PATA_OLDPIIX is not set
-# CONFIG_PATA_NETCELL is not set
-# CONFIG_PATA_NINJA32 is not set
-# CONFIG_PATA_NS87410 is not set
-# CONFIG_PATA_NS87415 is not set
-# CONFIG_PATA_OPTI is not set
-# CONFIG_PATA_OPTIDMA is not set
-# CONFIG_PATA_PDC_OLD is not set
-# CONFIG_PATA_RADISYS is not set
-# CONFIG_PATA_RZ1000 is not set
-# CONFIG_PATA_SC1200 is not set
-# CONFIG_PATA_SERVERWORKS is not set
-# CONFIG_PATA_PDC2027X is not set
-# CONFIG_PATA_SIL680 is not set
-# CONFIG_PATA_SIS is not set
-# CONFIG_PATA_VIA is not set
-# CONFIG_PATA_WINBOND is not set
-# CONFIG_PATA_PLATFORM is not set
-# CONFIG_PATA_SCH is not set
-# CONFIG_MD is not set
-# CONFIG_FUSION is not set
-
-#
-# IEEE 1394 (FireWire) support
-#
-
-#
-# Enable only one of the two stacks, unless you know what you are doing
-#
-# CONFIG_FIREWIRE is not set
-# CONFIG_IEEE1394 is not set
-# CONFIG_I2O is not set
-# CONFIG_MACINTOSH_DRIVERS is not set
-CONFIG_NETDEVICES=3Dy
-# CONFIG_NETDEVICES_MULTIQUEUE is not set
-# CONFIG_DUMMY is not set
-# CONFIG_BONDING is not set
-# CONFIG_MACVLAN is not set
-# CONFIG_EQUALIZER is not set
-CONFIG_TUN=3Dy
-# CONFIG_VETH is not set
-# CONFIG_ARCNET is not set
-CONFIG_PHYLIB=3Dy
-
-#
-# MII PHY device drivers
-#
-# CONFIG_MARVELL_PHY is not set
-# CONFIG_DAVICOM_PHY is not set
-# CONFIG_QSEMI_PHY is not set
-# CONFIG_LXT_PHY is not set
-# CONFIG_CICADA_PHY is not set
-# CONFIG_VITESSE_PHY is not set
-# CONFIG_SMSC_PHY is not set
-# CONFIG_BROADCOM_PHY is not set
-# CONFIG_ICPLUS_PHY is not set
-# CONFIG_REALTEK_PHY is not set
-CONFIG_FIXED_PHY=3Dy
-# CONFIG_MDIO_BITBANG is not set
-CONFIG_NET_ETHERNET=3Dy
-CONFIG_MII=3Dy
-# CONFIG_HAPPYMEAL is not set
-# CONFIG_SUNGEM is not set
-# CONFIG_CASSINI is not set
-# CONFIG_NET_VENDOR_3COM is not set
-# CONFIG_NET_TULIP is not set
-# CONFIG_HP100 is not set
-# CONFIG_IBM_NEW_EMAC_ZMII is not set
-# CONFIG_IBM_NEW_EMAC_RGMII is not set
-# CONFIG_IBM_NEW_EMAC_TAH is not set
-# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
-# CONFIG_NET_PCI is not set
-# CONFIG_B44 is not set
-CONFIG_FS_ENET=3Dy
-# CONFIG_FS_ENET_HAS_SCC is not set
-CONFIG_FS_ENET_HAS_FCC=3Dy
-# CONFIG_FS_ENET_MDIO_FCC is not set
-# CONFIG_NETDEV_1000 is not set
-# CONFIG_NETDEV_10000 is not set
-# CONFIG_TR is not set
-
-#
-# Wireless LAN
-#
-# CONFIG_WLAN_PRE80211 is not set
-# CONFIG_WLAN_80211 is not set
-# CONFIG_IWLWIFI_LEDS is not set
-# CONFIG_WAN is not set
-# CONFIG_FDDI is not set
-# CONFIG_HIPPI is not set
-# CONFIG_PPP is not set
-# CONFIG_SLIP is not set
-# CONFIG_NET_FC is not set
-# CONFIG_NETCONSOLE is not set
-# CONFIG_NETPOLL is not set
-# CONFIG_NET_POLL_CONTROLLER is not set
-# CONFIG_ISDN is not set
-# CONFIG_PHONE is not set
-
-#
-# Input device support
-#
-# CONFIG_INPUT is not set
-
-#
-# Hardware I/O ports
-#
-# CONFIG_SERIO is not set
-# CONFIG_GAMEPORT is not set
-
-#
-# Character devices
-#
-# CONFIG_VT is not set
-# CONFIG_DEVKMEM is not set
-# CONFIG_SERIAL_NONSTANDARD is not set
-# CONFIG_NOZOMI is not set
-
-#
-# Serial drivers
-#
-# CONFIG_SERIAL_8250 is not set
-
-#
-# Non-8250 serial port support
-#
-# CONFIG_SERIAL_UARTLITE is not set
-CONFIG_SERIAL_CORE=3Dy
-CONFIG_SERIAL_CORE_CONSOLE=3Dy
-CONFIG_SERIAL_CPM=3Dy
-CONFIG_SERIAL_CPM_CONSOLE=3Dy
-CONFIG_SERIAL_CPM_SCC1=3Dy
-# CONFIG_SERIAL_CPM_SCC2 is not set
-# CONFIG_SERIAL_CPM_SCC3 is not set
-CONFIG_SERIAL_CPM_SCC4=3Dy
-# CONFIG_SERIAL_CPM_SMC1 is not set
-# CONFIG_SERIAL_CPM_SMC2 is not set
-# CONFIG_SERIAL_JSM is not set
-CONFIG_UNIX98_PTYS=3Dy
-# CONFIG_LEGACY_PTYS is not set
-# CONFIG_IPMI_HANDLER is not set
-# CONFIG_HW_RANDOM is not set
-# CONFIG_NVRAM is not set
-# CONFIG_GEN_RTC is not set
-# CONFIG_R3964 is not set
-# CONFIG_APPLICOM is not set
-# CONFIG_RAW_DRIVER is not set
-# CONFIG_TCG_TPM is not set
-CONFIG_DEVPORT=3Dy
-# CONFIG_I2C is not set
-# CONFIG_SPI is not set
-# CONFIG_W1 is not set
-# CONFIG_POWER_SUPPLY is not set
-# CONFIG_HWMON is not set
-# CONFIG_THERMAL is not set
-# CONFIG_THERMAL_HWMON is not set
-# CONFIG_WATCHDOG is not set
-
-#
-# Sonics Silicon Backplane
-#
-CONFIG_SSB_POSSIBLE=3Dy
-# CONFIG_SSB is not set
-
-#
-# Multifunction device drivers
-#
-# CONFIG_MFD_SM501 is not set
-# CONFIG_HTC_PASIC3 is not set
-
-#
-# Multimedia devices
-#
-
-#
-# Multimedia core support
-#
-# CONFIG_VIDEO_DEV is not set
-# CONFIG_DVB_CORE is not set
-# CONFIG_VIDEO_MEDIA is not set
-
-#
-# Multimedia drivers
-#
-# CONFIG_DAB is not set
-
-#
-# Graphics support
-#
-# CONFIG_AGP is not set
-# CONFIG_DRM is not set
-# CONFIG_VGASTATE is not set
-# CONFIG_VIDEO_OUTPUT_CONTROL is not set
-# CONFIG_FB is not set
-# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-
-#
-# Display device support
-#
-# CONFIG_DISPLAY_SUPPORT is not set
-
-#
-# Sound
-#
-# CONFIG_SOUND is not set
-# CONFIG_USB_SUPPORT is not set
-# CONFIG_MMC is not set
-# CONFIG_MEMSTICK is not set
-# CONFIG_NEW_LEDS is not set
-# CONFIG_ACCESSIBILITY is not set
-# CONFIG_INFINIBAND is not set
-# CONFIG_EDAC is not set
-# CONFIG_RTC_CLASS is not set
-# CONFIG_DMADEVICES is not set
-# CONFIG_UIO is not set
-
-#
-# File systems
-#
-CONFIG_EXT2_FS=3Dy
-CONFIG_EXT2_FS_XATTR=3Dy
-# CONFIG_EXT2_FS_POSIX_ACL is not set
-# CONFIG_EXT2_FS_SECURITY is not set
-# CONFIG_EXT2_FS_XIP is not set
-CONFIG_EXT3_FS=3Dy
-CONFIG_EXT3_FS_XATTR=3Dy
-# CONFIG_EXT3_FS_POSIX_ACL is not set
-# CONFIG_EXT3_FS_SECURITY is not set
-CONFIG_EXT4DEV_FS=3Dy
-CONFIG_EXT4DEV_FS_XATTR=3Dy
-# CONFIG_EXT4DEV_FS_POSIX_ACL is not set
-# CONFIG_EXT4DEV_FS_SECURITY is not set
-CONFIG_JBD=3Dy
-CONFIG_JBD2=3Dy
-CONFIG_FS_MBCACHE=3Dy
-# CONFIG_REISERFS_FS is not set
-# CONFIG_JFS_FS is not set
-CONFIG_FS_POSIX_ACL=3Dy
-# CONFIG_XFS_FS is not set
-# CONFIG_OCFS2_FS is not set
-CONFIG_DNOTIFY=3Dy
-CONFIG_INOTIFY=3Dy
-CONFIG_INOTIFY_USER=3Dy
-# CONFIG_QUOTA is not set
-# CONFIG_AUTOFS_FS is not set
-# CONFIG_AUTOFS4_FS is not set
-# CONFIG_FUSE_FS is not set
-
-#
-# CD-ROM/DVD Filesystems
-#
-# CONFIG_ISO9660_FS is not set
-# CONFIG_UDF_FS is not set
-
-#
-# DOS/FAT/NT Filesystems
-#
-CONFIG_FAT_FS=3Dy
-CONFIG_MSDOS_FS=3Dy
-CONFIG_VFAT_FS=3Dy
-CONFIG_FAT_DEFAULT_CODEPAGE=3D437
-CONFIG_FAT_DEFAULT_IOCHARSET=3D"iso8859-1"
-# CONFIG_NTFS_FS is not set
-
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=3Dy
-CONFIG_PROC_KCORE=3Dy
-CONFIG_PROC_SYSCTL=3Dy
-CONFIG_SYSFS=3Dy
-CONFIG_TMPFS=3Dy
-# CONFIG_TMPFS_POSIX_ACL is not set
-# CONFIG_HUGETLB_PAGE is not set
-# CONFIG_CONFIGFS_FS is not set
-
-#
-# Miscellaneous filesystems
-#
-# CONFIG_ADFS_FS is not set
-# CONFIG_AFFS_FS is not set
-# CONFIG_HFS_FS is not set
-# CONFIG_HFSPLUS_FS is not set
-# CONFIG_BEFS_FS is not set
-# CONFIG_BFS_FS is not set
-# CONFIG_EFS_FS is not set
-CONFIG_JFFS2_FS=3Dy
-CONFIG_JFFS2_FS_DEBUG=3D0
-CONFIG_JFFS2_FS_WRITEBUFFER=3Dy
-# CONFIG_JFFS2_FS_WBUF_VERIFY is not set
-# CONFIG_JFFS2_SUMMARY is not set
-# CONFIG_JFFS2_FS_XATTR is not set
-# CONFIG_JFFS2_COMPRESSION_OPTIONS is not set
-CONFIG_JFFS2_ZLIB=3Dy
-# CONFIG_JFFS2_LZO is not set
-CONFIG_JFFS2_RTIME=3Dy
-# CONFIG_JFFS2_RUBIN is not set
-# CONFIG_CRAMFS is not set
-# CONFIG_VXFS_FS is not set
-# CONFIG_MINIX_FS is not set
-# CONFIG_HPFS_FS is not set
-# CONFIG_QNX4FS_FS is not set
-# CONFIG_ROMFS_FS is not set
-# CONFIG_SYSV_FS is not set
-# CONFIG_UFS_FS is not set
-CONFIG_NETWORK_FILESYSTEMS=3Dy
-CONFIG_NFS_FS=3Dy
-CONFIG_NFS_V3=3Dy
-CONFIG_NFS_V3_ACL=3Dy
-# CONFIG_NFS_V4 is not set
-# CONFIG_NFSD is not set
-CONFIG_ROOT_NFS=3Dy
-CONFIG_LOCKD=3Dy
-CONFIG_LOCKD_V4=3Dy
-CONFIG_NFS_ACL_SUPPORT=3Dy
-CONFIG_NFS_COMMON=3Dy
-CONFIG_SUNRPC=3Dy
-# CONFIG_SUNRPC_BIND34 is not set
-# CONFIG_RPCSEC_GSS_KRB5 is not set
-# CONFIG_RPCSEC_GSS_SPKM3 is not set
-# CONFIG_SMB_FS is not set
-# CONFIG_CIFS is not set
-# CONFIG_NCP_FS is not set
-# CONFIG_CODA_FS is not set
-# CONFIG_AFS_FS is not set
-
-#
-# Partition Types
-#
-CONFIG_PARTITION_ADVANCED=3Dy
-# CONFIG_ACORN_PARTITION is not set
-# CONFIG_OSF_PARTITION is not set
-# CONFIG_AMIGA_PARTITION is not set
-# CONFIG_ATARI_PARTITION is not set
-# CONFIG_MAC_PARTITION is not set
-CONFIG_MSDOS_PARTITION=3Dy
-# CONFIG_BSD_DISKLABEL is not set
-# CONFIG_MINIX_SUBPARTITION is not set
-# CONFIG_SOLARIS_X86_PARTITION is not set
-# CONFIG_UNIXWARE_DISKLABEL is not set
-# CONFIG_LDM_PARTITION is not set
-# CONFIG_SGI_PARTITION is not set
-# CONFIG_ULTRIX_PARTITION is not set
-# CONFIG_SUN_PARTITION is not set
-# CONFIG_KARMA_PARTITION is not set
-# CONFIG_EFI_PARTITION is not set
-# CONFIG_SYSV68_PARTITION is not set
-CONFIG_NLS=3Dy
-CONFIG_NLS_DEFAULT=3D"iso8859-1"
-CONFIG_NLS_CODEPAGE_437=3Dy
-# CONFIG_NLS_CODEPAGE_737 is not set
-# CONFIG_NLS_CODEPAGE_775 is not set
-# CONFIG_NLS_CODEPAGE_850 is not set
-# CONFIG_NLS_CODEPAGE_852 is not set
-# CONFIG_NLS_CODEPAGE_855 is not set
-# CONFIG_NLS_CODEPAGE_857 is not set
-# CONFIG_NLS_CODEPAGE_860 is not set
-# CONFIG_NLS_CODEPAGE_861 is not set
-# CONFIG_NLS_CODEPAGE_862 is not set
-# CONFIG_NLS_CODEPAGE_863 is not set
-# CONFIG_NLS_CODEPAGE_864 is not set
-# CONFIG_NLS_CODEPAGE_865 is not set
-# CONFIG_NLS_CODEPAGE_866 is not set
-# CONFIG_NLS_CODEPAGE_869 is not set
-# CONFIG_NLS_CODEPAGE_936 is not set
-# CONFIG_NLS_CODEPAGE_950 is not set
-# CONFIG_NLS_CODEPAGE_932 is not set
-# CONFIG_NLS_CODEPAGE_949 is not set
-# CONFIG_NLS_CODEPAGE_874 is not set
-# CONFIG_NLS_ISO8859_8 is not set
-# CONFIG_NLS_CODEPAGE_1250 is not set
-# CONFIG_NLS_CODEPAGE_1251 is not set
-CONFIG_NLS_ASCII=3Dy
-CONFIG_NLS_ISO8859_1=3Dy
-# CONFIG_NLS_ISO8859_2 is not set
-# CONFIG_NLS_ISO8859_3 is not set
-# CONFIG_NLS_ISO8859_4 is not set
-# CONFIG_NLS_ISO8859_5 is not set
-# CONFIG_NLS_ISO8859_6 is not set
-# CONFIG_NLS_ISO8859_7 is not set
-# CONFIG_NLS_ISO8859_9 is not set
-# CONFIG_NLS_ISO8859_13 is not set
-# CONFIG_NLS_ISO8859_14 is not set
-# CONFIG_NLS_ISO8859_15 is not set
-# CONFIG_NLS_KOI8_R is not set
-# CONFIG_NLS_KOI8_U is not set
-CONFIG_NLS_UTF8=3Dy
-# CONFIG_DLM is not set
-
-#
-# Library routines
-#
-CONFIG_BITREVERSE=3Dy
-# CONFIG_GENERIC_FIND_FIRST_BIT is not set
-# CONFIG_CRC_CCITT is not set
-CONFIG_CRC16=3Dy
-# CONFIG_CRC_ITU_T is not set
-CONFIG_CRC32=3Dy
-# CONFIG_CRC7 is not set
-# CONFIG_LIBCRC32C is not set
-CONFIG_ZLIB_INFLATE=3Dy
-CONFIG_ZLIB_DEFLATE=3Dy
-CONFIG_PLIST=3Dy
-CONFIG_HAS_IOMEM=3Dy
-CONFIG_HAS_IOPORT=3Dy
-CONFIG_HAS_DMA=3Dy
-CONFIG_HAVE_LMB=3Dy
-
-#
-# Kernel hacking
-#
-# CONFIG_PRINTK_TIME is not set
-# CONFIG_ENABLE_WARN_DEPRECATED is not set
-# CONFIG_ENABLE_MUST_CHECK is not set
-CONFIG_FRAME_WARN=3D0
-# CONFIG_MAGIC_SYSRQ is not set
-# CONFIG_UNUSED_SYMBOLS is not set
-# CONFIG_DEBUG_FS is not set
-# CONFIG_HEADERS_CHECK is not set
-CONFIG_DEBUG_KERNEL=3Dy
-# CONFIG_DEBUG_SHIRQ is not set
-CONFIG_DETECT_SOFTLOCKUP=3Dy
-# CONFIG_SCHED_DEBUG is not set
-# CONFIG_SCHEDSTATS is not set
-# CONFIG_TIMER_STATS is not set
-# CONFIG_DEBUG_OBJECTS is not set
-# CONFIG_SLUB_DEBUG_ON is not set
-# CONFIG_SLUB_STATS is not set
-# CONFIG_DEBUG_RT_MUTEXES is not set
-# CONFIG_RT_MUTEX_TESTER is not set
-# CONFIG_DEBUG_SPINLOCK is not set
-# CONFIG_DEBUG_MUTEXES is not set
-# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
-# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-# CONFIG_DEBUG_KOBJECT is not set
-# CONFIG_DEBUG_HIGHMEM is not set
-CONFIG_DEBUG_BUGVERBOSE=3Dy
-CONFIG_DEBUG_INFO=3Dy
-# CONFIG_DEBUG_VM is not set
-# CONFIG_DEBUG_WRITECOUNT is not set
-# CONFIG_DEBUG_LIST is not set
-# CONFIG_DEBUG_SG is not set
-# CONFIG_BOOT_PRINTK_DELAY is not set
-# CONFIG_RCU_TORTURE_TEST is not set
-# CONFIG_BACKTRACE_SELF_TEST is not set
-# CONFIG_FAULT_INJECTION is not set
-# CONFIG_SAMPLES is not set
-# CONFIG_DEBUG_STACKOVERFLOW is not set
-# CONFIG_DEBUG_STACK_USAGE is not set
-# CONFIG_DEBUG_PAGEALLOC is not set
-# CONFIG_DEBUGGER is not set
-# CONFIG_KGDB_CONSOLE is not set
-# CONFIG_IRQSTACKS is not set
-CONFIG_BDI_SWITCH=3Dy
-# CONFIG_PPC_EARLY_DEBUG is not set
-
-#
-# Security options
-#
-# CONFIG_KEYS is not set
-# CONFIG_SECURITY is not set
-# CONFIG_SECURITY_FILE_CAPABILITIES is not set
-# CONFIG_CRYPTO is not set
-# CONFIG_PPC_CLOCK is not set
-CONFIG_PPC_LIB_RHEAP=3Dy
-# CONFIG_VIRTUALIZATION is not set
+josh
