@@ -1,18 +1,21 @@
 Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 41244DDF0A
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 18:51:52 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [patch 9/9] powerpc/cell: Add DMA_ATTR_STRONG_ORDERING dma
-	attribute and use in IOMMU code
-Date: Wed, 16 Jul 2008 09:54:03 +0200
-References: <20080715195139.316677337@arndb.de>
-	<200807152327.06946.arnd@arndb.de> <ada7ibmd115.fsf@cisco.com>
-In-Reply-To: <ada7ibmd115.fsf@cisco.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [git pull] Please pull from powerpc.git merge branch
+Date: Wed, 16 Jul 2008 10:51:11 +0200
+References: <1216172043.7740.136.camel@pasglop>
+	<20080716042042.GA13212@redhat.com>
+In-Reply-To: <20080716042042.GA13212@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200807160954.03633.arnd@arndb.de>
-Cc: Mark Nelson <markn@au1.ibm.com>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org
+Message-Id: <200807161051.12545.arnd@arndb.de>
+Cc: Dave Jones <davej@redhat.com>, akpm <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 16 July 2008, Roland Dreier wrote:
-> =A0> Strong ordering is only active when both the bridge and the IOMMU en=
-able
-> =A0> it, but for correctly written drivers, this only results in a slowdo=
-wn.
->=20
-> So when would someone use this dma attribute? =A0As a hack to fix drivers
-> where the real fix is too complicated?
+On Wednesday 16 July 2008, Dave Jones wrote:
+> arch/powerpc/platforms/built-in.o: In function `ep8248e_mdio_probe':
+> /builddir/build/BUILD/kernel-2.6.26/linux-2.6.26.ppc/arch/powerpc/platforms/82xx/ep8248e.c:129: undefined reference to `alloc_mdio_bitbang'
+> /builddir/build/BUILD/kernel-2.6.26/linux-2.6.26.ppc/arch/powerpc/platforms/82xx/ep8248e.c:143: undefined reference to `mdiobus_register'
 
-This is used in the Axon PCIe endpoint drivers, e.g. in the Roadrunner
-machine. The reason was to improve roundtrip latency by doing only
-mmio stores, not loads, on each side of the PCIe connection, which
-turn into posted DMA operations on the other end. With relaxed ordering,
-the posted writes may be observed out of order. Strong ordering makes
-sure they arrive in-order without having to do a non-posted mmio read
-or eieio operation on the receiver side.
+FS_ENET and EP8248E both select MDIO_BITBANG, but not PHYLIB or MII, which
+looks broken to me.
+
+Also, I think it would be useful to split out the bitbang
+driver from ep8248e.c, so that you can build it as a loadable
+module if you want to have PHYLIB loadable.
 
 	Arnd <><
