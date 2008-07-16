@@ -1,21 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 41244DDF0A
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 18:51:52 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [git pull] Please pull from powerpc.git merge branch
-Date: Wed, 16 Jul 2008 10:51:11 +0200
-References: <1216172043.7740.136.camel@pasglop>
-	<20080716042042.GA13212@redhat.com>
-In-Reply-To: <20080716042042.GA13212@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807161051.12545.arnd@arndb.de>
-Cc: Dave Jones <davej@redhat.com>, akpm <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <dinesh.dua@coraltele.com>
+Received: from mail.coraltele.com (unknown [122.160.64.235])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 00759DDF37
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 19:07:49 +1000 (EST)
+Subject: WRITING AN SOC DRIVER WITHOUT DMA
+From: dinesh <dinesh.dua@coraltele.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20080712083939.15025.31192.stgit@trillian.secretlab.ca>
+References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
+	<20080712083939.15025.31192.stgit@trillian.secretlab.ca>
+Content-Type: multipart/alternative; boundary="=-1e/PTQfltXMGNmqL4Eph"
+Date: Wed, 16 Jul 2008 14:35:30 +0530
+Message-Id: <1216199130.749.4.camel@dinesh.dua>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	liam.girdwood@wolfsonmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 16 July 2008, Dave Jones wrote:
-> arch/powerpc/platforms/built-in.o: In function `ep8248e_mdio_probe':
-> /builddir/build/BUILD/kernel-2.6.26/linux-2.6.26.ppc/arch/powerpc/platforms/82xx/ep8248e.c:129: undefined reference to `alloc_mdio_bitbang'
-> /builddir/build/BUILD/kernel-2.6.26/linux-2.6.26.ppc/arch/powerpc/platforms/82xx/ep8248e.c:143: undefined reference to `mdiobus_register'
 
-FS_ENET and EP8248E both select MDIO_BITBANG, but not PHYLIB or MII, which
-looks broken to me.
+--=-1e/PTQfltXMGNmqL4Eph
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Also, I think it would be useful to split out the bitbang
-driver from ep8248e.c, so that you can build it as a loadable
-module if you want to have PHYLIB loadable.
+Hi,
+I am writing a soc sound driver for MPC8323 board linux 2.6.24 in which i want to do data transfer to and from device myself using BUFFER DESCRIPTOR not with the usual DMA transfer.
+Please help me.
 
-	Arnd <><
+--=-1e/PTQfltXMGNmqL4Eph
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
+<HTML>
+<HEAD>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
+  <META NAME="GENERATOR" CONTENT="GtkHTML/3.18.2">
+</HEAD>
+<BODY>
+<PRE>
+Hi,
+I am writing a soc sound driver for MPC8323 board linux 2.6.24 in which i want to do data transfer to and from device myself using BUFFER DESCRIPTOR not with the usual DMA transfer.
+Please help me.
+</PRE>
+</BODY>
+</HTML>
+
+--=-1e/PTQfltXMGNmqL4Eph--
