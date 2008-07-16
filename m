@@ -4,13 +4,13 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A9E46DDF37
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 09:22:39 +1000 (EST)
-Date: Wed, 16 Jul 2008 18:21:58 -0500
+	by ozlabs.org (Postfix) with ESMTPS id 085A4DE0A3
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 09:23:05 +1000 (EST)
+Date: Wed, 16 Jul 2008 18:22:15 -0500
 From: Kim Phillips <kim.phillips@freescale.com>
 To: linux-crypto@vger.kernel.org
-Subject: [PATCH 3/6] crypto: talitos - preempt overflow interrupts
-Message-Id: <20080716182158.cc9ee10b.kim.phillips@freescale.com>
+Subject: [PATCH 4/6] crypto: talitos - fix GFP flag usage
+Message-Id: <20080716182215.36c1bd11.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
@@ -24,86 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-add requests pending/submit count to prevent request queue full
-condition by preempting h/w overflow interrupts in software.
-We do this due to the delay in the delivery and handling of the
-channel overflow error interrupt.
+use GFP_ATOMIC when necessary; use atomic_t when allocating submit_count.
 
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 Acked-by: Lee Nipper <lee.nipper@freescale.com>
 ---
- drivers/crypto/talitos.c |   27 ++++++++++++++++++++++-----
- 1 files changed, 22 insertions(+), 5 deletions(-)
+ drivers/crypto/talitos.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index f644fba..fdb0680 100644
+index fdb0680..79fdba2 100644
 --- a/drivers/crypto/talitos.c
 +++ b/drivers/crypto/talitos.c
-@@ -99,6 +99,9 @@ struct talitos_private {
- 	/* next channel to be assigned next incoming descriptor */
- 	atomic_t last_chan;
+@@ -1015,6 +1015,8 @@ static struct ipsec_esp_edesc *ipsec_esp_edesc_alloc(struct aead_request *areq,
+ 	struct talitos_ctx *ctx = crypto_aead_ctx(authenc);
+ 	struct ipsec_esp_edesc *edesc;
+ 	int src_nents, dst_nents, alloc_len, dma_len;
++	gfp_t flags = areq->base.flags & CRYPTO_TFM_REQ_MAY_SLEEP ? GFP_KERNEL :
++		      GFP_ATOMIC;
  
-+	/* per-channel number of requests pending in channel h/w fifo */
-+	atomic_t *submit_count;
-+
- 	/* per-channel request fifo */
- 	struct talitos_request **fifo;
- 
-@@ -263,15 +266,15 @@ static int talitos_submit(struct device *dev, struct talitos_desc *desc,
- 
- 	spin_lock_irqsave(&priv->head_lock[ch], flags);
- 
--	head = priv->head[ch];
--	request = &priv->fifo[ch][head];
--
--	if (request->desc) {
--		/* request queue is full */
-+	if (!atomic_inc_not_zero(&priv->submit_count[ch])) {
-+		/* h/w fifo is full */
- 		spin_unlock_irqrestore(&priv->head_lock[ch], flags);
- 		return -EAGAIN;
+ 	if (areq->cryptlen + ctx->authsize > TALITOS_MAX_DATA_LEN) {
+ 		dev_err(ctx->dev, "cryptlen exceeds h/w max limit\n");
+@@ -1046,7 +1048,7 @@ static struct ipsec_esp_edesc *ipsec_esp_edesc_alloc(struct aead_request *areq,
+ 		alloc_len += icv_stashing ? ctx->authsize : 0;
  	}
  
-+	head = priv->head[ch];
-+	request = &priv->fifo[ch][head];
-+
- 	/* map descriptor and save caller data */
- 	request->dma_desc = dma_map_single(dev, desc, sizeof(*desc),
- 					   DMA_BIDIRECTIONAL);
-@@ -335,6 +338,9 @@ static void flush_channel(struct device *dev, int ch, int error, int reset_ch)
- 		priv->tail[ch] = (tail + 1) & (priv->fifo_len - 1);
- 
- 		spin_unlock_irqrestore(&priv->tail_lock[ch], flags);
-+
-+		atomic_dec(&priv->submit_count[ch]);
-+
- 		saved_req.callback(dev, saved_req.desc, saved_req.context,
- 				   status);
- 		/* channel may resume processing in single desc error case */
-@@ -1337,6 +1343,7 @@ static int __devexit talitos_remove(struct of_device *ofdev)
- 	if (hw_supports(dev, DESC_HDR_SEL0_RNG))
- 		talitos_unregister_rng(dev);
- 
-+	kfree(priv->submit_count);
- 	kfree(priv->tail);
- 	kfree(priv->head);
- 
-@@ -1501,6 +1508,16 @@ static int talitos_probe(struct of_device *ofdev,
+-	edesc = kmalloc(alloc_len, GFP_DMA);
++	edesc = kmalloc(alloc_len, GFP_DMA | flags);
+ 	if (!edesc) {
+ 		dev_err(ctx->dev, "could not allocate edescriptor\n");
+ 		return ERR_PTR(-ENOMEM);
+@@ -1508,7 +1510,7 @@ static int talitos_probe(struct of_device *ofdev,
  		}
  	}
  
-+	priv->submit_count = kmalloc(sizeof(int) * priv->num_channels,
-+				     GFP_KERNEL);
-+	if (!priv->submit_count) {
-+		dev_err(dev, "failed to allocate fifo submit count space\n");
-+		err = -ENOMEM;
-+		goto err_out;
-+	}
-+	for (i = 0; i < priv->num_channels; i++)
-+		atomic_set(&priv->submit_count[i], -priv->chfifo_len);
-+
- 	priv->head = kzalloc(sizeof(int) * priv->num_channels, GFP_KERNEL);
- 	priv->tail = kzalloc(sizeof(int) * priv->num_channels, GFP_KERNEL);
- 	if (!priv->head || !priv->tail) {
+-	priv->submit_count = kmalloc(sizeof(int) * priv->num_channels,
++	priv->submit_count = kmalloc(sizeof(atomic_t) * priv->num_channels,
+ 				     GFP_KERNEL);
+ 	if (!priv->submit_count) {
+ 		dev_err(dev, "failed to allocate fifo submit count space\n");
 -- 
 1.5.6
