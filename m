@@ -1,19 +1,16 @@
-Return-Path: <duykynguyen@hotmail.com>
-Received: from bay0-omc2-s31.bay0.hotmail.com (bay0-omc2-s31.bay0.hotmail.com
-	[65.54.246.167]) by ozlabs.org (Postfix) with ESMTP id 6A111DDE1D
+Return-Path: <fkan@amcc.com>
+Received: from svdc-dhcp-10-66-6-110.amcc.com (unknown [76.195.33.70])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D6C11DDED3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Jul 2008 13:44:02 +1000 (EST)
-Message-ID: <BLU119-DAV61F2F984D2E145D1E4AA1BB8F0@phx.gbl>
-From: "Duy-Ky Nguyen" <duykynguyen@hotmail.com>
-To: "Liu Dave" <DaveLiu@freescale.com>,
-	<linuxppc-embedded@ozlabs.org>
-References: <BLU119-DAV11096F9EACC27956DCC87BBB8F0@phx.gbl>
-	<58A20A281BAF1047B4EAE68DE5C0BDC2010573E9@zch01exm21.fsl.freescale.net>
-Subject: Re: Failure of request_irq()  for MPC8313 using arch=powerpc
-Date: Tue, 15 Jul 2008 20:43:59 -0700
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0028_01C8E6BB.81F418F0"
+	Wed, 16 Jul 2008 15:56:22 +1000 (EST)
+From: fkan@amcc.com
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] Add AMCC Arches 460GT eval board support to platforms/44x
+Date: Tue, 15 Jul 2008 22:33:26 -0700
+Message-Id: <1216186406-27993-1-git-send-email-fkan@amcc.com>
+Cc: Victor Gallardo <vgallard@amcc.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,356 +21,144 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+From: Victor Gallardo <vgallard@amcc.com>
 
-------=_NextPart_000_0028_01C8E6BB.81F418F0
-Content-Type: text/plain;
-	charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+ppc4xx: Add AMCC Arches 460GT eval board support 
 
-Hi Dave,
-
-I've just tried it and it failed.
-
-Before I had tried using the function
-int virq =3D of_irq_to_resource(GPIO_IRQ, 0, NULL);
-and it failed the same way
-
-I call request_irq() in the operation init and open, it behaves the same
-
-I greatky appreciate your help, Dave.
-
-Best Regards,
-
-Duy-Ky
-
-/////////////////////////////////////////////////////////////////////////=
-/
-// Start of capture
-
-Unable to handle kernel paging request for data at address 0x0000005e
-Faulting instruction address: 0xc000d1e8
-Oops: Kernel access of bad area, sig: 11 [#1]
-
-Modules linked in: ppc_drv
-NIP: C000D1E8 LR: C000D274 CTR: C0006088
-REGS: c7883d20 TRAP: 0300   Not tainted  (2.6.20)
-MSR: 00009032 <EE,ME,IR,DR>  CR: 22000448  XER: 00000000
-DAR: 0000005E, DSISR: 20000000
-TASK =3D c053a810[767] 'rrgg' THREAD: c7882000
-GPR00: C000D274 C7883DD0 C053A810 0000004A C0282BA8 C7883E08 C7FD9440 =
-C0273EEC
-GPR08: 00000000 00000000 00000100 C0006088 22000448 10018D00 07FFD000 =
-28000422
-GPR16: 10090000 100B0000 100B7328 00000000 00000000 00000000 100C8968 =
-100C89A8
-GPR24: 100BDFE8 00000000 00000000 C7FD9440 FFFFFFEA C7883E08 C0282BA8 =
-0000004A
-Call Trace:
-[C7883DD0] [C7FD5EE8]  (unreliable)
-[C7883DF0] [C000D274]
-[C7883E00] [C0009FC8]
-[C7883E30] [C000609C]
-[C7883E60] [C9072030]
-[C7883E70] [C0063E5C]
-[C7883EA0] [C005FFAC]
-[C7883EC0] [C0060244]
-[C7883F20] [C00602B8]
-[C7883F40] [C000F540]
---- Exception: c01Instruction dump:
-409effc8 80030024 900b0020 4e800020 7d800026 9421ffe0 7c0802a6 bfa10014
-7c9e2378 7cbd2b78 91810010 90010024 <83e30014> 2f9f0000 419e0028 =
-2e050000
- Segmentation fault
-
-// End of Capture
-
-  ----- Original Message -----=20
-  From: Liu Dave=20
-  To: Duy-Ky Nguyen ; linuxppc-embedded@ozlabs.org=20
-  Sent: Tuesday, July 15, 2008 7:09 PM
-  Subject: RE: Failure of request_irq() for MPC8313 using arch=3Dpowerpc
-
-
-  Hi Nguyen,
-
-  If current PowerPC linux is using the virq to request_irq,
-  you need do the irq_of_parse_and_map(np, 0) to get the virq.
-
-  like.
-  virq =3D irq_of_parse_and_map(np, 0)
-  request_irq(virq,...);
-
-  Hope it can help you.
-  Thanks,
-  Dave
-
--------------------------------------------------------------------------=
+Signed-off-by: Victor Gallardo <vgallard@amcc.com>
 ---
-    From: linuxppc-embedded-bounces+daveliu=3Dfreescale.com@ozlabs.org =
-[mailto:linuxppc-embedded-bounces+daveliu=3Dfreescale.com@ozlabs.org] On =
-Behalf Of Duy-Ky Nguyen
-    Sent: 2008=E5=B9=B47=E6=9C=8816=E6=97=A5 8:59 AM
-    To: linuxppc-embedded@ozlabs.org
-    Subject: Failure of request_irq() for MPC8313 using arch=3Dpowerpc
+ arch/powerpc/platforms/44x/Kconfig  |   18 ++++++++
+ arch/powerpc/platforms/44x/Makefile |    1 +
+ arch/powerpc/platforms/44x/arches.c |   76 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 95 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/44x/arches.c
 
-
-    Hello,
-
-    I had no problem in using request_irq() for MPC8272 with arch=3Dppc =
-from Montavista Linux
-
-    But I have failure for MPC8313 with arch=3Dpowerpc from FreeScale =
-LTIB Linux with error code -38
-
-    I found its header file mpc83xx.h under include/asm-ppc, while it's =
-supposed to be under include/asm-powerpc.
-
-    I did try to copy the header file to directory asm-powerpc
-
-    From MPC8313 datasheet, I have=20
-
-    GPIO_IRQ =3D 74
-
-    and I use
-
-    DEVICE_NAME =3D "ppc"
-    IRQ_FLAG =3D IRQF_SHARED    // use new flag
-    here my function call
-
-    request_irq (GPIO_IRQ,
-          ppc_ISR, =20
-          IRQ_FLAG,
-          DEVICE_NAME,  =20
-          NULL);  =20
-
-    I'd appreciate any help on this problem.
-
-    Best Regards,
-
-    Duy-Kyng
-
-
-------=_NextPart_000_0028_01C8E6BB.81F418F0
-Content-Type: text/html;
-	charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-=EF=BB=BF<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dutf-8">
-<META content=3D"MSHTML 6.00.2900.3243" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>Hi Dave,</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>I've just tried it and it =
-failed.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Before I had tried using the =
-function</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>int virq =3D =
-of_irq_to_resource(GPIO_IRQ, 0,=20
-NULL);</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>and it failed the same way</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>I call request_irq() in the operation =
-init and=20
-open, it behaves the same</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>I greatky appreciate your help, =
-Dave.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Best Regards,</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Duy-Ky</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial=20
-size=3D2>////////////////////////////////////////////////////////////////=
-//////////</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>// Start of capture</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Unable to handle kernel paging request =
-for data at=20
-address 0x0000005e<BR>Faulting instruction address: 0xc000d1e8<BR>Oops: =
-Kernel=20
-access of bad area, sig: 11 [#1]</FONT></DIV>
-<DIV>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Modules linked in: ppc_drv<BR>NIP: =
-C000D1E8 LR:=20
-C000D274 CTR: C0006088<BR>REGS: c7883d20 TRAP: 0300&nbsp;&nbsp; Not=20
-tainted&nbsp; (2.6.20)<BR>MSR: 00009032 &lt;EE,ME,IR,DR&gt;&nbsp; CR:=20
-22000448&nbsp; XER: 00000000<BR>DAR: 0000005E, DSISR: 20000000<BR>TASK =
-=3D=20
-c053a810[767] 'rrgg' THREAD: c7882000<BR>GPR00: C000D274 C7883DD0 =
-C053A810=20
-0000004A C0282BA8 C7883E08 C7FD9440 C0273EEC<BR>GPR08: 00000000 00000000 =
-
-00000100 C0006088 22000448 10018D00 07FFD000 28000422<BR>GPR16: 10090000 =
-
-100B0000 100B7328 00000000 00000000 00000000 100C8968 100C89A8<BR>GPR24: =
-
-100BDFE8 00000000 00000000 C7FD9440 FFFFFFEA C7883E08 C0282BA8 =
-0000004A<BR>Call=20
-Trace:<BR>[C7883DD0] [C7FD5EE8]&nbsp; (unreliable)<BR>[C7883DF0]=20
-[C000D274]<BR>[C7883E00] [C0009FC8]<BR>[C7883E30] =
-[C000609C]<BR>[C7883E60]=20
-[C9072030]<BR>[C7883E70] [C0063E5C]<BR>[C7883EA0] =
-[C005FFAC]<BR>[C7883EC0]=20
-[C0060244]<BR>[C7883F20] [C00602B8]<BR>[C7883F40] [C000F540]<BR>--- =
-Exception:=20
-c01Instruction dump:<BR>409effc8 80030024 900b0020 4e800020 7d800026 =
-9421ffe0=20
-7c0802a6 bfa10014<BR>7c9e2378 7cbd2b78 91810010 90010024 =
-&lt;83e30014&gt;=20
-2f9f0000 419e0028 2e050000<BR>&nbsp;Segmentation fault<BR></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>// End of Capture</DIV></FONT>
-<DIV><FONT face=3DArial size=3D2>&nbsp;</DIV></FONT>
-<BLOCKQUOTE dir=3Dltr=20
-style=3D"PADDING-RIGHT: 0px; PADDING-LEFT: 5px; MARGIN-LEFT: 5px; =
-BORDER-LEFT: #000000 2px solid; MARGIN-RIGHT: 0px">
-  <DIV style=3D"FONT: 10pt arial">----- Original Message ----- </DIV>
-  <DIV=20
-  style=3D"BACKGROUND: #e4e4e4; FONT: 10pt arial; font-color: =
-black"><B>From:</B>=20
-  <A title=3DDaveLiu@freescale.com =
-href=3D"mailto:DaveLiu@freescale.com">Liu=20
-  Dave</A> </DIV>
-  <DIV style=3D"FONT: 10pt arial"><B>To:</B> <A =
-title=3Dduykynguyen@hotmail.com=20
-  href=3D"mailto:duykynguyen@hotmail.com">Duy-Ky Nguyen</A> ; <A=20
-  title=3Dlinuxppc-embedded@ozlabs.org=20
-  =
-href=3D"mailto:linuxppc-embedded@ozlabs.org">linuxppc-embedded@ozlabs.org=
-</A>=20
-  </DIV>
-  <DIV style=3D"FONT: 10pt arial"><B>Sent:</B> Tuesday, July 15, 2008 =
-7:09=20
-PM</DIV>
-  <DIV style=3D"FONT: 10pt arial"><B>Subject:</B> RE: Failure of =
-request_irq() for=20
-  MPC8313 using arch=3Dpowerpc</DIV>
-  <DIV><BR></DIV>
-  <DIV dir=3Dltr align=3Dleft><SPAN class=3D317245801-16072008><FONT =
-face=3DArial=20
-  color=3D#0000ff size=3D2>Hi Nguyen,</FONT></SPAN></DIV>
-  <DIV dir=3Dltr align=3Dleft><SPAN class=3D317245801-16072008><FONT =
-face=3DArial=20
-  color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV>
-  <DIV dir=3Dltr align=3Dleft><SPAN class=3D317245801-16072008><FONT =
-face=3DArial=20
-  color=3D#0000ff size=3D2>If current PowerPC linux is using the virq to =
-
-  request_irq,</FONT></SPAN></DIV>
-  <DIV dir=3Dltr align=3Dleft><SPAN class=3D317245801-16072008><FONT =
-face=3DArial=20
-  color=3D#0000ff size=3D2>you need do the irq_of_parse_and_map(np, 0) =
-to get the=20
-  virq.</FONT></SPAN></DIV>
-  <DIV dir=3Dltr align=3Dleft><SPAN class=3D317245801-16072008><FONT =
-face=3DArial=20
-  color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV>
-  <DIV dir=3Dltr align=3Dleft><SPAN class=3D317245801-16072008><FONT =
-face=3DArial=20
-  color=3D#0000ff size=3D2>like.</FONT></SPAN></DIV>
-  <DIV dir=3Dltr align=3Dleft><SPAN class=3D317245801-16072008><FONT =
-face=3DArial=20
-  color=3D#0000ff size=3D2>virq =3D irq_of_parse_and_map(np, =
-0)</FONT></SPAN></DIV>
-  <DIV dir=3Dltr align=3Dleft><SPAN class=3D317245801-16072008><FONT =
-face=3DArial=20
-  color=3D#0000ff size=3D2>request_irq(virq,...);</FONT></SPAN></DIV>
-  <DIV>&nbsp;</DIV>
-  <DIV><SPAN class=3D317245801-16072008></SPAN><FONT face=3DArial><FONT=20
-  color=3D#0000ff><FONT size=3D2>H<SPAN class=3D317245801-16072008>ope =
-it can help=20
-  you.</SPAN></FONT></FONT></FONT></DIV>
-  <DIV><FONT size=3D+0><FONT color=3D#0000ff><FONT size=3D2><SPAN=20
-  class=3D317245801-16072008></SPAN></FONT></FONT></FONT><SPAN=20
-  class=3D317245801-16072008></SPAN><FONT face=3DArial><FONT =
-color=3D#0000ff><FONT=20
-  size=3D2>T<SPAN=20
-class=3D317245801-16072008>hanks,</SPAN></FONT></FONT></FONT></DIV>
-  <DIV><FONT size=3D+0><FONT color=3D#0000ff><FONT size=3D2><SPAN=20
-  class=3D317245801-16072008></SPAN></FONT></FONT></FONT><SPAN=20
-  class=3D317245801-16072008></SPAN><FONT face=3DArial><FONT =
-color=3D#0000ff><FONT=20
-  size=3D2>D<SPAN =
-class=3D317245801-16072008>ave</SPAN></FONT></FONT></FONT></DIV>
-  <BLOCKQUOTE dir=3Dltr=20
-  style=3D"PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #0000ff 2px =
-solid; MARGIN-RIGHT: 0px">
-    <DIV class=3DOutlookMessageHeader lang=3Den-us dir=3Dltr =
-align=3Dleft>
-    <HR tabIndex=3D-1>
-    <FONT face=3DTahoma size=3D2><B>From:</B> <A=20
-    =
-href=3D"mailto:linuxppc-embedded-bounces+daveliu=3Dfreescale.com@ozlabs.o=
-rg">linuxppc-embedded-bounces+daveliu=3Dfreescale.com@ozlabs.org</A>=20
-    =
-[mailto:linuxppc-embedded-bounces+daveliu=3Dfreescale.com@ozlabs.org] =
-<B>On=20
-    Behalf Of </B>Duy-Ky Nguyen<BR><B>Sent:</B> =
-2008=E5=B9=B47=E6=9C=8816=E6=97=A5 8:59 AM<BR><B>To:</B>=20
-    <A=20
-    =
-href=3D"mailto:linuxppc-embedded@ozlabs.org">linuxppc-embedded@ozlabs.org=
-</A><BR><B>Subject:</B>=20
-    Failure of request_irq() for MPC8313 using =
-arch=3Dpowerpc<BR></FONT><BR></DIV>
-    <DIV></DIV>
-    <DIV><FONT face=3DArial size=3D2>Hello,</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-    <DIV><FONT face=3DArial size=3D2>I had no problem in using =
-request_irq() for=20
-    MPC8272 with arch=3Dppc from Montavista Linux</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-    <DIV><FONT face=3DArial size=3D2>But I have failure for MPC8313 with =
-
-    arch=3Dpowerpc from FreeScale LTIB Linux with error code =
--38</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-    <DIV><FONT face=3DArial size=3D2>I found its header file mpc83xx.h =
-under=20
-    include/asm-ppc, while it's supposed to be under=20
-    include/asm-powerpc.</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-    <DIV><FONT face=3DArial size=3D2>I did try to copy the header file =
-to directory=20
-    asm-powerpc</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-    <DIV><FONT face=3DArial size=3D2>From MPC8313 datasheet, I have =
-</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-    <DIV><FONT face=3DArial size=3D2>GPIO_IRQ =3D 74</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-    <DIV><FONT face=3DArial size=3D2>and I use</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-    <DIV><FONT face=3DArial size=3D2>DEVICE_NAME =3D "ppc"</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2>IRQ_FLAG =3D =
-IRQF_SHARED&nbsp;&nbsp;&nbsp; // use=20
-    new flag</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2>here my function call</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-    <DIV><FONT face=3DArial size=3D2>request_irq (GPIO_IRQ,</FONT></DIV>
-    <DIV><FONT face=3DArial=20
-    =
-size=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ppc_ISR,&nbsp;&nbsp;</FONT><=
-/DIV>
-    <DIV><FONT face=3DArial=20
-    =
-size=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IRQ_FLAG,<BR>&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;DEVICE_NAME,&nbsp;&nbsp;&nbsp;<BR>&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;NULL);&nbsp;&nbsp;&nbsp;<BR></FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2>I'd appreciate any help on this=20
-    problem.</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-    <DIV><FONT face=3DArial size=3D2>Best Regards,</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-    <DIV><FONT face=3DArial size=3D2>Duy-Kyng</FONT></DIV>
-    <DIV><FONT face=3DArial size=3D2>&nbsp;</DIV></FONT>
-    <DIV><FONT face=3DArial=20
-size=3D2>&nbsp;</DIV></BLOCKQUOTE></BLOCKQUOTE></FONT></BODY></HTML>
-
-------=_NextPart_000_0028_01C8E6BB.81F418F0--
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index 6abe913..95d1217 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -77,6 +77,16 @@ config CANYONLANDS
+ 	help
+ 	  This option enables support for the AMCC PPC460EX evaluation board.
+ 
++config ARCHES
++	bool "Arches"
++	depends on 44x
++	default n
++	select 460GT
++	select PCI
++	select PPC4xx_PCI_EXPRESS
++	help
++	  This option enables support for the AMCC PPC460GT Arches board.
++
+ config YOSEMITE
+ 	bool "Yosemite"
+ 	depends on 44x
+@@ -149,6 +159,14 @@ config 460EX
+ 	select IBM_NEW_EMAC_ZMII
+ 	select IBM_NEW_EMAC_TAH
+ 
++config 460GT
++	bool
++	select PPC_FPU
++	select IBM_NEW_EMAC_EMAC4
++	select IBM_NEW_EMAC_RGMII
++	select IBM_NEW_EMAC_ZMII
++	select IBM_NEW_EMAC_TAH
++
+ # 44x errata/workaround config symbols, selected by the CPU models above
+ config IBM440EP_ERR42
+ 	bool
+diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
+index 774165f..86a4823 100644
+--- a/arch/powerpc/platforms/44x/Makefile
++++ b/arch/powerpc/platforms/44x/Makefile
+@@ -9,3 +9,4 @@ obj-$(CONFIG_RAINIER)	+= rainier.o
+ obj-$(CONFIG_WARP)	+= warp.o
+ obj-$(CONFIG_WARP)	+= warp-nand.o
+ obj-$(CONFIG_CANYONLANDS) += canyonlands.o
++obj-$(CONFIG_ARCHES)	+= arches.o
+diff --git a/arch/powerpc/platforms/44x/arches.c b/arch/powerpc/platforms/44x/arches.c
+new file mode 100644
+index 0000000..6d6aa66
+--- /dev/null
++++ b/arch/powerpc/platforms/44x/arches.c
+@@ -0,0 +1,76 @@
++/*
++ * Arches board specific routines
++ *
++ * (C) Copyright 2008
++ * Victor Gallardo, Applied Micro Circuits Corp., vgallardo@amcc.com.
++ * Adam Graham, Applied Micro Circuits Corp., agraham@amcc.com.
++ *
++ * Based on the Canyonlands code by
++ * Stefan Roese <sr@denx.de>
++ * Copyright 2008 DENX Software Engineering
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++#include <linux/init.h>
++#include <linux/of_platform.h>
++
++#include <asm/machdep.h>
++#include <asm/prom.h>
++#include <asm/udbg.h>
++#include <asm/time.h>
++#include <asm/uic.h>
++#include <asm/pci-bridge.h>
++#include <asm/ppc4xx.h>
++
++static __initdata struct of_device_id arches_of_bus[] = {
++	{ .compatible = "ibm,plb4", },
++	{ .compatible = "ibm,opb", },
++	{ .compatible = "ibm,ebc", },
++	{},
++};
++
++static int __init arches_device_probe(void)
++{
++	of_platform_bus_probe(NULL, arches_of_bus, NULL);
++
++	return 0;
++}
++machine_device_initcall(arches, arches_device_probe);
++
++static int __init arches_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	if (!of_flat_dt_is_compatible(root, "amcc,arches"))
++		return 0;
++
++	ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
++
++	return 1;
++}
++
++define_machine(arches) {
++	.name 				= "Arches",
++	.probe 				= arches_probe,
++	.progress 			= udbg_progress,
++	.init_IRQ 			= uic_init_tree,
++	.get_irq 			= uic_get_irq,
++	.restart			= ppc4xx_reset_system,
++	.calibrate_decr			= generic_calibrate_decr,
++};
+-- 
+1.5.5
