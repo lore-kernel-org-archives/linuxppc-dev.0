@@ -1,20 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 6FE3ADE61B
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 08:33:08 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Rune Torgersen" <runet@innovsys.com>
-Subject: Re: 82xx performance
-Date: Thu, 17 Jul 2008 00:32:36 +0200
-References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
-	<200807162345.26395.arnd@arndb.de>
-	<DCEAAC0833DD314AB0B58112AD99B93B04B3499C@ismail.innsys.innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04B3499C@ismail.innsys.innovsys.com>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id C6A6EDE2D4
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 08:42:18 +1000 (EST)
+Date: Wed, 16 Jul 2008 17:42:08 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] powerpc: fix support for latencytop
+Message-ID: <20080716224208.GF9594@localdomain>
+References: <48755237.9070701@nortel.com> <200807101608.18643.arnd@arndb.de>
+	<20080716202236.GZ9594@localdomain> <200807170012.25859.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807170032.36564.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200807170012.25859.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +22,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 16 July 2008, Rune Torgersen wrote:
-> I did run oprofile, but I could not figure out how to get it to show me
-> where in the kernel it was spending time. It showed that a lot of time
-> was spent in vmlinux, but not anything specific. I probably just don't
-> know how to set up or run oprofile correctly.
+Arnd Bergmann wrote:
+> We need to pass the kernel stack pointer instead of the user space
+> stack pointer in save_stack_trace_tsk().
 
-Maybe you passed no vmlinux, or only a stripped one?
-Oprofile needs to have a vmlinux file to extract the symbol
-information from.
-
-If you can't get it to work, readprofile(1) is a much simpler
-tool, both in what it can do and what it requires you to do.
-
-	Arnd <><
+Thanks, this fixes it, and latencytop even seems to work. :)
