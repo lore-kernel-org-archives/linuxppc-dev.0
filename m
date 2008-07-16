@@ -1,25 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Date: Wed, 16 Jul 2008 08:08:07 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] Support for DS75 thermal sensor
-Message-ID: <20080716140807.GB24045@secretlab.ca>
-References: <487331DC.2020601@grandegger.com>
-	<20080708115319.111226e6@hyperion.delvare>
-	<4873670C.6080204@grandegger.com>
-	<20080708152935.7457bc90@hyperion.delvare>
-	<487754DA.1060207@grandegger.com>
-	<20080711145613.14380360@hyperion.delvare>
-	<487DBB92.1070100@grandegger.com>
-	<20080716113311.384d211e@hyperion.delvare>
-	<487DC457.6000103@grandegger.com>
-	<20080716121059.2dbbfebe@hyperion.delvare>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910807160711v29c9fc41k21e084b317151e85@mail.gmail.com>
+Date: Wed, 16 Jul 2008 10:11:22 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Wolfgang Grandegger" <wg@grandegger.com>
+Subject: Re: [RFC] I2C: fsl-i2c: make device probing configurable via FDT
+In-Reply-To: <487DF304.7090205@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080716121059.2dbbfebe@hyperion.delvare>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: Linuxppc-dev@ozlabs.org, lm-sensors@lm-sensors.org,
-	Detlev Zundel <dzu@denx.de>, Alan Clucas <alanc@pipstechnology.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <487DD1BD.8040701@grandegger.com>
+	<9e4733910807160547q28f49865o11ec878d98987329@mail.gmail.com>
+	<487DF304.7090205@grandegger.com>
+Cc: Jean Delvare <khali@linux-fr.org>, Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,21 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 16, 2008 at 12:10:59PM +0200, Jean Delvare wrote:
-> On Wed, 16 Jul 2008 11:50:15 +0200, Wolfgang Grandegger wrote:
-> > Jean Delvare wrote:
-> > 
-> > Yep, as probing might not be acceptable in some cases, I makes sense to 
-> > add a property to suppress probing:
-> 
-> It'd rather make no-probing the default if possible. My understanding
-> is that all systems using i2c-mpc should have proper platform data.
+On 7/16/08, Wolfgang Grandegger <wg@grandegger.com> wrote:
+> Jon Smirl wrote:
+>
+> > On 7/16/08, Wolfgang Grandegger <wg@grandegger.com> wrote:
+> >
+> > > Currently, the I2C buses are probed for HWMON I2C devices, which might
+> > >  not be acceptable in same cases. This patch makes device probing
+> > >  configurable through the property "probe" of the FDT I2C device node:
+> > >
+> >
+> > All this patch seems to be doing is removing class I2C_CLASS_HWMON via
+> > a device tree flag, PROBE.
+> >
+>
+>  Yep.
+>
+>
+> > Why do you need to do this? The OF conversion patch that is working
+> > its way through the system lets you put the address of the device into
+> > the device tree node. Probing shouldn't be necessary at all.
+> >
+>
+>  Currently I2C_CLASS_HWMON is used for all I2C adapters and therefore
+> probing is done even with a proper I2C node defined in the DTS file. That's
+> what the patch is fixing leaving the possibility to (re-)enable legacy
+> probing.
 
-Total ACK.  From my perspective, probing should be off by default because the
-typical use case in powerpc land is to trust data in the device tree.  Add the
-property to turn on probing, not to turn it off.  Also, you'll need to
-document the semantics of such a property.  ie. what exactly does it
-mean when the probing property is present and the spi bus node has child
-nodes?
+Shouldn't we just remove I2C_CLASS_HWMON since everything can now be
+explicitly described in the device tree? What is an example of a case
+where we still need to probe?
 
-g.
+>
+>  For some more details you may want to have a look to Jean's mail on that
+> subject:
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-July/060012.html.
+>
+>  Wolfgang.
+>
+>
+>
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
