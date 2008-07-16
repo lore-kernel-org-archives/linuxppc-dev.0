@@ -1,10 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <265ffd8379f89c869c8e87806ced8737272b81f7.1216182085.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc: Streamline ret_from_except_lite for non-iSeries
-	platforms
-Date: Wed, 16 Jul 2008 14:21:34 +1000 (EST)
+Return-Path: <davej@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id CDAEADDF0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 14:27:48 +1000 (EST)
+Date: Wed, 16 Jul 2008 00:20:42 -0400
+From: Dave Jones <davej@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [git pull] Please pull from powerpc.git merge branch
+Message-ID: <20080716042042.GA13212@redhat.com>
+References: <1216172043.7740.136.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1216172043.7740.136.camel@pasglop>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	akpm <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,96 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There is a small passage of code in ret_from_except_lite which is
-only required on iSeries. For a multi-platform kernel on non-iSeries
-machines this means we end up executing ~15 nops in ret_from_except_lite.
+On Wed, Jul 16, 2008 at 11:34:03AM +1000, Ben Herrenschmidt wrote:
+ > Linus,
+ > 
+ > I apologize in advance for the couple of merge commits in there. I
+ > merged your tree yesterday in order to fix a (fairly minor) conflict,
+ > and waited for our autobuilder to test a whole bunch of configs
+ > overnight before asking you to pull, at which point, sfr informed me of
+ > a bunch of this time non-trivial conflicts with whatever you pulled in
+ > the meantime...
+ > 
+ > So here it is with 2 merge csets at the top, I'll try to do better next
+ > time. I don't want to rebase or my sub-maintainers will hate me.
+ > 
+ > So please pull from:
+ > 
+ > git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
-It would be nicer if non-iSeries could skip the code entirely, and on
-iSeries we can jump out of line to execute the code.
+Boom!
 
-I have no performance numbers to justify this, other than the assertion
-that executing 15 nops takes longer than executing 0.
+arch/powerpc/platforms/built-in.o: In function `ep8248e_mdio_probe':
+/builddir/build/BUILD/kernel-2.6.26/linux-2.6.26.ppc/arch/powerpc/platforms/82xx/ep8248e.c:129: undefined reference to `alloc_mdio_bitbang'
+/builddir/build/BUILD/kernel-2.6.26/linux-2.6.26.ppc/arch/powerpc/platforms/82xx/ep8248e.c:143: undefined reference to `mdiobus_register'
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+.config is at http://davej.fedorapeople.org/kernel-2.6.27-ppc.config
 
----
-Booted on POWER5 & legacy iSeries.
+	Dave
 
-
- arch/powerpc/kernel/entry_64.S |   53 ++++++++++++++++++++++------------------
- 1 files changed, 29 insertions(+), 24 deletions(-)
-
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index d736924..fff7490 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -507,31 +507,12 @@ _GLOBAL(ret_from_except_lite)
- #endif
- 
- restore:
--	ld	r5,SOFTE(r1)
--#ifdef CONFIG_PPC_ISERIES
- BEGIN_FW_FTR_SECTION
--	cmpdi	0,r5,0
--	beq	4f
--	/* Check for pending interrupts (iSeries) */
--	ld	r3,PACALPPACAPTR(r13)
--	ld	r3,LPPACAANYINT(r3)
--	cmpdi	r3,0
--	beq+	4f			/* skip do_IRQ if no interrupts */
--
--	li	r3,0
--	stb	r3,PACASOFTIRQEN(r13)	/* ensure we are soft-disabled */
--#ifdef CONFIG_TRACE_IRQFLAGS
--	bl	.trace_hardirqs_off
--	mfmsr	r10
--#endif
--	ori	r10,r10,MSR_EE
--	mtmsrd	r10			/* hard-enable again */
--	addi	r3,r1,STACK_FRAME_OVERHEAD
--	bl	.do_IRQ
--	b	.ret_from_except_lite		/* loop back and handle more */
--4:
--END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
--#endif
-+	ld	r5,SOFTE(r1)
-+FW_FTR_SECTION_ELSE
-+	b	iseries_check_pending_irqs
-+ALT_FW_FTR_SECTION_END_IFCLR(FW_FEATURE_ISERIES)
-+2:
- 	TRACE_AND_RESTORE_IRQ(r5);
- 
- 	/* extract EE bit and use it to restore paca->hard_enabled */
-@@ -587,6 +568,30 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
- 	rfid
- 	b	.	/* prevent speculative execution */
- 
-+iseries_check_pending_irqs:
-+#ifdef CONFIG_PPC_ISERIES
-+	ld	r5,SOFTE(r1)
-+	cmpdi	0,r5,0
-+	beq	2b
-+	/* Check for pending interrupts (iSeries) */
-+	ld	r3,PACALPPACAPTR(r13)
-+	ld	r3,LPPACAANYINT(r3)
-+	cmpdi	r3,0
-+	beq+	2b			/* skip do_IRQ if no interrupts */
-+
-+	li	r3,0
-+	stb	r3,PACASOFTIRQEN(r13)	/* ensure we are soft-disabled */
-+#ifdef CONFIG_TRACE_IRQFLAGS
-+	bl	.trace_hardirqs_off
-+	mfmsr	r10
-+#endif
-+	ori	r10,r10,MSR_EE
-+	mtmsrd	r10			/* hard-enable again */
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	.do_IRQ
-+	b	.ret_from_except_lite		/* loop back and handle more */
-+#endif
-+
- do_work:
- #ifdef CONFIG_PREEMPT
- 	andi.	r0,r3,MSR_PR	/* Returning to user mode? */
 -- 
-1.5.5
+http://www.codemonkey.org.uk
