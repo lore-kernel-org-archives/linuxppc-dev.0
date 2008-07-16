@@ -1,17 +1,15 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Add AMCC Arches 460GT eval board support to platforms/44x
-Date: Wed, 16 Jul 2008 16:46:01 +0200
-References: <1216186406-27993-1-git-send-email-fkan@amcc.com>
-	<20080716075025.0bca152c@zod.rchland.ibm.com>
-	<20080716141539.GC24045@secretlab.ca>
-In-Reply-To: <20080716141539.GC24045@secretlab.ca>
+Return-Path: <jochen@scram.de>
+Message-ID: <487E0A3E.80706@scram.de>
+Date: Wed, 16 Jul 2008 16:48:30 +0200
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807161646.02306.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallard@amcc.com>, fkan@amcc.com
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC] I2C: fsl-i2c: make device probing configurable via FDT
+References: <487DD1BD.8040701@grandegger.com>
+	<20080716142436.GD24045@secretlab.ca>
+In-Reply-To: <20080716142436.GD24045@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Jean Delvare <khali@linux-fr.org>, Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 16 July 2008, Grant Likely wrote:
->=20
-> >=20
-> > And then you don't need this file at all. =A0Just add a
-> > "amcc,canyonlands" string to your root node compatible property.
->=20
-> No! =A0Don't do this because it is not true!
->=20
-> Instead, add your board name to canyonlands.c in canyonlands_probe().
-> It's not the most scalable solution, but it keeps you from lying about
-> your hardware in the .dts file.
->=20
-> I'm working on a more scalable solution for this, but for now just add
-> your specific board to canyonlands_probe().
+Hi Grant,
 
-Shouldn't it be enough to have a common compatible value in each
-of these boards, e.g. "amcc,generic-ppc44x" and then just ignore the
-specific type unless you need to do something special?
+> On Wed, Jul 16, 2008 at 12:47:25PM +0200, Wolfgang Grandegger wrote:
+>> Currently, the I2C buses are probed for HWMON I2C devices, which might
+>> not be acceptable in same cases. This patch makes device probing
+>> configurable through the property "probe" of the FDT I2C device node:
+>>
+>>       i2c@3000 {
+>>            ...
+>>            compatible = "fsl-i2c";
+>>            probe;
+>> 	    ...
+>>        };
+> 
+> You need to add documentation to booting-without-of.txt about what the
+> 'probe' property means.  Also, 'probe' is a pretty generic term being
+> used in an i2c specific context.  Can you prefix it with i2c or
+> something to protect the namespace?  'i2c-probe' perhaps?
 
-=46or all I can tell, bamboo, canyonlands, katmai, rainier, sequoia
-and taishan setup is already identical except for their names, while
-ebony and Sam440ep are almost the same, except for their RTC device
-probing (which should be done in a generic way as well ;-)).
+In i2c-cpm, I currently use the property "linux,i2c-class" to set the
+i2c class directly as documented in dts-bindings/fsl/cpm_qe/cpm/i2c.txt.
 
-	Arnd <><
+We should agree on *one* method to set the i2c class.
+
+Thanks,
+Jochen
