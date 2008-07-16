@@ -1,31 +1,18 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 25A22DDEE3
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 17:46:16 +1000 (EST)
-Date: Wed, 16 Jul 2008 09:46:02 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "David Hubbard" <david.c.hubbard@gmail.com>
-Subject: Re: [RFC] (almost) booting allyesconfig -- please don't poke
-	super-io without request_region
-Message-ID: <20080716094602.4379e0ff@hyperion.delvare>
-In-Reply-To: <4dfa50520807150831i519a3a43n635ab7e58d35ba5e@mail.gmail.com>
-References: <for-27-patch1-0@bga.com> <4879A144.8060203@hhs.nl>
-	<4dfa50520807131411ied883cgcb20eb6bd94f761@mail.gmail.com>
-	<487A7211.7030309@hhs.nl>
-	<4dfa50520807131426t4013142cp1fcd49e078a79c1f@mail.gmail.com>
-	<20080714095914.0644ac5d@hyperion.delvare>
-	<88f5162604470179b3c6ebfe729a46f5@bga.com>
-	<487B8D2C.1090208@hhs.nl>
-	<4dfa50520807141055l532caaaai700255936600e5ae@mail.gmail.com>
-	<20080715103613.4fbbf01f@hyperion.delvare>
-	<4dfa50520807150831i519a3a43n635ab7e58d35ba5e@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Samuel Ortiz <samuel@sortiz.org>, linux-kernel@vger.kernel.org,
-	Milton Miller <miltonm@bga.com>, lm-sensors@lm-sensors.org,
-	linuxppc-dev@ozlabs.org, Hans de Goede <j.w.r.degoede@hhs.nl>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [patch 9/9] powerpc/cell: Add DMA_ATTR_STRONG_ORDERING dma
+	attribute and use in IOMMU code
+Date: Wed, 16 Jul 2008 09:54:03 +0200
+References: <20080715195139.316677337@arndb.de>
+	<200807152327.06946.arnd@arndb.de> <ada7ibmd115.fsf@cisco.com>
+In-Reply-To: <ada7ibmd115.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807160954.03633.arnd@arndb.de>
+Cc: Mark Nelson <markn@au1.ibm.com>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,51 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi David,
+On Wednesday 16 July 2008, Roland Dreier wrote:
+> =A0> Strong ordering is only active when both the bridge and the IOMMU en=
+able
+> =A0> it, but for correctly written drivers, this only results in a slowdo=
+wn.
+>=20
+> So when would someone use this dma attribute? =A0As a hack to fix drivers
+> where the real fix is too complicated?
 
-On Tue, 15 Jul 2008 09:31:29 -0600, David Hubbard wrote:
-> On Tue, Jul 15, 2008 at 2:36 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> > I always assumed that there was no way to know in advance if a
-> > Super-I/O (LPC) chip was present or not, let alone the exact model of
-> > the chip. The I/O addresses are decoded by the Super-I/O chip itself,
-> > and in general it has no relation to PCI. And I've never seen ports
-> > 0x2e/0x2f nor 0x4e/0x4f listed in /proc/ioports.
-> >
-> > But of course if there is a way to know, we should use it. Avoiding
-> > random access to I/O ports, even if they are relatively standard in
-> > this case, is always good.
-> 
-> I looked at my lspci output and did a little researching, and I think
-> the only thing we can deduce is that there is an LPC bridge, so
-> looking for a SuperIO is a good idea. If there is no LPC bridge
-> listed, I can't say whether probing the ports is a good idea or not.
+This is used in the Axon PCIe endpoint drivers, e.g. in the Roadrunner
+machine. The reason was to improve roundtrip latency by doing only
+mmio stores, not loads, on each side of the PCIe connection, which
+turn into posted DMA operations on the other end. With relaxed ordering,
+the posted writes may be observed out of order. Strong ordering makes
+sure they arrive in-order without having to do a non-posted mmio read
+or eieio operation on the receiver side.
 
-Machines I have here have an "ISA bridge" PCI device. Some of them have
-"LPC" in their name, but not all, and anyway the kernel only knows the
-device ID, not its user-friendly name:
-
-VIA:
-00:11.0 ISA bridge: VIA Technologies, Inc. VT8237 ISA bridge [KT600/K8T800/K8T890 South]
-
-Intel:
-00:01.0 ISA bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 01)
-00:1f.0 ISA bridge: Intel Corporation 82801CAM ISA Bridge (LPC) (rev 01)
-00:1f.0 ISA bridge: Intel Corporation 82801EB/ER (ICH5/ICH5R) LPC Interface Bridge (rev 02)
-
-nVidia:
-00:01.0 ISA bridge: nVidia Corporation nForce2 ISA Bridge (rev a4)
-
-One of these machines has a LPC bridge but no (detected) Super-I/O chip.
-
-The VIA and nVidia machines do not have "LPC" in their bridge name, but
-they do have a Super-I/O chip, while the first Intel machine doesn't.
-
-As a conclusion, there is no clear relationship between the presence of
-an ISA or LPC bridge and the presence of a Super-I/O chip. All we can
-say is that apparently all PC systems have an ISA bridge. So indeed we
-can probably make the probes conditional upon the presence of an "ISA
-bridge" PCI device. That's very easy to test. In practice it might be
-equivalent to making the driver x86-only.
-
--- 
-Jean Delvare
+	Arnd <><
