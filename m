@@ -1,15 +1,18 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <487DF304.7090205@grandegger.com>
-Date: Wed, 16 Jul 2008 15:09:24 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B191BDDF58
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 23:43:19 +1000 (EST)
+Date: Wed, 16 Jul 2008 08:39:12 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/ep8248e: Fix compile problem if !CONFIG_FS_ENET
+Message-ID: <Pine.LNX.4.64.0807160838520.14127@blarg.am.freescale.net>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [RFC] I2C: fsl-i2c: make device probing configurable via FDT
-References: <487DD1BD.8040701@grandegger.com>
-	<9e4733910807160547q28f49865o11ec878d98987329@mail.gmail.com>
-In-Reply-To: <9e4733910807160547q28f49865o11ec878d98987329@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Jean Delvare <khali@linux-fr.org>, Linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: davej@redhat.com, akpm@linux-foundation.org, torvalds@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,27 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
-> On 7/16/08, Wolfgang Grandegger <wg@grandegger.com> wrote:
->> Currently, the I2C buses are probed for HWMON I2C devices, which might
->>  not be acceptable in same cases. This patch makes device probing
->>  configurable through the property "probe" of the FDT I2C device node:
-> 
-> All this patch seems to be doing is removing class I2C_CLASS_HWMON via
-> a device tree flag, PROBE.
+If we don't enable FS_ENET we get build issues:
 
-Yep.
+arch/powerpc/platforms/built-in.o: In function `ep8248e_mdio_probe':
+arch/powerpc/platforms/82xx/ep8248e.c:129: undefined reference to `alloc_mdio_bitbang'
+arch/powerpc/platforms/82xx/ep8248e.c:143: undefined reference to `mdiobus_register'
 
-> Why do you need to do this? The OF conversion patch that is working
-> its way through the system lets you put the address of the device into
-> the device tree node. Probing shouldn't be necessary at all.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-Currently I2C_CLASS_HWMON is used for all I2C adapters and therefore 
-probing is done even with a proper I2C node defined in the DTS file. 
-That's what the patch is fixing leaving the possibility to (re-)enable 
-legacy probing.
+In my powerpc-next tree.
 
-For some more details you may want to have a look to Jean's mail on that 
-subject: http://ozlabs.org/pipermail/linuxppc-dev/2008-July/060012.html.
+- k
 
-Wolfgang.
+ arch/powerpc/platforms/82xx/ep8248e.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/82xx/ep8248e.c b/arch/powerpc/platforms/82xx/ep8248e.c
+index d5770fd..373e993 100644
+--- a/arch/powerpc/platforms/82xx/ep8248e.c
++++ b/arch/powerpc/platforms/82xx/ep8248e.c
+@@ -59,6 +59,7 @@ static void __init ep8248e_pic_init(void)
+ 	of_node_put(np);
+ }
+
++#ifdef CONFIG_FS_ENET_MDIO_FCC
+ static void ep8248e_set_mdc(struct mdiobb_ctrl *ctrl, int level)
+ {
+ 	if (level)
+@@ -164,6 +165,7 @@ static struct of_platform_driver ep8248e_mdio_driver = {
+ 	.probe = ep8248e_mdio_probe,
+ 	.remove = ep8248e_mdio_remove,
+ };
++#endif
+
+ struct cpm_pin {
+ 	int port, pin, flags;
+@@ -296,7 +298,9 @@ static  __initdata struct of_device_id of_bus_ids[] = {
+ static int __init declare_of_platform_devices(void)
+ {
+ 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
++#ifdef CONFIG_FS_ENET_MDIO_FCC
+ 	of_register_platform_driver(&ep8248e_mdio_driver);
++#endif
+
+ 	return 0;
+ }
+-- 
+1.5.5.1
