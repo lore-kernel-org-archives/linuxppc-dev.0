@@ -1,16 +1,15 @@
 Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 085A4DE0A3
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 09:23:05 +1000 (EST)
-Date: Wed, 16 Jul 2008 18:22:15 -0500
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3206FDE0AD
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 09:23:10 +1000 (EST)
+Date: Wed, 16 Jul 2008 18:22:23 -0500
 From: Kim Phillips <kim.phillips@freescale.com>
 To: linux-crypto@vger.kernel.org
-Subject: [PATCH 4/6] crypto: talitos - fix GFP flag usage
-Message-Id: <20080716182215.36c1bd11.kim.phillips@freescale.com>
+Subject: [PATCH 5/6] crypto: talitos - stop leaking memory in error path
+Message-Id: <20080716182223.08b2ee07.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
@@ -24,44 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-use GFP_ATOMIC when necessary; use atomic_t when allocating submit_count.
+free edescriptor when returning error (such as -EAGAIN).
 
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 Acked-by: Lee Nipper <lee.nipper@freescale.com>
 ---
- drivers/crypto/talitos.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/crypto/talitos.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index fdb0680..79fdba2 100644
+index 79fdba2..a81265b 100644
 --- a/drivers/crypto/talitos.c
 +++ b/drivers/crypto/talitos.c
-@@ -1015,6 +1015,8 @@ static struct ipsec_esp_edesc *ipsec_esp_edesc_alloc(struct aead_request *areq,
- 	struct talitos_ctx *ctx = crypto_aead_ctx(authenc);
- 	struct ipsec_esp_edesc *edesc;
- 	int src_nents, dst_nents, alloc_len, dma_len;
-+	gfp_t flags = areq->base.flags & CRYPTO_TFM_REQ_MAY_SLEEP ? GFP_KERNEL :
-+		      GFP_ATOMIC;
+@@ -880,7 +880,7 @@ static int ipsec_esp(struct ipsec_esp_edesc *edesc, struct aead_request *areq,
+ 	unsigned int cryptlen = areq->cryptlen;
+ 	unsigned int authsize = ctx->authsize;
+ 	unsigned int ivsize;
+-	int sg_count;
++	int sg_count, ret;
  
- 	if (areq->cryptlen + ctx->authsize > TALITOS_MAX_DATA_LEN) {
- 		dev_err(ctx->dev, "cryptlen exceeds h/w max limit\n");
-@@ -1046,7 +1048,7 @@ static struct ipsec_esp_edesc *ipsec_esp_edesc_alloc(struct aead_request *areq,
- 		alloc_len += icv_stashing ? ctx->authsize : 0;
- 	}
+ 	/* hmac key */
+ 	map_single_talitos_ptr(dev, &desc->ptr[0], ctx->authkeylen, &ctx->key,
+@@ -984,7 +984,12 @@ static int ipsec_esp(struct ipsec_esp_edesc *edesc, struct aead_request *areq,
+ 	map_single_talitos_ptr(dev, &desc->ptr[6], ivsize, ctx->iv, 0,
+ 			       DMA_FROM_DEVICE);
  
--	edesc = kmalloc(alloc_len, GFP_DMA);
-+	edesc = kmalloc(alloc_len, GFP_DMA | flags);
- 	if (!edesc) {
- 		dev_err(ctx->dev, "could not allocate edescriptor\n");
- 		return ERR_PTR(-ENOMEM);
-@@ -1508,7 +1510,7 @@ static int talitos_probe(struct of_device *ofdev,
- 		}
- 	}
+-	return talitos_submit(dev, desc, callback, areq);
++	ret = talitos_submit(dev, desc, callback, areq);
++	if (ret != -EINPROGRESS) {
++		ipsec_esp_unmap(dev, edesc, areq);
++		kfree(edesc);
++	}
++	return ret;
+ }
  
--	priv->submit_count = kmalloc(sizeof(int) * priv->num_channels,
-+	priv->submit_count = kmalloc(sizeof(atomic_t) * priv->num_channels,
- 				     GFP_KERNEL);
- 	if (!priv->submit_count) {
- 		dev_err(dev, "failed to allocate fifo submit count space\n");
+ 
 -- 
 1.5.6
