@@ -1,15 +1,14 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910807160724s136ef980weeeea2488ad7adf2@mail.gmail.com>
-Date: Wed, 16 Jul 2008 10:24:22 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Wolfgang Grandegger" <wg@grandegger.com>
+Return-Path: <glikely@secretlab.ca>
+Date: Wed, 16 Jul 2008 08:24:36 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Wolfgang Grandegger <wg@grandegger.com>
 Subject: Re: [RFC] I2C: fsl-i2c: make device probing configurable via FDT
-In-Reply-To: <487DF304.7090205@grandegger.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <20080716142436.GD24045@secretlab.ca>
 References: <487DD1BD.8040701@grandegger.com>
-	<9e4733910807160547q28f49865o11ec878d98987329@mail.gmail.com>
-	<487DF304.7090205@grandegger.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <487DD1BD.8040701@grandegger.com>
+Sender: Grant Likely <glikely@secretlab.ca>
 Cc: Jean Delvare <khali@linux-fr.org>, Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -20,23 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/16/08, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> Jon Smirl wrote:
+On Wed, Jul 16, 2008 at 12:47:25PM +0200, Wolfgang Grandegger wrote:
+> Currently, the I2C buses are probed for HWMON I2C devices, which might
+> not be acceptable in same cases. This patch makes device probing
+> configurable through the property "probe" of the FDT I2C device node:
 >
-> > On 7/16/08, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> >
-> > > Currently, the I2C buses are probed for HWMON I2C devices, which might
-> > >  not be acceptable in same cases. This patch makes device probing
-> > >  configurable through the property "probe" of the FDT I2C device node:
-> > >
-> >
-> > All this patch seems to be doing is removing class I2C_CLASS_HWMON via
-> > a device tree flag, PROBE.
+>       i2c@3000 {
+>            ...
+>            compatible = "fsl-i2c";
+>            probe;
+> 	    ...
+>        };
 
-If this is implemented it shouldn't be a device tree option, it should
-be a compile time option in the Kconfig system. We don't want to
-pollute a platform independent device tree with Linux clutter.
+You need to add documentation to booting-without-of.txt about what the
+'probe' property means.  Also, 'probe' is a pretty generic term being
+used in an i2c specific context.  Can you prefix it with i2c or
+something to protect the namespace?  'i2c-probe' perhaps?
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+> Assuming that systems using fsl-i2c should have proper platform data,
+> probing is disabled by default. Unfortunately, that's not the case and
+> various DTS files would require to be updated.
+
+This comment doesn't seem to be correct.
+
+> ---
+> arch/powerpc/sysdev/fsl_soc.c |    4 ++++
+> drivers/i2c/busses/i2c-mpc.c  |   17 ++++++++++++++---
+> include/linux/fsl_devices.h   |    1 +
+
+This will need to be reworked for current top of tree.  i2c-mpc
+dependence on fsl_soc.c has been removed.
+
+Thanks,
+g.
