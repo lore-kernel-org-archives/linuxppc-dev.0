@@ -1,15 +1,14 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Date: Wed, 16 Jul 2008 07:50:25 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: fkan@amcc.com
-Subject: Re: [PATCH] Add AMCC Arches 460GT eval board support to platforms/44x
-Message-ID: <20080716075025.0bca152c@zod.rchland.ibm.com>
-In-Reply-To: <1216186406-27993-1-git-send-email-fkan@amcc.com>
-References: <1216186406-27993-1-git-send-email-fkan@amcc.com>
+Return-Path: <khali@linux-fr.org>
+Date: Wed, 16 Jul 2008 14:05:11 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [RFC] I2C: fsl-i2c: make device probing configurable via FDT
+Message-ID: <20080716140511.7a269709@hyperion.delvare>
+In-Reply-To: <487DD1BD.8040701@grandegger.com>
+References: <487DD1BD.8040701@grandegger.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallard@amcc.com>,
-	linuxppc-embedded@ozlabs.org
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,95 +18,131 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 15 Jul 2008 22:33:26 -0700
-fkan@amcc.com wrote:
+Hi Wolfgang,
 
-> From: Victor Gallardo <vgallard@amcc.com>
->=20
-> ppc4xx: Add AMCC Arches 460GT eval board support=20
->=20
-> Signed-off-by: Victor Gallardo <vgallard@amcc.com>
-
-=46rom what I can tell, you don't even need this patch or the defconfig.
-Nothing differs at this point from Glacier other than the DTS.  Since
-U-Boot is your loader, it should be able to pass the different DTS to a
-kernel that supports Cayonlands and have no issues.
-
+On Wed, 16 Jul 2008 12:47:25 +0200, Wolfgang Grandegger wrote:
+> Currently, the I2C buses are probed for HWMON I2C devices, which might
+> not be acceptable in same cases. This patch makes device probing
+> configurable through the property "probe" of the FDT I2C device node:
+> 
+>        i2c@3000 {
+>             ...
+>             compatible = "fsl-i2c";
+>             probe;
+> 	    ...
+>         };
+> 
+> Assuming that systems using fsl-i2c should have proper platform data,
+> probing is disabled by default. Unfortunately, that's not the case and
+> various DTS files would require to be updated.
+> 
+> There have already been some discussion on this subject with Jean
+> under the following thread:
+> 
+>   http://ozlabs.org/pipermail/linuxppc-dev/2008-July/060008.html
+> 
+> Please comment.
+> 
+> Thanks,
+> 
+> Wolfgang.
+> 
+> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
 > ---
->  arch/powerpc/platforms/44x/Kconfig  |   18 ++++++++
->  arch/powerpc/platforms/44x/Makefile |    1 +
->  arch/powerpc/platforms/44x/arches.c |   76 +++++++++++++++++++++++++++++=
-++++++
->  3 files changed, 95 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/platforms/44x/arches.c
->=20
-> diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/=
-44x/Kconfig
-> index 6abe913..95d1217 100644
-> --- a/arch/powerpc/platforms/44x/Kconfig
-> +++ b/arch/powerpc/platforms/44x/Kconfig
-> @@ -77,6 +77,16 @@ config CANYONLANDS
->  	help
->  	  This option enables support for the AMCC PPC460EX evaluation board.
->=20
-> +config ARCHES
-> +	bool "Arches"
-> +	depends on 44x
-> +	default n
-> +	select 460GT
-> +	select PCI
-> +	select PPC4xx_PCI_EXPRESS
-> +	help
-> +	  This option enables support for the AMCC PPC460GT Arches board.
+>  arch/powerpc/sysdev/fsl_soc.c |    4 ++++
+>  drivers/i2c/busses/i2c-mpc.c  |   17 ++++++++++++++---
+>  include/linux/fsl_devices.h   |    1 +
+>  3 files changed, 19 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6-denx/drivers/i2c/busses/i2c-mpc.c
+> ===================================================================
+> --- linux-2.6-denx.orig/drivers/i2c/busses/i2c-mpc.c
+> +++ linux-2.6-denx/drivers/i2c/busses/i2c-mpc.c
+> @@ -306,13 +306,21 @@ static const struct i2c_algorithm mpc_al
+>  	.functionality = mpc_functionality,
+>  };
+>  
+> -static struct i2c_adapter mpc_ops = {
+> +static struct i2c_adapter mpc_probe_ops = {
+>  	.owner = THIS_MODULE,
+>  	.name = "MPC adapter",
+>  	.id = I2C_HW_MPC107,
+>  	.algo = &mpc_algo,
+>  	.class = I2C_CLASS_HWMON,
+> -	.timeout = 1,
+> + 	.timeout = 1,
 
-If you do want to have explicit support for Arches, that's fine.  Look
-at how Yosemite is supported.  It just reuses Bamboo.  You could do the
-same.
+Your patch is adding undesirable leading white space.
 
->  config YOSEMITE
->  	bool "Yosemite"
->  	depends on 44x
-> @@ -149,6 +159,14 @@ config 460EX
->  	select IBM_NEW_EMAC_ZMII
->  	select IBM_NEW_EMAC_TAH
->=20
-> +config 460GT
-> +	bool
-> +	select PPC_FPU
-> +	select IBM_NEW_EMAC_EMAC4
-> +	select IBM_NEW_EMAC_RGMII
-> +	select IBM_NEW_EMAC_ZMII
-> +	select IBM_NEW_EMAC_TAH
+> +};
+> +
+> +static struct i2c_adapter mpc_ops = {
+> +	.owner = THIS_MODULE,
+> +	.name = "MPC adapter",
+> +	.id = I2C_HW_MPC107,
+> +	.algo = &mpc_algo,
+> + 	.timeout = 1,
+>  };
 
-I don't see a reason to add this at all.  460EX and 460GT select the
-same set of options.
+I don't think you need 2 separate structures. Just set the class field
+at runtime (see below.)
 
->  # 44x errata/workaround config symbols, selected by the CPU models above
->  config IBM440EP_ERR42
->  	bool
-> diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms=
-/44x/Makefile
-> index 774165f..86a4823 100644
-> --- a/arch/powerpc/platforms/44x/Makefile
-> +++ b/arch/powerpc/platforms/44x/Makefile
-> @@ -9,3 +9,4 @@ obj-$(CONFIG_RAINIER)	+=3D rainier.o
->  obj-$(CONFIG_WARP)	+=3D warp.o
->  obj-$(CONFIG_WARP)	+=3D warp-nand.o
->  obj-$(CONFIG_CANYONLANDS) +=3D canyonlands.o
-> +obj-$(CONFIG_ARCHES)	+=3D arches.o
+>  
+>  static int fsl_i2c_probe(struct platform_device *pdev)
+> @@ -354,7 +362,10 @@ static int fsl_i2c_probe(struct platform
+>  	mpc_i2c_setclock(i2c);
+>  	platform_set_drvdata(pdev, i2c);
+>  
+> -	i2c->adap = mpc_ops;
+> +	(i2c->flags & FSL_I2C_DEV_PROBE)
 
-Here you would just have:
+Missing if? :)
 
-obj-$(CONFIG_ARCHES) +=3D cayonlands.o
+> +		i2c->adap = mpc_probe_ops;
+> +	else
+> +		i2c->adap = mpc_ops;
 
-> diff --git a/arch/powerpc/platforms/44x/arches.c b/arch/powerpc/platforms=
-/44x/arches.c
-> new file mode 100644
-> index 0000000..6d6aa66
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/44x/arches.c
+Or just:
 
-And then you don't need this file at all.  Just add a
-"amcc,canyonlands" string to your root node compatible property.
+	i2c->adap = mpc_ops;
+	if (i2c->flags & FSL_I2C_DEV_PROBE)
+		i2c->adap.flags = I2C_CLASS_HWMON;
 
-josh
+>  	i2c->adap.nr = pdev->id;
+>  	i2c_set_adapdata(&i2c->adap, i2c);
+>  	i2c->adap.dev.parent = &pdev->dev;
+> Index: linux-2.6-denx/arch/powerpc/sysdev/fsl_soc.c
+> ===================================================================
+> --- linux-2.6-denx.orig/arch/powerpc/sysdev/fsl_soc.c
+> +++ linux-2.6-denx/arch/powerpc/sysdev/fsl_soc.c
+> @@ -518,6 +518,10 @@ static int __init fsl_i2c_of_init(void)
+>  		if (flags)
+>  			i2c_data.device_flags |= FSL_I2C_DEV_CLOCK_5200;
+>  
+> +		flags = of_get_property(np, "probe", NULL);
+> +		if (flags)
+> +			i2c_data.device_flags |= FSL_I2C_DEV_PROBE;
+> +
+>  		ret =
+>  		    platform_device_add_data(i2c_dev, &i2c_data,
+>  					     sizeof(struct
+> Index: linux-2.6-denx/include/linux/fsl_devices.h
+> ===================================================================
+> --- linux-2.6-denx.orig/include/linux/fsl_devices.h
+> +++ linux-2.6-denx/include/linux/fsl_devices.h
+> @@ -82,6 +82,7 @@ struct fsl_i2c_platform_data {
+>  /* Flags related to I2C device features */
+>  #define FSL_I2C_DEV_SEPARATE_DFSRR	0x00000001
+>  #define FSL_I2C_DEV_CLOCK_5200		0x00000002
+> +#define FSL_I2C_DEV_PROBE		0x00000004
+>  
+>  enum fsl_usb2_operating_modes {
+>  	FSL_USB2_MPH_HOST,
+
+As a side note: in general it is not a good idea to use a template for
+struct i2c_adapter. This structure is relatively large compared to the
+few fields you need to set. If you insist on having a template, it
+should at least be marked either const or __initdata.
+
+-- 
+Jean Delvare
