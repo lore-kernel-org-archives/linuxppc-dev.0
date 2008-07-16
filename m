@@ -1,22 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
-	by ozlabs.org (Postfix) with ESMTP id E70BADE547
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 00:15:43 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so382914qwb.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 07:15:42 -0700 (PDT)
-Date: Wed, 16 Jul 2008 08:15:39 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Add AMCC Arches 460GT eval board support to platforms/44x
-Message-ID: <20080716141539.GC24045@secretlab.ca>
-References: <1216186406-27993-1-git-send-email-fkan@amcc.com>
-	<20080716075025.0bca152c@zod.rchland.ibm.com>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910807160718y580292abi5f44a05f466fd358@mail.gmail.com>
+Date: Wed, 16 Jul 2008 10:18:26 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] Support for DS75 thermal sensor
+In-Reply-To: <20080716140807.GB24045@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080716075025.0bca152c@zod.rchland.ibm.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallard@amcc.com>, fkan@amcc.com,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <487331DC.2020601@grandegger.com> <4873670C.6080204@grandegger.com>
+	<20080708152935.7457bc90@hyperion.delvare>
+	<487754DA.1060207@grandegger.com>
+	<20080711145613.14380360@hyperion.delvare>
+	<487DBB92.1070100@grandegger.com>
+	<20080716113311.384d211e@hyperion.delvare>
+	<487DC457.6000103@grandegger.com>
+	<20080716121059.2dbbfebe@hyperion.delvare>
+	<20080716140807.GB24045@secretlab.ca>
+Cc: Jean Delvare <khali@linux-fr.org>, Linuxppc-dev@ozlabs.org,
+	Alan Clucas <alanc@pipstechnology.co.uk>,
+	Detlev Zundel <dzu@denx.de>, lm-sensors@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,102 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 16, 2008 at 07:50:25AM -0400, Josh Boyer wrote:
-> On Tue, 15 Jul 2008 22:33:26 -0700
-> fkan@amcc.com wrote:
-> 
-> > From: Victor Gallardo <vgallard@amcc.com>
-> > 
-> > ppc4xx: Add AMCC Arches 460GT eval board support 
-> > 
-> > Signed-off-by: Victor Gallardo <vgallard@amcc.com>
-> 
-> From what I can tell, you don't even need this patch or the defconfig.
-> Nothing differs at this point from Glacier other than the DTS.  Since
-> U-Boot is your loader, it should be able to pass the different DTS to a
-> kernel that supports Cayonlands and have no issues.
-> 
-> > ---
-> >  arch/powerpc/platforms/44x/Kconfig  |   18 ++++++++
-> >  arch/powerpc/platforms/44x/Makefile |    1 +
-> >  arch/powerpc/platforms/44x/arches.c |   76 +++++++++++++++++++++++++++++++++++
-> >  3 files changed, 95 insertions(+), 0 deletions(-)
-> >  create mode 100644 arch/powerpc/platforms/44x/arches.c
-> > 
-> > diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-> > index 6abe913..95d1217 100644
-> > --- a/arch/powerpc/platforms/44x/Kconfig
-> > +++ b/arch/powerpc/platforms/44x/Kconfig
-> > @@ -77,6 +77,16 @@ config CANYONLANDS
-> >  	help
-> >  	  This option enables support for the AMCC PPC460EX evaluation board.
-> > 
-> > +config ARCHES
-> > +	bool "Arches"
-> > +	depends on 44x
-> > +	default n
-> > +	select 460GT
-> > +	select PCI
-> > +	select PPC4xx_PCI_EXPRESS
-> > +	help
-> > +	  This option enables support for the AMCC PPC460GT Arches board.
-> 
-> If you do want to have explicit support for Arches, that's fine.  Look
-> at how Yosemite is supported.  It just reuses Bamboo.  You could do the
-> same.
-> 
-> >  config YOSEMITE
-> >  	bool "Yosemite"
-> >  	depends on 44x
-> > @@ -149,6 +159,14 @@ config 460EX
-> >  	select IBM_NEW_EMAC_ZMII
-> >  	select IBM_NEW_EMAC_TAH
-> > 
-> > +config 460GT
-> > +	bool
-> > +	select PPC_FPU
-> > +	select IBM_NEW_EMAC_EMAC4
-> > +	select IBM_NEW_EMAC_RGMII
-> > +	select IBM_NEW_EMAC_ZMII
-> > +	select IBM_NEW_EMAC_TAH
-> 
-> I don't see a reason to add this at all.  460EX and 460GT select the
-> same set of options.
-> 
-> >  # 44x errata/workaround config symbols, selected by the CPU models above
-> >  config IBM440EP_ERR42
-> >  	bool
-> > diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-> > index 774165f..86a4823 100644
-> > --- a/arch/powerpc/platforms/44x/Makefile
-> > +++ b/arch/powerpc/platforms/44x/Makefile
-> > @@ -9,3 +9,4 @@ obj-$(CONFIG_RAINIER)	+= rainier.o
-> >  obj-$(CONFIG_WARP)	+= warp.o
-> >  obj-$(CONFIG_WARP)	+= warp-nand.o
-> >  obj-$(CONFIG_CANYONLANDS) += canyonlands.o
-> > +obj-$(CONFIG_ARCHES)	+= arches.o
-> 
-> Here you would just have:
-> 
-> obj-$(CONFIG_ARCHES) += cayonlands.o
-> 
-> > diff --git a/arch/powerpc/platforms/44x/arches.c b/arch/powerpc/platforms/44x/arches.c
-> > new file mode 100644
-> > index 0000000..6d6aa66
-> > --- /dev/null
-> > +++ b/arch/powerpc/platforms/44x/arches.c
-> 
-> And then you don't need this file at all.  Just add a
-> "amcc,canyonlands" string to your root node compatible property.
+On 7/16/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Wed, Jul 16, 2008 at 12:10:59PM +0200, Jean Delvare wrote:
+>  > On Wed, 16 Jul 2008 11:50:15 +0200, Wolfgang Grandegger wrote:
+>  > > Jean Delvare wrote:
+>  > >
+>
+> > > Yep, as probing might not be acceptable in some cases, I makes sense to
+>  > > add a property to suppress probing:
+>  >
+>  > It'd rather make no-probing the default if possible. My understanding
+>  > is that all systems using i2c-mpc should have proper platform data.
+>
+>
+> Total ACK.  From my perspective, probing should be off by default because the
+>  typical use case in powerpc land is to trust data in the device tree.  Add the
+>  property to turn on probing, not to turn it off.  Also, you'll need to
+>  document the semantics of such a property.  ie. what exactly does it
+>  mean when the probing property is present and the spi bus node has child
+>  nodes?
 
-No!  Don't do this because it is not true!
+I've found this thread now. Why can't we totally remove probing from
+i2c-mpc? These are embedded systems, not open boxes like a PC. If a
+i2c client hasn't been converted to the new model yet, convert it
+before deploying with the new i2c-mpc driver.  It's not very hard to
+convert the client drivers.
 
-Instead, add your board name to canyonlands.c in canyonlands_probe().
-It's not the most scalable solution, but it keeps you from lying about
-your hardware in the .dts file.
-
-I'm working on a more scalable solution for this, but for now just add
-your specific board to canyonlands_probe().
-
-Cheers,
-g.
+-- 
+Jon Smirl
+jonsmirl@gmail.com
