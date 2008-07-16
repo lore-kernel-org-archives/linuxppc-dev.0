@@ -1,22 +1,21 @@
-Return-Path: <rene.herman@keyaccess.nl>
-Received: from smtpq2.tilbu1.nb.home.nl (smtpq2.tilbu1.nb.home.nl
-	[213.51.146.201]) by ozlabs.org (Postfix) with ESMTP id 754D6DDFA1
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 19:04:23 +1000 (EST)
-Message-ID: <487DACBB.6000909@keyaccess.nl>
-Date: Wed, 16 Jul 2008 10:09:31 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [RFC] (almost) booting allyesconfig -- please don't poke super-io
-	without request_region
-References: <for-27-patch1-0@bga.com>	<4879A144.8060203@hhs.nl>	<4dfa50520807131411ied883cgcb20eb6bd94f761@mail.gmail.com>	<487A7211.7030309@hhs.nl>	<4dfa50520807131426t4013142cp1fcd49e078a79c1f@mail.gmail.com>	<20080714095914.0644ac5d@hyperion.delvare>	<88f5162604470179b3c6ebfe729a46f5@bga.com>	<487B8D2C.1090208@hhs.nl>	<4dfa50520807141055l532caaaai700255936600e5ae@mail.gmail.com>	<20080715103613.4fbbf01f@hyperion.delvare>	<4dfa50520807150831i519a3a43n635ab7e58d35ba5e@mail.gmail.com>
-	<20080716094602.4379e0ff@hyperion.delvare>
-In-Reply-To: <20080716094602.4379e0ff@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: Samuel Ortiz <samuel@sortiz.org>, linux-kernel@vger.kernel.org,
-	Milton Miller <miltonm@bga.com>, lm-sensors@lm-sensors.org,
-	linuxppc-dev@ozlabs.org, Hans de Goede <j.w.r.degoede@hhs.nl>,
-	David Hubbard <david.c.hubbard@gmail.com>
+Return-Path: <khali@linux-fr.org>
+Date: Wed, 16 Jul 2008 11:33:11 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH] Support for DS75 thermal sensor
+Message-ID: <20080716113311.384d211e@hyperion.delvare>
+In-Reply-To: <487DBB92.1070100@grandegger.com>
+References: <487331DC.2020601@grandegger.com>
+	<20080708115319.111226e6@hyperion.delvare>
+	<4873670C.6080204@grandegger.com>
+	<20080708152935.7457bc90@hyperion.delvare>
+	<487754DA.1060207@grandegger.com>
+	<20080711145613.14380360@hyperion.delvare>
+	<487DBB92.1070100@grandegger.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linuxppc-dev@ozlabs.org, Alan Clucas <alanc@pipstechnology.co.uk>,
+	Detlev Zundel <dzu@denx.de>, lm-sensors@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 16-07-08 09:46, Jean Delvare wrote:
+Hi Wolfgang,
 
-> As a conclusion, there is no clear relationship between the presence
-> of an ISA or LPC bridge and the presence of a Super-I/O chip. All we
-> can say is that apparently all PC systems have an ISA bridge. So
-> indeed we can probably make the probes conditional upon the presence
-> of an "ISA bridge" PCI device. That's very easy to test. In practice
-> it might be equivalent to making the driver x86-only.
+On Wed, 16 Jul 2008 11:12:50 +0200, Wolfgang Grandegger wrote:
+> Jean Delvare wrote:
+> > For hwmon chips, probing only occurs if the i2c adapter accepts to be
+> > probed, by setting the I2C_CLASS_HWMON flag in i2c_adapter.class. If
+> > you do not want a given i2c bus to be probed, then do not set the flag
+> > for that bus.
+> 
+> I see. My problem is that I2C_CLASS_HWMON is set in the I2C bus driver 
+> for the MPC:
+> 
+>    http://lxr.linux.no/linux+v2.6.26/drivers/i2c/busses/i2c-mpc.c#L314
+> 
+> If I disable it, the LM75 driver only probes the addresses of the I2C 
+> nodes defined in the FDT DTS file. I wonder if this should not be the 
+> default behaviour for kernels using OF platform description. For this 
+> reason, I have put Linuxppc-dev ML on CC. I also realized, that there 
+> are some patches for OF I2C pending. I will check.
 
-And foregoing non (pre-) PCI. Admittedly, that might not be much of an 
-issue and I don't know if "Super-I/O" is maybe even defined such as to 
-make it a NON issue but I do for example remember my old 386 chipset 
-providing for extended serial rates which I thought was way cool back 
-then. If that's Super-I/O (or something that should/could be covered by 
-the infrastructure at least) then PCI wouldn't be helpful.
+The problem is that at this point in time, only a couple hwmon drivers
+have been converted to new-style i2c. So, dropping the I2C_CLASS_HWMON
+would break most systems.
 
-Rene.
+I have a set of patches converting most hwmon drivers to new-style i2c.
+I plan to send it to Linus later today. Once all drivers are converted,
+everyone can start adding device definitions to platform code. And only
+once this is done for all platforms, you may remove I2C_CLASS_HWMON
+from the i2c-mpc driver.
+
+But even then, you can't exclude the possibility that some people want
+to keep relying on the auto-detection mode. In that case, the setting
+of the I2C_CLASS_HWMON flag should become an attribute of eacg i2c-mpc
+device.
+
+Anyway, this is something for every platform community to decide and
+work on. As the i2c subsystem maintainer, I made my best so that
+everything (sensible) is possible. But in the end it's up to the
+"users" (i.e. platform developers and maintainers) to make the decision
+of how things should work in their area. I can give advice on migration
+paths, but I can't take decisions for them.
+
+-- 
+Jean Delvare
