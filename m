@@ -1,16 +1,23 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <487DCC11.9030905@grandegger.com>
-Date: Wed, 16 Jul 2008 12:23:13 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <nobin.mathew@gmail.com>
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.185])
+	by ozlabs.org (Postfix) with ESMTP id 432D7DDED2
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 20:07:57 +1000 (EST)
+Received: by rn-out-0910.google.com with SMTP id j40so1907482rnf.16
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 03:07:55 -0700 (PDT)
+Message-ID: <8d6898730807160307g4455597ck921d55da8f51455d@mail.gmail.com>
+Date: Wed, 16 Jul 2008 15:37:54 +0530
+From: "Nobin Mathew" <nobin.mathew@gmail.com>
+To: dinesh <dinesh.dua@coraltele.com>
+Subject: Re: [alsa-devel] WRITING AN SOC DRIVER WITHOUT DMA
+In-Reply-To: <1216199130.749.4.camel@dinesh.dua>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] Support for DS75 thermal sensor
-References: <487331DC.2020601@grandegger.com>	<20080708115319.111226e6@hyperion.delvare>	<4873670C.6080204@grandegger.com>	<20080708152935.7457bc90@hyperion.delvare>	<487754DA.1060207@grandegger.com>	<20080711145613.14380360@hyperion.delvare>	<487DBB92.1070100@grandegger.com>	<20080716113311.384d211e@hyperion.delvare>	<487DC457.6000103@grandegger.com>
-	<20080716121059.2dbbfebe@hyperion.delvare>
-In-Reply-To: <20080716121059.2dbbfebe@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-dev@ozlabs.org, Alan Clucas <alanc@pipstechnology.co.uk>,
-	Detlev Zundel <dzu@denx.de>, lm-sensors@lm-sensors.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_24324_24291417.1216202874428"
+References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
+	<20080712083939.15025.31192.stgit@trillian.secretlab.ca>
+	<1216199130.749.4.camel@dinesh.dua>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	liam.girdwood@wolfsonmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,53 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jean Delvare wrote:
-> On Wed, 16 Jul 2008 11:50:15 +0200, Wolfgang Grandegger wrote:
->> Jean Delvare wrote:
->>> The problem is that at this point in time, only a couple hwmon drivers
->>> have been converted to new-style i2c. So, dropping the I2C_CLASS_HWMON
->>> would break most systems.
->>>
->>> I have a set of patches converting most hwmon drivers to new-style i2c.
->>> I plan to send it to Linus later today. Once all drivers are converted,
->>> everyone can start adding device definitions to platform code. And only
->>> once this is done for all platforms, you may remove I2C_CLASS_HWMON
->>> from the i2c-mpc driver.
->> Of course.
->>
->>> But even then, you can't exclude the possibility that some people want
->>> to keep relying on the auto-detection mode. In that case, the setting
->> I understood that this is only true for the HWMON devices. Why the 
->> special treatment?
-> 
-> Not really. There are other I2C_CLASS_* flags, just check <linux/i2c.h>.
-> 
-> What makes hwmon a bit different is the historical context. Originally,
-> the hwmon drivers were written for PCs, which have no per-system
-> platform code, so declaring the devices was simply not an option.
-> Additionally, i2c was maintained as part of the lm-sensors project
-> itself. This determined the probe-everything approach that has ruled
-> the i2c subsystem until recently. I've spent (with a few other
-> developers) the past few years drawing a clear separation between i2c
-> and hwmon, and now making it possible to declare i2c devices where
-> possible. This is a lot of work if you want to do this without breaking
-> any system out there (which is my case.)
+------=_Part_24324_24291417.1216202874428
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I can image. Thanks for the explanation.
-> 
->>> of the I2C_CLASS_HWMON flag should become an attribute of each i2c-mpc
->>> device.
->> Yep, as probing might not be acceptable in some cases, I makes sense to 
->> add a property to suppress probing:
-> 
-> It'd rather make no-probing the default if possible. My understanding
-> is that all systems using i2c-mpc should have proper platform data.
+Hi dinesh,
 
-Yep, unfortunately, HWMON devices are not defined in most cases.
+If you are working on ARM, see the ARM AACi code, in sound/arm/aaci.c
 
-> But then again, that's not really my business. The decision is left to
-> the actual users of this i2c bus driver.
+Thanks
+Nobin Mathew.
 
-A RFC patch is in preparation.
 
-Wolfgang.
+On 7/16/08, dinesh <dinesh.dua@coraltele.com> wrote:
+>
+> Hi,
+> I am writing a soc sound driver for MPC8323 board linux 2.6.24 in which i
+> want to do data transfer to and from device myself using BUFFER DESCRIPTOR
+> not with the usual DMA transfer.
+> Please help me.
+> _______________________________________________
+> Alsa-devel mailing list
+> Alsa-devel@alsa-project.org
+> http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
+>
+
+------=_Part_24324_24291417.1216202874428
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div>Hi dinesh,</div>
+<div>&nbsp;</div>
+<div>If you are working on ARM, see the ARM AACi code, in sound/arm/aaci.c</div>
+<div>&nbsp;</div>
+<div>Thanks</div>
+<div>Nobin Mathew.</div>
+<div><br>&nbsp;</div>
+<div><span class="gmail_quote">On 7/16/08, <b class="gmail_sendername">dinesh</b> &lt;<a href="mailto:dinesh.dua@coraltele.com">dinesh.dua@coraltele.com</a>&gt; wrote:</span>
+<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">Hi,<br>I am writing a soc sound driver for MPC8323 board linux 2.6.24 in which i want to do data transfer to and from device myself using BUFFER DESCRIPTOR not with the usual DMA transfer.<br>
+Please help me.<br>_______________________________________________<br>Alsa-devel mailing list<br><a href="mailto:Alsa-devel@alsa-project.org">Alsa-devel@alsa-project.org</a><br><a href="http://mailman.alsa-project.org/mailman/listinfo/alsa-devel">http://mailman.alsa-project.org/mailman/listinfo/alsa-devel</a><br>
+</blockquote></div><br>
+
+------=_Part_24324_24291417.1216202874428--
