@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E4685DE026
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 07:45:30 +1000 (EST)
-Subject: Re: SW TLB MMU rework and SMP issues (pte read/write)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <B2B96B0D-960F-4FB1-A5C1-6146EFB7E563@kernel.crashing.org>
-References: <BF59BFC7-736B-4D3F-9227-97DC90CE4739@kernel.crashing.org>
-	<1216174045.7740.152.camel@pasglop>
-	<B2B96B0D-960F-4FB1-A5C1-6146EFB7E563@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 17 Jul 2008 07:41:58 +1000
-Message-Id: <1216244518.7740.205.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 34522DE7C4
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 07:45:49 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: 82xx performance
+Date: Wed, 16 Jul 2008 23:45:26 +0200
+References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
+	<200807152150.35811.arnd@arndb.de>
+	<DCEAAC0833DD314AB0B58112AD99B93B04B3490E@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04B3490E@ismail.innsys.innovsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807162345.26395.arnd@arndb.de>
+Cc: Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-07-16 at 15:57 -0500, Kumar Gala wrote:
-> This makes sense.  I think we need to order the stores in set_pte_at  
-> regardless of CONFIG_SMP. 
+On Wednesday 16 July 2008, Rune Torgersen wrote:
+> Turns out the story is no so simple.
+> I redid the test wih all versions of arch/ppc from 2.6.18 to 2.6.26, and
+> also arch/powerpc (2.6.24 and 25, 26 doesn't compile because of binutil
+> issues)
+>=20
+> This time I made very sure that the tests were performed the same way,
+> and I made a tabel showing relative performance:
+>=20
+> kernel =A0 =A0 =A0 =A0compile time =A0 rel =A0 context switch =A0rel
+> v2.6.18 =A0 =A0 =A0 =A0 01:13:33.70 =A01.00 =A0 =A0 =A0 7.2 =A0 =A0 =A0 =
+=A01.00
+> v2.6.19 =A0 =A0 =A0 =A0 01:13:29.21 =A01.00 =A0 =A0 =A0 7.1 =A0 =A0 =A0 =
+=A00.99
+> v2.6.20 =A0 =A0 =A0 =A0 01:13:29.58 =A01.00 =A0 =A0 =A0 2.8 =A0 =A0 =A0 =
+=A00.39
+> v2.6.21 =A0 =A0 =A0 =A0 01:13:24.91 =A01.00 =A0 =A0 =A0 8.1 =A0 =A0 =A0 =
+=A01.13
+> v2.6.22 =A0 =A0 =A0 =A0 01:13:42.72 =A01.00 =A0 =A0 =A0 4.5 =A0 =A0 =A0 =
+=A00.63
+> v2.6.23 =A0 =A0 =A0 =A0 01:15:16.43 =A01.02 =A0 =A0 =A0 17 =A0 =A0 =A0 =
+=A0 2.36
+> v2.6.24 =A0 =A0 =A0 =A0 01:15:30.90 =A01.03 =A0 =A0 =A0 20 =A0 =A0 =A0 =
+=A0 2.78
+> v2.6.25 =A0 =A0 =A0 =A0 01:14:51.21 =A01.02 =A0 =A0 =A0 21 =A0 =A0 =A0 =
+=A0 2.92
+> v2.6.26 =A0 =A0 =A0 =A0 01:14:34.76 =A01.01 =A0 =A0 =A0 23.8 =A0 =A0 =A0 =
+3.31
+> v2.6.24-powerpc 01:17:41.99 =A01.06 =A0 =A0 =A0 25.8 =A0 =A0 =A0 3.58
+> v2.6.25-powerpc 01:18:10.10 =A01.06 =A0 =A0 =A0 35.7 =A0 =A0 =A0 4.96
+>=20
+> This shows that arch/ppc no matter versin is fairly consistent in speed.
+> Arch/powerpc is roughtly 6% worse.
+>=20
+> The contect swith column is found running lat_ctx 2 from lmbench3, and
+> should be in microsecs.
 
-Nah, that shouldn't be necessary.
+Ok, I think this could be related mostly to two changes:
 
->  Also, I think we should change pte_clear to  
-> use pte_update() so we only clear the low-order flag bits.  Patch will  
-> be sent shortly for review.
+* In 2.6.23, the process scheduler was replaced, the new one is the CFS,
+the 'completely fair scheduler'. This has changed a lot of data.
+To verify this, you could check out a git version just before and just
+after CFS went in.
 
-Well... at one point at least we did rely on a PTE page with all PTEs
-cleared to be blank. It don't know if that's still the case, I need to
-look.
+* Obviously, the 6 percent change between ppc and powerpc should not
+be there. You can still try to use 'readprofile', or oprofile in
+timer based mode (i.e. without HW performance counters) to get some
+more data about where the time is spent on an identical kernel version.
 
-Ben.
+	Arnd <><
