@@ -1,13 +1,19 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 24409DDF8A
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 09:59:07 +1000 (EST)
-From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: AT_BASE_PLATFORM (v2)
-Date: Tue, 15 Jul 2008 18:58:49 -0500
-Message-Id: <1216166331-14810-1-git-send-email-ntl@pobox.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, roland@redhat.com
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2187CDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 10:41:54 +1000 (EST)
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04B342D4@ismail.innsys.innovsys.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B04B342D4@ismail.innsys.innovsys.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <189c557681b0bc758b2e7c31afcd4df6@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Comiler error compiling 2.6.26
+Date: Wed, 16 Jul 2008 02:41:17 +0200
+To: "Rune Torgersen" <runet@innovsys.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,42 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Background:
-Some IBM POWER-based systems have the ability to run in a
-"compatibility" mode which mostly appears to the OS as a different
-processor from the actual hardware.  This feature of the platform is
-useful for live partition migration and for backwards compatibility
-with old kernels on new hardware.  For example, a Power6 system may
-appear to be a Power5+, which makes the AT_PLATFORM value "power5+".
+> Trying to cross-compile arch/powerpc for an freescale 8280:
+>
+> Gcc 4.1.2
+> Binutils 2.17
+>
+> BFD: ./vmlinux.strip.7812: section .text lma 0xc0000000 overlaps
+> previous sections
 
-Problem:
-Booting a system in a compatibility mode means that ld.so may load
-libraries that are inappropriately tuned for the real
-microarchitecture, and apps that use JIT techniques do not have the
-right information for generating tuned code.  While the AT_PLATFORM
-auxiliary vector entry correctly indicates the ISA supported, it does
-not accurately reflect the underlying microarchitecture in this case,
-and there is no good way for userspace to get this information.
+[etc]
 
-Proposed solution:
-Add an AT_BASE_PLATFORM auxiliary vector entry which indicates the
-microarchitecture.  This entry uses the same string format as
-AT_PLATFORM, and is readily usable by ld.so and other applications.
+Could you try with binutils 2.18?  If not, or if that doesn't help,
+we'll need to see your .config .
 
-Other solutions that have been suggested but found wanting:
 
-- Use a bit in AT_HWCAP to indicate compat mode -- this is not
-expressive enough.  It's not possible to derive the microarchitecture
-from the combination of AT_PLATFORM's value and a single bit.
-
-- Use dsocaps -- this seems to be a ld.so-specific interface and not
-easily usable by other programs.  ld.so/glibc is not the only program
-that can use knowledge of the microarchitecture.
-
-The following two patches:
-- add the base support to binfmt_elf.c for AT_BASE_PLATFORM
-- implement AT_BASE_PLATFORM for powerpc
-
-Changes since v1:
-- increment AT_VECTOR_SIZE_BASE
-- define AT_BASE_PLATFORM in generic code instead of powerpc
+Segher
