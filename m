@@ -1,19 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id BFF45DDE20
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 08:12:39 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: [PATCH] powerpc: fix support for latencytop
-Date: Thu, 17 Jul 2008 00:12:25 +0200
-References: <48755237.9070701@nortel.com> <200807101608.18643.arnd@arndb.de>
-	<20080716202236.GZ9594@localdomain>
-In-Reply-To: <20080716202236.GZ9594@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807170012.25859.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id CD7CBDDF6E
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 08:15:59 +1000 (EST)
+Date: Wed, 16 Jul 2008 18:15:56 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] Fix wrong 'no interrupt' handling in of_i2c
+Message-ID: <20080716181556.2974a1a8@lappy.seanm.ca>
+In-Reply-To: <fa686aa40806281216v71f33a70n67eca1c1e69417d8@mail.gmail.com>
+References: <20080628183141.15298.2758.stgit@octopus.labnet.pengutronix.de>
+	<fa686aa40806281216v71f33a70n67eca1c1e69417d8@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Wolfram Sang <w.sang@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We need to pass the kernel stack pointer instead of the user space
-stack pointer in save_stack_trace_tsk().
+On Sat, 28 Jun 2008 13:16:16 -0600
+"Grant Likely" <grant.likely@secretlab.ca> wrote:
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-On Wednesday 16 July 2008, Nathan Lynch wrote:
-> Arnd Bergmann wrote:
-> > Implement save_stack_trace_tsk on powerpc, so that we can run with
-> > latencytop.
+> On Sat, Jun 28, 2008 at 12:31 PM, Wolfram Sang
+> <w.sang@pengutronix.de> wrote:
+> > If an I2C device node does not specify an interrupt, the .irq
+> > member of the board_info struct was set to -1. This caused crashes
+> > on following irq_dispose_mappings. Leave it NO_IRQ as returned from
+> > irq_of_parse_and_map. (Suggesting -1 as 'i2c-no-irq' used to be a
+> > bug in linux/i2c.h.)
+> >
+> > Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 > 
-> So I tried latencytop with linux-next and got the following oops, but
-> I didn't really look into it yet.
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> 
 
-Oh, I didn't even realize that benh had merged that patch of mine.
-As I wrote in the description, it was entirely untested. You found
-another obvious bug: The code was passing the user space stack
-pointer instead of the kernel stack pointer.
+I just hit this while trying to get the at24 driver working. So:
 
-Again, this patch is entirely untested, and I would not be at all
-surprised to find other trivial bugs.
+Acked-by: Sean MacLennan <smaclennan@pikatech.com>
 
---- a/arch/powerpc/kernel/stacktrace.c
-+++ b/arch/powerpc/kernel/stacktrace.c
-@@ -59,6 +59,6 @@ EXPORT_SYMBOL_GPL(save_stack_trace);
- 
- void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
- {
--	save_context_stack(trace, tsk->thread.regs->gpr[1], tsk, 0);
-+	save_context_stack(trace, tsk->thread.ksp, tsk, 0);
- }
- EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+Cheers,
+   Sean
