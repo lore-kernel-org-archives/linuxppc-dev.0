@@ -1,31 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 52DD0DDDEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 07:47:30 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m6GLlNs4017908
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 14:47:24 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m6GLlNYN014362
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 16:47:23 -0500 (CDT)
-Date: Wed, 16 Jul 2008 16:47:23 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/ep8248e: Fix compile problem if !CONFIG_FS_ENET
-Message-ID: <20080716214722.GA6251@ld0162-tx32.am.freescale.net>
-References: <Pine.LNX.4.64.0807160838520.14127@blarg.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0807160838520.14127@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-	davej@redhat.com
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id B9C94DE530
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 07:52:46 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: 82xx performance
+Date: Wed, 16 Jul 2008 16:53:13 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B04B3499C@ismail.innsys.innovsys.com>
+In-Reply-To: <200807162345.26395.arnd@arndb.de>
+References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
+	<200807152150.35811.arnd@arndb.de>
+	<DCEAAC0833DD314AB0B58112AD99B93B04B3490E@ismail.innsys.innovsys.com>
+	<200807162345.26395.arnd@arndb.de>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Arnd Bergmann" <arnd@arndb.de>,
+	<linuxppc-dev@ozlabs.org>
+Cc: Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,25 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 16, 2008 at 08:39:12AM -0500, Kumar Gala wrote:
-> If we don't enable FS_ENET we get build issues:
-> 
-> arch/powerpc/platforms/built-in.o: In function `ep8248e_mdio_probe':
-> arch/powerpc/platforms/82xx/ep8248e.c:129: undefined reference to `alloc_mdio_bitbang'
-> arch/powerpc/platforms/82xx/ep8248e.c:143: undefined reference to `mdiobus_register'
+Arnd Bergmann wrote:
+> Ok, I think this could be related mostly to two changes:
+>=20
+> * In 2.6.23, the process scheduler was replaced, the new one
+> is the CFS,
+> the 'completely fair scheduler'. This has changed a lot of data.
+> To verify this, you could check out a git version just before and
+> just after CFS went in.=20
 
-How is this possible?  CONFIG_EP8248E selects CONFIG_MDIO_BITBANG.
+I'll check. Checking the context switch is fairly fast, so this is a
+goot time to learn bisect...
 
-> +#ifdef CONFIG_FS_ENET_MDIO_FCC
->  static void ep8248e_set_mdc(struct mdiobb_ctrl *ctrl, int level)
->  {
->  	if (level)
-> @@ -164,6 +165,7 @@ static struct of_platform_driver ep8248e_mdio_driver = {
->  	.probe = ep8248e_mdio_probe,
->  	.remove = ep8248e_mdio_remove,
->  };
-> +#endif
+> * Obviously, the 6 percent change between ppc and powerpc should not
+> be there. You can still try to use 'readprofile', or oprofile in
+> timer based mode (i.e. without HW performance counters) to get some
+> more data about where the time is spent on an identical
+> kernel version.
 
-This is wrong -- ep8248e doesn't use the FS_ENET_MDIO_FCC code.
-
--Scott
+I did run oprofile, but I could not figure out how to get it to show me
+where in the kernel it was spending time. It showed that a lot of time
+was spent in vmlinux, but not anything specific. I probably just don't
+know how to set up or run oprofile correctly.
