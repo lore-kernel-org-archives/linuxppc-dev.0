@@ -1,20 +1,10 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 564DDDDF15
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 13:05:45 +1000 (EST)
-Subject: Re: SW TLB MMU rework and SMP issues
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <BF59BFC7-736B-4D3F-9227-97DC90CE4739@kernel.crashing.org>
-References: <BF59BFC7-736B-4D3F-9227-97DC90CE4739@kernel.crashing.org>
-Content-Type: text/plain
-Date: Wed, 16 Jul 2008 12:07:25 +1000
-Message-Id: <1216174045.7740.152.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <265ffd8379f89c869c8e87806ced8737272b81f7.1216182085.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc: Streamline ret_from_except_lite for non-iSeries
+	platforms
+Date: Wed, 16 Jul 2008 14:21:34 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,68 +14,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-15 at 16:58 -0500, Kumar Gala wrote:
-> Ben,
-> 
-> I've been giving some thought to the new software managed TLBs and SMP  
-> issues.  I was wondering if you had any insights on how we should deal  
-> with the following issues:
+There is a small passage of code in ret_from_except_lite which is
+only required on iSeries. For a multi-platform kernel on non-iSeries
+machines this means we end up executing ~15 nops in ret_from_except_lite.
 
-As discussed on IRC (might interest others...)
+It would be nicer if non-iSeries could skip the code entirely, and on
+iSeries we can jump out of line to execute the code.
 
-> * tlb invalidates -- need to ensure we don't have multiple tlbsync's  
-> on the bus.  I'm thinking for e500/fsl we will move to IPI based  
-> invalidate broadcast and do invalidates locally
-> (http://patchwork.ozlabs.org/linuxppc/patch?id=19657 )
+I have no performance numbers to justify this, other than the assertion
+that executing 15 nops takes longer than executing 0.
 
-Well, you can just have all your invalidations wrapped in a spinlock.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-The "trick" of course is for full-mm invalidates such as page tables
-teardown or fork, to avoid doing a lock/unlock & IPI for every PTE of
-course. A way to do it is to do some batching, though it isn't trivial. 
+---
+Booted on POWER5 & legacy iSeries.
 
-Without support for TLB invalidate all or by PID, what you can do maybe
-is to manually do an invalidate by PID with a tlbre/tlbwe loop. Check
-the worst case scenario of walking your entire TLB vs. small processes
-that carry only a handful of PTEs....
 
-You can use the batch interface to 'count' things on page table teardown
-and decide based on a threshold of invalidated PTEs what approach is
-more likely to be useful, but can't really use the batch interface for
-fork. 
+ arch/powerpc/kernel/entry_64.S |   53 ++++++++++++++++++++++------------------
+ 1 files changed, 29 insertions(+), 24 deletions(-)
 
-> * 64-bit PTEs and reader vs writer hazards.  How do we ensure that the  
-> TLB miss handler samples a consistent view of the pte.  pte_updates  
-> seem ok since we only update the flag word.  However set_pte_at seems  
-> like it could be problematic.
-
-eieio on the writer and a data dependency on the reader. segher
-suggested a nice way to do it on the reader side, by doing a subf of the
-value from the pointer and then a lwxz using that value as an offset.
-
-ie. something like that, with r3 containing the PTE pointer:
-
-	lwz	r10,4(r3)
-	subf	r4,r10,r3  <-- you can use r3,r10,r3 if clobber is safe
-	lwzx	r11,r10,r4 <-- in which case you use r3 here too
-
-That ensures that the top half is loaded after the bottom half, which
-is what you want if you do the set_pte_at() that way:
-
-	stw	r11,0(r3)  <-- write top half first
-	eieio	           <-- maitain order to coherency domain
-        stw	r10,4(r3)  <-- write bottom half last
-
-In fact, in the reader case, while at it, you can interleave that with
-the testing of the present bit. Assuming _PAGE_PRESENT is in the low
-bits and you can clobber r3, you get something like:
-
-	lwz	r10,4(r3)
-	<-- can't do much here unless you can do unrelated things -->
-	andi.	r0,r10,_PAGE_PRESENT
-	subf	r3,r10,r3
-	beq	page_fault
-	lwzx	r11,r10,r3
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index d736924..fff7490 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -507,31 +507,12 @@ _GLOBAL(ret_from_except_lite)
+ #endif
+ 
+ restore:
+-	ld	r5,SOFTE(r1)
+-#ifdef CONFIG_PPC_ISERIES
+ BEGIN_FW_FTR_SECTION
+-	cmpdi	0,r5,0
+-	beq	4f
+-	/* Check for pending interrupts (iSeries) */
+-	ld	r3,PACALPPACAPTR(r13)
+-	ld	r3,LPPACAANYINT(r3)
+-	cmpdi	r3,0
+-	beq+	4f			/* skip do_IRQ if no interrupts */
+-
+-	li	r3,0
+-	stb	r3,PACASOFTIRQEN(r13)	/* ensure we are soft-disabled */
+-#ifdef CONFIG_TRACE_IRQFLAGS
+-	bl	.trace_hardirqs_off
+-	mfmsr	r10
+-#endif
+-	ori	r10,r10,MSR_EE
+-	mtmsrd	r10			/* hard-enable again */
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.do_IRQ
+-	b	.ret_from_except_lite		/* loop back and handle more */
+-4:
+-END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
+-#endif
++	ld	r5,SOFTE(r1)
++FW_FTR_SECTION_ELSE
++	b	iseries_check_pending_irqs
++ALT_FW_FTR_SECTION_END_IFCLR(FW_FEATURE_ISERIES)
++2:
+ 	TRACE_AND_RESTORE_IRQ(r5);
+ 
+ 	/* extract EE bit and use it to restore paca->hard_enabled */
+@@ -587,6 +568,30 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
+ 	rfid
+ 	b	.	/* prevent speculative execution */
+ 
++iseries_check_pending_irqs:
++#ifdef CONFIG_PPC_ISERIES
++	ld	r5,SOFTE(r1)
++	cmpdi	0,r5,0
++	beq	2b
++	/* Check for pending interrupts (iSeries) */
++	ld	r3,PACALPPACAPTR(r13)
++	ld	r3,LPPACAANYINT(r3)
++	cmpdi	r3,0
++	beq+	2b			/* skip do_IRQ if no interrupts */
++
++	li	r3,0
++	stb	r3,PACASOFTIRQEN(r13)	/* ensure we are soft-disabled */
++#ifdef CONFIG_TRACE_IRQFLAGS
++	bl	.trace_hardirqs_off
++	mfmsr	r10
++#endif
++	ori	r10,r10,MSR_EE
++	mtmsrd	r10			/* hard-enable again */
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	.do_IRQ
++	b	.ret_from_except_lite		/* loop back and handle more */
++#endif
++
+ do_work:
+ #ifdef CONFIG_PREEMPT
+ 	andi.	r0,r3,MSR_PR	/* Returning to user mode? */
+-- 
+1.5.5
