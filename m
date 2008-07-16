@@ -1,20 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8EC9EDDDFD
+Return-Path: <duykynguyen@hotmail.com>
+Received: from bay0-omc1-s32.bay0.hotmail.com (bay0-omc1-s32.bay0.hotmail.com
+	[65.54.246.104]) by ozlabs.org (Postfix) with ESMTP id 059C0DDF28
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Jul 2008 08:12:11 +1000 (EST)
-Message-Id: <CF70FC2C-6837-4D49-A4C7-B6735BF33787@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: selvamuthukumar v <v.selvamuthukumar@gmail.com>
-In-Reply-To: <790896390807140514r6074ec7j6d3eaf38787e3444@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: MPC8313 ERDB has proper interrupt mapping for TSEC?
-Date: Tue, 15 Jul 2008 17:11:59 -0500
-References: <790896390807140514r6074ec7j6d3eaf38787e3444@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 16 Jul 2008 11:03:41 +1000 (EST)
+Message-ID: <BLU119-DAV11096F9EACC27956DCC87BBB8F0@phx.gbl>
+From: "Duy-Ky Nguyen" <duykynguyen@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Failure of request_irq()  for MPC8313 using arch=powerpc
+Date: Tue, 15 Jul 2008 17:58:34 -0700
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0060_01C8E6A4.662A1C80"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,31 +21,109 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-On Jul 14, 2008, at 7:14 AM, selvamuthukumar v wrote:
+------=_NextPart_000_0060_01C8E6A4.662A1C80
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> From, arch/powerpc/boot/dts/mpc8313erdb.dts,
->
-> 212                 enet0: ethernet@24000 {
->                                   .
->                                   .
-> 219                         interrupts = <37 0x8 36 0x8 35 0x8>;
->                                   .
->                                   .
-> 222                 };
-> 223
-> 224                 enet1: ethernet@25000 {
->                                   .
->                                   .
-> 231                         interrupts = <34 0x8 33 0x8 32 0x8>;
->                                   .
-> 234                 };
-> 235
->
-> But as per 8313 Reference manual interrups 32, 33, 34 are for
-> TSEC1@24000 and 35, 36, 37 are for TSEC2@25000. Any idea why interrupt
-> numbers are swapped for enet0 and enet1?
+Hello,
 
-I believe different revisions of the part had different mappings.
+I had no problem in using request_irq() for MPC8272 with arch=3Dppc from =
+Montavista Linux
 
-- k
+But I have failure for MPC8313 with arch=3Dpowerpc from FreeScale LTIB =
+Linux with error code -38
+
+I found its header file mpc83xx.h under include/asm-ppc, while it's =
+supposed to be under include/asm-powerpc.
+
+I did try to copy the header file to directory asm-powerpc
+
+>From MPC8313 datasheet, I have=20
+
+GPIO_IRQ =3D 74
+
+and I use
+
+DEVICE_NAME =3D "ppc"
+IRQ_FLAG =3D IRQF_SHARED    // use new flag
+here my function call
+
+request_irq (GPIO_IRQ,
+      ppc_ISR, =20
+      IRQ_FLAG,
+      DEVICE_NAME,  =20
+      NULL);  =20
+
+I'd appreciate any help on this problem.
+
+Best Regards,
+
+Duy-Kyng
+
+
+------=_NextPart_000_0060_01C8E6A4.662A1C80
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.6000.16587" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Hello,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>I had no problem in using request_irq() =
+for MPC8272=20
+with arch=3Dppc from Montavista Linux</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>But I have failure for MPC8313 with =
+arch=3Dpowerpc=20
+from FreeScale LTIB Linux with error code -38</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>I found its header file mpc83xx.h under =
+
+include/asm-ppc, while it's supposed to be under=20
+include/asm-powerpc.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>I did try to copy the header file to =
+directory=20
+asm-powerpc</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>From MPC8313 datasheet, I have =
+</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>GPIO_IRQ =3D 74</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>and I use</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>DEVICE_NAME =3D "ppc"</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>IRQ_FLAG =3D =
+IRQF_SHARED&nbsp;&nbsp;&nbsp; // use new=20
+flag</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>here my function call</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>request_irq (GPIO_IRQ,</FONT></DIV>
+<DIV><FONT face=3DArial=20
+size=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ppc_ISR,&nbsp;&nbsp;</FONT><=
+/DIV>
+<DIV><FONT face=3DArial=20
+size=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IRQ_FLAG,<BR>&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;DEVICE_NAME,&nbsp;&nbsp;&nbsp;<BR>&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;NULL);&nbsp;&nbsp;&nbsp;<BR></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>I'd appreciate any help on this=20
+problem.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Best Regards,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Duy-Kyng</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>&nbsp;</DIV></FONT>
+<DIV><FONT face=3DArial size=3D2>&nbsp;</DIV></FONT></BODY></HTML>
+
+------=_NextPart_000_0060_01C8E6A4.662A1C80--
