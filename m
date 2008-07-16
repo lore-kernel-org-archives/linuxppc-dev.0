@@ -1,21 +1,21 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id C8147DE1A0
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 07:08:05 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: 82xx performance
-Date: Wed, 16 Jul 2008 16:08:35 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B04B3490E@ismail.innsys.innovsys.com>
-In-Reply-To: <200807152150.35811.arnd@arndb.de>
-References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
-	<200807142244.07450.arnd@arndb.de>
-	<DCEAAC0833DD314AB0B58112AD99B93B04AE6877@ismail.innsys.innovsys.com>
-	<200807152150.35811.arnd@arndb.de>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Arnd Bergmann" <arnd@arndb.de>, "Milton Miller" <miltonm@bga.com>,
-	<linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AC777DDF19
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 07:22:37 +1000 (EST)
+Message-Id: <DBBB7889-795A-40CC-ABF6-874CF6148772@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <B2B96B0D-960F-4FB1-A5C1-6146EFB7E563@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: SW TLB MMU rework and SMP issues (pte read/write)
+Date: Wed, 16 Jul 2008 16:15:32 -0500
+References: <BF59BFC7-736B-4D3F-9227-97DC90CE4739@kernel.crashing.org>
+	<1216174045.7740.152.camel@pasglop>
+	<B2B96B0D-960F-4FB1-A5C1-6146EFB7E563@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Tuesday 15 July 2008, Rune Torgersen wrote:
->> Using arch/ppc I got a 2.6.25 kernel to boot, and the kernel compile
->> test I did is almost identical (within 1%) of what the arch/powerpc
->> 2.6.25 did, so it seems to be a difference between 2.6.18 and 2.6.25
->> (I'll see if I can find an exact version, as I think my ppc port can
->> be compiled for all versions from 2.6.18 to 25)
->=20
-> You probably already know git-bisect, but if you don't, you should
-> definitely give it a try. It's the best tool to find which patch
-> exactly broke your performance.
 
-Turns out the story is no so simple.
-I redid the test wih all versions of arch/ppc from 2.6.18 to 2.6.26, and
-also arch/powerpc (2.6.24 and 25, 26 doesn't compile because of binutil
-issues)
+On Jul 16, 2008, at 3:57 PM, Kumar Gala wrote:
 
-This time I made very sure that the tests were performed the same way,
-and I made a tabel showing relative performance:
+>>> * 64-bit PTEs and reader vs writer hazards.  How do we ensure that  
+>>> the
+>>> TLB miss handler samples a consistent view of the pte.  pte_updates
+>>> seem ok since we only update the flag word.  However set_pte_at  
+>>> seems
+>>> like it could be problematic.
+>>
+>> eieio on the writer and a data dependency on the reader. segher
+>> suggested a nice way to do it on the reader side, by doing a subf  
+>> of the
+>> value from the pointer and then a lwxz using that value as an offset.
+>>
+>> ie. something like that, with r3 containing the PTE pointer:
+>>
+>> 	lwz	r10,4(r3)
+>> 	subf	r4,r10,r3  <-- you can use r3,r10,r3 if clobber is safe
+>> 	lwzx	r11,r10,r4 <-- in which case you use r3 here too
+>>
+>> That ensures that the top half is loaded after the bottom half, which
+>> is what you want if you do the set_pte_at() that way:
+>>
+>> 	stw	r11,0(r3)  <-- write top half first
+>> 	eieio	           <-- maitain order to coherency domain
+>>       stw	r10,4(r3)  <-- write bottom half last
+>>
+>> In fact, in the reader case, while at it, you can interleave that  
+>> with
+>> the testing of the present bit. Assuming _PAGE_PRESENT is in the low
+>> bits and you can clobber r3, you get something like:
+>>
+>> 	lwz	r10,4(r3)
+>> 	<-- can't do much here unless you can do unrelated things -->
+>> 	andi.	r0,r10,_PAGE_PRESENT
+>> 	subf	r3,r10,r3
+>> 	beq	page_fault
+>> 	lwzx	r11,r10,r3
+>
+> This makes sense.  I think we need to order the stores in set_pte_at  
+> regardless of CONFIG_SMP.
 
-kernel        compile time   rel   context switch  rel
-v2.6.18         01:13:33.70  1.00       7.2        1.00
-v2.6.19         01:13:29.21  1.00       7.1        0.99
-v2.6.20         01:13:29.58  1.00       2.8        0.39
-v2.6.21         01:13:24.91  1.00       8.1        1.13
-v2.6.22         01:13:42.72  1.00       4.5        0.63
-v2.6.23         01:15:16.43  1.02       17         2.36
-v2.6.24         01:15:30.90  1.03       20         2.78
-v2.6.25         01:14:51.21  1.02       21         2.92
-v2.6.26         01:14:34.76  1.01       23.8       3.31
-v2.6.24-powerpc 01:17:41.99  1.06       25.8       3.58
-v2.6.25-powerpc 01:18:10.10  1.06       35.7       4.96
+Ok, so I realized that we don't actually need to order the stores  
+since the sequential programming model will ensure the right things  
+happens.
 
-This shows that arch/ppc no matter versin is fairly consistent in speed.
-Arch/powerpc is roughtly 6% worse.
-
-The contect swith column is found running lat_ctx 2 from lmbench3, and
-should be in microsecs.
+- k
