@@ -1,27 +1,19 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0B658DE54A
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 09:23:11 +1000 (EST)
-Date: Wed, 16 Jul 2008 16:22:17 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [PATCH v2] leds: implement OpenFirmare GPIO LED driver
-In-Reply-To: <1216133032.5345.73.camel@dax.rpnet.com>
-Message-ID: <Pine.LNX.4.64.0807161619050.12709@t2.domain.actdsltmp>
-References: <20080715123822.GA10893@polina.dev.rtsoft.ru>
-	<20080715124013.GA13086@polina.dev.rtsoft.ru>
-	<1216126470.5345.55.camel@dax.rpnet.com>
-	<20080715132438.GA26648@polina.dev.rtsoft.ru>
-	<1216128687.5345.61.camel@dax.rpnet.com>
-	<20080715142354.GA3296@polina <1216133032.5345.73.camel@dax.rpnet.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2D5B7DE624
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 09:23:12 +1000 (EST)
+Date: Wed, 16 Jul 2008 18:22:30 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linux-crypto@vger.kernel.org
+Subject: [PATCH 6/6] crypto: talitos - sparse fix
+Message-Id: <20080716182230.0a33d01b.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Herbert Xu <herbert@gondor.apana.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,33 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 15 Jul 2008, Richard Purdie wrote:
-> On Tue, 2008-07-15 at 18:23 +0400, Anton Vorontsov wrote:
->>> Spell out openfirmware :). I initially had no idea "of == openfirmware"
->>> and I suspect others won't either...
->>
->> This would be unusually long name, that is
->>
->> $ find . -iname '*openfirmware*' | wc -l
->> 0
->>
->> And in contrast:
->>
->> drivers/video/offb.c
->> drivers/video/nvidia/nv_of.c
->> drivers/usb/host/ohci-ppc-of.c
->> drivers/usb/host/ehci-ppc-of.c
->> drivers/serial/of_serial.c
->> drivers/mtd/maps/physmap_of.c
->> ...
->>
->> So, I think we should stick with the "of" for consistency, while
->> confused users may consult with Kconfig for disambiguation.
->
-> The other cases don't have a gpio driver to confuse this new driver
-> with. Lets spell it out please, the filesystems can handle the extra
-> letters :).
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+ drivers/crypto/talitos.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-There's drivers/mtd/maps/physmap.c and drivers/mtd/maps/physmap_of.c,
-drivers/serial/of_serial.c and drivers/serial/serial_core.c,
-drivers/usb/host/ehci-ppc-soc.c and drivers/usb/host/ehci-ppc-of.c, etc.
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index a81265b..681c15f 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -848,7 +848,7 @@ static int sg_to_link_tbl(struct scatterlist *sg, int sg_count,
+ 
+ 	/* adjust (decrease) last one (or two) entry's len to cryptlen */
+ 	link_tbl_ptr--;
+-	while (link_tbl_ptr->len <= (-cryptlen)) {
++	while (be16_to_cpu(link_tbl_ptr->len) <= (-cryptlen)) {
+ 		/* Empty this entry, and move to previous one */
+ 		cryptlen += be16_to_cpu(link_tbl_ptr->len);
+ 		link_tbl_ptr->len = 0;
+-- 
+1.5.6
