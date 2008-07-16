@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7FB06DE021
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 08:28:22 +1000 (EST)
-Subject: Re: [PATCH] powerpc: fix support for latencytop
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200807170012.25859.arnd@arndb.de>
-References: <48755237.9070701@nortel.com> <200807101608.18643.arnd@arndb.de>
-	<20080716202236.GZ9594@localdomain> <200807170012.25859.arnd@arndb.de>
-Content-Type: text/plain
-Date: Thu, 17 Jul 2008 08:28:00 +1000
-Message-Id: <1216247280.7740.213.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 6FE3ADE61B
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 08:33:08 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Rune Torgersen" <runet@innovsys.com>
+Subject: Re: 82xx performance
+Date: Thu, 17 Jul 2008 00:32:36 +0200
+References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
+	<200807162345.26395.arnd@arndb.de>
+	<DCEAAC0833DD314AB0B58112AD99B93B04B3499C@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04B3499C@ismail.innsys.innovsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807170032.36564.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-07-17 at 00:12 +0200, Arnd Bergmann wrote:
-> We need to pass the kernel stack pointer instead of the user space
-> stack pointer in save_stack_trace_tsk().
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> 
-> On Wednesday 16 July 2008, Nathan Lynch wrote:
-> > Arnd Bergmann wrote:
-> > > Implement save_stack_trace_tsk on powerpc, so that we can run with
-> > > latencytop.
-> > 
-> > So I tried latencytop with linux-next and got the following oops, but
-> > I didn't really look into it yet.
-> 
-> Oh, I didn't even realize that benh had merged that patch of mine.
-> As I wrote in the description, it was entirely untested. You found
-> another obvious bug: The code was passing the user space stack
-> pointer instead of the kernel stack pointer.
-> 
-> Again, this patch is entirely untested, and I would not be at all
-> surprised to find other trivial bugs.
+On Wednesday 16 July 2008, Rune Torgersen wrote:
+> I did run oprofile, but I could not figure out how to get it to show me
+> where in the kernel it was spending time. It showed that a lot of time
+> was spent in vmlinux, but not anything specific. I probably just don't
+> know how to set up or run oprofile correctly.
 
-I missed that part of your description and it didn't seem to break the
-kernel stack trace so ... :-) It's a nice feature to have and bugs can
-be fixed before release.
+Maybe you passed no vmlinux, or only a stripped one?
+Oprofile needs to have a vmlinux file to extract the symbol
+information from.
 
-Now we should probably look at making the stacktrace code a bit more
-robust vs. wild pointers anyway.
+If you can't get it to work, readprofile(1) is a much simpler
+tool, both in what it can do and what it requires you to do.
 
-> --- a/arch/powerpc/kernel/stacktrace.c
-> +++ b/arch/powerpc/kernel/stacktrace.c
-> @@ -59,6 +59,6 @@ EXPORT_SYMBOL_GPL(save_stack_trace);
->  
->  void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
->  {
-> -	save_context_stack(trace, tsk->thread.regs->gpr[1], tsk, 0);
-> +	save_context_stack(trace, tsk->thread.ksp, tsk, 0);
->  }
->  EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+	Arnd <><
