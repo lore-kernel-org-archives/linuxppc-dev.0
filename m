@@ -2,20 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AC777DDF19
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 07:22:37 +1000 (EST)
-Message-Id: <DBBB7889-795A-40CC-ABF6-874CF6148772@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id E0FCFDE628
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 07:24:31 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m6GLORei016699
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 16:24:28 -0500
+Date: Wed, 16 Jul 2008 16:24:27 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <B2B96B0D-960F-4FB1-A5C1-6146EFB7E563@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: SW TLB MMU rework and SMP issues (pte read/write)
-Date: Wed, 16 Jul 2008 16:15:32 -0500
-References: <BF59BFC7-736B-4D3F-9227-97DC90CE4739@kernel.crashing.org>
-	<1216174045.7740.152.camel@pasglop>
-	<B2B96B0D-960F-4FB1-A5C1-6146EFB7E563@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/fsl-booke: Fixup 64-bite PTE reading for SMP support
+Message-ID: <Pine.LNX.4.64.0807161624030.13167@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,51 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+We need to create a false data dependency to ensure the loads of
+the pte are done in the right order.
 
-On Jul 16, 2008, at 3:57 PM, Kumar Gala wrote:
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/kernel/head_fsl_booke.S |   24 ++++++++++++++++++++----
+ 1 files changed, 20 insertions(+), 4 deletions(-)
 
->>> * 64-bit PTEs and reader vs writer hazards.  How do we ensure that  
->>> the
->>> TLB miss handler samples a consistent view of the pte.  pte_updates
->>> seem ok since we only update the flag word.  However set_pte_at  
->>> seems
->>> like it could be problematic.
->>
->> eieio on the writer and a data dependency on the reader. segher
->> suggested a nice way to do it on the reader side, by doing a subf  
->> of the
->> value from the pointer and then a lwxz using that value as an offset.
->>
->> ie. something like that, with r3 containing the PTE pointer:
->>
->> 	lwz	r10,4(r3)
->> 	subf	r4,r10,r3  <-- you can use r3,r10,r3 if clobber is safe
->> 	lwzx	r11,r10,r4 <-- in which case you use r3 here too
->>
->> That ensures that the top half is loaded after the bottom half, which
->> is what you want if you do the set_pte_at() that way:
->>
->> 	stw	r11,0(r3)  <-- write top half first
->> 	eieio	           <-- maitain order to coherency domain
->>       stw	r10,4(r3)  <-- write bottom half last
->>
->> In fact, in the reader case, while at it, you can interleave that  
->> with
->> the testing of the present bit. Assuming _PAGE_PRESENT is in the low
->> bits and you can clobber r3, you get something like:
->>
->> 	lwz	r10,4(r3)
->> 	<-- can't do much here unless you can do unrelated things -->
->> 	andi.	r0,r10,_PAGE_PRESENT
->> 	subf	r3,r10,r3
->> 	beq	page_fault
->> 	lwzx	r11,r10,r3
->
-> This makes sense.  I think we need to order the stores in set_pte_at  
-> regardless of CONFIG_SMP.
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 3cb52fa..fa39cce 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -579,13 +579,19 @@ interrupt_base:
 
-Ok, so I realized that we don't actually need to order the stores  
-since the sequential programming model will ensure the right things  
-happens.
+ 	FIND_PTE
+ 	andc.	r13,r13,r11		/* Check permission */
+-	bne	2f			/* Bail if permission mismach */
 
-- k
+ #ifdef CONFIG_PTE_64BIT
+-	lwz	r13, 0(r12)
++#ifdef CONFIG_SMP
++	subf	r10, r11, r12		/* create false data dep */
++	lwzx	r13, r11, r10		/* Get upper pte bits */
++#else
++	lwz	r13, 0(r12)		/* Get upper pte bits */
+ #endif
++#endif
++
++	bne	2f			/* Bail if permission/valid mismach */
+
+-	 /* Jump to common tlb load */
++	/* Jump to common tlb load */
+ 	b	finish_tlb_load
+ 2:
+ 	/* The bailout.  Restore registers to pre-exception conditions
+@@ -640,6 +646,16 @@ interrupt_base:
+
+ 	FIND_PTE
+ 	andc.	r13,r13,r11		/* Check permission */
++
++#ifdef CONFIG_PTE_64BIT
++#ifdef CONFIG_SMP
++	subf	r10, r11, r12		/* create false data dep */
++	lwzx	r13, r11, r10		/* Get upper pte bits */
++#else
++	lwz	r13, 0(r12)		/* Get upper pte bits */
++#endif
++#endif
++
+ 	bne	2f			/* Bail if permission mismach */
+
+ #ifdef CONFIG_PTE_64BIT
+@@ -702,7 +718,7 @@ interrupt_base:
+ /*
+  * Both the instruction and data TLB miss get to this
+  * point to load the TLB.
+- *	r10 - EA of fault
++ *	r10 - available to use
+  *	r11 - TLB (info from Linux PTE)
+  *	r12 - available to use
+  *	r13 - upper bits of PTE (if PTE_64BIT) or available to use
+-- 
+1.5.5.1
