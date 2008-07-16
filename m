@@ -1,11 +1,11 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Date: Wed, 16 Jul 2008 07:39:13 -0400
+Date: Wed, 16 Jul 2008 07:50:25 -0400
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: fkan@amcc.com
-Subject: Re: [PATCH] Add AMCC Arches DTS
-Message-ID: <20080716073913.100d259a@zod.rchland.ibm.com>
-In-Reply-To: <1216186476-28018-1-git-send-email-fkan@amcc.com>
-References: <1216186476-28018-1-git-send-email-fkan@amcc.com>
+Subject: Re: [PATCH] Add AMCC Arches 460GT eval board support to platforms/44x
+Message-ID: <20080716075025.0bca152c@zod.rchland.ibm.com>
+In-Reply-To: <1216186406-27993-1-git-send-email-fkan@amcc.com>
+References: <1216186406-27993-1-git-send-email-fkan@amcc.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallard@amcc.com>,
@@ -19,93 +19,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 15 Jul 2008 22:34:36 -0700
+On Tue, 15 Jul 2008 22:33:26 -0700
 fkan@amcc.com wrote:
 
 > From: Victor Gallardo <vgallard@amcc.com>
-> 
-> ppc4xx: Add AMCC Arches DTS
-> 
+>=20
+> ppc4xx: Add AMCC Arches 460GT eval board support=20
+>=20
 > Signed-off-by: Victor Gallardo <vgallard@amcc.com>
+
+=46rom what I can tell, you don't even need this patch or the defconfig.
+Nothing differs at this point from Glacier other than the DTS.  Since
+U-Boot is your loader, it should be able to pass the different DTS to a
+kernel that supports Cayonlands and have no issues.
+
 > ---
->  arch/powerpc/boot/dts/arches.dts |  522 ++++++++++++++++++++++++++++++++++++++
->  1 files changed, 522 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/arches.dts
-> 
-> diff --git a/arch/powerpc/boot/dts/arches.dts b/arch/powerpc/boot/dts/arches.dts
+>  arch/powerpc/platforms/44x/Kconfig  |   18 ++++++++
+>  arch/powerpc/platforms/44x/Makefile |    1 +
+>  arch/powerpc/platforms/44x/arches.c |   76 +++++++++++++++++++++++++++++=
+++++++
+>  3 files changed, 95 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/44x/arches.c
+>=20
+> diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/=
+44x/Kconfig
+> index 6abe913..95d1217 100644
+> --- a/arch/powerpc/platforms/44x/Kconfig
+> +++ b/arch/powerpc/platforms/44x/Kconfig
+> @@ -77,6 +77,16 @@ config CANYONLANDS
+>  	help
+>  	  This option enables support for the AMCC PPC460EX evaluation board.
+>=20
+> +config ARCHES
+> +	bool "Arches"
+> +	depends on 44x
+> +	default n
+> +	select 460GT
+> +	select PCI
+> +	select PPC4xx_PCI_EXPRESS
+> +	help
+> +	  This option enables support for the AMCC PPC460GT Arches board.
+
+If you do want to have explicit support for Arches, that's fine.  Look
+at how Yosemite is supported.  It just reuses Bamboo.  You could do the
+same.
+
+>  config YOSEMITE
+>  	bool "Yosemite"
+>  	depends on 44x
+> @@ -149,6 +159,14 @@ config 460EX
+>  	select IBM_NEW_EMAC_ZMII
+>  	select IBM_NEW_EMAC_TAH
+>=20
+> +config 460GT
+> +	bool
+> +	select PPC_FPU
+> +	select IBM_NEW_EMAC_EMAC4
+> +	select IBM_NEW_EMAC_RGMII
+> +	select IBM_NEW_EMAC_ZMII
+> +	select IBM_NEW_EMAC_TAH
+
+I don't see a reason to add this at all.  460EX and 460GT select the
+same set of options.
+
+>  # 44x errata/workaround config symbols, selected by the CPU models above
+>  config IBM440EP_ERR42
+>  	bool
+> diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms=
+/44x/Makefile
+> index 774165f..86a4823 100644
+> --- a/arch/powerpc/platforms/44x/Makefile
+> +++ b/arch/powerpc/platforms/44x/Makefile
+> @@ -9,3 +9,4 @@ obj-$(CONFIG_RAINIER)	+=3D rainier.o
+>  obj-$(CONFIG_WARP)	+=3D warp.o
+>  obj-$(CONFIG_WARP)	+=3D warp-nand.o
+>  obj-$(CONFIG_CANYONLANDS) +=3D canyonlands.o
+> +obj-$(CONFIG_ARCHES)	+=3D arches.o
+
+Here you would just have:
+
+obj-$(CONFIG_ARCHES) +=3D cayonlands.o
+
+> diff --git a/arch/powerpc/platforms/44x/arches.c b/arch/powerpc/platforms=
+/44x/arches.c
 > new file mode 100644
-> index 0000000..459cec2
+> index 0000000..6d6aa66
 > --- /dev/null
-> +++ b/arch/powerpc/boot/dts/arches.dts
-> @@ -0,0 +1,522 @@
-> +/*
-> + * Device Tree Source for AMCC Arches (dual 460GT board)
-> + *
-> + * (C) Copyright 2008
-> + * Victor Gallardo, Applied Micro Circuits Corp., vgallardo@amcc.com.
-> + * Adam Graham, Applied Micro Circuits Corp., agraham@amcc.com.
-> + *
-> + * Based on the glacier.dts file
-> + * Stefan Roese <sr@denx.de>
-> + * Copyright 2008 DENX Software Engineering
-> + *
-> + * See file CREDITS for list of people who contributed to this
-> + * project.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License as
-> + * published by the Free Software Foundation; either version 2 of
-> + * the License, or (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-> + * MA 02111-1307 USA
-> + */
-> +
-> +/ {
+> +++ b/arch/powerpc/platforms/44x/arches.c
 
-Could you convert this to a dts-v1 file please?  All the in-tree DTS
-files are dts-v1 and I'd very much like to keep it that way.
-
-> +	#address-cells = <2>;
-> +	#size-cells = <1>;
-> +	model = "amcc,arches";
-> +	compatible = "amcc,arches";
-> +	dcr-parent = <&/cpus/cpu@0>;
-> +
-> +	aliases {
-> +		ethernet0 = &EMAC0;
-> +		ethernet1 = &EMAC1;
-> +		serial0 = &UART0;
-> +		serial1 = &UART1;
-> +	};
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		cpu@0 {
-> +			device_type = "cpu";
-> +			model = "PowerPC,460GT";
-> +			reg = <0>;
-> +			clock-frequency = <0>; /* Filled in by U-Boot */
-> +			timebase-frequency = <0>; /* Filled in by U-Boot */
-> +			i-cache-line-size = <20>;
-> +			d-cache-line-size = <20>;
-> +			i-cache-size = <8000>;
-> +			d-cache-size = <8000>;
-> +			dcr-controller;
-> +			dcr-access-method = "native";
-> +		};
-
-If this is a dual-460GT, why is there only one CPU node listed?  Is it
-simply because Linux will only see one CPU as it is an AMP
-configuration?
+And then you don't need this file at all.  Just add a
+"amcc,canyonlands" string to your root node compatible property.
 
 josh
