@@ -1,14 +1,28 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910807160547q28f49865o11ec878d98987329@mail.gmail.com>
-Date: Wed, 16 Jul 2008 08:47:05 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Wolfgang Grandegger" <wg@grandegger.com>
-Subject: Re: [RFC] I2C: fsl-i2c: make device probing configurable via FDT
-In-Reply-To: <487DD1BD.8040701@grandegger.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <487DD1BD.8040701@grandegger.com>
-Cc: Jean Delvare <khali@linux-fr.org>, Linuxppc-dev@ozlabs.org
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EA560DE191
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 22:50:17 +1000 (EST)
+Message-Id: <3C858BBD-6F6C-4539-BA49-AE123AFA5C5E@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: benh@kernel.crashing.org
+In-Reply-To: <1216206824.7740.172.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [git pull] Please pull from powerpc.git merge branch
+Date: Wed, 16 Jul 2008 07:48:54 -0500
+References: <1216172043.7740.136.camel@pasglop>
+	<20080716042042.GA13212@redhat.com>
+	<200807161051.12545.arnd@arndb.de>
+	<1216206824.7740.172.camel@pasglop>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Dave Jones <davej@redhat.com>,
+	akpm <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,18 +32,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/16/08, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> Currently, the I2C buses are probed for HWMON I2C devices, which might
->  not be acceptable in same cases. This patch makes device probing
->  configurable through the property "probe" of the FDT I2C device node:
 
-All this patch seems to be doing is removing class I2C_CLASS_HWMON via
-a device tree flag, PROBE.
+On Jul 16, 2008, at 6:13 AM, Benjamin Herrenschmidt wrote:
 
-Why do you need to do this? The OF conversion patch that is working
-its way through the system lets you put the address of the device into
-the device tree node. Probing shouldn't be necessary at all.
+> On Wed, 2008-07-16 at 10:51 +0200, Arnd Bergmann wrote:
+>> On Wednesday 16 July 2008, Dave Jones wrote:
+>>> arch/powerpc/platforms/built-in.o: In function `ep8248e_mdio_probe':
+>>> /builddir/build/BUILD/kernel-2.6.26/linux-2.6.26.ppc/arch/powerpc/ 
+>>> platforms/82xx/ep8248e.c:129: undefined reference to  
+>>> `alloc_mdio_bitbang'
+>>> /builddir/build/BUILD/kernel-2.6.26/linux-2.6.26.ppc/arch/powerpc/ 
+>>> platforms/82xx/ep8248e.c:143: undefined reference to  
+>>> `mdiobus_register'
+>>
+>> FS_ENET and EP8248E both select MDIO_BITBANG, but not PHYLIB or  
+>> MII, which
+>> looks broken to me.
+>>
+>> Also, I think it would be useful to split out the bitbang
+>> driver from ep8248e.c, so that you can build it as a loadable
+>> module if you want to have PHYLIB loadable.
+>
+> On that note... I already run it through an autobuilder with a bunch  
+> of
+> configs before uploading (though obviously not this one). Kumar, can  
+> you
+> send me 2 or 3 configs you believe cover a reasonable range of the fsl
+> stuff that I could stick into my list for next time ?
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+For e500/85xx use the mpc85xx_defconfig that is in the kernel.  I want  
+to add a ppc6xx_defconfig to cover all 6xx based platforms that are  
+reasonable (all that are cache coherent to it will exclude 51xx).
+
+We are using mpc885_ads_defconfig for 8xx right now.
+
+- k
