@@ -2,14 +2,14 @@ Return-Path: <fkan@amcc.com>
 Received: from svdc-dhcp-10-66-6-110.amcc.com (unknown [76.195.33.70])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D6C11DDED3
+	by ozlabs.org (Postfix) with ESMTPS id E444CDDED3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Jul 2008 15:56:22 +1000 (EST)
+	Wed, 16 Jul 2008 15:56:23 +1000 (EST)
 From: fkan@amcc.com
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] Add AMCC Arches 460GT eval board support to platforms/44x
-Date: Tue, 15 Jul 2008 22:33:26 -0700
-Message-Id: <1216186406-27993-1-git-send-email-fkan@amcc.com>
+Subject: [PATCH] Add AMCC Arches DTS
+Date: Tue, 15 Jul 2008 22:34:36 -0700
+Message-Id: <1216186476-28018-1-git-send-email-fkan@amcc.com>
 Cc: Victor Gallardo <vgallard@amcc.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,75 +23,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 From: Victor Gallardo <vgallard@amcc.com>
 
-ppc4xx: Add AMCC Arches 460GT eval board support 
+ppc4xx: Add AMCC Arches DTS
 
 Signed-off-by: Victor Gallardo <vgallard@amcc.com>
 ---
- arch/powerpc/platforms/44x/Kconfig  |   18 ++++++++
- arch/powerpc/platforms/44x/Makefile |    1 +
- arch/powerpc/platforms/44x/arches.c |   76 +++++++++++++++++++++++++++++++++++
- 3 files changed, 95 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/44x/arches.c
+ arch/powerpc/boot/dts/arches.dts |  522 ++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 522 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/arches.dts
 
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 6abe913..95d1217 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -77,6 +77,16 @@ config CANYONLANDS
- 	help
- 	  This option enables support for the AMCC PPC460EX evaluation board.
- 
-+config ARCHES
-+	bool "Arches"
-+	depends on 44x
-+	default n
-+	select 460GT
-+	select PCI
-+	select PPC4xx_PCI_EXPRESS
-+	help
-+	  This option enables support for the AMCC PPC460GT Arches board.
-+
- config YOSEMITE
- 	bool "Yosemite"
- 	depends on 44x
-@@ -149,6 +159,14 @@ config 460EX
- 	select IBM_NEW_EMAC_ZMII
- 	select IBM_NEW_EMAC_TAH
- 
-+config 460GT
-+	bool
-+	select PPC_FPU
-+	select IBM_NEW_EMAC_EMAC4
-+	select IBM_NEW_EMAC_RGMII
-+	select IBM_NEW_EMAC_ZMII
-+	select IBM_NEW_EMAC_TAH
-+
- # 44x errata/workaround config symbols, selected by the CPU models above
- config IBM440EP_ERR42
- 	bool
-diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-index 774165f..86a4823 100644
---- a/arch/powerpc/platforms/44x/Makefile
-+++ b/arch/powerpc/platforms/44x/Makefile
-@@ -9,3 +9,4 @@ obj-$(CONFIG_RAINIER)	+= rainier.o
- obj-$(CONFIG_WARP)	+= warp.o
- obj-$(CONFIG_WARP)	+= warp-nand.o
- obj-$(CONFIG_CANYONLANDS) += canyonlands.o
-+obj-$(CONFIG_ARCHES)	+= arches.o
-diff --git a/arch/powerpc/platforms/44x/arches.c b/arch/powerpc/platforms/44x/arches.c
+diff --git a/arch/powerpc/boot/dts/arches.dts b/arch/powerpc/boot/dts/arches.dts
 new file mode 100644
-index 0000000..6d6aa66
+index 0000000..459cec2
 --- /dev/null
-+++ b/arch/powerpc/platforms/44x/arches.c
-@@ -0,0 +1,76 @@
++++ b/arch/powerpc/boot/dts/arches.dts
+@@ -0,0 +1,522 @@
 +/*
-+ * Arches board specific routines
++ * Device Tree Source for AMCC Arches (dual 460GT board)
 + *
 + * (C) Copyright 2008
 + * Victor Gallardo, Applied Micro Circuits Corp., vgallardo@amcc.com.
 + * Adam Graham, Applied Micro Circuits Corp., agraham@amcc.com.
 + *
-+ * Based on the Canyonlands code by
++ * Based on the glacier.dts file
 + * Stefan Roese <sr@denx.de>
 + * Copyright 2008 DENX Software Engineering
 + *
@@ -113,52 +66,498 @@ index 0000000..6d6aa66
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 + * MA 02111-1307 USA
 + */
-+#include <linux/init.h>
-+#include <linux/of_platform.h>
 +
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/time.h>
-+#include <asm/uic.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/ppc4xx.h>
++/ {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	model = "amcc,arches";
++	compatible = "amcc,arches";
++	dcr-parent = <&/cpus/cpu@0>;
 +
-+static __initdata struct of_device_id arches_of_bus[] = {
-+	{ .compatible = "ibm,plb4", },
-+	{ .compatible = "ibm,opb", },
-+	{ .compatible = "ibm,ebc", },
-+	{},
-+};
++	aliases {
++		ethernet0 = &EMAC0;
++		ethernet1 = &EMAC1;
++		serial0 = &UART0;
++		serial1 = &UART1;
++	};
 +
-+static int __init arches_device_probe(void)
-+{
-+	of_platform_bus_probe(NULL, arches_of_bus, NULL);
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+	return 0;
-+}
-+machine_device_initcall(arches, arches_device_probe);
++		cpu@0 {
++			device_type = "cpu";
++			model = "PowerPC,460GT";
++			reg = <0>;
++			clock-frequency = <0>; /* Filled in by U-Boot */
++			timebase-frequency = <0>; /* Filled in by U-Boot */
++			i-cache-line-size = <20>;
++			d-cache-line-size = <20>;
++			i-cache-size = <8000>;
++			d-cache-size = <8000>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
 +
-+static int __init arches_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
++	memory {
++		device_type = "memory";
++		reg = <0 0 0>; /* Filled in by U-Boot */
++	};
 +
-+	if (!of_flat_dt_is_compatible(root, "amcc,arches"))
-+		return 0;
++	UIC0: interrupt-controller0 {
++		compatible = "ibm,uic-460gt","ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++	};
 +
-+	ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
++	UIC1: interrupt-controller1 {
++		compatible = "ibm,uic-460gt","ibm,uic";
++		interrupt-controller;
++		cell-index = <1>;
++		dcr-reg = <0d0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <1e 4 1f 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
 +
-+	return 1;
-+}
++	UIC2: interrupt-controller2 {
++		compatible = "ibm,uic-460gt","ibm,uic";
++		interrupt-controller;
++		cell-index = <2>;
++		dcr-reg = <0e0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <a 4 b 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
 +
-+define_machine(arches) {
-+	.name 				= "Arches",
-+	.probe 				= arches_probe,
-+	.progress 			= udbg_progress,
-+	.init_IRQ 			= uic_init_tree,
-+	.get_irq 			= uic_get_irq,
-+	.restart			= ppc4xx_reset_system,
-+	.calibrate_decr			= generic_calibrate_decr,
++	UIC3: interrupt-controller3 {
++		compatible = "ibm,uic-460gt","ibm,uic";
++		interrupt-controller;
++		cell-index = <3>;
++		dcr-reg = <0f0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <10 4 11 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	SDR0: sdr {
++		compatible = "ibm,sdr-460gt";
++		dcr-reg = <00e 002>;
++	};
++
++	CPR0: cpr {
++		compatible = "ibm,cpr-460gt";
++		dcr-reg = <00c 002>;
++	};
++
++	plb {
++		compatible = "ibm,plb-460gt", "ibm,plb4";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; /* Filled in by U-Boot */
++
++		SDRAM0: sdram {
++			compatible = "ibm,sdram-460gt", "ibm,sdram-405gp";
++			dcr-reg = <010 2>;
++		};
++
++		MAL0: mcmal {
++			compatible = "ibm,mcmal-460gt", "ibm,mcmal2";
++			dcr-reg = <180 62>;
++			num-tx-chans = <4>;
++			num-rx-chans = <20>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-parent = <&UIC2>;
++			interrupts = <	/*TXEOB*/ 6 4
++					/*RXEOB*/ 7 4
++					/*SERR*/  3 4
++					/*TXDE*/  4 4
++					/*RXDE*/  5 4>;
++			desc-base-addr-high = <8>;
++		};
++
++		POB0: opb {
++			compatible = "ibm,opb-460gt", "ibm,opb";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges = <b0000000 4 b0000000 50000000>;
++			clock-frequency = <0>; /* Filled in by U-Boot */
++
++			EBC0: ebc {
++				compatible = "ibm,ebc-460gt", "ibm,ebc";
++				dcr-reg = <012 2>;
++				#address-cells = <2>;
++				#size-cells = <1>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				/* ranges property is supplied by U-Boot */
++				interrupts = <6 4>;
++				interrupt-parent = <&UIC1>;
++
++				nor_flash@0,0 {
++					compatible = "amd,s29gl256n", "cfi-flash";
++					bank-width = <2>;
++					reg = <0 000000 4000000>;
++					#address-cells = <1>;
++					#size-cells = <1>;
++					partition@0 {
++						label = "kernel";
++						reg = <0 1e0000>;
++					};
++					partition@1e0000 {
++						label = "dtb";
++						reg = <1e0000 20000>;
++					};
++					partition@200000 {
++						label = "ramdisk";
++						reg = <200000 1400000>;
++					};
++					partition@1600000 {
++						label = "jffs2";
++						reg = <1600000 400000>;
++					};
++					partition@1a00000 {
++						label = "user";
++						reg = <1a00000 2560000>;
++					};
++					partition@3f60000 {
++						label = "env";
++						reg = <3f60000 40000>;
++					};
++					partition@3fa0000 {
++						label = "u-boot";
++						reg = <3fa0000 60000>;
++					};
++				};
++			};
++
++			UART0: serial@ef600300 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600300 8>;
++				virtual-reg = <ef600300>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC1>;
++				interrupts = <1 4>;
++			};
++
++			UART1: serial@ef600400 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600400 8>;
++				virtual-reg = <ef600400>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC0>;
++				interrupts = <1 4>;
++			};
++
++			UART2: serial@ef600500 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600500 8>;
++				virtual-reg = <ef600500>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC1>;
++				interrupts = <1d 4>;
++			};
++
++			UART3: serial@ef600600 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600600 8>;
++				virtual-reg = <ef600600>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC1>;
++				interrupts = <1e 4>;
++			};
++
++			IIC0: i2c@ef600700 {
++				compatible = "ibm,iic-460gt", "ibm,iic";
++				reg = <ef600700 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++
++			IIC1: i2c@ef600800 {
++				compatible = "ibm,iic-460gt", "ibm,iic";
++				reg = <ef600800 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <3 4>;
++			};
++
++			ZMII0: emac-zmii@ef600d00 {
++				compatible = "ibm,zmii-460gt", "ibm,zmii";
++				reg = <ef600d00 c>;
++			};
++
++			RGMII0: emac-rgmii@ef601500 {
++				compatible = "ibm,rgmii-460gt", "ibm,rgmii";
++				reg = <ef601500 8>;
++				has-mdio;
++			};
++
++			RGMII1: emac-rgmii@ef601600 {
++				compatible = "ibm,rgmii-460gt", "ibm,rgmii";
++				reg = <ef601600 8>;
++				has-mdio;
++			};
++
++			TAH0: emac-tah@ef601350 {
++				compatible = "ibm,tah-460gt", "ibm,tah";
++				reg = <ef601350 30>;
++			};
++
++			TAH1: emac-tah@ef601450 {
++				compatible = "ibm,tah-460gt", "ibm,tah";
++				reg = <ef601450 30>;
++			};
++
++			EMAC0: ethernet@ef600e00 {
++				device_type = "network";
++				compatible = "ibm,emac-460gt", "ibm,emac4";
++				interrupt-parent = <&EMAC0>;
++				interrupts = <0 1>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = </*Status*/ 0 &UIC2 10 4
++						 /*Wake*/   1 &UIC2 14 4>;
++				reg = <ef600e00 70>;
++				local-mac-address = [000000000000]; /* Filled in by U-Boot */
++				mal-device = <&MAL0>;
++				mal-tx-channel = <0>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <2328>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rgmii";
++				phy-map = <00000000>;
++				rgmii-device = <&RGMII0>;
++				rgmii-channel = <0>;
++				tah-device = <&TAH0>;
++				tah-channel = <0>;
++				has-inverted-stacr-oc;
++				has-new-stacr-staopc;
++			};
++
++			EMAC1: ethernet@ef600f00 {
++				device_type = "network";
++				compatible = "ibm,emac-460gt", "ibm,emac4";
++				interrupt-parent = <&EMAC1>;
++				interrupts = <0 1>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = </*Status*/ 0 &UIC2 11 4
++						 /*Wake*/   1 &UIC2 15 4>;
++				reg = <ef600f00 70>;
++				local-mac-address = [000000000000]; /* Filled in by U-Boot */
++				mal-device = <&MAL0>;
++				mal-tx-channel = <1>;
++				mal-rx-channel = <8>;
++				cell-index = <1>;
++				max-frame-size = <2328>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rgmii";
++				phy-map = <00000000>;
++				rgmii-device = <&RGMII0>;
++				rgmii-channel = <1>;
++				tah-device = <&TAH1>;
++				tah-channel = <1>;
++				has-inverted-stacr-oc;
++				has-new-stacr-staopc;
++				mdio-device = <&EMAC0>;
++			};
++
++			EMAC2: ethernet@ef601100 {
++				device_type = "network";
++				compatible = "ibm,emac-460gt", "ibm,emac4";
++				interrupt-parent = <&EMAC2>;
++				interrupts = <0 1>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = </*Status*/ 0 &UIC2 12 4
++						 /*Wake*/   1 &UIC2 16 4>;
++				reg = <ef601100 70>;
++				local-mac-address = [000000000000]; /* Filled in by U-Boot */
++				mal-device = <&MAL0>;
++				mal-tx-channel = <2>;
++				mal-rx-channel = <10>;
++				cell-index = <2>;
++				max-frame-size = <2328>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rgmii";
++				phy-map = <00000000>;
++				rgmii-device = <&RGMII1>;
++				rgmii-channel = <0>;
++				has-inverted-stacr-oc;
++				has-new-stacr-staopc;
++				mdio-device = <&EMAC0>;
++			};
++
++			EMAC3: ethernet@ef601200 {
++				device_type = "network";
++				compatible = "ibm,emac-460gt", "ibm,emac4";
++				interrupt-parent = <&EMAC3>;
++				interrupts = <0 1>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = </*Status*/ 0 &UIC2 13 4
++						 /*Wake*/   1 &UIC2 17 4>;
++				reg = <ef601200 70>;
++				local-mac-address = [000000000000]; /* Filled in by U-Boot */
++				mal-device = <&MAL0>;
++				mal-tx-channel = <3>;
++				mal-rx-channel = <18>;
++				cell-index = <3>;
++				max-frame-size = <2328>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rgmii";
++				phy-map = <00000000>;
++				rgmii-device = <&RGMII1>;
++				rgmii-channel = <1>;
++				has-inverted-stacr-oc;
++				has-new-stacr-staopc;
++				mdio-device = <&EMAC0>;
++			};
++		};
++
++		PCIX0: pci@c0ec00000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb-pcix-460gt", "ibm,plb-pcix";
++			primary;
++			large-inbound-windows;
++			enable-msi-hole;
++			reg = <c 0ec00000   8	/* Config space access */
++			       0 0 0		/* no IACK cycles */
++			       c 0ed00000   4   /* Special cycles */
++			       c 0ec80000 100	/* Internal registers */
++			       c 0ec80100  fc>;	/* Internal messaging registers */
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed
++			 */
++			ranges = <02000000 0 80000000 0000000d 80000000 0 80000000
++				  01000000 0 00000000 0000000c 08000000 0 00010000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <42000000 0 0 0 0 0 80000000>;
++
++			/* This drives busses 0 to 0x3f */
++			bus-range = <0 3f>;
++
++			/* All PCI interrupts are routed to ext IRQ 2 -> UIC1-0 */
++			interrupt-map-mask = <0000 0 0 0>;
++			interrupt-map = < 0000 0 0 0 &UIC1 0 8 >;
++		};
++
++		PCIE0: pciex@d00000000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb-pciex-460ex", "ibm,plb-pciex";
++			primary;
++			port = <0>; /* port number */
++			reg = <d 00000000 20000000	/* Config space access */
++			       c 08010000 00001000>;	/* Registers */
++			dcr-reg = <100 020>;
++			sdr-base = <300>;
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed
++			 */
++			ranges = <02000000 0 80000000 0000000e 00000000 0 80000000
++				  01000000 0 00000000 0000000f 80000000 0 00010000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <42000000 0 0 0 0 0 80000000>;
++
++			/* This drives busses 40 to 0x7f */
++			bus-range = <40 7f>;
++
++			/* Legacy interrupts (note the weird polarity, the bridge seems
++			 * to invert PCIe legacy interrupts).
++			 * We are de-swizzling here because the numbers are actually for
++			 * port of the root complex virtual P2P bridge. But I want
++			 * to avoid putting a node for it in the tree, so the numbers
++			 * below are basically de-swizzled numbers.
++			 * The real slot is on idsel 0, so the swizzling is 1:1
++			 */
++			interrupt-map-mask = <0000 0 0 7>;
++			interrupt-map = <
++				0000 0 0 1 &UIC3 c 4 /* swizzled int A */
++				0000 0 0 2 &UIC3 d 4 /* swizzled int B */
++				0000 0 0 3 &UIC3 e 4 /* swizzled int C */
++				0000 0 0 4 &UIC3 f 4 /* swizzled int D */>;
++		};
++
++		PCIE1: pciex@d20000000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb-pciex-460ex", "ibm,plb-pciex";
++			primary;
++			port = <1>; /* port number */
++			reg = <d 20000000 20000000	/* Config space access */
++			       c 08011000 00001000>;	/* Registers */
++			dcr-reg = <120 020>;
++			sdr-base = <340>;
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed
++			 */
++			ranges = <02000000 0 80000000 0000000e 80000000 0 80000000
++				  01000000 0 00000000 0000000f 80010000 0 00010000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <42000000 0 0 0 0 0 80000000>;
++
++			/* This drives busses 80 to 0xbf */
++			bus-range = <80 bf>;
++
++			/* Legacy interrupts (note the weird polarity, the bridge seems
++			 * to invert PCIe legacy interrupts).
++			 * We are de-swizzling here because the numbers are actually for
++			 * port of the root complex virtual P2P bridge. But I want
++			 * to avoid putting a node for it in the tree, so the numbers
++			 * below are basically de-swizzled numbers.
++			 * The real slot is on idsel 0, so the swizzling is 1:1
++			 */
++			interrupt-map-mask = <0000 0 0 7>;
++			interrupt-map = <
++				0000 0 0 1 &UIC3 10 4 /* swizzled int A */
++				0000 0 0 2 &UIC3 11 4 /* swizzled int B */
++				0000 0 0 3 &UIC3 12 4 /* swizzled int C */
++				0000 0 0 4 &UIC3 13 4 /* swizzled int D */>;
++		};
++	};
 +};
 -- 
 1.5.5
