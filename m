@@ -1,14 +1,15 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 3D56CDE1B8
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 04:03:00 +1000 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] dtc: supply a definition for YYRHSLOC if there isn't one
-Date: Wed, 16 Jul 2008 13:53:57 -0400
-Message-Id: <1216230837-17557-1-git-send-email-paul.gortmaker@windriver.com>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, jdl@jdl.com,
-	david@gibson.dropbear.id.au
+Return-Path: <wg@grandegger.com>
+Message-ID: <487E57F6.7020602@grandegger.com>
+Date: Wed, 16 Jul 2008 22:20:06 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC] I2C: fsl-i2c: make device probing configurable via FDT
+References: <487DD1BD.8040701@grandegger.com>
+	<20080716142436.GD24045@secretlab.ca>
+In-Reply-To: <20080716142436.GD24045@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Jean Delvare <khali@linux-fr.org>, Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,30 +19,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It seems that some machines, like a default RHEL4 install, will
-not have a definition for YYRHSLOC, and that prevents building
-dtc.  This supplies what appears to be the standard definition
-for it in the event that the host system does not have it defined.
+Grant Likely wrote:
+> On Wed, Jul 16, 2008 at 12:47:25PM +0200, Wolfgang Grandegger wrote:
+>> Currently, the I2C buses are probed for HWMON I2C devices, which might
+>> not be acceptable in same cases. This patch makes device probing
+>> configurable through the property "probe" of the FDT I2C device node:
+>>
+>>       i2c@3000 {
+>>            ...
+>>            compatible = "fsl-i2c";
+>>            probe;
+>> 	    ...
+>>        };
+> 
+> You need to add documentation to booting-without-of.txt about what the
+> 'probe' property means.  Also, 'probe' is a pretty generic term being
+> used in an i2c specific context.  Can you prefix it with i2c or
+> something to protect the namespace?  'i2c-probe' perhaps?
 
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- srcpos.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Of course, no problem. I'm also aware of booting-without-of.txt but 
+first I wanted to bring up the problem-
+> 
+>> Assuming that systems using fsl-i2c should have proper platform data,
+>> probing is disabled by default. Unfortunately, that's not the case and
+>> various DTS files would require to be updated.
+> 
+> This comment doesn't seem to be correct.
 
-diff --git a/srcpos.h b/srcpos.h
-index e17c7c0..fa4d001 100644
---- a/srcpos.h
-+++ b/srcpos.h
-@@ -39,6 +39,10 @@ typedef struct YYLTYPE {
-     struct dtc_file *file;
- } YYLTYPE;
- 
-+#if ! defined(YYRHSLOC)
-+#define YYRHSLOC(Rhs, K) ((Rhs)[K])
-+#endif
-+
- #define YYLTYPE_IS_DECLARED	1
- #define YYLTYPE_IS_TRIVIAL	1
- #endif
--- 
-1.5.6.2
+Well, maybe it's due to my bad English. What I wanted to say is that by 
+default probing should be disabled. But that requires various DTS files 
+to be fixed.
+
+> 
+>> ---
+>> arch/powerpc/sysdev/fsl_soc.c |    4 ++++
+>> drivers/i2c/busses/i2c-mpc.c  |   17 ++++++++++++++---
+>> include/linux/fsl_devices.h   |    1 +
+> 
+> This will need to be reworked for current top of tree.  i2c-mpc
+> dependence on fsl_soc.c has been removed.
+
+I kown. Will prepare a new patch a.s.a.p.
+
+Wolfgang.
