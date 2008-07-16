@@ -1,25 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E71FCDE278
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 08:55:59 +1000 (EST)
-Message-Id: <BB883309-0856-4371-BFC3-68E2F54B5B29@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Dave Jones <davej@redhat.com>
-In-Reply-To: <20080716221949.GA18148@redhat.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH] powerpc/ep8248e: Fix compile problem if !CONFIG_FS_ENET
-Date: Wed, 16 Jul 2008 17:55:17 -0500
-References: <Pine.LNX.4.64.0807160838520.14127@blarg.am.freescale.net>
-	<20080716214722.GA6251@ld0162-tx32.am.freescale.net>
-	<20080716215745.GA17093@redhat.com>
-	<37829F82-D71C-4B42-A752-DA86C6F2764D@kernel.crashing.org>
-	<20080716221949.GA18148@redhat.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Add AMCC Arches 460GT eval board support to platforms/44x
+Date: Thu, 17 Jul 2008 00:58:53 +0200
+References: <1216186406-27993-1-git-send-email-fkan@amcc.com>
+	<200807161646.02306.arnd@arndb.de>
+	<20080716154646.GH24045@secretlab.ca>
+In-Reply-To: <20080716154646.GH24045@secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807170058.53599.arnd@arndb.de>
+Cc: Victor Gallardo <vgallard@amcc.com>, fkan@amcc.com,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,41 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 16 July 2008, Grant Likely wrote:
+>=20
+> > Shouldn't it be enough to have a common compatible value in each
+> > of these boards, e.g. "amcc,generic-ppc44x" and then just ignore the
+> > specific type unless you need to do something special?
+>=20
+> This is bad for the same reason that "amcc,44x-<blah>" compatible values
+> are bad in device nodes. =A0The definition of '*-44x-*' changes over time=
+ as
+> new parts are added. =A0Compatible values should always reflect an exact
+> part number.
 
-On Jul 16, 2008, at 5:19 PM, Dave Jones wrote:
+I agree in general, but I also think that all 44x boards should be
+regarded as the same machine time, in the same way that all powermacs
+are detected as compatible with "Power Macintosh" or "MacRISC", or
+how all sorts of serial ports claim compatibility with i8250.
 
-> On Wed, Jul 16, 2008 at 05:10:29PM -0500, Kumar Gala wrote:
->>
->> On Jul 16, 2008, at 4:57 PM, Dave Jones wrote:
->>
->>> On Wed, Jul 16, 2008 at 04:47:23PM -0500, Scott Wood wrote:
->>>> On Wed, Jul 16, 2008 at 08:39:12AM -0500, Kumar Gala wrote:
->>>>> If we don't enable FS_ENET we get build issues:
->>>>>
->>>>> arch/powerpc/platforms/built-in.o: In function  
->>>>> `ep8248e_mdio_probe':
->>>>> arch/powerpc/platforms/82xx/ep8248e.c:129: undefined reference to
->>>>> `alloc_mdio_bitbang'
->>>>> arch/powerpc/platforms/82xx/ep8248e.c:143: undefined reference to
->>>>> `mdiobus_register'
->>>>
->>>> How is this possible?  CONFIG_EP8248E selects CONFIG_MDIO_BITBANG.
->>>
->>> If CONFIG_PHYLIB=m however, that doesn't make any difference,  
->>> because
->>> vmlinuz is trying to use a symbol which now lives in a module.
->>
->> The mdiobus_register make sense, I'm not sure get why
->> alloc_mdio_bitbang is undefined.
->
-> Erm, same reason.  it's built into phy.o, which ends up in the module,
-> not the vmlinuz.
->
-> (also, it doesn't look like it's exported even if it was built-in?)
+=46or classic SOCs like 4xx or 52xx, the SOC familiy more or less defines
+the platform, and all the details about peripherals can be expressed
+in the device tree elsewhere.
 
-It looks like the simplest solution at this point is to  
-unconditionally select the PHYLIB for this board.  We should look at  
-moving the low level mdio bitbang ops out so they can be built as a  
-module.
+If one board is so different that you need a separate board setup
+in the kernel, it should simply not claim compatibility with the
+SOC platform.
 
-- k
+	Arnd <><
