@@ -1,20 +1,19 @@
-Return-Path: <rsass@uncc.edu>
-Received: from rsass-homer.uncc.edu (rsass-homer.uncc.edu [152.15.91.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A5ABDDE3D0
+Return-Path: <sprasad@bivio.net>
+Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id A3F41DE05F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jul 2008 00:47:49 +1000 (EST)
-Message-Id: <200807161447.m6GElde4032109@rsass-homer.uncc.edu>
-To: Neeraj Garg <neerajg@cdac.in>
-Subject: Re: Booting ML405 (Kernel panic - not syncing: No init found) 
-In-reply-to: <487C4326.9000000@cdac.in> 
-References: <48744475.2080605@cdac.in> <20080709143318.GB26524@secretlab.ca>
-	<20080709160659.EE3F6E28065@mail118-va3.bigfish.com>
-	<487C4326.9000000@cdac.in>
-Date: Wed, 16 Jul 2008 10:47:39 -0400
-From: Ron Sass <rsass@uncc.edu>
-Cc: John Linn <John.Linn@xilinx.com>, linuxppc-embedded@ozlabs.org
+	Thu, 17 Jul 2008 04:35:21 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: linux boot sequence
+Date: Wed, 16 Jul 2008 11:34:54 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D702B645F1@corpexc01.corp.networkrobots.com>
+In-Reply-To: <D3C541E264C021479BFB60B3B790C0FB497182@etoilenoire.STARWARS.local>
+References: <D3C541E264C021479BFB60B3B790C0FB497182@etoilenoire.STARWARS.local>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: "Rami WEHBI" <rwehbi@wirecom-tech.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,184 +24,101 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Rami,
 
-Hmmm... I think you've got a problem with your ramdisk.  There are
-a couple of issues but these alone don't explain your helloworld test.
+Please make sure to copy the list as well.
 
-1.  busybox should be set to root not neeraj 
-2.  you need to setuid busybox for some apps to run
-    (chmod 4775 bin/busybox so that it is srwxrwxr-x-r)
-3.  I would be wary of Yaghmour's text... it is a little dated
-    and if I remember correctly, he uses some regular expressions
-    to copy "just" the libraries you need to lib; but with
-    newer versions of gcc/glibc these regular expressions
-    don't catch everything
+OF - Open firmware. I am not sure which version of Linux kernel you are =
+using, and which boot loader. Lately it is all OF based, however it is =
+supported in the form of device tree blob/structure. For more =
+information read booting-without-of.txt in Documentation/powerpc.
 
-Two questions:
+U-Boot updates the detected memory in the dtb you loaded, so that when =
+kernel reads it, correct information is provided.
 
-Can you tell me exactly what your cross-compile command-line looks
-like?  How are compiling helloworld?
+There is no auto-detect option in kernel. You need to write your own =
+code at the exact location it needs to identify the size of memory. =
+Typically this is passed to the kernel either through DTB or kernel =
+arguments.
 
-How are you creating the ramdisk?  How do you go from directory
-structure to ramdisk.image.gz?
+Good Luck.
 
-Ron
+- Siva
 
-> 
-> Hi,
-> 
-> --Ron,Permissions are -rwxrwxr-x for all and owner is neeraj itself. And 
-> shared libraries are present in lib/ . Now I have placed helloworld.elf 
-> (using printf to print helloworld, and linked with -static option) in 
-> bin/ and changed init=/bin/helloworld , again it says cannot execute 
-> /bin/helloworld.
-> 
-> --John, we are using our custom hardware board, not exactly ML405 but 
-> its more or less similar to ML405, so I cannot use bit file provided for 
-> ML405. Till now we were using xilkernel, but now onward we are planning 
-> to use Linux. For serial console I have no option other than uartlite. 
-> This is how I compiled kernel :
-> 
-> 1) make ARCH=ppc ml405_defconfig
-> 2) patched kernel src with EDK(10.1) , so as to change xparameter.h, and 
-> later made some changed in arch/ppc/boot/simple/embed_config.c and 
-> xparameters.h file.
-> 3) make ARCH=ppc menuconfig , and selected uartlite to be console and 
-> ramdisk as file system.
-> 4) Created ramdisk (as per Building embedded linux, Karim Yaghmour, 
-> however major and minor number for device nodes is similar to ramdisk 
-> provided at git.xilinx.com)
-> 5) I have placed this ramdisk in arch/ppc/boot/images
-> 6) And then issued $make ARCH=ppc CROSS_COMPILE=powerpc-405-linux-gnu- 
-> zImge.initrd
-> 
-> 
-> --I have downloaded   ELDK4.1 and installed it. And when I compile 
-> simple helloworld.c using cross compiler, it says unresolved symbol 
-> 'printf' . Is there anything else to install with ELDK ?
-> 
-> 
-> -------------------------------------------------------------------
-> Neeraj Garg
-> 
-> 
-> 
-> In addition to what John wrote, I would also investigate your ramdisk.
-> I would be sure to check that you have the permissions/owner set correctly
-> on bin/busybox.  Also, I would double check that, if you compiled busybox
-> with shared libraries, the shared libraries are in the right place
-> on your ramdisk.
-> 
-> 
-> Ron
-> 
->  >
->  > Hi,
->  >
->  > Yes I am using ARCH=ppc (actual line is $make ARCH=ppc
->  > CROSS_COMPILE=powerpc-405-linux-gnu- zImage.initrd ) for this I have
->  > placed ramdisk.image.gz in arch/ppc/boot/images. In case of ARCH=powerpc
->  > I cannot find processor type 405 , in make menuconfig. Thats why i am
->  > using ARCH=ppc.
->  >
-> 
-> --------------060307000300070002040802
-> Content-Type: text/html; charset=ISO-8859-1
-> Content-Transfer-Encoding: 7bit
-> 
-> <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-> <html>
-> <head>
->   <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-> </head>
-> <body bgcolor="#ffffff" text="#000000">
-> Hi,<br>
-> <br>
-> --Ron,Permissions are -rwxrwxr-x for all and owner is neeraj itself.
-> And shared libraries are present in lib/ . Now I have placed
-> helloworld.elf (using printf to print helloworld, and linked with
-> -static option) in bin/ and changed init=/bin/helloworld , again it
-> says cannot execute /bin/helloworld. <br>
-> <br>
-> --John, we are using our custom hardware board, not exactly ML405 but
-> its more or less similar to ML405, so I cannot use bit file provided
-> for ML405. Till now we were using xilkernel, but now onward we are
-> planning to use Linux. For serial console I have no option other than
-> uartlite. This is how I compiled kernel :<br>
-> <br>
-> 1) make ARCH=ppc ml405_defconfig<br>
-> 2) patched kernel src with EDK(10.1) , so as to change xparameter.h,
-> and later made some changed in arch/ppc/boot/simple/embed_config.c and
-> xparameters.h file.<br>
-> 3) make ARCH=ppc menuconfig , and selected uartlite to be console and
-> ramdisk as file system.<br>
-> 4) Created ramdisk (as per Building embedded linux, Karim Yaghmour,
-> however major and minor number for device nodes is similar to ramdisk
-> provided at git.xilinx.com)<br>
-> 5) I have placed this ramdisk in arch/ppc/boot/images<br>
-> 6) And then issued $make ARCH=ppc CROSS_COMPILE=powerpc-405-linux-gnu-
-> zImge.initrd<br>
-> <br>
-> <br>
-> --I have downloaded &nbsp; ELDK4.1 and installed it. And when I compile
-> simple helloworld.c using cross compiler, it says unresolved symbol
-> 'printf' . Is there anything else to install with ELDK ?<br>
-> <br>
-> <br>
-> <div class="moz-signature">
-> <pre>-------------------------------------------------------------------
-> Neeraj Garg
-> </pre>
-> </div>
-> <br>
-> <br>
-> In addition to what John wrote, I would also investigate your ramdisk.
-> <br>
-> I would be sure to check that you have the permissions/owner set
-> correctly
-> <br>
-> on bin/busybox. &nbsp;Also, I would double check that, if you compiled
-> busybox
-> <br>
-> with shared libraries, the shared libraries are in the right place
-> <br>
-> on your ramdisk.<br>
-> <br>
-> <br>
-> Ron
-> <br>
-> <br>
-> &gt; <br>
-> &gt; Hi,
-> <br>
-> &gt; <br>
-> &gt; Yes I am using ARCH=ppc (actual line is $make ARCH=ppc <br>
-> &gt; CROSS_COMPILE=powerpc-405-linux-gnu- zImage.initrd ) for this I
-> have <br>
-> &gt; placed ramdisk.image.gz in arch/ppc/boot/images. In case of
-> ARCH=powerpc <br>
-> &gt; I cannot find processor type 405 , in make menuconfig. Thats why i
-> am <br>
-> &gt; using ARCH=ppc.
-> <br>
-> &gt; <br>
-> <font color="navy" face="Arial" size="2"><span
->  style="font-size: 10pt; font-family: Arial; color: navy;"></span></font>
-> </body>
-> </html>
-> 
-> --------------060307000300070002040802--
-> 
-> 
-> --===============0970715627==
-> Content-Type: text/plain; charset="us-ascii"
-> MIME-Version: 1.0
-> Content-Transfer-Encoding: 7bit
-> Content-Disposition: inline
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> --===============0970715627==--
-> 
+
+
+
+-----Original Message-----
+From: Rami WEHBI [mailto:rwehbi@wirecom-tech.com]=20
+Sent: Monday, July 14, 2008 11:47 PM
+To: Siva Prasad
+Subject: RE: linux boot sequence
+
+
+ what is the OF dtb ??? And how does the bootloader update it ???
+
+ How can I do to set the autodetect option in the kernel ???
+
+
+Best Regards,
+Rami,
+
+
+
+-----Message d'origine-----
+De : Siva Prasad [mailto:sprasad@bivio.net]=20
+Envoy=E9 : vendredi 11 juillet 2008 23:01
+=C0 : Rami WEHBI
+Cc : linuxppc-embedded@ozlabs.org
+Objet : linux boot sequence
+
+
+Well!... You can pass the size as part of the OF memory=3D<>.
+
+Typically your boot loader should detect the amount of memory on the =
+system and update the OF dtb to reflect the available memory.
+
+You may also tweak the kernel yourself to autodetect, instead of reading =
+from the OF. How ever, I would recommend the previous approach.
+
+- Siva
+
+
+Date: Fri, 11 Jul 2008 08:34:54 +0200
+From: "Rami WEHBI" <rwehbi@wirecom-tech.com>
+Subject: linux boot sequence
+To: <linuxppc-embedded@ozlabs.org>
+Message-ID:
+=09
+<D3C541E264C021479BFB60B3B790C0FB497014@etoilenoire.STARWARS.local>
+Content-Type: text/plain; charset=3D"iso-8859-1"
+
+
+Hi all,
+=20
+    I am using the ppc405 and I would like to know, how does linux on =
+this architect detect the available memory size in details !!!
+        is it a parameter passed to linux at startup by the boot loader =
+??
+        is it an automatic detection ?? what are the steps to accomplish =
+this job then ???
+=20
+Best regards to all,
+=20
+Rami
+=20
+
+
+
+Rami WEHBI =09
+Recherche & D?veloppement =09
+T?l :	 +33 2 36 56 86 00=09
+Fax :	 +33 2 36 56 86 01=09
+www.wirecom-tech.com=09
+
+  <http://www.wirecom-tech.com> =09
+
+WIRECOM Technologies
+135, Rue Jacques Charles
+45166 Olivet
+=09
