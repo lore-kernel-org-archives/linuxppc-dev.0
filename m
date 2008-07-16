@@ -1,24 +1,26 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BB01BDEEC3
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 01:28:30 +1000 (EST)
-Date: Thu, 17 Jul 2008 10:27:46 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/6] crypto: talitos - fix GFP flag usage
-Message-Id: <20080717102746.33381e30.kim.phillips@freescale.com>
-In-Reply-To: <D59ED865-85CF-4C1E-9D79-D9DD0DE49505@kernel.crashing.org>
-References: <20080716182215.36c1bd11.kim.phillips@freescale.com>
-	<BDCB5191-EEDE-4046-A741-80E6EF1333CF@kernel.crashing.org>
-	<20080717121758.GA25267@gondor.apana.org.au>
-	<D59ED865-85CF-4C1E-9D79-D9DD0DE49505@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 65802DE213
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 01:42:38 +1000 (EST)
+Message-Id: <C353D587-E029-4C80-A703-D23A8FA889A8@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: benh@kernel.crashing.org
+In-Reply-To: <1216184495.7740.158.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [git pull] Please pull from powerpc.git merge branch
+Date: Wed, 16 Jul 2008 07:46:18 -0500
+References: <1216172043.7740.136.camel@pasglop>
+	<20080716042042.GA13212@redhat.com>
+	<1216184495.7740.158.camel@pasglop>
+Cc: Dave Jones <davej@redhat.com>, akpm <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,27 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Jul 2008 07:26:14 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
 
-> 
-> On Jul 17, 2008, at 7:17 AM, Herbert Xu wrote:
-> 
-> > On Wed, Jul 16, 2008 at 06:33:45PM -0500, Kumar Gala wrote:
-> >>
-> >> On Jul 16, 2008, at 6:22 PM, Kim Phillips wrote:
-> >>
-> >>> use GFP_ATOMIC when necessary; use atomic_t when allocating
-> >>> submit_count.
-> >>
-> >> why?
-> >
-> > You mean why are atomics required? Yes that is a good question.
-> 
-> Yep. the commit message isn't explaining why, just what :)
+On Jul 16, 2008, at 12:01 AM, Benjamin Herrenschmidt wrote:
 
-In honouring requests that don't have the CRYPTO_TFM_REQ_MAY_SLEEP set,
-afaict, it's the standard non-wait variant GFP that drivers use (see
-the ixp4xx driver for e.g.).
+> On Wed, 2008-07-16 at 00:20 -0400, Dave Jones wrote:
+>> On Wed, Jul 16, 2008 at 11:34:03AM +1000, Ben Herrenschmidt wrote:
+>>> Linus,
+>>>
+>>> I apologize in advance for the couple of merge commits in there. I
+>>> merged your tree yesterday in order to fix a (fairly minor)  
+>>> conflict,
+>>> and waited for our autobuilder to test a whole bunch of configs
+>>> overnight before asking you to pull, at which point, sfr informed  
+>>> me of
+>>> a bunch of this time non-trivial conflicts with whatever you  
+>>> pulled in
+>>> the meantime...
+>>>
+>>> So here it is with 2 merge csets at the top, I'll try to do better  
+>>> next
+>>> time. I don't want to rebase or my sub-maintainers will hate me.
+>>>
+>>> So please pull from:
+>>>
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+>>
+>> Boom!
+>>
+>> arch/powerpc/platforms/built-in.o: In function `ep8248e_mdio_probe':
+>> /builddir/build/BUILD/kernel-2.6.26/linux-2.6.26.ppc/arch/powerpc/ 
+>> platforms/82xx/ep8248e.c:129: undefined reference to  
+>> `alloc_mdio_bitbang'
+>> /builddir/build/BUILD/kernel-2.6.26/linux-2.6.26.ppc/arch/powerpc/ 
+>> platforms/82xx/ep8248e.c:143: undefined reference to  
+>> `mdiobus_register'
+>>
+>> .config is at http://davej.fedorapeople.org/kernel-2.6.27-ppc.config
+>
+> Kumar, I think that's your realm, what's up there ?
 
-Kim
+I'll look into this.  On the note I'd like to add a ppc6xx_defconfig  
+and use the defconfig from Dave as the starts of that.  Any objections?
+
+- k
