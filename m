@@ -1,24 +1,18 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 68938DED9D
+Return-Path: <sprasad@bivio.net>
+Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 03A90DE10A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Jul 2008 03:02:03 +1000 (EST)
-Date: Thu, 17 Jul 2008 12:01:55 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: Freescale UCC_GETH Half Duplex Patch
-Message-Id: <20080717120155.efdef031.kim.phillips@freescale.com>
-In-Reply-To: <20080711124604.caf199e9.kim.phillips@freescale.com>
-References: <2FE8E39946EE489FBAFC327EC9154EAF@absolutdaddy>
-	<20080711124604.caf199e9.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: chuck@ThePTRGroup.com, rmcguire@videopresence.com,
-	linuxppc-embedded@ozlabs.org
+	Fri, 18 Jul 2008 06:08:20 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Re: increase lowmem value for ppc
+Date: Thu, 17 Jul 2008 13:07:48 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D702B647CC@corpexc01.corp.networkrobots.com>
+In-Reply-To: <mailman.2286.1216296226.2883.linuxppc-embedded@ozlabs.org>
+References: <mailman.2286.1216296226.2883.linuxppc-embedded@ozlabs.org>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -29,16 +23,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 11 Jul 2008 12:46:04 -0500
-Kim Phillips <kim.phillips@freescale.com> wrote:
 
-> It needs to be sent to the netdev mailing list, and see if you can get
-> rid of the MIME-encoding (see linux-2.6/Documentation/email-clients.txt).
-> 
-> And don't forget to add a signed-off-by line, too.
+Marco Stornelli wrote:
 
-Hi Russell, may I have your signed-off-by so that I may submit this to
-netdev to be applied on your behalf?  I'll keep the attributions
-intact, of course.
+> Upgrading to a 2.6.x kernel may solve the problem, but it needs a lot
+of=20
+> effort. Does 2.6.x kernel support 2G physical memory?
+>=20
+It's the same. Some architecture have 36-bit addressing, but I don't=20
+know if the latest kernel has the support for this feature for powerpc.
+>=20
 
-Kim
+I think recently there were some patches with 2.6.26-rcx to support
+36-bit addressing and changed the addressing to phys_addr_t type from
+unsigned long, and few other changed. I think this should be available
+starting 2.6.26 version.
