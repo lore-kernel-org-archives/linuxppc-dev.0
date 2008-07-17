@@ -1,21 +1,20 @@
-Return-Path: <ncase@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7F77DDE68D
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 07:29:20 +1000 (EST)
-Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
-From: Nate Case <ncase@xes-inc.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080715151917.GA30607@polina.dev.rtsoft.ru>
-References: <1216133032.5345.73.camel@dax.rpnet.com>
-	<20080715151917.GA30607@polina.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Thu, 17 Jul 2008 16:29:01 -0500
-Message-Id: <1216330141.7559.950.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
-	linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 2AE05DDF4D
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 07:32:38 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: 82xx performance
+Date: Thu, 17 Jul 2008 23:32:17 +0200
+References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
+	<200807172143.57576.arnd@arndb.de>
+	<DCEAAC0833DD314AB0B58112AD99B93B04B34E18@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04B34E18@ismail.innsys.innovsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807172332.18030.arnd@arndb.de>
+Cc: Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-15 at 19:19 +0400, Anton Vorontsov wrote:
-> +       led->cdev.name = of_get_property(np, "label", NULL);
-> +       if (!led->cdev.name)
-> +               led->cdev.name = dev_name(&ofdev->dev);
+On Thursday 17 July 2008, Rune Torgersen wrote:
+> Arnd Bergmann wrote:
+> > So again, nothing conclusive. I'm running out of ideas.
+> 
+> Is the syscall path different or the same on ppc and powerpc?
+> Any differences in the task switching, irq handling or page fault
+> handling?
+> 
 
-How about also supporting a "trigger" property which would set
-cdev.default_trigger in the same manner?  It would be useful for boards
-to be able to specify this in the device tree (e.g., if a certain LED is
-meant to be used as a "heartbeat").
+It's all different in suble ways, but those changes should only
+show up in the system time accounting, not user time accounting.
 
--- 
-Nate Case <ncase@xes-inc.com>
+One change that I would expect to show up in user space performance
+is different TLB management, in a way that causes increased flushing
+and reloading of page table entries. I don't have the slightest
+idea if or in what ways that has changed. Maybe Ben has a clue
+about this.
+
+	Arnd <><
