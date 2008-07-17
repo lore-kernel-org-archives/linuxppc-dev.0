@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 47804DE68C
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 22:28:44 +1000 (EST)
-Message-Id: <36B8084A-B0E4-48D5-97FD-05DD68D4A5D8@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 3C491DE861
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 22:40:17 +1000 (EST)
+Message-Id: <BB3F48EB-E5F5-484E-A343-19D4393F314F@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <27c8ac7aceccaf7856c65f2ef1305321f94d564e.1216279070.git.michael@ellerman.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <5F490C95-09E9-4378-B0B9-891FED7B182C@kernel.crashing.org>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 3/3] powerpc: Use PPC_LONG and PPC_LONG_ALIGN in
-	lib/string.S
-Date: Thu, 17 Jul 2008 07:28:35 -0500
+Subject: Re: [PATCH 2/3] powerpc: Use PPC_LONG_ALIGN in uaccess.h
+Date: Thu, 17 Jul 2008 07:36:36 -0500
 References: <3756cbfb076b2fa0b93ec990aabfee73296443d9.1216279070.git.michael@ellerman.id.au>
-	<27c8ac7aceccaf7856c65f2ef1305321f94d564e.1216279070.git.michael@ellerman.id.au>
+	<2e3c13ddbf80969f086c92f40b1ca6cf891a738f.1216279070.git.michael@ellerman.id.au>
+	<5F490C95-09E9-4378-B0B9-891FED7B182C@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,16 +26,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 17, 2008, at 2:17 AM, Michael Ellerman wrote:
+On Jul 17, 2008, at 7:28 AM, Kumar Gala wrote:
 
-> No change to the generated code.
 >
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
-> arch/powerpc/lib/string.S |   18 ++++++------------
-> 1 files changed, 6 insertions(+), 12 deletions(-)
+> On Jul 17, 2008, at 2:17 AM, Michael Ellerman wrote:
+>
+>> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+>> ---
+>> include/asm-powerpc/uaccess.h |   21 +++++++++------------
+>> 1 files changed, 9 insertions(+), 12 deletions(-)
+>
+> What's the reason for the change?
 
-
-What's the reason for the change?
+ignore me.. when I look closer its obvious.
 
 - k
