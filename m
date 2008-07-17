@@ -1,26 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 65802DE213
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 01:42:38 +1000 (EST)
-Message-Id: <C353D587-E029-4C80-A703-D23A8FA889A8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: benh@kernel.crashing.org
-In-Reply-To: <1216184495.7740.158.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [git pull] Please pull from powerpc.git merge branch
-Date: Wed, 16 Jul 2008 07:46:18 -0500
-References: <1216172043.7740.136.camel@pasglop>
-	<20080716042042.GA13212@redhat.com>
-	<1216184495.7740.158.camel@pasglop>
-Cc: Dave Jones <davej@redhat.com>, akpm <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id A41E7DE810
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 01:47:36 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: 82xx performance
+Date: Thu, 17 Jul 2008 17:47:28 +0200
+References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
+	<200807170032.36564.arnd@arndb.de>
+	<DCEAAC0833DD314AB0B58112AD99B93B04B34B71@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04B34B71@ismail.innsys.innovsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807171747.28624.arnd@arndb.de>
+Cc: Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,46 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 17 July 2008, Rune Torgersen wrote:
+> Arnd Bergmann wrote:
+> > If you can't get it to work, readprofile(1) is a much simpler
+> > tool, both in what it can do and what it requires you to do.
+> 
+> One thing that pops out is that handle_mm_fault uses twice as many
+> ticks in arch/powerpc.
 
-On Jul 16, 2008, at 12:01 AM, Benjamin Herrenschmidt wrote:
+The other thing I found interesting is that cpu_idle is on the
+top of the list in arch/powerpc but does not show up anywhere
+in your top arch/ppc samples. This indicates that the system is
+waiting for something, e.g. disk I/O for a significant amount
+of time.
 
-> On Wed, 2008-07-16 at 00:20 -0400, Dave Jones wrote:
->> On Wed, Jul 16, 2008 at 11:34:03AM +1000, Ben Herrenschmidt wrote:
->>> Linus,
->>>
->>> I apologize in advance for the couple of merge commits in there. I
->>> merged your tree yesterday in order to fix a (fairly minor)  
->>> conflict,
->>> and waited for our autobuilder to test a whole bunch of configs
->>> overnight before asking you to pull, at which point, sfr informed  
->>> me of
->>> a bunch of this time non-trivial conflicts with whatever you  
->>> pulled in
->>> the meantime...
->>>
->>> So here it is with 2 merge csets at the top, I'll try to do better  
->>> next
->>> time. I don't want to rebase or my sub-maintainers will hate me.
->>>
->>> So please pull from:
->>>
->>> git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
->>
->> Boom!
->>
->> arch/powerpc/platforms/built-in.o: In function `ep8248e_mdio_probe':
->> /builddir/build/BUILD/kernel-2.6.26/linux-2.6.26.ppc/arch/powerpc/ 
->> platforms/82xx/ep8248e.c:129: undefined reference to  
->> `alloc_mdio_bitbang'
->> /builddir/build/BUILD/kernel-2.6.26/linux-2.6.26.ppc/arch/powerpc/ 
->> platforms/82xx/ep8248e.c:143: undefined reference to  
->> `mdiobus_register'
->>
->> .config is at http://davej.fedorapeople.org/kernel-2.6.27-ppc.config
->
-> Kumar, I think that's your realm, what's up there ?
+Seeing more hits in handle_mm_fault suggests that you have
+a higher page fault rate. A trivial reason for this might
+be that the amount of memory was misdetected in the new
+code (maybe broken device tree). What is the content of
+/proc/meminfo after a fresh boot?
 
-I'll look into this.  On the note I'd like to add a ppc6xx_defconfig  
-and use the defconfig from Dave as the starts of that.  Any objections?
+If it's the same, try running a kernel build with 'time --verbose',
+using GNU time instead of the bash builtin time to see how the
+page fault rate changed.
 
-- k
+	Arnd <><
