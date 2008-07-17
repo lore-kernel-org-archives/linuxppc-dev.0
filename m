@@ -1,20 +1,22 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id F31CFDE442
+Return-Path: <rukseninanir@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
+	by ozlabs.org (Postfix) with ESMTP id 78D87DDF1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jul 2008 21:44:56 +1000 (EST)
-Message-ID: <487F307C.50706@denx.de>
-Date: Thu, 17 Jul 2008 13:43:56 +0200
-From: Anatolij Gustschin <agust@denx.de>
+	Thu, 17 Jul 2008 21:51:42 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so610997ugf.0
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 17 Jul 2008 04:51:40 -0700 (PDT)
+Message-ID: <487F3248.9080405@gmail.com>
+Date: Thu, 17 Jul 2008 14:51:36 +0300
+From: Ruksen INANIR <rukseninanir@gmail.com>
 MIME-Version: 1.0
-To: Alex_SYS <schmid-grafenau@t-online.de>
-Subject: Re: Videomode 800x480
-References: <18470632.post@talk.nabble.com>
-	<487CEC85.2070801@denx.de>	<18482586.post@talk.nabble.com>
-	<18502863.post@talk.nabble.com>
-In-Reply-To: <18502863.post@talk.nabble.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-embedded@ozlabs.org
+To: Marco Stornelli <marco.stornelli@coritel.it>, linuxppc-embedded@ozlabs.org
+Subject: Re: increase lowmem value for ppc
+References: <487F1FD2.7090909@gmail.com>
+	<487F297B.4070806@coritel.it>	<487F2B4C.7070409@coritel.it>
+	<487F2B7D.6080109@gmail.com> <487F2E79.1030102@coritel.it>
+In-Reply-To: <487F2E79.1030102@coritel.it>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,119 +27,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Alex_SYS wrote:
-> 
-> Alex_SYS wrote:
->> <Here is the Kernel Bootup message that it gives when it crashes!
+
+Thanks for your comments.
+I tried the highmem option but one of the device drivers does not 
+support highmem, so it did not work.
+the only choice for me is to increase the lowmem to 1520 MB. the maximum 
+lowmem value i reached succesfully is 1503 MB. but any value more than 
+1503 results kernel not able to load kernel modules.
+Upgrading to a 2.6.x kernel may solve the problem, but it needs a lot of 
+effort. Does 2.6.x kernel support 2G physical memory?
+
+
+
+
+Marco Stornelli wrote:
+> Ruksen INANIR ha scritto:
 >>
->> U-Boot 1.2.0-mpc5200b-tiny-3 (Dec 11 2007 - 11:25:01)
+>> Is there any side effects of changing the address splitting? 
+>
+> Yes, in this way the application address space is smaller than normal. 
+> Some big applications (for example same dbms) might not work. Usually 
+> with 2G/2G most of the applications work well.
+>
+>> What should i change for 2G/2G splitting? should i shift the kernel 
+>> start?
+>> Thanks
 >>
->> CPU:   MPC5200 v2.2, Core v1.4 at 399.999 MHz
->>        Bus 133 MHz, IPB 133 MHz, PCI 33 MHz
->> Board: phyCORE-MPC5200B-tiny
->> I2C:   ready
->> DRAM:  64 MB
->> SP:    0x03f73768
->> FLASH: 16 MB
->> Using pcm030 machine description
->> Linux version 2.6.23.1-rt5-pcm030-1trunk (aschmid@LINUX) (gcc version
->> 4.1.2) #39
->> 4 PREEMPT RT Tue Dec 11 17:58:48 CET 2007
->> Zone PFN ranges:
->>   DMA             0 ->    16384
->>   Normal      16384 ->    16384
->> Movable zone start PFN for each node
->> early_node_map[1] active PFN ranges
->>     0:        0 ->    16384
->> Real-Time Preemption Support (C) 2004-2007 Ingo Molnar
->> Built 1 zonelists in Zone order.  Total pages: 16256
->> Kernel command line: video=0x0-16@60 , console=ttyPSC0,115200
------------------------------>^^^^^^^^^
-is this intentional?
-
->> mtdparts=physmap-f
->> lash.0:256k(ubootl),1792k(kernel),13312k(jffs2),256k(uboot)ro,256k(oftree),-(spa
->> ce) rw root=/dev/mtdblock2 rootfstype=jffs2
->> WARNING: experimental RCU implementation.
->> MPC52xx PIC is up and running!
->> PID hash table entries: 256 (order: 8, 1024 bytes)
->> Console: colour dummy device 80x25
->> console [ttyPSC0] enabled
->> Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
->> Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
->> Memory: 61960k/65536k available (2624k kernel code, 3508k reserved, 144k
->> data, 1
->> 06k bss, 124k init)
->> Mount-cache hash table entries: 512
->> NET: Registered protocol family 16
->> PCI: Probing PCI hardware
->> DMA: MPC52xx BestComm driver
->> DMA: MPC52xx BestComm engine @f0001200 ok !
->> Generic PHY: Registered new driver
->> usbcore: registered new interface driver usbfs
->> usbcore: registered new interface driver hub
->> usbcore: registered new device driver usb
->> NET: Registered protocol family 2
->> IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
->> TCP established hash table entries: 2048 (order: 4, 73728 bytes)
->> TCP bind hash table entries: 2048 (order: 3, 57344 bytes)
->> TCP: Hash tables configured (established 2048 bind 2048)
->> TCP reno registered
->> JFFS2 version 2.2. (NAND) Â© 2001-2006 Red Hat, Inc.
->> io scheduler noop registered (default)
->> No Options from U-Boot
->> Lime Driver PROBE
->> No Mode
->> Name des Strings 0x0-16@60 with LÃ¤nge 9
->> Schleife mode Options
->> Schleife @
->> Schleife -
->> Schleife x
->> DONE vor CVT xres= 0 , yres=0 , cvt=
->> 0******************************************
->> ************CVT Mode: Trying specified video mode 0x0
->> Trying mode 800x480-16@60 800x600-16@20
->> Error=
->> 0********************************************************************Tryi
->> ng mode noname 640x400-16@70
->> Error=
->> 0********************************************************************Tryi
->> ng mode noname 640x480-16@60
->> Error=
->> 0********************************************************************Tryi
->> ng mode noname 800x600-16@56
-
-What arguments do you pass to fb_find_mode() in the driver? Probing all of
-these modes is not necessary.
- 
-<snip>
->> Error=
->> 0********************************************************************Tryi
->> ng default video mode
->> Trying mode noname 800x480-16@60
->> Error=
->> 0********************************************************************Tryi
->> ng default mode
->> Console: switching to colour frame buffer device 114x34
->> stopped custom tracer.
->> Oops: Exception in kernel mode, sig: 4 [#1]
->> PREEMPT pcm030
->> Modules linked in:
->> NIP: 00000900 LR: c011d94c CTR: c011daf4
->> REGS: c3fe7a30 TRAP: 0700   Not tainted  (2.6.23.1-rt5-pcm030-1trunk)
->> MSR: 00081000 <ME>  CR: 42042022  XER: 00000000
->> TASK = c3fe5c00[1] 'swapper' THREAD: c3fe6000
->> GPR00: ffffffff c3fe7ae0 c3fe5c00 c5128bfc 00000000 00010001 00000020
->> 00000020
->> GPR08: 00000000 00010001 ffffffff 00000020 c3f5f800 fffffffb 03fcb000
->> ffffffff
->> GPR16: 00000001 00000000 c3fe7f78 c024a748 00000000 00000000 00000002
->> 000001e0
->> GPR24: 00010001 c011daf4 00000020 c3f5f800 c5128bfc 00000000 00000005
->> 000001b0
->> NIP [00000900] 0x900
-
-Could you post your current vfb.c and .config file?
-
-Best Regards,
-Anatolij
+> Yes in advanced options of the kernel menu, but sometimes it's not 
+> easy.  Sometimes ago I had to do the same thing but I have to change 
+> the kernel code because some operations were hard-coded. Be careful 
+> because it's not an easy operation. However I'd suggest you to use the 
+> highmem, the memory performance are worse than direct memory mapping, 
+> but usually it's not a problem because the overhead is low.
+>
+>>
+>> Marco Stornelli wrote:
+>>> Marco Stornelli ha scritto:
+>>>> Ruksen INANIR ha scritto:
+>>>>>
+>>>>> Is there a way to increase the lowmem value for ppc. The 
+>>>>> MAX_LOW_MEM is defined as max 768 MB. But a value around 1.5 G 
+>>>>> works with no problem. But when i try to increase this value to 
+>>>>> 1520 or more, kernel complaints about no space for memory 
+>>>>> allocation when loading kernel modules.
+>>>>> I do not want to use HIGHMEM config. What is the max lowmem value 
+>>>>> for a ppc system? What other setting are needed to use 1520 MB (or 
+>>>>> more) as lowmem .
+>>>>> The ppc card has 2G on board memory. 2.4.22 kernel is used.
+>>>>>
+>>>>> Thanks
+>>>>> _______________________________________________
+>>>>> Linuxppc-embedded mailing list
+>>>>> Linuxppc-embedded@ozlabs.org
+>>>>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>>>>
+>>>> With 32-bit arch you may not use more than 1GB to map the memory 
+>>>> (minus some space for some kernel operation). The value of 768MB 
+>>>> was not there by chance.
+>>>>
+>>> Only an additional comment: I meant with the address splitting 
+>>> 3G/1G. To map more than 1GB, you have to change the splitting 2G/2G 
+>>> for example.
+>>>
+>>
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>
+>
+>
