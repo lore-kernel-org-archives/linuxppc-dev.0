@@ -1,31 +1,20 @@
-Return-Path: <Jason.Jin@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <npiggin@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DA2D1DDF33
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 20:48:47 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m6HAmedJ000075
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 03:48:40 -0700 (MST)
-Received: from zch01exm27.fsl.freescale.net (zch01exm27.ap.freescale.net
-	[10.192.129.223])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m6HAmcPE028005
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 05:48:39 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH 1/4] powerpc: fsl_msi doesn't need it's own of_node
-Date: Thu, 17 Jul 2008 18:48:59 +0800
-Message-ID: <CC27DED0F8F39E48A7E75FD768688B7AAC731A@zch01exm27.fsl.freescale.net>
-In-Reply-To: <378edcf6ad114d35166364c5df03a8c422f757a1.1216133084.git.michael@ellerman.id.au>
-References: <378edcf6ad114d35166364c5df03a8c422f757a1.1216133084.git.michael@ellerman.id.au>
-From: "Jin Zhengxiong" <Jason.Jin@freescale.com>
-To: "Michael Ellerman" <michael@ellerman.id.au>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Cc: Olof Johannsson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Gala Kumar <kumar.gala@freescale.com>
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 82D44DDED4
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 20:53:34 +1000 (EST)
+Date: Thu, 17 Jul 2008 12:53:25 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: [patch] powerpc: lockless get_user_pages
+Message-ID: <20080717105325.GB25083@wotan.suse.de>
+References: <20080717104426.GA25083@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080717104426.GA25083@wotan.suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,91 +24,365 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ack, Tested the patch set on Freescale board and working good.
-Thanks
+Together with the previous patch, I've tested this on mmotm, including
+with 64K base pages.  However I only have a machine with a single possible
+hugepage size, so testing a real multi size system would be nice.
 
-Jason Jin=20
+Thanks to Dave for reworking for multiple hugepage sizes (Dave, I had to
+make a small change to the slice shift calculation here).
 
-> -----Original Message-----
-> From: Michael Ellerman [mailto:michael@ellerman.id.au]=20
-> Sent: Tuesday, July 15, 2008 10:46 PM
-> To: Benjamin Herrenschmidt
-> Cc: linuxppc-dev@ozlabs.org; Olof Johannsson; Gala Kumar; Jin=20
-> Zhengxiong
-> Subject: [PATCH 1/4] powerpc: fsl_msi doesn't need it's own of_node
->=20
-> The FSL MSI code keeps a pointer to the of_node from the=20
-> device it represents. However it also has an irq_host, which=20
-> contains a pointer to the of_node, so use that one instead.
->=20
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->  arch/powerpc/sysdev/fsl_msi.c |   12 +++++-------
->  arch/powerpc/sysdev/fsl_msi.h |    3 ---
->  2 files changed, 5 insertions(+), 10 deletions(-)
->=20
-> diff --git a/arch/powerpc/sysdev/fsl_msi.c=20
-> b/arch/powerpc/sysdev/fsl_msi.c index 2c5187c..d49fa99 100644
-> --- a/arch/powerpc/sysdev/fsl_msi.c
-> +++ b/arch/powerpc/sysdev/fsl_msi.c
-> @@ -108,7 +108,8 @@ static int fsl_msi_free_dt_hwirqs(struct=20
-> fsl_msi *msi)
->  	bitmap_allocate_region(msi->fsl_msi_bitmap, 0,
->  		       get_count_order(NR_MSI_IRQS));
-> =20
-> -	p =3D of_get_property(msi->of_node, "msi-available-ranges", &len);
-> +	p =3D of_get_property(msi->irqhost->of_node,=20
-> "msi-available-ranges",
-> +			    &len);
-> =20
->  	if (!p) {
->  		/* No msi-available-ranges property,
-> @@ -120,7 +121,7 @@ static int fsl_msi_free_dt_hwirqs(struct=20
-> fsl_msi *msi)
-> =20
->  	if ((len % (2 * sizeof(u32))) !=3D 0) {
->  		printk(KERN_WARNING "fsl_msi: Malformed=20
-> msi-available-ranges "
-> -		       "property on %s\n", msi->of_node->full_name);
-> +		       "property on %s\n",=20
-> msi->irqhost->of_node->full_name);
->  		return -EINVAL;
->  	}
-> =20
-> @@ -317,14 +318,11 @@ static int __devinit=20
-> fsl_of_msi_probe(struct of_device *dev,
->  		goto error_out;
->  	}
-> =20
-> -	msi->of_node =3D of_node_get(dev->node);
-> +	msi->irqhost =3D irq_alloc_host(dev->node, IRQ_HOST_MAP_LINEAR,
-> +				      NR_MSI_IRQS,=20
-> &fsl_msi_host_ops, 0);
-> =20
-> -	msi->irqhost =3D irq_alloc_host(of_node_get(dev->node),
-> -				IRQ_HOST_MAP_LINEAR,
-> -				NR_MSI_IRQS, &fsl_msi_host_ops, 0);
->  	if (msi->irqhost =3D=3D NULL) {
->  		dev_err(&dev->dev, "No memory for MSI irqhost\n");
-> -		of_node_put(dev->node);
->  		err =3D -ENOMEM;
->  		goto error_out;
->  	}
-> diff --git a/arch/powerpc/sysdev/fsl_msi.h=20
-> b/arch/powerpc/sysdev/fsl_msi.h index a653468..6574550 100644
-> --- a/arch/powerpc/sysdev/fsl_msi.h
-> +++ b/arch/powerpc/sysdev/fsl_msi.h
-> @@ -22,9 +22,6 @@
->  #define FSL_PIC_IP_IPIC	0x00000002
-> =20
->  struct fsl_msi {
-> -	/* Device node of the MSI interrupt*/
-> -	struct device_node *of_node;
-> -
->  	struct irq_host *irqhost;
-> =20
->  	unsigned long cascade_irq;
-> --
-> 1.5.5
->=20
->=20
+--
+
+powerpc: lockless get_user_pages_fast
+
+Implement lockless get_user_pages_fast for powerpc. Page table existence is
+guaranteed with RCU, and speculative page references are used to take a
+reference to the pages without having a prior existence guarantee on them.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+---
+ arch/powerpc/Kconfig                |    3 
+ arch/powerpc/mm/Makefile            |    2 
+ arch/powerpc/mm/gup.c               |  245 ++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/pgtable-ppc64.h |    2 
+ include/linux/pagemap.h             |   23 +++
+ 6 files changed, 275 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/include/asm-powerpc/pgtable-ppc64.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/pgtable-ppc64.h	2008-07-17 20:30:06.000000000 +1000
++++ linux-2.6/include/asm-powerpc/pgtable-ppc64.h	2008-07-17 20:30:09.000000000 +1000
+@@ -461,6 +461,8 @@
+ 	return pt;
+ }
+ 
++pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long address);
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_PGTABLE_PPC64_H_ */
+Index: linux-2.6/include/linux/pagemap.h
+===================================================================
+--- linux-2.6.orig/include/linux/pagemap.h	2008-07-17 20:30:06.000000000 +1000
++++ linux-2.6/include/linux/pagemap.h	2008-07-17 20:30:09.000000000 +1000
+@@ -171,6 +171,29 @@
+ 	return 1;
+ }
+ 
++/*
++ * Same as above, but add instead of inc (could just be merged)
++ */
++static inline int page_cache_add_speculative(struct page *page, int count)
++{
++	VM_BUG_ON(in_interrupt());
++
++#if !defined(CONFIG_SMP) && defined(CONFIG_CLASSIC_RCU)
++# ifdef CONFIG_PREEMPT
++	VM_BUG_ON(!in_atomic());
++# endif
++	VM_BUG_ON(page_count(page) == 0);
++	atomic_add(count, &page->_count);
++
++#else
++	if (unlikely(!atomic_add_unless(&page->_count, count, 0)))
++		return 0;
++#endif
++	VM_BUG_ON(PageCompound(page) && page != compound_head(page));
++
++	return 1;
++}
++
+ static inline int page_freeze_refs(struct page *page, int count)
+ {
+ 	return likely(atomic_cmpxchg(&page->_count, count, 0) == count);
+Index: linux-2.6/arch/powerpc/mm/Makefile
+===================================================================
+--- linux-2.6.orig/arch/powerpc/mm/Makefile	2008-07-17 20:30:06.000000000 +1000
++++ linux-2.6/arch/powerpc/mm/Makefile	2008-07-17 20:30:09.000000000 +1000
+@@ -6,7 +6,7 @@
+ EXTRA_CFLAGS	+= -mno-minimal-toc
+ endif
+ 
+-obj-y				:= fault.o mem.o \
++obj-y				:= fault.o mem.o gup.o \
+ 				   init_$(CONFIG_WORD_SIZE).o \
+ 				   pgtable_$(CONFIG_WORD_SIZE).o \
+ 				   mmu_context_$(CONFIG_WORD_SIZE).o
+Index: linux-2.6/arch/powerpc/mm/gup.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/powerpc/mm/gup.c	2008-07-17 20:30:09.000000000 +1000
+@@ -0,0 +1,258 @@
++/*
++ * Lockless get_user_pages_fast for powerpc
++ *
++ * Copyright (C) 2008 Nick Piggin
++ * Copyright (C) 2008 Novell Inc.
++ */
++#include <linux/sched.h>
++#include <linux/mm.h>
++#include <linux/hugetlb.h>
++#include <linux/vmstat.h>
++#include <linux/pagemap.h>
++#include <linux/rwsem.h>
++#include <asm/pgtable.h>
++
++/*
++ * The performance critical leaf functions are made noinline otherwise gcc
++ * inlines everything into a single function which results in too much
++ * register pressure.
++ */
++static noinline int gup_pte_range(pmd_t pmd, unsigned long addr,
++		unsigned long end, int write, struct page **pages, int *nr)
++{
++	unsigned long mask, result;
++	pte_t *ptep;
++
++	result = _PAGE_PRESENT|_PAGE_USER;
++	if (write)
++		result |= _PAGE_RW;
++	mask = result | _PAGE_SPECIAL;
++
++	ptep = pte_offset_kernel(&pmd, addr);
++	do {
++		pte_t pte = *ptep;
++		struct page *page;
++
++		if ((pte_val(pte) & mask) != result)
++			return 0;
++		VM_BUG_ON(!pfn_valid(pte_pfn(pte)));
++		page = pte_page(pte);
++		if (!page_cache_get_speculative(page))
++			return 0;
++		if (unlikely(pte != *ptep)) {
++			put_page(page);
++			return 0;
++		}
++		pages[*nr] = page;
++		(*nr)++;
++
++	} while (ptep++, addr += PAGE_SIZE, addr != end);
++
++	return 1;
++}
++
++static noinline int gup_huge_pte(pte_t *ptep, struct hstate *hstate,
++				 unsigned long *addr, unsigned long end,
++				 int write, struct page **pages, int *nr)
++{
++	unsigned long mask;
++	unsigned long pte_end;
++	struct page *head, *page;
++	pte_t pte;
++	int refs;
++
++	pte_end = (*addr + huge_page_size(hstate)) & huge_page_mask(hstate);
++	if (pte_end < end)
++		end = pte_end;
++
++	pte = *ptep;
++	mask = _PAGE_PRESENT|_PAGE_USER;
++	if (write)
++		mask |= _PAGE_RW;
++	if ((pte_val(pte) & mask) != mask)
++		return 0;
++	/* hugepages are never "special" */
++	VM_BUG_ON(!pfn_valid(pte_pfn(pte)));
++
++	refs = 0;
++	head = pte_page(pte);
++	page = head + ((*addr & ~huge_page_mask(hstate)) >> PAGE_SHIFT);
++	do {
++		VM_BUG_ON(compound_head(page) != head);
++		pages[*nr] = page;
++		(*nr)++;
++		page++;
++		refs++;
++	} while (*addr += PAGE_SIZE, *addr != end);
++
++	if (!page_cache_add_speculative(head, refs)) {
++		*nr -= refs;
++		return 0;
++	}
++	if (unlikely(pte != *ptep)) {
++		/* Could be optimized better */
++		while (*nr) {
++			put_page(page);
++			(*nr)--;
++		}
++	}
++
++	return 1;
++}
++
++static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
++		int write, struct page **pages, int *nr)
++{
++	unsigned long next;
++	pmd_t *pmdp;
++
++	pmdp = pmd_offset(&pud, addr);
++	do {
++		pmd_t pmd = *pmdp;
++
++		next = pmd_addr_end(addr, end);
++		if (pmd_none(pmd))
++			return 0;
++		if (!gup_pte_range(pmd, addr, next, write, pages, nr))
++			return 0;
++	} while (pmdp++, addr = next, addr != end);
++
++	return 1;
++}
++
++static int gup_pud_range(pgd_t pgd, unsigned long addr, unsigned long end,
++		int write, struct page **pages, int *nr)
++{
++	unsigned long next;
++	pud_t *pudp;
++
++	pudp = pud_offset(&pgd, addr);
++	do {
++		pud_t pud = *pudp;
++
++		next = pud_addr_end(addr, end);
++		if (pud_none(pud))
++			return 0;
++		if (!gup_pmd_range(pud, addr, next, write, pages, nr))
++			return 0;
++	} while (pudp++, addr = next, addr != end);
++
++	return 1;
++}
++
++int get_user_pages_fast(unsigned long start, int nr_pages, int write,
++			struct page **pages)
++{
++	struct mm_struct *mm = current->mm;
++	unsigned long end = start + (nr_pages << PAGE_SHIFT);
++	unsigned long addr = start;
++	unsigned long next;
++	pgd_t *pgdp;
++	int nr = 0;
++	unsigned int shift;
++
++
++	if (unlikely(!access_ok(write ? VERIFY_WRITE : VERIFY_READ,
++					start, nr_pages*PAGE_SIZE)))
++		goto slow_irqon;
++
++	/* Cross a slice boundary? */
++	if (addr < SLICE_LOW_TOP) {
++		if (end > SLICE_LOW_TOP)
++			goto slow_irqon;
++
++		if (unlikely(GET_LOW_SLICE_INDEX(addr) !=
++			     GET_LOW_SLICE_INDEX(end - 1)))
++			goto slow_irqon;
++	} else {
++		if (unlikely(GET_HIGH_SLICE_INDEX(addr) !=
++			     GET_HIGH_SLICE_INDEX(end - 1)))
++			goto slow_irqon;
++	}
++
++	/*
++	 * XXX: batch / limit 'nr', to avoid large irq off latency
++	 * needs some instrumenting to determine the common sizes used by
++	 * important workloads (eg. DB2), and whether limiting the batch size
++	 * will decrease performance.
++	 *
++	 * It seems like we're in the clear for the moment. Direct-IO is
++	 * the main guy that batches up lots of get_user_pages, and even
++	 * they are limited to 64-at-a-time which is not so many.
++	 */
++	/*
++	 * This doesn't prevent pagetable teardown, but does prevent
++	 * the pagetables from being freed on powerpc.
++	 *
++	 * So long as we atomically load page table pointers versus teardown,
++	 * we can follow the address down to the the page and take a ref on it.
++	 */
++	local_irq_disable();
++
++	shift = mmu_psize_defs[get_slice_psize(mm, addr)].shift;
++
++	if (shift > PAGE_SHIFT) {
++		pte_t *ptep;
++		unsigned long a = addr;
++		unsigned long sz = ((1UL) << shift);
++		struct hstate *hstate = size_to_hstate(sz);
++
++		BUG_ON(!hstate);
++		/*
++		 * XXX: could be optimized to avoid hstate
++		 * lookup entirely (just use shift)
++		 */
++
++		ptep = huge_pte_offset(mm, a);
++		do {
++			VM_BUG_ON(shift != mmu_psize_defs[get_slice_psize(mm, a)].shift);
++			if (!gup_huge_pte(ptep, hstate, &a, end, write, pages,
++					  &nr))
++				goto slow;
++			ptep++;
++		} while (a != end);
++	} else {
++		pgdp = pgd_offset(mm, addr);
++		do {
++			pgd_t pgd = *pgdp;
++
++			VM_BUG_ON(shift != mmu_psize_defs[get_slice_psize(mm, addr)].shift);
++
++			next = pgd_addr_end(addr, end);
++			if (pgd_none(pgd))
++				goto slow;
++			if (!gup_pud_range(pgd, addr, next, write, pages, &nr))
++				goto slow;
++		} while (pgdp++, addr = next, addr != end);
++	}
++	local_irq_enable();
++
++	VM_BUG_ON(nr != (end - start) >> PAGE_SHIFT);
++	return nr;
++
++	{
++		int ret;
++
++slow:
++		local_irq_enable();
++slow_irqon:
++		/* Try to get the remaining pages with get_user_pages */
++		start += nr << PAGE_SHIFT;
++		pages += nr;
++
++		down_read(&mm->mmap_sem);
++		ret = get_user_pages(current, mm, start,
++			(end - start) >> PAGE_SHIFT, write, 0, pages, NULL);
++		up_read(&mm->mmap_sem);
++
++		/* Have to be a bit careful with return values */
++		if (nr > 0) {
++			if (ret < 0)
++				ret = nr;
++			else
++				ret += nr;
++		}
++
++		return ret;
++	}
++}
+Index: linux-2.6/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/Kconfig	2008-07-17 20:30:06.000000000 +1000
++++ linux-2.6/arch/powerpc/Kconfig	2008-07-17 20:30:09.000000000 +1000
+@@ -42,6 +42,9 @@
+ 	bool
+ 	default y
+ 
++config HAVE_GET_USER_PAGES_FAST
++	def_bool PPC64
++
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool PPC64
+ 
