@@ -1,20 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C653FDF1A5
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 06:07:04 +1000 (EST)
-Subject: Re: [RFC v3 PATCH 1/4] Extract list of relocation offsets
+Subject: Re: [Cbe-oss-dev] [patch 9/9] powerpc/cell:
+	Add	DMA_ATTR_STRONG_ORDERING dma attribute and use in IOMMU code
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: mohan@in.ibm.com
-In-Reply-To: <20080717184055.GB25070@in.ibm.com>
-References: <20080717183339.GA25070@in.ibm.com>
-	<20080717184055.GB25070@in.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200807171653.29946.arnd@arndb.de>
+References: <20080715195139.316677337@arndb.de>
+	<200807160954.03633.arnd@arndb.de> <1216275643.7740.302.camel@pasglop>
+	<200807171653.29946.arnd@arndb.de>
 Content-Type: text/plain
-Date: Fri, 18 Jul 2008 06:06:27 +1000
-Message-Id: <1216325187.7740.353.camel@pasglop>
+Date: Fri, 18 Jul 2008 06:10:23 +1000
+Message-Id: <1216325423.7740.355.camel@pasglop>
 Mime-Version: 1.0
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, paulus@samba.org, miltonm@bga.com
+Cc: linuxppc-dev@ozlabs.org, Roland Dreier <rdreier@cisco.com>,
+	Peter Altevogt <peter.altevogt@de.ibm.com>,
+	cbe-oss-dev@ozlabs.org, Hans Boettiger <h.boettiger@de.ibm.com>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,19 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-07-18 at 00:10 +0530, Mohan Kumar M wrote:
-> Extract list of relocation offsets
+On Thu, 2008-07-17 at 16:53 +0200, Arnd Bergmann wrote:
 > 
-> Extract list of offsets in the vmlinux file for which the relocation
-> delta has to be patched. Currently only following type of relocation
-> types are considered: R_PPC64_ADDR16_HI, R_PPC64_TOC and R_PPC64_ADDR64
-> 
-> The offsets are sorted according to the relocation type and this
-> information is appended to the normal vmlinux file by using the patch
-> relocation_build.patch
+> Peter and Hans were involved in the discussion that led to the
+> decision
+> to change step 3 from per-transfer default to always weak ordering.
+> I think they verified that this is safe for all the peripherals that
+> we
+> have on the QS21 and QS22 blades (tg3, ehci, mthca, mptsas), but that
+> doesn't mean that it is safe in general, so I guess you are right that
+> we should not make it the default in the kernel for Cell systems.
+> Hans, can you confirm this?
 
-Please, provide an indication of what changed since the previous
-version of the patch to make the reviewer's life easier !
+I'm surprised with tg3. We need to make sure that updates to the
+hw status block are properly ordered vs writes to the ring, among
+other things.
 
-Thanks,
 Ben.
