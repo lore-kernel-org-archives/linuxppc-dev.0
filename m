@@ -1,19 +1,25 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 6548CDE021
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 10:50:42 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Thu, 17 Jul 2008 02:49:11 +0200
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [HOW] binutils-2.17 breaks the 2.6.26 kernel
-Message-ID: <20080717004911.GA13596@iram.es>
-References: <1dce2aab6509053e60f7a59a30974749@bga.com>
-	<9e4733910807161738g58da8bd7v78e9d50dc4d846cb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910807161738g58da8bd7v78e9d50dc4d846cb@mail.gmail.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Alan Modra <amodra@bigpond.net.au>,
-	Milton Miller <miltonm@bga.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.232])
+	by ozlabs.org (Postfix) with ESMTP id E8484DDFEE
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 12:16:15 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so4297946wra.1
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 19:16:13 -0700 (PDT)
+Subject: Re: [PATCH] Add AMCC Arches 460GT eval board support to platforms/44x
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200807170058.53599.arnd@arndb.de>
+References: <1216186406-27993-1-git-send-email-fkan@amcc.com>
+	<200807161646.02306.arnd@arndb.de>
+	<20080716154646.GH24045@secretlab.ca>
+	<200807170058.53599.arnd@arndb.de>
+Content-Type: text/plain
+Date: Wed, 16 Jul 2008 22:15:53 -0400
+Message-Id: <1216260953.13063.7.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallard@amcc.com>, fkan@amcc.com,
+	linuxppc-embedded@ozlabs.org
+Reply-To: jwboyer@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 16, 2008 at 08:38:14PM -0400, Jon Smirl wrote:
-> On 7/16/08, Milton Miller <miltonm@bga.com> wrote:
-> > Hi.
+On Thu, 2008-07-17 at 00:58 +0200, Arnd Bergmann wrote:
+> On Wednesday 16 July 2008, Grant Likely wrote:
+> > 
+> > > Shouldn't it be enough to have a common compatible value in each
+> > > of these boards, e.g. "amcc,generic-ppc44x" and then just ignore the
+> > > specific type unless you need to do something special?
+> > 
+> > This is bad for the same reason that "amcc,44x-<blah>" compatible values
+> > are bad in device nodes.  The definition of '*-44x-*' changes over time as
+> > new parts are added.  Compatible values should always reflect an exact
+> > part number.
 > 
-> Previous threads have mentioned that binutil-2.17 is broken for
-> building powerpc kernels. It is fixed in binutils-2.18.
+> I agree in general, but I also think that all 44x boards should be
+> regarded as the same machine time, in the same way that all powermacs
+> are detected as compatible with "Power Macintosh" or "MacRISC", or
+> how all sorts of serial ports claim compatibility with i8250.
 > 
-> I have encountered this and upgrading to 2.18 fixed my build. The
-> symptom is large kernel sizes and a long time in gzip. In my case it
-> was gziping a 2GB file.
+> For classic SOCs like 4xx or 52xx, the SOC familiy more or less defines
+> the platform, and all the details about peripherals can be expressed
+> in the device tree elsewhere.
 
-Only? Mine was over 3GB :-)
+This is what Grant has done for 52xx and what I was talking about with
+"4xx_board.c", though 4xx_soc.c is probably a better name.
 
-I've not yet had time to update the binutils (the machine has
-a standard Debian Etch and I have trouble when adding Lenny
-sources).
+My hesitation is that while it's true today that 440<chip name> defines
+the SoC, it might not always be.  And the Virtex boards are craziness
+with the core and FPGA setup.  So we need to be careful a bit when
+chosing what do "bind" to for generics.
 
-I also bisected it for fun and got 366234f6 as the culprit.
+> If one board is so different that you need a separate board setup
+> in the kernel, it should simply not claim compatibility with the
+> SOC platform.
 
-	Gabriel
+Right.  Today we only have a few "overrides" in 4xx.  Namely
+Canyonlands/Glacier, and Bamboo/Yosemite (Sequoia/Rainier should also
+really be that way, but they aren't).  So if we decide to go to a
+different scheme, it shouldn't be a big deal to switch.
+
+josh
