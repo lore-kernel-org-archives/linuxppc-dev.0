@@ -1,26 +1,21 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0024BDE095
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 02:24:42 +1000 (EST)
-Date: Thu, 17 Jul 2008 11:22:06 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/6] crypto: talitos - fix GFP flag usage
-Message-Id: <20080717112206.ec05b503.kim.phillips@freescale.com>
-In-Reply-To: <8819CEAD-C9D4-4645-A272-026AE2B39D7B@kernel.crashing.org>
-References: <20080716182215.36c1bd11.kim.phillips@freescale.com>
-	<BDCB5191-EEDE-4046-A741-80E6EF1333CF@kernel.crashing.org>
-	<20080717121758.GA25267@gondor.apana.org.au>
-	<D59ED865-85CF-4C1E-9D79-D9DD0DE49505@kernel.crashing.org>
-	<20080717102746.33381e30.kim.phillips@freescale.com>
-	<8819CEAD-C9D4-4645-A272-026AE2B39D7B@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 678ECDE8CE
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 03:39:48 +1000 (EST)
+Date: Thu, 17 Jul 2008 12:39:30 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] elf loader support for auxvec base platform string
+Message-ID: <20080717173930.GG9594@localdomain>
+References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
+	<1216166331-14810-2-git-send-email-ntl@pobox.com>
+	<1216276539.7740.309.camel@pasglop>
+	<20080717000951.5f8cab37.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080717000951.5f8cab37.akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, roland@redhat.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,47 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Jul 2008 10:51:43 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
-
+Andrew Morton wrote:
+> > On Tue, 2008-07-15 at 18:58 -0500, Nathan Lynch wrote:
+> > > diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> > > index d48ff5f..834c2c4 100644
+> > > --- a/fs/binfmt_elf.c
+> > > +++ b/fs/binfmt_elf.c
+> > > @@ -131,6 +131,10 @@ static int padzero(unsigned long elf_bss)
+> > >  #define STACK_ALLOC(sp, len) ({ sp -= len ; sp; })
+> > >  #endif
+> > >  
+> > > +#ifndef ELF_BASE_PLATFORM
+> > > +#define ELF_BASE_PLATFORM NULL
+> > > +#endif
 > 
-> On Jul 17, 2008, at 10:27 AM, Kim Phillips wrote:
+> Please add a comment which explains what this is.
 > 
-> > On Thu, 17 Jul 2008 07:26:14 -0500
-> > Kumar Gala <galak@kernel.crashing.org> wrote:
-> >
-> >>
-> >> On Jul 17, 2008, at 7:17 AM, Herbert Xu wrote:
-> >>
-> >>> On Wed, Jul 16, 2008 at 06:33:45PM -0500, Kumar Gala wrote:
-> >>>>
-> >>>> On Jul 16, 2008, at 6:22 PM, Kim Phillips wrote:
-> >>>>
-> >>>>> use GFP_ATOMIC when necessary; use atomic_t when allocating
-> >>>>> submit_count.
-> >>>>
-> >>>> why?
-> >>>
-> >>> You mean why are atomics required? Yes that is a good question.
-> >>
-> >> Yep. the commit message isn't explaining why, just what :)
-> >
-> > In honouring requests that don't have the CRYPTO_TFM_REQ_MAY_SLEEP  
-> > set,
-> > afaict, it's the standard non-wait variant GFP that drivers use (see
-> > the ixp4xx driver for e.g.).
+> Please also add a comment telling the world in which header file the
+> architecture *must* define this macro and then ensure that that header is
+> included into this file by reliable means.  asm/elf.h looks OK.
+
+Okay.
+
+
+> > > @@ -172,6 +178,19 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+> > >  			return -EFAULT;
+> > >  	}
+> > >  
+> > > +	/*
+> > > +	 * If this architecture has a "base" platform capability
+> > > +	 * string, copy it to userspace.
+> > > +	 */
+> > > +	u_base_platform = NULL;
+> > > +	if (k_base_platform) {
+> > > +		size_t len = strlen(k_base_platform) + 1;
+> > > +
+> > > +		u_base_platform = (elf_addr_t __user *)STACK_ALLOC(p, len);
+> > > +		if (__copy_to_user(u_base_platform, k_base_platform, len))
+> > > +			return -EFAULT;
+> > > +	}
 > 
-> so GFP_ATOMIC and atomic_t aren't related.  I can understand the need  
-> for GFP_ATOMIC, but I don't get why something needs to be declared  
-> atomic_t.
+> >From my reading, this change will result in no additional code
+> generation on non-powerpc architectures.  This is good.  If poss, could
+> you please verify that theory and perhaps drop a note in the changelog
+> about that?
 
-I see what the source of confusion is now; it appears I missed this
-atomic_t clean-up when making the patchseries; the atomic_t fix belongs
-in the previous "preempt overflow interrupts" patch (3/6).
+That was the intent, yes.  However:
 
-atomic_t is needed for atomic operations which protect resource
-contention on submit_count, which subsequently represents submission
-slot availability on a particular SEC channel for multiple, potentially
-simultaneous, users.
+$ scripts/bloat-o-meter vmlinux-x86-{before,after}
+add/remove: 0/0 grow/shrink: 2/0 up/down: 18/0 (18)
+function                                     old     new   delta
+init_mm                                      784     800     +16
+load_elf_binary                            11946   11948      +2
 
-Kim
+(x86_64_defconfig, gcc 4.2.3)
+
+The init_mm/mm_struct bloat is expected (although I'd like to avoid
+that), but evidently it has some small effect on load_elf_binary.
