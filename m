@@ -1,22 +1,20 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 0AC87DE283
+Return-Path: <marco.stornelli@coritel.it>
+Received: from nausicaa2.coritel.it
+	(host254-130-static.190-82-b.business.telecomitalia.it
+	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 5309FDE059
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jul 2008 18:41:06 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KJP2t-0006Kh-BH
-	for linuxppc-embedded@ozlabs.org; Thu, 17 Jul 2008 01:41:03 -0700
-Message-ID: <18504063.post@talk.nabble.com>
-Date: Thu, 17 Jul 2008 01:41:03 -0700 (PDT)
-From: Misbah khan <misbah_khan@engineer.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: how to allocate 9MB of memory in kernel ?
-In-Reply-To: <d194b8ce0807170102x4be8b7ccx33a6a09e6129a45b@mail.gmail.com>
+	Thu, 17 Jul 2008 19:02:25 +1000 (EST)
+Message-ID: <487F0B2A.5050203@coritel.it>
+Date: Thu, 17 Jul 2008 11:04:42 +0200
+From: Marco Stornelli <marco.stornelli@coritel.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <18503022.post@talk.nabble.com>
-	<d194b8ce0807170102x4be8b7ccx33a6a09e6129a45b@mail.gmail.com>
+To: Misbah khan <misbah_khan@engineer.com>
+Subject: Re: how to allocate 9MB of memory in kernel ?
+References: <18503022.post@talk.nabble.com> <487EFA1E.8060804@coritel.it>
+	<18503965.post@talk.nabble.com>
+In-Reply-To: <18503965.post@talk.nabble.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,74 +25,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Misbah khan ha scritto:
+>>> You can use the mem option to tell to the kernel that you've got less 
+>>> ram you really have. 
+> I really didnt got the point you made. Can you please elaborate it for my
+> understanding.
+If you've got 128MB of ram you can use the mem option to tell to the 
+kernel the it can use only (128 - 9) MB of ram, after that you can use 
+that chunk of ram, however I think it's not the case if your goal is to 
+use a sdram as you said in the previous message.
 
+>>> However you can read Linux device drivers chapter 8 
+> i dont need to allocate large memory at the boot time also vmalloc and
+> kmalloc i cant use as it can allocate free page up to 128kb, hence if you
+> could suggest me a better technique i would really appriciate .
+> 
+The problem about 128KB is only for kmalloc. If I understood correctly 
+you need only to remap the 9MB of your sdram.
 
-In have a sdram of size 9MB which i would map to kernel space (ioremap woul=
-d
-do that ) the whole 9 MB kernel virtual memory i need to map to the
-application , the application would read when driver has complited writing
-and vice versa this implimentation would be in a circular buffer type. The
-size of my RAM is 128 MB=20
-
-
-
-Sylvain Joyeau wrote:
->=20
-> Misbah,
->=20
-> Please, give some more details about your application: the answer(s)
-> heavily depends on the kind of memory you want to allocate: contiguous
-> (implied in DMA purpose) or not (for process memory sharing only).
->=20
-> --
-> sj
->=20
->=20
-> 2008/7/17 Misbah khan <misbah_khan@engineer.com>:
+> ---Misbah <><
+> 
+> 
+> Marco Stornelli wrote:
+>> Misbah khan ha scritto:
+>>> Hi all,
+>>>
+>>> I need to allocate 9 MB of memory in to the kernel space which i need to
+>>> mmap for the application to access.
+>>>
+>>> I need to know what could be the best possible way of doing the same.
+>>>
+>>> Please share your experience in this regard .
+>>>
+>>> Thank you in advance 
+>>>
+>>> ----Misbah <><
+>> You can use the mem option to tell to the kernel that you've got less 
+>> ram you really have. However you can read Linux device drivers chapter 8 
+>> "Obtaining Large Buffers" :).
 >>
->> Hi all,
+>> Regards,
 >>
->> I need to allocate 9 MB of memory in to the kernel space which i need to
->> mmap for the application to access.
+>> -- 
+>> Marco Stornelli
+>> Embedded Software Engineer
+>> CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
+>> http://www.coritel.it
 >>
->> I need to know what could be the best possible way of doing the same.
->>
->> Please share your experience in this regard .
->>
->> Thank you in advance
->>
->> ----Misbah <><
->> --
->> View this message in context:
->> http://www.nabble.com/how-to-allocate-9MB-of-memory-in-kernel---tp185030=
-22p18503022.html
->> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
->>
+>> marco.stornelli@coritel.it
+>> +39 06 72582838
 >> _______________________________________________
 >> Linuxppc-embedded mailing list
 >> Linuxppc-embedded@ozlabs.org
 >> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 >>
->=20
->=20
->=20
-> --=20
-> ------------------
-> Sylvain JOYEAU
-> Freelance Engineer
-> Software RT-OS R&D
-> sylvain.joyeau@gmail.com
-> T=C3=A9l: +33-(0)667 477 052
-> "A good idea is one side of the coin. The other side is the practical
-> usefulness". J. Liedke.
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
->=20
+>>
+> 
 
---=20
-View this message in context: http://www.nabble.com/how-to-allocate-9MB-of-=
-memory-in-kernel---tp18503022p18504063.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+
+-- 
+Marco Stornelli
+Embedded Software Engineer
+CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
+http://www.coritel.it
+
+marco.stornelli@coritel.it
++39 06 72582838
