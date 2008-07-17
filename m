@@ -1,18 +1,19 @@
-Return-Path: <rukseninanir@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id 15949DDF30
+Return-Path: <marco.stornelli@coritel.it>
+Received: from nausicaa2.coritel.it
+	(host254-130-static.190-82-b.business.telecomitalia.it
+	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id C3468DE479
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jul 2008 20:32:57 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so604339ugf.0
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jul 2008 03:32:54 -0700 (PDT)
-Message-ID: <487F1FD2.7090909@gmail.com>
-Date: Thu, 17 Jul 2008 13:32:50 +0300
-From: Ruksen INANIR <rukseninanir@gmail.com>
+	Thu, 17 Jul 2008 21:11:49 +1000 (EST)
+Message-ID: <487F297B.4070806@coritel.it>
+Date: Thu, 17 Jul 2008 13:14:03 +0200
+From: Marco Stornelli <marco.stornelli@coritel.it>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: increase lowmem value for ppc
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ruksen INANIR <rukseninanir@gmail.com>
+Subject: Re: increase lowmem value for ppc
+References: <487F1FD2.7090909@gmail.com>
+In-Reply-To: <487F1FD2.7090909@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,14 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Ruksen INANIR ha scritto:
+> 
+> Is there a way to increase the lowmem value for ppc. The MAX_LOW_MEM is 
+> defined as max 768 MB. But a value around 1.5 G works with no problem. 
+> But when i try to increase this value to 1520 or more, kernel complaints 
+> about no space for memory allocation when loading kernel modules.
+> I do not want to use HIGHMEM config. What is the max lowmem value for a 
+> ppc system? What other setting are needed to use 1520 MB (or more) as 
+> lowmem .
+> The ppc card has 2G on board memory. 2.4.22 kernel is used.
+> 
+> Thanks
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+With 32-bit arch you may not use more than 1GB to map the memory (minus 
+some space for some kernel operation). The value of 768MB was not there 
+by chance.
 
-Is there a way to increase the lowmem value for ppc. The MAX_LOW_MEM is 
-defined as max 768 MB. But a value around 1.5 G works with no problem. 
-But when i try to increase this value to 1520 or more, kernel complaints 
-about no space for memory allocation when loading kernel modules.
-I do not want to use HIGHMEM config. What is the max lowmem value for a 
-ppc system? What other setting are needed to use 1520 MB (or more) as 
-lowmem .
-The ppc card has 2G on board memory. 2.4.22 kernel is used.
+-- 
+Marco Stornelli
+Embedded Software Engineer
+CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
+http://www.coritel.it
 
-Thanks
+marco.stornelli@coritel.it
++39 06 72582838
