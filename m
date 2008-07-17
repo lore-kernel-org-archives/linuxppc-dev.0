@@ -1,28 +1,24 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id 5D52CDE1DB
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 68938DED9D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Jul 2008 01:27:59 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1KJVOZ-0005Q2-RH
-	for linuxppc-embedded@ozlabs.org; Thu, 17 Jul 2008 15:27:51 +0000
-Received: from p5497d67a.dip.t-dialin.net ([84.151.214.122])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 17 Jul 2008 15:27:51 +0000
-Received: from dzu by p5497d67a.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 17 Jul 2008 15:27:51 +0000
-To: linuxppc-embedded@ozlabs.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: Re: Videomode 800x480
-Date: Thu, 17 Jul 2008 17:26:01 +0200
-Message-ID: <m24p6o352u.fsf@ohwell.denx.de>
-References: <18470632.post@talk.nabble.com> <487CEC85.2070801@denx.de>
-	<18482586.post@talk.nabble.com>
+	Fri, 18 Jul 2008 03:02:03 +1000 (EST)
+Date: Thu, 17 Jul 2008 12:01:55 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: Freescale UCC_GETH Half Duplex Patch
+Message-Id: <20080717120155.efdef031.kim.phillips@freescale.com>
+In-Reply-To: <20080711124604.caf199e9.kim.phillips@freescale.com>
+References: <2FE8E39946EE489FBAFC327EC9154EAF@absolutdaddy>
+	<20080711124604.caf199e9.kim.phillips@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: chuck@ThePTRGroup.com, rmcguire@videopresence.com,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -33,25 +29,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Alex,
+On Fri, 11 Jul 2008 12:46:04 -0500
+Kim Phillips <kim.phillips@freescale.com> wrote:
 
-> Hello, the physical settings for sync are made by U-Boot and working!
-> But in Lunux when I use 800x480, the screen is well, but the Kernel crashes
-> at Bootup!
-> Using 800x600 works!
-> Now I need only "Dummy" settings, that I can tell Linux I would like 800x480
-> and the Kernel doesn`t crash!
-> I don`t know exactly why the Kernel crashes, I know only that the modedB
-> 800x600 and so on work!
-> I will try your settings immediately!
+> It needs to be sent to the netdev mailing list, and see if you can get
+> rid of the MIME-encoding (see linux-2.6/Documentation/email-clients.txt).
+> 
+> And don't forget to add a signed-off-by line, too.
 
-Your keymap seems to be broken.  Try to include this in your ~/.Xmodmap
-file:
+Hi Russell, may I have your signed-off-by so that I may submit this to
+netdev to be applied on your behalf?  I'll keep the attributions
+intact, of course.
 
-keycode  10 = 1 period
-
-Cheers
-  Detlev
-
--- 
-error compiling committee.c: too many arguments to function
+Kim
