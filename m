@@ -2,20 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 55520DE3C2
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 22:26:28 +1000 (EST)
-Message-Id: <D59ED865-85CF-4C1E-9D79-D9DD0DE49505@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 95FFADE422
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 22:28:38 +1000 (EST)
+Message-Id: <5F490C95-09E9-4378-B0B9-891FED7B182C@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-In-Reply-To: <20080717121758.GA25267@gondor.apana.org.au>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <2e3c13ddbf80969f086c92f40b1ca6cf891a738f.1216279070.git.michael@ellerman.id.au>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 4/6] crypto: talitos - fix GFP flag usage
-Date: Thu, 17 Jul 2008 07:26:14 -0500
-References: <20080716182215.36c1bd11.kim.phillips@freescale.com>
-	<BDCB5191-EEDE-4046-A741-80E6EF1333CF@kernel.crashing.org>
-	<20080717121758.GA25267@gondor.apana.org.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH 2/3] powerpc: Use PPC_LONG_ALIGN in uaccess.h
+Date: Thu, 17 Jul 2008 07:28:29 -0500
+References: <3756cbfb076b2fa0b93ec990aabfee73296443d9.1216279070.git.michael@ellerman.id.au>
+	<2e3c13ddbf80969f086c92f40b1ca6cf891a738f.1216279070.git.michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +25,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 17, 2008, at 7:17 AM, Herbert Xu wrote:
+On Jul 17, 2008, at 2:17 AM, Michael Ellerman wrote:
 
-> On Wed, Jul 16, 2008 at 06:33:45PM -0500, Kumar Gala wrote:
->>
->> On Jul 16, 2008, at 6:22 PM, Kim Phillips wrote:
->>
->>> use GFP_ATOMIC when necessary; use atomic_t when allocating
->>> submit_count.
->>
->> why?
->
-> You mean why are atomics required? Yes that is a good question.
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
+> include/asm-powerpc/uaccess.h |   21 +++++++++------------
+> 1 files changed, 9 insertions(+), 12 deletions(-)
 
-Yep. the commit message isn't explaining why, just what :)
-
-> Kim?
+What's the reason for the change?
 
 - k
