@@ -1,11 +1,25 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <487F6F1F.9070600@grandegger.com>
-Date: Thu, 17 Jul 2008 18:11:11 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 489D8DE046
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 02:10:41 +1000 (EST)
+Date: Thu, 17 Jul 2008 09:10:05 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] elf loader support for auxvec base platform string
+In-Reply-To: <1216276539.7740.309.camel@pasglop>
+Message-ID: <alpine.LFD.1.10.0807170908060.2959@woody.linux-foundation.org>
+References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
+	<1216166331-14810-2-git-send-email-ntl@pobox.com>
+	<1216276539.7740.309.camel@pasglop>
 MIME-Version: 1.0
-To: Linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: FSL UPM NAND bindings, add read-fetch-delay property
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Nathan Lynch <ntl@pobox.com>, linux-kernel@vger.kernel.org,
+	roland@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,87 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds the binding for the property "read-fetch-delay" to the
-sub-nodes of the "fsl,upm-nand" compatible nodes. It will be used by a
-patch extending the support of the FSL UPM NAND driver for the TQM8548
-modules, which do not have the R/B pin of the NAND chip connected.
-Furthermore it documents the missing FLASH partition bindings.
-
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
----
-
-As soon as this new binding is accepted, I going to send the patch for
-the FSL UPM NAND driver to the MTD mailing list. An old version can be
-found here:
-
-  http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057632.html
-
-TIA.
-
-Wolfgang.
 
 
- Documentation/powerpc/dts-bindings/fsl/upm-nand.txt |   39 +++++++++++++++++---
- 1 file changed, 35 insertions(+), 4 deletions(-)
+On Thu, 17 Jul 2008, Benjamin Herrenschmidt wrote:
+> 
+> Should I seek somebody's ack before merging a patch like the one below ?
+> 
+> I'm a bit reluctant to merge via the powerpc.git tree some changes to
+> generic files without at least an ack from somebody else :-)
 
-Index: linux-2.6-galak/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt
-===================================================================
---- linux-2.6-galak.orig/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt
-+++ linux-2.6-galak/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt
-@@ -1,11 +1,34 @@
- Freescale Localbus UPM programmed to work with NAND flash
- 
--Required properties:
-+Properties:
- - compatible : "fsl,upm-nand".
- - reg : should specify localbus chip select and size used for the chip.
- - fsl,upm-addr-offset : UPM pattern offset for the address latch.
- - fsl,upm-cmd-offset : UPM pattern offset for the command latch.
--- gpios : may specify optional GPIO connected to the Ready-Not-Busy pin.
-+- gpios : (optional) may specify GPIO connected to the Ready-Not-Busy 
-+  pin.
-+
-+Each NAND flash is represented as a sub-node of the UPM node. The
-+nodes's name represents the name of the corresponding device.
-+
-+NAND flash properties:
-+- compatible : (optional) not yet used.
-+- read-fetch-delay : (optional) chip dependent delay for transferring
-+  data from array to read regs (tR).
-+
-+Each partition is represented as a sub-node of the NAND flash device.
-+Each node's name represents the name of the corresponding partition
-+of the flash device.
-+
-+NAND flash partition properties:
-+- reg : The partition's offset and size within the flash bank.
-+- label : (optional) The label / name for this flash partition. If
-+  omitted, the label is taken from the node name (excluding the unit
-+  address).
-+- read-only : (optional) This parameter, if present, is a hint to
-+  Linux that this flash partition should only be mounted read-only.
-+  This is usually used for flash partitions containing early-boot
-+  firmware images or data which should not be clobbered.
- 
- Example:
- 
-@@ -20,9 +43,17 @@ upm@1,0 {
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		compatible = "...";
-+		read-fetch-delay = 25
-+
-+		fs@0 {
-+			label = "fs";
-+			reg = <0x0 0xf80000>;
-+		};
- 
--		partition@0 {
--			...
-+		firmware@f80000 {
-+			label ="firmware";
-+			reg = <0xf80000 0x80000>;
-+			read-only;
- 		};
- 	};
- };
+Gaah. Generally we don't, but you're right to ask. The ELF loading keeps 
+on accumulating these things, and I'm not sure we have the right process 
+for things like this. They're all individually small and insignificant, 
+and they are all individually never going away and making the ELF loader 
+messier and messier.
+
+I dunno. 
+
+		Linus
