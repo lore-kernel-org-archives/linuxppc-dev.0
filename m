@@ -1,27 +1,17 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
-	by ozlabs.org (Postfix) with ESMTP id 48D03DE2E1
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 22:05:51 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so3383343pyg.27
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 05:05:50 -0700 (PDT)
-Message-ID: <9e4733910807170505k5aaf1c6fp10c6c268cb8e15c7@mail.gmail.com>
-Date: Thu, 17 Jul 2008 08:05:49 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Nobin Mathew" <nobin.mathew@gmail.com>
-Subject: Re: [alsa-devel] WRITING AN SOC DRIVER WITHOUT DMA
-In-Reply-To: <8d6898730807170426wac4719cv7cd925cfcd91aa68@mail.gmail.com>
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
+	by ozlabs.org (Postfix) with ESMTP id 21D15DDFF7
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 22:17:35 +1000 (EST)
+Date: Thu, 17 Jul 2008 20:17:20 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH 1/6] crypto: talitos - remove calls to of_node_put
+Message-ID: <20080717121719.GA25179@gondor.apana.org.au>
+References: <20080716182146.0b095f5d.kim.phillips@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
-	<20080712083939.15025.31192.stgit@trillian.secretlab.ca>
-	<1216199130.749.4.camel@dinesh.dua>
-	<8d6898730807160307g4455597ck921d55da8f51455d@mail.gmail.com>
-	<1216203206.9723.0.camel@dinesh.dua>
-	<1216274611.18207.6.camel@dinesh.dua>
-	<20080717105614.GC15333@sirena.org.uk>
-	<8d6898730807170426wac4719cv7cd925cfcd91aa68@mail.gmail.com>
-Cc: dinesh <dinesh.dua@coraltele.com>, alsa-devel@alsa-project.org,
-	liam.girdwood@wolfsonmicro.com, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080716182146.0b095f5d.kim.phillips@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,49 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/17/08, Nobin Mathew <nobin.mathew@gmail.com> wrote:
-> Hi Dinesh,
->
-> If that is your requirement then go and see the actual code
-> sound/arm/aaci.c. They are not using DMA. It is programmed IO.
+On Wed, Jul 16, 2008 at 06:21:46PM -0500, Kim Phillips wrote:
+> From: Lee Nipper <lee.nipper@freescale.com>
+> 
+> Remove of_node_put calls since there is no corresponding of_node_get.
+> This patch prevents an exception when talitos is loaded a 2nd time.
+> This sequence: modprobe talitos; rmmod talitos; modprobe talitos
+> causes this message: "WARNING: Bad of_node_put() on /soc8349@e0000000/crypto@30000".
+> 
+> Signed-off-by: Lee Nipper <lee.nipper@freescale.com>
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 
-
-Search around the list archives, the first version of the
-Efika/mpc5200 ac97 driver was programmed IO. The next version updated
-it to DMA.
-
-
->
->
-> Thanks
-> Nobin Mathew
->
->
-> On 7/17/08, Mark Brown
-> <broonie@opensource.wolfsonmicro.com> wrote:
-> > On Thu, Jul 17, 2008 at 11:33:31AM +0530, dinesh wrote:
-> >
-> > > What i want is that i have a buffer in driver code which is also handled
-> > > by some other application i want that this buffer data is to be used for
-> > > capture and playback  stream fills data to another buffer which i can
-> > > passover to my other application.
-> >
-> > Depending on what exactly you're doing here you may find that this is
-> > best implemented in user space with an ALSA plugin rather than doing it
-> > as part of a driver.  If you do want to do this in kernel space then the
-> > parts of an ASoC driver which transfer audio data are just the same as
-> > those for any other ALSA driver so things like sound/arm/aaci.c may
-> > provide useful examples.
-> >
->
->
-> _______________________________________________
->  Linuxppc-dev mailing list
->  Linuxppc-dev@ozlabs.org
->  https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
+All applied to crpyto-2.6.  Thanks!
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
