@@ -1,16 +1,16 @@
 Return-Path: <sprasad@bivio.net>
 Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
-	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 03A90DE10A
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 6CE89DDF16
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Jul 2008 06:08:20 +1000 (EST)
+	Fri, 18 Jul 2008 06:15:51 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: Re: increase lowmem value for ppc
-Date: Thu, 17 Jul 2008 13:07:48 -0700
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D702B647CC@corpexc01.corp.networkrobots.com>
-In-Reply-To: <mailman.2286.1216296226.2883.linuxppc-embedded@ozlabs.org>
-References: <mailman.2286.1216296226.2883.linuxppc-embedded@ozlabs.org>
+Subject: Re: how to allocate 9MB of memory in kernel ?
+Date: Thu, 17 Jul 2008 13:15:19 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D702B647D0@corpexc01.corp.networkrobots.com>
+In-Reply-To: <mailman.2280.1216290829.2883.linuxppc-embedded@ozlabs.org>
+References: <mailman.2280.1216290829.2883.linuxppc-embedded@ozlabs.org>
 From: "Siva Prasad" <sprasad@bivio.net>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -23,18 +23,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Misbah,
 
-Marco Stornelli wrote:
+May be I am missing some thing. I am sure you looked at the obvious.
 
-> Upgrading to a 2.6.x kernel may solve the problem, but it needs a lot
-of=20
-> effort. Does 2.6.x kernel support 2G physical memory?
->=20
-It's the same. Some architecture have 36-bit addressing, but I don't=20
-know if the latest kernel has the support for this feature for powerpc.
->=20
+Is there any reason why you are not using blocked read in application
+pthread (a separate thread if necessary), so that driver provides that
+value back to the application. Isn't that the right way to implement?
 
-I think recently there were some patches with 2.6.26-rcx to support
-36-bit addressing and changed the addressing to phys_addr_t type from
-unsigned long, and few other changed. I think this should be available
-starting 2.6.26 version.
+- Siva
+
+Misbah khan <misbah_khan@engineer.com> wrote:
+
+In have a sdram of size 9MB which i would map to kernel space (ioremap
+would
+do that ) the whole 9 MB kernel virtual memory i need to map to the
+application , the application would read when driver has complited
+writing
+and vice versa this implimentation would be in a circular buffer type.
+The
+size of my RAM is 128 MB=20
