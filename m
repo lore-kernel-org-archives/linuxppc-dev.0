@@ -1,20 +1,24 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2555EDE64A
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 00:09:03 +1000 (EST)
-Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m6HDMbYo015730
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 15:22:38 +0200
-Message-ID: <021101c8e810$2e810fb0$ad289e86@LPSC0173W>
-From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-To: <linuxppc-dev@ozlabs.org>
-Subject: Calling the kernel from a mini-bootloader
-Date: Thu, 17 Jul 2008 15:22:28 +0200
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 18E14DE9C5
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 00:13:38 +1000 (EST)
+Date: Thu, 17 Jul 2008 18:13:35 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
+Message-ID: <20080717141335.GA2219@polina.dev.rtsoft.ru>
+References: <1216133032.5345.73.camel@dax.rpnet.com>
+	<20080715151917.GA30607@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp>
+	<20080717041531.GA27243@secretlab.ca>
+	<20080717140519.GA32617@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080717140519.GA32617@polina.dev.rtsoft.ru>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
+	Trent Piepho <tpiepho@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello all,
-I'm in the process of writing a mini-bootloaler for a custom board and would 
-like some feedback on my boot methodology.
+On Thu, Jul 17, 2008 at 06:05:19PM +0400, Anton Vorontsov wrote:
+[...]
+> > I think it would be better to have a module that scans the device tree
+> > for LED nodes and registers a single leds-gpio platform device for the
+> > whole lot.
+> > 
+> > Thoughts?
+> 
+> I like the idea, thanks.
 
-Basically the kernel code (elf file) is copied into memory by a JTAG 
-debugger. A custom program (yet to be finished) then copies it onto an 
-onboard flash memory using serial commands. This flash is not part of the 
-flat memory addressing.
+Ugh, no. The idea sounds good, but in practice it isn't, since we'll
+have to handle suspend/resume ops ourselves. When we stick with the
+device/driver model we're getting all this for free.
 
-When I want to boot, I have a small bootloader put into an eprom that _is_ 
-part of the flat memory addressing. This (finished but not tested yet) 
-bootloader basically does two things:
-- it copies the content of the first flash into RAM
-- it launches it using a custom function call like "0x400000();"
-
-Now, I'd like to know if this is a reasonable approach ? I couldn't think of 
-a better way, but maybe there are issues I didn't think off.
-
-
-One additional question, if the above is valid, is that I would like to pass 
-a particular argument to the kernel to set its MAC address. I can read an 
-external value (similar to jumpers) from the bootloader via GPIO. Is there a 
-way to pass this value to the kernel so that a modified 
-arch/ppc/boot/simple/embed_config.c can use it to set the MAC address ?
-
-Maybe the main() of the kernel can receive argv/argc the usual way, and I 
-just need to call "0x400000(argc, argv);" but I have no idea if that works. 
-Thanks for suggestions.
 -- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
