@@ -1,21 +1,22 @@
 Return-Path: <bounces@nabble.com>
 Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id EBEC3DE1EC
+	by ozlabs.org (Postfix) with ESMTP id 0AC87DE283
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jul 2008 18:34:42 +1000 (EST)
+	Thu, 17 Jul 2008 18:41:06 +1000 (EST)
 Received: from isper.nabble.com ([192.168.236.156])
 	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KJOwh-00069I-Tq
-	for linuxppc-embedded@ozlabs.org; Thu, 17 Jul 2008 01:34:39 -0700
-Message-ID: <18503965.post@talk.nabble.com>
-Date: Thu, 17 Jul 2008 01:34:39 -0700 (PDT)
+	(envelope-from <bounces@nabble.com>) id 1KJP2t-0006Kh-BH
+	for linuxppc-embedded@ozlabs.org; Thu, 17 Jul 2008 01:41:03 -0700
+Message-ID: <18504063.post@talk.nabble.com>
+Date: Thu, 17 Jul 2008 01:41:03 -0700 (PDT)
 From: Misbah khan <misbah_khan@engineer.com>
 To: linuxppc-embedded@ozlabs.org
 Subject: Re: how to allocate 9MB of memory in kernel ?
-In-Reply-To: <487EFA1E.8060804@coritel.it>
+In-Reply-To: <d194b8ce0807170102x4be8b7ccx33a6a09e6129a45b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <18503022.post@talk.nabble.com> <487EFA1E.8060804@coritel.it>
+Content-Type: text/plain; charset=UTF-8
+References: <18503022.post@talk.nabble.com>
+	<d194b8ce0807170102x4be8b7ccx33a6a09e6129a45b@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,54 +28,73 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
->>You can use the mem option to tell to the kernel that you've got less 
->>ram you really have. 
-I really didnt got the point you made. Can you please elaborate it for my
-understanding.
->>However you can read Linux device drivers chapter 8 
-i dont need to allocate large memory at the boot time also vmalloc and
-kmalloc i cant use as it can allocate free page up to 128kb, hence if you
-could suggest me a better technique i would really appriciate .
 
----Misbah <><
+In have a sdram of size 9MB which i would map to kernel space (ioremap woul=
+d
+do that ) the whole 9 MB kernel virtual memory i need to map to the
+application , the application would read when driver has complited writing
+and vice versa this implimentation would be in a circular buffer type. The
+size of my RAM is 128 MB=20
 
 
-Marco Stornelli wrote:
-> 
-> Misbah khan ha scritto:
+
+Sylvain Joyeau wrote:
+>=20
+> Misbah,
+>=20
+> Please, give some more details about your application: the answer(s)
+> heavily depends on the kind of memory you want to allocate: contiguous
+> (implied in DMA purpose) or not (for process memory sharing only).
+>=20
+> --
+> sj
+>=20
+>=20
+> 2008/7/17 Misbah khan <misbah_khan@engineer.com>:
+>>
 >> Hi all,
->> 
+>>
 >> I need to allocate 9 MB of memory in to the kernel space which i need to
 >> mmap for the application to access.
->> 
+>>
 >> I need to know what could be the best possible way of doing the same.
->> 
+>>
 >> Please share your experience in this regard .
->> 
->> Thank you in advance 
->> 
+>>
+>> Thank you in advance
+>>
 >> ----Misbah <><
-> You can use the mem option to tell to the kernel that you've got less 
-> ram you really have. However you can read Linux device drivers chapter 8 
-> "Obtaining Large Buffers" :).
-> 
-> Regards,
-> 
-> -- 
-> Marco Stornelli
-> Embedded Software Engineer
-> CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-> http://www.coritel.it
-> 
-> marco.stornelli@coritel.it
-> +39 06 72582838
+>> --
+>> View this message in context:
+>> http://www.nabble.com/how-to-allocate-9MB-of-memory-in-kernel---tp185030=
+22p18503022.html
+>> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+>>
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>
+>=20
+>=20
+>=20
+> --=20
+> ------------------
+> Sylvain JOYEAU
+> Freelance Engineer
+> Software RT-OS R&D
+> sylvain.joyeau@gmail.com
+> T=C3=A9l: +33-(0)667 477 052
+> "A good idea is one side of the coin. The other side is the practical
+> usefulness". J. Liedke.
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+>=20
+>=20
 
--- 
-View this message in context: http://www.nabble.com/how-to-allocate-9MB-of-memory-in-kernel---tp18503022p18503965.html
+--=20
+View this message in context: http://www.nabble.com/how-to-allocate-9MB-of-=
+memory-in-kernel---tp18503022p18504063.html
 Sent from the linuxppc-embedded mailing list archive at Nabble.com.
