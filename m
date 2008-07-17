@@ -1,20 +1,18 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 5309FDE059
+Return-Path: <rukseninanir@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id 15949DDF30
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jul 2008 19:02:25 +1000 (EST)
-Message-ID: <487F0B2A.5050203@coritel.it>
-Date: Thu, 17 Jul 2008 11:04:42 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
+	Thu, 17 Jul 2008 20:32:57 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so604339ugf.0
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 17 Jul 2008 03:32:54 -0700 (PDT)
+Message-ID: <487F1FD2.7090909@gmail.com>
+Date: Thu, 17 Jul 2008 13:32:50 +0300
+From: Ruksen INANIR <rukseninanir@gmail.com>
 MIME-Version: 1.0
-To: Misbah khan <misbah_khan@engineer.com>
-Subject: Re: how to allocate 9MB of memory in kernel ?
-References: <18503022.post@talk.nabble.com> <487EFA1E.8060804@coritel.it>
-	<18503965.post@talk.nabble.com>
-In-Reply-To: <18503965.post@talk.nabble.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: increase lowmem value for ppc
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,69 +23,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Misbah khan ha scritto:
->>> You can use the mem option to tell to the kernel that you've got less 
->>> ram you really have. 
-> I really didnt got the point you made. Can you please elaborate it for my
-> understanding.
-If you've got 128MB of ram you can use the mem option to tell to the 
-kernel the it can use only (128 - 9) MB of ram, after that you can use 
-that chunk of ram, however I think it's not the case if your goal is to 
-use a sdram as you said in the previous message.
 
->>> However you can read Linux device drivers chapter 8 
-> i dont need to allocate large memory at the boot time also vmalloc and
-> kmalloc i cant use as it can allocate free page up to 128kb, hence if you
-> could suggest me a better technique i would really appriciate .
-> 
-The problem about 128KB is only for kmalloc. If I understood correctly 
-you need only to remap the 9MB of your sdram.
+Is there a way to increase the lowmem value for ppc. The MAX_LOW_MEM is 
+defined as max 768 MB. But a value around 1.5 G works with no problem. 
+But when i try to increase this value to 1520 or more, kernel complaints 
+about no space for memory allocation when loading kernel modules.
+I do not want to use HIGHMEM config. What is the max lowmem value for a 
+ppc system? What other setting are needed to use 1520 MB (or more) as 
+lowmem .
+The ppc card has 2G on board memory. 2.4.22 kernel is used.
 
-> ---Misbah <><
-> 
-> 
-> Marco Stornelli wrote:
->> Misbah khan ha scritto:
->>> Hi all,
->>>
->>> I need to allocate 9 MB of memory in to the kernel space which i need to
->>> mmap for the application to access.
->>>
->>> I need to know what could be the best possible way of doing the same.
->>>
->>> Please share your experience in this regard .
->>>
->>> Thank you in advance 
->>>
->>> ----Misbah <><
->> You can use the mem option to tell to the kernel that you've got less 
->> ram you really have. However you can read Linux device drivers chapter 8 
->> "Obtaining Large Buffers" :).
->>
->> Regards,
->>
->> -- 
->> Marco Stornelli
->> Embedded Software Engineer
->> CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
->> http://www.coritel.it
->>
->> marco.stornelli@coritel.it
->> +39 06 72582838
->> _______________________________________________
->> Linuxppc-embedded mailing list
->> Linuxppc-embedded@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>
->>
-> 
-
-
--- 
-Marco Stornelli
-Embedded Software Engineer
-CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-http://www.coritel.it
-
-marco.stornelli@coritel.it
-+39 06 72582838
+Thanks
