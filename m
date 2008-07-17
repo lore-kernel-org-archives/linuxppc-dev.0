@@ -1,26 +1,25 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 98375DE07E
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 08:42:56 +1000 (EST)
-Date: Thu, 17 Jul 2008 15:42:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH v3] elf loader support for auxvec base platform string
-Message-Id: <20080717154218.8981035c.akpm@linux-foundation.org>
-In-Reply-To: <20080717221932.GL9594@localdomain>
-References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
-	<1216166331-14810-2-git-send-email-ntl@pobox.com>
-	<1216276539.7740.309.camel@pasglop>
-	<20080717000951.5f8cab37.akpm@linux-foundation.org>
-	<20080717221932.GL9594@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: John Reiser <jreiser@BitWagon.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org, roland@redhat.com
+Return-Path: <glikely@secretlab.ca>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.168])
+	by ozlabs.org (Postfix) with ESMTP id 771FDDDED5
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 09:31:56 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so82180wfg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 16:31:55 -0700 (PDT)
+Date: Thu, 17 Jul 2008 17:31:53 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Liam Girdwood <liam.girdwood@wolfsonmicro.com>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org, timur@freescale.com
+Subject: Re: [alsa-devel] [PATCH 3/3] ALSA SoC: Add Texas Instruments
+	TLV320AIC26 codec driver
+Message-ID: <20080717233153.GA8187@secretlab.ca>
+References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
+	<20080701235340.16923.48024.stgit@trillian.secretlab.ca>
+	<1214995713.4882.54.camel@localhost.localdomain>
+	<20080712060018.GB23213@secretlab.ca>
+	<20080712173609.GA6523@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080712173609.GA6523@sirena.org.uk>
+Sender: Grant Likely <glikely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,191 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Jul 2008 17:19:32 -0500
-Nathan Lynch <ntl@pobox.com> wrote:
+On Sat, Jul 12, 2008 at 06:36:10PM +0100, Mark Brown wrote:
+> On Sat, Jul 12, 2008 at 12:00:18AM -0600, Grant Likely wrote:
 
-> Some IBM POWER-based platforms have the ability to run in a
-> mode which mostly appears to the OS as a different processor from the
-> actual hardware.  For example, a Power6 system may appear to be a
-> Power5+, which makes the AT_PLATFORM value "power5+".  This means that
-> programs are restricted to the ISA supported by Power5+;
-> Power6-specific instructions are treated as illegal.
+> It wouldn't be the only driver not to implement PLL configuration in
+> this way so that's probably be OK for an initial merge.  What's expected
+> for PLL configuration is that you implement the DAI set_pll() operation
+> in the codec driver, allowing machine drivers to configure the PLL when
+> they wish.
+
+okay
+
+> The power configuration should be fixed, though.  Normally drivers
+> either fully implement DAPM (including set_bias_level()) or power
+> everything in the codec up when the driver is loaded.  At the minute
+> what the driver is doing appears to be powering the codec up in both
+> _hw_params() and _probe() but never powering anything down - if that is
+> the case then probably all you need to do is remove the extra power up
+> from hw_params(), giving you the simple option.
+
+done
+
+> > Hmmm, I haven't been able to find this; either in the code or on a live
+> > running system.  Where is the common reg dump implemented.
 > 
-> However, some applications (virtual machines, optimized libraries) can
-> benefit from knowledge of the underlying CPU model.  A new aux vector
-> entry, AT_BASE_PLATFORM, will denote the actual hardware.  For
-> example, on a Power6 system in Power5+ compatibility mode, AT_PLATFORM
-> will be "power5+" and AT_BASE_PLATFORM will be "power6".  The idea is
-> that AT_PLATFORM indicates the instruction set supported, while
-> AT_BASE_PLATFORM indicates the underlying microarchitecture.
-> 
-> If the architecture has defined ELF_BASE_PLATFORM, copy that value to
-> the user stack in the same manner as ELF_PLATFORM.
-> 
-> Signed-off-by: Nathan Lynch <ntl@pobox.com>
-> 
-> ---
-> 
-> Added comment explaining ELF_BASE_PLATFORM.
-> 
->  fs/binfmt_elf.c        |   28 ++++++++++++++++++++++++++++
->  include/linux/auxvec.h |    5 ++++-
->  2 files changed, 32 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-> index d48ff5f..d8a7cc0 100644
-> --- a/fs/binfmt_elf.c
-> +++ b/fs/binfmt_elf.c
-> @@ -131,6 +131,15 @@ static int padzero(unsigned long elf_bss)
->  #define STACK_ALLOC(sp, len) ({ sp -= len ; sp; })
->  #endif
->  
-> +#ifndef ELF_BASE_PLATFORM
-> +/*
-> + * AT_BASE_PLATFORM indicates the "real" hardware/microarchitecture.
-> + * If the arch defines ELF_BASE_PLATFORM (in asm/elf.h), the value
-> + * will be copied to the user stack in the same manner as AT_PLATFORM.
-> + */
-> +#define ELF_BASE_PLATFORM NULL
-> +#endif
-> +
->  static int
->  create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
->  		unsigned long load_addr, unsigned long interp_load_addr)
-> @@ -142,7 +151,9 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
->  	elf_addr_t __user *envp;
->  	elf_addr_t __user *sp;
->  	elf_addr_t __user *u_platform;
-> +	elf_addr_t __user *u_base_platform;
->  	const char *k_platform = ELF_PLATFORM;
-> +	const char *k_base_platform = ELF_BASE_PLATFORM;
->  	int items;
->  	elf_addr_t *elf_info;
->  	int ei_index = 0;
-> @@ -172,6 +183,19 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
->  			return -EFAULT;
->  	}
->  
-> +	/*
-> +	 * If this architecture has a "base" platform capability
-> +	 * string, copy it to userspace.
-> +	 */
-> +	u_base_platform = NULL;
-> +	if (k_base_platform) {
-> +		size_t len = strlen(k_base_platform) + 1;
-> +
-> +		u_base_platform = (elf_addr_t __user *)STACK_ALLOC(p, len);
-> +		if (__copy_to_user(u_base_platform, k_base_platform, len))
-> +			return -EFAULT;
-> +	}
-> +
->  	/* Create the ELF interpreter info */
->  	elf_info = (elf_addr_t *)current->mm->saved_auxv;
->  	/* update AT_VECTOR_SIZE_BASE if the number of NEW_AUX_ENT() changes */
-> @@ -208,6 +232,10 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
->  		NEW_AUX_ENT(AT_PLATFORM,
->  			    (elf_addr_t)(unsigned long)u_platform);
->  	}
-> +	if (k_base_platform) {
-> +		NEW_AUX_ENT(AT_BASE_PLATFORM,
-> +			    (elf_addr_t)(unsigned long)u_base_platform);
-> +	}
->  	if (bprm->interp_flags & BINPRM_FLAGS_EXECFD) {
->  		NEW_AUX_ENT(AT_EXECFD, bprm->interp_data);
->  	}
-> diff --git a/include/linux/auxvec.h b/include/linux/auxvec.h
-> index ad89545..1adc61d 100644
-> --- a/include/linux/auxvec.h
-> +++ b/include/linux/auxvec.h
-> @@ -26,8 +26,11 @@
->  
->  #define AT_SECURE 23   /* secure mode boolean */
->  
-> +#define AT_BASE_PLATFORM 38	/* string identifying real platform, may
-> +				 * differ from AT_PLATFORM. */
-> +
->  #ifdef __KERNEL__
-> -#define AT_VECTOR_SIZE_BASE (14 + 2) /* NEW_AUX_ENT entries in auxiliary table */
-> +#define AT_VECTOR_SIZE_BASE (14 + 3) /* NEW_AUX_ENT entries in auxiliary table */
->  #endif
->  
->  #endif /* _LINUX_AUXVEC_H */
+> /sys/bus/platform/devices/soc-audio/codec_reg
 
-OK.
+Yikes.  The AIC26 has registers all over the place and most of them are
+empty.  The codec_reg attribute handling means I need to maintain a
+cache of the entire register file; not just the part that is actually
+used.  Oh well; I can work around it.
 
-But it conflicts directly with the already-queued
-execve-filename-document-and-export-via-auxiliary-vector.patch (which
-various potential reviewers blithely deleted - don't come complaining
-to me!):
-
-
-From: John Reiser <jreiser@BitWagon.com>
-
-The Linux kernel puts the filename argument of execve() into the
-new address space.  Many developers are surprised to learn this.
-Those who know and could use it, object "But it's not documented."
-Those who want to use it dislike the expression
-  (char *)(1+ strlen(env[-1+ n_env]) + env[-1+ n_env])
-because it requires locating the last original environment variable,
-and assumes that the filename follows the characters.
-
-This patch documents the insertion of the filename, and makes it easier to
-find by adding a new tag AT_EXECFN in the ElfXX_auxv_t; see <elf.h>.
-
-In many cases readlink("/proc/self/exe",) gives the same answer.  But if all
-the original pages get unmapped, then the kernel erases the symlink for
-/proc/self/exe.  This can happen when a program decompressor does a good job
-of cleaning up after uncompressing directly to memory, so that the address
-space of the target program looks the same as if compression had never
-happened.  One example is http://upx.sourceforge.net .
-
-One notable use of the underlying concept (what path containED the executable)
-is glibc expanding $ORIGIN in DT_RUNPATH.  In practice for the near term, it
-may be a good idea for user-mode code to use both /proc/self/exe and AT_EXECFN
-as fall-back methods for each other.  /proc/self/exe can fail due to
-unmapping, AT_EXECFN can fail because it won't be present on non-new systems. 
-The auxvec or {AT_EXECFN}.d_val also can get overwritten, although in nearly
-all cases this would be the result of a bug.
-
-The runtime cost is one NEW_AUX_ENT using two words of stack space.  The
-underlying value is maintained already as bprm->exec; setup_arg_pages() in
-fs/exec.c slides it for stack_shift, etc.
-
-Signed-off-by: John Reiser <jreiser@BitWagon.com>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Jakub Jelinek <jakub@redhat.com>
-Cc: Ulrich Drepper <drepper@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- fs/binfmt_elf.c        |    1 +
- include/linux/auxvec.h |    4 +++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
-
-diff -puN fs/binfmt_elf.c~execve-filename-document-and-export-via-auxiliary-vector fs/binfmt_elf.c
---- a/fs/binfmt_elf.c~execve-filename-document-and-export-via-auxiliary-vector
-+++ a/fs/binfmt_elf.c
-@@ -204,6 +204,7 @@ create_elf_tables(struct linux_binprm *b
- 	NEW_AUX_ENT(AT_GID, tsk->gid);
- 	NEW_AUX_ENT(AT_EGID, tsk->egid);
-  	NEW_AUX_ENT(AT_SECURE, security_bprm_secureexec(bprm));
-+	NEW_AUX_ENT(AT_EXECFN, bprm->exec);
- 	if (k_platform) {
- 		NEW_AUX_ENT(AT_PLATFORM,
- 			    (elf_addr_t)(unsigned long)u_platform);
-diff -puN include/linux/auxvec.h~execve-filename-document-and-export-via-auxiliary-vector include/linux/auxvec.h
---- a/include/linux/auxvec.h~execve-filename-document-and-export-via-auxiliary-vector
-+++ a/include/linux/auxvec.h
-@@ -26,8 +26,10 @@
- 
- #define AT_SECURE 23   /* secure mode boolean */
- 
-+#define AT_EXECFN  31	/* filename of program */
- #ifdef __KERNEL__
--#define AT_VECTOR_SIZE_BASE (14 + 2) /* NEW_AUX_ENT entries in auxiliary table */
-+#define AT_VECTOR_SIZE_BASE 17 /* NEW_AUX_ENT entries in auxiliary table */
-+  /* number of "#define AT_.*" above, minus {AT_NULL, AT_IGNORE, AT_NOTELF} */
- #endif
- 
- #endif /* _LINUX_AUXVEC_H */
-_
+Thanks,
+g.
