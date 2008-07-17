@@ -1,20 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 50617DDF22
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 15:59:23 +1000 (EST)
-In-Reply-To: <20080714164114.GA18784@polina.dev.rtsoft.ru>
-References: <20080714164114.GA18784@polina.dev.rtsoft.ru>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <dc452eaab83710e7d6f86dcc5d77bdda@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] leds: implement OpenFirmare GPIO LED driver
-Date: Thu, 17 Jul 2008 07:59:03 +0200
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
-	linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [patch 1/9] powerpc/cell/edac: log a syndrome code in case of
+	correctable error
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: arnd@arndb.de, Doug Thompson <norsk5@yahoo.com>
+In-Reply-To: <20080715195739.006221652@arndb.de>
+References: <20080715195139.316677337@arndb.de>
+	<20080715195739.006221652@arndb.de>
+Content-Type: text/plain
+Date: Thu, 17 Jul 2008 15:59:07 +1000
+Message-Id: <1216274347.7740.296.camel@pasglop>
+Mime-Version: 1.0
+Cc: Maxim Shchetynin <maxim@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org,
+	bluesmoke-devel <bluesmoke-devel@lists.sourceforge.net>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> diff --git a/Documentation/powerpc/dts-bindings/gpio/led.txt 
-> b/Documentation/powerpc/dts-bindings/gpio/led.txt
-> new file mode 100644
-> index 0000000..7e9ce81
-> --- /dev/null
-> +++ b/Documentation/powerpc/dts-bindings/gpio/led.txt
-> @@ -0,0 +1,15 @@
-> +LED connected to GPIO
-> +
-> +Required properties:
-> +- compatible : should be "gpio-led".
+Arnd, Maxim, please, next time, send that patch or at least CC the
+bluesmoke-devel list for EDAC related bits.
 
-This "compatible" name is a bit too generic.  No, I don't know a
-better name :-(
+Doug, if you are ok with this patch, I'll merge it via the powerpc
+tree.
 
-> +- label : (optional) the label for this LED. If omitted, the label is
-> +  taken from the node name (excluding the unit address).
+Cheers,
+Ben.
 
-What is a label?  It should be described here.  Also, its encoding
-should be described ("a string" I guess).
+On Tue, 2008-07-15 at 21:51 +0200, arnd@arndb.de 
 
-> +- gpios : should specify LED GPIO.
-> +
-> +Example:
-> +
-> +led@0 {
-> +	compatible = "gpio-led";
-> +	label = "hdd";
-> +	gpios = <&mcu_pio 0 0>;
-> +};
-
-You show a unit address but have no "reg" value.  This is
-incorrect.
-
-What would be the parent node of this, btw?
-
-
-Segher
+> From: Maxim Shchetynin <maxim@de.ibm.com>
+> 
+> If correctable error occurs the syndrome code was logged as 0. This patch
+> lets EDAC to log a correct syndrome code to make problem investigation
+> easier.
+> 
+> Signed-off-by: Maxim Shchetynin <maxim@de.ibm.com>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/edac/cell_edac.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/edac/cell_edac.c b/drivers/edac/cell_edac.c
+> index b54112f..0e024fe 100644
+> --- a/drivers/edac/cell_edac.c
+> +++ b/drivers/edac/cell_edac.c
+> @@ -33,7 +33,7 @@ static void cell_edac_count_ce(struct mem_ctl_info *mci, int chan, u64 ar)
+>  {
+>  	struct cell_edac_priv		*priv = mci->pvt_info;
+>  	struct csrow_info		*csrow = &mci->csrows[0];
+> -	unsigned long			address, pfn, offset;
+> +	unsigned long			address, pfn, offset, syndrome;
+>  
+>  	dev_dbg(mci->dev, "ECC CE err on node %d, channel %d, ar = 0x%016lx\n",
+>  		priv->node, chan, ar);
+> @@ -44,10 +44,11 @@ static void cell_edac_count_ce(struct mem_ctl_info *mci, int chan, u64 ar)
+>  		address = (address << 1) | chan;
+>  	pfn = address >> PAGE_SHIFT;
+>  	offset = address & ~PAGE_MASK;
+> +	syndrome = (ar & 0x000000001fe00000ul) >> 21;
+>  
+>  	/* TODO: Decoding of the error addresss */
+>  	edac_mc_handle_ce(mci, csrow->first_page + pfn, offset,
+> -			  0, 0, chan, "");
+> +			  syndrome, 0, chan, "");
+>  }
+>  
+>  static void cell_edac_count_ue(struct mem_ctl_info *mci, int chan, u64 ar)
+> -- 
+> 1.5.4.3
+> 
