@@ -1,22 +1,21 @@
-Return-Path: <sylvain.joyeau@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.155])
-	by ozlabs.org (Postfix) with ESMTP id 11EF0DE254
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 5C646DDEEC
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jul 2008 18:02:10 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so3009513fga.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jul 2008 01:02:08 -0700 (PDT)
-Message-ID: <d194b8ce0807170102x4be8b7ccx33a6a09e6129a45b@mail.gmail.com>
-Date: Thu, 17 Jul 2008 10:02:07 +0200
-From: "Sylvain Joyeau" <sylvain.joyeau@gmail.com>
-To: "Misbah khan" <misbah_khan@engineer.com>
+	Thu, 17 Jul 2008 18:19:17 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KJOhl-0005dY-7J
+	for linuxppc-embedded@ozlabs.org; Thu, 17 Jul 2008 01:19:13 -0700
+Message-ID: <18503765.post@talk.nabble.com>
+Date: Thu, 17 Jul 2008 01:19:13 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
 Subject: Re: how to allocate 9MB of memory in kernel ?
-In-Reply-To: <18503022.post@talk.nabble.com>
+In-Reply-To: <200807170956.52101.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <18503022.post@talk.nabble.com>
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: sjoyeau@wanadoo.fr
+Content-Type: text/plain; charset=us-ascii
+References: <18503022.post@talk.nabble.com> <200807170956.52101.arnd@arndb.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,49 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Misbah,
 
-Please, give some more details about your application: the answer(s)
-heavily depends on the kind of memory you want to allocate: contiguous
-(implied in DMA purpose) or not (for process memory sharing only).
+vmalloc can only allocate 128k i guess where in i need 9MB allocated when
+driver is inserted and would be released only when its removed. mapping to
+user space is not a concern 
 
---
-sj
+--- Misbah <><
 
 
-2008/7/17 Misbah khan <misbah_khan@engineer.com>:
->
-> Hi all,
->
-> I need to allocate 9 MB of memory in to the kernel space which i need to
-> mmap for the application to access.
->
-> I need to know what could be the best possible way of doing the same.
->
-> Please share your experience in this regard .
->
-> Thank you in advance
->
-> ----Misbah <><
-> --
-> View this message in context: http://www.nabble.com/how-to-allocate-9MB-o=
-f-memory-in-kernel---tp18503022p18503022.html
-> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
->
+Arnd Bergmann wrote:
+> 
+> On Thursday 17 July 2008, Misbah khan wrote:
+>> I need to allocate 9 MB of memory in to the kernel space which i need to
+>> mmap for the application to access.
+>> 
+>> I need to know what could be the best possible way of doing the same.
+>> 
+> 
+> If you don't need the memory to be physically contiguous, you can use
+> vmalloc to get the memory, but then you need to use remap_vmalloc_range
+> for mapping the memory into a user address space.
+> 
+> 	Arnd <><
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+> 
+> 
 
-
-
---=20
-------------------
-Sylvain JOYEAU
-Freelance Engineer
-Software RT-OS R&D
-sylvain.joyeau@gmail.com
-T=E9l: +33-(0)667 477 052
-"A good idea is one side of the coin. The other side is the practical
-usefulness". J. Liedke.
+-- 
+View this message in context: http://www.nabble.com/how-to-allocate-9MB-of-memory-in-kernel---tp18503022p18503765.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
