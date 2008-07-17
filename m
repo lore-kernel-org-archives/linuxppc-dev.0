@@ -1,19 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [patch 1/9] powerpc/cell/edac: log a syndrome code in case of
-	correctable error
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: arnd@arndb.de, Doug Thompson <norsk5@yahoo.com>
-In-Reply-To: <20080715195739.006221652@arndb.de>
-References: <20080715195139.316677337@arndb.de>
-	<20080715195739.006221652@arndb.de>
-Content-Type: text/plain
-Date: Thu, 17 Jul 2008 15:59:07 +1000
-Message-Id: <1216274347.7740.296.camel@pasglop>
+Return-Path: <dinesh.dua@coraltele.com>
+Received: from mail.coraltele.com (unknown [122.160.64.235])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 09761DDFAB
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 16:06:00 +1000 (EST)
+Subject: Re: [alsa-devel] WRITING AN SOC DRIVER WITHOUT DMA
+From: dinesh <dinesh.dua@coraltele.com>
+To: Nobin Mathew <nobin.mathew@gmail.com>
+In-Reply-To: <1216203206.9723.0.camel@dinesh.dua>
+References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
+	<20080712083939.15025.31192.stgit@trillian.secretlab.ca>
+	<1216199130.749.4.camel@dinesh.dua>
+	<8d6898730807160307g4455597ck921d55da8f51455d@mail.gmail.com>
+	<1216203206.9723.0.camel@dinesh.dua>
+Content-Type: multipart/alternative; boundary="=-l5Us9LkeVxYINBbY2jvk"
+Date: Thu, 17 Jul 2008 11:33:31 +0530
+Message-Id: <1216274611.18207.6.camel@dinesh.dua>
 Mime-Version: 1.0
-Cc: Maxim Shchetynin <maxim@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org,
-	bluesmoke-devel <bluesmoke-devel@lists.sourceforge.net>
-Reply-To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	liam.girdwood@wolfsonmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +28,148 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd, Maxim, please, next time, send that patch or at least CC the
-bluesmoke-devel list for EDAC related bits.
 
-Doug, if you are ok with this patch, I'll merge it via the powerpc
-tree.
+--=-l5Us9LkeVxYINBbY2jvk
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Cheers,
-Ben.
+Hi,
+I think no one is able to understand my problem, let me break it to low
+level.
+What i want is that i have a buffer in driver code which is also handled
+by some other application i want that this buffer data is to be used for
+capture and playback  stream fills data to another buffer which i can
+passover to my other application.
+If someone can help me please.
+Regards,
+Dinesh
 
-On Tue, 2008-07-15 at 21:51 +0200, arnd@arndb.de 
 
-> From: Maxim Shchetynin <maxim@de.ibm.com>
-> 
-> If correctable error occurs the syndrome code was logged as 0. This patch
-> lets EDAC to log a correct syndrome code to make problem investigation
-> easier.
-> 
-> Signed-off-by: Maxim Shchetynin <maxim@de.ibm.com>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/edac/cell_edac.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/edac/cell_edac.c b/drivers/edac/cell_edac.c
-> index b54112f..0e024fe 100644
-> --- a/drivers/edac/cell_edac.c
-> +++ b/drivers/edac/cell_edac.c
-> @@ -33,7 +33,7 @@ static void cell_edac_count_ce(struct mem_ctl_info *mci, int chan, u64 ar)
->  {
->  	struct cell_edac_priv		*priv = mci->pvt_info;
->  	struct csrow_info		*csrow = &mci->csrows[0];
-> -	unsigned long			address, pfn, offset;
-> +	unsigned long			address, pfn, offset, syndrome;
->  
->  	dev_dbg(mci->dev, "ECC CE err on node %d, channel %d, ar = 0x%016lx\n",
->  		priv->node, chan, ar);
-> @@ -44,10 +44,11 @@ static void cell_edac_count_ce(struct mem_ctl_info *mci, int chan, u64 ar)
->  		address = (address << 1) | chan;
->  	pfn = address >> PAGE_SHIFT;
->  	offset = address & ~PAGE_MASK;
-> +	syndrome = (ar & 0x000000001fe00000ul) >> 21;
->  
->  	/* TODO: Decoding of the error addresss */
->  	edac_mc_handle_ce(mci, csrow->first_page + pfn, offset,
-> -			  0, 0, chan, "");
-> +			  syndrome, 0, chan, "");
->  }
->  
->  static void cell_edac_count_ue(struct mem_ctl_info *mci, int chan, u64 ar)
-> -- 
-> 1.5.4.3
-> 
+-----Original Message-----
+From: dinesh <dinesh.dua@coraltele.com>
+To: Nobin Mathew <nobin.mathew@gmail.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
+alsa-devel@alsa-project.org, liam.girdwood@wolfsonmicro.com
+Subject: Re: [alsa-devel] WRITING AN SOC DRIVER WITHOUT DMA
+Date: Wed, 16 Jul 2008 15:43:26 +0530
+
+
+no i am working on powerpc.     MPC8323
+
+
+-----Original Message-----
+From: Nobin Mathew <nobin.mathew@gmail.com>
+To: dinesh <dinesh.dua@coraltele.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
+alsa-devel@alsa-project.org, liam.girdwood@wolfsonmicro.com
+Subject: Re: [alsa-devel] WRITING AN SOC DRIVER WITHOUT DMA
+Date: Wed, 16 Jul 2008 15:37:54 +0530
+
+
+Hi dinesh,
+
+If you are working on ARM, see the ARM AACi code, in sound/arm/aaci.c
+
+Thanks
+Nobin Mathew.
+
+
+On 7/16/08, dinesh <dinesh.dua@coraltele.com> wrote:
+>
+> Hi,
+> I am writing a soc sound driver for MPC8323 board linux 2.6.24 in which i
+> want to do data transfer to and from device myself using BUFFER DESCRIPTOR
+> not with the usual DMA transfer.
+> Please help me.
+> _______________________________________________
+> Alsa-devel mailing list
+> Alsa-devel@alsa-project.org
+> http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
+>
+_______________________________________________
+Alsa-devel mailing list
+Alsa-devel@alsa-project.org
+http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
+_______________________________________________
+Alsa-devel mailing list
+Alsa-devel@alsa-project.org
+http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
+
+--=-l5Us9LkeVxYINBbY2jvk
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
+<HTML>
+<HEAD>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
+  <META NAME="GENERATOR" CONTENT="GtkHTML/3.18.2">
+</HEAD>
+<BODY>
+Hi,<BR>
+I think no one is able to understand my problem, let me break it to low level.<BR>
+What i want is that i have a buffer in driver code which is also handled by some other application i want that this buffer data is to be used for capture and playback&nbsp; stream fills data to another buffer which i can passover to my other application.<BR>
+If someone can help me please.<BR>
+Regards,<BR>
+Dinesh<BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD>
+<BR>
+</TD>
+</TR>
+</TABLE>
+<BR>
+-----Original Message-----<BR>
+<B>From</B>: dinesh &lt;<A HREF="mailto:dinesh%20%3cdinesh.dua@coraltele.com%3e">dinesh.dua@coraltele.com</A>&gt;<BR>
+<B>To</B>: Nobin Mathew &lt;<A HREF="mailto:Nobin%20Mathew%20%3cnobin.mathew@gmail.com%3e">nobin.mathew@gmail.com</A>&gt;<BR>
+<B>Cc</B>: Grant Likely &lt;<A HREF="mailto:Grant%20Likely%20%3cgrant.likely@secretlab.ca%3e">grant.likely@secretlab.ca</A>&gt;, <A HREF="mailto:linuxppc-dev@ozlabs.org">linuxppc-dev@ozlabs.org</A>, <A HREF="mailto:alsa-devel@alsa-project.org">alsa-devel@alsa-project.org</A>, <A HREF="mailto:liam.girdwood@wolfsonmicro.com">liam.girdwood@wolfsonmicro.com</A><BR>
+<B>Subject</B>: Re: [alsa-devel] WRITING AN SOC DRIVER WITHOUT DMA<BR>
+<B>Date</B>: Wed, 16 Jul 2008 15:43:26 +0530<BR>
+<BR>
+<PRE>
+no i am working on powerpc.     MPC8323
+
+
+-----Original Message-----
+From: Nobin Mathew &lt;<A HREF="mailto:nobin.mathew@gmail.com">nobin.mathew@gmail.com</A>&gt;
+To: dinesh &lt;<A HREF="mailto:dinesh.dua@coraltele.com">dinesh.dua@coraltele.com</A>&gt;
+Cc: Grant Likely &lt;<A HREF="mailto:grant.likely@secretlab.ca">grant.likely@secretlab.ca</A>&gt;, <A HREF="mailto:linuxppc-dev@ozlabs.org">linuxppc-dev@ozlabs.org</A>,
+<A HREF="mailto:alsa-devel@alsa-project.org">alsa-devel@alsa-project.org</A>, <A HREF="mailto:liam.girdwood@wolfsonmicro.com">liam.girdwood@wolfsonmicro.com</A>
+Subject: Re: [alsa-devel] WRITING AN SOC DRIVER WITHOUT DMA
+Date: Wed, 16 Jul 2008 15:37:54 +0530
+
+
+Hi dinesh,
+
+If you are working on ARM, see the ARM AACi code, in sound/arm/aaci.c
+
+Thanks
+Nobin Mathew.
+
+
+On 7/16/08, dinesh &lt;<A HREF="mailto:dinesh.dua@coraltele.com">dinesh.dua@coraltele.com</A>&gt; wrote:
+&gt;
+&gt; Hi,
+&gt; I am writing a soc sound driver for MPC8323 board linux 2.6.24 in which i
+&gt; want to do data transfer to and from device myself using BUFFER DESCRIPTOR
+&gt; not with the usual DMA transfer.
+&gt; Please help me.
+&gt; _______________________________________________
+&gt; Alsa-devel mailing list
+&gt; <A HREF="mailto:Alsa-devel@alsa-project.org">Alsa-devel@alsa-project.org</A>
+&gt; <A HREF="http://mailman.alsa-project.org/mailman/listinfo/alsa-devel">http://mailman.alsa-project.org/mailman/listinfo/alsa-devel</A>
+&gt;
+_______________________________________________
+Alsa-devel mailing list
+<A HREF="mailto:Alsa-devel@alsa-project.org">Alsa-devel@alsa-project.org</A>
+<A HREF="http://mailman.alsa-project.org/mailman/listinfo/alsa-devel">http://mailman.alsa-project.org/mailman/listinfo/alsa-devel</A>
+_______________________________________________
+Alsa-devel mailing list
+<A HREF="mailto:Alsa-devel@alsa-project.org">Alsa-devel@alsa-project.org</A>
+<A HREF="http://mailman.alsa-project.org/mailman/listinfo/alsa-devel">http://mailman.alsa-project.org/mailman/listinfo/alsa-devel</A>
+</PRE>
+</BODY>
+</HTML>
+
+--=-l5Us9LkeVxYINBbY2jvk--
