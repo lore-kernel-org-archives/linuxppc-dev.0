@@ -1,11 +1,12 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <c83b4f179d07710f3592ddbc310b55f1ef274147.1216279290.git.michael@ellerman.id.au>
+Message-Id: <79d244f87af70706e70f02a045ef21b1d8e60ed9.1216279290.git.michael@ellerman.id.au>
 In-Reply-To: <d452d52afbde7001bf85070ee528d21bfa814d8d.1216279290.git.michael@ellerman.id.au>
 References: <d452d52afbde7001bf85070ee528d21bfa814d8d.1216279290.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 3/4] powerpc: ftrace: Use create_branch() and cope with errors
-Date: Thu, 17 Jul 2008 17:21:32 +1000 (EST)
+Subject: [PATCH 4/4] powerpc: ftrace: Use PPC_LONG and PPC_LONG_ALIGN asm
+	macros
+Date: Thu, 17 Jul 2008 17:21:33 +1000 (EST)
 Cc: srostedt@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -16,56 +17,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use create_branch() rather than doing it by hand. It's possible that
-we are unable to create a branch to the address, if it's too far away,
-in which case just return a nop. This will break the tracing, but
-shouldn't crash the kernel at least.
-
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/kernel/ftrace.c |   20 ++++++++------------
- 1 files changed, 8 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/ftrace.c |   13 +++----------
+ 1 files changed, 3 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 1d6f174..49a2049 100644
+index 49a2049..0e9fc10 100644
 --- a/arch/powerpc/kernel/ftrace.c
 +++ b/arch/powerpc/kernel/ftrace.c
-@@ -19,11 +19,6 @@
+@@ -14,6 +14,7 @@
+ #include <linux/init.h>
+ #include <linux/list.h>
+ 
++#include <asm/asm-compat.h>
+ #include <asm/cacheflush.h>
+ #include <asm/code-patching.h>
  #include <asm/ftrace.h>
+@@ -49,14 +50,6 @@ notrace unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+ 	return (unsigned char *)&op;
+ }
  
- 
--static unsigned int notrace ftrace_calc_offset(long ip, long addr)
--{
--	return (int)(addr - ip);
--}
+-#ifdef CONFIG_PPC64
+-# define _ASM_ALIGN	" .align 3 "
+-# define _ASM_PTR	" .llong "
+-#else
+-# define _ASM_ALIGN	" .align 2 "
+-# define _ASM_PTR	" .long "
+-#endif
 -
- notrace unsigned char *ftrace_nop_replace(void)
- {
- 	static unsigned int ftrace_nop = PPC_NOP_INSTR;
-@@ -35,16 +30,17 @@ notrace unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
- {
- 	static unsigned int op;
- 
--	/*
--	 * It would be nice to just use create_function_call, but that will
--	 * update the code itself. Here we need to just return the
--	 * instruction that is going to be modified, without modifying the
--	 * code.
--	 */
- 	addr = ppc_function_entry((void *)addr);
- 
- 	/* Set to "bl addr" */
--	op = 0x48000001 | (ftrace_calc_offset(ip, addr) & 0x03fffffc);
-+	op = create_branch((unsigned int *)ip, addr, BRANCH_SET_LINK);
-+
-+	/*
-+	 * This routine is not allowed to fail, but create_branch() can.
-+	 * In that case, just return nop and cross our fingers.
-+	 */
-+	if (!op)
-+		return ftrace_nop_replace();
- 
- 	/*
- 	 * No locking needed, this must be called via kstop_machine
+ notrace int
+ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 		   unsigned char *new_code)
+@@ -85,8 +78,8 @@ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 		"	b 2b\n"
+ 		".previous\n"
+ 		".section __ex_table,\"a\"\n"
+-		_ASM_ALIGN "\n"
+-		_ASM_PTR "1b, 3b\n"
++		PPC_LONG_ALIGN "\n"
++		PPC_LONG "1b, 3b\n"
+ 		".previous"
+ 		: "=r"(faulted), "=r"(replaced)
+ 		: "r"(ip), "r"(new),
 -- 
 1.5.5
