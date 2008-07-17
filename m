@@ -1,26 +1,24 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B61CDDE791
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 01:20:08 +1000 (EST)
-Date: Thu, 17 Jul 2008 19:20:06 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
-Message-ID: <20080717152006.GA26120@polina.dev.rtsoft.ru>
-References: <1216133032.5345.73.camel@dax.rpnet.com>
-	<20080715151917.GA30607@polina.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp>
-	<20080717041531.GA27243@secretlab.ca>
-	<20080717140519.GA32617@polina.dev.rtsoft.ru>
-	<20080717141335.GA2219@polina.dev.rtsoft.ru>
-	<20080717150422.GC31932@secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080717150422.GC31932@secretlab.ca>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
-	Trent Piepho <tpiepho@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BB01BDEEC3
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 01:28:30 +1000 (EST)
+Date: Thu, 17 Jul 2008 10:27:46 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 4/6] crypto: talitos - fix GFP flag usage
+Message-Id: <20080717102746.33381e30.kim.phillips@freescale.com>
+In-Reply-To: <D59ED865-85CF-4C1E-9D79-D9DD0DE49505@kernel.crashing.org>
+References: <20080716182215.36c1bd11.kim.phillips@freescale.com>
+	<BDCB5191-EEDE-4046-A741-80E6EF1333CF@kernel.crashing.org>
+	<20080717121758.GA25267@gondor.apana.org.au>
+	<D59ED865-85CF-4C1E-9D79-D9DD0DE49505@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,28 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 17, 2008 at 09:04:22AM -0600, Grant Likely wrote:
-> On Thu, Jul 17, 2008 at 06:13:35PM +0400, Anton Vorontsov wrote:
-> > On Thu, Jul 17, 2008 at 06:05:19PM +0400, Anton Vorontsov wrote:
-> > [...]
-> > > > I think it would be better to have a module that scans the device tree
-> > > > for LED nodes and registers a single leds-gpio platform device for the
-> > > > whole lot.
-> > > > 
-> > > > Thoughts?
-> > > 
-> > > I like the idea, thanks.
-> > 
-> > Ugh, no. The idea sounds good, but in practice it isn't, since we'll
-> > have to handle suspend/resume ops ourselves. When we stick with the
-> > device/driver model we're getting all this for free.
+On Thu, 17 Jul 2008 07:26:14 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
+
 > 
-> Won't the leds-gpio driver give you suspend/resume support?
+> On Jul 17, 2008, at 7:17 AM, Herbert Xu wrote:
+> 
+> > On Wed, Jul 16, 2008 at 06:33:45PM -0500, Kumar Gala wrote:
+> >>
+> >> On Jul 16, 2008, at 6:22 PM, Kim Phillips wrote:
+> >>
+> >>> use GFP_ATOMIC when necessary; use atomic_t when allocating
+> >>> submit_count.
+> >>
+> >> why?
+> >
+> > You mean why are atomics required? Yes that is a good question.
+> 
+> Yep. the commit message isn't explaining why, just what :)
 
-Ah. I just wrongly read your message. You're purposing to use gpio
-leds platform driver... I think this is doable, yes.
+In honouring requests that don't have the CRYPTO_TFM_REQ_MAY_SLEEP set,
+afaict, it's the standard non-wait variant GFP that drivers use (see
+the ixp4xx driver for e.g.).
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Kim
