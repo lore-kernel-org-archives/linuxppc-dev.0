@@ -1,20 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [patch 9/9] powerpc/cell:
-	Add	DMA_ATTR_STRONG_ORDERING dma attribute and use in IOMMU code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200807171653.29946.arnd@arndb.de>
-References: <20080715195139.316677337@arndb.de>
-	<200807160954.03633.arnd@arndb.de> <1216275643.7740.302.camel@pasglop>
-	<200807171653.29946.arnd@arndb.de>
-Content-Type: text/plain
-Date: Fri, 18 Jul 2008 06:10:57 +1000
-Message-Id: <1216325457.7740.357.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Roland Dreier <rdreier@cisco.com>,
-	Peter Altevogt <peter.altevogt@de.ibm.com>,
-	cbe-oss-dev@ozlabs.org, Hans Boettiger <h.boettiger@de.ibm.com>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E64A3DE36B
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 06:19:42 +1000 (EST)
+Date: Thu, 17 Jul 2008 13:18:18 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
+In-Reply-To: <fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
+References: <1216133032.5345.73.camel@dax.rpnet.com>
+	<20080715151917.GA30607@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp>
+	<20080717041531.GA27243@secretlab.ca>
+	<20080717140519.GA32617@polina.dev.rtsoft.ru>
+	<20080717141335.GA2219@polina.dev.rtsoft.ru>
+	<20080717150422.GC31932@secretlab.ca>
+	<20080717152006.GA26120@polina.dev.rtsoft.ru>
+	<fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 17 Jul 2008, Grant Likely wrote:
+> Alternately, I would also be okay with a scheme where all LED nodes
+> have a common parent and an of_platform driver would bind against the
+> parent node; not the individual children.  Then the leds-gpio driver
+> could be refactored to have both platform and of_platform bus
+> bindings.
 
-> Ok, this makes sense. I've followed the bit down in the specification,
-> and now it seems like we can't just set relaxed ordering in the IOMMU
-> but should use the value that comes from the PCIe device.
-> 
-> The flow of the order bit in this machine is as follows:
-> 
-> 1. The device can select relaxed (weak) or non-relaxed (strong) ordering
-> for a DMA transfer. PCI-X is always strong, DMAx can be configured globally,
-> and PCIe is device specific.
-> 2. The PCIe root complex can override the order bit and force it to strong
-> ordering (which we don't).
-> 3. The PLB5-to-C3PO bridge can override the bit and force it to weak or
-> strong or leave it alone (we force it to weak).
-> 4. The IOMMU can force the bit to weak on a per-page base (we don't without
-> the patch, but do with the patch).
-> 
-> Peter and Hans were involved in the discussion that led to the decision
-> to change step 3 from per-transfer default to always weak ordering.
-> I think they verified that this is safe for all the peripherals that we
-> have on the QS21 and QS22 blades (tg3, ehci, mthca, mptsas), but that
-> doesn't mean that it is safe in general, so I guess you are right that
-> we should not make it the default in the kernel for Cell systems.
-> Hans, can you confirm this?
+Basically what I did then in my patch then, refactor leds-gpio so most of
+it is shared and there is a block of code that does platform binding and
+another block that does of_platform binding.
 
-In the meantime, send a patch that defaults to strong with explicit
-weak, we can easily fixup after that.
+I didn't change the OF platform binding syntax so as not to complicate the
+example, but that's easy to do.  Something like:
 
-Ben.
+leds {
+ 	compatible = "gpio-led";
+ 	gpios = <&mpc8572 6 0
+ 	         &mpc8572 7 0>;
+ 	labels = "red", "green";
+};
+
+Or like this, which needs a little more code to parse:
+
+leds {
+ 	compatible = "gpio-led";
+ 	led@6 {
+ 		gpios = <&mpc8572 6 0>;
+ 		label = "red";
+ 	};
+ 	led@7 {
+ 		gpios = <&mpc8572 7 0>;
+ 		label = "green";
+ 	};
+};
+
+I like the first better.  It follows the example from the docs about how
+devices with multiple gpios should work too.
