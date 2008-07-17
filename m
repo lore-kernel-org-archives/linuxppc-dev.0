@@ -1,25 +1,28 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.168])
-	by ozlabs.org (Postfix) with ESMTP id 771FDDDED5
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 09:31:56 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so82180wfg.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 16:31:55 -0700 (PDT)
-Date: Thu, 17 Jul 2008 17:31:53 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Liam Girdwood <liam.girdwood@wolfsonmicro.com>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, timur@freescale.com
-Subject: Re: [alsa-devel] [PATCH 3/3] ALSA SoC: Add Texas Instruments
-	TLV320AIC26 codec driver
-Message-ID: <20080717233153.GA8187@secretlab.ca>
-References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
-	<20080701235340.16923.48024.stgit@trillian.secretlab.ca>
-	<1214995713.4882.54.camel@localhost.localdomain>
-	<20080712060018.GB23213@secretlab.ca>
-	<20080712173609.GA6523@sirena.org.uk>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 54D74DDF0D
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 09:42:03 +1000 (EST)
+Date: Fri, 18 Jul 2008 03:42:01 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
+Message-ID: <20080717234201.GA15745@polina.dev.rtsoft.ru>
+References: <1216133032.5345.73.camel@dax.rpnet.com>
+	<20080715151917.GA30607@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp>
+	<20080717041531.GA27243@secretlab.ca>
+	<20080717140519.GA32617@polina.dev.rtsoft.ru>
+	<20080717141335.GA2219@polina.dev.rtsoft.ru>
+	<20080717150422.GC31932@secretlab.ca>
+	<20080717152006.GA26120@polina.dev.rtsoft.ru>
+	<fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
+	<Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080712173609.GA6523@sirena.org.uk>
-Sender: Grant Likely <glikely@secretlab.ca>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,36 +32,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jul 12, 2008 at 06:36:10PM +0100, Mark Brown wrote:
-> On Sat, Jul 12, 2008 at 12:00:18AM -0600, Grant Likely wrote:
-
-> It wouldn't be the only driver not to implement PLL configuration in
-> this way so that's probably be OK for an initial merge.  What's expected
-> for PLL configuration is that you implement the DAI set_pll() operation
-> in the codec driver, allowing machine drivers to configure the PLL when
-> they wish.
-
-okay
-
-> The power configuration should be fixed, though.  Normally drivers
-> either fully implement DAPM (including set_bias_level()) or power
-> everything in the codec up when the driver is loaded.  At the minute
-> what the driver is doing appears to be powering the codec up in both
-> _hw_params() and _probe() but never powering anything down - if that is
-> the case then probably all you need to do is remove the extra power up
-> from hw_params(), giving you the simple option.
-
-done
-
-> > Hmmm, I haven't been able to find this; either in the code or on a live
-> > running system.  Where is the common reg dump implemented.
+On Thu, Jul 17, 2008 at 01:18:18PM -0700, Trent Piepho wrote:
+> On Thu, 17 Jul 2008, Grant Likely wrote:
+> > Alternately, I would also be okay with a scheme where all LED nodes
+> > have a common parent and an of_platform driver would bind against the
+> > parent node; not the individual children.  Then the leds-gpio driver
+> > could be refactored to have both platform and of_platform bus
+> > bindings.
 > 
-> /sys/bus/platform/devices/soc-audio/codec_reg
+> Basically what I did then in my patch then, refactor leds-gpio so most of
+> it is shared and there is a block of code that does platform binding and
+> another block that does of_platform binding.
 
-Yikes.  The AIC26 has registers all over the place and most of them are
-empty.  The codec_reg attribute handling means I need to maintain a
-cache of the entire register file; not just the part that is actually
-used.  Oh well; I can work around it.
+Ok. I must admit I'm quite burned out with OF gpio-leds. I was posting the
+bindings since April, probably four or five times. Last time a week ago,
+IIRC.
+
+During the months I received just a few replies, one from Grant ("Looks
+good to me."), few from Segher (with a lot of criticism, that I much
+appreciated and tried to fix all spotted issues), and one from Laurent
+(about active-low LEDs).
+
+Of course, I know we're all busy etc and we don't always read or reply to
+RFCs, so don't get me wrong, I'm not blaming or something. It just would be
+great if all these ideas would be spoken up a bit earlier, i.e. not in the
+middle of the merge window... But yes, we have what we have.
+
+And the true thing is that I tend to agree with all your comments, and I
+strongly believe that the issues you pointed out should be fixed prior to
+merging. But I'm tired of these leds, they aren't _that_ interesting,
+btw. ;-)
+
+So..
+
+Trent, I encourage you to collect your patch snippets into complete patch,
+and post it so it could slip into 2.6.27 (the bad thing is that your
+approach involves changes to the existing drivers, not just adding new
+driver that could slip even into -rc9).
+
+That is, I have a bunch of patches in my stg queue on which I can work
+with more fun, so I'm somewhat glad that somebody will take care of the
+notorious OF GPIO LEDs. ;-)
+
+
+For what it's worth:
+
+> I didn't change the OF platform binding syntax so as not to complicate the
+> example, but that's easy to do.  Something like:
+> 
+> leds {
+>  	compatible = "gpio-led";
+>  	gpios = <&mpc8572 6 0
+>  	         &mpc8572 7 0>;
+>  	labels = "red", "green";
+> };
+> 
+
+I don't like this.
+
+> Or like this, which needs a little more code to parse:
+> 
+> leds {
+>  	compatible = "gpio-led";
+>  	led@6 {
+>  		gpios = <&mpc8572 6 0>;
+>  		label = "red";
+>  	};
+>  	led@7 {
+>  		gpios = <&mpc8572 7 0>;
+>  		label = "green";
+>  	};
+> };
+
+I like this. Or better what Grant suggested, i.e. move label to node
+name.
+
+> I like the first better.  It follows the example from the docs about how
+> devices with multiple gpios should work too.
+
+IMO, each LED is a device. So, I would rather define compatible = <> for
+each led.
 
 Thanks,
-g.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
