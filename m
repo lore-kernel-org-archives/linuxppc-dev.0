@@ -1,11 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <27c8ac7aceccaf7856c65f2ef1305321f94d564e.1216279070.git.michael@ellerman.id.au>
-In-Reply-To: <3756cbfb076b2fa0b93ec990aabfee73296443d9.1216279070.git.michael@ellerman.id.au>
-References: <3756cbfb076b2fa0b93ec990aabfee73296443d9.1216279070.git.michael@ellerman.id.au>
+Message-Id: <d452d52afbde7001bf85070ee528d21bfa814d8d.1216279290.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 3/3] powerpc: Use PPC_LONG and PPC_LONG_ALIGN in lib/string.S
-Date: Thu, 17 Jul 2008 17:17:52 +1000 (EST)
+Subject: [PATCH 1/4] powerpc: ftrace: Use PPC_NOP_INSTR #define for NOP
+Date: Thu, 17 Jul 2008 17:21:30 +1000 (EST)
+Cc: srostedt@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,59 +14,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-No change to the generated code.
+And move ftrace_nop into the only function it's used in.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/lib/string.S |   18 ++++++------------
- 1 files changed, 6 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/ftrace.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
-index 49eb1f1..64e2e49 100644
---- a/arch/powerpc/lib/string.S
-+++ b/arch/powerpc/lib/string.S
-@@ -13,13 +13,7 @@
- #include <asm/ppc_asm.h>
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 3855ceb..78f4423 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -15,11 +15,10 @@
+ #include <linux/list.h>
  
- 	.section __ex_table,"a"
--#ifdef CONFIG_PPC64
--	.align	3
--#define EXTBL	.llong
--#else
--	.align	2
--#define EXTBL	.long
--#endif
-+	PPC_LONG_ALIGN
- 	.text
- 	
- _GLOBAL(strcpy)
-@@ -160,9 +154,9 @@ _GLOBAL(__clear_user)
- 	blr
+ #include <asm/cacheflush.h>
++#include <asm/code-patching.h>
+ #include <asm/ftrace.h>
  
- 	.section __ex_table,"a"
--	EXTBL	11b,90b
--	EXTBL	1b,91b
--	EXTBL	8b,92b
-+	PPC_LONG	11b,90b
-+	PPC_LONG	1b,91b
-+	PPC_LONG	8b,92b
- 	.text
  
- _GLOBAL(__strncpy_from_user)
-@@ -183,7 +177,7 @@ _GLOBAL(__strncpy_from_user)
- 	blr
+-static unsigned int ftrace_nop = 0x60000000;
+-
+ #ifdef CONFIG_PPC32
+ # define GET_ADDR(addr) addr
+ #else
+@@ -35,6 +34,8 @@ static unsigned int notrace ftrace_calc_offset(long ip, long addr)
  
- 	.section __ex_table,"a"
--	EXTBL	1b,99b
-+	PPC_LONG	1b,99b
- 	.text
+ notrace unsigned char *ftrace_nop_replace(void)
+ {
++	static unsigned int ftrace_nop = PPC_NOP_INSTR;
++
+ 	return (char *)&ftrace_nop;
+ }
  
- /* r3 = str, r4 = len (> 0), r5 = top (highest addr) */
-@@ -208,4 +202,4 @@ _GLOBAL(__strnlen_user)
- 	blr
- 
- 	.section __ex_table,"a"
--	EXTBL	1b,99b
-+	PPC_LONG	1b,99b
 -- 
 1.5.5
