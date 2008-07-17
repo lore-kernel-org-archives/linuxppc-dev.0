@@ -1,28 +1,30 @@
-Return-Path: <lnxtorez@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DCED2DE176
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 06:43:53 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6HKk5gk009078
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 16:46:05 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6HKg9XW209352
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 16:42:09 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6HKg8Ac014710
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 16:42:09 -0400
-Message-ID: <487FAE9F.20707@linux.vnet.ibm.com>
-Date: Thu, 17 Jul 2008 15:42:07 -0500
-From: Torez Smith <lnxtorez@linux.vnet.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
+	by ozlabs.org (Postfix) with ESMTP id 23A08DF30C
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 06:50:00 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so80621qwb.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 13:49:58 -0700 (PDT)
+Date: Thu, 17 Jul 2008 14:49:51 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
+Message-ID: <20080717204951.GD6894@secretlab.ca>
+References: <1216133032.5345.73.camel@dax.rpnet.com>
+	<20080715151917.GA30607@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp>
+	<20080717041531.GA27243@secretlab.ca>
+	<20080717140519.GA32617@polina.dev.rtsoft.ru>
+	<20080717141335.GA2219@polina.dev.rtsoft.ru>
+	<20080717150422.GC31932@secretlab.ca>
+	<20080717152006.GA26120@polina.dev.rtsoft.ru>
+	<fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
+	<Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
 MIME-Version: 1.0
-To: paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: indicate oprofile counters to use while in compat
-	mode
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,86 +34,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Description:
-While running on a system with new hardware and a kernel where the 
-cpu_specs[] table does not recognize the new hardware, the identify_cpu() 
-routine will select the default case as it searches through cpu_specs[]
-in an attempt to match the real PVR. Once the default case is selected,
-non of the oprofile counters and/or fields have been set up or defined.
+On Thu, Jul 17, 2008 at 01:18:18PM -0700, Trent Piepho wrote:
+> On Thu, 17 Jul 2008, Grant Likely wrote:
+> > Alternately, I would also be okay with a scheme where all LED nodes
+> > have a common parent and an of_platform driver would bind against the
+> > parent node; not the individual children.  Then the leds-gpio driver
+> > could be refactored to have both platform and of_platform bus
+> > bindings.
+> 
+> Basically what I did then in my patch then, refactor leds-gpio so most of
+> it is shared and there is a block of code that does platform binding and
+> another block that does of_platform binding.
 
-When identify_cpu() is called once more with the logical PVR, some of
-the cpu specific fields are replaced with the exception of the oprofile
-related ones. However, in the case where we have actually taken the
-default case while searching for the real PVR, we need to tell 
-oprofile that we are now running in compatibility mode so it can pick up
-the correct counters. We do this by setting the oprofile_cpu_type field 
-to be that taken from the cpu_specs[] for the cpu we are now emulating.
+Yes
 
-This change will detect that we are now altering the real PVR and determine
-if we also need to update the oprofile_cpu_type field.
+> I didn't change the OF platform binding syntax so as not to complicate the
+> example, but that's easy to do.  Something like:
+> 
+> leds {
+>  	compatible = "gpio-led";
+>  	gpios = <&mpc8572 6 0
+>  	         &mpc8572 7 0>;
+>  	labels = "red", "green";
+> };
+> 
+> Or like this, which needs a little more code to parse:
+> 
+> leds {
+>  	compatible = "gpio-led";
+>  	led@6 {
+>  		gpios = <&mpc8572 6 0>;
+>  		label = "red";
+>  	};
+>  	led@7 {
+>  		gpios = <&mpc8572 7 0>;
+>  		label = "green";
+>  	};
+> };
 
+I kind of like the second option better, because there is less chance
+of doing bad stuff if the gpio specifier was buggered up; but I'm cool
+with either.
 
-Testing:
-Tested on Power 5++ in compatibility mode by editing out the pvr_value for
-Power5++ inside cpu_specs[] so the kernel did not match the first time
-through, and, was forced to take the default case. Verified fields for 
-"the_cpu_spec" were set up as expected.
+However, if the second option is chosen then something like the following
+might be better as it eliminates the meaningless @<number> specifier.
 
+leds {
+	compatible = "gpio-led";
+	red {
+		gpios = <&mpc8572 6 0>;
+	};
+	green {
+		gpios = <&mpc8572 7 0>;
+	};
+};
 
-Signed-off-by: Torez Smith  lnxtorez@linux.vnet.ibm.com
-
-
-
-Patch:
-+++++++++++++++++++++
-diff -uprN -X powerpc.orig/Documentation/dontdiff powerpc.orig/arch/powerpc/kernel/cputable.c powerpc/arch/powerpc/kernel/cputable.c
---- powerpc.orig/arch/powerpc/kernel/cputable.c	2008-07-15 18:19:19.000000000 -0500
-+++ powerpc/arch/powerpc/kernel/cputable.c	2008-07-16 11:46:09.000000000 -0500
-@@ -355,6 +355,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
-+		.oprofile_cpu_type	= "ppc64/compat-power5+",
- 		.platform		= "power5+",
- 	},
- 	{	/* Power6 */
-@@ -386,6 +387,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
-+		.oprofile_cpu_type	= "ppc64/compat-power6",
- 		.platform		= "power6",
- 	},
- 	{	/* 2.06-compliant processor, i.e. Power7 "architected" mode */
-@@ -397,6 +399,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
-+		.oprofile_cpu_type	= "ppc64/compat-power7",
- 		.platform		= "power7",
- 	},
- 	{	/* Power7 */
-@@ -1629,6 +1632,23 @@ struct cpu_spec * __init identify_cpu(un
- 				t->cpu_setup = s->cpu_setup;
- 				t->cpu_restore = s->cpu_restore;
- 				t->platform = s->platform;
-+				/*
-+				 * If we have passed through this logic once
-+				 * before and have pulled the default case
-+				 * because the real PVR was not found inside
-+				 * cpu_specs[], then we are possibly running in
-+				 * compatibility mode. In that case, let the 
-+				 * oprofiler know which set of compatibility
-+				 * counters to pull from by making sure the 
-+				 * oprofile_cpu_type string is set to that of
-+				 * compatibility mode. If the oprofile_cpu_type
-+				 * already has a value, then we are possibly
-+				 * overriding a real PVR with a logical one, and,
-+				 * in that case, keep the current value for
-+				 * oprofile_cpu_type.
-+				 */
-+				if (t->oprofile_cpu_type == NULL)
-+					t->oprofile_cpu_type = s->oprofile_cpu_type;
- 			} else
- 				*t = *s;
- 			*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
+Cheers,
+g.
