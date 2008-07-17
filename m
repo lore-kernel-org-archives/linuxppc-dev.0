@@ -1,15 +1,29 @@
 Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40807171102k6f638d9dn6dca86706673fde1@mail.gmail.com>
-Date: Thu, 17 Jul 2008 12:02:50 -0600
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id 86E3DDECA4
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 04:05:30 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so153997anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 11:05:29 -0700 (PDT)
+Message-ID: <fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
+Date: Thu, 17 Jul 2008 12:05:28 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Wolfgang Grandegger" <wg@grandegger.com>
-Subject: Re: [PATCH] i2c-mpc: suppress I2C device probing
-In-Reply-To: <487F20EC.9040503@grandegger.com>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
+In-Reply-To: <20080717152006.GA26120@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <487F20EC.9040503@grandegger.com>
-Cc: Jean Delvare <khali@linux-fr.org>, Linuxppc-dev@ozlabs.org
+References: <1216133032.5345.73.camel@dax.rpnet.com>
+	<20080715151917.GA30607@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp>
+	<20080717041531.GA27243@secretlab.ca>
+	<20080717140519.GA32617@polina.dev.rtsoft.ru>
+	<20080717141335.GA2219@polina.dev.rtsoft.ru>
+	<20080717150422.GC31932@secretlab.ca>
+	<20080717152006.GA26120@polina.dev.rtsoft.ru>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
+	Trent Piepho <tpiepho@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,34 +33,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 17, 2008 at 4:37 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> This patch suppresses I2C device probing by clearing the class field
-> of the "struct i2c_adapter" for the MPC I2C bus adapters. Some board
-> configurations which rely on probing must be fixed up by adding a
-> proper I2C device node to the DTS file, like the TQM85xx modules.
+On Thu, Jul 17, 2008 at 9:20 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Thu, Jul 17, 2008 at 09:04:22AM -0600, Grant Likely wrote:
+>> On Thu, Jul 17, 2008 at 06:13:35PM +0400, Anton Vorontsov wrote:
+>> > On Thu, Jul 17, 2008 at 06:05:19PM +0400, Anton Vorontsov wrote:
+>> > [...]
+>> > > > I think it would be better to have a module that scans the device tree
+>> > > > for LED nodes and registers a single leds-gpio platform device for the
+>> > > > whole lot.
+>> > > >
+>> > > > Thoughts?
+>> > >
+>> > > I like the idea, thanks.
+>> >
+>> > Ugh, no. The idea sounds good, but in practice it isn't, since we'll
+>> > have to handle suspend/resume ops ourselves. When we stick with the
+>> > device/driver model we're getting all this for free.
+>>
+>> Won't the leds-gpio driver give you suspend/resume support?
 >
-> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> Ah. I just wrongly read your message. You're purposing to use gpio
+> leds platform driver... I think this is doable, yes.
 
-> ---
-> drivers/i2c/busses/i2c-mpc.c |    1 -
-> 1 file changed, 1 deletion(-)
->
-> Index: powerpc/drivers/i2c/busses/i2c-mpc.c
-> ===================================================================
-> --- powerpc.orig/drivers/i2c/busses/i2c-mpc.c
-> +++ powerpc/drivers/i2c/busses/i2c-mpc.c
-> @@ -312,7 +312,6 @@ static struct i2c_adapter mpc_ops = {
->        .name = "MPC adapter",
->        .id = I2C_HW_MPC107,
->        .algo = &mpc_algo,
-> -       .class = I2C_CLASS_HWMON | I2C_CLASS_SPD,
->        .timeout = 1,
-> };
->
->
+Alternately, I would also be okay with a scheme where all LED nodes
+have a common parent and an of_platform driver would bind against the
+parent node; not the individual children.  Then the leds-gpio driver
+could be refactored to have both platform and of_platform bus
+bindings.
 
-
+Cheers,
+g.
 
 -- 
 Grant Likely, B.Sc., P.Eng.
