@@ -1,21 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 47C80DE44D
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 23:53:55 +1000 (EST)
-In-Reply-To: <9e4733910807161738g58da8bd7v78e9d50dc4d846cb@mail.gmail.com>
-References: <1dce2aab6509053e60f7a59a30974749@bga.com>
-	<9e4733910807161738g58da8bd7v78e9d50dc4d846cb@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3400bffa9d49e09b00e04cafcd751322@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [HOW] binutils-2.17 breaks the 2.6.26 kernel
-Date: Thu, 17 Jul 2008 15:53:07 +0200
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Alan Modra <amodra@bigpond.net.au>,
-	Milton Miller <miltonm@bga.com>
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 64749DDEFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 23:55:19 +1000 (EST)
+Message-ID: <487F5108.9050207@windriver.com>
+Date: Thu, 17 Jul 2008 10:02:48 -0400
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+MIME-Version: 1.0
+To: Paul Gortmaker <paul.gortmaker@windriver.com>, linuxppc-dev@ozlabs.org,
+	jdl@jdl.com
+Subject: Re: [PATCH] dtc: supply a definition for YYRHSLOC if there isn't one
+References: <1216230837-17557-1-git-send-email-paul.gortmaker@windriver.com>
+	<20080717054713.GF21564@yookeroo.seuss>
+In-Reply-To: <20080717054713.GF21564@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Previous threads have mentioned that binutil-2.17 is broken for
-> building powerpc kernels. It is fixed in binutils-2.18.
+David Gibson wrote:
+> On Wed, Jul 16, 2008 at 01:53:57PM -0400, Paul Gortmaker wrote:
+>   
+>> It seems that some machines, like a default RHEL4 install, will
+>> not have a definition for YYRHSLOC, and that prevents building
+>> dtc.  This supplies what appears to be the standard definition
+>> for it in the event that the host system does not have it defined.
+>>     
+>
+> I'm pretty uneasy about this, since it relies on knowing the internals
+> of how bison manages its tokens.  What version of bison is it in RHEL4
+> that causes the trouble?
+>   
 
-Yes.
+Right -- well, I trust your judgment on something like that more than
+my own.   The version in question is "bison (GNU Bison) 1.875c".
 
-> I have encountered this and upgrading to 2.18 fixed my build. The
-> symptom is large kernel sizes and a long time in gzip. In my case it
-> was gziping a 2GB file.
+When I was digging around, the definitions all pretty much came back
+with the one I'd used, but I do understand your concern.
 
-Are you using a "binary" (non-ELF) image file?  This sounds like a
-different problem, caused by the kernel linker script not handling
-the build-id section correctly -- it places it at 0, and the rest
-of the kernel at 3GB, you can imagine the rest.  I've seen this
-on various embedded targets, but not on PowerPC iirc -- maybe I
-don't build any affected defconfig, what's yours?
+> In fact I have a feeling that the extra 'file' field in YYLTYPE never
+> gets used, which means we could just ditch our custom YYLLOC_DEFAULT
+> definition, which would be a better idea, IMO, except that we'll
+> probably want the file info back at some point.
+>
+> Ick.
+>   
 
+Sorry to be the bearer of bad news   :-)   If you have an alternate fix that
+you'd like me to test, I'd be happy to do so;  I've still access to the old
+machine on which the problem report was 1st bounced to me from.  If I
+tried to fix it in any other way than what I did, I'd probably hurt 
+myself...
 
-I have a working (tested! thanks Milton) workaround for the current
-problem, will send it later today.  This problem funnily is hidden
-by the presence of build-id :-)
-
-
-Segher
+Paul.
