@@ -1,22 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id B1E4ADDFAB
+Return-Path: <nareshgbhat@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 754E7DE07D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Jul 2008 18:52:38 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KJlhb-0006ds-ML
-	for linuxppc-embedded@ozlabs.org; Fri, 18 Jul 2008 01:52:35 -0700
-Message-ID: <18525123.post@talk.nabble.com>
-Date: Fri, 18 Jul 2008 01:52:35 -0700 (PDT)
-From: Alex_SYS <schmid-grafenau@t-online.de>
+	Fri, 18 Jul 2008 21:13:16 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so101687yxg.39
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 18 Jul 2008 04:13:15 -0700 (PDT)
+Message-ID: <cf9b3c760807180413w447535a7h35d8ce15c2c8e4e@mail.gmail.com>
+Date: Fri, 18 Jul 2008 16:43:14 +0530
+From: "Naresh Bhat" <nareshgbhat@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Videomode 800x480
-In-Reply-To: <m24p6o352u.fsf@ohwell.denx.de>
+Subject: ml403_emb_ref_ppc_81.zip problem
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <18470632.post@talk.nabble.com> <487CEC85.2070801@denx.de>
-	<18482586.post@talk.nabble.com> <m24p6o352u.fsf@ohwell.denx.de>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_34682_9509472.1216379594433"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,48 +24,102 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_34682_9509472.1216379594433
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hello, I`m on the embedded version, and have madee in qconf "framebuffer
-console" with fbdev!
-I`m sorry, but I don`t have the file "XModeMap" in my target! I have no X
-Running!
+My problem is explained here...
+
+While creating the new XPS project using Base system Builder:
+
+
+Step 1.
 
 
 
-Detlev Zundel wrote:
-> 
-> Hi Alex,
-> 
->> Hello, the physical settings for sync are made by U-Boot and working!
->> But in Lunux when I use 800x480, the screen is well, but the Kernel
->> crashes
->> at Bootup!
->> Using 800x600 works!
->> Now I need only "Dummy" settings, that I can tell Linux I would like
->> 800x480
->> and the Kernel doesn`t crash!
->> I don`t know exactly why the Kernel crashes, I know only that the modedB
->> 800x600 and so on work!
->> I will try your settings immediately!
-> 
-> Your keymap seems to be broken.  Try to include this in your ~/.Xmodmap
-> file:
-> 
-> keycode  10 = 1 period
-> 
-> Cheers
->   Detlev
-> 
-> -- 
-> error compiling committee.c: too many arguments to function
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+New Project->Base System builder Project-> Create a new XPS project using
+Base system Builder->Browse system.xps project from "ml403_emb_ref_ppc_81"
+directory and overite it.
 
--- 
-View this message in context: http://www.nabble.com/Videomode-800x480-tp18470632p18525123.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+
+
+Step 2.
+
+I am selecting "I would like to create the new design"
+
+and then
+
+Board Vendor "Xilinx"
+
+Board name "ML403"
+
+Board version "1"
+
+
+
+Step 3:
+
+I just click "Next"
+
+
+
+Step 4:
+
+I am selecting the Processor Cloclk Frequency as "300Mhz"
+
+
+
+Step 5: Configuring the IO interfaces
+
+
+
+Here is my problem.
+
+
+
+In RS232 UART I am having the only 2 option
+
+1. XPS_UARTLITE
+
+2. XPS_UART16550
+
+
+
+If I use the same base system builder (ml403_emb_ref_ppc_81) with other
+version of the EDK tools (like 8.1iSP2, 9.2iSP2). and repeat the same steps
+I am able to see the options like
+
+1. OPB_UARTLITE
+
+2. OPB_UART16550
+
+3. PLB_UART16550
+
+
+
+Do you have any idea on this Why it is not getting displayed on the
+EDK10.1iSP2 version?
+
+
+Thanks
+
+Naresh Bhat
+
+------=_Part_34682_9509472.1216379594433
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div dir="ltr"><p>My problem is explained here...</p><br><p>While creating the new XPS project using Base system Builder:</p><p><br></p><p>Step 1.</p><p>&nbsp;</p><p>New
+Project-&gt;Base System builder Project-&gt; Create a new XPS project
+using Base system Builder-&gt;Browse system.xps project from
+&quot;ml403_emb_ref_ppc_81&quot; directory and overite it.</p><p>&nbsp;</p><p>Step 2.</p><p>I am selecting &quot;I would like to create the new design&quot; </p><p>and then </p><p>Board Vendor &quot;Xilinx&quot; </p><p>Board name &quot;ML403&quot;</p>
+<p>Board version &quot;1&quot;</p><p>&nbsp;</p><p>Step 3:</p><p>I just click &quot;Next&quot;</p><p>&nbsp;</p><p>Step 4:</p><p>I am selecting the Processor Cloclk Frequency as &quot;300Mhz&quot;</p><p>&nbsp;</p><p>Step 5: Configuring the IO interfaces</p>
+<p>&nbsp;</p><p>Here is my problem. </p><p>&nbsp;</p><p>In RS232 UART I am having the only 2 option</p><p>1. XPS_UARTLITE</p><p>2. XPS_UART16550</p><p>&nbsp;</p><p>If
+I use the same base system builder (ml403_emb_ref_ppc_81) with other
+version of the EDK tools (like 8.1iSP2, 9.2iSP2). and repeat the same
+steps I am able to see the options like</p><p>1. OPB_UARTLITE</p><p>2. OPB_UART16550 </p><p>3. PLB_UART16550</p><p>&nbsp;</p><p>Do you have any idea on this Why it is not getting displayed on the EDK10.1iSP2 version?</p><p><br>
+</p><p>Thanks</p><p>Naresh Bhat<br></p></div>
+
+------=_Part_34682_9509472.1216379594433--
