@@ -1,21 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id BEE57DDDFD
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 30437DDF01
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Jul 2008 13:50:56 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so68144yxg.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jul 2008 20:50:54 -0700 (PDT)
-Message-ID: <9e4733910807172026l4876907ey4814ec0964360c6c@mail.gmail.com>
-Date: Thu, 17 Jul 2008 23:26:04 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: wsz_422 <wsz_422@126.com>
-Subject: Re: hang on "booting the kernel ...."
-In-Reply-To: <11945316.455961216349028828.JavaMail.coremail@bj126app95.126.com>
+	Fri, 18 Jul 2008 14:45:01 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KJhpy-0006zp-5A
+	for linuxppc-embedded@ozlabs.org; Thu, 17 Jul 2008 21:44:58 -0700
+Message-ID: <18522535.post@talk.nabble.com>
+Date: Thu, 17 Jul 2008 21:44:58 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: how to allocate 9MB of memory in kernel ?
+In-Reply-To: <200807170956.52101.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <11945316.455961216349028828.JavaMail.coremail@bj126app95.126.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+References: <18503022.post@talk.nabble.com> <200807170956.52101.arnd@arndb.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,35 +26,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 7/17/08, wsz_422 <wsz_422@126.com> wrote:
->
->   Hello!
->         When I boot the kerenl which was compiled by myself on the ML403,but
-> it hang on "booting the kernel ",the prompt information is as follow:
->     Linux
->     uncompressing the kernel ....done
->     Now booting the kernel
-> and then there is nothing .
->     The linux code I used is linux-2.6-xlix,the version is 2.6.22.And I use
-> the uartlite IP.And use the XMD to download the kernel,the command is dow
-> zImage.elf,con.
->     I don't know what the problem is.Can you give me a help? Thanks you!
+
+This i am not very sure with  :-
+Can we allocate 9MB using vmalloc and assure it to be low memory and not
+highmem ?
+can we ioremap 9 MB SDRAM to kernel virtual ?
+can we use vmalloc and do mmap to that allocated memory ,if the pages are
+not continues then is it going to concern mapping to user space ?
+
+---Misbah <><
 
 
-Most likely is that the root name in your device tree doesn't match a
-name that has been compiled into the kernel.
 
-
->
->
->
+Arnd Bergmann wrote:
+> 
+> On Thursday 17 July 2008, Misbah khan wrote:
+>> I need to allocate 9 MB of memory in to the kernel space which i need to
+>> mmap for the application to access.
+>> 
+>> I need to know what could be the best possible way of doing the same.
+>> 
+> 
+> If you don't need the memory to be physically contiguous, you can use
+> vmalloc to get the memory, but then you need to use remap_vmalloc_range
+> for mapping the memory into a user address space.
+> 
+> 	Arnd <><
 > _______________________________________________
->  Linuxppc-embedded mailing list
->  Linuxppc-embedded@ozlabs.org
->  https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+View this message in context: http://www.nabble.com/how-to-allocate-9MB-of-memory-in-kernel---tp18503022p18522535.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
