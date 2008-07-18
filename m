@@ -1,12 +1,22 @@
-Return-Path: <nareshgbhat@gmail.com>
-Message-ID: <cf9b3c760807180021m6ddefca6nc70082615a63dfea@mail.gmail.com>
-Date: Fri, 18 Jul 2008 12:51:38 +0530
-From: "Naresh Bhat" <nareshgbhat@gmail.com>
-To: Linuxppc-embedded@ozlabs.org
-Subject: Problem creating the ML403 project using Xilinx tool
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id B1E4ADDFAB
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 18 Jul 2008 18:52:38 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KJlhb-0006ds-ML
+	for linuxppc-embedded@ozlabs.org; Fri, 18 Jul 2008 01:52:35 -0700
+Message-ID: <18525123.post@talk.nabble.com>
+Date: Fri, 18 Jul 2008 01:52:35 -0700 (PDT)
+From: Alex_SYS <schmid-grafenau@t-online.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Videomode 800x480
+In-Reply-To: <m24p6o352u.fsf@ohwell.denx.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_32679_14256083.1216365698261"
+Content-Type: text/plain; charset=us-ascii
+References: <18470632.post@talk.nabble.com> <487CEC85.2070801@denx.de>
+	<18482586.post@talk.nabble.com> <m24p6o352u.fsf@ohwell.denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -17,36 +27,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_32679_14256083.1216365698261
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hi Guys,
+Hello, I`m on the embedded version, and have madee in qconf "framebuffer
+console" with fbdev!
+I`m sorry, but I don`t have the file "XModeMap" in my target! I have no X
+Running!
 
-I have tried to create the ML403 project using the
-"ml403_emb_ref_ppc_81.zip" from Xilinx website.
-I have used the toold EDK10.SP2 and ISE10.1SP4.
 
-Problem:
-When I am creating the base system builder project.  I am able to see the
-UART and Ethernet..etc devices "XPS" like XPS_UART, XPS_ETHERNET,
-XPS_ETHERNETLITE.
 
-How can I get the actual devices like EMAC0 on PLB bus with different
-options like
-
-NO DMA, Scattered DMA?
+Detlev Zundel wrote:
+> 
+> Hi Alex,
+> 
+>> Hello, the physical settings for sync are made by U-Boot and working!
+>> But in Lunux when I use 800x480, the screen is well, but the Kernel
+>> crashes
+>> at Bootup!
+>> Using 800x600 works!
+>> Now I need only "Dummy" settings, that I can tell Linux I would like
+>> 800x480
+>> and the Kernel doesn`t crash!
+>> I don`t know exactly why the Kernel crashes, I know only that the modedB
+>> 800x600 and so on work!
+>> I will try your settings immediately!
+> 
+> Your keymap seems to be broken.  Try to include this in your ~/.Xmodmap
+> file:
+> 
+> keycode  10 = 1 period
+> 
+> Cheers
+>   Detlev
+> 
+> -- 
+> error compiling committee.c: too many arguments to function
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
 -- 
-Naresh Bhat
-
-------=_Part_32679_14256083.1216365698261
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div dir="ltr">Hi Guys,<br><br>I have tried to create the ML403 project using the &quot;ml403_emb_ref_ppc_81.zip&quot; from Xilinx website. <br>I have used the toold EDK10.SP2 and ISE10.1SP4.<br><br>Problem:<br>When I am creating the base system builder project.&nbsp; I am able to see the UART and Ethernet..etc devices &quot;XPS&quot; like XPS_UART, XPS_ETHERNET, XPS_ETHERNETLITE.<br>
-<br>How can I get the actual devices like EMAC0 on PLB bus with different options like <br><br>NO DMA, Scattered DMA?<br><br>-- <br>Naresh Bhat<br><br></div>
-
-------=_Part_32679_14256083.1216365698261--
+View this message in context: http://www.nabble.com/Videomode-800x480-tp18470632p18525123.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
