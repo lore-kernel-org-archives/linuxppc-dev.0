@@ -1,19 +1,19 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 773D8DE15A
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 00:20:29 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
+	by ozlabs.org (Postfix) with ESMTP id F3D6ADE202
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 00:22:40 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so248843pyg.27
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 07:22:38 -0700 (PDT)
 Subject: Re: going to OLS?
-Date: Fri, 18 Jul 2008 16:20:21 +0200
+From: Josh Boyer <jwboyer@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4313E14A-C3FB-4996-B188-767704F380C3@kernel.crashing.org>
 References: <4313E14A-C3FB-4996-B188-767704F380C3@kernel.crashing.org>
-	<Pine.LNX.4.64.0807181548290.8276@vixen.sonytel.be>
-In-Reply-To: <Pine.LNX.4.64.0807181548290.8276@vixen.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200807181620.21498.sr@denx.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Content-Type: text/plain
+Date: Fri, 18 Jul 2008 10:22:29 -0400
+Message-Id: <1216390949.12864.22.camel@weaponx>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 18 July 2008, Geert Uytterhoeven wrote:
-> On Fri, 18 Jul 2008, Kumar Gala wrote:
-> > Since OLS is next week I figured I see who around here is going.
-> >
-> > I'm always interested in putting faces to names and having a lively
-> > discussions over beer.
-> >
-> > So if your headed to OLS respond to this thread and maybe we'll have an
-> > inform PPC BoF @ a pub.
->
-> Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
->
-> So I'll be there.
+On Fri, 2008-07-18 at 08:35 -0500, Kumar Gala wrote:
+> Since OLS is next week I figured I see who around here is going.
+> 
+> I'm always interested in putting faces to names and having a lively  
+> discussions over beer.
+> 
+> So if your headed to OLS respond to this thread and maybe we'll have  
+> an inform PPC BoF @ a pub.
 
-Me too. :)
+I'll be there.
 
-Best regards,
-Stefan
+josh
