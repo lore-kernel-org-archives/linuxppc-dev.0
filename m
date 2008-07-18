@@ -1,14 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 18 Jul 2008 13:47:27 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: Calling the kernel from a mini-bootloader
-Message-ID: <20080718034727.GF18748@yookeroo.seuss>
-References: <93c791ba2d4ce372589da84acd14a15c@bga.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.173])
+	by ozlabs.org (Postfix) with ESMTP id 0B767DDF0F
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 14:44:23 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so133143wfg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jul 2008 21:44:22 -0700 (PDT)
+Date: Thu, 17 Jul 2008 22:44:20 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
+	Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] leds: implement OpenFirmare GPIO LED driver
+Message-ID: <20080718044420.GB9795@secretlab.ca>
+References: <20080714164114.GA18784@polina.dev.rtsoft.ru>
+	<dc452eaab83710e7d6f86dcc5d77bdda@kernel.crashing.org>
+	<20080717110730.GA24775@polina.dev.rtsoft.ru>
+	<20080717150715.GD31932@secretlab.ca>
+	<20080718033512.GC18748@yookeroo.seuss>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <93c791ba2d4ce372589da84acd14a15c@bga.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+In-Reply-To: <20080718033512.GC18748@yookeroo.seuss>
+Sender: Grant Likely <glikely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,31 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 17, 2008 at 11:14:11AM -0500, Milton Miller wrote:
-> On Thu Jul 17 at 23:22:28 EST in 2008, Guillaume Dargaud wrote:
-[snip]
->> Maybe the main() of the kernel can receive argv/argc the usual way,  
->> and I
->> just need to call "0x400000(argc, argv);" but I have no idea if that  
->> works.
->
-> Ahh ... you are still on ppc.   Please note that we just merged
-> the removal of arch/ppc, everyone needs to use powerpc now.  The
-> good news is: its easier to state the requirements, and its
-> easier to share the code in vmlinux.  The bad news is you have to
-> follow the rules for passing data to the kernel.  Its not hard.
-> We have defined a data structure that is parsed to become a tree
-> of data describing the machine, and based the contents on open
-> firmware.  We call this the flattened device tree.
+On Fri, Jul 18, 2008 at 01:35:12PM +1000, David Gibson wrote:
+> This brings us back to the issue we also have with DCR controlled
+> devices.  Possibly we should have two ways of representing these
+> connections: for "pure" GPIO-only or DCR-only devices, they appear
+> under the relevant controller with the addresses encoded with 'reg'.
+> For devices on other busses which also have a few GPIO lines / DCR
+> registers, they would appear on the other bus with 'gpios' or
+> 'dcr-reg' properties (or some new, generalized 'other-bus-reg'
+> property).
 
-Your firmware doesn't have to deal with this though, although it can.
-It's perfectly acceptable - in fact I'd mildly recommend it over doing
-this in the firmware - to instead have the kernel's zImage wrapper
-supply the flattened device tree, folding information it needs to get
-from the firmware into it.
+On the other hand; it's just LEDs.  I think a single scheme is enough.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+:-)
+
+g.
