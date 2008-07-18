@@ -1,19 +1,19 @@
-Return-Path: <nareshgbhat@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id 754E7DE07D
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Jul 2008 21:13:16 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so101687yxg.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Jul 2008 04:13:15 -0700 (PDT)
-Message-ID: <cf9b3c760807180413w447535a7h35d8ce15c2c8e4e@mail.gmail.com>
-Date: Fri, 18 Jul 2008 16:43:14 +0530
-From: "Naresh Bhat" <nareshgbhat@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: ml403_emb_ref_ppc_81.zip problem
+Return-Path: <mahendravarman15@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.188])
+	by ozlabs.org (Postfix) with ESMTP id 40EA2DE43A
+	for <linuxppc-embedded@ozlabs.org.>;
+	Sat, 19 Jul 2008 00:00:15 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id b2so117398nfb.43
+	for <linuxppc-embedded@ozlabs.org.>;
+	Fri, 18 Jul 2008 07:00:13 -0700 (PDT)
+Message-ID: <4ac2955e0807180700u6184562duc128049245e37fdc@mail.gmail.com>
+Date: Fri, 18 Jul 2008 19:30:13 +0530
+From: "mahendra varman" <mahendravarman15@gmail.com>
+To: linuxppc-embedded@ozlabs.org.
+Subject: No filesystem could mount root
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_Part_34682_9509472.1216379594433"
+	boundary="----=_Part_40079_27218329.1216389613521"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,102 +24,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_34682_9509472.1216379594433
+------=_Part_40079_27218329.1216389613521
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-My problem is explained here...
+Hi all
 
-While creating the new XPS project using Base system Builder:
+We are porting linux 2.6.24 on a board with powerpc processor and with AMD
+79C972 ethernet chip
 
+Thru ramdisk I can able to boot the board and i can do the ifconfig eth0
+up..
 
-Step 1.
+When I try to boot the board with nfs iam getting the following
 
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module
+List of all partitions:
+No filesystem could mount root, tried:  ext3 ext2 msdos ntfs
+Kernel panic - not syncing: VFS: Unable to mount root fs on
+unknown-block(1,0)
+Rebooting in 180 seconds..
 
+1. In the kernel the nfs related configs are enabled properly
+2. The nfs server and file system is proper( I have mounted and checked the
+nfs server & file system thru another working setup)
+3. The ethernet driver  pcnet32.c  under drivers/net  is okkk it seems becaz
+it is working when i boot the board thru ramdisk
 
-New Project->Base System builder Project-> Create a new XPS project using
-Base system Builder->Browse system.xps project from "ml403_emb_ref_ppc_81"
-directory and overite it.
+Please shed me some light where to look and what may be the reason iam
+getting the above error when i boot thru NFS
 
+Thanks in advance
 
-
-Step 2.
-
-I am selecting "I would like to create the new design"
-
-and then
-
-Board Vendor "Xilinx"
-
-Board name "ML403"
-
-Board version "1"
-
-
-
-Step 3:
-
-I just click "Next"
-
-
-
-Step 4:
-
-I am selecting the Processor Cloclk Frequency as "300Mhz"
-
-
-
-Step 5: Configuring the IO interfaces
-
-
-
-Here is my problem.
-
-
-
-In RS232 UART I am having the only 2 option
-
-1. XPS_UARTLITE
-
-2. XPS_UART16550
-
-
-
-If I use the same base system builder (ml403_emb_ref_ppc_81) with other
-version of the EDK tools (like 8.1iSP2, 9.2iSP2). and repeat the same steps
-I am able to see the options like
-
-1. OPB_UARTLITE
-
-2. OPB_UART16550
-
-3. PLB_UART16550
-
-
-
-Do you have any idea on this Why it is not getting displayed on the
-EDK10.1iSP2 version?
-
-
-Thanks
-
-Naresh Bhat
-
-------=_Part_34682_9509472.1216379594433
+------=_Part_40079_27218329.1216389613521
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-<div dir="ltr"><p>My problem is explained here...</p><br><p>While creating the new XPS project using Base system Builder:</p><p><br></p><p>Step 1.</p><p>&nbsp;</p><p>New
-Project-&gt;Base System builder Project-&gt; Create a new XPS project
-using Base system Builder-&gt;Browse system.xps project from
-&quot;ml403_emb_ref_ppc_81&quot; directory and overite it.</p><p>&nbsp;</p><p>Step 2.</p><p>I am selecting &quot;I would like to create the new design&quot; </p><p>and then </p><p>Board Vendor &quot;Xilinx&quot; </p><p>Board name &quot;ML403&quot;</p>
-<p>Board version &quot;1&quot;</p><p>&nbsp;</p><p>Step 3:</p><p>I just click &quot;Next&quot;</p><p>&nbsp;</p><p>Step 4:</p><p>I am selecting the Processor Cloclk Frequency as &quot;300Mhz&quot;</p><p>&nbsp;</p><p>Step 5: Configuring the IO interfaces</p>
-<p>&nbsp;</p><p>Here is my problem. </p><p>&nbsp;</p><p>In RS232 UART I am having the only 2 option</p><p>1. XPS_UARTLITE</p><p>2. XPS_UART16550</p><p>&nbsp;</p><p>If
-I use the same base system builder (ml403_emb_ref_ppc_81) with other
-version of the EDK tools (like 8.1iSP2, 9.2iSP2). and repeat the same
-steps I am able to see the options like</p><p>1. OPB_UARTLITE</p><p>2. OPB_UART16550 </p><p>3. PLB_UART16550</p><p>&nbsp;</p><p>Do you have any idea on this Why it is not getting displayed on the EDK10.1iSP2 version?</p><p><br>
-</p><p>Thanks</p><p>Naresh Bhat<br></p></div>
+<div dir="ltr">Hi all<br><br>We are porting linux 2.6.24 on a board with powerpc processor and with AMD 79C972 ethernet chip<br><br>Thru ramdisk I can able to boot the board and i can do the ifconfig eth0 up..<br><br>When I try to boot the board with nfs iam getting the following <br>
+<br><font size="1">NET: Registered protocol family 1<br>NET: Registered protocol family 17<br>RPC: Registered udp transport module.<br>RPC: Registered tcp transport module</font><br>List of all partitions:<br>No filesystem could mount root, tried:&nbsp; ext3 ext2 msdos ntfs<br>
+Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(1,0)<br>Rebooting in 180 seconds..<br><br>1. In the kernel the nfs related configs are enabled properly<br>2. The nfs server and file system is proper( I have mounted and checked the nfs server &amp; file system thru another working setup)<br>
+3. The ethernet driver&nbsp; pcnet32.c&nbsp; under drivers/net&nbsp; is okkk it seems becaz it is working when i boot the board thru ramdisk<br><br>Please shed me some light where to look and what may be the reason iam getting the above error when i boot thru NFS<br>
+<br>Thanks in advance<br></div>
 
-------=_Part_34682_9509472.1216379594433--
+------=_Part_40079_27218329.1216389613521--
