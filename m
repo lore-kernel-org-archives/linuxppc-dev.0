@@ -1,17 +1,24 @@
-Return-Path: <robbat2@gentoo.org>
-Received: from mail.isohunt.com (b01.ext.isohunt.com [208.71.112.51])
-	by ozlabs.org (Postfix) with ESMTP id 7C112DEAAD
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 03:03:48 +1000 (EST)
-Date: Fri, 18 Jul 2008 09:57:23 -0700
-From: "Robin H. Johnson" <robbat2@gentoo.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: going to OLS?
-Message-ID: <20080718165723.GT27547@curie-int.orbis-terrarum.net>
-References: <4313E14A-C3FB-4996-B188-767704F380C3@kernel.crashing.org>
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 615E9DE42F
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 03:10:39 +1000 (EST)
+Message-ID: <4880CE81.4090608@pobox.com>
+Date: Fri, 18 Jul 2008 13:10:25 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+ARLBH93C7pgvpZY"
-In-Reply-To: <4313E14A-C3FB-4996-B188-767704F380C3@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] fs_enet: MDIO on GPIO support
+References: <200805261152.37636.laurentp@cse-semaphore.com>
+	<200806261321.24338.laurentp@cse-semaphore.com>
+	<20080626175523.54728d07@vitb.ru.mvista.com>
+	<200807181126.48246.laurentp@cse-semaphore.com>
+	<E7FD62BF-C2BB-4803-87AB-91DD7AB8FD0C@kernel.crashing.org>
+In-Reply-To: <E7FD62BF-C2BB-4803-87AB-91DD7AB8FD0C@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Vitaly Bordug <vbordug@ru.mvista.com>, Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,40 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala wrote:
+> 
+> On Jul 18, 2008, at 4:26 AM, Laurent Pinchart wrote:
+> 
+>> On Thursday 26 June 2008, Vitaly Bordug wrote:
+>>> On Thu, 26 Jun 2008 13:21:23 +0200
+>>> Laurent Pinchart <laurentp@cse-semaphore.com> wrote:
+>>>
+>>>>> There should be no dependencies. When the OF GPIO support is not
+>>>>> selected linux/of_gpio.h will define of_get_gpio() as a stub, so the
+>>>>> fs_enet driver will fall back to the legacy binding.
+>>>>
+>>>> Have we reached a consensus on which tree the patch should go to ?
+>>> I think it should go through powerpc tree, not seeing too much
+>>> netdev-generic stuff in here. If noone will object, Kumar will pick 
+>>> it up I
+>>> guess...
+>>
+>> Kumar, could you pick it up ? I'd like to see this in 2.6.27.
+>>
+>> Best regards,
+> 
+> Jeff said he applied both to his tree already.
 
---+ARLBH93C7pgvpZY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yep, it's already in davem's net-next...
 
-On Fri, Jul 18, 2008 at 08:35:36AM -0500, Kumar Gala wrote:
-> Since OLS is next week I figured I see who around here is going.
->
-> I'm always interested in putting faces to names and having a lively=20
-> discussions over beer.
->
-> So if your headed to OLS respond to this thread and maybe we'll have an=
-=20
-> inform PPC BoF @ a pub.
-I'll be there, arriving on Monday evening.
-
---=20
-Robin Hugh Johnson
-Gentoo Linux Developer & Infra Guy
-E-Mail     : robbat2@gentoo.org
-GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
-
---+ARLBH93C7pgvpZY
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Robbat2 @ Orbis-Terrarum Networks - The text below is a digital signature. If it doesn't make any sense to you, ignore it.
-
-iEYEARECAAYFAkiAy3MACgkQPpIsIjIzwix11QCgtFZFXIBCll6QGrYLGYPz3uYw
-hl4An0XI19ab77xVjGeISCCfyeCa3kkQ
-=mjTL
------END PGP SIGNATURE-----
-
---+ARLBH93C7pgvpZY--
+	Jeff
