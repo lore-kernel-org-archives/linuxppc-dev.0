@@ -1,17 +1,16 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 17231DEB4F
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 05:32:10 +1000 (EST)
-Date: Fri, 18 Jul 2008 15:32:10 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Wolfgang Denk" <wd@denx.de>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from VA3EHSOBE002.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id DF28FDE0AC
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 05:53:35 +1000 (EST)
+Message-ID: <4880F4B7.2030806@am.sony.com>
+Date: Fri, 18 Jul 2008 12:53:27 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: going to OLS?
-Message-ID: <20080718153210.300ddb26@lappy.seanm.ca>
-In-Reply-To: <20080718163338.D87BF2488A@gemini.denx.de>
-References: <20080718162731.GD10317@secretlab.ca>
-	<20080718163338.D87BF2488A@gemini.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <4313E14A-C3FB-4996-B188-767704F380C3@kernel.crashing.org>
+In-Reply-To: <4313E14A-C3FB-4996-B188-767704F380C3@kernel.crashing.org>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,13 +21,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 18 Jul 2008 18:33:38 +0200
-"Wolfgang Denk" <wd@denx.de> wrote:
+Kumar Gala wrote:
+> So if your headed to OLS respond to this thread and maybe we'll have  
+> an inform PPC BoF @ a pub.
 
-> BTW: will there a pre-OLS beer evening on Tuesday, or will Stefan and
-> me have to sit alone in some bar?
+I will go.
 
-I'm up for a pre-OLS beer evening!
-
-Cheers,
-   Sean
+-Geoff
