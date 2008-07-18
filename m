@@ -1,24 +1,28 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	by ozlabs.org (Postfix) with ESMTP id 96DA1DDFD7
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 19:58:32 +1000 (EST)
-Date: Fri, 18 Jul 2008 10:58:25 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [alsa-devel] [PATCH 3/3] ALSA SoC: Add Texas
-	Instruments	TLV320AIC26 codec driver
-Message-ID: <20080718095823.GA14416@sirena.org.uk>
-References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
-	<20080701235340.16923.48024.stgit@trillian.secretlab.ca>
-	<1214995713.4882.54.camel@localhost.localdomain>
-	<20080712060018.GB23213@secretlab.ca>
-	<20080712173609.GA6523@sirena.org.uk>
-	<20080717233153.GA8187@secretlab.ca>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id AAE44DDE1F
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 20:05:52 +1000 (EST)
+Date: Fri, 18 Jul 2008 14:05:49 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
+Message-ID: <20080718100549.GA28741@polina.dev.rtsoft.ru>
+References: <Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp>
+	<20080717041531.GA27243@secretlab.ca>
+	<20080717140519.GA32617@polina.dev.rtsoft.ru>
+	<20080717141335.GA2219@polina.dev.rtsoft.ru>
+	<20080717150422.GC31932@secretlab.ca>
+	<20080717152006.GA26120@polina.dev.rtsoft.ru>
+	<fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
+	<Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
+	<20080717234201.GA15745@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080717233153.GA8187@secretlab.ca>
-Cc: Liam Girdwood <liam.girdwood@wolfsonmicro.com>, alsa-devel@alsa-project.org,
-	timur@freescale.com, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +32,207 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 17, 2008 at 05:31:53PM -0600, Grant Likely wrote:
-> On Sat, Jul 12, 2008 at 06:36:10PM +0100, Mark Brown wrote:
+On Fri, Jul 18, 2008 at 02:20:42AM -0700, Trent Piepho wrote:
+> On Fri, 18 Jul 2008, Anton Vorontsov wrote:
+> > On Thu, Jul 17, 2008 at 01:18:18PM -0700, Trent Piepho wrote:
+> >> Basically what I did then in my patch then, refactor leds-gpio so most of
+> >> it is shared and there is a block of code that does platform binding and
+> >> another block that does of_platform binding.
+> >
+> > Ok. I must admit I'm quite burned out with OF gpio-leds. I was posting the
+> > bindings since April, probably four or five times. Last time a week ago,
+> > IIRC.
+> >
+> > During the months I received just a few replies, one from Grant ("Looks
+> > good to me."), few from Segher (with a lot of criticism, that I much
+> > appreciated and tried to fix all spotted issues), and one from Laurent
+> > (about active-low LEDs).
+> 
+> I'm sorry, I never saw those emails.  Were they all to linuxppc-dev?  I hate
+> reading that list, gmane, marc, and lkml.org don't archive it and
+> mail-archive.com isn't nearly as nice.
 
-> > /sys/bus/platform/devices/soc-audio/codec_reg
+Usually I use this archive: http://ozlabs.org/pipermail/linuxppc-dev/
 
-> Yikes.  The AIC26 has registers all over the place and most of them are
-> empty.  The codec_reg attribute handling means I need to maintain a
-> cache of the entire register file; not just the part that is actually
-> used.  Oh well; I can work around it.
+> Is this the last version?
+> http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg18355.html
 
-Sparse (or sparsely used) register maps are pretty common - in practice
-it's not been a problem to just have a cache that covers everything and
-only gets read, the amount of data involved is rarely that large in the
-context of what you need to store the audio you're working with.
+No, this is v2 or something. The last version is the same as the current
+one:
+
+http://ozlabs.org/pipermail/linuxppc-dev/2008-July/059156.html
+
+> Why did you get rid of "linux,default-trigger" 
+
+Nobody liked it, even I myself. ;-)
+
+http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056943.html
+
+Later I tried to use aliases for default-trigger.
+
+http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057244.html
+
+But after "i2c vs. cell-index vs. aliases" discussion I decided to
+remove this stuff completely until I find something better (or
+somebody will purpose).
+
+As for linux,default-brightness... we don't need this since now we
+have default-on trigger.
+
+> and the active-low property?
+
+Active-low can be coded inside the gpios = <>, via flags cell. And GPIO
+controller can transparently support active-low GPIO states (i.e. just
+like IRQ controllers automatically setting up IRQ trigger types based
+on information from the device tree).
+
+I implemented active-low flags for pixis gpio controller, but it is easy
+to do this for any controller, when needed. Here is example:
+
+diff --git a/arch/powerpc/platforms/86xx/pixis_gpio.c b/arch/powerpc/platforms/86xx/pixis_gpio.c
+new file mode 100644
+index 0000000..85254f9
+--- /dev/null
++++ b/arch/powerpc/platforms/86xx/pixis_gpio.c
+@@ -0,0 +1,141 @@
++/*
++ * PIXIS GPIOs
++ *
++ * Copyright (c) MontaVista Software, Inc. 2008.
++ *
++ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/spinlock.h>
++#include <linux/io.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
++#include <linux/gpio.h>
++
++#define PIXIS_GPIO_PINS 8
++
++struct px_gpio_chip {
++	struct of_mm_gpio_chip mm_gc;
++	spinlock_t lock;
++
++	/* mask for active-low pins */
++	u8 active_low;
++};
++
++static inline struct px_gpio_chip *
++to_px_gpio_chip(struct of_mm_gpio_chip *mm_gc)
++{
++	return container_of(mm_gc, struct px_gpio_chip, mm_gc);
++}
++
++static inline u8 pin2mask(unsigned int pin)
++{
++	return 1 << (PIXIS_GPIO_PINS - 1 - pin);
++}
++
++static int px_gpio_get(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct px_gpio_chip *px_gc = to_px_gpio_chip(mm_gc);
++	u8 __iomem *regs = mm_gc->regs;
++
++	return (in_8(regs) ^ px_gc->active_low) & pin2mask(gpio);
++}
++
++static void px_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct px_gpio_chip *px_gc = to_px_gpio_chip(mm_gc);
++	u8 __iomem *regs = mm_gc->regs;
++	unsigned long flags;
++	u8 val_mask = val ? pin2mask(gpio) : 0;
++
++	spin_lock_irqsave(&px_gc->lock, flags);
++
++	if ((val_mask ^ px_gc->active_low) & pin2mask(gpio))
++		setbits8(regs, pin2mask(gpio));
++	else
++		clrbits8(regs, pin2mask(gpio));
++
++	spin_unlock_irqrestore(&px_gc->lock, flags);
++}
++
++static int px_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
++{
++	return 0;
++}
++
++static int px_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	px_gpio_set(gc, gpio, val);
++	return 0;
++}
++
++#define PX_GPIO_FLAG_ACTIVE_LOW	(1 << 0)
++
++int px_gpio_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
++		  const void *gpio_spec)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(&of_gc->gc);
++	struct px_gpio_chip *px_gc = to_px_gpio_chip(mm_gc);
++	const u32 *gpio = gpio_spec;
++
++	if (*gpio > of_gc->gc.ngpio)
++		return -EINVAL;
++
++	if (gpio[1] & PX_GPIO_FLAG_ACTIVE_LOW)
++		px_gc->active_low |= pin2mask(*gpio);
++
++	return *gpio;
++}
++
++static int __init pixis_gpio_init(void)
++{
++	struct device_node *np;
++
++	for_each_compatible_node(np, NULL, "fsl,fpga-pixis-gpio-bank") {
++		int ret;
++		struct px_gpio_chip *px_gc;
++		struct of_mm_gpio_chip *mm_gc;
++		struct of_gpio_chip *of_gc;
++		struct gpio_chip *gc;
++
++		px_gc = kzalloc(sizeof(*px_gc), GFP_KERNEL);
++		if (!px_gc) {
++			ret = -ENOMEM;
++			goto err;
++		}
++
++		spin_lock_init(&px_gc->lock);
++
++		mm_gc = &px_gc->mm_gc;
++		of_gc = &mm_gc->of_gc;
++		gc = &of_gc->gc;
++
++		of_gc->gpio_cells = 2;
++		of_gc->xlate = px_gpio_xlate;
++		gc->ngpio = PIXIS_GPIO_PINS;
++		gc->direction_input = px_gpio_dir_in;
++		gc->direction_output = px_gpio_dir_out;
++		gc->get = px_gpio_get;
++		gc->set = px_gpio_set;
++
++		ret = of_mm_gpiochip_add(np, mm_gc);
++		if (ret)
++			goto err;
++		continue;
++err:
++		pr_err("%s: registration failed with status %d\n",
++		       np->full_name, ret);
++		kfree(px_gc);
++		/* try others anyway */
++	}
++	return 0;
++}
++arch_initcall(pixis_gpio_init);
