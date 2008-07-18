@@ -1,21 +1,32 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AB5B4DDF5F
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 18:43:21 +1000 (EST)
-Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m6I8hGrQ003794
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 10:43:16 +0200
-Message-ID: <02ec01c8e8b2$52717890$ad289e86@LPSC0173W>
-From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-To: "ppcdev" <linuxppc-dev@ozlabs.org>
-References: <93c791ba2d4ce372589da84acd14a15c@bga.com>
-Subject: Re: Calling the kernel from a mini-bootloader
-Date: Fri, 18 Jul 2008 10:43:11 +0200
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8E01ADDF02
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 19:22:34 +1000 (EST)
+Date: Fri, 18 Jul 2008 02:20:42 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
+In-Reply-To: <20080717234201.GA15745@polina.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
+References: <1216133032.5345.73.camel@dax.rpnet.com>
+	<20080715151917.GA30607@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp>
+	<20080717041531.GA27243@secretlab.ca>
+	<20080717140519.GA32617@polina.dev.rtsoft.ru>
+	<20080717141335.GA2219@polina.dev.rtsoft.ru>
+	<20080717150422.GC31932@secretlab.ca>
+	<20080717152006.GA26120@polina.dev.rtsoft.ru>
+	<fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
+	<Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
+	<20080717234201.GA15745@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=response
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,73 +36,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Milton and David, thanks t=for the answers.
+On Fri, 18 Jul 2008, Anton Vorontsov wrote:
+> On Thu, Jul 17, 2008 at 01:18:18PM -0700, Trent Piepho wrote:
+>> Basically what I did then in my patch then, refactor leds-gpio so most of
+>> it is shared and there is a block of code that does platform binding and
+>> another block that does of_platform binding.
+>
+> Ok. I must admit I'm quite burned out with OF gpio-leds. I was posting the
+> bindings since April, probably four or five times. Last time a week ago,
+> IIRC.
+>
+> During the months I received just a few replies, one from Grant ("Looks
+> good to me."), few from Segher (with a lot of criticism, that I much
+> appreciated and tried to fix all spotted issues), and one from Laurent
+> (about active-low LEDs).
 
-> This is a very reasonable approach, and is quite similar to what
-> I do.
-Makes me feel better !!!
+I'm sorry, I never saw those emails.  Were they all to linuxppc-dev?  I hate
+reading that list, gmane, marc, and lkml.org don't archive it and
+mail-archive.com isn't nearly as nice.
 
-> You actually have a few choices.   You can put just the loaded
-> data, or you can put the elf file and parse the header in your
-> boot loader.
-I cannot do that for memory constrains. I have 4Mb in the flash for the 
-kernel and only a few Kb for the eprom of the bootloader. Also the idea is 
-to sometimes update the kernel but basically never the bootloader.
+Is this the last version?
+http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg18355.html
 
-> After seeing the advantages, I would keep the elf
-> header.   One big advantage of keeping the elf header is you can
-> see how much data will be zeroed for bss when the kernel starts.
-> Another choice is rather than loading the kernel, build a zImage
-> of some kind (see the code in arch/powerpc/boot).  This way the
-> kernel code and static data is compressed.  I often see a 3-fold
-> reduction in size.  You can also attach an initrd, should you
-> decide to use initramfs later.  More o this below.
-I'm not too familiar with the sequence of events that unfolds when the 
-kernel start.
-The JTAG debugger copies the kernel at a given address. A program dumps a 
-copy of that address range in flash. A bootloader does the reverse and 
-launches it, so it shouldn't really matter what form the kernel takes, as 
-long as the original _did_ work.
+Why did you get rid of "linux,default-trigger" and the active-low property? 
+I couldn't find any discussion about this.  When I first saw your current
+patch I was going to add them, but I see you already had them and then
+removed them.
 
-> Ahh ... you are still on ppc.   Please note that we just merged
-> the removal of arch/ppc, everyone needs to use powerpc now.  The
-Yes, my code works on the ML405, now I'm just trying to get it to work on 
-our custom board... I haven't been able to follow closely the PPC/PowerPC 
-change but it got me worried so I stopped updating at 2.6.15. I'm using the 
-Xilinx git tree because I rely on a lot of their drivers, so I don't know if 
-the change will be seemless. From the change of xparameters.h to and 
-entirely different device description method, I'd say I'm not ready to take 
-the jump.
+I'd like to replace my "led-hack" stg patch with this, but I need
+default-trigger to do that.  I don't need active-low or default-brightness,
+but they seem like a good idea.  Actually, if you look closely at the patch
+I posted, you'll see I had modified the existing leds-gpio driver to add a
+default-brightness feature, though I don't need it anymore.  The requirement
+changed from having an led on during kernel boot to having it flash.  I
+have another hack for that, since there is no way to pass parameters to a
+trigger.
 
-Any Xilinx user care to comment on that ?
+>> leds {
+>>  	compatible = "gpio-led";
+>>  	led@6 {
+>>  		gpios = <&mpc8572 6 0>;
+>>  		label = "red";
+>>  	};
+>>  	led@7 {
+>>  		gpios = <&mpc8572 7 0>;
+>>  		label = "green";
+>>  	};
+>> };
+>
+> I like this. Or better what Grant suggested, i.e. move label to node
+> name.
 
-And I'm supposed to release the alpha version of our code today !!!
+Ok, I used that.  It's like the new way partitions are defined in NOR flash
+OF bindings.  My first example was more like the old way.  The led name can
+come from a label property or if there is none then the node name is used. 
+I don't think you can have colons or spaces in node names.  I don't have a
+default trigger property, but I'd really like to have that.  I could add an
+active low flag too.  Maybe compatible should be "gpio-leds", since you can
+define more than one?
 
-> good news is: its easier to state the requirements, and its
-Hmmm...
-
-> easier to share the code in vmlinux.  The bad news is you have to
-> follow the rules for passing data to the kernel.  Its not hard.
-> We have defined a data structure that is parsed to become a tree
-> of data describing the machine, and based the contents on open
-> firmware.  We call this the flattened device tree.
-Our firmware is custom VHDL code. I'll go ask the 'tronics guy if it fits 
-open firmware requirements, but I'd be surprised.
-
-> Please read Documentation/powerpc/booting-without-of for more
-Will do. Last update is 2005. Is this still relevant  ?
-
-> I will point out the minimal rom image I did for qemu where the
-> device tree is linked into the assembly, the kernel elf file is
-> already loaded, but I had to copy the nvram data serially into
-> ram and then poke the memory size and initrd location into the
-> device tree.
-Maybe I can just use an elementary approach like that: have the bootloader 
-write a single byte with the jumper positions somewhere in RAM, and then 
-have the kernel read it to use for the Mac address. With the flat addressing 
-it could work if there aren't built-in securities.
-
-Thanks
--- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+The patch is done and works for me.  One can select platform device and/or
+of_platform device support via Kconfig.  I'll port it to the git kernel and
+post it soon.
