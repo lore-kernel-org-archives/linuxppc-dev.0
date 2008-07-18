@@ -1,19 +1,20 @@
-Return-Path: <tehn.yit.chin@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.184])
-	by ozlabs.org (Postfix) with ESMTP id B3450DDF31
+Return-Path: <marco.stornelli@coritel.it>
+Received: from nausicaa2.coritel.it
+	(host254-130-static.190-82-b.business.telecomitalia.it
+	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 88319DDF26
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Jul 2008 16:29:36 +1000 (EST)
-Received: by ti-out-0910.google.com with SMTP id w7so189535tib.13
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jul 2008 23:29:34 -0700 (PDT)
-Message-ID: <bf04f99c0807172329m7ec94580n194e02b708bf7597@mail.gmail.com>
-Date: Fri, 18 Jul 2008 16:29:34 +1000
-From: "Tehn Yit Chin" <tehn.yit.chin@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: jumping to code in RAM in a MPC55xx
+	Fri, 18 Jul 2008 16:48:23 +1000 (EST)
+Message-ID: <48803D3C.5020608@coritel.it>
+Date: Fri, 18 Jul 2008 08:50:36 +0200
+From: Marco Stornelli <marco.stornelli@coritel.it>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_62042_12571893.1216362574217"
+To: Misbah khan <misbah_khan@engineer.com>
+Subject: Re: how to allocate 9MB of memory in kernel ?
+References: <18503022.post@talk.nabble.com> <200807170956.52101.arnd@arndb.de>
+	<18522535.post@talk.nabble.com>
+In-Reply-To: <18522535.post@talk.nabble.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,87 +25,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_62042_12571893.1216362574217
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Misbah khan ha scritto:
+> This i am not very sure with  :-
+> Can we allocate 9MB using vmalloc and assure it to be low memory and not
+> highmem ?
 
-Hi,
+Why do you need only low memory? And why do you need to allocate memory? 
+If I understood correctly you need only to "ioremap" a chunk of memory.
 
-This question is not directly related to linux, but a question on how to
-execute code from.
+> can we ioremap 9 MB SDRAM to kernel virtual ?
 
-My test code is as follows..
+Yep.
 
-void ram(unsigned int cat) __attribute__ ((section(".ram_code")));
-void ram1(void) __attribute__ ((section(".ram_code")));
-void flash(void) __attribute__ ((section(".text")));
-void flash1(unsigned int y) __attribute__ ((section(".text")));
+> can we use vmalloc and do mmap to that allocated memory ,if the pages are
+> not continues then is it going to concern mapping to user space ?
 
-void ram(unsigned int cat)
-{
-    unsigned int abc;
+The "contiguous" problem is related only to DMA operations.
 
-    abc += 12;
-    abc += cat;
-}
+> 
+> ---Misbah <><
+> 
+> 
+> 
+> Arnd Bergmann wrote:
+>> On Thursday 17 July 2008, Misbah khan wrote:
+>>> I need to allocate 9 MB of memory in to the kernel space which i need to
+>>> mmap for the application to access.
+>>>
+>>> I need to know what could be the best possible way of doing the same.
+>>>
+>> If you don't need the memory to be physically contiguous, you can use
+>> vmalloc to get the memory, but then you need to use remap_vmalloc_range
+>> for mapping the memory into a user address space.
+>>
+>> 	Arnd <><
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>
+>>
+> 
 
-void ram1(void)
-{
-    ram(123);
-}
 
+-- 
+Marco Stornelli
+Embedded Software Engineer
+CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
+http://www.coritel.it
 
-void flash1(unsigned int y)
-{
-    unsigned int x;
-
-    x = x + y;
-
-}
-
-void flash(void)
-{
-    unsigned int def;
-
-    def += 12;
-
-    asm (" bel ram1\n\t");
-}
-
-I have the section .ram_code mapped into the internal SRAM of the MPC55xx,
-which starts at 0x40000000. Code in .text are mapped into MPC55xx's internal
-FLASH, starting at 0x00000000.
-
-When I attempt to link the code together,  I get the error
-
-U:\src\applications\comms/fatdog.c(35,1): relocation truncated to fit:
-R_PPC_REL24 against symbol `ram1' defined in .ram_code section in
-U:\src\applications\comms\fatdog.o
-
-I googled the error and I think it means that the ram1() is too far away and
-the branch address has been truncated to fit into the binary.
-
-Other than assembler bel instruction, I have also tried bl, b and bea and
-all of them gave the same link error.
-
-I was wondering if anyone can give some insight on how I can get the MPC55xx
-to branch between FLASH and SRAM?
-
-Many thanks,
-Tehn Yit Chin
-
-------=_Part_62042_12571893.1216362574217
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div dir="ltr">Hi,<br><br>This question is not directly related to linux, but a question on how to execute code from.<br><br>My test code is as follows..<br><br>void ram(unsigned int cat) __attribute__ ((section(&quot;.ram_code&quot;)));<br>
-void ram1(void) __attribute__ ((section(&quot;.ram_code&quot;)));<br>void flash(void) __attribute__ ((section(&quot;.text&quot;)));<br>void flash1(unsigned int y) __attribute__ ((section(&quot;.text&quot;)));<br><br>void ram(unsigned int cat)<br>
-{<br>&nbsp;&nbsp;&nbsp; unsigned int abc;<br><br>&nbsp;&nbsp;&nbsp; abc += 12;<br>&nbsp;&nbsp;&nbsp; abc += cat;<br>}<br><br>void ram1(void)<br>{<br>&nbsp;&nbsp;&nbsp; ram(123);<br>}<br><br><br>void flash1(unsigned int y)<br>{<br>&nbsp;&nbsp;&nbsp; unsigned int x;<br><br>&nbsp;&nbsp;&nbsp; x = x + y;<br><br>}<br>
-<br>void flash(void)<br>{<br>&nbsp;&nbsp;&nbsp; unsigned int def;<br><br>&nbsp;&nbsp;&nbsp; def += 12;<br><br>&nbsp;&nbsp;&nbsp; asm (&quot; bel ram1\n\t&quot;);<br>}<br><br>I have the section .ram_code mapped into the internal SRAM of the MPC55xx, which starts at 0x40000000. Code in .text are mapped into MPC55xx&#39;s internal FLASH, starting at 0x00000000.<br>
-<br>When I attempt to link the code together,&nbsp; I get the error <br><br>U:\src\applications\comms/fatdog.c(35,1): relocation truncated to fit: R_PPC_REL24 against symbol `ram1&#39; defined in .ram_code section in U:\src\applications\comms\fatdog.o<br>
-<br>I googled the error and I think it means that the ram1() is too far away and the branch address has been truncated to fit into the binary.<br><br>Other than assembler bel instruction, I have also tried bl, b and bea and all of them gave the same link error.<br>
-<br>I was wondering if anyone can give some insight on how I can get the MPC55xx to branch between FLASH and SRAM?<br><br>Many thanks,<br>Tehn Yit Chin<br><br></div>
-
-------=_Part_62042_12571893.1216362574217--
+marco.stornelli@coritel.it
++39 06 72582838
