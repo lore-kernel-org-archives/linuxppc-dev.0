@@ -1,24 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C7B94DE30B
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 00:50:23 +1000 (EST)
-Message-Id: <97D0950D-BBCA-4859-936E-774D887B05DC@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-In-Reply-To: <200807181638.42485.laurentp@cse-semaphore.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCHv3 1/2] [POWERPC] CPM2: Implement GPIO LIB API on CPM2
-	Freescale SoC.
-Date: Fri, 18 Jul 2008 09:50:08 -0500
-References: <4808D75B.9000002@scram.de>
-	<200806261314.32957.laurentp@cse-semaphore.com>
-	<48651A70.2050608@scram.de>
-	<200807181638.42485.laurentp@cse-semaphore.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 49296DE06B
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 00:59:53 +1000 (EST)
+Message-ID: <4880AFDD.4030104@freescale.com>
+Date: Fri, 18 Jul 2008 09:59:41 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [alsa-devel] [PATCH v2 1/3] ALSA SoC: Add OpenFirmware	helper
+	for matching bus and codec drivers
+References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>	<20080714134930.GC25448@sirena.org.uk>	<fa686aa40807141006k402b6a5fq8da1424081a20011@mail.gmail.com>	<20080714171632.GH25448@sirena.org.uk>
+	<20080718071720.GA2174@secretlab.ca>
+In-Reply-To: <20080718071720.GA2174@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	liam.girdwood@wolfsonmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Grant Likely wrote:
 
-On Jul 18, 2008, at 9:38 AM, Laurent Pinchart wrote:
+> Okay, I've changed my mind.  :-)  I'll back off a bit from this extreme and
+> call it:
+> 
+> sound/soc/fsl/soc-of-simple.c
 
-> On Friday 27 June 2008, Jochen Friedrich wrote:
->> Hi Laurent,
->>
->>> Is there any pending issue or can this be applied to powerpc-next ?
->>
->> Looks OK to me.
->>
->>>> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
->>>> Cc: Jochen Friedrich <jochen@scram.de>
->> Acked-by: Jochen Friedrich <jochen@scram.de>
->
-> Any news on this patch ? Kumar, could you apply it to your tree for  
-> 2.6.27 ?
+That works for me.
 
-Can you repost it.  I not sure what patch 2/2 was and if I've already  
-dealt with it.
+And please don't forget to CC: me on any discussion involving sound/soc/fsl.
 
-- k
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
