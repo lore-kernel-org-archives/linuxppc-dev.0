@@ -1,20 +1,20 @@
-Return-Path: <netdev@ml.breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B9480DE049
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 22:10:30 +1000 (EST)
-Date: Fri, 18 Jul 2008 14:10:08 +0200
-From: Sebastian Siewior <netdev@ml.breakpoint.cc>
-To: Andy Fleming <afleming@freescale.com>
-Subject: bug: mutex_lock() in interrupt conntext via phy_stop() in gianfar
-Message-ID: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: benh@kernel.crashing.org
+Subject: [PATCH] Add DMA_ATTR_WEAK_ORDERING dma attribute and use in Cell
+	IOMMU code
+Date: Fri, 18 Jul 2008 15:03:34 +0200
+References: <20080715195139.316677337@arndb.de>
+	<200807171653.29946.arnd@arndb.de>
+	<1216325457.7740.357.camel@pasglop>
+In-Reply-To: <1216325457.7740.357.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Cc: Nate Case <ncase@xes-inc.com>, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Vitaly Bordug <vbordug@ru.mvista.com>,
-	Li Yang <leoli@freescale.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200807181503.35445.arnd@arndb.de>
+Cc: Mark Nelson <markn@au1.ibm.com>, Roland Dreier <rdreier@cisco.com>,
+	Hans Boettiger <h.boettiger@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	Peter Altevogt <peter.altevogt@de.ibm.com>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,94 +24,218 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit 35b5f6b1a aka [PHYLIB: Locking fixes for PHY I/O potentially sleeping]
-changed the phydev->lock from spinlock into a mutex. Now, the following
-code path got triggered while NFS was unavailable:
+Introduce a new dma attriblue DMA_ATTR_WEAK_ORDERING to use weak ordering
+on DMA mappings in the Cell processor. Add the code to the Cell's IOMMU
+implementation to use this code.
 
-|[   21.287359] nfs: server 10.11.3.47 not responding, still trying
-|[   38.891373] nfs: server 10.11.3.47 not responding, still trying
-|[  148.179592] INFO: task udevd:1762 blocked for more than 120 seconds.
-|[  148.185967] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-|[  148.193810] udevd         D 0fef1dd8     0  1762   1761
-|[  148.199055] Call Trace:
-|[  148.201504] [cecdda80] [c00071e4] __switch_to+0x6c/0x84
-|[  148.206764] [cecddaa0] [c025973c] schedule+0x46c/0x4cc
-|[  148.211937] [cecddad0] [c00f3d84] nfs_wait_schedule+0x24/0x38
-|[  148.217712] [cecddae0] [c0259b74] __wait_on_bit_lock+0x68/0xcc
-|[  148.223576] [cecddb00] [c0259c4c] out_of_line_wait_on_bit_lock+0x74/0x88
-|[  148.230300] [cecddb50] [c00f3e6c] __nfs_revalidate_inode+0xd4/0x264
-|[  148.236597] [cecddc20] [c00f1298] nfs_lookup_revalidate+0x1bc/0x3d4
-|[  148.243071] [cecddd80] [c0081db8] do_lookup+0x148/0x1a0
-|[  148.248361] [cecdddb0] [c0083bac] __link_path_walk+0x930/0xe24
-|[  148.254219] [cecdde00] [c00840e8] path_walk+0x48/0xa8
-|[  148.259293] [cecdde30] [c008442c] do_path_lookup+0x160/0x194
-|[  148.264982] [cecdde60] [c0084fe0] __path_lookup_intent_open+0x58/0xa4
-|[  148.271444] [cecdde80] [c007ea54] open_exec+0x2c/0xdc
-|[  148.276525] [cecddef0] [c007efa4] do_execve+0x58/0x1c4
-|[  148.281704] [cecddf20] [c0007568] sys_execve+0x58/0x84
-|[  148.286873] [cecddf40] [c000df58] ret_from_syscall+0x0/0x3c
-|[  169.651632] INFO: task udevsettle:1053 blocked for more than 120 seconds.
+Dynamic mappings can be weakly or strongly ordered on an individual basis
+but the fixed mapping has to be either completely strong or completely weak.
+This is currently decided by a kernel boot option (pass iommu_fixed=weak
+for a weakly ordered fixed linear mapping, strongly ordered is the default).
 
-some more of this and now the interresting part:
+Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+On Thursday 17 July 2008, Benjamin Herrenschmidt wrote:
+> In the meantime, send a patch that defaults to strong with explicit
+> weak, we can easily fixup after that.
+> 
 
-|[  194.859659] NETDEV WATCHDOG: eth0: transmit timed out
-|[  194.864733] BUG: sleeping function called from invalid context at /home/bigeasy/git/linux-2.6-powerpc/kernel/mutex.c:87
-|[  194.875529] in_atomic():1, irqs_disabled():0
-|[  194.879805] Call Trace:
-|[  194.882250] [c0383d90] [c0006dd8] show_stack+0x48/0x184 (unreliable)
-|[  194.888649] [c0383db0] [c001e938] __might_sleep+0xe0/0xf4
-|[  194.894069] [c0383dc0] [c025a43c] mutex_lock+0x24/0x3c
-|[  194.899234] [c0383de0] [c019005c] phy_stop+0x20/0x70
-|[  194.904234] [c0383df0] [c018d4ec] stop_gfar+0x28/0xf4
-|[  194.909305] [c0383e10] [c018e8c4] gfar_timeout+0x30/0x60
-|[  194.914638] [c0383e20] [c01fe7c0] dev_watchdog+0xa8/0x144
-|[  194.920064] [c0383e30] [c002f93c] run_timer_softirq+0x148/0x1c8
-|[  194.926008] [c0383e60] [c002b084] __do_softirq+0x5c/0xc4
-|[  194.931350] [c0383e80] [c00046fc] do_softirq+0x3c/0x54
-|[  194.936515] [c0383e90] [c002ac60] irq_exit+0x3c/0x5c
-|[  194.941499] [c0383ea0] [c000b378] timer_interrupt+0xe0/0xf8
-|[  194.947097] [c0383ec0] [c000e5ac] ret_from_except+0x0/0x18
-|[  194.952610] [c0383f80] [c000804c] cpu_idle+0xcc/0xdc
-|[  194.957592] [c0383fa0] [c025c07c] etext+0x7c/0x90
-|[  194.962322] [c0383fc0] [c0338960] start_kernel+0x294/0x2a8
-|[  194.967839] [c0383ff0] [c00003dc] skpinv+0x304/0x340
-|[  194.972833] ------------[ cut here ]------------
-|[  194.977450] Badness at /home/bigeasy/git/linux-2.6-powerpc/kernel/mutex.c:134
-|[  194.984589] NIP: c025a268 LR: c025a250 CTR: c017e224
-|[  194.989557] REGS: c0383cf0 TRAP: 0700   Not tainted  (2.6.26)
-|[  194.995302] MSR: 00029000 <EE,ME>  CR: 28002022  XER: 00000000
-|[  195.001167] TASK = c035e500[0] 'swapper' THREAD: c0382000
-|[  195.006390] GPR00: 00000000 c0383da0 c035e500 00000001 c035e500 00000010 00000000 c0360000 
-|[  195.014798] GPR08: 00000000 c0390000 00000001 c0360000 00006353 628a87a2 0ffe8600 00000000 
-|[  195.023206] GPR16: cab54ee3 00000000 00000000 0ffe7384 00000000 00000000 0ff904a0 00000000 
-|[  195.031612] GPR24: 00000000 00000000 c038e5a4 d1058000 c035e500 cf86b570 cf9c3888 cf9c3888 
-|[  195.040199] NIP [c025a268] __mutex_lock_slowpath+0x44/0x1f4
-|[  195.045783] LR [c025a250] __mutex_lock_slowpath+0x2c/0x1f4
-|[  195.051277] Call Trace:
-|[  195.053721] [c0383da0] [cf9c3888] 0xcf9c3888 (unreliable)
-|[  195.059146] [c0383de0] [c019005c] phy_stop+0x20/0x70
-|[  195.064135] [c0383df0] [c018d4ec] stop_gfar+0x28/0xf4
-|[  195.069202] [c0383e10] [c018e8c4] gfar_timeout+0x30/0x60
-|[  195.074529] [c0383e20] [c01fe7c0] dev_watchdog+0xa8/0x144
-|[  195.079946] [c0383e30] [c002f93c] run_timer_softirq+0x148/0x1c8
-|[  195.085885] [c0383e60] [c002b084] __do_softirq+0x5c/0xc4
-|[  195.091219] [c0383e80] [c00046fc] do_softirq+0x3c/0x54
-|[  195.096374] [c0383e90] [c002ac60] irq_exit+0x3c/0x5c
-|[  195.101353] [c0383ea0] [c000b378] timer_interrupt+0xe0/0xf8
-|[  195.106944] [c0383ec0] [c000e5ac] ret_from_except+0x0/0x18
-|[  195.112447] [c0383f80] [c000804c] cpu_idle+0xcc/0xdc
-|[  195.117426] [c0383fa0] [c025c07c] etext+0x7c/0x90
-|[  195.122147] [c0383fc0] [c0338960] start_kernel+0x294/0x2a8
-|[  195.127655] [c0383ff0] [c00003dc] skpinv+0x304/0x340
-|[  195.132633] Instruction dump:
-|[  195.135422] 90010044 7c5c1378 8009000c 5409012f 41a20024 4bee78dd 2f830000 419e0018 
-|[  195.143222] 3d20c039 80098714 2f800000 409e0008 <0fe00000> 7fc000a6 7c000146 801f0024 
+Ok, this is the previous version of the patch from Mark, which
+does exactly that. Please use this one instead.
 
-I found out that the same code path may be trigger in
-- drivers/net/ucc_geth.c
-- drivers/net/fec_mpc52xx.c
-- drivers/net/fs_enet/fs_enet-main.c
+ Documentation/DMA-attributes.txt    |    9 ++
+ arch/powerpc/platforms/cell/iommu.c |  113 ++++++++++++++++++++++++++++++++++--
+ include/linux/dma-attrs.h           |    1 
+ 3 files changed, 118 insertions(+), 5 deletions(-)
 
-other drivers use phy_stop() in ->close only.
-
-Sebastian
+Index: linux-2.6/arch/powerpc/platforms/cell/iommu.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/iommu.c
++++ linux-2.6/arch/powerpc/platforms/cell/iommu.c
+@@ -198,6 +198,8 @@ static void tce_build_cell(struct iommu_
+ 	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M | IOPTE_SO_RW |
+ 		(window->ioid & IOPTE_IOID_Mask);
+ #endif
++	if (unlikely(dma_get_attr(DMA_ATTR_WEAK_ORDERING, attrs)))
++		base_pte &= ~IOPTE_SO_RW;
+ 
+ 	io_pte = (unsigned long *)tbl->it_base + (index - tbl->it_offset);
+ 
+@@ -538,7 +540,9 @@ static struct cbe_iommu *cell_iommu_for_
+ static unsigned long cell_dma_direct_offset;
+ 
+ static unsigned long dma_iommu_fixed_base;
+-struct dma_mapping_ops dma_iommu_fixed_ops;
++
++/* iommu_fixed_is_weak is set if booted with iommu_fixed=weak */
++static int iommu_fixed_is_weak;
+ 
+ static struct iommu_table *cell_get_iommu_table(struct device *dev)
+ {
+@@ -562,6 +566,98 @@ static struct iommu_table *cell_get_iomm
+ 	return &window->table;
+ }
+ 
++/* A coherent allocation implies strong ordering */
++
++static void *dma_fixed_alloc_coherent(struct device *dev, size_t size,
++				      dma_addr_t *dma_handle, gfp_t flag)
++{
++	if (iommu_fixed_is_weak)
++		return iommu_alloc_coherent(dev, cell_get_iommu_table(dev),
++					    size, dma_handle,
++					    device_to_mask(dev), flag,
++					    dev->archdata.numa_node);
++	else
++		return dma_direct_ops.alloc_coherent(dev, size, dma_handle,
++						     flag);
++}
++
++static void dma_fixed_free_coherent(struct device *dev, size_t size,
++				    void *vaddr, dma_addr_t dma_handle)
++{
++	if (iommu_fixed_is_weak)
++		iommu_free_coherent(cell_get_iommu_table(dev), size, vaddr,
++				    dma_handle);
++	else
++		dma_direct_ops.free_coherent(dev, size, vaddr, dma_handle);
++}
++
++static dma_addr_t dma_fixed_map_single(struct device *dev, void *ptr,
++				       size_t size,
++				       enum dma_data_direction direction,
++				       struct dma_attrs *attrs)
++{
++	if (iommu_fixed_is_weak == dma_get_attr(DMA_ATTR_WEAK_ORDERING, attrs))
++		return dma_direct_ops.map_single(dev, ptr, size, direction,
++						 attrs);
++	else
++		return iommu_map_single(dev, cell_get_iommu_table(dev), ptr,
++					size, device_to_mask(dev), direction,
++					attrs);
++}
++
++static void dma_fixed_unmap_single(struct device *dev, dma_addr_t dma_addr,
++				   size_t size,
++				   enum dma_data_direction direction,
++				   struct dma_attrs *attrs)
++{
++	if (iommu_fixed_is_weak == dma_get_attr(DMA_ATTR_WEAK_ORDERING, attrs))
++		dma_direct_ops.unmap_single(dev, dma_addr, size, direction,
++					    attrs);
++	else
++		iommu_unmap_single(cell_get_iommu_table(dev), dma_addr, size,
++				   direction, attrs);
++}
++
++static int dma_fixed_map_sg(struct device *dev, struct scatterlist *sg,
++			   int nents, enum dma_data_direction direction,
++			   struct dma_attrs *attrs)
++{
++	if (iommu_fixed_is_weak == dma_get_attr(DMA_ATTR_WEAK_ORDERING, attrs))
++		return dma_direct_ops.map_sg(dev, sg, nents, direction, attrs);
++	else
++		return iommu_map_sg(dev, cell_get_iommu_table(dev), sg, nents,
++				    device_to_mask(dev), direction, attrs);
++}
++
++static void dma_fixed_unmap_sg(struct device *dev, struct scatterlist *sg,
++			       int nents, enum dma_data_direction direction,
++			       struct dma_attrs *attrs)
++{
++	if (iommu_fixed_is_weak == dma_get_attr(DMA_ATTR_WEAK_ORDERING, attrs))
++		dma_direct_ops.unmap_sg(dev, sg, nents, direction, attrs);
++	else
++		iommu_unmap_sg(cell_get_iommu_table(dev), sg, nents, direction,
++			       attrs);
++}
++
++static int dma_fixed_dma_supported(struct device *dev, u64 mask)
++{
++	return mask == DMA_64BIT_MASK;
++}
++
++static int dma_set_mask_and_switch(struct device *dev, u64 dma_mask);
++
++struct dma_mapping_ops dma_iommu_fixed_ops = {
++	.alloc_coherent = dma_fixed_alloc_coherent,
++	.free_coherent  = dma_fixed_free_coherent,
++	.map_single     = dma_fixed_map_single,
++	.unmap_single   = dma_fixed_unmap_single,
++	.map_sg         = dma_fixed_map_sg,
++	.unmap_sg       = dma_fixed_unmap_sg,
++	.dma_supported  = dma_fixed_dma_supported,
++	.set_dma_mask   = dma_set_mask_and_switch,
++};
++
+ static void cell_dma_dev_setup_fixed(struct device *dev);
+ 
+ static void cell_dma_dev_setup(struct device *dev)
+@@ -918,9 +1014,16 @@ static void cell_iommu_setup_fixed_ptab(
+ 
+ 	pr_debug("iommu: mapping 0x%lx pages from 0x%lx\n", fsize, fbase);
+ 
+-	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M | IOPTE_SO_RW
++	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M
+ 		    | (cell_iommu_get_ioid(np) & IOPTE_IOID_Mask);
+ 
++	if (iommu_fixed_is_weak)
++		pr_info("IOMMU: Using weak ordering for fixed mapping\n");
++	else {
++		pr_info("IOMMU: Using strong ordering for fixed mapping\n");
++		base_pte |= IOPTE_SO_RW;
++	}
++
+ 	for (uaddr = 0; uaddr < fsize; uaddr += (1 << 24)) {
+ 		/* Don't touch the dynamic region */
+ 		ioaddr = uaddr + fbase;
+@@ -1036,9 +1139,6 @@ static int __init cell_iommu_fixed_mappi
+ 		cell_iommu_setup_window(iommu, np, dbase, dsize, 0);
+ 	}
+ 
+-	dma_iommu_fixed_ops = dma_direct_ops;
+-	dma_iommu_fixed_ops.set_dma_mask = dma_set_mask_and_switch;
+-
+ 	dma_iommu_ops.set_dma_mask = dma_set_mask_and_switch;
+ 	set_pci_dma_ops(&dma_iommu_ops);
+ 
+@@ -1052,6 +1152,9 @@ static int __init setup_iommu_fixed(char
+ 	if (strcmp(str, "off") == 0)
+ 		iommu_fixed_disabled = 1;
+ 
++	else if (strcmp(str, "weak") == 0)
++		iommu_fixed_is_weak = 1;
++
+ 	return 1;
+ }
+ __setup("iommu_fixed=", setup_iommu_fixed);
+Index: linux-2.6/Documentation/DMA-attributes.txt
+===================================================================
+--- linux-2.6.orig/Documentation/DMA-attributes.txt
++++ linux-2.6/Documentation/DMA-attributes.txt
+@@ -22,3 +22,12 @@ ready and available in memory.  The DMA 
+ could race with data DMA.  Mapping the memory used for completion
+ indications with DMA_ATTR_WRITE_BARRIER would prevent the race.
+ 
++DMA_ATTR_WEAK_ORDERING
++----------------------
++
++DMA_ATTR_WEAK_ORDERING specifies that reads and writes to the mapping
++may be weakly ordered, that is that reads and writes may pass each other.
++
++Since it is optional for platforms to implement DMA_ATTR_WEAK_ORDERING,
++those that do not will simply ignore the attribute and exhibit default
++behavior.
+Index: linux-2.6/include/linux/dma-attrs.h
+===================================================================
+--- linux-2.6.orig/include/linux/dma-attrs.h
++++ linux-2.6/include/linux/dma-attrs.h
+@@ -12,6 +12,7 @@
+  */
+ enum dma_attr {
+ 	DMA_ATTR_WRITE_BARRIER,
++	DMA_ATTR_WEAK_ORDERING,
+ 	DMA_ATTR_MAX,
+ };
+ 
