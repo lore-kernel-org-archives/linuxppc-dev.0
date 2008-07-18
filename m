@@ -1,28 +1,27 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de",
-	Issuer "StartCom Class 1 Primary Intermediate Server CA" (not
-	verified)) by ozlabs.org (Postfix) with ESMTPS id C7F97DE082
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 01:52:30 +1000 (EST)
-Message-ID: <4880BC43.10300@scram.de>
-Date: Fri, 18 Jul 2008 17:52:35 +0200
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.188])
+	by ozlabs.org (Postfix) with ESMTP id 984DBDE6AF
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 02:14:18 +1000 (EST)
+Received: by rn-out-0910.google.com with SMTP id j40so166530rnf.16
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 09:14:16 -0700 (PDT)
+Date: Fri, 18 Jul 2008 10:14:13 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Liam Girdwood <liam.girdwood@wolfsonmicro.com>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org, timur@freescale.com
+Subject: Re: [alsa-devel] [PATCH 3/3] ALSA SoC: Add Texas Instruments
+	TLV320AIC26 codec driver
+Message-ID: <20080718161413.GA10317@secretlab.ca>
+References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
+	<20080701235340.16923.48024.stgit@trillian.secretlab.ca>
+	<1214995713.4882.54.camel@localhost.localdomain>
+	<20080712060018.GB23213@secretlab.ca>
+	<20080712173609.GA6523@sirena.org.uk>
+	<20080717233153.GA8187@secretlab.ca>
+	<20080718095823.GA14416@sirena.org.uk>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCHv3 1/2] [POWERPC] CPM2: Implement GPIO LIB API on CPM2
-	Freescale SoC.
-References: <4808D75B.9000002@scram.de>
-	<200806131715.59345.laurentp@cse-semaphore.com>
-	<48593E56.70708@scram.de>
-	<200806181908.41525.laurentp@cse-semaphore.com>
-	<8D84340F-427C-403B-8121-481642478B8C@kernel.crashing.org>
-	<4880B730.8050801@scram.de>
-	<C98DF5D7-0E3D-4FDA-A831-55CFD5F4590C@kernel.crashing.org>
-In-Reply-To: <C98DF5D7-0E3D-4FDA-A831-55CFD5F4590C@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080718095823.GA14416@sirena.org.uk>
+Sender: Grant Likely <glikely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,15 +31,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar,
+On Fri, Jul 18, 2008 at 10:58:25AM +0100, Mark Brown wrote:
+> Sparse (or sparsely used) register maps are pretty common - in practice
+> it's not been a problem to just have a cache that covers everything and
+> only gets read, the amount of data involved is rarely that large in the
+> context of what you need to store the audio you're working with.
 
-> but ports a-d are different on cpm1?  I guess I'd like to see both  
-> patches to understand the commonality and differences.
+okay.
 
-Yes. Both patches are still in patchwork:
-
-http://patchwork.ozlabs.org/linuxppc/patch?id=19045
-http://patchwork.ozlabs.org/linuxppc/patch?id=19386
-
-Thanks,
-Jochen
+g.
