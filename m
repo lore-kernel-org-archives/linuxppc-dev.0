@@ -1,16 +1,18 @@
 Return-Path: <smaclennan@pikatech.com>
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id C216FDE3CE
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 05:30:46 +1000 (EST)
-Date: Fri, 18 Jul 2008 15:30:45 -0400
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 17231DEB4F
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 05:32:10 +1000 (EST)
+Date: Fri, 18 Jul 2008 15:32:10 -0400
 From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev@ozlabs.org
+To: "Wolfgang Denk" <wd@denx.de>
 Subject: Re: going to OLS?
-Message-ID: <20080718153045.2e7a1187@lappy.seanm.ca>
-In-Reply-To: <4313E14A-C3FB-4996-B188-767704F380C3@kernel.crashing.org>
-References: <4313E14A-C3FB-4996-B188-767704F380C3@kernel.crashing.org>
+Message-ID: <20080718153210.300ddb26@lappy.seanm.ca>
+In-Reply-To: <20080718163338.D87BF2488A@gemini.denx.de>
+References: <20080718162731.GD10317@secretlab.ca>
+	<20080718163338.D87BF2488A@gemini.denx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,21 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 18 Jul 2008 08:35:36 -0500
-"Kumar Gala" <galak@kernel.crashing.org> wrote:
+On Fri, 18 Jul 2008 18:33:38 +0200
+"Wolfgang Denk" <wd@denx.de> wrote:
 
-> Since OLS is next week I figured I see who around here is going.
-> 
-> I'm always interested in putting faces to names and having a lively  
-> discussions over beer.
-> 
-> So if your headed to OLS respond to this thread and maybe we'll have  
-> an inform PPC BoF @ a pub.
+> BTW: will there a pre-OLS beer evening on Tuesday, or will Stefan and
+> me have to sit alone in some bar?
 
-I won't be going to OLS :( I couldn't get the time off, but I live in
-Ottawa and would be very interested in an a PPC BoF :D
-
-I generally telecommute, so lunchtime or evening would be fine.
+I'm up for a pre-OLS beer evening!
 
 Cheers,
    Sean
