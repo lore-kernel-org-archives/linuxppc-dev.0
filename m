@@ -1,21 +1,17 @@
-Return-Path: <becky.bruce@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 42E01DE2A1
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 07:13:50 +1000 (EST)
-Message-Id: <CC5CD6EB-BE4D-4630-B054-EEA389920714@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20080718163338.D87BF2488A@gemini.denx.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: going to OLS?
-Date: Fri, 18 Jul 2008 16:10:47 -0500
-References: <20080718163338.D87BF2488A@gemini.denx.de>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Gala Kumar <kumar.gala@freescale.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 3E4BFDDEDA
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 07:24:13 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: 32-bit kernel on PPC64 supported?
+Date: Fri, 18 Jul 2008 23:24:08 +0200
+References: <200807182043.08991.marvin24@gmx.de>
+In-Reply-To: <200807182043.08991.marvin24@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807182324.09219.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Friday 18 July 2008, Marvin wrote:
+> in which POWER4 is always undefined, e.g. in 
+> include/asm-powerpc/mmu_context.h. Maybe this is a leftover from times, where 
+> 64-bit kernels where not supported on Powermacs. Is this 32-bit support still 
+> necessary?
 
-On Jul 18, 2008, at 11:33 AM, Wolfgang Denk wrote:
+There is currently no 64-bit machine that is supported by current kernels,
+and I don't think there is any reason to add this again.
 
-> In message <20080718162731.GD10317@secretlab.ca> you wrote:
->>
->> If anybody wants to email me their cell phone # privately then I'll
->> collect a list and send it out to all the repliers to this thread.
->> That way you don't need to post your cell # to the mailing list for  
->> the
->> world to see.
->
-> BTW: will there a pre-OLS beer evening on Tuesday, or will Stefan and
-> me have to sit alone in some bar?
+I'm not sure what the point of your plan to replace CONFIG_POWER4 is, but
+it sounds like this case is slightly different, as you remove a potential
+feature, so I guess it should be a separate patch.
 
-Gosh, that would be so sad :)
-
-I'll probably be available - have to go to FSL's Ottawa site during  
-the day, and might get pulled into dinner, but I hope to be free after  
-that.  Kumar's in the same boat AFAIK.
-
-If someone can pick a place and time, and just announce it, maybe we  
-can all hook up.  I'd give it a go, but I've only been to Ottawa once,  
-and I'm afraid my drinking habits during said trip left me with  
-unreliable memories of drinking establishments :)
-
-Cheers,
-B
+	Arnd <><
