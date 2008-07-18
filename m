@@ -1,29 +1,21 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <becky.bruce@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9A90DDDF07
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 06:52:52 +1000 (EST)
-Date: Fri, 18 Jul 2008 13:52:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: John Reiser <jreiser@BitWagon.com>
-Subject: Re: [PATCH v3] elf loader support for auxvec base platform string
-Message-Id: <20080718135244.a8867700.akpm@linux-foundation.org>
-In-Reply-To: <4880FDA1.9070307@BitWagon.com>
-References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
-	<1216166331-14810-2-git-send-email-ntl@pobox.com>
-	<1216276539.7740.309.camel@pasglop>
-	<20080717000951.5f8cab37.akpm@linux-foundation.org>
-	<20080717221932.GL9594@localdomain>
-	<20080717154218.8981035c.akpm@linux-foundation.org>
-	<487FD74C.4080603@BitWagon.com> <20080718182850.GO9594@localdomain>
-	<4880FDA1.9070307@BitWagon.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, ntl@pobox.com,
-	torvalds@linux-foundation.org, roland@redhat.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 42E01DE2A1
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 07:13:50 +1000 (EST)
+Message-Id: <CC5CD6EB-BE4D-4630-B054-EEA389920714@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20080718163338.D87BF2488A@gemini.denx.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: going to OLS?
+Date: Fri, 18 Jul 2008 16:10:47 -0500
+References: <20080718163338.D87BF2488A@gemini.denx.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Gala Kumar <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,11 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 18 Jul 2008 13:31:29 -0700
-John Reiser <jreiser@BitWagon.com> wrote:
 
-> Elsewhere, I've staked out use of a new AT_WINE_PRELOAD_INFO
-> at 30.  Avoid that one, please. :-)
+On Jul 18, 2008, at 11:33 AM, Wolfgang Denk wrote:
 
-The reliable way in which to reserve these numbers is to patch the
-header file.
+> In message <20080718162731.GD10317@secretlab.ca> you wrote:
+>>
+>> If anybody wants to email me their cell phone # privately then I'll
+>> collect a list and send it out to all the repliers to this thread.
+>> That way you don't need to post your cell # to the mailing list for  
+>> the
+>> world to see.
+>
+> BTW: will there a pre-OLS beer evening on Tuesday, or will Stefan and
+> me have to sit alone in some bar?
+
+Gosh, that would be so sad :)
+
+I'll probably be available - have to go to FSL's Ottawa site during  
+the day, and might get pulled into dinner, but I hope to be free after  
+that.  Kumar's in the same boat AFAIK.
+
+If someone can pick a place and time, and just announce it, maybe we  
+can all hook up.  I'd give it a go, but I've only been to Ottawa once,  
+and I'm afraid my drinking habits during said trip left me with  
+unreliable memories of drinking establishments :)
+
+Cheers,
+B
