@@ -1,15 +1,16 @@
-Return-Path: <marvin24@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 947A5DDF01
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 04:43:13 +1000 (EST)
-From: Marvin <marvin24@gmx.de>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id C216FDE3CE
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 05:30:46 +1000 (EST)
+Date: Fri, 18 Jul 2008 15:30:45 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
 To: linuxppc-dev@ozlabs.org
-Subject: 32-bit kernel on PPC64 supported?
-Date: Fri, 18 Jul 2008 20:43:08 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200807182043.08991.marvin24@gmx.de>
+Subject: Re: going to OLS?
+Message-ID: <20080718153045.2e7a1187@lappy.seanm.ca>
+In-Reply-To: <4313E14A-C3FB-4996-B188-767704F380C3@kernel.crashing.org>
+References: <4313E14A-C3FB-4996-B188-767704F380C3@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,28 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 18 Jul 2008 08:35:36 -0500
+"Kumar Gala" <galak@kernel.crashing.org> wrote:
 
-Hi,
+> Since OLS is next week I figured I see who around here is going.
+> 
+> I'm always interested in putting faces to names and having a lively  
+> discussions over beer.
+> 
+> So if your headed to OLS respond to this thread and maybe we'll have  
+> an inform PPC BoF @ a pub.
 
-while trying to cleanup some configs/makefiles for ppc64 I noticed, that 
-CONFIG_POWER4 implies CONFIG_PPC64 and vice versa in all defconfigs.
-So I want to boldly replace CONFIG_POWER4 by CONFIG_PPC64 - ugh.
+I won't be going to OLS :( I couldn't get the time off, but I live in
+Ottawa and would be very interested in an a PPC BoF :D
 
-However, there are some constructs like:
+I generally telecommute, so lunchtime or evening would be fine.
 
-#ifndef CONFIG_PPC64
-...
-#ifdef CONFIG_POWER4
-...
-#endif
-...
-#endif /* CONFIG_PPC64 */
-
-in which POWER4 is always undefined, e.g. in 
-include/asm-powerpc/mmu_context.h. Maybe this is a leftover from times, where 
-64-bit kernels where not supported on Powermacs. Is this 32-bit support still 
-necessary?
-
-Greetings
-
-Marvin
+Cheers,
+   Sean
