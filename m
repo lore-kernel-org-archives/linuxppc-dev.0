@@ -1,22 +1,21 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	by ozlabs.org (Postfix) with ESMTP id 6C744DDEE4
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 20:39:52 +1000 (EST)
-Date: Fri, 18 Jul 2008 11:39:45 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [alsa-devel] [PATCH v2 3/3] ALSA SoC: Add Texas
-	Instruments	TLV320AIC26 codec driver
-Message-ID: <20080718103934.GC14416@sirena.org.uk>
-References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
-	<20080712083939.15025.31192.stgit@trillian.secretlab.ca>
-	<20080714114554.GA25448@sirena.org.uk>
-	<20080718062937.GA10988@secretlab.ca>
+Return-Path: <neko@genesi-usa.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
+	by ozlabs.org (Postfix) with ESMTP id 27262DE049
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 22:14:30 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so49144ugf.0
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 05:14:24 -0700 (PDT)
+Message-ID: <48808914.20702@genesi-usa.com>
+Date: Fri, 18 Jul 2008 13:14:12 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080718062937.GA10988@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	liam.girdwood@wolfsonmicro.com
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: 2.6.26 does not boot on Pegasos
+References: <20080715100033.GA5147@iram.es> <487CC1F5.5090706@genesi-usa.com>
+	<20080715155944.GA11881@iram.es>
+In-Reply-To: <20080715155944.GA11881@iram.es>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 18, 2008 at 12:29:37AM -0600, Grant Likely wrote:
-> On Mon, Jul 14, 2008 at 12:45:55PM +0100, Mark Brown wrote:
-> > On Sat, Jul 12, 2008 at 02:39:39AM -0600, Grant Likely wrote:
 
-> > This configuration is also exposed via a sysfs file, including some of
-> > the configurability.  Exposing the information via sysfs isn't a
-> > particular problem but allowing it to be written to without going
-> > through ALSA seems wrong.
+Gabriel Paubert wrote:
+> On Tue, Jul 15, 2008 at 04:27:49PM +0100, Matt Sealey wrote:
+>> If you built this kernel yourself, you need to do it from a system with
+>> an up-to-date binutils (2.18) otherwise, it does this.
 
-> All the written bit does is trigger the keyclick event.  It doesn't
-> adjust the parameters in any way.
+Note to the linux-ppc guys; is there any changelog entry which reports
+this requirement somewhere? I didn't find one...
 
-That should be OK for now but we ought to work out a way of doing this
-via an ALSA control so it can be standardised over the devices that
-support it.  I can't see anything suitable currently, though.
+> Thanks, this is likely the problem. The distribution is Debian stable 
+> with all security udates but the binutils are still 2.17.
 
-> > > +#if defined(CONFIG_SND_SOC_OF)
-> > > +	/* Tell the of_soc helper about this codec */
-> > > +	of_snd_soc_register_codec(&aic26_soc_codec_dev, aic26, &aic26_dai,
-> > > +				  spi->dev.archdata.of_node);
-> > > +#endif
+That's generally the problem we had with SuSE 10.3. Debian stable
+should be updated by Christmas.. :D
 
-> > CONFIG_SND_SOC_OF could be a module - this needs to also check for it
-> > being a module.
+> Trying to add Lenny source does not help, bummer. Aptitude fails 
+> with an error message like "Dynamic MMap ran out of room".
 
-> Doesn't #if defined() match on both static and module selection?
+Ouch. Well, all I can recommend is grabbing the source files from;
 
-Sadly not.
+http://packages.debian.org/source/testing/binutils
+
+And compiling and installing it manually. There is a bit of a
+disparity between glibc support between testing and stable that
+the prebuild packages will complain about (you have to install
+half of Lenny to do it, which is a bad idea just to update one
+package).
+
+Once you have the files you can just use "dpkg -x binutils-blah.dsc"
+to get going.
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
