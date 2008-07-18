@@ -1,24 +1,18 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 615E9DE42F
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 03:10:39 +1000 (EST)
-Message-ID: <4880CE81.4090608@pobox.com>
-Date: Fri, 18 Jul 2008 13:10:25 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] fs_enet: MDIO on GPIO support
-References: <200805261152.37636.laurentp@cse-semaphore.com>
-	<200806261321.24338.laurentp@cse-semaphore.com>
-	<20080626175523.54728d07@vitb.ru.mvista.com>
-	<200807181126.48246.laurentp@cse-semaphore.com>
-	<E7FD62BF-C2BB-4803-87AB-91DD7AB8FD0C@kernel.crashing.org>
-In-Reply-To: <E7FD62BF-C2BB-4803-87AB-91DD7AB8FD0C@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Vitaly Bordug <vbordug@ru.mvista.com>, Scott Wood <scottwood@freescale.com>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 82230DDEF1
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 03:45:26 +1000 (EST)
+In-Reply-To: <20080718034727.GF18748@yookeroo.seuss>
+References: <93c791ba2d4ce372589da84acd14a15c@bga.com>
+	<20080718034727.GF18748@yookeroo.seuss>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <fc7a47590d1991616768ecd10cfc032a@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: Calling the kernel from a mini-bootloader
+Date: Fri, 18 Jul 2008 12:47:08 -0500
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,30 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Jul 18, 2008, at 4:26 AM, Laurent Pinchart wrote:
-> 
->> On Thursday 26 June 2008, Vitaly Bordug wrote:
->>> On Thu, 26 Jun 2008 13:21:23 +0200
->>> Laurent Pinchart <laurentp@cse-semaphore.com> wrote:
->>>
->>>>> There should be no dependencies. When the OF GPIO support is not
->>>>> selected linux/of_gpio.h will define of_get_gpio() as a stub, so the
->>>>> fs_enet driver will fall back to the legacy binding.
->>>>
->>>> Have we reached a consensus on which tree the patch should go to ?
->>> I think it should go through powerpc tree, not seeing too much
->>> netdev-generic stuff in here. If noone will object, Kumar will pick 
->>> it up I
->>> guess...
->>
->> Kumar, could you pick it up ? I'd like to see this in 2.6.27.
->>
->> Best regards,
-> 
-> Jeff said he applied both to his tree already.
 
-Yep, it's already in davem's net-next...
+On Jul 17, 2008, at 10:47 PM, David Gibson wrote:
 
-	Jeff
+> On Thu, Jul 17, 2008 at 11:14:11AM -0500, Milton Miller wrote:
+>> On Thu Jul 17 at 23:22:28 EST in 2008, Guillaume Dargaud wrote:
+> [snip]
+[more snip]
+>> We call this the flattened device tree.
+>
+> Your firmware doesn't have to deal with this though, although it can.
+> It's perfectly acceptable - in fact I'd mildly recommend it over doing
+> this in the firmware - to instead have the kernel's zImage wrapper
+> supply the flattened device tree, folding information it needs to get
+> from the firmware into it.
+
+I thought about adding a section on which to recommend or talk about 
+the tradeoffs, but got hungry and hit send before going to lunch.
+
+Yes, I the zImage choice is definitely the least amount of code to 
+write, and is a good tradeoff to get future upgradability.  It may not 
+be the absolute fastest split of the work to start the kernel but it is 
+reasonably good, especially as it will decompress the kernel to its 
+run-time destination.
+
+milton
