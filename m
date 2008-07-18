@@ -1,24 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
-	by ozlabs.org (Postfix) with ESMTP id 4DC33DDEF0
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 17:17:24 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so156608wfg.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 00:17:22 -0700 (PDT)
-Date: Fri, 18 Jul 2008 01:17:20 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	liam.girdwood@wolfsonmicro.com, jonsmirl@gmail.com
-Subject: Re: [alsa-devel] [PATCH v2 1/3] ALSA SoC: Add OpenFirmware helper
-	for matching bus and codec drivers
-Message-ID: <20080718071720.GA2174@secretlab.ca>
-References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
-	<20080714134930.GC25448@sirena.org.uk>
-	<fa686aa40807141006k402b6a5fq8da1424081a20011@mail.gmail.com>
-	<20080714171632.GH25448@sirena.org.uk>
+Return-Path: <vijay.t.nikam@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.234])
+	by ozlabs.org (Postfix) with ESMTP id CB27DDDF39
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 18:28:06 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so194579rvb.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 01:28:05 -0700 (PDT)
+Message-ID: <f234e2140807180128o13e4db1bt1db9b043c7859234@mail.gmail.com>
+Date: Fri, 18 Jul 2008 13:58:05 +0530
+From: "Vijay Nikam" <vijay.t.nikam@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Linux not booting on MPC8313ERDB
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080714171632.GH25448@sirena.org.uk>
-Sender: Grant Likely <glikely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 14, 2008 at 06:16:33PM +0100, Mark Brown wrote:
-> On Mon, Jul 14, 2008 at 11:06:34AM -0600, Grant Likely wrote:
-> 
-> > I'm okay with that.  How about fsl/mpc5200-of-machine.c for now?
-> > (only the mpc5200 i2s driver uses it at the moment).  It can always be
-> > renamed if other folks want to use it for other chips.
-> 
-> That seems reasonable so long as you're happy with it, though it does
-> seem to be going to the other extreme in terms of broadness :) 
+Hello,
 
-Okay, I've changed my mind.  :-)  I'll back off a bit from this extreme and
-call it:
+I am trying to port everything (u-boot-nand.bin, uImage(kernel), jffs2
+and dtb) on NAND of MPC8313ERDB board ...
 
-sound/soc/fsl/soc-of-simple.c
+I loaded u-boot-nand.bin to boot the board from NAND and it is
+successful ... but the problem is in loading kernel ... the kernel
+version and location is detected properly and it starts loading it but
+at mounting file system it gives Magic bit mask error and finally says
+kernel panic and wait for reboot ...
 
-Does that sound okay?  If non-freescale chips decide to use it then it
-can be moved out of the freescale director.
+Could any one please provide some information to proceed ... thank you
 
-Cheers,
-g.
+Kind Regards,
+Vijay Nikam
