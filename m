@@ -1,20 +1,20 @@
-Return-Path: <jk@ozlabs.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-To: cbe-oss-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jeremy Kerr <jk@ozlabs.org>
 Subject: Re: [Cbe-oss-dev] [PATCH] Add DMA_ATTR_WEAK_ORDERING dma attribute
 	and use in Cell IOMMU code
-Date: Sat, 19 Jul 2008 17:29:21 +1000
+Date: Sat, 19 Jul 2008 10:36:42 +0200
 References: <20080715195139.316677337@arndb.de>
-	<1216325457.7740.357.camel@pasglop>
 	<200807181503.35445.arnd@arndb.de>
-In-Reply-To: <200807181503.35445.arnd@arndb.de>
+	<200807191729.22067.jk@ozlabs.org>
+In-Reply-To: <200807191729.22067.jk@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200807191729.22067.jk@ozlabs.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Roland Dreier <rdreier@cisco.com>,
+Message-Id: <200807191036.43089.arnd@arndb.de>
+Cc: Roland Dreier <rdreier@cisco.com>, Hans Boettiger <h.boettiger@de.ibm.com>,
 	linuxppc-dev@ozlabs.org, Peter Altevogt <peter.altevogt@de.ibm.com>,
-	Hans Boettiger <h.boettiger@de.ibm.com>
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,14 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Saturday 19 July 2008, Jeremy Kerr wrote:
+> 
+> > Ok, this is the previous version of the patch from Mark, which
+> > does exactly that. Please use this one instead.
+> 
+> So, should we add a:
+> 
+> From: Mark Nelson <markn@au1.ibm.com>
+> 
 
-> Ok, this is the previous version of the patch from Mark, which
-> does exactly that. Please use this one instead.
+Yes, of course. I keep losing this line when sending patches through
+quilt and kmail.
 
-So, should we add a:
-
-From: Mark Nelson <markn@au1.ibm.com>
-
-?
-
-Jeremy
+	Arnd <><
