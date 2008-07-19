@@ -1,21 +1,32 @@
-Return-Path: <venkatakrishnap@vrindatech.com>
-Received: from server.indiadomain.com (server.indiadomain.com [69.50.220.104])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4740BDDDE9
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 19:34:55 +1000 (EST)
-Received: from [122.169.141.48] (helo=venkatakrishna)
-	by server.indiadomain.com with esmtpa (Exim 4.69)
-	(envelope-from <venkatakrishnap@vrindatech.com>) id 1KK8SC-0007z1-S1
-	for linuxppc-dev@ozlabs.org; Sat, 19 Jul 2008 02:10:14 -0700
-From: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: linux BSP
-Date: Sat, 19 Jul 2008 02:39:08 +0530
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0004_01C8E948.A45F3840"
-Message-Id: <20080719093455.4740BDDDE9@ozlabs.org>
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 44F37DDF1C
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 23:41:46 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6JDfRtM014233
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 09:41:27 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6JDfHJg215820
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 09:41:17 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6JDfGWt010808
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 09:41:16 -0400
+Date: Sat, 19 Jul 2008 09:37:52 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: luisgpm@linux.vnet.ibm.com
+Subject: Re: [RFC] 4xx hardware watchpoint support
+Message-ID: <20080719093752.5aada45c@zod.rchland.ibm.com>
+In-Reply-To: <1213992894.6635.41.camel@gargoyle>
+References: <1211391577.6232.15.camel@gargoyle>
+	<18484.60888.981390.893747@cargo.ozlabs.ibm.com>
+	<1213992894.6635.41.camel@gargoyle>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,147 +36,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Fri, 20 Jun 2008 17:14:53 -0300
+Luis Machado <luisgpm@linux.vnet.ibm.com> wrote:
+> 
+> Follows a re-worked patch that unifies the handling of hardware
+> watchpoint structures for DABR-based and DAC-based processors.
+> 
+> The flow is exactly the same for DABR-based processors.
+> 
+> As for the DAC-based code, i've eliminated the "dac" field from the
+> thread structure, since now we use the "dabr" field to represent DAC1 of
+> the DAC-based processors. As a consequence, i removed all the
+> occurrences of "dac" throughout the code, using "dabr" in those cases.
+> 
+> The function "set_dabr" sets the correct register (DABR OR DAC) for each
+> specific processor now, instead of only setting the value for DABR-based
+> processors.
+> 
+> "do_dac" was merged with "do_dabr" as they were mostly equivalent pieces
+> of code. I've moved "do_dabr" to "arch/powerpc/kernel/process.c" so it
+> is visible for DAC-based code as well.
+> 
+> Tested on a Taishan 440GX with success.
+> 
+> Is it OK to leave it as "dabr" for both DABR and DAC? What do you think
+> of the patch overall?
 
-------=_NextPart_000_0004_01C8E948.A45F3840
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Aside from the comment I mention below (which really does need fixing),
+the overall look of the patch seems good.
 
-Dear Friends,
+> Index: linux-2.6.25-oldpatch/arch/powerpc/kernel/process.c
+> ===================================================================
+> --- linux-2.6.25-oldpatch.orig/arch/powerpc/kernel/process.c	2008-06-20 02:48:19.000000000 -0700
+> +++ linux-2.6.25-oldpatch/arch/powerpc/kernel/process.c	2008-06-20 02:51:16.000000000 -0700
+> @@ -241,6 +241,35 @@
+>  }
+>  #endif /* CONFIG_SMP */
+> 
+> +void do_dabr(struct pt_regs *regs, unsigned long address,
+> +		    unsigned long error_code)
+> +{
+> +	siginfo_t info;
+> +
+> +#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+> +	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
+> +			11, SIGSEGV) == NOTIFY_STOP)
+> +		return;
+> +
+> +	if (debugger_dabr_match(regs))
+> +		return;
+> +#else
+> +        /* Clear the DAC and struct entries.  One shot trigger.  */
+> +        mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) & ~(DBSR_DAC1R | DBSR_DAC1W
+> +                                                        | DBCR0_IDM));
 
- 
+This doesn't look right for how it's coded.  This would be the
+CONFIG_4xx || CONFIG_BOOKE case, but CONFIG_4xx includes PowerPC 405.
+That has a different bit layout among the DBCR registers.  Namely, on
+405 you would be clearing the TDE and IAC1 events because the DAC
+events are in DBCR1, not DBCR0.
 
-I want to ...
+<snip>
 
-1. How to develop linux BSP to MPC8260.
+> Index: linux-2.6.25-oldpatch/arch/powerpc/kernel/signal.c
+> ===================================================================
+> --- linux-2.6.25-oldpatch.orig/arch/powerpc/kernel/signal.c	2008-06-20 02:48:19.000000000 -0700
+> +++ linux-2.6.25-oldpatch/arch/powerpc/kernel/signal.c	2008-06-20 02:51:16.000000000 -0700
+> @@ -144,8 +144,12 @@
+>  	 * user space. The DABR will have been cleared if it
+>  	 * triggered inside the kernel.
+>  	 */
+> -	if (current->thread.dabr)
+> +	if (current->thread.dabr) {
+>  		set_dabr(current->thread.dabr);
+> +#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
+> +		mtspr(SPRN_DBCR0, current->thread.dbcr0);
+> +#endif
 
-2. where can I start to develop linux BSP.
+This has the same problem I mention above, as the 44x bit layout is
+stored in dbcr0 throughout the code.
 
-3. what are tools available in market to develop linux BSP.
+> +	}
+> 
+>  	if (is32) {
+>          	if (ka.sa.sa_flags & SA_SIGINFO)
+> Index: linux-2.6.25-oldpatch/arch/powerpc/kernel/traps.c
+> ===================================================================
+> --- linux-2.6.25-oldpatch.orig/arch/powerpc/kernel/traps.c	2008-06-20 02:48:19.000000000 -0700
+> +++ linux-2.6.25-oldpatch/arch/powerpc/kernel/traps.c	2008-06-20 02:54:37.000000000 -0700
+> @@ -1045,6 +1045,21 @@
+>  				return;
+>  		}
+>  		_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+> +	} else if (debug_status & (DBSR_DAC1R | DBSR_DAC1W)) {
+> +		regs->msr &= ~MSR_DE;
+> +	        printk("\nWatchpoint Triggered\n");
+> +		if (user_mode(regs)) {
+> +			current->thread.dbcr0 &= ~(DBSR_DAC1R | DBSR_DAC1W |
+> +								DBCR0_IDM);
+> +		} else {
+> +			/* Disable DAC interupts.  */
+> +			mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) & ~(DBSR_DAC1R |
+> +							DBSR_DAC1W | DBCR0_IDM));
+> +			/* Clear the DAC event.  */
+> +			mtspr(SPRN_DBSR, (DBSR_DAC1R | DBSR_DAC1W));
 
- 
+And again here.
 
- 
-
-Plz suggest me about this one.
-
- 
-
-Thanks Regards
-
-Venkatakrishna Pari
-
-
-------=_NextPart_000_0004_01C8E948.A45F3840
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:"MS Mincho";
-	panose-1:2 2 6 9 4 2 5 8 3 4;}
-@font-face
-	{font-family:"\@MS Mincho";
-	panose-1:0 0 0 0 0 0 0 0 0 0;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Dear Friends,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I want to =
-&#8230;&#8230;&#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>1. How to develop linux BSP to =
-MPC8260.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>2. where can I start to develop linux =
-BSP.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>3. what are tools available in market to develop =
-linux BSP.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Plz suggest me about this =
-one.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks Regards<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Venkatakrishna Pari<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0004_01C8E948.A45F3840--
+josh
