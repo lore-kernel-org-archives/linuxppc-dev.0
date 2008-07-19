@@ -1,16 +1,31 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Date: Sat, 19 Jul 2008 09:44:17 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Victor Gallardo <vgallardo@amcc.com>
-Subject: Re: [PATCH] Add AMCC Arches 460GT eval board support to platforms/44x
-Message-ID: <20080719094417.4c49cd36@zod.rchland.ibm.com>
-In-Reply-To: <18538794.post@talk.nabble.com>
-References: <1216186406-27993-1-git-send-email-fkan@amcc.com>
-	<20080716075025.0bca152c@zod.rchland.ibm.com>
-	<18538794.post@talk.nabble.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 750E5DDD04
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Jul 2008 07:10:49 +1000 (EST)
+Date: Sat, 19 Jul 2008 14:08:01 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: PIXIS gpio controller and gpio flags
+In-Reply-To: <20080718100549.GA28741@polina.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.64.0807191352040.27586@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp>
+	<20080717041531.GA27243@secretlab.ca>
+	<20080717140519.GA32617@polina.dev.rtsoft.ru>
+	<20080717141335.GA2219@polina.dev.rtsoft.ru>
+	<20080717150422.GC31932@secretlab.ca>
+	<20080717152006.GA26120@polina.dev.rtsoft.ru>
+	<fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
+	<Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
+	<20080717234201.GA15745@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
+	<20080718100549.GA28741@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +35,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 18 Jul 2008 15:31:33 -0700 (PDT)
-Victor Gallardo <vgallardo@amcc.com> wrote:
+On Fri, 18 Jul 2008, Anton Vorontsov wrote:
+> +int px_gpio_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
+> +               const void *gpio_spec)
+> +{
+> +     if (gpio[1] & PX_GPIO_FLAG_ACTIVE_LOW)
+> +             px_gc->active_low |= pin2mask(*gpio);
 
-> 
-> > From what I can tell, you don't even need this patch or the defconfig.
-> > Nothing differs at this point from Glacier other than the DTS.  Since
-> > U-Boot is your loader, it should be able to pass the different DTS to a
-> > kernel that supports Cayonlands and have no issues.
-> >
-> > ...
-> >
-> > If you do want to have explicit support for Arches, that's fine.  Look
-> > at how Yosemite is supported.  It just reuses Bamboo.  You could do the
-> > same.
-> 
-> Yes, I like this idea. I'll do this.
+You have a race here.  What if px_gpio_xlate() is called at the same time
+for different gpios?  This is an easy one to fix, since you can use the
+atomic bitops.
 
-As you might have noticed, this has generated quite a bit of discussion
-on whether this is the right approach or not.  If you can wait for a
-week, we plan on talking it over at OLS.  Then I can give you a better
-idea as to whether we're going to stick with this or use a different
-approach.
+It doesn't look like you have any way to unset the active low flag.  What if
+I unload the leds-gpio driver (or another gpio user) and then try to use the
+gpio with something else?  The active low flag is stuck on!  It doesn't show
+in sysfs or debugfs either.  That could be very confusing.
 
-Overall your patches are fairly clean, so you've done a good job so
-far.  Have a little patience with us as we figure out the right way to
-go :).
+I also wonder if it's ok to have the xlate function do flag setting?
 
-josh
+of_get_property() just gets the property, it doesn't allocate it.  Same with
+of_get_address() and of_get_pci_address(), they don't actually allocate or
+map an address, they just get the value.  of_get_gpio() doesn't allocate the
+gpio, that gets done later with gpio_request().  It seems like what it's
+supposed to do is just get the translated value of the gpio property.
+
+Except, your pixis gpio xlate function sets the gpio's flags.  What if one
+wants to just look up a gpio number, but not allocate it?  The flags will
+still get set.
+
+Most gpio users, including leds-gpio, can handle gpios being busy.  If
+leds-gpio can't get one of the gpios, it rolls back all the leds it did
+create, doesn't drive the device and returns EBUSY.  Except with
+of_get_gpio() setting the flags, it will change the flags out from under
+whatever had the gpio already allocated!
