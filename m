@@ -1,20 +1,22 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: [Cbe-oss-dev] [PATCH] Add DMA_ATTR_WEAK_ORDERING dma attribute
-	and use in Cell IOMMU code
-Date: Sat, 19 Jul 2008 10:36:42 +0200
-References: <20080715195139.316677337@arndb.de>
-	<200807181503.35445.arnd@arndb.de>
-	<200807191729.22067.jk@ozlabs.org>
-In-Reply-To: <200807191729.22067.jk@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807191036.43089.arnd@arndb.de>
-Cc: Roland Dreier <rdreier@cisco.com>, Hans Boettiger <h.boettiger@de.ibm.com>,
-	linuxppc-dev@ozlabs.org, Peter Altevogt <peter.altevogt@de.ibm.com>,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.178])
+	by ozlabs.org (Postfix) with ESMTP id 8DA34DDE0D
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 22:55:28 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so168283pyi.27
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 05:55:26 -0700 (PDT)
+Subject: Re: going to OLS?
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200807182355.35854.arnd@arndb.de>
+References: <4313E14A-C3FB-4996-B188-767704F380C3@kernel.crashing.org>
+	<200807182355.35854.arnd@arndb.de>
+Content-Type: text/plain
+Date: Sat, 19 Jul 2008 08:55:21 -0400
+Message-Id: <1216472121.13063.12.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: jwboyer@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 19 July 2008, Jeremy Kerr wrote:
+On Fri, 2008-07-18 at 23:55 +0200, Arnd Bergmann wrote:
+> On Friday 18 July 2008, Kumar Gala wrote:
+> > Since OLS is next week I figured I see who around here is going.
+> > 
+> > I'm always interested in putting faces to names and having a lively  
+> > discussions over beer.
+> > 
+> > So if your headed to OLS respond to this thread and maybe we'll have  
+> > an inform PPC BoF @ a pub.
 > 
-> > Ok, this is the previous version of the patch from Mark, which
-> > does exactly that. Please use this one instead.
-> 
-> So, should we add a:
-> 
-> From: Mark Nelson <markn@au1.ibm.com>
-> 
+> I'm not going this time, but I wish you all a great time at the PPC BoF,
 
-Yes, of course. I keep losing this line when sending patches through
-quilt and kmail.
+There is no PPC BoF (officially) this time.
 
-	Arnd <><
+josh
