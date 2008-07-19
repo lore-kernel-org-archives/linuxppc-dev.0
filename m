@@ -1,18 +1,19 @@
-Return-Path: <vijay.t.nikam@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.236])
-	by ozlabs.org (Postfix) with ESMTP id B09BBDDDF0
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 14:34:28 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so463811rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jul 2008 21:34:26 -0700 (PDT)
-Message-ID: <f234e2140807182134sa7d077ra795d0324c047625@mail.gmail.com>
-Date: Sat, 19 Jul 2008 10:04:26 +0530
-From: "Vijay Nikam" <vijay.t.nikam@gmail.com>
+Return-Path: <marvin24@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 62AB0DDE05
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jul 2008 17:29:48 +1000 (EST)
+From: Marvin <marvin24@gmx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Linux not booting on MPC8313ERDB
-In-Reply-To: <f234e2140807180128o13e4db1bt1db9b043c7859234@mail.gmail.com>
+Subject: Re: 32-bit kernel on PPC64 supported?
+Date: Sat, 19 Jul 2008 09:29:42 +0200
+References: <200807182043.08991.marvin24@gmx.de>
+	<1216419275.7740.459.camel@pasglop>
+In-Reply-To: <1216419275.7740.459.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <f234e2140807180128o13e4db1bt1db9b043c7859234@mail.gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200807190929.42995.marvin24@gmx.de>
+Cc: Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-I am trying to port everything (u-boot-nand.bin, uImage(kernel), jffs2
-and dtb) on NAND of MPC8313ERDB board ...
+Hi,
 
-I loaded u-boot-nand.bin to boot the board from NAND and it is
-successful ... but the problem is in loading kernel ... the kernel
-version and location is detected properly and it starts loading it but
-at mounting file system it gives Magic bit mask error and finally says
-kernel panic and wait for reboot ...
+On Saturday 19 July 2008 00:14:35 Benjamin Herrenschmidt wrote:
+> On Fri, 2008-07-18 at 20:43 +0200, Marvin wrote:
+> > Hi,
+> >
+> > while trying to cleanup some configs/makefiles for ppc64 I noticed, that
+> > CONFIG_POWER4 implies CONFIG_PPC64 and vice versa in all defconfigs.
+> > So I want to boldly replace CONFIG_POWER4 by CONFIG_PPC64 - ugh.
+>
+> No, those are different.
+>
+> CONFIG_PPC64 means a 64 bits kernel.
+>
+> CONFIG_POWER4 means a 64 bits kernel that only runs on IBM POWER4 and
+> later (ie, processors conforming to, iirc, version 2.01 or later of
+> the architecture).
+>
+> That is, it's legal to have CONFIG_PPC64 and !CONFIG_POWER4, and this
+> is even necessary if you want to boot on a POWER3 or an RS64 processor.
 
-Could any one please provide some information to proceed ... thank you
+I don't want to replace CONFIG_POWER4 by void, but by something like 
+CONFIG_TUNE_POWER4 (see my previous post, one week ago). So there is 
+no "feature loss". CONFIG_POWER3 is used only to define HAVE_BATS, so I 
+thought I can clean this up. 
 
-Kind Regards,
-Vijay Nikam
+> Now, there also used to be some 32 bits support for POWER4 and G5 but
+> that has been dropped a while ago.
+
+Ok - that's fine. 
+
+I hope to finish my patches during the weekend, so things will become more 
+clear. 
+
+Greetings
+
+Marvin
