@@ -1,18 +1,16 @@
-Return-Path: <stefanr@s5r6.in-berlin.de>
-Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.vr.in-berlin.de",
-	Issuer "IN-Berlin Server CA (G2)" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 32D3DDDEE8
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 04:55:33 +1000 (EST)
-Message-ID: <488385A7.4010509@s5r6.in-berlin.de>
-Date: Sun, 20 Jul 2008 20:36:23 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-MIME-Version: 1.0
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id AC3F4DDF6C
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 04:58:59 +1000 (EST)
+Date: Sun, 20 Jul 2008 14:58:58 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
 To: linuxppc-dev@ozlabs.org
-Subject: dma_alloc_coherent() on PPC32: physical addresses above 2G possible?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Don't panic when EEH_MAX_FAILS is exceeded
+Message-ID: <20080720145858.5be92934@lappy.seanm.ca>
+In-Reply-To: <488383D4.9000602@us.ibm.com>
+References: <488383D4.9000602@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+On Sun, 20 Jul 2008 11:28:36 -0700
+"Mike Mason" <mmlnx@us.ibm.com> wrote:
 
-I have to implement a workaround for a PCI device which gets into 
-trouble if descriptors are located at 32bit addresses, while 31bit 
-addresses are fine.  I would like to avoid this workaround on machines 
-on which dma_alloc_coherent() won't ever go at memory above 2 GB.
+> This patch changes the EEH_MAX_FAILS action from panic to printing an
+> error message.  Panicking under under this condition is too harsh.
+> Although performance will be affected and the device may not recover,
+> the system is still running, which at the very least, should allow
+> for a more graceful shutdown.  The panic() is now wrapped in a DEBUG
+> statement for development purposes.  The patch also removes the
+> msleep() within a spinlock, which is not allowed.
 
-Is defined(CONFIG_PPC32) a safe test for this?  I'm under the impression 
-that defined(CONFIG_X86_32) is safe.
+Why can you not msleep within a spinlock? And when was this change
+brought in?
 
-Are there any other means to detect when the workaround can be omitted, 
-at compile time or at runtime?
-
-PS:  I don't want to set the DMA mask of this device to DMA_31BIT_MASK 
-because that would be detrimental to other functions of the device. It's 
-a TI TSB43AB22A FireWire controller.
--- 
-Stefan Richter
--=====-==--- -=== =-=--
-http://arcgraph.de/sr/
+Cheers,
+   Sean
