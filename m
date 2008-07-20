@@ -1,19 +1,18 @@
-Return-Path: <stefanr@s5r6.in-berlin.de>
-Received: from hp3.statik.tu-cottbus.de (hp3.statik.tu-cottbus.de
-	[141.43.120.68]) by ozlabs.org (Postfix) with ESMTP id B3D41DDF15
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 06:12:10 +1000 (EST)
-Message-ID: <48839BF4.6010603@s5r6.in-berlin.de>
-Date: Sun, 20 Jul 2008 22:11:32 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id C6F43DDDD8
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 06:17:17 +1000 (EST)
+Date: Sun, 20 Jul 2008 15:17:08 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] Don't panic when EEH_MAX_FAILS is exceeded
+Message-ID: <20080720201708.GP9594@localdomain>
+References: <488383D4.9000602@us.ibm.com>
+	<20080720145858.5be92934@lappy.seanm.ca>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: dma_alloc_coherent() on PPC32: physical addresses above 2G
-	possible?
-References: <488385A7.4010509@s5r6.in-berlin.de>	<20080720114358.6c88e048@infradead.org>	<4883913F.9040706@s5r6.in-berlin.de>
-	<20080720123900.02677e6e@infradead.org>
-In-Reply-To: <20080720123900.02677e6e@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080720145858.5be92934@lappy.seanm.ca>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arjan van de Ven wrote:
-> On Sun, 20 Jul 2008 21:25:51 +0200
-> Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> 	if (dev->needs_dma_mask_workaround)
->> 		pci_set_consistent_dma_mask(pdev, DMA_31BIT_MASK);
->> 	allocate_something_special;
->> 	if (dev->needs_dma_mask_workaround)
->> 		pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK);
-...
-> something like this.
-> But realistically, how many consistent/coherent allocations do you have?
-> some ring buffers and other one time stuff surely... but not after that?
+Sean MacLennan wrote:
+> On Sun, 20 Jul 2008 11:28:36 -0700
+> "Mike Mason" <mmlnx@us.ibm.com> wrote:
+> 
+> > This patch changes the EEH_MAX_FAILS action from panic to printing an
+> > error message.  Panicking under under this condition is too harsh.
+> > Although performance will be affected and the device may not recover,
+> > the system is still running, which at the very least, should allow
+> > for a more graceful shutdown.  The panic() is now wrapped in a DEBUG
+> > statement for development purposes.  The patch also removes the
+> > msleep() within a spinlock, which is not allowed.
+> 
+> Why can you not msleep within a spinlock? And when was this change
+> brought in?
 
-It's for DMA programs (i.e. lists of descriptors), not for the data DMA
-buffers themselves.  FireWire controllers have several DMA contexts for
-isochronous and asynchronous reception and transmission, and some
-others.  Only context programs for isochronous reception need the
-workaround.
-
-We are dynamically appending new descriptors during runtime.  I.e. the
-affected allocations happen during setup of the DMA context and
-sometimes while the DMA context is active.  Particularly, in
-drivers/firewire/fw-ohci.c:
-	ohci_allocate_iso_context
-		context_init
-			context_add_buffer  <--
-and
-	ohci_queue_iso
-		ohci_queue_iso_receive_dualbuffer
-			context_get_descriptors
-				context_add_buffer  <--
-
-The other unaffected context types use context_add_buffer too.
--- 
-Stefan Richter
--=====-==--- -=== =-=--
-http://arcgraph.de/sr/
+Giving up the cpu while holding a spinlock risks locking up the system
+in the worst case -- if another task tries to acquire the held lock it
+can spin indefinitely.
