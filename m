@@ -1,20 +1,18 @@
-Return-Path: <SRS0+ccece2b3983fbc48babd+1792+infradead.org+arjan@casper.srs.infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CB82FDDE11
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 04:44:03 +1000 (EST)
-Date: Sun, 20 Jul 2008 11:43:58 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: dma_alloc_coherent() on PPC32: physical addresses above 2G
-	possible?
-Message-ID: <20080720114358.6c88e048@infradead.org>
-In-Reply-To: <488385A7.4010509@s5r6.in-berlin.de>
-References: <488385A7.4010509@s5r6.in-berlin.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 32D3DDDEE8
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 04:55:33 +1000 (EST)
+Message-ID: <488385A7.4010509@s5r6.in-berlin.de>
+Date: Sun, 20 Jul 2008 20:36:23 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: dma_alloc_coherent() on PPC32: physical addresses above 2G possible?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 20 Jul 2008 20:36:23 +0200
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+Hi all,
 
-> PS:  I don't want to set the DMA mask of this device to
-> DMA_31BIT_MASK because that would be detrimental to other functions
-> of the device. It's a TI TSB43AB22A FireWire controller.
+I have to implement a workaround for a PCI device which gets into 
+trouble if descriptors are located at 32bit addresses, while 31bit 
+addresses are fine.  I would like to avoid this workaround on machines 
+on which dma_alloc_coherent() won't ever go at memory above 2 GB.
 
-Hi,
+Is defined(CONFIG_PPC32) a safe test for this?  I'm under the impression 
+that defined(CONFIG_X86_32) is safe.
 
-just want to mention that you can set the coherent mask separately from
-the generic mask... is that sufficient for your load?
-(you can even set it just for this allocation..)
+Are there any other means to detect when the workaround can be omitted, 
+at compile time or at runtime?
 
+PS:  I don't want to set the DMA mask of this device to DMA_31BIT_MASK 
+because that would be detrimental to other functions of the device. It's 
+a TI TSB43AB22A FireWire controller.
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Stefan Richter
+-=====-==--- -=== =-=--
+http://arcgraph.de/sr/
