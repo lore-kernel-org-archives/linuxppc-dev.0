@@ -1,23 +1,20 @@
-Return-Path: <mahendravarman15@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
-	by ozlabs.org (Postfix) with ESMTP id 6C726DDF06
+Return-Path: <tehn.yit.chin@gmail.com>
+Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.191])
+	by ozlabs.org (Postfix) with ESMTP id 6205ADDDF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Jul 2008 23:02:48 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id e27so253674nfd.9
+	Mon, 21 Jul 2008 09:22:20 +1000 (EST)
+Received: by ti-out-0910.google.com with SMTP id w7so691942tib.13
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Jul 2008 06:02:45 -0700 (PDT)
-Message-ID: <4ac2955e0807190602g4dcf7ddauc07dd8441ef678cc@mail.gmail.com>
-Date: Sat, 19 Jul 2008 18:32:45 +0530
-From: "mahendra varman" <mahendravarman15@gmail.com>
-To: "selvamuthukumar v" <v.selvamuthukumar@gmail.com>
-Subject: Re: No filesystem could mount root
-In-Reply-To: <790896390807190452n7197924ma07bfd4c3431eb89@mail.gmail.com>
+	Sun, 20 Jul 2008 16:22:18 -0700 (PDT)
+Message-ID: <bf04f99c0807201622p5508af06q62afacb6158671ad@mail.gmail.com>
+Date: Mon, 21 Jul 2008 09:22:18 +1000
+From: "Tehn Yit Chin" <tehn.yit.chin@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: jumping to code in RAM in a MPC55xx
+In-Reply-To: <bf04f99c0807172329m7ec94580n194e02b708bf7597@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_47519_30307132.1216472565622"
-References: <4ac2955e0807180700u6184562duc128049245e37fdc@mail.gmail.com>
-	<790896390807190452n7197924ma07bfd4c3431eb89@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <bf04f99c0807172329m7ec94580n194e02b708bf7597@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,34 +25,77 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_47519_30307132.1216472565622
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+I am just going to answer my own questions for future reference.
 
-> There are no messages from the kernel that it's trying NFS. You can
-> check the boot arguments you are passing to the kernel.
+I did some searching on the internet and came across this note on the
+the usenet comp.sys.powerpc.tech
+
+http://newsgroups.derkeiler.com/Archive/Comp/comp.sys.powerpc.tech/2005-11/msg00015.html
+
+In summary, it performs a indirect jump to code via the CTR register.
+The following code snippet show how it is done.
+
+	lis	9,0xFC00 /* Function is at 0xFC000000 */
+	mtctr	9
+	bctrl
+
+
+On Fri, Jul 18, 2008 at 4:29 PM, Tehn Yit Chin <tehn.yit.chin@gmail.com> wrote:
 >
-
-The boot arguments are passed correctly only.
-
-setenv bootargs console=ttyS0,57600 root=/dev/nfs
-nfsroot=192.168.0.6:/root/FILESYSTEM/target/target-minimal
-ip=192.168.0.200:192.168.0.6:192.168.0.1:255.255.255.0::eth0
-
-still Iam getting the above said error
-
-Any clue??
-
-------=_Part_47519_30307132.1216472565622
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div dir="ltr"><br><div class="gmail_quote"><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">There are no messages from the kernel that it&#39;s trying NFS. You can<br>
-
-check the boot arguments you are passing to the kernel.<br>
-</blockquote></div><br>The boot arguments are passed correctly only.<br><br>setenv bootargs console=ttyS0,57600 root=/dev/nfs nfsroot=192.168.0.6:/root/FILESYSTEM/target/target-minimal ip=192.168.0.200:192.168.0.6:192.168.0.1:255.255.255.0::eth0<br>
-<br>still Iam getting the above said error<br><br>Any clue??<br><br><br></div>
-
-------=_Part_47519_30307132.1216472565622--
+> Hi,
+>
+> This question is not directly related to linux, but a question on how to execute code from.
+>
+> My test code is as follows..
+>
+> void ram(unsigned int cat) __attribute__ ((section(".ram_code")));
+> void ram1(void) __attribute__ ((section(".ram_code")));
+> void flash(void) __attribute__ ((section(".text")));
+> void flash1(unsigned int y) __attribute__ ((section(".text")));
+>
+> void ram(unsigned int cat)
+> {
+>     unsigned int abc;
+>
+>     abc += 12;
+>     abc += cat;
+> }
+>
+> void ram1(void)
+> {
+>     ram(123);
+> }
+>
+>
+> void flash1(unsigned int y)
+> {
+>     unsigned int x;
+>
+>     x = x + y;
+>
+> }
+>
+> void flash(void)
+> {
+>     unsigned int def;
+>
+>     def += 12;
+>
+>     asm (" bel ram1\n\t");
+> }
+>
+> I have the section .ram_code mapped into the internal SRAM of the MPC55xx, which starts at 0x40000000. Code in .text are mapped into MPC55xx's internal FLASH, starting at 0x00000000.
+>
+> When I attempt to link the code together,  I get the error
+>
+> U:\src\applications\comms/fatdog.c(35,1): relocation truncated to fit: R_PPC_REL24 against symbol `ram1' defined in .ram_code section in U:\src\applications\comms\fatdog.o
+>
+> I googled the error and I think it means that the ram1() is too far away and the branch address has been truncated to fit into the binary.
+>
+> Other than assembler bel instruction, I have also tried bl, b and bea and all of them gave the same link error.
+>
+> I was wondering if anyone can give some insight on how I can get the MPC55xx to branch between FLASH and SRAM?
+>
+> Many thanks,
+> Tehn Yit Chin
+>
