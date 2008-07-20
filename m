@@ -2,14 +2,14 @@ Return-Path: <SRS0+ccece2b3983fbc48babd+1792+infradead.org+arjan@casper.srs.infr
 Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 85914DDE45
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 05:38:59 +1000 (EST)
-Date: Sun, 20 Jul 2008 12:39:00 -0700
+	by ozlabs.org (Postfix) with ESMTPS id BA7F9DDEE4
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 05:48:42 +1000 (EST)
+Date: Sun, 20 Jul 2008 12:48:41 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Subject: Re: dma_alloc_coherent() on PPC32: physical addresses above 2G
 	possible?
-Message-ID: <20080720123900.02677e6e@infradead.org>
+Message-ID: <20080720124841.0e5e8de0@infradead.org>
 In-Reply-To: <4883913F.9040706@s5r6.in-berlin.de>
 References: <488385A7.4010509@s5r6.in-berlin.de>
 	<20080720114358.6c88e048@infradead.org>
@@ -29,21 +29,37 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 On Sun, 20 Jul 2008 21:25:51 +0200
 Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
+> Arjan van de Ven wrote:
+> > On Sun, 20 Jul 2008 20:36:23 +0200
+> > Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+> > 
+> >> PS:  I don't want to set the DMA mask of this device to
+> >> DMA_31BIT_MASK because that would be detrimental to other functions
+> >> of the device. It's a TI TSB43AB22A FireWire controller.
+> > 
+> > Hi,
+> > 
+> > just want to mention that you can set the coherent mask separately
+> > from the generic mask... is that sufficient for your load?
+> > (you can even set it just for this allocation..)
 > 
-> Later on:
+> Hmm.  Would that be done this way?
+> During probe:
 > 
-> 	if (dev->needs_dma_mask_workaround)
-> 		pci_set_consistent_dma_mask(pdev, DMA_31BIT_MASK);
-> 	allocate_something_special;
-> 	if (dev->needs_dma_mask_workaround)
-> 		pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK);
-> 
-> Or is there a variant of dma_alloc_coherent() which directly accepts a
-> mask argument?
+> 	if (chip_is_tsb43ab22a) {
+> 		if (dma_supported(dev, DMA_31BIT_MASK))
+> 			chip->needs_dma_mask_workaround = 1;
+> 		else
+> 			chip->needs_some_other_workaround = 1;
+> 	}
 
-something like this.
-But realistically, how many consistent/coherent allocations do you have?
-some ring buffers and other one time stuff surely... but not after that?
+btw it might be nicer to make this
+
+chip->something_special_mask = DMA_31BIT_MASK;
+
+then you can just use the mask from this struct rather than another
+check
+
 
 -- 
 If you want to reach me at my work email, use arjan@linux.intel.com
