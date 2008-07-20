@@ -1,15 +1,15 @@
 Return-Path: <marvin24@gmx.de>
 Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 3B302DDE11
+	by ozlabs.org (Postfix) with SMTP id 377AADDE08
 	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 17:05:46 +1000 (EST)
 From: Marvin <marvin24@gmx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [5/5] include tuning options into Makefile
-Date: Mon, 21 Jul 2008 09:00:58 +0200
-References: <200807210857.08892.marvin24@gmx.de>
-In-Reply-To: <200807210857.08892.marvin24@gmx.de>
+Subject: [1/5] add tune options to Kconfig.cputypes
+Date: Sun, 20 Jul 2008 19:48:24 +0200
+References: <200807201927.24198.marvin24@gmx.de>
+In-Reply-To: <200807201927.24198.marvin24@gmx.de>
 MIME-Version: 1.0
-Message-Id: <200807210900.58839.marvin24@gmx.de>
+Message-Id: <200807201948.24762.marvin24@gmx.de>
 Content-Type: text/plain;
   charset="iso-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,74 +22,116 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This patch finally adds mcpu/mtune options to the Makefile using the
-previous introduced tuning mechanism.
+This patch adds tuning options similar to ppc32. In addition one can choose to 
+compile exclusive for the selected (and higher) cpus.
 
-Subject: [PATCH] include tuning options into Makefile
+Subject: [PATCH] add tune options to Kconfig.cputypes
 
 ---
- arch/powerpc/Makefile |   41 +++++++++++++++++++++++------------------
- 1 files changed, 23 insertions(+), 18 deletions(-)
+ arch/powerpc/platforms/Kconfig.cputype |   79 ++++++++++++++++++++++++-------
+ 1 files changed, 61 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 9629c5e..09f81a7 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -75,30 +75,35 @@ CPP		= $(CC) -E $(KBUILD_CFLAGS)
- CHECKFLAGS	
-+= -m$(CONFIG_WORD_SIZE) -D__powerpc__ -D__powerpc$(CONFIG_WORD_SIZE)__
+diff --git a/arch/powerpc/platforms/Kconfig.cputype 
+b/arch/powerpc/platforms/Kconfig.cputype
+index 5bc4b61..88e6ce2 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -54,35 +54,78 @@ config E200
  
- ifeq ($(CONFIG_PPC64),y)
--GCC_BROKEN_VEC	:= $(shell if [ $(call cc-version) -lt 0400 ] ; then echo "y"; 
-fi)
+ endchoice
  
--ifeq ($(CONFIG_TUNE_POWER4),y)
--ifeq ($(CONFIG_OPT_EXCLUSIVE),y)
--ifeq ($(CONFIG_ALTIVEC),y)
--ifeq ($(GCC_BROKEN_VEC),y)
--	KBUILD_CFLAGS += $(call cc-option,-mcpu=970)
-+ifeq ($(shell if [ $(call cc-version) -lt 0400 ] ; then echo "y"; fi),y)
-+    P4CPU := power4
- else
--	KBUILD_CFLAGS += $(call cc-option,-mcpu=power4)
-+    P4CPU := 970
- endif
--else
--	KBUILD_CFLAGS += $(call cc-option,-mcpu=power4)
--endif
--else
--	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
--endif
--	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
+-config POWER4_ONLY
+-	bool "Optimize for POWER4"
++choice
++	prompt "Processor Type"
+ 	depends on PPC64
++	default TUNE_POWER4
++	help
++	  There are serveral families of 64 bit PowerPC chips supported.
++	  These include the RS64, Power3 to Power6 series, 970, and 
++	  Cell BE based CPUs made be IBM.
 +
-+# optimize for specific cpu
-+ifeq ($(CONFIG_TUNE_RS64),y)
-+    KBUILD_CFLAGS += $(call cc-option,-mcpu=rs64)
-+else ifeq ($(CONFIG_TUNE_POWER3),y)
-+    KBUILD_CFLAGS += $(call cc-option,-mcpu=power3)
-+else ifeq ($(CONFIG_TUNE_POWER4),y)
-+    KBUILD_CFLAGS += $(call cc-option,-mcpu=$(P4CPU))
-+else ifeq ($(CONFIG_TUNE_CELL),y)
-+    KBUILD_CFLAGS += $(call cc-option,-mcpu=cell,-mtune=cell)
-+else ifeq ($(CONFIG_TUNE_POWER5),y)
-+    KBUILD_CFLAGS += $(call cc-option,-mcpu=power5,-mtune=power5)
-+else ifeq ($(CONFIG_TUNE_POWER6),y)
-+    KBUILD_CFLAGS += $(call cc-option,-mcpu=power6,-mtune=power6)
- endif
--else
--LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
++	  If unsure, select Power4.
 +
-+ifneq ($(CONFIG_OPT_EXCLUSIVE),y)
-+    KBUILD_CFLAGS := $(subst mcpu,mtune,$(KBUILD_CFLAGS))
- endif
++config TUNE_RS64
++	bool "RS64"
++
++config TUNE_POWER3
++	bool "Power3"
++
++config TUNE_POWER4
++	bool "Power4"
++
++config TUNE_970
++	bool "970/G5"
++
++config TUNE_POWER5
++	bool "Power5"
++
++config TUNE_POWER6
++	bool "Power6"
++
++config TUNE_CELL
++	bool "Cell Broadband Engine"
++	help
++	  Cause the compiler to optimize for the PPE of the Cell Broadband
++	  Engine. This will make the code run considerably faster on Cell
++	  but somewhat slower on other machines. If the resulting kernel is
++	  built to run only on Cell BE machines, select also OPT_EXCLUSIVE.
++
++endchoice
++
++config OPT_EXCLUSIVE
++	bool "Optimize to run exclusive on selected CPU"
+ 	default n
+-	---help---
+-	  Cause the compiler to optimize for POWER4/POWER5/PPC970 processors.
+-	  The resulting binary will not work on POWER3 or RS64 processors
+-	  when compiled with binutils 2.15 or later.
++	help
++	  Cause the compiler to optimize to run exclusive on the selected
++	  CPU. The resulting binary will probably not work on older CPUs, 
++	  but should work on newer ones.
++	  
++	  See the following chart for supported PPC64 CPU generations.
++	  
++	  older <------------------------------> newer
++
++	  RS64 -> POWER3 -> POWER4 -> POWER5 -> POWER6
++	                    970/G5
++	                    CELL BE
++	                    PA6T
++	  
++	  If the compiler/binutils combination does not support the exclusive
++	  optimization, it will try to tune only or fail.
++	  
++	  If you are unsure, select no.
  
--ifeq ($(CONFIG_TUNE_CELL),y)
--	KBUILD_CFLAGS += $(call cc-option,-mtune=cell)
-+else
-+# !PPC64
-+    LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
- endif
+ config POWER3
+-	bool
+ 	depends on PPC64
+-	default y if !POWER4_ONLY
++	def_bool y if !POWER4_ONLY
  
- # No AltiVec instruction when building kernel
+ config POWER4
+ 	depends on PPC64
+ 	def_bool y
+ 
+-config TUNE_CELL
+-	bool "Optimize for Cell Broadband Engine"
++config POWER4_ONLY
+ 	depends on PPC64
+-	help
+-	  Cause the compiler to optimize for the PPE of the Cell Broadband
+-	  Engine. This will make the code run considerably faster on Cell
+-	  but somewhat slower on other machines. This option only changes
+-	  the scheduling of instructions, not the selection of instructions
+-	  itself, so the resulting kernel will keep running on all other
+-	  machines. When building a kernel that is supposed to run only
+-	  on Cell, you should also select the POWER4_ONLY option.
++	def_bool y if TUNE_POWER4 && OPT_EXCLUSIVE
+ 
+ config 6xx
+ 	bool
 -- 
 1.5.6.2
