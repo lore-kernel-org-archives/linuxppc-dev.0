@@ -1,20 +1,13 @@
-Return-Path: <ncase@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 77259DDDF3
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 08:57:29 +1000 (EST)
-Subject: Re: bug: mutex_lock() in interrupt conntext via phy_stop() in gianfar
-From: Nate Case <ncase@xes-inc.com>
-To: Sebastian Siewior <netdev@ml.breakpoint.cc>
-In-Reply-To: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
-References: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
-Content-Type: text/plain
-Date: Mon, 21 Jul 2008 17:57:08 -0500
-Message-Id: <1216681028.7559.993.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Vitaly Bordug <vbordug@ru.mvista.com>, Li Yang <leoli@freescale.com>
+Return-Path: <segher@gcc17.fsffrance.org>
+Received: from snail.fsffrance.org (eucd.info [88.191.250.43])
+	by ozlabs.org (Postfix) with ESMTP id A67EBDDEF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 09:56:33 +1000 (EST)
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org,
+	benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Fix build bug with binutils < 2.18 and GCC < 4.2
+Date: Tue, 22 Jul 2008 01:03:45 +0200
+Message-Id: <31a45a6b0f4087a6e54b05241eebc9f94202ffe5.1216681294.git.segher@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +17,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-07-18 at 14:10 +0200, Sebastian Siewior wrote:
-> Commit 35b5f6b1a aka [PHYLIB: Locking fixes for PHY I/O potentially sleeping]
-> changed the phydev->lock from spinlock into a mutex. Now, the following
-> code path got triggered while NFS was unavailable:
-> 
-[snip]
-> |[  194.864733] BUG: sleeping function called from invalid context at /home/bigeasy/git/linux-2.6-powerpc/kernel/mutex.c:87
-> |[  194.875529] in_atomic():1, irqs_disabled():0
-> |[  194.879805] Call Trace:
-> |[  194.882250] [c0383d90] [c0006dd8] show_stack+0x48/0x184 (unreliable)
-> |[  194.888649] [c0383db0] [c001e938] __might_sleep+0xe0/0xf4
-> |[  194.894069] [c0383dc0] [c025a43c] mutex_lock+0x24/0x3c
-> |[  194.899234] [c0383de0] [c019005c] phy_stop+0x20/0x70
-> |[  194.904234] [c0383df0] [c018d4ec] stop_gfar+0x28/0xf4
-> |[  194.909305] [c0383e10] [c018e8c4] gfar_timeout+0x30/0x60
-> |[  194.914638] [c0383e20] [c01fe7c0] dev_watchdog+0xa8/0x144
+binutils < 2.18 has a bug that makes it misbehave when taking an
+ELF file with all segments at load address 0 as input.  This
+happens when running "strip" on vmlinux, because of the AT() magic
+in this linker script.  People using GCC >= 4.2 won't run into
+this problem, because the "build-id" support will put some data
+into the "notes" segment (at a non-zero load address).
 
-Hmm..  I'm not sure what the best solution is to this.  Make the
-stop_gfar() call happen in a workqueue, and make a similar change to
-ucc_geth, fec_mpc52xx, and fs_enet? Modify phy_stop() to do the work in
-a workqueue conditionally if in interrupt context?  Between these two
-I'd lean toward the latter.
+To work around this, we force some data into both the "dummy"
+segment and the kernel segment, so the dummy segment will get a
+non-zero load address.  It's not enough to always create the
+"notes" segment, since if nothing gets assigned to it, its load
+address will be zero.
 
-Does anyone have any better ideas?
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+Tested-By: Milton Miller <miltonm@bga.com>
+---
+ arch/powerpc/kernel/vmlinux.lds.S |   31 ++++++++++++++++++++++++++++---
+ 1 files changed, 28 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 87a72c6..a914411 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -9,6 +9,25 @@
+ 
+ ENTRY(_stext)
+ 
++PHDRS {
++	kernel PT_LOAD FLAGS(7); /* RWX */
++	notes PT_NOTE FLAGS(0);
++	dummy PT_NOTE FLAGS(0);
++
++	/* binutils < 2.18 has a bug that makes it misbehave when taking an
++	   ELF file with all segments at load address 0 as input.  This
++	   happens when running "strip" on vmlinux, because of the AT() magic
++	   in this linker script.  People using GCC >= 4.2 won't run into
++	   this problem, because the "build-id" support will put some data
++	   into the "notes" segment (at a non-zero load address).
++
++	   To work around this, we force some data into both the "dummy"
++	   segment and the kernel segment, so the dummy segment will get a
++	   non-zero load address.  It's not enough to always create the
++	   "notes" segment, since if nothing gets assigned to it, its load
++	   address will be zero.  */
++}
++
+ #ifdef CONFIG_PPC64
+ OUTPUT_ARCH(powerpc:common64)
+ jiffies = jiffies_64;
+@@ -50,7 +69,7 @@ SECTIONS
+ 		. = ALIGN(PAGE_SIZE);
+ 		_etext = .;
+ 		PROVIDE32 (etext = .);
+-	}
++	} :kernel
+ 
+ 	/* Read-only data */
+ 	RODATA
+@@ -62,7 +81,13 @@ SECTIONS
+ 		__stop___ex_table = .;
+ 	}
+ 
+-	NOTES
++	NOTES :kernel :notes
++
++	/* The dummy segment contents for the bug workaround mentioned above
++	   near PHDRS.  */
++	.dummy : {
++		LONG(0xf177)
++	} :kernel :dummy
+ 
+ /*
+  * Init sections discarded at runtime
+@@ -74,7 +99,7 @@ SECTIONS
+ 		_sinittext = .;
+ 		INIT_TEXT
+ 		_einittext = .;
+-	}
++	} :kernel
+ 
+ 	/* .exit.text is discarded at runtime, not link time,
+ 	 * to deal with references from __bug_table
 -- 
-Nate Case <ncase@xes-inc.com>
+1.5.6.4.gf1ba5
