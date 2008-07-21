@@ -1,31 +1,22 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B3218DDE08
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 07:12:47 +1000 (EST)
-Date: Mon, 21 Jul 2008 14:12:20 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: PIXIS gpio controller and gpio flags
-In-Reply-To: <20080721175357.GA1773@polina.dev.rtsoft.ru>
-Message-ID: <Pine.LNX.4.64.0807211340460.26456@t2.domain.actdsltmp>
-References: <20080717140519.GA32617@polina.dev.rtsoft.ru>
-	<20080717141335.GA2219@polina.dev.rtsoft.ru>
-	<20080717150422.GC31932@secretlab.ca>
-	<20080717152006.GA26120@polina.dev.rtsoft.ru>
-	<fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
-	<Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
-	<20080717234201.GA15745@polina.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
-	<20080718100549.GA28741@polina.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0807191352040.27586@t2.domain.actdsltmp>
-	<20080721175357.GA1773@polina.dev.rtsoft.ru>
+	by ozlabs.org (Postfix) with ESMTPS id F2ED3DE011
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 07:15:13 +1000 (EST)
+Date: Mon, 21 Jul 2008 16:13:44 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
+Subject: Re: Mikrotik RouterBoard 333
+Message-ID: <20080721211344.GA13268@loki.buserror.net>
+References: <20080708042631.GB7328@yookeroo.seuss>
+	<20080709040925.GA13810@secretlab.ca> <487AA17E.6000808@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <487AA17E.6000808@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,45 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 21 Jul 2008, Anton Vorontsov wrote:
-> On Sat, Jul 19, 2008 at 02:08:01PM -0700, Trent Piepho wrote:
->> It doesn't look like you have any way to unset the active low flag.  What if
->> I unload the leds-gpio driver (or another gpio user) and then try to use the
->> gpio with something else?  The active low flag is stuck on!
->
-> Why would you want to unset the flags? It is specified in the device
-> tree, and can't be changed. Specifying different flags for the same GPIO
-> would be an error (plus, Linux forbids shared gpios, so you simply can't
-> specify one gpio for several devices).
+On Sun, Jul 13, 2008 at 08:44:46PM -0400, Jerry Van Baren wrote:
+> I'm a half-ack.  ;-)  I'm partial to u-boot's implementation rather than  
+> using a bootwrapper for obvious reasons.  The u-boot implementation  
+> takes the blob as a boot parameter and passes it along to the kernel  
+> after doing appropriate (optional) fixups.
 
-You can't use the same gpio for two different things at the same time, but you
-can load a driver, unload it, and then load another.
+And if those fixups expect a malformed device tree?
 
->> Most gpio users, including leds-gpio, can handle gpios being busy.  If
->> leds-gpio can't get one of the gpios, it rolls back all the leds it did
->> create, doesn't drive the device and returns EBUSY.  Except with
->> of_get_gpio() setting the flags, it will change the flags out from under
->> whatever had the gpio already allocated!
->
-> You're still assuming that something was allocated. It wasn't. The flag
-> was set, and it should not change. It is irrelevant if request() failed
-> or not.
+> Other than that quibble, I agree that burning the blob into the firmware  
+> so that the firmware must be recompiled and reburned to change the blob  
+> is very undesirable.
 
-Another driver has requested the gpio with active low NOT set.  Then the led
-driver looks up the property with active low set, which changes the flags. 
-When it tries to request the gpio it fails since the gpio is already in use. 
-The led driver handles this failure.  Except the active low flag is now set
-and the driver that was using the gpio before will now mysteriously stop
-working.  Perhaps by erasing flash instead of reading it or something nasty
-like that.
+I thought the device tree was *supposed* to be an interface between the
+firmware and the kernel?  What if the firmware produces the tree
+dynamically?  What if the firmware itself depends on having the device tree
+in order to operate?
 
-Is this the proper way to handle a dts mistake that has two drivers trying to
-use the same gpio?  Without the gpio flags getting set when looking up the
-gpio, this situation is handled without any difficulty.
-
-And is having a gpio used twice in the device tree really a mistake?  What if
-there are two different devices that can be attached to the gpios?  For
-example, an LED bank that can be unplugged and a serial console attached in
-its place, sharing the same connector and gpios.  Other than gpio flags
-getting set when looking up a gpio, it works fine to list both devices in the
-device tree as long as userspace has the correct driver loaded first.
+-Scott
