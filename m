@@ -1,20 +1,22 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id 8E392DDED4
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 23:11:29 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so237686yxg.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 06:11:27 -0700 (PDT)
-Received: from localhost ([127.0.0.1] helo=[127.0.1.1])
-	by terra with esmtp (Exim 4.69) (envelope-from <jonsmirl@gmail.com>)
-	id 1KKaok-0002Zn-NV
-	for linuxppc-dev@ozlabs.org; Sun, 20 Jul 2008 11:27:22 -0400
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH] Add more register definitions for the MPC52xx PSC
-To: linuxppc-dev@ozlabs.org
-Date: Sun, 20 Jul 2008 11:27:22 -0400
-Message-ID: <20080720152722.9874.45607.stgit@terra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 19CA1DDDE6
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 01:04:39 +1000 (EST)
+Date: Mon, 21 Jul 2008 11:04:39 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] Don't panic when EEH_MAX_FAILS is exceeded
+Message-ID: <20080721110439.50b5a2dc@lappy.seanm.ca>
+In-Reply-To: <20080721140946.ca314d2e.sfr@canb.auug.org.au>
+References: <488383D4.9000602@us.ibm.com>
+	<20080720145858.5be92934@lappy.seanm.ca>
+	<20080720201708.GP9594@localdomain>
+	<20080720234756.03b602ca@lappy.seanm.ca>
+	<20080721140946.ca314d2e.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
+	Sean MacLennan <sean.maclennan@ottawa.kanatek.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add more register definitions for the MPC52xx PSC
+On Mon, 21 Jul 2008 14:09:46 +1000
+"Stephen Rothwell" <sfr@canb.auug.org.au> wrote:
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
----
+> I think you must be thinking of mdelay().
 
- include/asm-powerpc/mpc52xx_psc.h |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+Correct you are! I didn't even know there was an msleep() so I just
+mapped it to mdelay() ;)
 
-diff --git a/include/asm-powerpc/mpc52xx_psc.h b/include/asm-powerpc/mpc52xx_psc.h
-index 0985dc8..4639598 100644
---- a/include/asm-powerpc/mpc52xx_psc.h
-+++ b/include/asm-powerpc/mpc52xx_psc.h
-@@ -162,8 +162,12 @@ struct mpc52xx_psc {
- 	u8		reserved5[3];
- 	u8		ctlr;		/* PSC + 0x1c */
- 	u8		reserved6[3];
--	u16		ccr;		/* PSC + 0x20 */
--	u8		reserved7[14];
-+	/* BitClkDiv field of CCR is byte swapped in 
-+	 * the hardware for mpc5200/b compatibility */
-+	u32		ccr;		/* PSC + 0x20 */
-+	u32		ac97_slots;	/* PSC + 0x24 */
-+	u32		ac97_cmd;	/* PSC + 0x28 */
-+	u32		ac97_data;	/* PSC + 0x2c */
- 	u8		ivr;		/* PSC + 0x30 */
- 	u8		reserved8[3];
- 	u8		ip;		/* PSC + 0x34 */
+I'll have to look at msleep() though, there are places we could use it.
+
+Cheers,
+   Sean
