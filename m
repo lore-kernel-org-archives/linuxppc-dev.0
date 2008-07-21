@@ -1,21 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ncase@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0EA8BDDEF9
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 08:13:41 +1000 (EST)
-In-Reply-To: <20080721211344.GA13268@loki.buserror.net>
-References: <20080708042631.GB7328@yookeroo.seuss>
-	<20080709040925.GA13810@secretlab.ca> <487AA17E.6000808@gmail.com>
-	<20080721211344.GA13268@loki.buserror.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <137baed45f975ea9061f6a7a2cc18fbc@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Mikrotik RouterBoard 333
-Date: Tue, 22 Jul 2008 00:13:19 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 77259DDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 08:57:29 +1000 (EST)
+Subject: Re: bug: mutex_lock() in interrupt conntext via phy_stop() in gianfar
+From: Nate Case <ncase@xes-inc.com>
+To: Sebastian Siewior <netdev@ml.breakpoint.cc>
+In-Reply-To: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
+References: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
+Content-Type: text/plain
+Date: Mon, 21 Jul 2008 17:57:08 -0500
+Message-Id: <1216681028.7559.993.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Vitaly Bordug <vbordug@ru.mvista.com>, Li Yang <leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Other than that quibble, I agree that burning the blob into the 
->> firmware
->> so that the firmware must be recompiled and reburned to change the 
->> blob
->> is very undesirable.
->
-> I thought the device tree was *supposed* to be an interface between the
-> firmware and the kernel?  What if the firmware produces the tree
-> dynamically?  What if the firmware itself depends on having the device 
-> tree
-> in order to operate?
+On Fri, 2008-07-18 at 14:10 +0200, Sebastian Siewior wrote:
+> Commit 35b5f6b1a aka [PHYLIB: Locking fixes for PHY I/O potentially sleeping]
+> changed the phydev->lock from spinlock into a mutex. Now, the following
+> code path got triggered while NFS was unavailable:
+> 
+[snip]
+> |[  194.864733] BUG: sleeping function called from invalid context at /home/bigeasy/git/linux-2.6-powerpc/kernel/mutex.c:87
+> |[  194.875529] in_atomic():1, irqs_disabled():0
+> |[  194.879805] Call Trace:
+> |[  194.882250] [c0383d90] [c0006dd8] show_stack+0x48/0x184 (unreliable)
+> |[  194.888649] [c0383db0] [c001e938] __might_sleep+0xe0/0xf4
+> |[  194.894069] [c0383dc0] [c025a43c] mutex_lock+0x24/0x3c
+> |[  194.899234] [c0383de0] [c019005c] phy_stop+0x20/0x70
+> |[  194.904234] [c0383df0] [c018d4ec] stop_gfar+0x28/0xf4
+> |[  194.909305] [c0383e10] [c018e8c4] gfar_timeout+0x30/0x60
+> |[  194.914638] [c0383e20] [c01fe7c0] dev_watchdog+0xa8/0x144
 
-Sure.  But in the case where the firmware just passes the
-kernel some fixed blob, it is easier for everyone to include
-that blob with the kernel instead.
+Hmm..  I'm not sure what the best solution is to this.  Make the
+stop_gfar() call happen in a workqueue, and make a similar change to
+ucc_geth, fec_mpc52xx, and fs_enet? Modify phy_stop() to do the work in
+a workqueue conditionally if in interrupt context?  Between these two
+I'd lean toward the latter.
 
+Does anyone have any better ideas?
 
-Segher
+-- 
+Nate Case <ncase@xes-inc.com>
