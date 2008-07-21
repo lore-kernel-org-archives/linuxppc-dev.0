@@ -1,20 +1,20 @@
-Return-Path: <linasvepstas@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id 0D6C7DDDE7
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 09:19:38 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so311019anc.78
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Jul 2008 16:19:37 -0700 (PDT)
-Message-ID: <3ae3aa420807201619m51e4a914rc4b97e084367d193@mail.gmail.com>
-Date: Sun, 20 Jul 2008 18:19:36 -0500
-From: "Linas Vepstas" <linasvepstas@gmail.com>
-To: "Nathan Lynch" <ntl@pobox.com>
-Subject: Re: [PATCH] Don't panic when EEH_MAX_FAILS is exceeded
-In-Reply-To: <20080720203333.GQ9594@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <488383D4.9000602@us.ibm.com> <20080720203333.GQ9594@localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BB57DDDDF9
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 10:59:09 +1000 (EST)
+Subject: Re: [2.6 patch] powerpc: remove duplicate 6xx option
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Adrian Bunk <bunk@kernel.org>
+In-Reply-To: <20080717181828.GA18326@cs181140183.pp.htv.fi>
+References: <20080717181828.GA18326@cs181140183.pp.htv.fi>
+Content-Type: text/plain
+Date: Mon, 21 Jul 2008 10:58:58 +1000
+Message-Id: <1216601938.11027.61.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: linasvepstas@gmail.com
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-2008/7/20 Nathan Lynch <ntl@pobox.com>:
-> Mike Mason wrote:
->>
->> This patch changes the EEH_MAX_FAILS action from panic to printing
->> an error message.  Panicking under under this condition is too
->> harsh.
+On Thu, 2008-07-17 at 21:18 +0300, Adrian Bunk wrote:
+> The real option is above in the same Kconfig file.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+Thanks, I'll pick that up.
 
-
->>                       /* re-read the slot reset state */
->>                       if (read_slot_reset_state(pdn, rets) != 0)
->>                               rets[0] = -1;   /* reset state unknown */
->
-> While I tend to agree that panic() is unnecessary, don't we want a
-> stack dump unconditionally (i.e. not bracketed in #ifdef DEBUG)?
-
-Probably. This stack trace would reveal a point inside the
-inf loop, which can then be analyzed and fixed.
-
-> I'd prefer just removing the code instead of adding #ifdef's in the
-> middle of this function.  eeh.c needs less #ifdef DEBUG, not more :)
-
-I didn't know that there was a lot of ifdef DEBUG in there.
-Yes, we don't need an ifdef DEBUG for this.
-
-Pending these changes, I'd happily add:
-
-Acked-by: Linas Vepstas <linasvepstas@gmail.com>
-
---linas
+Cheers,
+Ben.
+ 
+> ---
+> 2251e74345df51309579a0a5fd8339e2f14762b9 
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> index 5bc4b61..6489d57 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -84,9 +84,6 @@ config TUNE_CELL
+>  	  machines. When building a kernel that is supposed to run only
+>  	  on Cell, you should also select the POWER4_ONLY option.
+>  
+> -config 6xx
+> -	bool
+> -
+>  # this is temp to handle compat with arch=ppc
+>  config 8xx
+>  	bool
