@@ -1,32 +1,32 @@
 Return-Path: <mohan@in.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C8EF5DE2DE
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 05:17:18 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6LJHBWP029506
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 15:17:11 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6LJHBDh240752
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 15:17:11 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6LJHARg018743
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 15:17:11 -0400
-Message-ID: <4884E0AF.2070809@in.ibm.com>
-Date: Tue, 22 Jul 2008 00:47:03 +0530
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DC4D9DE2A4
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 05:20:19 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6LJKG4H014231
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 15:20:16 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6LJKGpN223928
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 15:20:16 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6LJKF1Y003785
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 15:20:16 -0400
+Message-ID: <4884E168.6070404@in.ibm.com>
+Date: Tue, 22 Jul 2008 00:50:08 +0530
 From: Mohan Kumar M <mohan@in.ibm.com>
 MIME-Version: 1.0
 To: Milton Miller <miltonm@bga.com>
-Subject: Re: [RFC v3 PATCH 1/4] Extract list of relocation offsets
+Subject: Re: [RFC v3 PATCH 2/4] Build files needed for relocation
 References: <20080717183339.GA25070@in.ibm.com>
 	<20080717184055.GB25070@in.ibm.com>
 	<1216325187.7740.353.camel@pasglop> <48802AE0.30105@in.ibm.com>
 	<d8d07a180aaf59d25936ad03c7287f5a@bga.com>
 In-Reply-To: <d8d07a180aaf59d25936ad03c7287f5a@bga.com>
-Content-Type: multipart/mixed; boundary="------------090705070000010904000706"
+Content-Type: multipart/mixed; boundary="------------020305010203080802050600"
 Cc: paulus@samba.org, naren@linux.vnet.ibm.com,
 	ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -39,919 +39,234 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------090705070000010904000706
+--------------020305010203080802050600
 Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Hi Milton,
-
-I am resending the patches generated against latest powerpc git tree.
-
-I am facing kdump kernel hang issue with the git tree. It hangs in 
-unflatten_devicetree call in prom.c
 
 
-Note: These patches are not fully tested.
-
-Regards,
-Mohan.
-
---------------090705070000010904000706
+--------------020305010203080802050600
 Content-Type: text/x-patch;
- name="0001-Extract-list-of-relocation-offsets.patch"
+ name="0002-Build-files-needed-for-relocation.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="0001-Extract-list-of-relocation-offsets.patch"
+ filename="0002-Build-files-needed-for-relocation.patch"
 
-Extract list of relocation offsets
+Build files needed for relocation
 
-Extract list of offsets in the vmlinux file for which the relocation
-delta has to be patched. Currently only following type of relocation
-types are considered: R_PPC64_ADDR16_HI, R_PPC64_TOC and R_PPC64_ADDR64
+This patch builds vmlinux file with relocation sections and contents so
+that relocs user space program can extract the required relocation
+offsets. This packs final relocatable vmlinux kernel as following:
+earlier part of relocation apply code, vmlinux, rest of relocation apply
+code.
 
-The offsets are sorted according to the relocation type and this
-information is appended to the normal vmlinux file by using the patch
-relocation_build.patch
+TODO:
+Relocatable vmlinux image is built in arch/powerpc/boot as vmlinux.reloc.
+But it should be built in top level directory of kernel source as vmlinux
+instead of vmlinux.reloc
 
 Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
 ---
- arch/powerpc/boot/relocs.c |  865 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 865 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/relocs.c
+ arch/powerpc/Kconfig                |   15 ++++++++++--
+ arch/powerpc/Makefile               |    9 ++++++-
+ arch/powerpc/boot/Makefile          |   39 ++++++++++++++++++++++++++++++++--
+ arch/powerpc/boot/vmlinux.lds.S     |   28 +++++++++++++++++++++++++
+ arch/powerpc/boot/vmlinux.reloc.scr |    8 +++++++
+ 5 files changed, 91 insertions(+), 8 deletions(-)
+ create mode 100644 arch/powerpc/boot/vmlinux.lds.S
+ create mode 100644 arch/powerpc/boot/vmlinux.reloc.scr
 
-diff --git a/arch/powerpc/boot/relocs.c b/arch/powerpc/boot/relocs.c
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index f2a0f50..366a622 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -317,6 +317,15 @@ config CRASH_DUMP
+ 
+ 	  Don't change this unless you know what you are doing.
+ 
++config RELOCATABLE_PPC64
++	bool "Build a relocatable kernel (EXPERIMENTAL)"
++	depends on PPC_MULTIPLATFORM && PPC64 && CRASH_DUMP && EXPERIMENTAL
++	help
++	  Build a kernel suitable for use as regular kernel and kdump capture
++	  kernel.
++
++	  Don't change this unless you know what you are doing.
++
+ config PHYP_DUMP
+ 	bool "Hypervisor-assisted dump (EXPERIMENTAL)"
+ 	depends on PPC_PSERIES && EXPERIMENTAL
+@@ -662,7 +671,7 @@ config LOWMEM_SIZE
+ 	default "0x30000000"
+ 
+ config RELOCATABLE
+-	bool "Build a relocatable kernel (EXPERIMENTAL)"
++	bool "Build relocatable kernel (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM && FSL_BOOKE
+ 	help
+ 	  This builds a kernel image that is capable of running at the
+@@ -782,11 +791,11 @@ config PAGE_OFFSET
+ 	default "0xc000000000000000"
+ config KERNEL_START
+ 	hex
+-	default "0xc000000002000000" if CRASH_DUMP
++	default "0xc000000002000000" if CRASH_DUMP && !RELOCATABLE_PPC64
+ 	default "0xc000000000000000"
+ config PHYSICAL_START
+ 	hex
+-	default "0x02000000" if CRASH_DUMP
++	default "0x02000000" if CRASH_DUMP && !RELOCATABLE_PPC64
+ 	default "0x00000000"
+ endif
+ 
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 59ae7d9..58ccb7f 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -63,7 +63,7 @@ override CC	+= -m$(CONFIG_WORD_SIZE)
+ override AR	:= GNUTARGET=elf$(CONFIG_WORD_SIZE)-powerpc $(AR)
+ endif
+ 
+-LDFLAGS_vmlinux	:= -Bstatic
++LDFLAGS_vmlinux	:= --emit-relocs
+ 
+ CFLAGS-$(CONFIG_PPC64)	:= -mminimal-toc -mtraceback=none  -mcall-aixdesc
+ CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 -mmultiple
+@@ -146,11 +146,16 @@ core-$(CONFIG_KVM) 		+= arch/powerpc/kvm/
+ drivers-$(CONFIG_OPROFILE)	+= arch/powerpc/oprofile/
+ 
+ # Default to zImage, override when needed
++
++ifneq ($(CONFIG_RELOCATABLE_PPC64),y)
+ all: zImage
++else
++all: zImage vmlinux.reloc
++endif
+ 
+ CPPFLAGS_vmlinux.lds	:= -Upowerpc
+ 
+-BOOT_TARGETS = zImage zImage.initrd uImage zImage% dtbImage% treeImage.% cuImage.% simpleImage.%
++BOOT_TARGETS = zImage vmlinux.reloc zImage.initrd uImage zImage% dtbImage% treeImage.% cuImage.% simpleImage.%
+ 
+ PHONY += $(BOOT_TARGETS)
+ 
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 751a6e6..1a62036 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -17,7 +17,7 @@
+ #	CROSS32_COMPILE is setup as a prefix just like CROSS_COMPILE
+ #	in the toplevel makefile.
+ 
+-all: $(obj)/zImage
++all: $(obj)/zImage $(obj)/vmlinux.reloc
+ 
+ BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+ 		 -fno-strict-aliasing -Os -msoft-float -pipe \
+@@ -122,18 +122,51 @@ $(patsubst %.S,%.o, $(filter %.S, $(src-boot))): %.o: %.S FORCE
+ $(obj)/wrapper.a: $(obj-wlib) FORCE
+ 	$(call if_changed,bootar)
+ 
+-hostprogs-y	:= addnote addRamDisk hack-coff mktree dtc
++hostprogs-y	:= addnote addRamDisk hack-coff mktree dtc relocs
+ 
+ targets		+= $(patsubst $(obj)/%,%,$(obj-boot) wrapper.a)
+ extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
+ 		   $(obj)/zImage.lds $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds
+ 
++ifeq ($(CONFIG_RELOCATABLE_PPC64),y)
++extra-y		+= $(obj)/vmlinux.lds
++endif
++
+ dtstree		:= $(srctree)/$(src)/dts
+ 
+ wrapper		:=$(srctree)/$(src)/wrapper
+-wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree dtc) \
++wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree dtc relocs) \
+ 			$(wrapper) FORCE
+ 
++ifeq ($(CONFIG_RELOCATABLE_PPC64),y)
++
++targets +=  vmlinux.offsets vmlinux.bin vmlinux.bin.all vmlinux.reloc.elf vmlinux.reloc reloc_apply.o vmlinux.lds
++
++OBJCOPYFLAGS_vmlinux.bin :=  -O binary -R .note -R .comment -S
++$(obj)/vmlinux.bin: vmlinux FORCE
++	$(call if_changed,objcopy)
++
++quiet_cmd_relocbin = BUILD   $@
++      cmd_relocbin = cat $(filter-out FORCE,$^) > $@
++
++quiet_cmd_relocs = RELOCS   $@
++    cmd_relocs = $(obj)/relocs $< > $@
++
++$(obj)/vmlinux.offsets: vmlinux $(obj)/relocs FORCE
++	$(call if_changed,relocs)
++
++$(obj)/vmlinux.bin.all: $(obj)/vmlinux.bin $(obj)/vmlinux.offsets FORCE
++	$(call if_changed,relocbin)
++
++LDFLAGS_vmlinux.reloc.elf := -T $(obj)/vmlinux.reloc.scr -r --format binary --oformat elf64-powerpc
++$(obj)/vmlinux.reloc.elf: $(obj)/vmlinux.bin.all FORCE
++	$(call if_changed,ld)
++
++LDFLAGS_vmlinux.reloc := -T $(obj)/vmlinux.lds
++$(obj)/vmlinux.reloc: $(obj)/reloc_apply.o $(obj)/vmlinux.reloc.elf FORCE
++	$(call if_changed,ld)
++endif
++
+ #############
+ # Bits for building dtc
+ # DTC_GENPARSER      := 1    # Uncomment to rebuild flex/bison output
+diff --git a/arch/powerpc/boot/vmlinux.lds.S b/arch/powerpc/boot/vmlinux.lds.S
 new file mode 100644
-index 0000000..31ca903
+index 0000000..245c667
 --- /dev/null
-+++ b/arch/powerpc/boot/relocs.c
-@@ -0,0 +1,865 @@
-+#include <stdio.h>
-+#include <stdarg.h>
-+#include <stdlib.h>
-+#include <stdint.h>
-+#include <string.h>
-+#include <errno.h>
-+#include <unistd.h>
-+#include <elf.h>
-+#include <byteswap.h>
-+#define USE_BSD
-+#include <endian.h>
++++ b/arch/powerpc/boot/vmlinux.lds.S
+@@ -0,0 +1,28 @@
++#include <asm/page.h>
++#include <asm-generic/vmlinux.lds.h>
 +
-+#define MAX_SHDRS 100
-+static Elf64_Ehdr ehdr;
-+static Elf64_Shdr shdr[MAX_SHDRS];
-+static Elf64_Sym  *symtab[MAX_SHDRS];
-+static Elf64_Rel  *reltab[MAX_SHDRS];
-+static Elf64_Rela  *reltaba[MAX_SHDRS];
-+static char *strtab[MAX_SHDRS];
-+static unsigned long reloc_count, reloc_idx;
++ENTRY(start_wrap)
 +
-+struct reloc_info {
-+	unsigned int rel_type;
-+	unsigned long long offset;
-+};
-+
-+static struct reloc_info *relocs;
++OUTPUT_ARCH(powerpc:common64)
++SECTIONS
++{
++	. = KERNELBASE;
 +
 +/*
-+ * Following symbols have been audited. There values are constant and do
-+ * not change if bzImage is loaded at a different physical address than
-+ * the address for which it has been compiled. Don't warn user about
-+ * absolute relocations present w.r.t these symbols.
++ * Text, read only data and other permanent read-only sections
 + */
-+static const char* safe_abs_relocs[] = {
-+		"__kernel_vsyscall",
-+		"__kernel_rt_sigreturn",
-+		"__kernel_sigreturn",
-+		"SYSENTER_RETURN",
-+};
++	/* Text and gots */
++	.text : {
++		_head = .;
++		*(.text.head)
++		_ehead = .;
 +
-+static int is_safe_abs_reloc(const char* sym_name)
-+{
-+	int i, array_size;
++		_text = .;
++		*(.vmlinux)
++		_etext = .;
 +
-+	array_size = sizeof(safe_abs_relocs)/sizeof(char*);
-+
-+	for(i = 0; i < array_size; i++) {
-+		if (!strcmp(sym_name, safe_abs_relocs[i]))
-+			/* Match found */
-+			return 1;
-+	}
-+	if (strncmp(sym_name, "__crc_", 6) == 0)
-+		return 1;
-+	return 0;
-+}
-+
-+static void die(char *fmt, ...)
-+{
-+	va_list ap;
-+	va_start(ap, fmt);
-+	vfprintf(stderr, fmt, ap);
-+	va_end(ap);
-+	exit(1);
-+}
-+
-+static const char *sym_type(unsigned type)
-+{
-+	static const char *type_name[] = {
-+#define SYM_TYPE(X) [X] = #X
-+		SYM_TYPE(STT_NOTYPE),
-+		SYM_TYPE(STT_OBJECT),
-+		SYM_TYPE(STT_FUNC),
-+		SYM_TYPE(STT_SECTION),
-+		SYM_TYPE(STT_FILE),
-+		SYM_TYPE(STT_COMMON),
-+		SYM_TYPE(STT_TLS),
-+#undef SYM_TYPE
-+	};
-+	const char *s_type = "unknown sym type name";
-+	if (type < sizeof(type_name)/sizeof(type_name[0])) {
-+		s_type = type_name[type];
-+	}
-+	return s_type;
-+}
-+
-+static const char *sym_bind(unsigned bind)
-+{
-+	static const char *bind_name[] = {
-+#define SYM_BIND(X) [X] = #X
-+		SYM_BIND(STB_LOCAL),
-+		SYM_BIND(STB_GLOBAL),
-+		SYM_BIND(STB_WEAK),
-+#undef SYM_BIND
-+	};
-+	const char *s_bind = "unknown sym bind name";
-+	if (bind < sizeof(bind_name)/sizeof(bind_name[0])) {
-+		s_bind = bind_name[bind];
-+	}
-+	return s_bind;
-+}
-+
-+static const char *sym_visibility(unsigned visibility)
-+{
-+	static const char *visibility_name[] = {
-+#define SYM_VISIBILITY(X) [X] = #X
-+		SYM_VISIBILITY(STV_DEFAULT),
-+		SYM_VISIBILITY(STV_INTERNAL),
-+		SYM_VISIBILITY(STV_HIDDEN),
-+		SYM_VISIBILITY(STV_PROTECTED),
-+#undef SYM_VISIBILITY
-+	};
-+	const char *name = "unknown sym visibility name";
-+	if (visibility < sizeof(visibility_name)/sizeof(visibility_name[0])) {
-+		name = visibility_name[visibility];
-+	}
-+	return name;
-+}
-+
-+static const char *rel_type(unsigned type)
-+{
-+	static const char *type_name[] = {
-+#define REL_TYPE(X) [X] = #X
-+		REL_TYPE(R_PPC64_NONE),
-+		REL_TYPE(R_PPC64_ADDR32),
-+		REL_TYPE(R_PPC64_ADDR24),
-+		REL_TYPE(R_PPC64_ADDR16),
-+		REL_TYPE(R_PPC64_ADDR16_LO),
-+		REL_TYPE(R_PPC64_ADDR16_HI),
-+		REL_TYPE(R_PPC64_ADDR16_HA),
-+		REL_TYPE(R_PPC64_ADDR14	),
-+		REL_TYPE(R_PPC64_ADDR14_BRTAKEN),
-+		REL_TYPE(R_PPC64_ADDR14_BRNTAKEN),
-+		REL_TYPE(R_PPC64_REL24),
-+		REL_TYPE(R_PPC64_REL14),
-+		REL_TYPE(R_PPC64_REL14_BRTAKEN),
-+		REL_TYPE(R_PPC64_REL14_BRNTAKEN),
-+		REL_TYPE(R_PPC64_GOT16),
-+		REL_TYPE(R_PPC64_GOT16_LO),
-+		REL_TYPE(R_PPC64_GOT16_HI),
-+		REL_TYPE(R_PPC64_GOT16_HA),
-+		REL_TYPE(R_PPC64_COPY),
-+		REL_TYPE(R_PPC64_GLOB_DAT),
-+		REL_TYPE(R_PPC64_JMP_SLOT),
-+		REL_TYPE(R_PPC64_RELATIVE),
-+		REL_TYPE(R_PPC64_UADDR32),
-+		REL_TYPE(R_PPC64_UADDR16),
-+		REL_TYPE(R_PPC64_REL32),
-+		REL_TYPE(R_PPC64_PLT32),
-+		REL_TYPE(R_PPC64_PLTREL32),
-+		REL_TYPE(R_PPC64_PLT16_LO),
-+		REL_TYPE(R_PPC64_PLT16_HI),
-+		REL_TYPE(R_PPC64_PLT16_HA),
-+		REL_TYPE(R_PPC64_SECTOFF),
-+		REL_TYPE(R_PPC64_SECTOFF_LO),
-+		REL_TYPE(R_PPC64_SECTOFF_HI),
-+		REL_TYPE(R_PPC64_SECTOFF_HA),
-+		REL_TYPE(R_PPC64_ADDR30),
-+		REL_TYPE(R_PPC64_ADDR64),
-+		REL_TYPE(R_PPC64_ADDR16_HIGHER),
-+		REL_TYPE(R_PPC64_ADDR16_HIGHERA),
-+		REL_TYPE(R_PPC64_ADDR16_HIGHEST),
-+		REL_TYPE(R_PPC64_ADDR16_HIGHESTA),
-+		REL_TYPE(R_PPC64_UADDR64),
-+		REL_TYPE(R_PPC64_REL64),
-+		REL_TYPE(R_PPC64_PLT64),
-+		REL_TYPE(R_PPC64_PLTREL64),
-+		REL_TYPE(R_PPC64_TOC16),
-+		REL_TYPE(R_PPC64_TOC16_LO),
-+		REL_TYPE(R_PPC64_TOC16_HI),
-+		REL_TYPE(R_PPC64_TOC16_HA),
-+		REL_TYPE(R_PPC64_TOC),
-+		REL_TYPE(R_PPC64_PLTGOT16),
-+		REL_TYPE(R_PPC64_PLTGOT16_LO),
-+		REL_TYPE(R_PPC64_PLTGOT16_HI),
-+		REL_TYPE(R_PPC64_PLTGOT16_HA),
-+		REL_TYPE(R_PPC64_ADDR16_DS),
-+		REL_TYPE(R_PPC64_ADDR16_LO_DS),
-+		REL_TYPE(R_PPC64_GOT16_DS),
-+		REL_TYPE(R_PPC64_GOT16_LO_DS),
-+		REL_TYPE(R_PPC64_PLT16_LO_DS),
-+		REL_TYPE(R_PPC64_SECTOFF_DS),
-+		REL_TYPE(R_PPC64_SECTOFF_LO_DS),
-+		REL_TYPE(R_PPC64_TOC16_DS),
-+		REL_TYPE(R_PPC64_TOC16_LO_DS),
-+		REL_TYPE(R_PPC64_PLTGOT16_DS),
-+		REL_TYPE(R_PPC64_PLTGOT16_LO_DS),
-+		REL_TYPE(R_PPC64_TLS),
-+		REL_TYPE(R_PPC64_DTPMOD64),
-+		REL_TYPE(R_PPC64_TPREL16),
-+		REL_TYPE(R_PPC64_TPREL16_LO),
-+		REL_TYPE(R_PPC64_TPREL16_HI),
-+		REL_TYPE(R_PPC64_TPREL16_HA),
-+		REL_TYPE(R_PPC64_TPREL64),
-+		REL_TYPE(R_PPC64_DTPREL16),
-+		REL_TYPE(R_PPC64_DTPREL16_LO),
-+		REL_TYPE(R_PPC64_DTPREL16_HI),
-+		REL_TYPE(R_PPC64_DTPREL16_HA),
-+		REL_TYPE(R_PPC64_DTPREL64),
-+		REL_TYPE(R_PPC64_GOT_TLSGD16),
-+		REL_TYPE(R_PPC64_GOT_TLSGD16_LO),
-+		REL_TYPE(R_PPC64_GOT_TLSGD16_HI),
-+		REL_TYPE(R_PPC64_GOT_TLSGD16_HA),
-+		REL_TYPE(R_PPC64_GOT_TLSLD16),
-+		REL_TYPE(R_PPC64_GOT_TLSLD16_LO),
-+		REL_TYPE(R_PPC64_GOT_TLSLD16_HI),
-+		REL_TYPE(R_PPC64_GOT_TLSLD16_HA),
-+		REL_TYPE(R_PPC64_GOT_TPREL16_DS),
-+		REL_TYPE(R_PPC64_GOT_TPREL16_LO_DS),
-+		REL_TYPE(R_PPC64_GOT_TPREL16_HI),
-+		REL_TYPE(R_PPC64_GOT_TPREL16_HA),
-+		REL_TYPE(R_PPC64_GOT_DTPREL16_DS),
-+		REL_TYPE(R_PPC64_GOT_DTPREL16_LO_DS),
-+		REL_TYPE(R_PPC64_GOT_DTPREL16_HI),
-+		REL_TYPE(R_PPC64_GOT_DTPREL16_HA),
-+		REL_TYPE(R_PPC64_TPREL16_DS),
-+		REL_TYPE(R_PPC64_TPREL16_LO_DS),
-+		REL_TYPE(R_PPC64_TPREL16_HIGHER),
-+		REL_TYPE(R_PPC64_TPREL16_HIGHERA),
-+		REL_TYPE(R_PPC64_TPREL16_HIGHEST),
-+		REL_TYPE(R_PPC64_TPREL16_HIGHESTA),
-+		REL_TYPE(R_PPC64_DTPREL16_DS),
-+		REL_TYPE(R_PPC64_DTPREL16_LO_DS),
-+		REL_TYPE(R_PPC64_DTPREL16_HIGHER),
-+		REL_TYPE(R_PPC64_DTPREL16_HIGHERA),
-+		REL_TYPE(R_PPC64_DTPREL16_HIGHEST),
-+		REL_TYPE(R_PPC64_DTPREL16_HIGHESTA),
-+#undef REL_TYPE
-+	};
-+	const char *name = "unknown type rel type name";
-+	if (type < sizeof(type_name)/sizeof(type_name[0])) {
-+		name = type_name[type];
-+	}
-+	return name;
-+}
-+
-+static const char *sec_name(unsigned shndx)
-+{
-+	const char *sec_strtab;
-+	const char *name;
-+	sec_strtab = strtab[ehdr.e_shstrndx];
-+	name = "<noname>";
-+	if (shndx < ehdr.e_shnum) {
-+		name = sec_strtab + shdr[shndx].sh_name;
-+	}
-+	else if (shndx == SHN_ABS) {
-+		name = "ABSOLUTE";
-+	}
-+	else if (shndx == SHN_COMMON) {
-+		name = "COMMON";
-+	}
-+	return name;
-+}
-+
-+static const char *sym_name(const char *sym_strtab, Elf64_Sym *sym)
-+{
-+	const char *name;
-+	name = "<noname>";
-+	if (sym->st_name) {
-+		name = sym_strtab + sym->st_name;
-+	}
-+	else {
-+		name = sec_name(shdr[sym->st_shndx].sh_name);
-+	}
-+	return name;
-+}
-+
-+
-+
-+#if BYTE_ORDER == BIG_ENDIAN
-+#define be16_to_cpu(val) (val)
-+#define be32_to_cpu(val) (val)
-+#define be64_to_cpu(val) (val)
-+#endif
-+#if BYTE_ORDER == LITTLE_ENDIAN
-+#define be16_to_cpu(val) bswap_16(val)
-+#define be32_to_cpu(val) bswap_32(val)
-+#define be64_to_cpu(val) bswap_64(val)
-+#endif
-+
-+static uint16_t elf16_to_cpu(uint16_t val)
-+{
-+	return be16_to_cpu(val);
-+}
-+
-+static uint32_t elf32_to_cpu(uint32_t val)
-+{
-+	return be32_to_cpu(val);
-+}
-+
-+static uint64_t elf64_to_cpu(uint64_t val)
-+{
-+	return be64_to_cpu(val);
-+}
-+
-+static void read_ehdr(FILE *fp)
-+{
-+	if (fread(&ehdr, sizeof(ehdr), 1, fp) != 1) {
-+		die("Cannot read ELF header: %s\n",
-+			strerror(errno));
-+	}
-+	if (memcmp(ehdr.e_ident, ELFMAG, 4) != 0) {
-+		die("No ELF magic\n");
-+	}
-+	if (ehdr.e_ident[EI_CLASS] != ELFCLASS64) {
-+		die("Not a 64 bit executable\n");
-+	}
-+	if (ehdr.e_ident[EI_DATA] != ELFDATA2MSB) {
-+		die("Not a MSB ELF executable\n");
-+	}
-+	if (ehdr.e_ident[EI_VERSION] != EV_CURRENT) {
-+		die("Unknown ELF version\n");
-+	}
-+	/* Convert the fields to native endian */
-+	ehdr.e_type      = elf16_to_cpu(ehdr.e_type);
-+	ehdr.e_machine   = elf16_to_cpu(ehdr.e_machine);
-+	ehdr.e_version   = elf32_to_cpu(ehdr.e_version);
-+	ehdr.e_entry     = elf64_to_cpu(ehdr.e_entry);
-+	ehdr.e_phoff     = elf64_to_cpu(ehdr.e_phoff);
-+	ehdr.e_shoff     = elf64_to_cpu(ehdr.e_shoff);
-+	ehdr.e_flags     = elf32_to_cpu(ehdr.e_flags);
-+	ehdr.e_ehsize    = elf16_to_cpu(ehdr.e_ehsize);
-+	ehdr.e_phentsize = elf16_to_cpu(ehdr.e_phentsize);
-+	ehdr.e_phnum     = elf16_to_cpu(ehdr.e_phnum);
-+	ehdr.e_shentsize = elf16_to_cpu(ehdr.e_shentsize);
-+	ehdr.e_shnum     = elf16_to_cpu(ehdr.e_shnum);
-+	ehdr.e_shstrndx  = elf16_to_cpu(ehdr.e_shstrndx);
-+
-+	if ((ehdr.e_type != ET_EXEC) && (ehdr.e_type != ET_DYN)) {
-+		die("Unsupported ELF header type\n");
-+	}
-+	if (ehdr.e_machine != EM_PPC64) {
-+		die("Not for PPC64\n");
-+	}
-+	if (ehdr.e_version != EV_CURRENT) {
-+		die("Unknown ELF version\n");
-+	}
-+	if (ehdr.e_ehsize != sizeof(Elf64_Ehdr)) {
-+		die("Bad Elf header size\n");
-+	}
-+	if (ehdr.e_phentsize != sizeof(Elf64_Phdr)) {
-+		die("Bad program header entry\n");
-+	}
-+	if (ehdr.e_shentsize != sizeof(Elf64_Shdr)) {
-+		die("Bad section header entry\n");
-+	}
-+	if (ehdr.e_shstrndx >= ehdr.e_shnum) {
-+		die("String table index out of bounds\n");
++		_reloc = .;
++		*(.text.reloc)
++		_ereloc = .;
 +	}
 +}
-+
-+static void read_shdrs(FILE *fp)
+diff --git a/arch/powerpc/boot/vmlinux.reloc.scr b/arch/powerpc/boot/vmlinux.reloc.scr
+new file mode 100644
+index 0000000..7240b6b
+--- /dev/null
++++ b/arch/powerpc/boot/vmlinux.reloc.scr
+@@ -0,0 +1,8 @@
++SECTIONS
 +{
-+	int i;
-+	if (ehdr.e_shnum > MAX_SHDRS) {
-+		die("%d section headers supported: %d\n",
-+			ehdr.e_shnum, MAX_SHDRS);
++  .vmlinux : {
++	input_len = .;
++	*(.data)
++	output_len = . - 8;
 +	}
-+	if (fseek(fp, ehdr.e_shoff, SEEK_SET) < 0) {
-+		die("Seek to %d failed: %s\n",
-+			ehdr.e_shoff, strerror(errno));
-+	}
-+	if (fread(&shdr, sizeof(shdr[0]), ehdr.e_shnum, fp) != ehdr.e_shnum) {
-+		die("Cannot read ELF section headers: %s\n",
-+			strerror(errno));
-+	}
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		shdr[i].sh_name      = elf32_to_cpu(shdr[i].sh_name);
-+		shdr[i].sh_type      = elf32_to_cpu(shdr[i].sh_type);
-+		shdr[i].sh_flags     = elf64_to_cpu(shdr[i].sh_flags);
-+		shdr[i].sh_addr      = elf64_to_cpu(shdr[i].sh_addr);
-+		shdr[i].sh_offset    = elf64_to_cpu(shdr[i].sh_offset);
-+		shdr[i].sh_size      = elf64_to_cpu(shdr[i].sh_size);
-+		shdr[i].sh_link      = elf32_to_cpu(shdr[i].sh_link);
-+		shdr[i].sh_info      = elf32_to_cpu(shdr[i].sh_info);
-+		shdr[i].sh_addralign = elf64_to_cpu(shdr[i].sh_addralign);
-+		shdr[i].sh_entsize   = elf64_to_cpu(shdr[i].sh_entsize);
-+	}
-+
-+}
-+
-+static void read_strtabs(FILE *fp)
-+{
-+	int i;
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		if (shdr[i].sh_type != SHT_STRTAB) {
-+			continue;
-+		}
-+		strtab[i] = malloc(shdr[i].sh_size);
-+		if (!strtab[i]) {
-+			die("malloc of %d bytes for strtab failed\n",
-+				shdr[i].sh_size);
-+		}
-+		if (fseek(fp, shdr[i].sh_offset, SEEK_SET) < 0) {
-+			die("Seek to %d failed: %s\n",
-+				shdr[i].sh_offset, strerror(errno));
-+		}
-+		if (fread(strtab[i], 1, shdr[i].sh_size, fp) != shdr[i].sh_size) {
-+			die("Cannot read symbol table: %s\n",
-+				strerror(errno));
-+		}
-+	}
-+}
-+
-+static void read_symtabs(FILE *fp)
-+{
-+	int i,j;
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		if (shdr[i].sh_type != SHT_SYMTAB) {
-+			continue;
-+		}
-+		symtab[i] = malloc(shdr[i].sh_size);
-+		if (!symtab[i]) {
-+			die("malloc of %d bytes for symtab failed\n",
-+				shdr[i].sh_size);
-+		}
-+		if (fseek(fp, shdr[i].sh_offset, SEEK_SET) < 0) {
-+			die("Seek to %d failed: %s\n",
-+				shdr[i].sh_offset, strerror(errno));
-+		}
-+		if (fread(symtab[i], 1, shdr[i].sh_size, fp) != shdr[i].sh_size) {
-+			die("Cannot read symbol table: %s\n",
-+				strerror(errno));
-+		}
-+		for(j = 0; j < shdr[i].sh_size/sizeof(symtab[i][0]); j++) {
-+			symtab[i][j].st_name  = elf32_to_cpu(symtab[i][j].st_name);
-+			symtab[i][j].st_value = elf64_to_cpu(symtab[i][j].st_value);
-+			symtab[i][j].st_size  = elf64_to_cpu(symtab[i][j].st_size);
-+			symtab[i][j].st_shndx = elf16_to_cpu(symtab[i][j].st_shndx);
-+		}
-+	}
-+}
-+
-+
-+static void read_relocs(FILE *fp)
-+{
-+	int i,j;
-+	void *relp;
-+
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		if (shdr[i].sh_type != SHT_REL && shdr[i].sh_type != SHT_RELA)
-+			continue;
-+
-+		if (shdr[i].sh_type == SHT_REL) {
-+			reltab[i] = malloc(shdr[i].sh_size);
-+			if (!reltab[i]) {
-+				die("malloc of %d bytes for relocs failed\n",
-+					shdr[i].sh_size);
-+			}
-+			relp = reltab[i];
-+		} else {
-+			reltaba[i] = malloc(shdr[i].sh_size);
-+			if (!reltaba[i]) {
-+				die("malloc of %d bytes for relocs failed\n",
-+					shdr[i].sh_size);
-+			}
-+			relp = reltaba[i];
-+		}
-+
-+		if (fseek(fp, shdr[i].sh_offset, SEEK_SET) < 0) {
-+			die("Seek to %d failed: %s\n",
-+				shdr[i].sh_offset, strerror(errno));
-+		}
-+		if (fread(relp, 1, shdr[i].sh_size, fp) != shdr[i].sh_size) {
-+			die("Cannot read symbol table: %s\n",
-+				strerror(errno));
-+		}
-+
-+		if (shdr[i].sh_type == SHT_REL)
-+			for(j = 0; j < shdr[i].sh_size/sizeof(reltab[0][0]); j++) {
-+				reltab[i][j].r_offset = elf64_to_cpu(reltab[i][j].r_offset);
-+				reltab[i][j].r_info   = elf64_to_cpu(reltab[i][j].r_info);
-+			}
-+		else
-+			for(j = 0; j < shdr[i].sh_size/sizeof(reltaba[0][0]); j++) {
-+				reltaba[i][j].r_offset = elf64_to_cpu(reltaba[i][j].r_offset);
-+				reltaba[i][j].r_info   = elf64_to_cpu(reltaba[i][j].r_info);
-+				reltaba[i][j].r_addend   = elf64_to_cpu(reltaba[i][j].r_addend);
-+			}
-+	}
-+}
-+
-+
-+static void print_absolute_symbols(void)
-+{
-+	int i;
-+	printf("Absolute symbols\n");
-+	printf(" Num:  Value            Size  Type       Bind        Visibility  Name\n");
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		char *sym_strtab;
-+		Elf64_Sym *sh_symtab;
-+		int j;
-+		if (shdr[i].sh_type != SHT_SYMTAB) {
-+			continue;
-+		}
-+		sh_symtab = symtab[i];
-+		sym_strtab = strtab[shdr[i].sh_link];
-+		for(j = 0; j < shdr[i].sh_size/sizeof(symtab[0][0]); j++) {
-+			Elf64_Sym *sym;
-+			const char *name;
-+			sym = &symtab[i][j];
-+			name = sym_name(sym_strtab, sym);
-+			if (sym->st_shndx != SHN_ABS) {
-+				continue;
-+			}
-+			printf("type:[%s]\n",
-+				sym_type(ELF64_ST_TYPE(sym->st_info)));
-+			printf("%5d %016llx %5d type:%s bind:%10s %12s %s\n", \
-+				j, sym->st_value, (int)(sym->st_size), \
-+				sym_type(ELF64_ST_TYPE(sym->st_info)), \
-+				sym_bind(ELF64_ST_BIND(sym->st_info)), \
-+				sym_visibility(ELF64_ST_VISIBILITY(sym->st_other)), \
-+				name);
-+		}
-+	}
-+	printf("\n");
-+}
-+
-+static void print_absolute_relocs(void)
-+{
-+	int i, printed = 0;
-+	int nr, sh_type;
-+
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		char *sym_strtab;
-+		Elf64_Sym *sh_symtab;
-+		unsigned sec_applies, sec_symtab;
-+		int j;
-+		if (shdr[i].sh_type != SHT_REL && shdr[i].sh_type != SHT_RELA) {
-+			continue;
-+		}
-+		sec_symtab  = shdr[i].sh_link;
-+		sec_applies = shdr[i].sh_info;
-+		if (!(shdr[sec_applies].sh_flags & SHF_ALLOC)) {
-+			continue;
-+		}
-+		if (shdr[i].sh_type == SHT_REL) {
-+			sh_type = SHT_REL;
-+			nr = shdr[i].sh_size/sizeof(reltab[0][0]);
-+		} else {
-+			sh_type = SHT_RELA;
-+			nr = shdr[i].sh_size/sizeof(reltaba[0][0]);
-+		}
-+
-+		sh_symtab = symtab[sec_symtab];
-+		sym_strtab = strtab[shdr[sec_symtab].sh_link];
-+
-+		for(j = 0; j < nr; j++) {
-+			Elf64_Rel *rel = NULL;
-+			Elf64_Rela *rela = NULL;
-+			Elf64_Sym *sym;
-+			const char *name;
-+
-+			if (sh_type == SHT_REL) {
-+				rel = &reltab[i][j];
-+				sym = &sh_symtab[ELF64_R_SYM(rel->r_info)];
-+			} else {
-+				rela = &reltaba[i][j];
-+				sym = &sh_symtab[ELF64_R_SYM(rela->r_info)];
-+			}
-+
-+			name = sym_name(sym_strtab, sym);
-+			if (sym->st_shndx != SHN_ABS) {
-+				continue;
-+			}
-+
-+			/* Absolute symbols are not relocated if vmlinux is
-+			 * loaded at a non-compiled address. Display a warning
-+			 * to user at compile time about the absolute
-+			 * relocations present.
-+			 *
-+			 * User need to audit the code to make sure
-+			 * some symbols which should have been section
-+			 * relative have not become absolute because of some
-+			 * linker optimization or wrong programming usage.
-+			 *
-+			 * Before warning check if this absolute symbol
-+			 * relocation is harmless.
-+			 */
-+			if (is_safe_abs_reloc(name))
-+				continue;
-+
-+			if (!printed) {
-+				printf("WARNING: Absolute relocations"
-+					" present\n");
-+				printf("Offset           Info             Type           Sym.Value        "
-+					"Sym.Name\n");
-+				printed = 1;
-+			}
-+
-+			if (sh_type == SHT_REL)
-+				printf("%016llx %016llx %10s %016llx  %s\n",
-+					rel->r_offset,
-+					rel->r_info,
-+					rel_type(ELF64_R_TYPE(rel->r_info)),
-+					sym->st_value,
-+					name);
-+			else
-+				printf("%016llx %016llx %10s %016llx  %s\n",
-+					rela->r_offset,
-+					rela->r_info,
-+					rel_type(ELF64_R_TYPE(rela->r_info)),
-+					sym->st_value,
-+					name);
-+		}
-+	}
-+
-+	if (printed)
-+		printf("\n");
-+}
-+
-+static void walk_relocs(void (*visit)(void *relp, Elf64_Sym *sym, int sh_type))
-+{
-+	int i;
-+	/* Walk through the relocations */
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		char *sym_strtab;
-+		Elf64_Sym *sh_symtab;
-+		unsigned sec_applies, sec_symtab;
-+		int j, nr_entries, sh_type;
-+		if (shdr[i].sh_type != SHT_REL && shdr[i].sh_type != SHT_RELA) {
-+			continue;
-+		}
-+		sec_symtab  = shdr[i].sh_link;
-+		sec_applies = shdr[i].sh_info;
-+		if (!(shdr[sec_applies].sh_flags & SHF_ALLOC)) {
-+			continue;
-+		}
-+		sh_symtab = symtab[sec_symtab];
-+		sym_strtab = strtab[shdr[sec_symtab].sh_link];
-+		if (shdr[i].sh_type == SHT_REL) {
-+			sh_type = SHT_REL;
-+			nr_entries = shdr[i].sh_size/sizeof(reltab[0][0]);
-+		} else {
-+			sh_type = SHT_RELA;
-+			nr_entries = shdr[i].sh_size/sizeof(reltaba[0][0]);
-+		}
-+
-+		for(j = 0; j < nr_entries; j++) {
-+			Elf64_Rel *rel;
-+			Elf64_Rela *rela;
-+			Elf64_Sym *sym;
-+			void *relp;
-+			unsigned r_type;
-+
-+			if (sh_type == SHT_REL) {
-+				rel = &reltab[i][j];
-+				sym = &sh_symtab[ELF64_R_SYM(rel->r_info)];
-+				r_type = ELF64_R_TYPE(rel->r_info);
-+				relp = rel;
-+			} else {
-+				rela = &reltaba[i][j];
-+				sym = &sh_symtab[ELF64_R_SYM(rela->r_info)];
-+				r_type = ELF64_R_TYPE(rela->r_info);
-+				relp = rela;
-+			}
-+			/* Don't visit relocations to absolute symbols */
-+			if (sym->st_shndx == SHN_ABS) {
-+				continue;
-+			}
-+			/* PC relative relocations don't need to be adjusted */
-+			switch (r_type) {
-+				case R_PPC64_ADDR32:
-+				case R_PPC64_ADDR16:
-+				case R_PPC64_ADDR16_HI:
-+				case R_PPC64_ADDR24:
-+				case R_PPC64_ADDR64:
-+				case R_PPC64_TOC:
-+					/* Visit relocations that need to be adjusted */
-+					visit(relp, sym, sh_type);
-+					break;
-+				case R_PPC64_ADDR16_LO:
-+				case R_PPC64_REL24:
-+				case R_PPC64_REL64:
-+				case R_PPC64_TOC16:
-+				case R_PPC64_ADDR16_LO_DS:
-+				case R_PPC64_ADDR16_HIGHEST:
-+				case R_PPC64_ADDR16_HIGHER:
-+				case R_PPC64_GOT16_DS:
-+				case R_PPC64_TOC16_DS:
-+				case R_PPC64_REL14:
-+				default:
-+					break;
-+			}
-+		}
-+	}
-+}
-+
-+static void count_reloc(void *relp, Elf64_Sym *sym, int sh_type)
-+{
-+	reloc_count += 1;
-+}
-+
-+static void collect_reloc(void *relp, Elf64_Sym *sym, int sh_type)
-+{
-+	Elf64_Rel *rel;
-+	Elf64_Rela *rela;
-+
-+	/* Remember the address that needs to be adjusted. */
-+	if (sh_type == SHT_REL) {
-+		rel = (Elf64_Rel *)relp;
-+		relocs[reloc_idx].offset = rel->r_offset;
-+		relocs[reloc_idx++].rel_type = ELF64_R_TYPE(rel->r_info);
-+	} else {
-+		rela = (Elf64_Rela *)relp;
-+		relocs[reloc_idx].offset = rela->r_offset;
-+		relocs[reloc_idx++].rel_type = ELF64_R_TYPE(rela->r_info);
-+	}
-+}
-+
-+static int cmp_relocs(const void *va, const void *vb)
-+{
-+	const struct reloc_info *a, *b;
-+	a = va; b = vb;
-+	return (a->rel_type == b->rel_type)? 0 : (a->rel_type > b->rel_type)? 1 : -1;
-+}
-+
-+static void emit_relocs(int as_text)
-+{
-+	int i;
-+	int prev_r_type;
-+	/* Count how many relocations I have and allocate space for them. */
-+	reloc_count = 0;
-+	walk_relocs(count_reloc);
-+	relocs = malloc(reloc_count * sizeof(relocs[0]));
-+	if (!relocs) {
-+		die("malloc of %d entries for relocs failed\n",
-+			reloc_count);
-+	}
-+	/* Collect up the relocations */
-+	reloc_idx = 0;
-+	walk_relocs(collect_reloc);
-+
-+	/* Order the relocations for more efficient processing */
-+	qsort(relocs, reloc_count, sizeof(relocs[0]), cmp_relocs);
-+
-+	/* Print the relocations */
-+	if (as_text) {
-+		/* Print the relocations in a form suitable that
-+		 * gas will like.
-+		 */
-+		printf(".section \".data.reloc\",\"a\"\n");
-+		printf(".balign 4\n");
-+
-+		printf("\t .long 0x%016llx\n", relocs[0].offset);
-+		prev_r_type = relocs[0].rel_type;
-+
-+		for(i = 1; i < reloc_count; i++) {
-+			if (prev_r_type != relocs[i].rel_type && prev_r_type == R_PPC64_ADDR16_HI) {
-+				printf("\t .long 0xffffffffffffffff\n");
-+				prev_r_type = relocs[i].rel_type;
-+			}
-+			printf("\t .long 0x%016llx\n", relocs[i].offset);
-+		}
-+		printf("\n");
-+	}
-+	else {
-+		unsigned char buf[8];
-+		buf[0] = buf[1] = buf[2] = buf[3] = 0;
-+		buf[4] = buf[5] = buf[6] = buf[7] = 0;
-+
-+		/* Print a stop */
-+		printf("%c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
-+		printf("%c%c%c%c", buf[4], buf[5], buf[6], buf[7]);
-+
-+		buf[7] = (relocs[0].offset >>  0) & 0xff;
-+		buf[6] = (relocs[0].offset >>  8) & 0xff;
-+		buf[5] = (relocs[0].offset >> 16) & 0xff;
-+		buf[4] = (relocs[0].offset >> 24) & 0xff;
-+		buf[3] = (relocs[0].offset >> 32) & 0xff;
-+		buf[2] = (relocs[0].offset >> 40) & 0xff;
-+		buf[1] = (relocs[0].offset >> 48) & 0xff;
-+		buf[0] = (relocs[0].offset >> 56) & 0xff;
-+		printf("%c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
-+		printf("%c%c%c%c", buf[4], buf[5], buf[6], buf[7]);
-+
-+		prev_r_type = relocs[0].rel_type;
-+
-+		/* Now print each relocation */
-+		for(i = 1; i < reloc_count; i++) {
-+			if (prev_r_type != relocs[i].rel_type && prev_r_type == R_PPC64_ADDR16_HI) {
-+				printf("%c%c%c%c", 0xff, 0xff, 0xff, 0xff);
-+				printf("%c%c%c%c", 0xff, 0xff, 0xff, 0xff);
-+				prev_r_type = relocs[i].rel_type;
-+			}
-+			buf[7] = (relocs[i].offset >>  0) & 0xff;
-+			buf[6] = (relocs[i].offset >>  8) & 0xff;
-+			buf[5] = (relocs[i].offset >> 16) & 0xff;
-+			buf[4] = (relocs[i].offset >> 24) & 0xff;
-+			buf[3] = (relocs[i].offset >> 32) & 0xff;
-+			buf[2] = (relocs[i].offset >> 40) & 0xff;
-+			buf[1] = (relocs[i].offset >> 48) & 0xff;
-+			buf[0] = (relocs[i].offset >> 56) & 0xff;
-+			printf("%c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
-+			printf("%c%c%c%c", buf[4], buf[5], buf[6], buf[7]);
-+		}
-+		buf[0] = buf[1] = buf[2] = buf[3] = 0;
-+		buf[4] = buf[5] = buf[6] = buf[7] = 0;
-+	}
-+}
-+
-+static void usage(void)
-+{
-+	die("relocs [--abs-syms |--abs-relocs | --text] vmlinux\n");
-+}
-+
-+int main(int argc, char **argv)
-+{
-+	int show_absolute_syms, show_absolute_relocs;
-+	int as_text;
-+	const char *fname;
-+	FILE *fp;
-+	int i;
-+
-+	show_absolute_syms = 0;
-+	show_absolute_relocs = 0;
-+	as_text = 0;
-+	fname = NULL;
-+	for(i = 1; i < argc; i++) {
-+		char *arg = argv[i];
-+		if (*arg == '-') {
-+			if (strcmp(argv[1], "--abs-syms") == 0) {
-+				show_absolute_syms = 1;
-+				continue;
-+			}
-+
-+			if (strcmp(argv[1], "--abs-relocs") == 0) {
-+				show_absolute_relocs = 1;
-+				continue;
-+			}
-+			else if (strcmp(argv[1], "--text") == 0) {
-+				as_text = 1;
-+				continue;
-+			}
-+		}
-+		else if (!fname) {
-+			fname = arg;
-+			continue;
-+		}
-+		usage();
-+	}
-+	if (!fname) {
-+		usage();
-+	}
-+	fp = fopen(fname, "r");
-+	if (!fp) {
-+		die("Cannot open %s: %s\n",
-+			fname, strerror(errno));
-+	}
-+	read_ehdr(fp);
-+	read_shdrs(fp);
-+	read_strtabs(fp);
-+	read_symtabs(fp);
-+	read_relocs(fp);
-+	if (show_absolute_syms) {
-+		print_absolute_symbols();
-+		return 0;
-+	}
-+	if (show_absolute_relocs) {
-+		print_absolute_relocs();
-+		return 0;
-+	}
-+	emit_relocs(as_text);
-+	return 0;
 +}
 -- 
 1.5.4
 
 
---------------090705070000010904000706--
+--------------020305010203080802050600--
