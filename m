@@ -2,19 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7B229DDF70
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 10:59:30 +1000 (EST)
-Subject: Re: [2.6 patch] powerpc/boot/Makefile: change spaces to tabs
+	by ozlabs.org (Postfix) with ESMTPS id 8D496DDE23
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 11:01:18 +1000 (EST)
+Subject: Re: [patch] powerpc: implement pte_special for 64K pages
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Adrian Bunk <bunk@kernel.org>
-In-Reply-To: <20080717181854.GB18326@cs181140183.pp.htv.fi>
-References: <20080717181854.GB18326@cs181140183.pp.htv.fi>
+To: Nick Piggin <npiggin@suse.de>
+In-Reply-To: <20080717104426.GA25083@wotan.suse.de>
+References: <20080717104426.GA25083@wotan.suse.de>
 Content-Type: text/plain
-Date: Mon, 21 Jul 2008 10:59:13 +1000
-Message-Id: <1216601953.11027.63.camel@pasglop>
+Date: Mon, 21 Jul 2008 10:57:55 +1000
+Message-Id: <1216601875.11027.59.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,43 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-07-17 at 21:18 +0300, Adrian Bunk wrote:
-> For C code spaces versus tabs is just a religious issue,
-> but for Makefiles it actually matters.
+On Thu, 2008-07-17 at 12:44 +0200, Nick Piggin wrote:
+> This can be folded into powerpc-implement-pte_special.patch
 > 
-> This patch fixes he following errors:
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/powerpc/boot/Makefile:166: *** missing separator.  Stop.
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/powerpc/boot/Makefile:171: *** missing separator.  Stop.
+> --
+> Ben has now freed up a pte bit on 64k pages. Use it for special pte bit.
 > 
-> Since this was inside an ifdef DTC_GENPARSER it was not a problem unless 
-> someone wanted to regenerate the shipped generated files.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> ---
 
-And that too :-)
+Ack.
+
+Andrew, will you merge this or do you want me to ?
 
 Cheers,
 Ben.
 
-> ---
-> 
->  arch/powerpc/boot/Makefile |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -163,12 +163,12 @@ quiet_cmd_flex = FLEX    $@
->        cmd_flex = $(FLEX) -o$@ $<; cp $@ $@_shipped
+> Index: linux-2.6/include/asm-powerpc/pgtable-64k.h
+> ===================================================================
+> --- linux-2.6.orig/include/asm-powerpc/pgtable-64k.h	2008-07-17 18:53:03.000000000 +1000
+> +++ linux-2.6/include/asm-powerpc/pgtable-64k.h	2008-07-17 20:30:06.000000000 +1000
+> @@ -70,11 +70,12 @@
+>  #define PGDIR_MASK	(~(PGDIR_SIZE-1))
 >  
->  $(obj)/dtc-src/dtc-parser.tab.c: $(src)/dtc-src/dtc-parser.y FORCE
-> -     $(call if_changed,bison)
-> +	$(call if_changed,bison)
+>  /* Additional PTE bits (don't change without checking asm in hash_low.S) */
+> +#define __HAVE_ARCH_PTE_SPECIAL
+> +#define _PAGE_SPECIAL	0x00000400 /* software: special page */
+>  #define _PAGE_HPTE_SUB	0x0ffff000 /* combo only: sub pages HPTE bits */
+>  #define _PAGE_HPTE_SUB0	0x08000000 /* combo only: first sub page */
+>  #define _PAGE_COMBO	0x10000000 /* this is a combo 4k page */
+>  #define _PAGE_4K_PFN	0x20000000 /* PFN is for a single 4k page */
+> -#define _PAGE_SPECIAL	0x0	   /* don't have enough room for this yet */
 >  
->  $(obj)/dtc-src/dtc-parser.tab.h: $(obj)/dtc-src/dtc-parser.tab.c
->  
->  $(obj)/dtc-src/dtc-lexer.lex.c: $(src)/dtc-src/dtc-lexer.l FORCE
-> -     $(call if_changed,flex)
-> +	$(call if_changed,flex)
->  endif
->  
->  #############
+>  /* For 64K page, we don't have a separate _PAGE_HASHPTE bit. Instead,
+>   * we set that to be the whole sub-bits mask. The C code will only
