@@ -1,17 +1,34 @@
-Return-Path: <skaliann@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id 8FD24DDEE8
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 05:22:56 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so275285ugf.0
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 12:22:54 -0700 (PDT)
-Message-ID: <6acbf80c0807211222i3f0076b9oae036e7a1a0465de@mail.gmail.com>
-Date: Mon, 21 Jul 2008 12:22:54 -0700
-From: "Sureshkumar Kaliannan" <skaliann@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: using -initrd with qemu-system-ppc
+Return-Path: <mohan@in.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E3EB3DE20B
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 05:23:47 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6LJNitQ004277
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 15:23:44 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6LJNiCc203442
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 15:23:44 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6LJNhCq003330
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 15:23:44 -0400
+Message-ID: <4884E238.8000504@in.ibm.com>
+Date: Tue, 22 Jul 2008 00:53:36 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_26447_30995344.1216668174145"
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [RFC v3 PATCH 4/4] Relocation support
+References: <20080717183339.GA25070@in.ibm.com>
+	<20080717184055.GB25070@in.ibm.com>
+	<1216325187.7740.353.camel@pasglop> <48802AE0.30105@in.ibm.com>
+	<d8d07a180aaf59d25936ad03c7287f5a@bga.com>
+In-Reply-To: <d8d07a180aaf59d25936ad03c7287f5a@bga.com>
+Content-Type: multipart/mixed; boundary="------------010400060800000003090007"
+Cc: paulus@samba.org, naren@linux.vnet.ibm.com,
+	ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,333 +38,337 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_26447_30995344.1216668174145
-Content-Type: text/plain; charset=ISO-8859-1
+This is a multi-part message in MIME format.
+--------------010400060800000003090007
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hi,
+I split the patch 4: Relocation support into 3 patches
 
-I'm struggling to get initrd working with qemu-system-ppc. The kernel
-doesn't seem to be find  initrd image passed to qemu-system-ppc.
-
-I added printfs in qemu, ppc_rom and in the kernel source code..Looks like
-qemu is passing the intird to Hackware and hackware rom seems to be setting
-the bootinfos structure with the initrd information but when it comes to the
-kernel it doesn't seem to get it.
-
-qemu logs show..it read the initrd image
-
-ppc_prep_init: START linux boot
-ppc_prep_init: INSIDE linux boot: /tmp/initrd.img
-ppc_prep_init: INSIDE INITRD
-ppc_prep_init: INSIDE INITRD filename: /tmp/initrd.img size: 31457280
-
-hackware logs i added also shows initrd is read from nvram and its put in
-the bootinfos and passed.
-
-bootinfos..initrd: 31457280
-bootinfos..memsize:0x2f400000
-Boot: 00040000 32eb1500 00000000 00000000
-Bootinfos at : 300000
-
-But the kernel didn;t find the BI_INITRD tag (0x1014). But it found the
-BI_CMDLINE and BI_MEMSIZE tags but not initrd.
-
-Now booting the kernel
-RAMDISK platform_init..calling boot_info
-RAMDISK find_bootinfo
-RAMDISK parser_booinfo
-RAMDISK BI tag: 0x1010
-RAMDISK BI tag: 0x1017
-RAMDISK memsize: 0x2f400000
-RAMDISK BI tag: 0x1012
-RAMDISK cmdline: console=ttyS0 ip=dhcp rw netdev=9,0x300,eth0
-netdev=10,0x320,eth1 netdev=11,0x340,eth2 netdev=3,0x360,eth3
-netdev=4,0x280,eth4 netdev=5,0x380,eth5
-RAMDISK parser_booinfo end
-....
-....
-IP-Config: Got DHCP answer from 10.0.2.2, my address is 10.0.2.15
-IP-Config: Complete:
-      device=eth0, addr=10.0.2.15, mask=255.255.255.0, gw=10.0.2.2,
-     host=10.0.2.15, domain=, nis-domain=(none),
-     bootserver=10.0.2.2, rootserver=10.0.2.2, rootpath=
-RAMDISK: no file foundi
-No filesystem could mount root, tried:  ext3 ext2 iso9660
+1. Generic kernel support for relocatable
+2. Kdump kernel support for relocatable
+3. LOAD_REG_IMMEDIATE macro replacement
 
 
-I'm stumped..May be the kernel is reading a different bootinfos..I'm not
-sure where the problem is. I made sure the CONFIG_BLK_DEV_INITRD is enabled
-and the printfs I added are outside of the CONFIG_BLK_DEV_INITRD check.
-
-I'm using the 0.9.1 version and the kernel is 2.6.18
-
-Please help me figure this out..I have attached the complete log.
-
-thanks
-Suresh
-[skaliann@sjc-lds-256
-~]$/ws/skaliann/opt/qemu-0.9.1/ppc-softmmu/qemu-system-ppc
--L /users/skaliann/qemu/share/qemu -M prep -kernel /tmp/zImage.prep
--nographic  -m 756 -redir tcp:1122::22 -redir tcp:2345::2345 -initrd
-/tmp/initrd.img  -append root=/dev/ram
-
-ppc_prep_init: START linux boot
-ppc_prep_init: INSIDE linux boot: /tmp/initrd.img
-ppc_prep_init: INSIDE INITRD
-ppc_prep_init: INSIDE INITRD filename: /tmp/initrd.img size: 31457280
-ppc_prep_init: OUTSIDE base=0x1800000 Size: 31457280NVRAM set: base:
-0x1800000 size: 31457280
-register PCI host 'pci-bridge' 'pci' '<null>' 'PREP Host PCI Bridge -
-Motorola Raven'
-register 'pci-bridge' 'pci' '<null>' 'PREP Host PCI Bridge - Motorola Raven'
-0x80000000 in 'device-tree' 0xffffffff
-Done 582a000 582a900
-register pci device 'Qemu VGA' 0000000c 'display' 'VGA' 'Qemu VGA'
-register 'Qemu VGA' 'display' 'VGA' 'Qemu VGA' 0x0000000c in 'pci-bridge'
-0x80000000
-Done 582a900 582aa00
-PPC Open Hack'Ware BIOS for qemu version 0.4.1
-Build 2008-07-18 22:17:00
-Copyright 2003-2005 Jocelyn Mayer
-
-Memory size: 756 MB.
-Booting from device m
-ide0: drive 0: none
-ide0: drive 1: CD-ROM
-ERROR: OF_property_copy cannot get property 'cd' for aliases
-ERROR: ATAPI TEST_UNIT_READY : status 48 != 0x08
-ide1: drive 0: none
-ide1: drive 1: none
-Probe partitions for device m
-ERROR: No MSDOS signature (38 0 0 0)
-New bootfile
-ERROR: OF_property_copy cannot get property 'alias' for <null>
-boot device: 5831080 image 1000000 size 1436466
-New bootfile
-New bootfile
-Fix bootfile
-boot device: 5831080
-ERROR: Found boot partition : 5831200 582d6c0
-ERROR: Not a MACH-O file
-ERROR: Not an Apple CHRP boot file !
-dest 100000 entry 00000200 => 100200
-Load raw file into memory at 100000 1436466 (0015eb32) 0 (00000000)
-bootinfos..initrd: 31457280
-bootinfos..memsize:0x2f400000
-Boot: 00040000 32eb1500 00000000 00000000
-Bootinfos at : 300000
-
-Now boot it... (0)
-
-stack: 5bfff80 malloc_base: 0 0x05800000 0x06000000
-PREP boot... 100200 100000
-loaded at:     00100200 00265D4C
-relocated to:  00800000 00965B4C
-zimage at:     00805F64 0095CC98
-avail ram:     00400000 00800000
-
-Linux/PPC load: decompress_kernel:  new cmd_line='console=ttyS0 ip=dhcp rw
-netdev=9,0x300,eth0 netdev=10,0x320,eth1 netdev=11,0x340,eth2
-netdev=3,0x360,eth3 netdev=4,0x280,eth4 netdev=5,0x380,eth5 root=/dev/ram'
-console=ttyS0 ip=dhcp rw netdev=9,0x300,eth0 netdev=10,0x320,eth1
-netdev=11,0x340,eth2 netdev=3,0x360,eth3 netdev=4,0x280,eth4
-netdev=5,0x380,eth5 root=/dev/ram
-Uncompressing Linux...done.
-Now booting the kernel
-RAMDISK platform_init..calling boot_info
-RAMDISK find_bootinfo
-RAMDISK parser_booinfo
-RAMDISK BI tag: 0x1010
-RAMDISK BI tag: 0x1017
-RAMDISK memsize: 0x2f400000
-RAMDISK BI tag: 0x1012
-RAMDISK cmdline: console=ttyS0 ip=dhcp rw netdev=9,0x300,eth0
-netdev=10,0x320,eth1 netdev=11,0x340,eth2 netdev=3,0x360,eth3
-netdev=4,0x280,eth4 netdev=5,0x380,eth5 root=/dev/ram
-RAMDISK parser_booinfo end
-Total memory = 756MB; using 2048kB for hash table (at c0400000)
-Linux version 2.6.18.8 (skaliann@sjc-lds-256) (gcc version 3.4.2) #25 Fri
-Jul 18 15:47:56 PDT 2008PReP architecture
-Built 1 zonelists.  Total pages: 193536
-Kernel command line: console=ttyS0 ip=dhcp rw netdev=9,0x300,eth0
-netdev=10,0x320,eth1 netdev=11,0x340,eth2 netdev=3,0x360,eth3
-netdev=4,0x280,eth4 netdev=5,0x380,eth5 root=/dev/ram
-PID hash table entries: 4096 (order: 12, 16384 bytes)
-time_init: decrementer frequency = 25.000000 MHz
-Console: colour dummy device 80x25
-Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-Memory: 761600k available (2260k kernel code, 776k data, 156k init, 0k
-highmem)
-Mount-cache hash table entries: 512
-lsmpi_region_init(): 11 pages (6508544 bytes)
-NET: Registered protocol family 16
-PCI: Probing PCI hardware
-Setting PCI interrupts for a "Mesquite cPCI (MCP750)"
-Linux Plug and Play Support v0.97 (c) Adam Belay
-SCSI subsystem initialized
-NET: Registered protocol family 2
-IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
-TCP established hash table entries: 131072 (order: 7, 524288 bytes)
-TCP bind hash table entries: 65536 (order: 6, 262144 bytes)
-TCP: Hash tables configured (established 131072 bind 65536)
-TCP reno registered
-VFS: Disk quotas dquot_6.5.1
-Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
-Initializing Cryptographic API
-io scheduler noop registered
-io scheduler deadline registered (default)
-isapnp: Scanning for PnP cards...
-isapnp: No Plug & Play device found
-Generic RTC Driver v1.07
-Macintosh non-volatile memory driver v1.1
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
-serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16450
-RAMDISK: wrong blocksize 16384, reverting to defaults
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 8 devices)
-ne.c:v1.10 9/23/94 Donald Becker (becker@scyld.com)
-Last modified Nov 1, 2000 by Paul Gortmaker
-NE*000 ethercard probe at 0x300: 52 54 00 12 34 56
-eth0: NE2000 found at 0x300, using IRQ 9.
-Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-hda: IRQ probe failed (0x0)
-hda: IRQ probe failed (0x0)
-hda: IRQ probe failed (0x0)
-hda: IRQ probe failed (0x0)
-hdb: IRQ probe failed (0x0)
-hdb: IRQ probe failed (0x0)
-hdb: QEMU CD-ROM, ATAPI CD/DVD-ROM drive
-hdb: IRQ probe failed (0x0)
-ide0 at 0x1f0-0x1f7,0x3f6 on irq 13
-serio: i8042 AUX port at 0x60,0x64 irq 12
-serio: i8042 KBD port at 0x60,0x64 irq 1
-mice: PS/2 mouse device common for all mice
-TCP bic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-NET: Registered protocol family 15
-input: AT Raw Set 2 keyboard as /class/input/input0
-input: ImExPS/2 Generic Explorer Mouse as /class/input/input1
-Sending DHCP requests ., OK
-IP-Config: Got DHCP answer from 10.0.2.2, my address is 10.0.2.15
-IP-Config: Complete:
-      device=eth0, addr=10.0.2.15, mask=255.255.255.0, gw=10.0.2.2,
-     host=10.0.2.15, domain=, nis-domain=(none),
-     bootserver=10.0.2.2, rootserver=10.0.2.2, rootpath=
-RAMDISK: no file foundi
-No filesystem could mount root, tried:  ext3 ext2 iso9660
-Kernel panic - not syncing: VFS: Unable to mount root fs on
-unknown-block(1,0)
- <0>Rebooting in 180 seconds..
-
-------=_Part_26447_30995344.1216668174145
-Content-Type: text/html; charset=ISO-8859-1
+--------------010400060800000003090007
+Content-Type: text/x-patch;
+ name="0004-Relocation-support.patch"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Disposition: inline;
+ filename="0004-Relocation-support.patch"
 
-<div dir="ltr">Hi,<br><br>I&#39;m struggling to get initrd working with qemu-system-ppc.
-The kernel doesn&#39;t seem to be find&nbsp; initrd image passed to
-qemu-system-ppc. <br><br>I added printfs in qemu, ppc_rom and in the
-kernel source code..Looks like qemu is passing the intird to Hackware
-and hackware rom seems to be setting the bootinfos structure with the initrd
-information but when it comes to the kernel it doesn&#39;t seem to get it.<br>
-<br>qemu logs show..it read the initrd image<br><br>
-ppc_prep_init: START linux boot<br>
-ppc_prep_init: INSIDE linux boot: /tmp/initrd.img<br>
-ppc_prep_init: INSIDE INITRD<br>
-ppc_prep_init: INSIDE INITRD filename: /tmp/initrd.img size: 31457280<br><br>hackware logs i added also shows initrd is read from nvram and its put in the bootinfos and passed.<br><br>bootinfos..initrd: 31457280<br>
-bootinfos..memsize:0x2f400000<br>
-Boot: 00040000 32eb1500 00000000 00000000<br>
-Bootinfos at : 300000<br><br>But the kernel didn;t find the BI_INITRD tag (0x1014). But it found the BI_CMDLINE and BI_MEMSIZE tags but not initrd. <br><br>Now booting the kernel<br>
-RAMDISK platform_init..calling boot_info<br>
-RAMDISK find_bootinfo<br>
-RAMDISK parser_booinfo<br>
-RAMDISK BI tag: 0x1010<br>
-RAMDISK BI tag: 0x1017<br>
-RAMDISK memsize: 0x2f400000<br>
-RAMDISK BI tag: 0x1012<br>
-RAMDISK cmdline: console=ttyS0 ip=dhcp rw netdev=9,0x300,eth0
-netdev=10,0x320,eth1 netdev=11,0x340,eth2 netdev=3,0x360,eth3
-netdev=4,0x280,eth4 netdev=5,0x380,eth5<br>
-RAMDISK parser_booinfo end<br>....<br>....<br>IP-Config: Got DHCP answer from <a href="http://10.0.2.2/" target="_blank">10.0.2.2</a>, my address is <a href="http://10.0.2.15/" target="_blank">10.0.2.15</a><br>
-IP-Config: Complete:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; device=eth0, addr=<a href="http://10.0.2.15/" target="_blank">10.0.2.15</a>, mask=<a href="http://255.255.255.0/" target="_blank">255.255.255.0</a>, gw=<a href="http://10.0.2.2/" target="_blank">10.0.2.2</a>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp; host=<a href="http://10.0.2.15/" target="_blank">10.0.2.15</a>, domain=, nis-domain=(none),<br>
-&nbsp;&nbsp;&nbsp;&nbsp; bootserver=<a href="http://10.0.2.2/" target="_blank">10.0.2.2</a>, rootserver=<a href="http://10.0.2.2/" target="_blank">10.0.2.2</a>, rootpath=<br>
-RAMDISK: no file foundi<br>
-No filesystem could mount root, tried:&nbsp; ext3 ext2 iso9660<br><br><br>I&#39;m
-stumped..May be the kernel is reading a different bootinfos..I&#39;m not
-sure where the problem is. I made sure the CONFIG_BLK_DEV_INITRD is
-enabled and the printfs I added are outside of the
-CONFIG_BLK_DEV_INITRD check.<br>
-<br>I&#39;m using the 0.9.1 version and the kernel is 2.6.18<br><br>Please help me figure this out..I have attached the complete log.<br><br>thanks<br>Suresh<br>[skaliann@sjc-lds-256 ~]$/ws/skaliann/opt/qemu-0.9.<div dir="ltr">
-1/ppc-softmmu/qemu-system-ppc -L /users/skaliann/qemu/share/qemu
--M prep -kernel /tmp/zImage.prep -nographic&nbsp; -m 756 -redir tcp:1122::22
--redir tcp:2345::2345 -initrd /tmp/initrd.img&nbsp; -append root=/dev/ram<br>
-<br>ppc_prep_init: START linux boot<br>ppc_prep_init: INSIDE linux boot: /tmp/initrd.img<br>ppc_prep_init: INSIDE INITRD<br>ppc_prep_init: INSIDE INITRD filename: /tmp/initrd.img size: 31457280<br>ppc_prep_init: OUTSIDE base=0x1800000 Size: 31457280NVRAM set: base: 0x1800000 size: 31457280<br>
+Relocation support
 
-register PCI host &#39;pci-bridge&#39; &#39;pci&#39; &#39;&lt;null&gt;&#39; &#39;PREP Host PCI Bridge - Motorola Raven&#39;<br>register &#39;pci-bridge&#39; &#39;pci&#39; &#39;&lt;null&gt;&#39; &#39;PREP Host PCI Bridge - Motorola Raven&#39; 0x80000000 in &#39;device-tree&#39; 0xffffffff<br>
+Add relocatable kernel support like take care when accessing absolute
+symbols in the code by adding the relocation kernel base address.
 
-Done 582a000 582a900<br>register pci device &#39;Qemu VGA&#39; 0000000c &#39;display&#39; &#39;VGA&#39; &#39;Qemu VGA&#39;<br>register &#39;Qemu VGA&#39; &#39;display&#39; &#39;VGA&#39; &#39;Qemu VGA&#39; 0x0000000c in &#39;pci-bridge&#39; 0x80000000<br>
+Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
+---
+ arch/powerpc/kernel/head_64.S          |   53 ++++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/machine_kexec_64.c |    4 +-
+ arch/powerpc/kernel/prom_init.c        |   27 ++++++++++++++--
+ arch/powerpc/kernel/prom_init_check.sh |    2 +-
+ arch/powerpc/kernel/setup_64.c         |    5 +--
+ arch/powerpc/mm/init_64.c              |    7 ++--
+ arch/powerpc/mm/mem.c                  |    3 +-
+ include/asm-powerpc/prom.h             |    2 +
+ include/asm-powerpc/sections.h         |    4 ++-
+ include/asm-powerpc/system.h           |    5 +++
+ 10 files changed, 95 insertions(+), 17 deletions(-)
 
-Done 582a900 582aa00<br>PPC Open Hack&#39;Ware BIOS for qemu version 0.4.1<br>Build 2008-07-18 22:17:00<br>Copyright 2003-2005 Jocelyn Mayer<br><br>Memory size: 756 MB.<br>Booting from device m<br>ide0: drive 0: none<br>
-ide0: drive 1: CD-ROM<br>
-ERROR: OF_property_copy cannot get property &#39;cd&#39; for aliases<br>ERROR: ATAPI TEST_UNIT_READY : status 48 != 0x08<br>ide1: drive 0: none<br>ide1: drive 1: none<br>Probe partitions for device m<br>ERROR: No MSDOS signature (38 0 0 0)<br>
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index ecced1e..8adf3b5 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -102,6 +102,12 @@ __secondary_hold_acknowledge:
+ 	.llong hvReleaseData-KERNELBASE
+ #endif /* CONFIG_PPC_ISERIES */
+ 
++#ifdef CONFIG_RELOCATABLE_PPC64
++	/* Used as static variable to initialize the reloc_delta */
++__initialized:
++	.long 0x0
++#endif
++
+ 	. = 0x60
+ /*
+  * The following code is used to hold secondary processors
+@@ -1247,6 +1253,38 @@ _STATIC(__mmu_off)
+  *
+  */
+ _GLOBAL(__start_initialization_multiplatform)
++#ifdef CONFIG_RELOCATABLE_PPC64
++	mr	r21,r3
++	mr	r22,r4
++	mr	r23,r5
++	bl	.reloc_offset
++	mr	r26,r3
++	mr	r3,r21
++	mr	r4,r22
++	mr	r5,r23
++
++	LOAD_REG_IMMEDIATE(r27, __initialized)
++	add	r27,r26,r27
++	ld	r7,0(r27)
++	cmpdi	r7,0
++	bne	4f
++
++	li	r7,1
++	stw	r7,0(r27)
++
++	cmpdi	r6,0
++	beq	4f
++	LOAD_REG_IMMEDIATE(r27, reloc_delta)
++	add	r27,r27,r26
++	std	r6,0(r27)
++
++	LOAD_REG_IMMEDIATE(r27, KERNELBASE)
++	add	r7,r6,r27
++	LOAD_REG_IMMEDIATE(r27, kernel_base)
++	add	r27,r27,r26
++	std	r7,0(r27)
++4:
++#endif
+ 	/*
+ 	 * Are we booted from a PROM Of-type client-interface ?
+ 	 */
+@@ -1322,6 +1360,19 @@ _INIT_STATIC(__boot_from_prom)
+ 	trap
+ 
+ _STATIC(__after_prom_start)
++	bl	.reloc_offset
++	mr	r26,r3
++#ifdef CONFIG_RELOCATABLE_PPC64
++	/*
++	 * If its a relocatable kernel, no need to copy the kernel
++	 * to PHYSICAL_START. Continue running from the same location
++	 */
++	LOAD_REG_IMMEDIATE(r27, reloc_delta)
++	add	r27,r27,r26
++	ld	r28,0(r27)
++	cmpdi	r28,0
++	bne	.start_here_multiplatform
++#endif
+ 
+ /*
+  * We need to run with __start at physical address PHYSICAL_START.
+@@ -1335,8 +1386,6 @@ _STATIC(__after_prom_start)
+  *	r26 == relocation offset
+  *	r27 == KERNELBASE
+  */
+-	bl	.reloc_offset
+-	mr	r26,r3
+ 	LOAD_REG_IMMEDIATE(r27, KERNELBASE)
+ 
+ 	LOAD_REG_IMMEDIATE(r3, PHYSICAL_START)	/* target addr */
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 631dfd6..09ce39d 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -43,7 +43,7 @@ int default_machine_kexec_prepare(struct kimage *image)
+ 	 * overlaps kernel static data or bss.
+ 	 */
+ 	for (i = 0; i < image->nr_segments; i++)
+-		if (image->segment[i].mem < __pa(_end))
++		if (image->segment[i].mem < (__pa(_end) + kernel_base))
+ 			return -ETXTBSY;
+ 
+ 	/*
+@@ -317,7 +317,7 @@ static void __init export_htab_values(void)
+ 	if (!node)
+ 		return;
+ 
+-	kernel_end = __pa(_end);
++	kernel_end = __pa(_end) + kernel_base;
+ 	prom_add_property(node, &kernel_end_prop);
+ 
+ 	/* On machines with no htab htab_address is NULL */
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 1ea8c8d..1b67219 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -91,11 +91,9 @@ extern const struct linux_logo logo_linux_clut224;
+  * fortunately don't get interpreted as two arguments).
+  */
+ #ifdef CONFIG_PPC64
+-#define RELOC(x)        (*PTRRELOC(&(x)))
+ #define ADDR(x)		(u32) add_reloc_offset((unsigned long)(x))
+ #define OF_WORKAROUNDS	0
+ #else
+-#define RELOC(x)	(x)
+ #define ADDR(x)		(u32) (x)
+ #define OF_WORKAROUNDS	of_workarounds
+ int of_workarounds;
+@@ -1073,7 +1071,12 @@ static void __init prom_init_mem(void)
+ 		}
+ 	}
+ 
++#ifndef CONFIG_RELOCATABLE_PPC64
+ 	RELOC(alloc_bottom) = PAGE_ALIGN((unsigned long)&RELOC(_end) + 0x4000);
++#else
++	RELOC(alloc_bottom) = PAGE_ALIGN((unsigned long)&RELOC(_end) + 0x4000 +
++							RELOC(reloc_delta));
++#endif
+ 
+ 	/* Check if we have an initrd after the kernel, if we do move our bottom
+ 	 * point to after it
+@@ -1337,10 +1340,19 @@ static void __init prom_hold_cpus(void)
+ 	unsigned int cpu_threads, hw_cpu_num;
+ 	int propsize;
+ 	struct prom_t *_prom = &RELOC(prom);
++
++#ifndef CONFIG_RELOCATABLE_PPC64
+ 	unsigned long *spinloop
+ 		= (void *) LOW_ADDR(__secondary_hold_spinloop);
+ 	unsigned long *acknowledge
+ 		= (void *) LOW_ADDR(__secondary_hold_acknowledge);
++#else
++	unsigned long *spinloop
++		= (void *) &__secondary_hold_spinloop;
++	unsigned long *acknowledge
++		= (void *) &__secondary_hold_acknowledge;
++#endif
++
+ #ifdef CONFIG_PPC64
+ 	/* __secondary_hold is actually a descriptor, not the text address */
+ 	unsigned long secondary_hold
+@@ -2402,8 +2414,15 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
+ 	/*
+ 	 * Copy the CPU hold code
+ 	 */
+-	if (RELOC(of_platform) != PLATFORM_POWERMAC)
+-		copy_and_flush(0, KERNELBASE + offset, 0x100, 0);
++	if (RELOC(of_platform) != PLATFORM_POWERMAC) {
++#ifdef CONFIG_RELOCATABLE_PPC64
++		if (RELOC(reloc_delta))
++			copy_and_flush(0, KERNELBASE + RELOC(reloc_delta),
++								0x100, 0);
++		else
++#endif
++			copy_and_flush(0, KERNELBASE + offset, 0x100, 0);
++	}
+ 
+ 	/*
+ 	 * Do early parsing of command line
+diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
+index 2c7e8e8..3cc7e24 100644
+--- a/arch/powerpc/kernel/prom_init_check.sh
++++ b/arch/powerpc/kernel/prom_init_check.sh
+@@ -20,7 +20,7 @@ WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
+ _end enter_prom memcpy memset reloc_offset __secondary_hold
+ __secondary_hold_acknowledge __secondary_hold_spinloop __start
+ strcmp strcpy strlcpy strlen strncmp strstr logo_linux_clut224
+-reloc_got2 kernstart_addr"
++reloc_got2 kernstart_addr reloc_delta"
+ 
+ NM="$1"
+ OBJ="$2"
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 04d8de9..91fab43 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -208,7 +208,6 @@ void __init early_setup(unsigned long dt_ptr)
+ 
+ 	/* Probe the machine type */
+ 	probe_machine();
+-
+ 	setup_kdump_trampoline();
+ 
+ 	DBG("Found, Initializing memory management...\n");
+@@ -526,9 +525,9 @@ void __init setup_arch(char **cmdline_p)
+ 	if (ppc_md.panic)
+ 		setup_panic();
+ 
+-	init_mm.start_code = (unsigned long)_stext;
++	init_mm.start_code = (unsigned long)_stext + kernel_base;
+ 	init_mm.end_code = (unsigned long) _etext;
+-	init_mm.end_data = (unsigned long) _edata;
++	init_mm.end_data = (unsigned long) _edata + kernel_base;
+ 	init_mm.brk = klimit;
+ 	
+ 	irqstack_early_init();
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 6ef63ca..1b908d4 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -79,10 +79,11 @@ phys_addr_t kernstart_addr;
+ 
+ void free_initmem(void)
+ {
+-	unsigned long addr;
++	unsigned long long addr, eaddr;
+ 
+-	addr = (unsigned long)__init_begin;
+-	for (; addr < (unsigned long)__init_end; addr += PAGE_SIZE) {
++	addr = (unsigned long long )__init_begin + kernel_base;
++	eaddr = (unsigned long long ) __init_end + kernel_base;
++	for (; addr < eaddr; addr += PAGE_SIZE) {
+ 		memset((void *)addr, POISON_FREE_INITMEM, PAGE_SIZE);
+ 		ClearPageReserved(virt_to_page(addr));
+ 		init_page_count(virt_to_page(addr));
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 776ba6a..f727de6 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -401,7 +401,8 @@ void __init mem_init(void)
+ 		}
+ 	}
+ 
+-	codesize = (unsigned long)&_sdata - (unsigned long)&_stext;
++	codesize = (unsigned long)&_sdata - (unsigned long)&_stext
++						+ kernel_base;
+ 	datasize = (unsigned long)&_edata - (unsigned long)&_sdata;
+ 	initsize = (unsigned long)&__init_end - (unsigned long)&__init_begin;
+ 	bsssize = (unsigned long)&__bss_stop - (unsigned long)&__bss_start;
+diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
+index eb3bd2e..4d7aa4f 100644
+--- a/include/asm-powerpc/prom.h
++++ b/include/asm-powerpc/prom.h
+@@ -39,6 +39,8 @@
+ 
+ #define OF_DT_VERSION		0x10
+ 
++extern unsigned long reloc_delta, kernel_base;
++
+ /*
+  * This is what gets passed to the kernel by prom_init or kexec
+  *
+diff --git a/include/asm-powerpc/sections.h b/include/asm-powerpc/sections.h
+index 916018e..f19dab3 100644
+--- a/include/asm-powerpc/sections.h
++++ b/include/asm-powerpc/sections.h
+@@ -7,10 +7,12 @@
+ #ifdef __powerpc64__
+ 
+ extern char _end[];
++extern unsigned long kernel_base;
+ 
+ static inline int in_kernel_text(unsigned long addr)
+ {
+-	if (addr >= (unsigned long)_stext && addr < (unsigned long)__init_end)
++	if (addr >= (unsigned long)_stext && addr < (unsigned long)__init_end
++								+ kernel_base)
+ 		return 1;
+ 
+ 	return 0;
+diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
+index 0c12c66..4f98967 100644
+--- a/include/asm-powerpc/system.h
++++ b/include/asm-powerpc/system.h
+@@ -534,6 +534,11 @@ extern unsigned long add_reloc_offset(unsigned long);
+ extern void reloc_got2(unsigned long);
+ 
+ #define PTRRELOC(x)	((typeof(x)) add_reloc_offset((unsigned long)(x)))
++#ifdef CONFIG_PPC64
++#define RELOC(x)        (*PTRRELOC(&(x)))
++#else
++#define RELOC(x)	(x)
++#endif
+ 
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+ extern void account_system_vtime(struct task_struct *);
+-- 
+1.5.4
 
-New bootfile<br>ERROR: OF_property_copy cannot get property &#39;alias&#39; for &lt;null&gt;<br>boot device: 5831080 image 1000000 size 1436466<br>New bootfile<br>New bootfile<br>Fix bootfile<br>boot device: 5831080<br>ERROR: Found boot partition : 5831200 582d6c0<br>
 
-ERROR: Not a MACH-O file<br>ERROR: Not an Apple CHRP boot file !<br>dest 100000 entry 00000200 =&gt; 100200<br>Load raw file into memory at 100000 1436466 (0015eb32) 0 (00000000)<br>bootinfos..initrd: 31457280<br>bootinfos..memsize:0x2f400000<br>
-
-Boot: 00040000 32eb1500 00000000 00000000<br>Bootinfos at : 300000<br><br>Now boot it... (0)<br><br>stack: 5bfff80 malloc_base: 0 0x05800000 0x06000000<br>PREP boot... 100200 100000<br>loaded at:&nbsp;&nbsp;&nbsp;&nbsp; 00100200 00265D4C<br>
-
-relocated to:&nbsp; 00800000 00965B4C<br>zimage at:&nbsp;&nbsp;&nbsp;&nbsp; 00805F64 0095CC98<br>avail ram:&nbsp;&nbsp;&nbsp;&nbsp; 00400000 00800000<br><br>Linux/PPC
-load: decompress_kernel:&nbsp; new cmd_line=&#39;console=ttyS0 ip=dhcp rw
-netdev=9,0x300,eth0 netdev=10,0x320,eth1 netdev=11,0x340,eth2
-netdev=3,0x360,eth3 netdev=4,0x280,eth4 netdev=5,0x380,eth5
-root=/dev/ram&#39;<br>
-console=ttyS0 ip=dhcp rw netdev=9,0x300,eth0 netdev=10,0x320,eth1
-netdev=11,0x340,eth2 netdev=3,0x360,eth3 netdev=4,0x280,eth4
-netdev=5,0x380,eth5 root=/dev/ram<br>Uncompressing Linux...done.<br>Now booting the kernel<br>
-RAMDISK platform_init..calling boot_info<br>RAMDISK find_bootinfo<br>RAMDISK parser_booinfo<br>RAMDISK BI tag: 0x1010<br>RAMDISK BI tag: 0x1017<br>RAMDISK memsize: 0x2f400000<br>RAMDISK BI tag: 0x1012<br>RAMDISK
-cmdline: console=ttyS0 ip=dhcp rw netdev=9,0x300,eth0
-netdev=10,0x320,eth1 netdev=11,0x340,eth2 netdev=3,0x360,eth3
-netdev=4,0x280,eth4 netdev=5,0x380,eth5 root=/dev/ram<br>
-RAMDISK parser_booinfo end<br>Total memory = 756MB; using 2048kB for hash table (at c0400000)<br>Linux version <a href="http://2.6.18.8/" target="_blank">2.6.18.8</a> (skaliann@sjc-lds-256) (gcc version 3.4.2) #25 Fri Jul 18 15:47:56 PDT 2008PReP architecture<br>
-
-Built 1 zonelists.&nbsp; Total pages: 193536<br>Kernel
-command line: console=ttyS0 ip=dhcp rw netdev=9,0x300,eth0
-netdev=10,0x320,eth1 netdev=11,0x340,eth2 netdev=3,0x360,eth3
-netdev=4,0x280,eth4 netdev=5,0x380,eth5 root=/dev/ram<br>
-PID hash table entries: 4096 (order: 12, 16384 bytes)<br>time_init: decrementer frequency = 25.000000 MHz<br>Console: colour dummy device 80x25<br>Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)<br>Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)<br>
-
-Memory: 761600k available (2260k kernel code, 776k data, 156k init, 0k highmem)<br>Mount-cache hash table entries: 512<br>lsmpi_region_init(): 11 pages (6508544 bytes)<br>NET: Registered protocol family 16<br>PCI: Probing PCI hardware<br>
-
-Setting PCI interrupts for a &quot;Mesquite cPCI (MCP750)&quot;<br>Linux Plug and Play Support v0.97 (c) Adam Belay<br>SCSI subsystem initialized<br>NET: Registered protocol family 2<br>IP route cache hash table entries: 32768 (order: 5, 131072 bytes)<br>
-
-TCP established hash table entries: 131072 (order: 7, 524288 bytes)<br>TCP bind hash table entries: 65536 (order: 6, 262144 bytes)<br>TCP: Hash tables configured (established 131072 bind 65536)<br>TCP reno registered<br>
-VFS: Disk quotas dquot_6.5.1<br>
-Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)<br>Initializing Cryptographic API<br>io scheduler noop registered<br>io scheduler deadline registered (default)<br>isapnp: Scanning for PnP cards...<br>isapnp: No Plug &amp; Play device found<br>
-
-Generic RTC Driver v1.07<br>Macintosh non-volatile memory driver v1.1<br>Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled<br>serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16450<br>RAMDISK: wrong blocksize 16384, reverting to defaults<br>
-
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize<br>loop: loaded (max 8 devices)<br>ne.c:v1.10 9/23/94 Donald Becker (<a href="mailto:becker@scyld.com" target="_blank">becker@scyld.com</a>)<br>Last modified Nov 1, 2000 by Paul Gortmaker<br>
-
-NE*000 ethercard probe at 0x300: 52 54 00 12 34 56<br>eth0: NE2000 found at 0x300, using IRQ 9.<br>Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2<br>ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx<br>
-
-hda: IRQ probe failed (0x0)<br>hda: IRQ probe failed (0x0)<br>hda: IRQ probe failed (0x0)<br>hda: IRQ probe failed (0x0)<br>hdb: IRQ probe failed (0x0)<br>hdb: IRQ probe failed (0x0)<br>hdb: QEMU CD-ROM, ATAPI CD/DVD-ROM drive<br>
-
-hdb: IRQ probe failed (0x0)<br>ide0 at 0x1f0-0x1f7,0x3f6 on irq 13<br>serio: i8042 AUX port at 0x60,0x64 irq 12<br>serio: i8042 KBD port at 0x60,0x64 irq 1<br>mice: PS/2 mouse device common for all mice<br>TCP bic registered<br>
-
-NET: Registered protocol family 1<br>NET: Registered protocol family 17<br>NET: Registered protocol family 15<br>input: AT Raw Set 2 keyboard as /class/input/input0<br>input: ImExPS/2 Generic Explorer Mouse as /class/input/input1<br>
-
-Sending DHCP requests ., OK<br>IP-Config: Got DHCP answer from <a href="http://10.0.2.2/" target="_blank">10.0.2.2</a>, my address is <a href="http://10.0.2.15/" target="_blank">10.0.2.15</a><br>IP-Config: Complete:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; device=eth0, addr=<a href="http://10.0.2.15/" target="_blank">10.0.2.15</a>, mask=<a href="http://255.255.255.0/" target="_blank">255.255.255.0</a>, gw=<a href="http://10.0.2.2/" target="_blank">10.0.2.2</a>,<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp; host=<a href="http://10.0.2.15/" target="_blank">10.0.2.15</a>, domain=, nis-domain=(none),<br>&nbsp;&nbsp;&nbsp;&nbsp; bootserver=<a href="http://10.0.2.2/" target="_blank">10.0.2.2</a>, rootserver=<a href="http://10.0.2.2/" target="_blank">10.0.2.2</a>, rootpath=<br>
-RAMDISK: no file foundi<br>
-No filesystem could mount root, tried:&nbsp; ext3 ext2 iso9660<br>Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(1,0)<br>&nbsp;&lt;0&gt;Rebooting in 180 seconds..</div></div>
-
-------=_Part_26447_30995344.1216668174145--
+--------------010400060800000003090007--
