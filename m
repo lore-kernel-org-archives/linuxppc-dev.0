@@ -1,34 +1,18 @@
-Return-Path: <mohan@in.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0FB59DE90C
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 05:26:44 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6LJQfA1011865
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 15:26:41 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6LJQfGJ231834
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 15:26:41 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6LJQeL4023781
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 15:26:41 -0400
-Message-ID: <4884E2E9.6050108@in.ibm.com>
-Date: Tue, 22 Jul 2008 00:56:33 +0530
-From: Mohan Kumar M <mohan@in.ibm.com>
+Return-Path: <super.firetwister@googlemail.com>
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.187])
+	by ozlabs.org (Postfix) with ESMTP id A0A25DE35B
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 05:46:00 +1000 (EST)
+Received: by mu-out-0910.google.com with SMTP id g7so1022003muf.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 12:45:55 -0700 (PDT)
+To: linuxppc-dev@ozlabs.org
+Subject: UIO not working on ppc405 onchip registers
+Date: Mon, 21 Jul 2008 21:52:14 +0200
 MIME-Version: 1.0
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [RFC v3 PATCH 6/4] Use LOAD_REG_IMMEDIATE macros
-References: <20080717183339.GA25070@in.ibm.com>
-	<20080717184055.GB25070@in.ibm.com>
-	<1216325187.7740.353.camel@pasglop> <48802AE0.30105@in.ibm.com>
-	<d8d07a180aaf59d25936ad03c7287f5a@bga.com>
-In-Reply-To: <d8d07a180aaf59d25936ad03c7287f5a@bga.com>
-Content-Type: multipart/mixed; boundary="------------040803020704040606020208"
-Cc: paulus@samba.org, naren@linux.vnet.ibm.com,
-	ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807212152.16080.super.firetwister@gmail.com>
+From: Markus Brunner <super.firetwister@googlemail.com>
+Cc: linux-embedded@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,123 +22,193 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------040803020704040606020208
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi,
+
+I'm unable to get UIO working on the ppc405ep onchip registers (e.g. gpio/iic) 
+however it's working fine on peripherals.
+It seems to me to be a problem with UIO on powerpc, because if I change the 
+address (and nothing more) to point to a external FPGA it's working fine.
+I also tried the generic uio_pdrv which had the same problems.
+Sometimes I get a "bus error" sometimes it only produces wrong results. 
+The "bus error" occurred when not a full 32 bit register was read (e.g. only a 
+byte of it), but I'm not sure if it doesn't occur for other reasons as well.
+
+Here is a simple example against 2.6.26. It should toggle the GPIO pin 0 on 
+ppc405ep, but can be changed easily to work on other ppc variants.
+
+Can anyone reproduce this problem, did anyone already succeed in writing a UIO 
+driver for the onchip registers? How can I fix this?
+
+Might this be something like commit c9698d6b1a90929e427a165bd8283f803f57d9bd which
+added pgprot_noncached() to UIO mmap code to get it work on ppc?
+
+Regards
+
+Markus
 
 
-
---------------040803020704040606020208
-Content-Type: text/x-patch;
- name="0006-Use-LOAD_REG_IMMEDIATE-macros.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="0006-Use-LOAD_REG_IMMEDIATE-macros.patch"
-
-Use LOAD_REG_IMMEDIATE macros
-
-This patch changes all LOAD_REG_ADDR macro calls to LOAD_REG_IMMEDIATE
-to make sure that we load the correct address.
-
-Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
----
- arch/powerpc/kernel/entry_64.S          |    4 ++--
- arch/powerpc/mm/hash_low_64.S           |    8 ++++----
- arch/powerpc/mm/slb_low.S               |    2 +-
- arch/powerpc/platforms/pseries/hvCall.S |    2 +-
- 4 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 12eb95a..37e5d95 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -714,7 +714,7 @@ _GLOBAL(enter_rtas)
-         std	r6,PACASAVEDMSR(r13)
+diff -upNr linux-2.6.26/drivers/uio-orig/Kconfig linux-2.6.26/drivers/uio/Kconfig
+--- linux-2.6.26/drivers/uio-orig/Kconfig	2008-07-18 09:15:51.000000000 +0200
++++ linux-2.6.26/drivers/uio/Kconfig	2008-07-18 09:16:18.000000000 +0200
+@@ -39,4 +39,12 @@ config UIO_SMX
  
- 	/* Setup our real return addr */	
--	LOAD_REG_ADDR(r4,.rtas_return_loc)
-+	LOAD_REG_IMMEDIATE(r4,.rtas_return_loc)
- 	clrldi	r4,r4,2			/* convert to realmode address */
-        	mtlr	r4
+ 	  If you compile this as a module, it will be called uio_smx.
  
-@@ -730,7 +730,7 @@ _GLOBAL(enter_rtas)
- 	sync				/* disable interrupts so SRR0/1 */
- 	mtmsrd	r0			/* don't get trashed */
- 
--	LOAD_REG_ADDR(r4, rtas)
-+	LOAD_REG_IMMEDIATE(r4, rtas)
- 	ld	r5,RTASENTRY(r4)	/* get the rtas->entry value */
- 	ld	r4,RTASBASE(r4)		/* get the rtas->base value */
- 	
-diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
-index a719f53..e9ba872 100644
---- a/arch/powerpc/mm/hash_low_64.S
-+++ b/arch/powerpc/mm/hash_low_64.S
-@@ -83,7 +83,7 @@ _GLOBAL(__hash_page_4K)
- 	std	r29,STK_REG(r29)(r1)
- 	std	r30,STK_REG(r30)(r1)
- 	std	r31,STK_REG(r31)(r1)
--	
++config UIO_GPIO
++	tristate "Driver for PPC_4xx GPIO"
++	depends on UIO
++	default n
++	help
++	  Driver for PPC_4xx GPIO Registers
 +
- 	/* Step 1:
- 	 *
- 	 * Check permissions, atomically mark the linux PTE busy
-@@ -168,7 +168,7 @@ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FTR_COHERENT_ICACHE, CPU_FTR_NOEXECUTE)
- 	std	r3,STK_PARM(r4)(r1)
- 
- 	/* Get htab_hash_mask */
--	ld	r4,htab_hash_mask@got(2)
-+	LOAD_REG_IMMEDIATE(r4, htab_hash_mask)
- 	ld	r27,0(r4)	/* htab_hash_mask -> r27 */
- 
- 	/* Check if we may already be in the hashtable, in this case, we
-@@ -461,7 +461,7 @@ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FTR_COHERENT_ICACHE, CPU_FTR_NOEXECUTE)
- 	std	r3,STK_PARM(r4)(r1)
- 
- 	/* Get htab_hash_mask */
--	ld	r4,htab_hash_mask@got(2)
-+	LOAD_REG_IMMEDIATE(r4, htab_hash_mask)
- 	ld	r27,0(r4)	/* htab_hash_mask -> r27 */
- 
- 	/* Check if we may already be in the hashtable, in this case, we
-@@ -792,7 +792,7 @@ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FTR_COHERENT_ICACHE, CPU_FTR_NOEXECUTE)
- 	std	r3,STK_PARM(r4)(r1)
- 
- 	/* Get htab_hash_mask */
--	ld	r4,htab_hash_mask@got(2)
-+	LOAD_REG_IMMEDIATE(r4, htab_hash_mask)
- 	ld	r27,0(r4)	/* htab_hash_mask -> r27 */
- 
- 	/* Check if we may already be in the hashtable, in this case, we
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index bc44dc4..502099e 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -128,7 +128,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_1T_SEGMENT)
- 	/* Now get to the array and obtain the sllp
- 	 */
- 	ld	r11,PACATOC(r13)
--	ld	r11,mmu_psize_defs@got(r11)
-+	LOAD_REG_IMMEDIATE(r11, mmu_psize_defs)
- 	add	r11,r11,r9
- 	ld	r11,MMUPSIZESLLP(r11)
- 	ori	r11,r11,SLB_VSID_USER
-diff --git a/arch/powerpc/platforms/pseries/hvCall.S b/arch/powerpc/platforms/pseries/hvCall.S
-index c1427b3..43c18f0 100644
---- a/arch/powerpc/platforms/pseries/hvCall.S
-+++ b/arch/powerpc/platforms/pseries/hvCall.S
-@@ -55,7 +55,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_PURR);				\
- 	/* calculate address of stat structure r4 = opcode */	\
- 	srdi	r4,r4,2;		/* index into array */	\
- 	mulli	r4,r4,HCALL_STAT_SIZE;				\
--	LOAD_REG_ADDR(r7, per_cpu__hcall_stats);		\
-+	LOAD_REG_IMMEDIATE(r7, per_cpu__hcall_stats);		\
- 	add	r4,r4,r7;					\
- 	ld	r7,PACA_DATA_OFFSET(r13); /* per cpu offset */	\
- 	add	r4,r4,r7;					\
--- 
-1.5.4
-
-
---------------040803020704040606020208--
+ endif
++
+diff -upNr linux-2.6.26/drivers/uio-orig/Makefile linux-2.6.26/drivers/uio/Makefile
+--- linux-2.6.26/drivers/uio-orig/Makefile	2008-07-18 09:27:18.000000000 +0200
++++ linux-2.6.26/drivers/uio/Makefile	2008-07-18 09:16:50.000000000 +0200
+@@ -1,3 +1,4 @@
+ obj-$(CONFIG_UIO)	+= uio.o
+ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+ obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
++obj-$(CONFIG_UIO_GPIO)	+= uio_ppc_4xx-gpio.o
+diff -upNr linux-2.6.26/drivers/uio-orig/uio-gpio.c linux-2.6.26/drivers/uio/uio-gpio.c
+--- linux-2.6.26/drivers/uio-orig/uio-gpio.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.26/drivers/uio/uio-gpio.c	2008-07-18 09:18:56.000000000 +0200
+@@ -0,0 +1,59 @@
++#include <sys/types.h>
++#include <sys/time.h>
++#include <sys/stat.h>
++#include <sys/mman.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <stdio.h>
++#include <stdlib.h>
++
++const unsigned long pin_mask( unsigned int pin) { return (0x80000000 >> (pin));}
++
++const char UIO_DEV[]  = "/dev/uio0";
++const unsigned int UIO_SIZE =   0x1000;
++const unsigned int UIO_ADDR = 0xef600700;
++
++const int  or = 0;
++const int tcr = 1;
++
++const unsigned int gpio_pin = 0;        /* What gpio pin do you want to toggle? */
++
++volatile unsigned long *gpio_regs;
++
++int main(int argc, char *argv[])
++{
++	int uiofd = open(UIO_DEV,O_RDWR);
++	if (uiofd < 0)
++		return uiofd;
++
++	unsigned long* map_addr = mmap(NULL,
++				       UIO_SIZE,
++				       PROT_READ | PROT_WRITE,
++				       MAP_SHARED,
++				       uiofd,
++				       0);
++	if (map_addr == ((unsigned long*) -1))
++		return -1;
++        gpio_regs = (volatile unsigned long*) map_addr;
++	printf("Mapped %0lx bytes from %08lx to %08lx\n", UIO_SIZE, UIO_ADDR, (unsigned long)map_addr);
++
++        printf("TCR = %08lx\n", gpio_regs[tcr]);
++        printf("TCR = %08lx\n", gpio_regs[tcr]);
++        printf("setting TCR\n");
++        gpio_regs[tcr] = gpio_regs[tcr] | pin_mask( gpio_pin );     // set tcr for pin to 1
++        printf("TCR = %08lx\n", gpio_regs[tcr]);
++        printf("TCR = %08lx\n", gpio_regs[tcr]);
++
++        printf("OR = %08lx\n", gpio_regs[or]);
++        printf("OR = %08lx\n", gpio_regs[or]);
++        printf("setting OR\n");
++        gpio_regs[or] = gpio_regs[or] | pin_mask( gpio_pin );       // set tcr for pin to 1
++        printf("OR = %08lx\n", gpio_regs[or]);
++        printf("OR = %08lx\n", gpio_regs[or]);
++        sleep( 3 );
++        printf("setting OR\n");
++        gpio_regs[or] = gpio_regs[or] & ~pin_mask( gpio_pin );      // set tcr for pin to 0
++        printf("OR = %08lx\n", gpio_regs[or]);
++        printf("OR = %08lx\n", gpio_regs[or]);
++
++}
+diff -upNr linux-2.6.26/drivers/uio-orig/uio_ppc_4xx-gpio.c linux-2.6.26/drivers/uio/uio_ppc_4xx-gpio.c
+--- linux-2.6.26/drivers/uio-orig/uio_ppc_4xx-gpio.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.26/drivers/uio/uio_ppc_4xx-gpio.c	2008-07-18 09:23:32.000000000 +0200
+@@ -0,0 +1,74 @@
++/*
++ * simple UIO GPIO driver.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/uio_driver.h>
++
++#include <asm/io.h>
++
++static struct uio_info info = {
++	.name = "uio_gpio",
++	.version = "0.0.0",
++	.irq = UIO_IRQ_NONE,
++	.irq_flags = 0,
++        .mem[0].addr = 0xef600700,
++        .mem[0].size = 0x1000,
++	.mem[0].memtype = UIO_MEM_PHYS,
++};
++
++static int __devinit uio_gpio_probe(struct device *dev)
++{
++	if (uio_register_device(dev, &info)){
++		printk(KERN_ERR "uio_gpio: uio_register_device failed\n");
++		return -ENODEV;
++	}
++	return 0;
++}
++
++static int uio_gpio_remove(struct device *dev)
++{
++	uio_unregister_device(&info);
++	info.mem[0].addr = 0;
++	info.mem[0].size = 0;
++	return 0;
++}
++
++static struct platform_device *uio_gpio_device;
++
++static struct device_driver uio_gpio_driver = {
++	.name		= "uio_gpio",
++	.bus		= &platform_bus_type,
++	.probe		= uio_gpio_probe,
++	.remove		= uio_gpio_remove,
++};
++
++
++static int __init uio_gpio_init(void)
++{
++	uio_gpio_device = platform_device_register_simple("uio_gpio", -1,
++							   NULL, 0);
++	if (IS_ERR(uio_gpio_device))
++		return PTR_ERR(uio_gpio_device);
++
++	return driver_register(&uio_gpio_driver);
++}
++
++static void __exit uio_gpio_exit(void)
++{
++	platform_device_unregister(uio_gpio_device);
++	driver_unregister(&uio_gpio_driver);
++}
++
++module_init(uio_gpio_init);
++module_exit(uio_gpio_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Markus Brunner");
