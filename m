@@ -1,18 +1,34 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 604FFDE154
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 03:05:36 +1000 (EST)
-Date: Mon, 21 Jul 2008 13:05:36 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: Networkl problems with lastest kernel....
-Message-ID: <20080721130536.3ca72f3e@lappy.seanm.ca>
-In-Reply-To: <20080721.093110.141511905.davem@davemloft.net>
-References: <20080721121829.28faffab@lappy.seanm.ca>
-	<20080721.093110.141511905.davem@davemloft.net>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9C4FADE06A
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 03:09:25 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6LH9IWx024455
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 13:09:18 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6LH9Hol215608
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 13:09:17 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6LH9Hj9002748
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 13:09:17 -0400
+Date: Mon, 21 Jul 2008 13:05:51 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: luisgpm@linux.vnet.ibm.com
+Subject: Re: [RFC] 4xx hardware watchpoint support
+Message-ID: <20080721130551.23a06006@zod.rchland.ibm.com>
+In-Reply-To: <1216658194.5727.36.camel@gargoyle>
+References: <1211391577.6232.15.camel@gargoyle>
+	<18484.60888.981390.893747@cargo.ozlabs.ibm.com>
+	<1213992894.6635.41.camel@gargoyle>
+	<20080719093752.5aada45c@zod.rchland.ibm.com>
+	<1216658194.5727.36.camel@gargoyle>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +38,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 21 Jul 2008 09:31:10 -0700 (PDT)
-"David Miller" <davem@davemloft.net> wrote:
+On Mon, 21 Jul 2008 13:36:33 -0300
+Luis Machado <luisgpm@linux.vnet.ibm.com> wrote:
 
-> If I had a penny for every driver with broken TX queue handling...
 > 
-> Please try this patch, thanks:
+> > This doesn't look right for how it's coded.  This would be the
+> > CONFIG_4xx || CONFIG_BOOKE case, but CONFIG_4xx includes PowerPC 405.
+> > That has a different bit layout among the DBCR registers.  Namely, on
+> > 405 you would be clearing the TDE and IAC1 events because the DAC
+> > events are in DBCR1, not DBCR0.
 > 
-> diff --git a/drivers/net/ibm_newemac/core.c
-> b/drivers/net/ibm_newemac/core.c index 2e720f2..4e01d29 100644
-> --- a/drivers/net/ibm_newemac/core.c
-> +++ b/drivers/net/ibm_newemac/core.c
-> @@ -1157,6 +1157,7 @@ static int emac_open(struct net_device *ndev)
->  	mal_enable_rx_channel(dev->mal, dev->mal_rx_chan);
->  	emac_tx_enable(dev);
->  	emac_rx_enable(dev);
-> +	netif_start_queue(dev);
->  	emac_netif_start(dev);
+> Maybe guarding the 405-specific parts in a separate "#if
+> defined(CONFIG_40x)" block will do?
 
-I had to change the dev to an ndev. dev is an struct emac_instance and
-ndev is the struct net_device.
+That, or adding a small function to move the bits to the appropriate
+registers (set_dbcr or set_dac_events).
 
-It still crashes, but in a different way. I think the problem is deeper
-than I thought. The kernel has been OOPSing on a reboot in the
-nfs_remount or there abouts for a few days. I thought the problem was
-in a debug driver I was using... so I ignored it for now.
+> Do you think it's worth to support this facility on 405's processors? If
+> so, i'll gladly work on a solution to it.
 
-But it does it without the debug driver.... so I think I have a
-corruption somewhere in the kernel.
+I would think so.  There's really no difference from a userspace
+perspective, so gdb watchpoints could be valuable there too.  I'll
+leave it up to you though.
 
-But I have attached the new OOPS anyway.
-
-Cheers,
-  Sean
-
-------------[ cut here ]------------
-Kernel BUG at c01ba66c [verbose debug info unavailable]
-Oops: Exception in kernel mode, sig: 5 [#1]
-Warp
-Modules linked in:
-NIP: c01ba66c LR: c015da58 CTR: 00000000
-REGS: cf839e90 TRAP: 0700   Not tainted  (2.6.26-pika)
-MSR: 00029000 <EE,ME>  CR: 44000042  XER: 0000005f
-TASK = cf81e880[5] 'events/0' THREAD: cf838000
-GPR00: 00000000 cf839f40 cf81e880 c02fd5a8 cf97856a 00000002 00000002
-ffffffff GPR08: c02fd5a8 00000001 00000000 00000001 24000048 00000000
-0ffac000 007fff9c GPR16: 00400684 00800000 007fff00 0ffa93c4 00000002
-c02e95f8 c02f0000 c02e95f8 GPR24: c02f0000 00000000 c0030000 cf984404
-cf9843d0 cf984000 cf984380 cf984000 NIP [c01ba66c]
-__netif_schedule+0x28/0x84 LR [c015da58] emac_link_timer+0x704/0x754
-Call Trace:
-[cf839f40] [c015c9f4] __emac_set_multicast_list+0x5c/0xb0 (unreliable)
-[cf839f60] [c015da58] emac_link_timer+0x704/0x754
-[cf839f80] [c002db54] run_workqueue+0x9c/0x138
-[cf839fa0] [c002df54] worker_thread+0x50/0xb4
-[cf839fd0] [c0031424] kthread+0x84/0x8c
-[cf839ff0] [c000c518] kernel_thread+0x48/0x64
-Instruction dump:
-4e800020 4bfffe48 7c0802a6 3d60c030 9421ffe0 396bd5a8 90010024 bfa10014 
-7c681b78 7c6b5a78 200b0000 7d605914 <0f0b0000> 39200002 38030024
-7d600028 ---[ end trace 3e8d5079b3c922db ]---
+josh
