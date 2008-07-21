@@ -1,19 +1,24 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id 3AAEDDDEFD
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 02:13:00 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so309106yxg.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 09:12:59 -0700 (PDT)
-Message-ID: <9e4733910807200826m22b676aewa89de8df9fd6da33@mail.gmail.com>
-Date: Sun, 20 Jul 2008 11:26:29 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Matt Sealey" <matt@genesi-usa.com>
-Subject: Re: radeonfb, dedicate memory to something else
-In-Reply-To: <48830D56.2080704@genesi-usa.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8DD83DDFBB
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 02:14:44 +1000 (EST)
+Date: Mon, 21 Jul 2008 11:13:07 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Dave Jones <davej@redhat.com>, Kumar Gala <galak@kernel.crashing.org>,
+	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/ep8248e: Fix compile problem if !CONFIG_FS_ENET
+Message-ID: <20080721161307.GC13185@loki.buserror.net>
+References: <Pine.LNX.4.64.0807160838520.14127@blarg.am.freescale.net>
+	<20080716214722.GA6251@ld0162-tx32.am.freescale.net>
+	<20080716215745.GA17093@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <48830D56.2080704@genesi-usa.com>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080716215745.GA17093@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/20/08, Matt Sealey <matt@genesi-usa.com> wrote:
-> Hi guys,
->
->  I know this isn't a PPC question, but since some of the RadeonFB developers
->  live here I thought best (and it's about a PPC platform).
->
->  Is there any way to hack up the RadeonFB driver - or anything related - to
->  reserve portions of the memory for a "fake" MTD or so, and still use the
->  Radeon as a graphics device? What I am talking about basically is turning
->  a 64MB Radeon card into a 32MB Radeon card, or a 128MB one into a 64MB
->  card..
+On Wed, Jul 16, 2008 at 05:57:45PM -0400, Dave Jones wrote:
+> On Wed, Jul 16, 2008 at 04:47:23PM -0500, Scott Wood wrote:
+>  > On Wed, Jul 16, 2008 at 08:39:12AM -0500, Kumar Gala wrote:
+>  > > If we don't enable FS_ENET we get build issues:
+>  > > 
+>  > > arch/powerpc/platforms/built-in.o: In function `ep8248e_mdio_probe':
+>  > > arch/powerpc/platforms/82xx/ep8248e.c:129: undefined reference to `alloc_mdio_bitbang'
+>  > > arch/powerpc/platforms/82xx/ep8248e.c:143: undefined reference to `mdiobus_register'
+>  > 
+>  > How is this possible?  CONFIG_EP8248E selects CONFIG_MDIO_BITBANG.
+> 
+> If CONFIG_PHYLIB=m however, that doesn't make any difference, because
+> vmlinuz is trying to use a symbol which now lives in a module.
 
-Somebody write this long ago. Maybe around 2000. That's all I
-remember. I think they made the video memory into a ram disk.
+Yuck.  If FOO selects BAR, and FOO is 'y', then BAR should be 'y', not 'm'.
+If BAR depends on other symbols that are 'm', they should be changed to 'y'.
 
-I believe there is more to it, the GART window may be smaller than the
-total RAM on the card. You need to use the GART to map in the
-appropriate pieces.
-
->  I think this can be done by hacking a PCI fixup perhaps, for Efika only
->  in my case, whereby the memory ranges are fiddled.
->
->  Perhaps, a better solution is to use some kind of in-kernel subsystem to
->  "allocate" and return a 32MB segment of PCI memory (and put it in an
->  named rheap) but I assume other drivers can and will simply walk all
->  over it?
->
->  --
->  Matt Sealey <matt@genesi-usa.com>
->  Genesi, Manager, Developer Relations
->  _______________________________________________
->  Linuxppc-dev mailing list
->  Linuxppc-dev@ozlabs.org
->  https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+-Scott
