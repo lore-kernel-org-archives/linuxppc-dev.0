@@ -1,36 +1,17 @@
-Return-Path: <mohan@in.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id ECBEDDDE03
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 14:37:41 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6M4bcmg001113
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 00:37:38 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6M4bcQp226696
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 00:37:38 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6M4bbgR032179
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 00:37:37 -0400
-Message-ID: <48856403.5050207@in.ibm.com>
-Date: Tue, 22 Jul 2008 10:07:23 +0530
-From: Mohan Kumar M <mohan@in.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC v3 PATCH 6/4] Use LOAD_REG_IMMEDIATE macros
-References: <20080717183339.GA25070@in.ibm.com>
-	<20080717184055.GB25070@in.ibm.com>
-	<1216325187.7740.353.camel@pasglop> <48802AE0.30105@in.ibm.com>
-	<d8d07a180aaf59d25936ad03c7287f5a@bga.com>
-	<4884E2E9.6050108@in.ibm.com>
-	<18565.16369.993585.334427@cargo.ozlabs.ibm.com>
-In-Reply-To: <18565.16369.993585.334427@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: naren@linux.vnet.ibm.com, Milton Miller <miltonm@bga.com>,
-	ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18565.27216.228641.108772@cargo.ozlabs.ibm.com>
+Date: Tue, 22 Jul 2008 15:04:16 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Robert Jennings <rcj@linux.vnet.ibm.com>
+Subject: Re: [PATCH 10/16 v3] [v2] powerpc: iommu enablement for CMO
+In-Reply-To: <20080708204813.GC20206@linux.vnet.ibm.com>
+References: <20080704124449.GA1310@linux.vnet.ibm.com>
+	<20080704125459.GM1310@linux.vnet.ibm.com>
+	<20080708204813.GC20206@linux.vnet.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>,
+	David Darrington <ddarring@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,84 +21,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Mohan Kumar M writes:
+Robert Jennings writes:
+
+> From: Robert Jennings <rcj@linux.vnet.ibm.com>
 > 
-> @@ -714,7 +714,7 @@ _GLOBAL(enter_rtas)
->          std	r6,PACASAVEDMSR(r13)
+> Minor change to add a call to align the return from the device's
+> get_desired_dma() function with IOMMU_PAGE_ALIGN().  Also removed a
+> comment referring to a non-existent structure member.
 > 
->  	/* Setup our real return addr */	
-> -	LOAD_REG_ADDR(r4,.rtas_return_loc)
-> +	LOAD_REG_IMMEDIATE(r4,.rtas_return_loc)
-> 
-> If LOAD_REG_ADDR doesn't work, then how are all the TOC loads in
-> gcc-generated code going to work?
-> 
+> This is a large patch but the normal code path is not affected.  For
+> non-pSeries platforms the code is ifdef'ed out and for non-CMO enabled
+> pSeries systems this does not affect the normal code path.  Devices that
+> do not perform DMA operations do not need modification with this patch.
+> The function get_desired_dma was renamed from get_io_entitlement for
+> clarity.
 
-Hi Paul,
+This patch is actually a new version of [PATCH 11/16 v3] powerpc: vio
+bus support for CMO, not a new version of [PATCH 10/16 v3] powerpc:
+iommu enablement for CMO as the subject would indicate, which tripped
+me up.  Anyway, my first comment is that the first paragraph of the
+description ("Minor change to ...") is not appropriate for the git
+tree and will have to be edited before the patch is applied.  If the
+extra changes are worth describing, describe them (in stand-alone
+fashion) in the description; otherwise put things like this after the
+line of three dashes, which terminates the description.
 
-We have a problem only when there is a reference to a variable through got.
+> +static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
+> +                                int nelems, enum dma_data_direction direction)
 
-Following mail sent to Segher yesterday may explain it.
+This function, and the related unmap_sg, map_single and unmap_single
+functions, now take an extra "struct dma_attrs *attrs" argument since
+Mark Nelson's patch "powerpc/dma: implement new dma_*map*_attrs()
+interfaces" went in (and it's now in Linus' tree).  You need to roll
+something like the patch below in with the 11/16 patch.
 
-I was going through the output generated by objdump -D vmlinux and 
-readelf -h vmlinux.
+Paul.
 
-
-<Snip objdump of vmlinux>
-
-Disassembly of section .got:
-
-c000000000805010 <__toc_start>:
-c000000000805010:       c0 00 00 00     lfs     f0,0(0)
-c000000000805014:       00 80 d0 10     .long 0x80d010
-c000000000805018:       c0 00 00 00     lfs     f0,0(0)
-c00000000080501c:       00 00 83 58     .long 0x8358
-c000000000805020:       c0 00 00 00     lfs     f0,0(0)
-c000000000805024:       00 85 1f e8     .long 0x851fe8
-c000000000805028:       c0 00 00 00     lfs     f0,0(0)
-c00000000080502c:       00 00 8d 84     .long 0x8d84
-c000000000805030:       c0 00 00 00     lfs     f0,0(0)
-c000000000805034:       00 85 03 38     .long 0x850338
-c000000000805038:       c0 00 00 00     lfs     f0,0(0)
-c00000000080503c:       00 85 28 b8     .long 0x8528b8
-c000000000805040:       c0 00 00 00     lfs     f0,0(0)
-c000000000805044:       00 85 28 b0     .long 0x8528b0
-c000000000805048:       c0 00 00 00     lfs     f0,0(0)
-c00000000080504c:       00 6d ef 60     .long 0x6def60
-
-All of the variables references through @got translated into relocation 
-type R_PPC64_GOT16_DS entries. All these entries correspond to one of 
-the above entries in the .got section. But none of the entries in .got 
-section are relocated.
-
-For example the instruction with relocation type R_PPC64_GOT16_DS,
-c00000000000830c:       e8 62 80 10     ld      r3,-32752(r2)
-
-refers to current_set variable. r2 will be pointing to 
-0xc00000000280d010 (relocated __toc_start + 0x8000). So the instruction 
-loads r3 with the content 0xc000000000851fe8 at location 
-0xc000000002805020, but which is not a relocated entry (0xc000000000851fe8)
-
-
-But when there is a relocation type of R_PPC64_ADDR16_HI, like
-c000000000008110:       64 84 00 00     oris    r4,r4,0
-
-we could easily get more info about this relocation from readelf like:
-
-c000000000008112  000100000005 R_PPC64_ADDR16_HI c000000000000000 .text 
-+ 8124
-
-So from above output we can identify that instruction at address 
-c000000000008112 needs to be patched with the relocation delta.
-
-
-Now I have two options left:
-1. Check for R_PPC64_GOT16_DS entries and check whether the contents 
-addressed by r2+offset is relocated or not and apply relocation if its not.
-2. Change all LOAD_REG_ADDR macros to LOAD_REG_IMMEDIATE. This I have 
-already done.
-
-
-Regards,
-Mohan.
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index ad818d1..e05baea 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -518,7 +518,8 @@ static void vio_dma_iommu_free_coherent(struct device *dev, size_t size,
+ 
+ static dma_addr_t vio_dma_iommu_map_single(struct device *dev, void *vaddr,
+                                            size_t size,
+-                                           enum dma_data_direction direction)
++                                           enum dma_data_direction direction,
++					   struct dma_attrs *attrs)
+ {
+ 	struct vio_dev *viodev = to_vio_dev(dev);
+ 	dma_addr_t ret = DMA_ERROR_CODE;
+@@ -528,7 +529,7 @@ static dma_addr_t vio_dma_iommu_map_single(struct device *dev, void *vaddr,
+ 		return ret;
+ 	}
+ 
+-	ret = dma_iommu_ops.map_single(dev, vaddr, size, direction);
++	ret = dma_iommu_ops.map_single(dev, vaddr, size, direction, attrs);
+ 	if (unlikely(dma_mapping_error(ret))) {
+ 		vio_cmo_dealloc(viodev, roundup(size, PAGE_SIZE));
+ 		atomic_inc(&viodev->cmo.allocs_failed);
+@@ -539,17 +540,18 @@ static dma_addr_t vio_dma_iommu_map_single(struct device *dev, void *vaddr,
+ 
+ static void vio_dma_iommu_unmap_single(struct device *dev,
+ 		dma_addr_t dma_handle, size_t size,
+-		enum dma_data_direction direction)
++		enum dma_data_direction direction, struct dma_attrs *attrs)
+ {
+ 	struct vio_dev *viodev = to_vio_dev(dev);
+ 
+-	dma_iommu_ops.unmap_single(dev, dma_handle, size, direction);
++	dma_iommu_ops.unmap_single(dev, dma_handle, size, direction, attrs);
+ 
+ 	vio_cmo_dealloc(viodev, roundup(size, PAGE_SIZE));
+ }
+ 
+ static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
+-                                int nelems, enum dma_data_direction direction)
++                                int nelems, enum dma_data_direction direction,
++				struct dma_attrs *attrs)
+ {
+ 	struct vio_dev *viodev = to_vio_dev(dev);
+ 	struct scatterlist *sgl;
+@@ -564,7 +566,7 @@ static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
+ 		return 0;
+ 	}
+ 
+-	ret = dma_iommu_ops.map_sg(dev, sglist, nelems, direction);
++	ret = dma_iommu_ops.map_sg(dev, sglist, nelems, direction, attrs);
+ 
+ 	if (unlikely(!ret)) {
+ 		vio_cmo_dealloc(viodev, alloc_size);
+@@ -581,7 +583,7 @@ static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
+ 
+ static void vio_dma_iommu_unmap_sg(struct device *dev,
+ 		struct scatterlist *sglist, int nelems,
+-		enum dma_data_direction direction)
++		enum dma_data_direction direction, struct dma_attrs *attrs)
+ {
+ 	struct vio_dev *viodev = to_vio_dev(dev);
+ 	struct scatterlist *sgl;
+@@ -591,7 +593,7 @@ static void vio_dma_iommu_unmap_sg(struct device *dev,
+ 	for (sgl = sglist; count < nelems; count++, sgl++)
+ 		alloc_size += roundup(sgl->dma_length, PAGE_SIZE);
+ 
+-	dma_iommu_ops.unmap_sg(dev, sglist, nelems, direction);
++	dma_iommu_ops.unmap_sg(dev, sglist, nelems, direction, attrs);
+ 
+ 	vio_cmo_dealloc(viodev, alloc_size);
+ }
