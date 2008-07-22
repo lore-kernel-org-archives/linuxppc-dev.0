@@ -1,20 +1,24 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	by ozlabs.org (Postfix) with ESMTP id 8447CDDE1E
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 00:23:28 +1000 (EST)
-Date: Tue, 22 Jul 2008 15:10:34 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [alsa-devel] [PATCH v3 0/3] ALSA SoC: MPC5200 audio driver
-Message-ID: <20080722141027.GB12555@sirena.org.uk>
-References: <fa686aa40807212358p17c824ia1d6516a87a7aac1@mail.gmail.com>
-	<20080722092646.GA7251@sirena.org.uk>
-	<9e4733910807220638u5cf48424l92ba780ecd9e3d9d@mail.gmail.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id B6CC5DE151
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 00:25:37 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so407202yxg.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 07:25:35 -0700 (PDT)
+Message-ID: <9e4733910807220725o41939c60l7f07d30577be7dc8@mail.gmail.com>
+Date: Tue, 22 Jul 2008 10:25:35 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Matt Sealey" <matt@genesi-usa.com>
+Subject: Re: radeonfb, dedicate memory to something else
+In-Reply-To: <4885A2C2.4060603@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910807220638u5cf48424l92ba780ecd9e3d9d@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, timur@freescale.com,
-	liam.girdwood@wolfsonmicro.com
+Content-Type: text/plain; charset=ISO-8859-1
+References: <48830D56.2080704@genesi-usa.com>
+	<9e4733910807200826m22b676aewa89de8df9fd6da33@mail.gmail.com>
+	<48859AD2.6050404@genesi-usa.com>
+	<1216716723.15900.128.camel@thor.sulgenrain.local>
+	<4885A2C2.4060603@genesi-usa.com>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>,
+	=?ISO-8859-1?Q?Michel_D=E4nzer?= <michel@tungstengraphics.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,10 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 22, 2008 at 09:38:11AM -0400, Jon Smirl wrote:
+On 7/22/08, Matt Sealey <matt@genesi-usa.com> wrote:
+> Michel D=E4nzer wrote:
+>
+> > On Tue, 2008-07-22 at 09:31 +0100, Matt Sealey wrote:
+> >
+> > > or other graphics drivers can be told "please only use the first 32MB=
+"
+> and
+> > > then either manually or automatically, map the rest as ramdisk.
+> > >
+> >
+> > You can limit the amount of video RAM used by X using the VideoRam
+> > directive in xorg.conf(5).
+> >
+>
+>
+>  Is it safe to poke around in radeon_identify_vram and maybe supply a ker=
+nel
+>  argument videomem=3D32M and let it check, if it's bigger, then limit it,=
+ and
+>  if not, keep the old size in rinfo->video_ram?
+>
+>  Can/could this be moved to all relevant framebuffer drivers?
+>
+>
+> > GART doesn't have anything to do with this. I suspect he was thinking o=
+f
+> > the PCI BARs not covering all video RAM.
+> >
+>
+>  That's certainly not the case here.
 
-> These drivers are going to get hit with immediate patches.  The DMA is
-> not broken out so that AC97 support can be fixed for the Efika.
+Yes, I'm forgetting how graphics work. If you can map all of VRAM into
+the PCI address space then you don't have to worry about sharing the
+window with X.
 
-Further updates shouldn't present a problem - if anything, it should be
-easier easier to review incremental patches.
+>  Ah okay. So now.. how do we do this for framebuffers?
+
+My memory is suspect, but first you would need to make sure all of
+VRAM is mapped. Then there is a value in fb that says how much of the
+VRAM it is using.  Anything above the max is fair game if X isn't
+running. Note that the amount of VRAM in use by fbdev is a function of
+which display mode it is in.
+
+>
+>  --
+>  Matt Sealey <matt@genesi-usa.com>
+>  Genesi, Manager, Developer Relations
+>
+
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
