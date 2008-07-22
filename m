@@ -1,22 +1,35 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 29F25DE0F7
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 20:49:59 +1000 (EST)
-Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m6MAnsMD004079
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 12:49:54 +0200
-Message-ID: <048601c8ebe8$acbfcc50$ad289e86@LPSC0173W>
-From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-To: "ppcdev" <linuxppc-dev@ozlabs.org>
-References: <93c791ba2d4ce372589da84acd14a15c@bga.com><20080718034727.GF18748@yookeroo.seuss><02ec01c8e8b2$52717890$ad289e86@LPSC0173W>
-	<007a845ba2b60b02a256b58632490b27@bga.com>
-Subject: Re: Calling the kernel from a mini-bootloader
-Date: Tue, 22 Jul 2008 12:49:49 +0200
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=response
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E5BC1DE2D3
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 20:53:56 +1000 (EST)
+Date: Tue, 22 Jul 2008 03:53:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] Make u64 long long on all architectures (was: the
+	printk problem)
+Message-Id: <20080722035318.76cad6dd.akpm@linux-foundation.org>
+In-Reply-To: <1216722995.8357.4.camel@localhost>
+References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
+	<20080704111540.ddffd241.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
+	<20080704132716.f1e12554.akpm@linux-foundation.org>
+	<20080704204252.GM14894@parisc-linux.org>
+	<20080704150100.1f7b8a65.akpm@linux-foundation.org>
+	<20080705020350.GN14894@parisc-linux.org>
+	<20080722030506.206a2cc2.akpm@linux-foundation.org>
+	<1216722995.8357.4.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Peter Anvin <hpa@zytor.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +39,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thank you Milton for the detailed explanation. It'll take me quite a while 
-to digest it.
+On Tue, 22 Jul 2008 20:36:35 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
 
+> On Tue, 2008-07-22 at 03:05 -0700, Andrew Morton wrote:
+> > On Fri, 4 Jul 2008 20:03:51 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
+> > 
+> > > [PATCH] Make u64 long long on all architectures
+> > > 
+> > > It is currently awkward to print a u64 type.  Some architectures use
+> > > unsigned long while others use unsigned long long.  Since unsigned long
+> > > long is 64-bit for all existing Linux architectures, change those that
+> > > use long to use long long.  Note that this applies only within the
+> > > kernel.  If u64 is being used in a C++ method definition, the symbol
+> > > mangling would change.
+> > > 
+> > > Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+> > > 
+> > > diff --git a/include/asm-generic/int-l64.h b/include/asm-generic/int-l64.h
+> > > index 2af9b75..32f07bd 100644
+> > > --- a/include/asm-generic/int-l64.h
+> > > +++ b/include/asm-generic/int-l64.h
+> > > @@ -23,8 +23,13 @@ typedef unsigned short __u16;
+> > >  typedef __signed__ int __s32;
+> > >  typedef unsigned int __u32;
+> > >  
+> > > +#ifdef __KERNEL__
+> > > +typedef __signed__ long long __s64;
+> > > +typedef unsigned long long __u64;
+> > > +#else
+> > >  typedef __signed__ long __s64;
+> > >  typedef unsigned long __u64;
+> > > +#endif
+> > >  
+> > >  #endif /* __ASSEMBLY__ */
+> > 
+> > This is (IMO) a desirable change and will prevent a heck of a lot of
+> > goofing around, and will permit a lot of prior goofing around to
+> > be removed.
+> > 
+> > But I bet there are lots of instalces of printk("%l", some_u64) down in
+> > arch code where the type of u64 _is_ known which will now spew warnings.
+> > 
+> > Oh well.
+> 
+> As a rough estimate:
+> 
+> concordia powerpc(master) $ find arch/powerpc/ ! -name '*32.*' | xargs grep "%l" | grep -v "%ll" | wc -l
+> 635
 
-As a follow up to my previous messages, I now have a working kernel and a 
-working bootloader... but not when they are both together.
+lolz.  If yesterdays-linux-next on todays-mainline wasn't such a
+hilarious trainwreck I'd test your grepping.  I guess that could be
+done on mainline too.
 
-Case in point:
-- load zImage.elf to DRAM 0x400000 with JTAG debugger. Run it. It runs fine.
+> Someone's gonna get a lot of git points for fixing all those. Might keep
+> the speeling fix crowd busy for a while.
 
-- Load Bootloader.elf to BRAM 0xFFFF0000 with JTAG debugger. Run it. It runs 
-fine (but it doesn't do much yet).
+I'm not sure I have the energy for this.
 
-- Now load both of the previous ones, and have the bootloader perform a jump 
-to kernel:
-     typedef void tFunc(void);
-     ((tFunc *)0x400000)();
-
-The kernel seems to start:
-
-loaded at:     00400000 004EA19C
-board data at: 004E8120 004E819C
-relocated to:  0040405C 004040D8
-zimage at:     00404E48 004E7A7E
-avail ram:     004EB000 08000000
-
-Linux/PPC load: console=ttyUL0,115200 rw root=/dev/nfs ip=bootp
-Uncompressing Linux...done.
-Now booting the kernel
-
-But then it hangs for exactly 3 minutes, nothing on the serial port, before 
-the bootloader restarts.
-Why should the behavior be different whether it's started from the debugger 
-or from my bootloader ?
--- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+But we really should do it.
