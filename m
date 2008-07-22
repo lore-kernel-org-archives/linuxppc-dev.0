@@ -1,20 +1,36 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id DDB75DDF00
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 17:54:42 +1000 (EST)
-Date: Tue, 22 Jul 2008 09:54:26 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Sebastian Siewior <netdev@ml.breakpoint.cc>
-Subject: Re: bug: mutex_lock() in interrupt conntext via phy_stop() in gianfar
-Message-ID: <20080722075426.GA4302@pengutronix.de>
-References: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
+Return-Path: <mohan@in.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F0A2EDE097
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 17:58:49 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6M7wkd2026541
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 03:58:46 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6M7wksa205658
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 03:58:46 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6M7wjxr012460
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 03:58:46 -0400
+Message-ID: <4885932C.2070008@in.ibm.com>
+Date: Tue, 22 Jul 2008 13:28:36 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
-In-Reply-To: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
-Cc: Nate Case <ncase@xes-inc.com>, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Vitaly Bordug <vbordug@ru.mvista.com>,
-	Li Yang <leoli@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC v3 PATCH 1/4] Extract list of relocation offsets
+References: <20080717183339.GA25070@in.ibm.com>
+	<20080717184055.GB25070@in.ibm.com>
+	<1216325187.7740.353.camel@pasglop> <48802AE0.30105@in.ibm.com>
+	<d8d07a180aaf59d25936ad03c7287f5a@bga.com>
+	<4884E0AF.2070809@in.ibm.com>
+	<18565.32335.641560.254806@cargo.ozlabs.ibm.com>
+In-Reply-To: <18565.32335.641560.254806@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: naren@linux.vnet.ibm.com, Milton Miller <miltonm@bga.com>,
+	ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,88 +40,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Paul Mackerras wrote:
+> Mohan Kumar M writes:
+> 
+>> diff --git a/arch/powerpc/boot/relocs.c b/arch/powerpc/boot/relocs.c
+>> new file mode 100644
+>> index 0000000..31ca903
+> 
+> Where did this file come from?  Did you write it all yourself?  If
+> not, then you need to credit the original author in the patch
+> description at least.  Also it needs a copyright notice.
+> 
+> There is some evidence that this has been copied from a similar
+> program for x86.  For instance, this:
 
---LZvS9be/3tNcYl/X
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Paul,
 
-Hi,
+Yes, its taken from x86 relocs.c. I will include proper credits to the 
+original author in the next patch.
 
-On Fri, Jul 18, 2008 at 02:10:08PM +0200, Sebastian Siewior wrote:
-> Commit 35b5f6b1a aka [PHYLIB: Locking fixes for PHY I/O potentially sleep=
-ing]
-> changed the phydev->lock from spinlock into a mutex. Now, the following
-> code path got triggered while NFS was unavailable:
-[...]
-> I found out that the same code path may be trigger in
-> - drivers/net/ucc_geth.c
-> - drivers/net/fec_mpc52xx.c
+> 
+> Also, this:
+> 
+> +		if (shdr[i].sh_type == SHT_REL) {
+> +			reltab[i] = malloc(shdr[i].sh_size);
+> +			if (!reltab[i]) {
+> +				die("malloc of %d bytes for relocs failed\n",
+> +					shdr[i].sh_size);
+> +			}
+> +			relp = reltab[i];
+> 
+> is, I think, unnecessary, since as far as I know we never get SHT_REL
+> sections on powerpc.
 
-Recently, I described a (I think) similar problem:
-(http://ozlabs.org/pipermail/linuxppc-dev/2008-July/059686.html)
+Ok, I will remove SHT_REL code in the relocs.c file.
 
-=3D=3D=3D
-
-Hello,
-
-today, I was debugging a kernel crash on a board with a MPC5200B using
-2.6.26-rc9. I found the following code in drivers/net/fec_mpc52xx.c:
-
-static irqreturn_t mpc52xx_fec_interrupt(int irq, void *dev_id)
-{
-[...]
-	/* on fifo error, soft-reset fec */
-	if (ievent & (FEC_IEVENT_RFIFO_ERROR | FEC_IEVENT_XFIFO_ERROR)) {
-
-		if (net_ratelimit() && (ievent & FEC_IEVENT_RFIFO_ERROR))
-			dev_warn(&dev->dev, "FEC_IEVENT_RFIFO_ERROR\n");
-		if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
-			dev_warn(&dev->dev, "FEC_IEVENT_XFIFO_ERROR\n");
-
-		mpc52xx_fec_reset(dev);
-
-		netif_wake_queue(dev);
-		return IRQ_HANDLED;
-	}
-[...]
-}
-
-Calling mpc52xx_fec_reset() from interrupt context is bad, at least
-because
-
-a) it calls phy_write, which contains BUG_ON(in_interrupt())
-b) it calls mpc52xx_fec_hw_init, which has a delay-loop to check
-   if the reset was successful (1..50 us)
-
-I assume the proper thing to do is to set a flag in the ISR and handle
-the soft reset later in some other context. Having never dealt with the
-network core and its drivers so far, I am not sure which place would be
-the right one to perform the soft reset. To not make things worse, I
-hope people with more insight to network stuff can deliver a suitable
-solution to this problem.
-
-All the best,
-
-   Wolfram
-
-=3D=3D=3D
-
---=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-
---LZvS9be/3tNcYl/X
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIhZIyD27XaX1/VRsRAl+KAJ90tZ1gf9X/tcn0nCEDFlph/voN8QCgrqaA
-1NJ/UcRX7VoBXF7k8TjrfvE=
-=IA10
------END PGP SIGNATURE-----
-
---LZvS9be/3tNcYl/X--
+Regards,
+Mohan.
