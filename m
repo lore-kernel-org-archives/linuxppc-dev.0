@@ -1,20 +1,24 @@
-Return-Path: <SHorton@kodiaknetworks.com>
-Received: from cowboy.inovate.inovate.com (planomail.kodiaknetworks.com
-	[76.203.108.6]) by ozlabs.org (Postfix) with ESMTP id 604A3DE065
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id C9023DDF78
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Jul 2008 05:23:47 +1000 (EST)
+	Wed, 23 Jul 2008 05:35:54 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KLNeJ-0005pB-3f
+	for linuxppc-embedded@ozlabs.org; Tue, 22 Jul 2008 12:35:51 -0700
+Message-ID: <18597016.post@talk.nabble.com>
+Date: Tue, 22 Jul 2008 12:35:51 -0700 (PDT)
+From: Victor Gallardo <vgallardo@amcc.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] Add AMCC Arches 460GT eval board support to platforms/44x
+In-Reply-To: <20080719094417.4c49cd36@zod.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Problem with cuImage Linux entry from old U-boot
-Date: Tue, 22 Jul 2008 14:23:39 -0500
-Message-ID: <295C5089A56CE143B316E5F67CA99CB001D0637A@cowboy.inovate.inovate.com>
-In-Reply-To: <20080722180506.GB13940@loki.buserror.net>
-References: <295C5089A56CE143B316E5F67CA99CB001D0626A@cowboy.inovate.inovate.com>
-	<20080722180506.GB13940@loki.buserror.net>
-From: "Stephen Horton" <SHorton@kodiaknetworks.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+References: <1216186406-27993-1-git-send-email-fkan@amcc.com>
+	<20080716075025.0bca152c@zod.rchland.ibm.com>
+	<18538794.post@talk.nabble.com>
+	<20080719094417.4c49cd36@zod.rchland.ibm.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,50 +29,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks Scott for the tip. I'll redouble my efforts to compare the code
-in my older 1.1.2 U-boot source (that the board boots from) with my new
-.dts and cuboot source.
 
------Original Message-----
-From: Scott Wood [mailto:scottwood@freescale.com]=20
-Sent: Tuesday, July 22, 2008 1:05 PM
-To: Stephen Horton
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Problem with cuImage Linux entry from old U-boot
+>As you might have noticed, this has generated quite a bit of discussion
+>on whether this is the right approach or not.  If you can wait for a
+>week, we plan on talking it over at OLS.  Then I can give you a better
+>idea as to whether we're going to stick with this or use a different
+>approach.
+>
+>Overall your patches are fairly clean, so you've done a good job so
+>far.  Have a little patience with us as we figure out the right way to
+>go :).
+>
+>josh
 
-On Mon, Jul 21, 2008 at 03:39:55PM -0500, Stephen Horton wrote:
-> I have made great strides with help from this mailing list and its
-> archives. I now have a compiled cuImage ready to boot from my older
-> working u-boot 1.1.2. I now seem to be stuck at the kernel entry
-point.
-> I'm not sure if I'm trying to jump into the kernel at the wrong
-address,
-> or if I have a serial console issue that prevents me from seeing
-anymore
-> progress.
+OK. I watch the mailing list for updates.
 
-Most likely the latter, or some other issue that prevents the kernel
-from
-booting to the point where the serial console functions.
+Thanks,
 
-> Linux/PowerPC load: ip=3Dbootp root=3D/dev/nfs rw =
-nfsroot=3D/opt/gentoo
-> console=3DttyMM0,9600n8
-> Finalizing device tree... flat tree at 0x7423a0
->=20
-> =20
->=20
-> ------
->=20
-> =20
->=20
-> If I run 'nm' on my elf image, I expect to find some entry point
-address
-> that corresponds to 0x7423a0, but this is not the case.=20
-
-Why would you expect that?  It's a dynamically allocated chunk of memory
-that holds the device tree that is passed to the kernel.  It's not an
-entry
-point; the entry point to the kernel is zero.
-
--Scott
+Victor Gallardo
+-- 
+View this message in context: http://www.nabble.com/-PATCH--Add-AMCC-Arches-460GT-eval-board-support-to-platforms-44x-tp18480745p18597016.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
