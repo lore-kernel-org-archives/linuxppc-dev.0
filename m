@@ -1,20 +1,35 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 01DC8DE2DB
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 21:53:15 +1000 (EST)
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 1/3] ASoC: Make OpenFirmware helper include file conditional
-Date: Tue, 22 Jul 2008 12:53:07 +0100
-Message-Id: <1216727589-19544-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <20080722115205.GA12555@sirena.org.uk>
-References: <20080722115205.GA12555@sirena.org.uk>
-Cc: alsa-project.org@rakim.wolfsonmicro.main, linuxppc-dev@ozlabs.org,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	timur@freescale.com, liam.girdwood@wolfsonmicro.com
+	by ozlabs.org (Postfix) with ESMTPS id 75128DE35F
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 21:55:43 +1000 (EST)
+Subject: Re: [PATCH] Make u64 long long on all architectures (was: the
+	printk problem)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1216722995.8357.4.camel@localhost>
+References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
+	<20080704111540.ddffd241.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
+	<20080704132716.f1e12554.akpm@linux-foundation.org>
+	<20080704204252.GM14894@parisc-linux.org>
+	<20080704150100.1f7b8a65.akpm@linux-foundation.org>
+	<20080705020350.GN14894@parisc-linux.org>
+	<20080722030506.206a2cc2.akpm@linux-foundation.org>
+	<1216722995.8357.4.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 22 Jul 2008 21:36:46 +1000
+Message-Id: <1216726606.11027.207.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Peter Anvin <hpa@zytor.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +39,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The OpenFirmware API headers don't build on all platforms so ensure
-that they are not included unless they are being used.
+On Tue, 2008-07-22 at 20:36 +1000, Michael Ellerman wrote:
+> concordia powerpc(master) $ find arch/powerpc/ ! -name '*32.*' | xargs
+> grep "%l" | grep -v "%ll" | wc -l
+> 635
+> 
+> 
+> Someone's gonna get a lot of git points for fixing all those. Might
+> keep
+> the speeling fix crowd busy for a 
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- include/sound/soc-of-simple.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+But a bunch of those might actually be real longs, not u64's ...
 
-diff --git a/include/sound/soc-of-simple.h b/include/sound/soc-of-simple.h
-index 696fc51..a064e19 100644
---- a/include/sound/soc-of-simple.h
-+++ b/include/sound/soc-of-simple.h
-@@ -7,6 +7,8 @@
- #ifndef _INCLUDE_SOC_OF_H_
- #define _INCLUDE_SOC_OF_H_
- 
-+#if defined(CONFIG_SND_SOC_OF_SIMPLE) || defined(CONFIG_SND_SOC_OF_SIMPLE_MODULE)
-+
- #include <linux/of.h>
- #include <sound/soc.h>
- 
-@@ -18,4 +20,6 @@ int of_snd_soc_register_platform(struct snd_soc_platform *platform,
- 				 struct device_node *node,
- 				 struct snd_soc_dai *cpu_dai);
- 
-+#endif
-+
- #endif /* _INCLUDE_SOC_OF_H_ */
--- 
-1.5.6.3
+Easier to do the change and build something like ppc6xx_defconfig to get
+a better approximation.
+
+Ben.
