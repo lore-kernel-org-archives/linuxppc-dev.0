@@ -1,27 +1,18 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D66A0DDF04
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 01:14:49 +1000 (EST)
-Message-ID: <4885F95C.7060600@freescale.com>
-Date: Tue, 22 Jul 2008 10:14:36 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 5959EDE13B
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 01:43:51 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org,
+ netdev@vger.kernel.org
+Subject: [PATCH] fs_enet: Remove unused fields in the fs_mii_bb_platform_info
+	structure.
+Date: Tue, 22 Jul 2008 17:43:42 +0200
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [alsa-devel] [PATCH v3 0/3] ALSA SoC: MPC5200 audio driver
-References: <fa686aa40807212358p17c824ia1d6516a87a7aac1@mail.gmail.com>	
-	<20080722092646.GA7251@sirena.org.uk>	
-	<9e4733910807220638u5cf48424l92ba780ecd9e3d9d@mail.gmail.com>	
-	<20080722141027.GB12555@sirena.org.uk>
-	<9e4733910807220752o4d220f90o770d55e70f493642@mail.gmail.com>
-In-Reply-To: <9e4733910807220752o4d220f90o770d55e70f493642@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	liam.girdwood@wolfsonmicro.com
+Content-Type: multipart/signed; boundary="nextPart43458818.Il0IBT7YsP";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200807221743.47807.laurentp@cse-semaphore.com>
+Cc: jgarzik@pobox.com, vbordug@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,13 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
+--nextPart43458818.Il0IBT7YsP
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> I'm just going to ignore 2.6.27 and wait for 2.6.28.
+The mdio_port, mdio_bit, mdc_port and mdc_bit fields in the
+fs_mii_bb_platform_info structure are left-overs from the move to the Phy
+Abstraction Layer subsystem. They are not used anymore and can be safely
+removed.
 
-2.6.28 might have ASoC V2, or at least portions of it.  You might want to just
-port your driver to ASoC V2 like I did and not worry about it.
+Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+=2D--
+ include/linux/fs_enet_pd.h    |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
+index 9bc045b..decc4b5 100644
+=2D-- a/include/linux/fs_enet_pd.h
++++ b/include/linux/fs_enet_pd.h
+@@ -103,10 +103,6 @@ struct fs_mii_bb_platform_info {
+ 	struct fs_mii_bit 	mdio_dir;
+ 	struct fs_mii_bit 	mdio_dat;
+ 	struct fs_mii_bit	mdc_dat;
+=2D	int mdio_port;	/* port & bit for MDIO */
+=2D	int mdio_bit;
+=2D	int mdc_port;	/* port & bit for MDC  */
+=2D	int mdc_bit;
+ 	int delay;	/* delay in us         */
+ 	int irq[32]; 	/* irqs per phy's */
+ };
+=2D-=20
+1.5.0
+
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart43458818.Il0IBT7YsP
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkiGADMACgkQ8y9gWxC9vpdugACeMZWMv0IFETZxVd7/xxhR8E7D
+wdkAoMsvS0a+lEDni7CL8GZtd6BuII7m
+=haH6
+-----END PGP SIGNATURE-----
+
+--nextPart43458818.Il0IBT7YsP--
