@@ -1,23 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id 8BF46DE01D
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 00:52:27 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so412301yxg.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 07:52:25 -0700 (PDT)
-Message-ID: <9e4733910807220752o4d220f90o770d55e70f493642@mail.gmail.com>
-Date: Tue, 22 Jul 2008 10:52:20 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, liam.girdwood@wolfsonmicro.com,
-	timur@freescale.com, "Mark Brown" <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [alsa-devel] [PATCH v3 0/3] ALSA SoC: MPC5200 audio driver
-In-Reply-To: <20080722141027.GB12555@sirena.org.uk>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 2193DDE15A
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 00:53:34 +1000 (EST)
+Date: Tue, 22 Jul 2008 18:53:30 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: latest tree build failure -- cpm uart & gpio
+Message-ID: <20080722145330.GA2315@polina.dev.rtsoft.ru>
+References: <FBE46DB6-A457-4AD8-9D6E-9D639AD04325@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa40807212358p17c824ia1d6516a87a7aac1@mail.gmail.com>
-	<20080722092646.GA7251@sirena.org.uk>
-	<9e4733910807220638u5cf48424l92ba780ecd9e3d9d@mail.gmail.com>
-	<20080722141027.GB12555@sirena.org.uk>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <FBE46DB6-A457-4AD8-9D6E-9D639AD04325@freescale.com>
+Cc: David Brownell <david-b@pacbell.net>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/22/08, Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
-> On Tue, Jul 22, 2008 at 09:38:11AM -0400, Jon Smirl wrote:
+On Tue, Jul 22, 2008 at 08:54:16AM -0500, Kumar Gala wrote:
+> can someone look at the following compile failure in linus's tree.  I'm 
+> guessing part of this has to do with Alan's tty changes (and might  
+> already be addressed?).
 >
->  > These drivers are going to get hit with immediate patches.  The DMA is
->  > not broken out so that AC97 support can be fixed for the Efika.
->
-> Further updates shouldn't present a problem - if anything, it should be
->  easier easier to review incremental patches.
+> include/asm-generic/gpio.h:131: error: implicit declaration of function 
+> 'gpio_get_value'
+> include/asm-generic/gpio.h:137: error: implicit declaration of function 
+> 'gpio_set_value'
 
-I'm just going to ignore 2.6.27 and wait for 2.6.28.  This driver only
-partially implement i2s support and assumes external clocking. There's
-no way to add a ASOC machine driver. It's not a general purpose
-driver. Adding the rest of the features probably means device tree
-changes.
+I think this patch should help:
+
+[OF] of_gpio: should use new <linux/gpio.h> header
+http://patchwork.ozlabs.org/linuxppc/patch?id=18750
+
+David, can you please Ack it? See Benjamin's mail:
+http://ozlabs.org/pipermail/linuxppc-dev/2008-July/060109.html
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
