@@ -1,19 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 9D045DDF63
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 17:25:47 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so403887anc.78
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 00:25:46 -0700 (PDT)
-Message-ID: <fa686aa40807220025r4e6f7c85xab03e4b7df154a70@mail.gmail.com>
-Date: Tue, 22 Jul 2008 01:25:46 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Paul Mackerras" <paulus@samba.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Please pull mpc5200-next
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1D4F6DDE1E
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 17:35:07 +1000 (EST)
+Subject: [git pull] Please pull from powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 22 Jul 2008 17:32:11 +1000
+Message-Id: <1216711931.11027.193.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	akpm <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	Kumar Gala <kumar.gala@freescale.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +25,244 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul/Ben
+﻿Hi Linus !
 
-Please pull my mpc5200 next branch for the following commits:
+Here's the second batch of powerpc updates. I should have a last one
+before the end of the merge window for things that are stealing dealing
+with conflicts or dependencies but we are getting there.
 
-Thanks,
-g.
+So please pull from:
 
-The following changes since commit e89970aa93b06d0605a488e74af3b0a2a80e03b5:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/net-2.6
+git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
-are available in the git repository at:
+Hopefully this one shouldn't whack the main Makefile :-)
 
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx next
+Note a couple of fbdev updates. One is an offb change by me, this is
+a powerpc specific driver so that shouldn't affect anybody else, and
+one is the ps3 specific fbdev by Geoff, so again, there should be
+no collateral damage.
 
-Grant Likely (3):
-      powerpc/mpc5200: Make mpc5200 GPIO driver select the GENERIC_GPIO config
-      powerpc/mpc5200: add PSC SICR bit definitions
-      of-bindings: Add binding documentation for SPI busses and devices
+Some drivers/net changes to freescale specific drivers are coming from
+Kumar's tree. Kumar, I merged them, however, shouldn't we have Jeff's
+ack on these things or is it ok as long as those are arch specific
+drivers and the changes boring ?
 
-Jon Smirl (2):
-      powerpc/mpc5200: Add AC97 register definitions for the MPC52xx PSC
-      powerpc/mpc5200: Remove fsl-soc.c from mpc5200 build, it is not needed.
+The cell EDAC change has been ack'ed by the EDAC maintainer.
 
-Wolfram Sang (1):
-      powerpc/mpc5200: Fix wrong 'no interrupt' handling in of_i2c
+Cheers,
+Ben.
 
- Documentation/powerpc/booting-without-of.txt |   57 ++++++++++++++++++++++++++
- arch/powerpc/platforms/52xx/Kconfig          |    2 +-
- drivers/of/of_i2c.c                          |    2 -
- include/asm-powerpc/mpc52xx_psc.h            |   40 +++++++++++++++++-
- 4 files changed, 95 insertions(+), 6 deletions(-)
+ Documentation/DMA-attributes.txt                   |    9 
+ Documentation/powerpc/booting-without-of.txt       |  189 +
+ .../powerpc/dts-bindings/fsl/cpm_qe/gpio.txt       |   38 
+ .../powerpc/dts-bindings/fsl/cpm_qe/qe/usb.txt     |   53 
+ .../powerpc/dts-bindings/fsl/mcu-mpc8349emitx.txt  |   17 
+ Documentation/powerpc/dts-bindings/fsl/pmc.txt     |   63 
+ Documentation/powerpc/dts-bindings/fsl/tsec.txt    |   31 
+ .../powerpc/dts-bindings/fsl/upm-nand.txt          |   28 
+ Documentation/powerpc/dts-bindings/gpio/led.txt    |   15 
+ arch/powerpc/Kconfig                               |   14 
+ arch/powerpc/boot/Makefile                         |    4 
+ arch/powerpc/boot/dts/mpc7448hpc2.dts              |   24 
+ arch/powerpc/boot/dts/mpc8313erdb.dts              |  241 +
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts             |   14 
+ arch/powerpc/configs/85xx/mpc8544_ds_defconfig     |    8 
+ arch/powerpc/configs/85xx/mpc8572_ds_defconfig     |    8 
+ arch/powerpc/configs/mpc85xx_defconfig             |    8 
+ arch/powerpc/configs/mpc8610_hpcd_defconfig        |  121 +
+ arch/powerpc/configs/mpc8641_hpcn_defconfig        |    8 
+ arch/powerpc/configs/ppc6xx_defconfig              | 3304 ++++++++++++++++++++
+ arch/powerpc/configs/ps3_defconfig                 |  196 +
+ arch/powerpc/kernel/cputable.c                     |   20 
+ arch/powerpc/kernel/head_fsl_booke.S               |  187 -
+ arch/powerpc/kernel/iommu.c                        |   13 
+ arch/powerpc/kernel/pci-common.c                   |    1 
+ arch/powerpc/kernel/prom_parse.c                   |   44 
+ arch/powerpc/kernel/stacktrace.c                   |    2 
+ arch/powerpc/kernel/vmlinux.lds.S                  |   31 
+ arch/powerpc/lib/feature-fixups.c                  |    2 
+ arch/powerpc/lib/string.S                          |   18 
+ arch/powerpc/platforms/52xx/Kconfig                |    1 
+ arch/powerpc/platforms/82xx/Kconfig                |    1 
+ arch/powerpc/platforms/82xx/ep8248e.c              |    4 
+ arch/powerpc/platforms/83xx/Kconfig                |    3 
+ arch/powerpc/platforms/83xx/Makefile               |    2 
+ arch/powerpc/platforms/83xx/mpc831x_rdb.c          |    1 
+ arch/powerpc/platforms/83xx/mpc832x_mds.c          |    1 
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c          |    1 
+ arch/powerpc/platforms/83xx/mpc834x_itx.c          |    1 
+ arch/powerpc/platforms/83xx/mpc834x_mds.c          |    1 
+ arch/powerpc/platforms/83xx/mpc836x_mds.c          |    1 
+ arch/powerpc/platforms/83xx/mpc836x_rdk.c          |    1 
+ arch/powerpc/platforms/83xx/mpc837x_mds.c          |    1 
+ arch/powerpc/platforms/83xx/mpc837x_rdb.c          |    1 
+ arch/powerpc/platforms/83xx/mpc83xx.h              |    5 
+ arch/powerpc/platforms/83xx/pci.c                  |   91 -
+ arch/powerpc/platforms/83xx/sbc834x.c              |    1 
+ arch/powerpc/platforms/83xx/suspend-asm.S          |  533 +++
+ arch/powerpc/platforms/83xx/suspend.c              |  388 ++
+ arch/powerpc/platforms/83xx/usb.c                  |   24 
+ arch/powerpc/platforms/85xx/Kconfig                |    3 
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c           |    2 
+ arch/powerpc/platforms/86xx/Kconfig                |    3 
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c         |   87 -
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c         |    2 
+ arch/powerpc/platforms/Kconfig                     |    6 
+ arch/powerpc/platforms/Kconfig.cputype             |    5 
+ arch/powerpc/platforms/cell/Kconfig                |   25 
+ arch/powerpc/platforms/cell/Makefile               |    3 
+ arch/powerpc/platforms/cell/cbe_powerbutton.c      |  117 +
+ arch/powerpc/platforms/cell/cpufreq_spudemand.c    |  184 +
+ arch/powerpc/platforms/cell/iommu.c                |  118 +
+ arch/powerpc/platforms/cell/pervasive.c            |   27 
+ arch/powerpc/platforms/cell/pervasive.h            |    9 
+ arch/powerpc/platforms/cell/ras.c                  |   46 
+ arch/powerpc/platforms/fsl_uli1575.c               |  117 +
+ arch/powerpc/platforms/iseries/Kconfig             |    1 
+ arch/powerpc/platforms/iseries/iommu.c             |    3 
+ arch/powerpc/platforms/pasemi/iommu.c              |    3 
+ arch/powerpc/platforms/ps3/Kconfig                 |    1 
+ arch/powerpc/platforms/ps3/device-init.c           |    1 
+ arch/powerpc/platforms/ps3/system-bus.c            |   21 
+ arch/powerpc/platforms/pseries/Kconfig             |    1 
+ arch/powerpc/platforms/pseries/eeh.c               |   26 
+ arch/powerpc/platforms/pseries/iommu.c             |   14 
+ arch/powerpc/sysdev/axonram.c                      |   28 
+ arch/powerpc/sysdev/dart_iommu.c                   |    3 
+ arch/powerpc/sysdev/fsl_pci.c                      |   61 
+ arch/powerpc/sysdev/fsl_pci.h                      |    1 
+ arch/powerpc/sysdev/fsl_soc.c                      |   90 -
+ arch/powerpc/sysdev/fsl_soc.h                      |    1 
+ arch/powerpc/sysdev/ipic.c                         |   71 
+ arch/powerpc/sysdev/qe_lib/qe.c                    |    6 
+ arch/powerpc/sysdev/qe_lib/ucc.c                   |    6 
+ arch/powerpc/sysdev/qe_lib/ucc_fast.c              |   16 
+ drivers/edac/cell_edac.c                           |    5 
+ drivers/net/fs_enet/Makefile                       |    5 
+ drivers/net/fs_enet/fs_enet-main.c                 |  312 --
+ drivers/net/fs_enet/fs_enet.h                      |    4 
+ drivers/net/fs_enet/mac-fcc.c                      |   67 
+ drivers/net/fs_enet/mac-fec.c                      |   23 
+ drivers/net/fs_enet/mac-scc.c                      |   37 
+ drivers/net/fs_enet/mii-bitbang.c                  |  107 -
+ drivers/net/fs_enet/mii-fec.c                      |  144 -
+ drivers/net/gianfar.c                              |  122 +
+ drivers/net/gianfar.h                              |   12 
+ drivers/net/gianfar_ethtool.c                      |   41 
+ drivers/video/offb.c                               |  192 +
+ drivers/video/ps3fb.c                              |    1 
+ include/asm-powerpc/asm-compat.h                   |    2 
+ include/asm-powerpc/machdep.h                      |    3 
+ include/asm-powerpc/pgtable-ppc32.h                |   15 
+ include/asm-powerpc/pmi.h                          |    1 
+ include/asm-powerpc/ps3.h                          |    7 
+ include/asm-powerpc/reg.h                          |    4 
+ include/asm-powerpc/uaccess.h                      |   21 
+ include/asm-powerpc/ucc_fast.h                     |    8 
+ include/linux/dma-attrs.h                          |    1 
+ include/linux/fs_enet_pd.h                         |    4 
+ include/linux/fsl_devices.h                        |    7 
+ include/linux/of_gpio.h                            |    2 
+ 111 files changed, 6416 insertions(+), 1612 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/cpm_qe/gpio.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/mcu-mpc8349emitx.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/pmc.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/upm-nand.txt
+ create mode 100644 Documentation/powerpc/dts-bindings/gpio/led.txt
+ create mode 100644 arch/powerpc/configs/ppc6xx_defconfig
+ delete mode 100644 arch/powerpc/platforms/83xx/pci.c
+ create mode 100644 arch/powerpc/platforms/83xx/suspend-asm.S
+ create mode 100644 arch/powerpc/platforms/83xx/suspend.c
+ create mode 100644 arch/powerpc/platforms/cell/cbe_powerbutton.c
+ create mode 100644 arch/powerpc/platforms/cell/cpufreq_spudemand.c
 
+Adrian Bunk (2):
+      powerpc: Remove duplicate 6xx option in Kconfig
+      powerpc/boot: Change spaces to tabs
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Andy Fleming (2):
+      powerpc: Add support for multiple gfar mdio interfaces
+      powerpc: Fix a bunch of sparse warnings in the qe_lib
+
+Anton Vorontsov (6):
+      powerpc/83xx: fix ULPI setup for MPC8315 processors
+      powerpc/fsl_soc: gianfar: don't probe disabled devices
+      powerpc: add FHCI USB, FSL MCU, FSL UPM and GPIO LEDs bindings
+      powerpc/fsl_uli1575: fix RTC quirk to work on MPC8572DS and MPC8610HPCD
+      powerpc/85xx/86xx: some refactoring for fsl_uli1575 code
+      powerpc/86xx: mpc8610_hpcd - add support for ULI RTC
+
+Arnd Bergmann (1):
+      powerpc: Fix support for latencytop
+
+Benjamin Herrenschmidt (2):
+      powerpc: Fix OF parsing of 64 bits PCI addresses
+      fbdev: Teaches offb about palette on radeon r5xx/r6xx
+
+Christian Krafft (3):
+      powerpc/cell/cpufreq: Add spu aware cpufreq governor
+      powerpc/cell: Cleanup sysreset_hack for IBM cell blades
+      powerpc/cell: Add support for power button of future IBM cell blades
+
+Geoff Levand (1):
+      powerpc/ps3: Update ps3_defconfig
+
+Jochen Friedrich (1):
+      powerpc: Add documentation for CPM GPIO banks
+
+John Rigby (2):
+      powerpc: pci config cleanup
+      powerpc: Move mpc83xx_add_bridge to fsl_pci.c
+
+Kumar Gala (7):
+      fs_enet: Remove !CONFIG_PPC_CPM_NEW_BINDING code
+      powerpc: Remove Kconfig PPC_CPM_NEW_BINDING
+      powerpc: rework FSL Book-E PTE access and TLB miss
+      powerpc/fsl: Minor TLBSYNC cleanup for FSL Book-E
+      powerpc/ep8248e: Unconditionally select PHYLIB for mdio_bitbang
+      Revert "powerpc/ep8248e: Fix compile problem if !CONFIG_FS_ENET"
+      powerpc: Add a 6xx defconfig
+
+Mark Nelson (2):
+      powerpc/dma: Use the struct dma_attrs in iommu code
+      powerpc/cell: Add DMA_ATTR_WEAK_ORDERING dma attribute and use in Cell IOMMU code
+
+Masakazu Mokuno (1):
+      powerpc/ps3: Add a sub-match id to ps3_system_bus
+
+Maxim Shchetynin (3):
+      powerpc/axonram: Use only one block device major number
+      powerpc/axonram: Enable partitioning of the Axons DDR2 DIMMs
+      powerpc/cell/edac: Log a syndrome code in case of correctable error
+
+Michael Ellerman (4):
+      powerpc: Use WARN_ON(1) instead of __WARN()
+      powerpc: Add a #define for aligning to a long-sized boundary
+      powerpc: Use PPC_LONG_ALIGN in uaccess.h
+      powerpc: Use PPC_LONG and PPC_LONG_ALIGN in lib/string.S
+
+Mike Mason (1):
+      powerpc/eeh: Don't panic when EEH_MAX_FAILS is exceeded
+
+Paul Gortmaker (1):
+      powerpc/mpc7448: add alias list to DTS, clean out old chosen node
+
+Scott Wood (6):
+      powerpc: Document Freescale power management nodes, and the sleep property.
+      powerpc: Update example SOC node in booting-without-of.txt.
+      powerpc/mpc83xx: Power Management support
+      powerpc/mpc8313erdb: Add power management to the device tree.
+      gianfar: Add magic packet and suspend/resume support.
+      Add fsl,magic-packet to, and clean up, the gianfar binding.
+
+Segher Boessenkool (1):
+      powerpc: Fix build bug with binutils < 2.18 and GCC < 4.2
+
+Timur Tabi (1):
+      powerpc: fix ALSA options in Freescale 85xx and 86xx defconfigs
+
+Torez Smith (1):
+      powerpc: Indicate which oprofile counters to use while in compat mode
+
+Wolfgang Grandegger (1):
+      of_gpio: Should use new <linux/gpio.h> header
