@@ -1,24 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 22266DE3F9
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp3.netcologne.de (smtp3.netcologne.de [194.8.194.66])
+	by ozlabs.org (Postfix) with ESMTP id C3EBBDEA74
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Jul 2008 04:22:04 +1000 (EST)
-Message-ID: <488624EE.9040502@freescale.com>
-Date: Tue, 22 Jul 2008 13:20:30 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Wed, 23 Jul 2008 05:18:49 +1000 (EST)
+Received: from antares (xdsl-87-79-216-93.netcologne.de [87.79.216.93])
+	by smtp3.netcologne.de (Postfix) with ESMTP id 2F29E6793F
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 22 Jul 2008 20:56:52 +0200 (CEST)
+Received: from antares (localhost [127.0.0.1])
+	by antares (Postfix) with ESMTPS id 02E79BA06C
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 22 Jul 2008 20:56:51 +0200 (CEST)
+Date: Tue, 22 Jul 2008 20:56:43 +0200
+From: =?UTF-8?q?Albrecht_Dre=C3=9F?= <albrecht.dress@arcor.de>
+Subject: [OT] write flash on MPC5200 board via jtag
+To: LinuxPPC Embedded <linuxppc-embedded@ozlabs.org>
+Message-Id: <1216753011l.5683l.0l@antares>
 MIME-Version: 1.0
-To: Mike Timmons <mike_timmons@trimble.com>
-Subject: Re: Problem with cuImage Linux entry from old U-boot
-References: <295C5089A56CE143B316E5F67CA99CB001D0626A@cowboy.inovate.inovate.com>
-	<20080722180506.GB13940@loki.buserror.net>
-	<161B3BAD77161449A144FF054231C3D60249D825@uss-am-xch-01.am.trimblecorp.net>
-In-Reply-To: <161B3BAD77161449A144FF054231C3D60249D825@uss-am-xch-01.am.trimblecorp.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Stephen Horton <SHorton@kodiaknetworks.com>, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature"; boundary="=-n+M+oDLiGUzN7wiJ1Gt1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -29,30 +29,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mike Timmons wrote:
-> Related question: I'm using a newer U-boot and managing the load of the
-> kernel and the device tree from separate partitions of my boot media.
-> 
-> Having the two partitions and managing the kernel and the tree
-> separately is a bit cumbersome, or maybe I'm just lazy. Regardless, can
-> I just use that "static" file name option when I build the kernel, load
-> the cuImage, and just invoke 
-> 
-> bootm <cuImageLoadAddress> ?
-> 
-> Will it work to just leave off the - <device tree Ram address>
-> 
-> I think I had it set-p right yesterday and I gave it a try, but no joy.
-> 
-> Can it be this simple to statically link the device tree with the kernel
-> build? For my application I don't see a benefit in keeping them separate
-> (the kernel and the tree).
+--=-n+M+oDLiGUzN7wiJ1Gt1
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, you can use cuImage to bundle the device tree with the kernel (note 
-that the type of image you use *must* match the type of bootm command 
-you use), though it's not recommended if you have a u-boot that can 
-properly pass a device tree.  cuImage relies on the bd_t to get 
-information from u-boot, and this is a very fragile structure, and 
-contains less information than the device tree.
+Hi,
 
--Scott
+sorry for a somewhat off-topic question...
+
+I want to design a mpc5200b board which is roughly derived from =20
+Freescale's 5200B Lite demo.  Obviously, I have the problem to =20
+initially write u-boot into the boot nor flash.  I believe this would =20
+be possible using the jtag/bsm interface (is that true?).
+
+Can you recommend any good hardware and software solution for that, if =20
+possible running on linux (OSS?)?  I don't need a "real" debugger =20
+(maybe an interface to gdb), just something to write the flash, so =20
+u-boot comes up.
+
+Thanks for any help,
+Albrecht.
+
+--=-n+M+oDLiGUzN7wiJ1Gt1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBIhi1yn/9unNAn/9ERAuEsAJ0ehKSJUwhuWOY838x/rU5ABzmMDQCePDld
+aLn905Y9HTPg6JPtz5mDIws=
+=Xz8D
+-----END PGP SIGNATURE-----
+
+--=-n+M+oDLiGUzN7wiJ1Gt1--
