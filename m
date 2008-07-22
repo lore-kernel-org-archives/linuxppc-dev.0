@@ -1,16 +1,33 @@
-Return-Path: <hch@lst.de>
-Date: Tue, 22 Jul 2008 11:49:50 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: arnd@arndb.de
-Subject: Re: [Cbe-oss-dev] [patch 7/9] azfs: initial submit of azfs,
-	a non-buffered filesystem
-Message-ID: <20080722094950.GA3234@lst.de>
-References: <20080715195139.316677337@arndb.de>
-	<20080715195739.820365109@arndb.de>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 61834DDF2C
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 20:05:13 +1000 (EST)
+Date: Tue, 22 Jul 2008 03:05:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH] Make u64 long long on all architectures (was: the
+	printk problem)
+Message-Id: <20080722030506.206a2cc2.akpm@linux-foundation.org>
+In-Reply-To: <20080705020350.GN14894@parisc-linux.org>
+References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
+	<20080704111540.ddffd241.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
+	<20080704132716.f1e12554.akpm@linux-foundation.org>
+	<20080704204252.GM14894@parisc-linux.org>
+	<20080704150100.1f7b8a65.akpm@linux-foundation.org>
+	<20080705020350.GN14894@parisc-linux.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080715195739.820365109@arndb.de>
-Cc: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Peter Anvin <hpa@zytor.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,47 +37,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 15, 2008 at 09:51:46PM +0200, arnd@arndb.de wrote:
-> From: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
+On Fri, 4 Jul 2008 20:03:51 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
+
+> [PATCH] Make u64 long long on all architectures
 > 
-> AZFS is a file system which keeps all files on memory mapped random
-> access storage. It was designed to work on the axonram device driver
-> for IBM QS2x blade servers, but can operate on any block device
-> that exports a direct_access method.
+> It is currently awkward to print a u64 type.  Some architectures use
+> unsigned long while others use unsigned long long.  Since unsigned long
+> long is 64-bit for all existing Linux architectures, change those that
+> use long to use long long.  Note that this applies only within the
+> kernel.  If u64 is being used in a C++ method definition, the symbol
+> mangling would change.
+> 
+> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+> 
+> diff --git a/include/asm-generic/int-l64.h b/include/asm-generic/int-l64.h
+> index 2af9b75..32f07bd 100644
+> --- a/include/asm-generic/int-l64.h
+> +++ b/include/asm-generic/int-l64.h
+> @@ -23,8 +23,13 @@ typedef unsigned short __u16;
+>  typedef __signed__ int __s32;
+>  typedef unsigned int __u32;
+>  
+> +#ifdef __KERNEL__
+> +typedef __signed__ long long __s64;
+> +typedef unsigned long long __u64;
+> +#else
+>  typedef __signed__ long __s64;
+>  typedef unsigned long __u64;
+> +#endif
+>  
+>  #endif /* __ASSEMBLY__ */
 
-I don't thinks it's quite ready yet.  I've had another look through the
-code and here's some issues I came up with:
+This is (IMO) a desirable change and will prevent a heck of a lot of
+goofing around, and will permit a lot of prior goofing around to
+be removed.
 
- - first thing is that it's not sparse clean, which is a bit of a red
-   flag.  The __iomem and __user annotations are there for a reason.
- - then even with annotations we still have the issue of
-   copy_{from,to}_user into mmio regions.  According to benh that's
-   still an open issue, but it at least needs very good explanations in
-   comments.
- - the aio_read and aio_write methods don't handle actually vectored
-   writes.  They need to iterate over all iovecs.  Or just implement
-   plain read/write given that it's not actually asynchronous.
- - the persistent superblock hack needs to go away.  Just clean up
-   everything in ->put_super.  If we want a fully persistant fs
-   we should just be using ext2 + xip
- - azfs_open looks very fishy.  there's never a need to do seeks
-   inside open.  if O_APPEND is set the VFS makes sure the read and
-   write methods get the right ppos pointer passed.
-   And truncation is done by the VFS for O_TRUNC opens through
-   ->setattr
- - azfs_znode should not have a size field of it's own, but the
-   filesystem should only use the inode one
- - the lists and inode_init_once should be called from the slab
-   constructor as in other filesystems
- - I don't think there is any point of having a slab cache
-   for the azfs_block structures
- - disk->driverfs_dev is not writeable to the filesystem, but for
-   driver use.  The information azfs stores in there is not used
-   anyway, so it could easily be removed.
- - lots of duplicated field in azfs_super where the superblock
-   ones should be used:
+But I bet there are lots of instalces of printk("%l", some_u64) down in
+arch code where the type of u64 _is_ known which will now spew warnings.
 
-	media_size	-> sb->s_maxbytes
-	sector_size	-> not needed at all
-	blkdev		-> sb->s_bdev
-	root		-> sb->s_root
+Oh well.
