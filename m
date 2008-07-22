@@ -1,21 +1,18 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.172])
-	by ozlabs.org (Postfix) with ESMTP id 65389DDF89
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 16:54:07 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so1431923wfg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 23:54:07 -0700 (PDT)
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3 3/3] ALSA SoC: Add Texas Instruments TLV320AIC26 codec
-	driver
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
+	by ozlabs.org (Postfix) with ESMTP id 13EA2DDE08
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 16:58:14 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so402943anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 23:58:09 -0700 (PDT)
+Message-ID: <fa686aa40807212358p17c824ia1d6516a87a7aac1@mail.gmail.com>
+Date: Tue, 22 Jul 2008 00:58:09 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
 To: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
 	liam.girdwood@wolfsonmicro.com
-Date: Tue, 22 Jul 2008 00:54:03 -0600
-Message-ID: <20080722065403.7306.53226.stgit@trillian.secretlab.ca>
-In-Reply-To: <20080722065352.7306.60679.stgit@trillian.secretlab.ca>
-References: <20080722065352.7306.60679.stgit@trillian.secretlab.ca>
+Subject: [PATCH v3 0/3] ALSA SoC: MPC5200 audio driver
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Sender: Grant Likely <glikely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: broonie@opensource.wolfsonmicro.com, timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,675 +23,285 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Hi all,
 
-ASoC Codec driver for the TLV320AIC26 device.  As it stands, this driver
-doesn't support all the modes and clocking options of the AIC16, but it
-is a start.
+Here is the latest series for adding MPC5200 I2S and TI AIC26 codec
+support to ALSA SoC.  I believe all the comments are addressed and I
+hope that this series is now ready to be merged.  I would really like
+to see these ones land in 2.6.27.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Thanks,
+g.
 
- sound/soc/codecs/Kconfig       |    4 
- sound/soc/codecs/Makefile      |    2 
- sound/soc/codecs/tlv320aic26.c |  519 ++++++++++++++++++++++++++++++++++++++++
- sound/soc/codecs/tlv320aic26.h |   93 +++++++
- 4 files changed, 618 insertions(+), 0 deletions(-)
+ include/sound/soc-of-simple.h   |   21 +
+ sound/soc/codecs/Kconfig        |    4 +
+ sound/soc/codecs/Makefile       |    2 +
+ sound/soc/codecs/tlv320aic26.c  |  519 +++++++++++++++++++++++
+ sound/soc/codecs/tlv320aic26.h  |   93 ++++
+ sound/soc/fsl/Kconfig           |   10 +
+ sound/soc/fsl/Makefile          |    5 +
+ sound/soc/fsl/mpc5200_psc_i2s.c |  884 +++++++++++++++++++++++++++++++++++++++
+ sound/soc/fsl/soc-of-simple.c   |  171 ++++++++
+ 9 files changed, 1709 insertions(+), 0 deletions(-)
 
-diff --git a/sound/soc/codecs/Kconfig b/sound/soc/codecs/Kconfig
-index 1db04a2..b399a64 100644
---- a/sound/soc/codecs/Kconfig
-+++ b/sound/soc/codecs/Kconfig
-@@ -47,6 +47,10 @@ config SND_SOC_CS4270_VD33_ERRATA
- 	bool
- 	depends on SND_SOC_CS4270
- 
-+config SND_SOC_TLV320AIC26
-+	tristate "TI TLB320AIC26 Codec support"
-+	depends on SND_SOC && SPI
-+
- config SND_SOC_TLV320AIC3X
- 	tristate
- 	depends on I2C
-diff --git a/sound/soc/codecs/Makefile b/sound/soc/codecs/Makefile
-index d7b97ab..dc0357e 100644
---- a/sound/soc/codecs/Makefile
-+++ b/sound/soc/codecs/Makefile
-@@ -9,6 +9,7 @@ snd-soc-wm8990-objs := wm8990.o
- snd-soc-wm9712-objs := wm9712.o
- snd-soc-wm9713-objs := wm9713.o
- snd-soc-cs4270-objs := cs4270.o
-+snd-soc-tlv320aic26-objs := tlv320aic26.o
- snd-soc-tlv320aic3x-objs := tlv320aic3x.o
- 
- obj-$(CONFIG_SND_SOC_AC97_CODEC)	+= snd-soc-ac97.o
-@@ -22,4 +23,5 @@ obj-$(CONFIG_SND_SOC_WM8990)	+= snd-soc-wm8990.o
- obj-$(CONFIG_SND_SOC_WM9712)	+= snd-soc-wm9712.o
- obj-$(CONFIG_SND_SOC_WM9713)	+= snd-soc-wm9713.o
- obj-$(CONFIG_SND_SOC_CS4270)	+= snd-soc-cs4270.o
-+obj-$(CONFIG_SND_SOC_TLV320AIC26)	+= snd-soc-tlv320aic26.o
- obj-$(CONFIG_SND_SOC_TLV320AIC3X)	+= snd-soc-tlv320aic3x.o
-diff --git a/sound/soc/codecs/tlv320aic26.c b/sound/soc/codecs/tlv320aic26.c
-new file mode 100644
-index 0000000..4621fda
---- /dev/null
-+++ b/sound/soc/codecs/tlv320aic26.c
-@@ -0,0 +1,519 @@
-+/*
-+ * Texas Instruments TLV320AIC26 low power audio CODEC
-+ * ALSA SoC CODEC driver
-+ *
-+ * Copyright (C) 2008 Secret Lab Technologies Ltd.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/init.h>
-+#include <linux/delay.h>
-+#include <linux/pm.h>
-+#include <linux/device.h>
-+#include <linux/sysfs.h>
-+#include <linux/spi/spi.h>
-+#include <sound/core.h>
-+#include <sound/pcm.h>
-+#include <sound/pcm_params.h>
-+#include <sound/soc.h>
-+#include <sound/soc-dapm.h>
-+#include <sound/soc-of-simple.h>
-+#include <sound/initval.h>
-+
-+#include "tlv320aic26.h"
-+
-+MODULE_DESCRIPTION("ASoC TLV320AIC26 codec driver");
-+MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
-+MODULE_LICENSE("GPL");
-+
-+/* AIC26 driver private data */
-+struct aic26 {
-+	struct spi_device *spi;
-+	struct snd_soc_codec codec;
-+	u16 reg_cache[AIC26_NUM_REGS];	/* shadow registers */
-+	int master;
-+	int datfm;
-+	int mclk;
-+
-+	/* Keyclick parameters */
-+	int keyclick_amplitude;
-+	int keyclick_freq;
-+	int keyclick_len;
-+};
-+
-+/* ---------------------------------------------------------------------
-+ * Register access routines
-+ */
-+static unsigned int aic26_reg_read(struct snd_soc_codec *codec,
-+				   unsigned int reg)
-+{
-+	struct aic26 *aic26 = codec->private_data;
-+	u16 *cache = codec->reg_cache;
-+	u16 cmd, value;
-+	u8 buffer[2];
-+	int rc;
-+
-+	if (reg >= AIC26_NUM_REGS) {
-+		WARN_ON_ONCE(1);
-+		return 0;
-+	}
-+
-+	/* Do SPI transfer; first 16bits are command; remaining is
-+	 * register contents */
-+	cmd = AIC26_READ_COMMAND_WORD(reg);
-+	buffer[0] = (cmd >> 8) & 0xff;
-+	buffer[1] = cmd & 0xff;
-+	rc = spi_write_then_read(aic26->spi, buffer, 2, buffer, 2);
-+	if (rc) {
-+		dev_err(&aic26->spi->dev, "AIC26 reg read error\n");
-+		return -EIO;
-+	}
-+	value = (buffer[0] << 8) | buffer[1];
-+
-+	/* Update the cache before returning with the value */
-+	cache[reg] = value;
-+	return value;
-+}
-+
-+static unsigned int aic26_reg_read_cache(struct snd_soc_codec *codec,
-+					 unsigned int reg)
-+{
-+	u16 *cache = codec->reg_cache;
-+
-+	if (reg >= AIC26_NUM_REGS) {
-+		WARN_ON_ONCE(1);
-+		return 0;
-+	}
-+
-+	return cache[reg];
-+}
-+
-+static int aic26_reg_write(struct snd_soc_codec *codec, unsigned int reg,
-+			   unsigned int value)
-+{
-+	struct aic26 *aic26 = codec->private_data;
-+	u16 *cache = codec->reg_cache;
-+	u16 cmd;
-+	u8 buffer[4];
-+	int rc;
-+
-+	if (reg >= AIC26_NUM_REGS) {
-+		WARN_ON_ONCE(1);
-+		return -EINVAL;
-+	}
-+
-+	/* Do SPI transfer; first 16bits are command; remaining is data
-+	 * to write into register */
-+	cmd = AIC26_WRITE_COMMAND_WORD(reg);
-+	buffer[0] = (cmd >> 8) & 0xff;
-+	buffer[1] = cmd & 0xff;
-+	buffer[2] = value >> 8;
-+	buffer[3] = value;
-+	rc = spi_write(aic26->spi, buffer, 4);
-+	if (rc) {
-+		dev_err(&aic26->spi->dev, "AIC26 reg read error\n");
-+		return -EIO;
-+	}
-+
-+	/* update cache before returning */
-+	cache[reg] = value;
-+	return 0;
-+}
-+
-+/* ---------------------------------------------------------------------
-+ * Digital Audio Interface Operations
-+ */
-+static int aic26_hw_params(struct snd_pcm_substream *substream,
-+			   struct snd_pcm_hw_params *params)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_device *socdev = rtd->socdev;
-+	struct snd_soc_codec *codec = socdev->codec;
-+	struct aic26 *aic26 = codec->private_data;
-+	int fsref, divisor, wlen, pval, jval, dval, qval;
-+	u16 reg;
-+
-+	dev_dbg(&aic26->spi->dev, "aic26_hw_params(substream=%p, params=%p)\n",
-+		substream, params);
-+	dev_dbg(&aic26->spi->dev, "rate=%i format=%i\n", params_rate(params),
-+		params_format(params));
-+
-+	switch (params_rate(params)) {
-+	case 8000:  fsref = 48000; divisor = AIC26_DIV_6; break;
-+	case 11025: fsref = 44100; divisor = AIC26_DIV_4; break;
-+	case 12000: fsref = 48000; divisor = AIC26_DIV_4; break;
-+	case 16000: fsref = 48000; divisor = AIC26_DIV_3; break;
-+	case 22050: fsref = 44100; divisor = AIC26_DIV_2; break;
-+	case 24000: fsref = 48000; divisor = AIC26_DIV_2; break;
-+	case 32000: fsref = 48000; divisor = AIC26_DIV_1_5; break;
-+	case 44100: fsref = 44100; divisor = AIC26_DIV_1; break;
-+	case 48000: fsref = 48000; divisor = AIC26_DIV_1; break;
-+	default:
-+		dev_dbg(&aic26->spi->dev, "bad rate\n"); return -EINVAL;
-+	}
-+
-+	/* select data word length */
-+	switch (params_format(params)) {
-+	case SNDRV_PCM_FORMAT_S8:     wlen = AIC26_WLEN_16; break;
-+	case SNDRV_PCM_FORMAT_S16_BE: wlen = AIC26_WLEN_16; break;
-+	case SNDRV_PCM_FORMAT_S24_BE: wlen = AIC26_WLEN_24; break;
-+	case SNDRV_PCM_FORMAT_S32_BE: wlen = AIC26_WLEN_32; break;
-+	default:
-+		dev_dbg(&aic26->spi->dev, "bad format\n"); return -EINVAL;
-+	}
-+
-+	/* Configure PLL */
-+	pval = 1;
-+	jval = (fsref == 44100) ? 7 : 8;
-+	dval = (fsref == 44100) ? 5264 : 1920;
-+	qval = 0;
-+	reg = 0x8000 | qval << 11 | pval << 8 | jval << 2;
-+	aic26_reg_write(codec, AIC26_REG_PLL_PROG1, reg);
-+	reg = dval << 2;
-+	aic26_reg_write(codec, AIC26_REG_PLL_PROG2, reg);
-+
-+	/* Audio Control 3 (master mode, fsref rate) */
-+	reg = aic26_reg_read_cache(codec, AIC26_REG_AUDIO_CTRL3);
-+	reg &= ~0xf800;
-+	if (aic26->master)
-+		reg |= 0x0800;
-+	if (fsref == 48000)
-+		reg |= 0x2000;
-+	aic26_reg_write(codec, AIC26_REG_AUDIO_CTRL3, reg);
-+
-+	/* Audio Control 1 (FSref divisor) */
-+	reg = aic26_reg_read_cache(codec, AIC26_REG_AUDIO_CTRL1);
-+	reg &= ~0x0fff;
-+	reg |= wlen | aic26->datfm | (divisor << 3) | divisor;
-+	aic26_reg_write(codec, AIC26_REG_AUDIO_CTRL1, reg);
-+
-+	return 0;
-+}
-+
-+/**
-+ * aic26_mute - Mute control to reduce noise when changing audio format
-+ */
-+static int aic26_mute(struct snd_soc_dai *dai, int mute)
-+{
-+	struct snd_soc_codec *codec = dai->codec;
-+	struct aic26 *aic26 = codec->private_data;
-+	u16 reg = aic26_reg_read_cache(codec, AIC26_REG_DAC_GAIN);
-+
-+	dev_dbg(&aic26->spi->dev, "aic26_mute(dai=%p, mute=%i)\n",
-+		dai, mute);
-+
-+	if (mute)
-+		reg |= 0x8080;
-+	else
-+		reg &= ~0x8080;
-+	aic26_reg_write(codec, AIC26_REG_DAC_GAIN, reg);
-+
-+	return 0;
-+}
-+
-+static int aic26_set_sysclk(struct snd_soc_dai *codec_dai,
-+			    int clk_id, unsigned int freq, int dir)
-+{
-+	struct snd_soc_codec *codec = codec_dai->codec;
-+	struct aic26 *aic26 = codec->private_data;
-+
-+	dev_dbg(&aic26->spi->dev, "aic26_set_sysclk(dai=%p, clk_id==%i,"
-+		" freq=%i, dir=%i)\n",
-+		codec_dai, clk_id, freq, dir);
-+
-+	/* MCLK needs to fall between 2MHz and 50 MHz */
-+	if ((freq < 2000000) || (freq > 50000000))
-+		return -EINVAL;
-+
-+	aic26->mclk = freq;
-+	return 0;
-+}
-+
-+static int aic26_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
-+{
-+	struct snd_soc_codec *codec = codec_dai->codec;
-+	struct aic26 *aic26 = codec->private_data;
-+
-+	dev_dbg(&aic26->spi->dev, "aic26_set_fmt(dai=%p, fmt==%i)\n",
-+		codec_dai, fmt);
-+
-+	/* set master/slave audio interface */
-+	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-+	case SND_SOC_DAIFMT_CBM_CFM: aic26->master = 1; break;
-+	case SND_SOC_DAIFMT_CBS_CFS: aic26->master = 0; break;
-+	default:
-+		dev_dbg(&aic26->spi->dev, "bad master\n"); return -EINVAL;
-+	}
-+
-+	/* interface format */
-+	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
-+	case SND_SOC_DAIFMT_I2S:     aic26->datfm = AIC26_DATFM_I2S; break;
-+	case SND_SOC_DAIFMT_DSP_A:   aic26->datfm = AIC26_DATFM_DSP; break;
-+	case SND_SOC_DAIFMT_RIGHT_J: aic26->datfm = AIC26_DATFM_RIGHTJ; break;
-+	case SND_SOC_DAIFMT_LEFT_J:  aic26->datfm = AIC26_DATFM_LEFTJ; break;
-+	default:
-+		dev_dbg(&aic26->spi->dev, "bad format\n"); return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+/* ---------------------------------------------------------------------
-+ * Digital Audio Interface Definition
-+ */
-+#define AIC26_RATES	(SNDRV_PCM_RATE_8000  | SNDRV_PCM_RATE_11025 |\
-+			 SNDRV_PCM_RATE_16000 | SNDRV_PCM_RATE_22050 |\
-+			 SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 |\
-+			 SNDRV_PCM_RATE_48000)
-+#define AIC26_FORMATS	(SNDRV_PCM_FMTBIT_S8     | SNDRV_PCM_FMTBIT_S16_BE |\
-+			 SNDRV_PCM_FMTBIT_S24_BE | SNDRV_PCM_FMTBIT_S32_BE)
-+
-+struct snd_soc_dai aic26_dai = {
-+	.name = "tlv320aic26",
-+	.playback = {
-+		.stream_name = "Playback",
-+		.channels_min = 2,
-+		.channels_max = 2,
-+		.rates = AIC26_RATES,
-+		.formats = AIC26_FORMATS,
-+	},
-+	.capture = {
-+		.stream_name = "Capture",
-+		.channels_min = 2,
-+		.channels_max = 2,
-+		.rates = AIC26_RATES,
-+		.formats = AIC26_FORMATS,
-+	},
-+	.ops = {
-+		.hw_params = aic26_hw_params,
-+	},
-+	.dai_ops = {
-+		.digital_mute = aic26_mute,
-+		.set_sysclk = aic26_set_sysclk,
-+		.set_fmt = aic26_set_fmt,
-+	},
-+};
-+EXPORT_SYMBOL_GPL(aic26_dai);
-+
-+/* ---------------------------------------------------------------------
-+ * ALSA controls
-+ */
-+static const char *aic26_capture_src_text[] = {"Mic", "Aux"};
-+static const struct soc_enum aic26_capture_src_enum =
-+	SOC_ENUM_SINGLE(AIC26_REG_AUDIO_CTRL1, 12, 2, aic26_capture_src_text);
-+
-+static const struct snd_kcontrol_new aic26_snd_controls[] = {
-+	/* Output */
-+	SOC_DOUBLE("PCM Playback Volume", AIC26_REG_DAC_GAIN, 8, 0, 0x7f, 1),
-+	SOC_DOUBLE("PCM Playback Switch", AIC26_REG_DAC_GAIN, 15, 7, 1, 1),
-+	SOC_SINGLE("PCM Capture Volume", AIC26_REG_ADC_GAIN, 8, 0x7f, 0),
-+	SOC_SINGLE("PCM Capture Mute", AIC26_REG_ADC_GAIN, 15, 1, 1),
-+	SOC_SINGLE("Keyclick activate", AIC26_REG_AUDIO_CTRL2, 15, 0x1, 0),
-+	SOC_SINGLE("Keyclick amplitude", AIC26_REG_AUDIO_CTRL2, 12, 0x7, 0),
-+	SOC_SINGLE("Keyclick frequency", AIC26_REG_AUDIO_CTRL2, 8, 0x7, 0),
-+	SOC_SINGLE("Keyclick period", AIC26_REG_AUDIO_CTRL2, 4, 0xf, 0),
-+	SOC_ENUM("Capture Source", aic26_capture_src_enum),
-+};
-+
-+/* ---------------------------------------------------------------------
-+ * SoC CODEC portion of driver: probe and release routines
-+ */
-+static int aic26_probe(struct platform_device *pdev)
-+{
-+	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
-+	struct snd_soc_codec *codec;
-+	struct snd_kcontrol *kcontrol;
-+	struct aic26 *aic26;
-+	int i, ret, err;
-+
-+	dev_info(&pdev->dev, "Probing AIC26 SoC CODEC driver\n");
-+	dev_dbg(&pdev->dev, "socdev=%p\n", socdev);
-+	dev_dbg(&pdev->dev, "codec_data=%p\n", socdev->codec_data);
-+
-+	/* Fetch the relevant aic26 private data here (it's already been
-+	 * stored in the .codec pointer) */
-+	aic26 = socdev->codec_data;
-+	if (aic26 == NULL) {
-+		dev_err(&pdev->dev, "aic26: missing codec pointer\n");
-+		return -ENODEV;
-+	}
-+	codec = &aic26->codec;
-+	socdev->codec = codec;
-+
-+	dev_dbg(&pdev->dev, "Registering PCMs, dev=%p, socdev->dev=%p\n",
-+		&pdev->dev, socdev->dev);
-+	/* register pcms */
-+	ret = snd_soc_new_pcms(socdev, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "aic26: failed to create pcms\n");
-+		return -ENODEV;
-+	}
-+
-+	/* register controls */
-+	dev_dbg(&pdev->dev, "Registering controls\n");
-+	for (i = 0; i < ARRAY_SIZE(aic26_snd_controls); i++) {
-+		kcontrol = snd_soc_cnew(&aic26_snd_controls[i], codec, NULL);
-+		err = snd_ctl_add(codec->card, kcontrol);
-+		WARN_ON(err < 0);
-+	}
-+
-+	/* CODEC is setup, we can register the card now */
-+	dev_dbg(&pdev->dev, "Registering card\n");
-+	ret = snd_soc_register_card(socdev);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "aic26: failed to register card\n");
-+		goto card_err;
-+	}
-+	return 0;
-+
-+ card_err:
-+	snd_soc_free_pcms(socdev);
-+	return ret;
-+}
-+
-+static int aic26_remove(struct platform_device *pdev)
-+{
-+	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
-+	snd_soc_free_pcms(socdev);
-+	return 0;
-+}
-+
-+struct snd_soc_codec_device aic26_soc_codec_dev = {
-+	.probe = aic26_probe,
-+	.remove = aic26_remove,
-+};
-+
-+/* ---------------------------------------------------------------------
-+ * SPI device portion of driver: sysfs files for debugging
-+ */
-+
-+static ssize_t aic26_keyclick_show(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
-+{
-+	struct aic26 *aic26 = dev_get_drvdata(dev);
-+	int val, amp, freq, len;
-+
-+	val = aic26_reg_read_cache(&aic26->codec, AIC26_REG_AUDIO_CTRL2);
-+	amp = (val >> 12) & 0x7;
-+	freq = (125 << ((val >> 8) & 0x7)) >> 1;
-+	len = 2 * (1 + ((val >> 4) & 0xf));
-+
-+	return sprintf(buf, "amp=%x freq=%iHz len=%iclks\n", amp, freq, len);
-+}
-+
-+/* Any write to the keyclick attribute will trigger the keyclick event */
-+static ssize_t aic26_keyclick_set(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf, size_t count)
-+{
-+	struct aic26 *aic26 = dev_get_drvdata(dev);
-+	int val;
-+
-+	val = aic26_reg_read_cache(&aic26->codec, AIC26_REG_AUDIO_CTRL2);
-+	val |= 0x8000;
-+	aic26_reg_write(&aic26->codec, AIC26_REG_AUDIO_CTRL2, val);
-+
-+	return count;
-+}
-+
-+DEVICE_ATTR(keyclick, 0644, aic26_keyclick_show, aic26_keyclick_set);
-+
-+/* ---------------------------------------------------------------------
-+ * SPI device portion of driver: probe and release routines and SPI
-+ * 				 driver registration.
-+ */
-+static int aic26_spi_probe(struct spi_device *spi)
-+{
-+	struct aic26 *aic26;
-+	int rc, i, reg;
-+
-+	dev_dbg(&spi->dev, "probing tlv320aic26 spi device\n");
-+
-+	/* Allocate driver data */
-+	aic26 = kzalloc(sizeof *aic26, GFP_KERNEL);
-+	if (!aic26)
-+		return -ENOMEM;
-+
-+	/* Initialize the driver data */
-+	aic26->spi = spi;
-+	dev_set_drvdata(&spi->dev, aic26);
-+
-+	/* Setup what we can in the codec structure so that the register
-+	 * access functions will work as expected.  More will be filled
-+	 * out when it is probed by the SoC CODEC part of this driver */
-+	aic26->codec.private_data = aic26;
-+	aic26->codec.name = "aic26";
-+	aic26->codec.owner = THIS_MODULE;
-+	aic26->codec.dai = &aic26_dai;
-+	aic26->codec.num_dai = 1;
-+	aic26->codec.read = aic26_reg_read;
-+	aic26->codec.write = aic26_reg_write;
-+	aic26->master = 1;
-+	mutex_init(&aic26->codec.mutex);
-+	INIT_LIST_HEAD(&aic26->codec.dapm_widgets);
-+	INIT_LIST_HEAD(&aic26->codec.dapm_paths);
-+	aic26->codec.reg_cache_size = AIC26_NUM_REGS;
-+	aic26->codec.reg_cache = aic26->reg_cache;
-+
-+	/* Reset the codec to power on defaults */
-+	aic26_reg_write(&aic26->codec, AIC26_REG_RESET, 0xBB00);
-+
-+	/* Power up CODEC */
-+	aic26_reg_write(&aic26->codec, AIC26_REG_POWER_CTRL, 0);
-+
-+	/* Audio Control 3 (master mode, fsref rate) */
-+	reg = aic26_reg_read(&aic26->codec, AIC26_REG_AUDIO_CTRL3);
-+	reg &= ~0xf800;
-+	reg |= 0x0800; /* set master mode */
-+	aic26_reg_write(&aic26->codec, AIC26_REG_AUDIO_CTRL3, reg);
-+
-+	/* Fill register cache */
-+	for (i = 0; i < ARRAY_SIZE(aic26->reg_cache); i++)
-+		aic26_reg_read(&aic26->codec, i);
-+
-+	/* Register the sysfs files for debugging */
-+	/* Create SysFS files */
-+	rc = device_create_file(&spi->dev, &dev_attr_keyclick);
-+	if (rc)
-+		dev_info(&spi->dev, "error creating sysfs files\n");
-+
-+#if defined(CONFIG_SND_SOC_OF_SIMPLE)
-+	/* Tell the of_soc helper about this codec */
-+	of_snd_soc_register_codec(&aic26_soc_codec_dev, aic26, &aic26_dai,
-+				  spi->dev.archdata.of_node);
-+#endif
-+
-+	dev_dbg(&spi->dev, "SPI device initialized\n");
-+	return 0;
-+}
-+
-+static int aic26_spi_remove(struct spi_device *spi)
-+{
-+	struct aic26 *aic26 = dev_get_drvdata(&spi->dev);
-+
-+	kfree(aic26);
-+
-+	return 0;
-+}
-+
-+static struct spi_driver aic26_spi = {
-+	.driver = {
-+		.name = "tlv320aic26",
-+		.owner = THIS_MODULE,
-+	},
-+	.probe = aic26_spi_probe,
-+	.remove = aic26_spi_remove,
-+};
-+
-+static int __init aic26_init(void)
-+{
-+	return spi_register_driver(&aic26_spi);
-+}
-+module_init(aic26_init);
-+
-+static void __exit aic26_exit(void)
-+{
-+	spi_unregister_driver(&aic26_spi);
-+}
-+module_exit(aic26_exit);
-diff --git a/sound/soc/codecs/tlv320aic26.h b/sound/soc/codecs/tlv320aic26.h
-new file mode 100644
-index 0000000..62b1f22
---- /dev/null
-+++ b/sound/soc/codecs/tlv320aic26.h
-@@ -0,0 +1,93 @@
-+/*
-+ * Texas Instruments TLV320AIC26 low power audio CODEC
-+ * register definitions
-+ *
-+ * Copyright (C) 2008 Secret Lab Technologies Ltd.
-+ */
-+
-+#ifndef _TLV320AIC16_H_
-+#define _TLV320AIC16_H_
-+
-+/* AIC26 Registers */
-+#define AIC26_READ_COMMAND_WORD(addr)	((1 << 15) | (addr << 5))
-+#define AIC26_WRITE_COMMAND_WORD(addr)	((0 << 15) | (addr << 5))
-+#define AIC26_PAGE_ADDR(page, offset)	((page << 6) | offset)
-+#define AIC26_NUM_REGS			AIC26_PAGE_ADDR(3, 0)
-+
-+/* Page 0: Auxillary data registers */
-+#define AIC26_REG_BAT1			AIC26_PAGE_ADDR(0, 0x05)
-+#define AIC26_REG_BAT2			AIC26_PAGE_ADDR(0, 0x06)
-+#define AIC26_REG_AUX			AIC26_PAGE_ADDR(0, 0x07)
-+#define AIC26_REG_TEMP1			AIC26_PAGE_ADDR(0, 0x09)
-+#define AIC26_REG_TEMP2			AIC26_PAGE_ADDR(0, 0x0A)
-+
-+/* Page 1: Auxillary control registers */
-+#define AIC26_REG_AUX_ADC		AIC26_PAGE_ADDR(1, 0x00)
-+#define AIC26_REG_STATUS		AIC26_PAGE_ADDR(1, 0x01)
-+#define AIC26_REG_REFERENCE		AIC26_PAGE_ADDR(1, 0x03)
-+#define AIC26_REG_RESET			AIC26_PAGE_ADDR(1, 0x04)
-+
-+/* Page 2: Audio control registers */
-+#define AIC26_REG_AUDIO_CTRL1		AIC26_PAGE_ADDR(2, 0x00)
-+#define AIC26_REG_ADC_GAIN		AIC26_PAGE_ADDR(2, 0x01)
-+#define AIC26_REG_DAC_GAIN		AIC26_PAGE_ADDR(2, 0x02)
-+#define AIC26_REG_SIDETONE		AIC26_PAGE_ADDR(2, 0x03)
-+#define AIC26_REG_AUDIO_CTRL2		AIC26_PAGE_ADDR(2, 0x04)
-+#define AIC26_REG_POWER_CTRL		AIC26_PAGE_ADDR(2, 0x05)
-+#define AIC26_REG_AUDIO_CTRL3		AIC26_PAGE_ADDR(2, 0x06)
-+
-+#define AIC26_REG_FILTER_COEFF_L_N0	AIC26_PAGE_ADDR(2, 0x07)
-+#define AIC26_REG_FILTER_COEFF_L_N1	AIC26_PAGE_ADDR(2, 0x08)
-+#define AIC26_REG_FILTER_COEFF_L_N2	AIC26_PAGE_ADDR(2, 0x09)
-+#define AIC26_REG_FILTER_COEFF_L_N3	AIC26_PAGE_ADDR(2, 0x0A)
-+#define AIC26_REG_FILTER_COEFF_L_N4	AIC26_PAGE_ADDR(2, 0x0B)
-+#define AIC26_REG_FILTER_COEFF_L_N5	AIC26_PAGE_ADDR(2, 0x0C)
-+#define AIC26_REG_FILTER_COEFF_L_D1	AIC26_PAGE_ADDR(2, 0x0D)
-+#define AIC26_REG_FILTER_COEFF_L_D2	AIC26_PAGE_ADDR(2, 0x0E)
-+#define AIC26_REG_FILTER_COEFF_L_D4	AIC26_PAGE_ADDR(2, 0x0F)
-+#define AIC26_REG_FILTER_COEFF_L_D5	AIC26_PAGE_ADDR(2, 0x10)
-+#define AIC26_REG_FILTER_COEFF_R_N0	AIC26_PAGE_ADDR(2, 0x11)
-+#define AIC26_REG_FILTER_COEFF_R_N1	AIC26_PAGE_ADDR(2, 0x12)
-+#define AIC26_REG_FILTER_COEFF_R_N2	AIC26_PAGE_ADDR(2, 0x13)
-+#define AIC26_REG_FILTER_COEFF_R_N3	AIC26_PAGE_ADDR(2, 0x14)
-+#define AIC26_REG_FILTER_COEFF_R_N4	AIC26_PAGE_ADDR(2, 0x15)
-+#define AIC26_REG_FILTER_COEFF_R_N5	AIC26_PAGE_ADDR(2, 0x16)
-+#define AIC26_REG_FILTER_COEFF_R_D1	AIC26_PAGE_ADDR(2, 0x17)
-+#define AIC26_REG_FILTER_COEFF_R_D2	AIC26_PAGE_ADDR(2, 0x18)
-+#define AIC26_REG_FILTER_COEFF_R_D4	AIC26_PAGE_ADDR(2, 0x19)
-+#define AIC26_REG_FILTER_COEFF_R_D5	AIC26_PAGE_ADDR(2, 0x1A)
-+
-+#define AIC26_REG_PLL_PROG1		AIC26_PAGE_ADDR(2, 0x1B)
-+#define AIC26_REG_PLL_PROG2		AIC26_PAGE_ADDR(2, 0x1C)
-+#define AIC26_REG_AUDIO_CTRL4		AIC26_PAGE_ADDR(2, 0x1D)
-+#define AIC26_REG_AUDIO_CTRL5		AIC26_PAGE_ADDR(2, 0x1E)
-+
-+/* fsref dividers; used in register 'Audio Control 1' */
-+enum aic26_divisors {
-+	AIC26_DIV_1	= 0,
-+	AIC26_DIV_1_5	= 1,
-+	AIC26_DIV_2	= 2,
-+	AIC26_DIV_3	= 3,
-+	AIC26_DIV_4	= 4,
-+	AIC26_DIV_5	= 5,
-+	AIC26_DIV_5_5	= 6,
-+	AIC26_DIV_6	= 7,
-+};
-+
-+/* Digital data format */
-+enum aic26_datfm {
-+	AIC26_DATFM_I2S		= 0 << 8,
-+	AIC26_DATFM_DSP		= 1 << 8,
-+	AIC26_DATFM_RIGHTJ	= 2 << 8, /* right justified */
-+	AIC26_DATFM_LEFTJ	= 3 << 8, /* left justified */
-+};
-+
-+/* Sample word length in bits; used in register 'Audio Control 1' */
-+enum aic26_wlen {
-+	AIC26_WLEN_16	= 0 << 10,
-+	AIC26_WLEN_20	= 1 << 10,
-+	AIC26_WLEN_24	= 2 << 10,
-+	AIC26_WLEN_32	= 3 << 10,
-+};
-+
-+#endif /* _TLV320AIC16_H_ */
+Cheers,
+g.
+
+On Tue, Jul 22, 2008 at 12:53 AM, Grant Likely
+<grant.likely@secretlab.ca> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> Simple utility layer for creating ASoC machine instances based on data
+> in the OpenFirmware device tree.  OF aware platform drivers and codec
+> drivers register themselves with this framework and the framework
+> automatically instantiates a machine driver.  At the moment, the driver
+> is not very capable and it is expected to be extended as more features
+> are needed for specifying the configuration in the device tree.
+>
+> This is most likely temporary glue code to work around limitations in
+> the ASoC v1 framework.  When v2 is merged, most of this driver will
+> need to be reworked.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>
+>  include/sound/soc-of-simple.h |   21 +++++
+>  sound/soc/fsl/Kconfig         |    3 +
+>  sound/soc/fsl/Makefile        |    3 +
+>  sound/soc/fsl/soc-of-simple.c |  171 +++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 198 insertions(+), 0 deletions(-)
+>
+> diff --git a/include/sound/soc-of-simple.h b/include/sound/soc-of-simple.h
+> new file mode 100644
+> index 0000000..696fc51
+> --- /dev/null
+> +++ b/include/sound/soc-of-simple.h
+> @@ -0,0 +1,21 @@
+> +/*
+> + * OF helpers for ALSA SoC
+> + *
+> + * Copyright (C) 2008, Secret Lab Technologies Ltd.
+> + */
+> +
+> +#ifndef _INCLUDE_SOC_OF_H_
+> +#define _INCLUDE_SOC_OF_H_
+> +
+> +#include <linux/of.h>
+> +#include <sound/soc.h>
+> +
+> +int of_snd_soc_register_codec(struct snd_soc_codec_device *codec_dev,
+> +                             void *codec_data, struct snd_soc_dai *dai,
+> +                             struct device_node *node);
+> +
+> +int of_snd_soc_register_platform(struct snd_soc_platform *platform,
+> +                                struct device_node *node,
+> +                                struct snd_soc_dai *cpu_dai);
+> +
+> +#endif /* _INCLUDE_SOC_OF_H_ */
+> diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+> index 3368ace..398f002 100644
+> --- a/sound/soc/fsl/Kconfig
+> +++ b/sound/soc/fsl/Kconfig
+> @@ -1,3 +1,6 @@
+> +config SND_SOC_OF_SIMPLE
+> +       tristate
+> +
+>  config SND_SOC_MPC8610
+>        bool "ALSA SoC support for the MPC8610 SOC"
+>        depends on MPC8610_HPCD
+> diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
+> index 62f680a..aa2100b 100644
+> --- a/sound/soc/fsl/Makefile
+> +++ b/sound/soc/fsl/Makefile
+> @@ -1,3 +1,6 @@
+> +# Simple machine driver that extracts configuration from the OF device tree
+> +obj-$(CONFIG_SND_SOC_OF_SIMPLE) += soc-of-simple.o
+> +
+>  # MPC8610 HPCD Machine Support
+>  obj-$(CONFIG_SND_SOC_MPC8610_HPCD) += mpc8610_hpcd.o
+>
+> diff --git a/sound/soc/fsl/soc-of-simple.c b/sound/soc/fsl/soc-of-simple.c
+> new file mode 100644
+> index 0000000..0382fda
+> --- /dev/null
+> +++ b/sound/soc/fsl/soc-of-simple.c
+> @@ -0,0 +1,171 @@
+> +/*
+> + * OF helpers for ALSA SoC Layer
+> + *
+> + * Copyright (C) 2008, Secret Lab Technologies Ltd.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/moduleparam.h>
+> +#include <linux/init.h>
+> +#include <linux/delay.h>
+> +#include <linux/pm.h>
+> +#include <linux/bitops.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/of.h>
+> +#include <sound/core.h>
+> +#include <sound/pcm.h>
+> +#include <sound/pcm_params.h>
+> +#include <sound/soc.h>
+> +#include <sound/soc-of-simple.h>
+> +#include <sound/initval.h>
+> +
+> +MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
+> +MODULE_LICENSE("GPL");
+> +MODULE_DESCRIPTION("ALSA SoC OpenFirmware bindings");
+> +
+> +static DEFINE_MUTEX(of_snd_soc_mutex);
+> +static LIST_HEAD(of_snd_soc_device_list);
+> +static int of_snd_soc_next_index;
+> +
+> +struct of_snd_soc_device {
+> +       int id;
+> +       struct list_head list;
+> +       struct snd_soc_device device;
+> +       struct snd_soc_machine machine;
+> +       struct snd_soc_dai_link dai_link;
+> +       struct platform_device *pdev;
+> +       struct device_node *platform_node;
+> +       struct device_node *codec_node;
+> +};
+> +
+> +static struct snd_soc_ops of_snd_soc_ops = {
+> +};
+> +
+> +static struct of_snd_soc_device *
+> +of_snd_soc_get_device(struct device_node *codec_node)
+> +{
+> +       struct of_snd_soc_device *of_soc;
+> +
+> +       list_for_each_entry(of_soc, &of_snd_soc_device_list, list) {
+> +               if (of_soc->codec_node == codec_node)
+> +                       return of_soc;
+> +       }
+> +
+> +       of_soc = kzalloc(sizeof(struct of_snd_soc_device), GFP_KERNEL);
+> +       if (!of_soc)
+> +               return NULL;
+> +
+> +       /* Initialize the structure and add it to the global list */
+> +       of_soc->codec_node = codec_node;
+> +       of_soc->id = of_snd_soc_next_index++;
+> +       of_soc->machine.dai_link = &of_soc->dai_link;
+> +       of_soc->machine.num_links = 1;
+> +       of_soc->device.machine = &of_soc->machine;
+> +       of_soc->dai_link.ops = &of_snd_soc_ops;
+> +       list_add(&of_soc->list, &of_snd_soc_device_list);
+> +
+> +       return of_soc;
+> +}
+> +
+> +static void of_snd_soc_register_device(struct of_snd_soc_device *of_soc)
+> +{
+> +       struct platform_device *pdev;
+> +       int rc;
+> +
+> +       /* Only register the device if both the codec and platform have
+> +        * been registered */
+> +       if ((!of_soc->device.codec_data) || (!of_soc->platform_node))
+> +               return;
+> +
+> +       pr_info("platform<-->codec match achieved; registering machine\n");
+> +
+> +       pdev = platform_device_alloc("soc-audio", of_soc->id);
+> +       if (!pdev) {
+> +               pr_err("of_soc: platform_device_alloc() failed\n");
+> +               return;
+> +       }
+> +
+> +       pdev->dev.platform_data = of_soc;
+> +       platform_set_drvdata(pdev, &of_soc->device);
+> +       of_soc->device.dev = &pdev->dev;
+> +
+> +       /* The ASoC device is complete; register it */
+> +       rc = platform_device_add(pdev);
+> +       if (rc) {
+> +               pr_err("of_soc: platform_device_add() failed\n");
+> +               return;
+> +       }
+> +
+> +}
+> +
+> +int of_snd_soc_register_codec(struct snd_soc_codec_device *codec_dev,
+> +                             void *codec_data, struct snd_soc_dai *dai,
+> +                             struct device_node *node)
+> +{
+> +       struct of_snd_soc_device *of_soc;
+> +       int rc = 0;
+> +
+> +       pr_info("registering ASoC codec driver: %s\n", node->full_name);
+> +
+> +       mutex_lock(&of_snd_soc_mutex);
+> +       of_soc = of_snd_soc_get_device(node);
+> +       if (!of_soc) {
+> +               rc = -ENOMEM;
+> +               goto out;
+> +       }
+> +
+> +       /* Store the codec data */
+> +       of_soc->device.codec_data = codec_data;
+> +       of_soc->device.codec_dev = codec_dev;
+> +       of_soc->dai_link.name = (char *)node->name;
+> +       of_soc->dai_link.stream_name = (char *)node->name;
+> +       of_soc->dai_link.codec_dai = dai;
+> +
+> +       /* Now try to register the SoC device */
+> +       of_snd_soc_register_device(of_soc);
+> +
+> + out:
+> +       mutex_unlock(&of_snd_soc_mutex);
+> +       return rc;
+> +}
+> +EXPORT_SYMBOL_GPL(of_snd_soc_register_codec);
+> +
+> +int of_snd_soc_register_platform(struct snd_soc_platform *platform,
+> +                                struct device_node *node,
+> +                                struct snd_soc_dai *cpu_dai)
+> +{
+> +       struct of_snd_soc_device *of_soc;
+> +       struct device_node *codec_node;
+> +       const phandle *handle;
+> +       int len, rc = 0;
+> +
+> +       pr_info("registering ASoC platform driver: %s\n", node->full_name);
+> +
+> +       handle = of_get_property(node, "codec-handle", &len);
+> +       if (!handle || len < sizeof(handle))
+> +               return -ENODEV;
+> +       codec_node = of_find_node_by_phandle(*handle);
+> +       if (!codec_node)
+> +               return -ENODEV;
+> +       pr_info("looking for codec: %s\n", codec_node->full_name);
+> +
+> +       mutex_lock(&of_snd_soc_mutex);
+> +       of_soc = of_snd_soc_get_device(codec_node);
+> +       if (!of_soc) {
+> +               rc = -ENOMEM;
+> +               goto out;
+> +       }
+> +
+> +       of_soc->platform_node = node;
+> +       of_soc->dai_link.cpu_dai = cpu_dai;
+> +       of_soc->device.platform = platform;
+> +       of_soc->machine.name = of_soc->dai_link.cpu_dai->name;
+> +
+> +       /* Now try to register the SoC device */
+> +       of_snd_soc_register_device(of_soc);
+> +
+> + out:
+> +       mutex_unlock(&of_snd_soc_mutex);
+> +       return rc;
+> +}
+> +EXPORT_SYMBOL_GPL(of_snd_soc_register_platform);
+>
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
