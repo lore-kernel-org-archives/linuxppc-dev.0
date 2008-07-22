@@ -1,21 +1,26 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 2193DDE15A
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 00:53:34 +1000 (EST)
-Date: Tue, 22 Jul 2008 18:53:30 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: latest tree build failure -- cpm uart & gpio
-Message-ID: <20080722145330.GA2315@polina.dev.rtsoft.ru>
-References: <FBE46DB6-A457-4AD8-9D6E-9D639AD04325@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <FBE46DB6-A457-4AD8-9D6E-9D639AD04325@freescale.com>
-Cc: David Brownell <david-b@pacbell.net>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <becky.bruce@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CC213DDE0D
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 00:55:22 +1000 (EST)
+Message-Id: <3A268FF3-E574-44A6-B975-92D98C553603@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+To: Sean MacLennan <smaclennan@pikatech.com>,
+	Grant Likely <grant.likely@secretlab.ca>, Wolfgang Denk <wd@denx.de>,
+	Stefan Roese <sr@denx.de>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <20080721162446.2c23ab01@lappy.seanm.ca>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: going to OLS?
+Date: Tue, 22 Jul 2008 10:55:11 -0400
+References: <20080718163338.D87BF2488A@gemini.denx.de>
+	<CC5CD6EB-BE4D-4630-B054-EEA389920714@freescale.com>
+	<fa686aa40807211315x56d15c2cocbaa17bc16d46de3@mail.gmail.com>
+	<20080721162446.2c23ab01@lappy.seanm.ca>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 22, 2008 at 08:54:16AM -0500, Kumar Gala wrote:
-> can someone look at the following compile failure in linus's tree.  I'm 
-> guessing part of this has to do with Alan's tty changes (and might  
-> already be addressed?).
+So,
+
+There doesn't seem to be an official plan, so I'm making one....   
+Kumar, Andy, and I will be at the Black Thorn at 7:30-ish this  
+evening.  Anybody that wants to join us welcome.
+
+Cheers,
+Becky
+
+
+On Jul 21, 2008, at 4:24 PM, Sean MacLennan wrote:
+
+> On Mon, 21 Jul 2008 14:15:53 -0600
+> "Grant Likely" <grant.likely@secretlab.ca> wrote:
 >
-> include/asm-generic/gpio.h:131: error: implicit declaration of function 
-> 'gpio_get_value'
-> include/asm-generic/gpio.h:137: error: implicit declaration of function 
-> 'gpio_set_value'
-
-I think this patch should help:
-
-[OF] of_gpio: should use new <linux/gpio.h> header
-http://patchwork.ozlabs.org/linuxppc/patch?id=18750
-
-David, can you please Ack it? See Benjamin's mail:
-http://ozlabs.org/pipermail/linuxppc-dev/2008-July/060109.html
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+>> BTW, if anyone else wants to receive the contact phone list, then  
+>> send
+>> me your phone number ASAP.  I'll be sending it out this evening.
+>
+> My home phone number is 613-728-1680.
+>
+> Cheers,
+>  Sean
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
