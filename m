@@ -1,16 +1,16 @@
-Return-Path: <mike.koss@ngc.com>
-Received: from xmrm0101.northgrum.com (xmrm0101.northgrum.com
-	[155.104.240.104]) by ozlabs.org (Postfix) with ESMTP id 35070DDE0F
+Return-Path: <akash.bhatnagar@vnl.in>
+Received: from mailx.vnl.in (unknown [125.19.52.136])
+	by ozlabs.org (Postfix) with ESMTP id C1046DDEE2
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Jul 2008 09:09:26 +1000 (EST)
-MIME-Version: 1.0
+	Tue, 22 Jul 2008 13:10:08 +1000 (EST)
+From: Akash Bhatnagar <akash.bhatnagar@vnl.in>
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Date: Tue, 22 Jul 2008 08:29:11 +0530
+Subject: Help required i2c-mpc driver 
+Message-ID: <50660FB7D5A72645933E13611D51D54A10BF96EB20@mailserver.vnl.in>
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C8EB84.AFF2D656"
-Subject: Linux on V4FX100
-Date: Mon, 21 Jul 2008 17:54:10 -0500
-Message-ID: <EDAE140DF1B2FC42B5867C22CA0B333FFA5D4A@XMBIL132.northgrum.com>
-From: "Koss, Mike (Mission Systems)" <mike.koss@ngc.com>
-To: <linuxppc-embedded@ozlabs.org>
+	boundary="_000_50660FB7D5A72645933E13611D51D54A10BF96EB20mailservervnl_"
+MIME-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,281 +21,484 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C8EB84.AFF2D656
-Content-Type: text/plain;
-	charset="us-ascii"
+--_000_50660FB7D5A72645933E13611D51D54A10BF96EB20mailservervnl_
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Hopefully beating the bushes in many arenas will help me ellict some
-responses.
+Hi,
+            I am working on implementation of I2C driver for both MPC8540(A=
+) & MPC8560(B) in Master Mode scenarios. The problem I am facing is given b=
+elow
 
-I have a system on a V4FX100 that is using both PPC405s. Each system is
-an exact clone of the other, with some minor variations like how the
-other's memory controller is mapped in. (They both can't be mapped to
-0x0 :P).
+If I read any buffer part via I2C bus from A to B continuously,the driver i=
+s working fine. However during this processing ,if B tries to read any buff=
+er register from A the bus will goes into low state (both SCL and SDA are l=
+ow).The error that it was showing are mainly NO ACK  and Remote IO errors. =
+After this I suspect that it may be the problem form slave receive function=
+ that I implemented. The reference Manual says that you have to set I2CCR[T=
+XAK] bit after slave receive finishes. But how does slave knows wether this=
+ will last byte of transaction.Only Master have this knowledge. The slave i=
+mplementation is as follows:-
 
-I have a Linux 2.6.22 image (arch/ppc) that I've built that will run on
-one and not the other. And by not run, I mean it boots successfully,
-gives me a console, I run the applications and then in some point in
-time in the near future the system crashes, semi-gracefully. The kernel
-crashes and prints out the crash, hence the gracefully part, but its
-dead in the water. What can an application that doesn't interface with
-any special kernel things do to cause the crash? The applications use
-only 'normal' things, no specific drivers (that haven't been completely
-tested ;).
+#ifdef CONFIG_MPC_I2C_SLAVE
 
-If I use a different software load, it runs fine with no problems. In
-fact, I currently use it for running and developing other software.
+                        // lost arbitration?
+                        if ((priv->read(&priv->regs->i2csr) & MPC_I2CSR_MAL=
+))
+                        {
 
-Has anyone seen anything similar when using both PPCs? From what I can
-tell it looks like it may be related to timers, but that's only guessing
-and inconclusive. I don't have any extra timers (plb/opb/xps_timer)
-built into either system.
+                                    priv->write(&priv->regs->i2csr, 0, MPC_=
+I2CSR_MAL);
+                                    if ((priv->read(&priv->regs->i2csr) & M=
+PC_I2CSR_MAAS))
+                                    {
+                                                mpc_slave_address_match(pri=
+v);
+                                    }
+                        }
+                        else
+                        {
+                                    if ((priv->read(&priv->regs->i2csr) & M=
+PC_I2CSR_MAAS))
+                                    {
+                                                mpc_slave_address_match(pri=
+v);
+                                    }
+                                    else if ((priv->read(&priv->regs->i2ccr=
+) & MPC_I2CCR_MTX))
+                                    {
+                                                mpc_slave_tx(priv);
+                                    }
+                                    else
+                                    {
+                                                mpc_slave_rx(priv);
+                                    }
+                        }
+#endif
+            }
 
-Thanks,
-Mike
+static inline void mpc_slave_rx(struct mpc_i2c_private *priv)
+{
+            buffer =3D priv->read(&priv->regs->i2cdr);
 
-Here's the crash output:
-Oops: kernel access of bad area, sig: 11 [#1]
-NIP: c002c960 LR: c002c960 CTR: 00000000
-REGS: c1363d90 TRAP: 0300   Not tainted  (2.6.22-rc2-default)
-MSR: 00021030 <ME,IR,DR>  CR: 48002488  XER: 20000055
-DAR: 0000029b, DSISR: 00800000
-TASK =3D c102f7b0[496] 'mmngr.exe' THREAD: c1362000
-GPR00: c002c960 c1363e40 c102f7b0 c1363eb0 c01dd9e8 00000000 00000001
-00000001
-GPR08: 00368044 00000001 c103c580 00000000 e7433f04 10030ea8 ffffffff
-ffffffff
-GPR16: 7f9d1a04 65786563 10080000 7ff907f0 00000001 00000000 7ff90808
-100c09f0
-GPR24: 10002830 10015068 c1363f18 c1363eb0 00000000 00000000 0000027b
-c1363eb0
-NIP [c002c960] __remove_hrtimer+0x3c/0x54
-LR [c002c960] __remove_hrtimer+0x3c/0x54
-Call Trace:
-[c1363e40] [c002c960] __remove_hrtimer+0x3c/0x54 (unreliable)
-[c1363e60] [c002c9d8] hrtimer_try_to_cancel+0x60/0x80
-[c1363e70] [c002ca14] hrtimer_cancel+0x1c/0x3c
-[c1363e80] [c0187af8] do_nanosleep+0x68/0xa4
-[c1363ea0] [c002ce70] hrtimer_nanosleep+0x48/0x184
-[c1363f10] [c002d044] sys_nanosleep+0x98/0xcc
-[c1363f40] [c0002c30] ret_from_syscall+0x0/0x3c
-Instruction dump:
-90010024 7c9f2378 8004000c 7c7e1b78 7f801800 7cbd2b78 40be000c 480b0fed
-907f000c 389f0008 7fc3f378 480b108d <93be0020> 80010024 bba10014
-7c0803a6
-Oops: kernel access of bad area, sig: 11 [#2]
-NIP: c00093bc LR: c00093d0 CTR: c0077d9c
-REGS: c01efef0 TRAP: 0300   Not tainted  (2.6.22-rc2-default)
-MSR: 00029030 <EE,ME,IR,DR>  CR: 24000082  XER: 00000055
-DAR: 00000027, DSISR: 00000000
-TASK =3D c01db980[0] 'swapper' THREAD: c01ee000
-GPR00: 00000000 c01effa0 c01db980 00000000 c00088d4 00000000 c020b414
-00000000
-GPR08: 00000002 c01ee028 28002448 00000010 8a2c8992 ffffffff ffffffff
-ffffffff
-GPR16: ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff
-ffffffff
-GPR24: ffffffff ffffffff c0209000 c0200000 00000000 c01ee000 ffffffff
-ffffffff
-NIP [c00093bc] cpu_idle+0xc0/0xd8
-LR [c00093d0] cpu_idle+0xd4/0xd8
-Call Trace:
-[c01effa0] [c00093d0] cpu_idle+0xd4/0xd8 (unreliable)
-[c01effb0] [c0185f5c] rest_init+0x50/0x60
-[c01effc0] [c01f09e4] start_kernel+0x2b4/0x2c8
-[c01efff0] [c000225c] start_here+0x44/0xb0
-Instruction dump:
-60008000 7c000124 39200010 381f0028 7d600028 7d6b4b78 7c00022c 7d60012d
-40a2fff0 4800000c 7c210b78 7ffffb78 <801f0028> 70090008 4182ff70
-7c421378
-Kernel panic - not syncing: Attempted to kill the idle task!
-Rebooting in 180 seconds..<NULL>
+            -------------Some Montavista Event Broker Part-----------
 
-------_=_NextPart_001_01C8EB84.AFF2D656
-Content-Type: text/html;
-	charset="us-ascii"
+}
+
+Since I am new in I2C functionality, Please point out any mistake I was doi=
+ng.
+
+This message and any attachment therewith is privileged, confidential and p=
+roprietary in nature and the property of the originator. It is intended sol=
+ely and exclusively for use by the individual to whom it is addressed. It s=
+hould not be circulated or used for any purpose other than for what is stat=
+ed. If you have received this message erroneously, please notify the origin=
+ator immediately. If you are not the intended recipient, you are notified t=
+hat you are strictly prohibited from using, copying, altering, or disclosin=
+g the contents of this message and are called upon to delete the same from =
+your system. Any contradictory action by you may invite penal consequences.=
+ Vihaan Networks Limited accepts no responsibility for loss or damage arisi=
+ng from the use of the information transmitted by this email including but =
+not limited to damage from virus."
+
+--_000_50660FB7D5A72645933E13611D51D54A10BF96EB20mailservervnl_
+Content-Type: text/html; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7653.38">
-<TITLE>Linux on V4FX100</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:sc=
+hemas-microsoft-com:office:word" xmlns=3D"http://www.w3.org/TR/REC-html40">
 
-<P><FONT SIZE=3D2 FACE=3D"Arial">Hopefully beating the bushes in many =
-arenas will help me ellict some responses.</FONT>
-</P>
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:1519002094;
+	mso-list-type:hybrid;
+	mso-list-template-ids:1939255154 -600781912 67698713 67698715 67698703 676=
+98713 67698715 67698703 67698713 67698715;}
+@list l0:level1
+	{mso-level-number-format:roman-lower;
+	mso-level-text:"%1\)";
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	margin-left:1.0in;
+	text-indent:-.5in;}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
 
-<P><FONT SIZE=3D2 FACE=3D"Arial">I have a system on a V4FX100 that is =
-using both PPC405s. Each system is an exact clone of the other, with =
-some minor variations like how the other's memory controller is mapped =
-in. (They both can't be mapped to 0x0 :P).</FONT></P>
+</head>
 
-<P><FONT SIZE=3D2 FACE=3D"Arial">I have a Linux 2.6.22 image (arch/ppc) =
-that I've built that will run on one and not the other. And by not run, =
-I mean it boots successfully, gives me a console, I run the applications =
-and then in some point in time in the near future the system crashes, =
-semi-gracefully. The kernel crashes and prints out the crash, hence the =
-gracefully part, but its dead in the water. What can an application that =
-doesn't interface with any special kernel things do to cause the crash? =
-The applications use only 'normal' things, no specific drivers (that =
-haven't been completely tested ;).</FONT></P>
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
 
-<P><FONT SIZE=3D2 FACE=3D"Arial">If I use a different software load, it =
-runs fine with no problems. In fact, I currently use it for running and =
-developing other software.</FONT></P>
+<div class=3DSection1>
 
-<P><FONT SIZE=3D2 FACE=3D"Arial">Has anyone seen anything similar when =
-using both PPCs? From what I can tell it looks like it may be related to =
-timers, but that's only guessing and inconclusive. I don't have any =
-extra timers (plb/opb/xps_timer) built into either system.</FONT></P>
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0=2E0pt;
+font-family:Arial'>Hi,<o:p></o:p></span></font></p>
 
-<P><FONT SIZE=3D2 FACE=3D"Arial">Thanks,</FONT>
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0=2E0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp; I
+am working on implementation of I2C driver for both MPC8540(A) &amp; MPC856=
+0(B)
+in Master Mode scenarios. The problem I am facing is given below<o:p></o:p>=
+</span></font></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Mike</FONT>
-</P>
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0=2E0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp; <o:p></o:p></span></font></p>
 
-<P><FONT SIZE=3D2 FACE=3D"Arial">Here's the crash output:</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><font size=3D2 face=3DArial=
+><span
+style=3D'font-size:10.0pt;font-family:Arial'>If I read any buffer part via =
+I2C
+bus from A to B continuously,the driver is working fine. However during this
+processing ,if B tries to read any buffer register from A the bus will goes
+into low state (both SCL and SDA are low).The error that it was showing are=
+ mainly
+NO ACK &nbsp;and Remote IO errors. After this I suspect that it may be the
+problem form <b><span style=3D'font-weight:bold'>slave receive function </s=
+pan></b>that
+I implemented. The reference Manual says that you have to set I2CCR[TXAK] b=
+it
+after slave receive finishes. But how does slave knows wether this will last
+byte of transaction.Only Master have this knowledge. The slave implementati=
+on
+is as follows:- <o:p></o:p></span></font></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Oops: kernel access of bad area, sig: =
-11 [#1]</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><font size=3D2 face=3DArial=
+><span
+style=3D'font-size:10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font=
+></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">NIP: c002c960 LR: c002c960 CTR: =
-00000000</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>#ifdef
+CONFIG_MPC_I2C_SLAVE<o:p></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">REGS: c1363d90 TRAP: 0300&nbsp;&nbsp; =
-Not tainted&nbsp; (2.6.22-rc2-default)</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'><o:p>&nbsp;<=
+/o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">MSR: 00021030 &lt;ME,IR,DR&gt;&nbsp; =
-CR: 48002488&nbsp; XER: 20000055</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //
+lost arbitration?<o:p></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">DAR: 0000029b, DSISR: 00800000</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if
+((priv-&gt;read(&amp;priv-&gt;regs-&gt;i2csr) &amp; MPC_I2CSR_MAL)) <o:p></=
+o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">TASK =3D c102f7b0[496] 'mmngr.exe' =
-THREAD: c1362000</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<o:p></o:p></span></fo=
+nt></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">GPR00: c002c960 c1363e40 c102f7b0 =
-c1363eb0 c01dd9e8 00000000 00000001 00000001</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <o:p></o:p></span></font><=
+/i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">GPR08: 00368044 00000001 c103c580 =
-00000000 e7433f04 10030ea8 ffffffff ffffffff</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; priv-&gt;write(&amp;priv-&=
+gt;regs-&gt;i2csr,
+0, MPC_I2CSR_MAL);<o:p></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">GPR16: 7f9d1a04 65786563 10080000 =
-7ff907f0 00000001 00000000 7ff90808 100c09f0</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if
+((priv-&gt;read(&amp;priv-&gt;regs-&gt;i2csr) &amp; MPC_I2CSR_MAAS)) <o:p><=
+/o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">GPR24: 10002830 10015068 c1363f18 =
-c1363eb0 00000000 00000000 0000027b c1363eb0</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<o:p></o:p></span></font>=
+</i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">NIP [c002c960] =
-__remove_hrtimer+0x3c/0x54</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mpc_slave_address_match(priv)=
+;<o:p></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">LR [c002c960] =
-__remove_hrtimer+0x3c/0x54</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></span></font>=
+</i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Call Trace:</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
+<o:p></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">[c1363e40] [c002c960] =
-__remove_hrtimer+0x3c/0x54 (unreliable)</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else
+<o:p></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">[c1363e60] [c002c9d8] =
-hrtimer_try_to_cancel+0x60/0x80</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<o:p></o:p></span></fo=
+nt></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">[c1363e70] [c002ca14] =
-hrtimer_cancel+0x1c/0x3c</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if
+((priv-&gt;read(&amp;priv-&gt;regs-&gt;i2csr) &amp; MPC_I2CSR_MAAS)) <o:p><=
+/o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">[c1363e80] [c0187af8] =
-do_nanosleep+0x68/0xa4</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<o:p></o:p></span></font>=
+</i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">[c1363ea0] [c002ce70] =
-hrtimer_nanosleep+0x48/0x184</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mpc_slave_address_match(priv)=
+;<o:p></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">[c1363f10] [c002d044] =
-sys_nanosleep+0x98/0xcc</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
+<o:p></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">[c1363f40] [c0002c30] =
-ret_from_syscall+0x0/0x3c</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else
+if ((priv-&gt;read(&amp;priv-&gt;regs-&gt;i2ccr) &amp; MPC_I2CCR_MTX)) <o:p=
+></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Instruction dump:</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<o:p></o:p></span></font>=
+</i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">90010024 7c9f2378 8004000c 7c7e1b78 =
-7f801800 7cbd2b78 40be000c 480b0fed</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mpc_slave_tx(priv);<o:p></o:p=
+></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">907f000c 389f0008 7fc3f378 480b108d =
-&lt;93be0020&gt; 80010024 bba10014 7c0803a6</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
+<o:p></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Oops: kernel access of bad area, sig: =
-11 [#2]</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else
+<o:p></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">NIP: c00093bc LR: c00093d0 CTR: =
-c0077d9c</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<o:p></o:p></span></font>=
+</i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">REGS: c01efef0 TRAP: 0300&nbsp;&nbsp; =
-Not tainted&nbsp; (2.6.22-rc2-default)</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mpc_slave_rx(priv);<o:p></o:p=
+></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">MSR: 00029030 =
-&lt;EE,ME,IR,DR&gt;&nbsp; CR: 24000082&nbsp; XER: 00000055</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></span></font>=
+</i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">DAR: 00000027, DSISR: 00000000</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></span></fo=
+nt></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">TASK =3D c01db980[0] 'swapper' THREAD: =
-c01ee000</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>#endif<o:p><=
+/o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">GPR00: 00000000 c01effa0 c01db980 =
-00000000 c00088d4 00000000 c020b414 00000000</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></span><=
+/font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">GPR08: 00000002 c01ee028 28002448 =
-00000010 8a2c8992 ffffffff ffffffff ffffffff</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'><o:p>&nbsp;<=
+/o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">GPR16: ffffffff ffffffff ffffffff =
-ffffffff ffffffff ffffffff ffffffff ffffffff</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>static inlin=
+e void
+mpc_slave_rx(struct mpc_i2c_private *priv)<o:p></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">GPR24: ffffffff ffffffff c0209000 =
-c0200000 00000000 c01ee000 ffffffff ffffffff</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>{<o:p></o:p>=
+</span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">NIP [c00093bc] =
-cpu_idle+0xc0/0xd8</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buffer
+=3D priv-&gt;read(&amp;priv-&gt;regs-&gt;i2cdr);<o:p></o:p></span></font></=
+i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">LR [c00093d0] =
-cpu_idle+0xd4/0xd8</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'><o:p>&nbsp;<=
+/o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Call Trace:</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -------------Some
+Montavista Event Broker Part-----------<o:p></o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">[c01effa0] [c00093d0] =
-cpu_idle+0xd4/0xd8 (unreliable)</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'><o:p>&nbsp;<=
+/o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">[c01effb0] [c0185f5c] =
-rest_init+0x50/0x60</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>}<o:p></o:p>=
+</span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">[c01effc0] [c01f09e4] =
-start_kernel+0x2b4/0x2c8</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
+ial><span
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'><o:p>&nbsp;<=
+/o:p></span></font></i></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">[c01efff0] [c000225c] =
-start_here+0x44/0xb0</FONT>
+<p class=3DMsoNormal style=3D'margin-left:.5in'><font size=3D2 face=3DArial=
+><span
+style=3D'font-size:10.0pt;font-family:Arial'>Since I am new in I2C function=
+ality,
+Please point out any mistake I was doing.<o:p></o:p></span></font></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Instruction dump:</FONT>
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0=2E0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">60008000 7c000124 39200010 381f0028 =
-7d600028 7d6b4b78 7c00022c 7d60012d</FONT>
+</div>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">40a2fff0 4800000c 7c210b78 7ffffb78 =
-&lt;801f0028&gt; 70090008 4182ff70 7c421378</FONT>
+<pre>This message and any attachment therewith is privileged, confidential =
+and proprietary in nature and the property of the originator. It is intende=
+d solely and exclusively for use by the individual to whom it is addressed.=
+ It should not be circulated or used for any purpose other than for what is=
+ stated. If you have received this message erroneously, please notify the o=
+riginator immediately. If you are not the intended recipient, you are notif=
+ied that you are strictly prohibited from using, copying, altering, or disc=
+losing the contents of this message and are called upon to delete the same =
+from your system. Any contradictory action by you may invite penal conseque=
+nces. Vihaan Networks Limited accepts no responsibility for loss or damage =
+arising from the use of the information transmitted by this email including=
+ but not limited to damage from virus."
+</pre></body>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Kernel panic - not syncing: Attempted =
-to kill the idle task!</FONT>
+</html>
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Rebooting in 180 =
-seconds..&lt;NULL&gt;</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C8EB84.AFF2D656--
+--_000_50660FB7D5A72645933E13611D51D54A10BF96EB20mailservervnl_--
