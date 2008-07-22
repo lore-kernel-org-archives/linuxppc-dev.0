@@ -1,21 +1,18 @@
-Return-Path: <mike_timmons@trimble.com>
-Received: from snvl-smtp1.trimble.com (snvl-smtp1.trimble.com [155.63.64.31])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "snvl-smtp1.trimble.com", Issuer "Trimble CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 1499EDDFB4
+Return-Path: <chris8661@gmail.com>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.247])
+	by ozlabs.org (Postfix) with ESMTP id 8BFE7DDED1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Jul 2008 07:55:46 +1000 (EST)
+	Wed, 23 Jul 2008 07:59:01 +1000 (EST)
+Received: by ag-out-0708.google.com with SMTP id 8so13301564agc.0
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 22 Jul 2008 14:58:59 -0700 (PDT)
+Message-ID: <c2ce83410807221458p5e5efd1t1bfe158b61a22eb6@mail.gmail.com>
+Date: Tue, 22 Jul 2008 17:58:58 -0400
+From: "Chris Collins" <chris8661@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Problems loading Linux 2.6 using PPCBug
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: [OT] write flash on MPC5200 board via jtag
-Date: Tue, 22 Jul 2008 14:55:41 -0700
-Message-ID: <161B3BAD77161449A144FF054231C3D60249D937@uss-am-xch-01.am.trimblecorp.net>
-In-Reply-To: <1216753011l.5683l.0l@antares>
-References: <1216753011l.5683l.0l@antares>
-From: "Mike Timmons" <mike_timmons@trimble.com>
-To: =?iso-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>,
-	"LinuxPPC Embedded" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,38 +23,108 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-If you don't have any code on the board then I can't think of how to =
-write to the flash unless you have a JTAG device. I use a BDI2000 to do =
-precisely what you're doing: write U-boot into virgin on-board flash on =
-a design derived from the lite 5200.
+I have a Motorola (now Emerson) Prpmc800 board. I have a working
+2.4.25 kernel that I can load from flash or TFTP, but I can't seem to
+get a 2.6 kernel to load. I've tried 2.6.24 and an older ~2.6.16
+kernel with no success.
 
-The significance of the debugger is that you need something that can =
-drive the microcontroller via the JTAG port and control the flash device =
-write intricacies.
+I'm trying to use ELDK 4.2 with 2.6.24 kernel and building with the
+default .config (with a new CONFIG_CMDLINE defined for my console):
+make ARCH=ppc CROSS_COMPILE=ppc_74xx- prpmc800_defconfig
 
-Pre-programming your flash device is another option.
+When I try to load the zImage.pplus file using the PPCBug boot loader
+I get the following error:
 
------Original Message-----
-From: linuxppc-embedded-bounces+mike_timmons=3Dtrimble.com@ozlabs.org =
-[mailto:linuxppc-embedded-bounces+mike_timmons=3Dtrimble.com@ozlabs.org] =
-On Behalf Of Albrecht Dre=DF
-Sent: Tuesday, July 22, 2008 1:57 PM
-To: LinuxPPC Embedded
-Subject: [OT] write flash on MPC5200 board via jtag
+PPC7-Bug>nbo 11 0,,, zImage.pplus
+Network Booting from: I82559, Controller 11, Device 0
+Device Name: /pci@fe000000/pci8086,1209@11,0:0,0
+Loading: zImage.pplus
 
-Hi,
+Client IP Address      = 10.10.1.10
+Server IP Address      = 10.101.1.101
+Gateway IP Address     = 10.10.1.254
+Subnet IP Address Mask = 255.255.255.0
+Boot File Name         = zImage.pplus
+Argument File Name     =
 
-sorry for a somewhat off-topic question...
+Network Boot File load in progress... To abort hit <BREAK>
+Bytes Received =&1479208, Bytes Loaded =&1479208
+Bytes/Second   =&739604, Elapsed Time =2 Second(s)
 
-I want to design a mpc5200b board which is roughly derived from =20
-Freescale's 5200B Lite demo.  Obviously, I have the problem to =20
-initially write u-boot into the boot nor flash.  I believe this would =20
-be possible using the jtag/bsm interface (is that true?).
+Residual-Data Located at: $1FE569FC
 
-Can you recommend any good hardware and software solution for that, if =20
-possible running on linux (OSS?)?  I don't need a "real" debugger =20
-(maybe an interface to gdb), just something to write the flash, so =20
-u-boot comes up.
+Exception: Program (Illegal Instruction)
+SRR0 =00005400 SRR1 =00083040 Vector-Offset =00700
+IP     =00005400 MSR    =00003040 CR     =00000000 FPSCR  =00000000
+R0     =00000000 R1     =1FE00000 R2     =00000000 R3     =1FE569FC
+R4     =00005000 R5     =00000000 R6     =00000000 R7     =00000000
+R8     =00000000 R9     =00000000 R10    =00000000 R11    =00000000
+R12    =00000000 R13    =00000000 R14    =00000000 R15    =00000000
+R16    =00000000 R17    =00000000 R18    =00000000 R19    =00000000
+R20    =00000000 R21    =00000000 R22    =00000000 R23    =00000000
+R24    =00000000 R25    =00000000 R26    =00000000 R27    =00000000
+R28    =00000000 R29    =00000000 R30    =00000000 R31    =00000000
+SPR0   =00000000 SPR1   =00000000 SPR8   =00000000 SPR9   =00000000
+00005400 00000000  WORD        $00000000
 
-Thanks for any help,
-Albrecht.
+
+I have the 'env' variable for PReP enabled... which seems to be the
+usual suspect:
+
+PPC7-Bug>env
+Bug or System environment [B/S] = B?
+Maximum Memory Usage (Mb, 0=AUTO) =   2?
+Field Service Menu Enable [Y/N] = N?
+Probe System for Supported I/O Controllers [Y/N] = Y?
+Auto-Initialize of NVRAM Header Enable [Y/N] = Y?
+Network PReP-Boot Mode Enable [Y/N] = Y?
+SCSI Bus Reset on Debugger Startup [Y/N]   = N?
+Primary SCSI Bus Negotiations Type [A/S/N] = A?
+Primary SCSI Data Bus Width [W/N]          = N?
+Secondary SCSI Identifier                  = "07"?
+NVRAM Boot List (GEV.fw-boot-path) Boot Enable [Y/N]           = N?
+NVRAM Boot List (GEV.fw-boot-path) Boot at power-up only [Y/N] = N?
+NVRAM Boot List (GEV.fw-boot-path) Boot Abort Delay            = 5?
+Auto Boot Enable [Y/N]           = N?
+Auto Boot at power-up only [Y/N] = N?
+Auto Boot Scan Enable [Y/N]      = Y?
+Auto Boot Scan Device Type List  = FDISK/CDROM/TAPE/HDISK/?
+Auto Boot Controller LUN   = 00?
+Auto Boot Device LUN       = 00?
+Auto Boot Partition Number = 00?
+Auto Boot Abort Delay      = 7?
+Auto Boot Default String [NULL for an empty string] = ?
+ROM Boot Enable [Y/N]            = Y?
+ROM Boot at power-up only [Y/N]  = Y?
+ROM Boot Abort Delay             = 5?
+ROM Boot Direct Starting Address = F0110000?
+ROM Boot Direct Ending Address   = FFFFFFFC?
+Network Auto Boot Enable [Y/N]           = N?
+Network Auto Boot at power-up only [Y/N] = N?
+Network Auto Boot Controller LUN = 11?
+Network Auto Boot Device LUN     = 00?
+Network Auto Boot Abort Delay    = 5?
+Network Auto Boot Configuration Parameters Offset (NVRAM) = 00001000?
+Memory Size Enable [Y/N]         = Y?
+Memory Size Starting Address     = 00000000?
+Memory Size Ending Address       = 08000000?
+DRAM Speed in NANO Seconds       = 10?
+ROM Bank A Access Speed (ns) = 150?
+ROM Bank B Access Speed (ns) = 120?
+DRAM Parity Enable [On-Detection/Always/Never - O/A/N]    = O?
+L2Cache Parity Enable [On-Detection/Always/Never - O/A/N] = O?
+PCI Interrupts Route Control Registers (PIRQ0/1/2/3) = 0A0B0E0F?
+Serial Startup Code Master Enable [Y/N] = N?
+Serial Startup Code LF Enable [Y/N] =     N?
+Firmware Command Buffer Enable [Y/N] = N?
+Firmware Command Buffer Delay  = 5?
+Firmware Command Buffer :
+['NULL' terminates entry]?
+PPC7-Bug>
+
+Is this a problem with PPCBug and the 2.6 kernel? Has anyone else had
+success loading the 2.6 kernel using PPCBug? Does anyone have a port
+of U-Boot for the Prpmc800?
+
+Thanks in advance for your help.
+Chris
