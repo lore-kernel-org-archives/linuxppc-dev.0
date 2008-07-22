@@ -1,18 +1,20 @@
-Return-Path: <rsass@uncc.edu>
-Received: from rsass-homer.uncc.edu (rsass-homer.uncc.edu [152.15.91.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4FEB2DEAEF
+Return-Path: <sprasad@bivio.net>
+Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id B2716DDF4E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Jul 2008 05:50:00 +1000 (EST)
-Message-Id: <200807221949.m6MJnll7016697@rsass-homer.uncc.edu>
-To: Neeraj Garg <neerajg@cdac.in>
-Subject: Re: How to create custom ramdisk 
-In-reply-to: <4885DCA4.9050709@cdac.in> 
-References: <4885DCA4.9050709@cdac.in>
-Date: Tue, 22 Jul 2008 15:49:47 -0400
-From: Ron Sass <rsass@uncc.edu>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 23 Jul 2008 06:09:56 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: BUG with U-boot 1.1.4 and kernel 2.6.23 scanning PCIe on a MPC8641D
+	board
+Date: Tue, 22 Jul 2008 13:09:24 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D702CE2CDE@corpexc01.corp.networkrobots.com>
+In-Reply-To: <mailman.363.1216733649.2828.linuxppc-embedded@ozlabs.org>
+References: <mailman.363.1216733649.2828.linuxppc-embedded@ozlabs.org>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <joachim.bader@diehl-aerospace.de>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,83 +25,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Joachim,
 
-Under my home page, I have links to the courses I teach.
+We did not had a crash, but had some problem with assigning resources
+for PCI bus on 8641D. Your issue may be related or not, I am not really
+sure.
 
-http://rcs.uncc.edu/~rsass/
+You might want to check out MSI patch. Currently this is already there
+for few other FSL processors like 85xx, but not for 86xx.
 
-Follow the links to "Fundamentals of Reconfigurable
-Computing"  specifically,
-
-http://rcs.uncc.edu/~rsass/courses/2008-Fall/6890/
-
-There are labs and tutorials there.  Under Labs, (Lab 3 in
-particular) we build Linux-based systems.  Lab 3 is has a tutorial
-based on Secret Lab's git repository and some in-house scripts.
-The students use RHEL5 machines but in our research lab we Fedora
-Core and CentOS4 machines.
-
-Also we have a wiki with other tutorials.  Sorry, it's not very
-organized (or up to date...)
-
-http://www.rcs.uncc.edu/wiki/index.php/Main_Page
-
-Ron
+- Siva
+=20
 
 
-> 
-> Hi,
-> 
-> I want to create a custom ramdisk (initrd which can be placed in 
-> arch/ppc/boot/images). Can anybody guide me steps to built the same. My 
-> host have RHEL-4.
-> 
-> -- 
-> 
-> -------------------------------------------------------------------
-> Neeraj Garg
-> 
-> 
-> 
-> --------------080207080004080602090709
-> Content-Type: text/html; charset=ISO-8859-1
-> Content-Transfer-Encoding: 7bit
-> 
-> <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-> <html>
-> <head>
->   <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
->   <title></title>
-> </head>
-> <body bgcolor="#ffffff" text="#000000">
-> Hi,<br>
-> <br>
-> I want to create a custom ramdisk (initrd which can be placed in
-> arch/ppc/boot/images). Can anybody guide me steps to built
-> the same. My host have RHEL-4.<br>
-> <br>
-> <div class="moz-signature">-- <br>
-> <pre><!-- img src="file:///E:/htdg.jpg" border="0" alt="C-DAC"-->------------
-> -------------------------------------------------------
-> Neeraj Garg
-> 
-> </pre>
-> </div>
-> </body>
-> </html>
-> 
-> --------------080207080004080602090709--
-> 
-> 
-> --===============0773240910==
-> Content-Type: text/plain; charset="us-ascii"
-> MIME-Version: 1.0
-> Content-Transfer-Encoding: 7bit
-> Content-Disposition: inline
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> --===============0773240910==--
-> 
+joachim.bader@diehl-aerospace.de Wrote:
+
+Hello folks,
+
+we run a proprietary board with Freescale MPC8641D using U-boot 1.1.4
+and=20
+Linux kernel 2.6.23
+
+First of all, we are no experts in PCIe-Bus handling and management.
+We started with the problem that U-Boot was able to scan the devices=20
+connected to PCIe-Bus where the kernel fails.
+Using the information provided by Vince Asbridge regarding the different
+
+numbering of devices on PCIe bus by U-Boot and kernel we were able to
+get=20
+the kernel up recognizing the devices correctly.
+Thanks for this info.
+
+But now we are blocked by an exception in kernel mode during=20
+initialisation of the PCIe-Buses and devices. We instrumented the kernel
+
+additional to the standard print outs to get more information and to=20
+understand the behavior of the scan and allocation process. But now we
+get=20
+lost. I assume that the problem is caused by the transparent bridges.
+
+I appent here after the trace log. Perhaps someone knows this problem=20
+already or can give me a hint .
+
+I read in the logs some messages that 2.6.23 does contain some bugs=20
+related to PCIe and it would be a good choice to upgrade to 2.6.25. Is=20
+this one of that cases?
+Currently we would like to prevent switching the kernel version.
+
+Any help is appreciated.
+
+Thanks in advance.
+
+Joachim
