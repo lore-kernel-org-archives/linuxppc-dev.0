@@ -1,11 +1,20 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910807221247r38509c76uf625195b712a1145@mail.gmail.com>
-Date: Tue, 22 Jul 2008 15:47:51 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: ppc-dev <Linuxppc-dev@ozlabs.org>, netdev <netdev@vger.kernel.org>
-Subject: netif_schedule and mpc5200_fec
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2B295DDF4E
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 06:09:57 +1000 (EST)
+Message-ID: <48863E8E.4080308@pobox.com>
+Date: Tue, 22 Jul 2008 16:09:50 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCH] fs_enet: Remove unused fields in the
+	fs_mii_bb_platform_info structure.
+References: <200807221743.47807.laurentp@cse-semaphore.com>
+In-Reply-To: <200807221743.47807.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, vbordug@ru.mvista.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,49 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I just updated to linus/master and mpc5200_fec won't boot.
+Laurent Pinchart wrote:
+> The mdio_port, mdio_bit, mdc_port and mdc_bit fields in the
+> fs_mii_bb_platform_info structure are left-overs from the move to the Phy
+> Abstraction Layer subsystem. They are not used anymore and can be safely
+> removed.
+> 
+> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+> ---
+>  include/linux/fs_enet_pd.h    |    4 ----
+>  1 files changed, 0 insertions(+), 4 deletions(-)
+> 
+> diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
+> index 9bc045b..decc4b5 100644
+> --- a/include/linux/fs_enet_pd.h
+> +++ b/include/linux/fs_enet_pd.h
+> @@ -103,10 +103,6 @@ struct fs_mii_bb_platform_info {
+>  	struct fs_mii_bit 	mdio_dir;
+>  	struct fs_mii_bit 	mdio_dat;
+>  	struct fs_mii_bit	mdc_dat;
+> -	int mdio_port;	/* port & bit for MDIO */
+> -	int mdio_bit;
+> -	int mdc_port;	/* port & bit for MDC  */
+> -	int mdc_bit;
+>  	int delay;	/* delay in us         */
+>  	int irq[32]; 	/* irqs per phy's */
 
-Guessing it is this patch but I haven't looked at it yet.
-
-commit 263ba3204a434d0ca851e1321b31cd58376b86cb
-Author: David S. Miller <davem@davemloft.net>
-Date:   Tue Jul 15 03:47:41 2008 -0700
-
-    netdev: Convert all drivers away from netif_schedule().
-
-    They logically all want to trigger a schedule for all device
-    TX queues.
-
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-
-Sending DHCP requests .<0>------------[ cut here ]------------
-Badness at c01da570 [verbose debug info unavailable]
-NIP: c01da570 LR: c015b31c CTR: c015b234
-REGS: c382de70 TRAP: 0700   Not tainted  (2.6.26-efika)
-MSR: 00029032 <EE,ME,IR,DR>  CR: 22000082  XER: 00000000
-TASK = c3815000[4] 'events/0' THREAD: c382c000
-GPR00: 00000001 c382df20 c3815000 c031e468 c38f25a0 00000000 00000000 00000000
-GPR08: c382dfb4 c0330000 00000000 c031e468 3181b461 ffffffff 03ffe000 ffffffff
-GPR16: 00000001 00000000 007ffc00 00000000 00000000 03ff8838 00000000 00000004
-GPR24: 00000000 00000000 c032b46c c0330000 c38a2e00 00000001 c38f2780 c38f2400
-NIP [c01da570] __netif_schedule+0x3c/0xac
-LR [c015b31c] mpc52xx_fec_adjust_link+0xe8/0x194
-Call Trace:
-[c382df20] [c002eeb0] queue_work+0x58/0x6c (unreliable)
-[c382df40] [c015b31c] mpc52xx_fec_adjust_link+0xe8/0x194
-[c382df60] [c0158cd0] phy_state_machine+0xec/0x4e0
-[c382df80] [c002eb0c] run_workqueue+0xb4/0x148
-[c382dfa0] [c002f070] worker_thread+0x9c/0xb8
-[c382dfd0] [c0032954] kthread+0x4c/0x88
-[c382dff0] [c000f538] kernel_thread+0x44/0x60
-Instruction dump:
-7c6b1b78 3929e468 7f834800 39200002 90010024 38030024 bfa10014 40be0030
-3d20c033 80099988 7c000034 5400d97e <0f000000> 2f800000 41be0054 38000001
-PHY: f0003000:00 - Link is Up - 100/Full
-., OK
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+applied
