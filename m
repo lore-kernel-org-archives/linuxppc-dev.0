@@ -1,19 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	by ozlabs.org (Postfix) with ESMTP id 462CCDDED9
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 19:26:55 +1000 (EST)
+Date: Tue, 22 Jul 2008 10:26:47 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [alsa-devel] [PATCH v3 0/3] ALSA SoC: MPC5200 audio driver
+Message-ID: <20080722092646.GA7251@sirena.org.uk>
+References: <fa686aa40807212358p17c824ia1d6516a87a7aac1@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18565.42340.817405.289271@cargo.ozlabs.ibm.com>
-Date: Tue, 22 Jul 2008 19:16:20 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Chandru <chandru@in.ibm.com>
-Subject: Re: [PATCH 1/4][V2] powerpc : add support for linux,
-	usable-memory properties for drconf memory
-In-Reply-To: <200807221431.49268.chandru@in.ibm.com>
-References: <200807080014.24910.chandru@in.ibm.com>
-	<200807111639.22032.chandru@in.ibm.com>
-	<200807111919.36401.chandru@in.ibm.com>
-	<200807221431.49268.chandru@in.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+In-Reply-To: <fa686aa40807212358p17c824ia1d6516a87a7aac1@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, timur@freescale.com,
+	liam.girdwood@wolfsonmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Chandru writes:
+On Tue, Jul 22, 2008 at 12:58:09AM -0600, Grant Likely wrote:
 
-> Scan for linux,usable-memory properties in case of dynamic reconfiguration 
-> memory . Support for kexec/kdump.
-> 
-> Signed-off-by: Chandru Siddalingappa <chandru@in.ibm.com>
+> Here is the latest series for adding MPC5200 I2S and TI AIC26 codec
+> support to ALSA SoC.  I believe all the comments are addressed and I
+> hope that this series is now ready to be merged.  I would really like
+> to see these ones land in 2.6.27.
 
-Could we *please* have a more comprehensive patch description that
-that?  Something which will help people coming along in two (or five
-or ten) years time to understand what problem exists in the code, how
-this patch solves it, and why this approach was chosen over any
-alternative approaches?
+That might be a bit of a push given how far into the merge window we
+are and Takashi's holiday this week, though as they are new drivers
+things could be a bit more relaxed.
 
-Thanks,
-Paul.
+Takashi, I'll queue these (and other ASoC patches) for submission in
+bulk once you return.
