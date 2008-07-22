@@ -1,23 +1,24 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4189FDDDE7
+	by ozlabs.org (Postfix) with ESMTPS id 966A6DE015
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Jul 2008 02:57:51 +1000 (EST)
-Message-ID: <48861161.8050707@freescale.com>
-Date: Tue, 22 Jul 2008 11:57:05 -0500
-From: Jon Loeliger <jdl@freescale.com>
+	Wed, 23 Jul 2008 03:56:40 +1000 (EST)
+Date: Tue, 22 Jul 2008 12:55:08 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Duy-Ky Nguyen <duykynguyen@hotmail.com>
+Subject: Re: Failure of request_irq()  for MPC8313 using arch=powerpc
+Message-ID: <20080722175508.GA13940@loki.buserror.net>
+References: <BLU119-DAV11096F9EACC27956DCC87BBB8F0@phx.gbl>
+	<58A20A281BAF1047B4EAE68DE5C0BDC2010573E9@zch01exm21.fsl.freescale.net>
+	<BLU119-DAV61F2F984D2E145D1E4AA1BB8F0@phx.gbl>
 MIME-Version: 1.0
-To: joachim.bader@diehl-aerospace.de
-Subject: Re: Help: Kernel BUG with U-boot 1.1.4 and kernel 2.6.23 scanning
-	PCIe on	a MPC8641D board
-References: <OFB15FD6AA.EA941C67-ONC125748E.00488CEE-C125748E.004A8A08@diehl-gruppe.de>
-In-Reply-To: <OFB15FD6AA.EA941C67-ONC125748E.00488CEE-C125748E.004A8A08@diehl-gruppe.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <BLU119-DAV61F2F984D2E145D1E4AA1BB8F0@phx.gbl>
+Cc: Liu Dave <DaveLiu@freescale.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,30 +29,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-joachim.bader@diehl-aerospace.de wrote:
+On Tue, Jul 15, 2008 at 08:43:59PM -0700, Duy-Ky Nguyen wrote:
+> Hi Dave,
 > 
-> Hello folks,
-> 
-> we run a proprietary board with Freescale MPC8641D using U-boot 1.1.4 
-> and Linux kernel 2.6.23
-> 
+> I've just tried it and it failed.
 
-> I read in the logs some messages that 2.6.23 does contain some bugs 
-> related to PCIe
+Could you elaborate on exactly what you tried?  Did you pass the GPIO device
+tree node?
 
-Correct.
+> Before I had tried using the function
+> int virq = of_irq_to_resource(GPIO_IRQ, 0, NULL);
+> and it failed the same way
 
-> and it would be a good choice to upgrade to 2.6.25. Is 
-> this one of that cases?
+The first argument of of_irq_to_resource is a device node pointer, not an
+IRQ number.  Surely the compiler warned you about this.
 
-Almost certainly.  You should pick up top of tree if you can.
-
-> Currently we would like to prevent switching the kernel version.
-
-You could back-port the PCIe bug fixes and rewrite if you wanted.
-My guess is that a _trial_ run of the current top of tree,
-or at least 2.6.26 might Just Work and fix your issues.
-
-It would be less work to try it than do discover-n-back-port...
-
-jdl
+-Scott
