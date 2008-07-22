@@ -1,16 +1,19 @@
-Return-Path: <davej@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 59737DDE03
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 10:45:18 +1000 (EST)
-Date: Mon, 21 Jul 2008 20:38:14 -0400
-From: Dave Jones <davej@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id DDC08DDE17
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 11:35:02 +1000 (EST)
+Date: Tue, 22 Jul 2008 11:34:58 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dave Jones <davej@redhat.com>
 Subject: Re: [PATCH] serial: fix struct uart_info change fallout
-Message-ID: <20080722003814.GA14809@redhat.com>
+Message-Id: <20080722113458.8c5c77c6.sfr@canb.auug.org.au>
+In-Reply-To: <20080722003814.GA14809@redhat.com>
 References: <20080722102520.ca801ab5.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080722102520.ca801ab5.sfr@canb.auug.org.au>
+	<20080722003814.GA14809@redhat.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__22_Jul_2008_11_34_58_+1000_.7NOZ=DtUIsBKIno"
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org,
 	Linus Torvalds <torvalds@linux-foundation.org>,
 	LKML <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
@@ -23,21 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 22, 2008 at 10:25:20AM +1000, Stephen Rothwell wrote:
- > Hi Linus, Alan,
- > 
- > Today's linux-next (actually just Linus' tree) build (powerpc
- > ppc64_defconfig) failed like this:
- > 
- > drivers/serial/serial_txx9.c: In function 'receive_chars':
- > drivers/serial/serial_txx9.c:275: error: 'struct uart_info' has no member named 'tty'
- > drivers/serial/icom.c: In function 'recv_interrupt':
- > drivers/serial/icom.c:733: error: 'struct uart_info' has no member named 'tty'
+--Signature=_Tue__22_Jul_2008_11_34_58_+1000_.7NOZ=DtUIsBKIno
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That's the same pair of patches I sent earlier, which apparently were
-"Already in the ttydev tree" which should be in linux-next ?
+Hi Dave,
 
-	Dave
- 
--- 
-http://www.codemonkey.org.uk
+On Mon, 21 Jul 2008 20:38:14 -0400 Dave Jones <davej@redhat.com> wrote:
+>
+> That's the same pair of patches I sent earlier, which apparently were
+> "Already in the ttydev tree" which should be in linux-next ?
+
+Indeed.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__22_Jul_2008_11_34_58_+1000_.7NOZ=DtUIsBKIno
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiFOUIACgkQjjKRsyhoI8wLvwCgv4wDxAOhnWLBb4/63R7TAOsj
+iLwAn2xD4EMYGZ2Msglqn8ozg+ifokjZ
+=bfBK
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__22_Jul_2008_11_34_58_+1000_.7NOZ=DtUIsBKIno--
