@@ -1,20 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 92948DE0A4
+Return-Path: <jdl@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4189FDDDE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Jul 2008 01:18:21 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: how to allocate 9MB of memory in kernel ?
-Date: Tue, 22 Jul 2008 17:12:51 +0200
-References: <18503022.post@talk.nabble.com> <4885AC94.7050501@coritel.it>
-	<18587466.post@talk.nabble.com>
-In-Reply-To: <18587466.post@talk.nabble.com>
+	Wed, 23 Jul 2008 02:57:51 +1000 (EST)
+Message-ID: <48861161.8050707@freescale.com>
+Date: Tue, 22 Jul 2008 11:57:05 -0500
+From: Jon Loeliger <jdl@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807221712.52030.arnd@arndb.de>
-Cc: Misbah khan <misbah_khan@engineer.com>
+To: joachim.bader@diehl-aerospace.de
+Subject: Re: Help: Kernel BUG with U-boot 1.1.4 and kernel 2.6.23 scanning
+	PCIe on	a MPC8641D board
+References: <OFB15FD6AA.EA941C67-ONC125748E.00488CEE-C125748E.004A8A08@diehl-gruppe.de>
+In-Reply-To: <OFB15FD6AA.EA941C67-ONC125748E.00488CEE-C125748E.004A8A08@diehl-gruppe.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,22 +28,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 22 July 2008, Misbah khan wrote:
-> First of all let me thank you for your valuable suggessions ...
+joachim.bader@diehl-aerospace.de wrote:
 > 
-> 1. I wanted to allocate 9MB in kernel and wanted that memory to be mapped to
-> the physically continews SDRAM memory. but till now i could not found a way
-> to do so ???
+> Hello folks,
 > 
-> 2. So i thought to use ioremap to map SDRAM and make it accessible to user
-> using mmap technique but there is only one doubt and that is will it be
-> secure and stable and whether it is a right way of doing ???
+> we run a proprietary board with Freescale MPC8641D using U-boot 1.1.4 
+> and Linux kernel 2.6.23
+> 
 
-As I have told you a few times now, you *either* allocate the memory *or*
-ioremap it, NOT BOTH!!!
+> I read in the logs some messages that 2.6.23 does contain some bugs 
+> related to PCIe
 
-If you SDRAM is you main memory, you need vmalloc and remap_vmalloc_range.
-If the SDRAM is not your main memory but some I/O attached buffer, you need
-ioremap/of_iomap and remap_pfn_range.
+Correct.
 
-	Arnd <><
+> and it would be a good choice to upgrade to 2.6.25. Is 
+> this one of that cases?
+
+Almost certainly.  You should pick up top of tree if you can.
+
+> Currently we would like to prevent switching the kernel version.
+
+You could back-port the PCIe bug fixes and rewrite if you wanted.
+My guess is that a _trial_ run of the current top of tree,
+or at least 2.6.26 might Just Work and fix your issues.
+
+It would be less work to try it than do discover-n-back-port...
+
+jdl
