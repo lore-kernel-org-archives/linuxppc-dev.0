@@ -1,23 +1,26 @@
-Return-Path: <super.firetwister@googlemail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.158])
-	by ozlabs.org (Postfix) with ESMTP id CB6BBDE1C1
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 02:13:16 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so878591fga.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 09:13:13 -0700 (PDT)
-To: Uwe =?iso-8859-1?q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-Subject: Re: UIO not working on ppc405 onchip registers
-Date: Tue, 22 Jul 2008 18:20:21 +0200
-References: <200807212152.16080.super.firetwister@gmail.com>
-	<20080722061730.GB12576@digi.com>
-	<200807220947.43074.super.firetwister@gmail.com>
-In-Reply-To: <200807220947.43074.super.firetwister@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807221820.22333.super.firetwister@gmail.com>
-From: super.firetwister@googlemail.com
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B1D92DE0D9
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 02:17:36 +1000 (EST)
+Date: Tue, 22 Jul 2008 16:59:29 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] serial: fix struct uart_info change fallout
+Message-ID: <20080722165929.717e38d4@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080723014910.7351c495.sfr@canb.auug.org.au>
+References: <20080722102520.ca801ab5.sfr@canb.auug.org.au>
+	<20080722025850.0d073a5e@lxorguk.ukuu.org.uk>
+	<20080722130152.f115224d.sfr@canb.auug.org.au>
+	<20080722114436.2c13edea@lxorguk.ukuu.org.uk>
+	<20080723014910.7351c495.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 22 July 2008, super.firetwister@gmail.com wrote:
-> Hello Uwe,
->
-> On Tuesday 22 July 2008, Uwe Kleine-K=F6nig wrote:
-> > I don't know powerpc in general nor ppc405ep in detail but IIRC arm has
-> > problems if some memory is mapped twice.  Might this be the problem
-> > here?
->
-> Maybee, the emac0 (0xef600800) and emac1 (0xef600900) get mapped as well,
-> because AFAIK I have to map a whole pagesize (0x1000).
+> I interpreted your "So much for the linux-next tree" as saying "well,
+> that has been no help".  I am sorry if I got that wrong.
 
-Same problem without emac module loaded.
+True it didn't help in the merge that much this time. I don't think that
+is a problem with the linux-next tree but one of the lack of tty
+maintainer and tty tree letting the confusion occur in the first place -
+plus a large quantity of first time around ineptness on my part.
 
-Did anybody tried to reproduce the problem?
+> But my point above is that you had a fix for the current breakage in
+> Linus' tree a couple of weeks before you sent the patches to Linus that
+> broke the powerpc build (i.e. linux-next did its job) and yet you didn't
+> combine the fix with the original patch or send the fix with the original
+> patch.  So we end up with a powerpc tree that won't build in the middle
+> of the merge window while more powerpc patches are trying to be
+> tested ... I understand that this could easily happen because of
+> forgetfulness, tiredness or accident.
 
-Regards
+I really expected to get the rest merged within an hour or two, but then
+it broke, then I was travelling and each time I got wireless access to
+resync the tree and work on it - it broke again and again and again.
 
-Markus
+Next time I will bump the patch up the pile and get it out earlier when
+that occurs.
+
+Alan
