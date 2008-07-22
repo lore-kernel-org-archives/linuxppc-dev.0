@@ -1,20 +1,34 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <kniht@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2B295DDF4E
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 06:09:57 +1000 (EST)
-Message-ID: <48863E8E.4080308@pobox.com>
-Date: Tue, 22 Jul 2008 16:09:50 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 45C3ADDF4E
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 06:22:02 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6MKLpUn017517
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 16:21:51 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6MKLpFr186430
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 16:21:51 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6MKLo6T010637
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 16:21:51 -0400
+Message-ID: <4886418C.9050704@linux.vnet.ibm.com>
+Date: Tue, 22 Jul 2008 15:22:36 -0500
+From: Jon Tollefson <kniht@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH] fs_enet: Remove unused fields in the
-	fs_mii_bb_platform_info structure.
-References: <200807221743.47807.laurentp@cse-semaphore.com>
-In-Reply-To: <200807221743.47807.laurentp@cse-semaphore.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, vbordug@ru.mvista.com, netdev@vger.kernel.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>, benh@kernel.crashing.org,
+	paulus@samba.org, npiggin@suse.de,
+	Jon Tollefson <kniht@linux.vnet.ibm.com>,
+	ppc-dev <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: gigantci pages patches
+References: <20080711174515.1aacf83b.sfr@canb.auug.org.au>
+	<20080722033417.GD14888@yookeroo.seuss>
+In-Reply-To: <20080722033417.GD14888@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +38,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Laurent Pinchart wrote:
-> The mdio_port, mdio_bit, mdc_port and mdc_bit fields in the
-> fs_mii_bb_platform_info structure are left-overs from the move to the Phy
-> Abstraction Layer subsystem. They are not used anymore and can be safely
-> removed.
-> 
-> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
-> ---
->  include/linux/fs_enet_pd.h    |    4 ----
->  1 files changed, 0 insertions(+), 4 deletions(-)
-> 
-> diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
-> index 9bc045b..decc4b5 100644
-> --- a/include/linux/fs_enet_pd.h
-> +++ b/include/linux/fs_enet_pd.h
-> @@ -103,10 +103,6 @@ struct fs_mii_bb_platform_info {
->  	struct fs_mii_bit 	mdio_dir;
->  	struct fs_mii_bit 	mdio_dat;
->  	struct fs_mii_bit	mdc_dat;
-> -	int mdio_port;	/* port & bit for MDIO */
-> -	int mdio_bit;
-> -	int mdc_port;	/* port & bit for MDC  */
-> -	int mdc_bit;
->  	int delay;	/* delay in us         */
->  	int irq[32]; 	/* irqs per phy's */
+David Gibson wrote:
+> On Fri, Jul 11, 2008 at 05:45:15PM +1000, Stephen Rothwell wrote:
+>   
+>> Hi all,
+>>
+>> Could people take one last look at these patches and if there are no
+>> issues, please send Ack-bys to Andrew who will push them to Linus for
+>> 2.6.27.
+>>
+>> [PATCH 1/6 v2] allow arch specific function for allocating gigantic pages
+>> http://patchwork.ozlabs.org/linuxppc/patch?&id=18437
+>> Patch: [PATCH 2/6 v2] powerpc: function for allocating gigantic pages
+>> http://patchwork.ozlabs.org/linuxppc/patch?&id=18438
+>> Patch: [PATCH 3/6 v2] powerpc: scan device tree and save gigantic page locations
+>> http://patchwork.ozlabs.org/linuxppc/patch?&id=18439
+>> Patch: [PATCH 4/6 v2] powerpc: define page support for 16G pages
+>> http://patchwork.ozlabs.org/linuxppc/patch?&id=18440
+>> Patch: [PATCH 5/6 v2] check for overflow
+>> http://patchwork.ozlabs.org/linuxppc/patch?&id=18441
+>> Patch: [PATCH 6/6] powerpc: support multiple huge page sizes
+>> http://patchwork.ozlabs.org/linuxppc/patch?&id=18442
+>>     
+>
+> Sorry, I should have looked at these properly when they went past in
+> May, but obviously I missed them.
+>
+> They mostly look ok.  I'm a bit confused on 2/6 though - it seems the
+> new powerpc alloc_bootmem_huge_page() function is specific to the 16G
+> gigantic pages.  But can't that function also get called for the
+> normal 16M hugepages depending on how the hugepage pool is
+> initialized.
+>
+> Or am I missing something (wouldn't surprise me given my brain's
+> sluggishness today)?
+>   
+The alloc_bootmem_huge_page() function is only called for pages >=
+MAX_ORDER.  The 16M pages are always allocated within the generic
+hugetlbfs code with alloc_pages_node().
 
-applied
+Jon
