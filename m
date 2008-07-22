@@ -1,33 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <broonie@opensource.wolfsonmicro.com>
+Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
+	[80.75.67.52])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 61834DDF2C
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 20:05:13 +1000 (EST)
-Date: Tue, 22 Jul 2008 03:05:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH] Make u64 long long on all architectures (was: the
-	printk problem)
-Message-Id: <20080722030506.206a2cc2.akpm@linux-foundation.org>
-In-Reply-To: <20080705020350.GN14894@parisc-linux.org>
-References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
-	<20080704111540.ddffd241.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
-	<20080704132716.f1e12554.akpm@linux-foundation.org>
-	<20080704204252.GM14894@parisc-linux.org>
-	<20080704150100.1f7b8a65.akpm@linux-foundation.org>
-	<20080705020350.GN14894@parisc-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Peter Anvin <hpa@zytor.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E48ECDE15D
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 20:09:55 +1000 (EST)
+Date: Tue, 22 Jul 2008 11:09:52 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 2/3] ALSA SoC: Add mpc5200-psc I2S driver
+Message-ID: <20080722100951.GB2572@rakim.wolfsonmicro.main>
+References: <20080722065352.7306.60679.stgit@trillian.secretlab.ca>
+	<20080722065358.7306.9412.stgit@trillian.secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080722065358.7306.9412.stgit@trillian.secretlab.ca>
+Cc: timur@freescale.com, linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	liam.girdwood@wolfsonmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,42 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 4 Jul 2008 20:03:51 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
+On Tue, Jul 22, 2008 at 12:53:58AM -0600, Grant Likely wrote:
 
-> [PATCH] Make u64 long long on all architectures
-> 
-> It is currently awkward to print a u64 type.  Some architectures use
-> unsigned long while others use unsigned long long.  Since unsigned long
-> long is 64-bit for all existing Linux architectures, change those that
-> use long to use long long.  Note that this applies only within the
-> kernel.  If u64 is being used in a C++ method definition, the symbol
-> mangling would change.
-> 
-> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-> 
-> diff --git a/include/asm-generic/int-l64.h b/include/asm-generic/int-l64.h
-> index 2af9b75..32f07bd 100644
-> --- a/include/asm-generic/int-l64.h
-> +++ b/include/asm-generic/int-l64.h
-> @@ -23,8 +23,13 @@ typedef unsigned short __u16;
->  typedef __signed__ int __s32;
->  typedef unsigned int __u32;
->  
-> +#ifdef __KERNEL__
-> +typedef __signed__ long long __s64;
-> +typedef unsigned long long __u64;
-> +#else
->  typedef __signed__ long __s64;
->  typedef unsigned long __u64;
-> +#endif
->  
->  #endif /* __ASSEMBLY__ */
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-This is (IMO) a desirable change and will prevent a heck of a lot of
-goofing around, and will permit a lot of prior goofing around to
-be removed.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-But I bet there are lots of instalces of printk("%l", some_u64) down in
-arch code where the type of u64 _is_ known which will now spew warnings.
+There's a few issues that were raised on the previous review cycle that
+still need to be addressed but they should be fixable in incremental
+patches (and easier to review that way):
 
-Oh well.
+> +static int psc_i2s_trigger(struct snd_pcm_substream *substream, int cmd)
+
+> +		spin_lock_irqsave(&psc_i2s->lock, flags);
+> +		/* first make sure it is low */
+> +		while ((in_8(&regs->ipcr_acr.ipcr) & 0x80) != 0)
+> +			;
+> +		/* then wait for the transition to high */
+> +		while ((in_8(&regs->ipcr_acr.ipcr) & 0x80) == 0)
+> +			;
+
+These loops should really have some sort of time limit on them,
+otherwise they'll lock hard if the expected events don't happen.  Given
+that in slave mode they're synchronising with an externally generated
+clock this is something that might happen in practice and should produce
+better diagnostics.
+
+> +	default:
+> +		dev_dbg(psc_i2s->dev, "invalid command\n");
+> +		return -EINVAL;
+> +	}
+
+I'd really expect to see the other possible triggers handled, even if
+the appropriate action is to silently ignore them, rather than having
+them generate an error message.
