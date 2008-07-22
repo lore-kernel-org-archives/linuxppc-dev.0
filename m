@@ -1,23 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <rcjenn@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2BBA1DDEF8
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 09:59:57 +1000 (EST)
-Subject: Re: Networkl problems with lastest kernel....
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080721.101650.181903456.davem@davemloft.net>
-References: <20080721121829.28faffab@lappy.seanm.ca>
-	<20080721.093110.141511905.davem@davemloft.net>
-	<20080721130536.3ca72f3e@lappy.seanm.ca>
-	<20080721.101650.181903456.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 22 Jul 2008 09:59:48 +1000
-Message-Id: <1216684788.11027.155.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, smaclennan@pikatech.com
-Reply-To: benh@kernel.crashing.org
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2A15ADDEF9
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 10:24:36 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6M0OXGq031817
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 20:24:33 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6M0OWhE148354
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 18:24:32 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6M0OWno029284
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 18:24:32 -0600
+Date: Mon, 21 Jul 2008 19:24:21 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+	linuxppc-dev@ozlabs.org, Brian King <brking@linux.vnet.ibm.com>,
+	Nathan Fontenot <nfont@austin.ibm.com>,
+	David Darrington <ddarring@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc: Correct CMO entitlement accounting for map_sg
+Message-ID: <20080722002420.GA26633@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,48 +35,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-07-21 at 10:16 -0700, David Miller wrote:
-> From: Sean MacLennan <smaclennan@pikatech.com>
-> Date: Mon, 21 Jul 2008 13:05:36 -0400
-> 
-> > But I have attached the new OOPS anyway.
-> 
-> The same problem is still there, this driver will
-> unfortunately require quite a bit more surgery.
-> 
-> You can instead add the following patch, it will
-> warn instead of BUG on you, and try to continue.
+The ibmvscsi driver maps pages via map_sg and frees the sg list by calling
+unmap_single.  This exposes a problem where the code had been using the
+length field in the scatterlist to account for the allocation when the
+mapping was created but the dma_length would be used when the mapping
+was destroyed.  The iommu code does coalesce the pages so the dma_length
+can be smaller and would result in an entitlement accounting leak.
+This patch frees up the entitlement after calling the iommu map_sg code
+when pages have been coalesced so that freeing entitlement based on
+dma_length is correct.
 
-Argh, EMAC ! I suppose I need to go have a look & fix it :-)
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-EMAC does some strange things such as sharing one NAPI instance for
-multiple devices. Dunno if that's related to the problem. I need to dig
-a bit.
+---
+This applies on top of the existing CMO patchset.
 
-Cheers,
-Ben.
+---
+ arch/powerpc/kernel/vio.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-> >From 867d79fb9a4d5929ad8335c896fcfe11c3b2ef14 Mon Sep 17 00:00:00 2001
-> From: Linus Torvalds <torvalds@linux-foundation.org>
-> Date: Mon, 21 Jul 2008 09:54:18 -0700
-> Subject: [PATCH] net: In __netif_schedule() use WARN_ON instead of BUG_ON
-> 
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> ---
->  net/core/dev.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/core/dev.c b/net/core/dev.c
-> index 7e2d527..cbc34c0 100644
-> --- a/net/core/dev.c
-> +++ b/net/core/dev.c
-> @@ -1327,7 +1327,8 @@ static void dev_queue_xmit_nit(struct sk_buff *skb, struct net_device *dev)
->  
->  void __netif_schedule(struct Qdisc *q)
->  {
-> -	BUG_ON(q == &noop_qdisc);
-> +	if (WARN_ON_ONCE(q == &noop_qdisc))
-> +		return;
->  
->  	if (!test_and_set_bit(__QDISC_STATE_SCHED, &q->state)) {
->  		struct softnet_data *sd;
+Index: b/arch/powerpc/kernel/vio.c
+===================================================================
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -571,6 +571,11 @@ static int vio_dma_iommu_map_sg(struct d
+ 		atomic_inc(&viodev->cmo.allocs_failed);
+ 	}
+ 
++	for (sgl = sglist, count = 0; count < ret; count++, sgl++)
++		alloc_size -= roundup(sgl->dma_length, PAGE_SIZE);
++	if (alloc_size)
++		vio_cmo_dealloc(viodev, alloc_size);
++
+ 	return ret;
+ }
+ 
+@@ -584,7 +589,7 @@ static void vio_dma_iommu_unmap_sg(struc
+ 	int count = 0;
+ 
+ 	for (sgl = sglist; count < nelems; count++, sgl++)
+-		alloc_size += roundup(sgl->length, PAGE_SIZE);
++		alloc_size += roundup(sgl->dma_length, PAGE_SIZE);
+ 
+ 	dma_iommu_ops.unmap_sg(dev, sglist, nelems, direction);
+ 
