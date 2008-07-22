@@ -1,15 +1,16 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.172])
-	by ozlabs.org (Postfix) with ESMTP id 44F45DDE1D
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 16:54:02 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 65389DDF89
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 16:54:07 +1000 (EST)
 Received: by wf-out-1314.google.com with SMTP id 24so1431923wfg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 23:54:01 -0700 (PDT)
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 23:54:07 -0700 (PDT)
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3 2/3] ALSA SoC: Add mpc5200-psc I2S driver
+Subject: [PATCH v3 3/3] ALSA SoC: Add Texas Instruments TLV320AIC26 codec
+	driver
 To: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
 	liam.girdwood@wolfsonmicro.com
-Date: Tue, 22 Jul 2008 00:53:58 -0600
-Message-ID: <20080722065358.7306.9412.stgit@trillian.secretlab.ca>
+Date: Tue, 22 Jul 2008 00:54:03 -0600
+Message-ID: <20080722065403.7306.53226.stgit@trillian.secretlab.ca>
 In-Reply-To: <20080722065352.7306.60679.stgit@trillian.secretlab.ca>
 References: <20080722065352.7306.60679.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
@@ -27,930 +28,673 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-This is an I2S bus driver for the MPC5200 PSC device.  It depends on the
-soc-of helper functions to match a PSC device with a codec based on data
-in the device tree.
+ASoC Codec driver for the TLV320AIC26 device.  As it stands, this driver
+doesn't support all the modes and clocking options of the AIC16, but it
+is a start.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- sound/soc/fsl/Kconfig           |    7 
- sound/soc/fsl/Makefile          |    2 
- sound/soc/fsl/mpc5200_psc_i2s.c |  884 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 893 insertions(+), 0 deletions(-)
+ sound/soc/codecs/Kconfig       |    4 
+ sound/soc/codecs/Makefile      |    2 
+ sound/soc/codecs/tlv320aic26.c |  519 ++++++++++++++++++++++++++++++++++++++++
+ sound/soc/codecs/tlv320aic26.h |   93 +++++++
+ 4 files changed, 618 insertions(+), 0 deletions(-)
 
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index 398f002..bba9546 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -17,3 +17,10 @@ config SND_SOC_MPC8610_HPCD
- 	default y if MPC8610_HPCD
- 	help
- 	  Say Y if you want to enable audio on the Freescale MPC8610 HPCD.
-+
-+config SND_SOC_MPC5200_I2S
-+	tristate "Freescale MPC5200 PSC in I2S mode driver"
-+	select SND_SOC_OF_SIMPLE
-+	depends on SND_SOC && PPC_MPC52xx
-+	help
-+	  Say Y here to support the MPC5200 PSCs in I2S mode.
-diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-index aa2100b..035da4a 100644
---- a/sound/soc/fsl/Makefile
-+++ b/sound/soc/fsl/Makefile
-@@ -7,3 +7,5 @@ obj-$(CONFIG_SND_SOC_MPC8610_HPCD) += mpc8610_hpcd.o
- # MPC8610 Platform Support
- obj-$(CONFIG_SND_SOC_MPC8610) += fsl_ssi.o fsl_dma.o
+diff --git a/sound/soc/codecs/Kconfig b/sound/soc/codecs/Kconfig
+index 1db04a2..b399a64 100644
+--- a/sound/soc/codecs/Kconfig
++++ b/sound/soc/codecs/Kconfig
+@@ -47,6 +47,10 @@ config SND_SOC_CS4270_VD33_ERRATA
+ 	bool
+ 	depends on SND_SOC_CS4270
  
-+obj-$(CONFIG_SND_SOC_MPC5200_I2S) += mpc5200_psc_i2s.o
++config SND_SOC_TLV320AIC26
++	tristate "TI TLB320AIC26 Codec support"
++	depends on SND_SOC && SPI
 +
-diff --git a/sound/soc/fsl/mpc5200_psc_i2s.c b/sound/soc/fsl/mpc5200_psc_i2s.c
+ config SND_SOC_TLV320AIC3X
+ 	tristate
+ 	depends on I2C
+diff --git a/sound/soc/codecs/Makefile b/sound/soc/codecs/Makefile
+index d7b97ab..dc0357e 100644
+--- a/sound/soc/codecs/Makefile
++++ b/sound/soc/codecs/Makefile
+@@ -9,6 +9,7 @@ snd-soc-wm8990-objs := wm8990.o
+ snd-soc-wm9712-objs := wm9712.o
+ snd-soc-wm9713-objs := wm9713.o
+ snd-soc-cs4270-objs := cs4270.o
++snd-soc-tlv320aic26-objs := tlv320aic26.o
+ snd-soc-tlv320aic3x-objs := tlv320aic3x.o
+ 
+ obj-$(CONFIG_SND_SOC_AC97_CODEC)	+= snd-soc-ac97.o
+@@ -22,4 +23,5 @@ obj-$(CONFIG_SND_SOC_WM8990)	+= snd-soc-wm8990.o
+ obj-$(CONFIG_SND_SOC_WM9712)	+= snd-soc-wm9712.o
+ obj-$(CONFIG_SND_SOC_WM9713)	+= snd-soc-wm9713.o
+ obj-$(CONFIG_SND_SOC_CS4270)	+= snd-soc-cs4270.o
++obj-$(CONFIG_SND_SOC_TLV320AIC26)	+= snd-soc-tlv320aic26.o
+ obj-$(CONFIG_SND_SOC_TLV320AIC3X)	+= snd-soc-tlv320aic3x.o
+diff --git a/sound/soc/codecs/tlv320aic26.c b/sound/soc/codecs/tlv320aic26.c
 new file mode 100644
-index 0000000..8692329
+index 0000000..4621fda
 --- /dev/null
-+++ b/sound/soc/fsl/mpc5200_psc_i2s.c
-@@ -0,0 +1,884 @@
++++ b/sound/soc/codecs/tlv320aic26.c
+@@ -0,0 +1,519 @@
 +/*
-+ * Freescale MPC5200 PSC in I2S mode
-+ * ALSA SoC Digital Audio Interface (DAI) driver
++ * Texas Instruments TLV320AIC26 low power audio CODEC
++ * ALSA SoC CODEC driver
 + *
 + * Copyright (C) 2008 Secret Lab Technologies Ltd.
 + */
 +
-+#include <linux/init.h>
 +#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/device.h>
++#include <linux/moduleparam.h>
++#include <linux/init.h>
 +#include <linux/delay.h>
-+#include <linux/of_device.h>
-+#include <linux/of_platform.h>
-+#include <linux/dma-mapping.h>
-+
++#include <linux/pm.h>
++#include <linux/device.h>
++#include <linux/sysfs.h>
++#include <linux/spi/spi.h>
 +#include <sound/core.h>
 +#include <sound/pcm.h>
 +#include <sound/pcm_params.h>
-+#include <sound/initval.h>
 +#include <sound/soc.h>
++#include <sound/soc-dapm.h>
 +#include <sound/soc-of-simple.h>
++#include <sound/initval.h>
 +
-+#include <sysdev/bestcomm/bestcomm.h>
-+#include <sysdev/bestcomm/gen_bd.h>
-+#include <asm/mpc52xx_psc.h>
++#include "tlv320aic26.h"
 +
++MODULE_DESCRIPTION("ASoC TLV320AIC26 codec driver");
 +MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
-+MODULE_DESCRIPTION("Freescale MPC5200 PSC in I2S mode ASoC Driver");
 +MODULE_LICENSE("GPL");
 +
-+/**
-+ * PSC_I2S_RATES: sample rates supported by the I2S
-+ *
-+ * This driver currently only supports the PSC running in I2S slave mode,
-+ * which means the codec determines the sample rate.  Therefore, we tell
-+ * ALSA that we support all rates and let the codec driver decide what rates
-+ * are really supported.
-+ */
-+#define PSC_I2S_RATES (SNDRV_PCM_RATE_5512 | SNDRV_PCM_RATE_8000_192000 | \
-+			SNDRV_PCM_RATE_CONTINUOUS)
++/* AIC26 driver private data */
++struct aic26 {
++	struct spi_device *spi;
++	struct snd_soc_codec codec;
++	u16 reg_cache[AIC26_NUM_REGS];	/* shadow registers */
++	int master;
++	int datfm;
++	int mclk;
 +
-+/**
-+ * PSC_I2S_FORMATS: audio formats supported by the PSC I2S mode
-+ */
-+#define PSC_I2S_FORMATS (SNDRV_PCM_FMTBIT_S8 | SNDRV_PCM_FMTBIT_S16_BE | \
-+			 SNDRV_PCM_FMTBIT_S24_BE | SNDRV_PCM_FMTBIT_S24_BE | \
-+			 SNDRV_PCM_FMTBIT_S32_BE)
-+
-+/**
-+ * psc_i2s_stream - Data specific to a single stream (playback or capture)
-+ * @active:		flag indicating if the stream is active
-+ * @psc_i2s:		pointer back to parent psc_i2s data structure
-+ * @bcom_task:		bestcomm task structure
-+ * @irq:		irq number for bestcomm task
-+ * @period_start:	physical address of start of DMA region
-+ * @period_end:		physical address of end of DMA region
-+ * @period_next_pt:	physical address of next DMA buffer to enqueue
-+ * @period_bytes:	size of DMA period in bytes
-+ */
-+struct psc_i2s_stream {
-+	int active;
-+	struct psc_i2s *psc_i2s;
-+	struct bcom_task *bcom_task;
-+	int irq;
-+	struct snd_pcm_substream *stream;
-+	dma_addr_t period_start;
-+	dma_addr_t period_end;
-+	dma_addr_t period_next_pt;
-+	dma_addr_t period_current_pt;
-+	int period_bytes;
++	/* Keyclick parameters */
++	int keyclick_amplitude;
++	int keyclick_freq;
++	int keyclick_len;
 +};
 +
-+/**
-+ * psc_i2s - Private driver data
-+ * @name: short name for this device ("PSC0", "PSC1", etc)
-+ * @psc_regs: pointer to the PSC's registers
-+ * @fifo_regs: pointer to the PSC's FIFO registers
-+ * @irq: IRQ of this PSC
-+ * @dev: struct device pointer
-+ * @dai: the CPU DAI for this device
-+ * @sicr: Base value used in serial interface control register; mode is ORed
-+ *        with this value.
-+ * @playback: Playback stream context data
-+ * @capture: Capture stream context data
++/* ---------------------------------------------------------------------
++ * Register access routines
 + */
-+struct psc_i2s {
-+	char name[32];
-+	struct mpc52xx_psc __iomem *psc_regs;
-+	struct mpc52xx_psc_fifo __iomem *fifo_regs;
-+	unsigned int irq;
-+	struct device *dev;
-+	struct snd_soc_dai dai;
-+	spinlock_t lock;
-+	u32 sicr;
-+
-+	/* per-stream data */
-+	struct psc_i2s_stream playback;
-+	struct psc_i2s_stream capture;
-+
-+	/* Statistics */
-+	struct {
-+		int overrun_count;
-+		int underrun_count;
-+	} stats;
-+};
-+
-+/*
-+ * Interrupt handlers
-+ */
-+static irqreturn_t psc_i2s_status_irq(int irq, void *_psc_i2s)
++static unsigned int aic26_reg_read(struct snd_soc_codec *codec,
++				   unsigned int reg)
 +{
-+	struct psc_i2s *psc_i2s = _psc_i2s;
-+	struct mpc52xx_psc __iomem *regs = psc_i2s->psc_regs;
-+	u16 isr;
-+
-+	isr = in_be16(&regs->mpc52xx_psc_isr);
-+
-+	/* Playback underrun error */
-+	if (psc_i2s->playback.active && (isr & MPC52xx_PSC_IMR_TXEMP))
-+		psc_i2s->stats.underrun_count++;
-+
-+	/* Capture overrun error */
-+	if (psc_i2s->capture.active && (isr & MPC52xx_PSC_IMR_ORERR))
-+		psc_i2s->stats.overrun_count++;
-+
-+	out_8(&regs->command, 4 << 4);	/* reset the error status */
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/**
-+ * psc_i2s_bcom_enqueue_next_buffer - Enqueue another audio buffer
-+ * @s: pointer to stream private data structure
-+ *
-+ * Enqueues another audio period buffer into the bestcomm queue.
-+ *
-+ * Note: The routine must only be called when there is space available in
-+ * the queue.  Otherwise the enqueue will fail and the audio ring buffer
-+ * will get out of sync
-+ */
-+static void psc_i2s_bcom_enqueue_next_buffer(struct psc_i2s_stream *s)
-+{
-+	struct bcom_bd *bd;
-+
-+	/* Prepare and enqueue the next buffer descriptor */
-+	bd = bcom_prepare_next_buffer(s->bcom_task);
-+	bd->status = s->period_bytes;
-+	bd->data[0] = s->period_next_pt;
-+	bcom_submit_next_buffer(s->bcom_task, NULL);
-+
-+	/* Update for next period */
-+	s->period_next_pt += s->period_bytes;
-+	if (s->period_next_pt >= s->period_end)
-+		s->period_next_pt = s->period_start;
-+}
-+
-+/* Bestcomm DMA irq handler */
-+static irqreturn_t psc_i2s_bcom_irq(int irq, void *_psc_i2s_stream)
-+{
-+	struct psc_i2s_stream *s = _psc_i2s_stream;
-+
-+	/* For each finished period, dequeue the completed period buffer
-+	 * and enqueue a new one in it's place. */
-+	while (bcom_buffer_done(s->bcom_task)) {
-+		bcom_retrieve_buffer(s->bcom_task, NULL, NULL);
-+		s->period_current_pt += s->period_bytes;
-+		if (s->period_current_pt >= s->period_end)
-+			s->period_current_pt = s->period_start;
-+		psc_i2s_bcom_enqueue_next_buffer(s);
-+		bcom_enable(s->bcom_task);
-+	}
-+
-+	/* If the stream is active, then also inform the PCM middle layer
-+	 * of the period finished event. */
-+	if (s->active)
-+		snd_pcm_period_elapsed(s->stream);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/**
-+ * psc_i2s_startup: create a new substream
-+ *
-+ * This is the first function called when a stream is opened.
-+ *
-+ * If this is the first stream open, then grab the IRQ and program most of
-+ * the PSC registers.
-+ */
-+static int psc_i2s_startup(struct snd_pcm_substream *substream)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct psc_i2s *psc_i2s = rtd->dai->cpu_dai->private_data;
++	struct aic26 *aic26 = codec->private_data;
++	u16 *cache = codec->reg_cache;
++	u16 cmd, value;
++	u8 buffer[2];
 +	int rc;
 +
-+	dev_dbg(psc_i2s->dev, "psc_i2s_startup(substream=%p)\n", substream);
-+
-+	if (!psc_i2s->playback.active &&
-+	    !psc_i2s->capture.active) {
-+		/* Setup the IRQs */
-+		rc = request_irq(psc_i2s->irq, &psc_i2s_status_irq, IRQF_SHARED,
-+				 "psc-i2s-status", psc_i2s);
-+		rc |= request_irq(psc_i2s->capture.irq,
-+				  &psc_i2s_bcom_irq, IRQF_SHARED,
-+				  "psc-i2s-capture", &psc_i2s->capture);
-+		rc |= request_irq(psc_i2s->playback.irq,
-+				  &psc_i2s_bcom_irq, IRQF_SHARED,
-+				  "psc-i2s-playback", &psc_i2s->playback);
-+		if (rc) {
-+			free_irq(psc_i2s->irq, psc_i2s);
-+			free_irq(psc_i2s->capture.irq,
-+				 &psc_i2s->capture);
-+			free_irq(psc_i2s->playback.irq,
-+				 &psc_i2s->playback);
-+			return -ENODEV;
-+		}
++	if (reg >= AIC26_NUM_REGS) {
++		WARN_ON_ONCE(1);
++		return 0;
 +	}
 +
-+	return 0;
-+}
-+
-+static int psc_i2s_hw_params(struct snd_pcm_substream *substream,
-+				 struct snd_pcm_hw_params *params)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct psc_i2s *psc_i2s = rtd->dai->cpu_dai->private_data;
-+	u32 mode;
-+
-+	dev_dbg(psc_i2s->dev, "%s(substream=%p) p_size=%i p_bytes=%i"
-+		" periods=%i buffer_size=%i  buffer_bytes=%i\n",
-+		__func__, substream, params_period_size(params),
-+		params_period_bytes(params), params_periods(params),
-+		params_buffer_size(params), params_buffer_bytes(params));
-+
-+	switch (params_format(params)) {
-+	case SNDRV_PCM_FORMAT_S8:
-+		mode = MPC52xx_PSC_SICR_SIM_CODEC_8;
-+		break;
-+	case SNDRV_PCM_FORMAT_S16_BE:
-+		mode = MPC52xx_PSC_SICR_SIM_CODEC_16;
-+		break;
-+	case SNDRV_PCM_FORMAT_S24_BE:
-+		mode = MPC52xx_PSC_SICR_SIM_CODEC_24;
-+		break;
-+	case SNDRV_PCM_FORMAT_S32_BE:
-+		mode = MPC52xx_PSC_SICR_SIM_CODEC_32;
-+		break;
-+	default:
-+		dev_dbg(psc_i2s->dev, "invalid format\n");
-+		return -EINVAL;
++	/* Do SPI transfer; first 16bits are command; remaining is
++	 * register contents */
++	cmd = AIC26_READ_COMMAND_WORD(reg);
++	buffer[0] = (cmd >> 8) & 0xff;
++	buffer[1] = cmd & 0xff;
++	rc = spi_write_then_read(aic26->spi, buffer, 2, buffer, 2);
++	if (rc) {
++		dev_err(&aic26->spi->dev, "AIC26 reg read error\n");
++		return -EIO;
 +	}
-+	out_be32(&psc_i2s->psc_regs->sicr, psc_i2s->sicr | mode);
++	value = (buffer[0] << 8) | buffer[1];
 +
-+	snd_pcm_set_runtime_buffer(substream, &substream->dma_buffer);
-+
-+	return 0;
++	/* Update the cache before returning with the value */
++	cache[reg] = value;
++	return value;
 +}
 +
-+static int psc_i2s_hw_free(struct snd_pcm_substream *substream)
++static unsigned int aic26_reg_read_cache(struct snd_soc_codec *codec,
++					 unsigned int reg)
 +{
-+	snd_pcm_set_runtime_buffer(substream, NULL);
-+	return 0;
++	u16 *cache = codec->reg_cache;
++
++	if (reg >= AIC26_NUM_REGS) {
++		WARN_ON_ONCE(1);
++		return 0;
++	}
++
++	return cache[reg];
 +}
 +
-+/**
-+ * psc_i2s_trigger: start and stop the DMA transfer.
-+ *
-+ * This function is called by ALSA to start, stop, pause, and resume the DMA
-+ * transfer of data.
-+ */
-+static int psc_i2s_trigger(struct snd_pcm_substream *substream, int cmd)
++static int aic26_reg_write(struct snd_soc_codec *codec, unsigned int reg,
++			   unsigned int value)
 +{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct psc_i2s *psc_i2s = rtd->dai->cpu_dai->private_data;
-+	struct snd_pcm_runtime *runtime = substream->runtime;
-+	struct psc_i2s_stream *s;
-+	struct mpc52xx_psc __iomem *regs = psc_i2s->psc_regs;
-+	u16 imr;
-+	u8 psc_cmd;
-+	long flags;
++	struct aic26 *aic26 = codec->private_data;
++	u16 *cache = codec->reg_cache;
++	u16 cmd;
++	u8 buffer[4];
++	int rc;
 +
-+	if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
-+		s = &psc_i2s->capture;
-+	else
-+		s = &psc_i2s->playback;
-+
-+	dev_dbg(psc_i2s->dev, "psc_i2s_trigger(substream=%p, cmd=%i)"
-+		" stream_id=%i\n",
-+		substream, cmd, substream->pstr->stream);
-+
-+	switch (cmd) {
-+	case SNDRV_PCM_TRIGGER_START:
-+		s->period_bytes = frames_to_bytes(runtime,
-+						  runtime->period_size);
-+		s->period_start = virt_to_phys(runtime->dma_area);
-+		s->period_end = s->period_start +
-+				(s->period_bytes * runtime->periods);
-+		s->period_next_pt = s->period_start;
-+		s->period_current_pt = s->period_start;
-+		s->active = 1;
-+
-+		/* First; reset everything */
-+		if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE) {
-+			out_8(&regs->command, MPC52xx_PSC_RST_RX);
-+			out_8(&regs->command, MPC52xx_PSC_RST_ERR_STAT);
-+		} else {
-+			out_8(&regs->command, MPC52xx_PSC_RST_TX);
-+			out_8(&regs->command, MPC52xx_PSC_RST_ERR_STAT);
-+		}
-+
-+		/* Next, fill up the bestcomm bd queue and enable DMA.
-+		 * This will begin filling the PSC's fifo. */
-+		if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
-+			bcom_gen_bd_rx_reset(s->bcom_task);
-+		else
-+			bcom_gen_bd_tx_reset(s->bcom_task);
-+		while (!bcom_queue_full(s->bcom_task))
-+			psc_i2s_bcom_enqueue_next_buffer(s);
-+		bcom_enable(s->bcom_task);
-+
-+		/* Due to errata in the i2s mode; need to line up enabling
-+		 * the transmitter with a transition on the frame sync
-+		 * line */
-+
-+		spin_lock_irqsave(&psc_i2s->lock, flags);
-+		/* first make sure it is low */
-+		while ((in_8(&regs->ipcr_acr.ipcr) & 0x80) != 0)
-+			;
-+		/* then wait for the transition to high */
-+		while ((in_8(&regs->ipcr_acr.ipcr) & 0x80) == 0)
-+			;
-+		/* Finally, enable the PSC.
-+		 * Receiver must always be enabled; even when we only want
-+		 * transmit.  (see 15.3.2.3 of MPC5200B User's Guide) */
-+		psc_cmd = MPC52xx_PSC_RX_ENABLE;
-+		if (substream->pstr->stream == SNDRV_PCM_STREAM_PLAYBACK)
-+			psc_cmd |= MPC52xx_PSC_TX_ENABLE;
-+		out_8(&regs->command, psc_cmd);
-+		spin_unlock_irqrestore(&psc_i2s->lock, flags);
-+
-+		break;
-+
-+	case SNDRV_PCM_TRIGGER_STOP:
-+		/* Turn off the PSC */
-+		s->active = 0;
-+		if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE) {
-+			if (!psc_i2s->playback.active) {
-+				out_8(&regs->command, 2 << 4);	/* reset rx */
-+				out_8(&regs->command, 3 << 4);	/* reset tx */
-+				out_8(&regs->command, 4 << 4);	/* reset err */
-+			}
-+		} else {
-+			out_8(&regs->command, 3 << 4);	/* reset tx */
-+			out_8(&regs->command, 4 << 4);	/* reset err */
-+			if (!psc_i2s->capture.active)
-+				out_8(&regs->command, 2 << 4);	/* reset rx */
-+		}
-+
-+		bcom_disable(s->bcom_task);
-+		while (!bcom_queue_empty(s->bcom_task))
-+			bcom_retrieve_buffer(s->bcom_task, NULL, NULL);
-+
-+		break;
-+
-+	default:
-+		dev_dbg(psc_i2s->dev, "invalid command\n");
++	if (reg >= AIC26_NUM_REGS) {
++		WARN_ON_ONCE(1);
 +		return -EINVAL;
 +	}
 +
-+	/* Update interrupt enable settings */
-+	imr = 0;
-+	if (psc_i2s->playback.active)
-+		imr |= MPC52xx_PSC_IMR_TXEMP;
-+	if (psc_i2s->capture.active)
-+		imr |= MPC52xx_PSC_IMR_ORERR;
-+	out_be16(&regs->isr_imr.imr, imr);
-+
-+	return 0;
-+}
-+
-+/**
-+ * psc_i2s_shutdown: shutdown the data transfer on a stream
-+ *
-+ * Shutdown the PSC if there are no other substreams open.
-+ */
-+static void psc_i2s_shutdown(struct snd_pcm_substream *substream)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct psc_i2s *psc_i2s = rtd->dai->cpu_dai->private_data;
-+
-+	dev_dbg(psc_i2s->dev, "psc_i2s_shutdown(substream=%p)\n", substream);
-+
-+	/*
-+	 * If this is the last active substream, disable the PSC and release
-+	 * the IRQ.
-+	 */
-+	if (!psc_i2s->playback.active &&
-+	    !psc_i2s->capture.active) {
-+
-+		/* Disable all interrupts and reset the PSC */
-+		out_be16(&psc_i2s->psc_regs->isr_imr.imr, 0);
-+		out_8(&psc_i2s->psc_regs->command, 3 << 4); /* reset tx */
-+		out_8(&psc_i2s->psc_regs->command, 2 << 4); /* reset rx */
-+		out_8(&psc_i2s->psc_regs->command, 1 << 4); /* reset mode */
-+		out_8(&psc_i2s->psc_regs->command, 4 << 4); /* reset error */
-+
-+		/* Release irqs */
-+		free_irq(psc_i2s->irq, psc_i2s);
-+		free_irq(psc_i2s->capture.irq, &psc_i2s->capture);
-+		free_irq(psc_i2s->playback.irq, &psc_i2s->playback);
++	/* Do SPI transfer; first 16bits are command; remaining is data
++	 * to write into register */
++	cmd = AIC26_WRITE_COMMAND_WORD(reg);
++	buffer[0] = (cmd >> 8) & 0xff;
++	buffer[1] = cmd & 0xff;
++	buffer[2] = value >> 8;
++	buffer[3] = value;
++	rc = spi_write(aic26->spi, buffer, 4);
++	if (rc) {
++		dev_err(&aic26->spi->dev, "AIC26 reg read error\n");
++		return -EIO;
 +	}
-+}
 +
-+/**
-+ * psc_i2s_set_sysclk: set the clock frequency and direction
-+ *
-+ * This function is called by the machine driver to tell us what the clock
-+ * frequency and direction are.
-+ *
-+ * Currently, we only support operating as a clock slave (SND_SOC_CLOCK_IN),
-+ * and we don't care about the frequency.  Return an error if the direction
-+ * is not SND_SOC_CLOCK_IN.
-+ *
-+ * @clk_id: reserved, should be zero
-+ * @freq: the frequency of the given clock ID, currently ignored
-+ * @dir: SND_SOC_CLOCK_IN (clock slave) or SND_SOC_CLOCK_OUT (clock master)
-+ */
-+static int psc_i2s_set_sysclk(struct snd_soc_dai *cpu_dai,
-+			      int clk_id, unsigned int freq, int dir)
-+{
-+	struct psc_i2s *psc_i2s = cpu_dai->private_data;
-+	dev_dbg(psc_i2s->dev, "psc_i2s_set_sysclk(cpu_dai=%p, dir=%i)\n",
-+				cpu_dai, dir);
-+	return (dir == SND_SOC_CLOCK_IN) ? 0 : -EINVAL;
-+}
-+
-+/**
-+ * psc_i2s_set_fmt: set the serial format.
-+ *
-+ * This function is called by the machine driver to tell us what serial
-+ * format to use.
-+ *
-+ * This driver only supports I2S mode.  Return an error if the format is
-+ * not SND_SOC_DAIFMT_I2S.
-+ *
-+ * @format: one of SND_SOC_DAIFMT_xxx
-+ */
-+static int psc_i2s_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int format)
-+{
-+	struct psc_i2s *psc_i2s = cpu_dai->private_data;
-+	dev_dbg(psc_i2s->dev, "psc_i2s_set_fmt(cpu_dai=%p, format=%i)\n",
-+				cpu_dai, format);
-+	return (format == SND_SOC_DAIFMT_I2S) ? 0 : -EINVAL;
++	/* update cache before returning */
++	cache[reg] = value;
++	return 0;
 +}
 +
 +/* ---------------------------------------------------------------------
-+ * ALSA SoC Bindings
-+ *
-+ * - Digital Audio Interface (DAI) template
-+ * - create/destroy dai hooks
++ * Digital Audio Interface Operations
 + */
++static int aic26_hw_params(struct snd_pcm_substream *substream,
++			   struct snd_pcm_hw_params *params)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_device *socdev = rtd->socdev;
++	struct snd_soc_codec *codec = socdev->codec;
++	struct aic26 *aic26 = codec->private_data;
++	int fsref, divisor, wlen, pval, jval, dval, qval;
++	u16 reg;
++
++	dev_dbg(&aic26->spi->dev, "aic26_hw_params(substream=%p, params=%p)\n",
++		substream, params);
++	dev_dbg(&aic26->spi->dev, "rate=%i format=%i\n", params_rate(params),
++		params_format(params));
++
++	switch (params_rate(params)) {
++	case 8000:  fsref = 48000; divisor = AIC26_DIV_6; break;
++	case 11025: fsref = 44100; divisor = AIC26_DIV_4; break;
++	case 12000: fsref = 48000; divisor = AIC26_DIV_4; break;
++	case 16000: fsref = 48000; divisor = AIC26_DIV_3; break;
++	case 22050: fsref = 44100; divisor = AIC26_DIV_2; break;
++	case 24000: fsref = 48000; divisor = AIC26_DIV_2; break;
++	case 32000: fsref = 48000; divisor = AIC26_DIV_1_5; break;
++	case 44100: fsref = 44100; divisor = AIC26_DIV_1; break;
++	case 48000: fsref = 48000; divisor = AIC26_DIV_1; break;
++	default:
++		dev_dbg(&aic26->spi->dev, "bad rate\n"); return -EINVAL;
++	}
++
++	/* select data word length */
++	switch (params_format(params)) {
++	case SNDRV_PCM_FORMAT_S8:     wlen = AIC26_WLEN_16; break;
++	case SNDRV_PCM_FORMAT_S16_BE: wlen = AIC26_WLEN_16; break;
++	case SNDRV_PCM_FORMAT_S24_BE: wlen = AIC26_WLEN_24; break;
++	case SNDRV_PCM_FORMAT_S32_BE: wlen = AIC26_WLEN_32; break;
++	default:
++		dev_dbg(&aic26->spi->dev, "bad format\n"); return -EINVAL;
++	}
++
++	/* Configure PLL */
++	pval = 1;
++	jval = (fsref == 44100) ? 7 : 8;
++	dval = (fsref == 44100) ? 5264 : 1920;
++	qval = 0;
++	reg = 0x8000 | qval << 11 | pval << 8 | jval << 2;
++	aic26_reg_write(codec, AIC26_REG_PLL_PROG1, reg);
++	reg = dval << 2;
++	aic26_reg_write(codec, AIC26_REG_PLL_PROG2, reg);
++
++	/* Audio Control 3 (master mode, fsref rate) */
++	reg = aic26_reg_read_cache(codec, AIC26_REG_AUDIO_CTRL3);
++	reg &= ~0xf800;
++	if (aic26->master)
++		reg |= 0x0800;
++	if (fsref == 48000)
++		reg |= 0x2000;
++	aic26_reg_write(codec, AIC26_REG_AUDIO_CTRL3, reg);
++
++	/* Audio Control 1 (FSref divisor) */
++	reg = aic26_reg_read_cache(codec, AIC26_REG_AUDIO_CTRL1);
++	reg &= ~0x0fff;
++	reg |= wlen | aic26->datfm | (divisor << 3) | divisor;
++	aic26_reg_write(codec, AIC26_REG_AUDIO_CTRL1, reg);
++
++	return 0;
++}
 +
 +/**
-+ * psc_i2s_dai_template: template CPU Digital Audio Interface
++ * aic26_mute - Mute control to reduce noise when changing audio format
 + */
-+static struct snd_soc_dai psc_i2s_dai_template = {
-+	.type = SND_SOC_DAI_I2S,
++static int aic26_mute(struct snd_soc_dai *dai, int mute)
++{
++	struct snd_soc_codec *codec = dai->codec;
++	struct aic26 *aic26 = codec->private_data;
++	u16 reg = aic26_reg_read_cache(codec, AIC26_REG_DAC_GAIN);
++
++	dev_dbg(&aic26->spi->dev, "aic26_mute(dai=%p, mute=%i)\n",
++		dai, mute);
++
++	if (mute)
++		reg |= 0x8080;
++	else
++		reg &= ~0x8080;
++	aic26_reg_write(codec, AIC26_REG_DAC_GAIN, reg);
++
++	return 0;
++}
++
++static int aic26_set_sysclk(struct snd_soc_dai *codec_dai,
++			    int clk_id, unsigned int freq, int dir)
++{
++	struct snd_soc_codec *codec = codec_dai->codec;
++	struct aic26 *aic26 = codec->private_data;
++
++	dev_dbg(&aic26->spi->dev, "aic26_set_sysclk(dai=%p, clk_id==%i,"
++		" freq=%i, dir=%i)\n",
++		codec_dai, clk_id, freq, dir);
++
++	/* MCLK needs to fall between 2MHz and 50 MHz */
++	if ((freq < 2000000) || (freq > 50000000))
++		return -EINVAL;
++
++	aic26->mclk = freq;
++	return 0;
++}
++
++static int aic26_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
++{
++	struct snd_soc_codec *codec = codec_dai->codec;
++	struct aic26 *aic26 = codec->private_data;
++
++	dev_dbg(&aic26->spi->dev, "aic26_set_fmt(dai=%p, fmt==%i)\n",
++		codec_dai, fmt);
++
++	/* set master/slave audio interface */
++	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
++	case SND_SOC_DAIFMT_CBM_CFM: aic26->master = 1; break;
++	case SND_SOC_DAIFMT_CBS_CFS: aic26->master = 0; break;
++	default:
++		dev_dbg(&aic26->spi->dev, "bad master\n"); return -EINVAL;
++	}
++
++	/* interface format */
++	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
++	case SND_SOC_DAIFMT_I2S:     aic26->datfm = AIC26_DATFM_I2S; break;
++	case SND_SOC_DAIFMT_DSP_A:   aic26->datfm = AIC26_DATFM_DSP; break;
++	case SND_SOC_DAIFMT_RIGHT_J: aic26->datfm = AIC26_DATFM_RIGHTJ; break;
++	case SND_SOC_DAIFMT_LEFT_J:  aic26->datfm = AIC26_DATFM_LEFTJ; break;
++	default:
++		dev_dbg(&aic26->spi->dev, "bad format\n"); return -EINVAL;
++	}
++
++	return 0;
++}
++
++/* ---------------------------------------------------------------------
++ * Digital Audio Interface Definition
++ */
++#define AIC26_RATES	(SNDRV_PCM_RATE_8000  | SNDRV_PCM_RATE_11025 |\
++			 SNDRV_PCM_RATE_16000 | SNDRV_PCM_RATE_22050 |\
++			 SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 |\
++			 SNDRV_PCM_RATE_48000)
++#define AIC26_FORMATS	(SNDRV_PCM_FMTBIT_S8     | SNDRV_PCM_FMTBIT_S16_BE |\
++			 SNDRV_PCM_FMTBIT_S24_BE | SNDRV_PCM_FMTBIT_S32_BE)
++
++struct snd_soc_dai aic26_dai = {
++	.name = "tlv320aic26",
 +	.playback = {
++		.stream_name = "Playback",
 +		.channels_min = 2,
 +		.channels_max = 2,
-+		.rates = PSC_I2S_RATES,
-+		.formats = PSC_I2S_FORMATS,
++		.rates = AIC26_RATES,
++		.formats = AIC26_FORMATS,
 +	},
 +	.capture = {
++		.stream_name = "Capture",
 +		.channels_min = 2,
 +		.channels_max = 2,
-+		.rates = PSC_I2S_RATES,
-+		.formats = PSC_I2S_FORMATS,
++		.rates = AIC26_RATES,
++		.formats = AIC26_FORMATS,
 +	},
 +	.ops = {
-+		.startup = psc_i2s_startup,
-+		.hw_params = psc_i2s_hw_params,
-+		.hw_free = psc_i2s_hw_free,
-+		.shutdown = psc_i2s_shutdown,
-+		.trigger = psc_i2s_trigger,
++		.hw_params = aic26_hw_params,
 +	},
 +	.dai_ops = {
-+		.set_sysclk = psc_i2s_set_sysclk,
-+		.set_fmt = psc_i2s_set_fmt,
++		.digital_mute = aic26_mute,
++		.set_sysclk = aic26_set_sysclk,
++		.set_fmt = aic26_set_fmt,
 +	},
 +};
++EXPORT_SYMBOL_GPL(aic26_dai);
 +
 +/* ---------------------------------------------------------------------
-+ * The PSC I2S 'ASoC platform' driver
-+ *
-+ * Can be referenced by an 'ASoC machine' driver
-+ * This driver only deals with the audio bus; it doesn't have any
-+ * interaction with the attached codec
++ * ALSA controls
 + */
++static const char *aic26_capture_src_text[] = {"Mic", "Aux"};
++static const struct soc_enum aic26_capture_src_enum =
++	SOC_ENUM_SINGLE(AIC26_REG_AUDIO_CTRL1, 12, 2, aic26_capture_src_text);
 +
-+static const struct snd_pcm_hardware psc_i2s_pcm_hardware = {
-+	.info = SNDRV_PCM_INFO_MMAP | SNDRV_PCM_INFO_MMAP_VALID |
-+		SNDRV_PCM_INFO_INTERLEAVED | SNDRV_PCM_INFO_BLOCK_TRANSFER,
-+	.formats = SNDRV_PCM_FMTBIT_S8 | SNDRV_PCM_FMTBIT_S16_BE |
-+		   SNDRV_PCM_FMTBIT_S24_BE | SNDRV_PCM_FMTBIT_S32_BE,
-+	.rate_min = 8000,
-+	.rate_max = 48000,
-+	.channels_min = 2,
-+	.channels_max = 2,
-+	.period_bytes_max	= 1024 * 1024,
-+	.period_bytes_min	= 32,
-+	.periods_min		= 2,
-+	.periods_max		= 256,
-+	.buffer_bytes_max	= 2 * 1024 * 1024,
-+	.fifo_size		= 0,
-+};
-+
-+static int psc_i2s_pcm_open(struct snd_pcm_substream *substream)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct psc_i2s *psc_i2s = rtd->dai->cpu_dai->private_data;
-+	struct psc_i2s_stream *s;
-+
-+	dev_dbg(psc_i2s->dev, "psc_i2s_pcm_open(substream=%p)\n", substream);
-+
-+	if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
-+		s = &psc_i2s->capture;
-+	else
-+		s = &psc_i2s->playback;
-+
-+	snd_soc_set_runtime_hwparams(substream, &psc_i2s_pcm_hardware);
-+
-+	s->stream = substream;
-+	return 0;
-+}
-+
-+static int psc_i2s_pcm_close(struct snd_pcm_substream *substream)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct psc_i2s *psc_i2s = rtd->dai->cpu_dai->private_data;
-+	struct psc_i2s_stream *s;
-+
-+	dev_dbg(psc_i2s->dev, "psc_i2s_pcm_close(substream=%p)\n", substream);
-+
-+	if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
-+		s = &psc_i2s->capture;
-+	else
-+		s = &psc_i2s->playback;
-+
-+	s->stream = NULL;
-+	return 0;
-+}
-+
-+static snd_pcm_uframes_t
-+psc_i2s_pcm_pointer(struct snd_pcm_substream *substream)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct psc_i2s *psc_i2s = rtd->dai->cpu_dai->private_data;
-+	struct psc_i2s_stream *s;
-+	dma_addr_t count;
-+
-+	if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
-+		s = &psc_i2s->capture;
-+	else
-+		s = &psc_i2s->playback;
-+
-+	count = s->period_current_pt - s->period_start;
-+
-+	return bytes_to_frames(substream->runtime, count);
-+}
-+
-+static struct snd_pcm_ops psc_i2s_pcm_ops = {
-+	.open		= psc_i2s_pcm_open,
-+	.close		= psc_i2s_pcm_close,
-+	.ioctl		= snd_pcm_lib_ioctl,
-+	.pointer	= psc_i2s_pcm_pointer,
-+};
-+
-+static u64 psc_i2s_pcm_dmamask = 0xffffffff;
-+static int psc_i2s_pcm_new(struct snd_card *card, struct snd_soc_dai *dai,
-+			   struct snd_pcm *pcm)
-+{
-+	struct snd_soc_pcm_runtime *rtd = pcm->private_data;
-+	size_t size = psc_i2s_pcm_hardware.buffer_bytes_max;
-+	int rc = 0;
-+
-+	dev_dbg(rtd->socdev->dev, "psc_i2s_pcm_new(card=%p, dai=%p, pcm=%p)\n",
-+		card, dai, pcm);
-+
-+	if (!card->dev->dma_mask)
-+		card->dev->dma_mask = &psc_i2s_pcm_dmamask;
-+	if (!card->dev->coherent_dma_mask)
-+		card->dev->coherent_dma_mask = 0xffffffff;
-+
-+	if (pcm->streams[0].substream) {
-+		rc = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, pcm->dev, size,
-+					&pcm->streams[0].substream->dma_buffer);
-+		if (rc)
-+			goto playback_alloc_err;
-+	}
-+
-+	if (pcm->streams[1].substream) {
-+		rc = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, pcm->dev, size,
-+					&pcm->streams[1].substream->dma_buffer);
-+		if (rc)
-+			goto capture_alloc_err;
-+	}
-+
-+	return 0;
-+
-+ capture_alloc_err:
-+	if (pcm->streams[0].substream)
-+		snd_dma_free_pages(&pcm->streams[0].substream->dma_buffer);
-+ playback_alloc_err:
-+	dev_err(card->dev, "Cannot allocate buffer(s)\n");
-+	return -ENOMEM;
-+}
-+
-+static void psc_i2s_pcm_free(struct snd_pcm *pcm)
-+{
-+	struct snd_soc_pcm_runtime *rtd = pcm->private_data;
-+	struct snd_pcm_substream *substream;
-+	int stream;
-+
-+	dev_dbg(rtd->socdev->dev, "psc_i2s_pcm_free(pcm=%p)\n", pcm);
-+
-+	for (stream = 0; stream < 2; stream++) {
-+		substream = pcm->streams[stream].substream;
-+		if (substream) {
-+			snd_dma_free_pages(&substream->dma_buffer);
-+			substream->dma_buffer.area = NULL;
-+			substream->dma_buffer.addr = 0;
-+		}
-+	}
-+}
-+
-+struct snd_soc_platform psc_i2s_pcm_soc_platform = {
-+	.name		= "mpc5200-psc-audio",
-+	.pcm_ops	= &psc_i2s_pcm_ops,
-+	.pcm_new	= &psc_i2s_pcm_new,
-+	.pcm_free	= &psc_i2s_pcm_free,
++static const struct snd_kcontrol_new aic26_snd_controls[] = {
++	/* Output */
++	SOC_DOUBLE("PCM Playback Volume", AIC26_REG_DAC_GAIN, 8, 0, 0x7f, 1),
++	SOC_DOUBLE("PCM Playback Switch", AIC26_REG_DAC_GAIN, 15, 7, 1, 1),
++	SOC_SINGLE("PCM Capture Volume", AIC26_REG_ADC_GAIN, 8, 0x7f, 0),
++	SOC_SINGLE("PCM Capture Mute", AIC26_REG_ADC_GAIN, 15, 1, 1),
++	SOC_SINGLE("Keyclick activate", AIC26_REG_AUDIO_CTRL2, 15, 0x1, 0),
++	SOC_SINGLE("Keyclick amplitude", AIC26_REG_AUDIO_CTRL2, 12, 0x7, 0),
++	SOC_SINGLE("Keyclick frequency", AIC26_REG_AUDIO_CTRL2, 8, 0x7, 0),
++	SOC_SINGLE("Keyclick period", AIC26_REG_AUDIO_CTRL2, 4, 0xf, 0),
++	SOC_ENUM("Capture Source", aic26_capture_src_enum),
 +};
 +
 +/* ---------------------------------------------------------------------
-+ * Sysfs attributes for debugging
++ * SoC CODEC portion of driver: probe and release routines
++ */
++static int aic26_probe(struct platform_device *pdev)
++{
++	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
++	struct snd_soc_codec *codec;
++	struct snd_kcontrol *kcontrol;
++	struct aic26 *aic26;
++	int i, ret, err;
++
++	dev_info(&pdev->dev, "Probing AIC26 SoC CODEC driver\n");
++	dev_dbg(&pdev->dev, "socdev=%p\n", socdev);
++	dev_dbg(&pdev->dev, "codec_data=%p\n", socdev->codec_data);
++
++	/* Fetch the relevant aic26 private data here (it's already been
++	 * stored in the .codec pointer) */
++	aic26 = socdev->codec_data;
++	if (aic26 == NULL) {
++		dev_err(&pdev->dev, "aic26: missing codec pointer\n");
++		return -ENODEV;
++	}
++	codec = &aic26->codec;
++	socdev->codec = codec;
++
++	dev_dbg(&pdev->dev, "Registering PCMs, dev=%p, socdev->dev=%p\n",
++		&pdev->dev, socdev->dev);
++	/* register pcms */
++	ret = snd_soc_new_pcms(socdev, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "aic26: failed to create pcms\n");
++		return -ENODEV;
++	}
++
++	/* register controls */
++	dev_dbg(&pdev->dev, "Registering controls\n");
++	for (i = 0; i < ARRAY_SIZE(aic26_snd_controls); i++) {
++		kcontrol = snd_soc_cnew(&aic26_snd_controls[i], codec, NULL);
++		err = snd_ctl_add(codec->card, kcontrol);
++		WARN_ON(err < 0);
++	}
++
++	/* CODEC is setup, we can register the card now */
++	dev_dbg(&pdev->dev, "Registering card\n");
++	ret = snd_soc_register_card(socdev);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "aic26: failed to register card\n");
++		goto card_err;
++	}
++	return 0;
++
++ card_err:
++	snd_soc_free_pcms(socdev);
++	return ret;
++}
++
++static int aic26_remove(struct platform_device *pdev)
++{
++	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
++	snd_soc_free_pcms(socdev);
++	return 0;
++}
++
++struct snd_soc_codec_device aic26_soc_codec_dev = {
++	.probe = aic26_probe,
++	.remove = aic26_remove,
++};
++
++/* ---------------------------------------------------------------------
++ * SPI device portion of driver: sysfs files for debugging
 + */
 +
-+static ssize_t psc_i2s_status_show(struct device *dev,
-+			   struct device_attribute *attr, char *buf)
++static ssize_t aic26_keyclick_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
 +{
-+	struct psc_i2s *psc_i2s = dev_get_drvdata(dev);
++	struct aic26 *aic26 = dev_get_drvdata(dev);
++	int val, amp, freq, len;
 +
-+	return sprintf(buf, "status=%.4x sicr=%.8x rfnum=%i rfstat=0x%.4x "
-+			"tfnum=%i tfstat=0x%.4x\n",
-+			in_be16(&psc_i2s->psc_regs->sr_csr.status),
-+			in_be32(&psc_i2s->psc_regs->sicr),
-+			in_be16(&psc_i2s->fifo_regs->rfnum) & 0x1ff,
-+			in_be16(&psc_i2s->fifo_regs->rfstat),
-+			in_be16(&psc_i2s->fifo_regs->tfnum) & 0x1ff,
-+			in_be16(&psc_i2s->fifo_regs->tfstat));
++	val = aic26_reg_read_cache(&aic26->codec, AIC26_REG_AUDIO_CTRL2);
++	amp = (val >> 12) & 0x7;
++	freq = (125 << ((val >> 8) & 0x7)) >> 1;
++	len = 2 * (1 + ((val >> 4) & 0xf));
++
++	return sprintf(buf, "amp=%x freq=%iHz len=%iclks\n", amp, freq, len);
 +}
 +
-+static int *psc_i2s_get_stat_attr(struct psc_i2s *psc_i2s, const char *name)
-+{
-+	if (strcmp(name, "playback_underrun") == 0)
-+		return &psc_i2s->stats.underrun_count;
-+	if (strcmp(name, "capture_overrun") == 0)
-+		return &psc_i2s->stats.overrun_count;
-+
-+	return NULL;
-+}
-+
-+static ssize_t psc_i2s_stat_show(struct device *dev,
-+				 struct device_attribute *attr, char *buf)
-+{
-+	struct psc_i2s *psc_i2s = dev_get_drvdata(dev);
-+	int *attrib;
-+
-+	attrib = psc_i2s_get_stat_attr(psc_i2s, attr->attr.name);
-+	if (!attrib)
-+		return 0;
-+
-+	return sprintf(buf, "%i\n", *attrib);
-+}
-+
-+static ssize_t psc_i2s_stat_store(struct device *dev,
++/* Any write to the keyclick attribute will trigger the keyclick event */
++static ssize_t aic26_keyclick_set(struct device *dev,
 +				  struct device_attribute *attr,
-+				  const char *buf,
-+				  size_t count)
++				  const char *buf, size_t count)
 +{
-+	struct psc_i2s *psc_i2s = dev_get_drvdata(dev);
-+	int *attrib;
++	struct aic26 *aic26 = dev_get_drvdata(dev);
++	int val;
 +
-+	attrib = psc_i2s_get_stat_attr(psc_i2s, attr->attr.name);
-+	if (!attrib)
-+		return 0;
++	val = aic26_reg_read_cache(&aic26->codec, AIC26_REG_AUDIO_CTRL2);
++	val |= 0x8000;
++	aic26_reg_write(&aic26->codec, AIC26_REG_AUDIO_CTRL2, val);
 +
-+	*attrib = simple_strtoul(buf, NULL, 0);
 +	return count;
 +}
 +
-+DEVICE_ATTR(status, 0644, psc_i2s_status_show, NULL);
-+DEVICE_ATTR(playback_underrun, 0644, psc_i2s_stat_show, psc_i2s_stat_store);
-+DEVICE_ATTR(capture_overrun, 0644, psc_i2s_stat_show, psc_i2s_stat_store);
++DEVICE_ATTR(keyclick, 0644, aic26_keyclick_show, aic26_keyclick_set);
 +
 +/* ---------------------------------------------------------------------
-+ * OF platform bus binding code:
-+ * - Probe/remove operations
-+ * - OF device match table
++ * SPI device portion of driver: probe and release routines and SPI
++ * 				 driver registration.
 + */
-+static int __devinit psc_i2s_of_probe(struct of_device *op,
-+				      const struct of_device_id *match)
++static int aic26_spi_probe(struct spi_device *spi)
 +{
-+	phys_addr_t fifo;
-+	struct psc_i2s *psc_i2s;
-+	struct resource res;
-+	int size, psc_id, irq, rc;
-+	const __be32 *prop;
-+	void __iomem *regs;
++	struct aic26 *aic26;
++	int rc, i, reg;
 +
-+	dev_dbg(&op->dev, "probing psc i2s device\n");
++	dev_dbg(&spi->dev, "probing tlv320aic26 spi device\n");
 +
-+	/* Get the PSC ID */
-+	prop = of_get_property(op->node, "cell-index", &size);
-+	if (!prop || size < sizeof *prop)
-+		return -ENODEV;
-+	psc_id = be32_to_cpu(*prop);
-+
-+	/* Fetch the registers and IRQ of the PSC */
-+	irq = irq_of_parse_and_map(op->node, 0);
-+	if (of_address_to_resource(op->node, 0, &res)) {
-+		dev_err(&op->dev, "Missing reg property\n");
-+		return -ENODEV;
-+	}
-+	regs = ioremap(res.start, 1 + res.end - res.start);
-+	if (!regs) {
-+		dev_err(&op->dev, "Could not map registers\n");
-+		return -ENODEV;
-+	}
-+
-+	/* Allocate and initialize the driver private data */
-+	psc_i2s = kzalloc(sizeof *psc_i2s, GFP_KERNEL);
-+	if (!psc_i2s) {
-+		iounmap(regs);
++	/* Allocate driver data */
++	aic26 = kzalloc(sizeof *aic26, GFP_KERNEL);
++	if (!aic26)
 +		return -ENOMEM;
-+	}
-+	spin_lock_init(&psc_i2s->lock);
-+	psc_i2s->irq = irq;
-+	psc_i2s->psc_regs = regs;
-+	psc_i2s->fifo_regs = regs + sizeof *psc_i2s->psc_regs;
-+	psc_i2s->dev = &op->dev;
-+	psc_i2s->playback.psc_i2s = psc_i2s;
-+	psc_i2s->capture.psc_i2s = psc_i2s;
-+	snprintf(psc_i2s->name, sizeof psc_i2s->name, "PSC%u", psc_id+1);
 +
-+	/* Fill out the CPU DAI structure */
-+	memcpy(&psc_i2s->dai, &psc_i2s_dai_template, sizeof psc_i2s->dai);
-+	psc_i2s->dai.private_data = psc_i2s;
-+	psc_i2s->dai.name = psc_i2s->name;
-+	psc_i2s->dai.id = psc_id;
++	/* Initialize the driver data */
++	aic26->spi = spi;
++	dev_set_drvdata(&spi->dev, aic26);
 +
-+	/* Find the address of the fifo data registers and setup the
-+	 * DMA tasks */
-+	fifo = res.start + offsetof(struct mpc52xx_psc, buffer.buffer_32);
-+	psc_i2s->capture.bcom_task =
-+		bcom_psc_gen_bd_rx_init(psc_id, 10, fifo, 512);
-+	psc_i2s->playback.bcom_task =
-+		bcom_psc_gen_bd_tx_init(psc_id, 10, fifo);
-+	if (!psc_i2s->capture.bcom_task ||
-+	    !psc_i2s->playback.bcom_task) {
-+		dev_err(&op->dev, "Could not allocate bestcomm tasks\n");
-+		iounmap(regs);
-+		kfree(psc_i2s);
-+		return -ENODEV;
-+	}
++	/* Setup what we can in the codec structure so that the register
++	 * access functions will work as expected.  More will be filled
++	 * out when it is probed by the SoC CODEC part of this driver */
++	aic26->codec.private_data = aic26;
++	aic26->codec.name = "aic26";
++	aic26->codec.owner = THIS_MODULE;
++	aic26->codec.dai = &aic26_dai;
++	aic26->codec.num_dai = 1;
++	aic26->codec.read = aic26_reg_read;
++	aic26->codec.write = aic26_reg_write;
++	aic26->master = 1;
++	mutex_init(&aic26->codec.mutex);
++	INIT_LIST_HEAD(&aic26->codec.dapm_widgets);
++	INIT_LIST_HEAD(&aic26->codec.dapm_paths);
++	aic26->codec.reg_cache_size = AIC26_NUM_REGS;
++	aic26->codec.reg_cache = aic26->reg_cache;
 +
-+	/* Disable all interrupts and reset the PSC */
-+	out_be16(&psc_i2s->psc_regs->isr_imr.imr, 0);
-+	out_8(&psc_i2s->psc_regs->command, 3 << 4); /* reset transmitter */
-+	out_8(&psc_i2s->psc_regs->command, 2 << 4); /* reset receiver */
-+	out_8(&psc_i2s->psc_regs->command, 1 << 4); /* reset mode */
-+	out_8(&psc_i2s->psc_regs->command, 4 << 4); /* reset error */
++	/* Reset the codec to power on defaults */
++	aic26_reg_write(&aic26->codec, AIC26_REG_RESET, 0xBB00);
 +
-+	/* Configure the serial interface mode; defaulting to CODEC8 mode */
-+	psc_i2s->sicr = MPC52xx_PSC_SICR_DTS1 | MPC52xx_PSC_SICR_I2S |
-+			MPC52xx_PSC_SICR_CLKPOL;
-+	if (of_get_property(op->node, "fsl,cellslave", NULL))
-+		psc_i2s->sicr |= MPC52xx_PSC_SICR_CELLSLAVE |
-+				 MPC52xx_PSC_SICR_GENCLK;
-+	out_be32(&psc_i2s->psc_regs->sicr,
-+		 psc_i2s->sicr | MPC52xx_PSC_SICR_SIM_CODEC_8);
++	/* Power up CODEC */
++	aic26_reg_write(&aic26->codec, AIC26_REG_POWER_CTRL, 0);
 +
-+	/* Check for the codec handle.  If it is not present then we
-+	 * are done */
-+	if (!of_get_property(op->node, "codec-handle", NULL))
-+		return 0;
++	/* Audio Control 3 (master mode, fsref rate) */
++	reg = aic26_reg_read(&aic26->codec, AIC26_REG_AUDIO_CTRL3);
++	reg &= ~0xf800;
++	reg |= 0x0800; /* set master mode */
++	aic26_reg_write(&aic26->codec, AIC26_REG_AUDIO_CTRL3, reg);
 +
-+	/* Set up mode register;
-+	 * First write: RxRdy (FIFO Alarm) generates rx FIFO irq
-+	 * Second write: register Normal mode for non loopback
-+	 */
-+	out_8(&psc_i2s->psc_regs->mode, 0);
-+	out_8(&psc_i2s->psc_regs->mode, 0);
++	/* Fill register cache */
++	for (i = 0; i < ARRAY_SIZE(aic26->reg_cache); i++)
++		aic26_reg_read(&aic26->codec, i);
 +
-+	/* Set the TX and RX fifo alarm thresholds */
-+	out_be16(&psc_i2s->fifo_regs->rfalarm, 0x100);
-+	out_8(&psc_i2s->fifo_regs->rfcntl, 0x4);
-+	out_be16(&psc_i2s->fifo_regs->tfalarm, 0x100);
-+	out_8(&psc_i2s->fifo_regs->tfcntl, 0x7);
-+
-+	/* Lookup the IRQ numbers */
-+	psc_i2s->playback.irq =
-+		bcom_get_task_irq(psc_i2s->playback.bcom_task);
-+	psc_i2s->capture.irq =
-+		bcom_get_task_irq(psc_i2s->capture.bcom_task);
-+
-+	/* Save what we've done so it can be found again later */
-+	dev_set_drvdata(&op->dev, psc_i2s);
-+
-+	/* Register the SYSFS files */
-+	rc = device_create_file(psc_i2s->dev, &dev_attr_status);
-+	rc = device_create_file(psc_i2s->dev, &dev_attr_capture_overrun);
-+	rc = device_create_file(psc_i2s->dev, &dev_attr_playback_underrun);
++	/* Register the sysfs files for debugging */
++	/* Create SysFS files */
++	rc = device_create_file(&spi->dev, &dev_attr_keyclick);
 +	if (rc)
-+		dev_info(psc_i2s->dev, "error creating sysfs files\n");
++		dev_info(&spi->dev, "error creating sysfs files\n");
 +
-+	/* Tell the ASoC OF helpers about it */
-+	of_snd_soc_register_platform(&psc_i2s_pcm_soc_platform, op->node,
-+				     &psc_i2s->dai);
++#if defined(CONFIG_SND_SOC_OF_SIMPLE)
++	/* Tell the of_soc helper about this codec */
++	of_snd_soc_register_codec(&aic26_soc_codec_dev, aic26, &aic26_dai,
++				  spi->dev.archdata.of_node);
++#endif
 +
++	dev_dbg(&spi->dev, "SPI device initialized\n");
 +	return 0;
 +}
 +
-+static int __devexit psc_i2s_of_remove(struct of_device *op)
++static int aic26_spi_remove(struct spi_device *spi)
 +{
-+	struct psc_i2s *psc_i2s = dev_get_drvdata(&op->dev);
++	struct aic26 *aic26 = dev_get_drvdata(&spi->dev);
 +
-+	dev_dbg(&op->dev, "psc_i2s_remove()\n");
-+
-+	bcom_gen_bd_rx_release(psc_i2s->capture.bcom_task);
-+	bcom_gen_bd_tx_release(psc_i2s->playback.bcom_task);
-+
-+	iounmap(psc_i2s->psc_regs);
-+	iounmap(psc_i2s->fifo_regs);
-+	kfree(psc_i2s);
-+	dev_set_drvdata(&op->dev, NULL);
++	kfree(aic26);
 +
 +	return 0;
 +}
 +
-+/* Match table for of_platform binding */
-+static struct of_device_id psc_i2s_match[] __devinitdata = {
-+	{ .compatible = "fsl,mpc5200-psc-i2s", },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, psc_i2s_match);
-+
-+static struct of_platform_driver psc_i2s_driver = {
-+	.match_table = psc_i2s_match,
-+	.probe = psc_i2s_of_probe,
-+	.remove = __devexit_p(psc_i2s_of_remove),
++static struct spi_driver aic26_spi = {
 +	.driver = {
-+		.name = "mpc5200-psc-i2s",
++		.name = "tlv320aic26",
 +		.owner = THIS_MODULE,
 +	},
++	.probe = aic26_spi_probe,
++	.remove = aic26_spi_remove,
 +};
 +
-+/* ---------------------------------------------------------------------
-+ * Module setup and teardown; simply register the of_platform driver
-+ * for the PSC in I2S mode.
++static int __init aic26_init(void)
++{
++	return spi_register_driver(&aic26_spi);
++}
++module_init(aic26_init);
++
++static void __exit aic26_exit(void)
++{
++	spi_unregister_driver(&aic26_spi);
++}
++module_exit(aic26_exit);
+diff --git a/sound/soc/codecs/tlv320aic26.h b/sound/soc/codecs/tlv320aic26.h
+new file mode 100644
+index 0000000..62b1f22
+--- /dev/null
++++ b/sound/soc/codecs/tlv320aic26.h
+@@ -0,0 +1,93 @@
++/*
++ * Texas Instruments TLV320AIC26 low power audio CODEC
++ * register definitions
++ *
++ * Copyright (C) 2008 Secret Lab Technologies Ltd.
 + */
-+static int __init psc_i2s_init(void)
-+{
-+	return of_register_platform_driver(&psc_i2s_driver);
-+}
-+module_init(psc_i2s_init);
 +
-+static void __exit psc_i2s_exit(void)
-+{
-+	of_unregister_platform_driver(&psc_i2s_driver);
-+}
-+module_exit(psc_i2s_exit);
++#ifndef _TLV320AIC16_H_
++#define _TLV320AIC16_H_
 +
++/* AIC26 Registers */
++#define AIC26_READ_COMMAND_WORD(addr)	((1 << 15) | (addr << 5))
++#define AIC26_WRITE_COMMAND_WORD(addr)	((0 << 15) | (addr << 5))
++#define AIC26_PAGE_ADDR(page, offset)	((page << 6) | offset)
++#define AIC26_NUM_REGS			AIC26_PAGE_ADDR(3, 0)
 +
++/* Page 0: Auxillary data registers */
++#define AIC26_REG_BAT1			AIC26_PAGE_ADDR(0, 0x05)
++#define AIC26_REG_BAT2			AIC26_PAGE_ADDR(0, 0x06)
++#define AIC26_REG_AUX			AIC26_PAGE_ADDR(0, 0x07)
++#define AIC26_REG_TEMP1			AIC26_PAGE_ADDR(0, 0x09)
++#define AIC26_REG_TEMP2			AIC26_PAGE_ADDR(0, 0x0A)
++
++/* Page 1: Auxillary control registers */
++#define AIC26_REG_AUX_ADC		AIC26_PAGE_ADDR(1, 0x00)
++#define AIC26_REG_STATUS		AIC26_PAGE_ADDR(1, 0x01)
++#define AIC26_REG_REFERENCE		AIC26_PAGE_ADDR(1, 0x03)
++#define AIC26_REG_RESET			AIC26_PAGE_ADDR(1, 0x04)
++
++/* Page 2: Audio control registers */
++#define AIC26_REG_AUDIO_CTRL1		AIC26_PAGE_ADDR(2, 0x00)
++#define AIC26_REG_ADC_GAIN		AIC26_PAGE_ADDR(2, 0x01)
++#define AIC26_REG_DAC_GAIN		AIC26_PAGE_ADDR(2, 0x02)
++#define AIC26_REG_SIDETONE		AIC26_PAGE_ADDR(2, 0x03)
++#define AIC26_REG_AUDIO_CTRL2		AIC26_PAGE_ADDR(2, 0x04)
++#define AIC26_REG_POWER_CTRL		AIC26_PAGE_ADDR(2, 0x05)
++#define AIC26_REG_AUDIO_CTRL3		AIC26_PAGE_ADDR(2, 0x06)
++
++#define AIC26_REG_FILTER_COEFF_L_N0	AIC26_PAGE_ADDR(2, 0x07)
++#define AIC26_REG_FILTER_COEFF_L_N1	AIC26_PAGE_ADDR(2, 0x08)
++#define AIC26_REG_FILTER_COEFF_L_N2	AIC26_PAGE_ADDR(2, 0x09)
++#define AIC26_REG_FILTER_COEFF_L_N3	AIC26_PAGE_ADDR(2, 0x0A)
++#define AIC26_REG_FILTER_COEFF_L_N4	AIC26_PAGE_ADDR(2, 0x0B)
++#define AIC26_REG_FILTER_COEFF_L_N5	AIC26_PAGE_ADDR(2, 0x0C)
++#define AIC26_REG_FILTER_COEFF_L_D1	AIC26_PAGE_ADDR(2, 0x0D)
++#define AIC26_REG_FILTER_COEFF_L_D2	AIC26_PAGE_ADDR(2, 0x0E)
++#define AIC26_REG_FILTER_COEFF_L_D4	AIC26_PAGE_ADDR(2, 0x0F)
++#define AIC26_REG_FILTER_COEFF_L_D5	AIC26_PAGE_ADDR(2, 0x10)
++#define AIC26_REG_FILTER_COEFF_R_N0	AIC26_PAGE_ADDR(2, 0x11)
++#define AIC26_REG_FILTER_COEFF_R_N1	AIC26_PAGE_ADDR(2, 0x12)
++#define AIC26_REG_FILTER_COEFF_R_N2	AIC26_PAGE_ADDR(2, 0x13)
++#define AIC26_REG_FILTER_COEFF_R_N3	AIC26_PAGE_ADDR(2, 0x14)
++#define AIC26_REG_FILTER_COEFF_R_N4	AIC26_PAGE_ADDR(2, 0x15)
++#define AIC26_REG_FILTER_COEFF_R_N5	AIC26_PAGE_ADDR(2, 0x16)
++#define AIC26_REG_FILTER_COEFF_R_D1	AIC26_PAGE_ADDR(2, 0x17)
++#define AIC26_REG_FILTER_COEFF_R_D2	AIC26_PAGE_ADDR(2, 0x18)
++#define AIC26_REG_FILTER_COEFF_R_D4	AIC26_PAGE_ADDR(2, 0x19)
++#define AIC26_REG_FILTER_COEFF_R_D5	AIC26_PAGE_ADDR(2, 0x1A)
++
++#define AIC26_REG_PLL_PROG1		AIC26_PAGE_ADDR(2, 0x1B)
++#define AIC26_REG_PLL_PROG2		AIC26_PAGE_ADDR(2, 0x1C)
++#define AIC26_REG_AUDIO_CTRL4		AIC26_PAGE_ADDR(2, 0x1D)
++#define AIC26_REG_AUDIO_CTRL5		AIC26_PAGE_ADDR(2, 0x1E)
++
++/* fsref dividers; used in register 'Audio Control 1' */
++enum aic26_divisors {
++	AIC26_DIV_1	= 0,
++	AIC26_DIV_1_5	= 1,
++	AIC26_DIV_2	= 2,
++	AIC26_DIV_3	= 3,
++	AIC26_DIV_4	= 4,
++	AIC26_DIV_5	= 5,
++	AIC26_DIV_5_5	= 6,
++	AIC26_DIV_6	= 7,
++};
++
++/* Digital data format */
++enum aic26_datfm {
++	AIC26_DATFM_I2S		= 0 << 8,
++	AIC26_DATFM_DSP		= 1 << 8,
++	AIC26_DATFM_RIGHTJ	= 2 << 8, /* right justified */
++	AIC26_DATFM_LEFTJ	= 3 << 8, /* left justified */
++};
++
++/* Sample word length in bits; used in register 'Audio Control 1' */
++enum aic26_wlen {
++	AIC26_WLEN_16	= 0 << 10,
++	AIC26_WLEN_20	= 1 << 10,
++	AIC26_WLEN_24	= 2 << 10,
++	AIC26_WLEN_32	= 3 << 10,
++};
++
++#endif /* _TLV320AIC16_H_ */
