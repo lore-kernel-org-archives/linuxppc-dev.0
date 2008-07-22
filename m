@@ -1,16 +1,23 @@
-Return-Path: <akash.bhatnagar@vnl.in>
-Received: from mailx.vnl.in (unknown [125.19.52.136])
-	by ozlabs.org (Postfix) with ESMTP id C1046DDEE2
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id CFBBEDDE41
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Jul 2008 13:10:08 +1000 (EST)
-From: Akash Bhatnagar <akash.bhatnagar@vnl.in>
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Date: Tue, 22 Jul 2008 08:29:11 +0530
-Subject: Help required i2c-mpc driver 
-Message-ID: <50660FB7D5A72645933E13611D51D54A10BF96EB20@mailserver.vnl.in>
-Content-Type: multipart/alternative;
-	boundary="_000_50660FB7D5A72645933E13611D51D54A10BF96EB20mailservervnl_"
+	Tue, 22 Jul 2008 15:23:37 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KLALV-0002b4-J4
+	for linuxppc-embedded@ozlabs.org; Mon, 21 Jul 2008 22:23:33 -0700
+Message-ID: <18582612.post@talk.nabble.com>
+Date: Mon, 21 Jul 2008 22:23:33 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: how to allocate 9MB of memory in kernel ?
+In-Reply-To: <200807181739.10268.arnd@arndb.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <18503022.post@talk.nabble.com> <200807170956.52101.arnd@arndb.de>
+	<18522535.post@talk.nabble.com> <48803D3C.5020608@coritel.it>
+	<18525063.post@talk.nabble.com> <200807181739.10268.arnd@arndb.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,484 +28,176 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_000_50660FB7D5A72645933E13611D51D54A10BF96EB20mailservervnl_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
-            I am working on implementation of I2C driver for both MPC8540(A=
-) & MPC8560(B) in Master Mode scenarios. The problem I am facing is given b=
-elow
+Hi all,
 
-If I read any buffer part via I2C bus from A to B continuously,the driver i=
-s working fine. However during this processing ,if B tries to read any buff=
-er register from A the bus will goes into low state (both SCL and SDA are l=
-ow).The error that it was showing are mainly NO ACK  and Remote IO errors. =
-After this I suspect that it may be the problem form slave receive function=
- that I implemented. The reference Manual says that you have to set I2CCR[T=
-XAK] bit after slave receive finishes. But how does slave knows wether this=
- will last byte of transaction.Only Master have this knowledge. The slave i=
-mplementation is as follows:-
+I am getting kernel panic while trying these as suggested by you ,the
+following points will elaborate my concern :-
 
-#ifdef CONFIG_MPC_I2C_SLAVE
-
-                        // lost arbitration?
-                        if ((priv->read(&priv->regs->i2csr) & MPC_I2CSR_MAL=
-))
-                        {
-
-                                    priv->write(&priv->regs->i2csr, 0, MPC_=
-I2CSR_MAL);
-                                    if ((priv->read(&priv->regs->i2csr) & M=
-PC_I2CSR_MAAS))
-                                    {
-                                                mpc_slave_address_match(pri=
-v);
-                                    }
-                        }
-                        else
-                        {
-                                    if ((priv->read(&priv->regs->i2csr) & M=
-PC_I2CSR_MAAS))
-                                    {
-                                                mpc_slave_address_match(pri=
-v);
-                                    }
-                                    else if ((priv->read(&priv->regs->i2ccr=
-) & MPC_I2CCR_MTX))
-                                    {
-                                                mpc_slave_tx(priv);
-                                    }
-                                    else
-                                    {
-                                                mpc_slave_rx(priv);
-                                    }
-                        }
-#endif
-            }
-
-static inline void mpc_slave_rx(struct mpc_i2c_private *priv)
+My circular buffer defination is this :-
+/* Frame */
+typedef struct
 {
-            buffer =3D priv->read(&priv->regs->i2cdr);
+	char buffer[SIZE_FRAME];
+	unsigned int count;
+}frame_S;
 
-            -------------Some Montavista Event Broker Part-----------
+/* Circular Buffer Structured */
+/* Mmaped area Structure */
+typedef struct
+{
 
-}
+	frame_S  fluke[NO_FRAMES];
+	unsigned int count_index;
+	unsigned int read_index;
+	unsigned int write_index;
 
-Since I am new in I2C functionality, Please point out any mistake I was doi=
-ng.
+}circularbuffer_S;
 
-This message and any attachment therewith is privileged, confidential and p=
-roprietary in nature and the property of the originator. It is intended sol=
-ely and exclusively for use by the individual to whom it is addressed. It s=
-hould not be circulated or used for any purpose other than for what is stat=
-ed. If you have received this message erroneously, please notify the origin=
-ator immediately. If you are not the intended recipient, you are notified t=
-hat you are strictly prohibited from using, copying, altering, or disclosin=
-g the contents of this message and are called upon to delete the same from =
-your system. Any contradictory action by you may invite penal consequences.=
- Vihaan Networks Limited accepts no responsibility for loss or damage arisi=
-ng from the use of the information transmitted by this email including but =
-not limited to damage from virus."
+circularbuffer_S   *buf_area=NULL;
 
---_000_50660FB7D5A72645933E13611D51D54A10BF96EB20mailservervnl_
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+i am allocating memory using vmalloc and remaping to the SDRAM area as :-
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:sc=
-hemas-microsoft-com:office:word" xmlns=3D"http://www.w3.org/TR/REC-html40">
+buf_area = vmalloc(sizeof(circularbuffer_S));
+	if(!buf_area)
+	{
+		printk(KERN_ALERT"vmalloc failed \n");
+		return -1;
+	}
 
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
- /* List Definitions */
- @list l0
-	{mso-list-id:1519002094;
-	mso-list-type:hybrid;
-	mso-list-template-ids:1939255154 -600781912 67698713 67698715 67698703 676=
-98713 67698715 67698703 67698713 67698715;}
-@list l0:level1
-	{mso-level-number-format:roman-lower;
-	mso-level-text:"%1\)";
-	mso-level-tab-stop:1.0in;
-	mso-level-number-position:left;
-	margin-left:1.0in;
-	text-indent:-.5in;}
-ol
-	{margin-bottom:0in;}
-ul
-	{margin-bottom:0in;}
--->
-</style>
+	buf_area = (circularbuffer_S *)ioremap(7700000,900000);
+	if(!buf_area)
+	{
+		printk(KERN_ALERT"ioremap failed \n");
+		return -1;
+	}
 
-</head>
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+mmap Implimentation is this :-
 
-<div class=3DSection1>
+unsigned long start = vma->vm_start;
+	unsigned long size = vma->vm_end - vma->vm_start; //0x900000;
+	unsigned long phy_add = virt_to_phys(buf_area); //0x7700000;
+	int ret = 0;
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0=2E0pt;
-font-family:Arial'>Hi,<o:p></o:p></span></font></p>
+	/* Make the mmaped area noncacheable */
+	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0=2E0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; I
-am working on implementation of I2C driver for both MPC8540(A) &amp; MPC856=
-0(B)
-in Master Mode scenarios. The problem I am facing is given below<o:p></o:p>=
-</span></font></p>
+	/* Set the Flags to give permissions to Mmaped area */
+	vma->vm_flags |=VM_RESERVED;
+	vma->vm_flags |=VM_READ;
+	vma->vm_flags |=VM_WRITE;
+	vma->vm_flags |=VM_IO;
+	//vma->vm_flags |=VM_SHARED;
+	//vma->vm_flags |=VM_LOCKED;
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0=2E0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; <o:p></o:p></span></font></p>
+	printk(KERN_DEBUG"In mmap function\n");
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><font size=3D2 face=3DArial=
-><span
-style=3D'font-size:10.0pt;font-family:Arial'>If I read any buffer part via =
-I2C
-bus from A to B continuously,the driver is working fine. However during this
-processing ,if B tries to read any buffer register from A the bus will goes
-into low state (both SCL and SDA are low).The error that it was showing are=
- mainly
-NO ACK &nbsp;and Remote IO errors. After this I suspect that it may be the
-problem form <b><span style=3D'font-weight:bold'>slave receive function </s=
-pan></b>that
-I implemented. The reference Manual says that you have to set I2CCR[TXAK] b=
-it
-after slave receive finishes. But how does slave knows wether this will last
-byte of transaction.Only Master have this knowledge. The slave implementati=
-on
-is as follows:- <o:p></o:p></span></font></p>
+	if(remap_vmalloc_range(vma,buf_area,(phy_add >> PAGE_SHIFT)))
+	{
+		printk(KERN_ALERT"remap_vmalloc_range failed\n");
+		goto mmap_exit;
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><font size=3D2 face=3DArial=
-><span
-style=3D'font-size:10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font=
-></p>
+   	}
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>#ifdef
-CONFIG_MPC_I2C_SLAVE<o:p></o:p></span></font></i></p>
+I am getting mmap failed .....
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'><o:p>&nbsp;<=
-/o:p></span></font></i></p>
+some times i am getting this error .......
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //
-lost arbitration?<o:p></o:p></span></font></i></p>
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if
-((priv-&gt;read(&amp;priv-&gt;regs-&gt;i2csr) &amp; MPC_I2CSR_MAL)) <o:p></=
-o:p></span></font></i></p>
+/***************************************************/
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<o:p></o:p></span></fo=
-nt></i></p>
+insmod fluke_driver.ko
+ Ioremap mapped to virtual 0x0c7900e20
+Unable to handle kernel paging request at virtual address c8200e34
+pgd = c0444000
+[c8200e34] *pgd=85c80011, *pte=00000000, *ppte=00000000
+Internal error: Oops: 807 [#1]
+Modules linked in: fluke_driver tstamp sig_router mvci_spi mvci_sf_pcd
+mvci_sci_unidir_s1 mvci_sci_diff mvci_sci_bidir_s
+1 g_ether mvci_rtmd_s1 mvci_kwiso_s1 mvci_kw1281_s1 mvci_kh_s1 mvci_j1850
+mvci_gm_sbc mvci_diagh_s1 mvci_dcl mvci_can1 f
+pga_conf arcotg_udc adc_dac keypad(F) splc501_lcd(F) cpld
+CPU: 0
+PC is at FlukeDriverInit+0xe4/0x140 [fluke_driver]
+LR is at preempt_schedule+0x48/0x58
+pc : [<bf01c0e4>]    lr : [<c0241e98>]    Tainted: GF
+sp : c69b9ed0  ip : c69b9e28  fp : c69b9eec
+r10: c7862000  r9 : 00000015  r8 : 00000016
+r7 : bf01aaa0  r6 : c682a5f0  r5 : bf01ac24  r4 : 00000000
+r3 : 00900014  r2 : c7900e20  r1 : c69b8000  r0 : 00000000
+Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  Segment user
+Control: C5387F
+Table: 80444000  DAC: 00000015
+Process insmod (pid: 1089, stack limit = 0xc69b8250)
+Stack: (0xc69b9ed0 to 0xc69ba000)
+9ec0:                                     00000000 c682a5c4 c682a5c4
+c682a400
+9ee0: c69b9fa4 c69b9ef0 c005ec78 bf01c00c 00000000 00000000 00011008
+00000000
+9f00: 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+00000000
+9f20: 00000000 00000000 00000000 00000000 c78642e8 c6aad200 c7863820
+c7863730
+9f40: c7863848 00000000 0000006a 0000006a bf01aaac c00485d8 0000000a
+c69b8000
+9f60: bf01aae8 c7863474 c7863870 00000013 00000000 c0282764 c69b9f9c
+00008608
+9f80: 00000003 00011018 00000080 c0020f64 c69b8000 00011008 00000000
+c69b9fa8
+9fa0: c0020de0 c005d7d4 00008608 00000003 00011018 000025e8 00011008
+0000002d
+9fc0: 00008608 00000003 00011018 00000080 bec38f5e 00000000 00011008
+00000000
+9fe0: 00004000 bec38d14 000088dc 400db334 60000010 00011018 48010000
+00000000
+Backtrace:
+[<bf01c000>] (FlukeDriverInit+0x0/0x140 [fluke_driver]) from [<c005ec78>]
+(sys_init_module+0x14b0/0x1698)
+ r5 = C682A400  r4 = C682A5C4
+[<c005d7c8>] (sys_init_module+0x0/0x1698) from [<c0020de0>]
+(ret_fast_syscall+0x0/0x2c)
+Code: eb408e00 e5952000 e59f3058 e1a00004 (e7824003)
+ Segmentation fault
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <o:p></o:p></span></font><=
-/i></p>
+/****************************************************/
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; priv-&gt;write(&amp;priv-&=
-gt;regs-&gt;i2csr,
-0, MPC_I2CSR_MAL);<o:p></o:p></span></font></i></p>
+Please suggest me what could be the problem and how to overcome this and do
+my implimentation ....
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if
-((priv-&gt;read(&amp;priv-&gt;regs-&gt;i2csr) &amp; MPC_I2CSR_MAAS)) <o:p><=
-/o:p></span></font></i></p>
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<o:p></o:p></span></font>=
-</i></p>
+------Misbah <><
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mpc_slave_address_match(priv)=
-;<o:p></o:p></span></font></i></p>
+Arnd Bergmann wrote:
+> 
+> On Friday 18 July 2008, Misbah khan wrote:
+> 
+>> Now my concern is How can i map SDRAM one to one to circular buffer of
+>> such
+>> a huge size ???? 
+> 
+> As I mentioned, use vmalloc to get the memory, and provide an mmap
+> function
+> that uses remap_vmalloc_range to put it into the user address space.
+> 
+>> My idea is that i will ioreamp SDRAM and do memcpy_toio() when ever i am
+>> writing to the the circular buffer which is dma allocated and pages are
+>> set
+>> reserved . and read the frame from user space .
+> 
+> ioremap and memcpy_toio style accesses only make sense for stuff that is
+> *not* your main memory. Memory is alrady directly accessible in the kernel
+> after allocating with get_free_pages, kmalloc or vmalloc. No need to
+> play with __iomem pointers for this.
+> 
+> 	Arnd <><
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></span></font>=
-</i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
-<o:p></o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else
-<o:p></o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<o:p></o:p></span></fo=
-nt></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if
-((priv-&gt;read(&amp;priv-&gt;regs-&gt;i2csr) &amp; MPC_I2CSR_MAAS)) <o:p><=
-/o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<o:p></o:p></span></font>=
-</i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mpc_slave_address_match(priv)=
-;<o:p></o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
-<o:p></o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else
-if ((priv-&gt;read(&amp;priv-&gt;regs-&gt;i2ccr) &amp; MPC_I2CCR_MTX)) <o:p=
-></o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<o:p></o:p></span></font>=
-</i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mpc_slave_tx(priv);<o:p></o:p=
-></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
-<o:p></o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else
-<o:p></o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<o:p></o:p></span></font>=
-</i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mpc_slave_rx(priv);<o:p></o:p=
-></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></span></font>=
-</i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></span></fo=
-nt></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>#endif<o:p><=
-/o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></span><=
-/font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'><o:p>&nbsp;<=
-/o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>static inlin=
-e void
-mpc_slave_rx(struct mpc_i2c_private *priv)<o:p></o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>{<o:p></o:p>=
-</span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buffer
-=3D priv-&gt;read(&amp;priv-&gt;regs-&gt;i2cdr);<o:p></o:p></span></font></=
-i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'><o:p>&nbsp;<=
-/o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -------------Some
-Montavista Event Broker Part-----------<o:p></o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'><o:p>&nbsp;<=
-/o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>}<o:p></o:p>=
-</span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><i><font size=3D2 face=3DAr=
-ial><span
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'><o:p>&nbsp;<=
-/o:p></span></font></i></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><font size=3D2 face=3DArial=
-><span
-style=3D'font-size:10.0pt;font-family:Arial'>Since I am new in I2C function=
-ality,
-Please point out any mistake I was doing.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0=2E0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-<pre>This message and any attachment therewith is privileged, confidential =
-and proprietary in nature and the property of the originator. It is intende=
-d solely and exclusively for use by the individual to whom it is addressed.=
- It should not be circulated or used for any purpose other than for what is=
- stated. If you have received this message erroneously, please notify the o=
-riginator immediately. If you are not the intended recipient, you are notif=
-ied that you are strictly prohibited from using, copying, altering, or disc=
-losing the contents of this message and are called upon to delete the same =
-from your system. Any contradictory action by you may invite penal conseque=
-nces. Vihaan Networks Limited accepts no responsibility for loss or damage =
-arising from the use of the information transmitted by this email including=
- but not limited to damage from virus."
-</pre></body>
-
-</html>
-
---_000_50660FB7D5A72645933E13611D51D54A10BF96EB20mailservervnl_--
+-- 
+View this message in context: http://www.nabble.com/how-to-allocate-9MB-of-memory-in-kernel---tp18503022p18582612.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
