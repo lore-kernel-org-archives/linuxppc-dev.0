@@ -1,16 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 22 Jul 2008 16:36:26 -0700 (PDT)
-Message-Id: <20080722.163626.109432106.davem@davemloft.net>
-To: jonsmirl@gmail.com
-Subject: Re: netif_schedule and mpc5200_fec
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <9e4733910807221633x4385c36dod81ac3f81e242e5c@mail.gmail.com>
-References: <9e4733910807221554j451019a0sa711541e97fbf0aa@mail.gmail.com>
-	<20080722.160718.122532549.davem@davemloft.net>
-	<9e4733910807221633x4385c36dod81ac3f81e242e5c@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: davem@redhat.com, Linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Return-Path: <jonsmirl@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id 5290EDDE02
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 09:53:52 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so1952796ywh.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 16:53:50 -0700 (PDT)
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: [PATCH 1/2] Support internal I2S clock sources on MPC5200
+To: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+Date: Tue, 22 Jul 2008 19:53:49 -0400
+Message-ID: <20080722235349.11648.90112.stgit@terra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,43 +20,154 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: "Jon Smirl" <jonsmirl@gmail.com>
-Date: Tue, 22 Jul 2008 19:33:13 -0400
+Support internal I2S clock sources on MPC5200
 
-> On 7/22/08, David Miller <davem@davemloft.net> wrote:
-> > From: "Jon Smirl" <jonsmirl@gmail.com>
-> >
-> > Date: Tue, 22 Jul 2008 18:54:18 -0400
-> >
-> >
-> >  > On 7/22/08, David Miller <davem@davemloft.net> wrote:
-> >  > > From: "Jon Smirl" <jonsmirl@gmail.com>
-> >  > >  Date: Tue, 22 Jul 2008 17:03:32 -0400
-> >  > >
-> >  > >
-> >  > > > On 7/22/08, Jon Smirl <jonsmirl@gmail.com> wrote:
-> >  > >  > > I just updated to linus/master and mpc5200_fec won't boot.
-> >  > >  >
-> >  > >  > It does boot, but this badness looks like it is coming from this
-> >  > >  > patch. I don't know enough about networking to debug it.
-> >  > >
-> >  > >
-> >  > > I just applied the following patch from Anton Vorontsov which
-> >  > >  will fix this.
-> >  >
-> >  > I applied this piece and still have the same error.
-> >
-> >
-> > There are no calls to functions in mpc52xx_fec_adjust_link that
-> >  can lead to __netif_schedule() any more.
-> >
-> >  Therefore I can't see how your backtrace is even possible.
-> >
-> >  Please double check that you've really applied the patch
-> >  and that mpc52xx_fec_adjust_link lacks any calls to
-> >  netif_*_queue() and *netif_schedule().
-> 
-> You're right. That patch fixes it. Another thing I brought down made
-> my image file not get generated and I was using an old image.
+Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+---
 
-Thanks for confirming this Jon.
+ sound/soc/fsl/mpc5200_psc_i2s.c |   58 ++++++++++++++++++++++++++++++++++-----
+ sound/soc/fsl/mpc5200_psc_i2s.h |   13 +++++++++
+ 2 files changed, 64 insertions(+), 7 deletions(-)
+ create mode 100644 sound/soc/fsl/mpc5200_psc_i2s.h
+
+diff --git a/sound/soc/fsl/mpc5200_psc_i2s.c b/sound/soc/fsl/mpc5200_psc_i2s.c
+index 8692329..f028f61 100644
+--- a/sound/soc/fsl/mpc5200_psc_i2s.c
++++ b/sound/soc/fsl/mpc5200_psc_i2s.c
+@@ -23,8 +23,12 @@
+ 
+ #include <sysdev/bestcomm/bestcomm.h>
+ #include <sysdev/bestcomm/gen_bd.h>
++#include <asm/time.h>
++#include <asm/mpc52xx.h>
+ #include <asm/mpc52xx_psc.h>
+ 
++#include "mpc5200_psc_i2s.h"
++
+ MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
+ MODULE_DESCRIPTION("Freescale MPC5200 PSC in I2S mode ASoC Driver");
+ MODULE_LICENSE("GPL");
+@@ -93,6 +97,7 @@ struct psc_i2s {
+ 	struct snd_soc_dai dai;
+ 	spinlock_t lock;
+ 	u32 sicr;
++	uint sysclk;
+ 
+ 	/* per-stream data */
+ 	struct psc_i2s_stream playback;
+@@ -224,6 +229,7 @@ static int psc_i2s_hw_params(struct snd_pcm_substream *substream,
+ {
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct psc_i2s *psc_i2s = rtd->dai->cpu_dai->private_data;
++	uint bits, framesync, bitclk, value;
+ 	u32 mode;
+ 
+ 	dev_dbg(psc_i2s->dev, "%s(substream=%p) p_size=%i p_bytes=%i"
+@@ -235,15 +241,19 @@ static int psc_i2s_hw_params(struct snd_pcm_substream *substream,
+ 	switch (params_format(params)) {
+ 	case SNDRV_PCM_FORMAT_S8:
+ 		mode = MPC52xx_PSC_SICR_SIM_CODEC_8;
++		bits = 8;
+ 		break;
+ 	case SNDRV_PCM_FORMAT_S16_BE:
+ 		mode = MPC52xx_PSC_SICR_SIM_CODEC_16;
++		bits = 16;
+ 		break;
+ 	case SNDRV_PCM_FORMAT_S24_BE:
+ 		mode = MPC52xx_PSC_SICR_SIM_CODEC_24;
++		bits = 24;
+ 		break;
+ 	case SNDRV_PCM_FORMAT_S32_BE:
+ 		mode = MPC52xx_PSC_SICR_SIM_CODEC_32;
++		bits = 32;
+ 		break;
+ 	default:
+ 		dev_dbg(psc_i2s->dev, "invalid format\n");
+@@ -251,7 +261,24 @@ static int psc_i2s_hw_params(struct snd_pcm_substream *substream,
+ 	}
+ 	out_be32(&psc_i2s->psc_regs->sicr, psc_i2s->sicr | mode);
+ 
+-	snd_pcm_set_runtime_buffer(substream, &substream->dma_buffer);
++	if (psc_i2s->sysclk) {
++		framesync = bits * 2;
++		bitclk = (psc_i2s->sysclk) / (params_rate(params) * framesync);
++		
++		/* bitclk field is byte swapped due to mpc5200/b compatibility */
++		value = ((framesync - 1) << 24) |
++			(((bitclk - 1) & 0xFF) << 16) | ((bitclk - 1) & 0xFF00);
++		
++		dev_dbg(psc_i2s->dev, "%s(substream=%p) rate=%i sysclk=%i"
++			" framesync=%i bitclk=%i reg=%X\n",
++			__FUNCTION__, substream, params_rate(params), psc_i2s->sysclk,
++			framesync, bitclk, value);
++		
++		out_be32(&psc_i2s->psc_regs->ccr, value);
++		out_8(&psc_i2s->psc_regs->ctur, bits - 1);
++	}
++	
++  	snd_pcm_set_runtime_buffer(substream, &substream->dma_buffer);
+ 
+ 	return 0;
+ }
+@@ -429,9 +456,29 @@ static int psc_i2s_set_sysclk(struct snd_soc_dai *cpu_dai,
+ 			      int clk_id, unsigned int freq, int dir)
+ {
+ 	struct psc_i2s *psc_i2s = cpu_dai->private_data;
+-	dev_dbg(psc_i2s->dev, "psc_i2s_set_sysclk(cpu_dai=%p, dir=%i)\n",
+-				cpu_dai, dir);
+-	return (dir == SND_SOC_CLOCK_IN) ? 0 : -EINVAL;
++	int clkdiv, err; 
++	dev_dbg(psc_i2s->dev, "psc_i2s_set_sysclk(cpu_dai=%p, freq=%u, dir=%i)\n",
++				cpu_dai, freq, dir);
++	if (dir == SND_SOC_CLOCK_OUT) {
++		psc_i2s->sysclk = freq;
++		if (clk_id == MPC52xx_CLK_CELLSLAVE) {
++			psc_i2s->sicr |= MPC52xx_PSC_SICR_CELLSLAVE | MPC52xx_PSC_SICR_GENCLK;
++		} else { /* MPC52xx_CLK_INTERNAL */
++			psc_i2s->sicr &= ~MPC52xx_PSC_SICR_CELLSLAVE;
++			psc_i2s->sicr |= MPC52xx_PSC_SICR_GENCLK;
++
++			clkdiv = ppc_proc_freq / freq;
++			err = ppc_proc_freq % freq;
++			if (err > freq / 2)
++				clkdiv++;
++
++			dev_dbg(psc_i2s->dev, "psc_i2s_set_sysclk(clkdiv %d freq error=%ldHz)\n",
++					clkdiv, (ppc_proc_freq / clkdiv - freq));
++				
++			return mpc52xx_set_psc_clkdiv(psc_i2s->dai.id + 1, clkdiv); 
++		}
++	}
++	return 0;
+ }
+ 
+ /**
+@@ -784,9 +831,6 @@ static int __devinit psc_i2s_of_probe(struct of_device *op,
+ 	/* Configure the serial interface mode; defaulting to CODEC8 mode */
+ 	psc_i2s->sicr = MPC52xx_PSC_SICR_DTS1 | MPC52xx_PSC_SICR_I2S |
+ 			MPC52xx_PSC_SICR_CLKPOL;
+-	if (of_get_property(op->node, "fsl,cellslave", NULL))
+-		psc_i2s->sicr |= MPC52xx_PSC_SICR_CELLSLAVE |
+-				 MPC52xx_PSC_SICR_GENCLK;
+ 	out_be32(&psc_i2s->psc_regs->sicr,
+ 		 psc_i2s->sicr | MPC52xx_PSC_SICR_SIM_CODEC_8);
+ 
+diff --git a/sound/soc/fsl/mpc5200_psc_i2s.h b/sound/soc/fsl/mpc5200_psc_i2s.h
+new file mode 100644
+index 0000000..0e0a84e
+--- /dev/null
++++ b/sound/soc/fsl/mpc5200_psc_i2s.h
+@@ -0,0 +1,13 @@
++/*
++ * Freescale MPC5200 PSC in I2S mode
++ * ALSA SoC Digital Audio Interface (DAI) driver
++ *
++ */
++ 
++#ifndef __SOUND_SOC_FSL_MPC52xx_PSC_I2S_H__
++#define __SOUND_SOC_FSL_MPC52xx_PSC_I2S_H__
++
++#define MPC52xx_CLK_INTERNAL 0
++#define MPC52xx_CLK_CELLSLAVE 1
++
++#endif /* __SOUND_SOC_FSL_MPC52xx_PSC_I2S_H__ */
