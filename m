@@ -1,31 +1,16 @@
-Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2A15ADDEF9
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 10:24:36 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6M0OXGq031817
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 20:24:33 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6M0OWhE148354
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 18:24:32 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6M0OWno029284
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jul 2008 18:24:32 -0600
-Date: Mon, 21 Jul 2008 19:24:21 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
-	linuxppc-dev@ozlabs.org, Brian King <brking@linux.vnet.ibm.com>,
-	Nathan Fontenot <nfont@austin.ibm.com>,
-	David Darrington <ddarring@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc: Correct CMO entitlement accounting for map_sg
-Message-ID: <20080722002420.GA26633@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id EE7E8DDE24
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 10:25:29 +1000 (EST)
+Date: Tue, 22 Jul 2008 10:25:20 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] serial: fix struct uart_info change fallout
+Message-Id: <20080722102520.ca801ab5.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,47 +20,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The ibmvscsi driver maps pages via map_sg and frees the sg list by calling
-unmap_single.  This exposes a problem where the code had been using the
-length field in the scatterlist to account for the allocation when the
-mapping was created but the dma_length would be used when the mapping
-was destroyed.  The iommu code does coalesce the pages so the dma_length
-can be smaller and would result in an entitlement accounting leak.
-This patch frees up the entitlement after calling the iommu map_sg code
-when pages have been coalesced so that freeing entitlement based on
-dma_length is correct.
+Hi Linus, Alan,
 
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+Today's linux-next (actually just Linus' tree) build (powerpc
+ppc64_defconfig) failed like this:
 
+drivers/serial/serial_txx9.c: In function 'receive_chars':
+drivers/serial/serial_txx9.c:275: error: 'struct uart_info' has no member named 'tty'
+drivers/serial/icom.c: In function 'recv_interrupt':
+drivers/serial/icom.c:733: error: 'struct uart_info' has no member named 'tty'
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
-This applies on top of the existing CMO patchset.
+ drivers/serial/icom.c        |    2 +-
+ drivers/serial/serial_txx9.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
----
- arch/powerpc/kernel/vio.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+diff --git a/drivers/serial/icom.c b/drivers/serial/icom.c
+index 9c2df5c..2b7531d 100644
+--- a/drivers/serial/icom.c
++++ b/drivers/serial/icom.c
+@@ -730,7 +730,7 @@ static void xmit_interrupt(u16 port_int_reg, struct icom_port *icom_port)
+ static void recv_interrupt(u16 port_int_reg, struct icom_port *icom_port)
+ {
+ 	short int count, rcv_buff;
+-	struct tty_struct *tty = icom_port->uart_port.info->tty;
++	struct tty_struct *tty = icom_port->uart_port.info->port.tty;
+ 	unsigned short int status;
+ 	struct uart_icount *icount;
+ 	unsigned long offset;
+diff --git a/drivers/serial/serial_txx9.c b/drivers/serial/serial_txx9.c
+index 7ad2192..8fcb4c5 100644
+--- a/drivers/serial/serial_txx9.c
++++ b/drivers/serial/serial_txx9.c
+@@ -272,7 +272,7 @@ static void serial_txx9_initialize(struct uart_port *port)
+ static inline void
+ receive_chars(struct uart_txx9_port *up, unsigned int *status)
+ {
+-	struct tty_struct *tty = up->port.info->tty;
++	struct tty_struct *tty = up->port.info->port.tty;
+ 	unsigned char ch;
+ 	unsigned int disr = *status;
+ 	int max_count = 256;
+-- 
+1.5.6.2
 
-Index: b/arch/powerpc/kernel/vio.c
-===================================================================
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -571,6 +571,11 @@ static int vio_dma_iommu_map_sg(struct d
- 		atomic_inc(&viodev->cmo.allocs_failed);
- 	}
- 
-+	for (sgl = sglist, count = 0; count < ret; count++, sgl++)
-+		alloc_size -= roundup(sgl->dma_length, PAGE_SIZE);
-+	if (alloc_size)
-+		vio_cmo_dealloc(viodev, alloc_size);
-+
- 	return ret;
- }
- 
-@@ -584,7 +589,7 @@ static void vio_dma_iommu_unmap_sg(struc
- 	int count = 0;
- 
- 	for (sgl = sglist; count < nelems; count++, sgl++)
--		alloc_size += roundup(sgl->length, PAGE_SIZE);
-+		alloc_size += roundup(sgl->dma_length, PAGE_SIZE);
- 
- 	dma_iommu_ops.unmap_sg(dev, sglist, nelems, direction);
- 
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
