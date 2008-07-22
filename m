@@ -1,23 +1,14 @@
-Return-Path: <netdev@ml.breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A3DB2DE00B
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 06:59:25 +1000 (EST)
-Date: Tue, 22 Jul 2008 22:59:11 +0200
-From: Sebastian Siewior <netdev@ml.breakpoint.cc>
-To: Nate Case <ncase@xes-inc.com>
-Subject: Re: bug: mutex_lock() in interrupt conntext via phy_stop() in gianfar
-Message-ID: <20080722205911.GA29840@Chamillionaire.breakpoint.cc>
-References: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
-	<1216681028.7559.993.camel@localhost.localdomain>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910807221403g512f6e37s6722c7950f881224@mail.gmail.com>
+Date: Tue, 22 Jul 2008 17:03:32 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: ppc-dev <Linuxppc-dev@ozlabs.org>, netdev <netdev@vger.kernel.org>,
+	"David S. Miller" <davem@redhat.com>
+Subject: Re: netif_schedule and mpc5200_fec
+In-Reply-To: <9e4733910807221247r38509c76uf625195b712a1145@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1216681028.7559.993.camel@localhost.localdomain>
-Cc: netdev@vger.kernel.org, Sebastian Siewior <netdev@ml.breakpoint.cc>,
-	linuxppc-dev@ozlabs.org, Vitaly Bordug <vbordug@ru.mvista.com>,
-	Li Yang <leoli@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910807221247r38509c76uf625195b712a1145@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +18,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Nate Case | 2008-07-21 17:57:08 [-0500]:
+On 7/22/08, Jon Smirl <jonsmirl@gmail.com> wrote:
+> I just updated to linus/master and mpc5200_fec won't boot.
 
->On Fri, 2008-07-18 at 14:10 +0200, Sebastian Siewior wrote:
->> Commit 35b5f6b1a aka [PHYLIB: Locking fixes for PHY I/O potentially sleeping]
->> changed the phydev->lock from spinlock into a mutex. Now, the following
->> code path got triggered while NFS was unavailable:
->> 
->[snip]
->> |[  194.864733] BUG: sleeping function called from invalid context at /home/bigeasy/git/linux-2.6-powerpc/kernel/mutex.c:87
->> |[  194.875529] in_atomic():1, irqs_disabled():0
->> |[  194.879805] Call Trace:
->> |[  194.882250] [c0383d90] [c0006dd8] show_stack+0x48/0x184 (unreliable)
->> |[  194.888649] [c0383db0] [c001e938] __might_sleep+0xe0/0xf4
->> |[  194.894069] [c0383dc0] [c025a43c] mutex_lock+0x24/0x3c
->> |[  194.899234] [c0383de0] [c019005c] phy_stop+0x20/0x70
->> |[  194.904234] [c0383df0] [c018d4ec] stop_gfar+0x28/0xf4
->> |[  194.909305] [c0383e10] [c018e8c4] gfar_timeout+0x30/0x60
->> |[  194.914638] [c0383e20] [c01fe7c0] dev_watchdog+0xa8/0x144
->
->Hmm..  I'm not sure what the best solution is to this.  Make the
->stop_gfar() call happen in a workqueue, and make a similar change to
->ucc_geth, fec_mpc52xx, and fs_enet? Modify phy_stop() to do the work in
->a workqueue conditionally if in interrupt context?  Between these two
->I'd lean toward the latter.
->
->Does anyone have any better ideas?
-If I look at tg3.c than exactly this is done. Others call it only on
-close(). I guess this depends very much on driver's logic :)
-If nobody minds, than I would assume that tg3.c is a good example and I
-would move the timout path into a workqueu.
+It does boot, but this badness looks like it is coming from this
+patch. I don't know enough about networking to debug it.
 
-Sebastian
+jonsmirl@terra:~/fs/drivers/net$ git diff
+8b9835108f68938a5f7e74fd2c0fc65da2abad92 fec_mpc52xx.c
+diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+index 329edd9..ae9ecb7 100644
+--- a/drivers/net/fec_mpc52xx.c
++++ b/drivers/net/fec_mpc52xx.c
+@@ -197,7 +197,7 @@ static void mpc52xx_fec_adjust_link(struct net_device *dev)
+                if (priv->link == PHY_DOWN) {
+                        new_state = 1;
+                        priv->link = phydev->link;
+-                       netif_schedule(dev);
++                       netif_tx_schedule_all(dev);
+                        netif_carrier_on(dev);
+                        netif_start_queue(dev);
+                }
+jonsmirl@terra:~/fs/drivers/net$
+
+
+>
+>  Guessing it is this patch but I haven't looked at it yet.
+>
+>  commit 263ba3204a434d0ca851e1321b31cd58376b86cb
+>  Author: David S. Miller <davem@davemloft.net>
+>  Date:   Tue Jul 15 03:47:41 2008 -0700
+>
+>     netdev: Convert all drivers away from netif_schedule().
+>
+>     They logically all want to trigger a schedule for all device
+>     TX queues.
+>
+>     Signed-off-by: David S. Miller <davem@davemloft.net>
+>
+>
+>  Sending DHCP requests .<0>------------[ cut here ]------------
+>  Badness at c01da570 [verbose debug info unavailable]
+>  NIP: c01da570 LR: c015b31c CTR: c015b234
+>  REGS: c382de70 TRAP: 0700   Not tainted  (2.6.26-efika)
+>  MSR: 00029032 <EE,ME,IR,DR>  CR: 22000082  XER: 00000000
+>  TASK = c3815000[4] 'events/0' THREAD: c382c000
+>  GPR00: 00000001 c382df20 c3815000 c031e468 c38f25a0 00000000 00000000 00000000
+>  GPR08: c382dfb4 c0330000 00000000 c031e468 3181b461 ffffffff 03ffe000 ffffffff
+>  GPR16: 00000001 00000000 007ffc00 00000000 00000000 03ff8838 00000000 00000004
+>  GPR24: 00000000 00000000 c032b46c c0330000 c38a2e00 00000001 c38f2780 c38f2400
+>  NIP [c01da570] __netif_schedule+0x3c/0xac
+>  LR [c015b31c] mpc52xx_fec_adjust_link+0xe8/0x194
+>  Call Trace:
+>  [c382df20] [c002eeb0] queue_work+0x58/0x6c (unreliable)
+>  [c382df40] [c015b31c] mpc52xx_fec_adjust_link+0xe8/0x194
+>  [c382df60] [c0158cd0] phy_state_machine+0xec/0x4e0
+>  [c382df80] [c002eb0c] run_workqueue+0xb4/0x148
+>  [c382dfa0] [c002f070] worker_thread+0x9c/0xb8
+>  [c382dfd0] [c0032954] kthread+0x4c/0x88
+>  [c382dff0] [c000f538] kernel_thread+0x44/0x60
+>  Instruction dump:
+>  7c6b1b78 3929e468 7f834800 39200002 90010024 38030024 bfa10014 40be0030
+>  3d20c033 80099988 7c000034 5400d97e <0f000000> 2f800000 41be0054 38000001
+>  PHY: f0003000:00 - Link is Up - 100/Full
+>  ., OK
+>
+>
+>
+>  --
+>  Jon Smirl
+>  jonsmirl@gmail.com
+>
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
