@@ -1,20 +1,22 @@
-Return-Path: <gvb.linuxppc.dev@gmail.com>
-Received: from QMTA04.westchester.pa.mail.comcast.net
-	(qmta04.westchester.pa.mail.comcast.net [76.96.62.40])
-	by ozlabs.org (Postfix) with ESMTP id 437EADDDF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 13:00:43 +1000 (EST)
-Message-ID: <48854C02.7000307@gmail.com>
-Date: Mon, 21 Jul 2008 22:54:58 -0400
-From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Mikrotik RouterBoard 333
-References: <20080708042631.GB7328@yookeroo.seuss>
-	<20080709040925.GA13810@secretlab.ca> <487AA17E.6000808@gmail.com>
-	<20080721211344.GA13268@loki.buserror.net>
-In-Reply-To: <20080721211344.GA13268@loki.buserror.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 92DADDDECF
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 13:01:58 +1000 (EST)
+Date: Tue, 22 Jul 2008 13:01:52 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] serial: fix struct uart_info change fallout
+Message-Id: <20080722130152.f115224d.sfr@canb.auug.org.au>
+In-Reply-To: <20080722025850.0d073a5e@lxorguk.ukuu.org.uk>
+References: <20080722102520.ca801ab5.sfr@canb.auug.org.au>
+	<20080722025850.0d073a5e@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__22_Jul_2008_13_01_52_+1000_BcLv.lp1U/rBNWE8"
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,56 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> On Sun, Jul 13, 2008 at 08:44:46PM -0400, Jerry Van Baren wrote:
->> I'm a half-ack.  ;-)  I'm partial to u-boot's implementation rather than  
->> using a bootwrapper for obvious reasons.  The u-boot implementation  
->> takes the blob as a boot parameter and passes it along to the kernel  
->> after doing appropriate (optional) fixups.
-> 
-> And if those fixups expect a malformed device tree?
+--Signature=_Tue__22_Jul_2008_13_01_52_+1000_BcLv.lp1U/rBNWE8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Oops, very bad choice of terms on my part.  :-(  The fixups I referred 
-to are mostly "fill in the blank" things like setting the various 
-clocks, MAC information, PCI information, etc. to the correct values 
-based on hardware probing or a priori knowledge.  U-boot does not 
-(should not / will not!) fix broken device trees.  A broken tree w/ the 
-u-boot methodology is fixed by loading a corrected one, not requiring a 
-full rebuild and reload of the firmware.
+Hi Alan,
 
-Note that the blobs are (should be) made from the *.dts files that are 
-part of the linux kernel source, so having correct ones has not been a 
-problem.  Since replacement ones are easily loaded, broken blobs are 
-fixed by replacement, not by contorted fixups a'la the start of this 
-thread.  Since blobs are well defined, even if some boneheaded company 
-didn't release their blob source, it is trivial to dump it (e.g. "fdt 
-print /"), fixed, and then replaced.
+On Tue, 22 Jul 2008 02:58:50 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrot=
+e:
+>
+> Yes I know.
 
->> Other than that quibble, I agree that burning the blob into the firmware  
->> so that the firmware must be recompiled and reburned to change the blob  
->> is very undesirable.
-> 
-> I thought the device tree was *supposed* to be an interface between the
-> firmware and the kernel?  What if the firmware produces the tree
-> dynamically?  What if the firmware itself depends on having the device tree
-> in order to operate?
-> 
-> -Scott
+Indeed, you knew before you pushed the breaking patches to Linus.
 
-Well, yes and no on dynamically generated blobs.  There isn't much point 
-"dynamically" generating the static parts of the blob - if you have 
-static code "dynamically" generating the static parts of the blob, is it 
-dynamic or static?  That is probably exactly where Mikrotik has 
-problems.  The truly dynamic parts are a small part of the blob.
+> I've been trying to get the other patches merged but each of the five
+> pulls of Linus tree I have done has broken the tty patch merges *AGAIN*
+> so I still don't have them tested and ready to merge despite it being 3AM.
 
-If all else fails, u-boot is GPLed and the user is able to get the 
-source and fix it (well, at least for 3 years after purchasing the 
-hardware).
+Then why weren't the fixes rolled back into the original patch or at
+least submitted at the same time?
 
-There are advantages and disadvantages to u-boot and boot-wrapper 
-methods.  There are nothing but disadvantages to having the blob 
-physically a part of the firmware (with a double whammy if the firmware 
-source is not readily available).
+> So much for the linux-next tree. Please give it until tomorrow or you are
 
-Best regards,
-gvb
+What is your problem with the linux-next tree.  The problem was
+discovered and reported when I first merged the ttydev tree into
+linux-next on July 1.  The fixes were in linux-next on July 2.
+
+> just going to break the tree again and mean I have to run another set of
+> tests and regressions.
+
+Please give what until tomorrow?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__22_Jul_2008_13_01_52_+1000_BcLv.lp1U/rBNWE8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiFTaAACgkQjjKRsyhoI8y4LACeNxayZN3UxWUj/+qkvFm+F+25
+xSsAoLbS8c4UHLMUYki17yu3bpqwOQO2
+=h/3U
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__22_Jul_2008_13_01_52_+1000_BcLv.lp1U/rBNWE8--
