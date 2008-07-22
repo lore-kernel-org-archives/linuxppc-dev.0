@@ -1,24 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.233])
-	by ozlabs.org (Postfix) with ESMTP id 2229DDDF3D
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 07:34:31 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id c8so2350820qbc.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 14:34:31 -0700 (PDT)
-Date: Tue, 22 Jul 2008 17:34:01 -0400
-From: Grant Likely <grant.likely@secretlab.ca>
-To: John Linn <John.Linn@xilinx.com>
-Subject: Re: going to OLS?
-Message-ID: <20080722213401.GI12412@secretlab.ca>
-References: <3A268FF3-E574-44A6-B975-92D98C553603@freescale.com>
-	<20080722210958.A8A9B2F8059@mail124-wa4.bigfish.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080722210958.A8A9B2F8059@mail124-wa4.bigfish.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: Wolfgang Denk <wd@denx.de>, linuxppc-dev@ozlabs.org,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Stefan Roese <sr@denx.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8C990DDECA
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 08:05:29 +1000 (EST)
+Subject: Re: latest tree build failure -- cpm uart & gpio
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20080722145330.GA2315@polina.dev.rtsoft.ru>
+References: <FBE46DB6-A457-4AD8-9D6E-9D639AD04325@freescale.com>
+	<20080722145330.GA2315@polina.dev.rtsoft.ru>
+Content-Type: text/plain
+Date: Wed, 23 Jul 2008 08:05:09 +1000
+Message-Id: <1216764309.11027.211.camel@pasglop>
+Mime-Version: 1.0
+Cc: David Brownell <david-b@pacbell.net>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Kumar Gala <kumar.gala@freescale.com>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,16 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 22, 2008 at 03:09:55PM -0600, John Linn wrote:
-> Becky Bruce wrote:
-> > So,
-> > 
-> > There doesn't seem to be an official plan, so I'm making one....
-> > Kumar, Andy, and I will be at the Black Thorn at 7:30-ish this
-> > evening.  Anybody that wants to join us welcome.
-> > 
-> Sounds good, I'll be there.  It will be good to put some faces to names.
+On Tue, 2008-07-22 at 18:53 +0400, Anton Vorontsov wrote:
+> On Tue, Jul 22, 2008 at 08:54:16AM -0500, Kumar Gala wrote:
+> > can someone look at the following compile failure in linus's tree.  I'm 
+> > guessing part of this has to do with Alan's tty changes (and might  
+> > already be addressed?).
+> >
+> > include/asm-generic/gpio.h:131: error: implicit declaration of function 
+> > 'gpio_get_value'
+> > include/asm-generic/gpio.h:137: error: implicit declaration of function 
+> > 'gpio_set_value'
+> 
+> I think this patch should help:
+> 
+> [OF] of_gpio: should use new <linux/gpio.h> header
+> http://patchwork.ozlabs.org/linuxppc/patch?id=18750
+> 
+> David, can you please Ack it? See Benjamin's mail:
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-July/060109.html
+> 
 
-I'll be there.
+Hrm.. I though I had that one in my latest batch. In fact, I just
+checked and it got merged.
 
-g.
+Ben.
