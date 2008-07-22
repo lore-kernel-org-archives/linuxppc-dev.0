@@ -1,24 +1,34 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <rcjenn@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 06C9DDE2FF
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 23:11:42 +1000 (EST)
-Message-Id: <9D2D9C95-C2B7-408C-BDA1-89B7748F6977@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: benh@kernel.crashing.org
-In-Reply-To: <1216711931.11027.193.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [git pull] Please pull from powerpc.git merge branch
-Date: Tue, 22 Jul 2008 08:11:25 -0500
-References: <1216711931.11027.193.camel@pasglop>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	akpm <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4A64DDE12D
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 23:28:22 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6MDSHMG026091
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 09:28:17 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6MDSGYN110642
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 07:28:16 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6MDSGKI008807
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 07:28:16 -0600
+Date: Tue, 22 Jul 2008 08:28:17 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 10/16 v3] powerpc: iommu enablement for CMO
+Message-ID: <20080722132816.GC5650@linux.vnet.ibm.com>
+References: <20080704124449.GA1310@linux.vnet.ibm.com>
+	<20080704125459.GM1310@linux.vnet.ibm.com>
+	<18565.26804.757649.584391@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18565.26804.757649.584391@cargo.ozlabs.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+	David Darrington <ddarring@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,33 +38,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+* Paul Mackerras (paulus@samba.org) wrote:
+> Robert Jennings writes:
+> 
+> > To support Cooperative Memory Overcommitment (CMO), we need to check
+> > for failure from some of the tce hcalls.
+> 
+> This patch runs into context mismatches because of changes made by
+> Michael Ellerman's patch "Fix sparse warnings in
+> arch/powerpc/platforms/pseries" (now in Linus' tree), which changed
+> code like
+> 
+> 	if (condition)
+> 		return function_returning_void(args);
+> 
+> into
+> 
+> 	if (condition) {
+> 		function_returning_void(args);
+> 		return;
+> 	}
+> 
+> which will cause problems for your patch.  Please check if any of
+> these changes need to be undone again.
 
-On Jul 22, 2008, at 2:32 AM, Benjamin Herrenschmidt wrote:
+I do need to revert those changes, the return values will no longer be
+void.  I'll get those tested and posted.  Thanks.
 
-> Hi Linus !
->
-> Here's the second batch of powerpc updates. I should have a last one
-> before the end of the merge window for things that are stealing  
-> dealing
-> with conflicts or dependencies but we are getting there.
->
-> So please pull from:
->
-> git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
->
-> Hopefully this one shouldn't whack the main Makefile :-)
->
-> Note a couple of fbdev updates. One is an offb change by me, this is
-> a powerpc specific driver so that shouldn't affect anybody else, and
-> one is the ps3 specific fbdev by Geoff, so again, there should be
-> no collateral damage.
->
-> Some drivers/net changes to freescale specific drivers are coming from
-> Kumar's tree. Kumar, I merged them, however, shouldn't we have Jeff's
-> ack on these things or is it ok as long as those are arch specific
-> drivers and the changes boring ?
-
-they had jeff's ack.  I just didn't update the commits, my bad and  
-I'll fix that in the future.
-
-- k
+--Rob Jennings
