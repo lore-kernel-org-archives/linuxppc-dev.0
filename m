@@ -1,18 +1,22 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 924CDDE08B
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 02:00:48 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>,
- kumar.gala@freescale.com
-Subject: [PATCH] cpm2: Rework baud rate generators configuration to support
-	external clocks.
-Date: Tue, 22 Jul 2008 18:00:43 +0200
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 29E1FDE3DF
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 02:01:38 +1000 (EST)
+Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m6MG1Xfk012675
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 18:01:33 +0200
+Message-ID: <04ea01c8ec14$36663c70$ad289e86@LPSC0173W>
+From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+To: "ppcdev" <linuxppc-dev@ozlabs.org>
+References: <93c791ba2d4ce372589da84acd14a15c@bga.com><20080718034727.GF18748@yookeroo.seuss><02ec01c8e8b2$52717890$ad289e86@LPSC0173W><007a845ba2b60b02a256b58632490b27@bga.com>
+	<048601c8ebe8$acbfcc50$ad289e86@LPSC0173W>
+Subject: Re: Calling the kernel from a mini-bootloader
+Date: Tue, 22 Jul 2008 18:01:28 +0200
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200807221800.44234.laurentp@cse-semaphore.com>
-Cc: vbordug@ru.mvista.com
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=response
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,161 +26,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The CPM2 BRG setup functions cpm_setbrg and cpm2_fastbrg don't support external
-clocks. This patch adds a new exported __cpm2_setbrg function that takes the
-clock rate and clock source as extra parameters, and moves cpm_setbrg and
-cpm2_fastbrg to include/asm-powerpc/cpm2.h where they become inline wrappers
-around __cpm2_setbrg.
+Answering to myself to try and provide more background info:
 
-Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
----
- arch/powerpc/sysdev/cpm2.c |   34 +++----------------------------
- include/asm-powerpc/cpm2.h |   46 +++++++++++++++++++++++++++++++------------
- 2 files changed, 37 insertions(+), 43 deletions(-)
+> As a follow up to my previous messages, I now have a working kernel and a 
+> working bootloader... but not when they are both together.
+>
+> Case in point:
+> - load zImage.elf to DRAM 0x400000 with JTAG debugger. Run it. It runs 
+> fine.
+>
+> - Load Bootloader.elf to BRAM 0xFFFF0000 with JTAG debugger. Run it. It 
+> runs fine (but it doesn't do much yet).
+>
+> - Now load both of the previous ones, and have the bootloader perform a 
+> jump to kernel:
+void main() {
+     typedef void tFunc(void);
+     ((tFunc *)0x400000)();
+}
 
-diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
-index 9311778..f1c3395 100644
---- a/arch/powerpc/sysdev/cpm2.c
-+++ b/arch/powerpc/sysdev/cpm2.c
-@@ -115,16 +115,10 @@ EXPORT_SYMBOL(cpm_command);
-  * Baud rate clocks are zero-based in the driver code (as that maps
-  * to port numbers).  Documentation uses 1-based numbering.
-  */
--#define BRG_INT_CLK	(get_brgfreq())
--#define BRG_UART_CLK	(BRG_INT_CLK/16)
--
--/* This function is used by UARTS, or anything else that uses a 16x
-- * oversampled clock.
-- */
--void
--cpm_setbrg(uint brg, uint rate)
-+void __cpm2_setbrg(uint brg, uint rate, uint clk, int div16, int src)
- {
- 	u32 __iomem *bp;
-+	u32 val;
- 
- 	/* This is good enough to get SMCs running.....
- 	*/
-@@ -135,34 +129,14 @@ cpm_setbrg(uint brg, uint rate)
- 		brg -= 4;
- 	}
- 	bp += brg;
--	out_be32(bp, (((BRG_UART_CLK / rate) - 1) << 1) | CPM_BRG_EN);
--
--	cpm2_unmap(bp);
--}
--
--/* This function is used to set high speed synchronous baud rate
-- * clocks.
-- */
--void
--cpm2_fastbrg(uint brg, uint rate, int div16)
--{
--	u32 __iomem *bp;
--	u32 val;
--
--	if (brg < 4) {
--		bp = cpm2_map_size(im_brgc1, 16);
--	} else {
--		bp = cpm2_map_size(im_brgc5, 16);
--		brg -= 4;
--	}
--	bp += brg;
--	val = ((BRG_INT_CLK / rate) << 1) | CPM_BRG_EN;
-+	val = (((clk / rate) - 1) << 1) | CPM_BRG_EN | src;
- 	if (div16)
- 		val |= CPM_BRG_DIV16;
- 
- 	out_be32(bp, val);
- 	cpm2_unmap(bp);
- }
-+EXPORT_SYMBOL(__cpm2_setbrg);
- 
- int cpm2_clk_setup(enum cpm_clk_target target, int clock, int mode)
- {
-diff --git a/include/asm-powerpc/cpm2.h b/include/asm-powerpc/cpm2.h
-index 4c85ed9..dab9949 100644
---- a/include/asm-powerpc/cpm2.h
-+++ b/include/asm-powerpc/cpm2.h
-@@ -12,6 +12,7 @@
- 
- #include <asm/immap_cpm2.h>
- #include <asm/cpm.h>
-+#include <sysdev/fsl_soc.h>
- 
- #ifdef CONFIG_PPC_85xx
- #define CPM_MAP_ADDR (get_immrbase() + 0x80000)
-@@ -119,10 +120,40 @@ extern void cpm_dpdump(void);
- extern void *cpm_dpram_addr(unsigned long offset);
- #endif
- 
--extern void cpm_setbrg(uint brg, uint rate);
--extern void cpm2_fastbrg(uint brg, uint rate, int div16);
- extern void cpm2_reset(void);
- 
-+/* Baud rate generators.
-+*/
-+#define CPM_BRG_RST		((uint)0x00020000)
-+#define CPM_BRG_EN		((uint)0x00010000)
-+#define CPM_BRG_EXTC_INT	((uint)0x00000000)
-+#define CPM_BRG_EXTC_CLK3_9	((uint)0x00004000)
-+#define CPM_BRG_EXTC_CLK5_15	((uint)0x00008000)
-+#define CPM_BRG_ATB		((uint)0x00002000)
-+#define CPM_BRG_CD_MASK		((uint)0x00001ffe)
-+#define CPM_BRG_DIV16		((uint)0x00000001)
-+
-+#define CPM2_BRG_INT_CLK	(get_brgfreq())
-+#define CPM2_BRG_UART_CLK	(CPM2_BRG_INT_CLK/16)
-+
-+extern void __cpm2_setbrg(uint brg, uint rate, uint clk, int div16, int src);
-+
-+/* This function is used by UARTS, or anything else that uses a 16x
-+ * oversampled clock.
-+ */
-+static inline void cpm_setbrg(uint brg, uint rate)
-+{
-+	__cpm2_setbrg(brg, rate, CPM2_BRG_UART_CLK, 0, CPM_BRG_EXTC_INT);
-+}
-+
-+/* This function is used to set high speed synchronous baud rate
-+ * clocks.
-+ */
-+static inline void cpm2_fastbrg(uint brg, uint rate, int div16)
-+{
-+	__cpm2_setbrg(brg, rate, CPM2_BRG_INT_CLK, div16, CPM_BRG_EXTC_INT);
-+}
-+
- /* Function code bits, usually generic to devices.
- */
- #define CPMFCR_GBL	((u_char)0x20)	/* Set memory snooping */
-@@ -221,17 +252,6 @@ typedef struct smc_uart {
- #define SMCM_TX		((unsigned char)0x02)
- #define SMCM_RX		((unsigned char)0x01)
- 
--/* Baud rate generators.
--*/
--#define CPM_BRG_RST		((uint)0x00020000)
--#define CPM_BRG_EN		((uint)0x00010000)
--#define CPM_BRG_EXTC_INT	((uint)0x00000000)
--#define CPM_BRG_EXTC_CLK3_9	((uint)0x00004000)
--#define CPM_BRG_EXTC_CLK5_15	((uint)0x00008000)
--#define CPM_BRG_ATB		((uint)0x00002000)
--#define CPM_BRG_CD_MASK		((uint)0x00001ffe)
--#define CPM_BRG_DIV16		((uint)0x00000001)
--
- /* SCCs.
- */
- #define SCC_GSMRH_IRP		((uint)0x00040000)
+Now if the bootloader _only_ contains the above code, the kernel runs 
+perfectly.
+Unfortunately I need to do some things in the bootloader: I use 3 GPIOs to 
+control a frontal set of LEDs, to get a card number and to load/unload a 
+serial flash memory. Those operations work. But here is the strange thing 
+that leads me to believe there are interrupt interferences.
+
+If I just read from a GPIO before launching the kernel, it boots fine, with 
+a few NFS errors when mounting the rootnfs:
+[    4.360060] Freeing unused kernel memory: 76k init
+[   11.432269] nfs: server 192.168.1.185 not responding, still trying
+[   11.441186] nfs: server 192.168.1.185 OK
+init started: BusyBox v1.10.1 (2008-04-24 12:26:38 CEST)
+genepy login:
+
+Now if I also write to a 2nd GPIO, I get a lot more NFS errors.
+
+And if I also access the flash through the 3rd GPIO, the kernel hangs:
+
+> loaded at:     00400000 004EA19C
+> board data at: 004E8120 004E819C
+> relocated to:  0040405C 004040D8
+> zimage at:     00404E48 004E7A7E
+> avail ram:     004EB000 08000000
+>
+> Linux/PPC load: console=ttyUL0,115200 rw root=/dev/nfs ip=bootp
+> Uncompressing Linux...done.
+> Now booting the kernel
+>
+> But then it hangs for exactly 3 minutes, nothing on the serial port, 
+> before the bootloader restarts.
+> Why should the behavior be different whether it's started from the 
+> debugger or from my bootloader ?
+
+Now I've defined my hardware project using interrupts on the GPIOs, which I 
+don't need and frankly they don't make sense for an output GPIO. I would 
+like to try to compile a kernel without GPIO interrupts, unfortunately the 
+compilation fails:
+$ make ARCH=ppc CROSS_COMPILE=powerpc-linux-uclibc-
+[...]
+  CC      arch/ppc/syslib/virtex_devices.o
+arch/ppc/syslib/virtex_devices.c:535: error: 'XPAR_INTC_0_GPIO_0_VEC_ID' 
+undeclared here (not in a function)
+
+Question breakdown:
+- do I need interrupts for GPIOs ?
+- how can I compile the ppc 2.6.25 kernel without them ?
+- Why do I have problems running the kernel if the bootloader makes use of 
+the GPIOs ?
+- does the bootloader need to perform some kind of special cleanup before 
+calling the kernel ?
+
+Thanks a lot for shedding a light on those mysteries.
 -- 
-1.5.0
-
--- 
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-F +32 (2) 387 42 75
+Guillaume Dargaud
+http://www.gdargaud.net/ 
