@@ -1,23 +1,30 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E6737DE189
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 20:34:48 +1000 (EST)
-Date: Tue, 22 Jul 2008 11:34:43 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v3 3/3] ALSA SoC: Add Texas Instruments TLV320AIC26
-	codec driver
-Message-ID: <20080722103443.GC2572@rakim.wolfsonmicro.main>
-References: <20080722065352.7306.60679.stgit@trillian.secretlab.ca>
-	<20080722065403.7306.53226.stgit@trillian.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080722065403.7306.53226.stgit@trillian.secretlab.ca>
-Cc: timur@freescale.com, linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	liam.girdwood@wolfsonmicro.com
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] Make u64 long long on all architectures (was: the
+	printk problem)
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080722030506.206a2cc2.akpm@linux-foundation.org>
+References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
+	<20080704111540.ddffd241.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
+	<20080704132716.f1e12554.akpm@linux-foundation.org>
+	<20080704204252.GM14894@parisc-linux.org>
+	<20080704150100.1f7b8a65.akpm@linux-foundation.org>
+	<20080705020350.GN14894@parisc-linux.org>
+	<20080722030506.206a2cc2.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-zzXwhI2BCaAafcumruBA"
+Date: Tue, 22 Jul 2008 20:36:35 +1000
+Message-Id: <1216722995.8357.4.camel@localhost>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Peter Anvin <hpa@zytor.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,36 +34,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 22, 2008 at 12:54:03AM -0600, Grant Likely wrote:
 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+--=-zzXwhI2BCaAafcumruBA
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+On Tue, 2008-07-22 at 03:05 -0700, Andrew Morton wrote:
+> On Fri, 4 Jul 2008 20:03:51 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
+>=20
+> > [PATCH] Make u64 long long on all architectures
+> >=20
+> > It is currently awkward to print a u64 type.  Some architectures use
+> > unsigned long while others use unsigned long long.  Since unsigned long
+> > long is 64-bit for all existing Linux architectures, change those that
+> > use long to use long long.  Note that this applies only within the
+> > kernel.  If u64 is being used in a C++ method definition, the symbol
+> > mangling would change.
+> >=20
+> > Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+> >=20
+> > diff --git a/include/asm-generic/int-l64.h b/include/asm-generic/int-l6=
+4.h
+> > index 2af9b75..32f07bd 100644
+> > --- a/include/asm-generic/int-l64.h
+> > +++ b/include/asm-generic/int-l64.h
+> > @@ -23,8 +23,13 @@ typedef unsigned short __u16;
+> >  typedef __signed__ int __s32;
+> >  typedef unsigned int __u32;
+> > =20
+> > +#ifdef __KERNEL__
+> > +typedef __signed__ long long __s64;
+> > +typedef unsigned long long __u64;
+> > +#else
+> >  typedef __signed__ long __s64;
+> >  typedef unsigned long __u64;
+> > +#endif
+> > =20
+> >  #endif /* __ASSEMBLY__ */
+>=20
+> This is (IMO) a desirable change and will prevent a heck of a lot of
+> goofing around, and will permit a lot of prior goofing around to
+> be removed.
+>=20
+> But I bet there are lots of instalces of printk("%l", some_u64) down in
+> arch code where the type of u64 _is_ known which will now spew warnings.
+>=20
+> Oh well.
 
-with the same comments about outstanding issues as applied to the CPU
-side.
+As a rough estimate:
 
-> +static int aic26_hw_params(struct snd_pcm_substream *substream,
-> +			   struct snd_pcm_hw_params *params)
-> +{
+concordia powerpc(master) $ find arch/powerpc/ ! -name '*32.*' | xargs grep=
+ "%l" | grep -v "%ll" | wc -l
+635
 
-> +	switch (params_rate(params)) {
-> +	case 8000:  fsref = 48000; divisor = AIC26_DIV_6; break;
 
-> +	/* Configure PLL */
-> +	pval = 1;
-> +	jval = (fsref == 44100) ? 7 : 8;
-> +	dval = (fsref == 44100) ? 5264 : 1920;
+Someone's gonna get a lot of git points for fixing all those. Might keep
+the speeling fix crowd busy for a while.
 
-Without having looked at the chip datasheet these parameters probably
-all need to depend on the input clock rate and the PLL configuration
-should be done in a set_pll() rather than here.
+cheers
 
-> +#if defined(CONFIG_SND_SOC_OF_SIMPLE)
-> +	/* Tell the of_soc helper about this codec */
-> +	of_snd_soc_register_codec(&aic26_soc_codec_dev, aic26, &aic26_dai,
-> +				  spi->dev.archdata.of_node);
-> +#endif
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-This won't work if the OF_SIMPLE stuff is a module.  There's also a
-checkpatch issue which I'll fix up.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-zzXwhI2BCaAafcumruBA
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIhbgzdSjSd0sB4dIRArTZAKDHBi9mo4QUVr2xO/c5+WSAnSLG1ACdHXy4
+A41TJDlZFWkrWfHH1UMztEA=
+=Smrs
+-----END PGP SIGNATURE-----
+
+--=-zzXwhI2BCaAafcumruBA--
