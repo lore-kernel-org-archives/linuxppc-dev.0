@@ -1,28 +1,28 @@
 Return-Path: <ehrhardt@linux.vnet.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2122BDDDF9
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 18:36:54 +1000 (EST)
+	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 92A90DDE1F
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 18:37:07 +1000 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id m6N8al0j115080
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 08:36:47 GMT
+	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id m6N8amnb264658
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 08:36:48 GMT
 Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
 	[9.149.165.213])
 	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.0) with
-	ESMTP id m6N8alvx4157494
+	ESMTP id m6N8alMQ2285604
 	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 10:36:47 +0200
 Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
 	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m6N8alUa021856
+	id m6N8alsu021877
 	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 10:36:47 +0200
 From: ehrhardt@linux.vnet.ibm.com
 To: kvm-ppc@vger.kernel.org, embedded-hypervisor@power.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/6] kvmppc: read device tree hypervisor node infrastructure
-Date: Wed, 23 Jul 2008 10:36:42 +0200
-Message-Id: <1216802207-32675-2-git-send-email-ehrhardt@linux.vnet.ibm.com>
+Subject: [PATCH 5/6] kvmppc: magic page paravirtualization - guest part
+Date: Wed, 23 Jul 2008 10:36:46 +0200
+Message-Id: <1216802207-32675-6-git-send-email-ehrhardt@linux.vnet.ibm.com>
 In-Reply-To: <1216802207-32675-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
 References: <1216802207-32675-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
 Cc: hollisb@us.ibm.com
@@ -37,162 +37,137 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 
-This patch adds the guest portion of the device tree based host->guest
-communication. Using the device tree infrastructure this patch implements
-kvm_para_available and kvm_arch_para_features (in this patch just the
-infrastructure, no specific feature registered).
+This patch adds the guest handling for the magic page mechanism. A Hypervisor
+can modify the device tree passed to the guest. Using that already existing
+interface a guest can simply detect available hypervisor features and agree
+on the supported ones using hypercalls.
+In this example it is checked for the feature switch "feature,pv-magicpage"
+in the hypervisor node and additional data which represents the size the
+hypervisor requests in "data,pv-magicpage-size".
+When the guest read that data and wants to support it the memory is allocated
+and passed to the hypervisor using the KVM_HCALL_RESERVE_MAGICPAGE hypercall.
 
 Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 ---
 
 [diffstat]
- arch/powerpc/kernel/Makefile       |    2 ++
- arch/powerpc/kernel/kvm.c          |   30 ++++++++++++++++++++++++++++++
- arch/powerpc/kernel/setup_32.c     |    3 +++
- arch/powerpc/platforms/44x/Kconfig |    7 +++++++
- include/asm-powerpc/kvm_para.h     |   37 ++++++++++++++++++++++++++++++++++---
- 5 files changed, 76 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/kvm.c      |   48 +++++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/kvm_para.h |   27 ++++++++++++++++++++++-
+ 2 files changed, 74 insertions(+), 1 deletion(-)
 
 [diff]
-
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -80,6 +80,8 @@
- 
- obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
- 
-+obj-$(CONFIG_KVM_GUEST)		+= kvm.o
-+
- ifneq ($(CONFIG_PPC_INDIRECT_IO),y)
- obj-y				+= iomap.o
- endif
 diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-new file mode 100644
---- /dev/null
+--- a/arch/powerpc/kernel/kvm.c
 +++ b/arch/powerpc/kernel/kvm.c
-@@ -0,0 +1,30 @@
+@@ -22,9 +22,57 @@
+ #include <linux/percpu.h>
+ #include <linux/mm.h>
+ #include <linux/kvm_para.h>
++#include <linux/bootmem.h>
++
 +/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright IBM Corp. 2008
-+ *
-+ * Authors:
-+ * 	Hollis Blanchard <hollisb@us.ibm.com>
-+ * 	Christian Ehrhardt <ehrhardt@de.ibm.com>
++ * this is guest memory granted to the hypervisor;
++ * the hypervisor can place data in this area and rewrite
++ * privileged instructions to read from this area without
++ * trapping.
++ * Only the Hypervisor needs to be aware of the structure layout
++ * which makes the guest more felxible - the guest only guarantees
++ * the size which is requested by the hypervisor and read from a
++ * device tree entry.
 + */
++void *kvm_magicpage;
 +
-+#include <linux/percpu.h>
-+#include <linux/mm.h>
-+#include <linux/kvm_para.h>
-+
-+void __init kvm_guest_init(void)
++static void __init kvmppc_register_magic_page(void)
 +{
-+	if (!kvm_para_available())
++	unsigned long paddr;
++	int size;
++	long err;
++
++	size = kvmppc_pv_read_data(KVM_PVDATA_MAGICPAGE_SIZE);
++	if (size < 0) {
++		printk(KERN_ERR"%s: couldn't read size for kvmppc style "
++			"paravirtualization support (got %d)\n",
++			__func__, size);
 +		return;
++	}
++
++	/* FIXME Guest SMP needs that percpu
++	 * On SMP we might also need a free implementation */
++	kvm_magicpage = alloc_bootmem(size);
++	if (!kvm_magicpage) {
++		printk(KERN_ERR"%s - failed to allocate %d bytes\n",
++			 __func__, size);
++		return;
++	}
++
++	paddr = (unsigned long)__pa(kvm_magicpage);
++	err = kvm_hypercall1(KVM_HCALL_RESERVE_MAGICPAGE, paddr);
++	if (err)
++		printk(KERN_ERR"%s: couldn't register magic page\n", __func__);
++	else
++		printk(KERN_NOTICE"%s: registered %d bytes for "
++			"virtualization support\n", __func__, size);
 +}
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -17,6 +17,7 @@
- #include <linux/cpu.h>
- #include <linux/console.h>
- #include <linux/lmb.h>
-+#include <linux/kvm_para.h>
  
- #include <asm/io.h>
- #include <asm/prom.h>
-@@ -319,5 +320,7 @@
- 		ppc_md.setup_arch();
- 	if ( ppc_md.progress ) ppc_md.progress("arch: exit", 0x3eab);
- 
-+	kvm_guest_init();
+ void __init kvm_guest_init(void)
+ {
+ 	if (!kvm_para_available())
+ 		return;
 +
- 	paging_init();
++	if (kvm_para_has_feature(KVM_FEATURE_PPCPV_MAGICPAGE))
++		kvmppc_register_magic_page();
  }
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -152,3 +152,10 @@
- # 44x errata/workaround config symbols, selected by the CPU models above
- config IBM440EP_ERR42
- 	bool
-+
-+config KVM_GUEST
-+	bool "KVM Guest support"
-+	depends on EXPERIMENTAL
-+	help
-+	This option enables various optimizations for running under the KVM
-+	hypervisor.
 diff --git a/include/asm-powerpc/kvm_para.h b/include/asm-powerpc/kvm_para.h
 --- a/include/asm-powerpc/kvm_para.h
 +++ b/include/asm-powerpc/kvm_para.h
-@@ -14,7 +14,9 @@
-  *
-  * Copyright IBM Corp. 2008
-  *
-- * Authors: Hollis Blanchard <hollisb@us.ibm.com>
-+ * Authors:
-+ * 	Hollis Blanchard <hollisb@us.ibm.com>
-+ * 	Christian Ehrhardt <ehrhardt@de.ibm.com>
-  */
+@@ -28,10 +28,18 @@
  
- #ifndef __POWERPC_KVM_PARA_H__
-@@ -22,15 +24,44 @@
+ #define KVM_HYPERCALL_BIN 0x03ffffff
  
- #ifdef __KERNEL__
- 
-+#include <linux/of.h>
++#define KVM_HCALL_RESERVE_MAGICPAGE	0
 +
-+static struct kvmppc_para_features {
-+	char *dtcell;
-+	int feature;
-+} para_features[] = {
-+};
++#define KVM_PVDATA_MAGICPAGE_SIZE	"data,pv-magicpage-size"
 +
++/* List of PV features supported, returned as a bitfield */
++#define KVM_FEATURE_PPCPV_MAGICPAGE	0
++
+ static struct kvmppc_para_features {
+ 	char *dtcell;
+ 	int feature;
+ } para_features[] = {
++	{ "feature,pv-magicpage", KVM_FEATURE_PPCPV_MAGICPAGE }
+ };
+ 
  static inline int kvm_para_available(void)
- {
--	return 0;
-+	struct device_node *dn;
-+
-+	dn = of_find_node_by_path("/hypervisor");
-+
-+	return !!dn;
- }
+@@ -54,13 +62,30 @@
+ 	if (!dn)
+ 		return 0;
  
- static inline unsigned int kvm_arch_para_features(void)
- {
--	return 0;
+-	for (i = 0; i < ARRAY_SIZE(para_features)-1; i++) {
++	for (i = 0; i < ARRAY_SIZE(para_features); i++) {
+ 		dtval = of_get_property(dn, para_features[i].dtcell, NULL);
+ 		if (dtval && *dtval == 1)
+ 			features |= (1 << para_features[i].feature);
+ 	}
+ 
+ 	return features;
++}
++
++/* reads the specified data field out of the hypervisor node */
++static inline int kvmppc_pv_read_data(char *dtcell)
++{
 +	struct device_node *dn;
 +	const int *dtval;
-+	unsigned int features = 0;
-+	int i;
 +
 +	dn = of_find_node_by_path("/hypervisor");
 +	if (!dn)
-+		return 0;
++		return -EINVAL;
 +
-+	for (i = 0; i < ARRAY_SIZE(para_features)-1; i++) {
-+		dtval = of_get_property(dn, para_features[i].dtcell, NULL);
-+		if (dtval && *dtval == 1)
-+			features |= (1 << para_features[i].feature);
-+	}
-+
-+	return features;
++	dtval = of_get_property(dn, dtcell, NULL);
++	if (dtval)
++		return *dtval;
++	else
++		return -EINVAL;
  }
-+
-+void kvm_guest_init(void);
  
- #endif /* __KERNEL__ */
- 
+ void kvm_guest_init(void);
