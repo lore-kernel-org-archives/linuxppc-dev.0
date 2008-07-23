@@ -1,22 +1,25 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id A5A53DDEF2
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 00:09:08 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so486126yxg.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 07:09:07 -0700 (PDT)
-Message-ID: <9e4733910807230709l4249eaf6m750bad811342ba13@mail.gmail.com>
-Date: Wed, 23 Jul 2008 10:09:01 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	"Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [alsa-devel] [PATCH 2/2] Allow a custom ASOC machine driver with
-	soc-of-simple
-In-Reply-To: <20080723105334.GC8377@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080722235349.11648.90112.stgit@terra>
-	<20080722235351.11648.56387.stgit@terra>
-	<20080723105334.GC8377@sirena.org.uk>
+Return-Path: <hch@lst.de>
+Received: from verein.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 84C51DDF00
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 00:29:40 +1000 (EST)
+Date: Wed, 23 Jul 2008 16:23:35 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Luis Machado <luisgpm@linux.vnet.ibm.com>
+Subject: Re: [RFC] 4xx hardware watchpoint support
+Message-ID: <20080723142335.GA22767@lst.de>
+References: <1211391577.6232.15.camel@gargoyle>
+	<18484.60888.981390.893747@cargo.ozlabs.ibm.com>
+	<1213992894.6635.41.camel@gargoyle>
+	<20080719093752.5aada45c@zod.rchland.ibm.com>
+	<1216658194.5727.36.camel@gargoyle>
+	<20080721130551.23a06006@zod.rchland.ibm.com>
+	<1216777678.5727.82.camel@gargoyle>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1216777678.5727.82.camel@gargoyle>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +29,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/23/08, Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
-> On Tue, Jul 22, 2008 at 07:53:51PM -0400, Jon Smirl wrote:
->
->  > Allow a custom ASOC machine driver with soc-of-simple
->
->
-> As with the clocking configuration: this looks fine from an ASoC point
->  of view but please fix the checkpatch warnings.  However...
->
->
->  >       /* Only register the device if both the codec and platform have
->  >        * been registered */
->  > -     if ((!of_soc->device.codec_data) || (!of_soc->platform_node))
->  > +     if ((!of_soc->device.codec_data) || (!of_soc->platform_node) || !machine_name)
->  >               return;
->
->
-> ...this doesn't just allow a custom machine driver, it requires that
->  something configures at least the machine name.  That's not a problem
->  from the ASoC point of view but possibly from the PowerPC side?
+On Tue, Jul 22, 2008 at 10:47:58PM -0300, Luis Machado wrote:
+> +void do_dabr(struct pt_regs *regs, unsigned long address,
+> +		    unsigned long error_code)
+> +{
+> +	siginfo_t info;
+> +
+> +#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+> +	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
+> +			11, SIGSEGV) == NOTIFY_STOP)
+> +		return;
+> +
+> +	if (debugger_dabr_match(regs))
+> +		return;
+> +
+> +	/* Clear the DAC and struct entries.  One shot trigger.  */
+> +#else /* (defined(CONFIG_4xx) || defined(CONFIG_BOOKE)) */
+> +	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) & ~(DBSR_DAC1R | DBSR_DAC1W
+> +							| DBCR0_IDM));
+> +#endif
 
-You have to configure at least the name. Otherwise if the machine
-driver is the last to register, how do you know to hold off the final
-registration and wait for the machine driver to appear?
+Some comment, first the above negate conditional
+looks rather ugly, I'd rather do a
 
-Or is it ok for me to change these after the platform device has been created?
-		of_soc->dai_link.ops = machine_ops;
-		of_soc->machine.name = machine_name;
+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+	dbcr0 case
+#else
+	dabr case
+#endif
 
-I have to have the machine driver in order to control my external clock chips.
+second I wonder why we have the notify_die only for one case, that seems
+rather odd.  Looking further the notify_die is even more odd because
+DIE_DABR_MATCH doesn't actually appear anywhere else in the kernel.
+I'd suggest simply removing it.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+> +	/* For processors using DABR (i.e. 970), the bottom 3 bits are flags.
+> +	   It was assumed, on previous implementations, that 3 bits were
+> +	   passed together with the data address, fitting the design of the
+> +	   DABR register, as follows:
+> +
+> +	   bit 0: Read flag
+> +	   bit 1: Write flag
+> +	   bit 2: Breakpoint translation
+> +
+> +	   Thus, we use them here as so.  */
+
+Can you redo this in the normal Linux comment style, ala:
+
+	/*
+	 * For processors using DABR (i.e. 970), the bottom 3 bits are flags.
+	 *  It was assumed, on previous implementations, that 3 bits were
+	 *  passed together with the data address, fitting the design of the
+	 *  DABR register, as follows:
+	 *
+	 *  bit 0: Read flag
+	 *  bit 1: Write flag
+	 *  bit 2: Breakpoint translation
+	 *
+	 *  Thus, we use them here as so.
+	 */
+
+and similar in few other places.
