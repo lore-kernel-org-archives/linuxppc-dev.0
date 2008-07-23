@@ -1,26 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CBD78DE3B0
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 02:30:19 +1000 (EST)
-Message-Id: <15BE5723-9703-42FA-815D-4A9CF9A67C33@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20080723115321.53aa655b@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [RFC] 4xx hardware watchpoint support
-Date: Wed, 23 Jul 2008 11:26:49 -0500
-References: <1211391577.6232.15.camel@gargoyle>
-	<18484.60888.981390.893747@cargo.ozlabs.ibm.com>
-	<1213992894.6635.41.camel@gargoyle>
-	<20080719093752.5aada45c@zod.rchland.ibm.com>
-	<1216658194.5727.36.camel@gargoyle>
-	<20080721130551.23a06006@zod.rchland.ibm.com>
-	<1216777678.5727.82.camel@gargoyle>
-	<20080723115321.53aa655b@zod.rchland.ibm.com>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 66E91DE15D
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 03:13:35 +1000 (EST)
+Date: Wed, 23 Jul 2008 13:13:35 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: <richw@netcomuk.co.uk>
+Subject: Re: DTS configuration of external interrupts on 8347
+Message-ID: <20080723131335.00eadc6a@lappy.seanm.ca>
+In-Reply-To: <4887471E.6070306@btconnect.com>
+References: <4887471E.6070306@btconnect.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, richard.whitlo@btconnect.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,59 +21,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 23 Jul 2008 15:58:38 +0100
+"Richard Whitlock" <richard.whitlo@btconnect.com> wrote:
 
-On Jul 23, 2008, at 10:53 AM, Josh Boyer wrote:
+> I have a small problem with a port of linux 2.6.26 to a custom board.
+> Our board is almost identical to the Analogue & Micro asp 8347 board,
+> so I'm using Kumar Gala's excellent fsl tree (thank you Kumar) as it 
+> already has a defconfig for the asp.
+> Thanks also to Bryan O'Donoghue for pointing us in the direction of
+> the asp port in the first place.
+> 
+> The problem we have is I am unable to request an external interrupt.
+> We have an FPGA which has an interrupt line - HW IRQ_0, so thats
+> linux IRQ 48. I have added the following to the dts file:
+> 
+> fpgaKFAF@0xF8000000 {
+>                 interrupts = <48 8>;
+>                 interrupt-parent = <&ipic>;
+> }
+> 
+> but whenever I call request_irq() it returns -ENOSYS.
+> 
+> The driver loads fine, and the open function does very little - a
+> call to ioremap() - which works, and a call to request_irq() which
+> does not. Is there anything else I have to do to configure this
+> interrupt?
 
-> On Tue, 22 Jul 2008 22:47:58 -0300
-> Luis Machado <luisgpm@linux.vnet.ibm.com> wrote:
->
->> Hi,
->>
->>> That, or adding a small function to move the bits to the appropriate
->>> registers (set_dbcr or set_dac_events).
->>>
->>>> Do you think it's worth to support this facility on 405's  
->>>> processors? If
->>>> so, i'll gladly work on a solution to it.
->>>
->>> I would think so.  There's really no difference from a userspace
->>> perspective, so gdb watchpoints could be valuable there too.  I'll
->>> leave it up to you though.
->>
->> As the 440 support is ready and the 405 needs additional tweaking  
->> due to
->> the use of DBCR1 instead of DBCR0 and due to a different position  
->> scheme
->> of the DAC1R/DAC1W flags inside DBCR1, i'd say we should include this
->> code and handle the 405 case later.
->
-> That's fine with me, but I have one question below then.
->
->> Index: linux-2.6.26/arch/powerpc/kernel/signal.c
->> ===================================================================
->> --- linux-2.6.26.orig/arch/powerpc/kernel/signal.c	2008-07-20  
->> 16:56:57.000000000 -0700
->> +++ linux-2.6.26/arch/powerpc/kernel/signal.c	2008-07-22  
->> 16:47:22.000000000 -0700
->> @@ -145,8 +145,12 @@
->> 	 * user space. The DABR will have been cleared if it
->> 	 * triggered inside the kernel.
->> 	 */
->> -	if (current->thread.dabr)
->> +	if (current->thread.dabr) {
->> 		set_dabr(current->thread.dabr);
->> +#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
->> +		mtspr(SPRN_DBCR0, current->thread.dbcr0);
->> +#endif
->
-> Shouldn't this (and other places) be:
->
-> #if defined(CONFIG_44x) || defined(CONFIG_BOOKE)
->
-> if you are going to exclude 40x for now?  Otherwise this is still
-> enabled on 405 and setting the wrong register.
+I don't think you have enough information in the dts. We do the same
+thing on the warp (you can look at the warp.dts):
 
-if we are ignoring 40x this can just be CONFIG_BOOKE.  CONFIG_44x sets  
-CONFIG_BOOKE.
+fpga@2,0 {
+	compatible = "pika,fpga";
+	reg = <0x00000002 0x00000000 0x00001000>;
+	interrupts = <0x18 0x8>;
+	interrupt-parent = <&UIC0>;
+};
 
-- k
+You need the compatible, maybe "kfaf,fpga", and I believe the reg entry
+although you could try without it.
+
+You then can use:
+
+	of_find_compatible_node
+	irq_of_parse_and_map
+	request_irq
+
+platforms/44x/warp.c shows an example using the ad7414. Just change the
+ad7414 string to your compatible string.
+
+Cheers,
+   Sean
