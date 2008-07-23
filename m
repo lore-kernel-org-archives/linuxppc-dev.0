@@ -1,17 +1,16 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 66E91DE15D
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 03:13:35 +1000 (EST)
-Date: Wed, 23 Jul 2008 13:13:35 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: <richw@netcomuk.co.uk>
-Subject: Re: DTS configuration of external interrupts on 8347
-Message-ID: <20080723131335.00eadc6a@lappy.seanm.ca>
-In-Reply-To: <4887471E.6070306@btconnect.com>
-References: <4887471E.6070306@btconnect.com>
+Return-Path: <txtbox@gmail.com>
+Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.242])
+	by ozlabs.org (Postfix) with ESMTP id DFFF5DE191
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 04:17:58 +1000 (EST)
+Received: by hs-out-0708.google.com with SMTP id z77so265740hsz.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 11:17:56 -0700 (PDT)
+Subject: Xilinx linux Wiki
+From: Jacob Holladay Poteet <txtbox@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary="=-UoMwxbxjqv5ofhI2LqRL"
+Date: Wed, 23 Jul 2008 13:17:50 -0500
+Message-Id: <1216837070.6238.12.camel@Phoebe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, richard.whitlo@btconnect.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,53 +20,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 23 Jul 2008 15:58:38 +0100
-"Richard Whitlock" <richard.whitlo@btconnect.com> wrote:
 
-> I have a small problem with a port of linux 2.6.26 to a custom board.
-> Our board is almost identical to the Analogue & Micro asp 8347 board,
-> so I'm using Kumar Gala's excellent fsl tree (thank you Kumar) as it 
-> already has a defconfig for the asp.
-> Thanks also to Bryan O'Donoghue for pointing us in the direction of
-> the asp port in the first place.
-> 
-> The problem we have is I am unable to request an external interrupt.
-> We have an FPGA which has an interrupt line - HW IRQ_0, so thats
-> linux IRQ 48. I have added the following to the dts file:
-> 
-> fpgaKFAF@0xF8000000 {
->                 interrupts = <48 8>;
->                 interrupt-parent = <&ipic>;
-> }
-> 
-> but whenever I call request_irq() it returns -ENOSYS.
-> 
-> The driver loads fine, and the open function does very little - a
-> call to ioremap() - which works, and a call to request_irq() which
-> does not. Is there anything else I have to do to configure this
-> interrupt?
+--=-UoMwxbxjqv5ofhI2LqRL
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-I don't think you have enough information in the dts. We do the same
-thing on the warp (you can look at the warp.dts):
+Hello All,
 
-fpga@2,0 {
-	compatible = "pika,fpga";
-	reg = <0x00000002 0x00000000 0x00001000>;
-	interrupts = <0x18 0x8>;
-	interrupt-parent = <&UIC0>;
-};
+This message is an advertisement for the new Xilinx wiki at
+http://xilinx.wikidot.com/ . I think this could be a useful and
+longstanding resource that could help bring new members into the
+Embedded Linux for Xilinx community rather quickly. Because this project
+isn't completely within the focus of this mailing list I apologize; I
+really believe that it may be of interest to many people that work here
+though. If you have any comments on the place of a wiki like this or are
+aware of any other community resources with active contributions, please
+reply.
 
-You need the compatible, maybe "kfaf,fpga", and I believe the reg entry
-although you could try without it.
+Thanks,
+Jake Poteet
 
-You then can use:
+--=-UoMwxbxjqv5ofhI2LqRL
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
 
-	of_find_compatible_node
-	irq_of_parse_and_map
-	request_irq
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
+<HTML>
+<HEAD>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
+  <META NAME="GENERATOR" CONTENT="GtkHTML/3.18.2">
+</HEAD>
+<BODY>
+Hello All,<BR>
+<BR>
+This message is an advertisement for the new Xilinx wiki at <A HREF="http://xilinx.wikidot.com/">http://xilinx.wikidot.com/</A> . I think this could be a useful and longstanding resource that could help bring new members into the Embedded Linux for Xilinx community rather quickly. Because this project isn't completely within the focus of this mailing list I apologize; I really believe that it may be of interest to many people that work here though. If you have any comments on the place of a wiki like this or are aware of any other community resources with active contributions, please reply.<BR>
+<BR>
+Thanks,<BR>
+Jake Poteet
+</BODY>
+</HTML>
 
-platforms/44x/warp.c shows an example using the ad7414. Just change the
-ad7414 string to your compatible string.
-
-Cheers,
-   Sean
+--=-UoMwxbxjqv5ofhI2LqRL--
