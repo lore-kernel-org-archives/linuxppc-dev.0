@@ -1,21 +1,27 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 575DBDDE23
+Return-Path: <rubini@mail.gnudd.com>
+Received: from mail.gnudd.com (unknown [151.38.134.203])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 374D0DDF3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Jul 2008 22:21:53 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KLdLp-0006oO-Uz
-	for linuxppc-embedded@ozlabs.org; Wed, 23 Jul 2008 05:21:49 -0700
-Message-ID: <18609501.post@talk.nabble.com>
-Date: Wed, 23 Jul 2008 05:21:49 -0700 (PDT)
-From: WITTROCK <jwittrock@maginst.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [OT] write flash on MPC5200 board via jtag
-In-Reply-To: <1216753011l.5683l.0l@antares>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <1216753011l.5683l.0l@antares>
+	Wed, 23 Jul 2008 22:59:25 +1000 (EST)
+Date: Wed, 23 Jul 2008 14:47:45 +0200
+From: Alessandro Rubini <rubini@gnudd.com>
+To: misbah_khan@engineer.com
+Subject: Re: how to allocate 9MB of memory in kernel ?
+Message-ID: <20080723124745.GA20156@mail.gnudd.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Sender: rubini@gnudd.com
+In-Reply-To: <18605418.post@talk.nabble.com>
+References: <18605418.post@talk.nabble.com> <18503022.post@talk.nabble.com>
+	<200807170956.52101.arnd@arndb.de>
+	<18522535.post@talk.nabble.com> <48803D3C.5020608@coritel.it>
+	<18525063.post@talk.nabble.com> <200807181739.10268.arnd@arndb.de>
+	<18582612.post@talk.nabble.com> <200807221131.32556.arnd@arndb.de>
+	<4885AC94.7050501@coritel.it> <18587466.post@talk.nabble.com>
+	<200807221712.52030.arnd@arndb.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,23 +33,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-I am using  http://urjtag.org/ UrJtag  to do accomplish this.  I have used it
-with both a Wiggler clone and an Altera UsbBlaster as the physical JTAG
-interface on both a Linux and Windows (cygwin) host.  The only problem is
-that this approach is very slow, so I wrote a small (~8kb) "bootstrap"
-program which is first put into flash.  This small program then handles
-programming u-boot to flash over a serial interface.  Once u-boot is in
-place, I use it to program the rest of flash.
+> If i allocate 9BM using vmalloc and remap to user space how should it
+> address to the 9MB 
+> SDRAM contigues address which i need to map for user access ? 
 
-Some JTAG tools actually place a small application in the target devices
-ram, then this application allows much faster programming of an attached
-flash device.  This requires more information about the COP/BDM interface
-than is published in the MPC5200B user manual or data sheet.  I haven't used
-the Abatron tools, so maybe they do this.  In the case of UrJtag, it is
-simply fiddling with bus signals using boundry scan, so it is excruciatingly
-slow.
+Use the nopage method and vmalloc_to_page in it.
 
--WITTROCK
--- 
-View this message in context: http://www.nabble.com/-OT--write-flash-on-MPC5200-board-via-jtag-tp18596887p18609501.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+I have an example in ftp://gnudd.com/pub/samplecode, in the
+smallsample26 package, the module is "smallmmap.c" (I'm sure there are
+simlilar examples elsewhere).
+
+/alessandro
