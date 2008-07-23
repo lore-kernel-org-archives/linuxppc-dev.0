@@ -1,37 +1,37 @@
-Return-Path: <luisgpm@linux.vnet.ibm.com>
-Received: from igw3.br.ibm.com (igw3.br.ibm.com [32.104.18.26])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "igw3.br.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8CF95DE1E4
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 01:48:17 +1000 (EST)
-Received: from mailhub3.br.ibm.com (unknown [9.18.232.110])
-	by igw3.br.ibm.com (Postfix) with ESMTP id 196A1390437
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 12:29:42 -0300 (BRST)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.18.232.46])
-	by mailhub3.br.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m6NFeTrc2924574
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 12:48:14 -0300
-Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
-	by d24av01.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6NEfvkq006664
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 11:41:57 -0300
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D0C1ADE2AC
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 01:57:12 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6NFv7rc014300
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 11:57:07 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6NFv7Kr171424
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 09:57:07 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6NFv3Lg028003
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 09:57:04 -0600
+Date: Wed, 23 Jul 2008 11:53:21 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: luisgpm@linux.vnet.ibm.com
 Subject: Re: [RFC] 4xx hardware watchpoint support
-From: Luis Machado <luisgpm@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20080723142335.GA22767@lst.de>
+Message-ID: <20080723115321.53aa655b@zod.rchland.ibm.com>
+In-Reply-To: <1216777678.5727.82.camel@gargoyle>
 References: <1211391577.6232.15.camel@gargoyle>
 	<18484.60888.981390.893747@cargo.ozlabs.ibm.com>
 	<1213992894.6635.41.camel@gargoyle>
 	<20080719093752.5aada45c@zod.rchland.ibm.com>
 	<1216658194.5727.36.camel@gargoyle>
 	<20080721130551.23a06006@zod.rchland.ibm.com>
-	<1216777678.5727.82.camel@gargoyle>  <20080723142335.GA22767@lst.de>
-Content-Type: text/plain
-Date: Wed, 23 Jul 2008 11:42:02 -0300
-Message-Id: <1216824122.5727.91.camel@gargoyle>
+	<1216777678.5727.82.camel@gargoyle>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
-Reply-To: luisgpm@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,46 +41,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Some comment, first the above negate conditional
-> looks rather ugly, I'd rather do a
+On Tue, 22 Jul 2008 22:47:58 -0300
+Luis Machado <luisgpm@linux.vnet.ibm.com> wrote:
+
+> Hi,
 > 
-> #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-> 	dbcr0 case
-> #else
-> 	dabr case
-> #endif
-
-Yes, it makes sense. I'll switch it around.
-
-> second I wonder why we have the notify_die only for one case, that seems
-> rather odd.  Looking further the notify_die is even more odd because
-> DIE_DABR_MATCH doesn't actually appear anywhere else in the kernel.
-> I'd suggest simply removing it.
-
-DIE_DABR_MATCH doesn't appear anywhere else because there is only a
-single function responsible for handling the DABR/DAC events on powerPC
-with this modification. It would make sense to call this to both the
-DAC/DABR cases though (i.e. taking it out of the #ifdef), what do you
-think?
-
-> Can you redo this in the normal Linux comment style, ala:
+> > That, or adding a small function to move the bits to the appropriate
+> > registers (set_dbcr or set_dac_events).
+> > 
+> > > Do you think it's worth to support this facility on 405's processors? If
+> > > so, i'll gladly work on a solution to it.
+> > 
+> > I would think so.  There's really no difference from a userspace
+> > perspective, so gdb watchpoints could be valuable there too.  I'll
+> > leave it up to you though.
 > 
-> 	/*
-> 	 * For processors using DABR (i.e. 970), the bottom 3 bits are flags.
-> 	 *  It was assumed, on previous implementations, that 3 bits were
-> 	 *  passed together with the data address, fitting the design of the
-> 	 *  DABR register, as follows:
-> 	 *
-> 	 *  bit 0: Read flag
-> 	 *  bit 1: Write flag
-> 	 *  bit 2: Breakpoint translation
-> 	 *
-> 	 *  Thus, we use them here as so.
-> 	 */
-> 
-> and similar in few other places.
+> As the 440 support is ready and the 405 needs additional tweaking due to
+> the use of DBCR1 instead of DBCR0 and due to a different position scheme
+> of the DAC1R/DAC1W flags inside DBCR1, i'd say we should include this
+> code and handle the 405 case later. 
 
-Will do, thanks for reviewing this one.
+That's fine with me, but I have one question below then.
 
-Regards,
-Luis
+> Index: linux-2.6.26/arch/powerpc/kernel/signal.c
+> ===================================================================
+> --- linux-2.6.26.orig/arch/powerpc/kernel/signal.c	2008-07-20 16:56:57.000000000 -0700
+> +++ linux-2.6.26/arch/powerpc/kernel/signal.c	2008-07-22 16:47:22.000000000 -0700
+> @@ -145,8 +145,12 @@
+>  	 * user space. The DABR will have been cleared if it
+>  	 * triggered inside the kernel.
+>  	 */
+> -	if (current->thread.dabr)
+> +	if (current->thread.dabr) {
+>  		set_dabr(current->thread.dabr);
+> +#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
+> +		mtspr(SPRN_DBCR0, current->thread.dbcr0);
+> +#endif
+
+Shouldn't this (and other places) be:
+
+#if defined(CONFIG_44x) || defined(CONFIG_BOOKE)
+
+if you are going to exclude 40x for now?  Otherwise this is still
+enabled on 405 and setting the wrong register.
+
+josh
