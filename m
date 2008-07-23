@@ -1,22 +1,21 @@
-Return-Path: <sebastien.dugue@bull.net>
-Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id 826F5DE22E
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 01:01:23 +1000 (EST)
-Date: Wed, 23 Jul 2008 17:01:02 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: Linux RT Users <linux-rt-users@vger.kernel.org>
-Subject: [PATCH 2/2][RT] powerpc - Make the irq reverse mapping radix tree
-	lockless
-Message-ID: <20080723170102.483b5b54@bull.net>
-In-Reply-To: <20080723165932.57e3ada2@bull.net>
-References: <20080723165932.57e3ada2@bull.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Tim Chavez <tinytim@us.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Jean Pierre Dion <jean-pierre.dion@bull.net>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Gilles Carry <Gilles.Carry@ext.bull.net>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	by ozlabs.org (Postfix) with ESMTP id 3959BDDE10
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 01:14:39 +1000 (EST)
+Date: Wed, 23 Jul 2008 16:14:32 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [alsa-devel] [PATCH 2/2] Allow a custom ASOC machine driver with
+	soc-of-simple
+Message-ID: <20080723151431.GA22926@sirena.org.uk>
+References: <20080722235349.11648.90112.stgit@terra>
+	<20080722235351.11648.56387.stgit@terra>
+	<20080723105334.GC8377@sirena.org.uk>
+	<9e4733910807230709l4249eaf6m750bad811342ba13@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9e4733910807230709l4249eaf6m750bad811342ba13@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,200 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-Date: Tue, 22 Jul 2008 11:56:41 +0200
-Subject: [PATCH][RT] powerpc - Make the irq reverse mapping radix tree lockless
+On Wed, Jul 23, 2008 at 10:09:01AM -0400, Jon Smirl wrote:
+> On 7/23/08, Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-  The radix tree used by interrupt controllers for their irq reverse mapping
-(currently only the XICS found on pSeries) have a complex locking scheme
-dating back to before the advent of the concurrent radix tree on preempt-rt.
+> > ...this doesn't just allow a custom machine driver, it requires that
+> >  something configures at least the machine name.  That's not a problem
+> >  from the ASoC point of view but possibly from the PowerPC side?
 
-  Take advantage of this and of the fact that the items of the tree are
-pointers to a static array (irq_map) elements which can never go under us
-to simplify the locking.
+> You have to configure at least the name. Otherwise if the machine
+> driver is the last to register, how do you know to hold off the final
+> registration and wait for the machine driver to appear?
 
-  Concurrency between readers and writers are handled by the intrinsic
-properties of the concurrent radix tree. Concurrency between the tree
-initialization which is done asynchronously with readers and writers access is
-handled via an atomic variable (revmap_trees_allocated) set when the tree
-has been initialized and checked before any reader or writer access just
-like we used to check for tree.gfp_mask != 0 before.
+I understand why you have made this change but it's a substantial change
+which should at least be documented in the changelog (I'd expect to see
+some mention of how this is supposed to be configured, for example).
+I'd also expect something to handle the existing user.
 
-Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
+Like I said, I'm not entirely sure that you're supposed to be using this
+driver if you want a machine driver: this is a machine driver and I'm
+not sure if it's supposed to cover all cases or not.  Grant?
 
----
- arch/powerpc/kernel/irq.c |  102 ++++++++++++----------------------------------
- 1 file changed, 27 insertions(+), 75 deletions(-)
+> Or is it ok for me to change these after the platform device has been created?
+> 		of_soc->dai_link.ops = machine_ops;
+> 		of_soc->machine.name = machine_name;
 
-Index: linux-2.6.25.8-rt7/arch/powerpc/kernel/irq.c
-===================================================================
---- linux-2.6.25.8-rt7.orig/arch/powerpc/kernel/irq.c
-+++ linux-2.6.25.8-rt7/arch/powerpc/kernel/irq.c
-@@ -403,8 +403,7 @@ void do_softirq(void)
- 
- static LIST_HEAD(irq_hosts);
- static DEFINE_RAW_SPINLOCK(irq_big_lock);
--static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
--static unsigned int irq_radix_writer;
-+static atomic_t revmap_trees_allocated = ATOMIC_INIT(0);
- struct irq_map_entry irq_map[NR_IRQS];
- static unsigned int irq_virq_count = NR_IRQS;
- static struct irq_host *irq_default_host;
-@@ -547,57 +546,6 @@ void irq_set_virq_count(unsigned int cou
- 		irq_virq_count = count;
- }
- 
--/* radix tree not lockless safe ! we use a brlock-type mecanism
-- * for now, until we can use a lockless radix tree
-- */
--static void irq_radix_wrlock(unsigned long *flags)
--{
--	unsigned int cpu, ok;
--
--	spin_lock_irqsave(&irq_big_lock, *flags);
--	irq_radix_writer = 1;
--	smp_mb();
--	do {
--		barrier();
--		ok = 1;
--		for_each_possible_cpu(cpu) {
--			if (per_cpu(irq_radix_reader, cpu)) {
--				ok = 0;
--				break;
--			}
--		}
--		if (!ok)
--			cpu_relax();
--	} while(!ok);
--}
--
--static void irq_radix_wrunlock(unsigned long flags)
--{
--	smp_wmb();
--	irq_radix_writer = 0;
--	spin_unlock_irqrestore(&irq_big_lock, flags);
--}
--
--static void irq_radix_rdlock(unsigned long *flags)
--{
--	local_irq_save(*flags);
--	__get_cpu_var(irq_radix_reader) = 1;
--	smp_mb();
--	if (likely(irq_radix_writer == 0))
--		return;
--	__get_cpu_var(irq_radix_reader) = 0;
--	smp_wmb();
--	spin_lock(&irq_big_lock);
--	__get_cpu_var(irq_radix_reader) = 1;
--	spin_unlock(&irq_big_lock);
--}
--
--static void irq_radix_rdunlock(unsigned long flags)
--{
--	__get_cpu_var(irq_radix_reader) = 0;
--	local_irq_restore(flags);
--}
--
- static int irq_setup_virq(struct irq_host *host, unsigned int virq,
- 			    irq_hw_number_t hwirq)
- {
-@@ -752,7 +700,6 @@ void irq_dispose_mapping(unsigned int vi
- {
- 	struct irq_host *host;
- 	irq_hw_number_t hwirq;
--	unsigned long flags;
- 
- 	if (virq == NO_IRQ)
- 		return;
-@@ -784,15 +731,20 @@ void irq_dispose_mapping(unsigned int vi
- 		if (hwirq < host->revmap_data.linear.size)
- 			host->revmap_data.linear.revmap[hwirq] = NO_IRQ;
- 		break;
--	case IRQ_HOST_MAP_TREE:
-+	case IRQ_HOST_MAP_TREE: {
-+		DEFINE_RADIX_TREE_CONTEXT(ctx, &host->revmap_data.tree);
-+
- 		/* Check if radix tree allocated yet */
--		if (host->revmap_data.tree.gfp_mask == 0)
-+		if (atomic_read(&revmap_trees_allocated) == 0)
- 			break;
--		irq_radix_wrlock(&flags);
--		radix_tree_delete(&host->revmap_data.tree, hwirq);
--		irq_radix_wrunlock(flags);
-+
-+		radix_tree_lock(&ctx);
-+		radix_tree_delete(ctx.tree, hwirq);
-+		radix_tree_unlock(&ctx);
-+
- 		break;
- 	}
-+	}
- 
- 	/* Destroy map */
- 	smp_mb();
-@@ -845,22 +797,20 @@ unsigned int irq_radix_revmap(struct irq
- 	struct radix_tree_root *tree;
- 	struct irq_map_entry *ptr;
- 	unsigned int virq;
--	unsigned long flags;
- 
- 	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
- 
--	/* Check if the radix tree exist yet. We test the value of
--	 * the gfp_mask for that. Sneaky but saves another int in the
--	 * structure. If not, we fallback to slow mode
--	 */
--	tree = &host->revmap_data.tree;
--	if (tree->gfp_mask == 0)
-+	/* Check if the radix tree exist yet. */
-+	if (atomic_read(&revmap_trees_allocated) == 0)
- 		return irq_find_mapping(host, hwirq);
- 
--	/* Now try to resolve */
--	irq_radix_rdlock(&flags);
-+	/*
-+	 * Now try to resolve
-+	 * No rcu_read_lock(ing) needed, the ptr returned can't go under us
-+	 * as it's referencing an entry in the static irq_map table.
-+	 */
-+	tree = &host->revmap_data.tree;
- 	ptr = radix_tree_lookup(tree, hwirq);
--	irq_radix_rdunlock(flags);
- 
- 	/* Found it, return */
- 	if (ptr) {
-@@ -871,9 +821,10 @@ unsigned int irq_radix_revmap(struct irq
- 	/* If not there, try to insert it */
- 	virq = irq_find_mapping(host, hwirq);
- 	if (virq != NO_IRQ) {
--		irq_radix_wrlock(&flags);
--		radix_tree_insert(tree, hwirq, &irq_map[virq]);
--		irq_radix_wrunlock(flags);
-+		DEFINE_RADIX_TREE_CONTEXT(ctx, tree);
-+		radix_tree_lock(&ctx);
-+		radix_tree_insert(ctx.tree, hwirq, &irq_map[virq]);
-+		radix_tree_unlock(&ctx);
- 	}
- 	return virq;
- }
-@@ -984,14 +935,15 @@ void irq_early_init(void)
- static int irq_late_init(void)
- {
- 	struct irq_host *h;
--	unsigned long flags;
- 
--	irq_radix_wrlock(&flags);
- 	list_for_each_entry(h, &irq_hosts, link) {
- 		if (h->revmap_type == IRQ_HOST_MAP_TREE)
- 			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
- 	}
--	irq_radix_wrunlock(flags);
-+
-+	/* Make sure the radix trees inits are visible before setting the flag */
-+	smp_mb();
-+	atomic_set(&revmap_trees_allocated, 1);
- 
- 	return 0;
- }
+No.
