@@ -1,18 +1,16 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 09C3CDDE02
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 09:53:53 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so1952798ywh.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jul 2008 16:53:52 -0700 (PDT)
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH 2/2] Allow a custom ASOC machine driver with soc-of-simple
-To: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
-Date: Tue, 22 Jul 2008 19:53:51 -0400
-Message-ID: <20080722235351.11648.56387.stgit@terra>
-In-Reply-To: <20080722235349.11648.90112.stgit@terra>
-References: <20080722235349.11648.90112.stgit@terra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 13B90DDE08
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 10:45:00 +1000 (EST)
+Date: Wed, 23 Jul 2008 10:44:58 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt
+	<benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: fallout from sysdev API changes
+Message-Id: <20080723104458.0cca65d5.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,85 +20,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Allow a custom ASOC machine driver with soc-of-simple
+A struct sysdev_attribute * parameter was added to the show routine by
+commit 4a0b2b4dbe1335b8b9886ba3dc85a145d5d938ed "sysdev: Pass the
+attribute to the low level sysdev show/store function".
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+This eliminates a warning:
+
+arch/powerpc/kernel/sysfs.c:538: warning: initialization from incompatible pointer type
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
+ arch/powerpc/kernel/sysfs.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
- include/sound/soc-of-simple.h |    2 ++
- sound/soc/fsl/soc-of-simple.c |   26 +++++++++++++++++++++-----
- 2 files changed, 23 insertions(+), 5 deletions(-)
+Greg, probably easiest for this to go via the powerpc tree - an Ack would
+be nice, though.
 
-diff --git a/include/sound/soc-of-simple.h b/include/sound/soc-of-simple.h
-index 696fc51..1e83f2f 100644
---- a/include/sound/soc-of-simple.h
-+++ b/include/sound/soc-of-simple.h
-@@ -18,4 +18,6 @@ int of_snd_soc_register_platform(struct snd_soc_platform *platform,
- 				 struct device_node *node,
- 				 struct snd_soc_dai *cpu_dai);
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index aba0ba9..800e5e9 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -529,7 +529,8 @@ static void register_nodes(void)
+ #endif
  
-+void of_snd_soc_register_machine(char *name, struct snd_soc_ops *ops);
-+
- #endif /* _INCLUDE_SOC_OF_H_ */
-diff --git a/sound/soc/fsl/soc-of-simple.c b/sound/soc/fsl/soc-of-simple.c
-index 0382fda..dd2fa23 100644
---- a/sound/soc/fsl/soc-of-simple.c
-+++ b/sound/soc/fsl/soc-of-simple.c
-@@ -38,8 +38,8 @@ struct of_snd_soc_device {
- 	struct device_node *codec_node;
- };
+ /* Only valid if CPU is present. */
+-static ssize_t show_physical_id(struct sys_device *dev, char *buf)
++static ssize_t show_physical_id(struct sys_device *dev,
++				struct sysdev_attribute *attr, char *buf)
+ {
+ 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
  
--static struct snd_soc_ops of_snd_soc_ops = {
--};
-+static struct snd_soc_ops *machine_ops = NULL;
-+static char *machine_name = NULL;
- 
- static struct of_snd_soc_device *
- of_snd_soc_get_device(struct device_node *codec_node)
-@@ -61,7 +61,7 @@ of_snd_soc_get_device(struct device_node *codec_node)
- 	of_soc->machine.dai_link = &of_soc->dai_link;
- 	of_soc->machine.num_links = 1;
- 	of_soc->device.machine = &of_soc->machine;
--	of_soc->dai_link.ops = &of_snd_soc_ops;
-+	of_soc->dai_link.ops = machine_ops;
- 	list_add(&of_soc->list, &of_snd_soc_device_list);
- 
- 	return of_soc;
-@@ -74,7 +74,7 @@ static void of_snd_soc_register_device(struct of_snd_soc_device *of_soc)
- 
- 	/* Only register the device if both the codec and platform have
- 	 * been registered */
--	if ((!of_soc->device.codec_data) || (!of_soc->platform_node))
-+	if ((!of_soc->device.codec_data) || (!of_soc->platform_node) || !machine_name)
- 		return;
- 
- 	pr_info("platform<-->codec match achieved; registering machine\n");
-@@ -159,7 +159,7 @@ int of_snd_soc_register_platform(struct snd_soc_platform *platform,
- 	of_soc->platform_node = node;
- 	of_soc->dai_link.cpu_dai = cpu_dai;
- 	of_soc->device.platform = platform;
--	of_soc->machine.name = of_soc->dai_link.cpu_dai->name;
-+	of_soc->machine.name = machine_name;
- 
- 	/* Now try to register the SoC device */
- 	of_snd_soc_register_device(of_soc);
-@@ -169,3 +169,19 @@ int of_snd_soc_register_platform(struct snd_soc_platform *platform,
- 	return rc;
- }
- EXPORT_SYMBOL_GPL(of_snd_soc_register_platform);
-+
-+void of_snd_soc_register_machine(char *name, struct snd_soc_ops *ops)
-+{
-+	struct of_snd_soc_device *of_soc;
-+	
-+	machine_name = name;
-+	machine_ops = ops;
-+	
-+	list_for_each_entry(of_soc, &of_snd_soc_device_list, list) {
-+		of_soc->dai_link.ops = machine_ops;
-+		of_soc->machine.name = machine_name;
-+		of_snd_soc_register_device(of_soc);
-+	}
-+
-+}
-+EXPORT_SYMBOL_GPL(of_snd_soc_register_machine);
+-- 
+1.5.6.3
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
