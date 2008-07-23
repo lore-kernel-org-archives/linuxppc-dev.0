@@ -1,21 +1,19 @@
-Return-Path: <duykynguyen@hotmail.com>
-Received: from bay0-omc2-s8.bay0.hotmail.com (bay0-omc2-s8.bay0.hotmail.com
-	[65.54.246.144]) by ozlabs.org (Postfix) with ESMTP id 744A3DDED1
+Return-Path: <nareshgbhat@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
+	by ozlabs.org (Postfix) with ESMTP id 8319ADDDEA
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Jul 2008 11:54:57 +1000 (EST)
-Message-ID: <BLU119-DAV9BAEF385061105909DC9FBB840@phx.gbl>
-From: "Duy-Ky Nguyen" <duykynguyen@hotmail.com>
-To: "Scott Wood" <scottwood@freescale.com>
-References: <BLU119-DAV11096F9EACC27956DCC87BBB8F0@phx.gbl>
-	<58A20A281BAF1047B4EAE68DE5C0BDC2010573E9@zch01exm21.fsl.freescale.net>
-	<BLU119-DAV61F2F984D2E145D1E4AA1BB8F0@phx.gbl>
-	<20080722175508.GA13940@loki.buserror.net>
-Subject: Re: Failure of request_irq()  for MPC8313 using arch=powerpc
-Date: Tue, 22 Jul 2008 18:54:50 -0700
+	Wed, 23 Jul 2008 16:42:47 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so1890280wfg.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 22 Jul 2008 23:42:46 -0700 (PDT)
+Message-ID: <cf9b3c760807222342h47ff8d0atd74fd5a583a62d9c@mail.gmail.com>
+Date: Wed, 23 Jul 2008 12:12:45 +0530
+From: "Naresh Bhat" <nareshgbhat@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Kernel is Hanging for page size 16KB.
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
-Cc: Liu Dave <DaveLiu@freescale.com>, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_11984_29810841.1216795365868"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,53 +24,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Scott,
+------=_Part_11984_29810841.1216795365868
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I forgot to mention that I have less error if I use the existing device node 
-"spi" in the DTS file
+Hi Guys,
 
-# Start of error capture
+I have a board MIPS Malta and Linux 2.6.10 is running on that. By default
+4KB page size will be allocated in the kernel (I mean to say I saw it when I
+do the "make menuconfig".
 
-Got device node from device tree
-Got Virtual IRQ
-PPC : interrupt hook failed (-22)
+Problem is:
 
-# End of capture
-
-So it's able to access the device node and to map "virq" while I had total 
-failure in using "gpio" I put into DTS
-
-I must make mistake in creating the node "gpio" in the DTS file
-
-I'm using FreeScale Eva board MPC8313ERDB
-
-Thanks,
-
-Duy-Ky
-
------ Original Message ----- 
-From: "Scott Wood" <scottwood@freescale.com>
-To: "Duy-Ky Nguyen" <duykynguyen@hotmail.com>
-Cc: "Liu Dave" <DaveLiu@freescale.com>; <linuxppc-embedded@ozlabs.org>
-Sent: Tuesday, July 22, 2008 10:55 AM
-Subject: Re: Failure of request_irq() for MPC8313 using arch=powerpc
+When I changed the page size to 16KB it will hang after mounting the file
+system. I am using the NFS for booting the board.
 
 
-> On Tue, Jul 15, 2008 at 08:43:59PM -0700, Duy-Ky Nguyen wrote:
->> Hi Dave,
->>
->> I've just tried it and it failed.
->
-> Could you elaborate on exactly what you tried?  Did you pass the GPIO 
-> device
-> tree node?
->
->> Before I had tried using the function
->> int virq = of_irq_to_resource(GPIO_IRQ, 0, NULL);
->> and it failed the same way
->
-> The first argument of of_irq_to_resource is a device node pointer, not an
-> IRQ number.  Surely the compiler warned you about this.
->
-> -Scott
-> 
+Can anybody help me on this issue...
+-- 
+
+Naresh Bhat
+
+------=_Part_11984_29810841.1216795365868
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div dir="ltr">Hi Guys,<br><br>I have a board MIPS Malta and Linux 2.6.10 is running on that. By default 4KB page size will be allocated in the kernel (I mean to say I saw it when I do the &quot;make menuconfig&quot;.<br><br>
+Problem is:<br><br>When I changed the page size to 16KB it will hang after mounting the file system. I am using the NFS for booting the board.<br clear="all"><br><br>Can anybody help me on this issue...<br>-- <br><br>Naresh Bhat<br>
+<br></div>
+
+------=_Part_11984_29810841.1216795365868--
