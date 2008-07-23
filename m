@@ -1,17 +1,23 @@
-Return-Path: <marvin24@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 6B982DE934
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 06:16:36 +1000 (EST)
-From: Marvin <marvin24@gmx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC] [0/5] tuning options for PPC64
-Date: Wed, 23 Jul 2008 22:16:31 +0200
-References: <200807210902.48150.marvin24@gmx.de>
-In-Reply-To: <200807210902.48150.marvin24@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807232216.31610.marvin24@gmx.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 14F01DDF1D
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 08:13:08 +1000 (EST)
+Subject: Re: bug: mutex_lock() in interrupt conntext via phy_stop() in gianfar
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nate Case <ncase@xes-inc.com>
+In-Reply-To: <1216681028.7559.993.camel@localhost.localdomain>
+References: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
+	<1216681028.7559.993.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 24 Jul 2008 08:12:48 +1000
+Message-Id: <1216851168.11027.343.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Li Yang <leoli@freescale.com>, Vitaly Bordug <vbordug@ru.mvista.com>,
+	Sebastian Siewior <netdev@ml.breakpoint.cc>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,76 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2008-07-21 at 17:57 -0500, Nate Case wrote:
+> On Fri, 2008-07-18 at 14:10 +0200, Sebastian Siewior wrote:
+> > Commit 35b5f6b1a aka [PHYLIB: Locking fixes for PHY I/O potentially sleeping]
+> > changed the phydev->lock from spinlock into a mutex. Now, the following
+> > code path got triggered while NFS was unavailable:
+> > 
+> [snip]
+> > |[  194.864733] BUG: sleeping function called from invalid context at /home/bigeasy/git/linux-2.6-powerpc/kernel/mutex.c:87
+> > |[  194.875529] in_atomic():1, irqs_disabled():0
+> > |[  194.879805] Call Trace:
+> > |[  194.882250] [c0383d90] [c0006dd8] show_stack+0x48/0x184 (unreliable)
+> > |[  194.888649] [c0383db0] [c001e938] __might_sleep+0xe0/0xf4
+> > |[  194.894069] [c0383dc0] [c025a43c] mutex_lock+0x24/0x3c
+> > |[  194.899234] [c0383de0] [c019005c] phy_stop+0x20/0x70
+> > |[  194.904234] [c0383df0] [c018d4ec] stop_gfar+0x28/0xf4
+> > |[  194.909305] [c0383e10] [c018e8c4] gfar_timeout+0x30/0x60
+> > |[  194.914638] [c0383e20] [c01fe7c0] dev_watchdog+0xa8/0x144
+> 
+> Hmm..  I'm not sure what the best solution is to this.  Make the
+> stop_gfar() call happen in a workqueue, and make a similar change to
+> ucc_geth, fec_mpc52xx, and fs_enet? Modify phy_stop() to do the work in
+> a workqueue conditionally if in interrupt context?  Between these two
+> I'd lean toward the latter.
+> 
+> Does anyone have any better ideas?
 
-Hi,
+Move the reset task to a workqueue.
 
-and thanks for the feedback. To make it short, the conclusions I draw from 
-that are:
-
-	- let the cpu type be choosen optionaly
-	- both target cpu and tuning cpu should be selectable
-	- if one cpu gets choosen, it should select some feature flag, mcpu and mtune 
-option automatically in Kconfig.cputypes
-	- if none gets choosen, all features will be selected (is this save?)
-
-I found these ppc64 cpu specific candidates for CONFIG_FEATURE-X:
-
-Altivec (G4, G5, POWER6+7, PA6T)
-BAT64 aka POWER3 (Power3)
-FPU (all)
-Std_MMU (all)
-Virt_CPU_Accounting (all, except PA6T?)
-VSX (power7)
-
-There are probably some more features present, which are currently enabled by 
-some ifdefs for PPC64 and POWER4 (e.g. powermac/feature.c). I will not touch 
-them due to my little knowledge and just keep these symbols.
-
-I guess this will become another long weekend ;-)
-
-Marvin
-
-
-On Monday 21 July 2008 09:02:47 Marvin wrote:
-> Hi,
->
-> the following five patches should lay a foundation to more fine-grained
-> tuning on PPC64 cpus. They must be applied in order. The motivation are the
-> discussions of serveral cpu specific optimizations in the past on this
-> list, cleanup of the wired Makefile/CONFIG_POWERx constructs and at least
-> the ownership of a PS3.
->
-> The patches intoduce CONFIG_TUNE_some_cpu and CONFIG_OPT_EXCLUSIVE, with
-> the aim to cover two common cases:
->
-> 	- distributions want a common kernel, bootable on all ppc64 machines and
-> tune for a certain cpu
->
-> 	- high end users don't care about older cpus and want to compile a kernel
-> with their favorite mcpu option
->
-> I know there is also the possibility of mcpu=x and mtune=y, y>x but this
-> can be tackled in the next step (hopefully).
->
-> I know this will bring up some conserns, but my initial findings grepping
-> the defconfigs show:
->
-> 	- CONFIG_POWER3 enables BATS only
-> 		it is also used the enable some configs
-> 		it is used always in combination with CONFIG_POWER4
->
-> 	- CONFIG_POWER4 is always combined with CONFIG_PPC64 and vice versa
-> 		all POWER3 || POWER4 || PPC64 can be replaced by PPC64
->
-> 	- There seems to be no support for 32-bit kernels on ppc64 machines
->
-> I hope for some feedback, so this new scheme (or some other) can be
-> included to mainstream kernel.
->
-> Greetings
->
-> Marvin
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Cheers,
+Ben.
