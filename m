@@ -1,15 +1,19 @@
-Return-Path: <richard.whitlo@btconnect.com>
-Received: from c2bthomr10.btconnect.com (c2bthomr10.btconnect.com
-	[213.123.20.128]) by ozlabs.org (Postfix) with ESMTP id EC954DDF08
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 00:59:46 +1000 (EST)
-Message-ID: <4887471E.6070306@btconnect.com>
-Date: Wed, 23 Jul 2008 15:58:38 +0100
-From: Richard Whitlock <richard.whitlo@btconnect.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: DTS configuration of external interrupts on 8347
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Reply-To: richw@netcomuk.co.uk
+Return-Path: <sebastien.dugue@bull.net>
+Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
+	by ozlabs.org (Postfix) with ESMTP id DF267DDED2
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 01:01:19 +1000 (EST)
+Date: Wed, 23 Jul 2008 16:59:32 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: Linux RT Users <linux-rt-users@vger.kernel.org>
+Subject: [PATCH 0/2][RT] powerpc - fix bug in irq reverse mapping radix tree
+Message-ID: <20080723165932.57e3ada2@bull.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Tim Chavez <tinytim@us.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Jean Pierre Dion <jean-pierre.dion@bull.net>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Gilles Carry <Gilles.Carry@ext.bull.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,28 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have a small problem with a port of linux 2.6.26 to a custom board.
-Our board is almost identical to the Analogue & Micro asp 8347 board, so 
-I'm using Kumar Gala's excellent fsl tree (thank you Kumar) as it 
-already has a defconfig for the asp.
-Thanks also to Bryan O'Donoghue for pointing us in the direction of the 
-asp port in the first place.
+  Hi,
 
-The problem we have is I am unable to request an external interrupt. We 
-have an FPGA which has an interrupt line - HW IRQ_0, so thats linux IRQ 48.
-I have added the following to the dts file:
+  here are 2 patches for fixing the following bug occuring on IBM pSeries under
+an RT kernel:
 
-fpgaKFAF@0xF8000000 {
-                interrupts = <48 8>;
-                interrupt-parent = <&ipic>;
-}
+BUG: sleeping function called from invalid context swapper(1) at kernel/rtmutex.c:739
+in_atomic():1 [00000002], irqs_disabled():1
+Call Trace:
+[c0000001e20f3340] [c000000000010370] .show_stack+0x70/0x1bc (unreliable)
+[c0000001e20f33f0] [c000000000049380] .__might_sleep+0x11c/0x138
+[c0000001e20f3470] [c0000000002a2f64] .__rt_spin_lock+0x3c/0x98
+[c0000001e20f34f0] [c0000000000c3f20] .kmem_cache_alloc+0x68/0x184
+[c0000001e20f3590] [c000000000193f3c] .radix_tree_node_alloc+0xf0/0x144
+[c0000001e20f3630] [c000000000195190] .radix_tree_insert+0x18c/0x2fc
+[c0000001e20f36f0] [c00000000000c710] .irq_radix_revmap+0x1a4/0x1e4
+[c0000001e20f37b0] [c00000000003b3f0] .xics_startup+0x30/0x54
+[c0000001e20f3840] [c00000000008b864] .setup_irq+0x26c/0x370
+[c0000001e20f38f0] [c00000000008ba68] .request_irq+0x100/0x158
+[c0000001e20f39a0] [c0000000001ee9c0] .hvc_open+0xb4/0x148
+[c0000001e20f3a40] [c0000000001d72ec] .tty_open+0x200/0x368
+[c0000001e20f3af0] [c0000000000ce928] .chrdev_open+0x1f4/0x25c
+[c0000001e20f3ba0] [c0000000000c8bf0] .__dentry_open+0x188/0x2c8
+[c0000001e20f3c50] [c0000000000c8dec] .do_filp_open+0x50/0x70
+[c0000001e20f3d70] [c0000000000c8e8c] .do_sys_open+0x80/0x148
+[c0000001e20f3e20] [c00000000000928c] .init_post+0x4c/0x100
+[c0000001e20f3ea0] [c0000000003c0e0c] .kernel_init+0x428/0x478
+[c0000001e20f3f90] [c000000000027448] .kernel_thread+0x4c/0x68
 
-but whenever I call request_irq() it returns -ENOSYS.
 
-The driver loads fine, and the open function does very little - a call 
-to ioremap() - which works, and a call to request_irq() which does not.
-Is there anything else I have to do to configure this interrupt?
+  The root cause of this bug lies in the fact that the XICS interrupt controller
+uses a radix tree for its reverse irq mapping and that we cannot allocate the tree
+nodes (even GFP_ATOMIC) with preemption disabled.
 
-Regards,
+  In fact, we have 2 nested preemption disabling when we want to allocate
+a new node:
 
-Richard.
+  - setup_irq() does a spin_lock_irqsave() before calling xics_startup() which
+    then calls irq_radix_revmap() to insert a new node in the tree
+
+  - irq_radix_revmap() also does a spin_lock_irqsave() (in irq_radix_wrlock())
+    before the radix_tree_insert()
+
+  The first patch moves the call to irq_radix_revmap() from xics_startup() out to
+xics_host_map_direct() and xics_host_map_lpar() which are called with preemption
+enabled.
+
+  The second patch is a little more involved in that it takes advantage of
+the concurrent radix tree to simplify the locking requirements and allows
+to allocate a new node outside a preemption disabled section.
+
+  I just hope I've correctly understood the concurrent radix trees semantic
+and got the (absence of) locking right.
+
+  Sebastien.
