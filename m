@@ -1,24 +1,23 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id B31B8DE310
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 01:16:19 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so496956yxg.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 08:16:17 -0700 (PDT)
-Message-ID: <9e4733910807230816m474af04ch9b6650cdbb96ffec@mail.gmail.com>
-Date: Wed, 23 Jul 2008 11:16:17 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jon Smirl" <jonsmirl@gmail.com>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [alsa-devel] [PATCH 2/2] Allow a custom ASOC machine driver with
-	soc-of-simple
-In-Reply-To: <20080723151431.GA22926@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080722235349.11648.90112.stgit@terra>
-	<20080722235351.11648.56387.stgit@terra>
-	<20080723105334.GC8377@sirena.org.uk>
-	<9e4733910807230709l4249eaf6m750bad811342ba13@mail.gmail.com>
-	<20080723151431.GA22926@sirena.org.uk>
+Return-Path: <loeliger@ld0161-tx32.am.freescale.net>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E8781DDEF4
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 01:20:59 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m6NFKrJY004754
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 08:20:54 -0700 (MST)
+Received: from ld0161-tx32.am.freescale.net (ld0161-tx32.am.freescale.net
+	[10.82.19.111])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m6NFKr3W005840
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 10:20:53 -0500 (CDT)
+From: Jon Loeliger <jdl@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] libfdt: Fix 'make install' target handling of .h files.
+Date: Wed, 23 Jul 2008 10:20:53 -0500
+Message-Id: <1216826453-18515-1-git-send-email-jdl@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,42 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/23/08, Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
-> On Wed, Jul 23, 2008 at 10:09:01AM -0400, Jon Smirl wrote:
->  > On 7/23/08, Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
->
->
-> > > ...this doesn't just allow a custom machine driver, it requires that
->  > >  something configures at least the machine name.  That's not a problem
->  > >  from the ASoC point of view but possibly from the PowerPC side?
->
->  > You have to configure at least the name. Otherwise if the machine
->  > driver is the last to register, how do you know to hold off the final
->  > registration and wait for the machine driver to appear?
->
->
-> I understand why you have made this change but it's a substantial change
->  which should at least be documented in the changelog (I'd expect to see
->  some mention of how this is supposed to be configured, for example).
->  I'd also expect something to handle the existing user.
+The definition of LIBFDT_INCLUDES was accidentally dropped.
+Put it back and add srcdir prefix handling for it.
 
-This is a modification to Grant's new driver. Grant is the only other user.
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+---
+ Makefile               |    4 +++-
+ libfdt/Makefile.libfdt |    1 +
+ 2 files changed, 4 insertions(+), 1 deletions(-)
 
->
->  Like I said, I'm not entirely sure that you're supposed to be using this
->  driver if you want a machine driver: this is a machine driver and I'm
->  not sure if it's supposed to cover all cases or not.  Grant?
->
->
->  > Or is it ok for me to change these after the platform device has been created?
->  >               of_soc->dai_link.ops = machine_ops;
->  >               of_soc->machine.name = machine_name;
->
->
-> No.
->
-
-
+diff --git a/Makefile b/Makefile
+index e871855..0222dc0 100644
+--- a/Makefile
++++ b/Makefile
+@@ -55,7 +55,7 @@ install: all
+ 	$(INSTALL) -d $(DESTDIR)$(LIBDIR)
+ 	$(INSTALL) -m 644 $(LIBFDT_lib) $(DESTDIR)$(LIBDIR)
+ 	$(INSTALL) -d $(DESTDIR)$(INCLUDEDIR)
+-	$(INSTALL) -m 644 $(addprefix $(LIBFDT_srcdir)/,$(LIBFDT_INCLUDES)) $(DESTDIR)$(INCLUDEDIR)
++	$(INSTALL) -m 644 $(LIBFDT_include) $(DESTDIR)$(INCLUDEDIR)
+ 
+ #
+ # Rules for versioning
+@@ -140,6 +140,8 @@ endif
+ LIBFDT_objdir = libfdt
+ LIBFDT_srcdir = libfdt
+ LIBFDT_lib = $(LIBFDT_objdir)/libfdt.a
++LIBFDT_include = $(addprefix $(LIBFDT_srcdir)/,$(LIBFDT_INCLUDES))
++
+ include $(LIBFDT_srcdir)/Makefile.libfdt
+ 
+ .PHONY: libfdt
+diff --git a/libfdt/Makefile.libfdt b/libfdt/Makefile.libfdt
+index f4f495b..6c42acf 100644
+--- a/libfdt/Makefile.libfdt
++++ b/libfdt/Makefile.libfdt
+@@ -3,5 +3,6 @@
+ # This is not a complete Makefile of itself.  Instead, it is designed to
+ # be easily embeddable into other systems of Makefiles.
+ #
++LIBFDT_INCLUDES = fdt.h libfdt.h
+ LIBFDT_SRCS = fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c
+ LIBFDT_OBJS = $(LIBFDT_SRCS:%.c=%.o)
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+1.5.6.3.439.g1e10
