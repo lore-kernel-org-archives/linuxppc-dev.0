@@ -1,23 +1,23 @@
-Return-Path: <loeliger@ld0161-tx32.am.freescale.net>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E8781DDEF4
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 01:20:59 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m6NFKrJY004754
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 08:20:54 -0700 (MST)
-Received: from ld0161-tx32.am.freescale.net (ld0161-tx32.am.freescale.net
-	[10.82.19.111])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m6NFKr3W005840
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 10:20:53 -0500 (CDT)
-From: Jon Loeliger <jdl@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] libfdt: Fix 'make install' target handling of .h files.
-Date: Wed, 23 Jul 2008 10:20:53 -0500
-Message-Id: <1216826453-18515-1-git-send-email-jdl@freescale.com>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	by ozlabs.org (Postfix) with ESMTP id C603BDDEE8
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 01:37:00 +1000 (EST)
+Date: Wed, 23 Jul 2008 16:36:55 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [alsa-devel] [PATCH 2/2] Allow a custom ASOC machine driver with
+	soc-of-simple
+Message-ID: <20080723153642.GB22926@sirena.org.uk>
+References: <20080722235349.11648.90112.stgit@terra>
+	<20080722235351.11648.56387.stgit@terra>
+	<20080723105334.GC8377@sirena.org.uk>
+	<9e4733910807230709l4249eaf6m750bad811342ba13@mail.gmail.com>
+	<20080723151431.GA22926@sirena.org.uk>
+	<9e4733910807230816m474af04ch9b6650cdbb96ffec@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9e4733910807230816m474af04ch9b6650cdbb96ffec@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,47 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The definition of LIBFDT_INCLUDES was accidentally dropped.
-Put it back and add srcdir prefix handling for it.
+On Wed, Jul 23, 2008 at 11:16:17AM -0400, Jon Smirl wrote:
+> On 7/23/08, Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
----
- Makefile               |    4 +++-
- libfdt/Makefile.libfdt |    1 +
- 2 files changed, 4 insertions(+), 1 deletions(-)
+> >  I'd also expect something to handle the existing user.
 
-diff --git a/Makefile b/Makefile
-index e871855..0222dc0 100644
---- a/Makefile
-+++ b/Makefile
-@@ -55,7 +55,7 @@ install: all
- 	$(INSTALL) -d $(DESTDIR)$(LIBDIR)
- 	$(INSTALL) -m 644 $(LIBFDT_lib) $(DESTDIR)$(LIBDIR)
- 	$(INSTALL) -d $(DESTDIR)$(INCLUDEDIR)
--	$(INSTALL) -m 644 $(addprefix $(LIBFDT_srcdir)/,$(LIBFDT_INCLUDES)) $(DESTDIR)$(INCLUDEDIR)
-+	$(INSTALL) -m 644 $(LIBFDT_include) $(DESTDIR)$(INCLUDEDIR)
- 
- #
- # Rules for versioning
-@@ -140,6 +140,8 @@ endif
- LIBFDT_objdir = libfdt
- LIBFDT_srcdir = libfdt
- LIBFDT_lib = $(LIBFDT_objdir)/libfdt.a
-+LIBFDT_include = $(addprefix $(LIBFDT_srcdir)/,$(LIBFDT_INCLUDES))
-+
- include $(LIBFDT_srcdir)/Makefile.libfdt
- 
- .PHONY: libfdt
-diff --git a/libfdt/Makefile.libfdt b/libfdt/Makefile.libfdt
-index f4f495b..6c42acf 100644
---- a/libfdt/Makefile.libfdt
-+++ b/libfdt/Makefile.libfdt
-@@ -3,5 +3,6 @@
- # This is not a complete Makefile of itself.  Instead, it is designed to
- # be easily embeddable into other systems of Makefiles.
- #
-+LIBFDT_INCLUDES = fdt.h libfdt.h
- LIBFDT_SRCS = fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c
- LIBFDT_OBJS = $(LIBFDT_SRCS:%.c=%.o)
--- 
-1.5.6.3.439.g1e10
+> This is a modification to Grant's new driver. Grant is the only other user.
+
+Right, hence my use of the singular : ) .  Since you are adding this new
+of_snd_soc_register_machine() Grant's existing platform won't be calling
+it yet and will therefore stop instantiating the ASoC subsystem until it
+is changed to do so.
