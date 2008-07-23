@@ -1,32 +1,34 @@
-Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F10F8DE8D0
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 04:36:58 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6NIanl4025712
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 14:36:49 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6NIanqI174320
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 12:36:49 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6NIah3C006242
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 12:36:49 -0600
-Date: Wed, 23 Jul 2008 13:36:38 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: paulus@samba.org, benh@kernel.crashing.org
-Subject: [PATCH 16/16 v4] powerpc: Update arch vector to indicate support
-	for CMO
-Message-ID: <20080723183638.GS12905@linux.vnet.ibm.com>
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B5700DDFB7
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 05:11:02 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6NJAnmb011844
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 15:10:49 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6NJAlnV119300
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 15:10:47 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6NJAlE5012493
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 15:10:47 -0400
+Received: from austin.ibm.com (netmail2.austin.ibm.com [9.41.248.176])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m6NJAlbM012438
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 15:10:47 -0400
+Received: from [9.65.41.135] (sig-9-65-41-135.mts.ibm.com [9.65.41.135])
+	by austin.ibm.com (8.13.8/8.12.10) with ESMTP id m6NJAkoX029704
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 14:10:46 -0500
+Message-ID: <48878236.9020605@austin.ibm.com>
+Date: Wed, 23 Jul 2008 14:10:46 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080723181932.GC12905@linux.vnet.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	David Darrington <ddarring@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Remove kmalloc call in handling writes to lparcfg
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,53 +38,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=46rom: Nathan Fontenot <nfont@austin.ibm.com>
+There are only 4 valid name=value pairs for writes to
+/proc/ppc64/lparcfg.  Current code allocates a buffer to copy
+this information in from the user.  Since the longest name=value
+pair will easily fit into a buffer of 64 characters, simply
+put the buffer on the stack instead of allocating the buffer.
 
-Update the architecture vector to indicate that Cooperative Memory
-Overcommitment is supported if CONFIG_PPC_SMLPAR is set.
+NOTE: This patch applies on top of the CMO patches.
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-
+Signed-off-by: Nathan Fotenot <nfont@austin.ibm.com>
 ---
-This is the last patch in the series.  Committing it will signal to=20
-the platform firmware is CMO enabled.
-
-Made this dependent on CONFIG_PPC_SMLPAR so that we don't advertise
-functionality when the kernel isn't supporting it.
----
- arch/powerpc/kernel/prom_init.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-Index: b/arch/powerpc/kernel/prom_init.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -643,6 +643,11 @@ static void __init early_cmdline_parse(v
- #else
- #define OV5_MSI			0x00
- #endif /* CONFIG_PCI_MSI */
-+#ifdef CONFIG_PPC_SMLPAR
-+#define OV5_CMO			0x80	/* Cooperative Memory Overcommitment */
-+#else
-+#define OV5_CMO			0x00
-+#endif
-=20
- /*
-  * The architecture vector has an array of PVR mask/value pairs,
-@@ -687,10 +692,12 @@ static unsigned char ibm_architecture_ve
- 	0,				/* don't halt */
-=20
- 	/* option vector 5: PAPR/OF options */
--	3 - 2,				/* length */
-+	5 - 2,				/* length */
- 	0,				/* don't ignore, don't halt */
- 	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES | OV5_DRCONF_MEMORY |
- 	OV5_DONATE_DEDICATE_CPU | OV5_MSI,
-+	0,
-+	OV5_CMO,
- };
-=20
- /* Old method - ELF header with PT_NOTE sections */
+Index: linux-2.6.git/arch/powerpc/kernel/lparcfg.c
+===================================================================
+--- linux-2.6.git.orig/arch/powerpc/kernel/lparcfg.c	2008-07-22 13:17:40.000000000 -0500
++++ linux-2.6.git/arch/powerpc/kernel/lparcfg.c	2008-07-23 13:40:50.000000000 -0500
+@@ -573,29 +573,27 @@
+ static ssize_t lparcfg_write(struct file *file, const char __user * buf,
+ 			     size_t count, loff_t * off)
+ {
+-	char *kbuf;
++	int kbuf_sz = 64;
++	char kbuf[kbuf_sz];
+ 	char *tmp;
+ 	u64 new_entitled, *new_entitled_ptr = &new_entitled;
+ 	u8 new_weight, *new_weight_ptr = &new_weight;
+-	ssize_t retval = -ENOMEM;
++	ssize_t retval;
+ 
+ 	if (!firmware_has_feature(FW_FEATURE_SPLPAR) ||
+ 			firmware_has_feature(FW_FEATURE_ISERIES))
+ 		return -EINVAL;
+ 
+-	kbuf = kmalloc(count, GFP_KERNEL);
+-	if (!kbuf)
+-		goto out;
++	if (count > kbuf_sz)
++		return -EINVAL;
+ 
+-	retval = -EFAULT;
+ 	if (copy_from_user(kbuf, buf, count))
+-		goto out;
++		return -EFAULT;
+ 
+-	retval = -EINVAL;
+ 	kbuf[count - 1] = '\0';
+ 	tmp = strchr(kbuf, '=');
+ 	if (!tmp)
+-		goto out;
++		return -EINVAL;
+ 
+ 	*tmp++ = '\0';
+ 
+@@ -603,32 +601,32 @@
+ 		char *endp;
+ 		*new_entitled_ptr = (u64) simple_strtoul(tmp, &endp, 10);
+ 		if (endp == tmp)
+-			goto out;
++			return -EINVAL;
+ 
+ 		retval = update_ppp(new_entitled_ptr, NULL);
+ 	} else if (!strcmp(kbuf, "capacity_weight")) {
+ 		char *endp;
+ 		*new_weight_ptr = (u8) simple_strtoul(tmp, &endp, 10);
+ 		if (endp == tmp)
+-			goto out;
++			return -EINVAL;
+ 
+ 		retval = update_ppp(NULL, new_weight_ptr);
+ 	} else if (!strcmp(kbuf, "entitled_memory")) {
+ 		char *endp;
+ 		*new_entitled_ptr = (u64) simple_strtoul(tmp, &endp, 10);
+ 		if (endp == tmp)
+-			goto out;
++			return -EINVAL;
+ 
+ 		retval = update_mpp(new_entitled_ptr, NULL);
+ 	} else if (!strcmp(kbuf, "entitled_memory_weight")) {
+ 		char *endp;
+ 		*new_weight_ptr = (u8) simple_strtoul(tmp, &endp, 10);
+ 		if (endp == tmp)
+-			goto out;
++			return -EINVAL;
+ 
+ 		retval = update_mpp(NULL, new_weight_ptr);
+ 	} else
+-		goto out;
++		return -EINVAL;
+ 
+ 	if (retval == H_SUCCESS || retval == H_CONSTRAINED) {
+ 		retval = count;
+@@ -644,8 +642,6 @@
+ 		retval = -EIO;
+ 	}
+ 
+-out:
+-	kfree(kbuf);
+ 	return retval;
+ }
