@@ -1,18 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40807222157u437641efud22d5fa8546a6025@mail.gmail.com>
-Date: Wed, 23 Jul 2008 00:57:20 -0400
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: netif_schedule and mpc5200_fec
-In-Reply-To: <20080722.163626.109432106.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910807221554j451019a0sa711541e97fbf0aa@mail.gmail.com>
-	<20080722.160718.122532549.davem@davemloft.net>
-	<9e4733910807221633x4385c36dod81ac3f81e242e5c@mail.gmail.com>
-	<20080722.163626.109432106.davem@davemloft.net>
-Cc: davem@redhat.com, Linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 0172FDDE03
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jul 2008 15:30:22 +1000 (EST)
+Date: Wed, 23 Jul 2008 15:30:17 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH 2/2] Allow a custom ASOC machine driver with soc-of-simple
+Message-Id: <20080723153017.1b235313.sfr@canb.auug.org.au>
+In-Reply-To: <20080722235351.11648.56387.stgit@terra>
+References: <20080722235349.11648.90112.stgit@terra>
+	<20080722235351.11648.56387.stgit@terra>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__23_Jul_2008_15_30_17_+1000_pK2cvj=ojNPkxJLN"
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 22, 2008 at 7:36 PM, David Miller <davem@davemloft.net> wrote:
-> From: "Jon Smirl" <jonsmirl@gmail.com>
->> You're right. That patch fixes it. Another thing I brought down made
->> my image file not get generated and I was using an old image.
+--Signature=_Wed__23_Jul_2008_15_30_17_+1000_pK2cvj=ojNPkxJLN
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi John,
+
+On Tue, 22 Jul 2008 19:53:51 -0400 Jon Smirl <jonsmirl@gmail.com> wrote:
 >
-> Thanks for confirming this Jon.
+> +static struct snd_soc_ops *machine_ops =3D NULL;
+> +static char *machine_name =3D NULL;
 
-Thanks for fixing it!
+You don't need these initialisations.
 
+--=20
 Cheers,
-g.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+--Signature=_Wed__23_Jul_2008_15_30_17_+1000_pK2cvj=ojNPkxJLN
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiGwekACgkQjjKRsyhoI8yRywCfeVwTrAHd2MVL1QWc/2EAm3xs
+FykAn0hTPK6uXBcW3Nt9U3/+zQGBwMk4
+=nIzX
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__23_Jul_2008_15_30_17_+1000_pK2cvj=ojNPkxJLN--
