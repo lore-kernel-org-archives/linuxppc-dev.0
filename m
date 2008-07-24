@@ -1,18 +1,11 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id D5956DDEEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 12:01:13 +1000 (EST)
-Date: Thu, 24 Jul 2008 12:01:12 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: ehrhardt@linux.vnet.ibm.com
-Subject: Re: [PATCH 0/6][RFC] kvmppc: paravirtualization interface
-Message-ID: <20080724020112.GM20457@bakeyournoodle.com>
-References: <1216802207-32675-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910807232009o634027cajde78395f95ae95ce@mail.gmail.com>
+Date: Wed, 23 Jul 2008 23:09:59 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: ppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: Getting GPIO to build again
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1216802207-32675-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, embedded-hypervisor@power.org, hollisb@us.ibm.com,
-	kvm-ppc@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +15,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 23, 2008 at 10:36:41AM +0200, ehrhardt@linux.vnet.ibm.com wrote:
-> From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> 
-> This patch series implements a paravirtualization interface using:
-> - the device tree mechanism to pass hypervisor informations to the guest
-> - hypercalls for guest->host calls
-> - an example exploiter of that interface (magic page)
-> This is work in progress, but working so far. I just start to really exploit
-> the fuctionality behind the magic page mechanism therefor I can't provide any
-> performance improvements so far, but it is evolved enough for RFC and to start
-> the standardization discussion.
+I just synced up to linus/master....
 
-Are you aiming this for the current merge window, ie for 2.6.27?
+  CC      arch/powerpc/platforms/52xx/mpc52xx_gpio.o
+In file included from arch/powerpc/platforms/52xx/mpc52xx_gpio.c:22:
+include/linux/of_gpio.h:26: error: field 'gc' has incomplete type
+include/linux/of_gpio.h: In function 'to_of_gpio_chip':
+include/linux/of_gpio.h:34: warning: type defaults to 'int' in
+declaration of '__mptr'
+include/linux/of_gpio.h:34: warning: initialization from incompatible
+pointer type
+In file included from include/asm/gpio.h:18,
+                 from arch/powerpc/platforms/52xx/mpc52xx_gpio.c:26:
+include/asm-generic/gpio.h: At top level:
+include/asm-generic/gpio.h:24: error: redefinition of 'gpio_is_valid'
+include/linux/gpio.h:24: error: previous definition of 'gpio_is_valid' was here
+In file included from arch/powerpc/platforms/52xx/mpc52xx_gpio.c:26:
+include/asm/gpio.h:27: error: redefinition of 'gpio_get_value'
+include/linux/gpio.h:50: error: previous definition of 'gpio_get_value' was here
+include/asm/gpio.h:32: error: redefinition of 'gpio_set_value'
+include/linux/gpio.h:57: error: previous definition of 'gpio_set_value' was here
+include/asm/gpio.h:37: error: redefinition of 'gpio_cansleep'
+include/linux/gpio.h:63: error: previous definition of 'gpio_cansleep' was here
+include/asm/gpio.h:45: error: redefinition of 'gpio_to_irq'
+include/linux/gpio.h:83: error: previous definition of 'gpio_to_irq' was here
+include/asm/gpio.h:50: error: redefinition of 'irq_to_gpio'
+include/linux/gpio.h:90: error: previous definition of 'irq_to_gpio' was here
+make[2]: *** [arch/powerpc/platforms/52xx/mpc52xx_gpio.o] Error 1
+make[1]: *** [arch/powerpc/platforms/52xx] Error 2
+make: *** [arch/powerpc/platforms] Error 2
 
-Yours Tony
 
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
+-- 
+Jon Smirl
+jonsmirl@gmail.com
