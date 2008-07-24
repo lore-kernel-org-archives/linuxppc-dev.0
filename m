@@ -1,22 +1,24 @@
-Return-Path: <dinesh.dua@coraltele.com>
-Received: from mail.coraltele.com (unknown [122.160.64.235])
+Return-Path: <netdev@ml.breakpoint.cc>
+Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
+	[85.10.199.196])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BAF71DDEE8
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 16:22:36 +1000 (EST)
-Subject: filling  dummy struct snd_dma_buffer
-From: dinesh <dinesh.dua@coraltele.com>
-To: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <9e4733910807230709l4249eaf6m750bad811342ba13@mail.gmail.com>
-References: <20080722235349.11648.90112.stgit@terra>
-	<20080722235351.11648.56387.stgit@terra>
-	<20080723105334.GC8377@sirena.org.uk>
-	<9e4733910807230709l4249eaf6m750bad811342ba13@mail.gmail.com>
-Content-Type: multipart/alternative; boundary="=-YRWbjulJrEaxngAESch1"
-Date: Thu, 24 Jul 2008 11:50:02 +0530
-Message-Id: <1216880403.2846.19.camel@dinesh.dua>
-Mime-Version: 1.0
+	by ozlabs.org (Postfix) with ESMTPS id 26327DDE00
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 17:27:53 +1000 (EST)
+Date: Thu, 24 Jul 2008 09:27:39 +0200
+From: Sebastian Siewior <netdev@ml.breakpoint.cc>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: bug: mutex_lock() in interrupt conntext via phy_stop() in gianfar
+Message-ID: <20080724072739.GA10563@Chamillionaire.breakpoint.cc>
+References: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
+	<1216681028.7559.993.camel@localhost.localdomain>
+	<1216851168.11027.343.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <1216851168.11027.343.camel@pasglop>
+Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
+	Nate Case <ncase@xes-inc.com>,
+	Vitaly Bordug <vbordug@ru.mvista.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+* Benjamin Herrenschmidt | 2008-07-24 08:12:48 [+1000]:
 
---=-YRWbjulJrEaxngAESch1
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+>On Mon, 2008-07-21 at 17:57 -0500, Nate Case wrote:
+>> On Fri, 2008-07-18 at 14:10 +0200, Sebastian Siewior wrote:
+>> > Commit 35b5f6b1a aka [PHYLIB: Locking fixes for PHY I/O potentially sleeping]
+>> > changed the phydev->lock from spinlock into a mutex. Now, the following
+>> > code path got triggered while NFS was unavailable:
+>> > 
+>> [snip]
+>> > |[  194.864733] BUG: sleeping function called from invalid context at /home/bigeasy/git/linux-2.6-powerpc/kernel/mutex.c:87
+>> > |[  194.875529] in_atomic():1, irqs_disabled():0
+>> > |[  194.879805] Call Trace:
+>> > |[  194.882250] [c0383d90] [c0006dd8] show_stack+0x48/0x184 (unreliable)
+>> > |[  194.888649] [c0383db0] [c001e938] __might_sleep+0xe0/0xf4
+>> > |[  194.894069] [c0383dc0] [c025a43c] mutex_lock+0x24/0x3c
+>> > |[  194.899234] [c0383de0] [c019005c] phy_stop+0x20/0x70
+>> > |[  194.904234] [c0383df0] [c018d4ec] stop_gfar+0x28/0xf4
+>> > |[  194.909305] [c0383e10] [c018e8c4] gfar_timeout+0x30/0x60
+>> > |[  194.914638] [c0383e20] [c01fe7c0] dev_watchdog+0xa8/0x144
+>> 
+>> Hmm..  I'm not sure what the best solution is to this.  Make the
+>> stop_gfar() call happen in a workqueue, and make a similar change to
+>> ucc_geth, fec_mpc52xx, and fs_enet? Modify phy_stop() to do the work in
+>> a workqueue conditionally if in interrupt context?  Between these two
+>> I'd lean toward the latter.
+>> 
+>> Does anyone have any better ideas?
+>
+>Move the reset task to a workqueue.
+Done in [1] Ben.
 
+[1] http://marc.info/?l=linux-netdev&m=121684347609062&w=2
+>Cheers,
+>Ben.
 
-
-Hi 
-i want to fill dummy "struct snd_dma_buffer" in which i want to pass base address of allocated BUFFER DESCRIPTOR(BD).
-help me.
-
-Regards,
-Dinesh dua
-
---=-YRWbjulJrEaxngAESch1
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
-<HTML>
-<HEAD>
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
-  <META NAME="GENERATOR" CONTENT="GtkHTML/3.18.2">
-</HEAD>
-<BODY>
-<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
-<TR>
-<TD>
-<BR>
-</TD>
-</TR>
-</TABLE>
-<PRE>
-Hi 
-i want to fill dummy &quot;<B>struct snd_dma_buffer</B>&quot; in which i want to pass base address of allocated BUFFER DESCRIPTOR(BD).
-help me.
-
-Regards,
-Dinesh dua
-</PRE>
-</BODY>
-</HTML>
-
---=-YRWbjulJrEaxngAESch1--
+Sebastian
