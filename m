@@ -1,18 +1,21 @@
 Return-Path: <laurentp@cse-semaphore.com>
 Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 178EBDDDE9
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 00:22:01 +1000 (EST)
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 6B6A6DE2DA
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 00:47:03 +1000 (EST)
 From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCHv2] cpm_uart: Fix break generation
-Date: Thu, 24 Jul 2008 16:21:58 +0200
-References: <200806261338.19358.laurentp@cse-semaphore.com>
-In-Reply-To: <200806261338.19358.laurentp@cse-semaphore.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCHv3 1/2] [POWERPC] CPM2: Implement GPIO LIB API on CPM2
+	Freescale SoC.
+Date: Thu, 24 Jul 2008 16:46:57 +0200
+References: <4808D75B.9000002@scram.de> <4880B730.8050801@scram.de>
+	<C98DF5D7-0E3D-4FDA-A831-55CFD5F4590C@kernel.crashing.org>
+In-Reply-To: <C98DF5D7-0E3D-4FDA-A831-55CFD5F4590C@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200807241621.58719.laurentp@cse-semaphore.com>
-Cc: scottwood@freescale.com, linux-serial@vger.kernel.org
+Content-Type: multipart/signed; boundary="nextPart7120205.pYC4cXeE2e";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200807241647.00564.laurentp@cse-semaphore.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,47 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When generating a break condition on a serial port, the CPM must be told
-beforehand how long the break should be. Unfortunately, this information is
-not available through the current serial break handling API. This patch works
-around the problem by requesting a 32767 characters break followed by a 0
-characters break after the requested duration. The CPM will stop the first
-break when the second one is requested. This might not work with future CPM
-revisions.
----
- drivers/serial/cpm_uart/cpm_uart_core.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+--nextPart7120205.pYC4cXeE2e
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index c29d87d..aa0a284 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -269,13 +269,19 @@ static void cpm_uart_break_ctl(struct uart_port *port, int break_state)
- {
- 	struct uart_cpm_port *pinfo = (struct uart_cpm_port *)port;
-+	u16 __iomem *brkcr = IS_SMC(pinfo) ? &pinfo->smcup->smc_brkcr
-+				: &pinfo->sccup->scc_brkcr;
- 
- 	pr_debug("CPM uart[%d]:break ctrl, break_state: %d\n", port->line,
- 		break_state);
- 
--	if (break_state)
-+	if (break_state) {
-+		out_be16(brkcr, 32767);
- 		cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
--	else
-+	} else {
-+		out_be16(brkcr, 0);
-+		cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
- 		cpm_line_cr_cmd(pinfo, CPM_CR_RESTART_TX);
-+	}
- }
- 
- /*
--- 
-1.5.0
+Hi Kumar,
 
--- 
+On Friday 18 July 2008, Kumar Gala wrote:
+> On Jul 18, 2008, at 10:30 AM, Jochen Friedrich wrote:
+> >> On Jun 18, 2008, at 12:08 PM, Laurent Pinchart wrote:
+> >>
+> >>> +#if defined(CONFIG_CPM2) || defined(CONFIG_8xx_GPIO)
+> >>> +
+> >>> +struct cpm2_ioports {
+> >>> +	u32 dir, par, sor, odr, dat;
+> >>> +	u32 res[3];
+> >>> +};
+> >>> +
+> >>
+> >> is this really common for both CPM2 and 8xx?  if so why the name?
+> >
+> > It is common to CPM2 and Port E of CPM1.
+>=20
+> but ports a-d are different on cpm1?  I guess I'd like to see both =20
+> patches to understand the commonality and differences.
+
+As Jorgen mentionned, both patches are still in patchwork:
+
+http://patchwork.ozlabs.org/linuxppc/patch?id=3D19045
+http://patchwork.ozlabs.org/linuxppc/patch?id=3D19386
+
+Would it be possible for you to review them in time for 2.6.27 ?
+
+=2D-=20
 Laurent Pinchart
 CSE Semaphore Belgium
 
@@ -71,4 +68,18 @@ B-1410 Waterloo
 Belgium
 
 T +32 (2) 387 42 59
-F +32 (2) 387 42 75
+=46 +32 (2) 387 42 75
+
+--nextPart7120205.pYC4cXeE2e
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkiIleQACgkQ8y9gWxC9vpfVGACgs1gXEn5r0Bnmkw/Yla36wUis
++XYAoJ35Hr9Y5zADQkBHBsafuEJ7rWak
+=KII3
+-----END PGP SIGNATURE-----
+
+--nextPart7120205.pYC4cXeE2e--
