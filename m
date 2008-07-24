@@ -1,22 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dinesh.dua@coraltele.com>
+Received: from mail.coraltele.com (unknown [122.160.64.235])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6C594DDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 16:01:55 +1000 (EST)
-Subject: Re: [PATCH 14/16 v4] ibmvscsi: driver enablement for CMO
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-In-Reply-To: <20080723183527.GQ12905@linux.vnet.ibm.com>
-References: <20080723183527.GQ12905@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 24 Jul 2008 15:59:42 +1000
-Message-Id: <1216879182.11188.23.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTPS id BAF71DDEE8
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 16:22:36 +1000 (EST)
+Subject: filling  dummy struct snd_dma_buffer
+From: dinesh <dinesh.dua@coraltele.com>
+To: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <9e4733910807230709l4249eaf6m750bad811342ba13@mail.gmail.com>
+References: <20080722235349.11648.90112.stgit@terra>
+	<20080722235351.11648.56387.stgit@terra>
+	<20080723105334.GC8377@sirena.org.uk>
+	<9e4733910807230709l4249eaf6m750bad811342ba13@mail.gmail.com>
+Content-Type: multipart/alternative; boundary="=-YRWbjulJrEaxngAESch1"
+Date: Thu, 24 Jul 2008 11:50:02 +0530
+Message-Id: <1216880403.2846.19.camel@dinesh.dua>
 Mime-Version: 1.0
-Cc: linux-scsi@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Brian King <brking@linux.vnet.ibm.com>,
-	David Darrington <ddarring@linux.vnet.ibm.com>
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,161 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-07-23 at 13:35 -0500, Robert Jennings wrote:
-> From: Robert Jennings <rcj@linux.vnet.ibm.com>
-> 
-> Enable the driver to function in a Cooperative Memory Overcommitment (CMO)
-> environment.
-> 
-> The following changes are made to enable the driver for CMO:
->  * DMA mapping errors will not result in error messages if entitlement has
->    been exceeded and resources were not available.
->  * The driver has a get_desired_dma function defined to function
->    in a CMO environment. It will indicate how much IO memory it would like
->    to function.
-> 
-> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-> Acked by: Brian King <brking@linux.vnet.ibm.com>
-> 
-> ---
-> We would like to take this patch through linuxppc-dev with the full
-> change set for this feature.  We are copying linux-scsi for review and ack.
 
-James, if you are ok with this patch, can you Ack it ? I'll merge it via
-the powerpc tree along with all its dependencies.
+--=-YRWbjulJrEaxngAESch1
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Thanks in advance !
 
-Cheers,
-Ben.
 
-> ---
->  drivers/scsi/ibmvscsi/ibmvscsi.c |   45 +++++++++++++++++++++++++++++++++------
->  drivers/scsi/ibmvscsi/ibmvscsi.h |    2 ++
->  2 files changed, 40 insertions(+), 7 deletions(-)
-> 
-> Index: b/drivers/scsi/ibmvscsi/ibmvscsi.c
-> ===================================================================
-> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-> @@ -72,6 +72,7 @@
->  #include <linux/delay.h>
->  #include <asm/firmware.h>
->  #include <asm/vio.h>
-> +#include <asm/firmware.h>
->  #include <scsi/scsi.h>
->  #include <scsi/scsi_cmnd.h>
->  #include <scsi/scsi_host.h>
-> @@ -426,8 +427,10 @@ static int map_sg_data(struct scsi_cmnd 
->  					   SG_ALL * sizeof(struct srp_direct_buf),
->  					   &evt_struct->ext_list_token, 0);
->  		if (!evt_struct->ext_list) {
-> -			sdev_printk(KERN_ERR, cmd->device,
-> -				    "Can't allocate memory for indirect table\n");
-> +			if (!firmware_has_feature(FW_FEATURE_CMO))
-> +				sdev_printk(KERN_ERR, cmd->device,
-> +				            "Can't allocate memory "
-> +				            "for indirect table\n");
->  			return 0;
->  		}
->  	}
-> @@ -743,7 +746,9 @@ static int ibmvscsi_queuecommand(struct 
->  	srp_cmd->lun = ((u64) lun) << 48;
->  
->  	if (!map_data_for_srp_cmd(cmnd, evt_struct, srp_cmd, hostdata->dev)) {
-> -		sdev_printk(KERN_ERR, cmnd->device, "couldn't convert cmd to srp_cmd\n");
-> +		if (!firmware_has_feature(FW_FEATURE_CMO))
-> +			sdev_printk(KERN_ERR, cmnd->device,
-> +			            "couldn't convert cmd to srp_cmd\n");
->  		free_event_struct(&hostdata->pool, evt_struct);
->  		return SCSI_MLQUEUE_HOST_BUSY;
->  	}
-> @@ -855,7 +860,10 @@ static void send_mad_adapter_info(struct
->  					    DMA_BIDIRECTIONAL);
->  
->  	if (dma_mapping_error(req->buffer)) {
-> -		dev_err(hostdata->dev, "Unable to map request_buffer for adapter_info!\n");
-> +		if (!firmware_has_feature(FW_FEATURE_CMO))
-> +			dev_err(hostdata->dev,
-> +			        "Unable to map request_buffer for "
-> +			        "adapter_info!\n");
->  		free_event_struct(&hostdata->pool, evt_struct);
->  		return;
->  	}
-> @@ -1400,7 +1408,9 @@ static int ibmvscsi_do_host_config(struc
->  						    DMA_BIDIRECTIONAL);
->  
->  	if (dma_mapping_error(host_config->buffer)) {
-> -		dev_err(hostdata->dev, "dma_mapping error getting host config\n");
-> +		if (!firmware_has_feature(FW_FEATURE_CMO))
-> +			dev_err(hostdata->dev,
-> +			        "dma_mapping error getting host config\n");
->  		free_event_struct(&hostdata->pool, evt_struct);
->  		return -1;
->  	}
-> @@ -1604,7 +1614,7 @@ static struct scsi_host_template driver_
->  	.eh_host_reset_handler = ibmvscsi_eh_host_reset_handler,
->  	.slave_configure = ibmvscsi_slave_configure,
->  	.change_queue_depth = ibmvscsi_change_queue_depth,
-> -	.cmd_per_lun = 16,
-> +	.cmd_per_lun = IBMVSCSI_CMDS_PER_LUN_DEFAULT,
->  	.can_queue = IBMVSCSI_MAX_REQUESTS_DEFAULT,
->  	.this_id = -1,
->  	.sg_tablesize = SG_ALL,
-> @@ -1613,6 +1623,26 @@ static struct scsi_host_template driver_
->  };
->  
->  /**
-> + * ibmvscsi_get_desired_dma - Calculate IO memory desired by the driver
-> + *
-> + * @vdev: struct vio_dev for the device whose desired IO mem is to be returned
-> + *
-> + * Return value:
-> + *	Number of bytes of IO data the driver will need to perform well.
-> + */
-> +static unsigned long ibmvscsi_get_desired_dma(struct vio_dev *vdev)
-> +{
-> +	/* iu_storage data allocated in initialize_event_pool */
-> +	unsigned long desired_io = max_requests * sizeof(union viosrp_iu);
-> +
-> +	/* add io space for sg data */
-> +	desired_io += (IBMVSCSI_MAX_SECTORS_DEFAULT *
-> +	                     IBMVSCSI_CMDS_PER_LUN_DEFAULT);
-> +
-> +	return desired_io;
-> +}
-> +
-> +/**
->   * Called by bus code for each adapter
->   */
->  static int ibmvscsi_probe(struct vio_dev *vdev, const struct vio_device_id *id)
-> @@ -1641,7 +1671,7 @@ static int ibmvscsi_probe(struct vio_dev
->  	hostdata->host = host;
->  	hostdata->dev = dev;
->  	atomic_set(&hostdata->request_limit, -1);
-> -	hostdata->host->max_sectors = 32 * 8; /* default max I/O 32 pages */
-> +	hostdata->host->max_sectors = IBMVSCSI_MAX_SECTORS_DEFAULT;
->  
->  	rc = ibmvscsi_ops->init_crq_queue(&hostdata->queue, hostdata, max_requests);
->  	if (rc != 0 && rc != H_RESOURCE) {
-> @@ -1735,6 +1765,7 @@ static struct vio_driver ibmvscsi_driver
->  	.id_table = ibmvscsi_device_table,
->  	.probe = ibmvscsi_probe,
->  	.remove = ibmvscsi_remove,
-> +	.get_desired_dma = ibmvscsi_get_desired_dma,
->  	.driver = {
->  		.name = "ibmvscsi",
->  		.owner = THIS_MODULE,
-> Index: b/drivers/scsi/ibmvscsi/ibmvscsi.h
-> ===================================================================
-> --- a/drivers/scsi/ibmvscsi/ibmvscsi.h
-> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.h
-> @@ -45,6 +45,8 @@ struct Scsi_Host;
->  #define MAX_INDIRECT_BUFS 10
->  
->  #define IBMVSCSI_MAX_REQUESTS_DEFAULT 100
-> +#define IBMVSCSI_CMDS_PER_LUN_DEFAULT 16
-> +#define IBMVSCSI_MAX_SECTORS_DEFAULT 256 /* 32 * 8 = default max I/O 32 pages */
->  #define IBMVSCSI_MAX_CMDS_PER_LUN 64
->  
->  /* ------------------------------------------------------------
+Hi 
+i want to fill dummy "struct snd_dma_buffer" in which i want to pass base address of allocated BUFFER DESCRIPTOR(BD).
+help me.
+
+Regards,
+Dinesh dua
+
+--=-YRWbjulJrEaxngAESch1
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
+<HTML>
+<HEAD>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
+  <META NAME="GENERATOR" CONTENT="GtkHTML/3.18.2">
+</HEAD>
+<BODY>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD>
+<BR>
+</TD>
+</TR>
+</TABLE>
+<PRE>
+Hi 
+i want to fill dummy &quot;<B>struct snd_dma_buffer</B>&quot; in which i want to pass base address of allocated BUFFER DESCRIPTOR(BD).
+help me.
+
+Regards,
+Dinesh dua
+</PRE>
+</BODY>
+</HTML>
+
+--=-YRWbjulJrEaxngAESch1--
