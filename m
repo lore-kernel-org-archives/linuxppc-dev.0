@@ -1,21 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id 25170DDF57
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 05:07:57 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so1006624anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 12:07:55 -0700 (PDT)
-Message-ID: <fa686aa40807241207w42a70d8crd5f60c766a9550ef@mail.gmail.com>
-Date: Thu, 24 Jul 2008 15:07:55 -0400
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Sean MacLennan" <smaclennan@pikatech.com>
-Subject: Re: [ANN] Device Tree Mailing List
-In-Reply-To: <20080724145706.138af140@lappy.seanm.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080724143609.60274eed.hugh@blemings.org>
-	<20080724145706.138af140@lappy.seanm.ca>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org, parch@power.org
+Return-Path: <rmachet@slac.stanford.edu>
+Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
+	[134.79.18.120])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 13FC6DE1E4
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 05:19:16 +1000 (EST)
+Received: from mailgate01.slac.stanford.edu (mailgate01.slac.stanford.edu
+	[134.79.18.80])
+	by nospam3.slac.stanford.edu (8.13.8/8.13.8) with ESMTP id
+	m6OJJEcI017603
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 12:19:14 -0700 (PDT)
+	(envelope-from rmachet@slac.stanford.edu)
+Received: from pcds-ts102.slac.stanford.edu (pcds-ts102.slac.stanford.edu
+	[134.79.128.151])
+	by mailgate01.slac.stanford.edu (8.13.8/8.13.8) with ESMTP id
+	m6OJJDxP000431
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 12:19:13 -0700 (PDT)
+	(envelope-from rmachet@slac.stanford.edu)
+Subject: Hard-coded virtual address used by dma_alloc_coherent
+From: Remi Machet <rmachet@slac.stanford.edu>
+To: Linux PPC <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Thu, 24 Jul 2008 12:19:11 -0700
+Message-Id: <1216927153.19203.62.camel@pcds-ts102.slac.stanford.edu>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +33,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 24, 2008 at 2:57 PM, Sean MacLennan <smaclennan@pikatech.com> wrote:
-> On Thu, 24 Jul 2008 14:36:09 -0400
-> "Hugh Blemings" <hugh@blemings.org> wrote:
->
->> Hiya,
->>
->> Grant Likely and Josh Boyer organised a Bird of Feather session on
->> Device Trees today at the Ottawa Linux Symposium, about a dozen folk
->> there all told.
->>
->> Was agreed that there was now enough non-PowerPC specific interest in
->> Device Trees to make a generic list a useful thing to have, so have
->> gone ahead and got one set up;
->>
->>   https://ozlabs.org/mailman/listinfo/devicetree-discuss
->>
->> For folk I knew to be interested/involved in DT stuff you may have
->> already received an invitation to join, I trust this was in order.
->>
->> If you didn't, please don't feel left out, I just did a quick off the
->> top of my head search through the mailing list archive :)
->
-> I assume that powerpc specific device tree questions/patches can still
-> be posted here though?
+Hi,
 
-If it is related to bindings (even powerpc-specific bindings) I think
-it is better to discuss them on the new list.  Doing so helps keep
-usage conventions consistent across all architectures.
+I have noticed that the DMA allocation for non-coherent PowerPC
+architecture is using a hard coded virtual memory address for its memory
+pool. This address is typically 0xFF100000 (set by
+CONFIG_CONSISTENT_START) and can conflict with early ioremap in systems
+that enable HIGHMEM.
 
-g.
+Is there any reason why we have to use an arbitrary virtual address ? If
+the virtual address must be known at compile time, can't we use fixmap ?
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+I also can't figure out why we need to use a virtual address known at
+compilation time and cannot just allocate pages using get_free_pages and
+mark them as non cacheable and non swappable.
+
+For those of you that want to check it out, the code is in
+arch/powerpc/lib/dma-noncoherent.c
+
+Thanks,
+
+Remi
