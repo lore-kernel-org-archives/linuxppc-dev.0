@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 07898DDEE8
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 08:45:02 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 3DE47DDF96
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 08:47:45 +1000 (EST)
 Subject: Re: lockdep badness
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <20080724192300.GE9594@localdomain>
+In-Reply-To: <20080724193828.GF9594@localdomain>
 References: <20080724192300.GE9594@localdomain>
+	<20080724193828.GF9594@localdomain>
 Content-Type: text/plain
-Date: Fri, 25 Jul 2008 08:44:56 +1000
-Message-Id: <1216939496.11188.58.camel@pasglop>
+Date: Fri, 25 Jul 2008 08:47:39 +1000
+Message-Id: <1216939659.11188.61.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -24,52 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-07-24 at 14:23 -0500, Nathan Lynch wrote:
-> I'm seeing warnings from the lockdep code itself in recent kernels on
-> a Power6 blade (v2.6.26 and benh's -next branch).
+On Thu, 2008-07-24 at 14:38 -0500, Nathan Lynch wrote:
+> Nathan Lynch wrote:
+> > 
+> > A couple of stack traces below, the first is from benh's tree, the
+> > second is from 2.6.26.  The lockdep self-tests all pass at boot.
 > 
-> Something to do with powerpc's "lazy" interrupt-disabling, perhaps?
+> Sorry, should have pointed out the code that is warning more
+> specifically.
 > 
-> A couple of stack traces below, the first is from benh's tree, the
-> second is from 2.6.26.  The lockdep self-tests all pass at boot.
+> 
+> > RTAS daemon started
+> > RTAS: event: 295, Type: Dump Notification Event, Severity: 2
+> > ------------[ cut here ]------------
+> > Badness at kernel/lockdep.c:2719
+> 
+> check_flags():
+> 
+>         if (irqs_disabled_flags(flags)) {
+>                 if (DEBUG_LOCKS_WARN_ON(current->hardirqs_enabled)) {
+>                         printk("possible reason: unannotated
+>                 irqs-off.\n");
+>                 }
+>         } else {
+> >>>             if (DEBUG_LOCKS_WARN_ON(!current->hardirqs_enabled)) {
+>                         printk("possible reason: unannotated
+>                 irqs-on.\n");
+>                 }
+>         }
 
-Interesting.
+Yes, it looks like at some point the IRQ state gets out of sync, and I
+haven't found out where yet. Having a repro case would help, what is the
+setup of your machine ? I seems to be related to having an RTAS event at
+boot.
 
-> [c0000000e787bc20] [c0000000e787bc70] 0xc0000000e787bc70 (unreliable)
-> [c0000000e787bca0] [c0000000000b5ac8] .lock_release+0x7c/0x208
-> [c0000000e787bd50] [c0000000005e12c0] ._spin_unlock_irqrestore+0x34/0x94
-> [c0000000e787bde0] [c00000000004d648] .pSeries_log_error+0x380/0x3f0
-> [c0000000e787bef0] [c00000000004d8e4] .rtasd+0x98/0x100
-> [c0000000e787bf90] [c000000000029d20] .kernel_thread+0x4c/0x68
-> Instruction dump:
 
-This one is one I haven't managed to reproduce and didn't quite find out
-what could be causing it, but it was already reported by Badari (and in
-fact is referenced as a regression in Rafael list).
+> > ipr: IBM Power RAID SCSI Device Driver version: 2.4.1 (April 24, 2007)
+> > ipr 0000:00:01.0: Found IOA with IRQ: 289
+> > ipr 0000:00:01.0: Starting IOA initialization sequence.
+> > ipr 0000:00:01.0: Adapter firmware version: 02200023
+> > ipr 0000:00:01.0: IOA initialized.
+> > ------------[ cut here ]------------
+> > Badness at kernel/lockdep.c:2037
+> 
+> trace_hardirqs_on():
+> 
+>         if (DEBUG_LOCKS_WARN_ON(!irqs_disabled()))
+>                 return;
+> >>>     if (DEBUG_LOCKS_WARN_ON(current->hardirq_context))
+>                 return;
 
-> Call Trace:
-> [c00000000fffbb10] [c00000000fffbbb0] 0xc00000000fffbbb0 (unreliable)
-> [c00000000fffbbb0] [c0000000005d8824] ._spin_unlock_irq+0x40/0x68
-> [c00000000fffbc40] [c000000000426708] .ipr_ioa_reset_done+0x218/0x2ac
-> [c00000000fffbd00] [c00000000041bdb8] .ipr_reset_ioa_job+0xc8/0xf4
-> [c00000000fffbd90] [c000000000424ffc] .ipr_isr+0x280/0x628
-> [c00000000fffbe50] [c0000000000ccc70] .handle_IRQ_event+0x58/0xd4
-> [c00000000fffbef0] [c0000000000cef4c] .handle_fasteoi_irq+0x128/0x1c8
-> [c00000000fffbf90] [c000000000029918] .call_handle_irq+0x1c/0x2c
-> [c000000000a63a20] [c00000000000d9cc] .do_IRQ+0x138/0x248
-> [c000000000a63ad0] [c000000000004ca8] hardware_interrupt_entry+0x28/0x2c
-> --- Exception: 501 at .raw_local_irq_restore+0x8c/0xa4
->     LR = .cpu_idle+0x140/0x210
-> [c000000000a63e60] [c0000000005da07c] .rest_init+0x7c/0x98
-> [c000000000a63ee0] [c000000000866f10] .start_kernel+0x488/0x4b0
-> [c000000000a63f90] [c000000000008584] .start_here_common+0x4c/0xc8
-> Instruction dump:
-
-This one is new to me. I will have a look. What machine is this ?
-
-I suspect the error is to do spin_lock/unlock_irq rather than
-save/restore variants at IRQ time, which would be an IPR bug... or
-rather something legal that Ingo decided shouldn't be anymore :-)
+As I said before, I'm not 100% sure what that is, it smells like
+something legal that Ingo made not so anymore but I need to double
+check.
 
 Cheers,
 Ben.
