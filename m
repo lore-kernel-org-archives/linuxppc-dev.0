@@ -1,24 +1,35 @@
-Return-Path: <netdev@ml.breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
+Return-Path: <ehrhardt@linux.vnet.ibm.com>
+Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 26327DDE00
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 17:27:53 +1000 (EST)
-Date: Thu, 24 Jul 2008 09:27:39 +0200
-From: Sebastian Siewior <netdev@ml.breakpoint.cc>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: bug: mutex_lock() in interrupt conntext via phy_stop() in gianfar
-Message-ID: <20080724072739.GA10563@Chamillionaire.breakpoint.cc>
-References: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
-	<1216681028.7559.993.camel@localhost.localdomain>
-	<1216851168.11027.343.camel@pasglop>
+	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 029C0DDED1
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 17:45:22 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id m6O7iP5D184944
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 07:44:25 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.0) with
+	ESMTP id m6O7iPZF3084336
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 09:44:25 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m6O7iOYs025267
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 09:44:25 +0200
+Message-ID: <488832D3.8060305@linux.vnet.ibm.com>
+Date: Thu, 24 Jul 2008 09:44:19 +0200
+From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1216851168.11027.343.camel@pasglop>
-Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
-	Nate Case <ncase@xes-inc.com>,
-	Vitaly Bordug <vbordug@ru.mvista.com>, linuxppc-dev@ozlabs.org
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: [PATCH 1/6] kvmppc: read device tree hypervisor node
+	infrastructure
+References: <1216802207-32675-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	<1216802207-32675-2-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	<20080724014133.GH20457@bakeyournoodle.com>
+In-Reply-To: <20080724014133.GH20457@bakeyournoodle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, hollisb@us.ibm.com, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,39 +39,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Benjamin Herrenschmidt | 2008-07-24 08:12:48 [+1000]:
-
->On Mon, 2008-07-21 at 17:57 -0500, Nate Case wrote:
->> On Fri, 2008-07-18 at 14:10 +0200, Sebastian Siewior wrote:
->> > Commit 35b5f6b1a aka [PHYLIB: Locking fixes for PHY I/O potentially sleeping]
->> > changed the phydev->lock from spinlock into a mutex. Now, the following
->> > code path got triggered while NFS was unavailable:
->> > 
->> [snip]
->> > |[  194.864733] BUG: sleeping function called from invalid context at /home/bigeasy/git/linux-2.6-powerpc/kernel/mutex.c:87
->> > |[  194.875529] in_atomic():1, irqs_disabled():0
->> > |[  194.879805] Call Trace:
->> > |[  194.882250] [c0383d90] [c0006dd8] show_stack+0x48/0x184 (unreliable)
->> > |[  194.888649] [c0383db0] [c001e938] __might_sleep+0xe0/0xf4
->> > |[  194.894069] [c0383dc0] [c025a43c] mutex_lock+0x24/0x3c
->> > |[  194.899234] [c0383de0] [c019005c] phy_stop+0x20/0x70
->> > |[  194.904234] [c0383df0] [c018d4ec] stop_gfar+0x28/0xf4
->> > |[  194.909305] [c0383e10] [c018e8c4] gfar_timeout+0x30/0x60
->> > |[  194.914638] [c0383e20] [c01fe7c0] dev_watchdog+0xa8/0x144
->> 
->> Hmm..  I'm not sure what the best solution is to this.  Make the
->> stop_gfar() call happen in a workqueue, and make a similar change to
->> ucc_geth, fec_mpc52xx, and fs_enet? Modify phy_stop() to do the work in
->> a workqueue conditionally if in interrupt context?  Between these two
->> I'd lean toward the latter.
->> 
->> Does anyone have any better ideas?
+Tony Breeds wrote:
+> On Wed, Jul 23, 2008 at 10:36:42AM +0200, ehrhardt@linux.vnet.ibm.com wrote:
 >
->Move the reset task to a workqueue.
-Done in [1] Ben.
+> Hi Christian,
+> 	A few comments inlined ...
+>
+>   
+[...]
+>> +
+>>  static inline int kvm_para_available(void)
+>>  {
+>> -	return 0;
+>> +	struct device_node *dn;
+>> +
+>> +	dn = of_find_node_by_path("/hypervisor");
+>>     
+>
+> You need an of_node_put(dn);
+>
+>   
+I just looked at the linux/of.h and did not see that I have to free it 
+again.
+Thanks for the hint, I inserted both calls.
+>> +
+>> +	return !!dn;
+>>  }
+>>  
+>>  static inline unsigned int kvm_arch_para_features(void)
+>>  {
+>> -	return 0;
+>> +	struct device_node *dn;
+>> +	const int *dtval;
+>> +	unsigned int features = 0;
+>> +	int i;
+>> +
+>> +	dn = of_find_node_by_path("/hypervisor");
+>> +	if (!dn)
+>> +		return 0;
+>> +
+>> +	for (i = 0; i < ARRAY_SIZE(para_features)-1; i++) {
+>>     
+>
+> Why -1?  Isn't ARRAY_SIZE(para_features) adequate?
+>   
 
-[1] http://marc.info/?l=linux-netdev&m=121684347609062&w=2
->Cheers,
->Ben.
+yeah I already had this, bit the change was folded into the wrong patch, 
+fixed now
 
-Sebastian
+[...]
+> Yours Tony
+>
+>   linux.conf.au    http://www.marchsouth.org/
+>   Jan 19 - 24 2009 The Australian Linux Technical Conference!
+>
+>   
+
+
+-- 
+
+Grüsse / regards, 
+Christian Ehrhardt
+IBM Linux Technology Center, Open Virtualization
