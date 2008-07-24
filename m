@@ -1,20 +1,11 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5663BDDFE9
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 03:50:55 +1000 (EST)
-Date: Thu, 24 Jul 2008 21:50:32 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] watchdog: delete unused driver mpc8xx_wdt.c
-Message-ID: <20080724215032.0d940f0f@vitb-lp.dev.rtsoft.ru>
-In-Reply-To: <488857CD.6080007@scram.de>
-References: <488857CD.6080007@scram.de>
+Return-Path: <hugh@blemings.org>
+Date: Thu, 24 Jul 2008 14:36:09 -0400
+From: Hugh Blemings <hugh@blemings.org>
+To: linuxppc-dev@ozlabs.org, parch@power.org
+Subject: [ANN] Device Tree Mailing List
+Message-Id: <20080724143609.60274eed.hugh@blemings.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=KOI8-R
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, wim@iguana.be, "Kernel,
-	Linux" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +15,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-В Thu, 24 Jul 2008 12:22:05 +0200
-Jochen Friedrich <jochen@scram.de> пишет:
+Hiya,
 
-> The watchdog driver mpc8xx_wdt.c was a device interface to
-> arch/ppc/syslib/m8xx_wdt.c for MPC8xx hardware. Now that ARCH=ppc is
-> gone, this driver is of no more use. For ARCH=powerpc, MPC8xx hardware
-> is supported by mpc8xxx_wdt.c.
-> 
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+Grant Likely and Josh Boyer organised a Bird of Feather session on Device Trees today at the Ottawa Linux Symposium, about a dozen folk there all told.
 
-Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
+Was agreed that there was now enough non-PowerPC specific interest in Device Trees to make a generic list a useful thing to have, so have gone ahead and got one set up;
 
--Vitaly
+  https://ozlabs.org/mailman/listinfo/devicetree-discuss
+
+For folk I knew to be interested/involved in DT stuff you may have already received an invitation to join, I trust this was in order.
+
+If you didn't, please don't feel left out, I just did a quick off the top of my head search through the mailing list archive :)
+
+Regards,
+Hugh
