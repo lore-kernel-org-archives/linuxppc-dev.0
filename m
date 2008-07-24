@@ -1,31 +1,30 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <markn@au1.ibm.com>
+Received: from e23smtp01.au.ibm.com (E23SMTP01.au.ibm.com [202.81.18.162])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 97A9EDDDCA
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 09:43:39 +1000 (EST)
-Date: Wed, 23 Jul 2008 16:42:24 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: PIXIS gpio controller and gpio flags
-In-Reply-To: <20080723145650.GA13792@polina.dev.rtsoft.ru>
-Message-ID: <Pine.LNX.4.64.0807231551230.26456@t2.domain.actdsltmp>
-References: <20080717150422.GC31932@secretlab.ca>
-	<20080717152006.GA26120@polina.dev.rtsoft.ru>
-	<fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
-	<Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
-	<20080717234201.GA15745@polina.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
-	<20080718100549.GA28741@polina.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0807191352040.27586@t2.domain.actdsltmp>
-	<20080721175357.GA1773@polina.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0807211340460.26456@t2.domain.actdsltmp>
-	<20080723145650.GA13792@polina.dev.rtsoft.ru>
+	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0D2D8DDEE3
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 10:22:22 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id m6O0MjIX027027
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 10:22:45 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6O0MKFT304466
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 10:22:20 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6O0MK5v027786
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 10:22:20 +1000
+From: Mark Nelson <markn@au1.ibm.com>
+To: paulus@samba.org, benh@kernel.crashing.org
+Subject: [PATCH] powerpc/cell: set fixed mapping to weak if we find a
+	pcie-endpoint
+Date: Thu, 24 Jul 2008 10:22:44 +1000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200807241022.44903.markn@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,51 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 23 Jul 2008, Anton Vorontsov wrote:
-> On Mon, Jul 21, 2008 at 02:12:20PM -0700, Trent Piepho wrote:
->> On Mon, 21 Jul 2008, Anton Vorontsov wrote:
->>> On Sat, Jul 19, 2008 at 02:08:01PM -0700, Trent Piepho wrote:
->>>> It doesn't look like you have any way to unset the active low flag.  What if
->>>> I unload the leds-gpio driver (or another gpio user) and then try to use the
->>>> gpio with something else?  The active low flag is stuck on!
->>>
->>> Why would you want to unset the flags? It is specified in the device
->>> tree, and can't be changed. Specifying different flags for the same GPIO
->>> would be an error (plus, Linux forbids shared gpios, so you simply can't
->>> specify one gpio for several devices).
->>
->> You can't use the same gpio for two different things at the same time, but you
->> can load a driver, unload it, and then load another.
->
-> Hm.. yeah, this might happen. Now I tend to think that transparent
-> active-low handling wasn't that good idea after all. So, something like
-> of_gpio_is_active_low(device_node, gpioidx) should be implemented
-> instead. This function will parse the gpio's = <> flags. Please speak up
-> if you have any better ideas though.
+From: Mark Nelson <markn@au1.ibm.com>
 
-The flags could be provided via of_get_gpio.  E.g., something like
-of_get_gpio(...., u32 *flags), and if flags is non-NULL the gpio flags are
-left there.  of_get_gpio already has the flags and some other of_get_*
-functions return multiple things like this.
+At the moment the fixed mapping is by default strongly ordered (the
+iommu_fixed=weak boot option must be used to make the fixed mapping weakly
+ordered). If we're on a setup where the southbridge is being used in
+endpoint mode (triblade and CAB boards) the default should be a weakly
+ordered fixed mapping.
 
-Or just have an active low property for the led:
- 	led.active_low = !!of_get_property(np, "active-low", NULL);
+This adds a check so that if a node of type pcie-endpoint can be found in
+the device tree the fixed mapping is set to be weak by default (but can be
+overridden using iommu_fixed=strong).
 
-Pretty simple, just one line of code.  At least if one looks just at
-leds-gpio, that's obviously the simplest way.  Is active low a property of
-the led or a property of the gpio?  I guess one could argue either way.
+Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/powerpc/platforms/cell/iommu.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-It seems like putting one line of code leds-gpio driver is better than
-putting much more complex code into the gpio controller driver.  And each
-gpio controller has to have that code too.
-
-Now you could say that each gpio user needing to support inverting gpios is
-a lot of code too, but I don't think it's necessary.  Active low LEDs are
-common since gpios can usually sink more current than they can source.  But
-other gpio users, like the I2C, SPI, MDIO drivers etc., haven't had a need
-to support inverting each signal.
-
-I'm also loathe to add software gpio inverting to my mpc8572 gpio driver. 
-In addition to some LEDs there is also a bit-banged JTAG bus on the CPU
-GPIOs.  I had to go to great lengths to get it fast enough and each
-instruction added to a gpio operation is going to cost me MHz.
+Index: upstream/arch/powerpc/platforms/cell/iommu.c
+===================================================================
+--- upstream.orig/arch/powerpc/platforms/cell/iommu.c
++++ upstream/arch/powerpc/platforms/cell/iommu.c
+@@ -1150,12 +1150,23 @@ static int iommu_fixed_disabled;
+ 
+ static int __init setup_iommu_fixed(char *str)
+ {
++	struct device_node *pciep = NULL;
++
+ 	if (strcmp(str, "off") == 0)
+ 		iommu_fixed_disabled = 1;
+ 
+-	else if (strcmp(str, "weak") == 0)
++	/* If we can find a pcie-endpoint in the device tree assume that
++	 * we're on a triblade or a CAB so by default the fixed mapping
++	 * should be set to be weakly ordered; but only if the boot
++	 * option WASN'T set for strong ordering
++	 */
++	pciep = of_find_node_by_type(NULL, "pcie-endpoint");
++
++	if (strcmp(str, "weak") == 0 || (pciep && strcmp(str, "strong") != 0))
+ 		iommu_fixed_is_weak = 1;
+ 
++	of_node_put(pciep);
++
+ 	return 1;
+ }
+ __setup("iommu_fixed=", setup_iommu_fixed);
