@@ -1,16 +1,24 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Date: Thu, 24 Jul 2008 16:08:39 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Getting GPIO to build again
-Message-ID: <20080724120839.GA24673@polina.dev.rtsoft.ru>
-References: <9e4733910807232009o634027cajde78395f95ae95ce@mail.gmail.com>
-	<9e4733910807232034x3af76073x979ef608ddfbebfb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <9e4733910807232034x3af76073x979ef608ddfbebfb@mail.gmail.com>
-Cc: ppc-dev <Linuxppc-dev@ozlabs.org>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <sebastien.dugue@bull.net>
+Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
+	by ozlabs.org (Postfix) with ESMTP id 26E9BDDFFB
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 22:18:14 +1000 (EST)
+Date: Thu, 24 Jul 2008 14:18:39 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 2/2][RT] powerpc - Make the irq reverse mapping radix
+	tree lockless
+Message-ID: <20080724141839.477de30b@bull.net>
+In-Reply-To: <200807242111.35338.nickpiggin@yahoo.com.au>
+References: <20080724122352.3bc76bda@bull.net>
+	<20080724125044.53b604cb@bull.net>
+	<200807242111.35338.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Tim Chavez <tinytim@us.ibm.com>, Linux-rt <linux-rt-users@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Jean Pierre Dion <jean-pierre.dion@bull.net>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Gilles Carry <Gilles.Carry@ext.bull.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,33 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 23, 2008 at 11:34:28PM -0400, Jon Smirl wrote:
-> This lets me build again, no clue if it is the correct fix.
+On Thu, 24 Jul 2008 21:11:34 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-No, I don't think that this is correct. OF_GPIO isn't GENERIC_GPIO
-provider. GPIO controllers should select GENERIC_GPIO instead.
-
-Though, with this patch:
-http://lkml.org/lkml/2008/7/10/269
-
-We'll only have to select ARCH_WANT_OPTIONAL_GPIOLIB. Maybe for whole
-powerpc.
-
-> diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-> index 3a7a11a..e14dbe3 100644
-> --- a/drivers/of/Kconfig
-> +++ b/drivers/of/Kconfig
-> @@ -3,6 +3,7 @@ config OF_DEVICE
->         depends on OF && (SPARC || PPC_OF)
+> On Thursday 24 July 2008 20:50, Sebastien Dugue wrote:
+> > From: Sebastien Dugue <sebastien.dugue@bull.net>
+> > Date: Tue, 22 Jul 2008 11:56:41 +0200
+> > Subject: [PATCH][RT] powerpc - Make the irq reverse mapping radix tree
+> > lockless
+> >
+> >   The radix tree used by interrupt controllers for their irq reverse
+> > mapping (currently only the XICS found on pSeries) have a complex locking
+> > scheme dating back to before the advent of the concurrent radix tree on
+> > preempt-rt.
+> >
+> >   Take advantage of this and of the fact that the items of the tree are
+> > pointers to a static array (irq_map) elements which can never go under us
+> > to simplify the locking.
+> >
+> >   Concurrency between readers and writers are handled by the intrinsic
+> > properties of the concurrent radix tree. Concurrency between the tree
+> > initialization which is done asynchronously with readers and writers access
+> > is handled via an atomic variable (revmap_trees_allocated) set when the
+> > tree has been initialized and checked before any reader or writer access
+> > just like we used to check for tree.gfp_mask != 0 before.
 > 
->  config OF_GPIO
-> +       select GENERIC_GPIO
->         def_bool y
->         depends on OF && PPC_OF && HAVE_GPIO_LIB
->         help
+> Hmm, RCU radix tree is in mainline too for quite a while. I thought
+> Ben had already converted this code over ages ago...
+
+  Mainline does not have the concurrent radix tree which this patch
+is based on, but maybe it's overkill and the RCU radix tree is enough.
+Not sure, will have to think about it a bit more.
+
+> 
+> Nothing against the -rt patch, but mainline should probably be updated
+> to use RCU as well?
 > 
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+  If rcu radix tree is enough, then definitely yes.
+
+  Sebastien.
