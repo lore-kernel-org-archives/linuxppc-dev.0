@@ -1,21 +1,19 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 6B6A6DE2DA
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 00:47:03 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCHv3 1/2] [POWERPC] CPM2: Implement GPIO LIB API on CPM2
-	Freescale SoC.
-Date: Thu, 24 Jul 2008 16:46:57 +0200
-References: <4808D75B.9000002@scram.de> <4880B730.8050801@scram.de>
-	<C98DF5D7-0E3D-4FDA-A831-55CFD5F4590C@kernel.crashing.org>
-In-Reply-To: <C98DF5D7-0E3D-4FDA-A831-55CFD5F4590C@kernel.crashing.org>
+Return-Path: <richard.whitlo@btconnect.com>
+Received: from c2beaomr07.btconnect.com (c2beaomr07.btconnect.com
+	[213.123.26.185]) by ozlabs.org (Postfix) with ESMTP id 1CB25DDF23
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 01:07:32 +1000 (EST)
+Message-ID: <48889A5B.5030200@btconnect.com>
+Date: Thu, 24 Jul 2008 16:06:03 +0100
+From: Richard Whitlock <richard.whitlo@btconnect.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7120205.pYC4cXeE2e";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200807241647.00564.laurentp@cse-semaphore.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: DTS configuration of external interrupts on 8347
+References: <4887471E.6070306@btconnect.com>
+	<20080723131335.00eadc6a@lappy.seanm.ca>
+In-Reply-To: <20080723131335.00eadc6a@lappy.seanm.ca>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Cc: richw@netcomuk.co.uk, linuxppc-dev@ozlabs.org
+Reply-To: richw@netcomuk.co.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,61 +23,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart7120205.pYC4cXeE2e
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Sean MacLennan wrote:
+> On Wed, 23 Jul 2008 15:58:38 +0100
+> "Richard Whitlock" <richard.whitlo@btconnect.com> wrote:
+>
+>   
+>> I have a small problem with a port of linux 2.6.26 to a custom board.
+>> Our board is almost identical to the Analogue & Micro asp 8347 board,
+>> so I'm using Kumar Gala's excellent fsl tree (thank you Kumar) as it 
+>> already has a defconfig for the asp.
+>> Thanks also to Bryan O'Donoghue for pointing us in the direction of
+>> the asp port in the first place.
+>>
+>> The problem we have is I am unable to request an external interrupt.
+>> We have an FPGA which has an interrupt line - HW IRQ_0, so thats
+>> linux IRQ 48. I have added the following to the dts file:
+>>
+>> fpgaKFAF@0xF8000000 {
+>>                 interrupts = <48 8>;
+>>                 interrupt-parent = <&ipic>;
+>> }
+>>
+>> but whenever I call request_irq() it returns -ENOSYS.
+>>
+>> The driver loads fine, and the open function does very little - a
+>> call to ioremap() - which works, and a call to request_irq() which
+>> does not. Is there anything else I have to do to configure this
+>> interrupt?
+>>     
+>
+> I don't think you have enough information in the dts. We do the same
+> thing on the warp (you can look at the warp.dts):
+>
+> fpga@2,0 {
+> 	compatible = "pika,fpga";
+> 	reg = <0x00000002 0x00000000 0x00001000>;
+> 	interrupts = <0x18 0x8>;
+> 	interrupt-parent = <&UIC0>;
+> };
+>
+> You need the compatible, maybe "kfaf,fpga", and I believe the reg entry
+> although you could try without it.
+>
+> You then can use:
+>
+> 	of_find_compatible_node
+> 	irq_of_parse_and_map
+> 	request_irq
+>
+> platforms/44x/warp.c shows an example using the ad7414. Just change the
+> ad7414 string to your compatible string.
+>
+> Cheers,
+>    Sean
+>
+>
+>
+>   
+Sean,
 
-Hi Kumar,
+Thanks for that - our original code had no call to irq_of_parse_and_map().
+We've put that in, as well as a call to of_find_compatible_node(), and 
+now everything works fine. We have also modified our dts file along the 
+lines you suggested.
+Cheers,
 
-On Friday 18 July 2008, Kumar Gala wrote:
-> On Jul 18, 2008, at 10:30 AM, Jochen Friedrich wrote:
-> >> On Jun 18, 2008, at 12:08 PM, Laurent Pinchart wrote:
-> >>
-> >>> +#if defined(CONFIG_CPM2) || defined(CONFIG_8xx_GPIO)
-> >>> +
-> >>> +struct cpm2_ioports {
-> >>> +	u32 dir, par, sor, odr, dat;
-> >>> +	u32 res[3];
-> >>> +};
-> >>> +
-> >>
-> >> is this really common for both CPM2 and 8xx?  if so why the name?
-> >
-> > It is common to CPM2 and Port E of CPM1.
->=20
-> but ports a-d are different on cpm1?  I guess I'd like to see both =20
-> patches to understand the commonality and differences.
 
-As Jorgen mentionned, both patches are still in patchwork:
-
-http://patchwork.ozlabs.org/linuxppc/patch?id=3D19045
-http://patchwork.ozlabs.org/linuxppc/patch?id=3D19386
-
-Would it be possible for you to review them in time for 2.6.27 ?
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart7120205.pYC4cXeE2e
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkiIleQACgkQ8y9gWxC9vpfVGACgs1gXEn5r0Bnmkw/Yla36wUis
-+XYAoJ35Hr9Y5zADQkBHBsafuEJ7rWak
-=KII3
------END PGP SIGNATURE-----
-
---nextPart7120205.pYC4cXeE2e--
+Richard.
