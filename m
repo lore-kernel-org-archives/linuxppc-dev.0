@@ -1,24 +1,15 @@
-Return-Path: <sebastien.dugue@bull.net>
-Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id 26E9BDDFFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 22:18:14 +1000 (EST)
-Date: Thu, 24 Jul 2008 14:18:39 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 2/2][RT] powerpc - Make the irq reverse mapping radix
-	tree lockless
-Message-ID: <20080724141839.477de30b@bull.net>
-In-Reply-To: <200807242111.35338.nickpiggin@yahoo.com.au>
-References: <20080724122352.3bc76bda@bull.net>
-	<20080724125044.53b604cb@bull.net>
-	<200807242111.35338.nickpiggin@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Tim Chavez <tinytim@us.ibm.com>, Linux-rt <linux-rt-users@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Jean Pierre Dion <jean-pierre.dion@bull.net>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Gilles Carry <Gilles.Carry@ext.bull.net>
+Return-Path: <jochen@scram.de>
+Message-ID: <4888746B.8020003@scram.de>
+Date: Thu, 24 Jul 2008 14:24:11 +0200
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
+Subject: Re: Getting GPIO to build again
+References: <9e4733910807232009o634027cajde78395f95ae95ce@mail.gmail.com>	<9e4733910807232034x3af76073x979ef608ddfbebfb@mail.gmail.com>
+	<20080724120839.GA24673@polina.dev.rtsoft.ru>
+In-Reply-To: <20080724120839.GA24673@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,42 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 24 Jul 2008 21:11:34 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+Hi Anton,
 
-> On Thursday 24 July 2008 20:50, Sebastien Dugue wrote:
-> > From: Sebastien Dugue <sebastien.dugue@bull.net>
-> > Date: Tue, 22 Jul 2008 11:56:41 +0200
-> > Subject: [PATCH][RT] powerpc - Make the irq reverse mapping radix tree
-> > lockless
-> >
-> >   The radix tree used by interrupt controllers for their irq reverse
-> > mapping (currently only the XICS found on pSeries) have a complex locking
-> > scheme dating back to before the advent of the concurrent radix tree on
-> > preempt-rt.
-> >
-> >   Take advantage of this and of the fact that the items of the tree are
-> > pointers to a static array (irq_map) elements which can never go under us
-> > to simplify the locking.
-> >
-> >   Concurrency between readers and writers are handled by the intrinsic
-> > properties of the concurrent radix tree. Concurrency between the tree
-> > initialization which is done asynchronously with readers and writers access
-> > is handled via an atomic variable (revmap_trees_allocated) set when the
-> > tree has been initialized and checked before any reader or writer access
-> > just like we used to check for tree.gfp_mask != 0 before.
+> Though, with this patch:
+> http://lkml.org/lkml/2008/7/10/269
 > 
-> Hmm, RCU radix tree is in mainline too for quite a while. I thought
-> Ben had already converted this code over ages ago...
+> We'll only have to select ARCH_WANT_OPTIONAL_GPIOLIB. Maybe for whole
+> powerpc.
 
-  Mainline does not have the concurrent radix tree which this patch
-is based on, but maybe it's overkill and the RCU radix tree is enough.
-Not sure, will have to think about it a bit more.
+That would simplify the GPIO support patches for CPM1/2, as well.
 
-> 
-> Nothing against the -rt patch, but mainline should probably be updated
-> to use RCU as well?
-> 
-
-  If rcu radix tree is enough, then definitely yes.
-
-  Sebastien.
+Thanks,
+Jochen
