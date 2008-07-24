@@ -1,21 +1,20 @@
 Return-Path: <laurentp@cse-semaphore.com>
 Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id E6485DE562
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 02:00:29 +1000 (EST)
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 00E1CDE15F
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 02:36:40 +1000 (EST)
 From: Laurent Pinchart <laurentp@cse-semaphore.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCHv4] cpm2: Implement GPIO LIB API on CPM2 Freescale SoC.
-Date: Thu, 24 Jul 2008 18:00:26 +0200
-References: <4808D75B.9000002@scram.de>
-	<200807241647.00564.laurentp@cse-semaphore.com>
-	<524AC131-C155-416F-A8D7-EF1C6FD9A35B@kernel.crashing.org>
-In-Reply-To: <524AC131-C155-416F-A8D7-EF1C6FD9A35B@kernel.crashing.org>
+Subject: [PATCHv2] cpm_uart: Modem control lines support
+Date: Thu, 24 Jul 2008 18:36:37 +0200
+References: <200804161110.21778.laurentp@cse-semaphore.com>
+	<200807241705.03340.laurentp@cse-semaphore.com>
+	<2F3F000A-AC69-4C15-A535-F93B60BA191E@kernel.crashing.org>
+In-Reply-To: <2F3F000A-AC69-4C15-A535-F93B60BA191E@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1271388.vnMoO2GhKh";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200807241800.27146.laurentp@cse-semaphore.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807241836.37913.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,232 +24,156 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1271388.vnMoO2GhKh
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This patch replaces the get_mctrl/set_mctrl stubs with modem control line
+read/write access through the GPIO lib.
 
-This patch implement GPIO LIB support for the CPM2 GPIOs. The code can also=
- be
-used for CPM1 GPIO port E, as both cores are compatible at the register lev=
-el.
-
-Based on earlier work by Jochen Friedrich.
+Available modem control lines are described in the device tree using GPIO
+bindings. The driver expect a GPIO pin for each of the CTS, RTS, DCD, DSR,
+DTR and RI signals. Unused control lines can be left out.
 
 Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
-Cc: Jochen Friedrich <jochen@scram.de>
-=2D--
- arch/powerpc/platforms/Kconfig   |    2 +
- arch/powerpc/sysdev/cpm2.c       |   11 ++++
- arch/powerpc/sysdev/cpm_common.c |  123 ++++++++++++++++++++++++++++++++++=
-++++
- include/asm-powerpc/cpm.h        |    3 +
- 4 files changed, 139 insertions(+), 0 deletions(-)
+---
+ Documentation/powerpc/booting-without-of.txt |   10 ++++++
+ drivers/serial/cpm_uart/cpm_uart.h           |   10 ++++++
+ drivers/serial/cpm_uart/cpm_uart_core.c      |   40 ++++++++++++++++++++++++--
+ 3 files changed, 57 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 87454c5..7e67e26 100644
-=2D-- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -280,6 +280,8 @@ config CPM2
- 	depends on MPC85xx || 8260
- 	select CPM
- 	select PPC_LIB_RHEAP
-+	select GENERIC_GPIO
-+	select HAVE_GPIO_LIB
- 	help
- 	  The CPM2 (Communications Processor Module) is a coprocessor on
- 	  embedded CPUs made by Freescale.  Selecting this option means that
-diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
-index 5a6c5df..9311778 100644
-=2D-- a/arch/powerpc/sysdev/cpm2.c
-+++ b/arch/powerpc/sysdev/cpm2.c
-@@ -377,3 +377,14 @@ void cpm2_set_pin(int port, int pin, int flags)
- 	else
- 		clrbits32(&iop[port].odr, pin);
- }
+diff --git a/Documentation/powerpc/dts-bindings/fsl/cpm_qe/serial.txt b/Documentation/powerpc/dts-bindings/fsl/cpm_qe/serial.txt
+index 1d2a772..21a3484 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/cpm_qe/serial.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/cpm_qe/serial.txt
+@@ -7,6 +7,15 @@
+ - fsl,cpm2-scc-uart
+ - fsl,qe-uart
+ 
++Modem control lines connected to GPIO controllers are listed in the gpios
++property as described in booting-without-of.txt, section IX.1 in the following
++order:
 +
-+static int cpm_init_par_io(void)
-+{
-+	struct device_node *np;
++CTS, RTS, DCD, DSR, DTR, and RI.
 +
-+	for_each_compatible_node(np, NULL, "fsl,cpm2-pario-bank")
-+		cpm2_gpiochip_add32(np);
-+	return 0;
-+}
-+arch_initcall(cpm_init_par_io);
++The gpios property is optional and can be left out when control lines are
++not used.
 +
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_com=
-mon.c
-index cb7df2d..b957a48 100644
-=2D-- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -19,6 +19,8 @@
-=20
- #include <linux/init.h>
- #include <linux/of_device.h>
-+#include <linux/spinlock.h>
-+#include <linux/of.h>
-=20
- #include <asm/udbg.h>
- #include <asm/io.h>
-@@ -28,6 +30,10 @@
-=20
- #include <mm/mmu_decl.h>
-=20
-+#if defined(CONFIG_CPM2) || defined(CONFIG_8xx_GPIO)
+ Example:
+ 
+ 	serial@11a00 {
+@@ -18,4 +27,6 @@
+ 		interrupt-parent = <&PIC>;
+ 		fsl,cpm-brg = <1>;
+ 		fsl,cpm-command = <00800000>;
++		gpios = <&gpio_c 15 0
++			 &gpio_d 29 0>;
+ 	};
+diff --git a/drivers/serial/cpm_uart/cpm_uart.h b/drivers/serial/cpm_uart/cpm_uart.h
+index 0cc39f8..d0c55e2 100644
+--- a/drivers/serial/cpm_uart/cpm_uart.h
++++ b/drivers/serial/cpm_uart/cpm_uart.h
+@@ -50,6 +50,15 @@
+ 
+ #define SCC_WAIT_CLOSING 100
+ 
++#define GPIO_CTS	0
++#define GPIO_RTS	1
++#define GPIO_DCD	2
++#define GPIO_DSR	3
++#define GPIO_DTR	4
++#define GPIO_RI		5
++
++#define NUM_GPIOS	(GPIO_RI+1)
++
+ struct uart_cpm_port {
+ 	struct uart_port	port;
+ 	u16			rx_nrfifos;
+@@ -82,6 +91,7 @@ struct uart_cpm_port {
+ 	int			wait_closing;
+ 	/* value to combine with opcode to form cpm command */
+ 	u32			command;
++	int			gpios[NUM_GPIOS];
+ };
+ 
+ extern int cpm_uart_nr;
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index d10a16e..d3c19e5 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -43,6 +43,8 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/fs_uart_pd.h>
+ #include <linux/of_platform.h>
++#include <linux/gpio.h>
 +#include <linux/of_gpio.h>
-+#endif
+ 
+ #include <asm/io.h>
+ #include <asm/irq.h>
+@@ -96,13 +98,41 @@ static unsigned int cpm_uart_tx_empty(struct uart_port *port)
+ 
+ static void cpm_uart_set_mctrl(struct uart_port *port, unsigned int mctrl)
+ {
+-	/* Whee. Do nothing. */
++	struct uart_cpm_port *pinfo = (struct uart_cpm_port *)port;
 +
- #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
- static u32 __iomem *cpm_udbg_txdesc =3D
- 	(u32 __iomem __force *)CONFIG_PPC_EARLY_DEBUG_CPM_ADDR;
-@@ -198,3 +204,120 @@ dma_addr_t cpm_muram_dma(void __iomem *addr)
- 	return muram_pbase + ((u8 __iomem *)addr - muram_vbase);
++	if (pinfo->gpios[GPIO_RTS] >= 0)
++		gpio_set_value(pinfo->gpios[GPIO_RTS], !(mctrl & TIOCM_RTS));
++
++	if (pinfo->gpios[GPIO_DTR] >= 0)
++		gpio_set_value(pinfo->gpios[GPIO_DTR], !(mctrl & TIOCM_DTR));
  }
- EXPORT_SYMBOL(cpm_muram_dma);
+ 
+ static unsigned int cpm_uart_get_mctrl(struct uart_port *port)
+ {
+-	/* Whee. Do nothing. */
+-	return TIOCM_CAR | TIOCM_DSR | TIOCM_CTS;
++	struct uart_cpm_port *pinfo = (struct uart_cpm_port *)port;
++	unsigned int mctrl = TIOCM_CTS | TIOCM_DSR | TIOCM_CAR;
 +
-+#if defined(CONFIG_CPM2) || defined(CONFIG_8xx_GPIO)
++	if (pinfo->gpios[GPIO_CTS] >= 0) {
++		if (gpio_get_value(pinfo->gpios[GPIO_CTS]))
++			mctrl &= ~TIOCM_CTS;
++	}
 +
-+struct cpm2_ioports {
-+	u32 dir, par, sor, odr, dat;
-+	u32 res[3];
-+};
++	if (pinfo->gpios[GPIO_DSR] >= 0) {
++		if (gpio_get_value(pinfo->gpios[GPIO_DSR]))
++			mctrl &= ~TIOCM_DSR;
++	}
 +
-+struct cpm2_gpio32_chip {
-+	struct of_mm_gpio_chip mm_gc;
-+	spinlock_t lock;
++	if (pinfo->gpios[GPIO_DCD] >= 0) {
++		if (gpio_get_value(pinfo->gpios[GPIO_DCD]))
++			mctrl &= ~TIOCM_CAR;
++	}
 +
-+	/* shadowed data register to clear/set bits safely */
-+	u32 cpdata;
-+};
++	if (pinfo->gpios[GPIO_RI] >= 0) {
++		if (!gpio_get_value(pinfo->gpios[GPIO_RI]))
++			mctrl |= TIOCM_RNG;
++	}
 +
-+static inline struct cpm2_gpio32_chip *
-+to_cpm2_gpio32_chip(struct of_mm_gpio_chip *mm_gc)
-+{
-+	return container_of(mm_gc, struct cpm2_gpio32_chip, mm_gc);
-+}
++	return mctrl;
+ }
+ 
+ /*
+@@ -893,6 +923,7 @@ static int cpm_uart_init_port(struct device_node *np,
+ 	void __iomem *mem, *pram;
+ 	int len;
+ 	int ret;
++	int i;
+ 
+ 	data = of_get_property(np, "fsl,cpm-brg", &len);
+ 	if (!data || len != 4) {
+@@ -952,6 +983,9 @@ static int cpm_uart_init_port(struct device_node *np,
+ 		goto out_pram;
+ 	}
+ 
++	for (i = 0; i < NUM_GPIOS; i++)
++		pinfo->gpios[i] = of_get_gpio(np, i);
 +
-+static void cpm2_gpio32_save_regs(struct of_mm_gpio_chip *mm_gc)
-+{
-+	struct cpm2_gpio32_chip *cpm2_gc =3D to_cpm2_gpio32_chip(mm_gc);
-+	struct cpm2_ioports __iomem *iop =3D mm_gc->regs;
-+
-+	cpm2_gc->cpdata =3D in_be32(&iop->dat);
-+}
-+
-+static int cpm2_gpio32_get(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc =3D to_of_mm_gpio_chip(gc);
-+	struct cpm2_ioports __iomem *iop =3D mm_gc->regs;
-+	u32 pin_mask;
-+
-+	pin_mask =3D 1 << (31 - gpio);
-+
-+	return !!(in_be32(&iop->dat) & pin_mask);
-+}
-+
-+static void cpm2_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int v=
-alue)
-+{
-+	struct of_mm_gpio_chip *mm_gc =3D to_of_mm_gpio_chip(gc);
-+	struct cpm2_gpio32_chip *cpm2_gc =3D to_cpm2_gpio32_chip(mm_gc);
-+	struct cpm2_ioports __iomem *iop =3D mm_gc->regs;
-+	unsigned long flags;
-+	u32 pin_mask =3D 1 << (31 - gpio);
-+
-+	spin_lock_irqsave(&cpm2_gc->lock, flags);
-+
-+	if (value)
-+		cpm2_gc->cpdata |=3D pin_mask;
-+	else
-+		cpm2_gc->cpdata &=3D ~pin_mask;
-+
-+	out_be32(&iop->dat, cpm2_gc->cpdata);
-+
-+	spin_unlock_irqrestore(&cpm2_gc->lock, flags);
-+}
-+
-+static int cpm2_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, in=
-t val)
-+{
-+	struct of_mm_gpio_chip *mm_gc =3D to_of_mm_gpio_chip(gc);
-+	struct cpm2_ioports __iomem *iop =3D mm_gc->regs;
-+	u32 pin_mask;
-+
-+	pin_mask =3D 1 << (31 - gpio);
-+
-+	setbits32(&iop->dir, pin_mask);
-+
-+	cpm2_gpio32_set(gc, gpio, val);
-+
-+	return 0;
-+}
-+
-+static int cpm2_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc =3D to_of_mm_gpio_chip(gc);
-+	struct cpm2_ioports __iomem *iop =3D mm_gc->regs;
-+	u32 pin_mask;
-+
-+	pin_mask =3D 1 << (31 - gpio);
-+
-+	clrbits32(&iop->dir, pin_mask);
-+
-+	return 0;
-+}
-+
-+int cpm2_gpiochip_add32(struct device_node *np)
-+{
-+	struct cpm2_gpio32_chip *cpm2_gc;
-+	struct of_mm_gpio_chip *mm_gc;
-+	struct of_gpio_chip *of_gc;
-+	struct gpio_chip *gc;
-+
-+	cpm2_gc =3D kzalloc(sizeof(*cpm2_gc), GFP_KERNEL);
-+	if (!cpm2_gc)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&cpm2_gc->lock);
-+
-+	mm_gc =3D &cpm2_gc->mm_gc;
-+	of_gc =3D &mm_gc->of_gc;
-+	gc =3D &of_gc->gc;
-+
-+	mm_gc->save_regs =3D cpm2_gpio32_save_regs;
-+	of_gc->gpio_cells =3D 2;
-+	gc->ngpio =3D 32;
-+	gc->direction_input =3D cpm2_gpio32_dir_in;
-+	gc->direction_output =3D cpm2_gpio32_dir_out;
-+	gc->get =3D cpm2_gpio32_get;
-+	gc->set =3D cpm2_gpio32_set;
-+
-+	return of_mm_gpiochip_add(np, mm_gc);
-+}
-+#endif /* CONFIG_CPM2 || CONFIG_8xx_GPIO */
-diff --git a/include/asm-powerpc/cpm.h b/include/asm-powerpc/cpm.h
-index ede38ff..23b72ee 100644
-=2D-- a/include/asm-powerpc/cpm.h
-+++ b/include/asm-powerpc/cpm.h
-@@ -3,6 +3,7 @@
-=20
- #include <linux/compiler.h>
- #include <linux/types.h>
-+#include <linux/of.h>
-=20
- /* Opcodes common to CPM1 and CPM2
- */
-@@ -99,4 +100,6 @@ void __iomem *cpm_muram_addr(unsigned long offset);
- dma_addr_t cpm_muram_dma(void __iomem *addr);
- int cpm_command(u32 command, u8 opcode);
-=20
-+int cpm2_gpiochip_add32(struct device_node *np);
-+
- #endif
-=2D-=20
+ 	return cpm_uart_request_port(&pinfo->port);
+ 
+ out_pram:
+-- 
 1.5.0
 
-=2D-=20
+
+-- 
 Laurent Pinchart
 CSE Semaphore Belgium
 
@@ -259,18 +182,4 @@ B-1410 Waterloo
 Belgium
 
 T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1271388.vnMoO2GhKh
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkiIpxsACgkQ8y9gWxC9vpdzJgCeMRmWWrZ0Fmw2db9dqzmoiuar
-MnEAn2CID7omn8HkZ5+e6TJulfVF2vm/
-=Jdbj
------END PGP SIGNATURE-----
-
---nextPart1271388.vnMoO2GhKh--
+F +32 (2) 387 42 75
