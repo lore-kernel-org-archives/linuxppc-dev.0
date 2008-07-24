@@ -1,30 +1,20 @@
-Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp01.au.ibm.com (E23SMTP01.au.ibm.com [202.81.18.162])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0D2D8DDEE3
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 10:22:22 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id m6O0MjIX027027
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 10:22:45 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6O0MKFT304466
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 10:22:20 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6O0MK5v027786
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 10:22:20 +1000
-From: Mark Nelson <markn@au1.ibm.com>
-To: paulus@samba.org, benh@kernel.crashing.org
-Subject: [PATCH] powerpc/cell: set fixed mapping to weak if we find a
-	pcie-endpoint
-Date: Thu, 24 Jul 2008 10:22:44 +1000
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id E368DDDE10
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jul 2008 11:41:37 +1000 (EST)
+Date: Thu, 24 Jul 2008 11:41:34 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: ehrhardt@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/6] kvmppc: read device tree hypervisor node
+	infrastructure
+Message-ID: <20080724014133.GH20457@bakeyournoodle.com>
+References: <1216802207-32675-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	<1216802207-32675-2-git-send-email-ehrhardt@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200807241022.44903.markn@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1216802207-32675-2-git-send-email-ehrhardt@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, embedded-hypervisor@power.org, hollisb@us.ibm.com,
+	kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,50 +24,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Mark Nelson <markn@au1.ibm.com>
+On Wed, Jul 23, 2008 at 10:36:42AM +0200, ehrhardt@linux.vnet.ibm.com wrote:
 
-At the moment the fixed mapping is by default strongly ordered (the
-iommu_fixed=weak boot option must be used to make the fixed mapping weakly
-ordered). If we're on a setup where the southbridge is being used in
-endpoint mode (triblade and CAB boards) the default should be a weakly
-ordered fixed mapping.
+Hi Christian,
+	A few comments inlined ...
 
-This adds a check so that if a node of type pcie-endpoint can be found in
-the device tree the fixed mapping is set to be weak by default (but can be
-overridden using iommu_fixed=strong).
+> diff --git a/include/asm-powerpc/kvm_para.h b/include/asm-powerpc/kvm_para.h
+> --- a/include/asm-powerpc/kvm_para.h
+> +++ b/include/asm-powerpc/kvm_para.h
+> @@ -14,7 +14,9 @@
+>   *
+>   * Copyright IBM Corp. 2008
+>   *
+> - * Authors: Hollis Blanchard <hollisb@us.ibm.com>
+> + * Authors:
+> + * 	Hollis Blanchard <hollisb@us.ibm.com>
+> + * 	Christian Ehrhardt <ehrhardt@de.ibm.com>
+>   */
+>  
+>  #ifndef __POWERPC_KVM_PARA_H__
+> @@ -22,15 +24,44 @@
+>  
+>  #ifdef __KERNEL__
+>  
+> +#include <linux/of.h>
+> +
+> +static struct kvmppc_para_features {
+> +	char *dtcell;
+> +	int feature;
+> +} para_features[] = {
+> +};
+> +
+>  static inline int kvm_para_available(void)
+>  {
+> -	return 0;
+> +	struct device_node *dn;
+> +
+> +	dn = of_find_node_by_path("/hypervisor");
 
-Signed-off-by: Mark Nelson <markn@au1.ibm.com>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
----
- arch/powerpc/platforms/cell/iommu.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+You need an of_node_put(dn);
 
-Index: upstream/arch/powerpc/platforms/cell/iommu.c
-===================================================================
---- upstream.orig/arch/powerpc/platforms/cell/iommu.c
-+++ upstream/arch/powerpc/platforms/cell/iommu.c
-@@ -1150,12 +1150,23 @@ static int iommu_fixed_disabled;
- 
- static int __init setup_iommu_fixed(char *str)
- {
-+	struct device_node *pciep = NULL;
-+
- 	if (strcmp(str, "off") == 0)
- 		iommu_fixed_disabled = 1;
- 
--	else if (strcmp(str, "weak") == 0)
-+	/* If we can find a pcie-endpoint in the device tree assume that
-+	 * we're on a triblade or a CAB so by default the fixed mapping
-+	 * should be set to be weakly ordered; but only if the boot
-+	 * option WASN'T set for strong ordering
-+	 */
-+	pciep = of_find_node_by_type(NULL, "pcie-endpoint");
-+
-+	if (strcmp(str, "weak") == 0 || (pciep && strcmp(str, "strong") != 0))
- 		iommu_fixed_is_weak = 1;
- 
-+	of_node_put(pciep);
-+
- 	return 1;
- }
- __setup("iommu_fixed=", setup_iommu_fixed);
+> +
+> +	return !!dn;
+>  }
+>  
+>  static inline unsigned int kvm_arch_para_features(void)
+>  {
+> -	return 0;
+> +	struct device_node *dn;
+> +	const int *dtval;
+> +	unsigned int features = 0;
+> +	int i;
+> +
+> +	dn = of_find_node_by_path("/hypervisor");
+> +	if (!dn)
+> +		return 0;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(para_features)-1; i++) {
+
+Why -1?  Isn't ARRAY_SIZE(para_features) adequate?
+
+> +		dtval = of_get_property(dn, para_features[i].dtcell, NULL);
+> +		if (dtval && *dtval == 1)
+> +			features |= (1 << para_features[i].feature);
+> +	}
+> +
+
+You need an of_node_put(dn);
+
+> +	return features;
+>  }
+
+Yours Tony
+
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
