@@ -1,15 +1,19 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <48899736.8020400@grandegger.com>
-Date: Fri, 25 Jul 2008 11:04:54 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <mbrown@fensystems.co.uk>
+Received: from sprocket.fensystems.co.uk (sprocket.fensystems.co.uk
+	[212.13.204.53]) by ozlabs.org (Postfix) with ESMTP id 70A5EDE0A5
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 18:10:05 +1000 (EST)
+Date: Fri, 25 Jul 2008 08:35:55 +0100 (BST)
+From: Michael Brown <mbrown@fensystems.co.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: sfx.c driver build failure
+In-Reply-To: <1216966559.11188.85.camel@pasglop>
+Message-ID: <Pine.LNX.4.62.0807250831440.8217@dolphin.home>
+References: <1216966559.11188.85.camel@pasglop>
 MIME-Version: 1.0
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
-	FDT
-References: <488982B5.4070102@grandegger.com> <4889942C.4040800@scram.de>
-In-Reply-To: <4889942C.4040800@scram.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org
+Content-Type: MULTIPART/MIXED; BOUNDARY="656896-1967781521-1216971355=:8217"
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Jeff Garzik <jgarzik@pobox.com>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,34 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jochen Friedrich wrote:
-> Hi Wolfgang,
-> 
->> The I2C driver for the MPC currently uses a fixed speed hard-coded into
->> the driver. This patch adds the FDT properties "fdr" and "dfsrr" for the
->> corresponding I2C registers to make the speed configurable via FDT, 
->> e.g.:
->>
->>     i2c@3100 {
->>         compatible = "fsl-i2c";
->>         reg = <0x3100 0x100>;
->>         interrupts = <43 2>;
->>         interrupt-parent = <&mpic>;
->>         dfsrr = <0x20>;
->>         fdr = <0x03>;
->>     };
-> 
-> 
-> Would it be possible to use the standard property "clock-frequency" for this
-> and calculate the register settings in the driver?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Almost everything is possible in software, just for what price ;-). 
-U-Boot has some code in drivers/i2c/fsl_i2c.c to determine reasonable 
-fdr and dfsrr values for the MPC83/5/6xx boards. For the MPC82xx and 
-MPC85xx it's even more sophisticated.
+--656896-1967781521-1216971355=:8217
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-I was also thinking to just overtake the U-Boot settings if fdt and 
-dfsrr is not defined for the I2C node (instead of the debatable default 
-values).
+On Fri, 25 Jul 2008, Benjamin Herrenschmidt wrote:
+> The sfx driver (which happens to be part of some of our test configs)=20
+> fails to build in current Linus tree on powerpc with this error:
+>=20
+> /home/benh/kernels/linux-powerpc/drivers/net/sfc/efx.c: In function =FF=
+=FFefx_probe_interrupts=FF=FF:
+> /home/benh/kernels/linux-powerpc/drivers/net/sfc/efx.c:845: error: lvalue=
+ required as unary =FF=FF&=FF=FF oper
+> and
 
-Wolfgang.
+I'm not the maintainer of that code; I wrote the original version, but=20
+it's now maintained by Solarflare.
+
+I don't see anything on that line that ought to be architecture-specific. =
+=20
+Could you send me the preprocessed efx.c from your powerpc build?
+
+Michael
+--656896-1967781521-1216971355=:8217--
