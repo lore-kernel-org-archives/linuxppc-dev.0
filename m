@@ -1,27 +1,35 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id BC567DE9EC
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 02:48:18 +1000 (EST)
-Date: Fri, 25 Jul 2008 20:48:15 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Trent Piepho <tpiepho@freescale.com>
-Subject: [RFC PATCH] of_gpio: implement of_get_gpio_flags()
-Message-ID: <20080725164815.GA23228@polina.dev.rtsoft.ru>
-References: <fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
-	<Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
-	<20080717234201.GA15745@polina.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
-	<20080718100549.GA28741@polina.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0807191352040.27586@t2.domain.actdsltmp>
-	<20080721175357.GA1773@polina.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0807211340460.26456@t2.domain.actdsltmp>
-	<20080723145650.GA13792@polina.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0807231551230.26456@t2.domain.actdsltmp>
+Return-Path: <chandru@in.ibm.com>
+Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F18C0DEA64
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 02:51:23 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id m6PGocwJ008755
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 02:50:38 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6PGpNQ91712212
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 02:51:23 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6PGpMEa024397
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 02:51:22 +1000
+From: Chandru <chandru@in.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/4][V2] powerpc : add support for linux,
+	usable-memory properties for drconf memory
+Date: Fri, 25 Jul 2008 22:21:18 +0530
+References: <200807080014.24910.chandru@in.ibm.com>
+	<200807221431.49268.chandru@in.ibm.com>
+	<18565.42340.817405.289271@cargo.ozlabs.ibm.com>
+In-Reply-To: <18565.42340.817405.289271@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <Pine.LNX.4.64.0807231551230.26456@t2.domain.actdsltmp>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807252221.19389.chandru@in.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,252 +39,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This function is alike to the of_get_gpio(), but accepts new argument:
-flags. Now the of_get_gpio() call is a wrapper around of_get_gpio_flags().
-
-This new function will be used by the drivers that need to retrive GPIO
-information, such as active-low flag.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-
-On Wed, Jul 23, 2008 at 04:42:24PM -0700, Trent Piepho wrote:
-> On Wed, 23 Jul 2008, Anton Vorontsov wrote:
-> > On Mon, Jul 21, 2008 at 02:12:20PM -0700, Trent Piepho wrote:
-> >> On Mon, 21 Jul 2008, Anton Vorontsov wrote:
-> >>> On Sat, Jul 19, 2008 at 02:08:01PM -0700, Trent Piepho wrote:
-> >>>> It doesn't look like you have any way to unset the active low flag.  What if
-> >>>> I unload the leds-gpio driver (or another gpio user) and then try to use the
-> >>>> gpio with something else?  The active low flag is stuck on!
-> >>>
-> >>> Why would you want to unset the flags? It is specified in the device
-> >>> tree, and can't be changed. Specifying different flags for the same GPIO
-> >>> would be an error (plus, Linux forbids shared gpios, so you simply can't
-> >>> specify one gpio for several devices).
-> >>
-> >> You can't use the same gpio for two different things at the same time, but you
-> >> can load a driver, unload it, and then load another.
-> >
-> > Hm.. yeah, this might happen. Now I tend to think that transparent
-> > active-low handling wasn't that good idea after all. So, something like
-> > of_gpio_is_active_low(device_node, gpioidx) should be implemented
-> > instead. This function will parse the gpio's = <> flags. Please speak up
-> > if you have any better ideas though.
+On Tuesday 22 July 2008 14:46:20 Paul Mackerras wrote:
+> Chandru writes:
 > 
-> The flags could be provided via of_get_gpio.  E.g., something like
-> of_get_gpio(...., u32 *flags), and if flags is non-NULL the gpio flags are
-> left there.  of_get_gpio already has the flags and some other of_get_*
-> functions return multiple things like this.
-
-Good idea, thanks. This patch implements of_get_gpio_flags() in addition
-to of_get_gpio() (since we don't want to break existing users).
-
-The name seems a bit unfortunate though, because one could read the
-function as it gets gpio flags only (though, we might implement
-this instead, but this way average driver will end up with parsing
-gpios = <> twice).
-
-of_get_gpio_wflags() would be better. Or maybe leave it as is, since
-it is documented anyway. ;-)
-
-> Or just have an active low property for the led:
->  	led.active_low = !!of_get_property(np, "active-low", NULL);
+> > Scan for linux,usable-memory properties in case of dynamic reconfiguration 
+> > memory . Support for kexec/kdump.
+> > 
+> > Signed-off-by: Chandru Siddalingappa <chandru@in.ibm.com>
 > 
-> Pretty simple, just one line of code.  At least if one looks just at
-> leds-gpio, that's obviously the simplest way.  Is active low a property of
-> the led or a property of the gpio?  I guess one could argue either way.
-
-As I said previously, I'm not against this as a temporary solution.
-Because we can always deprecate the active-low property later, in a
-backward compatible way.
-
-See http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055202.html
-
-So, assuming that the of_get_gpio_flags() will appear only in 2.6.28,
-I'm fine with explicit active-low property for now.
-
-> It seems like putting one line of code leds-gpio driver is better than
-> putting much more complex code into the gpio controller driver.  And each
-> gpio controller has to have that code too.
+> Could we *please* have a more comprehensive patch description that
+> that?  Something which will help people coming along in two (or five
+> or ten) years time to understand what problem exists in the code, how
+> this patch solves it, and why this approach was chosen over any
+> alternative approaches?
 > 
-> Now you could say that each gpio user needing to support inverting gpios is
-> a lot of code too,
-[...]
+> Thanks,
+> Paul.
+> 
 
-Quite the reverse, actually. ;-) I tend to agree. With this patch
-every gpio controller will able to parse flags, w/o single line
-added. So this approach is obviously better.
+Another alternate approach could be to create one 'linux,usable-drconf-memory' property and add all the usable memory regions into it, in a similar fashion to ibm,dynamic-memory property. For a given lmb in ibm,dynamic-memory , a corresponding usable-memory entry could be created which will contain 1 or more of (base,size) duple.  For each entry in this new 'linux,usable-drconf-memory' property, a counter within it will tell us how many (base,size) duple are available in it.  Some part of the current code may get duplicated. Let me go back and check if I can work on a patch for this approach .  
 
-Plus, with transparent active-low handling, most drivers will end up
-with checking active-low twice, because most drivers are doing if
-(active_low) already.
-
-Thanks.
-
- drivers/of/gpio.c       |   35 ++++++++++++++++++++++++++++-------
- include/linux/of_gpio.h |   38 ++++++++++++++++++++++++++++++++++----
- 2 files changed, 62 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
-index 1c9cab8..5be67dd 100644
---- a/drivers/of/gpio.c
-+++ b/drivers/of/gpio.c
-@@ -19,14 +19,16 @@
- #include <asm/prom.h>
- 
- /**
-- * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
-+ * of_get_gpio - Get a GPIO number and flags to use with GPIO API
-  * @np:		device node to get GPIO from
-  * @index:	index of the GPIO
-+ * @flags:	a flags pointer to fill in
-  *
-  * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
-- * value on the error condition.
-+ * value on the error condition. This function also will fill in the flags.
-  */
--int of_get_gpio(struct device_node *np, int index)
-+int of_get_gpio_flags(struct device_node *np, int index,
-+		      enum of_gpio_flags *flags)
- {
- 	int ret = -EINVAL;
- 	struct device_node *gc;
-@@ -102,7 +104,11 @@ int of_get_gpio(struct device_node *np, int index)
- 		goto err0;
- 	}
- 
--	ret = of_gc->xlate(of_gc, np, gpio_spec);
-+	/* .xlate might decide to not fill in the flags, so clear it here */
-+	if (flags)
-+		*flags = 0;
-+
-+	ret = of_gc->xlate(of_gc, np, gpio_spec, flags);
- 	if (ret < 0)
- 		goto err1;
- 
-@@ -113,26 +119,41 @@ err0:
- 	pr_debug("%s exited with status %d\n", __func__, ret);
- 	return ret;
- }
--EXPORT_SYMBOL(of_get_gpio);
-+EXPORT_SYMBOL(of_get_gpio_flags);
- 
- /**
-- * of_gpio_simple_xlate - translate gpio_spec to the GPIO number
-+ * of_gpio_simple_xlate - translate gpio_spec to the GPIO number and flags
-  * @of_gc:	pointer to the of_gpio_chip structure
-  * @np:		device node of the GPIO chip
-  * @gpio_spec:	gpio specifier as found in the device tree
-+ * @flags:	a flags pointer to fill in
-  *
-  * This is simple translation function, suitable for the most 1:1 mapped
-  * gpio chips. This function performs only one sanity check: whether gpio
-  * is less than ngpios (that is specified in the gpio_chip).
-  */
- int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
--			 const void *gpio_spec)
-+			 const void *gpio_spec, enum of_gpio_flags *flags)
- {
- 	const u32 *gpio = gpio_spec;
- 
-+	/*
-+	 * We're discouraging gpio_cells < 2, since this way you'll have to
-+	 * write your own xlate function, which will retrive the GPIO number
-+	 * and its flags from a single gpio cell. This is possible, but not
-+	 * recommended.
-+	 */
-+	if (of_gc->gpio_cells < 2) {
-+		WARN_ON(1);
-+		return -EINVAL;
-+	}
-+
- 	if (*gpio > of_gc->gc.ngpio)
- 		return -EINVAL;
- 
-+	if (flags)
-+		*flags = gpio[1];
-+
- 	return *gpio;
- }
- EXPORT_SYMBOL(of_gpio_simple_xlate);
-diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
-index 67db101..8dc9bcb 100644
---- a/include/linux/of_gpio.h
-+++ b/include/linux/of_gpio.h
-@@ -14,19 +14,32 @@
- #ifndef __LINUX_OF_GPIO_H
- #define __LINUX_OF_GPIO_H
- 
-+#include <linux/compiler.h>
-+#include <linux/kernel.h>
- #include <linux/errno.h>
- #include <linux/gpio.h>
- 
-+struct device_node;
-+
- #ifdef CONFIG_OF_GPIO
- 
- /*
-+ * This is Linux-specific flags. By default controllers' and Linux' mapping
-+ * match, but GPIO controllers are free to translate their own flags to
-+ * Linux-specific in their .xlate callback. Though, 1:1 mapping is recommended.
-+ */
-+enum of_gpio_flags {
-+	OF_GPIO_ACTIVE_LOW = 0x1,
-+};
-+
-+/*
-  * Generic OF GPIO chip
-  */
- struct of_gpio_chip {
- 	struct gpio_chip gc;
- 	int gpio_cells;
- 	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
--		     const void *gpio_spec);
-+		     const void *gpio_spec, enum of_gpio_flags *flags);
- };
- 
- static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
-@@ -50,20 +63,37 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
- 	return container_of(of_gc, struct of_mm_gpio_chip, of_gc);
- }
- 
--extern int of_get_gpio(struct device_node *np, int index);
-+extern int of_get_gpio_flags(struct device_node *np, int index,
-+			     enum of_gpio_flags *flags);
-+
- extern int of_mm_gpiochip_add(struct device_node *np,
- 			      struct of_mm_gpio_chip *mm_gc);
- extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
- 				struct device_node *np,
--				const void *gpio_spec);
-+				const void *gpio_spec,
-+				enum of_gpio_flags *flags);
- #else
- 
- /* Drivers may not strictly depend on the GPIO support, so let them link. */
--static inline int of_get_gpio(struct device_node *np, int index)
-+static inline int of_get_gpio_flags(struct device_node *np, int index,
-+				    enum of_gpio_flags *flags)
- {
- 	return -ENOSYS;
- }
- 
- #endif /* CONFIG_OF_GPIO */
- 
-+/**
-+ * of_get_gpio - Get a GPIO number to use with GPIO API
-+ * @np:		device node to get GPIO from
-+ * @index:	index of the GPIO
-+ *
-+ * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
-+ * value on the error condition.
-+ */
-+static inline int of_get_gpio(struct device_node *np, int index)
-+{
-+	return of_get_gpio_flags(np, index, NULL);
-+}
-+
- #endif /* __LINUX_OF_GPIO_H */
--- 
-1.5.5.4
+thx,
+Chandru  
