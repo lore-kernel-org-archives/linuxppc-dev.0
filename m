@@ -1,16 +1,27 @@
-Return-Path: <hugh@veritas.com>
-Date: Fri, 25 Jul 2008 19:45:00 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: CONFIG_FRAME_POINTER [was [PATCH] x86: BUILD_IRQ say .text]
-In-Reply-To: <20080724104459.GI28817@elte.hu>
-Message-ID: <Pine.LNX.4.64.0807251839190.20617@blonde.site>
-References: <Pine.LNX.4.64.0807211828470.26173@blonde.site>
-	<20080724104459.GI28817@elte.hu>
+Return-Path: <glikely@secretlab.ca>
+Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.244])
+	by ozlabs.org (Postfix) with ESMTP id E257EDE0AD
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 04:52:40 +1000 (EST)
+Received: by hs-out-0708.google.com with SMTP id z77so697994hsz.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 11:52:38 -0700 (PDT)
+Message-ID: <fa686aa40807251152t22848f69l924b0f83f1871165@mail.gmail.com>
+Date: Fri, 25 Jul 2008 14:52:38 -0400
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: [PATCH v3 1/4] of: adapt of_find_i2c_driver() to be usable by SPI
+	also
+In-Reply-To: <9e4733910807251002w7da115e5r53600f1cf4e3891@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: the arch/x86 maintainers <x86@kernel.org>, Linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+	<20080725073311.8485.16226.stgit@trillian.secretlab.ca>
+	<9e4733910807250840n48c6ae79l27af4f320b5b1df1@mail.gmail.com>
+	<fa686aa40807250921v73bec21cya6b4cd494f12f2e8@mail.gmail.com>
+	<9e4733910807251002w7da115e5r53600f1cf4e3891@mail.gmail.com>
+Cc: spi-devel-general@lists.sourceforge.net, akpm@linux-foundation.org,
+	dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,92 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 24 Jul 2008, Ingo Molnar wrote:
-> * Hugh Dickins <hugh@veritas.com> wrote:
-> 
-> > I've been using -fno-unit-at-a-time (to lessen inlining, for easier 
-> > debugging) for a long time
-> 
-> Should we perhaps enable this automatically on CONFIG_FRAME_POINTER=y 
-> builds? Although a separate, default-off config option might be better, 
+On Fri, Jul 25, 2008 at 1:02 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On 7/25/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+>> On Fri, Jul 25, 2008 at 11:40 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
+>>  > On 7/25/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+>>  >>  + * First method is to lookup the compatible value in of_modalias_table.
+>>  >>  + * Second is to look for a "linux,<modalias>" entry in the compatible list
+>>  >>  + * and used that for modalias.  Third is to strip off the manufacturer
+>>  >>  + * prefix from the first compatible entry and use the remainder as modalias
+>>  >
+>>  > I also think this is a problem. Embedding the name of Linux device
+>>  > drivers into device firmware makes it almost impossible to rename the
+>>  > device driver.  Again, what is a case where generic part numbers can't
+>>  > be listed in the alias section of the linux device driver?
+>>  >
+>>  > Even eeprom was just fixed to take generic part numbers (at24).
+>>
+>> Again, I agree, but this change is very much a stop gap measure to get
+>>  things working in a sane way without having to create bad device tree
+>>  bindings (device tree bindings are hard to change, code is not).  I've
+>>  been considering posting a patch to remove this clause from the
+>>  functions, but that needs to be reviewed separately from this change.
+>
+> Isn't putting "compatible="linux,modalias"" into your device tree a
+> really bad idea?
 
-I'm content to go on patching the Makefile to suit my own private debug
-proclivities, somewhat reluctant to foist them upon others.  But I must
-have found no-unit-at-a-time made things clearer at some point,
-and assume it is still being useful.
+Yes, it is, but I still need to preserve existing behavior in this
+patch.  That change needs to be reviewed separately.  I'll submit
+another patch to deal with this.
 
-Whether it deserves its own config option, hmm, not sure of that.
-But agree it shouldn't really go into CONFIG_FRAME_POINTER=y
-(though notice that already bundles no-optimize-sibling-calls).
+g.
 
-I rather think CONFIG_FRAME_POINTER shouldn't exist at all (or be
-a private, config-user-invisible, specific-to-a-few-arches thing):
-what one wants to configure is how far to sacrifice cpu performance
-and kernel smallness to getting a good stacktrace.  Frame pointer
-is just an implementation detail on that, appropriate to some arches.
-Perhaps three settings: no stacktrace, fair stacktrace, best stacktrace.
-
-I've Cc'ed Ben and linuxppc-dev because I wonder if they're aware
-that several options (I got it from LATENCYTOP, but I think LOCKDEP
-and FTRACE and some others) are doing a "select FRAME_POINTER",
-which forces CONFIG_FRAME_POINTER=y on PowerPC, even though
-FRAME_POINTER is not an option offered on PowerPC.  The
-resulting kernels appear to run okay, but I was surprised.
-
-> i'd not be surprised if there were more regressions in this area, it's a 
-> seldom used build vector.
-
-There'd probably be a lot more if we weren't (recently?) supporting
-compilers which only manage no-unit-at-a-time.  The only issue I get
-in my kernel builds is with sched_clock() - but I've not been trying
-allyesconfig or randconfig.  Here's a patch: but whereas the BUILD_IRQ
-one seemed worth sending because the problem might crop up in other
-ways and waste someone's time, this one just depends on your taste.
-
-
-[PATCH] sched: move sched_clock before first use
-
-Move sched_clock() up to stop warning: weak declaration of `sched_clock'
-after first use results in unspecified behavior (if -fno-unit-at-a-time).
-
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-
- kernel/sched_clock.c |   19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
-
---- 2.6.26-git/kernel/sched_clock.c	2008-07-18 11:33:34.000000000 +0100
-+++ linux/kernel/sched_clock.c	2008-07-18 11:57:46.000000000 +0100
-@@ -32,6 +32,15 @@
- #include <linux/ktime.h>
- #include <linux/module.h>
- 
-+/*
-+ * Scheduler clock - returns current time in nanosec units.
-+ * This is default implementation.
-+ * Architectures and sub-architectures can override this.
-+ */
-+unsigned long long __attribute__((weak)) sched_clock(void)
-+{
-+	return (unsigned long long)jiffies * (NSEC_PER_SEC / HZ);
-+}
- 
- #ifdef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
- 
-@@ -321,16 +330,6 @@ EXPORT_SYMBOL_GPL(sched_clock_idle_wakeu
- 
- #endif
- 
--/*
-- * Scheduler clock - returns current time in nanosec units.
-- * This is default implementation.
-- * Architectures and sub-architectures can override this.
-- */
--unsigned long long __attribute__((weak)) sched_clock(void)
--{
--	return (unsigned long long)jiffies * (NSEC_PER_SEC / HZ);
--}
--
- unsigned long long cpu_clock(int cpu)
- {
- 	unsigned long long clock;
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
