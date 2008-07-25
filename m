@@ -1,14 +1,20 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 256D4DE4BB
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 09:06:24 +1000 (EST)
-Date: Fri, 25 Jul 2008 18:06:17 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix vio build warnings
-Message-ID: <20080725230617.GL9594@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6A007DDF78
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 09:11:23 +1000 (EST)
+Subject: [git pull] Please pull from powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 26 Jul 2008 09:11:13 +1000
+Message-Id: <1217027473.11188.120.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	akpm <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,28 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-arch/powerpc/kernel/vio.c:1034: warning: function declaration isn’t a prototype
-arch/powerpc/kernel/vio.c:1035: warning: function declaration isn’t a prototype
+Hi Linus !
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
- arch/powerpc/kernel/vio.c |    4 ++--
+Please pull from:
+﻿
+﻿git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+To get one patch that fixes a boot problem introduced by yesterday's
+serie.
+
+Thanks !
+Ben.
+
+ arch/powerpc/kernel/cputable.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index ade8aea..6952384 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -1031,8 +1031,8 @@ void vio_cmo_set_dev_desired(struct vio_dev *viodev, size_t desired) {}
- static int vio_cmo_bus_probe(struct vio_dev *viodev) { return 0; }
- static void vio_cmo_bus_remove(struct vio_dev *viodev) {}
- static void vio_cmo_set_dma_ops(struct vio_dev *viodev) {}
--static void vio_cmo_bus_init() {}
--static void vio_cmo_sysfs_init() { }
-+static void vio_cmo_bus_init(void) {}
-+static void vio_cmo_sysfs_init(void) { }
- #endif /* CONFIG_PPC_SMLPAR */
- EXPORT_SYMBOL(vio_cmo_entitlement_update);
- EXPORT_SYMBOL(vio_cmo_set_dev_desired);
--- 
-1.5.6.2
+Nathan Lynch (1):
+      powerpc: Fix boot problem due to AT_BASE_PLATFORM change
