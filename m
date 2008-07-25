@@ -1,35 +1,25 @@
-Return-Path: <chandru@in.ibm.com>
-Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F18C0DEA64
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 02:51:23 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id m6PGocwJ008755
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 02:50:38 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6PGpNQ91712212
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 02:51:23 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6PGpMEa024397
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 02:51:22 +1000
-From: Chandru <chandru@in.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/4][V2] powerpc : add support for linux,
-	usable-memory properties for drconf memory
-Date: Fri, 25 Jul 2008 22:21:18 +0530
-References: <200807080014.24910.chandru@in.ibm.com>
-	<200807221431.49268.chandru@in.ibm.com>
-	<18565.42340.817405.289271@cargo.ozlabs.ibm.com>
-In-Reply-To: <18565.42340.817405.289271@cargo.ozlabs.ibm.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.237])
+	by ozlabs.org (Postfix) with ESMTP id C3F74DEB9B
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 03:02:42 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so2911499rvb.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 10:02:41 -0700 (PDT)
+Message-ID: <9e4733910807251002w7da115e5r53600f1cf4e3891@mail.gmail.com>
+Date: Fri, 25 Jul 2008 13:02:41 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 1/4] of: adapt of_find_i2c_driver() to be usable by SPI
+	also
+In-Reply-To: <fa686aa40807250921v73bec21cya6b4cd494f12f2e8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807252221.19389.chandru@in.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+	<20080725073311.8485.16226.stgit@trillian.secretlab.ca>
+	<9e4733910807250840n48c6ae79l27af4f320b5b1df1@mail.gmail.com>
+	<fa686aa40807250921v73bec21cya6b4cd494f12f2e8@mail.gmail.com>
+Cc: spi-devel-general@lists.sourceforge.net, akpm@linux-foundation.org,
+	dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,25 +29,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 22 July 2008 14:46:20 Paul Mackerras wrote:
-> Chandru writes:
-> 
-> > Scan for linux,usable-memory properties in case of dynamic reconfiguration 
-> > memory . Support for kexec/kdump.
-> > 
-> > Signed-off-by: Chandru Siddalingappa <chandru@in.ibm.com>
-> 
-> Could we *please* have a more comprehensive patch description that
-> that?  Something which will help people coming along in two (or five
-> or ten) years time to understand what problem exists in the code, how
-> this patch solves it, and why this approach was chosen over any
-> alternative approaches?
-> 
-> Thanks,
-> Paul.
-> 
+On 7/25/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Fri, Jul 25, 2008 at 11:40 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
+>  > On 7/25/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+>  >> From: Grant Likely <grant.likely@secretlab.ca>
+>  >>
+>
+> >>  + * At the moment, a single table is used for all bus types because it is
+>  >>  + * assumed that the data size is small and that the compatible values
+>  >>  + * should already be distinct enough to differentiate between SPI, I2C
+>  >>  + * and other devices.
+>  >
+>  > Maybe add a section recommending to update the alias list in the linux
+>  > device driver before adding entries here? This table should be a last
+>  > resort. I'm not even sure this table should exist, what would be a
+>  > case where we would need to make an entry here instead of fixing the
+>  > device driver by adding an alias name?
+>
+>
+> In principle I agree.  However, this patch is simply porting the i2c
+>  specific code to something that can be used by both SPI and I2C.  I
+>  don't want to rework the actual mechanism in this particular patch.  I
+>  can submit an additional patch to change this along with reworking
+>  some of the behavior that needs to be improved.
+>
+>
+>  >>  + * First method is to lookup the compatible value in of_modalias_table.
+>  >>  + * Second is to look for a "linux,<modalias>" entry in the compatible list
+>  >>  + * and used that for modalias.  Third is to strip off the manufacturer
+>  >>  + * prefix from the first compatible entry and use the remainder as modalias
+>  >
+>  > I also think this is a problem. Embedding the name of Linux device
+>  > drivers into device firmware makes it almost impossible to rename the
+>  > device driver.  Again, what is a case where generic part numbers can't
+>  > be listed in the alias section of the linux device driver?
+>  >
+>  > Even eeprom was just fixed to take generic part numbers (at24).
+>
+>
+> Again, I agree, but this change is very much a stop gap measure to get
+>  things working in a sane way without having to create bad device tree
+>  bindings (device tree bindings are hard to change, code is not).  I've
+>  been considering posting a patch to remove this clause from the
+>  functions, but that needs to be reviewed separately from this change.
 
-Another alternate approach could be to create one 'linux,usable-drconf-memory' property and add all the usable memory regions into it, in a similar fashion to ibm,dynamic-memory property. For a given lmb in ibm,dynamic-memory , a corresponding usable-memory entry could be created which will contain 1 or more of (base,size) duple.  For each entry in this new 'linux,usable-drconf-memory' property, a counter within it will tell us how many (base,size) duple are available in it.  Some part of the current code may get duplicated. Let me go back and check if I can work on a patch for this approach .  
+Isn't putting "compatible="linux,modalias"" into your device tree a
+really bad idea?
 
-thx,
-Chandru  
+>
+>  Thanks,
+>
+> g.
+>
+>  --
+>  Grant Likely, B.Sc., P.Eng.
+>  Secret Lab Technologies Ltd.
+>
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
