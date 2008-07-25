@@ -1,22 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 791FDDE0D0
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 01:07:57 +1000 (EST)
-Message-Id: <BAF7B55C-75C2-4BCA-8686-34A843865C91@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1216973590.11188.99.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [git pull] Please pull from powerpc.git merge branch
-Date: Fri, 25 Jul 2008 10:07:43 -0500
-References: <1216973590.11188.99.camel@pasglop>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	akpm <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <wg@grandegger.com>
+Message-ID: <4889EE4C.9040705@grandegger.com>
+Date: Fri, 25 Jul 2008 17:16:28 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc: 85xx: add proper OF bus ids for the TQM85xx
+References: <48898470.80109@grandegger.com>
+	<fa686aa40807250620r1ab574basd07ecce6be2bc238@mail.gmail.com>
+In-Reply-To: <fa686aa40807250620r1ab574basd07ecce6be2bc238@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,14 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Grant Likely wrote:
+> On Fri, Jul 25, 2008 at 3:44 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>> Since recent modifications to the MPC I2C code, the MPC I2C buses are not
+>> found any more. This patch fixes the problem by adding proper OF
+>> bus ids.
+>>
+>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+>> ---
+>> arch/powerpc/platforms/85xx/tqm85xx.c |    6 +++---
+>> 1 file changed, 3 insertions(+), 3 deletions(-)
+>>
+>> Index: linux-2.6-galak/arch/powerpc/platforms/85xx/tqm85xx.c
+>> ===================================================================
+>> --- linux-2.6-galak.orig/arch/powerpc/platforms/85xx/tqm85xx.c
+>> +++ linux-2.6-galak/arch/powerpc/platforms/85xx/tqm85xx.c
+>> @@ -156,15 +156,15 @@ static void tqm85xx_show_cpuinfo(struct }
+>>
+>> static struct of_device_id __initdata of_bus_ids[] = {
+>> +       { .type = "soc", },
+>> +       { .compatible = "soc", },
+>>        { .compatible = "simple-bus", },
+> 
+> Ugh, i assume this is to support older .dts files that don't have
+> simple-bus in their compatible property?  Please put them at the end
+> of the list and put a comment ahead of them stating that they are
+> legacy support.  You should also state in the comment which boards or
+> dts files these entries provide support for.
 
-On Jul 25, 2008, at 3:13 AM, Benjamin Herrenschmidt wrote:
+Ah, I see. For the TQM8548 adding the following compatible line:
 
->
-> Benjamin Herrenschmidt (1):
->      Move update_mmu_cache() declaration from tlbflush.h to pgtable.h
+         soc8548@e0000000 {
+		...
+		compatible = "fsl,mpc8548-immr", "simple-bus"; 
 
-I'm guessing this was pretty trivial, but please post patches to the  
-list even if you've committed them to your tree.
 
-- k
+solved my issues. All other DTS files for the TQM85xx modules have this 
+line. It got lost somehow for the TQM8548. Thanks for pointing me to the 
+real problem. Forget this patch, I will send a new one fixing the DTS file.
+
+Wolfgang.
