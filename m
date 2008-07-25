@@ -1,29 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4F2FBDDDFF
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 14:04:35 +1000 (EST)
-Subject: Re: [RFC] 4xx hardware watchpoint support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: luisgpm@linux.vnet.ibm.com
-In-Reply-To: <1216829442.5727.97.camel@gargoyle>
-References: <1211391577.6232.15.camel@gargoyle>
-	<18484.60888.981390.893747@cargo.ozlabs.ibm.com>
-	<1213992894.6635.41.camel@gargoyle>
-	<20080719093752.5aada45c@zod.rchland.ibm.com>
-	<1216658194.5727.36.camel@gargoyle>
-	<20080721130551.23a06006@zod.rchland.ibm.com>
-	<1216777678.5727.82.camel@gargoyle>
-	<20080723115321.53aa655b@zod.rchland.ibm.com>
-	<1216829442.5727.97.camel@gargoyle>
-Content-Type: text/plain
-Date: Fri, 25 Jul 2008 14:00:33 +1000
-Message-Id: <1216958433.11188.70.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 35399DDEF3
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 14:13:41 +1000 (EST)
+Date: Fri, 25 Jul 2008 14:13:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: linux-next: kbuild tree build failure
+Message-Id: <20080725141330.c58e0a07.sfr@canb.auug.org.au>
+In-Reply-To: <20080707184038.aaeb8d40.sfr@canb.auug.org.au>
+References: <20080707184038.aaeb8d40.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Christoph Hellwig <hch@lst.de>,
-	Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__25_Jul_2008_14_13_30_+1000_0ZtDO6qI53KCAVxo"
+Cc: Benjamin, Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Mackerras <paulus@samba.org>, Paul
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,27 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-07-23 at 13:10 -0300, Luis Machado wrote:
-> On Wed, 2008-07-23 at 11:53 -0400, Josh Boyer wrote:
-> > Shouldn't this (and other places) be:
-> > 
-> > #if defined(CONFIG_44x) || defined(CONFIG_BOOKE)
-> > 
-> > if you are going to exclude 40x for now?  Otherwise this is still
-> > enabled on 405 and setting the wrong register.
-> > 
-> > josh
-> 
-> Yes, sorry. I wasn't aware of this specific define value. It makes
-> things easier to support 405's later.
-> 
-> Like so?
+--Signature=_Fri__25_Jul_2008_14_13_30_+1000_0ZtDO6qI53KCAVxo
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Please, next time, when you re-send a patch like that, re-include
-the full subject and patch description. You can add then blurbs after
-the --- line if you want to add things that won't make it to git.
+Hi Sam,
 
-I'll deal with that specific one for now.
+On Mon, 7 Jul 2008 18:40:38 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
+rote:
+>
+> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+>=20
+> arch/powerpc/platforms/cell/spu_base.c: In function '__spu_trap_data_seg':
+> arch/powerpc/platforms/cell/spu_base.c:194: error: duplicate case value
+> arch/powerpc/platforms/cell/spu_base.c:177: error: previously used here
 
+This still fails in linux-next today.  We need some solution before you
+send these commits to Linus.
+
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__25_Jul_2008_14_13_30_+1000_0ZtDO6qI53KCAVxo
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiJUusACgkQjjKRsyhoI8xkYACgmhCRENes9NWIVzQUS1jyLt6X
+7LgAnRvpsvjOAMwlflGTEU1ryoEnT92W
+=+Bz7
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__25_Jul_2008_14_13_30_+1000_0ZtDO6qI53KCAVxo--
