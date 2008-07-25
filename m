@@ -1,22 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 07BBEDE070
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 04:15:04 +1000 (EST)
-Message-Id: <FC85A2C9-A382-4E26-8A0A-33CD324DB632@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080725175410.GA12278@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: GPIO drivers, other patches?
-Date: Fri, 25 Jul 2008 13:14:58 -0500
-References: <AB4393B8-8578-4AFA-B23A-048F86A9A24D@kernel.crashing.org>
-	<20080715160048.GA31615@polina.dev.rtsoft.ru>
-	<20080715174201.GA2231@polina.dev.rtsoft.ru>
-	<20080725175410.GA12278@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <dwalker@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 848F3DE17B
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 04:19:50 +1000 (EST)
+Subject: Re: [PATCH v3 4/4] powerpc/mpc5200: Add mpc5200-spi (non-PSC)
+	device driver
+From: Daniel Walker <dwalker@mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20080725073326.8485.99210.stgit@trillian.secretlab.ca>
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+	<20080725073326.8485.99210.stgit@trillian.secretlab.ca>
+Content-Type: text/plain
+Date: Fri, 25 Jul 2008 14:19:14 -0400
+Message-Id: <1217009954.13539.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+	akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2008-07-25 at 03:33 -0400, Grant Likely wrote:
 
-On Jul 25, 2008, at 12:54 PM, Anton Vorontsov wrote:
+> +	if (status && (irq != NO_IRQ))
+> +		dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
+> +			status);
+> +
+> +	/* Check if there is another transfer waiting */
+> +	if (list_empty(&ms->queue))
+> +		return FSM_STOP;
 
-> On Tue, Jul 15, 2008 at 09:42:01PM +0400, Anton Vorontsov wrote:
->> On Tue, Jul 15, 2008 at 08:00:48PM +0400, Anton Vorontsov wrote:
->>> On Tue, Jul 15, 2008 at 10:10:21AM -0500, Kumar Gala wrote:
->>>> Anton,
->>>>
->>>> I think I've gotten most of the patches from you,
->>>
->>> Yes, much thanks!
->>>
->>>> but I know there are
->>>> few I've lost.  Can you just repost any patches that aren't in my
->>>> powerpc-next tree.
->>
->> While testing the tree in run-time found that this patch is missing:
->>
->> [PATCH 3/4] powerpc: rtc_cmos_setup: assign interrupts only if  
->> there is i8259 PIC
->> http://patchwork.ozlabs.org/linuxppc/patch?id=18915
->>
->> Without this patch rtc will fail to probe on MPC8610HPCD:
->>
->> rtc_cmos rtc_cmos: rtc core: registered rtc_cmos as rtc0
->> rtc_cmos: probe of rtc_cmos failed with error -38
->
-> Kumar, sorry for bothering you again... are there any open issues
-> with the patch, can we merge it?
+I don't think doing list_empty outside the critical section is totally
+safe.. You might want to move it down inside the spin_lock() section.
 
-I'd like Ben to ack it.
+> +	/* Get the next message */
+> +	spin_lock(&ms->lock);
 
-- k
+The part that's a little confusing here is that the interrupt can
+actually activate the workqueue .. So I'm wondering if maybe you could
+have this interrupt driven any workqueue driven at the same time? If you
+could then you would need the above to be 
+spin_lock_irq/spin_lock_irqsave ..
+
+Daniel
