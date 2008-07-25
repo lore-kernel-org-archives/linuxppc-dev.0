@@ -1,32 +1,22 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C1EA3DDF00
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 06:40:56 +1000 (EST)
-Date: Fri, 25 Jul 2008 13:38:12 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
-In-Reply-To: <20080718100549.GA28741@polina.dev.rtsoft.ru>
-Message-ID: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
-References: <Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp>
-	<20080717041531.GA27243@secretlab.ca>
-	<20080717140519.GA32617@polina.dev.rtsoft.ru>
-	<20080717141335.GA2219@polina.dev.rtsoft.ru>
-	<20080717150422.GC31932@secretlab.ca>
-	<20080717152006.GA26120@polina.dev.rtsoft.ru>
-	<fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
-	<Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
-	<20080717234201.GA15745@polina.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
-	<20080718100549.GA28741@polina.dev.rtsoft.ru>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 01115DDF5B
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 06:41:06 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: 82xx performance
+Date: Fri, 25 Jul 2008 15:41:00 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B04BC5B2A@ismail.innsys.innovsys.com>
+In-Reply-To: <200807172332.18030.arnd@arndb.de>
+References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
+	<200807172143.57576.arnd@arndb.de>
+	<DCEAAC0833DD314AB0B58112AD99B93B04B34E18@ismail.innsys.innovsys.com>
+	<200807172332.18030.arnd@arndb.de>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Arnd Bergmann" <arnd@arndb.de>,
+	<linuxppc-dev@ozlabs.org>
+Cc: Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,76 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here are my patches for the OF bindings.  The first is just a tiny change to
-the leds code to silence a warning.  The second is the real patch.
+> From: Arnd Bergmann [mailto:arnd@arndb.de]=20
+> On Thursday 17 July 2008, Rune Torgersen wrote:
+> > Arnd Bergmann wrote:
+> > > So again, nothing conclusive. I'm running out of ideas.
+> >=20
+> > Is the syscall path different or the same on ppc and powerpc?
+> > Any differences in the task switching, irq handling or page fault
+> > handling?
+> >=20
+>=20
+> It's all different in suble ways, but those changes should only
+> show up in the system time accounting, not user time accounting.
 
-The leds-gpio driver gets two sub-options in Kconfig, one for platform
-device support and one for openfirmware platform device support.
+I've been running the workload this board will see. On a 2.6.18 kernel
+%idle is ~50% and %wa (waiting for IO) is less than 1% most of the time.
+On 2.6.25, the idle% is lower (by about 10-15%) and the %wa is
+consistently hovering around 20-30% sometimes spiking to 100%.
 
-There is support for setting an LED trigger.  I didn't include support for
-active-low or initial brightness, but I think those would be good features
-to add.  See below for more on that.
+The workload involves quite a bit of socket IO (TCP, UDP, Unix Sockets
+and TIPC) and disk IO.
+Any easy way of finding what is causing the wait for IO?
 
-Since each device node can describe multiple leds, I used "gpio-leds"
-instead of "gpio-led" for the compatible property.
-
-Examples of the dts syntax:
-
-leds {
-         compatible = "gpio-leds";
-         hdd {
-                 label = "IDE activity";
-                 gpios = <&mcu_pio 0 0>;
-                 function = "ide-disk";
-         };
-};
-
-run-control {
-         compatible = "gpio-leds";
-         red {
-                 gpios = <&mpc8572 6 0>;
-         };
-         green {
-                 gpios = <&mpc8572 7 0>;
-         };
-}
-
-
-On Fri, 18 Jul 2008, Anton Vorontsov wrote:
-> Later I tried to use aliases for default-trigger.
->
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057244.html
-
-I doesn't seem to me that the alias method will work very well.  If I want
-an LED that starts on, I need to add code to the kernel to support an
-"led-on-while-kernel-boots" alias?  And if I want red & green leds to flash
-while booting, I need to add aliases "led-flashing-while-kernel-boots-1" and
-"led-flashing-while-kernel-boots-2", since you can't assign two leds to the
-same alias?
-
-> As for linux,default-brightness... we don't need this since now we
-> have default-on trigger.
-
-Except we can't use triggers....
-
-There is an issue with the default-on trigger, besides requiring led
-triggers be turned on and the extra code that needs.  It causes the led to
-have a glitch in it.  Suppose the LED is already on from reset or the boot
-loader.  When the gpio is allocated, it's allocated with an initial value of
-off.  Then, later, it's turned back on when the trigger runs.  But say the
-trigger doesn't run?
-
-Here's a real example.  I have an LED that comes on the board powers on.  It
-was supposed to turn off when the kernel has finished booting.  But suppose
-the kernel panics between the gpio getting lowered when the led is added and
-the trigger turning it back on?  Now the LED is off and it appears the
-problem happened after the kernel finished booting, but really it happened
-during the kernel boot.  In an embedded system with no console, that's quite
-a bit of misinformation.  It can be entirely avoided by changing just three
-lines of code with the leds-gpio driver to add an option to start the led
-on.
-
-It could also be the case that the gpio the led is on also triggers some
-other piece of hardware.  An alarm that's on the same line as a fault led
-for example.  The glitch created by the default-on trigger could be
-unacceptable in that case.
+(Ive been trying to get lttng to work, but not any good results so far).
