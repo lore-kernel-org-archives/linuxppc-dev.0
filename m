@@ -1,23 +1,20 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 50C82DDF35
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 17:32:57 +1000 (EST)
-Date: Fri, 25 Jul 2008 09:32:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: sfx.c driver build failure
-Message-ID: <20080725073225.GB21824@elte.hu>
-References: <1216966559.11188.85.camel@pasglop>
-	<20080725171715.9287c823.sfr@canb.auug.org.au>
+Return-Path: <glikely@secretlab.ca>
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.225])
+	by ozlabs.org (Postfix) with ESMTP id 15E96DDF47
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 17:33:10 +1000 (EST)
+Received: by qb-out-0506.google.com with SMTP id a33so3784837qbd.1
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 00:33:09 -0700 (PDT)
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH v3 0/4 REPOST] OF infrastructure for SPI devices
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	spi-devel-general@lists.sourceforge.net,
+	dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org,
+	jonsmirl@gmail.com
+Date: Fri, 25 Jul 2008 03:33:05 -0400
+Message-ID: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080725171715.9287c823.sfr@canb.auug.org.au>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Jeff Garzik <jgarzik@pobox.com>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	Michael Brown <mbrown@fensystems.co.uk>
+Content-Type: text/plain; charset="utf-8"
+Sender: Grant Likely <glikely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I don't know what to do with these patches.  I'd really like to see them
+in .27, and now that akpm has cleared his queue, the prerequisite patch
+has been merged so they are ready to go in.  However, even though there
+has been favourable reception on the SPI and linuxppc lists for these
+changes I don't have any acks from anybody yet.
 
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+David, can you please reply on if you are okay with these patches
+getting merged?  If so, do you want me to merge them via my tree, or
+do you want to pick them up?
 
-> On Fri, 25 Jul 2008 16:15:59 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >
-> > The sfx driver (which happens to be part of some of our test configs)
-> > fails to build in current Linus tree on powerpc with this error:
-> > 
-> > /home/benh/kernels/linux-powerpc/drivers/net/sfc/efx.c: In function ‘efx_probe_interrupts’:
-> > /home/benh/kernels/linux-powerpc/drivers/net/sfc/efx.c:845: error: lvalue required as unary ‘&’ operand
-> 
-> Commit 695a6b456307455a10059512208e8ed0d376ecd3 "topology: work around 
-> topology_core_siblings() breakage" in linux-next (from the cpus4096 
-> tree) comments out the offending lines ...  With the comment "the 
-> topology API is a mess right now".
+Thanks,
+g.
 
-there's a patch from Mike Travis that solves it all from grounds up and 
-which approach has the ack of Rusty as well, but it's not fully tested 
-through yet - i will get to it later today.
-
-	Ingo
+--
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
