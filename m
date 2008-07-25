@@ -1,19 +1,20 @@
-Return-Path: <mbrown@fensystems.co.uk>
-Received: from sprocket.fensystems.co.uk (sprocket.fensystems.co.uk
-	[212.13.204.53]) by ozlabs.org (Postfix) with ESMTP id 70A5EDE0A5
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 18:10:05 +1000 (EST)
-Date: Fri, 25 Jul 2008 08:35:55 +0100 (BST)
-From: Michael Brown <mbrown@fensystems.co.uk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: sfx.c driver build failure
-In-Reply-To: <1216966559.11188.85.camel@pasglop>
-Message-ID: <Pine.LNX.4.62.0807250831440.8217@dolphin.home>
-References: <1216966559.11188.85.camel@pasglop>
+Return-Path: <lark@linux.net.cn>
+Received: from mx.linux.net.cn (unknown [210.82.31.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7BB41DE4EB
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 20:16:01 +1000 (EST)
+Message-ID: <4889A7D6.1070701@linux.net.cn>
+Date: Fri, 25 Jul 2008 18:15:50 +0800
+From: Wang Jian <lark@linux.net.cn>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="656896-1967781521-1216971355=:8217"
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Jeff Garzik <jgarzik@pobox.com>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+To: richw@netcomuk.co.uk
+Subject: Re: DTS configuration of external interrupts on 8347
+References: <4887471E.6070306@btconnect.com>	<20080723131335.00eadc6a@lappy.seanm.ca>
+	<48889A5B.5030200@btconnect.com>
+In-Reply-To: <48889A5B.5030200@btconnect.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Richard Whitlock wrote:
+> Sean MacLennan wrote:
+>> On Wed, 23 Jul 2008 15:58:38 +0100
+>> "Richard Whitlock" <richard.whitlo@btconnect.com> wrote:
+>>
+>>  
+>>> I have a small problem with a port of linux 2.6.26 to a custom board.
+>>> Our board is almost identical to the Analogue & Micro asp 8347 board,
+>>> so I'm using Kumar Gala's excellent fsl tree (thank you Kumar) as it 
+>>> already has a defconfig for the asp.
+>>> Thanks also to Bryan O'Donoghue for pointing us in the direction of
+>>> the asp port in the first place.
+>>>
+>>> The problem we have is I am unable to request an external interrupt.
+>>> We have an FPGA which has an interrupt line - HW IRQ_0, so thats
+>>> linux IRQ 48. I have added the following to the dts file:
+>>>
+>>> fpgaKFAF@0xF8000000 {
+>>>                 interrupts = <48 8>;
+>>>                 interrupt-parent = <&ipic>;
+>>> }
+>>>
+>>> but whenever I call request_irq() it returns -ENOSYS.
+>>>
+>>> The driver loads fine, and the open function does very little - a
+>>> call to ioremap() - which works, and a call to request_irq() which
+>>> does not. Is there anything else I have to do to configure this
+>>> interrupt?
+>>>     
+>>
+>> I don't think you have enough information in the dts. We do the same
+>> thing on the warp (you can look at the warp.dts):
+>>
+>> fpga@2,0 {
+>>     compatible = "pika,fpga";
+>>     reg = <0x00000002 0x00000000 0x00001000>;
+>>     interrupts = <0x18 0x8>;
+>>     interrupt-parent = <&UIC0>;
+>> };
+>>
+>> You need the compatible, maybe "kfaf,fpga", and I believe the reg entry
+>> although you could try without it.
+>>
+>> You then can use:
+>>
+>>     of_find_compatible_node
+>>     irq_of_parse_and_map
+>>     request_irq
+>>
+>> platforms/44x/warp.c shows an example using the ad7414. Just change the
+>> ad7414 string to your compatible string.
+>>
+>> Cheers,
+>>    Sean
+>>
+>>
+>>
+>>   
+> Sean,
+> 
+> Thanks for that - our original code had no call to irq_of_parse_and_map().
+> We've put that in, as well as a call to of_find_compatible_node(), and 
+> now everything works fine. We have also modified our dts file along the 
+> lines you suggested.
+> Cheers,
+> 
 
---656896-1967781521-1216971355=:8217
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+The docs on OF/DTS are very poor in this specific area. For starters, 
+it's naturally assumed that after linking the drivers in and adding 
+device nodes to device tree source file, all is done. But that is NOT 
+enough, espeicially for non-bus device drivers. Sometime, you must add 
+init code to search device tree nodes you are interested, add device 
+objects for them.
 
-On Fri, 25 Jul 2008, Benjamin Herrenschmidt wrote:
-> The sfx driver (which happens to be part of some of our test configs)=20
-> fails to build in current Linus tree on powerpc with this error:
->=20
-> /home/benh/kernels/linux-powerpc/drivers/net/sfc/efx.c: In function =FF=
-=FFefx_probe_interrupts=FF=FF:
-> /home/benh/kernels/linux-powerpc/drivers/net/sfc/efx.c:845: error: lvalue=
- required as unary =FF=FF&=FF=FF oper
-> and
-
-I'm not the maintainer of that code; I wrote the original version, but=20
-it's now maintained by Solarflare.
-
-I don't see anything on that line that ought to be architecture-specific. =
-=20
-Could you send me the preprocessed efx.c from your powerpc build?
-
-Michael
---656896-1967781521-1216971355=:8217--
+I see a bunch of patches on dts documentation are pending for 2.6.27. 
+Wish this area will be improved.
