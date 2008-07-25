@@ -1,26 +1,26 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 0CA25DE170
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp3.netcologne.de (smtp3.netcologne.de [194.8.194.66])
+	by ozlabs.org (Postfix) with ESMTP id 2F285DEA79
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Jul 2008 21:22:18 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KMLNH-0004Re-2J
-	for linuxppc-embedded@ozlabs.org; Fri, 25 Jul 2008 04:22:15 -0700
-Message-ID: <18649823.post@talk.nabble.com>
-Date: Fri, 25 Jul 2008 04:22:15 -0700 (PDT)
-From: Mirek23 <miroslaw.dach@psi.ch>
+	Sat, 26 Jul 2008 05:48:11 +1000 (EST)
+Received: from antares (xdsl-87-79-97-26.netcologne.de [87.79.97.26])
+	by smtp3.netcologne.de (Postfix) with ESMTP id 1929E67DD1
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 25 Jul 2008 21:48:09 +0200 (CEST)
+Received: from antares (localhost [127.0.0.1])
+	by antares (Postfix) with ESMTPS id C17E5BA06D
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 25 Jul 2008 21:48:08 +0200 (CEST)
+Date: Fri, 25 Jul 2008 21:48:00 +0200
+From: =?UTF-8?q?Albrecht_Dre=C3=9F?= <albrecht.dress@arcor.de>
+Subject: Re: [OT] write flash on MPC5200 board via jtag
 To: linuxppc-embedded@ozlabs.org
-Subject: RE: Xilinx Linux 2.6 for XPS LL_TEMAC and LL_FIFO problem
-In-Reply-To: <20080724132453.C8F1010F0077@mail56-dub.bigfish.com>
+In-Reply-To: <9e4733910807221530vd5573d3oc2b56f544ab1c1f6@mail.gmail.com>
+	(from jonsmirl@gmail.com on Wed Jul 23 00:30:10 2008)
+Message-Id: <1217015287l.5674l.0l@antares>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <BAY115-W186EA84A950C17657AD8D9B20B0@phx.gbl>
-	<EDAE140DF1B2FC42B5867C22CA0B333FA99D2F@XMBIL132.northgrum.com>
-	<20080316214832.3F77A538046@mail141-sin.bigfish.com>
-	<18628194.post@talk.nabble.com>
-	<EDAE140DF1B2FC42B5867C22CA0B333FFA5D56@XMBIL132.northgrum.com>
-	<20080724132453.C8F1010F0077@mail56-dub.bigfish.com>
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature"; boundary="=-MV64dST2gtna7Q2Znx/2"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -31,37 +31,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--=-MV64dST2gtna7Q2Znx/2
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi John and Mike,
+Hi all!
 
-Thank you for your reply. We have modified out FPGA design and now we have
-LL_TEMAC with LL_DMA component connected instead of the LL_FIFO. Before
-building linux kernel we have tried to build the u-boot (downloaded from the
-xilinx-git tree).
+Thank you so much for your tips, they were really helpful!
 
-It was relatively easy to build u-boot which has the ll_temac with ll_dma
-support.
+Am 23.07.08 00:30 schrieb(en) Jon Smirl:
+> I haven't tried it, but a Macraigor USB Wiggler supports the MPC5200 =20
+> and it's $250.
+[snip]
+> Let me know if you try it and it works.
 
-next we have tried to run u-boot on our ppc (virtex-4 FX12). All went fine
-till the moment to establish the communication with the network.
+I guess I will try this one, and of course give you feedback.  Do not =20
+expect this too fast, though, I have to get it to Europe, and test it =20
+with the Lite board first.
 
-I put some debug messages to the xilinx ll_dma and ll_temac drivers and we
-have found that u-boot hangs 
-during dma initialisation:
+Thanks again,
+Albrecht.
 
-more specifically in the function calls :
-       XLlDma_Initialize(XLlDma * InstancePtr, u32 BaseAddress) 
-               XLlDma_Reset(XLlDma * InstancePtr) 
-                         XLlDma_mBdRingSnapShotCurrBd(TxRingPtr);
 
-Do you have any idea what could be wrong with dma initialization?
+--=-MV64dST2gtna7Q2Znx/2
+Content-Type: application/pgp-signature
 
-Best Regards
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
 
-Mirek
+iD8DBQBIii33n/9unNAn/9ERAsiyAJ96tBsiSAz6ehEjIjjbSGO6Lh935ACeJ/CP
+h/p9hamdo4wHC/0XIZ352b4=
+=EHtn
+-----END PGP SIGNATURE-----
 
- 
-
--- 
-View this message in context: http://www.nabble.com/Compile-time-error%2C-compiling-Xilinx-Linux-2.6-for-XPS-LLTEMAC-tp16065692p18649823.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+--=-MV64dST2gtna7Q2Znx/2--
