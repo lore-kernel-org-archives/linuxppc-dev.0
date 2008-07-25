@@ -1,20 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 13285DE0E9
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 06:25:58 +1000 (EST)
-Message-Id: <05912EE6-31DE-40F4-A255-B716702033D9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: luisgpm@linux.vnet.ibm.com
-In-Reply-To: <1217015418.29012.67.camel@gargoyle>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH] powerpc: clean up the Book-E HW watchpoint support
-Date: Fri, 25 Jul 2008 15:18:50 -0500
-References: <Pine.LNX.4.64.0807251425390.29749@blarg.am.freescale.net>
-	<1217015418.29012.67.camel@gargoyle>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C1EA3DDF00
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 06:40:56 +1000 (EST)
+Date: Fri, 25 Jul 2008 13:38:12 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH v3] leds: implement OpenFirmare GPIO LED driver
+In-Reply-To: <20080718100549.GA28741@polina.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0807161546010.12709@t2.domain.actdsltmp>
+	<20080717041531.GA27243@secretlab.ca>
+	<20080717140519.GA32617@polina.dev.rtsoft.ru>
+	<20080717141335.GA2219@polina.dev.rtsoft.ru>
+	<20080717150422.GC31932@secretlab.ca>
+	<20080717152006.GA26120@polina.dev.rtsoft.ru>
+	<fa686aa40807171105m22dda41dqb334dd5f7b2634d8@mail.gmail.com>
+	<Pine.LNX.4.64.0807171302190.27902@t2.domain.actdsltmp>
+	<20080717234201.GA15745@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0807171807420.29856@t2.domain.actdsltmp>
+	<20080718100549.GA28741@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +36,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Here are my patches for the OF bindings.  The first is just a tiny change to
+the leds code to silence a warning.  The second is the real patch.
 
-On Jul 25, 2008, at 2:50 PM, Luis Machado wrote:
+The leds-gpio driver gets two sub-options in Kconfig, one for platform
+device support and one for openfirmware platform device support.
 
-> Works for me.
+There is support for setting an LED trigger.  I didn't include support for
+active-low or initial brightness, but I think those would be good features
+to add.  See below for more on that.
+
+Since each device node can describe multiple leds, I used "gpio-leds"
+instead of "gpio-led" for the compatible property.
+
+Examples of the dts syntax:
+
+leds {
+         compatible = "gpio-leds";
+         hdd {
+                 label = "IDE activity";
+                 gpios = <&mcu_pio 0 0>;
+                 function = "ide-disk";
+         };
+};
+
+run-control {
+         compatible = "gpio-leds";
+         red {
+                 gpios = <&mpc8572 6 0>;
+         };
+         green {
+                 gpios = <&mpc8572 7 0>;
+         };
+}
+
+
+On Fri, 18 Jul 2008, Anton Vorontsov wrote:
+> Later I tried to use aliases for default-trigger.
 >
-> I presume you had positive results on the Book-E as well.
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057244.html
 
-I havent had a chance to test this on our HW.
+I doesn't seem to me that the alias method will work very well.  If I want
+an LED that starts on, I need to add code to the kernel to support an
+"led-on-while-kernel-boots" alias?  And if I want red & green leds to flash
+while booting, I need to add aliases "led-flashing-while-kernel-boots-1" and
+"led-flashing-while-kernel-boots-2", since you can't assign two leds to the
+same alias?
 
-> By the way, thanks for cleaning it up.
+> As for linux,default-brightness... we don't need this since now we
+> have default-on trigger.
 
-np.
+Except we can't use triggers....
 
-- k
+There is an issue with the default-on trigger, besides requiring led
+triggers be turned on and the extra code that needs.  It causes the led to
+have a glitch in it.  Suppose the LED is already on from reset or the boot
+loader.  When the gpio is allocated, it's allocated with an initial value of
+off.  Then, later, it's turned back on when the trigger runs.  But say the
+trigger doesn't run?
+
+Here's a real example.  I have an LED that comes on the board powers on.  It
+was supposed to turn off when the kernel has finished booting.  But suppose
+the kernel panics between the gpio getting lowered when the led is added and
+the trigger turning it back on?  Now the LED is off and it appears the
+problem happened after the kernel finished booting, but really it happened
+during the kernel boot.  In an embedded system with no console, that's quite
+a bit of misinformation.  It can be entirely avoided by changing just three
+lines of code with the leds-gpio driver to add an option to start the led
+on.
+
+It could also be the case that the gpio the led is on also triggers some
+other piece of hardware.  An alarm that's on the same line as a fault led
+for example.  The glitch created by the default-on trigger could be
+unacceptable in that case.
