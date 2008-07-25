@@ -1,15 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40807250620r1ab574basd07ecce6be2bc238@mail.gmail.com>
-Date: Fri, 25 Jul 2008 09:20:22 -0400
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Wolfgang Grandegger" <wg@grandegger.com>
-Subject: Re: [PATCH] powerpc: 85xx: add proper OF bus ids for the TQM85xx
-In-Reply-To: <48898470.80109@grandegger.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <48898470.80109@grandegger.com>
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <ncase@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D2E90DDEEB
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 00:16:32 +1000 (EST)
+Subject: Re: [PATCH / RFC] net: don't grab a mutex within a timer context
+	in gianfar
+From: Nate Case <ncase@xes-inc.com>
+To: Sebastian Siewior <netdev@ml.breakpoint.cc>
+In-Reply-To: <20080723200337.GA5122@Chamillionaire.breakpoint.cc>
+References: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
+	<1216681028.7559.993.camel@localhost.localdomain>
+	<20080722205911.GA29840@Chamillionaire.breakpoint.cc>
+	<20080723200337.GA5122@Chamillionaire.breakpoint.cc>
+Content-Type: text/plain
+Date: Fri, 25 Jul 2008 09:16:00 -0500
+Message-Id: <1216995360.7559.1022.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Vitaly Bordug <vbordug@ru.mvista.com>,
+	Li Yang <leoli@freescale.com>, Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,35 +29,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 25, 2008 at 3:44 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> Since recent modifications to the MPC I2C code, the MPC I2C buses are not
-> found any more. This patch fixes the problem by adding proper OF
-> bus ids.
->
-> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-> ---
-> arch/powerpc/platforms/85xx/tqm85xx.c |    6 +++---
-> 1 file changed, 3 insertions(+), 3 deletions(-)
->
-> Index: linux-2.6-galak/arch/powerpc/platforms/85xx/tqm85xx.c
-> ===================================================================
-> --- linux-2.6-galak.orig/arch/powerpc/platforms/85xx/tqm85xx.c
-> +++ linux-2.6-galak/arch/powerpc/platforms/85xx/tqm85xx.c
-> @@ -156,15 +156,15 @@ static void tqm85xx_show_cpuinfo(struct }
->
-> static struct of_device_id __initdata of_bus_ids[] = {
-> +       { .type = "soc", },
-> +       { .compatible = "soc", },
->        { .compatible = "simple-bus", },
+On Wed, 2008-07-23 at 22:03 +0200, Sebastian Siewior wrote:
+> I moved it into a workqueue, this is what tg3 does.
+> I would convert the other three drivers unless $dude suggests a better
+> method or somebody else takes care....
+> 
+>  drivers/net/gianfar.c |   22 ++++++++++++++++++----
+>  drivers/net/gianfar.h |    2 ++
+>  2 files changed, 20 insertions(+), 4 deletions(-)
 
-Ugh, i assume this is to support older .dts files that don't have
-simple-bus in their compatible property?  Please put them at the end
-of the list and put a comment ahead of them stating that they are
-legacy support.  You should also state in the comment which boards or
-dts files these entries provide support for.
-
-g.
+This looks good to me.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Nate Case <ncase@xes-inc.com>
