@@ -1,15 +1,17 @@
-Return-Path: <l.fu@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id B4F22DE137
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 21:43:48 +1000 (EST)
-Date: Fri, 25 Jul 2008 13:43:41 +0200
-From: Luotao Fu <l.fu@pengutronix.de>
-To: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
-Subject: [spi][mpc52xx][PATCH] Fix mpc52xx_psc_spi master driver
-Message-ID: <20080725114341.GB6415@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vEao7xgI/oilGqZ+"
+Return-Path: <sebastien.dugue@bull.net>
+Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
+	by ozlabs.org (Postfix) with ESMTP id E1084DDFD1
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 22:58:54 +1000 (EST)
+Date: Fri, 25 Jul 2008 14:59:13 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: lockdep badness
+Message-ID: <20080725145913.64904640@bull.net>
+In-Reply-To: <20080724192300.GE9594@localdomain>
+References: <20080724192300.GE9594@localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,108 +22,61 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---vEao7xgI/oilGqZ+
-Content-Type: multipart/mixed; boundary="3lcZGd9BuhuYXNfi"
-Content-Disposition: inline
+  Hi,
+
+On Thu, 24 Jul 2008 14:23:00 -0500 Nathan Lynch <ntl@pobox.com> wrote:
+
+> I'm seeing warnings from the lockdep code itself in recent kernels on
+> a Power6 blade (v2.6.26 and benh's -next branch).
+> 
+> Something to do with powerpc's "lazy" interrupt-disabling, perhaps?
+> 
+> A couple of stack traces below, the first is from benh's tree, the
+> second is from 2.6.26.  The lockdep self-tests all pass at boot.
+> 
+> RTAS daemon started
+> RTAS: event: 295, Type: Dump Notification Event, Severity: 2
+> ------------[ cut here ]------------
+> Badness at kernel/lockdep.c:2719
+
+<snip>
+
+  I'm observing nearly the same thing (minus the ipr related badness) here with
+Ben's powerpc.git (master) on a JS22 blade:
+
+Freeing initrd memory: 2676k freed
+RTAS daemon started
+RTAS: event: 94, Type: Platform Information Event, Severity: 1
+------------[ cut here ]------------
+Badness at kernel/lockdep.c:2079
+NIP: c0000000000846dc LR: c0000000000846c0 CTR: 0000000000000000
+REGS: c0000001e353f9c0 TRAP: 0700   Not tainted  (2.6.26)
+MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 24000042  XER: 20000010
+TASK = c0000000efa58640[115] 'rtasd' THREAD: c0000001e353c000 CPU: 3
+GPR00: 0000000000000000 c0000001e353fc40 c0000000004efe50 0000000000000001 
+GPR04: 0000000000000001 c00000000003cc94 0000000000000001 636820202d203230 
+GPR08: 3465303000000000 c0000000009627a8 c0000000efa58e88 0000000000000001 
+GPR12: 3465303038200d0a c000000000525900 c000000000395ba0 4000000000c00000 
+GPR16: c0000000003943c8 0000000000000000 000000000029d000 000000000101c920 
+GPR20: 0000000000000000 0000000000000001 0000000000000744 0000000000000001 
+GPR24: c000000000538cf0 c0000001e3e74000 c00000000041b48c c0000000004c0060 
+GPR28: c0000000000847a4 c0000000efa58640 c0000000004b18d0 c0000001e353fc40 
+NIP [c0000000000846dc] .trace_hardirqs_on_caller+0xc4/0x170
+LR [c0000000000846c0] .trace_hardirqs_on_caller+0xa8/0x170
+Call Trace:
+[c0000001e353fcd0] [c0000000000847a4] .trace_hardirqs_on+0x1c/0x30
+[c0000001e353fd50] [c0000000002df554] ._spin_unlock_irqrestore+0x68/0xb8
+[c0000001e353fde0] [c00000000003cc94] .pSeries_log_error+0x3a4/0x400
+[c0000001e353fef0] [c00000000003cf28] .rtasd+0x98/0x100
+[c0000001e353ff90] [c0000000000295f8] .kernel_thread+0x4c/0x68
+Instruction dump:
+901d07ec 880d01ca 2fa00000 41be002c 481300a1 60000000 2fa30000 419e00a0 
+e93e80f8 80090000 2f800000 409e0090 <0fe00000> 48000088 e92d01a0 8009082c 
+Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+msgmni has been set to 15071
+Block layer SCSI generic (bsg) driver version 0.4 loaded (major 254)
+
+ ...
 
 
---3lcZGd9BuhuYXNfi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-this is a fix for full duplex transfer mode on the mpc52xx_psc_spi driver.
-Details see the patch header. Tested on a mpc5200b board.
-
-Cheers
-Luotao fu
---=20
-   Dipl.-Ing. Luotao Fu | Phone: +49-5121-206917-3
-Pengutronix - Linux Solutions for Science and Industry
-Entwicklungszentrum Nord     http://www.pengutronix.de
-
-
---3lcZGd9BuhuYXNfi
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="mpc52xx_psc_spi_fix_block_send.diff"
-Content-Transfer-Encoding: quoted-printable
-
-=46rom: Luotao Fu <l.fu@pengutronix.de>
-Subject: fix block transfer on mpc52xx psc spi
-
-  The block transfer routine in the mpc52xx psc spi driver misinterpret the
-  datasheet. According to the processor datasheet the chipselect is held as
-  long as the EOF is not written. Theoretically block of any sizes can be
-  transferd in this way. The old routine however writes an EOF after every
-  word, which has the size of size_of_word. This makes the transfer slow.
-  Also fixed some duplicate code.
-
-Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
-
----
- drivers/spi/mpc52xx_psc_spi.c |   22 +++++++---------------
- 1 file changed, 7 insertions(+), 15 deletions(-)
-
-Index: drivers/spi/mpc52xx_psc_spi.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/drivers/spi/mpc52xx_psc_spi.c.orig
-+++ b/drivers/spi/mpc52xx_psc_spi.c
-@@ -146,7 +146,6 @@ static int mpc52xx_psc_spi_transfer_rxtx
- 	unsigned rfalarm;
- 	unsigned send_at_once =3D MPC52xx_PSC_BUFSIZE;
- 	unsigned recv_at_once;
--	unsigned bpw =3D mps->bits_per_word / 8;
-=20
- 	if (!t->tx_buf && !t->rx_buf && t->len)
- 		return -EINVAL;
-@@ -162,22 +161,15 @@ static int mpc52xx_psc_spi_transfer_rxtx
- 		}
-=20
- 		dev_dbg(&spi->dev, "send %d bytes...\n", send_at_once);
--		if (tx_buf) {
--			for (; send_at_once; sb++, send_at_once--) {
--				/* set EOF flag */
--				if (mps->bits_per_word
--						&& (sb + 1) % bpw =3D=3D 0)
--					out_8(&psc->ircr2, 0x01);
-+		for (; send_at_once; sb++, send_at_once--) {
-+			/* set EOF flag before the last word is sent */
-+			if (send_at_once =3D=3D 1)
-+				out_8(&psc->ircr2, 0x01);
-+
-+			if (tx_buf)
- 				out_8(&psc->mpc52xx_psc_buffer_8, tx_buf[sb]);
--			}
--		} else {
--			for (; send_at_once; sb++, send_at_once--) {
--				/* set EOF flag */
--				if (mps->bits_per_word
--						&& ((sb + 1) % bpw) =3D=3D 0)
--					out_8(&psc->ircr2, 0x01);
-+			else
- 				out_8(&psc->mpc52xx_psc_buffer_8, 0);
--			}
- 		}
-=20
-=20
-
---3lcZGd9BuhuYXNfi--
-
---vEao7xgI/oilGqZ+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIibxtiruQY+UyUmERAnrnAJ9oG8A0N0/uPe+rL3fv/ELUTnTL6gCeKx8D
-i6ERK59IhmvpbVUcK4wDCKA=
-=iisq
------END PGP SIGNATURE-----
-
---vEao7xgI/oilGqZ+--
+  Sebastien.
