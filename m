@@ -1,20 +1,15 @@
-Return-Path: <lark@linux.net.cn>
-Received: from mx.linux.net.cn (unknown [210.82.31.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7BB41DE4EB
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 20:16:01 +1000 (EST)
-Message-ID: <4889A7D6.1070701@linux.net.cn>
-Date: Fri, 25 Jul 2008 18:15:50 +0800
-From: Wang Jian <lark@linux.net.cn>
+Return-Path: <l.fu@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id B4F22DE137
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 21:43:48 +1000 (EST)
+Date: Fri, 25 Jul 2008 13:43:41 +0200
+From: Luotao Fu <l.fu@pengutronix.de>
+To: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Subject: [spi][mpc52xx][PATCH] Fix mpc52xx_psc_spi master driver
+Message-ID: <20080725114341.GB6415@pengutronix.de>
 MIME-Version: 1.0
-To: richw@netcomuk.co.uk
-Subject: Re: DTS configuration of external interrupts on 8347
-References: <4887471E.6070306@btconnect.com>	<20080723131335.00eadc6a@lappy.seanm.ca>
-	<48889A5B.5030200@btconnect.com>
-In-Reply-To: <48889A5B.5030200@btconnect.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="vEao7xgI/oilGqZ+"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,79 +19,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Richard Whitlock wrote:
-> Sean MacLennan wrote:
->> On Wed, 23 Jul 2008 15:58:38 +0100
->> "Richard Whitlock" <richard.whitlo@btconnect.com> wrote:
->>
->>  
->>> I have a small problem with a port of linux 2.6.26 to a custom board.
->>> Our board is almost identical to the Analogue & Micro asp 8347 board,
->>> so I'm using Kumar Gala's excellent fsl tree (thank you Kumar) as it 
->>> already has a defconfig for the asp.
->>> Thanks also to Bryan O'Donoghue for pointing us in the direction of
->>> the asp port in the first place.
->>>
->>> The problem we have is I am unable to request an external interrupt.
->>> We have an FPGA which has an interrupt line - HW IRQ_0, so thats
->>> linux IRQ 48. I have added the following to the dts file:
->>>
->>> fpgaKFAF@0xF8000000 {
->>>                 interrupts = <48 8>;
->>>                 interrupt-parent = <&ipic>;
->>> }
->>>
->>> but whenever I call request_irq() it returns -ENOSYS.
->>>
->>> The driver loads fine, and the open function does very little - a
->>> call to ioremap() - which works, and a call to request_irq() which
->>> does not. Is there anything else I have to do to configure this
->>> interrupt?
->>>     
->>
->> I don't think you have enough information in the dts. We do the same
->> thing on the warp (you can look at the warp.dts):
->>
->> fpga@2,0 {
->>     compatible = "pika,fpga";
->>     reg = <0x00000002 0x00000000 0x00001000>;
->>     interrupts = <0x18 0x8>;
->>     interrupt-parent = <&UIC0>;
->> };
->>
->> You need the compatible, maybe "kfaf,fpga", and I believe the reg entry
->> although you could try without it.
->>
->> You then can use:
->>
->>     of_find_compatible_node
->>     irq_of_parse_and_map
->>     request_irq
->>
->> platforms/44x/warp.c shows an example using the ad7414. Just change the
->> ad7414 string to your compatible string.
->>
->> Cheers,
->>    Sean
->>
->>
->>
->>   
-> Sean,
-> 
-> Thanks for that - our original code had no call to irq_of_parse_and_map().
-> We've put that in, as well as a call to of_find_compatible_node(), and 
-> now everything works fine. We have also modified our dts file along the 
-> lines you suggested.
-> Cheers,
-> 
 
-The docs on OF/DTS are very poor in this specific area. For starters, 
-it's naturally assumed that after linking the drivers in and adding 
-device nodes to device tree source file, all is done. But that is NOT 
-enough, espeicially for non-bus device drivers. Sometime, you must add 
-init code to search device tree nodes you are interested, add device 
-objects for them.
+--vEao7xgI/oilGqZ+
+Content-Type: multipart/mixed; boundary="3lcZGd9BuhuYXNfi"
+Content-Disposition: inline
 
-I see a bunch of patches on dts documentation are pending for 2.6.27. 
-Wish this area will be improved.
+
+--3lcZGd9BuhuYXNfi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+this is a fix for full duplex transfer mode on the mpc52xx_psc_spi driver.
+Details see the patch header. Tested on a mpc5200b board.
+
+Cheers
+Luotao fu
+--=20
+   Dipl.-Ing. Luotao Fu | Phone: +49-5121-206917-3
+Pengutronix - Linux Solutions for Science and Industry
+Entwicklungszentrum Nord     http://www.pengutronix.de
+
+
+--3lcZGd9BuhuYXNfi
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="mpc52xx_psc_spi_fix_block_send.diff"
+Content-Transfer-Encoding: quoted-printable
+
+=46rom: Luotao Fu <l.fu@pengutronix.de>
+Subject: fix block transfer on mpc52xx psc spi
+
+  The block transfer routine in the mpc52xx psc spi driver misinterpret the
+  datasheet. According to the processor datasheet the chipselect is held as
+  long as the EOF is not written. Theoretically block of any sizes can be
+  transferd in this way. The old routine however writes an EOF after every
+  word, which has the size of size_of_word. This makes the transfer slow.
+  Also fixed some duplicate code.
+
+Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
+
+---
+ drivers/spi/mpc52xx_psc_spi.c |   22 +++++++---------------
+ 1 file changed, 7 insertions(+), 15 deletions(-)
+
+Index: drivers/spi/mpc52xx_psc_spi.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/drivers/spi/mpc52xx_psc_spi.c.orig
++++ b/drivers/spi/mpc52xx_psc_spi.c
+@@ -146,7 +146,6 @@ static int mpc52xx_psc_spi_transfer_rxtx
+ 	unsigned rfalarm;
+ 	unsigned send_at_once =3D MPC52xx_PSC_BUFSIZE;
+ 	unsigned recv_at_once;
+-	unsigned bpw =3D mps->bits_per_word / 8;
+=20
+ 	if (!t->tx_buf && !t->rx_buf && t->len)
+ 		return -EINVAL;
+@@ -162,22 +161,15 @@ static int mpc52xx_psc_spi_transfer_rxtx
+ 		}
+=20
+ 		dev_dbg(&spi->dev, "send %d bytes...\n", send_at_once);
+-		if (tx_buf) {
+-			for (; send_at_once; sb++, send_at_once--) {
+-				/* set EOF flag */
+-				if (mps->bits_per_word
+-						&& (sb + 1) % bpw =3D=3D 0)
+-					out_8(&psc->ircr2, 0x01);
++		for (; send_at_once; sb++, send_at_once--) {
++			/* set EOF flag before the last word is sent */
++			if (send_at_once =3D=3D 1)
++				out_8(&psc->ircr2, 0x01);
++
++			if (tx_buf)
+ 				out_8(&psc->mpc52xx_psc_buffer_8, tx_buf[sb]);
+-			}
+-		} else {
+-			for (; send_at_once; sb++, send_at_once--) {
+-				/* set EOF flag */
+-				if (mps->bits_per_word
+-						&& ((sb + 1) % bpw) =3D=3D 0)
+-					out_8(&psc->ircr2, 0x01);
++			else
+ 				out_8(&psc->mpc52xx_psc_buffer_8, 0);
+-			}
+ 		}
+=20
+=20
+
+--3lcZGd9BuhuYXNfi--
+
+--vEao7xgI/oilGqZ+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIibxtiruQY+UyUmERAnrnAJ9oG8A0N0/uPe+rL3fv/ELUTnTL6gCeKx8D
+i6ERK59IhmvpbVUcK4wDCKA=
+=iisq
+-----END PGP SIGNATURE-----
+
+--vEao7xgI/oilGqZ+--
