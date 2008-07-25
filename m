@@ -1,21 +1,27 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp124.sbc.mail.sp1.yahoo.com (smtp124.sbc.mail.sp1.yahoo.com
-	[69.147.64.97]) by ozlabs.org (Postfix) with SMTP id 1BA9CDDF7D
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 05:00:48 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v3 2/4] spi: split up spi_new_device() to allow two stage
-	registration.
-Date: Fri, 25 Jul 2008 12:00:44 -0700
-References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-	<20080725073316.8485.84001.stgit@trillian.secretlab.ca>
-In-Reply-To: <20080725073316.8485.84001.stgit@trillian.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200807251200.45321.david-b@pacbell.net>
-Cc: spi-devel-general@lists.sourceforge.net, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 58EABDE053
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 05:02:43 +1000 (EST)
+Message-Id: <0C5F7DBC-2B04-47C0-B14E-D5EEFD344176@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+To: Sebastian Siewior <netdev@ml.breakpoint.cc>
+In-Reply-To: <20080723200337.GA5122@Chamillionaire.breakpoint.cc>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH / RFC] net: don't grab a mutex within a timer context in
+	gianfar
+Date: Fri, 25 Jul 2008 15:02:11 -0400
+References: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
+	<1216681028.7559.993.camel@localhost.localdomain>
+	<20080722205911.GA29840@Chamillionaire.breakpoint.cc>
+	<20080723200337.GA5122@Chamillionaire.breakpoint.cc>
+Cc: Nate Case <ncase@xes-inc.com>, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Vitaly Bordug <vbordug@ru.mvista.com>,
+	Li Yang <leoli@freescale.com>, Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,291 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 25 July 2008, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
-> 
-> spi_new_device() allocates and registers an spi device all in one swoop.
-> If the driver needs to add extra data to the spi_device before it is
-> registered, then this causes problems.
 
-Mention an example please ... you have dev->archdata in mind, yes?
+On Jul 23, 2008, at 16:03, Sebastian Siewior wrote:
 
-
-> This patch splits the allocation and registration portions of code out
-> of spi_new_device() and creates three new functions; spi_alloc_device(),
-> spi_register_device(), and spi_device_release().
-
-Comment needs fixing:  *TWO* new functions, spi_device_release() was
-not needed ...
-
-
-> spi_new_device() is 
-> modified to use the new functions for allocation and registration.
-> None of the existing users of spi_new_device() should be affected by
-> this change.
-> 
-> Drivers using the new API can forego the use of an spi_board_info
-
-Strike "an".  :)
-
-> structure to describe the device layout and populate data into the
-> spi_device structure directly.
-> 
-> This change is in preparation for adding an OF device tree parser to
-> generate spi_devices based on data in the device tree.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-
-Given the comment fixes noted above and below:
-
-
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
-
-Thanks.
-
-
-
+> From: Sebastian Siewior <bigeasy@linutronix.de>
+>
+> I got the following backtrace while network was unavailble:
+>
+> |NETDEV WATCHDOG: eth0: transmit timed out
+> |BUG: sleeping function called from invalid context at /home/bigeasy/ 
+> git/linux-2.6-powerpc/kernel/mutex.c:87
+> |in_atomic():1, irqs_disabled():0
+> |Call Trace:
+> |[c0383d90] [c0006dd8] show_stack+0x48/0x184 (unreliable)
+> |[c0383db0] [c001e938] __might_sleep+0xe0/0xf4
+> |[c0383dc0] [c025a43c] mutex_lock+0x24/0x3c
+> |[c0383de0] [c019005c] phy_stop+0x20/0x70
+> |[c0383df0] [c018d4ec] stop_gfar+0x28/0xf4
+> |[c0383e10] [c018e8c4] gfar_timeout+0x30/0x60
+> |[c0383e20] [c01fe7c0] dev_watchdog+0xa8/0x144
+> |[c0383e30] [c002f93c] run_timer_softirq+0x148/0x1c8
+> |[c0383e60] [c002b084] __do_softirq+0x5c/0xc4
+> |[c0383e80] [c00046fc] do_softirq+0x3c/0x54
+> |[c0383e90] [c002ac60] irq_exit+0x3c/0x5c
+> |[c0383ea0] [c000b378] timer_interrupt+0xe0/0xf8
+> |[c0383ec0] [c000e5ac] ret_from_except+0x0/0x18
+> |[c0383f80] [c000804c] cpu_idle+0xcc/0xdc
+> |[c0383fa0] [c025c07c] etext+0x7c/0x90
+> |[c0383fc0] [c0338960] start_kernel+0x294/0x2a8
+> |[c0383ff0] [c00003dc] skpinv+0x304/0x340
+> |------------[ cut here ]------------
+>
+> The phylock was once a spinlock but got changed into a mutex via
+> commit 35b5f6b1a aka [PHYLIB: Locking fixes for PHY I/O potentially  
+> sleeping]
+>
+> Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
 > ---
-> 
->  drivers/spi/spi.c       |  139 ++++++++++++++++++++++++++++++++---------------
->  include/linux/spi/spi.h |   10 +++
->  2 files changed, 105 insertions(+), 44 deletions(-)
-> 
-> diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-> index ecca4a6..2077ef5 100644
-> --- a/drivers/spi/spi.c
-> +++ b/drivers/spi/spi.c
-> @@ -178,6 +178,96 @@ struct boardinfo {
->  static LIST_HEAD(board_list);
->  static DEFINE_MUTEX(board_lock);
->  
-> +/**
-> + * spi_alloc_device - Allocate a new SPI device
-> + * @master: Controller to which device is connected
-> + * Context: can sleep
-> + *
-> + * Allows a driver to allocate and initialize and spi_device without
-
-"a" spi_device
-
-> + * registering it immediately.  This allows a driver to directly
-> + * fill the spi_device with device parameters before calling
-> + * spi_add_device() on it.
-> + *
-> + * Caller is responsible to call spi_add_device() on the returned
-> + * spi_device structure to add it to the SPI master.  If the caller
-> + * needs to discard the spi_device without adding it, then it should
-> + * call spi_dev_put() on it.
-> + *
-> + * Returns a pointer to the new device, or NULL.
-> + */
-> +struct spi_device *spi_alloc_device(struct spi_master *master)
-> +{
-> +	struct spi_device	*spi;
-> +	struct device		*dev = master->dev.parent;
-> +
-> +	if (!spi_master_get(master))
-> +		return NULL;
-> +
-> +	spi = kzalloc(sizeof *spi, GFP_KERNEL);
-> +	if (!spi) {
-> +		dev_err(dev, "cannot alloc spi_device\n");
-> +		spi_master_put(master);
-> +		return NULL;
-> +	}
-> +
-> +	spi->master = master;
-> +	spi->dev.parent = dev;
-> +	spi->dev.bus = &spi_bus_type;
-> +	spi->dev.release = spidev_release;
-> +	device_initialize(&spi->dev);
-> +	return spi;
-> +}
-> +EXPORT_SYMBOL_GPL(spi_alloc_device);
-> +
-> +/**
-> + * spi_add_device - Add an spi_device allocated with spi_alloc_device
-
-Strike "an".
 
 
-> + * @spi: spi_device to register
-> + *
-> + * Companion function to spi_alloc_device.  Devices allocated with
-> + * spi_alloc_device can be added onto the spi bus with this function.
-> + *
-> + * Returns 0 on success; non-zero on failure
-> + */
-> +int spi_add_device(struct spi_device *spi)
-> +{
-> +	struct device *dev = spi->master->dev.parent;
-> +	int status;
-> +
-> +	/* Chipselects are numbered 0..max; validate. */
-> +	if (spi->chip_select >= spi->master->num_chipselect) {
-> +		dev_err(dev, "cs%d > max %d\n",
+Looks good to me.  Thanks for taking care of this.
 
-Nit;  "cs%d >= max %d" ... no need to carry this minor bug forward.
-
-
-> +			spi->chip_select,
-> +			spi->master->num_chipselect);
-> +		return -EINVAL;
-> +	}
-> +
-> +	/* Set the bus ID string */
-> +	snprintf(spi->dev.bus_id, sizeof spi->dev.bus_id,
-> +			"%s.%u", spi->master->dev.bus_id,
-> +			spi->chip_select);
-> +
-> +	/* drivers may modify this initial i/o setup */
-> +	status = spi->master->setup(spi);
-
-Hmm, I just noticed this *pre-existing* bug:  if there's already
-a device with this chipselect (so the device_add will fail, later),
-its configuration will be trashed here.  That's not a reason to NAK
-this patch.  (I think the fix would be as simple as calling setup
-in spi_drv_probe, and making sure that's always called even if for
-some odd reason the driver doesn't have its own probe routine.  If
-you want to fix that, great ... otherwise I'll try to get it done
-before 2.6.27 finishes.)
-
-
-> +	if (status < 0) {
-> +		dev_err(dev, "can't %s %s, status %d\n",
-> +				"setup", spi->dev.bus_id, status);
-> +		return status;
-> +	}
-> +
-> +	/* driver core catches callers that misbehave by defining
-> +	 * devices that already exist.
-> +	 */
-> +	status = device_add(&spi->dev);
-> +	if (status < 0) {
-> +		dev_err(dev, "can't %s %s, status %d\n",
-> +				"add", spi->dev.bus_id, status);
-> +		return status;
-> +	}
-> +
-> +	dev_dbg(dev, "registered child %s\n", spi->dev.bus_id);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(spi_add_device);
->  
->  /**
->   * spi_new_device - instantiate one new SPI device
-> @@ -197,7 +287,6 @@ struct spi_device *spi_new_device(struct spi_master *master,
->  				  struct spi_board_info *chip)
->  {
->  	struct spi_device	*proxy;
-> -	struct device		*dev = master->dev.parent;
->  	int			status;
->  
->  	/* NOTE:  caller did any chip->bus_num checks necessary.
-> @@ -207,66 +296,28 @@ struct spi_device *spi_new_device(struct spi_master *master,
->  	 * suggests syslogged diagnostics are best here (ugh).
->  	 */
->  
-> -	/* Chipselects are numbered 0..max; validate. */
-> -	if (chip->chip_select >= master->num_chipselect) {
-> -		dev_err(dev, "cs%d > max %d\n",
-> -			chip->chip_select,
-> -			master->num_chipselect);
-> -		return NULL;
-> -	}
-> -
-> -	if (!spi_master_get(master))
-> +	proxy = spi_alloc_device(master);
-> +	if (!proxy)
->  		return NULL;
->  
->  	WARN_ON(strlen(chip->modalias) >= sizeof(proxy->modalias));
->  
-> -	proxy = kzalloc(sizeof *proxy, GFP_KERNEL);
-> -	if (!proxy) {
-> -		dev_err(dev, "can't alloc dev for cs%d\n",
-> -			chip->chip_select);
-> -		goto fail;
-> -	}
-> -	proxy->master = master;
->  	proxy->chip_select = chip->chip_select;
->  	proxy->max_speed_hz = chip->max_speed_hz;
->  	proxy->mode = chip->mode;
->  	proxy->irq = chip->irq;
->  	strlcpy(proxy->modalias, chip->modalias, sizeof(proxy->modalias));
-> -
-> -	snprintf(proxy->dev.bus_id, sizeof proxy->dev.bus_id,
-> -			"%s.%u", master->dev.bus_id,
-> -			chip->chip_select);
-> -	proxy->dev.parent = dev;
-> -	proxy->dev.bus = &spi_bus_type;
->  	proxy->dev.platform_data = (void *) chip->platform_data;
->  	proxy->controller_data = chip->controller_data;
->  	proxy->controller_state = NULL;
-> -	proxy->dev.release = spidev_release;
->  
-> -	/* drivers may modify this initial i/o setup */
-> -	status = master->setup(proxy);
-> +	status = spi_add_device(proxy);
->  	if (status < 0) {
-> -		dev_err(dev, "can't %s %s, status %d\n",
-> -				"setup", proxy->dev.bus_id, status);
-> -		goto fail;
-> +		spi_dev_put(proxy);
-> +		return NULL;
->  	}
->  
-> -	/* driver core catches callers that misbehave by defining
-> -	 * devices that already exist.
-> -	 */
-> -	status = device_register(&proxy->dev);
-> -	if (status < 0) {
-> -		dev_err(dev, "can't %s %s, status %d\n",
-> -				"add", proxy->dev.bus_id, status);
-> -		goto fail;
-> -	}
-> -	dev_dbg(dev, "registered child %s\n", proxy->dev.bus_id);
->  	return proxy;
-> -
-> -fail:
-> -	spi_master_put(master);
-> -	kfree(proxy);
-> -	return NULL;
->  }
->  EXPORT_SYMBOL_GPL(spi_new_device);
->  
-> diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
-> index a9cc29d..d203d08 100644
-> --- a/include/linux/spi/spi.h
-> +++ b/include/linux/spi/spi.h
-> @@ -778,8 +778,18 @@ spi_register_board_info(struct spi_board_info const *info, unsigned n)
->   * use spi_new_device() to describe each device.  You can also call
->   * spi_unregister_device() to start making that device vanish, but
->   * normally that would be handled by spi_unregister_master().
-> + *
-> + * You can also use spi_alloc_device() and spi_add_device() to
-> + * for
-
-to, for, sex, ate ... voudou will appreciate!!  ;)
-
-Make that "to use" a two stage registration "sequence".
-
-> 		a two stage registration of an SPI device.  This gives the caller 
-> + * some more control over the spi_device structure before it is registered
-
-"... before it is registered, but requires that caller to initialize fields that
-would otherwise be defined using the board info."
-
-
->   */
->  extern struct spi_device *
-> +spi_alloc_device(struct spi_master *master);
-> +
-> +extern int
-> +spi_add_device(struct spi_device *spi);
-> +
-> +extern struct spi_device *
->  spi_new_device(struct spi_master *, struct spi_board_info *);
->  
->  static inline void
-> 
+Acked-by: Andy Fleming <afleming@freescale.com>
