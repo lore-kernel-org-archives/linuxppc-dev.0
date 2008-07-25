@@ -1,24 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 29C9FDEC8F
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 05:34:06 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so1166276anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 12:34:05 -0700 (PDT)
-Message-ID: <fa686aa40807251234n74e4cd75yd6313fa394533625@mail.gmail.com>
-Date: Fri, 25 Jul 2008 15:34:03 -0400
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH v3 2/4] spi: split up spi_new_device() to allow two stage
-	registration.
-In-Reply-To: <200807251200.45321.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-	<20080725073316.8485.84001.stgit@trillian.secretlab.ca>
-	<200807251200.45321.david-b@pacbell.net>
-Cc: spi-devel-general@lists.sourceforge.net, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8E34BDE0A8
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 05:38:40 +1000 (EST)
+Message-Id: <83A1F423-1C8B-405D-9118-D9BB51A8AA94@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <C786174A-78C1-40B6-ABC9-24E7419FA182@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [RFC] 4xx hardware watchpoint support
+Date: Fri, 25 Jul 2008 14:38:28 -0500
+References: <1211391577.6232.15.camel@gargoyle>
+	<18484.60888.981390.893747@cargo.ozlabs.ibm.com>
+	<1213992894.6635.41.camel@gargoyle>
+	<20080719093752.5aada45c@zod.rchland.ibm.com>
+	<1216658194.5727.36.camel@gargoyle>
+	<20080721130551.23a06006@zod.rchland.ibm.com>
+	<1216777678.5727.82.camel@gargoyle>
+	<20080723115321.53aa655b@zod.rchland.ibm.com>
+	<1216829442.5727.97.camel@gargoyle>
+	<1216958433.11188.70.camel@pasglop>
+	<C786174A-78C1-40B6-ABC9-24E7419FA182@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, Christoph Hellwig <hch@lst.de>,
+	ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +34,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 25, 2008 at 3:00 PM, David Brownell <david-b@pacbell.net> wrote:
-> On Friday 25 July 2008, Grant Likely wrote:
+
+On Jul 25, 2008, at 10:23 AM, Kumar Gala wrote:
+
+>
+> On Jul 24, 2008, at 11:00 PM, Benjamin Herrenschmidt wrote:
+>
+>> On Wed, 2008-07-23 at 13:10 -0300, Luis Machado wrote:
+>>> On Wed, 2008-07-23 at 11:53 -0400, Josh Boyer wrote:
+>>>> Shouldn't this (and other places) be:
+>>>>
+>>>> #if defined(CONFIG_44x) || defined(CONFIG_BOOKE)
+>>>>
+>>>> if you are going to exclude 40x for now?  Otherwise this is still
+>>>> enabled on 405 and setting the wrong register.
+>>>>
+>>>> josh
+>>>
+>>> Yes, sorry. I wasn't aware of this specific define value. It makes
+>>> things easier to support 405's later.
+>>>
+>>> Like so?
 >>
->> This change is in preparation for adding an OF device tree parser to
->> generate spi_devices based on data in the device tree.
+>> Please, next time, when you re-send a patch like that, re-include
+>> the full subject and patch description. You can add then blurbs after
+>> the --- line if you want to add things that won't make it to git.
 >>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>> I'll deal with that specific one for now.
 >
-> Given the comment fixes noted above and below:
+> Ben,  I want to make sure this works on FSL Book-E before it gets  
+> into tree and I need to think about what SMP issues it might have.
 >
->
-> Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+> I talked to Josh about this at OLS and if you are ok I can deal with  
+> acceptance of this patch via my tree.
 
-Cool, I'll get all this fixed.  Thanks.
+Josh pointed out that you went ahead and merged this.  Curse you :)
 
-g.
+I've got a patch in my tree to address my initial concerns.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+- k
