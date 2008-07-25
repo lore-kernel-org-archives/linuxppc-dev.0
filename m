@@ -1,26 +1,25 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp3.netcologne.de (smtp3.netcologne.de [194.8.194.66])
-	by ozlabs.org (Postfix) with ESMTP id 2F285DEA79
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-1.cisco.com (sj-iport-1.cisco.com [171.71.176.70])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-1.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id EAE58DE487
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 Jul 2008 05:48:11 +1000 (EST)
-Received: from antares (xdsl-87-79-97-26.netcologne.de [87.79.97.26])
-	by smtp3.netcologne.de (Postfix) with ESMTP id 1929E67DD1
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Jul 2008 21:48:09 +0200 (CEST)
-Received: from antares (localhost [127.0.0.1])
-	by antares (Postfix) with ESMTPS id C17E5BA06D
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Jul 2008 21:48:08 +0200 (CEST)
-Date: Fri, 25 Jul 2008 21:48:00 +0200
-From: =?UTF-8?q?Albrecht_Dre=C3=9F?= <albrecht.dress@arcor.de>
-Subject: Re: [OT] write flash on MPC5200 board via jtag
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <9e4733910807221530vd5573d3oc2b56f544ab1c1f6@mail.gmail.com>
-	(from jonsmirl@gmail.com on Wed Jul 23 00:30:10 2008)
-Message-Id: <1217015287l.5674l.0l@antares>
+	Sat, 26 Jul 2008 07:27:35 +1000 (EST)
+Received: from sj-core-2.cisco.com (sj-core-2.cisco.com [171.71.177.254])
+	by sj-dkim-2.cisco.com (8.12.11/8.12.11) with ESMTP id m6PLRUcE006122
+	for <linuxppc-embedded@ozlabs.org>; Fri, 25 Jul 2008 14:27:30 -0700
+Received: from xbh-sjc-231.amer.cisco.com (xbh-sjc-231.cisco.com
+	[128.107.191.100])
+	by sj-core-2.cisco.com (8.13.8/8.13.8) with ESMTP id m6PLRUwc000805
+	for <linuxppc-embedded@ozlabs.org>; Fri, 25 Jul 2008 21:27:30 GMT
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature"; boundary="=-MV64dST2gtna7Q2Znx/2"
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C8EE9D.3E3B0E7F"
+Subject: PowerPC source tree
+Date: Fri, 25 Jul 2008 14:27:30 -0700
+Message-ID: <F795765B112E7344AF36AA9112796415069F14DB@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -31,38 +30,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---=-MV64dST2gtna7Q2Znx/2
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C8EE9D.3E3B0E7F
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Hi all!
+Hi,
+Where can I download the latest (stable) PowerPC source tree? Is it
+kernel.org?=20
+Thanks,
+Bizhan
 
-Thank you so much for your tips, they were really helpful!
+------_=_NextPart_001_01C8EE9D.3E3B0E7F
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Am 23.07.08 00:30 schrieb(en) Jon Smirl:
-> I haven't tried it, but a Macraigor USB Wiggler supports the MPC5200 =20
-> and it's $250.
-[snip]
-> Let me know if you try it and it works.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.3354" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D171522621-25072008><FONT face=3DArial=20
+size=3D2>Hi,</FONT></SPAN></DIV>
+<DIV><SPAN class=3D171522621-25072008><FONT face=3DArial size=3D2>Where =
+can I download=20
+the latest (stable) PowerPC source tree? Is it kernel.org? =
+</FONT></SPAN></DIV>
+<DIV><SPAN class=3D171522621-25072008><FONT face=3DArial=20
+size=3D2>Thanks,</FONT></SPAN></DIV>
+<DIV><SPAN class=3D171522621-25072008><FONT face=3DArial=20
+size=3D2>Bizhan</FONT></SPAN></DIV></BODY></HTML>
 
-I guess I will try this one, and of course give you feedback.  Do not =20
-expect this too fast, though, I have to get it to Europe, and test it =20
-with the Lite board first.
-
-Thanks again,
-Albrecht.
-
-
---=-MV64dST2gtna7Q2Znx/2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQBIii33n/9unNAn/9ERAsiyAJ96tBsiSAz6ehEjIjjbSGO6Lh935ACeJ/CP
-h/p9hamdo4wHC/0XIZ352b4=
-=EHtn
------END PGP SIGNATURE-----
-
---=-MV64dST2gtna7Q2Znx/2--
+------_=_NextPart_001_01C8EE9D.3E3B0E7F--
