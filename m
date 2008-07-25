@@ -1,17 +1,18 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.224])
-	by ozlabs.org (Postfix) with ESMTP id C47A7DDF59
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 17:33:15 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 6F268DDF3B
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 17:33:20 +1000 (EST)
 Received: by qb-out-0506.google.com with SMTP id d11so224347qbd.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 00:33:13 -0700 (PDT)
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 00:33:20 -0700 (PDT)
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3 1/4] of: adapt of_find_i2c_driver() to be usable by SPI also
+Subject: [PATCH v3 2/4] spi: split up spi_new_device() to allow two stage
+	registration.
 To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
 	spi-devel-general@lists.sourceforge.net,
 	dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org,
 	jonsmirl@gmail.com
-Date: Fri, 25 Jul 2008 03:33:11 -0400
-Message-ID: <20080725073311.8485.16226.stgit@trillian.secretlab.ca>
+Date: Fri, 25 Jul 2008 03:33:16 -0400
+Message-ID: <20080725073316.8485.84001.stgit@trillian.secretlab.ca>
 In-Reply-To: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
 References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
@@ -28,211 +29,232 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-SPI has a similar problem as I2C in that it needs to determine an
-appropriate modalias value for each device node.  This patch adapts
-the of_i2c of_find_i2c_driver() function to be usable by of_spi also.
+spi_new_device() allocates and registers an spi device all in one swoop.
+If the driver needs to add extra data to the spi_device before it is
+registered, then this causes problems.
+
+This patch splits the allocation and registration portions of code out
+of spi_new_device() and creates three new functions; spi_alloc_device(),
+spi_register_device(), and spi_device_release().  spi_new_device() is
+modified to use the new functions for allocation and registration.
+None of the existing users of spi_new_device() should be affected by
+this change.
+
+Drivers using the new API can forego the use of an spi_board_info
+structure to describe the device layout and populate data into the
+spi_device structure directly.
+
+This change is in preparation for adding an OF device tree parser to
+generate spi_devices based on data in the device tree.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/of/base.c   |   88 +++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/of/of_i2c.c |   64 ++-----------------------------------
- include/linux/of.h  |    1 +
- 3 files changed, 92 insertions(+), 61 deletions(-)
+ drivers/spi/spi.c       |  139 ++++++++++++++++++++++++++++++++---------------
+ include/linux/spi/spi.h |   10 +++
+ 2 files changed, 105 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 23ffb7c..ad8ac1a 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -385,3 +385,91 @@ struct device_node *of_find_matching_node(struct device_node *from,
- 	return np;
- }
- EXPORT_SYMBOL(of_find_matching_node);
-+
+diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+index ecca4a6..2077ef5 100644
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -178,6 +178,96 @@ struct boardinfo {
+ static LIST_HEAD(board_list);
+ static DEFINE_MUTEX(board_lock);
+ 
 +/**
-+ * of_modalias_table: Table of explicit compatible ==> modalias mappings
++ * spi_alloc_device - Allocate a new SPI device
++ * @master: Controller to which device is connected
++ * Context: can sleep
 + *
-+ * This table allows particulare compatible property values to be mapped
-+ * to modalias strings.  This is useful for busses which do not directly
-+ * understand the OF device tree but are populated based on data contained
-+ * within the device tree.  SPI and I2C are the two current users of this
-+ * table.
++ * Allows a driver to allocate and initialize and spi_device without
++ * registering it immediately.  This allows a driver to directly
++ * fill the spi_device with device parameters before calling
++ * spi_add_device() on it.
 + *
-+ * In most cases, devices do not need to be listed in this table because
-+ * the modalias value can be derived directly from the compatible table.
-+ * However, if for any reason a value cannot be derived, then this table
-+ * provides a method to override the implicit derivation.
++ * Caller is responsible to call spi_add_device() on the returned
++ * spi_device structure to add it to the SPI master.  If the caller
++ * needs to discard the spi_device without adding it, then it should
++ * call spi_dev_put() on it.
 + *
-+ * At the moment, a single table is used for all bus types because it is
-+ * assumed that the data size is small and that the compatible values
-+ * should already be distinct enough to differentiate between SPI, I2C
-+ * and other devices.
++ * Returns a pointer to the new device, or NULL.
 + */
-+struct of_modalias_table {
-+	char *of_device;
-+	char *modalias;
-+};
-+static struct of_modalias_table of_modalias_table[] = {
-+	/* Empty for now; add entries as needed */
-+};
-+
-+/**
-+ * of_modalias_node - Lookup appropriate modalias for a device node
-+ * @node:	pointer to a device tree node
-+ * @modalias:	Pointer to buffer that modalias value will be copied into
-+ * @len:	Length of modalias value
-+ *
-+ * Based on the value of the compatible property, this routine will determine
-+ * an appropriate modalias value for a particular device tree node.  Three
-+ * separate methods are used to derive a modalias value.
-+ *
-+ * First method is to lookup the compatible value in of_modalias_table.
-+ * Second is to look for a "linux,<modalias>" entry in the compatible list
-+ * and used that for modalias.  Third is to strip off the manufacturer
-+ * prefix from the first compatible entry and use the remainder as modalias
-+ *
-+ * This routine returns 0 on success
-+ */
-+int of_modalias_node(struct device_node *node, char *modalias, int len)
++struct spi_device *spi_alloc_device(struct spi_master *master)
 +{
-+	int i, cplen;
-+	const char *compatible;
-+	const char *p;
++	struct spi_device	*spi;
++	struct device		*dev = master->dev.parent;
 +
-+	/* 1. search for exception list entry */
-+	for (i = 0; i < ARRAY_SIZE(of_modalias_table); i++) {
-+		compatible = of_modalias_table[i].of_device;
-+		if (!of_device_is_compatible(node, compatible))
-+			continue;
-+		strlcpy(modalias, of_modalias_table[i].modalias, len);
-+		return 0;
++	if (!spi_master_get(master))
++		return NULL;
++
++	spi = kzalloc(sizeof *spi, GFP_KERNEL);
++	if (!spi) {
++		dev_err(dev, "cannot alloc spi_device\n");
++		spi_master_put(master);
++		return NULL;
 +	}
 +
-+	compatible = of_get_property(node, "compatible", &cplen);
-+	if (!compatible)
-+		return -ENODEV;
++	spi->master = master;
++	spi->dev.parent = dev;
++	spi->dev.bus = &spi_bus_type;
++	spi->dev.release = spidev_release;
++	device_initialize(&spi->dev);
++	return spi;
++}
++EXPORT_SYMBOL_GPL(spi_alloc_device);
 +
-+	/* 2. search for linux,<modalias> entry */
-+	p = compatible;
-+	while (cplen > 0) {
-+		if (!strncmp(p, "linux,", 6)) {
-+			p += 6;
-+			strlcpy(modalias, p, len);
-+			return 0;
-+		}
++/**
++ * spi_add_device - Add an spi_device allocated with spi_alloc_device
++ * @spi: spi_device to register
++ *
++ * Companion function to spi_alloc_device.  Devices allocated with
++ * spi_alloc_device can be added onto the spi bus with this function.
++ *
++ * Returns 0 on success; non-zero on failure
++ */
++int spi_add_device(struct spi_device *spi)
++{
++	struct device *dev = spi->master->dev.parent;
++	int status;
 +
-+		i = strlen(p) + 1;
-+		p += i;
-+		cplen -= i;
++	/* Chipselects are numbered 0..max; validate. */
++	if (spi->chip_select >= spi->master->num_chipselect) {
++		dev_err(dev, "cs%d > max %d\n",
++			spi->chip_select,
++			spi->master->num_chipselect);
++		return -EINVAL;
 +	}
 +
-+	/* 3. take first compatible entry and strip manufacturer */
-+	p = strchr(compatible, ',');
-+	if (!p)
-+		return -ENODEV;
-+	p++;
-+	strlcpy(modalias, p, len);
++	/* Set the bus ID string */
++	snprintf(spi->dev.bus_id, sizeof spi->dev.bus_id,
++			"%s.%u", spi->master->dev.bus_id,
++			spi->chip_select);
++
++	/* drivers may modify this initial i/o setup */
++	status = spi->master->setup(spi);
++	if (status < 0) {
++		dev_err(dev, "can't %s %s, status %d\n",
++				"setup", spi->dev.bus_id, status);
++		return status;
++	}
++
++	/* driver core catches callers that misbehave by defining
++	 * devices that already exist.
++	 */
++	status = device_add(&spi->dev);
++	if (status < 0) {
++		dev_err(dev, "can't %s %s, status %d\n",
++				"add", spi->dev.bus_id, status);
++		return status;
++	}
++
++	dev_dbg(dev, "registered child %s\n", spi->dev.bus_id);
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(of_modalias_node);
-+
-diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
-index 344e1b0..6a98dc8 100644
---- a/drivers/of/of_i2c.c
-+++ b/drivers/of/of_i2c.c
-@@ -16,62 +16,6 @@
- #include <linux/of_i2c.h>
- #include <linux/module.h>
++EXPORT_SYMBOL_GPL(spi_add_device);
  
--struct i2c_driver_device {
--	char    *of_device;
--	char    *i2c_type;
--};
--
--static struct i2c_driver_device i2c_devices[] = {
--};
--
--static int of_find_i2c_driver(struct device_node *node,
--			      struct i2c_board_info *info)
--{
--	int i, cplen;
--	const char *compatible;
--	const char *p;
--
--	/* 1. search for exception list entry */
--	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
--		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
--			continue;
--		if (strlcpy(info->type, i2c_devices[i].i2c_type,
--			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
--			return -ENOMEM;
--
--		return 0;
--	}
--
--	compatible = of_get_property(node, "compatible", &cplen);
--	if (!compatible)
--		return -ENODEV;
--
--	/* 2. search for linux,<i2c-type> entry */
--	p = compatible;
--	while (cplen > 0) {
--		if (!strncmp(p, "linux,", 6)) {
--			p += 6;
--			if (strlcpy(info->type, p,
--				    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
--				return -ENOMEM;
--			return 0;
--		}
--
--		i = strlen(p) + 1;
--		p += i;
--		cplen -= i;
--	}
--
--	/* 3. take fist compatible entry and strip manufacturer */
--	p = strchr(compatible, ',');
--	if (!p)
--		return -ENODEV;
--	p++;
--	if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
--		return -ENOMEM;
--	return 0;
--}
--
- void of_register_i2c_devices(struct i2c_adapter *adap,
- 			     struct device_node *adap_node)
+ /**
+  * spi_new_device - instantiate one new SPI device
+@@ -197,7 +287,6 @@ struct spi_device *spi_new_device(struct spi_master *master,
+ 				  struct spi_board_info *chip)
  {
-@@ -83,6 +27,9 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
- 		const u32 *addr;
- 		int len;
+ 	struct spi_device	*proxy;
+-	struct device		*dev = master->dev.parent;
+ 	int			status;
  
-+		if (of_modalias_node(node, info.type, sizeof(info.type)) < 0)
-+			continue;
-+
- 		addr = of_get_property(node, "reg", &len);
- 		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
- 			printk(KERN_ERR
-@@ -92,11 +39,6 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 	/* NOTE:  caller did any chip->bus_num checks necessary.
+@@ -207,66 +296,28 @@ struct spi_device *spi_new_device(struct spi_master *master,
+ 	 * suggests syslogged diagnostics are best here (ugh).
+ 	 */
  
- 		info.irq = irq_of_parse_and_map(node, 0);
- 
--		if (of_find_i2c_driver(node, &info) < 0) {
--			irq_dispose_mapping(info.irq);
--			continue;
--		}
+-	/* Chipselects are numbered 0..max; validate. */
+-	if (chip->chip_select >= master->num_chipselect) {
+-		dev_err(dev, "cs%d > max %d\n",
+-			chip->chip_select,
+-			master->num_chipselect);
+-		return NULL;
+-	}
 -
- 		info.addr = *addr;
+-	if (!spi_master_get(master))
++	proxy = spi_alloc_device(master);
++	if (!proxy)
+ 		return NULL;
  
- 		request_module(info.type);
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 59a61bd..79886ad 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -70,5 +70,6 @@ extern int of_n_addr_cells(struct device_node *np);
- extern int of_n_size_cells(struct device_node *np);
- extern const struct of_device_id *of_match_node(
- 	const struct of_device_id *matches, const struct device_node *node);
-+extern int of_modalias_node(struct device_node *node, char *modalias, int len);
+ 	WARN_ON(strlen(chip->modalias) >= sizeof(proxy->modalias));
  
- #endif /* _LINUX_OF_H */
+-	proxy = kzalloc(sizeof *proxy, GFP_KERNEL);
+-	if (!proxy) {
+-		dev_err(dev, "can't alloc dev for cs%d\n",
+-			chip->chip_select);
+-		goto fail;
+-	}
+-	proxy->master = master;
+ 	proxy->chip_select = chip->chip_select;
+ 	proxy->max_speed_hz = chip->max_speed_hz;
+ 	proxy->mode = chip->mode;
+ 	proxy->irq = chip->irq;
+ 	strlcpy(proxy->modalias, chip->modalias, sizeof(proxy->modalias));
+-
+-	snprintf(proxy->dev.bus_id, sizeof proxy->dev.bus_id,
+-			"%s.%u", master->dev.bus_id,
+-			chip->chip_select);
+-	proxy->dev.parent = dev;
+-	proxy->dev.bus = &spi_bus_type;
+ 	proxy->dev.platform_data = (void *) chip->platform_data;
+ 	proxy->controller_data = chip->controller_data;
+ 	proxy->controller_state = NULL;
+-	proxy->dev.release = spidev_release;
+ 
+-	/* drivers may modify this initial i/o setup */
+-	status = master->setup(proxy);
++	status = spi_add_device(proxy);
+ 	if (status < 0) {
+-		dev_err(dev, "can't %s %s, status %d\n",
+-				"setup", proxy->dev.bus_id, status);
+-		goto fail;
++		spi_dev_put(proxy);
++		return NULL;
+ 	}
+ 
+-	/* driver core catches callers that misbehave by defining
+-	 * devices that already exist.
+-	 */
+-	status = device_register(&proxy->dev);
+-	if (status < 0) {
+-		dev_err(dev, "can't %s %s, status %d\n",
+-				"add", proxy->dev.bus_id, status);
+-		goto fail;
+-	}
+-	dev_dbg(dev, "registered child %s\n", proxy->dev.bus_id);
+ 	return proxy;
+-
+-fail:
+-	spi_master_put(master);
+-	kfree(proxy);
+-	return NULL;
+ }
+ EXPORT_SYMBOL_GPL(spi_new_device);
+ 
+diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
+index a9cc29d..d203d08 100644
+--- a/include/linux/spi/spi.h
++++ b/include/linux/spi/spi.h
+@@ -778,8 +778,18 @@ spi_register_board_info(struct spi_board_info const *info, unsigned n)
+  * use spi_new_device() to describe each device.  You can also call
+  * spi_unregister_device() to start making that device vanish, but
+  * normally that would be handled by spi_unregister_master().
++ *
++ * You can also use spi_alloc_device() and spi_add_device() to
++ * for a two stage registration of an SPI device.  This gives the caller
++ * some more control over the spi_device structure before it is registered
+  */
+ extern struct spi_device *
++spi_alloc_device(struct spi_master *master);
++
++extern int
++spi_add_device(struct spi_device *spi);
++
++extern struct spi_device *
+ spi_new_device(struct spi_master *, struct spi_board_info *);
+ 
+ static inline void
