@@ -1,19 +1,18 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from IE1EHSOBE002.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id 9BA3EDDF0A
+Return-Path: <rmcguire@videopresence.com>
+Received: from smtpauth05.prod.mesa1.secureserver.net
+	(smtpauth05.prod.mesa1.secureserver.net [64.202.165.99])
+	by ozlabs.org (Postfix) with SMTP id B80C8DDF48
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 Jul 2008 07:55:06 +1000 (EST)
+	Sat, 26 Jul 2008 09:51:04 +1000 (EST)
+From: "Russell McGuire" <rmcguire@videopresence.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: 82xx/83xx MCC Super Channels - GUN Error
+Date: Fri, 25 Jul 2008 16:50:58 -0700
+Message-ID: <B943401BAE76451EB07F7797ED082BEF@absolutdaddy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: RE: Xilinx Linux 2.6 for XPS LL_TEMAC and LL_FIFO problem
-Date: Fri, 25 Jul 2008 15:54:53 -0600
-In-Reply-To: <18649823.post@talk.nabble.com>
-References: <BAY115-W186EA84A950C17657AD8D9B20B0@phx.gbl><EDAE140DF1B2FC42B5867C22CA0B333FA99D2F@XMBIL132.northgrum.com><20080316214832.3F77A538046@mail141-sin.bigfish.com><18628194.post@talk.nabble.com><EDAE140DF1B2FC42B5867C22CA0B333FFA5D56@XMBIL132.northgrum.com><20080724132453.C8F1010F0077@mail56-dub.bigfish.com>
-	<18649823.post@talk.nabble.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "Mirek23" <miroslaw.dach@psi.ch>,
-	<linuxppc-embedded@ozlabs.org>
-Message-ID: <20080725215457.DE78A1228063@mail132-dub.bigfish.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Reply-To: rmcguire@videopresence.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,103 +23,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-{resend as I forgot to send to the mailing list)
+Guys,
 
-Hi Mirek,
+Attempting to polish up an existing MCC HDLC driver, adding super channels
+for an 8360E, though I imagine the specifics an answer, might work for any
+82xx or 83xx architecture.
 
-Since this is a u-boot issue, we can move this conversation off this
-list.
+Background:
+I have taken my existing working MCC HDLC driver <non-superchanneled>
+interfaced to a T1 in clear channel mode, and found that I was using less
+than optimized MCC configuration, i.e. using the TX SiRAM entries to
+transmit 8 bytes chunks. Though his works, I get GUN errors probably every
+10 minutes. So after careful reading, I decided to optimize and create super
+channels using the 83xx version <16 bit entries only for 83xx> for the
+SiRAM.
 
-The u-boot that is in the git repository has not been tested on the
-Virtex4 platform.
+Problem:
+After the super channel conversion, I now get GUN interrupts continuously
+the instant I enable the TDM's / SI. 
 
-I have only tested on the ML507, Virtex 5 platform.
+Detail:
+I have written the extra code to program up the SiRAM entries, RX side to
+use super channel 6 <for compatibility with later SATM code, SC must be
+divisible by 4 after subtracting 2>, and the TX side uses channels 0-11 <12
+channels of 2 bytes = 192 byes of a standard T1 B8ZS-ESF Frame>, my SCT
+table of course routes slots 0-11 into SC 6. I am guessing this is correct,
+and more likely I probably have a setup problem with configuring all the MCC
+parameters, or init sequence.
 
-There's not a ML403/ML405 board supported in our git tree, so I'm
-curious what you did to try to build it for V4.
+After reading much Freescale documentation and their FAQ's online, I see
+there are a couple of undocumented things that may or may not need to be
+done, like stopping a super channel before issues the QE_INIT_TX_RX
+commands.
 
-There are differences between V4 and V5 with the DMA as it's hard in V5
-and hangs off the DCR bus of the processor.
+So my question is this:
+In order to not have GUN always occurring, how does one initialize a super
+channel and its related sub-channels? This what I am doing now.
+1) Program SI entries
+2) Program MCC global PRAM?
+3) Program SuperChannel ChanPRAM
+4) Program SuperChannel XtraPRAM
+5) Program SuperChannel Table <SCT>
+6) Set rstate and tstate once for SuperChannel i.e. channel 6
+7) Call QE_INIT_TX_RX once for channel block 0 <i.e. channels 0-31>.
+8) Enable TDM's
+9) GUN recovery code goes nuts until I reset.
 
-The kernel itself is running on both the ML405 and the ML507, but not
-yet with u-boot.
+Anybody have experience with this and super channels? I have seen hints that
+perhaps I need to maybe set rstate and tstate for every channel in the super
+channel, what about the 'first byte' in the SiRAM TX entry? Does that need
+to be set for clear channels? I have seen one email for 82xx MCC that say
+the super channel needs to be QE_STOP_TX before calling the MCC INIT code,
+but not sure if that is really needed, or only for 82xx CPU's. What about
+using the QE_INIT_TX_RX_16? I have tried this, and it causes silence in the
+driver, i.e. can't even get interrupts if I use this command.
 
-Thanks,
-John
+Ideas anyone?
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-embedded-
-> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Mirek23
-> Sent: Friday, July 25, 2008 5:22 AM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: RE: Xilinx Linux 2.6 for XPS LL_TEMAC and LL_FIFO problem
-> =
-
-> =
-
-> Hi John and Mike,
-> =
-
-> Thank you for your reply. We have modified out FPGA design and now we
-have
-> LL_TEMAC with LL_DMA component connected instead of the LL_FIFO.
-Before
-> building linux kernel we have tried to build the u-boot (downloaded
-from the
-> xilinx-git tree).
-> =
-
-> It was relatively easy to build u-boot which has the ll_temac with
-ll_dma
-> support.
-> =
-
-> next we have tried to run u-boot on our ppc (virtex-4 FX12). All went
-fine
-> till the moment to establish the communication with the network.
-> =
-
-> I put some debug messages to the xilinx ll_dma and ll_temac drivers
-and we
-> have found that u-boot hangs
-> during dma initialisation:
-> =
-
-> more specifically in the function calls :
->        XLlDma_Initialize(XLlDma * InstancePtr, u32 BaseAddress)
->                XLlDma_Reset(XLlDma * InstancePtr)
->                          XLlDma_mBdRingSnapShotCurrBd(TxRingPtr);
-> =
-
-> Do you have any idea what could be wrong with dma initialization?
-> =
-
-> Best Regards
-> =
-
-> Mirek
-> =
-
-> =
-
-> =
-
-> --
-> View this message in context:
-http://www.nabble.com/Compile-time-error%2C-compiling-Xilinx-Linux-2.6-
-> for-XPS-LLTEMAC-tp16065692p18649823.html
-> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
-> =
-
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+Russell McGuire
+Senior Systems Engineer
+rmcguire@videopresence.com
+503.888.0968
