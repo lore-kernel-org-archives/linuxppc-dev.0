@@ -1,18 +1,29 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4889EFFE.2070201@grandegger.com>
-Date: Fri, 25 Jul 2008 17:23:42 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
-	FDT
-References: <488982B5.4070102@grandegger.com> <4889942C.4040800@scram.de>	
-	<48899736.8020400@grandegger.com>	
-	<fa686aa40807250612g34b5167dtbe70c810f30a5d32@mail.gmail.com>
-	<ed82fe3e0807250721n115d28c7ha1f641c9175c473d@mail.gmail.com>
-In-Reply-To: <ed82fe3e0807250721n115d28c7ha1f641c9175c473d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4EA97DDEDC
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 01:24:18 +1000 (EST)
+Message-Id: <C786174A-78C1-40B6-ABC9-24E7419FA182@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: benh@kernel.crashing.org
+In-Reply-To: <1216958433.11188.70.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [RFC] 4xx hardware watchpoint support
+Date: Fri, 25 Jul 2008 10:23:44 -0500
+References: <1211391577.6232.15.camel@gargoyle>
+	<18484.60888.981390.893747@cargo.ozlabs.ibm.com>
+	<1213992894.6635.41.camel@gargoyle>
+	<20080719093752.5aada45c@zod.rchland.ibm.com>
+	<1216658194.5727.36.camel@gargoyle>
+	<20080721130551.23a06006@zod.rchland.ibm.com>
+	<1216777678.5727.82.camel@gargoyle>
+	<20080723115321.53aa655b@zod.rchland.ibm.com>
+	<1216829442.5727.97.camel@gargoyle>
+	<1216958433.11188.70.camel@pasglop>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +33,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> On Fri, Jul 25, 2008 at 8:12 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> 
->> Yes, please use something like clock-frequency or current-speed and do
->> the calculation.
-> 
-> Ditto.  I already wrote the code that does that for U-Boot, so all you
-> need to do is port it.
 
-I know but we still need an algorithm for MPC52xx and MPC82xx as well.
+On Jul 24, 2008, at 11:00 PM, Benjamin Herrenschmidt wrote:
 
-> Although I'm curious, if U-Boot already programs the speed, why does
-> the driver program it again?
+> On Wed, 2008-07-23 at 13:10 -0300, Luis Machado wrote:
+>> On Wed, 2008-07-23 at 11:53 -0400, Josh Boyer wrote:
+>>> Shouldn't this (and other places) be:
+>>>
+>>> #if defined(CONFIG_44x) || defined(CONFIG_BOOKE)
+>>>
+>>> if you are going to exclude 40x for now?  Otherwise this is still
+>>> enabled on 405 and setting the wrong register.
+>>>
+>>> josh
+>>
+>> Yes, sorry. I wasn't aware of this specific define value. It makes
+>> things easier to support 405's later.
+>>
+>> Like so?
+>
+> Please, next time, when you re-send a patch like that, re-include
+> the full subject and patch description. You can add then blurbs after
+> the --- line if you want to add things that won't make it to git.
+>
+> I'll deal with that specific one for now.
 
-Maybe because it's not obvious for the driver if the registers have 
-already been configured by the boot-loader.
+Ben,  I want to make sure this works on FSL Book-E before it gets into  
+tree and I need to think about what SMP issues it might have.
 
-Wolfgang.
+I talked to Josh about this at OLS and if you are ok I can deal with  
+acceptance of this patch via my tree.
+
+- k
