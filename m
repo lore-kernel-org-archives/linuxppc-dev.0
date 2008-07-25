@@ -1,28 +1,23 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1DAA2DE0E1
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 17:49:41 +1000 (EST)
-Subject: Re: [PATCH 2/2][RT] powerpc - Make the irq reverse mapping radix
-	tree lockless
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-In-Reply-To: <20080724141839.477de30b@bull.net>
-References: <20080724122352.3bc76bda@bull.net>
-	<20080724125044.53b604cb@bull.net>
-	<200807242111.35338.nickpiggin@yahoo.com.au>
-	<20080724141839.477de30b@bull.net>
+	by ozlabs.org (Postfix) with ESMTPS id 6842DDE0E3
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 17:51:16 +1000 (EST)
+Subject: Re: sfx.c driver build failure
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Brown <mbrown@fensystems.co.uk>
+In-Reply-To: <Pine.LNX.4.62.0807250831440.8217@dolphin.home>
+References: <1216966559.11188.85.camel@pasglop>
+	<Pine.LNX.4.62.0807250831440.8217@dolphin.home>
 Content-Type: text/plain; charset=utf-8
-Date: Fri, 25 Jul 2008 09:49:37 +0200
-Message-Id: <1216972177.7257.351.camel@twins>
+Date: Fri, 25 Jul 2008 17:50:57 +1000
+Message-Id: <1216972257.11188.96.camel@pasglop>
 Mime-Version: 1.0
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Tim Chavez <tinytim@us.ibm.com>,
-	Linux-rt <linux-rt-users@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Jean Pierre Dion <jean-pierre.dion@bull.net>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Gilles Carry <Gilles.Carry@ext.bull.net>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Jeff Garzik <jgarzik@pobox.com>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,57 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-07-24 at 14:18 +0200, Sebastien Dugue wrote:
-> On Thu, 24 Jul 2008 21:11:34 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> 
-> > On Thursday 24 July 2008 20:50, Sebastien Dugue wrote:
-> > > From: Sebastien Dugue <sebastien.dugue@bull.net>
-> > > Date: Tue, 22 Jul 2008 11:56:41 +0200
-> > > Subject: [PATCH][RT] powerpc - Make the irq reverse mapping radix tree
-> > > lockless
-> > >
-> > >   The radix tree used by interrupt controllers for their irq reverse
-> > > mapping (currently only the XICS found on pSeries) have a complex locking
-> > > scheme dating back to before the advent of the concurrent radix tree on
-> > > preempt-rt.
-> > >
-> > >   Take advantage of this and of the fact that the items of the tree are
-> > > pointers to a static array (irq_map) elements which can never go under us
-> > > to simplify the locking.
-> > >
-> > >   Concurrency between readers and writers are handled by the intrinsic
-> > > properties of the concurrent radix tree. Concurrency between the tree
-> > > initialization which is done asynchronously with readers and writers access
-> > > is handled via an atomic variable (revmap_trees_allocated) set when the
-> > > tree has been initialized and checked before any reader or writer access
-> > > just like we used to check for tree.gfp_mask != 0 before.
+On Fri, 2008-07-25 at 08:35 +0100, Michael Brown wrote:
+> On Fri, 25 Jul 2008, Benjamin Herrenschmidt wrote:
+> > The sfx driver (which happens to be part of some of our test configs) 
+> > fails to build in current Linus tree on powerpc with this error:
 > > 
-> > Hmm, RCU radix tree is in mainline too for quite a while. I thought
-> > Ben had already converted this code over ages ago...
+> > /home/benh/kernels/linux-powerpc/drivers/net/sfc/efx.c: In function ÿÿefx_probe_interruptsÿÿ:
+> > /home/benh/kernels/linux-powerpc/drivers/net/sfc/efx.c:845: error: lvalue required as unary ÿÿ&ÿÿ oper
+> > and
 > 
->   Mainline does not have the concurrent radix tree which this patch
-> is based on, but maybe it's overkill and the RCU radix tree is enough.
-> Not sure, will have to think about it a bit more.
+> I'm not the maintainer of that code; I wrote the original version, but 
+> it's now maintained by Solarflare.
+> 
+> I don't see anything on that line that ought to be architecture-specific.  
+> Could you send me the preprocessed efx.c from your powerpc build?
 
-Should be. The model of the concurrent radix tree can be mapped to
-spinlock + rcu radix tree.
+Apparently, it's a know generic breakage of the topology stuff,
+it's beeing sorted out.
 
-So instead of:
-
-> ﻿+               DEFINE_RADIX_TREE_CONTEXT(ctx, tree);
-> +               radix_tree_lock(&ctx);
-> +               radix_tree_insert(ctx.tree, hwirq, &irq_map[virq]);
-> +               radix_tree_unlock(&ctx);
-
-
-you then write:
-
-	spin_lock(&host->revmap_data.tree_lock);
-	radix_tree_insert(&host->revmap_data.tree, hwirq, &irq_map[virq]);
-	spin_unlock(&host->revmap_data.tree_lock);
-
-
-The only advantage of the concurrent radix tree over this model is that
-it can potentially do multiple modification operations at the same time.
-
-Still, cool that you used it ;-)
+Cheers,
+Ben.
