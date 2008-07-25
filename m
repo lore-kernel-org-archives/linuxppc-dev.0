@@ -1,18 +1,21 @@
-Return-Path: <timur.tabi@gmail.com>
-Message-ID: <ed82fe3e0807250721n115d28c7ha1f641c9175c473d@mail.gmail.com>
-Date: Fri, 25 Jul 2008 09:21:31 -0500
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
+Return-Path: <jonsmirl@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.237])
+	by ozlabs.org (Postfix) with ESMTP id 932FDDE678
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 00:46:13 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so2861312rvb.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 07:46:11 -0700 (PDT)
+Message-ID: <9e4733910807250746g436307d7sbbf799b73a9f2c67@mail.gmail.com>
+Date: Fri, 25 Jul 2008 10:46:11 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
 To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
-	FDT
-In-Reply-To: <fa686aa40807250612g34b5167dtbe70c810f30a5d32@mail.gmail.com>
+Subject: Re: [PATCH v3 0/4 REPOST] OF infrastructure for SPI devices
+In-Reply-To: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <488982B5.4070102@grandegger.com> <4889942C.4040800@scram.de>
-	<48899736.8020400@grandegger.com>
-	<fa686aa40807250612g34b5167dtbe70c810f30a5d32@mail.gmail.com>
-Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+Cc: spi-devel-general@lists.sourceforge.net, akpm@linux-foundation.org,
+	dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,17 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 25, 2008 at 8:12 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+On 7/25/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> I don't know what to do with these patches.  I'd really like to see them
+>  in .27, and now that akpm has cleared his queue, the prerequisite patch
+>  has been merged so they are ready to go in.  However, even though there
+>  has been favourable reception on the SPI and linuxppc lists for these
+>  changes I don't have any acks from anybody yet.
 
-> Yes, please use something like clock-frequency or current-speed and do
-> the calculation.
+I have compatible hardware but it has an MMC card socket hooked up. I
+haven't figured out yet how to get this driver hooked to the MMC
+subsystem and make the file system on the card work.  (I've been
+working on ALSA).
 
-Ditto.  I already wrote the code that does that for U-Boot, so all you
-need to do is port it.
+I believe I need this:
+http://lkml.org/lkml/2008/6/5/209
 
-Although I'm curious, if U-Boot already programs the speed, why does
-the driver program it again?
+Then I need to get everything hooked together. Point me in the right
+direction and I can help with testing.
+
+
+>
+>  David, can you please reply on if you are okay with these patches
+>  getting merged?  If so, do you want me to merge them via my tree, or
+>  do you want to pick them up?
+>
+>  Thanks,
+>  g.
+>
+>  --
+>  Grant Likely, B.Sc. P.Eng.
+>  Secret Lab Technologies Ltd.
+>
+> --
+>  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>  the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  Please read the FAQ at  http://www.tux.org/lkml/
+>
+
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Jon Smirl
+jonsmirl@gmail.com
