@@ -1,27 +1,16 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 58EABDE053
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 05:02:43 +1000 (EST)
-Message-Id: <0C5F7DBC-2B04-47C0-B14E-D5EEFD344176@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-To: Sebastian Siewior <netdev@ml.breakpoint.cc>
-In-Reply-To: <20080723200337.GA5122@Chamillionaire.breakpoint.cc>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH / RFC] net: don't grab a mutex within a timer context in
-	gianfar
-Date: Fri, 25 Jul 2008 15:02:11 -0400
-References: <20080718121008.GA28871@Chamillionaire.breakpoint.cc>
-	<1216681028.7559.993.camel@localhost.localdomain>
-	<20080722205911.GA29840@Chamillionaire.breakpoint.cc>
-	<20080723200337.GA5122@Chamillionaire.breakpoint.cc>
-Cc: Nate Case <ncase@xes-inc.com>, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Vitaly Bordug <vbordug@ru.mvista.com>,
-	Li Yang <leoli@freescale.com>, Jeff Garzik <jgarzik@pobox.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C5CA6DDF32
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 05:27:43 +1000 (EST)
+Date: Fri, 25 Jul 2008 14:27:33 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: clean up the Book-E HW watchpoint support
+Message-ID: <Pine.LNX.4.64.0807251425390.29749@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,45 +20,142 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+* CONFIG_BOOKE is selected by CONFIG_44x so we dont need both
+* Fixed a few comments
+* Go back to only using DBCR0_IDM to determine if we are using
+  debug resources.
 
-On Jul 23, 2008, at 16:03, Sebastian Siewior wrote:
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-> From: Sebastian Siewior <bigeasy@linutronix.de>
->
-> I got the following backtrace while network was unavailble:
->
-> |NETDEV WATCHDOG: eth0: transmit timed out
-> |BUG: sleeping function called from invalid context at /home/bigeasy/ 
-> git/linux-2.6-powerpc/kernel/mutex.c:87
-> |in_atomic():1, irqs_disabled():0
-> |Call Trace:
-> |[c0383d90] [c0006dd8] show_stack+0x48/0x184 (unreliable)
-> |[c0383db0] [c001e938] __might_sleep+0xe0/0xf4
-> |[c0383dc0] [c025a43c] mutex_lock+0x24/0x3c
-> |[c0383de0] [c019005c] phy_stop+0x20/0x70
-> |[c0383df0] [c018d4ec] stop_gfar+0x28/0xf4
-> |[c0383e10] [c018e8c4] gfar_timeout+0x30/0x60
-> |[c0383e20] [c01fe7c0] dev_watchdog+0xa8/0x144
-> |[c0383e30] [c002f93c] run_timer_softirq+0x148/0x1c8
-> |[c0383e60] [c002b084] __do_softirq+0x5c/0xc4
-> |[c0383e80] [c00046fc] do_softirq+0x3c/0x54
-> |[c0383e90] [c002ac60] irq_exit+0x3c/0x5c
-> |[c0383ea0] [c000b378] timer_interrupt+0xe0/0xf8
-> |[c0383ec0] [c000e5ac] ret_from_except+0x0/0x18
-> |[c0383f80] [c000804c] cpu_idle+0xcc/0xdc
-> |[c0383fa0] [c025c07c] etext+0x7c/0x90
-> |[c0383fc0] [c0338960] start_kernel+0x294/0x2a8
-> |[c0383ff0] [c00003dc] skpinv+0x304/0x340
-> |------------[ cut here ]------------
->
-> The phylock was once a spinlock but got changed into a mutex via
-> commit 35b5f6b1a aka [PHYLIB: Locking fixes for PHY I/O potentially  
-> sleeping]
->
-> Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
-> ---
+Luis, can you test this on 44x.  I don't expect any breakage.
+
+- k
+
+ arch/powerpc/kernel/entry_32.S |    6 +++---
+ arch/powerpc/kernel/process.c  |    8 ++++----
+ arch/powerpc/kernel/ptrace.c   |    7 ++++---
+ arch/powerpc/kernel/signal.c   |    2 +-
+ 4 files changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 81c8324..da52269 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -148,7 +148,7 @@ transfer_to_handler:
+ 	/* Check to see if the dbcr0 register is set up to debug.  Use the
+ 	   internal debug mode bit to do this. */
+ 	lwz	r12,THREAD_DBCR0(r12)
+-	andis.	r12,r12,(DBCR0_IDM  | DBSR_DAC1R | DBSR_DAC1W)@h
++	andis.	r12,r12,DBCR0_IDM@h
+ 	beq+	3f
+ 	/* From user and task is ptraced - load up global dbcr0 */
+ 	li	r12,-1			/* clear all pending debug events */
+@@ -292,7 +292,7 @@ syscall_exit_cont:
+ 	/* If the process has its own DBCR0 value, load it up.  The internal
+ 	   debug mode bit tells us that dbcr0 should be loaded. */
+ 	lwz	r0,THREAD+THREAD_DBCR0(r2)
+-	andis.	r10,r0,(DBCR0_IDM  | DBSR_DAC1R | DBSR_DAC1W)@h
++	andis.	r10,r0,DBCR0_IDM@h
+ 	bnel-	load_dbcr0
+ #endif
+ #ifdef CONFIG_44x
+@@ -720,7 +720,7 @@ restore_user:
+ 	/* Check whether this process has its own DBCR0 value.  The internal
+ 	   debug mode bit tells us that dbcr0 should be loaded. */
+ 	lwz	r0,THREAD+THREAD_DBCR0(r2)
+-	andis.	r10,r0,(DBCR0_IDM  | DBSR_DAC1R | DBSR_DAC1W)@h
++	andis.	r10,r0,DBCR0_IDM@h
+ 	bnel-	load_dbcr0
+ #endif
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index db2497c..e030f3b 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -254,7 +254,7 @@ void do_dabr(struct pt_regs *regs, unsigned long address,
+ 		return;
+
+ 	/* Clear the DAC and struct entries.  One shot trigger */
+-#if (defined(CONFIG_44x) || defined(CONFIG_BOOKE))
++#if defined(CONFIG_BOOKE)
+ 	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) & ~(DBSR_DAC1R | DBSR_DAC1W
+ 							| DBCR0_IDM));
+ #endif
+@@ -286,7 +286,7 @@ int set_dabr(unsigned long dabr)
+ 	mtspr(SPRN_DABR, dabr);
+ #endif
+
+-#if defined(CONFIG_44x) || defined(CONFIG_BOOKE)
++#if defined(CONFIG_BOOKE)
+ 	mtspr(SPRN_DAC1, dabr);
+ #endif
+
+@@ -373,7 +373,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	if (unlikely(__get_cpu_var(current_dabr) != new->thread.dabr))
+ 		set_dabr(new->thread.dabr);
+
+-#if defined(CONFIG_44x) || defined(CONFIG_BOOKE)
++#if defined(CONFIG_BOOKE)
+ 	/* If new thread DAC (HW breakpoint) is the same then leave it */
+ 	if (new->thread.dabr)
+ 		set_dabr(new->thread.dabr);
+@@ -568,7 +568,7 @@ void flush_thread(void)
+ 		current->thread.dabr = 0;
+ 		set_dabr(0);
+
+-#if defined(CONFIG_44x) || defined(CONFIG_BOOKE)
++#if defined(CONFIG_BOOKE)
+ 		current->thread.dbcr0 &= ~(DBSR_DAC1R | DBSR_DAC1W);
+ #endif
+ 	}
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index a5d0e78..66204cb 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -717,7 +717,7 @@ void user_disable_single_step(struct task_struct *task)
+ 	struct pt_regs *regs = task->thread.regs;
 
 
-Looks good to me.  Thanks for taking care of this.
+-#if defined(CONFIG_44x) || defined(CONFIG_BOOKE)
++#if defined(CONFIG_BOOKE)
+ 	/* If DAC then do not single step, skip */
+ 	if (task->thread.dabr)
+ 		return;
+@@ -744,10 +744,11 @@ int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
+ 	if (addr > 0)
+ 		return -EINVAL;
 
-Acked-by: Andy Fleming <afleming@freescale.com>
++	/* The bottom 3 bits in dabr are flags */
+ 	if ((data & ~0x7UL) >= TASK_SIZE)
+ 		return -EIO;
+
+-#ifdef CONFIG_PPC64
++#ifndef CONFIG_BOOKE
+
+ 	/* For processors using DABR (i.e. 970), the bottom 3 bits are flags.
+ 	 *  It was assumed, on previous implementations, that 3 bits were
+@@ -769,7 +770,7 @@ int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
+ 	task->thread.dabr = data;
+
+ #endif
+-#if defined(CONFIG_44x) || defined(CONFIG_BOOKE)
++#if defined(CONFIG_BOOKE)
+
+ 	/* As described above, it was assumed 3 bits were passed with the data
+ 	 *  address, but we will assume only the mode bits will be passed
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index 7aada78..2b5eaa6 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -147,7 +147,7 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
+ 	 */
+ 	if (current->thread.dabr) {
+ 		set_dabr(current->thread.dabr);
+-#if defined(CONFIG_44x) || defined(CONFIG_BOOKE)
++#if defined(CONFIG_BOOKE)
+ 		mtspr(SPRN_DBCR0, current->thread.dbcr0);
+ #endif
+ 	}
+-- 
+1.5.5.1
