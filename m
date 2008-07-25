@@ -1,21 +1,17 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.242])
-	by ozlabs.org (Postfix) with ESMTP id 24219DE132
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 23:06:52 +1000 (EST)
-Received: by ag-out-0708.google.com with SMTP id 8so15702253agc.0
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 06:06:50 -0700 (PDT)
-Message-ID: <fa686aa40807250606y670a8419p1e62fe66afe4cc3c@mail.gmail.com>
-Date: Fri, 25 Jul 2008 09:06:41 -0400
+Message-ID: <fa686aa40807250612g34b5167dtbe70c810f30a5d32@mail.gmail.com>
+Date: Fri, 25 Jul 2008 09:12:10 -0400
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Luotao Fu" <l.fu@pengutronix.de>
-Subject: Re: [spi-devel-general] [spi][mpc52xx][PATCH] Fix mpc52xx_psc_spi
-	master driver
-In-Reply-To: <20080725114341.GB6415@pengutronix.de>
+To: "Wolfgang Grandegger" <wg@grandegger.com>
+Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
+	FDT
+In-Reply-To: <48899736.8020400@grandegger.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20080725114341.GB6415@pengutronix.de>
-Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+References: <488982B5.4070102@grandegger.com> <4889942C.4040800@scram.de>
+	<48899736.8020400@grandegger.com>
+Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +21,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 25, 2008 at 7:43 AM, Luotao Fu <l.fu@pengutronix.de> wrote:
-> Hi,
+On Fri, Jul 25, 2008 at 5:04 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+> Jochen Friedrich wrote:
+>>
+>> Hi Wolfgang,
+>>
+>>> The I2C driver for the MPC currently uses a fixed speed hard-coded into
+>>> the driver. This patch adds the FDT properties "fdr" and "dfsrr" for the
+>>> corresponding I2C registers to make the speed configurable via FDT, e.g.:
+>>>
+>>>    i2c@3100 {
+>>>        compatible = "fsl-i2c";
+>>>        reg = <0x3100 0x100>;
+>>>        interrupts = <43 2>;
+>>>        interrupt-parent = <&mpic>;
+>>>        dfsrr = <0x20>;
+>>>        fdr = <0x03>;
+>>>    };
+>>
+>>
+>> Would it be possible to use the standard property "clock-frequency" for
+>> this
+>> and calculate the register settings in the driver?
+
+Yes, please use something like clock-frequency or current-speed and do
+the calculation.
+
+> Almost everything is possible in software, just for what price ;-). U-Boot
+> has some code in drivers/i2c/fsl_i2c.c to determine reasonable fdr and dfsrr
+> values for the MPC83/5/6xx boards. For the MPC82xx and MPC85xx it's even
+> more sophisticated.
 >
-> this is a fix for full duplex transfer mode on the mpc52xx_psc_spi driver.
-> Details see the patch header. Tested on a mpc5200b board.
->
-> Cheers
-> Luotao fu
+> I was also thinking to just overtake the U-Boot settings if fdt and dfsrr is
+> not defined for the I2C node (instead of the debatable default values).
 
-Looks pretty good to me.  I'll pick this up.
+This is a perfectly valid option.  Personally, I'd prefer it encoded
+in the device tree, but if it looks like a valid speed has already
+been programmed in then I'm cool with the driver just preserving that.
+ If it turns out to causes problems the we can always change the code
+to be more conservative later.
 
-For future patches, please send patches inline and not as attachments.
- Attachments mess up the workflow because I cannot comment on the
-patch by just hitting 'reply' and it doesn't work with git-am.
-
+Thanks,
 g.
+
 -- 
 Grant Likely, B.Sc., P.Eng.
 Secret Lab Technologies Ltd.
