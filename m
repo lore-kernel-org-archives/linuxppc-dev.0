@@ -1,22 +1,20 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 01115DDF5B
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 06:41:06 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: 82xx performance
-Date: Fri, 25 Jul 2008 15:41:00 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B04BC5B2A@ismail.innsys.innovsys.com>
-In-Reply-To: <200807172332.18030.arnd@arndb.de>
-References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
-	<200807172143.57576.arnd@arndb.de>
-	<DCEAAC0833DD314AB0B58112AD99B93B04B34E18@ismail.innsys.innovsys.com>
-	<200807172332.18030.arnd@arndb.de>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Arnd Bergmann" <arnd@arndb.de>,
-	<linuxppc-dev@ozlabs.org>
-Cc: Milton Miller <miltonm@bga.com>
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CED26DE23B
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 07:04:25 +1000 (EST)
+From: Trent Piepho <tpiepho@freescale.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] leds: make the default trigger name const
+Date: Fri, 25 Jul 2008 14:01:44 -0700
+Message-Id: <1217019705-24244-1-git-send-email-tpiepho@freescale.com>
+In-Reply-To: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
+	Richard Purdie <rpurdie@rpsys.net>, Trent Piepho <tpiepho@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> From: Arnd Bergmann [mailto:arnd@arndb.de]=20
-> On Thursday 17 July 2008, Rune Torgersen wrote:
-> > Arnd Bergmann wrote:
-> > > So again, nothing conclusive. I'm running out of ideas.
-> >=20
-> > Is the syscall path different or the same on ppc and powerpc?
-> > Any differences in the task switching, irq handling or page fault
-> > handling?
-> >=20
->=20
-> It's all different in suble ways, but those changes should only
-> show up in the system time accounting, not user time accounting.
+The default_trigger fields of struct gpio_led and thus struct led_classdev
+are pretty much always assigned from a string literal, which means the
+string can't be modified.  Which is fine, since there is no reason to
+modify the string and in fact it never is.
 
-I've been running the workload this board will see. On a 2.6.18 kernel
-%idle is ~50% and %wa (waiting for IO) is less than 1% most of the time.
-On 2.6.25, the idle% is lower (by about 10-15%) and the %wa is
-consistently hovering around 20-30% sometimes spiking to 100%.
+But they should be marked const to prevent such code from being added, to
+prevent warnings if -Wwrite-strings is used and when assigned from a
+constant string other than a string literal (which produces a warning under
+current kernel compiler flags), and for general good coding practices.
 
-The workload involves quite a bit of socket IO (TCP, UDP, Unix Sockets
-and TIPC) and disk IO.
-Any easy way of finding what is causing the wait for IO?
+Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+---
+ include/linux/leds.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-(Ive been trying to get lttng to work, but not any good results so far).
+diff --git a/include/linux/leds.h b/include/linux/leds.h
+index 519df72..defe693 100644
+--- a/include/linux/leds.h
++++ b/include/linux/leds.h
+@@ -48,7 +48,7 @@ struct led_classdev {
+ 
+ 	struct device		*dev;
+ 	struct list_head	 node;			/* LED Device list */
+-	char			*default_trigger;	/* Trigger to use */
++	const char		*default_trigger;	/* Trigger to use */
+ 
+ #ifdef CONFIG_LEDS_TRIGGERS
+ 	/* Protects the trigger data below */
+@@ -121,7 +121,7 @@ extern void ledtrig_ide_activity(void);
+ /* For the leds-gpio driver */
+ struct gpio_led {
+ 	const char *name;
+-	char *default_trigger;
++	const char *default_trigger;
+ 	unsigned 	gpio;
+ 	u8 		active_low;
+ };
+-- 
+1.5.4.3
