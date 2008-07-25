@@ -1,17 +1,15 @@
 Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40807250612g34b5167dtbe70c810f30a5d32@mail.gmail.com>
-Date: Fri, 25 Jul 2008 09:12:10 -0400
+Message-ID: <fa686aa40807250620r1ab574basd07ecce6be2bc238@mail.gmail.com>
+Date: Fri, 25 Jul 2008 09:20:22 -0400
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "Wolfgang Grandegger" <wg@grandegger.com>
-Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
-	FDT
-In-Reply-To: <48899736.8020400@grandegger.com>
+Subject: Re: [PATCH] powerpc: 85xx: add proper OF bus ids for the TQM85xx
+In-Reply-To: <48898470.80109@grandegger.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <488982B5.4070102@grandegger.com> <4889942C.4040800@scram.de>
-	<48899736.8020400@grandegger.com>
-Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org
+References: <48898470.80109@grandegger.com>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,47 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 25, 2008 at 5:04 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> Jochen Friedrich wrote:
->>
->> Hi Wolfgang,
->>
->>> The I2C driver for the MPC currently uses a fixed speed hard-coded into
->>> the driver. This patch adds the FDT properties "fdr" and "dfsrr" for the
->>> corresponding I2C registers to make the speed configurable via FDT, e.g.:
->>>
->>>    i2c@3100 {
->>>        compatible = "fsl-i2c";
->>>        reg = <0x3100 0x100>;
->>>        interrupts = <43 2>;
->>>        interrupt-parent = <&mpic>;
->>>        dfsrr = <0x20>;
->>>        fdr = <0x03>;
->>>    };
->>
->>
->> Would it be possible to use the standard property "clock-frequency" for
->> this
->> and calculate the register settings in the driver?
-
-Yes, please use something like clock-frequency or current-speed and do
-the calculation.
-
-> Almost everything is possible in software, just for what price ;-). U-Boot
-> has some code in drivers/i2c/fsl_i2c.c to determine reasonable fdr and dfsrr
-> values for the MPC83/5/6xx boards. For the MPC82xx and MPC85xx it's even
-> more sophisticated.
+On Fri, Jul 25, 2008 at 3:44 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+> Since recent modifications to the MPC I2C code, the MPC I2C buses are not
+> found any more. This patch fixes the problem by adding proper OF
+> bus ids.
 >
-> I was also thinking to just overtake the U-Boot settings if fdt and dfsrr is
-> not defined for the I2C node (instead of the debatable default values).
+> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+> ---
+> arch/powerpc/platforms/85xx/tqm85xx.c |    6 +++---
+> 1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> Index: linux-2.6-galak/arch/powerpc/platforms/85xx/tqm85xx.c
+> ===================================================================
+> --- linux-2.6-galak.orig/arch/powerpc/platforms/85xx/tqm85xx.c
+> +++ linux-2.6-galak/arch/powerpc/platforms/85xx/tqm85xx.c
+> @@ -156,15 +156,15 @@ static void tqm85xx_show_cpuinfo(struct }
+>
+> static struct of_device_id __initdata of_bus_ids[] = {
+> +       { .type = "soc", },
+> +       { .compatible = "soc", },
+>        { .compatible = "simple-bus", },
 
-This is a perfectly valid option.  Personally, I'd prefer it encoded
-in the device tree, but if it looks like a valid speed has already
-been programmed in then I'm cool with the driver just preserving that.
- If it turns out to causes problems the we can always change the code
-to be more conservative later.
+Ugh, i assume this is to support older .dts files that don't have
+simple-bus in their compatible property?  Please put them at the end
+of the list and put a comment ahead of them stating that they are
+legacy support.  You should also state in the comment which boards or
+dts files these entries provide support for.
 
-Thanks,
 g.
 
 -- 
