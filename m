@@ -1,25 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id 555FFDDF68
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 12:45:55 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so1192479anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 19:45:54 -0700 (PDT)
-Message-ID: <fa686aa40807251945t26a1656ep7a57ca71faa096c4@mail.gmail.com>
-Date: Fri, 25 Jul 2008 22:45:54 -0400
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Daniel Walker" <dwalker@mvista.com>
-Subject: Re: [PATCH v3 4/4] powerpc/mpc5200: Add mpc5200-spi (non-PSC) device
-	driver
-In-Reply-To: <1217009954.13539.23.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-	<20080725073326.8485.99210.stgit@trillian.secretlab.ca>
-	<1217009954.13539.23.camel@localhost.localdomain>
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-	akpm@linux-foundation.org
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id D2A64DDE24
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 13:48:03 +1000 (EST)
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04BC5B2A@ismail.innsys.innovsys.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
+	<200807172143.57576.arnd@arndb.de>
+	<DCEAAC0833DD314AB0B58112AD99B93B04B34E18@ismail.innsys.innovsys.com>
+	<200807172332.18030.arnd@arndb.de>
+	<DCEAAC0833DD314AB0B58112AD99B93B04BC5B2A@ismail.innsys.innovsys.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <52cfb363300164e2d5d566ac635e9d20@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: 82xx performance
+Date: Fri, 25 Jul 2008 22:47:36 -0500
+To: "Rune Torgersen" <runet@innovsys.com>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,46 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 25, 2008 at 2:19 PM, Daniel Walker <dwalker@mvista.com> wrote:
-> On Fri, 2008-07-25 at 03:33 -0400, Grant Likely wrote:
+
+On Jul 25, 2008, at 3:41 PM, Rune Torgersen wrote:
+
+>> From: Arnd Bergmann [mailto:arnd@arndb.de]
+>> On Thursday 17 July 2008, Rune Torgersen wrote:
+>>> Arnd Bergmann wrote:
+>>>> So again, nothing conclusive. I'm running out of ideas.
+>>>
+>>> Is the syscall path different or the same on ppc and powerpc?
+>>> Any differences in the task switching, irq handling or page fault
+>>> handling?
+>>>
+>>
+>> It's all different in suble ways, but those changes should only
+>> show up in the system time accounting, not user time accounting.
 >
->> +     if (status && (irq != NO_IRQ))
->> +             dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
->> +                     status);
->> +
->> +     /* Check if there is another transfer waiting */
->> +     if (list_empty(&ms->queue))
->> +             return FSM_STOP;
+> I've been running the workload this board will see. On a 2.6.18 kernel
+> %idle is ~50% and %wa (waiting for IO) is less than 1% most of the 
+> time.
+> On 2.6.25, the idle% is lower (by about 10-15%) and the %wa is
+> consistently hovering around 20-30% sometimes spiking to 100%.
 >
-> I don't think doing list_empty outside the critical section is totally
-> safe.. You might want to move it down inside the spin_lock() section.
-
-This should be fine.  This is the only place where items are dequeued,
-and it will only ever be called from the ISR or the work queue.  The
-work queue and IRQ will never be active at the same time (I'll add a
-comment to the fact).  It also looks like list_empty is perfectly safe
-to call without the protection of a spin lock (but somebody correct me
-if I'm out to lunch).  It doesn't dereference any of the pointers in
-the list_head structure.
-
+> The workload involves quite a bit of socket IO (TCP, UDP, Unix Sockets
+> and TIPC) and disk IO.
+> Any easy way of finding what is causing the wait for IO?
 >
->> +     /* Get the next message */
->> +     spin_lock(&ms->lock);
->
-> The part that's a little confusing here is that the interrupt can
-> actually activate the workqueue .. So I'm wondering if maybe you could
-> have this interrupt driven any workqueue driven at the same time? If you
-> could then you would need the above to be
-> spin_lock_irq/spin_lock_irqsave ..
+> (Ive been trying to get lttng to work, but not any good results so 
+> far).
 
-Ditto here, since the irq and workqueue are not enabled at the same
-time there is no worry about collision.
+In both idle and wait, the cpu is in the idle loop waiting for something
+to do.  The difference is that a cpu is considered in disk wait if the
+there is a task in uninterruptible sleep that is not being counted as
+waiting on another cpu.
 
-Cheers,
-g.
+With a significant change in wait time, I would suggest restating the
+current observations to the linux-mm community, probably with a cc
+to linux-kernel.
 
+Be sure to state what you have done to equalize the comparison (eg
+highmen, ram size left, etc).
 
+There may be some tunables that could adjust the behavior.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+milton
