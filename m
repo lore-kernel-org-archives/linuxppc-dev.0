@@ -1,17 +1,23 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id C775ADDFAA
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 14:23:39 +1000 (EST)
-In-Reply-To: <488A44DB.7090400@austin.ibm.com>
-References: <488A44DB.7090400@austin.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <55352adb7411e87b6c4dd948fc623936@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: [PATCH] Memset the kernel copy of rtas args before using
-Date: Fri, 25 Jul 2008 23:17:10 -0500
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id ADB47DDF5B
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 14:29:29 +1000 (EST)
+Subject: Re: [git pull] Please pull from powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807251734030.4188@nehalem.linux-foundation.org>
+References: <1217027473.11188.120.camel@pasglop>
+	<alpine.LFD.1.10.0807251734030.4188@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 26 Jul 2008 14:28:51 +1000
+Message-Id: <1217046531.11188.126.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	akpm <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,30 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat Jul 26 at 07:25:47 EST in 2008, Nathan Fontenot wrote:
-> The kernel copy of the rtas args struct that is read in from
-> user space is a stack variable.  This structure should be
-> zero'ed out before we do any reads/writes to/from the user
-> when handling a rtas call request.  This patch adds a memset
-> to do this.
+On Fri, 2008-07-25 at 17:38 -0700, Linus Torvalds wrote:
+> 
+> On Sat, 26 Jul 2008, Benjamin Herrenschmidt wrote:
+> > 
+> > Please pull from:
+> > ﻿
+> > ﻿git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+> 
+> What odd character do you have there before the 'git://' and why?
 
-Why bother to zero the data before copying from the user?  We
-check that they supply data for the whole input range needed.
+Hrm... no idea... must be some weirdo evolution thing...
 
-> I am seeing an issue in testing partition mobility, where the
-> parts of the rtas args struct that return status top the user
-> contain stale data.
+> It cuts-and-pastes into some whitespace that isn't space, and that the 
+> shell thus makes part of that word when parsing. It seems to be U+FEFF, 
+> which is "zero-width non-break space", but what the heck is the point of 
+> that kind of garbage in email?
 
-Please change the patch to just clear the output arg range.
-(I"m fine not trusting firmware to set all output args based
-on what the user suggested the return arg count would be).
+No idea how it got there.
 
-And we can do it after we decide not to return an error:
+> Is this some new way for Evolution to screw up?
 
-  792         if (args.token == RTAS_UNKNOWN_SERVICE)
-  793                 return -EINVAL;
-  794
-  795         /* Need to handle ibm,suspend_me call specially */
+Quite possibly. I'll do some tests to see if I can reproduce locally...
+it could be the result of a key combo that leaves that in the mail but
+isn't visible... weird.
 
+Sorry about that,
 
-milton
+Cheers,
+Ben.
