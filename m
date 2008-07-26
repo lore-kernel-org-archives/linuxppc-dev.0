@@ -1,27 +1,18 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
-	by ozlabs.org (Postfix) with ESMTP id 293BFDDFC5
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 15:20:08 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so1197450anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 22:20:07 -0700 (PDT)
-Message-ID: <fa686aa40807252220x5b224e91ucca467ff6eecc0ae@mail.gmail.com>
-Date: Sat, 26 Jul 2008 01:20:06 -0400
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Daniel Walker" <dwalker@mvista.com>
-Subject: Re: [PATCH v3 4/4] powerpc/mpc5200: Add mpc5200-spi (non-PSC) device
-	driver
-In-Reply-To: <1217047659.3970.14.camel@localhost.localdomain>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
+	by ozlabs.org (Postfix) with ESMTP id 839C7DDF60
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 16:24:23 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so1747205pyi.27
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 23:24:21 -0700 (PDT)
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] powerpc/mpc5200: Fix locking on mpc52xx_spi driver
+To: dwalker@mvista.com, spi-devel-general@lists.sourceforge.net,
+	dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
+Date: Sat, 26 Jul 2008 02:24:18 -0400
+Message-ID: <20080726062226.10506.65539.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-	<20080725073326.8485.99210.stgit@trillian.secretlab.ca>
-	<1217009954.13539.23.camel@localhost.localdomain>
-	<fa686aa40807251945t26a1656ep7a57ca71faa096c4@mail.gmail.com>
-	<1217047659.3970.14.camel@localhost.localdomain>
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-	akpm@linux-foundation.org
+Content-Type: text/plain; charset="utf-8"
+Sender: Grant Likely <glikely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,73 +22,119 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jul 26, 2008 at 12:47 AM, Daniel Walker <dwalker@mvista.com> wrote:
-> On Fri, 2008-07-25 at 22:45 -0400, Grant Likely wrote:
->> On Fri, Jul 25, 2008 at 2:19 PM, Daniel Walker <dwalker@mvista.com> wrote:
->> > On Fri, 2008-07-25 at 03:33 -0400, Grant Likely wrote:
->> >
->> >> +     if (status && (irq != NO_IRQ))
->> >> +             dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
->> >> +                     status);
->> >> +
->> >> +     /* Check if there is another transfer waiting */
->> >> +     if (list_empty(&ms->queue))
->> >> +             return FSM_STOP;
->> >
->> > I don't think doing list_empty outside the critical section is totally
->> > safe.. You might want to move it down inside the spin_lock() section.
->>
->> This should be fine.  This is the only place where items are dequeued,
->> and it will only ever be called from the ISR or the work queue.  The
->> work queue and IRQ will never be active at the same time (I'll add a
->> comment to the fact).  It also looks like list_empty is perfectly safe
->> to call without the protection of a spin lock (but somebody correct me
->> if I'm out to lunch).  It doesn't dereference any of the pointers in
->> the list_head structure.
->
-> The list_empty wouldn't crash, but the result isn't necessarily
-> accurate.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-It doesn't need to be accurate because the spinlock is obtained before
-actually trying to dequeue anything.  Even if it held the spinlock
-there would still be uncertainty depending on which routine ran first.
- If this function ran first, then it's going to stop the state machine
-regardless and the enqueue function will have to kick it off again
-anyway.
+Locking was incorrect for the state machine processing since there are
+conditions where both the work queue and the IRQ can be active.  This
+patch fixes the handling to ensure the spin lock is held whenever the
+state machine is being processed.
 
-But, I've taken a look at the code, and you're right, the spin lock
-does need to be held while running the state machine because I do have
-a case where the IRQ and workqueue could get executed at the same
-time.  I'll fix it up.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
->
->> >
->> >> +     /* Get the next message */
->> >> +     spin_lock(&ms->lock);
->> >
->> > The part that's a little confusing here is that the interrupt can
->> > actually activate the workqueue .. So I'm wondering if maybe you could
->> > have this interrupt driven any workqueue driven at the same time? If you
->> > could then you would need the above to be
->> > spin_lock_irq/spin_lock_irqsave ..
->>
->> Ditto here, since the irq and workqueue are not enabled at the same
->> time there is no worry about collision.
->
-> Why are you waking up the work queue from inside the irq handler? You
-> might also want to break out the handling from inside the irq handler
-> and call that from the workqueue, instead of re-calling the irq handler
-> function from the workqueue.. It's a little confusing from a context
-> perspective.
+Hi Daniel,
 
-Sure, I can rework that.  The irq handler would then just simply be a
-straight call into the state machine runner.  I just dropped the
-additional 4 lines of code for conciseness, but I can change it around
-for clarity... actually, with the spin lock stuff above I need to do
-this rework.
+Here is the incremental change to the mpc52xx_spi driver to fix up the
+locking.  It should be safe and unambiguous now.
 
+Cheers,
 g.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+ drivers/spi/mpc52xx_spi.c |   44 +++++++++++++++++++++++++-------------------
+ 1 files changed, 25 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/spi/mpc52xx_spi.c b/drivers/spi/mpc52xx_spi.c
+index a4afc56..ab7be43 100644
+--- a/drivers/spi/mpc52xx_spi.c
++++ b/drivers/spi/mpc52xx_spi.c
+@@ -149,17 +149,10 @@ mpc52xx_spi_fsmstate_idle(int irq, struct mpc52xx_spi *ms, u8 status, u8 data)
+ 		dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
+ 			status);
+ 
+-	/* Check if there is another transfer waiting.  It is safe to do
+-	 * this here without holding the spinlock because this is the only
+-	 * function where messages are dequeued and this function will
+-	 * only get called by the IRQ or by the workqueue.  The IRQ and
+-	 * the workqueue will not be enabled at the same time. */
++	/* Check if there is another transfer waiting. */
+ 	if (list_empty(&ms->queue))
+ 		return FSM_STOP;
+ 
+-	/* Get the next message */
+-	spin_lock(&ms->lock);
+-
+ 	/* Call the pre-message hook with a pointer to the next
+ 	 * message.  The pre-message hook may enqueue a new message for
+ 	 * changing the chip select value to the head of the queue */
+@@ -168,10 +161,9 @@ mpc52xx_spi_fsmstate_idle(int irq, struct mpc52xx_spi *ms, u8 status, u8 data)
+ 		ms->premessage(m, ms->premessage_context);
+ 
+ 	/* reget the head of the queue (the premessage hook may have enqueued
+-	 * something before it.) and drop the spinlock */
++	 * something before it.) */
+ 	ms->message = list_first_entry(&ms->queue, struct spi_message, queue);
+ 	list_del_init(&ms->message->queue);
+-	spin_unlock(&ms->lock);
+ 
+ 	/* Setup the controller parameters */
+ 	ctrl1 = SPI_CTRL1_SPIE | SPI_CTRL1_SPE | SPI_CTRL1_MSTR;
+@@ -326,36 +318,50 @@ mpc52xx_spi_fsmstate_wait(int irq, struct mpc52xx_spi *ms, u8 status, u8 data)
+ 	return FSM_CONTINUE;
+ }
+ 
+-/*
+- * IRQ handler
++/**
++ * mpc52xx_spi_fsm_process - Finite State Machine iteration function
++ * @irq: irq number that triggered the FSM; NO_IRQ for workqueue polling
++ * @ms: pointer to mpc52xx_spi driver data
+  */
+-static irqreturn_t mpc52xx_spi_irq(int irq, void *_ms)
++static void mpc52xx_spi_fsm_process(int irq, struct mpc52xx_spi *ms)
+ {
+-	struct mpc52xx_spi *ms = _ms;
+ 	int rc = FSM_CONTINUE;
+ 	u8 status, data;
+ 
+ 	while (rc == FSM_CONTINUE) {
+ 		/* Interrupt cleared by read of STATUS followed by
+-		 * read of DATA registers*/
++		 * read of DATA registers */
+ 		status = readb(ms->regs + SPI_STATUS);
+-		data = readb(ms->regs + SPI_DATA); /* clear status */
++		data = readb(ms->regs + SPI_DATA);
+ 		rc = ms->state(irq, ms, status, data);
+ 	}
+ 
+ 	if (rc == FSM_POLL)
+ 		schedule_work(&ms->work);
++}
+ 
++/**
++ * mpc52xx_spi_irq - IRQ handler
++ */
++static irqreturn_t mpc52xx_spi_irq(int irq, void *_ms)
++{
++	struct mpc52xx_spi *ms = _ms;
++	spin_lock(&ms->lock);
++	mpc52xx_spi_fsm_process(irq, ms);
++	spin_unlock(&ms->lock);
+ 	return IRQ_HANDLED;
+ }
+ 
+-/*
+- * Workqueue method of running the state machine
++/**
++ * mpc52xx_spi_wq - Workqueue function for polling the state machine
+  */
+ static void mpc52xx_spi_wq(struct work_struct *work)
+ {
+ 	struct mpc52xx_spi *ms = container_of(work, struct mpc52xx_spi, work);
+-	mpc52xx_spi_irq(NO_IRQ, ms);
++	unsigned long flags;
++	spin_lock_irqsave(&ms->lock, flags);
++	mpc52xx_spi_fsm_process(NO_IRQ, ms);
++	spin_unlock_irqrestore(&ms->lock, flags);
+ }
+ 
+ /*
