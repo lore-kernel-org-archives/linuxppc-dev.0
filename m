@@ -1,19 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 27940DDEDC
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 03:57:34 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m6QHvUGo002478
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 12:57:31 -0500
-Date: Sat, 26 Jul 2008 12:57:30 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fix 8xx build failure
-Message-ID: <Pine.LNX.4.64.0807261256430.21570@blarg.am.freescale.net>
+Return-Path: <glikely@secretlab.ca>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
+	by ozlabs.org (Postfix) with ESMTP id 63EA5DDFDA
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 04:28:23 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so1823503pyi.27
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 11:28:22 -0700 (PDT)
+Date: Sat, 26 Jul 2008 14:28:19 -0400
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: Cleanup for i2c driver changes.
+Message-ID: <20080726182819.GA11285@secretlab.ca>
+References: <20080725214510.400c6ce8@lappy.seanm.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080725214510.400c6ce8@lappy.seanm.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +24,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 'powerpc ioremap_prot' broke 8xx builds:
+On Fri, Jul 25, 2008 at 09:45:10PM -0400, Sean MacLennan wrote:
+> This patch removes the i2c code which is now obsolete due to the new
+> ibm iic driver walking the device tree for child nodes.
+> 
+> There are two other small cleanups that came indirectly from the ad7414
+> code review. Make sure Tlow is correct and handle the case where
+> i2c_smbus_read_word_data fails.
+> 
+> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
 
-include2/asm/pgtable-ppc32.h:555: error: '_PAGE_WRITETHRU' undeclared (first use in this function)
-include2/asm/pgtable-ppc32.h:555: error: (Each undeclared identifier is reported only once
-include2/asm/pgtable-ppc32.h:555: error: for each function it appears in.)
+Looks okay to me, but you should really cc: the 4xx maintainer (Josh
+Boyer) when sending out 4xx patches.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+Cheers,
+g.
 
-in my powerpc-next tree.
-
-- k
-
- include/asm-powerpc/pgtable-ppc32.h |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/include/asm-powerpc/pgtable-ppc32.h b/include/asm-powerpc/pgtable-ppc32.h
-index bdbab72..6fe39e3 100644
---- a/include/asm-powerpc/pgtable-ppc32.h
-+++ b/include/asm-powerpc/pgtable-ppc32.h
-@@ -401,6 +401,9 @@ extern int icache_44x_need_flush;
- #ifndef _PAGE_COHERENT
- #define _PAGE_COHERENT	0
- #endif
-+#ifndef _PAGE_WRITETHRU
-+#define _PAGE_WRITETHRU	0
-+#endif
- #ifndef _PMD_PRESENT_MASK
- #define _PMD_PRESENT_MASK	_PMD_PRESENT
- #endif
--- 
-1.5.5.1
+> ---
+> diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
+> index 9565995..960edf8 100644
+> --- a/arch/powerpc/platforms/44x/warp.c
+> +++ b/arch/powerpc/platforms/44x/warp.c
+> @@ -30,18 +30,6 @@ static __initdata struct of_device_id warp_of_bus[] = {
+>  	{},
+>  };
+>  
+> -static __initdata struct i2c_board_info warp_i2c_info[] = {
+> -	{ I2C_BOARD_INFO("ad7414", 0x4a) }
+> -};
+> -
+> -static int __init warp_arch_init(void)
+> -{
+> -	/* This should go away once support is moved to the dts. */
+> -	i2c_register_board_info(0, warp_i2c_info, ARRAY_SIZE(warp_i2c_info));
+> -	return 0;
+> -}
+> -machine_arch_initcall(warp, warp_arch_init);
+> -
+>  static int __init warp_device_probe(void)
+>  {
+>  	of_platform_bus_probe(NULL, warp_of_bus, NULL);
+> @@ -223,7 +211,7 @@ static void pika_setup_critical_temp(struct i2c_client *client)
+>  
+>  	/* These registers are in 1 degree increments. */
+>  	i2c_smbus_write_byte_data(client, 2, 65); /* Thigh */
+> -	i2c_smbus_write_byte_data(client, 3, 55); /* Tlow */
+> +	i2c_smbus_write_byte_data(client, 3,  0); /* Tlow */
+>  
+>  	np = of_find_compatible_node(NULL, NULL, "adi,ad7414");
+>  	if (np == NULL) {
+> @@ -289,8 +277,15 @@ found_it:
+>  	printk(KERN_INFO "PIKA DTM thread running.\n");
+>  
+>  	while (!kthread_should_stop()) {
+> -		u16 temp = swab16(i2c_smbus_read_word_data(client, 0));
+> -		out_be32(fpga + 0x20, temp);
+> +		int val;
+> +
+> +		val = i2c_smbus_read_word_data(client, 0);
+> +		if (val < 0)
+> +			dev_dbg(&client->dev, "DTM read temp failed.\n");
+> +		else {
+> +			s16 temp = swab16(val);
+> +			out_be32(fpga + 0x20, temp);
+> +		}
+>  
+>  		pika_dtm_check_fan(fpga);
+>  
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
