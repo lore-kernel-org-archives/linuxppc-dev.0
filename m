@@ -1,19 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
-	by ozlabs.org (Postfix) with ESMTP id 732F5DDFAF
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 14:00:45 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so1195038anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 21:00:44 -0700 (PDT)
-Message-ID: <fa686aa40807252100q299f87d7xc2101869a45704bb@mail.gmail.com>
-Date: Sat, 26 Jul 2008 00:00:43 -0400
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	"Paul Mackerras" <paulus@samba.org>
-Subject: Please pull mpc52xx-next
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id C775ADDFAA
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 14:23:39 +1000 (EST)
+In-Reply-To: <488A44DB.7090400@austin.ibm.com>
+References: <488A44DB.7090400@austin.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <55352adb7411e87b6c4dd948fc623936@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: [PATCH] Memset the kernel copy of rtas args before using
+Date: Fri, 25 Jul 2008 23:17:10 -0500
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,47 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hey Ben, here are a few more patches for .27.  I would have had this
-stuff in earlier, but they depended on another patch that I didn't
-feel like I should push that was in Andrew's queue.
+On Sat Jul 26 at 07:25:47 EST in 2008, Nathan Fontenot wrote:
+> The kernel copy of the rtas args struct that is read in from
+> user space is a stack variable.  This structure should be
+> zero'ed out before we do any reads/writes to/from the user
+> when handling a rtas call request.  This patch adds a memset
+> to do this.
 
-Thanks,
-g.
+Why bother to zero the data before copying from the user?  We
+check that they supply data for the whole input range needed.
 
-The following changes since commit 1ff8419871ea757ae0298aa296bcff9b2ca48561:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/net-2.6
+> I am seeing an issue in testing partition mobility, where the
+> parts of the rtas args struct that return status top the user
+> contain stale data.
 
-are available in the git repository at:
+Please change the patch to just clear the output arg range.
+(I"m fine not trusting firmware to set all output args based
+on what the user suggested the return arg count would be).
 
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx.git next
+And we can do it after we decide not to return an error:
 
-Grant Likely (4):
-      of: adapt of_find_i2c_driver() to be usable by SPI also
-      spi: split up spi_new_device() to allow two stage registration.
-      spi: Add OF binding support for SPI busses
-      powerpc/mpc5200: Add mpc5200-spi (non-PSC) device driver
-
- drivers/of/Kconfig              |    6 +
- drivers/of/Makefile             |    1 +
- drivers/of/base.c               |   88 ++++++
- drivers/of/of_i2c.c             |   64 +----
- drivers/of/of_spi.c             |   93 ++++++
- drivers/spi/Kconfig             |    8 +
- drivers/spi/Makefile            |    1 +
- drivers/spi/mpc52xx_spi.c       |  602 +++++++++++++++++++++++++++++++++++++++
- drivers/spi/spi.c               |  139 ++++++---
- include/linux/of.h              |    1 +
- include/linux/of_spi.h          |   18 ++
- include/linux/spi/mpc52xx_spi.h |   10 +
- include/linux/spi/spi.h         |   12 +
- 13 files changed, 938 insertions(+), 105 deletions(-)
- create mode 100644 drivers/of/of_spi.c
- create mode 100644 drivers/spi/mpc52xx_spi.c
- create mode 100644 include/linux/of_spi.h
- create mode 100644 include/linux/spi/mpc52xx_spi.h
+  792         if (args.token == RTAS_UNKNOWN_SERVICE)
+  793                 return -EINVAL;
+  794
+  795         /* Need to handle ibm,suspend_me call specially */
 
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+milton
