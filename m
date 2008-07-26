@@ -1,22 +1,27 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id 93196DDFB6
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 14:55:32 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so1196725anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 21:55:31 -0700 (PDT)
-Message-ID: <fa686aa40807252155l4f785920qdb14d117067b30f4@mail.gmail.com>
-Date: Sat, 26 Jul 2008 00:55:31 -0400
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
+	by ozlabs.org (Postfix) with ESMTP id 293BFDDFC5
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 15:20:08 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so1197450anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 22:20:07 -0700 (PDT)
+Message-ID: <fa686aa40807252220x5b224e91ucca467ff6eecc0ae@mail.gmail.com>
+Date: Sat, 26 Jul 2008 01:20:06 -0400
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Milton Miller" <miltonm@bga.com>
-Subject: Re: [RFC,PATCH] scripts/package: add powerpc images to tarball
-In-Reply-To: <200807250108.m6P18f4B099179@sullivan.realtime.net>
+To: "Daniel Walker" <dwalker@mvista.com>
+Subject: Re: [PATCH v3 4/4] powerpc/mpc5200: Add mpc5200-spi (non-PSC) device
+	driver
+In-Reply-To: <1217047659.3970.14.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <1216887460.306306.238738123378.1.gpush@pingu>
-	<200807250108.m6P18f4B099179@sullivan.realtime.net>
-Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
-	linux-kernel@vger.kernel.org
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+	<20080725073326.8485.99210.stgit@trillian.secretlab.ca>
+	<1217009954.13539.23.camel@localhost.localdomain>
+	<fa686aa40807251945t26a1656ep7a57ca71faa096c4@mail.gmail.com>
+	<1217047659.3970.14.camel@localhost.localdomain>
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+	akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +31,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 24, 2008 at 9:08 PM, Milton Miller <miltonm@bga.com> wrote:
+On Sat, Jul 26, 2008 at 12:47 AM, Daniel Walker <dwalker@mvista.com> wrote:
+> On Fri, 2008-07-25 at 22:45 -0400, Grant Likely wrote:
+>> On Fri, Jul 25, 2008 at 2:19 PM, Daniel Walker <dwalker@mvista.com> wrote:
+>> > On Fri, 2008-07-25 at 03:33 -0400, Grant Likely wrote:
+>> >
+>> >> +     if (status && (irq != NO_IRQ))
+>> >> +             dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
+>> >> +                     status);
+>> >> +
+>> >> +     /* Check if there is another transfer waiting */
+>> >> +     if (list_empty(&ms->queue))
+>> >> +             return FSM_STOP;
+>> >
+>> > I don't think doing list_empty outside the critical section is totally
+>> > safe.. You might want to move it down inside the spin_lock() section.
+>>
+>> This should be fine.  This is the only place where items are dequeued,
+>> and it will only ever be called from the ISR or the work queue.  The
+>> work queue and IRQ will never be active at the same time (I'll add a
+>> comment to the fact).  It also looks like list_empty is perfectly safe
+>> to call without the protection of a spin lock (but somebody correct me
+>> if I'm out to lunch).  It doesn't dereference any of the pointers in
+>> the list_head structure.
 >
->> Currently, tarball builds for powerpc kernels don't have any boot
->> images (other than vmlinux) present.
->>
->> Add support for powerpc builds in the buildtar script, to include
->> a few default images.
->>
->> Signed-off-by: Jeremy Kerr <jk at ozlabs.org>
->>
->> ---
->> RFC: any requests for more/less boot images?
->>
-> ..
->> +             for img in zImage zImage.pseries zImage.iseries \
->> +                             dtbImage dtbImage.ps3
+> The list_empty wouldn't crash, but the result isn't necessarily
+> accurate.
+
+It doesn't need to be accurate because the spinlock is obtained before
+actually trying to dequeue anything.  Even if it held the spinlock
+there would still be uncertainty depending on which routine ran first.
+ If this function ran first, then it's going to stop the state machine
+regardless and the enqueue function will have to kick it off again
+anyway.
+
+But, I've taken a look at the code, and you're right, the spin lock
+does need to be held while running the state machine because I do have
+a case where the IRQ and workqueue could get executed at the same
+time.  I'll fix it up.
+
 >
-> Yes.  How about all dtbImage, zImage, cuboot, treeboot, etc
-> that are newer than vmlinux?
+>> >
+>> >> +     /* Get the next message */
+>> >> +     spin_lock(&ms->lock);
+>> >
+>> > The part that's a little confusing here is that the interrupt can
+>> > actually activate the workqueue .. So I'm wondering if maybe you could
+>> > have this interrupt driven any workqueue driven at the same time? If you
+>> > could then you would need the above to be
+>> > spin_lock_irq/spin_lock_irqsave ..
+>>
+>> Ditto here, since the irq and workqueue are not enabled at the same
+>> time there is no worry about collision.
+>
+> Why are you waking up the work queue from inside the irq handler? You
+> might also want to break out the handling from inside the irq handler
+> and call that from the workqueue, instead of re-calling the irq handler
+> function from the workqueue.. It's a little confusing from a context
+> perspective.
 
-dtbImage is not a buildable image.  Neither is cuImage, treeImage or
-simpleImage.  All of those targets embed a device tree which is
-specified by adding the .dts filename to the target name.
-
-so, for example, 'make cuImage' fails.  Instead you do 'make
-cuImage.lite5200b' which pulls in dts/lite5200b.dts.
-
-Also, zImage is a 'meta' target that builds all the default image
-targets (the $image-y list).  The zImage is actually just a symlink to
-the first file in the list of default images.  So zImage can actually
-point to any kind of kernel image depending on how the kernel is
-configured.  I wonder if we should just remove the zImage file
-entirely, or at least make it always linked to one particular image
-type.
+Sure, I can rework that.  The irq handler would then just simply be a
+straight call into the state machine runner.  I just dropped the
+additional 4 lines of code for conciseness, but I can change it around
+for clarity... actually, with the spin lock stuff above I need to do
+this rework.
 
 g.
 
