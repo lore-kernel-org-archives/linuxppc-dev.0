@@ -1,19 +1,19 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id B5E2CDDFB7
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 13:59:00 +1000 (EST)
-In-Reply-To: <200807251111.26673.jk@ozlabs.org>
-References: <1216887460.306306.238738123378.1.gpush@pingu>
-	<200807250108.m6P18f4B099179@sullivan.realtime.net>
-	<200807251111.26673.jk@ozlabs.org>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b15cc94f988df8d269ad40fafcd911cb@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [RFC,PATCH] scripts/package: add powerpc images to tarball
-Date: Fri, 25 Jul 2008 22:59:06 -0500
-To: Jeremy Kerr <jk@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id 732F5DDFAF
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 14:00:45 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so1195038anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 21:00:44 -0700 (PDT)
+Message-ID: <fa686aa40807252100q299f87d7xc2101869a45704bb@mail.gmail.com>
+Date: Sat, 26 Jul 2008 00:00:43 -0400
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	"Paul Mackerras" <paulus@samba.org>
+Subject: Please pull mpc52xx-next
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hey Ben, here are a few more patches for .27.  I would have had this
+stuff in earlier, but they depended on another patch that I didn't
+feel like I should push that was in Andrew's queue.
 
-On Jul 24, 2008, at 8:11 PM, Jeremy Kerr wrote:
+Thanks,
+g.
 
-> Milton,
->
->> Yes.  How about all dtbImage, zImage, cuboot, treeboot, etc
->> that are newer than vmlinux?
->
-> The existing arch code doesn't do any checks for timestamps, perhaps
-> this would be better implemented as an arch-independent change?
+The following changes since commit 1ff8419871ea757ae0298aa296bcff9b2ca48561:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
 
-The problem is some people might want to add intermediate files that are
-younger than vmlinux (eg .config).  We know our boot-image should be
-newer.  But I don't know how one would express the expected ages.
+are available in the git repository at:
 
-The reason I suggested the check was to eliminate images that are not
-in the current config.  I figured a test for relative file age could
-be done in the for loop -- possibly replace shell wildcard with
-find arch/$(ARCH)/boot/{zImage*,dtbImage*,uImage*,cuImage*,treeboot*}
--newer vmlinux -print.
+  git://git.secretlab.ca/git/linux-2.6-mpc52xx.git next
 
-> (but would you like me to add treeboot and cuboot?)
+Grant Likely (4):
+      of: adapt of_find_i2c_driver() to be usable by SPI also
+      spi: split up spi_new_device() to allow two stage registration.
+      spi: Add OF binding support for SPI busses
+      powerpc/mpc5200: Add mpc5200-spi (non-PSC) device driver
 
-I don't see why we should prefer the workstations and servers over the
-embedded boards.  zImage is just a link to the first boot image, but
-one can build a multiple formats and the order is somewhat arbitrary.
-So I see it as fairness.  Otherwise, there are a few other platforms
-that are "user" based vs embedded (like efkia, no?).
+ drivers/of/Kconfig              |    6 +
+ drivers/of/Makefile             |    1 +
+ drivers/of/base.c               |   88 ++++++
+ drivers/of/of_i2c.c             |   64 +----
+ drivers/of/of_spi.c             |   93 ++++++
+ drivers/spi/Kconfig             |    8 +
+ drivers/spi/Makefile            |    1 +
+ drivers/spi/mpc52xx_spi.c       |  602 +++++++++++++++++++++++++++++++++++++++
+ drivers/spi/spi.c               |  139 ++++++---
+ include/linux/of.h              |    1 +
+ include/linux/of_spi.h          |   18 ++
+ include/linux/spi/mpc52xx_spi.h |   10 +
+ include/linux/spi/spi.h         |   12 +
+ 13 files changed, 938 insertions(+), 105 deletions(-)
+ create mode 100644 drivers/of/of_spi.c
+ create mode 100644 drivers/spi/mpc52xx_spi.c
+ create mode 100644 include/linux/of_spi.h
+ create mode 100644 include/linux/spi/mpc52xx_spi.h
 
-milton
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
