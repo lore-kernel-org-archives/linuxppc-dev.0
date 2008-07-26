@@ -1,23 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ADB47DDF5B
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 14:29:29 +1000 (EST)
-Subject: Re: [git pull] Please pull from powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807251734030.4188@nehalem.linux-foundation.org>
-References: <1217027473.11188.120.camel@pasglop>
-	<alpine.LFD.1.10.0807251734030.4188@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=utf-8
-Date: Sat, 26 Jul 2008 14:28:51 +1000
-Message-Id: <1217046531.11188.126.camel@pasglop>
+Return-Path: <dwalker@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id A188BDDF8B
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 14:49:22 +1000 (EST)
+Subject: Re: [PATCH v3 4/4] powerpc/mpc5200: Add mpc5200-spi (non-PSC)
+	device driver
+From: Daniel Walker <dwalker@mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40807251945t26a1656ep7a57ca71faa096c4@mail.gmail.com>
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+	<20080725073326.8485.99210.stgit@trillian.secretlab.ca>
+	<1217009954.13539.23.camel@localhost.localdomain>
+	<fa686aa40807251945t26a1656ep7a57ca71faa096c4@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 26 Jul 2008 00:47:39 -0400
+Message-Id: <1217047659.3970.14.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	akpm <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-Reply-To: benh@kernel.crashing.org
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+	akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-07-25 at 17:38 -0700, Linus Torvalds wrote:
+On Fri, 2008-07-25 at 22:45 -0400, Grant Likely wrote:
+> On Fri, Jul 25, 2008 at 2:19 PM, Daniel Walker <dwalker@mvista.com> wrote:
+> > On Fri, 2008-07-25 at 03:33 -0400, Grant Likely wrote:
+> >
+> >> +     if (status && (irq != NO_IRQ))
+> >> +             dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
+> >> +                     status);
+> >> +
+> >> +     /* Check if there is another transfer waiting */
+> >> +     if (list_empty(&ms->queue))
+> >> +             return FSM_STOP;
+> >
+> > I don't think doing list_empty outside the critical section is totally
+> > safe.. You might want to move it down inside the spin_lock() section.
 > 
-> On Sat, 26 Jul 2008, Benjamin Herrenschmidt wrote:
-> > 
-> > Please pull from:
-> > ﻿
-> > ﻿git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+> This should be fine.  This is the only place where items are dequeued,
+> and it will only ever be called from the ISR or the work queue.  The
+> work queue and IRQ will never be active at the same time (I'll add a
+> comment to the fact).  It also looks like list_empty is perfectly safe
+> to call without the protection of a spin lock (but somebody correct me
+> if I'm out to lunch).  It doesn't dereference any of the pointers in
+> the list_head structure.
+
+The list_empty wouldn't crash, but the result isn't necessarily
+accurate.
+
+> >
+> >> +     /* Get the next message */
+> >> +     spin_lock(&ms->lock);
+> >
+> > The part that's a little confusing here is that the interrupt can
+> > actually activate the workqueue .. So I'm wondering if maybe you could
+> > have this interrupt driven any workqueue driven at the same time? If you
+> > could then you would need the above to be
+> > spin_lock_irq/spin_lock_irqsave ..
 > 
-> What odd character do you have there before the 'git://' and why?
+> Ditto here, since the irq and workqueue are not enabled at the same
+> time there is no worry about collision.
 
-Hrm... no idea... must be some weirdo evolution thing...
+Why are you waking up the work queue from inside the irq handler? You
+might also want to break out the handling from inside the irq handler
+and call that from the workqueue, instead of re-calling the irq handler
+function from the workqueue.. It's a little confusing from a context
+perspective.
 
-> It cuts-and-pastes into some whitespace that isn't space, and that the 
-> shell thus makes part of that word when parsing. It seems to be U+FEFF, 
-> which is "zero-width non-break space", but what the heck is the point of 
-> that kind of garbage in email?
-
-No idea how it got there.
-
-> Is this some new way for Evolution to screw up?
-
-Quite possibly. I'll do some tests to see if I can reproduce locally...
-it could be the result of a key combo that leaves that in the mail but
-isn't visible... weird.
-
-Sorry about that,
-
-Cheers,
-Ben.
+Daniel
