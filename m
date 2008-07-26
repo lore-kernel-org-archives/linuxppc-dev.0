@@ -1,14 +1,25 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 2E619DDF69
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 11:50:17 +1000 (EST)
-Date: Fri, 25 Jul 2008 21:50:19 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Warp DTS changes
-Message-ID: <20080725215019.5f441b7c@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
+	by ozlabs.org (Postfix) with ESMTP id 555FFDDF68
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 12:45:55 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so1192479anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jul 2008 19:45:54 -0700 (PDT)
+Message-ID: <fa686aa40807251945t26a1656ep7a57ca71faa096c4@mail.gmail.com>
+Date: Fri, 25 Jul 2008 22:45:54 -0400
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Daniel Walker" <dwalker@mvista.com>
+Subject: Re: [PATCH v3 4/4] powerpc/mpc5200: Add mpc5200-spi (non-PSC) device
+	driver
+In-Reply-To: <1217009954.13539.23.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+	<20080725073326.8485.99210.stgit@trillian.secretlab.ca>
+	<1217009954.13539.23.camel@localhost.localdomain>
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+	akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,62 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Added support for the new at24 eeprom driver.
-Documented a new fpga section, the DMA scatter gather list.
-Removed index from i2c. No longer needed.
-Fixed the leds section.
+On Fri, Jul 25, 2008 at 2:19 PM, Daniel Walker <dwalker@mvista.com> wrote:
+> On Fri, 2008-07-25 at 03:33 -0400, Grant Likely wrote:
+>
+>> +     if (status && (irq != NO_IRQ))
+>> +             dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
+>> +                     status);
+>> +
+>> +     /* Check if there is another transfer waiting */
+>> +     if (list_empty(&ms->queue))
+>> +             return FSM_STOP;
+>
+> I don't think doing list_empty outside the critical section is totally
+> safe.. You might want to move it down inside the spin_lock() section.
 
-Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
----
-diff --git a/arch/powerpc/boot/dts/warp.dts b/arch/powerpc/boot/dts/warp.dts
-index 340018c..7300736 100644
---- a/arch/powerpc/boot/dts/warp.dts
-+++ b/arch/powerpc/boot/dts/warp.dts
-@@ -139,6 +139,11 @@
- 					interrupt-parent = <&UIC0>;
- 				};
- 
-+				fpga@2,2000 {
-+					compatible = "pika,fpga-sgl";
-+			   		reg = <0x00000002 0x00002000 0x00000200>;
-+				};
-+
- 				fpga@2,4000 {
- 					compatible = "pika,fpga-sd";
- 					reg = <0x00000002 0x00004000 0x00000A00>;
-@@ -181,7 +186,6 @@
- 				reg = <0xef600700 0x00000014>;
- 				interrupt-parent = <&UIC0>;
- 				interrupts = <0x2 0x4>;
--				index = <0x0>;
- 				#address-cells = <1>;
- 				#size-cells = <0>;
- 
-@@ -191,6 +195,12 @@
- 					interrupts = <0x19 0x8>;
- 					interrupt-parent = <&UIC0>;
- 				};
-+
-+				/* This will create 52 and 53 */
-+				at24@52 {
-+					compatible = "at,24c04";
-+					reg = <0x52>;
-+				};
- 			};
- 
- 			GPIO0: gpio@ef600b00 {
-@@ -209,7 +219,13 @@
- 				led@31 {
- 					compatible = "linux,gpio-led";
- 					linux,name = ":green:";
--					gpios = <&GPIO1 0x30 0>;
-+					gpios = <&GPIO1 31 0>;
-+				};		
-+	
-+				led@30 {	
-+					compatible = "linux,gpio-led";
-+					linux,name = ":red:";
-+					gpios = <&GPIO1 30 0>;
- 				};
- 			};
- 
+This should be fine.  This is the only place where items are dequeued,
+and it will only ever be called from the ISR or the work queue.  The
+work queue and IRQ will never be active at the same time (I'll add a
+comment to the fact).  It also looks like list_empty is perfectly safe
+to call without the protection of a spin lock (but somebody correct me
+if I'm out to lunch).  It doesn't dereference any of the pointers in
+the list_head structure.
+
+>
+>> +     /* Get the next message */
+>> +     spin_lock(&ms->lock);
+>
+> The part that's a little confusing here is that the interrupt can
+> actually activate the workqueue .. So I'm wondering if maybe you could
+> have this interrupt driven any workqueue driven at the same time? If you
+> could then you would need the above to be
+> spin_lock_irq/spin_lock_irqsave ..
+
+Ditto here, since the irq and workqueue are not enabled at the same
+time there is no worry about collision.
+
+Cheers,
+g.
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
