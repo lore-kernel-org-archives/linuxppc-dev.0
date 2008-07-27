@@ -1,23 +1,19 @@
-Return-Path: <sam@ravnborg.org>
-Received: from smtpout3.tre.se (smtpout3.tre.se [80.251.192.228])
-	by ozlabs.org (Postfix) with ESMTP id 8E480DDF67
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 06:44:12 +1000 (EST)
-Date: Sun, 27 Jul 2008 22:43:55 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH] isdn: mISDN HFC PCI support depends on virt_to_bus()
-Message-ID: <20080727204355.GA14057@uranus.ravnborg.org>
-References: <20080728023732.090aff83.sfr@canb.auug.org.au>
-	<20080727182709.1dac0556@lxorguk.ukuu.org.uk>
-	<20080727.125604.73857337.davem@davemloft.net>
-	<adamyk35aoi.fsf@cisco.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <adamyk35aoi.fsf@cisco.com>
-Cc: sfr@canb.auug.org.au, kkeil@suse.de, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	torvalds@linux-foundation.org,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Return-Path: <david-b@pacbell.net>
+Received: from smtp118.sbc.mail.sp1.yahoo.com (smtp118.sbc.mail.sp1.yahoo.com
+	[69.147.64.91]) by ozlabs.org (Postfix) with SMTP id 9654CDE0FE
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 06:45:40 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc/mpc5200: Fix locking on mpc52xx_spi driver
+Date: Sun, 27 Jul 2008 13:45:37 -0700
+References: <20080726062226.10506.65539.stgit@trillian.secretlab.ca>
+In-Reply-To: <20080726062226.10506.65539.stgit@trillian.secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200807271345.37360.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, dwalker@mvista.com,
+	spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,15 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jul 27, 2008 at 01:33:49PM -0700, Roland Dreier wrote:
->  > IMHO, this driver was really rushed in and that was a huge mistake.
->  > If it had gone through linux-next we could have tidied all of this
->  > stuff up in a less "rushed" manner.
-> 
-> ??  This thread *is* about a build failure in linux-next.
-mISDN are in -linus which is part of -next and Stephens point is that if
-we have had mISDN in -next then this would have been fixed before hitting
--linus. Maybe Karsten should use davem as gateway as he has anyway been
-so for other isdn patches lately?
+Applying patch mpc52xx-spi-fix0.patch
+patching file drivers/spi/mpc52xx_spi.c
+Hunk #1 FAILED at 149.
+Hunk #2 succeeded at 154 (offset -7 lines).
+Hunk #3 succeeded at 311 (offset -7 lines).
+1 out of 3 hunks FAILED -- rejects in file drivers/spi/mpc52xx_spi.c
+Patch mpc52xx-spi-fix0.patch does not apply (enforce with -f)
 
-	Sam
+... looks like chunk #1 was against something other than
+what you posted, and was partly reversed ..
+
+
+> +static irqreturn_t mpc52xx_spi_irq(int irq, void *_ms)
+> +{
+> +	struct mpc52xx_spi *ms = _ms;
+> +	spin_lock(&ms->lock);
+
+Blank line after variable declaration blocks please ... and
+also, since you're not using IRQF_DISABLED when you request
+this IRQ, you've got locking trouble here.  Either specify
+IRQF_DISABLED (my preference) or use spin_lock_irqsave().
+
+> +	mpc52xx_spi_fsm_process(irq, ms);
+> +	spin_unlock(&ms->lock);
+>  	return IRQ_HANDLED;
+>  }
