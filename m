@@ -1,21 +1,17 @@
-Return-Path: <SRS0+bd188df41afa764af17a+1799+infradead.org+dwmw2@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0A850DDF4E
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 15:40:37 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Use new printk extension %pS to print symbols
-	on oops
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0807071006270.11076@woody.linux-foundation.org>
-References: <20080707034436.BEA2DDDF35@ozlabs.org>
-	<alpine.LFD.1.10.0807071006270.11076@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Sun, 27 Jul 2008 01:40:30 -0400
-Message-Id: <1217137231.1769.33.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <roland@redhat.com>
+Received: from QMTA10.emeryville.ca.mail.comcast.net
+	(qmta10.emeryville.ca.mail.comcast.net [76.96.30.17])
+	by ozlabs.org (Postfix) with ESMTP id 9165BDDF4B
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 16:49:03 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 0/5] powerpc tracehook
+Message-Id: <20080727064859.69692154280@magilla.localdomain>
+Date: Sat, 26 Jul 2008 23:48:59 -0700 (PDT)
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-07-07 at 10:08 -0700, Linus Torvalds wrote:
-> On Mon, 7 Jul 2008, Benjamin Herrenschmidt wrote:
-> >
-> > This changes the oops and backtrace code to use the new %pS
-> > printk extension to print out symbols rather than manually
-> > calling print_symbol.
-> 
-> Ok, I ended up committing the suppor for '%pS' early (as a series of 
-> smaller patches to make it clearer), just because it makes it easier for 
-> different people to start converthing things with the infrastructure in 
-> place.
+These patches are posted for review, but you can just pull the GIT branch
+if you prefer.  Patch 1/5 corrects a long-standing (minor) error in ptrace
+behavior.  The others change no existing behavior, just enable new and
+future features to work on the arch.
 
-Out of interest, why is it %pS and not %Sp? Shouldn't the modifier come
-first? What if we want to print a pointer immediately followed by a
-capital S?
+The following changes since commit 8be1a6d6c77ab4532e4476fdb8177030ef48b52c:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../roland/infiniband
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git powerpc-tracehook
+
+Roland McGrath (5):
+      powerpc: tracehook_signal_handler
+      powerpc: tracehook syscall
+      powerpc: tracehook: asm/syscall.h
+      powerpc: tracehook: TIF_NOTIFY_RESUME
+      powerpc: tracehook: CONFIG_HAVE_ARCH_TRACEHOOK
+
+ arch/powerpc/Kconfig              |    1 +
+ arch/powerpc/kernel/entry_32.S    |   11 ++++-
+ arch/powerpc/kernel/entry_64.S    |   10 +++-
+ arch/powerpc/kernel/ptrace.c      |   47 ++++++++++-----------
+ arch/powerpc/kernel/signal.c      |   21 ++++++++-
+ include/asm-powerpc/ptrace.h      |    1 +
+ include/asm-powerpc/signal.h      |    3 +-
+ include/asm-powerpc/syscall.h     |   84 +++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/thread_info.h |    5 ++-
+ 9 files changed, 147 insertions(+), 36 deletions(-)
+ create mode 100644 include/asm-powerpc/syscall.h
+
+
+Thanks,
+Roland
