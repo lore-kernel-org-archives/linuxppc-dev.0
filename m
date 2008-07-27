@@ -1,12 +1,12 @@
 Return-Path: <ntl@pobox.com>
 Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 74782DDFB7
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id B1F2ADDFCF
 	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 15:25:13 +1000 (EST)
 From: Nathan Lynch <ntl@pobox.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 4/6] make core sibling information available to userspace
-Date: Sun, 27 Jul 2008 00:24:53 -0500
-Message-Id: <1217136295-18693-5-git-send-email-ntl@pobox.com>
+Subject: [PATCH 3/6] Update cpu_sibling_maps dynamically
+Date: Sun, 27 Jul 2008 00:24:52 -0500
+Message-Id: <1217136295-18693-4-git-send-email-ntl@pobox.com>
 In-Reply-To: <1217136295-18693-1-git-send-email-ntl@pobox.com>
 References: <1217136295-18693-1-git-send-email-ntl@pobox.com>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
@@ -19,169 +19,148 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Implement the notion of "core siblings" for powerpc.  This makes
-/sys/devices/system/cpu/cpu*/topology/core_siblings present sensible
-values, indicating online CPUs which share an L2 cache.
+Rather doing one initialization pass over all the per-cpu
+cpu_sibling_maps at boot, update the maps at cpu online/offline time.
+
+This is a behavior change -- the thread_siblings attribute now
+reflects only online siblings, whereas it would display offline
+siblings before.  The new behavior matches that of x86, and is
+arguably more useful.
 
 Signed-off-by: Nathan Lynch <ntl@pobox.com>
 ---
- arch/powerpc/kernel/smp.c      |   71 ++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/smp.h      |    1 +
- include/asm-powerpc/topology.h |    1 +
- 3 files changed, 73 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/setup-common.c |   24 ------------------------
+ arch/powerpc/kernel/setup_64.c     |    3 ---
+ arch/powerpc/kernel/smp.c          |   32 +++++++++++++++++++++++++++++---
+ 3 files changed, 29 insertions(+), 30 deletions(-)
 
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 61a3f41..9cc5a52 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -367,7 +367,6 @@ static void __init cpu_init_thread_core_maps(int tpc)
+  * setup_cpu_maps - initialize the following cpu maps:
+  *                  cpu_possible_map
+  *                  cpu_present_map
+- *                  cpu_sibling_map
+  *
+  * Having the possible map set up early allows us to restrict allocations
+  * of things like irqstacks to num_possible_cpus() rather than NR_CPUS.
+@@ -475,29 +474,6 @@ void __init smp_setup_cpu_maps(void)
+ 	 */
+ 	cpu_init_thread_core_maps(nthreads);
+ }
+-
+-/*
+- * Being that cpu_sibling_map is now a per_cpu array, then it cannot
+- * be initialized until the per_cpu areas have been created.  This
+- * function is now called from setup_per_cpu_areas().
+- */
+-void __init smp_setup_cpu_sibling_map(void)
+-{
+-#ifdef CONFIG_PPC64
+-	int i, cpu, base;
+-
+-	for_each_possible_cpu(cpu) {
+-		DBG("Sibling map for CPU %d:", cpu);
+-		base = cpu_first_thread_in_core(cpu);
+-		for (i = 0; i < threads_per_core; i++) {
+-			cpu_set(base + i, per_cpu(cpu_sibling_map, cpu));
+-			DBG(" %d", base + i);
+-		}
+-		DBG("\n");
+-	}
+-
+-#endif /* CONFIG_PPC64 */
+-}
+ #endif /* CONFIG_SMP */
+ 
+ #ifdef CONFIG_PCSPKR_PLATFORM
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 04d8de9..8b25f51 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -611,9 +611,6 @@ void __init setup_per_cpu_areas(void)
+ 		paca[i].data_offset = ptr - __per_cpu_start;
+ 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
+ 	}
+-
+-	/* Now that per_cpu is setup, initialize cpu_sibling_map */
+-	smp_setup_cpu_sibling_map();
+ }
+ #endif
+ 
 diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 3c4d07e..e8bc6a0 100644
+index f5ae9fa..3c4d07e 100644
 --- a/arch/powerpc/kernel/smp.c
 +++ b/arch/powerpc/kernel/smp.c
-@@ -63,10 +63,12 @@ struct thread_info *secondary_ti;
- cpumask_t cpu_possible_map = CPU_MASK_NONE;
- cpumask_t cpu_online_map = CPU_MASK_NONE;
- DEFINE_PER_CPU(cpumask_t, cpu_sibling_map) = CPU_MASK_NONE;
-+DEFINE_PER_CPU(cpumask_t, cpu_core_map) = CPU_MASK_NONE;
- 
- EXPORT_SYMBOL(cpu_online_map);
- EXPORT_SYMBOL(cpu_possible_map);
- EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
-+EXPORT_PER_CPU_SYMBOL(cpu_core_map);
- 
- /* SMP operations for this machine */
- struct smp_ops_t *smp_ops;
-@@ -230,6 +232,7 @@ void __devinit smp_prepare_boot_cpu(void)
+@@ -41,6 +41,7 @@
+ #include <asm/smp.h>
+ #include <asm/time.h>
+ #include <asm/machdep.h>
++#include <asm/cputhreads.h>
+ #include <asm/cputable.h>
+ #include <asm/system.h>
+ #include <asm/mpic.h>
+@@ -228,6 +229,7 @@ void __devinit smp_prepare_boot_cpu(void)
+ 	BUG_ON(smp_processor_id() != boot_cpuid);
  
  	cpu_set(boot_cpuid, cpu_online_map);
- 	cpu_set(boot_cpuid, per_cpu(cpu_sibling_map, boot_cpuid));
-+	cpu_set(boot_cpuid, per_cpu(cpu_core_map, boot_cpuid));
++	cpu_set(boot_cpuid, per_cpu(cpu_sibling_map, boot_cpuid));
  #ifdef CONFIG_PPC64
  	paca[boot_cpuid].__current = current;
  #endif
-@@ -377,11 +380,43 @@ int __cpuinit __cpu_up(unsigned int cpu)
- 	return 0;
- }
- 
-+/* Must be called when no change can occur to cpu_present_map,
-+ * i.e. during cpu online or offline.
-+ */
-+static struct device_node *cpu_to_l2cache(int cpu)
-+{
-+	struct device_node *np;
-+	const u32 *l2cache_phandle;
-+
-+	if (!cpu_present(cpu))
-+		return NULL;
-+
-+	np = of_get_cpu_node(cpu, NULL);
-+
-+	l2cache_phandle = of_get_property(np, "l2-cache", NULL);
-+
-+	of_node_put(np);
-+
-+	if (!l2cache_phandle)
-+		return NULL;
-+
-+	np = NULL;
-+	for_each_node_by_type(np, "cache") {
-+		const u32 *phandle = of_get_property(np, "ibm,phandle", NULL);
-+		if (!phandle)
-+			continue;
-+		if (*phandle == *l2cache_phandle)
-+			return np;
-+	}
-+
-+	return NULL;
-+}
- 
- /* Activate a secondary processor. */
+@@ -380,6 +382,7 @@ int __cpuinit __cpu_up(unsigned int cpu)
  int __devinit start_secondary(void *unused)
  {
  	unsigned int cpu = smp_processor_id();
-+	struct device_node *l2_cache;
- 	int i, base;
++	int i, base;
  
  	atomic_inc(&init_mm.mm_count);
-@@ -410,7 +445,26 @@ int __devinit start_secondary(void *unused)
- 			continue;
- 		cpu_set(cpu, per_cpu(cpu_sibling_map, base + i));
- 		cpu_set(base + i, per_cpu(cpu_sibling_map, cpu));
-+
-+		/* cpu_core_map should be a superset of
-+		 * cpu_sibling_map even if we don't have cache
-+		 * information, so update the former here, too.
-+		 */
-+		cpu_set(cpu, per_cpu(cpu_core_map, base +i));
-+		cpu_set(base + i, per_cpu(cpu_core_map, cpu));
-+	}
-+	l2_cache = cpu_to_l2cache(cpu);
-+	for_each_online_cpu(i) {
-+		struct device_node *np = cpu_to_l2cache(i);
-+		if (!np)
+ 	current->active_mm = &init_mm;
+@@ -400,6 +403,14 @@ int __devinit start_secondary(void *unused)
+ 
+ 	ipi_call_lock();
+ 	cpu_set(cpu, cpu_online_map);
++	/* Update sibling maps */
++	base = cpu_first_thread_in_core(cpu);
++	for (i = 0; i < threads_per_core; i++) {
++		if (cpu_is_offline(base + i))
 +			continue;
-+		if (np == l2_cache) {
-+			cpu_set(cpu, per_cpu(cpu_core_map, i));
-+			cpu_set(i, per_cpu(cpu_core_map, cpu));
-+		}
-+		of_node_put(np);
- 	}
-+	of_node_put(l2_cache);
++		cpu_set(cpu, per_cpu(cpu_sibling_map, base + i));
++		cpu_set(base + i, per_cpu(cpu_sibling_map, cpu));
++	}
  	ipi_call_unlock();
  
  	local_irq_enable();
-@@ -448,6 +502,7 @@ void __init smp_cpus_done(unsigned int max_cpus)
+@@ -437,10 +448,25 @@ void __init smp_cpus_done(unsigned int max_cpus)
  #ifdef CONFIG_HOTPLUG_CPU
  int __cpu_disable(void)
  {
-+	struct device_node *l2_cache;
- 	int cpu = smp_processor_id();
- 	int base, i;
- 	int err;
-@@ -464,8 +519,24 @@ int __cpu_disable(void)
- 	for (i = 0; i < threads_per_core; i++) {
- 		cpu_clear(cpu, per_cpu(cpu_sibling_map, base + i));
- 		cpu_clear(base + i, per_cpu(cpu_sibling_map, cpu));
-+		cpu_clear(cpu, per_cpu(cpu_core_map, base +i));
-+		cpu_clear(base + i, per_cpu(cpu_core_map, cpu));
- 	}
+-	if (smp_ops->cpu_disable)
+-		return smp_ops->cpu_disable();
++	int cpu = smp_processor_id();
++	int base, i;
++	int err;
  
-+	l2_cache = cpu_to_l2cache(cpu);
-+	for_each_present_cpu(i) {
-+		struct device_node *np = cpu_to_l2cache(i);
-+		if (!np)
-+			continue;
-+		if (np == l2_cache) {
-+			cpu_clear(cpu, per_cpu(cpu_core_map, i));
-+			cpu_clear(i, per_cpu(cpu_core_map, cpu));
-+		}
-+		of_node_put(np);
+-	return -ENOSYS;
++	if (!smp_ops->cpu_disable)
++		return -ENOSYS;
++
++	err = smp_ops->cpu_disable();
++	if (err)
++		return err;
++
++	/* Update sibling maps */
++	base = cpu_first_thread_in_core(cpu);
++	for (i = 0; i < threads_per_core; i++) {
++		cpu_clear(cpu, per_cpu(cpu_sibling_map, base + i));
++		cpu_clear(base + i, per_cpu(cpu_sibling_map, cpu));
 +	}
-+	of_node_put(l2_cache);
 +
-+
- 	return 0;
++	return 0;
  }
  
-diff --git a/include/asm-powerpc/smp.h b/include/asm-powerpc/smp.h
-index 416d4c2..32e9100 100644
---- a/include/asm-powerpc/smp.h
-+++ b/include/asm-powerpc/smp.h
-@@ -62,6 +62,7 @@ extern int smp_hw_index[];
- #endif
- 
- DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
-+DECLARE_PER_CPU(cpumask_t, cpu_core_map);
- 
- /* Since OpenPIC has only 4 IPIs, we use slightly different message numbers.
-  *
-diff --git a/include/asm-powerpc/topology.h b/include/asm-powerpc/topology.h
-index 100c6fb..f00e8e5 100644
---- a/include/asm-powerpc/topology.h
-+++ b/include/asm-powerpc/topology.h
-@@ -108,6 +108,7 @@ static inline void sysfs_remove_device_from_node(struct sys_device *dev,
- #include <asm/smp.h>
- 
- #define topology_thread_siblings(cpu)	(per_cpu(cpu_sibling_map, cpu))
-+#define topology_core_siblings(cpu)	(per_cpu(cpu_core_map, cpu))
- #endif
- #endif
- 
+ void __cpu_die(unsigned int cpu)
 -- 
 1.5.6.2
