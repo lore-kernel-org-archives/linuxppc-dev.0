@@ -1,20 +1,21 @@
-Return-Path: <roland@redhat.com>
-Received: from QMTA02.emeryville.ca.mail.comcast.net
-	(qmta02.emeryville.ca.mail.comcast.net [76.96.30.24])
-	by ozlabs.org (Postfix) with ESMTP id DE598DDFC6
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 16:53:21 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 5/5] powerpc: tracehook: CONFIG_HAVE_ARCH_TRACEHOOK
-In-Reply-To: Roland McGrath's message of  Saturday, 26 July 2008 23:48:59 -0700
-	<20080727064859.69692154280@magilla.localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BCC55DDEFF
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 17:52:52 +1000 (EST)
+Subject: Re: [PATCH 0/5] powerpc tracehook
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roland McGrath <roland@redhat.com>
+In-Reply-To: <20080727064859.69692154280@magilla.localdomain>
 References: <20080727064859.69692154280@magilla.localdomain>
-Message-Id: <20080727065320.972D9154280@magilla.localdomain>
-Date: Sat, 26 Jul 2008 23:53:20 -0700 (PDT)
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Sun, 27 Jul 2008 17:52:45 +1000
+Message-Id: <1217145165.11188.132.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The powerpc arch code has all the prerequisites, so set HAVE_ARCH_TRACEHOOK.
+On Sat, 2008-07-26 at 23:48 -0700, Roland McGrath wrote:
+> These patches are posted for review, but you can just pull the GIT branch
+> if you prefer.  Patch 1/5 corrects a long-standing (minor) error in ptrace
+> behavior.  The others change no existing behavior, just enable new and
+> future features to work on the arch.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/powerpc/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Hi Roland !
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index fe88418..587da5e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -117,6 +117,7 @@ config PPC
- 	select HAVE_KPROBES
- 	select HAVE_ARCH_KGDB
- 	select HAVE_KRETPROBES
-+	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_LMB
- 	select HAVE_DMA_ATTRS if PPC64
- 	select USE_GENERIC_SMP_HELPERS if SMP
+Thanks for this. I haven't followed the story of tracehook so far, are
+those patches dependent on something else or it's all already upstream
+and do you think that's still 2.6.27 material ?
+
+Cheers,
+Ben.
+
+> The following changes since commit 8be1a6d6c77ab4532e4476fdb8177030ef48b52c:
+>   Linus Torvalds (1):
+>         Merge branch 'for-linus' of git://git.kernel.org/.../roland/infiniband
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git powerpc-tracehook
+> 
+> Roland McGrath (5):
+>       powerpc: tracehook_signal_handler
+>       powerpc: tracehook syscall
+>       powerpc: tracehook: asm/syscall.h
+>       powerpc: tracehook: TIF_NOTIFY_RESUME
+>       powerpc: tracehook: CONFIG_HAVE_ARCH_TRACEHOOK
+> 
+>  arch/powerpc/Kconfig              |    1 +
+>  arch/powerpc/kernel/entry_32.S    |   11 ++++-
+>  arch/powerpc/kernel/entry_64.S    |   10 +++-
+>  arch/powerpc/kernel/ptrace.c      |   47 ++++++++++-----------
+>  arch/powerpc/kernel/signal.c      |   21 ++++++++-
+>  include/asm-powerpc/ptrace.h      |    1 +
+>  include/asm-powerpc/signal.h      |    3 +-
+>  include/asm-powerpc/syscall.h     |   84 +++++++++++++++++++++++++++++++++++++
+>  include/asm-powerpc/thread_info.h |    5 ++-
+>  9 files changed, 147 insertions(+), 36 deletions(-)
+>  create mode 100644 include/asm-powerpc/syscall.h
+> 
+> 
+> Thanks,
+> Roland
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
