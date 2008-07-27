@@ -1,20 +1,19 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
-	by ozlabs.org (Postfix) with ESMTP id 63EA5DDFDA
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 04:28:23 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so1823503pyi.27
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 11:28:22 -0700 (PDT)
-Date: Sat, 26 Jul 2008 14:28:19 -0400
+Date: Sat, 26 Jul 2008 19:25:47 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: Cleanup for i2c driver changes.
-Message-ID: <20080726182819.GA11285@secretlab.ca>
-References: <20080725214510.400c6ce8@lappy.seanm.ca>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable
+	via FDT
+Message-ID: <20080727012547.GG12191@secretlab.ca>
+References: <488982B5.4070102@grandegger.com> <4889942C.4040800@scram.de>
+	<48899736.8020400@grandegger.com>
+	<fa686aa40807250612g34b5167dtbe70c810f30a5d32@mail.gmail.com>
+	<4889F299.3080403@grandegger.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080725214510.400c6ce8@lappy.seanm.ca>
+In-Reply-To: <4889F299.3080403@grandegger.com>
 Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,74 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 25, 2008 at 09:45:10PM -0400, Sean MacLennan wrote:
-> This patch removes the i2c code which is now obsolete due to the new
-> ibm iic driver walking the device tree for child nodes.
-> 
-> There are two other small cleanups that came indirectly from the ad7414
-> code review. Make sure Tlow is correct and handle the case where
-> i2c_smbus_read_word_data fails.
-> 
-> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+On Fri, Jul 25, 2008 at 05:34:49PM +0200, Wolfgang Grandegger wrote:
+> Grant Likely wrote:
+>> On Fri, Jul 25, 2008 at 5:04 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>>> I was also thinking to just overtake the U-Boot settings if fdt and dfsrr is
+>>> not defined for the I2C node (instead of the debatable default values).
+>>
+>> This is a perfectly valid option.  Personally, I'd prefer it encoded
+>> in the device tree, but if it looks like a valid speed has already
+>> been programmed in then I'm cool with the driver just preserving that.
+>>  If it turns out to causes problems the we can always change the code
+>> to be more conservative later.
+>
+> How should the Linux driver decide if the registers have been already  
+> set by the boot-loader? The reset-values might be good as well.  
+> Therefore, if "clock-frequency" is not specified, the driver may simply  
+> not touch the fdr and dfsr registers (overtaking the values from the  
+> boot-loader).
 
-Looks okay to me, but you should really cc: the 4xx maintainer (Josh
-Boyer) when sending out 4xx patches.
+I'm okay with that.  If the property isn't present then it is probably
+okay to just assume that it is usable.
 
-Cheers,
 g.
-
-> ---
-> diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
-> index 9565995..960edf8 100644
-> --- a/arch/powerpc/platforms/44x/warp.c
-> +++ b/arch/powerpc/platforms/44x/warp.c
-> @@ -30,18 +30,6 @@ static __initdata struct of_device_id warp_of_bus[] = {
->  	{},
->  };
->  
-> -static __initdata struct i2c_board_info warp_i2c_info[] = {
-> -	{ I2C_BOARD_INFO("ad7414", 0x4a) }
-> -};
-> -
-> -static int __init warp_arch_init(void)
-> -{
-> -	/* This should go away once support is moved to the dts. */
-> -	i2c_register_board_info(0, warp_i2c_info, ARRAY_SIZE(warp_i2c_info));
-> -	return 0;
-> -}
-> -machine_arch_initcall(warp, warp_arch_init);
-> -
->  static int __init warp_device_probe(void)
->  {
->  	of_platform_bus_probe(NULL, warp_of_bus, NULL);
-> @@ -223,7 +211,7 @@ static void pika_setup_critical_temp(struct i2c_client *client)
->  
->  	/* These registers are in 1 degree increments. */
->  	i2c_smbus_write_byte_data(client, 2, 65); /* Thigh */
-> -	i2c_smbus_write_byte_data(client, 3, 55); /* Tlow */
-> +	i2c_smbus_write_byte_data(client, 3,  0); /* Tlow */
->  
->  	np = of_find_compatible_node(NULL, NULL, "adi,ad7414");
->  	if (np == NULL) {
-> @@ -289,8 +277,15 @@ found_it:
->  	printk(KERN_INFO "PIKA DTM thread running.\n");
->  
->  	while (!kthread_should_stop()) {
-> -		u16 temp = swab16(i2c_smbus_read_word_data(client, 0));
-> -		out_be32(fpga + 0x20, temp);
-> +		int val;
-> +
-> +		val = i2c_smbus_read_word_data(client, 0);
-> +		if (val < 0)
-> +			dev_dbg(&client->dev, "DTM read temp failed.\n");
-> +		else {
-> +			s16 temp = swab16(val);
-> +			out_be32(fpga + 0x20, temp);
-> +		}
->  
->  		pika_dtm_check_fan(fpga);
->  
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
