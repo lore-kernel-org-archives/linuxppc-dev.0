@@ -1,24 +1,22 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.231])
-	by ozlabs.org (Postfix) with ESMTP id A47CBDDF97
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 08:00:08 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id c48so3450983wra.1
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 15:00:06 -0700 (PDT)
-Message-ID: <9e4733910807271500l23fd2b12n940197474a5291df@mail.gmail.com>
-Date: Sun, 27 Jul 2008 18:00:06 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>
-Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
-In-Reply-To: <77a246d166f3eafb4d6a5d899ff86945@kernel.crashing.org>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp122.sbc.mail.sp1.yahoo.com (smtp122.sbc.mail.sp1.yahoo.com
+	[69.147.64.95]) by ozlabs.org (Postfix) with SMTP id DD0F8DDF9E
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 08:13:04 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: spi-devel-general@lists.sourceforge.net
+Subject: Re: [spi-devel-general] [PATCH 1/4] [SPI] [POWERPC] spi_mpc83xx:
+	handles Freescale	MPC8610 as well
+Date: Sun, 27 Jul 2008 15:12:58 -0700
+References: <20080516165052.GA24196@polina.dev.rtsoft.ru>
+	<20080516190438.GA2758@loki.buserror.net>
+In-Reply-To: <20080516190438.GA2758@loki.buserror.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
-	<20080727001119.GB12191@secretlab.ca>
-	<9e4733910807262205l2db8d662u9dd2e517282686f8@mail.gmail.com>
-	<fa686aa40807262235l47bff0bfi15d86a6e171d6775@mail.gmail.com>
-	<9e4733910807270721h5777bb80u9f3d25413a62883c@mail.gmail.com>
-	<77a246d166f3eafb4d6a5d899ff86945@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200807271512.58969.david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Scott Wood <scottwood@freescale.com>, Timur Tabi <timur@freescale.com>,
+	Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,69 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/27/08, Segher Boessenkool <segher@kernel.crashing.org> wrote:
-> >
-> > >
-> > > > compatible = "atmel,24c32wp", "24c32", "eeprom";
-> > > >
-> > >
-> >
->
->
-> >
-> > > I know this is just an example; but to keep thinks clear, the second
-> > >  and third values in this compatible property are completely bogus (for
-> > >  device trees).  The manufacturer prefix needs to be present and
-> > >  'eeprom' is far to vague.
-> > >
-> >
-> > Isn't 24c32 a generic, cross manufacturer term used for these devices?
-> >
->
->  Sure it is.  But "compatible" values are a global namespace so care
->  needs to be taken not to cause collisions.  One mechanism for that
->  is to use vendor prefixes (and that just shifts the problem so it
->  is less global); another is to choose good names that have a lower
->  chance to collide with the name for another device.  And the most
->  important way to prevent collisions is to write up a binding, so
->  everyone knows you have claimed that name.  It still needs to be
->  a good name, of course.
->
->
-> > What if I have a socket and use a different vendor's chip each week?
-> >
->
->  You use sockets for your seeproms?  Wow :-)  But yes, it shouldn't
->  be necessary to put the exact make of the device in the device
->  tree, for such generic devices.  It certainly doesn't hurt to do
->  so though (if the exact model is known).
->
->  A reasonable "compatible" value would be something like
-> "serial-eeprom-24c32".
->  You can go a little bit more generic than that, if you write up in
->  your binding how the driver should figure out the device size and
->  the protocol used.
+On Friday 16 May 2008, Scott Wood wrote:
+> On Fri, May 16, 2008 at 08:50:52PM +0400, Anton Vorontsov wrote:
+> >  config SPI_MPC83xx
+> >  	tristate "Freescale MPC83xx/QUICC Engine SPI controller"
+> > -	depends on SPI_MASTER && (PPC_83xx || QUICC_ENGINE) && EXPERIMENTAL
+> > +	depends on SPI_MASTER && (PPC_83xx || QUICC_ENGINE || PPC_86xx) && EXPERIMENTAL
+> 
+> How about "depends on SPI_MASTER && FSL_SOC && EXPERIMENTAL"?
+> 
+> Plus, we should change the option text to something like "MPC8xxx SPI
+> controller".
 
-Matching on "serial-eeprom-24c32" requires me to convince the at24
-authors to add that string as an alias binding for their driver. How
-about "serial-eeprom,24c32" or "generic,24x32"?
-
->
-> > eeprom is the vague Linuxism that at24 is attempting to correct.
-> > eeprom just goes and searches for anything resembling an eeprom. It
-> > will trigger on chips that aren't eeproms.
-> >
->
->  Yeah.  And no driver should need to probe _anything_ if it has a
->  device tree node describing the device -- certainly it shouldn't
->  probe for what kind of device it is!
->
->
->  Segher
->
->
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Is there an approved-by-powerpc-folk version of this patch yet?
+(Noting that SPI_MASTER is now implicit ...)
