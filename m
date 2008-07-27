@@ -1,23 +1,22 @@
 Return-Path: <jonsmirl@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.236])
-	by ozlabs.org (Postfix) with ESMTP id 6476FDDF5B
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 00:07:05 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id c48so3300286wra.1
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 07:07:03 -0700 (PDT)
-Message-ID: <9e4733910807270707l65085acfq2f6f99c6d35c16a3@mail.gmail.com>
-Date: Sun, 27 Jul 2008 10:07:03 -0400
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.226])
+	by ozlabs.org (Postfix) with ESMTP id 03D68DDF24
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 00:21:25 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so3304606wra.1
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 07:21:24 -0700 (PDT)
+Message-ID: <9e4733910807270721h5777bb80u9f3d25413a62883c@mail.gmail.com>
+Date: Sun, 27 Jul 2008 10:21:24 -0400
 From: "Jon Smirl" <jonsmirl@gmail.com>
 To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/2] Allow a custom ASOC machine driver with soc-of-simple
-In-Reply-To: <fa686aa40807262229r76750664v48405f13dcb84f23@mail.gmail.com>
+Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
+In-Reply-To: <fa686aa40807262235l47bff0bfi15d86a6e171d6775@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20080722235349.11648.90112.stgit@terra>
-	<20080722235351.11648.56387.stgit@terra>
-	<20080727011206.GD12191@secretlab.ca>
-	<9e4733910807262144l7be98192l95dd526bf08e0434@mail.gmail.com>
-	<fa686aa40807262229r76750664v48405f13dcb84f23@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
+	<20080727001119.GB12191@secretlab.ca>
+	<9e4733910807262205l2db8d662u9dd2e517282686f8@mail.gmail.com>
+	<fa686aa40807262235l47bff0bfi15d86a6e171d6775@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,143 +27,78 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On 7/27/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Sun, Jul 27, 2008 at 12:44 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On Sun, Jul 27, 2008 at 1:05 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
 >  > On 7/26/08, Grant Likely <grant.likely@secretlab.ca> wrote:
->  >> On Tue, Jul 22, 2008 at 07:53:51PM -0400, Jon Smirl wrote:
->  >>
->  >> > Allow a custom ASOC machine driver with soc-of-simple
+>  >> On Mon, Jul 14, 2008 at 09:54:37PM +0400, Anton Vorontsov wrote:
+>  >>  > Currently of_i2c will select first compatible property as a last resort
+>  >>  > option. This isn't best choice though, because generic compatible entries
+>  >>  > are listed last, not first. For example, two compatible entries given for
+>  >>  > the MCU node:
 >  >>  >
->  >>  > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
->
-> >>  > diff --git a/sound/soc/fsl/soc-of-simple.c b/sound/soc/fsl/soc-of-simple.c
->  >>  > index 0382fda..dd2fa23 100644
->  >>  > --- a/sound/soc/fsl/soc-of-simple.c
->  >>  > +++ b/sound/soc/fsl/soc-of-simple.c
->  >>  > @@ -38,8 +38,8 @@ struct of_snd_soc_device {
->  >>  >       struct device_node *codec_node;
->  >>  >  };
+>  >>  > "fsl,mc9s08qg8-mpc837xrdb", "fsl,mcu-mpc8349emitx";
 >  >>  >
->  >>  > -static struct snd_soc_ops of_snd_soc_ops = {
->  >>  > -};
->  >>  > +static struct snd_soc_ops *machine_ops = NULL;
->  >>  > +static char *machine_name = NULL;
+>  >>  > Since no sane driver will ever match specific devices, what we want is
+>  >>  > to select most generic option (last). Then driver may call
+>  >>  > of_device_is_compatible() if it is really interested in details.
 >  >>
 >  >>
->  >> Doing this prevents multiple instances of this machine driver (which is
->  >>  exactly what I have on my board).  To register a machine driver it
->  >>  creates a 3-way bind condition instead of the existing 2-way one.  Right
->  >>  now it is easy to match up codec and platform drivers because a common
->  >>  key is available in the device tree.
->  >>
->  >>  Alternately, it might be okay to only allow for a single machine driver
->  >>  that is able to create multiple sound card instances, but this current
->  >>  code just uses the same name and ops for each registered device.
->  >>
->  > We need to call them fabric drivers since we already have machine
->  > drivers in arch/.... It is too confusing.
->
->
-> heh, even worse; we've already got platform drivers under drivers/.
->  :-P  I disagree.  We need to be consistent with ALSA terminology, but
->  I will be more diligent to call them ASoC Machine drivers.
->
->
->  > My fabric driver was getting probed after the rest of ASOC bound,
->  > that's why I had to add the third condition.
+>  >> I highly suspect that this will actually be a rare condition and that
+>  >>  most of the time the driver you want will bind against the first entry
+>  >>  in the list (I'm basing this on what discussion I've seen on the list
+>  >>  and it seems to me that Jiri does want i2c devices to list the exact set
+>  >>  of chips that each driver binds against).
 >  >
->  > An important feature for me is the ability to compile in multiple
->  > fabric drivers and then get the right one selected based on the
->  > machine name in the device tree.
+>  > Can we put a loop on request_module() and have it try each one down
+>  > the list until something matches? request_module() returns errors, but
+>  > I can't tell from the source if one of those errors is "no matching
+>  > module found" since it invokes a user space helper.
 >
 >
-> Absolutely; this is a hard requirement as far as I'm concerned.
+> What will request_module() do if the modules is compiled in
+>  statically?  If it is workable then I'm not opposed to this approach.
+
+I'm no expert on request_module, from the comments:
+
+It appears to be synchronous with user space...
+	call_usermodehelper wait flag, and remove exec_usermodehelper.
+	Rusty Russell <rusty@rustcorp.com.au>  Jan 2003
+
+ * Load a module using the user mode module loader. The function returns
+ * zero on success or a negative errno code on failure. Note that a
+ * successful module load does not mean the module did not then unload
+ * and exit on an error of its own. Callers must check that the service
+ * they requested is now available not blindly invoke it.
+
+Is this really a problem? If the specific driver gets loaded and then
+errors out, then something must be wrong. The appropriate action
+probably should not be to load the next driver on the list.
+
+It looks like it should work. Compiled in moduled and modules that are
+already loaded are essentially the same so they should return 0 from
+request module.
+
 >
->  It is also a hard requirement for either multiple *active* ASoC
->  machine drivers, or support ASoC machine drivers that control multiple
->  ASoC device instances.
 >
->
->  >  I'm doing via my machine driver.
+>  > That would work for this compatible string:
+>  > compatible = "atmel,24c32wp", "24c32", "eeprom";
 >  >
->  > Could we dynamically build an OF fabric device entry with a compatible
->  > string like this: compatible="machinename-fabric,generic-fabric"
->  > Now a hard requirement for a fabric driver is ok since one of those
->  > two will load for sure. generic-fabric is just a do nothing driver
->  > that is always built in.
+>  > request_module will always fail for the first entry. If you have at24
+>  > in your system the second one will succeed. If you have eeprom the
+>  > third one works. All of those names are valid in a device tree.
 >
 >
-> Ugh; unfortunately that results in Linux internal details getting
->  leaked out to the device tree.  Not a good idea; especially when we
->  *know* this driver is a stop gap measure until v2 changes things on
->  us.
+> I know this is just an example; but to keep thinks clear, the second
+>  and third values in this compatible property are completely bogus (for
+>  device trees).  The manufacturer prefix needs to be present and
+>  'eeprom' is far to vague.
 
-It has been pointed out several times that the sound fabric (wires,
-external chips) really is a device so why can't it have a device tree
-entry?
+Isn't 24c32 a generic, cross manufacturer term used for these devices?
+What if I have a socket and use a different vendor's chip each week?
 
-ASOCv2 still has this same problem of triggering the load of the fabric driver.
+eeprom is the vague Linuxism that at24 is attempting to correct.
+eeprom just goes and searches for anything resembling an eeprom. It
+will trigger on chips that aren't eeproms.
 
-The Linuxism being exposed here is the split between the machine
-driver and the fabric driver. Machine drivers are dynamically selected
-by the device tree. The device tree model is assuming these are
-combined into a single unit.
-
-Simulating the merge of these two two into a single unit is why I
-added the platform device creation code for my fabric driver to my
-machine driver. But then we run in to the problem that Linux doesn't
-support device drivers that override each other. There is no way to
-have a dspeak01-fabric override a generic-fabric.
-
-One solution to the override problem would be to make an overridable
-callout in the machine driver that always creates a generic-fabric
-platform device. I would then set a bit in my machine driver which
-would cause the name to change from generic-fabric to dspeak01-fabric.
-
-Another Linuxism involved here is creating devices without knowing
-when or if a driver is ever going to show up. You hit this when making
-the ASOC devices, say we only created a dspeak01-fabric platform
-device and it hasn't been probed yet. How do you know if it is safe to
-assume a generic-fabric? Is dspeak01-fabric coming and it just hasn't
-been probed yet, or is it never coming at all?
-
->
->  But that still doesn't help the question of how to trigger loading of
->  the board specific machine drivers.  grumble.  But I do think that the
->  sanest approach is still to trigger on the top level model property in
->  the tree.
->
->  Oh well, if I need to add a dummy machine driver that matches on my
->  board, then that's what I'll do.  It certainly sidesteps all the ugly
->  heuristics of figuring out when custom code is needed.
->
->
->  > /* Trigger the platform specific ASOC driver to load */
->  > static struct platform_device platform = {
->  >        .name           = "dspeak01-fabric",
->  >        .id             = -1,
->  > };
->  >
->  > static struct platform_device *devices[] = {
->  >        &platform,
->  > };
->  >
->  > static void __init digispeaker_declare_platform_devices(void)
->  > {
->  >        mpc52xx_declare_of_platform_devices();
->  >        platform_add_devices(&devices[0], ARRAY_SIZE(devices));
->  > }
->
->
-> I'm not convinced that all this is necessary.  I'm partial to just
->  having the ASoC machine module probe routine check the top level board
->  property and registering the ASoC machine driver if it is a match.
->  That also eliminates needing to build knowledge of the sound circuit
->  into the PPC platform driver which helps stem the tide of
->  proliferating platform files.
->
->  g.
->
->
 >
 >  --
 >  Grant Likely, B.Sc., P.Eng.
