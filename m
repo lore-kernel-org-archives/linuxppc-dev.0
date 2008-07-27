@@ -1,19 +1,18 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp116.sbc.mail.sp1.yahoo.com (smtp116.sbc.mail.sp1.yahoo.com
-	[69.147.64.89]) by ozlabs.org (Postfix) with SMTP id 13CEFDDED7
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 07:49:30 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: spi-devel-general@lists.sourceforge.net
-Subject: Re: [PATCH v3 0/4 REPOST] OF infrastructure for SPI devices
-Date: Sun, 27 Jul 2008 14:49:28 -0700
-References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-In-Reply-To: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807271449.28472.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <9e4733910807270721h5777bb80u9f3d25413a62883c@mail.gmail.com>
+References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
+	<20080727001119.GB12191@secretlab.ca>
+	<9e4733910807262205l2db8d662u9dd2e517282686f8@mail.gmail.com>
+	<fa686aa40807262235l47bff0bfi15d86a6e171d6775@mail.gmail.com>
+	<9e4733910807270721h5777bb80u9f3d25413a62883c@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <77a246d166f3eafb4d6a5d899ff86945@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
+Date: Sun, 27 Jul 2008 23:52:03 +0200
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 25 July 2008, Grant Likely wrote:
-> I don't know what to do with these patches.  I'd really like to see them
-> in .27, and now that akpm has cleared his queue, the prerequisite patch
-> has been merged so they are ready to go in.  However, even though there
-> has been favourable reception on the SPI and linuxppc lists for these
-> changes I don't have any acks from anybody yet.
-> 
-> David, can you please reply on if you are okay with these patches
-> getting merged?  If so, do you want me to merge them via my tree, or
-> do you want to pick them up?
+>>> compatible = "atmel,24c32wp", "24c32", "eeprom";
 
-OK ... to recap, #1 and #3 are OF-specific, I'll be agnostic.
-If other OF folk think it's OK, great.
+>> I know this is just an example; but to keep thinks clear, the second
+>>  and third values in this compatible property are completely bogus 
+>> (for
+>>  device trees).  The manufacturer prefix needs to be present and
+>>  'eeprom' is far to vague.
+>
+> Isn't 24c32 a generic, cross manufacturer term used for these devices?
 
-Some cleanup was needed for #2, but it was basically ok ...
-I'd like to see the final version, and if it goes via an
-OF push that's OK by me.  (Though I'd like to see that change
-make it into 2.6.27 regardless, so let me know.)
+Sure it is.  But "compatible" values are a global namespace so care
+needs to be taken not to cause collisions.  One mechanism for that
+is to use vendor prefixes (and that just shifts the problem so it
+is less global); another is to choose good names that have a lower
+chance to collide with the name for another device.  And the most
+important way to prevent collisions is to write up a binding, so
+everyone knows you have claimed that name.  It still needs to be
+a good name, of course.
 
-And #4 isn't quite cooked yet.
+> What if I have a socket and use a different vendor's chip each week?
+
+You use sockets for your seeproms?  Wow :-)  But yes, it shouldn't
+be necessary to put the exact make of the device in the device
+tree, for such generic devices.  It certainly doesn't hurt to do
+so though (if the exact model is known).
+
+A reasonable "compatible" value would be something like 
+"serial-eeprom-24c32".
+You can go a little bit more generic than that, if you write up in
+your binding how the driver should figure out the device size and
+the protocol used.
+
+> eeprom is the vague Linuxism that at24 is attempting to correct.
+> eeprom just goes and searches for anything resembling an eeprom. It
+> will trigger on chips that aren't eeproms.
+
+Yeah.  And no driver should need to probe _anything_ if it has a
+device tree node describing the device -- certainly it shouldn't
+probe for what kind of device it is!
+
+
+Segher
