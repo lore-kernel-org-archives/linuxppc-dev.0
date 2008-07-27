@@ -1,24 +1,20 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1BDD9DDF86
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 03:29:18 +1000 (EST)
-Date: Sun, 27 Jul 2008 10:26:08 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] powerpc: Use new printk extension %pS to print symbols
-	on oops
-In-Reply-To: <1217137231.1769.33.camel@shinybook.infradead.org>
-Message-ID: <alpine.LFD.1.10.0807271025490.3486@nehalem.linux-foundation.org>
-References: <20080707034436.BEA2DDDF35@ozlabs.org>
-	<alpine.LFD.1.10.0807071006270.11076@woody.linux-foundation.org>
-	<1217137231.1769.33.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id EB134DDDCA
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 03:39:17 +1000 (EST)
+Date: Sun, 27 Jul 2008 13:39:18 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] isdn: mISDN HFC PCI support depends on virt_to_bus()
+Message-ID: <20080727133918.72cbb127@lappy.seanm.ca>
+In-Reply-To: <20080728023732.090aff83.sfr@canb.auug.org.au>
+References: <20080728023732.090aff83.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>,
+	Karsten Keil <kkeil@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,14 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 28 Jul 2008 02:37:32 +1000
+"Stephen Rothwell" <sfr@canb.auug.org.au> wrote:
 
-
-On Sun, 27 Jul 2008, David Woodhouse wrote:
+> On powerpc (allyesconfig build) we get this error:
 > 
-> Out of interest, why is it %pS and not %Sp? Shouldn't the modifier come
-> first? What if we want to print a pointer immediately followed by a
-> capital S?
+> drivers/isdn/hardware/mISDN/hfcpci.c:1991: error: implicit
+> declaration of function 'virt_to_bus'
 
-Try it. 
+When did mISDN make it into the kernel? And which kernel tree is it in?
+I don't see it in the Linux next tree....
 
-			Linus
+I am very interested since we are trying to get mISDN working on the
+Warp. There was no notice that they got 2.6.26 compiling.
+
+Cheers,
+   Sean
