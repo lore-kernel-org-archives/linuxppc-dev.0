@@ -1,20 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
-	by ozlabs.org (Postfix) with ESMTP id 859FEDDDFD
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.175])
+	by ozlabs.org (Postfix) with ESMTP id 1B5B6DDE0E
 	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 14:04:46 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so4716507wfg.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 21:04:46 -0700 (PDT)
-Date: Sat, 26 Jul 2008 20:11:19 -0400
+Received: by wf-out-1314.google.com with SMTP id 24so4716530wfg.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 21:04:45 -0700 (PDT)
+Date: Sat, 26 Jul 2008 20:21:16 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
-Message-ID: <20080727001119.GB12191@secretlab.ca>
-References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH 2/2] leds: Support OpenFirmware led bindings
+Message-ID: <20080727022116.GN12191@secretlab.ca>
+References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
+	<1217019705-24244-2-git-send-email-tpiepho@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080714175437.GA5230@polina.dev.rtsoft.ru>
+In-Reply-To: <1217019705-24244-2-git-send-email-tpiepho@freescale.com>
 Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,93 +26,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 14, 2008 at 09:54:37PM +0400, Anton Vorontsov wrote:
-> Currently of_i2c will select first compatible property as a last resort
-> option. This isn't best choice though, because generic compatible entries
-> are listed last, not first. For example, two compatible entries given for
-> the MCU node:
-> 
-> "fsl,mc9s08qg8-mpc837xrdb", "fsl,mcu-mpc8349emitx";
-> 
-> Since no sane driver will ever match specific devices, what we want is
-> to select most generic option (last). Then driver may call
-> of_device_is_compatible() if it is really interested in details.
- 
-I highly suspect that this will actually be a rare condition and that
-most of the time the driver you want will bind against the first entry
-in the list (I'm basing this on what discussion I've seen on the list
-and it seems to me that Jiri does want i2c devices to list the exact set
-of chips that each driver binds against).
+On Fri, Jul 25, 2008 at 02:01:45PM -0700, Trent Piepho wrote:
+> Add bindings to support LEDs defined as of_platform devices in addition to
+> the existing bindings for platform devices.
 
-I'm inclined to leave it as is for now and instead handle the mpc837x
-case with the fixup table in this file.  (Actually, this function has
-been moved to of/base.c; so handle it in that function)
+(adding devicetree-discuss@ozlabs.org to the cc list)
 
-For the longer term, I think that this whole match method is a stop gap
-solution until we figure out a tidy way to bind and provide device tree
-data to i2c, SPI and platform devices.
+> New options in Kconfig allow the platform binding code and/or the
+> of_platform code to be turned on.  The of_platform code is of course only
+> available on archs that have OF support.
+> 
+> The existing probe and remove methods are refactored to use new functions
+> create_gpio_led(), to create and register one led, and delete_gpio_led(),
+> to unregister and free one led.  The new probe and remove methods for the
+> of_platform driver can then share most of the common probe and remove code
+> with the platform driver.
+> 
+> The suspend and resume methods aren't shared, but they are very short.  The
+> actual led driving code is the same for LEDs created by either binding.
+
+I like this approach.  I think it is a good pattern.
+
+> The OF bindings are based on patch by Anton Vorontsov
+> <avorontsov@ru.mvista.com>.  They have been extended to allow multiple LEDs
+> per device.
+> 
+> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+> ---
+>  Documentation/powerpc/dts-bindings/gpio/led.txt |   44 ++++-
+>  drivers/leds/Kconfig                            |   21 ++-
+>  drivers/leds/leds-gpio.c                        |  225 ++++++++++++++++++-----
+>  3 files changed, 236 insertions(+), 54 deletions(-)
+> 
+> diff --git a/Documentation/powerpc/dts-bindings/gpio/led.txt b/Documentation/powerpc/dts-bindings/gpio/led.txt
+> index ff51f4c..ed01297 100644
+> --- a/Documentation/powerpc/dts-bindings/gpio/led.txt
+> +++ b/Documentation/powerpc/dts-bindings/gpio/led.txt
+> @@ -1,15 +1,39 @@
+> -LED connected to GPIO
+> +LEDs connected to GPIO lines
+>  
+>  Required properties:
+> -- compatible : should be "gpio-led".
+> -- label : (optional) the label for this LED. If omitted, the label is
+> -  taken from the node name (excluding the unit address).
+> -- gpios : should specify LED GPIO.
+> +- compatible : should be "gpio-leds".
+>  
+> -Example:
+> +Each LED is represented as a sub-node of the gpio-leds device.  Each
+> +node's name represents the name of the corresponding LED.
+>  
+> -led@0 {
+> -	compatible = "gpio-led";
+> -	label = "hdd";
+> -	gpios = <&mcu_pio 0 1>;
+> +LED node properties:
+> +- gpios :  Should specify the LED GPIO.
+
+Question: it is possible/desirable for a single LED to be assigned
+multiple GPIO pins?  Say, for a tri-color LED?  (I'm fishing for
+opinions; I really don't know if it would be a good idea or not)
+
+> +- label :  (optional) The label for this LED.  If omitted, the label
+> +  is taken from the node name (excluding the unit address).
+> +- function :  (optional) This parameter, if present, is a string
+> +  defining the function of the LED.  It can be used to put the LED
+> +  under software control, e.g. Linux LED triggers like "heartbeat",
+> +  "ide-disk", and "timer".  Or it could be used to attach a hardware
+> +  signal to the LED, e.g. a SoC that can configured to put a SATA
+> +  activity signal on a GPIO line.
+
+This makes me nervous.  It exposes Linux internal implementation details
+into the device tree data.  If you want to have a property that
+describes the LED usage, then the possible values and meanings should be
+documented here.
+
+> +	memset(&led, 0, sizeof(led));
+> +	for_each_child_of_node(np, child) {
+> +		led.gpio = of_get_gpio(child, 0);
+> +		led.name = of_get_property(child, "label", NULL) ? : child->name;
+
+> +		led.default_trigger =
+> +			of_get_property(child, "linux,default-trigger", NULL);
+
+This isn't in the documented binding.  I assume that you mean 'function'
+here?
+
+Otherwise, the code looks pretty good to me.
 
 g.
-
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> 
-> Other options are: start filling the exceptions list, or add  "linux,..."
-> compatible entry to the device tree.
-> 
->  drivers/of/of_i2c.c |   17 +++++++++++------
->  1 files changed, 11 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
-> index b2ccdcb..0d35a0a 100644
-> --- a/drivers/of/of_i2c.c
-> +++ b/drivers/of/of_i2c.c
-> @@ -29,6 +29,7 @@ static int of_find_i2c_driver(struct device_node *node,
->  	int i, cplen;
->  	const char *compatible;
->  	const char *p;
-> +	const char *last_wcomma = NULL;
->  
->  	/* 1. search for exception list entry */
->  	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
-> @@ -45,7 +46,7 @@ static int of_find_i2c_driver(struct device_node *node,
->  	if (!compatible)
->  		return -ENODEV;
->  
-> -	/* 2. search for linux,<i2c-type> entry */
-> +	/* 2. search for linux,<i2c-type> entry, or remember last w/ comma */
->  	p = compatible;
->  	while (cplen > 0) {
->  		if (!strncmp(p, "linux,", 6)) {
-> @@ -54,6 +55,12 @@ static int of_find_i2c_driver(struct device_node *node,
->  				    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
->  				return -ENOMEM;
->  			return 0;
-> +		} else {
-> +			const char *comma;
-> +
-> +			comma = strchr(p, ',');
-> +			if (comma)
-> +				last_wcomma = comma + 1;
->  		}
->  
->  		i = strlen(p) + 1;
-> @@ -61,12 +68,10 @@ static int of_find_i2c_driver(struct device_node *node,
->  		cplen -= i;
->  	}
->  
-> -	/* 3. take fist compatible entry and strip manufacturer */
-> -	p = strchr(compatible, ',');
-> -	if (!p)
-> +	/* 3. take last compatible entry w/ comma, manufacturer stripped */
-> +	if (!last_wcomma)
->  		return -ENODEV;
-> -	p++;
-> -	if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-> +	if (strlcpy(info->type, last_wcomma, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
->  		return -ENOMEM;
->  	return 0;
->  }
-> -- 
-> 1.5.5.4
