@@ -1,31 +1,22 @@
-Return-Path: <jimix@watson.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A4076DDF49
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 22:48:18 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6RCm9Yh019014
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 08:48:09 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6RCmApw216794
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 08:48:10 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6RCm9c9013300
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 08:48:09 -0400
-Received: from [9.12.247.74] ([9.12.247.74])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m6RCm9Tc013295
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 08:48:09 -0400
-Message-Id: <B6E6E232-5793-4BBB-BD82-95B19716ACE4@watson.ibm.com>
-From: Jimi Xenidis <jimix@watson.ibm.com>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: [PATCH] Fix powerpc64 build if CONFIG_EPOLL=n
-Date: Sun, 27 Jul 2008 08:48:09 -0400
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id E435DDDF69
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 23:12:40 +1000 (EST)
+Date: Sun, 27 Jul 2008 23:11:49 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH 1/2] leds: make the default trigger name const
+Message-Id: <20080727231149.1b2508da.sfr@canb.auug.org.au>
+In-Reply-To: <20080727020857.GM12191@secretlab.ca>
+References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
+	<1217019705-24244-1-git-send-email-tpiepho@freescale.com>
+	<20080727020857.GM12191@secretlab.ca>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__27_Jul_2008_23_11_49_+1000_nza_GRb/r6/K0b.d"
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Richard Purdie <rpurdie@rpsys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,23 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Declate compat_sys_epoll_pwait as a conditional syscall like the rest  
-of the epoll interfaces.
-We could have put an #ifdef around the entry in include/asm-powerpc/ 
-systbl.h, but IMHO this is ultimately correct patch.
+--Signature=_Sun__27_Jul_2008_23_11_49_+1000_nza_GRb/r6/K0b.d
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jimi Xenidis <jimix@watson.ibm.com>
----
+Hi Trent,
 
-diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
-index 5b9b467..0fea0ee 100644
---- a/kernel/sys_ni.c
-+++ b/kernel/sys_ni.c
-@@ -59,6 +59,7 @@ cond_syscall(sys_epoll_create);
-  cond_syscall(sys_epoll_ctl);
-  cond_syscall(sys_epoll_wait);
-  cond_syscall(sys_epoll_pwait);
-+cond_syscall(compat_sys_epoll_pwait);
-  cond_syscall(sys_semget);
-  cond_syscall(sys_semop);
-  cond_syscall(sys_semtimedop);
+On Sat, 26 Jul 2008 20:08:57 -0600 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+> On Fri, Jul 25, 2008 at 02:01:44PM -0700, Trent Piepho wrote:
+> > The default_trigger fields of struct gpio_led and thus struct led_class=
+dev
+> > are pretty much always assigned from a string literal, which means the
+> > string can't be modified.  Which is fine, since there is no reason to
+> > modify the string and in fact it never is.
+> >=20
+> > But they should be marked const to prevent such code from being added, =
+to
+> > prevent warnings if -Wwrite-strings is used and when assigned from a
+> > constant string other than a string literal (which produces a warning u=
+nder
+> > current kernel compiler flags), and for general good coding practices.
+> >=20
+> > Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+
+I would ack this as well, except I am not sure what tree this patch is
+against.  In the current powerpc next tree,
+
+
+> > +++ b/include/linux/leds.h
+> > @@ -48,7 +48,7 @@ struct led_classdev {
+> > =20
+> >  	struct device		*dev;
+> >  	struct list_head	 node;			/* LED Device list */
+> > -	char			*default_trigger;	/* Trigger to use */
+> > +	const char		*default_trigger;	/* Trigger to use */
+
+this is already const, but there is another structure slightly further
+down (struct led_info) that has a non-const default_tigger.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__27_Jul_2008_23_11_49_+1000_nza_GRb/r6/K0b.d
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiMdBUACgkQjjKRsyhoI8wkPQCfXx7UyEDbUIM6bv8qFmwDl44m
+HAoAn1WKfzXFkpfL8+/5MYHOCBtd8AIT
+=25GB
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__27_Jul_2008_23_11_49_+1000_nza_GRb/r6/K0b.d--
