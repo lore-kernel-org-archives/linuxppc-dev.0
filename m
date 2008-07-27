@@ -1,14 +1,12 @@
 Return-Path: <ntl@pobox.com>
 Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 3AEF9DDF2E
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 15:25:06 +1000 (EST)
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 802C9DDF31
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 15:25:07 +1000 (EST)
 From: Nathan Lynch <ntl@pobox.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/6] kill useless SMT code in prom_hold_cpus
-Date: Sun, 27 Jul 2008 00:24:50 -0500
-Message-Id: <1217136295-18693-2-git-send-email-ntl@pobox.com>
-In-Reply-To: <1217136295-18693-1-git-send-email-ntl@pobox.com>
-References: <1217136295-18693-1-git-send-email-ntl@pobox.com>
+Subject: [PATCH 0/6] powerpc topology updates
+Date: Sun, 27 Jul 2008 00:24:49 -0500
+Message-Id: <1217136295-18693-1-git-send-email-ntl@pobox.com>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -19,96 +17,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I think this code that counts SMT threads and compares against NR_CPUS
-is an artifact of pre-powerpc-merge ppc64.  We care about starting
-only primary threads in the OF client code.
+This series consists of a couple of cleanups and a few feature
+additions, all of which are more or less related to system topology
+(threads, cores, caches, sysfs...)  These are independent of
+each other except for 4 and 5 (core sibling and core id info).
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
- arch/powerpc/kernel/prom_init.c |   39 +++------------------------------------
- 1 files changed, 3 insertions(+), 36 deletions(-)
+I'd say the highlights are the last three patches, which add core and
+cache information to sysfs.  Here is some example output with the
+patches applied:
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index c4ab219..b72849a 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -205,8 +205,6 @@ static int __initdata mem_reserve_cnt;
- static cell_t __initdata regbuf[1024];
- 
- 
--#define MAX_CPU_THREADS 2
--
- /*
-  * Error results ... some OF calls will return "-1" on error, some
-  * will return 0, some will return either. To simplify, here are
-@@ -1339,10 +1337,6 @@ static void __init prom_hold_cpus(void)
- 	unsigned int reg;
- 	phandle node;
- 	char type[64];
--	int cpuid = 0;
--	unsigned int interrupt_server[MAX_CPU_THREADS];
--	unsigned int cpu_threads, hw_cpu_num;
--	int propsize;
- 	struct prom_t *_prom = &RELOC(prom);
- 	unsigned long *spinloop
- 		= (void *) LOW_ADDR(__secondary_hold_spinloop);
-@@ -1386,7 +1380,6 @@ static void __init prom_hold_cpus(void)
- 		reg = -1;
- 		prom_getprop(node, "reg", &reg, sizeof(reg));
- 
--		prom_debug("\ncpuid        = 0x%x\n", cpuid);
- 		prom_debug("cpu hw idx   = 0x%x\n", reg);
- 
- 		/* Init the acknowledge var which will be reset by
-@@ -1395,28 +1388,9 @@ static void __init prom_hold_cpus(void)
- 		 */
- 		*acknowledge = (unsigned long)-1;
- 
--		propsize = prom_getprop(node, "ibm,ppc-interrupt-server#s",
--					&interrupt_server,
--					sizeof(interrupt_server));
--		if (propsize < 0) {
--			/* no property.  old hardware has no SMT */
--			cpu_threads = 1;
--			interrupt_server[0] = reg; /* fake it with phys id */
--		} else {
--			/* We have a threaded processor */
--			cpu_threads = propsize / sizeof(u32);
--			if (cpu_threads > MAX_CPU_THREADS) {
--				prom_printf("SMT: too many threads!\n"
--					    "SMT: found %x, max is %x\n",
--					    cpu_threads, MAX_CPU_THREADS);
--				cpu_threads = 1; /* ToDo: panic? */
--			}
--		}
--
--		hw_cpu_num = interrupt_server[0];
--		if (hw_cpu_num != _prom->cpu) {
-+		if (reg != _prom->cpu) {
- 			/* Primary Thread of non-boot cpu */
--			prom_printf("%x : starting cpu hw idx %x... ", cpuid, reg);
-+			prom_printf("starting cpu hw idx %x... ", reg);
- 			call_prom("start-cpu", 3, 0, node,
- 				  secondary_hold, reg);
- 
-@@ -1431,17 +1405,10 @@ static void __init prom_hold_cpus(void)
- 		}
- #ifdef CONFIG_SMP
- 		else
--			prom_printf("%x : boot cpu     %x\n", cpuid, reg);
-+			prom_printf("boot cpu hw idx %x\n", reg);
- #endif /* CONFIG_SMP */
--
--		/* Reserve cpu #s for secondary threads.   They start later. */
--		cpuid += cpu_threads;
- 	}
- 
--	if (cpuid > NR_CPUS)
--		prom_printf("WARNING: maximum CPUs (" __stringify(NR_CPUS)
--			    ") exceeded: ignoring extras\n");
--
- 	prom_debug("prom_hold_cpus: end...\n");
- }
- 
--- 
-1.5.6.2
+(Power5)
+# grep -r . /sys/devices/system/cpu/cpu0/cache/ | sed
+  's/\/sys\/devices\/system\/cpu\///'
+cpu0/cache/index0/type:Data
+cpu0/cache/index0/level:1
+cpu0/cache/index0/size:32K
+cpu0/cache/index0/coherency_line_size:128
+cpu0/cache/index0/number_of_sets:64
+cpu0/cache/index0/ways_of_associativity:4
+cpu0/cache/index1/type:Instruction
+cpu0/cache/index1/level:1
+cpu0/cache/index1/size:64K
+cpu0/cache/index1/coherency_line_size:128
+cpu0/cache/index1/number_of_sets:256
+cpu0/cache/index1/ways_of_associativity:2
+cpu0/cache/index2/type:Unified
+cpu0/cache/index2/level:2
+cpu0/cache/index2/size:1920K
+cpu0/cache/index2/coherency_line_size:128
+cpu0/cache/index2/number_of_sets:1536
+cpu0/cache/index2/ways_of_associativity:10
+cpu0/cache/index3/type:Unified
+cpu0/cache/index3/level:3
+cpu0/cache/index3/size:36864K
+cpu0/cache/index3/coherency_line_size:128
+cpu0/cache/index3/number_of_sets:1
+cpu0/cache/index3/ways_of_associativity:0
+
+(Power6)
+# grep -r . /sys/devices/system/cpu/cpu0/topology/ | sed \
+  's/\/sys\/devices\/system\/cpu\///'
+cpu0/topology/physical_package_id:-1
+cpu0/topology/core_id:0
+cpu0/topology/thread_siblings:00000003
+cpu0/topology/thread_siblings_list:0-1
+cpu0/topology/core_siblings:0000000f
+cpu0/topology/core_siblings_list:0-3
+
+Nathan Lynch (6):
+  kill useless SMT code in prom_hold_cpus
+  register_cpu_online should be __cpuinit
+  Update cpu_sibling_maps dynamically
+  make core sibling information available to userspace
+  make core id information available to userspace
+  show processor cache information in sysfs
+
+ arch/powerpc/kernel/prom_init.c    |   39 +----
+ arch/powerpc/kernel/setup-common.c |   24 ---
+ arch/powerpc/kernel/setup_64.c     |    3 -
+ arch/powerpc/kernel/smp.c          |  126 ++++++++++++++-
+ arch/powerpc/kernel/sysfs.c        |  310 +++++++++++++++++++++++++++++++++++-
+ include/asm-powerpc/smp.h          |    2 +
+ include/asm-powerpc/topology.h     |    2 +
+ 7 files changed, 439 insertions(+), 67 deletions(-)
