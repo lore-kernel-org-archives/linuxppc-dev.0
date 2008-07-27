@@ -1,16 +1,19 @@
 Return-Path: <roland@redhat.com>
-Received: from QMTA10.emeryville.ca.mail.comcast.net
-	(qmta10.emeryville.ca.mail.comcast.net [76.96.30.17])
-	by ozlabs.org (Postfix) with ESMTP id 9165BDDF4B
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 16:49:03 +1000 (EST)
+Received: from QMTA03.emeryville.ca.mail.comcast.net
+	(qmta03.emeryville.ca.mail.comcast.net [76.96.30.32])
+	by ozlabs.org (Postfix) with ESMTP id 98B04DDDE7
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 16:49:56 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 From: Roland McGrath <roland@redhat.com>
 To: Paul Mackerras <paulus@samba.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 0/5] powerpc tracehook
-Message-Id: <20080727064859.69692154280@magilla.localdomain>
-Date: Sat, 26 Jul 2008 23:48:59 -0700 (PDT)
+Subject: [PATCH 1/5] powerpc: tracehook_signal_handler
+In-Reply-To: Roland McGrath's message of  Saturday, 26 July 2008 23:48:59 -0700
+	<20080727064859.69692154280@magilla.localdomain>
+References: <20080727064859.69692154280@magilla.localdomain>
+Message-Id: <20080727064950.F2F69154280@magilla.localdomain>
+Date: Sat, 26 Jul 2008 23:49:50 -0700 (PDT)
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,38 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These patches are posted for review, but you can just pull the GIT branch
-if you prefer.  Patch 1/5 corrects a long-standing (minor) error in ptrace
-behavior.  The others change no existing behavior, just enable new and
-future features to work on the arch.
+This makes the powerpc signal handling code call tracehook_signal_handler()
+after a handler is set up.  This means that using PTRACE_SINGLESTEP to
+enter a signal handler will report to ptrace on the first instruction of
+the handler, instead of the second.  This is consistent with what x86 and
+other machines do, and what users and debuggers want.
 
-The following changes since commit 8be1a6d6c77ab4532e4476fdb8177030ef48b52c:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../roland/infiniband
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/powerpc/kernel/signal.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git powerpc-tracehook
-
-Roland McGrath (5):
-      powerpc: tracehook_signal_handler
-      powerpc: tracehook syscall
-      powerpc: tracehook: asm/syscall.h
-      powerpc: tracehook: TIF_NOTIFY_RESUME
-      powerpc: tracehook: CONFIG_HAVE_ARCH_TRACEHOOK
-
- arch/powerpc/Kconfig              |    1 +
- arch/powerpc/kernel/entry_32.S    |   11 ++++-
- arch/powerpc/kernel/entry_64.S    |   10 +++-
- arch/powerpc/kernel/ptrace.c      |   47 ++++++++++-----------
- arch/powerpc/kernel/signal.c      |   21 ++++++++-
- include/asm-powerpc/ptrace.h      |    1 +
- include/asm-powerpc/signal.h      |    3 +-
- include/asm-powerpc/syscall.h     |   84 +++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/thread_info.h |    5 ++-
- 9 files changed, 147 insertions(+), 36 deletions(-)
- create mode 100644 include/asm-powerpc/syscall.h
-
-
-Thanks,
-Roland
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index 7aada78..11a5c45 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -9,7 +9,7 @@
+  * this archive for more details.
+  */
+ 
+-#include <linux/ptrace.h>
++#include <linux/tracehook.h>
+ #include <linux/signal.h>
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -177,6 +177,12 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
+ 		 * its frame, and we can clear the TLF_RESTORE_SIGMASK flag.
+ 		 */
+ 		current_thread_info()->local_flags &= ~_TLF_RESTORE_SIGMASK;
++
++		/*
++		 * Let tracing know that we've done the handler setup.
++		 */
++		tracehook_signal_handler(signr, &info, &ka, regs,
++					 test_thread_flag(TIF_SINGLESTEP));
+ 	}
+ 
+ 	return ret;
