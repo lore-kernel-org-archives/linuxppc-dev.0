@@ -1,20 +1,19 @@
 Return-Path: <jonsmirl@gmail.com>
 Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.234])
-	by ozlabs.org (Postfix) with ESMTP id AFA11DDF59
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 14:44:09 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id c48so3180751wra.1
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 21:44:08 -0700 (PDT)
-Message-ID: <9e4733910807262144l7be98192l95dd526bf08e0434@mail.gmail.com>
-Date: Sun, 27 Jul 2008 00:44:07 -0400
+	by ozlabs.org (Postfix) with ESMTP id 0E9ADDDF6D
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 14:48:09 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so3181531wra.1
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 21:48:09 -0700 (PDT)
+Message-ID: <9e4733910807262148j2b8446efx4f5e564ec036e961@mail.gmail.com>
+Date: Sun, 27 Jul 2008 00:48:08 -0400
 From: "Jon Smirl" <jonsmirl@gmail.com>
 To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/2] Allow a custom ASOC machine driver with soc-of-simple
-In-Reply-To: <20080727011206.GD12191@secretlab.ca>
+Subject: Re: [PATCH 1/2] Support internal I2S clock sources on MPC5200
+In-Reply-To: <20080727020536.GL12191@secretlab.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <20080722235349.11648.90112.stgit@terra>
-	<20080722235351.11648.56387.stgit@terra>
-	<20080727011206.GD12191@secretlab.ca>
+	<20080727020536.GL12191@secretlab.ca>
 Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,171 +25,187 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On 7/26/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Tue, Jul 22, 2008 at 07:53:51PM -0400, Jon Smirl wrote:
+> On Tue, Jul 22, 2008 at 07:53:49PM -0400, Jon Smirl wrote:
 >
-> > Allow a custom ASOC machine driver with soc-of-simple
+> > Support internal I2S clock sources on MPC5200
 >  >
 >  > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 >
 >
-> Sorry I didn't respond earlier.  OLS kept me pretty distracted.
+> I'll play with this when I get home.  In the mean time I've got some
+>  comments below.  Overall, it looks right to me.
 >
->  Need a more detailed comment block about how your changing things and
->  why.
+>  g.
+>
 >
 >
 >  > ---
 >  >
->  >  include/sound/soc-of-simple.h |    2 ++
->  >  sound/soc/fsl/soc-of-simple.c |   26 +++++++++++++++++++++-----
->  >  2 files changed, 23 insertions(+), 5 deletions(-)
+>  >  sound/soc/fsl/mpc5200_psc_i2s.c |   58 ++++++++++++++++++++++++++++++++++-----
+>  >  sound/soc/fsl/mpc5200_psc_i2s.h |   13 +++++++++
+>  >  2 files changed, 64 insertions(+), 7 deletions(-)
+>  >  create mode 100644 sound/soc/fsl/mpc5200_psc_i2s.h
 >  >
->  > diff --git a/include/sound/soc-of-simple.h b/include/sound/soc-of-simple.h
->  > index 696fc51..1e83f2f 100644
->  > --- a/include/sound/soc-of-simple.h
->  > +++ b/include/sound/soc-of-simple.h
->  > @@ -18,4 +18,6 @@ int of_snd_soc_register_platform(struct snd_soc_platform *platform,
->  >                                struct device_node *node,
->  >                                struct snd_soc_dai *cpu_dai);
+>  > diff --git a/sound/soc/fsl/mpc5200_psc_i2s.c b/sound/soc/fsl/mpc5200_psc_i2s.c
+>  > index 8692329..f028f61 100644
+>  > --- a/sound/soc/fsl/mpc5200_psc_i2s.c
+>  > +++ b/sound/soc/fsl/mpc5200_psc_i2s.c
+>  > @@ -23,8 +23,12 @@
 >  >
->  > +void of_snd_soc_register_machine(char *name, struct snd_soc_ops *ops);
+>  >  #include <sysdev/bestcomm/bestcomm.h>
+>  >  #include <sysdev/bestcomm/gen_bd.h>
+>  > +#include <asm/time.h>
+>  > +#include <asm/mpc52xx.h>
+>  >  #include <asm/mpc52xx_psc.h>
+>  >
+>  > +#include "mpc5200_psc_i2s.h"
 >  > +
->  >  #endif /* _INCLUDE_SOC_OF_H_ */
->  > diff --git a/sound/soc/fsl/soc-of-simple.c b/sound/soc/fsl/soc-of-simple.c
->  > index 0382fda..dd2fa23 100644
->  > --- a/sound/soc/fsl/soc-of-simple.c
->  > +++ b/sound/soc/fsl/soc-of-simple.c
->  > @@ -38,8 +38,8 @@ struct of_snd_soc_device {
->  >       struct device_node *codec_node;
->  >  };
+>  >  MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
+>  >  MODULE_DESCRIPTION("Freescale MPC5200 PSC in I2S mode ASoC Driver");
+>  >  MODULE_LICENSE("GPL");
+>  > @@ -93,6 +97,7 @@ struct psc_i2s {
+>  >       struct snd_soc_dai dai;
+>  >       spinlock_t lock;
+>  >       u32 sicr;
+>  > +     uint sysclk;
 >  >
->  > -static struct snd_soc_ops of_snd_soc_ops = {
->  > -};
->  > +static struct snd_soc_ops *machine_ops = NULL;
->  > +static char *machine_name = NULL;
->
->
-> Doing this prevents multiple instances of this machine driver (which is
->  exactly what I have on my board).  To register a machine driver it
->  creates a 3-way bind condition instead of the existing 2-way one.  Right
->  now it is easy to match up codec and platform drivers because a common
->  key is available in the device tree.
->
->  Alternately, it might be okay to only allow for a single machine driver
->  that is able to create multiple sound card instances, but this current
->  code just uses the same name and ops for each registered device.
->
-We need to call them fabric drivers since we already have machine
-drivers in arch/.... It is too confusing.
-
-My fabric driver was getting probed after the rest of ASOC bound,
-that's why I had to add the third condition.
-
-An important feature for me is the ability to compile in multiple
-fabric drivers and then get the right one selected based on the
-machine name in the device tree.  I'm doing via my machine driver.
-
-Could we dynamically build an OF fabric device entry with a compatible
-string like this: compatible="machinename-fabric,generic-fabric"
-Now a hard requirement for a fabric driver is ok since one of those
-two will load for sure. generic-fabric is just a do nothing driver
-that is always built in.
-
-/* Trigger the platform specific ASOC driver to load */
-static struct platform_device platform = {
-        .name           = "dspeak01-fabric",
-        .id             = -1,
-};
-
-static struct platform_device *devices[] = {
-        &platform,
-};
-
-static void __init digispeaker_declare_platform_devices(void)
-{
-        mpc52xx_declare_of_platform_devices();
-        platform_add_devices(&devices[0], ARRAY_SIZE(devices));
-}
-
-define_machine(digispeaker_platform) {
-        .name           = "dspeak01",
-        .probe          = digispeaker_probe,
-        .setup_arch     = digispeaker_setup_arch,
-        .init           = digispeaker_declare_platform_devices,
-        .init_IRQ       = mpc52xx_init_irq,
-        .get_irq        = mpc52xx_get_irq,
-        .restart        = mpc52xx_restart,
-        .calibrate_decr = generic_calibrate_decr,
-};
-
-
->
+>  >       /* per-stream data */
+>  >       struct psc_i2s_stream playback;
+>  > @@ -224,6 +229,7 @@ static int psc_i2s_hw_params(struct snd_pcm_substream *substream,
+>  >  {
+>  >       struct snd_soc_pcm_runtime *rtd = substream->private_data;
+>  >       struct psc_i2s *psc_i2s = rtd->dai->cpu_dai->private_data;
+>  > +     uint bits, framesync, bitclk, value;
+>  >       u32 mode;
 >  >
->  >  static struct of_snd_soc_device *
->  >  of_snd_soc_get_device(struct device_node *codec_node)
->  > @@ -61,7 +61,7 @@ of_snd_soc_get_device(struct device_node *codec_node)
->  >       of_soc->machine.dai_link = &of_soc->dai_link;
->  >       of_soc->machine.num_links = 1;
->  >       of_soc->device.machine = &of_soc->machine;
->  > -     of_soc->dai_link.ops = &of_snd_soc_ops;
->  > +     of_soc->dai_link.ops = machine_ops;
->  >       list_add(&of_soc->list, &of_snd_soc_device_list);
+>  >       dev_dbg(psc_i2s->dev, "%s(substream=%p) p_size=%i p_bytes=%i"
+>  > @@ -235,15 +241,19 @@ static int psc_i2s_hw_params(struct snd_pcm_substream *substream,
+>  >       switch (params_format(params)) {
+>  >       case SNDRV_PCM_FORMAT_S8:
+>  >               mode = MPC52xx_PSC_SICR_SIM_CODEC_8;
+>  > +             bits = 8;
+>  >               break;
+>  >       case SNDRV_PCM_FORMAT_S16_BE:
+>  >               mode = MPC52xx_PSC_SICR_SIM_CODEC_16;
+>  > +             bits = 16;
+>  >               break;
+>  >       case SNDRV_PCM_FORMAT_S24_BE:
+>  >               mode = MPC52xx_PSC_SICR_SIM_CODEC_24;
+>  > +             bits = 24;
+>  >               break;
+>  >       case SNDRV_PCM_FORMAT_S32_BE:
+>  >               mode = MPC52xx_PSC_SICR_SIM_CODEC_32;
+>  > +             bits = 32;
+>  >               break;
+>  >       default:
+>  >               dev_dbg(psc_i2s->dev, "invalid format\n");
+>  > @@ -251,7 +261,24 @@ static int psc_i2s_hw_params(struct snd_pcm_substream *substream,
+>  >       }
+>  >       out_be32(&psc_i2s->psc_regs->sicr, psc_i2s->sicr | mode);
 >  >
->  >       return of_soc;
->  > @@ -74,7 +74,7 @@ static void of_snd_soc_register_device(struct of_snd_soc_device *of_soc)
->  >
->  >       /* Only register the device if both the codec and platform have
->  >        * been registered */
->  > -     if ((!of_soc->device.codec_data) || (!of_soc->platform_node))
->  > +     if ((!of_soc->device.codec_data) || (!of_soc->platform_node) || !machine_name)
->
->
-> I'm not thrilled with the hard requirement for a machine driver, but I
->  see what you're trying to do.  I want to find a clean way to trigger
->  this behaviour in the device tree without resorting to encoding linux
->  internal details into the data.  Need to think about this more.
->
->
->  >               return;
->  >
->  >       pr_info("platform<-->codec match achieved; registering machine\n");
->  > @@ -159,7 +159,7 @@ int of_snd_soc_register_platform(struct snd_soc_platform *platform,
->  >       of_soc->platform_node = node;
->  >       of_soc->dai_link.cpu_dai = cpu_dai;
->  >       of_soc->device.platform = platform;
->  > -     of_soc->machine.name = of_soc->dai_link.cpu_dai->name;
->  > +     of_soc->machine.name = machine_name;
->
->
-> As mentioned above, either there needs to be multiple machine drivers
->  or the ability to change the name for each platform--codec pair.
->
->
->  >
->  >       /* Now try to register the SoC device */
->  >       of_snd_soc_register_device(of_soc);
->  > @@ -169,3 +169,19 @@ int of_snd_soc_register_platform(struct snd_soc_platform *platform,
->  >       return rc;
->  >  }
->  >  EXPORT_SYMBOL_GPL(of_snd_soc_register_platform);
+>  > -     snd_pcm_set_runtime_buffer(substream, &substream->dma_buffer);
+>  > +     if (psc_i2s->sysclk) {
+>  > +             framesync = bits * 2;
+>  > +             bitclk = (psc_i2s->sysclk) / (params_rate(params) * framesync);
 >  > +
->  > +void of_snd_soc_register_machine(char *name, struct snd_soc_ops *ops)
->  > +{
->  > +     struct of_snd_soc_device *of_soc;
+>  > +             /* bitclk field is byte swapped due to mpc5200/b compatibility */
+>  > +             value = ((framesync - 1) << 24) |
+>  > +                     (((bitclk - 1) & 0xFF) << 16) | ((bitclk - 1) & 0xFF00);
 >  > +
->  > +     machine_name = name;
->  > +     machine_ops = ops;
+>  > +             dev_dbg(psc_i2s->dev, "%s(substream=%p) rate=%i sysclk=%i"
+>  > +                     " framesync=%i bitclk=%i reg=%X\n",
+>  > +                     __FUNCTION__, substream, params_rate(params), psc_i2s->sysclk,
+>  > +                     framesync, bitclk, value);
 >  > +
->  > +     list_for_each_entry(of_soc, &of_snd_soc_device_list, list) {
->  > +             of_soc->dai_link.ops = machine_ops;
->  > +             of_soc->machine.name = machine_name;
->  > +             of_snd_soc_register_device(of_soc);
+>  > +             out_be32(&psc_i2s->psc_regs->ccr, value);
+>  > +             out_8(&psc_i2s->psc_regs->ctur, bits - 1);
 >  > +     }
+>
+>
+> This should probably only be executed if the psc is the clock master;
+>  just like you've done in psc_i2s_set_sysclk()
+>
+
+psc_i2s->sysclk can only get set if there is a clock master. Note that
+there are two ways to be a clock master, internal and cellslave.
+
+i2s_set_sysclk() is dynamically called from my fabric driver to adjust
+the timebase to match the music.
+
+>
 >  > +
->  > +}
+>  > +     snd_pcm_set_runtime_buffer(substream, &substream->dma_buffer);
+>  >
+>  >       return 0;
+>  >  }
+>  > @@ -429,9 +456,29 @@ static int psc_i2s_set_sysclk(struct snd_soc_dai *cpu_dai,
+>  >                             int clk_id, unsigned int freq, int dir)
+>  >  {
+>  >       struct psc_i2s *psc_i2s = cpu_dai->private_data;
+>  > -     dev_dbg(psc_i2s->dev, "psc_i2s_set_sysclk(cpu_dai=%p, dir=%i)\n",
+>  > -                             cpu_dai, dir);
+>  > -     return (dir == SND_SOC_CLOCK_IN) ? 0 : -EINVAL;
+>  > +     int clkdiv, err;
+>  > +     dev_dbg(psc_i2s->dev, "psc_i2s_set_sysclk(cpu_dai=%p, freq=%u, dir=%i)\n",
+>  > +                             cpu_dai, freq, dir);
+>  > +     if (dir == SND_SOC_CLOCK_OUT) {
+>  > +             psc_i2s->sysclk = freq;
+>  > +             if (clk_id == MPC52xx_CLK_CELLSLAVE) {
+>  > +                     psc_i2s->sicr |= MPC52xx_PSC_SICR_CELLSLAVE | MPC52xx_PSC_SICR_GENCLK;
+>  > +             } else { /* MPC52xx_CLK_INTERNAL */
+>  > +                     psc_i2s->sicr &= ~MPC52xx_PSC_SICR_CELLSLAVE;
+>  > +                     psc_i2s->sicr |= MPC52xx_PSC_SICR_GENCLK;
+>  > +
+>  > +                     clkdiv = ppc_proc_freq / freq;
+>  > +                     err = ppc_proc_freq % freq;
+>  > +                     if (err > freq / 2)
+>  > +                             clkdiv++;
+>  > +
+>  > +                     dev_dbg(psc_i2s->dev, "psc_i2s_set_sysclk(clkdiv %d freq error=%ldHz)\n",
+>  > +                                     clkdiv, (ppc_proc_freq / clkdiv - freq));
+>  > +
+>  > +                     return mpc52xx_set_psc_clkdiv(psc_i2s->dai.id + 1, clkdiv);
+>  > +             }
+>  > +     }
+>  > +     return 0;
+>  >  }
+>  >
+>  >  /**
+>  > @@ -784,9 +831,6 @@ static int __devinit psc_i2s_of_probe(struct of_device *op,
+>  >       /* Configure the serial interface mode; defaulting to CODEC8 mode */
+>  >       psc_i2s->sicr = MPC52xx_PSC_SICR_DTS1 | MPC52xx_PSC_SICR_I2S |
+>  >                       MPC52xx_PSC_SICR_CLKPOL;
+>  > -     if (of_get_property(op->node, "fsl,cellslave", NULL))
+>  > -             psc_i2s->sicr |= MPC52xx_PSC_SICR_CELLSLAVE |
+>  > -                              MPC52xx_PSC_SICR_GENCLK;
+>  >       out_be32(&psc_i2s->psc_regs->sicr,
+>  >                psc_i2s->sicr | MPC52xx_PSC_SICR_SIM_CODEC_8);
+>  >
+>  > diff --git a/sound/soc/fsl/mpc5200_psc_i2s.h b/sound/soc/fsl/mpc5200_psc_i2s.h
+>  > new file mode 100644
+>  > index 0000000..0e0a84e
+>  > --- /dev/null
+>  > +++ b/sound/soc/fsl/mpc5200_psc_i2s.h
+>  > @@ -0,0 +1,13 @@
+>  > +/*
+>  > + * Freescale MPC5200 PSC in I2S mode
+>  > + * ALSA SoC Digital Audio Interface (DAI) driver
+>  > + *
+>  > + */
+>  > +
+>  > +#ifndef __SOUND_SOC_FSL_MPC52xx_PSC_I2S_H__
+>  > +#define __SOUND_SOC_FSL_MPC52xx_PSC_I2S_H__
+>  > +
+>  > +#define MPC52xx_CLK_INTERNAL 0
+>  > +#define MPC52xx_CLK_CELLSLAVE 1
+>  > +
+>  > +#endif /* __SOUND_SOC_FSL_MPC52xx_PSC_I2S_H__ */
+>  >
 >
->
-> You need to hold the mutex when manipulating the list.
+> > _______________________________________________
+>  > Linuxppc-dev mailing list
+>  > Linuxppc-dev@ozlabs.org
+>  > https://ozlabs.org/mailman/listinfo/linuxppc-dev
 >
 
 
