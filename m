@@ -1,20 +1,20 @@
 Return-Path: <jonsmirl@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.234])
-	by ozlabs.org (Postfix) with ESMTP id 0E9ADDDF6D
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 14:48:09 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id c48so3181531wra.1
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 21:48:09 -0700 (PDT)
-Message-ID: <9e4733910807262148j2b8446efx4f5e564ec036e961@mail.gmail.com>
-Date: Sun, 27 Jul 2008 00:48:08 -0400
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.226])
+	by ozlabs.org (Postfix) with ESMTP id 552DEDDF69
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 15:05:05 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id i30so3689881wxd.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jul 2008 22:05:02 -0700 (PDT)
+Message-ID: <9e4733910807262205l2db8d662u9dd2e517282686f8@mail.gmail.com>
+Date: Sun, 27 Jul 2008 01:05:01 -0400
 From: "Jon Smirl" <jonsmirl@gmail.com>
 To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/2] Support internal I2S clock sources on MPC5200
-In-Reply-To: <20080727020536.GL12191@secretlab.ca>
+Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
+In-Reply-To: <20080727001119.GB12191@secretlab.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20080722235349.11648.90112.stgit@terra>
-	<20080727020536.GL12191@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
+	<20080727001119.GB12191@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,187 +25,113 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On 7/26/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Tue, Jul 22, 2008 at 07:53:49PM -0400, Jon Smirl wrote:
->
-> > Support internal I2S clock sources on MPC5200
+> On Mon, Jul 14, 2008 at 09:54:37PM +0400, Anton Vorontsov wrote:
+>  > Currently of_i2c will select first compatible property as a last resort
+>  > option. This isn't best choice though, because generic compatible entries
+>  > are listed last, not first. For example, two compatible entries given for
+>  > the MCU node:
 >  >
->  > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+>  > "fsl,mc9s08qg8-mpc837xrdb", "fsl,mcu-mpc8349emitx";
+>  >
+>  > Since no sane driver will ever match specific devices, what we want is
+>  > to select most generic option (last). Then driver may call
+>  > of_device_is_compatible() if it is really interested in details.
 >
 >
-> I'll play with this when I get home.  In the mean time I've got some
->  comments below.  Overall, it looks right to me.
+> I highly suspect that this will actually be a rare condition and that
+>  most of the time the driver you want will bind against the first entry
+>  in the list (I'm basing this on what discussion I've seen on the list
+>  and it seems to me that Jiri does want i2c devices to list the exact set
+>  of chips that each driver binds against).
+
+Can we put a loop on request_module() and have it try each one down
+the list until something matches? request_module() returns errors, but
+I can't tell from the source if one of those errors is "no matching
+module found" since it invokes a user space helper.
+
+That would work for this compatible string:
+compatible = "atmel,24c32wp", "24c32", "eeprom";
+
+request_module will always fail for the first entry. If you have at24
+in your system the second one will succeed. If you have eeprom the
+third one works. All of those names are valid in a device tree.
+
+If all three fail, create a device with the last entry since someone
+may modprobe the driver in later.
+
+>  I'm inclined to leave it as is for now and instead handle the mpc837x
+>  case with the fixup table in this file.  (Actually, this function has
+>  been moved to of/base.c; so handle it in that function)
+>
+>  For the longer term, I think that this whole match method is a stop gap
+>  solution until we figure out a tidy way to bind and provide device tree
+>  data to i2c, SPI and platform devices.
+>
 >
 >  g.
 >
->
->
+>  >
+>  > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 >  > ---
 >  >
->  >  sound/soc/fsl/mpc5200_psc_i2s.c |   58 ++++++++++++++++++++++++++++++++++-----
->  >  sound/soc/fsl/mpc5200_psc_i2s.h |   13 +++++++++
->  >  2 files changed, 64 insertions(+), 7 deletions(-)
->  >  create mode 100644 sound/soc/fsl/mpc5200_psc_i2s.h
+>  > Other options are: start filling the exceptions list, or add  "linux,..."
+>  > compatible entry to the device tree.
 >  >
->  > diff --git a/sound/soc/fsl/mpc5200_psc_i2s.c b/sound/soc/fsl/mpc5200_psc_i2s.c
->  > index 8692329..f028f61 100644
->  > --- a/sound/soc/fsl/mpc5200_psc_i2s.c
->  > +++ b/sound/soc/fsl/mpc5200_psc_i2s.c
->  > @@ -23,8 +23,12 @@
+>  >  drivers/of/of_i2c.c |   17 +++++++++++------
+>  >  1 files changed, 11 insertions(+), 6 deletions(-)
 >  >
->  >  #include <sysdev/bestcomm/bestcomm.h>
->  >  #include <sysdev/bestcomm/gen_bd.h>
->  > +#include <asm/time.h>
->  > +#include <asm/mpc52xx.h>
->  >  #include <asm/mpc52xx_psc.h>
+>  > diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+>  > index b2ccdcb..0d35a0a 100644
+>  > --- a/drivers/of/of_i2c.c
+>  > +++ b/drivers/of/of_i2c.c
+>  > @@ -29,6 +29,7 @@ static int of_find_i2c_driver(struct device_node *node,
+>  >       int i, cplen;
+>  >       const char *compatible;
+>  >       const char *p;
+>  > +     const char *last_wcomma = NULL;
 >  >
->  > +#include "mpc5200_psc_i2s.h"
+>  >       /* 1. search for exception list entry */
+>  >       for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
+>  > @@ -45,7 +46,7 @@ static int of_find_i2c_driver(struct device_node *node,
+>  >       if (!compatible)
+>  >               return -ENODEV;
+>  >
+>  > -     /* 2. search for linux,<i2c-type> entry */
+>  > +     /* 2. search for linux,<i2c-type> entry, or remember last w/ comma */
+>  >       p = compatible;
+>  >       while (cplen > 0) {
+>  >               if (!strncmp(p, "linux,", 6)) {
+>  > @@ -54,6 +55,12 @@ static int of_find_i2c_driver(struct device_node *node,
+>  >                                   I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+>  >                               return -ENOMEM;
+>  >                       return 0;
+>  > +             } else {
+>  > +                     const char *comma;
 >  > +
->  >  MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
->  >  MODULE_DESCRIPTION("Freescale MPC5200 PSC in I2S mode ASoC Driver");
->  >  MODULE_LICENSE("GPL");
->  > @@ -93,6 +97,7 @@ struct psc_i2s {
->  >       struct snd_soc_dai dai;
->  >       spinlock_t lock;
->  >       u32 sicr;
->  > +     uint sysclk;
+>  > +                     comma = strchr(p, ',');
+>  > +                     if (comma)
+>  > +                             last_wcomma = comma + 1;
+>  >               }
 >  >
->  >       /* per-stream data */
->  >       struct psc_i2s_stream playback;
->  > @@ -224,6 +229,7 @@ static int psc_i2s_hw_params(struct snd_pcm_substream *substream,
->  >  {
->  >       struct snd_soc_pcm_runtime *rtd = substream->private_data;
->  >       struct psc_i2s *psc_i2s = rtd->dai->cpu_dai->private_data;
->  > +     uint bits, framesync, bitclk, value;
->  >       u32 mode;
->  >
->  >       dev_dbg(psc_i2s->dev, "%s(substream=%p) p_size=%i p_bytes=%i"
->  > @@ -235,15 +241,19 @@ static int psc_i2s_hw_params(struct snd_pcm_substream *substream,
->  >       switch (params_format(params)) {
->  >       case SNDRV_PCM_FORMAT_S8:
->  >               mode = MPC52xx_PSC_SICR_SIM_CODEC_8;
->  > +             bits = 8;
->  >               break;
->  >       case SNDRV_PCM_FORMAT_S16_BE:
->  >               mode = MPC52xx_PSC_SICR_SIM_CODEC_16;
->  > +             bits = 16;
->  >               break;
->  >       case SNDRV_PCM_FORMAT_S24_BE:
->  >               mode = MPC52xx_PSC_SICR_SIM_CODEC_24;
->  > +             bits = 24;
->  >               break;
->  >       case SNDRV_PCM_FORMAT_S32_BE:
->  >               mode = MPC52xx_PSC_SICR_SIM_CODEC_32;
->  > +             bits = 32;
->  >               break;
->  >       default:
->  >               dev_dbg(psc_i2s->dev, "invalid format\n");
->  > @@ -251,7 +261,24 @@ static int psc_i2s_hw_params(struct snd_pcm_substream *substream,
+>  >               i = strlen(p) + 1;
+>  > @@ -61,12 +68,10 @@ static int of_find_i2c_driver(struct device_node *node,
+>  >               cplen -= i;
 >  >       }
->  >       out_be32(&psc_i2s->psc_regs->sicr, psc_i2s->sicr | mode);
 >  >
->  > -     snd_pcm_set_runtime_buffer(substream, &substream->dma_buffer);
->  > +     if (psc_i2s->sysclk) {
->  > +             framesync = bits * 2;
->  > +             bitclk = (psc_i2s->sysclk) / (params_rate(params) * framesync);
->  > +
->  > +             /* bitclk field is byte swapped due to mpc5200/b compatibility */
->  > +             value = ((framesync - 1) << 24) |
->  > +                     (((bitclk - 1) & 0xFF) << 16) | ((bitclk - 1) & 0xFF00);
->  > +
->  > +             dev_dbg(psc_i2s->dev, "%s(substream=%p) rate=%i sysclk=%i"
->  > +                     " framesync=%i bitclk=%i reg=%X\n",
->  > +                     __FUNCTION__, substream, params_rate(params), psc_i2s->sysclk,
->  > +                     framesync, bitclk, value);
->  > +
->  > +             out_be32(&psc_i2s->psc_regs->ccr, value);
->  > +             out_8(&psc_i2s->psc_regs->ctur, bits - 1);
->  > +     }
->
->
-> This should probably only be executed if the psc is the clock master;
->  just like you've done in psc_i2s_set_sysclk()
->
-
-psc_i2s->sysclk can only get set if there is a clock master. Note that
-there are two ways to be a clock master, internal and cellslave.
-
-i2s_set_sysclk() is dynamically called from my fabric driver to adjust
-the timebase to match the music.
-
->
->  > +
->  > +     snd_pcm_set_runtime_buffer(substream, &substream->dma_buffer);
->  >
+>  > -     /* 3. take fist compatible entry and strip manufacturer */
+>  > -     p = strchr(compatible, ',');
+>  > -     if (!p)
+>  > +     /* 3. take last compatible entry w/ comma, manufacturer stripped */
+>  > +     if (!last_wcomma)
+>  >               return -ENODEV;
+>  > -     p++;
+>  > -     if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+>  > +     if (strlcpy(info->type, last_wcomma, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+>  >               return -ENOMEM;
 >  >       return 0;
 >  >  }
->  > @@ -429,9 +456,29 @@ static int psc_i2s_set_sysclk(struct snd_soc_dai *cpu_dai,
->  >                             int clk_id, unsigned int freq, int dir)
->  >  {
->  >       struct psc_i2s *psc_i2s = cpu_dai->private_data;
->  > -     dev_dbg(psc_i2s->dev, "psc_i2s_set_sysclk(cpu_dai=%p, dir=%i)\n",
->  > -                             cpu_dai, dir);
->  > -     return (dir == SND_SOC_CLOCK_IN) ? 0 : -EINVAL;
->  > +     int clkdiv, err;
->  > +     dev_dbg(psc_i2s->dev, "psc_i2s_set_sysclk(cpu_dai=%p, freq=%u, dir=%i)\n",
->  > +                             cpu_dai, freq, dir);
->  > +     if (dir == SND_SOC_CLOCK_OUT) {
->  > +             psc_i2s->sysclk = freq;
->  > +             if (clk_id == MPC52xx_CLK_CELLSLAVE) {
->  > +                     psc_i2s->sicr |= MPC52xx_PSC_SICR_CELLSLAVE | MPC52xx_PSC_SICR_GENCLK;
->  > +             } else { /* MPC52xx_CLK_INTERNAL */
->  > +                     psc_i2s->sicr &= ~MPC52xx_PSC_SICR_CELLSLAVE;
->  > +                     psc_i2s->sicr |= MPC52xx_PSC_SICR_GENCLK;
->  > +
->  > +                     clkdiv = ppc_proc_freq / freq;
->  > +                     err = ppc_proc_freq % freq;
->  > +                     if (err > freq / 2)
->  > +                             clkdiv++;
->  > +
->  > +                     dev_dbg(psc_i2s->dev, "psc_i2s_set_sysclk(clkdiv %d freq error=%ldHz)\n",
->  > +                                     clkdiv, (ppc_proc_freq / clkdiv - freq));
->  > +
->  > +                     return mpc52xx_set_psc_clkdiv(psc_i2s->dai.id + 1, clkdiv);
->  > +             }
->  > +     }
->  > +     return 0;
->  >  }
->  >
->  >  /**
->  > @@ -784,9 +831,6 @@ static int __devinit psc_i2s_of_probe(struct of_device *op,
->  >       /* Configure the serial interface mode; defaulting to CODEC8 mode */
->  >       psc_i2s->sicr = MPC52xx_PSC_SICR_DTS1 | MPC52xx_PSC_SICR_I2S |
->  >                       MPC52xx_PSC_SICR_CLKPOL;
->  > -     if (of_get_property(op->node, "fsl,cellslave", NULL))
->  > -             psc_i2s->sicr |= MPC52xx_PSC_SICR_CELLSLAVE |
->  > -                              MPC52xx_PSC_SICR_GENCLK;
->  >       out_be32(&psc_i2s->psc_regs->sicr,
->  >                psc_i2s->sicr | MPC52xx_PSC_SICR_SIM_CODEC_8);
->  >
->  > diff --git a/sound/soc/fsl/mpc5200_psc_i2s.h b/sound/soc/fsl/mpc5200_psc_i2s.h
->  > new file mode 100644
->  > index 0000000..0e0a84e
->  > --- /dev/null
->  > +++ b/sound/soc/fsl/mpc5200_psc_i2s.h
->  > @@ -0,0 +1,13 @@
->  > +/*
->  > + * Freescale MPC5200 PSC in I2S mode
->  > + * ALSA SoC Digital Audio Interface (DAI) driver
->  > + *
->  > + */
->  > +
->  > +#ifndef __SOUND_SOC_FSL_MPC52xx_PSC_I2S_H__
->  > +#define __SOUND_SOC_FSL_MPC52xx_PSC_I2S_H__
->  > +
->  > +#define MPC52xx_CLK_INTERNAL 0
->  > +#define MPC52xx_CLK_CELLSLAVE 1
->  > +
->  > +#endif /* __SOUND_SOC_FSL_MPC52xx_PSC_I2S_H__ */
->  >
->
-> > _______________________________________________
->  > Linuxppc-dev mailing list
->  > Linuxppc-dev@ozlabs.org
->  > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>  > --
+>  > 1.5.5.4
 >
 
 
