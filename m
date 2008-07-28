@@ -1,24 +1,23 @@
 Return-Path: <kkeil@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AE91ADDE9F
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 18:40:31 +1000 (EST)
-Date: Mon, 28 Jul 2008 10:40:24 +0200
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 13CECDDF29
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 20:26:37 +1000 (EST)
+Date: Mon, 28 Jul 2008 12:26:29 +0200
 From: Karsten Keil <kkeil@suse.de>
-To: Marcel Holtmann <marcel@holtmann.org>
+To: David Miller <davem@davemloft.net>
 Subject: Re: mISDN still breaking the allmodconfig build...
-Message-ID: <20080728084024.GA23465@pingi.kke.suse.de>
+Message-ID: <20080728102629.GA25509@pingi.kke.suse.de>
 References: <20080727.170235.97056809.davem@davemloft.net>
 	<93120C4B-D2F4-4479-806B-2141AC3DC607@holtmann.org>
 	<20080727.180736.74131389.davem@davemloft.net>
-	<7949EA87-4340-4353-AFC9-79A718B95DF0@holtmann.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7949EA87-4340-4353-AFC9-79A718B95DF0@holtmann.org>
-Cc: sfr@canb.auug.org.au, kkeil@suse.de, linux-kernel@vger.kernel.org,
+In-Reply-To: <20080727.180736.74131389.davem@davemloft.net>
+Cc: sfr@canb.auug.org.au, marcel@holtmann.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	torvalds@linux-foundation.org, David Miller <davem@davemloft.net>
+	torvalds@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,46 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Marcel,
-On Mon, Jul 28, 2008 at 03:13:21AM +0200, Marcel Holtmann wrote:
-> Hi Dave,
+On Sun, Jul 27, 2008 at 06:07:36PM -0700, David Miller wrote:
+> From: Marcel Holtmann <marcel@holtmann.org>
+> Date: Mon, 28 Jul 2008 03:03:04 +0200
 > 
-> >>>More fallout from the premature mISDN driver merge:
-> >>>
-> >>>drivers/isdn/hardware/mISDN/hfcmulti.c:5255:2: error: #error "not
-> >>>running on big endian machines now"
-> >>
-> >>is that only the HFC driver or the whole mISDN stack?
-> >>
-> >>I know that the two old ISDN stacks where really bad on big endian,
-> >>but my assumption was that we did sort this out in the end.
-> >
-> >One of the two mISDN drivers uses the deprecated virt_to_bus()
-> >interface for handling DMA addresses (that doesn't even work on many
-> >x86 systems these days) and the other mISDN driver gives the above
-> >big-endian compile time error.
-> >
-> >In short, this driver was not ready for merging at all.
+> > > More fallout from the premature mISDN driver merge:
+> > >
+> > > drivers/isdn/hardware/mISDN/hfcmulti.c:5255:2: error: #error "not  
+> > > running on big endian machines now"
+> > 
+> > is that only the HFC driver or the whole mISDN stack?
+> > 
+> > I know that the two old ISDN stacks where really bad on big endian,  
+> > but my assumption was that we did sort this out in the end.
 > 
-> I am not defending it and agree that this driver should have had at  
-> least one test run in linux-next.
+> One of the two mISDN drivers uses the deprecated virt_to_bus()
+> interface for handling DMA addresses (that doesn't even work on many
+> x86 systems these days) and the other mISDN driver gives the above
+> big-endian compile time error.
+> 
 
-Yes my fault, sorry.
-
-> However mISDN is a whole ISDN stack.  
-> So does mISDN has an issue too or do we only have a really broken  
-> driver. Karsten?
-
-Yes this is only a issue of the hardware layer not of the stack.
-
-OK the driver are based on the old drivers already in HiSax and for
-virt_to_bus() I never got a complain before and yes I already have some patches
-to solve the endian issues in the HFC driver, but it was not finaly
-confirmed, that all this work now on big endian systems and my PPC system
-unfortunately died some time ago, so I did leave it as it is, but with
-the wrong option, instead to mark it X86 only I let it break. 
-
-On the other side this remained me to check the big endian thing again ;-)
+OK this was forgotten to change in a printk from the old driver, the new allocation
+code should be OK it use pci_alloc_consistent().
+I think it should simple use the returned dmahandle in this printk.
 
 -- 
 Karsten Keil
