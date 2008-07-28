@@ -2,19 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 44B0ADDE3A
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 16:13:24 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m6S6DIuk009064
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 01:13:19 -0500
-Subject: [PATCH] powerpc: Disable 64K huge page support when doing 64K SPU
-	mappings
+	by ozlabs.org (Postfix) with ESMTPS id D1C7DDDEEA
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 16:35:18 +1000 (EST)
+Subject: Re: [PATCH 0/6] powerpc topology updates
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <1217136295-18693-1-git-send-email-ntl@pobox.com>
+References: <1217136295-18693-1-git-send-email-ntl@pobox.com>
 Content-Type: text/plain
-Date: Mon, 28 Jul 2008 16:13:18 +1000
-Message-Id: <1217225598.11188.169.camel@pasglop>
+Date: Mon, 28 Jul 2008 16:34:57 +1000
+Message-Id: <1217226897.11188.172.camel@pasglop>
 Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,41 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 64K SPU local store mapping feature is incompatible with the
-64K huge pages support due to the inability of some parts of
-the memory management to differenciate between them while they
-use a different page table format.
+On Sun, 2008-07-27 at 00:24 -0500, Nathan Lynch wrote:
+> This series consists of a couple of cleanups and a few feature
+> additions, all of which are more or less related to system topology
+> (threads, cores, caches, sysfs...)  These are independent of
+> each other except for 4 and 5 (core sibling and core id info).
+> 
+> I'd say the highlights are the last three patches, which add core and
+> cache information to sysfs.  Here is some example output with the
+> patches applied:
 
-For now, disable 64K huge pages when CONFIG_SPU_FS_64K_LS,
-in the long run, this can be fixed by making this feature use
-the hugetlb page table format.
+Applied with minor changes.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I made cpu_to_l2cache() use of_find_device_by_phandle() which should
+work as well on pseries and should have the added advantage of working
+on others too (ie. it will use device_node->linux_phandle to do the
+compare, which is setup with the base phandle and overriden by the
+ibm,phandle if there is one).
 
-Index: linux-work/arch/powerpc/mm/hugetlbpage.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/hugetlbpage.c	2008-07-28 15:57:48.000000000 +1000
-+++ linux-work/arch/powerpc/mm/hugetlbpage.c	2008-07-28 15:59:25.000000000 +1000
-@@ -736,14 +736,21 @@ static int __init hugetlbpage_init(void)
- 
- 	if (!cpu_has_feature(CPU_FTR_16M_PAGE))
- 		return -ENODEV;
-+
- 	/* Add supported huge page sizes.  Need to change HUGE_MAX_HSTATE
- 	 * and adjust PTE_NONCACHE_NUM if the number of supported huge page
- 	 * sizes changes.
- 	 */
- 	set_huge_psize(MMU_PAGE_16M);
--	set_huge_psize(MMU_PAGE_64K);
- 	set_huge_psize(MMU_PAGE_16G);
- 
-+	/* Temporarily disable support for 64K huge pages when 64K SPU local
-+	 * store support is enabled as the current implementation conflicts.
-+	 */
-+#ifndef CONFIG_SPU_FS_64K_LS
-+	set_huge_psize(MMU_PAGE_64K);
-+#endif
-+
- 	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
- 		if (mmu_huge_psizes[psize]) {
- 			huge_pgtable_cache(psize) = kmem_cache_create(
+I also did a few cleanups of printk's and error checking.
+
+Cheers,
+Ben.
