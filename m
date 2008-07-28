@@ -1,18 +1,20 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id E86D3DDFCF
+Return-Path: <matvejchikov@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
+	by ozlabs.org (Postfix) with ESMTP id C0575DF349
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Jul 2008 03:26:45 +1000 (EST)
-Date: Mon, 28 Jul 2008 09:51:08 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Stephen Horton <SHorton@kodiaknetworks.com>
-Subject: Re: mpc744x, Marvell mv6446x kernel guidance please
-Message-ID: <20080728165108.GA22621@mag.az.mvista.com>
-References: <295C5089A56CE143B316E5F67CA99CB001C9E4BD@cowboy.inovate.inovate.com>
+	Tue, 29 Jul 2008 05:43:09 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so439857qwb.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 28 Jul 2008 12:43:08 -0700 (PDT)
+Message-ID: <8496f91a0807281243y2193dad5hc758444fe0a10258@mail.gmail.com>
+Date: Mon, 28 Jul 2008 23:43:07 +0400
+From: "Matvejchikov Ilya" <matvejchikov@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: No output from SMC1 console with the 2.6.26 kernel (PQ2FADS based
+	board)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <295C5089A56CE143B316E5F67CA99CB001C9E4BD@cowboy.inovate.inovate.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Reply-To: matvejchikov@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,38 +25,96 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 10, 2008 at 10:46:49PM -0500, Stephen Horton wrote:
-> Hello folks,
-> 
-> In a current work project, I have inherited a compactPCI board that has
-> an mpc7447/7448 powerpc processor as well as a Marvell system
-> controller, model mv64462 (stripped down mv64460). The board has a
-> somewhat working Gentoo Linux port running on it from long ago and a
-> company far far away (kernel version 2.6.9 built using arch/ppc). To
-> prepare for an upcoming deployment, I would like to bring the OS
-> up-to-date on this board with a newer kernel (targeting Gentoo 2008),
-> but I am unsure of the approach to take. I am a software developer, but
-> normally do not work on kernel porting / board integration. I have
-> researched the arch/ppc to arch/powerpc migration, but I'm a bit
-> intimidated by the 'new' device tree symantics and other changes to the
-> stream. Here are some questions:
-> 
-> 1.	Is it possible with the 2.6.24 (Gentoo 2008) kernel to still use
-> arch/ppc for this platform architecture?  I've tried to get this to
-> compile, but am having trouble with files from arch/powerpc getting
-> pulled in; then I read some comments (from I believe this forum) that
-> indicated that arch/ppc is not longer supposed to compile
+Hi all,
 
-arch/ppc is gone now.  You should spend you effort working in
-arch/powerpc.
+I'm working with PQ2FADS based board. When I started to use new 2.6.26
+kernel my SMC1 console stopped working. I know that the cpm_uart
+driver has been changed and the DTS file needs updating. Unfortunately
+I failed to get it running. Could somebody help me solve this problem?
 
-> 2.	Does anyone have example code for this platform architecture?
-> Any freebees I could use for creating my device tree?
+====
+The cpm node of the DTS file:
+.............................................
+		cpm@119c0 {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			#interrupt-cells = <2>;
+			compatible = "fsl,mpc8280-cpm", "fsl,cpm2";
+			reg = <119c0 30>;
+			ranges;
 
-You can use prpmc2800 as an example.
+			muram {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				ranges = <0 0 10000>;
 
-> 3.	Any advice of any kind?
+				data-only@0 {
+					compatible = "fsl,cpm-muram-data";
+					reg = <0 2000 9800 800>;
+				};
+			};
 
-Its not as bad as it looks.  Just dig into it and don't give up.
+			brg@119f0 {
+				compatible = "fsl,cpm-brg", "fsl,cpm2-brg";
+				reg = <119f0 10 115f0 10>;
+			};
 
-Mark
+			smc1: serial@11a80 {
+				device_type = "serial";
+				compatible = "fsl,cpm2-smc-uart";
+				reg = <11a80 20 87fc 2>;
+				interrupts = <4 8>;
+				interrupt-parent = <&PIC>;
+				fsl,cpm-brg = <7>;
+				fsl,cpm-command = <1d000000>;
+			};
+
+		};
+.............................................
+	chosen {
+		linux,stdout-path = &smc1;
+		bootargs = "console=ttyCPM0";
+	};
+.............................................
+
+The early debuging output:
+Xid mach(): done
+MMU:enter
+MMU:hw init
+MMU:mapin
+MMU:setio
+MMU:exit
+Using Electronic Devices SPC826 (M82) machine description
+Linux version 2.6.26 (ilya@westend) (gcc version 4.1.2) #83 Thu Jul 24
+14:45:07 MSD 2008
+console [udbg0] enabled
+Entering add_active_range(0, 0, 4096) 0 entries of 256 used
+setup_arch: bootmem
+spc826_setup_arch()
+spc826_setup_arch(), finish
+arch: exit
+Top of RAM: 0x1000000, Total RAM: 0x1000000
+Memory hole size: 0MB
+Zone PFN ranges:
+  DMA             0 ->     4096
+  Normal       4096 ->     4096
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0:        0 ->     4096
+On node 0 totalpages: 4096
+  DMA zone: 32 pages used for memmap
+  DMA zone: 0 pages reserved
+  DMA zone: 4064 pages, LIFO batch:0
+  Normal zone: 0 pages used for memmap
+  Movable zone: 0 pages used for memmap
+Built 1 zonelists in Zone order, mobility grouping off.  Total pages: 4064
+Kernel command line: console=ttyCPM0
+PID hash table entries: 64 (order: 6, 256 bytes)
+time_init: decrementer frequency = 16.500000 MHz
+time_init: processor frequency   = 264.000000 MHz
+clocksource: timebase mult[f26c9b2] shift[22] registered
+clockevent: decrementer mult[439] shift[16] cpu[0]
+Console: colour dummy device 80x25
+====
+
+Thanks!
