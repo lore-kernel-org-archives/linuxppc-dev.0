@@ -1,15 +1,22 @@
-Return-Path: <waldi@debian.org>
-Received: from wavehammer.waldi.eu.org (wavehammer.waldi.eu.org
-	[82.139.201.20]) by ozlabs.org (Postfix) with ESMTP id 48A70DDDF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 05:30:02 +1000 (EST)
-Date: Mon, 28 Jul 2008 20:56:51 +0200
-From: Bastian Blank <waldi@debian.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/lpar - defer prefered console setup
-Message-ID: <20080728185651.GA29530@wavehammer.waldi.eu.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C4910DDEEE
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 07:15:02 +1000 (EST)
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807280838580.3486@nehalem.linux-foundation.org>
+References: <1217239117.11188.187.camel@pasglop>
+	<alpine.LFD.1.10.0807280838580.3486@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 29 Jul 2008 07:14:52 +1000
+Message-Id: <1217279692.11188.213.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,64 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi
+On Mon, 2008-07-28 at 08:40 -0700, Linus Torvalds wrote:
+> 
+> On Mon, 28 Jul 2008, Benjamin Herrenschmidt wrote:
+> > 
+> > It's all in:
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+> 
+> It doesn't really seem to be. I get "Already up-to-date.", and the top 
+> commit there seems to be from July 3..
+> 
+> Forgot to push?
 
-The powerpc lpar code adds a prefered console at a very early state,
-during arch_setup. This runs even before the console setup from the
-command line and takes preference.
+No, forgot to s/paulus/benh in the path :-)
+> 
+> > (Hopefully no silly non-printable character this time, at least
+> > nothing I manage to spot with evo but who knows...)
+> 
+> Yeah, no odd whitespace here either. Not that it helps ;)
 
-This patch moves the prefered console setup into an arch_initcall which
-runs later and allows the specification of the correct console on the
-command line. The udbg console remains as boot console.
-
-There is a different problem that the code does not pick up the correct
-console because it uses a part (4) of the lpar device number (30000004)
-instead of the correct index 1.
-
-Signed-off-by: Bastian Blank <waldi@debian.org>
-
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 9235c46..626290d 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -57,6 +57,7 @@ extern void pSeries_find_serial_port(void);
- 
- 
- int vtermno;	/* virtual terminal# for udbg  */
-+static char *console_name;
- 
- #define __ALIGNED__ __attribute__((__aligned__(sizeof(long))))
- static void udbg_hvsi_putc(char c)
-@@ -232,18 +233,24 @@ void __init find_udbg_vterm(void)
- 		udbg_putc = udbg_putcLP;
- 		udbg_getc = udbg_getcLP;
- 		udbg_getc_poll = udbg_getc_pollLP;
--		add_preferred_console("hvc", termno[0] & 0xff, NULL);
-+		console_name = "hvc";
- 	} else if (of_device_is_compatible(stdout_node, "hvterm-protocol")) {
--		vtermno = termno[0];
- 		udbg_putc = udbg_hvsi_putc;
- 		udbg_getc = udbg_hvsi_getc;
- 		udbg_getc_poll = udbg_hvsi_getc_poll;
--		add_preferred_console("hvsi", termno[0] & 0xff, NULL);
-+		console_name = "hvsi";
- 	}
- out:
- 	of_node_put(stdout_node);
- }
- 
-+static void __init enable_vterm(void)
-+{
-+	if (console_name)
-+		add_preferred_console(console_name, vtermno, NULL);
-+}
-+arch_initcall(enable_vterm);
-+
- void vpa_init(int cpu)
- {
- 	int hwcpu = get_hard_smp_processor_id(cpu);
-
--- 
-Genius doesn't work on an assembly line basis.  You can't simply say,
-"Today I will be brilliant."
-		-- Kirk, "The Ultimate Computer", stardate 4731.3
+Cheers,
+Ben.
