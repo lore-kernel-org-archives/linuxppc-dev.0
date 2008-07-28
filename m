@@ -1,21 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.168])
-	by ozlabs.org (Postfix) with ESMTP id 54DF0DDE08
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id E86D3DDFCF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 27 Jul 2008 14:04:44 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so4716513wfg.15
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 Jul 2008 21:04:42 -0700 (PDT)
-Date: Sat, 26 Jul 2008 19:36:15 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Joachim Meyer <Jogi95@web.de>
-Subject: Re: XSysAce: Queue is plugged
-Message-ID: <20080727013615.GJ12191@secretlab.ca>
-References: <870343913@web.de>
+	Tue, 29 Jul 2008 03:26:45 +1000 (EST)
+Date: Mon, 28 Jul 2008 09:51:08 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Stephen Horton <SHorton@kodiaknetworks.com>
+Subject: Re: mpc744x, Marvell mv6446x kernel guidance please
+Message-ID: <20080728165108.GA22621@mag.az.mvista.com>
+References: <295C5089A56CE143B316E5F67CA99CB001C9E4BD@cowboy.inovate.inovate.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <870343913@web.de>
-Sender: Grant Likely <glikely@secretlab.ca>
+In-Reply-To: <295C5089A56CE143B316E5F67CA99CB001C9E4BD@cowboy.inovate.inovate.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,23 +23,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 10, 2008 at 04:49:21PM +0200, Joachim Meyer wrote:
-> Hi
+On Thu, Jul 10, 2008 at 10:46:49PM -0500, Stephen Horton wrote:
+> Hello folks,
 > 
-> XSysAce: Queue is plugged
-> Can someone say me what this means and how to get rid of it?
-> I use a 2.6.23 xilinx Kernel on a XUPv2p. In the Kernel config-menu are 2 sysace drivers:
-> < > Xilinx SystemACE support
-> and 
-> < > Xilinx SystemACE support (old driver)
+> In a current work project, I have inherited a compactPCI board that has
+> an mpc7447/7448 powerpc processor as well as a Marvell system
+> controller, model mv64462 (stripped down mv64460). The board has a
+> somewhat working Gentoo Linux port running on it from long ago and a
+> company far far away (kernel version 2.6.9 built using arch/ppc). To
+> prepare for an upcoming deployment, I would like to bring the OS
+> up-to-date on this board with a newer kernel (targeting Gentoo 2008),
+> but I am unsure of the approach to take. I am a software developer, but
+> normally do not work on kernel porting / board integration. I have
+> researched the arch/ppc to arch/powerpc migration, but I'm a bit
+> intimidated by the 'new' device tree symantics and other changes to the
+> stream. Here are some questions:
 > 
-> I'm using the old driver because if I try to compile with the other it ends in this:
-> 
+> 1.	Is it possible with the 2.6.24 (Gentoo 2008) kernel to still use
+> arch/ppc for this platform architecture?  I've tried to get this to
+> compile, but am having trouble with files from arch/powerpc getting
+> pulled in; then I read some comments (from I believe this forum) that
+> indicated that arch/ppc is not longer supposed to compile
 
-The new driver compiles fine in 2.6.26.  I think it is more robust than
-the old sysace driver.  See if you can port forward to a more recent
-kernel; or you could try plucking the current driver out of Linus' tree
-and trying it on your older kernel (but you won't get much support that
-way).
+arch/ppc is gone now.  You should spend you effort working in
+arch/powerpc.
 
-g.
+> 2.	Does anyone have example code for this platform architecture?
+> Any freebees I could use for creating my device tree?
+
+You can use prpmc2800 as an example.
+
+> 3.	Any advice of any kind?
+
+Its not as bad as it looks.  Just dig into it and don't give up.
+
+Mark
