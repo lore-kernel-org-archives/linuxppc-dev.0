@@ -1,23 +1,24 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CC416DDF4D
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 10:15:39 +1000 (EST)
-Date: Mon, 28 Jul 2008 10:15:33 +1000
+	by ozlabs.org (Postfix) with ESMTP id CB8ADDDFA4
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 10:16:47 +1000 (EST)
+Date: Mon, 28 Jul 2008 10:16:43 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Roland Dreier <rdreier@cisco.com>
 Subject: Re: [PATCH] isdn: mISDN HFC PCI support depends on virt_to_bus()
-Message-Id: <20080728101533.beb1250d.sfr@canb.auug.org.au>
-In-Reply-To: <20080727182709.1dac0556@lxorguk.ukuu.org.uk>
+Message-Id: <20080728101643.82a7e870.sfr@canb.auug.org.au>
+In-Reply-To: <adamyk35aoi.fsf@cisco.com>
 References: <20080728023732.090aff83.sfr@canb.auug.org.au>
 	<20080727182709.1dac0556@lxorguk.ukuu.org.uk>
+	<20080727.125604.73857337.davem@davemloft.net>
+	<adamyk35aoi.fsf@cisco.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__28_Jul_2008_10_15_33_+1000_GNfKP+ALpr7twsJe"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>,
-	Karsten Keil <kkeil@suse.de>
+	boundary="Signature=_Mon__28_Jul_2008_10_16_43_+1000_jdpyc/KrfJVT1vik"
+Cc: kkeil@suse.de, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org, torvalds@linux-foundation.org,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,44 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__28_Jul_2008_10_15_33_+1000_GNfKP+ALpr7twsJe
+--Signature=_Mon__28_Jul_2008_10_16_43_+1000_jdpyc/KrfJVT1vik
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, 27 Jul 2008 18:27:09 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrot=
-e:
->
-> On Mon, 28 Jul 2008 02:37:32 +1000 Stephen Rothwell <sfr@canb.auug.org.au=
-> wrote:
->=20
-> > On powerpc (allyesconfig build) we get this error:
-> >=20
-> > drivers/isdn/hardware/mISDN/hfcpci.c:1991: error: implicit declaration =
-of function 'virt_to_bus'
-> >=20
-> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
->=20
-> Can we please not merge new virt_to_bus users and instead fix the actual
-> code to use the right functions?
+Hi Roland,
 
-Absolutely.  But I currently just want my trees to build (I am a bear of
-little brain with simple needs :-))
+On Sun, 27 Jul 2008 13:33:49 -0700 Roland Dreier <rdreier@cisco.com> wrote:
+>
+>  > IMHO, this driver was really rushed in and that was a huge mistake.
+>  > If it had gone through linux-next we could have tidied all of this
+>  > stuff up in a less "rushed" manner.
+>=20
+> ??  This thread *is* about a build failure in linux-next.
+
+I noticed this in Linus' tree ... I did not mention linux-next.
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__28_Jul_2008_10_15_33_+1000_GNfKP+ALpr7twsJe
+--Signature=_Mon__28_Jul_2008_10_16_43_+1000_jdpyc/KrfJVT1vik
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkiND6UACgkQjjKRsyhoI8yh8gCdFxS/DySxGjWUC7Poy80amb4C
-g+0An2LFyxLwKXjyJ4X068RjUKL42yb4
-=CF5w
+iEYEARECAAYFAkiND+sACgkQjjKRsyhoI8zuYACfQ4ekFN33ugVADihvkp36bTrq
+QEgAn26mE9XGwE5SI21YkP9hM0376PjL
+=q8mI
 -----END PGP SIGNATURE-----
 
---Signature=_Mon__28_Jul_2008_10_15_33_+1000_GNfKP+ALpr7twsJe--
+--Signature=_Mon__28_Jul_2008_10_16_43_+1000_jdpyc/KrfJVT1vik--
