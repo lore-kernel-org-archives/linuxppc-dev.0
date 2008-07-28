@@ -1,23 +1,25 @@
-Return-Path: <mikpe@it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 092B4DDFAA
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 11:58:41 +1000 (EST)
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0670DDDFAA
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 12:01:09 +1000 (EST)
+Date: Sun, 27 Jul 2008 18:56:49 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 1/2] leds: make the default trigger name const
+In-Reply-To: <20080727231149.1b2508da.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0807271304350.26456@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
+	<1217019705-24244-1-git-send-email-tpiepho@freescale.com>
+	<20080727020857.GM12191@secretlab.ca>
+	<20080727231149.1b2508da.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18573.10107.853761.684410@harpo.it.uu.se>
-Date: Mon, 28 Jul 2008 03:57:15 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: David Miller <davem@davemloft.net>
-Subject: Re: mISDN still breaking the allmodconfig build...
-In-Reply-To: <20080727.180736.74131389.davem@davemloft.net>
-References: <20080727.170235.97056809.davem@davemloft.net>
-	<93120C4B-D2F4-4479-806B-2141AC3DC607@holtmann.org>
-	<20080727.180736.74131389.davem@davemloft.net>
-Cc: sfr@canb.auug.org.au, kkeil@suse.de, marcel@holtmann.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org, torvalds@linux-foundation.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Richard Purdie <rpurdie@rpsys.net>, Trent Piepho <tpiepho@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Miller writes:
- > From: Marcel Holtmann <marcel@holtmann.org>
- > Date: Mon, 28 Jul 2008 03:03:04 +0200
- > 
- > > > More fallout from the premature mISDN driver merge:
- > > >
- > > > drivers/isdn/hardware/mISDN/hfcmulti.c:5255:2: error: #error "not  
- > > > running on big endian machines now"
- > > 
- > > is that only the HFC driver or the whole mISDN stack?
- > > 
- > > I know that the two old ISDN stacks where really bad on big endian,  
- > > but my assumption was that we did sort this out in the end.
- > 
- > One of the two mISDN drivers uses the deprecated virt_to_bus()
- > interface for handling DMA addresses (that doesn't even work on many
- > x86 systems these days) and the other mISDN driver gives the above
- > big-endian compile time error.
- > 
- > In short, this driver was not ready for merging at all.
+On Sun, 27 Jul 2008, Stephen Rothwell wrote:
+> On Sat, 26 Jul 2008 20:08:57 -0600 Grant Likely <grant.likely@secretlab.ca> wrote:
+>> On Fri, Jul 25, 2008 at 02:01:44PM -0700, Trent Piepho wrote:
+>>> The default_trigger fields of struct gpio_led and thus struct led_classdev
+>>> are pretty much always assigned from a string literal, which means the
+>>> string can't be modified.  Which is fine, since there is no reason to
+>>> modify the string and in fact it never is.
+>>>
+>>> But they should be marked const to prevent such code from being added, to
+>>> prevent warnings if -Wwrite-strings is used and when assigned from a
+>>> constant string other than a string literal (which produces a warning under
+>>> current kernel compiler flags), and for general good coding practices.
+>>>
+>>> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+>> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>
+> I would ack this as well, except I am not sure what tree this patch is
+> against.  In the current powerpc next tree,
 
-Why on earth does a generic (I hope) protocol driver (some ISDN
-thingy in this case) care about endianess at all?
+It was against powerpc next from Jul 22nd, current at the time I made the
+patch.  It looks like that file has changed in the last few days.  There is a
+patch from Anton Vorontsov, "leds:  mark led_classdev.default_trigger as
+const", which adds const to one of the structs I modified, but doesn't get the
+other one (struct gpio_led).
 
-Or has things come to a "the world's an x86" ("the world's a VAX" for
-old-timers but add 25+ years or so) situation where the majority of
-coders don't even consider that machines might be different from what
-they use? If so, a deep sigh of sadness.
+Then another patch from Nate Case added a new LED chip driver, and the
+platform data for this driver was added as "generic led platform data", which
+I don't entirely agree with.  And this new struct didn't make default_trigger
+const, probably because it was just copied from the gpio led platform data
+with some fields removed (so it's not really that generic then, is it?).
 
-(Not that I prefer a particular endianess. My point being that coders
-shouldn't make endianess assumptions unless they're really^3 important.)>
+I'll send an updated patch for current powerpc next.
