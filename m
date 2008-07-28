@@ -1,24 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 34871DDFF8
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 04:02:07 +1000 (EST)
-Date: Mon, 28 Jul 2008 22:02:04 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/2] leds: Support OpenFirmware led bindings
-Message-ID: <20080728180204.GA13190@polina.dev.rtsoft.ru>
-References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
-	<1217019705-24244-2-git-send-email-tpiepho@freescale.com>
-	<20080727022116.GN12191@secretlab.ca>
-	<Pine.LNX.4.64.0807272159500.26456@t2.domain.actdsltmp>
-	<20080728170914.GA21265@secretlab.ca>
+Return-Path: <glikely@secretlab.ca>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.172])
+	by ozlabs.org (Postfix) with ESMTP id 2F528DE410
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 04:02:45 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so5923400wfg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 11:02:44 -0700 (PDT)
+Date: Mon, 28 Jul 2008 12:02:41 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: "Sparks, Sam" <SSparks@aclaratech.com>
+Subject: Re: mpc8349-mITX DTB load failure
+Message-ID: <20080728180241.GD21534@secretlab.ca>
+References: <6011A7C9CD0EE74792C3ED2A8355608634213E@mail.twacs.com>
+	<20080728171634.GB21265@secretlab.ca>
+	<6011A7C9CD0EE74792C3ED2A8355608634214C@mail.twacs.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080728170914.GA21265@secretlab.ca>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
-	Trent Piepho <tpiepho@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <6011A7C9CD0EE74792C3ED2A8355608634214C@mail.twacs.com>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,65 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 28, 2008 at 11:09:14AM -0600, Grant Likely wrote:
-[...]
-> > >> +- function :  (optional) This parameter, if present, is a string
-> > >> +  defining the function of the LED.  It can be used to put the LED
-> > >> +  under software control, e.g. Linux LED triggers like "heartbeat",
-> > >> +  "ide-disk", and "timer".  Or it could be used to attach a hardware
-> > >> +  signal to the LED, e.g. a SoC that can configured to put a SATA
-> > >> +  activity signal on a GPIO line.
-> > >
-> > > This makes me nervous.  It exposes Linux internal implementation details
-> > > into the device tree data.  If you want to have a property that
-> > > describes the LED usage, then the possible values and meanings should be
-> > > documented here.
-> > 
-> > Should it be a linux specific property then?  I could list all the current
-> > linux triggers, but enumerating every possible function someone might want
-> > to assign to an LED seems hopeless.
-> 
-> I don't like adding Linux specific properties to the device tree if at
-> all possible, and I really don't like encoding Linux internal details
-> (like trigger names).  They can change between kernel versions and
-> breaking compatibility with older device trees is strongly avoided.
-> That's why so much effort goes into getting bindings correct the first
-> time.
-> 
-> I'd rather see the device tree provide 'hints' toward the expected usage
-> and if a platform needs something specific, then the platform specific
-> code should setup the trigger.
-> 
-> Regardless, any hints provided by the binding must be documented.  In
-> most cases the gpio-leds driver should be able to figure out which trigger
-> to bind without platform code intervention.
+On Mon, Jul 28, 2008 at 12:49:19PM -0500, Sparks, Sam wrote:
+> No luck there, either. I ran into a issue with space a year ago, and was
+> getting the FDT_ERR_NOSPACE error until I added the -S 0x3000 option.
+> This looks like something completely different.
 
-Maybe we can encode leds into devices themselves, via phandles?
+Does your dts source file already have a chosen node?  There had been an
+issue where u-boot cacks if chosen was pre-created.
 
-E.g.
-
-sata@101 {
-	compatible = "fsl,sata";
-	leds = <&red_led>;
-};
-
-And then the OF GPIO LEDs driver could do something like:
-
-char *ide_disk_trigger_compatibles[] = {
-	"fsl,sata",
-	"ide-generic",
-	...
-};
-
-for_each_node_with_leds_property(node, led_phandle) {
-	if (if_ide_disk_compatible(node)) {
-		struct gpio_led *led = phandle_to_led(led_phandle);
-
-		led->default_trigger = "ide-disk";
-	}
-}
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+g.
