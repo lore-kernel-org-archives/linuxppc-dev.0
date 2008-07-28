@@ -1,23 +1,23 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 77F77DDF99
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 10:23:45 +1000 (EST)
-Date: Mon, 28 Jul 2008 10:23:38 +1000
+	by ozlabs.org (Postfix) with ESMTP id EDB84DDFE6
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 10:32:59 +1000 (EST)
+Date: Mon, 28 Jul 2008 10:32:53 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH] isdn: mISDN HFC PCI support depends on virt_to_bus()
-Message-Id: <20080728102338.14d1c66e.sfr@canb.auug.org.au>
-In-Reply-To: <20080727133918.72cbb127@lappy.seanm.ca>
-References: <20080728023732.090aff83.sfr@canb.auug.org.au>
-	<20080727133918.72cbb127@lappy.seanm.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] powerpc/ibmveth: fix multiple errors with
+	dma_mapping_error conversion
+Message-Id: <20080728103253.5256e6c0.sfr@canb.auug.org.au>
+In-Reply-To: <20080727122414.cac4e336.akpm@linux-foundation.org>
+References: <20080728021424.40cf66bc.sfr@canb.auug.org.au>
+	<20080727122414.cac4e336.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__28_Jul_2008_10_23_38_+1000_IH10mwTz9sOA4CBZ"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>,
-	Karsten Keil <kkeil@suse.de>
+	boundary="Signature=_Mon__28_Jul_2008_10_32_53_+1000_0JQ_/qAiFWNDz46v"
+Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,49 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__28_Jul_2008_10_23_38_+1000_IH10mwTz9sOA4CBZ
+--Signature=_Mon__28_Jul_2008_10_32_53_+1000_0JQ_/qAiFWNDz46v
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sean,
+Hi Andrew,
 
-On Sun, 27 Jul 2008 13:39:18 -0400 Sean MacLennan <smaclennan@pikatech.com>=
- wrote:
+On Sun, 27 Jul 2008 12:24:14 -0700 Andrew Morton <akpm@linux-foundation.org=
+> wrote:
 >
-> On Mon, 28 Jul 2008 02:37:32 +1000
-> "Stephen Rothwell" <sfr@canb.auug.org.au> wrote:
+> On Mon, 28 Jul 2008 02:14:24 +1000 Stephen Rothwell <sfr@canb.auug.org.au=
+> wrote:
 >=20
-> > On powerpc (allyesconfig build) we get this error:
-> >=20
-> > drivers/isdn/hardware/mISDN/hfcpci.c:1991: error: implicit
-> > declaration of function 'virt_to_bus'
+> > The addition of an argument to dma_mapping_error() in commit
+> > 8d8bb39b9eba32dd70e87fd5ad5c5dd4ba118e06 "dma-mapping: add the device
+> > argument to dma_mapping_error()" left a bit of fallout:
 >=20
-> When did mISDN make it into the kernel? And which kernel tree is it in?
-> I don't see it in the Linux next tree....
+> Yeah, sorry, that patch was a horror - I fixed it perhaps ten times.  I
+> think people were madly adding new dma_mapping_error() calls while we
+> were trying to maintain it as well.
+>=20
+> It should have been dome as a two-stage conversion.
 
-Its not in linux-next (will be today).  It went straight into Linus' tree
-late last week.
+Yes, indeed (my new favourite word :-))
 
-> I am very interested since we are trying to get mISDN working on the
-> Warp. There was no notice that they got 2.6.26 compiling.
-
-It won't even build on powerpc64, powercp32 should at least build.
+I hope that we all can discuss procedures for API changes at the Kernel
+Summit ...
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__28_Jul_2008_10_23_38_+1000_IH10mwTz9sOA4CBZ
+--Signature=_Mon__28_Jul_2008_10_32_53_+1000_0JQ_/qAiFWNDz46v
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkiNEYoACgkQjjKRsyhoI8xtfwCgsaSiR9wMPR49ErCVExoXj6ic
-1mAAn1k/a4SI8UXlbREKZd+2tkQNWaAa
-=5rO6
+iEYEARECAAYFAkiNE7UACgkQjjKRsyhoI8zTcgCePJJdfrTRzlwHIQkh2vwNv3Ax
+AxUAn0VftUIy32jvnG+ULTZqvOc6dmi8
+=9/z9
 -----END PGP SIGNATURE-----
 
---Signature=_Mon__28_Jul_2008_10_23_38_+1000_IH10mwTz9sOA4CBZ--
+--Signature=_Mon__28_Jul_2008_10_32_53_+1000_0JQ_/qAiFWNDz46v--
