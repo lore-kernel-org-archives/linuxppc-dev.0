@@ -1,23 +1,19 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 129B1DE01D
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 19:53:12 +1000 (EST)
-Date: Mon, 28 Jul 2008 13:53:09 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Trent Piepho <tpiepho@freescale.com>
-Subject: Re: [PATCH 1/2] leds: make the default trigger name const
-Message-ID: <20080728095309.GA31809@polina.dev.rtsoft.ru>
-References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
-	<1217019705-24244-1-git-send-email-tpiepho@freescale.com>
-	<20080727020857.GM12191@secretlab.ca>
-	<20080727231149.1b2508da.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0807271304350.26456@t2.domain.actdsltmp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <Pine.LNX.4.64.0807271304350.26456@t2.domain.actdsltmp>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 836B2DE02A
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 19:58:51 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 28 Jul 2008 19:58:37 +1000
+Message-Id: <1217239117.11188.187.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,36 +23,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jul 27, 2008 at 06:56:49PM -0700, Trent Piepho wrote:
-> On Sun, 27 Jul 2008, Stephen Rothwell wrote:
-> > On Sat, 26 Jul 2008 20:08:57 -0600 Grant Likely <grant.likely@secretlab.ca> wrote:
-> >> On Fri, Jul 25, 2008 at 02:01:44PM -0700, Trent Piepho wrote:
-> >>> The default_trigger fields of struct gpio_led and thus struct led_classdev
-> >>> are pretty much always assigned from a string literal, which means the
-> >>> string can't be modified.  Which is fine, since there is no reason to
-> >>> modify the string and in fact it never is.
-> >>>
-> >>> But they should be marked const to prevent such code from being added, to
-> >>> prevent warnings if -Wwrite-strings is used and when assigned from a
-> >>> constant string other than a string literal (which produces a warning under
-> >>> current kernel compiler flags), and for general good coding practices.
-> >>>
-> >>> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> >> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> >
-> > I would ack this as well, except I am not sure what tree this patch is
-> > against.  In the current powerpc next tree,
-> 
-> It was against powerpc next from Jul 22nd, current at the time I made the
-> patch.  It looks like that file has changed in the last few days.  There is a
-> patch from Anton Vorontsov, "leds:  mark led_classdev.default_trigger as
-> const", which adds const to one of the structs I modified, but doesn't get the
-> other one (struct gpio_led).
+Hi Linus !
 
-Yes, I posted the patch for my version of OF GPIO LEDs, which didn't use
-struct gpio_led's default_trigger.
+I lied :-) There is a couple more features coming in. Mostly Roland
+tracehook stuff which came in a bit late but since the generic bits
+are in and he had some powerpc support ready, we felt like it was
+something worth having. There's also some SPI bits from Grant who
+were around but took some time to be fully acked and some stuff to
+expose our cache topology through sysfs that we wanted but took a
+bit longer to finish than expected.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+The rest is mostly fixes.
+
+It's all in:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+
+(Hopefully no silly non-printable character this time, at least
+nothing I manage to spot with evo but who knows...)
+
+Cheers,
+Ben.
+
+ arch/powerpc/Kconfig                       |    1 
+ arch/powerpc/kernel/entry_32.S             |   17 +-
+ arch/powerpc/kernel/entry_64.S             |   10 +
+ arch/powerpc/kernel/legacy_serial.c        |   44 ++--
+ arch/powerpc/kernel/process.c              |    8 -
+ arch/powerpc/kernel/prom_init.c            |   39 ----
+ arch/powerpc/kernel/ptrace.c               |   54 ++---
+ arch/powerpc/kernel/setup-common.c         |   24 --
+ arch/powerpc/kernel/setup_64.c             |    3 
+ arch/powerpc/kernel/signal.c               |   23 ++
+ arch/powerpc/kernel/smp.c                  |  119 ++++++++++-
+ arch/powerpc/kernel/stacktrace.c           |    1 
+ arch/powerpc/kernel/sysfs.c                |  311 ++++++++++++++++++++++++++++
+ arch/powerpc/kernel/vio.c                  |    6 -
+ arch/powerpc/mm/hugetlbpage.c              |    9 +
+ arch/powerpc/platforms/powermac/setup.c    |   72 ++++++
+ arch/powerpc/platforms/powermac/udbg_scc.c |   12 +
+ arch/powerpc/platforms/pseries/cmm.c       |    8 +
+ drivers/net/ibmveth.c                      |    8 -
+ drivers/of/Kconfig                         |    6 +
+ drivers/of/Makefile                        |    1 
+ drivers/of/base.c                          |   88 ++++++++
+ drivers/of/of_i2c.c                        |   64 ------
+ drivers/of/of_spi.c                        |   93 ++++++++
+ drivers/spi/spi.c                          |  139 +++++++++----
+ include/asm-powerpc/pgtable-4k.h           |    2 
+ include/asm-powerpc/pgtable-64k.h          |    2 
+ include/asm-powerpc/pgtable-ppc32.h        |    3 
+ include/asm-powerpc/pgtable-ppc64.h        |    4 
+ include/asm-powerpc/ptrace.h               |    1 
+ include/asm-powerpc/signal.h               |    3 
+ include/asm-powerpc/smp.h                  |    2 
+ include/asm-powerpc/syscall.h              |   84 ++++++++
+ include/asm-powerpc/thread_info.h          |    5 
+ include/asm-powerpc/topology.h             |    2 
+ include/linux/of.h                         |    1 
+ include/linux/of_spi.h                     |   18 ++
+ include/linux/spi/spi.h                    |   12 +
+ 38 files changed, 1039 insertions(+), 260 deletions(-)
+ create mode 100644 drivers/of/of_spi.c
+ create mode 100644 include/asm-powerpc/syscall.h
+ create mode 100644 include/linux/of_spi.h
+
+Benjamin Herrenschmidt (3):
+      powerpc/powermac: Use sane default baudrate for SCC debugging
+      powerpc/powermac: Fixup default serial port device for pmac_zilog
+      powerpc: Disable 64K hugetlb support when doing 64K SPU mappings
+
+Grant Likely (3):
+      of: adapt of_find_i2c_driver() to be usable by SPI also
+      spi: split up spi_new_device() to allow two stage registration.
+      spi: Add OF binding support for SPI busses
+
+Huang Weiyi (1):
+      powerpc: Removed duplicated include in stacktrace.c
+
+Kumar Gala (2):
+      powerpc/booke: Clean up the hardware watchpoint support
+      powerpc: Fix 8xx build failure
+
+Nathan Lynch (7):
+      powerpc: Fix vio build warnings
+      powerpc: kill useless SMT code in prom_hold_cpus
+      powerpc: register_cpu_online should be __cpuinit
+      powerpc: Update cpu_sibling_maps dynamically
+      powerpc: Make core sibling information available to userspace
+      powerpc: Make core id information available to userspace
+      powerpc: Show processor cache information in sysfs
+
+Nick Piggin (1):
+      powerpc/mm: Implement _PAGE_SPECIAL & pte_special() for 64-bit
+
+Roland McGrath (5):
+      powerpc: Call tracehook_signal_handler() when setting up signal frames
+      powerpc: Make syscall tracing use tracehook.h helpers
+      powerpc: Add asm/syscall.h with the tracehook entry points
+      powerpc: Add TIF_NOTIFY_RESUME support for tracehook
+      powerpc: Enable tracehook for the architecture
+
+Stephen Rothwell (3):
+      powerpc/pseries: Fix CMO sysdev attribute API change fallout
+      ibmveth: Fix multiple errors with dma_mapping_error conversion
+      powerpc/vio: More fallout from dma_mapping_error API change
