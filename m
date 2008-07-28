@@ -1,19 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 72D0ADDF61
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 11:30:05 +1000 (EST)
-Subject: ide pmac breakage
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Mon, 28 Jul 2008 11:29:56 +1000
-Message-Id: <1217208596.11188.144.camel@pasglop>
-Mime-Version: 1.0
-Cc: list linux-ide <linux-ide@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <marcel@holtmann.org>
+Received: from mail.holtmann.org (senator.holtmann.net [87.106.208.187])
+	by ozlabs.org (Postfix) with ESMTP id EC554DDFC1
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 11:13:26 +1000 (EST)
+Message-Id: <7949EA87-4340-4353-AFC9-79A718B95DF0@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20080727.180736.74131389.davem@davemloft.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v928.1)
+Subject: Re: mISDN still breaking the allmodconfig build...
+Date: Mon, 28 Jul 2008 03:13:21 +0200
+References: <20080727.170235.97056809.davem@davemloft.net>
+	<93120C4B-D2F4-4479-806B-2141AC3DC607@holtmann.org>
+	<20080727.180736.74131389.davem@davemloft.net>
+Cc: sfr@canb.auug.org.au, kkeil@suse.de, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	torvalds@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,52 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The current ide-pmac upstream is broken. It calls
-media_bay_set_ide_infos() with an uninitialized "hwif" argument.
+Hi Dave,
 
-It's not a trivial mistake, there's a chicken-and-egg problem in the
-init code in there.
+>>> More fallout from the premature mISDN driver merge:
+>>>
+>>> drivers/isdn/hardware/mISDN/hfcmulti.c:5255:2: error: #error "not
+>>> running on big endian machines now"
+>>
+>> is that only the HFC driver or the whole mISDN stack?
+>>
+>> I know that the two old ISDN stacks where really bad on big endian,
+>> but my assumption was that we did sort this out in the end.
+>
+> One of the two mISDN drivers uses the deprecated virt_to_bus()
+> interface for handling DMA addresses (that doesn't even work on many
+> x86 systems these days) and the other mISDN driver gives the above
+> big-endian compile time error.
+>
+> In short, this driver was not ready for merging at all.
 
-I've locally fixed it with this patch that i'll merge via the powerpc
-tree unless you have an objection.
+I am not defending it and agree that this driver should have had at  
+least one test run in linux-next. However mISDN is a whole ISDN stack.  
+So does mISDN has an issue too or do we only have a really broken  
+driver. Karsten?
 
-However, the machine crashes when removing the media-bay CD-ROM drive.
+Regards
 
-Crash appears to be a NULL deref, possibly in elv_may_queue() though
-I don't have a clean backtrace yet, working on it...
-
-Cheers,
-Ben.
-
-diff --git a/drivers/ide/ppc/pmac.c b/drivers/ide/ppc/pmac.c
-index c521bf6..fa2be26 100644
---- a/drivers/ide/ppc/pmac.c
-+++ b/drivers/ide/ppc/pmac.c
-@@ -1086,6 +1086,11 @@ static int __devinit pmac_ide_setup_device(pmac_ide_hwif_t *pmif, hw_regs_t *hw)
- 	/* Make sure we have sane timings */
- 	sanitize_timings(pmif);
- 
-+	host = ide_host_alloc(&d, hws);
-+	if (host == NULL)
-+		return -ENOMEM;
-+	hwif = host->ports[0];
-+
- #ifndef CONFIG_PPC64
- 	/* XXX FIXME: Media bay stuff need re-organizing */
- 	if (np->parent && np->parent->name
-@@ -1119,11 +1124,11 @@ static int __devinit pmac_ide_setup_device(pmac_ide_hwif_t *pmif, hw_regs_t *hw)
- 			 pmif->mdev ? "macio" : "PCI", pmif->aapl_bus_id,
- 			 pmif->mediabay ? " (mediabay)" : "", hw->irq);
- 
--	rc = ide_host_add(&d, hws, &host);
--	if (rc)
-+	rc = ide_host_register(host, &d, hws);
-+	if (rc) {
-+		ide_host_free(host);
- 		return rc;
--
--	hwif = host->ports[0];
-+	}
- 
- 	return 0;
- }
+Marcel
