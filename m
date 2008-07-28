@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D1C7DDDEEA
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 16:35:18 +1000 (EST)
-Subject: Re: [PATCH 0/6] powerpc topology updates
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <1217136295-18693-1-git-send-email-ntl@pobox.com>
-References: <1217136295-18693-1-git-send-email-ntl@pobox.com>
-Content-Type: text/plain
-Date: Mon, 28 Jul 2008 16:34:57 +1000
-Message-Id: <1217226897.11188.172.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <9e4733910807271500l23fd2b12n940197474a5291df@mail.gmail.com>
+References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
+	<20080727001119.GB12191@secretlab.ca>
+	<9e4733910807262205l2db8d662u9dd2e517282686f8@mail.gmail.com>
+	<fa686aa40807262235l47bff0bfi15d86a6e171d6775@mail.gmail.com>
+	<9e4733910807270721h5777bb80u9f3d25413a62883c@mail.gmail.com>
+	<77a246d166f3eafb4d6a5d899ff86945@kernel.crashing.org>
+	<9e4733910807271500l23fd2b12n940197474a5291df@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <043095cdcd52bb7af5cf4373b249b302@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
+Date: Mon, 28 Jul 2008 09:47:21 +0200
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2008-07-27 at 00:24 -0500, Nathan Lynch wrote:
-> This series consists of a couple of cleanups and a few feature
-> additions, all of which are more or less related to system topology
-> (threads, cores, caches, sysfs...)  These are independent of
-> each other except for 4 and 5 (core sibling and core id info).
-> 
-> I'd say the highlights are the last three patches, which add core and
-> cache information to sysfs.  Here is some example output with the
-> patches applied:
+>>  A reasonable "compatible" value would be something like
+>> "serial-eeprom-24c32".
+>>  You can go a little bit more generic than that, if you write up in
+>>  your binding how the driver should figure out the device size and
+>>  the protocol used.
+>
+> Matching on "serial-eeprom-24c32" requires me to convince the at24
+> authors to add that string as an alias binding for their driver.
 
-Applied with minor changes.
+No, it requires the IIC subsystem to get fixed and not use OF
+"compatible" values as module alias names.
 
-I made cpu_to_l2cache() use of_find_device_by_phandle() which should
-work as well on pseries and should have the added advantage of working
-on others too (ie. it will use device_node->linux_phandle to do the
-compare, which is setup with the base phandle and overriden by the
-ibm,phandle if there is one).
+> How
+> about "serial-eeprom,24c32" or "generic,24x32"?
 
-I also did a few cleanups of printk's and error checking.
+Neither "serial-eeprom" nor "generic" is the name of a vendor, so
+no.  The comma has a well-defined meaning.  Why would a comma be
+easier than a dash for your device matching code, anyway?
 
-Cheers,
-Ben.
+
+Segher
