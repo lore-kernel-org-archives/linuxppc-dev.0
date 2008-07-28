@@ -2,19 +2,15 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4B40EDDF12
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 22:54:32 +1000 (EST)
-Message-Id: <A87B5E3B-45CE-4EED-B998-41DE34119F99@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 14B24DE46C
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 22:54:38 +1000 (EST)
+Date: Mon, 28 Jul 2008 07:54:34 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080611230431.GC21351@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 3/4] powerpc: rtc_cmos_setup: assign interrupts only if
-	there is i8259 PIC
-Date: Mon, 28 Jul 2008 07:54:27 -0500
-References: <20080611230250.GA13412@polina.dev.rtsoft.ru>
-	<20080611230431.GC21351@polina.dev.rtsoft.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull from 'powerpc-next' branch (for 2.6.27)
+Message-ID: <Pine.LNX.4.64.0807280752420.22887@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,29 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Please pull from 'powerpc-next' branch of
 
-On Jun 11, 2008, at 6:04 PM, Anton Vorontsov wrote:
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git powerpc-next
 
-> i8259 PIC is disabled on MPC8610HPCD boards, thus currently rtc-cmos
-> driver fails to probe.
->
-> To fix the issue, we lookup the device tree for "chrp,iic" and
-> "pnpPNP,000" compatible devices, and if not found we do not assign RTC
-> IRQ and assuming that i8259 was disabled.
->
-> Though this patch fixes RTC on some boards (and surely should not  
-> break
-> any other), the whole approach is still broken. We can't easily fix  
-> this
-> though, because old device trees do not specify i8259 interrupts for  
-> the
-> cmos rtc node.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/sysdev/rtc_cmos_setup.c |   23 +++++++++++++++++------
-> 1 files changed, 17 insertions(+), 6 deletions(-)
+to receive the following updates:
 
-applied.
+Sorry for taking so long on these.  Being at OLS limited patch applying
+ability last week.  These are some CPM related patches that have been on
+the list for some time and a fix to the RTC cmos detection need for the
+mpc8610ds board.
 
 - k
+
+ Documentation/powerpc/dts-bindings/fsl/cpm_qe/serial.txt |   11
+ arch/powerpc/platforms/8xx/Kconfig                       |   10
+ arch/powerpc/platforms/Kconfig                           |    2
+ arch/powerpc/sysdev/cpm1.c                               |  267 ++++++++++++++-
+ arch/powerpc/sysdev/cpm2.c                               |   11
+ arch/powerpc/sysdev/cpm_common.c                         |  123 ++++++
+ arch/powerpc/sysdev/rtc_cmos_setup.c                     |   23 -
+ drivers/serial/cpm_uart/cpm_uart.h                       |   11
+ drivers/serial/cpm_uart/cpm_uart_core.c                  |   66 +++
+ include/asm-powerpc/cpm.h                                |    3
+ 10 files changed, 506 insertions(+), 21 deletions(-)
+
+Anton Vorontsov (1):
+      powerpc: rtc_cmos_setup: assign interrupts only if there is i8259 PIC
+
+Jochen Friedrich (1):
+      powerpc: implement GPIO LIB API on CPM1 Freescale SoC.
+
+Laurent Pinchart (3):
+      cpm2: Implement GPIO LIB API on CPM2 Freescale SoC.
+      cpm_uart: Modem control lines support
+      cpm_uart: Add generic clock API support to set baudrates
