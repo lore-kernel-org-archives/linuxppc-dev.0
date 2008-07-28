@@ -1,19 +1,20 @@
-Return-Path: <SSparks@aclaratech.com>
-Received: from SG2EHSOBE004.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 157D4DEE82
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 04:18:16 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: mpc8349-mITX DTB load failure
-Date: Mon, 28 Jul 2008 13:16:50 -0500
-Message-ID: <6011A7C9CD0EE74792C3ED2A8355608634214E@mail.twacs.com>
-In-Reply-To: <20080728180241.GD21534@secretlab.ca>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1DFFEDE4AC
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 04:31:03 +1000 (EST)
+Date: Mon, 28 Jul 2008 13:30:43 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: "Sparks, Sam" <SSparks@aclaratech.com>
+Subject: Re: mpc8349-mITX DTB load failure
+Message-Id: <20080728133043.563a691c.kim.phillips@freescale.com>
+In-Reply-To: <6011A7C9CD0EE74792C3ED2A8355608634213E@mail.twacs.com>
 References: <6011A7C9CD0EE74792C3ED2A8355608634213E@mail.twacs.com>
-	<20080728171634.GB21265@secretlab.ca>
-	<6011A7C9CD0EE74792C3ED2A8355608634214C@mail.twacs.com>
-	<20080728180241.GD21534@secretlab.ca>
-From: "Sparks, Sam" <SSparks@aclaratech.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,11 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> From: Grant Likely
-> Sent: Monday, July 28, 2008 1:03 PM
-> Does your dts source file already have a chosen node?  There=20
-> had been an issue where u-boot cacks if chosen was pre-created.
+On Mon, 28 Jul 2008 11:10:47 -0500
+"Sparks, Sam" <SSparks@aclaratech.com> wrote:
 
-Nope, there is no reference to "chosen" in the dts
+> ## Booting kernel from Legacy Image at 01001000 ...
 
---Sam
+> ## Flattened Device Tree blob at 01000000
+
+so the dtb is being loaded only 0x1000 bytes from the kernel, yet it's
+probably bigger than that.  Can you try different load addresses,
+preferably with the two images at least 0x3000 bytes apart?
+
+Kim
