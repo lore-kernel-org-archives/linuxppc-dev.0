@@ -4,26 +4,23 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 95CE5DDDFF
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 13:06:44 +1000 (EST)
-Date: Sun, 27 Jul 2008 20:04:26 -0700
+	by ozlabs.org (Postfix) with ESMTPS id 2CEB7DDF77
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 13:18:34 +1000 (EST)
+Date: Sun, 27 Jul 2008 20:17:35 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: James Morris <jmorris@namei.org>
-Subject: Re: [PATCH] powerpc/ibmveth: fix multiple errors with
-	dma_mapping_error conversion
-Message-Id: <20080727200426.c290f14d.akpm@linux-foundation.org>
-In-Reply-To: <Xine.LNX.4.64.0807281101310.19550@us.intercode.com.au>
-References: <20080728021424.40cf66bc.sfr@canb.auug.org.au>
-	<20080727122414.cac4e336.akpm@linux-foundation.org>
-	<20080728103253.5256e6c0.sfr@canb.auug.org.au>
-	<Xine.LNX.4.64.0807281101310.19550@us.intercode.com.au>
+To: David Gibson <dwg@au1.ibm.com>
+Subject: Re: gigantci pages patches
+Message-Id: <20080727201735.0b141250.akpm@linux-foundation.org>
+In-Reply-To: <20080728010757.GF11318@yookeroo.seuss>
+References: <20080711174515.1aacf83b.sfr@canb.auug.org.au>
+	<20080722033417.GD14888@yookeroo.seuss>
+	<4886418C.9050704@linux.vnet.ibm.com>
+	<20080728010757.GF11318@yookeroo.seuss>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Jeff Garzik <jeff@garzik.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	ppc-dev <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, FUJITA
+Cc: npiggin@suse.de, Stephen Rothwell <sfr@canb.auug.org.au>,
+	Jon Tollefson <kniht@linux.vnet.ibm.com>,
+	ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,45 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 28 Jul 2008 11:07:40 +1000 (EST) James Morris <jmorris@namei.org> wrote:
+On Mon, 28 Jul 2008 11:07:57 +1000 David Gibson <dwg@au1.ibm.com> wrote:
 
-> On Mon, 28 Jul 2008, Stephen Rothwell wrote:
+> On Tue, Jul 22, 2008 at 03:22:36PM -0500, Jon Tollefson wrote:
+> > David Gibson wrote:
+> > > On Fri, Jul 11, 2008 at 05:45:15PM +1000, Stephen Rothwell wrote:
+> > >   
+> > >> Hi all,
+> > >>
+> > >> Could people take one last look at these patches and if there are no
+> > >> issues, please send Ack-bys to Andrew who will push them to Linus for
+> > >> 2.6.27.
+> > >>
+> > >> [PATCH 1/6 v2] allow arch specific function for allocating gigantic pages
+> > >> http://patchwork.ozlabs.org/linuxppc/patch?&id=18437
+> > >> Patch: [PATCH 2/6 v2] powerpc: function for allocating gigantic pages
+> > >> http://patchwork.ozlabs.org/linuxppc/patch?&id=18438
+> > >> Patch: [PATCH 3/6 v2] powerpc: scan device tree and save gigantic page locations
+> > >> http://patchwork.ozlabs.org/linuxppc/patch?&id=18439
+> > >> Patch: [PATCH 4/6 v2] powerpc: define page support for 16G pages
+> > >> http://patchwork.ozlabs.org/linuxppc/patch?&id=18440
+> > >> Patch: [PATCH 5/6 v2] check for overflow
+> > >> http://patchwork.ozlabs.org/linuxppc/patch?&id=18441
+> > >> Patch: [PATCH 6/6] powerpc: support multiple huge page sizes
+> > >> http://patchwork.ozlabs.org/linuxppc/patch?&id=18442
+> > >>     
+> > >
+> > > Sorry, I should have looked at these properly when they went past in
+> > > May, but obviously I missed them.
+> > >
+> > > They mostly look ok.  I'm a bit confused on 2/6 though - it seems the
+> > > new powerpc alloc_bootmem_huge_page() function is specific to the 16G
+> > > gigantic pages.  But can't that function also get called for the
+> > > normal 16M hugepages depending on how the hugepage pool is
+> > > initialized.
+> > >
+> > > Or am I missing something (wouldn't surprise me given my brain's
+> > > sluggishness today)?
+> > >   
+> > The alloc_bootmem_huge_page() function is only called for pages >=
+> > MAX_ORDER.  The 16M pages are always allocated within the generic
+> > hugetlbfs code with alloc_pages_node().
 > 
-> > I hope that we all can discuss procedures for API changes at the Kernel
-> > Summit ...
+> Ah, ok.  Well, in that case:
 > 
-> "all" as in, whoever was invited (the only transparent aspect of was a 
-> silly count of # of commits for the initial shortlist), or was on the 
-> committee, or bought seats via sponsorship.
+> Acked-by: David Gibson <dwg@au1.ibm.com>
 > 
+> for the series
 
-Yeah.
+OK.  Although I'm no longer sure what patches "for the series" refers to.
 
-We do all our work via email.  If there's some particular issue that we
-feel cannot be resolved effectively via email then I'd really like to
-know what that issue is, and why.
+I am currently retaining
 
-> - James (co- maintainer/author of several kernel subsystems over 8+ years 
-> and apparently not invited, because ?)
+powerpc-implement-pte_special.patch
+powerpc-implement-pte_special-update.patch
+powerpc-lockless-get_user_pages.patch
 
-- Andrew, who asked everyone two years ago whether we can justify
-annual kernel summits, and who still awaits a convincing answer.
+and frankly I'm unsure what the status is.  I have a note that benh had
+concerns about powerpc-lockless-get_user_pages.patch, but iirc they
+were waffly and vague ;)
 
-
-But for this particular problem I don't think there's much to be
-discussed.  It should have been implemented as
-s/dma_mapping_error/dma_mapping_error2/g with eventual removal of
-dma_mapping_error().  But I failed to appreciate how many
-dma_mapping_error()s there are and I failed to predict how many _new_
-dma_mapping_error()s would turn up across the -rc phase.  So I suck,
-what's new?
-
-
-otoh, I don't reeeeeeealy worry too much about compile errors during
-the merge window.  People get all hot under the collar and shout at
-each other, but they're trivial to find (the compiler tells you!) and
-almost always trivial to fix and they are almost always trivially
-worked around via config if you hit one during a bisect.  Shrug, fix
-them and move on.
-
-It's the runtime errors which are far, far, far more of a problem for us.
+So I'm thinking I'll stick these patches onto my send-to-ben list.
