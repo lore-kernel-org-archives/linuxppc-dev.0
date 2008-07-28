@@ -1,21 +1,27 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1DFFEDE4AC
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 04:31:03 +1000 (EST)
-Date: Mon, 28 Jul 2008 13:30:43 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: "Sparks, Sam" <SSparks@aclaratech.com>
-Subject: Re: mpc8349-mITX DTB load failure
-Message-Id: <20080728133043.563a691c.kim.phillips@freescale.com>
-In-Reply-To: <6011A7C9CD0EE74792C3ED2A8355608634213E@mail.twacs.com>
-References: <6011A7C9CD0EE74792C3ED2A8355608634213E@mail.twacs.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id BEC3ADE868
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 04:31:19 +1000 (EST)
+Date: Mon, 28 Jul 2008 11:26:28 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 2/2] leds: Support OpenFirmware led bindings
+In-Reply-To: <20080728180204.GA13190@polina.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.64.0807281120150.26456@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
+	<1217019705-24244-2-git-send-email-tpiepho@freescale.com>
+	<20080727022116.GN12191@secretlab.ca>
+	<Pine.LNX.4.64.0807272159500.26456@t2.domain.actdsltmp>
+	<20080728170914.GA21265@secretlab.ca>
+	<20080728180204.GA13190@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 28 Jul 2008 11:10:47 -0500
-"Sparks, Sam" <SSparks@aclaratech.com> wrote:
+On Mon, 28 Jul 2008, Anton Vorontsov wrote:
+> On Mon, Jul 28, 2008 at 11:09:14AM -0600, Grant Likely wrote:
+> [...]
+>>>>> +- function :  (optional) This parameter, if present, is a string
+>>>>> +  defining the function of the LED.  It can be used to put the LED
+>>>>> +  under software control, e.g. Linux LED triggers like "heartbeat",
+>>>>> +  "ide-disk", and "timer".  Or it could be used to attach a hardware
+>>>>> +  signal to the LED, e.g. a SoC that can configured to put a SATA
+>>>>> +  activity signal on a GPIO line.
+>>>>
+>>>> This makes me nervous.  It exposes Linux internal implementation details
+>>>> into the device tree data.  If you want to have a property that
+>>>> describes the LED usage, then the possible values and meanings should be
+>>>> documented here.
+>>>
+>>> Should it be a linux specific property then?  I could list all the current
+>>> linux triggers, but enumerating every possible function someone might want
+>>> to assign to an LED seems hopeless.
+>>
+>> I'd rather see the device tree provide 'hints' toward the expected usage
+>> and if a platform needs something specific, then the platform specific
+>> code should setup the trigger.
+>>
+> Maybe we can encode leds into devices themselves, via phandles?
 
-> ## Booting kernel from Legacy Image at 01001000 ...
+How will this work for anything besides ide activity?  For example, flashing,
+heartbeat, default on, overheat, fan failed, kernel panic, etc.
 
-> ## Flattened Device Tree blob at 01000000
+> And then the OF GPIO LEDs driver could do something like:
+>
+> char *ide_disk_trigger_compatibles[] = {
+> 	"fsl,sata",
+> 	"ide-generic",
+> 	...
+> };
 
-so the dtb is being loaded only 0x1000 bytes from the kernel, yet it's
-probably bigger than that.  Can you try different load addresses,
-preferably with the two images at least 0x3000 bytes apart?
-
-Kim
+Everytime someone added a new ide driver, this table would have to be updated.
