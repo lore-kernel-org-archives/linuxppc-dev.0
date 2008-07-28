@@ -1,20 +1,24 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <9e4733910807271500l23fd2b12n940197474a5291df@mail.gmail.com>
-References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
-	<20080727001119.GB12191@secretlab.ca>
-	<9e4733910807262205l2db8d662u9dd2e517282686f8@mail.gmail.com>
-	<fa686aa40807262235l47bff0bfi15d86a6e171d6775@mail.gmail.com>
-	<9e4733910807270721h5777bb80u9f3d25413a62883c@mail.gmail.com>
-	<77a246d166f3eafb4d6a5d899ff86945@kernel.crashing.org>
-	<9e4733910807271500l23fd2b12n940197474a5291df@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <043095cdcd52bb7af5cf4373b249b302@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
-Date: Mon, 28 Jul 2008 09:47:21 +0200
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D8DFFDDF6B
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 18:36:20 +1000 (EST)
+Date: Mon, 28 Jul 2008 01:31:47 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/2] leds: Support OpenFirmware led bindings
+In-Reply-To: <20080727022116.GN12191@secretlab.ca>
+Message-ID: <Pine.LNX.4.64.0807272159500.26456@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
+	<1217019705-24244-2-git-send-email-tpiepho@freescale.com>
+	<20080727022116.GN12191@secretlab.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>  A reasonable "compatible" value would be something like
->> "serial-eeprom-24c32".
->>  You can go a little bit more generic than that, if you write up in
->>  your binding how the driver should figure out the device size and
->>  the protocol used.
+On Sat, 26 Jul 2008, Grant Likely wrote:
+> On Fri, Jul 25, 2008 at 02:01:45PM -0700, Trent Piepho wrote:
+>> Add bindings to support LEDs defined as of_platform devices in addition to
+>> the existing bindings for platform devices.
 >
-> Matching on "serial-eeprom-24c32" requires me to convince the at24
-> authors to add that string as an alias binding for their driver.
+>> +- gpios :  Should specify the LED GPIO.
+>
+> Question: it is possible/desirable for a single LED to be assigned
+> multiple GPIO pins?  Say, for a tri-color LED?  (I'm fishing for
+> opinions; I really don't know if it would be a good idea or not)
 
-No, it requires the IIC subsystem to get fixed and not use OF
-"compatible" values as module alias names.
+Good question.  The Linux LED layer has no concept of multi-color LEDs, so
+it's more difficult that just adding support to the gpio led driver.  I have
+a device with a tri-color red/green/orange LED and this posed some
+difficulty.  It's defined as independent red and greed LEDs, which is mostly
+fine, except I wanted it to flash orange.  I can make both the red LED and
+green LED flash, but there is nothing to insure their flashing remains in
+sync.
 
-> How
-> about "serial-eeprom,24c32" or "generic,24x32"?
+Other OF bindings allow multiple GPIOs to be listed in a gpios property, so
+that's not a problem if someone wants to do that.  There would need to be a
+way to define what the gpios mean.  I don't think it's worthwhile to come up
+with a binding for that until there is a real user.
 
-Neither "serial-eeprom" nor "generic" is the name of a vendor, so
-no.  The comma has a well-defined meaning.  Why would a comma be
-easier than a dash for your device matching code, anyway?
+>> +- function :  (optional) This parameter, if present, is a string
+>> +  defining the function of the LED.  It can be used to put the LED
+>> +  under software control, e.g. Linux LED triggers like "heartbeat",
+>> +  "ide-disk", and "timer".  Or it could be used to attach a hardware
+>> +  signal to the LED, e.g. a SoC that can configured to put a SATA
+>> +  activity signal on a GPIO line.
+>
+> This makes me nervous.  It exposes Linux internal implementation details
+> into the device tree data.  If you want to have a property that
+> describes the LED usage, then the possible values and meanings should be
+> documented here.
 
+Should it be a linux specific property then?  I could list all the current
+linux triggers, but enumerating every possible function someone might want
+to assign to an LED seems hopeless.
 
-Segher
+>> +		led.default_trigger =
+>> +			of_get_property(child, "linux,default-trigger", NULL);
+>
+> This isn't in the documented binding.  I assume that you mean 'function'
+> here?
+
+Looks like I emailed the wrong patch file.  That should be changed to
+"function" and there are a few cosmetic changes that are missing.
