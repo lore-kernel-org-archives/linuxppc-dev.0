@@ -2,19 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 42275DDFD9
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 12:02:32 +1000 (EST)
-Subject: Re: ide pmac breakage
+	by ozlabs.org (Postfix) with ESMTPS id 323B6DDFB3
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 12:06:26 +1000 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m6S26KIL001177
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 21:06:21 -0500
+Subject: [PATCH] powerpc/powermac: Use sane default baudrate for SCC debugging
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-In-Reply-To: <1217208596.11188.144.camel@pasglop>
-References: <1217208596.11188.144.camel@pasglop>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Mon, 28 Jul 2008 12:02:25 +1000
-Message-Id: <1217210545.11188.146.camel@pasglop>
+Date: Mon, 28 Jul 2008 12:06:19 +1000
+Message-Id: <1217210779.11188.148.camel@pasglop>
 Mime-Version: 1.0
-Cc: list linux-ide <linux-ide@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,53 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-07-28 at 11:29 +1000, Benjamin Herrenschmidt wrote:
-> The current ide-pmac upstream is broken. It calls
-> media_bay_set_ide_infos() with an uninitialized "hwif" argument.
-> 
-> It's not a trivial mistake, there's a chicken-and-egg problem in the
-> init code in there.
-> 
-> I've locally fixed it with this patch that i'll merge via the powerpc
-> tree unless you have an objection.
-> 
-> However, the machine crashes when removing the media-bay CD-ROM drive.
-> 
-> Crash appears to be a NULL deref, possibly in elv_may_queue() though
-> I don't have a clean backtrace yet, working on it...
+When using the "sccdbg" option to route early kernel messages and
+xmon to the SCC serial port on PowerMacs, when this wasn't the
+configured output port of Open Firmware, we initialize the baudrate
+to 57600bps. This isn't a very good default on some powermacs where
+both the FW and pmac_zilog will default to 38400. This fixes it to
+use the same logic as pmac_zilog to pick a default speed.
+    
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Here's a backtrace:
-
-Vector: 300 (Data Access) at [c58b7b80]
-    pc: c014f264: elv_may_queue+0x10/0x44
-    lr: c0152750: get_request+0x2c/0x2c0
-    sp: c58b7c30
-   msr: 1032
-   dar: c
- dsisr: 40000000
-  current = 0xc58aaae0
-    pid   = 854, comm = media-bay
-enter ? for help
-mon> t
-[c58b7c40] c0152750 get_request+0x2c/0x2c0
-[c58b7c70] c0152a08 get_request_wait+0x24/0xec
-[c58b7cc0] c0225674 ide_cd_queue_pc+0x58/0x1a0
-[c58b7d40] c022672c ide_cdrom_packet+0x9c/0xdc
-[c58b7d70] c0261810 cdrom_get_disc_info+0x60/0xd0
-[c58b7dc0] c026208c cdrom_mrw_exit+0x1c/0x11c
-[c58b7e30] c0260f7c unregister_cdrom+0x84/0xe8
-[c58b7e50] c022395c ide_cd_release+0x80/0x84
-[c58b7e70] c0163650 kref_put+0x54/0x6c
-[c58b7e80] c0223884 ide_cd_put+0x40/0x5c
-[c58b7ea0] c0211100 generic_ide_remove+0x28/0x3c
-[c58b7eb0] c01e9d34 __device_release_driver+0x78/0xb4
-[c58b7ec0] c01e9e44 device_release_driver+0x28/0x44
-[c58b7ee0] c01e8f7c bus_remove_device+0xac/0xd8
-[c58b7f00] c01e7424 device_del+0x104/0x198
-[c58b7f20] c01e74d0 device_unregister+0x18/0x30
-[c58b7f40] c02121c4 __ide_port_unregister_devices+0x6c/0x88
-[c58b7f60] c0212398 ide_port_unregister_devices+0x38/0x80
-[c58b7f80] c0208ca4 media_bay_step+0x1cc/0x5c0
-[c58b7fb0] c0209124 media_bay_task+0x8c/0xcc
-[c58b7fd0] c00485c0 kthread+0x48/0x84
-[c58b7ff0] c0011b20 kernel_thread+0x44/0x60
+diff --git a/arch/powerpc/platforms/powermac/udbg_scc.c b/arch/powerpc/platforms/powermac/udbg_scc.c
+index 47de4d3..572771f 100644
+--- a/arch/powerpc/platforms/powermac/udbg_scc.c
++++ b/arch/powerpc/platforms/powermac/udbg_scc.c
+@@ -125,13 +125,23 @@ void udbg_scc_init(int force_scc)
+ 	out_8(sccc, 0xc0);
+ 
+ 	/* If SCC was the OF output port, read the BRG value, else
+-	 * Setup for 57600 8N1
++	 * Setup for 38400 or 57600 8N1 depending on the machine
+ 	 */
+ 	if (ch_def != NULL) {
+ 		out_8(sccc, 13);
+ 		scc_inittab[1] = in_8(sccc);
+ 		out_8(sccc, 12);
+ 		scc_inittab[3] = in_8(sccc);
++	} else if (machine_is_compatible("RackMac1,1")
++		   || machine_is_compatible("RackMac1,2")
++		   || machine_is_compatible("MacRISC4")) {
++		/* Xserves and G5s default to 57600 */
++		scc_inittab[1] = 0;
++		scc_inittab[3] = 0;
++	} else {
++		/* Others default to 38400 */
++		scc_inittab[1] = 0;
++		scc_inittab[3] = 1;
+ 	}
+ 
+ 	for (i = 0; i < sizeof(scc_inittab); ++i)
