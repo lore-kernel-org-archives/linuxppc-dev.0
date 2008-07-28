@@ -1,13 +1,27 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 7D4C3DE02F
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 04:49:38 +1000 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Documentation: remove old sbc8260 board specific information
-Date: Mon, 28 Jul 2008 14:50:31 -0400
-Message-Id: <1217271031-8922-1-git-send-email-paul.gortmaker@windriver.com>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, rob@landley.net
+Return-Path: <glikely@secretlab.ca>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.170])
+	by ozlabs.org (Postfix) with ESMTP id 9BA2CDDED1
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 04:49:59 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so5951478wfg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 11:49:58 -0700 (PDT)
+Date: Mon, 28 Jul 2008 12:49:55 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH 2/2] leds: Support OpenFirmware led bindings
+Message-ID: <20080728184955.GB21874@secretlab.ca>
+References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
+	<1217019705-24244-2-git-send-email-tpiepho@freescale.com>
+	<20080727022116.GN12191@secretlab.ca>
+	<Pine.LNX.4.64.0807272159500.26456@t2.domain.actdsltmp>
+	<20080728170914.GA21265@secretlab.ca>
+	<20080728180204.GA13190@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0807281120150.26456@t2.domain.actdsltmp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0807281120150.26456@t2.domain.actdsltmp>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,234 +31,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This file contains 8 yr. old board specific information that was for
-the now gone ppc implementation, and it pre-dates widespread u-boot
-support.  Any of the technical details of the board memory map would be
-more appropriately captured in a dts if I revive it as powerpc anyway.
+On Mon, Jul 28, 2008 at 11:26:28AM -0700, Trent Piepho wrote:
+> On Mon, 28 Jul 2008, Anton Vorontsov wrote:
+> > On Mon, Jul 28, 2008 at 11:09:14AM -0600, Grant Likely wrote:
+> > [...]
+> >>>>> +- function :  (optional) This parameter, if present, is a string
+> >>>>> +  defining the function of the LED.  It can be used to put the LED
+> >>>>> +  under software control, e.g. Linux LED triggers like "heartbeat",
+> >>>>> +  "ide-disk", and "timer".  Or it could be used to attach a hardware
+> >>>>> +  signal to the LED, e.g. a SoC that can configured to put a SATA
+> >>>>> +  activity signal on a GPIO line.
+> >>>>
+> >>>> This makes me nervous.  It exposes Linux internal implementation details
+> >>>> into the device tree data.  If you want to have a property that
+> >>>> describes the LED usage, then the possible values and meanings should be
+> >>>> documented here.
+> >>>
+> >>> Should it be a linux specific property then?  I could list all the current
+> >>> linux triggers, but enumerating every possible function someone might want
+> >>> to assign to an LED seems hopeless.
+> >>
+> >> I'd rather see the device tree provide 'hints' toward the expected usage
+> >> and if a platform needs something specific, then the platform specific
+> >> code should setup the trigger.
+> >>
+> > Maybe we can encode leds into devices themselves, via phandles?
+> 
+> How will this work for anything besides ide activity?  For example, flashing,
+> heartbeat, default on, overheat, fan failed, kernel panic, etc.
 
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-Acked-by: Jason Wessel <jason.wessel@windriver.com>
----
- Documentation/powerpc/00-INDEX                   |    2 -
- Documentation/powerpc/SBC8260_memory_mapping.txt |  197 ----------------------
- 2 files changed, 0 insertions(+), 199 deletions(-)
- delete mode 100644 Documentation/powerpc/SBC8260_memory_mapping.txt
+It certainly doesn't work for everything; but where it does work it
+makes a lot of sense because the property position provides a lot of
+context.
 
-diff --git a/Documentation/powerpc/00-INDEX b/Documentation/powerpc/00-INDEX
-index 3be84aa..29d839c 100644
---- a/Documentation/powerpc/00-INDEX
-+++ b/Documentation/powerpc/00-INDEX
-@@ -20,8 +20,6 @@ mpc52xx-device-tree-bindings.txt
- 	- MPC5200 Device Tree Bindings
- ppc_htab.txt
- 	- info about the Linux/PPC /proc/ppc_htab entry
--SBC8260_memory_mapping.txt
--	- EST SBC8260 board info
- smp.txt
- 	- use and state info about Linux/PPC on MP machines
- sound.txt
-diff --git a/Documentation/powerpc/SBC8260_memory_mapping.txt b/Documentation/powerpc/SBC8260_memory_mapping.txt
-deleted file mode 100644
-index e6e9ee0..0000000
---- a/Documentation/powerpc/SBC8260_memory_mapping.txt
-+++ /dev/null
-@@ -1,197 +0,0 @@
--Please mail me (Jon Diekema, diekema_jon@si.com or diekema@cideas.com)
--if you have questions, comments or corrections.
--
--	* EST SBC8260 Linux memory mapping rules
--
--	http://www.estc.com/ 
--	http://www.estc.com/products/boards/SBC8260-8240_ds.html
--
--	Initial conditions:
--	-------------------
--	
--	Tasks that need to be perform by the boot ROM before control is
--	transferred to zImage (compressed Linux kernel):
--
--	- Define the IMMR to 0xf0000000
--
--	- Initialize the memory controller so that RAM is available at
--	  physical address 0x00000000.  On the SBC8260 is this 16M (64M)
--	  SDRAM.
--
--	- The boot ROM should only clear the RAM that it is using.
--
--	  The reason for doing this is to enhances the chances of a
--	  successful post mortem on a Linux panic.  One of the first
--	  items to examine is the 16k (LOG_BUF_LEN) circular console
--	  buffer called log_buf which is defined in kernel/printk.c.
--
--	- To enhance boot ROM performance, the I-cache can be enabled.
--
--	  Date: Mon, 22 May 2000 14:21:10 -0700
--	  From: Neil Russell <caret@c-side.com>
--
--	  LiMon (LInux MONitor) runs with and starts Linux with MMU
--	  off, I-cache enabled, D-cache disabled.  The I-cache doesn't
--	  need hints from the MMU to work correctly as the D-cache
--	  does.  No D-cache means no special code to handle devices in
--	  the presence of cache (no snooping, etc). The use of the
--	  I-cache means that the monitor can run acceptably fast
--	  directly from ROM, rather than having to copy it to RAM.
--
--	- Build the board information structure (see 
--	  include/asm-ppc/est8260.h for its definition)
--
--	- The compressed Linux kernel (zImage) contains a bootstrap loader 
--	  that is position independent; you can load it into any RAM, 
--	  ROM or FLASH memory address >= 0x00500000 (above 5 MB), or
--	  at its link address of 0x00400000 (4 MB).
--
--	  Note: If zImage is loaded at its link address of 0x00400000 (4 MB),
--	        then zImage will skip the step of moving itself to 
--		its link address.
--
--	- Load R3 with the address of the board information structure
--
--	- Transfer control to zImage
--
--	- The Linux console port is SMC1, and the baud rate is controlled
--	  from the bi_baudrate field of the board information structure.
--	  On thing to keep in mind when picking the baud rate, is that
--	  there is no flow control on the SMC ports.  I would stick
--	  with something safe and standard like 19200.
--
--	  On the EST SBC8260, the SMC1 port is on the COM1 connector of
--	  the board.
--
--	
--	EST SBC8260 defaults:
--	---------------------
--
--                                Chip
--        Memory                  Sel  Bus   Use
--        ---------------------   ---  ---   ----------------------------------
--	0x00000000-0x03FFFFFF   CS2  60x   (16M or 64M)/64M SDRAM
--	0x04000000-0x04FFFFFF   CS4  local  4M/16M SDRAM (soldered to the board)
--	0x21000000-0x21000000   CS7  60x    1B/64K Flash present detect (from the flash SIMM)
--	0x21000001-0x21000001   CS7  60x    1B/64K Switches (read) and LEDs (write)
--	0x22000000-0x2200FFFF   CS5  60x    8K/64K EEPROM
--	0xFC000000-0xFCFFFFFF   CS6  60x    2M/16M flash (8 bits wide, soldered to the board)
--	0xFE000000-0xFFFFFFFF   CS0  60x    4M/16M flash (SIMM)
--
--	Notes:
--	------
--
--	- The chip selects can map 32K blocks and up (powers of 2)
--
--	- The SDRAM machine can handled up to 128Mbytes per chip select
--
--	- Linux uses the 60x bus memory (the SDRAM DIMM) for the 
--	  communications buffers.
--
--	- BATs can map 128K-256Mbytes each.  There are four data BATs and
--	  four instruction BATs.  Generally the data and instruction BATs
--	  are mapped the same.
--
--	- The IMMR must be set above the kernel virtual memory addresses,
--	  which start at 0xC0000000.  Otherwise, the kernel may crash as
--	  soon as you start any threads or processes due to VM collisions 
--	  in the kernel or user process space.
--
--
--	  Details from Dan Malek <dan_malek@mvista.com> on 10/29/1999:
--
--	  The user application virtual space consumes the first 2 Gbytes
--	  (0x00000000 to 0x7FFFFFFF).  The kernel virtual text starts at
--	  0xC0000000, with data following.  There is a "protection hole"
--	  between the end of kernel data and the start of the kernel
--	  dynamically allocated space, but this space is still within
--	  0xCxxxxxxx.
--
--	  Obviously the kernel can't map any physical addresses 1:1 in
--	  these ranges.
--
--
--	  Details from Dan Malek <dan_malek@mvista.com> on 5/19/2000:
--
--	  During the early kernel initialization, the kernel virtual
--	  memory allocator is not operational.  Prior to this KVM
--	  initialization, we choose to map virtual to physical addresses
--	  1:1.  That is, the kernel virtual address exactly matches the
--	  physical address on the bus.  These mappings are typically done
--	  in arch/ppc/kernel/head.S, or arch/ppc/mm/init.c.  Only
--	  absolutely necessary mappings should be done at this time, for
--	  example board control registers or a serial uart.  Normal device
--	  driver initialization should map resources later when necessary.
--
--	  Although platform dependent, and certainly the case for embedded
--	  8xx, traditionally memory is mapped at physical address zero,
--	  and I/O devices above physical address 0x80000000.  The lowest
--	  and highest (above 0xf0000000) I/O addresses are traditionally 
--	  used for devices or registers we need to map during kernel 
--	  initialization and prior to KVM operation.  For this reason, 
--	  and since it followed prior PowerPC platform examples, I chose 
--	  to map the embedded 8xx kernel to the 0xc0000000 virtual address.
--	  This way, we can enable the MMU to map the kernel for proper 
--	  operation, and still map a few windows before the KVM is operational.
--
--	  On some systems, you could possibly run the kernel at the 
--	  0x80000000 or any other virtual address.  It just depends upon 
--	  mapping that must be done prior to KVM operational.  You can never 
--	  map devices or kernel spaces that overlap with the user virtual 
--	  space.  This is why default IMMR mapping used by most BDM tools 
--	  won't work.  They put the IMMR at something like 0x10000000 or 
--	  0x02000000 for example.  You simply can't map these addresses early
--	  in the kernel, and continue proper system operation.
--
--	  The embedded 8xx/82xx kernel is mature enough that all you should 
--	  need to do is map the IMMR someplace at or above 0xf0000000 and it 
--	  should boot far enough to get serial console messages and KGDB 
--	  connected on any platform.  There are lots of other subtle memory 
--	  management design features that you simply don't need to worry 
--	  about.  If you are changing functions related to MMU initialization,
--	  you are likely breaking things that are known to work and are 
--	  heading down a path of disaster and frustration.  Your changes 
--	  should be to make the flexibility of the processor fit Linux, 
--	  not force arbitrary and non-workable memory mappings into Linux.
--
--	- You don't want to change KERNELLOAD or KERNELBASE, otherwise the
--	  virtual memory and MMU code will get confused.
--	
--	  arch/ppc/Makefile:KERNELLOAD = 0xc0000000
--
--	  include/asm-ppc/page.h:#define PAGE_OFFSET    0xc0000000
--	  include/asm-ppc/page.h:#define KERNELBASE     PAGE_OFFSET
--
--	- RAM is at physical address 0x00000000, and gets mapped to 
--	  virtual address 0xC0000000 for the kernel.
--
--
--	Physical addresses used by the Linux kernel:
--	--------------------------------------------
--
--	0x00000000-0x3FFFFFFF   1GB reserved for RAM
--	0xF0000000-0xF001FFFF   128K IMMR  64K used for dual port memory,
--                                 64K for 8260 registers
--
--	
--        Logical addresses used by the Linux kernel:
--	-------------------------------------------
--
--	0xF0000000-0xFFFFFFFF   256M BAT0 (IMMR: dual port RAM, registers)
--	0xE0000000-0xEFFFFFFF   256M BAT1 (I/O space for custom boards)
--	0xC0000000-0xCFFFFFFF   256M BAT2 (RAM)
--	0xD0000000-0xDFFFFFFF   256M BAT3 (if RAM > 256MByte)
--
--
--	EST SBC8260 Linux mapping:
--	--------------------------
--
--	DBAT0, IBAT0, cache inhibited:
--
--                                Chip
--        Memory                  Sel  Use
--        ---------------------   ---  ---------------------------------
--        0xF0000000-0xF001FFFF   n/a  IMMR: dual port RAM, registers
--
--        DBAT1, IBAT1, cache inhibited:
--
--- 
-1.5.6.2
+> 
+> > And then the OF GPIO LEDs driver could do something like:
+> >
+> > char *ide_disk_trigger_compatibles[] = {
+> > 	"fsl,sata",
+> > 	"ide-generic",
+> > 	...
+> > };
+> 
+> Everytime someone added a new ide driver, this table would have to be updated.
+
+Yes, the implementation needs thought.
+
+g.
