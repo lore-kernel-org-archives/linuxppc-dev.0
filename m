@@ -1,33 +1,29 @@
-Return-Path: <emunson@us.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9856BDDF67
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 07:24:06 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6SLO15C002128
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 17:24:01 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6SLO1at221108
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 17:24:01 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6SLO0OQ004447
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 17:24:00 -0400
-Date: Mon, 28 Jul 2008 14:23:54 -0700
-From: Eric B Munson <ebmunson@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Message-ID: <20080728212354.GB8450@us.ibm.com>
-References: <cover.1216928613.git.ebmunson@us.ibm.com>
-	<1217277204.23502.36.camel@nimitz>
+Return-Path: <ebiederm@xmission.com>
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
+	by ozlabs.org (Postfix) with ESMTP id AD8FFDDE03
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 08:52:52 +1000 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Vivek Goyal <vgoyal@redhat.com>
+References: <20080727234529.GM6175@verge.net.au>
+	<20080728015117.GA12055@verge.net.au>
+	<20080728024526.GB3334@verge.net.au>
+	<20080728034007.GA30450@verge.net.au>
+	<20080728211025.GA9985@redhat.com>
+Date: Mon, 28 Jul 2008 15:47:41 -0700
+In-Reply-To: <20080728211025.GA9985@redhat.com> (Vivek Goyal's message of
+	"Mon, 28 Jul 2008 17:10:25 -0400")
+Message-ID: <m1vdypfwxe.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="wq9mPyueHGvFACwf"
-In-Reply-To: <1217277204.23502.36.camel@nimitz>
-Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Subject: Re: [PATCH 1/5] Move elfcorehdr_addr out of vmcore.c (Was: Re:
+	[patch] crashdump: fix undefined reference to `elfcorehdr_addr')
+Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+	Paul Mundt <lethal@linux-sh.org>, kexec@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Terry Loftin <terry.loftin@hp.com>, Simon Horman <horms@verge.net.au>,
+	Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,47 +33,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Vivek Goyal <vgoyal@redhat.com> writes:
 
---wq9mPyueHGvFACwf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Hi All,
+>
+> How does following series of patches look like. I have moved
+> elfcorehdr_addr out of vmcore.c and pushed it to arch dependent section 
+> of crash dump to make sure that it can be worked with even when
+> CONFIG_PROC_VMCORE is disabled and CONFIG_CRASH_DUMP is enabled.
+>
+> I tested it on x86_64. Compile tested it on i386 and ppc64. ia64 and
+> sh versions are completely untested.
 
-On Mon, 28 Jul 2008, Dave Hansen wrote:
+Given the current state of the code:
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-> On Mon, 2008-07-28 at 12:17 -0700, Eric Munson wrote:
-> >=20
-> > This patch stack introduces a personality flag that indicates the
-> > kernel
-> > should setup the stack as a hugetlbfs-backed region. A userspace
-> > utility
-> > may set this flag then exec a process whose stack is to be backed by
-> > hugetlb pages.
->=20
-> I didn't see it mentioned here, but these stacks are fixed-size, right?
-> They can't actually grow and are fixed in size at exec() time, right?
->=20
-> -- Dave
+To process a kernel crash dump we pass the kernel elfcorehdr option, so testing
+to see if it was passed seems reasonable.
 
-The stack VMA is a fixed size but the pages will be faulted in as needed.
+In general I think this method of handling the problems with kdump is
+too brittle to live, but in the case of iommus we certainly need to do something
+different, and unfortunately iommus were not common on x86 when the original code
+was merged so we have not handled them well.
 
---=20
-Eric B Munson
-IBM Linux Technology Center
-ebmunson@us.ibm.com
-
-
---wq9mPyueHGvFACwf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIjjjqsnv9E83jkzoRAugvAKD36x3OyfiN/GtGM+x0LJ6SL7e7TgCdHOOf
-OGGM1jiwgdCWkwRUj/Gd/Fg=
-=5CJt
------END PGP SIGNATURE-----
-
---wq9mPyueHGvFACwf--
+Eric
