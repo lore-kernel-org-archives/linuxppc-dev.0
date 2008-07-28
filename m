@@ -1,25 +1,21 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0670DDDFAA
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 12:01:09 +1000 (EST)
-Date: Sun, 27 Jul 2008 18:56:49 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/2] leds: make the default trigger name const
-In-Reply-To: <20080727231149.1b2508da.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0807271304350.26456@t2.domain.actdsltmp>
-References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
-	<1217019705-24244-1-git-send-email-tpiepho@freescale.com>
-	<20080727020857.GM12191@secretlab.ca>
-	<20080727231149.1b2508da.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Richard Purdie <rpurdie@rpsys.net>, Trent Piepho <tpiepho@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 42275DDFD9
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 12:02:32 +1000 (EST)
+Subject: Re: ide pmac breakage
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+In-Reply-To: <1217208596.11188.144.camel@pasglop>
+References: <1217208596.11188.144.camel@pasglop>
+Content-Type: text/plain
+Date: Mon, 28 Jul 2008 12:02:25 +1000
+Message-Id: <1217210545.11188.146.camel@pasglop>
+Mime-Version: 1.0
+Cc: list linux-ide <linux-ide@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,35 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 27 Jul 2008, Stephen Rothwell wrote:
-> On Sat, 26 Jul 2008 20:08:57 -0600 Grant Likely <grant.likely@secretlab.ca> wrote:
->> On Fri, Jul 25, 2008 at 02:01:44PM -0700, Trent Piepho wrote:
->>> The default_trigger fields of struct gpio_led and thus struct led_classdev
->>> are pretty much always assigned from a string literal, which means the
->>> string can't be modified.  Which is fine, since there is no reason to
->>> modify the string and in fact it never is.
->>>
->>> But they should be marked const to prevent such code from being added, to
->>> prevent warnings if -Wwrite-strings is used and when assigned from a
->>> constant string other than a string literal (which produces a warning under
->>> current kernel compiler flags), and for general good coding practices.
->>>
->>> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
->> Acked-by: Grant Likely <grant.likely@secretlab.ca>
->
-> I would ack this as well, except I am not sure what tree this patch is
-> against.  In the current powerpc next tree,
+On Mon, 2008-07-28 at 11:29 +1000, Benjamin Herrenschmidt wrote:
+> The current ide-pmac upstream is broken. It calls
+> media_bay_set_ide_infos() with an uninitialized "hwif" argument.
+> 
+> It's not a trivial mistake, there's a chicken-and-egg problem in the
+> init code in there.
+> 
+> I've locally fixed it with this patch that i'll merge via the powerpc
+> tree unless you have an objection.
+> 
+> However, the machine crashes when removing the media-bay CD-ROM drive.
+> 
+> Crash appears to be a NULL deref, possibly in elv_may_queue() though
+> I don't have a clean backtrace yet, working on it...
 
-It was against powerpc next from Jul 22nd, current at the time I made the
-patch.  It looks like that file has changed in the last few days.  There is a
-patch from Anton Vorontsov, "leds:  mark led_classdev.default_trigger as
-const", which adds const to one of the structs I modified, but doesn't get the
-other one (struct gpio_led).
+Here's a backtrace:
 
-Then another patch from Nate Case added a new LED chip driver, and the
-platform data for this driver was added as "generic led platform data", which
-I don't entirely agree with.  And this new struct didn't make default_trigger
-const, probably because it was just copied from the gpio led platform data
-with some fields removed (so it's not really that generic then, is it?).
-
-I'll send an updated patch for current powerpc next.
+Vector: 300 (Data Access) at [c58b7b80]
+    pc: c014f264: elv_may_queue+0x10/0x44
+    lr: c0152750: get_request+0x2c/0x2c0
+    sp: c58b7c30
+   msr: 1032
+   dar: c
+ dsisr: 40000000
+  current = 0xc58aaae0
+    pid   = 854, comm = media-bay
+enter ? for help
+mon> t
+[c58b7c40] c0152750 get_request+0x2c/0x2c0
+[c58b7c70] c0152a08 get_request_wait+0x24/0xec
+[c58b7cc0] c0225674 ide_cd_queue_pc+0x58/0x1a0
+[c58b7d40] c022672c ide_cdrom_packet+0x9c/0xdc
+[c58b7d70] c0261810 cdrom_get_disc_info+0x60/0xd0
+[c58b7dc0] c026208c cdrom_mrw_exit+0x1c/0x11c
+[c58b7e30] c0260f7c unregister_cdrom+0x84/0xe8
+[c58b7e50] c022395c ide_cd_release+0x80/0x84
+[c58b7e70] c0163650 kref_put+0x54/0x6c
+[c58b7e80] c0223884 ide_cd_put+0x40/0x5c
+[c58b7ea0] c0211100 generic_ide_remove+0x28/0x3c
+[c58b7eb0] c01e9d34 __device_release_driver+0x78/0xb4
+[c58b7ec0] c01e9e44 device_release_driver+0x28/0x44
+[c58b7ee0] c01e8f7c bus_remove_device+0xac/0xd8
+[c58b7f00] c01e7424 device_del+0x104/0x198
+[c58b7f20] c01e74d0 device_unregister+0x18/0x30
+[c58b7f40] c02121c4 __ide_port_unregister_devices+0x6c/0x88
+[c58b7f60] c0212398 ide_port_unregister_devices+0x38/0x80
+[c58b7f80] c0208ca4 media_bay_step+0x1cc/0x5c0
+[c58b7fb0] c0209124 media_bay_task+0x8c/0xcc
+[c58b7fd0] c00485c0 kthread+0x48/0x84
+[c58b7ff0] c0011b20 kernel_thread+0x44/0x60
