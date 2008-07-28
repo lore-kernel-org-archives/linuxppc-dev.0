@@ -1,22 +1,26 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
-	by ozlabs.org (Postfix) with ESMTP id C89FEDE102
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 02:40:00 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so5875743wfg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 09:39:59 -0700 (PDT)
-Date: Mon, 28 Jul 2008 10:39:56 -0600
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.170])
+	by ozlabs.org (Postfix) with ESMTP id D12DADDEDD
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 02:49:25 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so5881137wfg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 09:49:24 -0700 (PDT)
+Date: Mon, 28 Jul 2008 10:49:22 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH v3 0/4 REPOST] OF infrastructure for SPI devices
-Message-ID: <20080728163956.GC21039@secretlab.ca>
-References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
-	<200807271449.28472.david-b@pacbell.net>
+To: T Ziomek <ctz001@email.mot.com>
+Subject: Re: [RFC,PATCH] scripts/package: add powerpc images to tarball
+Message-ID: <20080728164922.GA21159@secretlab.ca>
+References: <1216887460.306306.238738123378.1.gpush@pingu>
+	<200807250108.m6P18f4B099179@sullivan.realtime.net>
+	<fa686aa40807252155l4f785920qdb14d117067b30f4@mail.gmail.com>
+	<913573e2092839fbe37a0bfa37119eb6@bga.com>
+	<fa686aa40807261053r5a8ebe40l7e8061f926f185f9@mail.gmail.com>
+	<20080728163435.GE27068@email.mot.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200807271449.28472.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080728163435.GE27068@email.mot.com>
 Sender: Grant Likely <glikely@secretlab.ca>
-Cc: spi-devel-general@lists.sourceforge.net, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Milton Miller <miltonm@bga.com>, Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jul 27, 2008 at 02:49:28PM -0700, David Brownell wrote:
-> On Friday 25 July 2008, Grant Likely wrote:
-> > I don't know what to do with these patches.  I'd really like to see them
-> > in .27, and now that akpm has cleared his queue, the prerequisite patch
-> > has been merged so they are ready to go in.  However, even though there
-> > has been favourable reception on the SPI and linuxppc lists for these
-> > changes I don't have any acks from anybody yet.
-> > 
-> > David, can you please reply on if you are okay with these patches
-> > getting merged?  If so, do you want me to merge them via my tree, or
-> > do you want to pick them up?
+On Mon, Jul 28, 2008 at 11:34:35AM -0500, T Ziomek wrote:
+> On Sat, Jul 26, 2008 at 01:53:57PM -0400, Grant Likely wrote:
+>  . . .
+> > Come to think of it, I'd support just removing the zImage symlink
+> > entirely to eliminate confusion so that everyone knows that 'make
+> > zImage' is the 'make all' for default image targets.
 > 
-> OK ... to recap, #1 and #3 are OF-specific, I'll be agnostic.
-> If other OF folk think it's OK, great.
-> 
-> Some cleanup was needed for #2, but it was basically ok ...
-> I'd like to see the final version, and if it goes via an
-> OF push that's OK by me.  (Though I'd like to see that change
-> make it into 2.6.27 regardless, so let me know.)
+> That ("zImage" means all default image targets) seems pretty non-intui-
+> tive; why not something like 'make all_def_images'?
 
-Thanks for the review.  1-3 is already merged into my git tree and Ben
-has pulled them.  I hope that's okay.  Here's a link to the commit:
+It is purely historical.  zImage and modules have been the default
+make targets for a long time.  I'm not opposed to changing it, but it is
+a change that affects almost everyone.  I'd like to see some consensus
+before going down this path.
 
-http://git.kernel.org/?p=linux/kernel/git/benh/powerpc.git;a=commitdiff;h=dc87c98e8f635a718f1abb2c3e15fc77c0001651
-
-Let me know if you see anything else that needs to be changed and I'll
-submit a fixup patch.
-
-> And #4 isn't quite cooked yet.
-
-Okay, I'll hack on this more and post v4.
-
-Thanks again,
 g.
