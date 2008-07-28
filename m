@@ -1,29 +1,26 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
-	by ozlabs.org (Postfix) with ESMTP id AD8FFDDE03
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 08:52:52 +1000 (EST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Vivek Goyal <vgoyal@redhat.com>
-References: <20080727234529.GM6175@verge.net.au>
-	<20080728015117.GA12055@verge.net.au>
-	<20080728024526.GB3334@verge.net.au>
-	<20080728034007.GA30450@verge.net.au>
-	<20080728211025.GA9985@redhat.com>
-Date: Mon, 28 Jul 2008 15:47:41 -0700
-In-Reply-To: <20080728211025.GA9985@redhat.com> (Vivek Goyal's message of
-	"Mon, 28 Jul 2008 17:10:25 -0400")
-Message-ID: <m1vdypfwxe.fsf@frodo.ebiederm.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.175])
+	by ozlabs.org (Postfix) with ESMTP id 78024DDF00
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 08:56:54 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so6105849wfg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 15:56:53 -0700 (PDT)
+Date: Mon, 28 Jul 2008 16:56:50 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+Message-ID: <20080728225650.GB22273@secretlab.ca>
+References: <1217239117.11188.187.camel@pasglop>
+	<alpine.LFD.1.10.0807280838580.3486@nehalem.linux-foundation.org>
+	<20080729015330.39aff7a5.sfr@canb.auug.org.au>
+	<alpine.LFD.1.10.0807280905500.3486@nehalem.linux-foundation.org>
+	<1217279736.11188.215.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Subject: Re: [PATCH 1/5] Move elfcorehdr_addr out of vmcore.c (Was: Re:
-	[patch] crashdump: fix undefined reference to `elfcorehdr_addr')
-Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-	Paul Mundt <lethal@linux-sh.org>, kexec@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Terry Loftin <terry.loftin@hp.com>, Simon Horman <horms@verge.net.au>,
-	Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1217279736.11188.215.camel@pasglop>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, akpm@linux-foundation.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,27 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Vivek Goyal <vgoyal@redhat.com> writes:
+On Tue, Jul 29, 2008 at 07:15:36AM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2008-07-28 at 09:06 -0700, Linus Torvalds wrote:
+> > 
+> > On Tue, 29 Jul 2008, Stephen Rothwell wrote:
+> > > 
+> > > It should be
+> > > 
+> > > 	git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+> > > 
+> > > Ben seems to have copied from one of Paul's pull requests.
+> > 
+> > Ok, that one worked for me.
+> > 
+> > Ben, I'm sure some day you'll get it right on the first try. We're all 
+> > cheering for you!
+> 
+> Should I hang out with a brown paper bag on my head all day today ?
 
-> Hi All,
->
-> How does following series of patches look like. I have moved
-> elfcorehdr_addr out of vmcore.c and pushed it to arch dependent section 
-> of crash dump to make sure that it can be worked with even when
-> CONFIG_PROC_VMCORE is disabled and CONFIG_CRASH_DUMP is enabled.
->
-> I tested it on x86_64. Compile tested it on i386 and ppc64. ia64 and
-> sh versions are completely untested.
+No, that's reserved for committing things to the top level Makefile for
+no reason.
 
-Given the current state of the code:
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
-
-To process a kernel crash dump we pass the kernel elfcorehdr option, so testing
-to see if it was passed seems reasonable.
-
-In general I think this method of handling the problems with kdump is
-too brittle to live, but in the case of iommus we certainly need to do something
-different, and unfortunately iommus were not common on x86 when the original code
-was merged so we have not handled them well.
-
-Eric
+g.
