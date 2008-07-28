@@ -1,22 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
-	by ozlabs.org (Postfix) with ESMTP id 059D5DDDFD
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 14:24:34 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so1312459anc.78
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jul 2008 21:24:33 -0700 (PDT)
-Message-ID: <fa686aa40807272124td830126r2fa7a08a1509245d@mail.gmail.com>
-Date: Sun, 27 Jul 2008 22:24:33 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	"Paul Mackerras" <paulus@samba.org>
-Subject: Re: Please pull mpc52xx-next
-In-Reply-To: <fa686aa40807271448tb387f06xe380f7941fb7d331@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa40807252100q299f87d7xc2101869a45704bb@mail.gmail.com>
-	<fa686aa40807271448tb387f06xe380f7941fb7d331@mail.gmail.com>
+Return-Path: <imp@bsdimp.com>
+Date: Sun, 27 Jul 2008 22:16:28 -0600 (MDT)
+Message-Id: <20080727.221628.-1956307928.imp@bsdimp.com>
+To: jonsmirl@gmail.com
+Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
+From: "M. Warner Losh" <imp@bsdimp.com>
+In-Reply-To: <9e4733910807271500l23fd2b12n940197474a5291df@mail.gmail.com>
+References: <9e4733910807270721h5777bb80u9f3d25413a62883c@mail.gmail.com>
+	<77a246d166f3eafb4d6a5d899ff86945@kernel.crashing.org>
+	<9e4733910807271500l23fd2b12n940197474a5291df@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,50 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jul 27, 2008 at 3:48 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Fri, Jul 25, 2008 at 10:00 PM, Grant Likely
-> <grant.likely@secretlab.ca> wrote:
->> Hey Ben, here are a few more patches for .27.  I would have had this
->> stuff in earlier, but they depended on another patch that I didn't
->> feel like I should push that was in Andrew's queue.
->>
->> Grant Likely (4):
->>      of: adapt of_find_i2c_driver() to be usable by SPI also
->>      spi: split up spi_new_device() to allow two stage registration.
->>      spi: Add OF binding support for SPI busses
->>      powerpc/mpc5200: Add mpc5200-spi (non-PSC) device driver
->
-> Oops, I shouldn't have merged this last one.  Please don't pull this
-> tree yet.  I'll fix it up this evening.
+In message: <9e4733910807271500l23fd2b12n940197474a5291df@mail.gmail.com>
+            "Jon Smirl" <jonsmirl@gmail.com> writes:
+: On 7/27/08, Segher Boessenkool <segher@kernel.crashing.org> wrote:
+: > >
+: > > >
+: > > > > compatible = "atmel,24c32wp", "24c32", "eeprom";
+: > > > >
+: > > >
+: > >
+: >
+: >
+: > >
+: > > > I know this is just an example; but to keep thinks clear, the second
+: > > >  and third values in this compatible property are completely bogus (for
+: > > >  device trees).  The manufacturer prefix needs to be present and
+: > > >  'eeprom' is far to vague.
+: > > >
+: > >
+: > > Isn't 24c32 a generic, cross manufacturer term used for these devices?
+: > >
+: >
+: >  Sure it is.  But "compatible" values are a global namespace so care
+: >  needs to be taken not to cause collisions.  One mechanism for that
+: >  is to use vendor prefixes (and that just shifts the problem so it
+: >  is less global); another is to choose good names that have a lower
+: >  chance to collide with the name for another device.  And the most
+: >  important way to prevent collisions is to write up a binding, so
+: >  everyone knows you have claimed that name.  It still needs to be
+: >  a good name, of course.
+: >
+: >
+: > > What if I have a socket and use a different vendor's chip each week?
+: > >
+: >
+: >  You use sockets for your seeproms?  Wow :-)  But yes, it shouldn't
+: >  be necessary to put the exact make of the device in the device
+: >  tree, for such generic devices.  It certainly doesn't hurt to do
+: >  so though (if the exact model is known).
+: >
+: >  A reasonable "compatible" value would be something like
+: > "serial-eeprom-24c32".
+: >  You can go a little bit more generic than that, if you write up in
+: >  your binding how the driver should figure out the device size and
+: >  the protocol used.
+: 
+: Matching on "serial-eeprom-24c32" requires me to convince the at24
+: authors to add that string as an alias binding for their driver. How
+: about "serial-eeprom,24c32" or "generic,24x32"?
 
-Okay, I've got it sorted out now.  Here is the new pull request:
+Many of the serial eeproms have a common way to access them.  There's
+a few organizations of eeproms made by a number of different
+manufacturers that are actually accessed the same.
 
-The following changes since commit 024e8ac04453b3525448c31ef39848cf675ba6db:
-  Roland McGrath (1):
-        x86_64: fix ia32 AMD syscall audit fast-path
-
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx next
-
-Grant Likely (3):
-      of: adapt of_find_i2c_driver() to be usable by SPI also
-      spi: split up spi_new_device() to allow two stage registration.
-      spi: Add OF binding support for SPI busses
-
- drivers/of/Kconfig      |    6 ++
- drivers/of/Makefile     |    1 +
- drivers/of/base.c       |   88 ++++++++++++++++++++++++++++++
- drivers/of/of_i2c.c     |   64 +---------------------
- drivers/of/of_spi.c     |   93 +++++++++++++++++++++++++++++++
- drivers/spi/spi.c       |  139 ++++++++++++++++++++++++++++++++---------------
- include/linux/of.h      |    1 +
- include/linux/of_spi.h  |   18 ++++++
- include/linux/spi/spi.h |   12 ++++
- 9 files changed, 317 insertions(+), 105 deletions(-)
- create mode 100644 drivers/of/of_spi.c
- create mode 100644 include/linux/of_spi.h
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Warner
