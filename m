@@ -1,24 +1,19 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D8DFFDDF6B
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 18:36:20 +1000 (EST)
-Date: Mon, 28 Jul 2008 01:31:47 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/2] leds: Support OpenFirmware led bindings
-In-Reply-To: <20080727022116.GN12191@secretlab.ca>
-Message-ID: <Pine.LNX.4.64.0807272159500.26456@t2.domain.actdsltmp>
-References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
-	<1217019705-24244-2-git-send-email-tpiepho@freescale.com>
-	<20080727022116.GN12191@secretlab.ca>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 526DDDDE24
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 18:42:23 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC] cpm_uart: Add generic clock API support to set baudrates
+Date: Mon, 28 Jul 2008 10:42:16 +0200
+References: <200807241405.21770.laurentp@cse-semaphore.com>
+	<01409579-8A92-4A16-9C66-7C751BB348E7@kernel.crashing.org>
+In-Reply-To: <01409579-8A92-4A16-9C66-7C751BB348E7@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807281042.16872.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,51 +23,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 26 Jul 2008, Grant Likely wrote:
-> On Fri, Jul 25, 2008 at 02:01:45PM -0700, Trent Piepho wrote:
->> Add bindings to support LEDs defined as of_platform devices in addition to
->> the existing bindings for platform devices.
->
->> +- gpios :  Should specify the LED GPIO.
->
-> Question: it is possible/desirable for a single LED to be assigned
-> multiple GPIO pins?  Say, for a tri-color LED?  (I'm fishing for
-> opinions; I really don't know if it would be a good idea or not)
+This patch introduces baudrate setting support via the generic clock API.
+When present the optional device tree clock property is used instead of
+fsl-cpm-brg. Platforms can then define complex clock schemes, to output
+the serial clock on an external pin for instance.
 
-Good question.  The Linux LED layer has no concept of multi-color LEDs, so
-it's more difficult that just adding support to the gpio led driver.  I have
-a device with a tri-color red/green/orange LED and this posed some
-difficulty.  It's defined as independent red and greed LEDs, which is mostly
-fine, except I wanted it to flash orange.  I can make both the red LED and
-green LED flash, but there is nothing to insure their flashing remains in
-sync.
+Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+---
+ drivers/serial/cpm_uart/cpm_uart.h      |    1 +
+ drivers/serial/cpm_uart/cpm_uart_core.c |   26 +++++++++++++++++++-------
+ 2 files changed, 20 insertions(+), 7 deletions(-)
 
-Other OF bindings allow multiple GPIOs to be listed in a gpios property, so
-that's not a problem if someone wants to do that.  There would need to be a
-way to define what the gpios mean.  I don't think it's worthwhile to come up
-with a binding for that until there is a real user.
+On Friday 25 July 2008, Kumar Gala wrote:
+> I'm having problems applying due to mailer formatting.
 
->> +- function :  (optional) This parameter, if present, is a string
->> +  defining the function of the LED.  It can be used to put the LED
->> +  under software control, e.g. Linux LED triggers like "heartbeat",
->> +  "ide-disk", and "timer".  Or it could be used to attach a hardware
->> +  signal to the LED, e.g. a SoC that can configured to put a SATA
->> +  activity signal on a GPIO line.
->
-> This makes me nervous.  It exposes Linux internal implementation details
-> into the device tree data.  If you want to have a property that
-> describes the LED usage, then the possible values and meanings should be
-> documented here.
+*sigh* I'll definitely have to fix GPG support in kmail. Sorry about the
+annoyance.
 
-Should it be a linux specific property then?  I could list all the current
-linux triggers, but enumerating every possible function someone might want
-to assign to an LED seems hopeless.
+diff --git a/drivers/serial/cpm_uart/cpm_uart.h b/drivers/serial/cpm_uart/cpm_uart.h
+index d0c55e2..2e64c03 100644
+--- a/drivers/serial/cpm_uart/cpm_uart.h
++++ b/drivers/serial/cpm_uart/cpm_uart.h
+@@ -77,6 +77,7 @@ struct uart_cpm_port {
+ 	unsigned char		*rx_buf;
+ 	u32			flags;
+ 	void			(*set_lineif)(struct uart_cpm_port *);
++	struct clk		*clk;
+ 	u8			brg;
+ 	uint			 dp_addr;
+ 	void 			*mem_addr;
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index d3c19e5..438e460 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -44,6 +44,7 @@
+ #include <linux/fs_uart_pd.h>
+ #include <linux/gpio.h>
+ #include <linux/of_gpio.h>
++#include <linux/clk.h>
+ 
+ #include <asm/io.h>
+ #include <asm/irq.h>
+@@ -641,7 +642,10 @@ static void cpm_uart_set_termios(struct uart_port *port,
+ 		out_be16(&sccp->scc_psmr, (sbits << 12) | scval);
+ 	}
+ 
+-	cpm_set_brg(pinfo->brg - 1, baud);
++	if (pinfo->clk)
++		clk_set_rate(pinfo->clk, baud);
++	else
++		cpm_set_brg(pinfo->brg - 1, baud);
+ 	spin_unlock_irqrestore(&port->lock, flags);
+ }
+ 
+@@ -991,13 +995,21 @@ static int cpm_uart_init_port(struct device_node *np,
+ 	int ret;
+ 	int i;
+ 
+-	data = of_get_property(np, "fsl,cpm-brg", &len);
+-	if (!data || len != 4) {
+-		printk(KERN_ERR "CPM UART %s has no/invalid "
+-		                "fsl,cpm-brg property.\n", np->name);
+-		return -EINVAL;
++	data = of_get_property(np, "clock", NULL);
++	if (data) {
++		struct clk *clk = clk_get(NULL, (const char*)data);
++		if (!IS_ERR(clk))
++			pinfo->clk = clk;
++	}
++	if (!pinfo->clk) {
++		data = of_get_property(np, "fsl,cpm-brg", &len);
++		if (!data || len != 4) {
++			printk(KERN_ERR "CPM UART %s has no/invalid "
++			                "fsl,cpm-brg property.\n", np->name);
++			return -EINVAL;
++		}
++		pinfo->brg = *data;
+ 	}
+-	pinfo->brg = *data;
+ 
+ 	data = of_get_property(np, "fsl,cpm-command", &len);
+ 	if (!data || len != 4) {
+-- 
+1.5.0
 
->> +		led.default_trigger =
->> +			of_get_property(child, "linux,default-trigger", NULL);
->
-> This isn't in the documented binding.  I assume that you mean 'function'
-> here?
 
-Looks like I emailed the wrong patch file.  That should be changed to
-"function" and there are a few cosmetic changes that are missing.
+-- 
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+F +32 (2) 387 42 75
