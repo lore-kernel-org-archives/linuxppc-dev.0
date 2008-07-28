@@ -2,17 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 836B2DE02A
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 19:58:51 +1000 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
+	by ozlabs.org (Postfix) with ESMTPS id F3F57DDF07
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 20:51:15 +1000 (EST)
+Subject: Re: mISDN still breaking the allmodconfig build...
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Marcel Holtmann <marcel@holtmann.org>
+In-Reply-To: <93120C4B-D2F4-4479-806B-2141AC3DC607@holtmann.org>
+References: <20080727.170235.97056809.davem@davemloft.net>
+	<93120C4B-D2F4-4479-806B-2141AC3DC607@holtmann.org>
 Content-Type: text/plain
-Date: Mon, 28 Jul 2008 19:58:37 +1000
-Message-Id: <1217239117.11188.187.camel@pasglop>
+Date: Mon, 28 Jul 2008 20:50:53 +1000
+Message-Id: <1217242253.11188.197.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: sfr@canb.auug.org.au, kkeil@suse.de, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	torvalds@linux-foundation.org, David Miller <davem@davemloft.net>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,108 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Mon, 2008-07-28 at 03:03 +0200, Marcel Holtmann wrote:
+> Hi Dave,
+> 
+> > More fallout from the premature mISDN driver merge:
+> >
+> > drivers/isdn/hardware/mISDN/hfcmulti.c:5255:2: error: #error "not  
+> > running on big endian machines now"
+> 
+> is that only the HFC driver or the whole mISDN stack?
+> 
+> I know that the two old ISDN stacks where really bad on big endian,  
+> but my assumption was that we did sort this out in the end.
 
-I lied :-) There is a couple more features coming in. Mostly Roland
-tracehook stuff which came in a bit late but since the generic bits
-are in and he had some powerpc support ready, we felt like it was
-something worth having. There's also some SPI bits from Grant who
-were around but took some time to be fully acked and some stuff to
-expose our cache topology through sysfs that we wanted but took a
-bit longer to finish than expected.
+Well, I got it working well enough (the old one) on a ppc405 about 5 or
+6 years ago... It did require some endian & dma mapping fixing, iirc, in
+the hisax pci driver, but nothing very tricky.
 
-The rest is mostly fixes.
+What bugs me is that we -fixed- at least some of these things in the old
+stack, up to the point where I could use it reliably in some commercial
+products, and now we are merging a new stack which, in that area, is a
+clear regression over the old code.
 
-It's all in:
+One basic premise to me for replacing a whole stack with a new one is
+that the new one should be -at-least- as good as the old one in all
+areas, and those (virt_to_bus and endianness) are pretty major.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-
-(Hopefully no silly non-printable character this time, at least
-nothing I manage to spot with evo but who knows...)
-
-Cheers,
 Ben.
-
- arch/powerpc/Kconfig                       |    1 
- arch/powerpc/kernel/entry_32.S             |   17 +-
- arch/powerpc/kernel/entry_64.S             |   10 +
- arch/powerpc/kernel/legacy_serial.c        |   44 ++--
- arch/powerpc/kernel/process.c              |    8 -
- arch/powerpc/kernel/prom_init.c            |   39 ----
- arch/powerpc/kernel/ptrace.c               |   54 ++---
- arch/powerpc/kernel/setup-common.c         |   24 --
- arch/powerpc/kernel/setup_64.c             |    3 
- arch/powerpc/kernel/signal.c               |   23 ++
- arch/powerpc/kernel/smp.c                  |  119 ++++++++++-
- arch/powerpc/kernel/stacktrace.c           |    1 
- arch/powerpc/kernel/sysfs.c                |  311 ++++++++++++++++++++++++++++
- arch/powerpc/kernel/vio.c                  |    6 -
- arch/powerpc/mm/hugetlbpage.c              |    9 +
- arch/powerpc/platforms/powermac/setup.c    |   72 ++++++
- arch/powerpc/platforms/powermac/udbg_scc.c |   12 +
- arch/powerpc/platforms/pseries/cmm.c       |    8 +
- drivers/net/ibmveth.c                      |    8 -
- drivers/of/Kconfig                         |    6 +
- drivers/of/Makefile                        |    1 
- drivers/of/base.c                          |   88 ++++++++
- drivers/of/of_i2c.c                        |   64 ------
- drivers/of/of_spi.c                        |   93 ++++++++
- drivers/spi/spi.c                          |  139 +++++++++----
- include/asm-powerpc/pgtable-4k.h           |    2 
- include/asm-powerpc/pgtable-64k.h          |    2 
- include/asm-powerpc/pgtable-ppc32.h        |    3 
- include/asm-powerpc/pgtable-ppc64.h        |    4 
- include/asm-powerpc/ptrace.h               |    1 
- include/asm-powerpc/signal.h               |    3 
- include/asm-powerpc/smp.h                  |    2 
- include/asm-powerpc/syscall.h              |   84 ++++++++
- include/asm-powerpc/thread_info.h          |    5 
- include/asm-powerpc/topology.h             |    2 
- include/linux/of.h                         |    1 
- include/linux/of_spi.h                     |   18 ++
- include/linux/spi/spi.h                    |   12 +
- 38 files changed, 1039 insertions(+), 260 deletions(-)
- create mode 100644 drivers/of/of_spi.c
- create mode 100644 include/asm-powerpc/syscall.h
- create mode 100644 include/linux/of_spi.h
-
-Benjamin Herrenschmidt (3):
-      powerpc/powermac: Use sane default baudrate for SCC debugging
-      powerpc/powermac: Fixup default serial port device for pmac_zilog
-      powerpc: Disable 64K hugetlb support when doing 64K SPU mappings
-
-Grant Likely (3):
-      of: adapt of_find_i2c_driver() to be usable by SPI also
-      spi: split up spi_new_device() to allow two stage registration.
-      spi: Add OF binding support for SPI busses
-
-Huang Weiyi (1):
-      powerpc: Removed duplicated include in stacktrace.c
-
-Kumar Gala (2):
-      powerpc/booke: Clean up the hardware watchpoint support
-      powerpc: Fix 8xx build failure
-
-Nathan Lynch (7):
-      powerpc: Fix vio build warnings
-      powerpc: kill useless SMT code in prom_hold_cpus
-      powerpc: register_cpu_online should be __cpuinit
-      powerpc: Update cpu_sibling_maps dynamically
-      powerpc: Make core sibling information available to userspace
-      powerpc: Make core id information available to userspace
-      powerpc: Show processor cache information in sysfs
-
-Nick Piggin (1):
-      powerpc/mm: Implement _PAGE_SPECIAL & pte_special() for 64-bit
-
-Roland McGrath (5):
-      powerpc: Call tracehook_signal_handler() when setting up signal frames
-      powerpc: Make syscall tracing use tracehook.h helpers
-      powerpc: Add asm/syscall.h with the tracehook entry points
-      powerpc: Add TIF_NOTIFY_RESUME support for tracehook
-      powerpc: Enable tracehook for the architecture
-
-Stephen Rothwell (3):
-      powerpc/pseries: Fix CMO sysdev attribute API change fallout
-      ibmveth: Fix multiple errors with dma_mapping_error conversion
-      powerpc/vio: More fallout from dma_mapping_error API change
