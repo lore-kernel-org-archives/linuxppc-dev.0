@@ -1,28 +1,22 @@
-Return-Path: <SRS0=YHklx0=YI=writeme.com=sinan@yourhostingaccount.com>
-Received: from mailout07.yourhostingaccount.com
-	(mailout07.yourhostingaccount.com [65.254.253.61])
-	by ozlabs.org (Postfix) with ESMTP id 538B4DE3BA
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 23:20:10 +1000 (EST)
-Received: from mailscan04.yourhostingaccount.com ([10.1.15.4]
-	helo=mailscan04.yourhostingaccount.com)
-	by mailout07.yourhostingaccount.com with esmtp (Exim)
-	id 1KNSAV-00019b-EH
-	for linuxppc-dev@ozlabs.org; Mon, 28 Jul 2008 08:49:39 -0400
-Message-ID: <488DC046.7060802@writeme.com>
-Date: Mon, 28 Jul 2008 08:49:10 -0400
-From: Sinan Akman <sinan@writeme.com>
-MIME-Version: 1.0
-To: Karsten Keil <kkeil@suse.de>
-Subject: Re: mISDN still breaking the allmodconfig build...
-References: <20080727.170235.97056809.davem@davemloft.net>	<93120C4B-D2F4-4479-806B-2141AC3DC607@holtmann.org>	<20080727.180736.74131389.davem@davemloft.net>	<7949EA87-4340-4353-AFC9-79A718B95DF0@holtmann.org>
-	<20080728084024.GA23465@pingi.kke.suse.de>
-In-Reply-To: <20080728084024.GA23465@pingi.kke.suse.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Sender: Sinan Akman <sinan@writeme.com>
-Cc: sfr@canb.auug.org.au, Marcel Holtmann <marcel@holtmann.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org, torvalds@linux-foundation.org,
-	David Miller <davem@davemloft.net>
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 29985DE1A7
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 23:48:15 +1000 (EST)
+Message-Id: <6E59BCC0-526F-4767-AC7E-8C82FD7D4B3B@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+In-Reply-To: <200807221800.44234.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] cpm2: Rework baud rate generators configuration to
+	support external clocks.
+Date: Mon, 28 Jul 2008 08:48:05 -0500
+References: <200807221800.44234.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, vbordug@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,14 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Karsten Keil wrote:
-> [...]
-> virt_to_bus() I never got a complain before and yes I already have some patches
-> to solve the endian issues in the HFC driver, but it was not finaly
 
-   Karsten, do you have those patches available somewhere ?
-I could give it a try on  4xx with a 4s card in the near future.
+On Jul 22, 2008, at 11:00 AM, Laurent Pinchart wrote:
 
-   Thanks
+> The CPM2 BRG setup functions cpm_setbrg and cpm2_fastbrg don't  
+> support external
+> clocks. This patch adds a new exported __cpm2_setbrg function that  
+> takes the
+> clock rate and clock source as extra parameters, and moves  
+> cpm_setbrg and
+> cpm2_fastbrg to include/asm-powerpc/cpm2.h where they become inline  
+> wrappers
+> around __cpm2_setbrg.
+>
+> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+> ---
+> arch/powerpc/sysdev/cpm2.c |   34 +++----------------------------
+> include/asm-powerpc/cpm2.h |   46 ++++++++++++++++++++++++++++++ 
+> +------------
+> 2 files changed, 37 insertions(+), 43 deletions(-)
 
-   Sinan Akman
+applied.
+
+- k
