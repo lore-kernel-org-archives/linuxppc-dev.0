@@ -1,14 +1,12 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.170])
-	by ozlabs.org (Postfix) with ESMTP id 9BA2CDDED1
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 04:49:59 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so5951478wfg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 11:49:58 -0700 (PDT)
-Date: Mon, 28 Jul 2008 12:49:55 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 88D20DE2BE
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 04:51:14 +1000 (EST)
+Date: Mon, 28 Jul 2008 22:51:03 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Trent Piepho <tpiepho@freescale.com>
 Subject: Re: [PATCH 2/2] leds: Support OpenFirmware led bindings
-Message-ID: <20080728184955.GB21874@secretlab.ca>
+Message-ID: <20080728185103.GA25343@polina.dev.rtsoft.ru>
 References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
 	<1217019705-24244-2-git-send-email-tpiepho@freescale.com>
 	<20080727022116.GN12191@secretlab.ca>
@@ -17,11 +15,11 @@ References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
 	<20080728180204.GA13190@polina.dev.rtsoft.ru>
 	<Pine.LNX.4.64.0807281120150.26456@t2.domain.actdsltmp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
 In-Reply-To: <Pine.LNX.4.64.0807281120150.26456@t2.domain.actdsltmp>
-Sender: Grant Likely <glikely@secretlab.ca>
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -60,11 +58,12 @@ On Mon, Jul 28, 2008 at 11:26:28AM -0700, Trent Piepho wrote:
 > How will this work for anything besides ide activity?  For example, flashing,
 > heartbeat, default on, overheat, fan failed, kernel panic, etc.
 
-It certainly doesn't work for everything; but where it does work it
-makes a lot of sense because the property position provides a lot of
-context.
+Everything is possible, but will look weird. For example,
 
-> 
+Default on (power led) could be encoded in the root node.
+fan and overheat in a PM controller's node.
+Kernel panic in the chosen node.
+
 > > And then the OF GPIO LEDs driver could do something like:
 > >
 > > char *ide_disk_trigger_compatibles[] = {
@@ -75,6 +74,17 @@ context.
 > 
 > Everytime someone added a new ide driver, this table would have to be updated.
 
-Yes, the implementation needs thought.
+Yes. device_type would be helpful here. :-)
 
-g.
+
+Well, otherwise, we could provide a trigger map in the chosen node:
+
+chosen {
+	/* leds map: default-on, ide-disk, nand-disk, panic */
+	linux,leds = <&green_led &red_led 0 0>;
+};
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
