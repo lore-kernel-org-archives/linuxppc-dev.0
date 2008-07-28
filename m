@@ -1,26 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.175])
-	by ozlabs.org (Postfix) with ESMTP id 78024DDF00
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 08:56:54 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so6105849wfg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 15:56:53 -0700 (PDT)
-Date: Mon, 28 Jul 2008 16:56:50 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Message-ID: <20080728225650.GB22273@secretlab.ca>
-References: <1217239117.11188.187.camel@pasglop>
-	<alpine.LFD.1.10.0807280838580.3486@nehalem.linux-foundation.org>
-	<20080729015330.39aff7a5.sfr@canb.auug.org.au>
-	<alpine.LFD.1.10.0807280905500.3486@nehalem.linux-foundation.org>
-	<1217279736.11188.215.camel@pasglop>
+Return-Path: <e-grigore@criticalsoftware.com>
+Received: from gate.criticalsoftware.com (gate.criticalsoftware.com
+	[212.13.37.242]) by ozlabs.org (Postfix) with ESMTP id 981AEDE9A0
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 04:52:47 +1000 (EST)
+Received: from [192.168.1.70] (unknown [192.168.1.70])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by gate.criticalsoftware.com (Postfix) with ESMTP id 6FBEBE8614
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jul 2008 19:31:14 +0100 (WEST)
+Message-ID: <488E1134.6010109@criticalsoftware.com>
+Date: Mon, 28 Jul 2008 19:34:28 +0100
+From: mihaela elena grigore <e-grigore@criticalsoftware.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1217279736.11188.215.camel@pasglop>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, akpm@linux-foundation.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: linux kernel for ppc as elf relocatable
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,25 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 29, 2008 at 07:15:36AM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2008-07-28 at 09:06 -0700, Linus Torvalds wrote:
-> > 
-> > On Tue, 29 Jul 2008, Stephen Rothwell wrote:
-> > > 
-> > > It should be
-> > > 
-> > > 	git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-> > > 
-> > > Ben seems to have copied from one of Paul's pull requests.
-> > 
-> > Ok, that one worked for me.
-> > 
-> > Ben, I'm sure some day you'll get it right on the first try. We're all 
-> > cheering for you!
-> 
-> Should I hang out with a brown paper bag on my head all day today ?
+Can somebody help me with a few indications regarding how to obtain a 
+relocatable vmlinux when compiling the linux kernel for ppc32 ?
 
-No, that's reserved for committing things to the top level Makefile for
-no reason.
+For powerpc, by default, the building process results in an ELF 32-bit 
+MSB executable statically linked. I saw that for other architectures it 
+builds, by default, a relocatable elf file.
 
-g.
+Why is it statically linked for some architectures and relocatable for 
+others ? How to make it relocatable for ppc32? I assume that changing 
+LDFLAGS_vmlinux to '-r' in the Makefile for ppc is not enough... (i'm 
+using 2.6.11)
+
+p.s. any comments/answers to my posting, please add me in CC, as i 
+didn't subscribe, thank you.
