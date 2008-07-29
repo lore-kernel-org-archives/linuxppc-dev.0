@@ -1,27 +1,17 @@
-Return-Path: <vgoyal@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 8D76ADE92D
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 07:18:12 +1000 (EST)
-Date: Mon, 28 Jul 2008 17:10:25 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Simon Horman <horms@verge.net.au>
-Subject: [PATCH 1/5] Move elfcorehdr_addr out of vmcore.c (Was: Re: [patch]
-	crashdump: fix undefined reference to `elfcorehdr_addr')
-Message-ID: <20080728211025.GA9985@redhat.com>
-References: <20080727234529.GM6175@verge.net.au>
-	<20080728015117.GA12055@verge.net.au>
-	<20080728024526.GB3334@verge.net.au>
-	<20080728034007.GA30450@verge.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080728034007.GA30450@verge.net.au>
-Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-	kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Terry Loftin <terry.loftin@hp.com>,
-	Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 02C73DDDE7
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 10:52:20 +1000 (EST)
+Date: Tue, 29 Jul 2008 10:52:13 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: linux-next: pci-current tree build failure
+Message-Id: <20080729105213.0ac2acbd.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Benjamin, Ingo, Joerg Roedel <joerg.roedel@amd.com>,
+	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,89 +21,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+Hi Jesse,
 
-How does following series of patches look like. I have moved
-elfcorehdr_addr out of vmcore.c and pushed it to arch dependent section 
-of crash dump to make sure that it can be worked with even when
-CONFIG_PROC_VMCORE is disabled and CONFIG_CRASH_DUMP is enabled.
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
-I tested it on x86_64. Compile tested it on i386 and ppc64. ia64 and
-sh versions are completely untested.
+arch/powerpc/kernel/iommu.c:54: error: static declaration of 'iommu_num_pages' follows non-static declaration
+include/linux/iommu-helper.h:11: error: previous declaration of 'iommu_num_pages' was here
 
-Thanks
-Vivek
+Caused by commit 3bc9f79ee1ddc913be0a6d3592036683ef8a3148 ("iommu: add
+iommu_num_pages helper function") which introduced a global version of a
+function that powerpc has a different version of.  I am not sure that the
+two do the same thing - in fact they don't since powerpc can have a 64k
+page size and still need to use a 4k iommu pages.  I applied the
+patch below (which I personally hate :-))
 
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+>From ade341416a628800ad2a27ecd576238087290125 Mon Sep 17 00:00:00 2001
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 29 Jul 2008 10:47:59 +1000
+Subject: [PATCH] powerpc: generic iommu helper fallout
 
+Powerpc needs it own version of iommu_num_pages() since the iommu pages
+may be a different size to the system pages.
 
-o elfcorehdr_addr is used by not only the code under CONFIG_PROC_VMCORE but
-  also by the code which is not inside CONFIG_PROC_VMCORE. For example,
-  is_kdump_kernel() is used by powerpc code to determine if kernel is booting
-  after a panic then use previous kernel's TCE table. So even if
-  CONFIG_PROC_VMCORE is not set in second kernel, one should be able to
-  correctly determine that we are booting after a panic and setup calgary
-  iommu accordingly.
-
-o So remove the assumption that elfcorehdr_addr is under CONFIG_PROC_VMCORE.
-
-o Move definition of elfcorehdr_addr to arch dependent crash files.
-  (Unfortunately crash dump does not have an arch independent file otherwise
-   that would have been the best place).
-
-o kexec.c is not the right place as one can Have CRASH_DUMP enabled in
-  second kernel without KEXEC being enabled.
-
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
+ arch/powerpc/kernel/iommu.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
- fs/proc/vmcore.c           |    3 ---
- include/linux/crash_dump.h |   14 ++++++++++----
- 2 files changed, 10 insertions(+), 7 deletions(-)
-
-diff -puN fs/proc/vmcore.c~remove-elfcore-hdr-addr-definition-vmcore fs/proc/vmcore.c
---- linux-2.6.27-pre-rc1/fs/proc/vmcore.c~remove-elfcore-hdr-addr-definition-vmcore	2008-07-28 09:19:50.000000000 -0400
-+++ linux-2.6.27-pre-rc1-root/fs/proc/vmcore.c	2008-07-28 09:20:10.000000000 -0400
-@@ -32,9 +32,6 @@ static size_t elfcorebuf_sz;
- /* Total size of vmcore file. */
- static u64 vmcore_size;
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 550a193..b147055 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -51,7 +51,7 @@ static int protect4gb = 1;
  
--/* Stores the physical address of elf header of crash image. */
--unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
--
- struct proc_dir_entry *proc_vmcore = NULL;
+ static void __iommu_free(struct iommu_table *, dma_addr_t, unsigned int);
  
- /* Reads a page from the oldmem device from given offset. */
-diff -puN include/linux/crash_dump.h~remove-elfcore-hdr-addr-definition-vmcore include/linux/crash_dump.h
---- linux-2.6.27-pre-rc1/include/linux/crash_dump.h~remove-elfcore-hdr-addr-definition-vmcore	2008-07-28 12:00:44.000000000 -0400
-+++ linux-2.6.27-pre-rc1-root/include/linux/crash_dump.h	2008-07-28 12:00:56.000000000 -0400
-@@ -9,11 +9,7 @@
- 
- #define ELFCORE_ADDR_MAX	(-1ULL)
- 
--#ifdef CONFIG_PROC_VMCORE
- extern unsigned long long elfcorehdr_addr;
--#else
--static const unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
--#endif
- 
- extern ssize_t copy_oldmem_page(unsigned long, char *, size_t,
- 						unsigned long, int);
-@@ -28,6 +24,16 @@ extern struct proc_dir_entry *proc_vmcor
- 
- #define vmcore_elf_check_arch(x) (elf_check_arch(x) || vmcore_elf_check_arch_cross(x))
- 
-+/*
-+ * is_kdump_kernel() checks whether this kernel is booting after a panic of
-+ * previous kernel or not. This is determined by checking if previous kernel
-+ * has passed the elf core header address on command line.
-+ *
-+ * This is not just a test if CONFIG_CRASH_DUMP is enabled or not. It will
-+ * return 1 if CONFIG_CRASH_DUMP=y and if kernel is booting after a panic of
-+ * previous kernel.
-+ */
-+
- static inline int is_kdump_kernel(void)
+-static inline unsigned long iommu_num_pages(unsigned long vaddr,
++static inline unsigned long ppc_iommu_num_pages(unsigned long vaddr,
+ 					    unsigned long slen)
  {
- 	return (elfcorehdr_addr != ELFCORE_ADDR_MAX) ? 1 : 0;
-_
+ 	unsigned long npages;
+@@ -325,7 +325,7 @@ int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 		}
+ 		/* Allocate iommu entries for that segment */
+ 		vaddr = (unsigned long) sg_virt(s);
+-		npages = iommu_num_pages(vaddr, slen);
++		npages = ppc_iommu_num_pages(vaddr, slen);
+ 		align = 0;
+ 		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT && slen >= PAGE_SIZE &&
+ 		    (vaddr & ~PAGE_MASK) == 0)
+@@ -418,7 +418,7 @@ int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 			unsigned long vaddr, npages;
+ 
+ 			vaddr = s->dma_address & IOMMU_PAGE_MASK;
+-			npages = iommu_num_pages(s->dma_address, s->dma_length);
++			npages = ppc_iommu_num_pages(s->dma_address, s->dma_length);
+ 			__iommu_free(tbl, vaddr, npages);
+ 			s->dma_address = DMA_ERROR_CODE;
+ 			s->dma_length = 0;
+@@ -452,7 +452,7 @@ void iommu_unmap_sg(struct iommu_table *tbl, struct scatterlist *sglist,
+ 
+ 		if (sg->dma_length == 0)
+ 			break;
+-		npages = iommu_num_pages(dma_handle, sg->dma_length);
++		npages = ppc_iommu_num_pages(dma_handle, sg->dma_length);
+ 		__iommu_free(tbl, dma_handle, npages);
+ 		sg = sg_next(sg);
+ 	}
+@@ -584,7 +584,7 @@ dma_addr_t iommu_map_single(struct device *dev, struct iommu_table *tbl,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	uaddr = (unsigned long)vaddr;
+-	npages = iommu_num_pages(uaddr, size);
++	npages = ppc_iommu_num_pages(uaddr, size);
+ 
+ 	if (tbl) {
+ 		align = 0;
+@@ -617,7 +617,7 @@ void iommu_unmap_single(struct iommu_table *tbl, dma_addr_t dma_handle,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	if (tbl) {
+-		npages = iommu_num_pages(dma_handle, size);
++		npages = ppc_iommu_num_pages(dma_handle, size);
+ 		iommu_free(tbl, dma_handle, npages);
+ 	}
+ }
+-- 
+1.5.6.3
