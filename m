@@ -1,23 +1,16 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.189])
-	by ozlabs.org (Postfix) with ESMTP id 5B55FDE26F
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 22:06:48 +1000 (EST)
-Received: by fk-out-0910.google.com with SMTP id e30so4918596fke.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 05:06:47 -0700 (PDT)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: ide pmac breakage
-Date: Tue, 29 Jul 2008 14:04:46 +0200
-References: <1217208596.11188.144.camel@pasglop>
-	<200807291341.14724.bzolnier@gmail.com>
-	<1217332971.11188.249.camel@pasglop>
-In-Reply-To: <1217332971.11188.249.camel@pasglop>
+Return-Path: <temerkhanov@yandex.ru>
+Received: from webmail22.yandex.ru (webmail22.yandex.ru [213.180.223.146])
+	by ozlabs.org (Postfix) with ESMTP id F178DDDDF7
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 22:36:32 +1000 (EST)
+Received: from YAMAIL (webmail22) by mail.yandex.ru id S4473784AbYG2L6Q for
+	<linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 15:58:16 +0400
+From: Sergey Temerkhanov <temerkhanov@yandex.ru>
+To: linuxppc-dev@ozlabs.org
+Subject: Level IRQ handling on Xilinx INTC with ARCH=powerpc
 MIME-Version: 1.0
-Message-Id: <200807291404.46906.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linux-ide@vger.kernel.org,
-	petkovbb@gmail.com, linuxppc-dev@ozlabs.org
+Message-Id: <360961217332693@webmail22.yandex.ru>
+Date: Tue, 29 Jul 2008 15:58:13 +0400
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 29 July 2008, Benjamin Herrenschmidt wrote:
-> On Tue, 2008-07-29 at 13:41 +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > Well, all I do is call into Bart's new helpers to scan for or
-> > unregister
-> > > devices ...
-> > 
-> > The switch to these helpers happened _before_ 2.6.26 and it shouldn't
-> > bring
-> > such behavior change (ditto for new IDE host addition/removal
-> > helpers)...
-> > 
-> > Please try to git-bisect it when you have some time.
-> 
-> Ok, I will. I worked fine when I last tried your patches. I'll see if I
-> can track it down too. Been a bit too busy lately as you can imagine.
-> 
-> Do you have something that exercise the same code path you can use ?
+Hi, all!
 
-I'll see if I can reproduce it with IDE warm-plug support later...
+I'm currently in process of development of Xilinx I2C IP core driver and I've run into the problem: the ISR for level-based IRQ is called twice.
 
-Thanks,
-Bart
+It looks like level IRQ handling on Xilinx INTC with ARCH=powerpc is currently broken as Xilinx INTC requires IRQ acknowledge with IRQ signal deasserted (i.e. after ISR call). ISR is supposed to acknowledge level IRQ in the core which asserted it thus deasserting appropriate IRQ signal.
+And handle_level_irq() which is currently used as high-level IRQ handler for Xilinx INTC only tries to acknowledge IRQ before ISR call. So that the IRQ remains asserted in INTC and after the call to desc->chip->unmask() causes spurious attempt to process the same IRQ again. However, call to desc->chip->ack() this time finishes the required procedure of IRQ acknowledge.
+
+I see a few ways to resolve this:
+1. Change high-level handler to __do_IRQ() (as for ARCH=ppc) with proper methods modification (which is deprecated).
+2. Change handle_level_irq() so that it calls desc->chip->ack() or desc->chip->end() (and set chip->end to point to xilinx_intc_ack() for Xilinx INTC) before desc->chip->unmask() (may potentially cause breakage for other arches. But I've tried it and it works).
+3. Acknowledge IRQ at INTC in ISR (quick'n'dirty hack).
+
+Regards, Sergey Temerkhanov
