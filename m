@@ -1,34 +1,36 @@
 Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2CB90DE2C0
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 90B71DE21E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jul 2008 05:37:58 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m6TJaWan017427 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Jul 2008 12:36:32 -0700 (MST)
+	Wed, 30 Jul 2008 05:39:24 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m6TJd3D8007458 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 29 Jul 2008 12:39:03 -0700 (MST)
 Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
 	[10.82.19.112])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m6TJaV0C004304
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m6TJd2VI010233
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Jul 2008 14:36:31 -0500 (CDT)
-Date: Tue, 29 Jul 2008 14:36:30 -0500
+	Tue, 29 Jul 2008 14:39:02 -0500 (CDT)
+Date: Tue, 29 Jul 2008 14:39:01 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Ben Gardiner <BenGardiner@nanometrics.ca>
+To: Matvejchikov Ilya <matvejchikov@gmail.com>
 Subject: Re: No output from SMC1 console with the 2.6.26 kernel (8xx based
 	board)
-Message-ID: <20080729193630.GB8051@ld0162-tx32.am.freescale.net>
+Message-ID: <20080729193901.GC8051@ld0162-tx32.am.freescale.net>
 References: <8496f91a0807281243y2193dad5hc758444fe0a10258@mail.gmail.com>
 	<488E2510.7070209@freescale.com>
 	<8496f91a0807282310r5e70fe01v85b2ff2da7a80416@mail.gmail.com>
 	<488F385B.9030504@nanometrics.ca>
+	<8496f91a0807291136v172b3b16t170088faf3f30b5b@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <488F385B.9030504@nanometrics.ca>
-Cc: linuxppc-embedded@ozlabs.org
+In-Reply-To: <8496f91a0807291136v172b3b16t170088faf3f30b5b@mail.gmail.com>
+Cc: Ben Gardiner <BenGardiner@nanometrics.ca>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -39,18 +41,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 29, 2008 at 11:33:47AM -0400, Ben Gardiner wrote:
-> And my serial console output is stopping around the same point as 
-> Matvejchikov. I have baud 9600, so I'm guessing that it's cutoff because 
-> of this (please excuse me if this is wrong). NB: the console=ttyS0 
-> bootarg is there to get a working console when I  boot back to 2.4.
-> <snip console>
-> Memory <- <0x0 0x8000000> (128MB)
-> ENET0: local-mac-address <- 00:11:40:02:00:18
-> CPU clock-frequency <- 0x3f940aa (67MHz)
-> CPU timebase-frequency <- 0x1fce17 (2MHz)
-> CPU bus-frequency <- 0x1fce170 (33MHz)
+On Tue, Jul 29, 2008 at 10:36:30PM +0400, Matvejchikov Ilya wrote:
+> Have you tired to run 2.6.25 kernel? With 2.6.25.4 my console works
+> fine! I suspect there is something like a regression....
 
-Try commenting out calls to cpm_setbrg(), to see if the frequency is bad.
+Did you use CONFIG_PPC_CPM_NEW_BINDING in 2.6.25?  It became mandatory in
+2.6.26.  Also, try commenting out cpm_setbrg() calls in case the
+frequency is not being set properly.
+
+2.6.26 introduced the allocation of the CPM2 SMC parameter RAM area; what
+did your device node look like in 2.6.25?  What happens if you use that
+device tree with 2.6.26?
 
 -Scott
