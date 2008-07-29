@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F055DDDF1F
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 07:33:32 +1000 (EST)
-Subject: Re: 2.6.27-rc1 problems
+	by ozlabs.org (Postfix) with ESMTPS id 36B77DDF54
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 07:35:57 +1000 (EST)
+Subject: Re: Level IRQ handling on Xilinx INTC with ARCH=powerpc
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-In-Reply-To: <20080729140617.7bf16aeb@lappy.seanm.ca>
-References: <20080729140617.7bf16aeb@lappy.seanm.ca>
+To: David Howells <dhowells@redhat.com>
+In-Reply-To: <16359.1217340857@redhat.com>
+References: <360961217332693@webmail22.yandex.ru> <16359.1217340857@redhat.com>
 Content-Type: text/plain
-Date: Wed, 30 Jul 2008 07:33:05 +1000
-Message-Id: <1217367185.11188.260.camel@pasglop>
+Date: Wed, 30 Jul 2008 07:35:23 +1000
+Message-Id: <1217367323.11188.263.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,25 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-29 at 14:06 -0400, Sean MacLennan wrote:
-> I am seeing a lot of problems with 2.6.27-rc1.
+On Tue, 2008-07-29 at 15:14 +0100, David Howells wrote:
+> Sergey Temerkhanov <temerkhanov@yandex.ru> wrote:
 > 
-> Merge conflicts that make no sense.
+> > And handle_level_irq() which is currently used as high-level IRQ handler for
+> > Xilinx INTC only tries to acknowledge IRQ before ISR call. So that the IRQ
+> > remains asserted in INTC and after the call to desc->chip->unmask() causes
+> > spurious attempt to process the same IRQ again. However, call to
+> > desc->chip->ack() this time finishes the required procedure of IRQ
+> > acknowledge.
+> 
+> I think I'm seeing the same on the MN10300 arch with its builtin PIC.  My
+> soultion was to make unmask() also clear the IRQ latch in the PIC for that
+> channel.  We perhaps want an unmask_ack() op.
 
-Ugh ? Have you done a clean pull ?
-
-> Files missing (tracehook.h).
-
-Looks like your repo isn't sane
-
-> Lots of compile errors.
-
-There's one known due to a PCI patch that went in and broke ppc64 but
-that's it I think. I'll a new batch of fixes today.
-
-> Anybody else seeing problems, or is it just me? I am starting
-> to wonder if my git repository has gotten corrupted.
-
-Yeah, sounds like it.
+I've heard about similar issues on other setups... I dislike having a
+separate op though, not sure what's the best approach. Another one is to
+write a different level handler for such PICs, though that somewhat
+sucks too. CC'ing Ingo and Thomas who may have a better idea.
 
 Ben.
