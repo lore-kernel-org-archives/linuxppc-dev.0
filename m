@@ -1,20 +1,18 @@
-Return-Path: <schandra@in.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 1450BDDE05
+Return-Path: <BenGardiner@nanometrics.ca>
+Received: from nmxmail.nanometrics.ca (mail.nanometrics.ca [206.191.47.130])
+	by ozlabs.org (Postfix) with ESMTP id 70E1BDDE22
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jul 2008 01:22:22 +1000 (EST)
-Subject: ML507 EDK 10.1 SP2
-From: somshekar c kadam <schandra@in.mvista.com>
-To: John Linn <John.Linn@xilinx.com>
-In-Reply-To: <20080602143551.54964C80052@mail135-wa4.bigfish.com>
-References: <1212445128.3187.20.camel@localhost.localdomain>
-	<20080602143551.54964C80052@mail135-wa4.bigfish.com>
-Content-Type: text/plain
-Date: Wed, 30 Jul 2008 07:56:00 +0530
-Message-Id: <1217384760.22420.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: skaushik@in.mvista.com, nbhat@in.mvista.com, pnarasim@in.mvista.com,
-	linuxppc-embedded@ozlabs.org
+	Wed, 30 Jul 2008 01:38:10 +1000 (EST)
+Message-ID: <488F385B.9030504@nanometrics.ca>
+Date: Tue, 29 Jul 2008 11:33:47 -0400
+From: Ben Gardiner <BenGardiner@nanometrics.ca>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: No output from SMC1 console with the 2.6.26 kernel (8xx based board)
+References: <8496f91a0807281243y2193dad5hc758444fe0a10258@mail.gmail.com>	<488E2510.7070209@freescale.com>
+	<8496f91a0807282310r5e70fe01v85b2ff2da7a80416@mail.gmail.com>
+In-Reply-To: <8496f91a0807282310r5e70fe01v85b2ff2da7a80416@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,231 +23,190 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi John Linn,
-
-We are using ML507 EDK 10.1 with latest SP2.
-We have took your help in getting up the Xilinx git kernel up on ML507
-using bsb image donwload.bit from xilinx website and dts file part of
-the kernel. The kernel boots successfully. thanks for all your support.
-
-Well we now want to modify bsb image by creating new download.bit using
-EDK 10.1 SP2 and generate dts file for it.
-
-Problem now we are facing is we follow the steps mentioned XIlinx ML507
-pdf to create donwload.bit and generate dts file for it. using the same
-xilinx kernel but the board doesn't boot.
-
-Can you throw some light on any specific steps we are missing apart from
-the pdf mentioned to create bsb image download.bit and corresponding dts
-file. 
-
-Just we need to use uartlite instead of 16650 uart.
-Also we are trying on ML403 we are not able to create a sample
-donwload.bit which boots. 
-Please mention any steps we are missing or any pointers will help as we
-are stuck in this problem from long.
-
-For ml403 we even tried older edk 9.1 sp2 , 8.1 sp2 and 7.1 sp2 neither
-works .
-
-Waiting for your inputs 
-Thanks In advance 
-Regards
-Neelu
-
-
-
-
-
-
-On Mon, 2008-06-02 at 08:35 -0600, John Linn wrote:
-> Hi Neelu,
-> 
-> The easiest way to get a good baseline with the board and the kernel is
-> to use the bitstream for the board that we provide in the file,
-> linux_support.tar.gz, on http://git.xilinx.com.
-> 
-> In the PPC440 directory of the support file, there's a bit stream for
-> the board. If you don't use a Xilinx probe to download to the board, you
-> will need to create an ACE file from that bit stream, but it sounds like
-> you know how to do that.
-> 
-> I know the state of the Xilinx Git tree, but I don't know the state of
-> Grant's for sure. We have baselined our Git tree such that you should be
-> able to make it work quick and easy (that's our goal).
-> 
-> To build arch/powerpc, the following commands should create zImage in
-> the arch/powerpc/boot directory that can be used with the bitstream from
-> the linux_support.tar.gz file.  I am currently using the ELDK 4.1 tools
-> to build the kernel.
-> 
-> > make ARCH=powerpc ml507_defconfig
-> > make ARCH=powerpc zImage
-> 
-> We also provide a ramdisk image in the support file, you can build it
-> also after copying the ramdisk images into the arch/powerpc/boot
-> directory.  The default command line of the kernel, in the ml507.dts
-> file in the arch/powerpc/boot/dts directory, is setup to use the
-> ramdisk.
-> 
-> > make ARCH=powerpc zImage.initrd
-> 
-> Hope that helps,
-> John Linn
-> 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+john.linn=xilinx.com@ozlabs.org
-> [mailto:linuxppc-embedded-bounces+john.linn=xilinx.com@ozlabs.org] On
-> Behalf Of somshekar c kadam
-> Sent: Monday, June 02, 2008 4:19 PM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: ML507 EDK 10.1
-> 
-> Hi All,
-> 
-> Currently I am working with ML507 Base Reference design. I  have
-> installed Eval 10.1 edk I am bale to create ace file using xmd with base
-> download.bit. and able to boot the board. Now I want to boot the board
-> with Xilinx Linux kernel from Xilinx git tree. I am facing compilation
-> problem with zImage.dts for ml507_defconfig.
-> 
+In 'Re: No output from SMC1 console with the 2.6.26 kernel (PQ2FADS 
+based    board)' Matvejchikov Ilya wrote:
+> No, it's not working for me :(
+>
+> My pins is configured by u-boot so I disable init_ioports() function
+> call. Moreover the udbg0 console forks fine... I have no output at all
+> after "udbg_putc = NULL" line in the cpm_uart driver. As I see it the
+> cpm_uart driver doesn't run properly after udbg console has turned
+> off.....
 >   
-> 
-> 
-> now I need to create ace file for Linux for ML507.
-> I tried creating zImage.dts its failing. Kernel error see below
-> 
-> Please help or give some pointers wherein I can compile zImge.dts. this
-> is from latest git tree. Seems for me arch/powerpc wrapper code is
-> broken. Please suggest.
-> currently I have no bdi I need to stick to Ace compact Flash booting.
-> Also bit confused where we have two git tree one is Xilinx git tree one
-> more from Grant Likely which should I use ?
-> 
-> Thanks In Advance
-> 
-> Neelu
-> 
-> ---------------------------------------------------
-> WRAP    arch/powerpc/boot/zImage.dts
-> DTC: dts->dtb  on file
-> "/home/neelu/xilinx/xilinx_gittree/test44/linux-2.6-xlnx/arch/powerpc/bo
-> ot/dts/ml507.dts"
-> objcopy: Unable to recognise the format of the input file `vmlinux'
-> make[1]: *** [arch/powerpc/boot/zImage.dts] Error 1
-> make: *** [zImage.dts] Error 2
-> 
-> 
-> 
-> 
-> WIth Verbose =1 
-> 
-> 
->  /bin/sh
-> /home/neelu/xilinx/xilinx_gittree/test44/linux-2.6-xlnx/arch/powerpc/boo
-> t/wrapper -c -o arch/powerpc/boot/zImage.dts -p dts   -s
-> /home/neelu/xilinx/xilinx_gittree/test44/linux-2.6-xlnx/arch/powerpc/boo
-> t/dts/ml507.dts vmlinux
-> + kernel=
-> + ofile=zImage
-> + platform=of
-> + initrd=
-> + dtb=
-> + dts=
-> + cacheit=
-> + binary=
-> + gzip=.gz
-> + CROSS=
-> + object=arch/powerpc/boot
-> + objbin=arch/powerpc/boot
-> + tmpdir=.
-> + '[' 8 -gt 0 ']'
-> + case "$1" in
-> + cacheit=y
-> + shift
-> + '[' 7 -gt 0 ']'
-> + case "$1" in
-> + shift
-> + '[' 6 -gt 0 ']'
-> + ofile=arch/powerpc/boot/zImage.dts
-> + shift
-> + '[' 5 -gt 0 ']'
-> + case "$1" in
-> + shift
-> + '[' 4 -gt 0 ']'
-> + platform=dts
-> + shift
-> + '[' 3 -gt 0 ']'
-> + case "$1" in
-> + shift
-> + '[' 2 -gt 0 ']'
-> +
-> dts=/home/neelu/xilinx/xilinx_gittree/test44/linux-2.6-xlnx/arch/powerpc
-> /boot/dts/ml507.dts
-> + shift
-> + '[' 1 -gt 0 ']'
-> + case "$1" in
-> + '[' -z '' ']'
-> + kernel=vmlinux
-> + shift
-> + '[' 0 -gt 0 ']'
-> + '['
-> -n
-> /home/neelu/xilinx/xilinx_gittree/test44/linux-2.6-xlnx/arch/powerpc/boo
-> t/dts/ml507.dts ']'
-> + '[' '!'
-> -r
-> /home/neelu/xilinx/xilinx_gittree/test44/linux-2.6-xlnx/arch/powerpc/boo
-> t/dts/ml507.dts -a -r
-> arch/powerpc/boot/dts//home/neelu/xilinx/xilinx_gittree/test44/linux-2.6
-> -xlnx/arch/powerpc/boot/dts/ml507.dts ']'
-> + '[' -z '' ']'
-> + dtb=dts.dtb
-> + arch/powerpc/boot/dtc -O dtb -o dts.dtb -b
-> 0
-> /home/neelu/xilinx/xilinx_gittree/test44/linux-2.6-xlnx/arch/powerpc/boo
-> t/dts/ml507.dts
-> DTC: dts->dtb  on file
-> "/home/neelu/xilinx/xilinx_gittree/test44/linux-2.6-xlnx/arch/powerpc/bo
-> ot/dts/ml507.dts"
-> + '[' -z vmlinux ']'
-> + platformo=arch/powerpc/boot/dts.o
-> + lds=arch/powerpc/boot/zImage.lds
-> + ext=strip
-> + objflags=-S
-> + tmp=./zImage.24209.o
-> + ksection=.kernel:vmlinux.strip
-> + isection=.kernel:initrd
-> + case "$platform" in
-> ++ basename vmlinux
-> + vmz=./vmlinux.strip
-> + '[' -z y -o '!' -f ./vmlinux.strip.gz -o ./vmlinux.strip.gz -ot
-> vmlinux ']'
-> + objcopy -S vmlinux ./vmlinux.strip.24209
-> objcopy: Unable to recognise the format of the input file `vmlinux'
-> make[1]: *** [arch/powerpc/boot/zImage.dts] Error 1
-> make: *** [zImage.dts] Error 2
-> 
-> 
-> 
-> 
-> 
-> ------------------------------------------------------------------------
-> ------------------
-> 
-> 
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-> This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+I think I'm having a similar problem with an 8xx based board.
+
+I am calling cpm_reset() and cpm1_set_pin().
+<snip nmx_setup.c>
+...
+static struct cpm_pin nmx_pins[] = {
+    /* SMC1 */
+    {CPM_PORTB, 24, CPM_PIN_INPUT}, /* RX */
+    {CPM_PORTB, 25, CPM_PIN_INPUT | CPM_PIN_SECONDARY}, /* TX */
+};
+
+static void __init init_ioports(void)
+{
+    int i;
+
+    for (i = 0; i < ARRAY_SIZE(nmx_pins); i++) {
+        struct cpm_pin *pin = &nmx_pins[i];
+        cpm1_set_pin(pin->port, pin->pin, pin->flags);
+    }
+
+    cpm1_clk_setup(CPM_CLK_SMC1, CPM_BRG1, CPM_CLK_RTX);
+
+}
+
+static void __init nmx_setup_arch(void)
+{
+    cpm_reset();
+    init_ioports();
+...
+<snip>
+
+I have a cpm dts entry copied from the mpc866ads.dts. I've also added 
+the compatible = "simple-bus".
+<snip nmx-taurus.dts>
+...
+        cpm@9c0 {
+            #address-cells = <1>;
+            #size-cells = <1>;
+            compatible = "fsl,mpc866-cpm", "fsl,cpm1", "simple-bus";
+            ranges;
+            reg = <0x9c0 0x40>;
+            brg-frequency = <0>;
+            interrupts = <0 2>;    // cpm error interrupt
+            interrupt-parent = <&CPM_PIC>;
+
+            muram@2000 {
+                #address-cells = <1>;
+                #size-cells = <1>;
+                ranges = <0x0 0x2000 0x2000>;
+
+                data@0 {
+                    compatible = "fsl,cpm-muram-data";
+                    reg = <0x0 0x1c00>;
+                };
+            };
+
+            brg@9f0 {
+                compatible = "fsl,mpc866-brg",
+                         "fsl,cpm1-brg",
+                         "fsl,cpm-brg";
+                reg = <0x9f0 0x10>;
+                clock-frequency = <0>;
+            };
+
+            CPM_PIC: pic@930 {
+                interrupt-controller;
+                #address-cells = <0>;
+                #interrupt-cells = <1>;
+                interrupts = <5 2 0 2>;
+                interrupt-parent = <&PIC>;
+                reg = <0x930 0x20>;
+                compatible = "fsl,mpc866-cpm-pic",
+                             "fsl,cpm1-pic";
+            };
+
+
+            serial@a80 {
+                device_type = "serial";
+                compatible = "fsl,mpc866-smc-uart",
+                             "fsl,cpm1-smc-uart";
+                reg = <0xa80 0x10 0x3e80 0x40>;
+                interrupts = <4>;
+                interrupt-parent = <&CPM_PIC>;
+                fsl,cpm-brg = <1>;
+                fsl,cpm-command = <0x90>;
+            };
+
+            serial@a90 {
+                device_type = "serial";
+                compatible = "fsl,mpc866-smc-uart",
+                             "fsl,cpm1-smc-uart";
+                reg = <0xa90 0x10 0x3f80 0x40>;
+                interrupts = <3>;
+                interrupt-parent = <&CPM_PIC>;
+                fsl,cpm-brg = <2>;
+                fsl,cpm-command = <0xd0>;
+            };
+
+        };
+    };
+...
+<snip>
+
+I have CPM console SMC1 enabled
+<snip .config>
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+CONFIG_SERIAL_CPM=y
+CONFIG_SERIAL_CPM_CONSOLE=y
+CONFIG_SERIAL_CPM_SMC1=y
+ <snip>
+
+And my serial console output is stopping around the same point as 
+Matvejchikov. I have baud 9600, so I'm guessing that it's cutoff because 
+of this (please excuse me if this is wrong). NB: the console=ttyS0 
+bootarg is there to get a working console when I  boot back to 2.4.
+<snip console>
+Memory <- <0x0 0x8000000> (128MB)
+ENET0: local-mac-address <- 00:11:40:02:00:18
+CPU clock-frequency <- 0x3f940aa (67MHz)
+CPU timebase-frequency <- 0x1fce17 (2MHz)
+CPU bus-frequency <- 0x1fce170 (33MHz)
+
+zImage starting: loaded at 0x00400000 (sp: 0x07f77908)
+Allocating 0x127c50 bytes for kernel ...
+gunzipping (0x00000000 <- 0x0040c000:0x00538390)...done 0x11a680 bytes
+
+Linux/PowerPC load: root=/dev/mtdblock2 rw panic=10 console=ttyCPM0 
+console=ttyS0
+Finalizing device tree... flat tree at 0x545300
+Xid mach(): done
+MMU:enter
+MMU:hw init
+MMU:mapin
+MMU:setio
+MMU:exit
+Using NMX Taurus machine description
+Linux version 2.6.26-dirty (BenGardiner@penguin.nanometrics.ca) (gcc 
+version 4.0.1) #1 Tue Jul 2
+9 10:43:11 EDT 2008
+console [udbg0] enabled
+Entering add_active_range(0, 0, 32768) 0 entries of 256 used
+setup_arch: bootmem
+arch: exit
+Top of RAM: 0x8000000, Total RAM: 0x8000000
+Memory hole size: 0MB
+Zone PFN ranges:
+  DMA             0 ->    32768
+  Normal      32768 ->    32768
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0:        0 ->    32768
+On node 0 totalpages: 32768
+  DMA zone: 256 pages used for memmap
+  DMA zone: 0 pages reserved
+  DMA zone: 32512 pages, LIFO batch:7
+  Normal zone: 0 pages used for memmap
+  Movable zone: 0 pages used for memmap
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 32512
+Kernel command line: root=/dev/mtdblock2 rw panic=10 console=ttyCPM0 
+console=ttyS0
+PID hash table entries: 512 (order: 9, 2048 bytes)
+Decrementer Frequency = 0x3f940a
+time_init: decrementer frequency = 4.166666 MHz
+time_init: processor frequency   = 66.666666 MHz
+clocksource: timebase mult[3c0000a1] shift[22] registered
+clockevent: decremente
+<snip>
+
+I've had the same behaviour with gcc 4.0.1 and gcc 4.3.0. Also with 
+CONFIG_SERIAL_CPM_SCC1=y defined and not. Also with the smc2 dts entry 
+removed and not. Also with ',9600' on the console=CPM0 bootarg and not.
+
+Please excuse me for jumping in late. I hope this can help track down 
+the problem.
+
+,Ben
