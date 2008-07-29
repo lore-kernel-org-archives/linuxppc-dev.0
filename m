@@ -1,29 +1,12 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
-	by ozlabs.org (Postfix) with ESMTP id AEB0BDDF15
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 14:42:45 +1000 (EST)
-Date: Tue, 29 Jul 2008 14:42:43 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH 3/5] ia64: Define elfcorehdr_addr in arch dependent section
-Message-ID: <20080729044241.GA23514@verge.net.au>
-References: <20080727234529.GM6175@verge.net.au>
-	<20080728015117.GA12055@verge.net.au>
-	<20080728024526.GB3334@verge.net.au>
-	<20080728034007.GA30450@verge.net.au>
-	<20080728211025.GA9985@redhat.com>
-	<20080728211156.GB9985@redhat.com>
-	<20080728211314.GC9985@redhat.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 29 Jul 2008 14:51:22 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: libfdt: Forgot one function when cleaning the namespace
+Message-ID: <20080729045122.GC19856@yookeroo.seuss>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080728211314.GC9985@redhat.com>
-Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-	kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Terry Loftin <terry.loftin@hp.com>,
-	Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,73 +16,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 28, 2008 at 05:13:14PM -0400, Vivek Goyal wrote:
-> 
-> o Move elfcorehdr_addr definition in arch dependent crash dump file. This is
->   equivalent to defining elfcorehdr_addr under CONFIG_CRASH_DUMP instead of
->   CONFIG_PROC_VMCORE. This is needed by is_kdump_kernel() which can be
->   used irrespective of the fact whether CONFIG_PROC_VMCORE is enabled or
->   not.
-> 
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> ---
-> 
->  arch/ia64/kernel/setup.c |    9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff -puN arch/ia64/kernel/setup.c~fix-elfcorehdr_addr-parsing-ia64 arch/ia64/kernel/setup.c
-> --- linux-2.6.27-pre-rc1/arch/ia64/kernel/setup.c~fix-elfcorehdr_addr-parsing-ia64	2008-07-28 12:16:40.000000000 -0400
-> +++ linux-2.6.27-pre-rc1-root/arch/ia64/kernel/setup.c	2008-07-28 12:16:40.000000000 -0400
-> @@ -478,7 +478,12 @@ static __init int setup_nomca(char *s)
->  }
->  early_param("nomca", setup_nomca);
->  
-> -#ifdef CONFIG_PROC_VMCORE
-> +/*
-> + * Note: elfcorehdr_addr is not just limited to vmcore. It is also used by
-> + * is_kdump_kernel() to determine if we are booting after a panic. Hence
-> + * ifdef it under CONFIG_CRASH_DUMP and not CONFIG_PROC_VMCORE.
-> + */
-> +#ifdef CONFIG_CRASH_DUMP
->  /* elfcorehdr= specifies the location of elf core header
->   * stored by the crashed kernel.
->   */
-> @@ -491,7 +496,9 @@ static int __init parse_elfcorehdr(char 
->  	return 0;
->  }
->  early_param("elfcorehdr", parse_elfcorehdr);
-> +#endif
->  
-> +#ifdef CONFIG_PROC_VMCORE
->  int __init reserve_elfcorehdr(unsigned long *start, unsigned long *end)
->  {
->  	unsigned long length;
-> _
+In commit b6d80a20fc293f3b995c3ce1a6744a5574192125, we renamed all
+libfdt functions to be prefixed with fdt_ or _fdt_ to minimise the
+chance of collisions with things from whatever package libfdt is
+embedded in, pulled into the libfdt build via that environment's
+libfdt_env.h.
 
-Hi Vivek,
+Except... I missed one.  This patch applies the same treatment to
+_stringlist_contains().  While we're at it, also make it static since
+it's only used in the same file.
 
-I think that you also need the following in arch/ia64/kernel/crash_dump.c.
-With this change your code compiles on ia64.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Signed-off-by: Simon Horman <horms@verge.net.au>
-
-
-Index: linux-2.6/arch/ia64/kernel/crash_dump.c
+Index: dtc/libfdt/fdt_ro.c
 ===================================================================
---- linux-2.6.orig/arch/ia64/kernel/crash_dump.c	2008-07-29 14:06:57.000000000 +1000
-+++ linux-2.6/arch/ia64/kernel/crash_dump.c	2008-07-29 14:09:55.000000000 +1000
-@@ -8,10 +8,14 @@
+--- dtc.orig/libfdt/fdt_ro.c	2008-07-29 13:43:23.000000000 +1000
++++ dtc/libfdt/fdt_ro.c	2008-07-29 13:43:33.000000000 +1000
+@@ -408,7 +408,8 @@ int fdt_node_offset_by_phandle(const voi
+ 					     &phandle, sizeof(phandle));
+ }
  
- #include <linux/errno.h>
- #include <linux/types.h>
-+#include <linux/crash_dump.h>
- 
- #include <asm/page.h>
- #include <asm/uaccess.h>
- 
-+/* Stores the physical address of elf header of crash image. */
-+unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
-+
- /**
-  * copy_oldmem_page - copy one page from "oldmem"
-  * @pfn: page frame number to be copied
+-int _stringlist_contains(const char *strlist, int listlen, const char *str)
++static int _fdt_stringlist_contains(const char *strlist, int listlen,
++				    const char *str)
+ {
+ 	int len = strlen(str);
+ 	const char *p;
+@@ -434,7 +435,7 @@ int fdt_node_check_compatible(const void
+ 	prop = fdt_getprop(fdt, nodeoffset, "compatible", &len);
+ 	if (!prop)
+ 		return len;
+-	if (_stringlist_contains(prop, len, compatible))
++	if (_fdt_stringlist_contains(prop, len, compatible))
+ 		return 0;
+ 	else
+ 		return 1;
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
