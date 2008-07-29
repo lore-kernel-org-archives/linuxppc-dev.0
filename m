@@ -1,18 +1,31 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id F26C3DDE22
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 20:17:38 +1000 (EST)
-To: mihaela elena grigore <e-grigore@criticalsoftware.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: linux kernel for ppc as elf relocatable
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 28 Jul 2008 19:34:28 BST."
-	<488E1134.6010109@criticalsoftware.com>
-Date: Tue, 29 Jul 2008 12:17:35 +0200
-Sender: wd@denx.de
-Message-Id: <20080729101735.BAF07248B9@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jimix@watson.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 48F01DDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 20:43:04 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6TAgxee006274
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 06:42:59 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6TAgxbR219422
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 06:42:59 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6TAgxpG005762
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jul 2008 06:42:59 -0400
+Message-Id: <612EFEB1-E426-4E1B-86F6-BB2D484F0374@watson.ibm.com>
+From: Jimi Xenidis <jimix@watson.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20080728002336.4a7883f1.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] Fix powerpc64 build if CONFIG_EPOLL=n
+Date: Tue, 29 Jul 2008 06:42:59 -0400
+References: <B6E6E232-5793-4BBB-BD82-95B19716ACE4@watson.ibm.com>
+	<20080728002336.4a7883f1.sfr@canb.auug.org.au>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,19 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <488E1134.6010109@criticalsoftware.com> you wrote:
-> Can somebody help me with a few indications regarding how to obtain a 
-> relocatable vmlinux when compiling the linux kernel for ppc32 ?
 
-Why exactly would you want to do that?
+On Jul 27, 2008, at 10:23 AM, Stephen Rothwell wrote:
 
-Best regards,
+> Hi Jimi,
+>
+> On Sun, 27 Jul 2008 08:48:09 -0400 Jimi Xenidis  
+> <jimix@watson.ibm.com> wrote:
+>>
+>> Declate compat_sys_epoll_pwait as a conditional syscall like the rest
+>> of the epoll interfaces.
+>> We could have put an #ifdef around the entry in include/asm-powerpc/
+>> systbl.h, but IMHO this is ultimately correct patch.
+>
+> Already in Linus' tree - commit  
+> 5f17156fc55abac476d180e480bedb0f07f01b14
+> "Fix build on COMPAT platforms when CONFIG_EPOLL is disabled"
 
-Wolfgang Denk
+Wow, missed by less than a week.
+Thanks for the pointer.
+-JX
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Success in marriage is not so much finding the right person as it  is
-being the right person.
+>
+>
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
