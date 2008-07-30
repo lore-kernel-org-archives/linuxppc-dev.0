@@ -1,24 +1,23 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5BD8DDE2B9
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 05:30:17 +1000 (EST)
-Date: Wed, 30 Jul 2008 20:30:10 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Message-ID: <20080730193010.GB14138@csn.ul.ie>
-References: <cover.1216928613.git.ebmunson@us.ibm.com>
-	<20080730014308.2a447e71.akpm@linux-foundation.org>
-	<20080730172317.GA14138@csn.ul.ie>
-	<20080730103407.b110afc2.akpm@linux-foundation.org>
+Return-Path: <bzolnier@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.190])
+	by ozlabs.org (Postfix) with ESMTP id ED569DDF33
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 05:46:03 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id e30so166682fke.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 12:46:01 -0700 (PDT)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: benh@kernel.crashing.org
+Subject: Re: ide pmac breakage
+Date: Wed, 30 Jul 2008 21:11:54 +0200
+References: <1217208596.11188.144.camel@pasglop>
+	<200807292126.12238.bzolnier@gmail.com>
+	<1217401052.11188.318.camel@pasglop>
+In-Reply-To: <1217401052.11188.318.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20080730103407.b110afc2.akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Hastings <abh@cray.com>, Eric Munson <ebmunson@us.ibm.com>
+Message-Id: <200807302111.54514.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linux-ide@vger.kernel.org,
+	petkovbb@gmail.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,62 +27,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (30/07/08 10:34), Andrew Morton didst pronounce:
-> On Wed, 30 Jul 2008 18:23:18 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
+On Wednesday 30 July 2008, Benjamin Herrenschmidt wrote:
+> On Tue, 2008-07-29 at 21:26 +0200, Bartlomiej Zolnierkiewicz wrote:
 > 
-> > On (30/07/08 01:43), Andrew Morton didst pronounce:
-> > > On Mon, 28 Jul 2008 12:17:10 -0700 Eric Munson <ebmunson@us.ibm.com> wrote:
-> > > 
-> > > > Certain workloads benefit if their data or text segments are backed by
-> > > > huge pages.
-> > > 
-> > > oh.  As this is a performance patch, it would be much better if its
-> > > description contained some performance measurement results!  Please.
-> > > 
-> > 
-> > I ran these patches through STREAM (http://www.cs.virginia.edu/stream/).
-> > STREAM itself was patched to allocate data from the stack instead of statically
-> > for the test. They completed without any problem on x86, x86_64 and PPC64
-> > and each test showed a performance gain from using hugepages.  I can post
-> > the raw figures but they are not currently in an eye-friendly format. Here
-> > are some plots of the data though;
-> > 
-> > x86: http://www.csn.ul.ie/~mel/postings/stack-backing-20080730/x86-stream-stack.ps
-> > x86_64: http://www.csn.ul.ie/~mel/postings/stack-backing-20080730/x86_64-stream-stack.ps
-> > ppc64-small: http://www.csn.ul.ie/~mel/postings/stack-backing-20080730/ppc64-small-stream-stack.ps
-> > ppc64-large: http://www.csn.ul.ie/~mel/postings/stack-backing-20080730/ppc64-large-stream-stack.ps
-> > 
-> > The test was to run STREAM with different array sizes (plotted on X-axis)
-> > and measure the average throughput (y-axis). In each case, backing the stack
-> > with large pages with a performance gain.
+> > I WON!!!
 > 
-> So about a 10% speedup on x86 for most STREAM configurations.  Handy -
-> that's somewhat larger than most hugepage-conversions, iirc.
+> Only half...
+
+Heh, I wasn't talking about fixing the issue...
+(hint: look up the author of the bad commit).
+
+> It goes further and then blows up again. First problem is, this
+> unregister interface doesn't quite convey the fact that the HW is gone
+> and the IDE code seems to take it's sweet time figuring it out after
+> trying some requests. Maybe something smarter can be done here ? ie,
+> ide_set_interface_dead() :-)
+
+Sure, it would be great to have controller hotplug working reliably
+one day but the recent patches shouldn't really be making things worse
+(quite the contrary) so I would prefer to find and learn more about
+the cause of regression first.
+
+[ However nothing prevents us from improving the hotplug support in
+  parallel to fixing the issue so if you have some ideas that could
+  be conveyed in form of patches please go ahead. ]
+
+> mediabay0: switching to 7
+> mediabay0: powering down
+> media bay 0 is empty
+> hdc: status error: status=0x00 { }
+> ide: failed opcode was: unknown
+> hdc: status error: status=0x00 { }
+> ide: failed opcode was: unknown
 > 
+> Then after this couple of failed attempts at sending commands, it
+> crashes with the backtrace below. Another NULL dereference apparently,
+> though the DAR value (the faulting address) has been slightly different
+> between consecutive tests so it may be a use-after-free too.
 
-It is a bit. Usually, I expect around 5%.
+Is it actually caused by additional reference counting on drive->gendev?
+IOW if you reverse the patch below instead of applying the previous fix
+do things work OK again?
 
-> Do we expect that this change will be replicated in other
-> memory-intensive apps?  (I do).
-> 
+> Note that there shouldn't be anything fundamentally different from
+> ide-pmac here vs. something like pcmcia IDE cards... do you have one of
+> these to test with ?
 
-I expect so. I know SpecCPU has some benchmarks that are stack-dependent and
-would benefit from this patchset. I haven't experimented enough yet with other
-workloads to give a decent estimate. I've added Andrew Hastings to the cc as
-I believe he can make a good estimate on what sort of gains had by backing
-the stack with huge pages based on experiments along those lines. Andrew?
+Nope and I really don't intend to have one.  I count on other people
+to take some care of support for host drivers that they maintain/use. ;)
 
-With Erics patch and libhugetlbfs, we can automatically back text/data[1],
-malloc[2] and stacks without source modification. Fairly soon, libhugetlbfs
-will also be able to override shmget() to add SHM_HUGETLB. That should cover
-a lot of the memory-intensive apps without source modification.
+Thanks,
+Bart
 
-[1] It can partially remap non-hugepage-aligned segments but ideally the
-application would be relinked
-
-[2] Allocated via the morecore hook in glibc
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 4e73aee..8f253e5 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -57,23 +57,29 @@ static DEFINE_MUTEX(idecd_ref_mutex);
+ #define ide_cd_g(disk) \
+ 	container_of((disk)->private_data, struct cdrom_info, driver)
+ 
++static void ide_cd_release(struct kref *);
++
+ static struct cdrom_info *ide_cd_get(struct gendisk *disk)
+ {
+ 	struct cdrom_info *cd = NULL;
+ 
+ 	mutex_lock(&idecd_ref_mutex);
+ 	cd = ide_cd_g(disk);
+-	if (cd)
++	if (cd) {
+ 		kref_get(&cd->kref);
++		if (ide_device_get(cd->drive)) {
++			kref_put(&cd->kref, ide_cd_release);
++			cd = NULL;
++		}
++	}
+ 	mutex_unlock(&idecd_ref_mutex);
+ 	return cd;
+ }
+ 
+-static void ide_cd_release(struct kref *);
+-
+ static void ide_cd_put(struct cdrom_info *cd)
+ {
+ 	mutex_lock(&idecd_ref_mutex);
++	ide_device_put(cd->drive);
+ 	kref_put(&cd->kref, ide_cd_release);
+ 	mutex_unlock(&idecd_ref_mutex);
+ }
