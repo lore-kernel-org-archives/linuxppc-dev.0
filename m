@@ -1,21 +1,16 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 7AE1EDDE10
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 23:41:11 +1000 (EST)
-Date: Wed, 30 Jul 2008 15:41:10 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [PATCH 2/6] kvmppc: add hypercall infrastructure - host part
-In-Reply-To: <20080724014352.GI20457@bakeyournoodle.com>
-Message-ID: <Pine.LNX.4.64.0807301540130.1993@vixen.sonytel.be>
-References: <1216802207-32675-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
-	<1216802207-32675-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
-	<20080724014352.GI20457@bakeyournoodle.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-374568469-1217425270=:1993"
-Cc: embedded-hypervisor@power.org, kvm-ppc@vger.kernel.org, hollisb@us.ibm.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id EF663DE411
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 23:58:09 +1000 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: devicetree-discuss@ozlabs.org
+Subject: [PATCH] dtc: give advance warning that "-S" is going away.
+Date: Wed, 30 Jul 2008 09:59:16 -0400
+Message-Id: <1217426356-1248-1-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <E1KOBwm-0002vc-CT@jdl.com>
+References: <E1KOBwm-0002vc-CT@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com,
+	Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,51 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+The "-S" option allowed the specification of a minimum size for
+the blob, however the main reason for caring about the size is
+so there is enough padding to add a chosen node by u-boot or
+whoever.  In which case, folks don't really care about the absolute
+size, but rather the size of the padding added for this -- which
+is what the "-p" option does.  Having the "-S" just confuses people.
 
----584349381-374568469-1217425270=:1993
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ dtc.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-On Thu, 24 Jul 2008, Tony Breeds wrote:
-> On Wed, Jul 23, 2008 at 10:36:43AM +0200, ehrhardt@linux.vnet.ibm.com wrote:
-> > From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> > diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-> > --- a/arch/powerpc/kvm/emulate.c
-> > +++ b/arch/powerpc/kvm/emulate.c
-> > @@ -203,6 +203,24 @@
-> >  	kvmppc_set_msr(vcpu, vcpu->arch.srr1);
-> >  }
-> >  
-> > +static int kvmppc_do_hypercall(struct kvm_vcpu *vcpu)
-> > +{
-> > +	int ret = 0;
-> > +
-> > +	switch (vcpu->arch.gpr[0]) {
-> > +	default:
-> > +		printk(KERN_ERR"unknown hypercall %d\n", vcpu->arch.gpr[0]);
-> 
-> I think the preffered style is printk(KERN_ERR "...)  You've made the
-> same style mistake in most of you printk()'s in your other patches
-> aswell.
-
-Note that these days people use pr_err() instead.
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@eu.sony.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-374568469-1217425270=:1993--
+diff --git a/dtc.c b/dtc.c
+index d8fd43b..84bee2d 100644
+--- a/dtc.c
++++ b/dtc.c
+@@ -182,6 +182,9 @@ int main(int argc, char *argv[])
+ 	if (minsize && padsize)
+ 		die("Can't set both -p and -S\n");
+ 
++	if (minsize)
++		fprintf(stderr, "DTC: Use of \"-S\" is deprecated; it will be removed soon, use \"-p\" instead\n");
++
+ 	fprintf(stderr, "DTC: %s->%s  on file \"%s\"\n",
+ 		inform, outform, arg);
+ 
+-- 
+1.5.6.2
