@@ -2,22 +2,24 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 44165DE10E
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 08:49:28 +1000 (EST)
-Subject: Re: ide pmac breakage
+	by ozlabs.org (Postfix) with ESMTPS id 4625ADDE19
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 09:00:37 +1000 (EST)
+Subject: Re: [PATCH] powerpc/ibmveth: fix multiple errors with
+	dma_mapping_error conversion
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-In-Reply-To: <200807302111.54514.bzolnier@gmail.com>
-References: <1217208596.11188.144.camel@pasglop>
-	<200807292126.12238.bzolnier@gmail.com>
-	<1217401052.11188.318.camel@pasglop>
-	<200807302111.54514.bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <4890DA8E.5000502@garzik.org>
+References: <20080728021424.40cf66bc.sfr@canb.auug.org.au>
+	<4890DA8E.5000502@garzik.org>
 Content-Type: text/plain
-Date: Thu, 31 Jul 2008 08:49:12 +1000
-Message-Id: <1217458152.11188.355.camel@pasglop>
+Date: Thu, 31 Jul 2008 08:59:16 +1000
+Message-Id: <1217458756.11188.357.camel@pasglop>
 Mime-Version: 1.0
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linux-ide@vger.kernel.org,
-	petkovbb@gmail.com, linuxppc-dev@ozlabs.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	LKML <linux-kernel@vger.kernel.org>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -28,23 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-07-30 at 21:11 +0200, Bartlomiej Zolnierkiewicz wrote:
+On Wed, 2008-07-30 at 17:18 -0400, Jeff Garzik wrote:
+> Stephen Rothwell wrote:
+> > The addition of an argument to dma_mapping_error() in commit
+> > 8d8bb39b9eba32dd70e87fd5ad5c5dd4ba118e06 "dma-mapping: add the device
+> > argument to dma_mapping_error()" left a bit of fallout:
+> > 
+> > drivers/net/ibmveth.c:263: error: too few arguments to function 'dma_mapping_error'
+> > drivers/net/ibmveth.c:264: error: expected ')' before 'goto'
+> > drivers/net/ibmveth.c:284: error: expected expression before '}' token
+> > drivers/net/ibmveth.c:297: error: too few arguments to function 'dma_mapping_error'
+> > drivers/net/ibmveth.c:298: error: expected ')' before 'dma_unmap_single'
+> > drivers/net/ibmveth.c:306: error: expected expression before '}' token
+> > drivers/net/ibmveth.c:491: error: too few arguments to function 'dma_mapping_error'
+> > drivers/net/ibmveth.c:927: error: too few arguments to function 'dma_mapping_error'
+> > drivers/net/ibmveth.c:927: error: expected ')' before '{' token
+> > drivers/net/ibmveth.c:974: error: expected expression before '}' token
+> > drivers/net/ibmveth.c:914: error: label 'out' used but not defined m
+> > 
+> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> > ---
+> >  drivers/net/ibmveth.c |    8 ++++----
+> >  1 files changed, 4 insertions(+), 4 deletions(-)
+> > 
+> > Compiler tested for ppc64_defconfig.
 > 
-> > Note that there shouldn't be anything fundamentally different from
-> > ide-pmac here vs. something like pcmcia IDE cards... do you have one
-> of
-> > these to test with ?
+> applied
 > 
-> Nope and I really don't intend to have one.  I count on other people
-> to take some care of support for host drivers that they
-> maintain/use. ;)
 
-Hrm... that's not a very sane approach. You have some infrastructure for
-adding / removing devices, in fact changes things in that area even, and
-not a single piece of HW to exercise those code path ? I don't ask you
-to get a powermac with a media-bay, but ide_cs seems to be a pretty
-important one that's part of what the ide maintainer should take care
-of... And I suspect it's going to exercise the same code path as
-mediabay.
+I think I merged that one up already... it was a trivial compile fix
+for a fallover of an API change in a powerpc specific driver so I
+didn't wait for an ack.
 
 Ben.
