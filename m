@@ -1,34 +1,25 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1DF09DE129
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 02:23:48 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6UGQ4Qo004481
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 12:26:04 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6UGNRV1227406
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 12:23:27 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6UGNRQU008654
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 12:23:27 -0400
-Received: from austin.ibm.com (netmail2.austin.ibm.com [9.41.248.176])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m6UGNQJT008629
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 12:23:27 -0400
-Received: from [9.53.40.161] ([9.53.40.161])
-	by austin.ibm.com (8.13.8/8.12.10) with ESMTP id m6UGNQQF042866
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 11:23:26 -0500
-Message-ID: <4890957F.5080203@austin.ibm.com>
-Date: Wed, 30 Jul 2008 11:23:27 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Zero fill the return values of rtas arg buffer
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0521BDE2B5
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 03:34:26 +1000 (EST)
+Date: Wed, 30 Jul 2008 10:34:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
+Message-Id: <20080730103407.b110afc2.akpm@linux-foundation.org>
+In-Reply-To: <20080730172317.GA14138@csn.ul.ie>
+References: <cover.1216928613.git.ebmunson@us.ibm.com>
+	<20080730014308.2a447e71.akpm@linux-foundation.org>
+	<20080730172317.GA14138@csn.ul.ie>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Eric Munson <ebmunson@us.ibm.com>,
+	libhugetlbfs-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,41 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The kernel copy of the rtas args struct contains the return
-value(s) for the specified rtas call.  These are copied back
-to user space with the assumption that every value is properly
-updated prior.  This patch zero's out the return value fields
-of the rtas args struct before processing the rtas call.
+On Wed, 30 Jul 2008 18:23:18 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
 
-I am seeing an issue in testing partition mobility, where the
-return value fields of the rtas args struct contain stale data.
-This causes it to appear as thought the rtas call fails, when
-it actually succeeds.
+> On (30/07/08 01:43), Andrew Morton didst pronounce:
+> > On Mon, 28 Jul 2008 12:17:10 -0700 Eric Munson <ebmunson@us.ibm.com> wrote:
+> > 
+> > > Certain workloads benefit if their data or text segments are backed by
+> > > huge pages.
+> > 
+> > oh.  As this is a performance patch, it would be much better if its
+> > description contained some performance measurement results!  Please.
+> > 
+> 
+> I ran these patches through STREAM (http://www.cs.virginia.edu/stream/).
+> STREAM itself was patched to allocate data from the stack instead of statically
+> for the test. They completed without any problem on x86, x86_64 and PPC64
+> and each test showed a performance gain from using hugepages.  I can post
+> the raw figures but they are not currently in an eye-friendly format. Here
+> are some plots of the data though;
+> 
+> x86: http://www.csn.ul.ie/~mel/postings/stack-backing-20080730/x86-stream-stack.ps
+> x86_64: http://www.csn.ul.ie/~mel/postings/stack-backing-20080730/x86_64-stream-stack.ps
+> ppc64-small: http://www.csn.ul.ie/~mel/postings/stack-backing-20080730/ppc64-small-stream-stack.ps
+> ppc64-large: http://www.csn.ul.ie/~mel/postings/stack-backing-20080730/ppc64-large-stream-stack.ps
+> 
+> The test was to run STREAM with different array sizes (plotted on X-axis)
+> and measure the average throughput (y-axis). In each case, backing the stack
+> with large pages with a performance gain.
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
----
+So about a 10% speedup on x86 for most STREAM configurations.  Handy -
+that's somewhat larger than most hugepage-conversions, iirc.
 
-Index: linux-2.6.git/arch/powerpc/kernel/rtas.c
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/kernel/rtas.c	2008-07-22 09:34:03.000000000 -0500
-+++ linux-2.6.git/arch/powerpc/kernel/rtas.c	2008-07-28 11:25:18.000000000 -0500
-@@ -792,6 +792,9 @@
- 	if (args.token == RTAS_UNKNOWN_SERVICE)
- 		return -EINVAL;
- 
-+	args.rets = &args.args[nargs];
-+	memset(args.rets, 0, args.nret * sizeof(rtas_arg_t));
-+
- 	/* Need to handle ibm,suspend_me call specially */
- 	if (args.token == ibm_suspend_me_token) {
- 		rc = rtas_ibm_suspend_me(&args);
-@@ -808,8 +811,6 @@
- 	enter_rtas(__pa(&rtas.args));
- 	args = rtas.args;
- 
--	args.rets = &args.args[nargs];
--
- 	/* A -1 return code indicates that the last command couldn't
- 	   be completed due to a hardware error. */
- 	if (args.rets[0] == -1)
- 
+Do we expect that this change will be replicated in other
+memory-intensive apps?  (I do).
