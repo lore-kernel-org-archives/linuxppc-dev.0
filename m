@@ -1,20 +1,18 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
-Received: from tama500.ecl.ntt.co.jp (tama500.ecl.ntt.co.jp [129.60.39.148])
-	by ozlabs.org (Postfix) with ESMTP id 8A98FDDEE3
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 11:51:50 +1000 (EST)
-To: bzolnier@gmail.com
-Subject: Re: ide pmac breakage
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <200807292126.12238.bzolnier@gmail.com>
-References: <200807291404.46906.bzolnier@gmail.com>
-	<200807291645.03382.bzolnier@gmail.com>
-	<200807292126.12238.bzolnier@gmail.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/lpar - defer prefered console setup
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Bastian Blank <waldi@debian.org>
+In-Reply-To: <20080728185651.GA29530@wavehammer.waldi.eu.org>
+References: <20080728185651.GA29530@wavehammer.waldi.eu.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-Y3b41xOQjJnxNaVmOM9m"
+Date: Wed, 30 Jul 2008 12:34:51 +1000
+Message-Id: <1217385291.10646.2.camel@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20080730102308B.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 30 Jul 2008 10:23:08 +0900
-Cc: fujita.tomonori@lab.ntt.co.jp, petkovbb@gmail.com, linuxppc-dev@ozlabs.org,
-	linux-ide@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,40 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 29 Jul 2008 21:26:11 +0200
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-> On Tuesday 29 July 2008, Bartlomiej Zolnierkiewicz wrote:
-> > On Tuesday 29 July 2008, Bartlomiej Zolnierkiewicz wrote:
-> > > On Tuesday 29 July 2008, Benjamin Herrenschmidt wrote:
-> > > > On Tue, 2008-07-29 at 13:41 +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > > > > Well, all I do is call into Bart's new helpers to scan for or
-> > > > > unregister
-> > > > > > devices ...
-> > > > > 
-> > > > > The switch to these helpers happened _before_ 2.6.26 and it shouldn't
-> > > > > bring
-> > > > > such behavior change (ditto for new IDE host addition/removal
-> > > > > helpers)...
-> > > > > 
-> > > > > Please try to git-bisect it when you have some time.
-> > > > 
-> > > > Ok, I will. I worked fine when I last tried your patches. I'll see if I
-> > > > can track it down too. Been a bit too busy lately as you can imagine.
-> > > > 
-> > > > Do you have something that exercise the same code path you can use ?
-> > > 
-> > > I'll see if I can reproduce it with IDE warm-plug support later...
-> > 
-> > OK, I reproduced it here with IDE warm-plug support
-> > (echo -n "1" > /sys/class/ide_port/ide*/delete_devices)
-> > for devices driven by ide-cd.
-> > 
-> > It is also reproducible under qemu so I'm scripting it
-> > into git-bisect run now...
-> 
-> I WON!!!
+--=-Y3b41xOQjJnxNaVmOM9m
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Great, seems that I don't need to learn how ide does ref counting. :)
+On Mon, 2008-07-28 at 20:56 +0200, Bastian Blank wrote:
+> Hi
 
-Thanks a lot!
+Hi Bastian,
+
+> The powerpc lpar code adds a prefered console at a very early state,
+> during arch_setup. This runs even before the console setup from the
+> command line and takes preference.
+
+It runs before the command line parsing, and so /does not/ take
+preference. I thought.
+
+/**
+ * add_preferred_console - add a device to the list of preferred consoles.
+ ...
+ * The last preferred console added will be used for kernel messages
+ * and stdin/out/err for init.=20
+
+The last console will be added by the console=3D parsing, and so that will
+be used. The console we add in the pseries setup is only used if nothing
+is specified on the command line.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-Y3b41xOQjJnxNaVmOM9m
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIj9NLdSjSd0sB4dIRAunJAJ94BN9WrelhYf0rWSgTLAt0XmtyrgCgp603
+po+W7JX3TSKq5q+01o9UNHQ=
+=e8ud
+-----END PGP SIGNATURE-----
+
+--=-Y3b41xOQjJnxNaVmOM9m--
