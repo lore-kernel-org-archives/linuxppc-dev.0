@@ -1,19 +1,19 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id D1B32DE0A7
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 22:00:19 +1000 (EST)
-Date: Wed, 30 Jul 2008 14:00:06 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Vijay Nikam <vijay.t.nikam@gmail.com>
-Subject: Re: Warning: Uable to open an inital console
-In-Reply-To: <f234e2140807300214v60a2ddf3s59c1c9c47af30c9b@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0807301358550.1993@vixen.sonytel.be>
-References: <f234e2140807300214v60a2ddf3s59c1c9c47af30c9b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-2079314093-1217419206=:1993"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2CB1EDE19F
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 22:33:36 +1000 (EST)
+Message-Id: <C8EC8414-A033-46FE-AFEC-8C2A6AB5B4F7@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: benh@kernel.crashing.org
+In-Reply-To: <1217389038.11188.285.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] powerpc/mm: Lockless get_user_pages_fast()
+Date: Wed, 30 Jul 2008 07:33:26 -0500
+References: <1217389038.11188.285.camel@pasglop>
+Cc: Nick Piggin <npiggin@suse.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,42 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584349381-2079314093-1217419206=:1993
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+On Jul 29, 2008, at 10:37 PM, Benjamin Herrenschmidt wrote:
 
-On Wed, 30 Jul 2008, Vijay Nikam wrote:
-> I have mpc8313erdb board and trying boot the kernel from NAND flash ...
-> The kernel is booting fine but it hangs at the following message;
-> 
-> Warning: unable to open an initial console.
+> From: Nick Piggin <npiggin@suse.de>
+>
+> Implement lockless get_user_pages_fast for powerpc.  Page table  
+> existence
+> is guaranteed with RCU, and speculative page references are used to  
+> take a
+> reference to the pages without having a prior existence guarantee on  
+> them.
+>
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Hugh Dickins <hugh@veritas.com>
+> Cc: "Paul E. McKenney" <paulmck@us.ibm.com>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>
+> I'm going to merge this, sending it to the list for reference, it was
+> in -mm for some time , minus some changes/fixes I did to solve  
+> conflicts
+> with the new multiple huge page sizes.
+>
+> Index: linux-work/arch/powerpc/Kconfig
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/Kconfig	2008-07-30  
+> 13:17:06.000000000 +1000
+> +++ linux-work/arch/powerpc/Kconfig	2008-07-30 13:27:40.000000000  
+> +1000
+> @@ -42,6 +42,9 @@ config GENERIC_HARDIRQS
+> 	bool
+> 	default y
+>
+> +config HAVE_GET_USER_PAGES_FAST
+> +	def_bool PPC64
+> +
+> config HAVE_SETUP_PER_CPU_AREA
+> 	def_bool PPC64
 
-Your root file system doesn't have /dev/console, which should look like:
+what's ppc64 specific here?
 
-| crw------- 1 root dialout 5, 1 2008-07-30 10:21 /dev/console
-
-> Kernel panic - not syncing: No init found.  Try passing init= option to
-> kernel.
-
-Your root file system doesn't have init (/sbin/init, /init, ...).
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@eu.sony.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-2079314093-1217419206=:1993--
+- k
