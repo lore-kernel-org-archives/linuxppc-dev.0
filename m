@@ -1,22 +1,19 @@
-Return-Path: <BenGardiner@nanometrics.ca>
-Received: from nmxmail.nanometrics.ca (mail.nanometrics.ca [206.191.47.130])
-	by ozlabs.org (Postfix) with ESMTP id B92DFDDEFD
+Return-Path: <SHorton@kodiaknetworks.com>
+Received: from cowboy.inovate.inovate.com (planomail.kodiaknetworks.com
+	[76.203.108.6]) by ozlabs.org (Postfix) with ESMTP id 8BC98DE3B7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jul 2008 23:35:22 +1000 (EST)
-Message-ID: <48906E4E.5060701@nanometrics.ca>
-Date: Wed, 30 Jul 2008 09:36:14 -0400
-From: Ben Gardiner <BenGardiner@nanometrics.ca>
+	Wed, 30 Jul 2008 23:56:21 +1000 (EST)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: No output from SMC1 console with the 2.6.26 kernel (8xx based
-	board)
-References: <8496f91a0807281243y2193dad5hc758444fe0a10258@mail.gmail.com>
-	<488E2510.7070209@freescale.com>
-	<8496f91a0807282310r5e70fe01v85b2ff2da7a80416@mail.gmail.com>
-	<488F385B.9030504@nanometrics.ca>
-	<20080729193630.GB8051@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20080729193630.GB8051@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: mpc744x, Marvell mv6446x kernel guidance please
+Date: Wed, 30 Jul 2008 08:56:18 -0500
+Message-ID: <295C5089A56CE143B316E5F67CA99CB001D06956@cowboy.inovate.inovate.com>
+In-Reply-To: <20080728165108.GA22621@mag.az.mvista.com>
+References: <295C5089A56CE143B316E5F67CA99CB001C9E4BD@cowboy.inovate.inovate.com>
+	<20080728165108.GA22621@mag.az.mvista.com>
+From: "Stephen Horton" <SHorton@kodiaknetworks.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,79 +25,107 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> On Tue, Jul 29, 2008 at 11:33:47AM -0400, Ben Gardiner wrote:
->> CPU clock-frequency <- 0x3f940aa (67MHz)
->> CPU timebase-frequency <- 0x1fce17 (2MHz)
->> CPU bus-frequency <- 0x1fce170 (33MHz)
->>     
->
-> Try commenting out calls to cpm_setbrg(), to see if the frequency is bad.
->
-> -Scott
->   
+Hello Mark,
 
-Thank you, Scott. You spotted it: my bootloader (an old uboot) is 
-passing not only the wrong clock freq (66.7 instead of 66 MHz) but 
-because 66.7 > 66.0 it is also passing the clock freq / 2 as the bus 
-freq. I got that last leap from the commit message of 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=50530378161fa8d7837243119ed9140ee65e55d4. 
-Thanks to cuboot I had an obvious place to do the fixup of the 
-clock-freq but I hadn't realized that the bus-freq was wrong.
+Thanks for your kind encouragement. I now have a mostly booting kernel.
+I have just a few remaining issues to resolve; perhaps you (or others)
+can give me some tips regarding these:
 
-As you suggested, commenting out the call to cpm_setbrg() did the trick 
-for me:
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.h 
-b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-index ddf46d3..c14a5f1 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-@@ -24,7 +24,7 @@ #endif
- 
- static inline void cpm_set_brg(int brg, int baud)
- {
--       cpm_setbrg(brg, baud);
-+       //cpm_setbrg(brg, baud);
- }
+1. In your prpmc2800 .dts configuration, in the PCI bus configuration
+section, you lay-out the IRQ mappings like this:
+	interrupt-map =3D <
+                /* IDSEL 0x0a */
+                5000 0 0 1 &/mv64x60/pic 50
+                5000 0 0 2 &/mv64x60/pic 51
+I've read the Open Firmware document on Interrupt Mapping, but I still
+don't really understand the first 3 columns (5000 0 0), especially where
+the first column comes from. Is this just some arbitrarily selected
+offset address for that device on the pci bus?
 
-Of course I won't run with that patch. We are using cuboot, so I put 
-some fixup code in our copy of cuboot-8xx.c, cuboot-nmx-taurus.c:
-diff --git a/arch/powerpc/boot/cuboot-nmx-taurusc 
-b/arch/powerpc/boot/cuboot-nmx-taurus.c
-index c202c88..5ab2ff3 100644
---- a/arch/powerpc/boot/cuboot-nmx-taurus.c
-+++ b/arch/powerpc/boot/cuboot-nmx-taurus.c
-@@ -26,6 +26,12 @@ static void platform_fixups(void)
- 
-        dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
-        dt_fixup_mac_addresses(bd.bi_enetaddr, bd.bi_enet1addr);
-+       /* NMX workaround: fix board reporting wrong freq */
-+       if(bd.bi_intfreq == 66700000) {
-+               bd.bi_intfreq = 66666666UL;
-+               bd.bi_busfreq = bd.bi_intfreq;
-+       }
-+       /* end NMX workaround.*/
-        dt_fixup_cpu_clocks(bd.bi_intfreq, bd.bi_busfreq / 16, 
-bd.bi_busfreq);
- 
-        node = finddevice("/soc/cpm");
+2. I've also grabbed some of the recent katana750i .dts examples that
+you were working on from one of the git trees (as well as Remi Machet's
+GEFanuc C2k board .dts code which is also based on your prpmc2800). Like
+your katana750i example, my board also has 2 PMC sites. In your
+cuboot-katana.c file, where you are setting up the PCI devices in
+'katana750i_bridge_setup', I'm having trouble understanding how you
+selected the bitmask values to Disable and Enable cpu->pci windows?
+	enables =3D in_le32((u32 *)(bridge_base +
+MV64x60_CPU_BAR_ENABLE));
+	enables |=3D 0x0007fe00; /* Disable all cpu->pci windows */
+	out_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE),
+enables);
+and here:
+	enables &=3D ~0x0000c000; /* Enable cpu->pci1 i/o, cpu->pci1 mem0
+*/
+	out_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE),
+enables);
+Can you point me in the right direction to understand this? I have
+MPC7450 processor family docs for my processor as well as access to
+Marvell docs.
 
-NB: I realize 66666666 may be wrong. It is what was set in our 2.4 
-kernel so I'm going to leave it as is for now. If I can show that it is 
-causing clock drift or someone can give me a reason why it should be 
-66000000 I'll change it then.
+3. My Marvell chip is a MV64462. Unlike the MV64460, it only has a
+single Gig Ethernet interface, which on my board connects to an 8-port
+Broadcom BCM5388 Ethernet Switch. This switch additionally has 2 Gig E
+interfaces for each PMC site, 2 PICMG 2.16 connected interfaces, and 1
+faceplate connected port. I am successful in getting the Marvell to
+setup a Mac-to-Mac connection to the switch via its connected port, but
+I'm unsure how to tell Linux about the other ports on the switch,
+primarily the 2 PICMG 2.16 ports and the faceplate port.  I have access
+to the switch in my platform .c file, where I am configuring and
+verifying that I have the mac-mac connection setup.  Can you speculate
+on how I can get the other interfaces to configure? Do I need to a
+section in my .dts for the Broadcom switch? My .dts currently only has 1
+ethernet and 1 PHY defined... Or, should I setup multiple Ethernet
+sections all on the same PHY, or something like that? Or, should I just
+do something in my platform file to get Linux to add the other
+interfaces?
 
-Which fixes up the values passed by Uboot:
-<snip console>
-...
-CPU clock-frequency <- 0x3f940aa (67MHz)
-CPU timebase-frequency <- 0x3f940a (4MHz)
-CPU bus-frequency <- 0x3f940aa (67MHz)
-...
-<snip>
+I appreciate any other addition thoughts you can give,
+Regards,
+Stephen
 
-Thanks for your help and for cuboot.
-I'm sorry to have confused this issue. It appears that Matvejchikov and 
-I are having a different problem.
+-----Original Message-----
+From: Mark A. Greer [mailto:mgreer@mvista.com]=20
+Sent: Monday, July 28, 2008 11:51 AM
+To: Stephen Horton
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: mpc744x, Marvell mv6446x kernel guidance please
 
-,Ben
+On Thu, Jul 10, 2008 at 10:46:49PM -0500, Stephen Horton wrote:
+> Hello folks,
+>=20
+> In a current work project, I have inherited a compactPCI board that
+has
+> an mpc7447/7448 powerpc processor as well as a Marvell system
+> controller, model mv64462 (stripped down mv64460). The board has a
+> somewhat working Gentoo Linux port running on it from long ago and a
+> company far far away (kernel version 2.6.9 built using arch/ppc). To
+> prepare for an upcoming deployment, I would like to bring the OS
+> up-to-date on this board with a newer kernel (targeting Gentoo 2008),
+> but I am unsure of the approach to take. I am a software developer,
+but
+> normally do not work on kernel porting / board integration. I have
+> researched the arch/ppc to arch/powerpc migration, but I'm a bit
+> intimidated by the 'new' device tree symantics and other changes to
+the
+> stream. Here are some questions:
+>=20
+> 1.	Is it possible with the 2.6.24 (Gentoo 2008) kernel to still use
+> arch/ppc for this platform architecture?  I've tried to get this to
+> compile, but am having trouble with files from arch/powerpc getting
+> pulled in; then I read some comments (from I believe this forum) that
+> indicated that arch/ppc is not longer supposed to compile
+
+arch/ppc is gone now.  You should spend you effort working in
+arch/powerpc.
+
+> 2.	Does anyone have example code for this platform architecture?
+> Any freebees I could use for creating my device tree?
+
+You can use prpmc2800 as an example.
+
+> 3.	Any advice of any kind?
+
+Its not as bad as it looks.  Just dig into it and don't give up.
+
+Mark
