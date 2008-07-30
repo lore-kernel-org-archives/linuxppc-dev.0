@@ -1,21 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D3BC2DDF78
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 08:36:04 +1000 (EST)
-Message-Id: <64F97436-C94D-4CD7-A217-3C4356C93807@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1217456772.11188.342.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH] powerpc/mm: Lockless get_user_pages_fast()
-Date: Wed, 30 Jul 2008 17:35:57 -0500
-References: <1217389038.11188.285.camel@pasglop>
-	<C8EC8414-A033-46FE-AFEC-8C2A6AB5B4F7@kernel.crashing.org>
-	<1217456772.11188.342.camel@pasglop>
-Cc: Nick Piggin <npiggin@suse.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id 44165DE10E
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 08:49:28 +1000 (EST)
+Subject: Re: ide pmac breakage
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+In-Reply-To: <200807302111.54514.bzolnier@gmail.com>
+References: <1217208596.11188.144.camel@pasglop>
+	<200807292126.12238.bzolnier@gmail.com>
+	<1217401052.11188.318.camel@pasglop>
+	<200807302111.54514.bzolnier@gmail.com>
+Content-Type: text/plain
+Date: Thu, 31 Jul 2008 08:49:12 +1000
+Message-Id: <1217458152.11188.355.camel@pasglop>
+Mime-Version: 1.0
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linux-ide@vger.kernel.org,
+	petkovbb@gmail.com, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2008-07-30 at 21:11 +0200, Bartlomiej Zolnierkiewicz wrote:
+> 
+> > Note that there shouldn't be anything fundamentally different from
+> > ide-pmac here vs. something like pcmcia IDE cards... do you have one
+> of
+> > these to test with ?
+> 
+> Nope and I really don't intend to have one.  I count on other people
+> to take some care of support for host drivers that they
+> maintain/use. ;)
 
-On Jul 30, 2008, at 5:26 PM, Benjamin Herrenschmidt wrote:
+Hrm... that's not a very sane approach. You have some infrastructure for
+adding / removing devices, in fact changes things in that area even, and
+not a single piece of HW to exercise those code path ? I don't ask you
+to get a powermac with a media-bay, but ide_cs seems to be a pretty
+important one that's part of what the ide maintainer should take care
+of... And I suspect it's going to exercise the same code path as
+mediabay.
 
->
->>> Index: linux-work/arch/powerpc/Kconfig
->>> ===================================================================
->>> --- linux-work.orig/arch/powerpc/Kconfig	2008-07-30
->>> 13:17:06.000000000 +1000
->>> +++ linux-work/arch/powerpc/Kconfig	2008-07-30 13:27:40.000000000
->>> +1000
->>> @@ -42,6 +42,9 @@ config GENERIC_HARDIRQS
->>> 	bool
->>> 	default y
->>>
->>> +config HAVE_GET_USER_PAGES_FAST
->>> +	def_bool PPC64
->>> +
->>> config HAVE_SETUP_PER_CPU_AREA
->>> 	def_bool PPC64
->>
->> what's ppc64 specific here?
->
-> Mostly _PAGE_SPECIAL (which I do plan to add to embedded which is why
-> I've been trying hard to free a PTE bit :-) and the way we synchronize
-> with the freeing of page tables (ppc64 uses RCU, ppc32 doesn't, we'd
-> have to find something to keep fast gup in sync).
-
-I think we have some code that uses RCU for page freeing.  I'll dig it  
-up and posted it.
-
-- k
+Ben.
