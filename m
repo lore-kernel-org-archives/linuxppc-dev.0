@@ -1,27 +1,33 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id 49DE1DDF81
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 00:42:27 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so12178yxg.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 07:42:25 -0700 (PDT)
-Date: Wed, 30 Jul 2008 08:42:02 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
-Message-ID: <20080730144202.GB21958@secretlab.ca>
-References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
-	<20080727001119.GB12191@secretlab.ca>
-	<9e4733910807262205l2db8d662u9dd2e517282686f8@mail.gmail.com>
-	<fa686aa40807262235l47bff0bfi15d86a6e171d6775@mail.gmail.com>
-	<9e4733910807270721h5777bb80u9f3d25413a62883c@mail.gmail.com>
-	<77a246d166f3eafb4d6a5d899ff86945@kernel.crashing.org>
-	<9e4733910807271500l23fd2b12n940197474a5291df@mail.gmail.com>
-	<043095cdcd52bb7af5cf4373b249b302@kernel.crashing.org>
+Return-Path: <emunson@us.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 69C59DE2D7
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 01:04:26 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6UF4Mvi027031
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 11:04:22 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6UF4MEV230540
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 11:04:22 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6UF4MjX025333
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 11:04:22 -0400
+Date: Wed, 30 Jul 2008 08:04:05 -0700
+From: Eric B Munson <ebmunson@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
+Message-ID: <20080730150405.GA20465@us.ibm.com>
+References: <cover.1216928613.git.ebmunson@us.ibm.com>
+	<20080730014139.39b3edc5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <043095cdcd52bb7af5cf4373b249b302@kernel.crashing.org>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="1yeeQ81UyVL57Vl7"
+In-Reply-To: <20080730014139.39b3edc5.akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,32 +37,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 28, 2008 at 09:47:21AM +0200, Segher Boessenkool wrote:
->>>  A reasonable "compatible" value would be something like
->>> "serial-eeprom-24c32".
->>>  You can go a little bit more generic than that, if you write up in
->>>  your binding how the driver should figure out the device size and
->>>  the protocol used.
->>
->> Matching on "serial-eeprom-24c32" requires me to convince the at24
->> authors to add that string as an alias binding for their driver.
->
-> No, it requires the IIC subsystem to get fixed and not use OF
-> "compatible" values as module alias names.
 
-Indeed; the device tree is just a data structure with a well defined
-usage model.  It is the kernel's job to adapt that data into a form that
-it can use.
+--1yeeQ81UyVL57Vl7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->> How
->> about "serial-eeprom,24c32" or "generic,24x32"?
->
-> Neither "serial-eeprom" nor "generic" is the name of a vendor, so
-> no.  The comma has a well-defined meaning.  Why would a comma be
-> easier than a dash for your device matching code, anyway?
+On Wed, 30 Jul 2008, Andrew Morton wrote:
 
-Just to add my voice; I 100% agree.  If it is not documented, and it
-doesn't fit with established conventions, then it shouldn't be used in
-the compatible field.
+> On Mon, 28 Jul 2008 12:17:10 -0700 Eric Munson <ebmunson@us.ibm.com> wrot=
+e:
+>=20
+> > Certain workloads benefit if their data or text segments are backed by
+> > huge pages. The stack is no exception to this rule but there is no
+> > mechanism currently that allows the backing of a stack reliably with
+> > huge pages.  Doing this from userspace is excessively messy and has some
+> > awkward restrictions.  Particularly on POWER where 256MB of address spa=
+ce
+> > gets wasted if the stack is setup there.
+> >=20
+> > This patch stack introduces a personality flag that indicates the kernel
+> > should setup the stack as a hugetlbfs-backed region. A userspace utility
+> > may set this flag then exec a process whose stack is to be backed by
+> > hugetlb pages.
+> >=20
+> > Eric Munson (5):
+> >   Align stack boundaries based on personality
+> >   Add shared and reservation control to hugetlb_file_setup
+> >   Split boundary checking from body of do_munmap
+> >   Build hugetlb backed process stacks
+> >   [PPC] Setup stack memory segment for hugetlb pages
+> >=20
+> >  arch/powerpc/mm/hugetlbpage.c |    6 +
+> >  arch/powerpc/mm/slice.c       |   11 ++
+> >  fs/exec.c                     |  209 +++++++++++++++++++++++++++++++++=
++++++---
+> >  fs/hugetlbfs/inode.c          |   52 +++++++----
+> >  include/asm-powerpc/hugetlb.h |    3 +
+> >  include/linux/hugetlb.h       |   22 ++++-
+> >  include/linux/mm.h            |    1 +
+> >  include/linux/personality.h   |    3 +
+> >  ipc/shm.c                     |    2 +-
+> >  mm/mmap.c                     |   11 ++-
+> >  10 files changed, 284 insertions(+), 36 deletions(-)
+>=20
+> That all looks surprisingly straightforward.
+>=20
+> Might there exist an x86 port which people can play with?
+>=20
 
-g.
+I have tested these patches on x86, x86_64, and ppc64, but not yet on ia64.
+There is a user space utility that I have been using to test which would be
+included in libhugetlbfs if this is merged into the kernel.  I will send it
+out as a reply to this thread, performance numbers are also on the way.
+
+--=20
+Eric B Munson
+IBM Linux Technology Center
+ebmunson@us.ibm.com
+
+
+--1yeeQ81UyVL57Vl7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIkILlsnv9E83jkzoRAnu+AJ43tJhIvKC/V/l/tvEzpOLo1AfDugCgky73
+1/w9s6N+iJutNNsYfJdCkx0=
+=nEy7
+-----END PGP SIGNATURE-----
+
+--1yeeQ81UyVL57Vl7--
