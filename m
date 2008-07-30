@@ -1,38 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BA69CDDDE6
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
+	by ozlabs.org (Postfix) with ESMTP id 3FA72DE6DB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Jul 2008 01:45:51 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m6UFjkO9006528 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jul 2008 08:45:46 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m6UFjjkr028333
+	Thu, 31 Jul 2008 02:49:02 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so64627pyi.27
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jul 2008 10:45:46 -0500 (CDT)
-Date: Wed, 30 Jul 2008 10:45:45 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Matvejchikov Ilya <matvejchikov@gmail.com>
-Subject: Re: No output from SMC1 console with the 2.6.26 kernel (8xx based
-	board)
-Message-ID: <20080730154545.GB25428@ld0162-tx32.am.freescale.net>
-References: <8496f91a0807281243y2193dad5hc758444fe0a10258@mail.gmail.com>
-	<488E2510.7070209@freescale.com>
-	<8496f91a0807282310r5e70fe01v85b2ff2da7a80416@mail.gmail.com>
-	<488F385B.9030504@nanometrics.ca>
-	<8496f91a0807291136v172b3b16t170088faf3f30b5b@mail.gmail.com>
-	<20080729193901.GC8051@ld0162-tx32.am.freescale.net>
-	<8496f91a0807300237q302cafd3ga21ddb7bbc0bd513@mail.gmail.com>
+	Wed, 30 Jul 2008 09:49:00 -0700 (PDT)
+Subject: Re: 4xx USB drivers
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: - Reyneke <reynekejunk@hotmail.com>
+In-Reply-To: <BAY101-W55F03E0DA492264568B776BE7D0@phx.gbl>
+References: <BAY101-W55F03E0DA492264568B776BE7D0@phx.gbl>
+Content-Type: text/plain
+Date: Wed, 30 Jul 2008 12:48:56 -0400
+Message-Id: <1217436536.13523.3.camel@weaponx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8496f91a0807300237q302cafd3ga21ddb7bbc0bd513@mail.gmail.com>
-Cc: Ben Gardiner <BenGardiner@nanometrics.ca>, linuxppc-embedded@ozlabs.org
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: jwboyer@linux.vnet.ibm.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -43,27 +28,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 30, 2008 at 01:37:43PM +0400, Matvejchikov Ilya wrote:
-> 			smc1: serial@11a80 {
-> 				device_type = "serial";
-> 				compatible = "fsl,cpm2-smc-uart";
-> 				reg = <11a80 20 0 40>;
-> 				interrupts = <4 8>;
-> 				interrupt-parent = <&PIC>;
-> 				fsl,cpm-brg = <7>;
-> 				fsl,cpm-command = <1d000000>;
-> 			};
+On Wed, 2008-07-30 at 13:20 +0000, - Reyneke wrote:
+> Hi,
 > 
-> 		};
+> Does anyone know what the state is of the ppc 44x USB host drivers in the powerpc kernel branch (v2.6.25)?
 > 
-> (muram node for 2.6.25 is differs from muram node for the 2.6.26)
-> 
-> With this device tree I have a warning message from cpm_uart driver
-> tells that the dts file needs to be updated.
+> The EHCI and OHCI all seem to be there and OF aware, but we can't quite get it to work.
 
-Right, but does the serial port work?  If it works with this tree and not
-with the new version, then that points to a problem in the dynamic pram
-allocation.  Otherwise, I'm not sure what's causing the difference
-between the two versions; you may want to bisect.
+On which 4xx board?  I've used OHCI on 440EP with good success.  440EPx
+has an Errata for OHCI/EHCI interactions.  AMCC had a patch for arch/ppc
+and I believe someone was working on porting that to arch/powerpc
+(Vitaly maybe?).  If you only use one driver at a time, it should work
+there though.
 
--Scott
+josh
