@@ -1,20 +1,19 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de",
-	Issuer "StartCom Class 1 Primary Intermediate Server CA" (not
-	verified)) by ozlabs.org (Postfix) with ESMTPS id 84060DDEEE
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 20:54:46 +1000 (EST)
-Message-ID: <48904863.7050902@scram.de>
-Date: Wed, 30 Jul 2008 12:54:27 +0200
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id D1B32DE0A7
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 22:00:19 +1000 (EST)
+Date: Wed, 30 Jul 2008 14:00:06 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Vijay Nikam <vijay.t.nikam@gmail.com>
+Subject: Re: Warning: Uable to open an inital console
+In-Reply-To: <f234e2140807300214v60a2ddf3s59c1c9c47af30c9b@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0807301358550.1993@vixen.sonytel.be>
+References: <f234e2140807300214v60a2ddf3s59c1c9c47af30c9b@mail.gmail.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: I2C node in device tree breaks old-style drivers
-References: <488F72C8.8010909@freescale.com>
-In-Reply-To: <488F72C8.8010909@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-2079314093-1217419206=:1993"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,54 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Timur,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> So my conclusion is that specifying an I2C node in the device tree *requires*
-> that the driver be new-style.  Is there any way we can fix this?  I'm not going
-> to have time to update the CS4270 driver to a new-style interface before the
-> 2.6.27 window closes.
+---584349381-2079314093-1217419206=:1993
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-This conclusion is correct. One possible way to fix this is to add support for
-blacklisting to drivers/of/base.c (untested):
+On Wed, 30 Jul 2008, Vijay Nikam wrote:
+> I have mpc8313erdb board and trying boot the kernel from NAND flash ...
+> The kernel is booting fine but it hangs at the following message;
+> 
+> Warning: unable to open an initial console.
 
-[RFC] of: Support blacklisting and blacklist cs4270.
+Your root file system doesn't have /dev/console, which should look like:
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- drivers/of/base.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+| crw------- 1 root dialout 5, 1 2008-07-30 10:21 /dev/console
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index ad8ac1a..8c53b2c 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -404,13 +404,16 @@ EXPORT_SYMBOL(of_find_matching_node);
-  * assumed that the data size is small and that the compatible values
-  * should already be distinct enough to differentiate between SPI, I2C
-  * and other devices.
-+ *
-+ * Blacklisting devices is supported by using NULL as modalias.
-  */
- struct of_modalias_table {
- 	char *of_device;
- 	char *modalias;
- };
- static struct of_modalias_table of_modalias_table[] = {
--	/* Empty for now; add entries as needed */
-+	/* Blacklisting cs4270 as this driver is currently old-style. */
-+	{ "cirrus,cs4270",	NULL }
- };
+> Kernel panic - not syncing: No init found.  Try passing init= option to
+> kernel.
 
- /**
-@@ -441,6 +444,9 @@ int of_modalias_node(struct device_node *node, char *modalias, int len)
- 		compatible = of_modalias_table[i].of_device;
- 		if (!of_device_is_compatible(node, compatible))
- 			continue;
-+		/* Check for blacklisting */
-+		if (!of_modalias_table[i].modalias)
-+			return -ENODEV;
- 		strlcpy(modalias, of_modalias_table[i].modalias, len);
- 		return 0;
- 	}
--- 
-1.5.6.3
+Your root file system doesn't have init (/sbin/init, /init, ...).
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@eu.sony.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis 293-0376800-10 GEBA-BE-BB
+---584349381-2079314093-1217419206=:1993--
