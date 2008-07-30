@@ -4,10 +4,10 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D90E6DDE9F
+	by ozlabs.org (Postfix) with ESMTPS id E0F2ADE1DF
 	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 05:29:27 +1000 (EST)
-Message-Id: <200807301929.m6UJT4u1011918@imap1.linux-foundation.org>
-Subject: [patch 2/2] powerpc: replace __FUNCTION__ with __func__
+Message-Id: <200807301929.m6UJT3nb011915@imap1.linux-foundation.org>
+Subject: [patch 1/2] ppc: use the common ascii hex helpers
 To: benh@kernel.crashing.org
 From: akpm@linux-foundation.org
 Date: Wed, 30 Jul 2008 12:29:03 -0700
@@ -24,66 +24,62 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Harvey Harrison <harvey.harrison@gmail.com>
 
-__FUNCTION__ is gcc-specific, use __func__
-
-[akpm@linux-foundation.org: coding-style fixes]
+[akpm@linux-foundation.org: exclude prom_init.c]
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/powerpc/kernel/lparcfg.c        |    8 ++++----
- arch/powerpc/platforms/pseries/cmm.c |    4 ++--
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/btext.c |   34 ++++++++++++++++------------------
+ powerpc/kernel/prom_init.c  |    0 
+ 2 files changed, 16 insertions(+), 18 deletions(-)
 
-diff -puN arch/powerpc/kernel/lparcfg.c~powerpc-replace-__function__-with-__func__ arch/powerpc/kernel/lparcfg.c
---- a/arch/powerpc/kernel/lparcfg.c~powerpc-replace-__function__-with-__func__
-+++ a/arch/powerpc/kernel/lparcfg.c
-@@ -505,10 +505,10 @@ static ssize_t update_ppp(u64 *entitleme
- 		return -EINVAL;
+diff -puN arch/powerpc/kernel/btext.c~ppc-use-the-common-ascii-hex-helpers arch/powerpc/kernel/btext.c
+--- a/arch/powerpc/kernel/btext.c~ppc-use-the-common-ascii-hex-helpers
++++ a/arch/powerpc/kernel/btext.c
+@@ -442,28 +442,26 @@ void btext_drawtext(const char *c, unsig
  
- 	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
--	         __FUNCTION__, ppp_data.entitlement, ppp_data.weight);
-+		 __func__, ppp_data.entitlement, ppp_data.weight);
+ void btext_drawhex(unsigned long v)
+ {
+-	char *hex_table = "0123456789abcdef";
+-
+ 	if (!boot_text_mapped)
+ 		return;
+ #ifdef CONFIG_PPC64
+-	btext_drawchar(hex_table[(v >> 60) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >> 56) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >> 52) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >> 48) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >> 44) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >> 40) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >> 36) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >> 32) & 0x0000000FUL]);
++	btext_drawchar(hex_asc_hi(v >> 56));
++	btext_drawchar(hex_asc_lo(v >> 56));
++	btext_drawchar(hex_asc_hi(v >> 48));
++	btext_drawchar(hex_asc_lo(v >> 48));
++	btext_drawchar(hex_asc_hi(v >> 40));
++	btext_drawchar(hex_asc_lo(v >> 40));
++	btext_drawchar(hex_asc_hi(v >> 32));
++	btext_drawchar(hex_asc_lo(v >> 32));
+ #endif
+-	btext_drawchar(hex_table[(v >> 28) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >> 24) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >> 20) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >> 16) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >> 12) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >>  8) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >>  4) & 0x0000000FUL]);
+-	btext_drawchar(hex_table[(v >>  0) & 0x0000000FUL]);
++	btext_drawchar(hex_asc_hi(v >> 24));
++	btext_drawchar(hex_asc_lo(v >> 24));
++	btext_drawchar(hex_asc_hi(v >> 16));
++	btext_drawchar(hex_asc_lo(v >> 16));
++	btext_drawchar(hex_asc_hi(v >> 8));
++	btext_drawchar(hex_asc_lo(v >> 8));
++	btext_drawchar(hex_asc_hi(v));
++	btext_drawchar(hex_asc_lo(v));
+ 	btext_drawchar(' ');
+ }
  
- 	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
--		 __FUNCTION__, new_entitled, new_weight);
-+		 __func__, new_entitled, new_weight);
- 
- 	retval = plpar_hcall_norets(H_SET_PPP, new_entitled, new_weight);
- 	return retval;
-@@ -551,10 +551,10 @@ static ssize_t update_mpp(u64 *entitleme
- 		return -EINVAL;
- 
- 	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
--	         __FUNCTION__, mpp_data.entitled_mem, mpp_data.mem_weight);
-+	         __func__, mpp_data.entitled_mem, mpp_data.mem_weight);
- 
- 	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
--	         __FUNCTION__, new_entitled, new_weight);
-+		 __func__, new_entitled, new_weight);
- 
- 	rc = plpar_hcall_norets(H_SET_MPP, new_entitled, new_weight);
- 	return rc;
-diff -puN arch/powerpc/platforms/pseries/cmm.c~powerpc-replace-__function__-with-__func__ arch/powerpc/platforms/pseries/cmm.c
---- a/arch/powerpc/platforms/pseries/cmm.c~powerpc-replace-__function__-with-__func__
-+++ a/arch/powerpc/platforms/pseries/cmm.c
-@@ -121,7 +121,7 @@ static long cmm_alloc_pages(long nr)
- 			npa = (struct cmm_page_array *)__get_free_page(GFP_NOIO | __GFP_NOWARN |
- 								       __GFP_NORETRY | __GFP_NOMEMALLOC);
- 			if (!npa) {
--				pr_info("%s: Can not allocate new page list\n", __FUNCTION__);
-+				pr_info("%s: Can not allocate new page list\n", __func__);
- 				free_page(addr);
- 				break;
- 			}
-@@ -138,7 +138,7 @@ static long cmm_alloc_pages(long nr)
- 		}
- 
- 		if ((rc = plpar_page_set_loaned(__pa(addr)))) {
--			pr_err("%s: Can not set page to loaned. rc=%ld\n", __FUNCTION__, rc);
-+			pr_err("%s: Can not set page to loaned. rc=%ld\n", __func__, rc);
- 			spin_unlock(&cmm_lock);
- 			free_page(addr);
- 			break;
+diff -puN arch/powerpc/kernel/prom_init.c~ppc-use-the-common-ascii-hex-helpers arch/powerpc/kernel/prom_init.c
 _
