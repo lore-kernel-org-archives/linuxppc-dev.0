@@ -2,14 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 36023DDE17
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 13:37:26 +1000 (EST)
-Subject: [PATCH] powerpc/mm: Lockless get_user_pages_fast()
+	by ozlabs.org (Postfix) with ESMTPS id 3BEF0DDE41
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 14:21:03 +1000 (EST)
+Subject: Re: [PATCH] powerpc/mm: Lockless get_user_pages_fast()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1217389038.11188.285.camel@pasglop>
+References: <1217389038.11188.285.camel@pasglop>
 Content-Type: text/plain
-Date: Wed, 30 Jul 2008 13:37:18 +1000
-Message-Id: <1217389038.11188.285.camel@pasglop>
+Date: Wed, 30 Jul 2008 14:20:56 +1000
+Message-Id: <1217391656.11188.292.camel@pasglop>
 Mime-Version: 1.0
 Cc: Nick Piggin <npiggin@suse.de>
 Reply-To: benh@kernel.crashing.org
@@ -38,9 +40,15 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+v2.
+Fix makefile to only build gup.o on 64 bits and fix a bug with
+huge pages where we would oops (null dereference) if  
+huge_pte_offset() returns NULL (ie, not populated yet).
+
+v1.
 I'm going to merge this, sending it to the list for reference, it was
-in -mm for some time , minus some changes/fixes I did to solve conflicts
-with the new multiple huge page sizes.
+in -mm , minus some changes/fixes I did to solve conflicts with the
+new multiple huge page sizes.
 
 Index: linux-work/arch/powerpc/Kconfig
 ===================================================================
@@ -59,27 +67,30 @@ Index: linux-work/arch/powerpc/Kconfig
 Index: linux-work/arch/powerpc/mm/Makefile
 ===================================================================
 --- linux-work.orig/arch/powerpc/mm/Makefile	2008-07-30 13:17:06.000000000 +1000
-+++ linux-work/arch/powerpc/mm/Makefile	2008-07-30 13:27:40.000000000 +1000
-@@ -6,7 +6,7 @@ ifeq ($(CONFIG_PPC64),y)
- EXTRA_CFLAGS	+= -mno-minimal-toc
- endif
- 
--obj-y				:= fault.o mem.o \
-+obj-y				:= fault.o mem.o gup.o \
- 				   init_$(CONFIG_WORD_SIZE).o \
- 				   pgtable_$(CONFIG_WORD_SIZE).o \
++++ linux-work/arch/powerpc/mm/Makefile	2008-07-30 13:42:42.000000000 +1000
+@@ -12,7 +12,8 @@ obj-y				:= fault.o mem.o \
  				   mmu_context_$(CONFIG_WORD_SIZE).o
+ hash-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
+ obj-$(CONFIG_PPC64)		+= hash_utils_64.o \
+-				   slb_low.o slb.o stab.o mmap.o $(hash-y)
++				   slb_low.o slb.o stab.o \
++				   gup.o mmap.o $(hash-y)
+ obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o
+ obj-$(CONFIG_PPC_STD_MMU)	+= hash_low_$(CONFIG_WORD_SIZE).o \
+ 				   tlb_$(CONFIG_WORD_SIZE).o
 Index: linux-work/arch/powerpc/mm/gup.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-work/arch/powerpc/mm/gup.c	2008-07-30 13:28:03.000000000 +1000
-@@ -0,0 +1,262 @@
++++ linux-work/arch/powerpc/mm/gup.c	2008-07-30 14:20:00.000000000 +1000
+@@ -0,0 +1,271 @@
 +/*
 + * Lockless get_user_pages_fast for powerpc
 + *
 + * Copyright (C) 2008 Nick Piggin
 + * Copyright (C) 2008 Novell Inc.
 + */
++#undef DEBUG
++
 +#include <linux/sched.h>
 +#include <linux/mm.h>
 +#include <linux/hugetlb.h>
@@ -226,6 +237,8 @@ Index: linux-work/arch/powerpc/mm/gup.c
 +	int psize, nr = 0;
 +	unsigned int shift;
 +
++	pr_debug("%s(%lx,%x,%s)\n", __func__, start, nr_pages, write ? "write" : "read");
++
 +	start &= PAGE_MASK;
 +	addr = start;
 +	len = (unsigned long) nr_pages << PAGE_SHIFT;
@@ -234,6 +247,8 @@ Index: linux-work/arch/powerpc/mm/gup.c
 +	if (unlikely(!access_ok(write ? VERIFY_WRITE : VERIFY_READ,
 +					start, len)))
 +		goto slow_irqon;
++
++	pr_debug("  aligned: %lx .. %lx\n", start, end);
 +
 +	/* Cross a slice boundary? */
 +	/* XXX could be improved by iterating slices instead */
@@ -287,8 +302,9 @@ Index: linux-work/arch/powerpc/mm/gup.c
 +		do {
 +			VM_BUG_ON(shift != mmu_psize_defs[get_slice_psize(mm, a)].shift);
 +			ptep = huge_pte_offset(mm, a);
-+			if (!gup_huge_pte(ptep, hstate, &a, end, write, pages,
-+					  &nr))
++			pr_debug(" %016lx: huge ptep %p\n", a, ptep);
++			if (!ptep || !gup_huge_pte(ptep, hstate, &a, end, write, pages,
++						   &nr))
 +				goto slow;
 +		} while (a != end);
 +	} else {
@@ -297,7 +313,7 @@ Index: linux-work/arch/powerpc/mm/gup.c
 +			pgd_t pgd = *pgdp;
 +
 +			VM_BUG_ON(shift != mmu_psize_defs[get_slice_psize(mm, addr)].shift);
-+
++			pr_debug("  %016lx: normal pgd %p\n", addr, (void *)pgd);
 +			next = pgd_addr_end(addr, end);
 +			if (pgd_none(pgd))
 +				goto slow;
@@ -316,6 +332,8 @@ Index: linux-work/arch/powerpc/mm/gup.c
 +slow:
 +		local_irq_enable();
 +slow_irqon:
++		pr_debug("  slow path ! nr = %d\n", nr);
++
 +		/* Try to get the remaining pages with get_user_pages */
 +		start += nr << PAGE_SHIFT;
 +		pages += nr;
