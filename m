@@ -1,22 +1,22 @@
-Return-Path: <waldi@debian.org>
-Received: from wavehammer.waldi.eu.org (wavehammer.waldi.eu.org
-	[82.139.201.20]) by ozlabs.org (Postfix) with ESMTP id 74940DDEE7
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 17:34:45 +1000 (EST)
-Date: Wed, 30 Jul 2008 09:34:38 +0200
-From: Bastian Blank <waldi@debian.org>
-To: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] hvc - register all available consoles (was: Re: [PATCH]
-	powerpc/lpar - defer prefered console setup)
-Message-ID: <20080730073438.GA29700@wavehammer.waldi.eu.org>
-References: <20080728185651.GA29530@wavehammer.waldi.eu.org>
-	<1217385291.10646.2.camel@localhost>
-	<20080730062313.GA26044@wavehammer.waldi.eu.org>
-	<20080730062919.GA27281@wavehammer.waldi.eu.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080730062919.GA27281@wavehammer.waldi.eu.org>
-Cc: linux-kernel@vger.kernel.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7287CDDF70
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 18:42:43 +1000 (EST)
+Date: Wed, 30 Jul 2008 01:41:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Munson <ebmunson@us.ibm.com>
+Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
+Message-Id: <20080730014139.39b3edc5.akpm@linux-foundation.org>
+In-Reply-To: <cover.1216928613.git.ebmunson@us.ibm.com>
+References: <cover.1216928613.git.ebmunson@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,220 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 30, 2008 at 08:29:19AM +0200, Bastian Blank wrote:
-> Okay, so hvc_console is the culprit. It don't register a preferred
-> console if it knows it is not the first in the list.
+On Mon, 28 Jul 2008 12:17:10 -0700 Eric Munson <ebmunson@us.ibm.com> wrote:
 
-The patch registers all available hvc consoles. It adds one "struct
-console" for all possible hvc consoles.
+> Certain workloads benefit if their data or text segments are backed by
+> huge pages. The stack is no exception to this rule but there is no
+> mechanism currently that allows the backing of a stack reliably with
+> huge pages.  Doing this from userspace is excessively messy and has some
+> awkward restrictions.  Particularly on POWER where 256MB of address space
+> gets wasted if the stack is setup there.
+> 
+> This patch stack introduces a personality flag that indicates the kernel
+> should setup the stack as a hugetlbfs-backed region. A userspace utility
+> may set this flag then exec a process whose stack is to be backed by
+> hugetlb pages.
+> 
+> Eric Munson (5):
+>   Align stack boundaries based on personality
+>   Add shared and reservation control to hugetlb_file_setup
+>   Split boundary checking from body of do_munmap
+>   Build hugetlb backed process stacks
+>   [PPC] Setup stack memory segment for hugetlb pages
+> 
+>  arch/powerpc/mm/hugetlbpage.c |    6 +
+>  arch/powerpc/mm/slice.c       |   11 ++
+>  fs/exec.c                     |  209 ++++++++++++++++++++++++++++++++++++++---
+>  fs/hugetlbfs/inode.c          |   52 +++++++----
+>  include/asm-powerpc/hugetlb.h |    3 +
+>  include/linux/hugetlb.h       |   22 ++++-
+>  include/linux/mm.h            |    1 +
+>  include/linux/personality.h   |    3 +
+>  ipc/shm.c                     |    2 +-
+>  mm/mmap.c                     |   11 ++-
+>  10 files changed, 284 insertions(+), 36 deletions(-)
 
-Signed-off-by: Bastian Blank <waldi@debian.org>
+That all looks surprisingly straightforward.
 
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index 44160d5..143a4b2 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -137,15 +137,36 @@ static struct hvc_struct *hvc_get_by_index(int index)
- }
- 
- 
-+static void hvc_console_print(struct console *co, const char *b,
-+			      unsigned count);
-+static struct tty_driver *hvc_console_device(struct console *c, int *index);
-+static int __init hvc_console_setup(struct console *co, char *options);
-+
- /*
-  * Initial console vtermnos for console API usage prior to full console
-  * initialization.  Any vty adapter outside this range will not have usable
-  * console interfaces but can still be used as a tty device.  This has to be
-  * static because kmalloc will not work during early console init.
-  */
--static struct hv_ops *cons_ops[MAX_NR_HVC_CONSOLES];
--static uint32_t vtermnos[MAX_NR_HVC_CONSOLES] =
--	{[0 ... MAX_NR_HVC_CONSOLES - 1] = -1};
-+struct hvc_console
-+{
-+	uint32_t vtermno;
-+	struct hv_ops *ops;
-+	struct console console;
-+};
-+static struct hvc_console consoles[MAX_NR_HVC_CONSOLES] = {
-+	[0 ... MAX_NR_HVC_CONSOLES - 1] = {
-+		.vtermno = -1,
-+		.console = {
-+			.name		= "hvc",
-+			.write		= hvc_console_print,
-+			.device		= hvc_console_device,
-+			.setup		= hvc_console_setup,
-+			.flags		= CON_PRINTBUFFER,
-+			.index		= -1,
-+		},
-+	}
-+};
- 
- /*
-  * Console APIs, NOT TTY.  These APIs are available immediately when
-@@ -164,7 +185,7 @@ static void hvc_console_print(struct console *co, const char *b,
- 		return;
- 
- 	/* This console adapter was removed so it is not usable. */
--	if (vtermnos[index] < 0)
-+	if (consoles[index].vtermno < 0)
- 		return;
- 
- 	while (count > 0 || i > 0) {
-@@ -178,7 +199,7 @@ static void hvc_console_print(struct console *co, const char *b,
- 				--count;
- 			}
- 		} else {
--			r = cons_ops[index]->put_chars(vtermnos[index], c, i);
-+			r = consoles[index].ops->put_chars(consoles[index].vtermno, c, i);
- 			if (r < 0) {
- 				/* throw away chars on error */
- 				i = 0;
-@@ -193,7 +214,7 @@ static void hvc_console_print(struct console *co, const char *b,
- 
- static struct tty_driver *hvc_console_device(struct console *c, int *index)
- {
--	if (vtermnos[c->index] == -1)
-+	if (consoles[c->index].vtermno == -1)
- 		return NULL;
- 
- 	*index = c->index;
-@@ -205,43 +226,12 @@ static int __init hvc_console_setup(struct console *co, char *options)
- 	if (co->index < 0 || co->index >= MAX_NR_HVC_CONSOLES)
- 		return -ENODEV;
- 
--	if (vtermnos[co->index] == -1)
-+	if (consoles[co->index].vtermno == -1)
- 		return -ENODEV;
- 
- 	return 0;
- }
- 
--static struct console hvc_con_driver = {
--	.name		= "hvc",
--	.write		= hvc_console_print,
--	.device		= hvc_console_device,
--	.setup		= hvc_console_setup,
--	.flags		= CON_PRINTBUFFER,
--	.index		= -1,
--};
--
--/*
-- * Early console initialization.  Precedes driver initialization.
-- *
-- * (1) we are first, and the user specified another driver
-- * -- index will remain -1
-- * (2) we are first and the user specified no driver
-- * -- index will be set to 0, then we will fail setup.
-- * (3)  we are first and the user specified our driver
-- * -- index will be set to user specified driver, and we will fail
-- * (4) we are after driver, and this initcall will register us
-- * -- if the user didn't specify a driver then the console will match
-- *
-- * Note that for cases 2 and 3, we will match later when the io driver
-- * calls hvc_instantiate() and call register again.
-- */
--static int __init hvc_console_init(void)
--{
--	register_console(&hvc_con_driver);
--	return 0;
--}
--console_initcall(hvc_console_init);
--
- /* callback when the kboject ref count reaches zero. */
- static void destroy_hvc_struct(struct kref *kref)
- {
-@@ -267,12 +257,13 @@ static void destroy_hvc_struct(struct kref *kref)
-  */
- int hvc_instantiate(uint32_t vtermno, int index, struct hv_ops *ops)
- {
-+	struct hvc_console *hc;
- 	struct hvc_struct *hp;
- 
- 	if (index < 0 || index >= MAX_NR_HVC_CONSOLES)
- 		return -1;
- 
--	if (vtermnos[index] != -1)
-+	if (consoles[index].vtermno != -1)
- 		return -1;
- 
- 	/* make sure no no tty has been registered in this index */
-@@ -282,19 +273,17 @@ int hvc_instantiate(uint32_t vtermno, int index, struct hv_ops *ops)
- 		return -1;
- 	}
- 
--	vtermnos[index] = vtermno;
--	cons_ops[index] = ops;
-+	hc = &consoles[index];
-+
-+	hc->vtermno = vtermno;
-+	hc->ops = ops;
-+	hc->console.index = index;
- 
- 	/* reserve all indices up to and including this index */
- 	if (last_hvc < index)
- 		last_hvc = index;
- 
--	/* if this index is what the user requested, then register
--	 * now (setup won't fail at this point).  It's ok to just
--	 * call register again if previously .setup failed.
--	 */
--	if (index == hvc_con_driver.index)
--		register_console(&hvc_con_driver);
-+	register_console(&hc->console);
- 
- 	return 0;
- }
-@@ -637,7 +626,7 @@ static int hvc_poll(struct hvc_struct *hp)
- 		}
- 		for (i = 0; i < n; ++i) {
- #ifdef CONFIG_MAGIC_SYSRQ
--			if (hp->index == hvc_con_driver.index) {
-+			if (consoles[hp->index].console.flags & CON_CONSDEV) {
- 				/* Handle the SysRq Hack */
- 				/* XXX should support a sequence */
- 				if (buf[i] == '\x0f') {	/* ^O */
-@@ -775,8 +764,8 @@ struct hvc_struct __devinit *hvc_alloc(uint32_t vtermno, int irq,
- 	 * see if this vterm id matches one registered for console.
- 	 */
- 	for (i=0; i < MAX_NR_HVC_CONSOLES; i++)
--		if (vtermnos[i] == hp->vtermno &&
--		    cons_ops[i] == hp->ops)
-+		if (consoles[i].vtermno == hp->vtermno &&
-+		    consoles[i].ops == hp->ops)
- 			break;
- 
- 	/* no matching slot, just use a counter */
-@@ -800,7 +789,7 @@ int __devexit hvc_remove(struct hvc_struct *hp)
- 	tty = hp->tty;
- 
- 	if (hp->index < MAX_NR_HVC_CONSOLES)
--		vtermnos[hp->index] = -1;
-+		consoles[hp->index].vtermno = -1;
- 
- 	/* Don't whack hp->irq because tty_hangup() will need to free the irq. */
- 
-@@ -881,13 +870,16 @@ out:
-  */
- static void __exit hvc_exit(void)
- {
-+	int i;
-+
- 	if (hvc_driver) {
- 		kthread_stop(hvc_task);
- 
- 		tty_unregister_driver(hvc_driver);
- 		/* return tty_struct instances allocated in hvc_init(). */
- 		put_tty_driver(hvc_driver);
--		unregister_console(&hvc_con_driver);
-+		for (i = 0; i < MAX_NR_HVC_CONSOLES; i++)
-+			unregister_console(&consoles->console);
- 	}
- }
- module_exit(hvc_exit);
-
--- 
-There is an order of things in this universe.
-		-- Apollo, "Who Mourns for Adonais?" stardate 3468.1
+Might there exist an x86 port which people can play with?
