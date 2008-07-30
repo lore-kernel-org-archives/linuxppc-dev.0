@@ -1,27 +1,23 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
-	by ozlabs.org (Postfix) with ESMTP id 7707DDDF6A
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 06:20:52 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id n7so92335wag.13
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 13:20:51 -0700 (PDT)
-Message-ID: <9e4733910807301320h4e6029a8gbff2875ba9c7ab0b@mail.gmail.com>
-Date: Wed, 30 Jul 2008 16:20:50 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
-In-Reply-To: <20080730144202.GB21958@secretlab.ca>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 202C4DDF41
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 07:18:20 +1000 (EST)
+Message-ID: <4890DA8E.5000502@garzik.org>
+Date: Wed, 30 Jul 2008 17:18:06 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
-	<20080727001119.GB12191@secretlab.ca>
-	<9e4733910807262205l2db8d662u9dd2e517282686f8@mail.gmail.com>
-	<fa686aa40807262235l47bff0bfi15d86a6e171d6775@mail.gmail.com>
-	<9e4733910807270721h5777bb80u9f3d25413a62883c@mail.gmail.com>
-	<77a246d166f3eafb4d6a5d899ff86945@kernel.crashing.org>
-	<9e4733910807271500l23fd2b12n940197474a5291df@mail.gmail.com>
-	<043095cdcd52bb7af5cf4373b249b302@kernel.crashing.org>
-	<20080730144202.GB21958@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] powerpc/ibmveth: fix multiple errors with
+	dma_mapping_error conversion
+References: <20080728021424.40cf66bc.sfr@canb.auug.org.au>
+In-Reply-To: <20080728021424.40cf66bc.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,71 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/30/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Mon, Jul 28, 2008 at 09:47:21AM +0200, Segher Boessenkool wrote:
->  >>>  A reasonable "compatible" value would be something like
->  >>> "serial-eeprom-24c32".
->  >>>  You can go a little bit more generic than that, if you write up in
->  >>>  your binding how the driver should figure out the device size and
->  >>>  the protocol used.
->  >>
->  >> Matching on "serial-eeprom-24c32" requires me to convince the at24
->  >> authors to add that string as an alias binding for their driver.
->  >
->  > No, it requires the IIC subsystem to get fixed and not use OF
->  > "compatible" values as module alias names.
->
->
-> Indeed; the device tree is just a data structure with a well defined
->  usage model.  It is the kernel's job to adapt that data into a form that
->  it can use.
+Stephen Rothwell wrote:
+> The addition of an argument to dma_mapping_error() in commit
+> 8d8bb39b9eba32dd70e87fd5ad5c5dd4ba118e06 "dma-mapping: add the device
+> argument to dma_mapping_error()" left a bit of fallout:
+> 
+> drivers/net/ibmveth.c:263: error: too few arguments to function 'dma_mapping_error'
+> drivers/net/ibmveth.c:264: error: expected ')' before 'goto'
+> drivers/net/ibmveth.c:284: error: expected expression before '}' token
+> drivers/net/ibmveth.c:297: error: too few arguments to function 'dma_mapping_error'
+> drivers/net/ibmveth.c:298: error: expected ')' before 'dma_unmap_single'
+> drivers/net/ibmveth.c:306: error: expected expression before '}' token
+> drivers/net/ibmveth.c:491: error: too few arguments to function 'dma_mapping_error'
+> drivers/net/ibmveth.c:927: error: too few arguments to function 'dma_mapping_error'
+> drivers/net/ibmveth.c:927: error: expected ')' before '{' token
+> drivers/net/ibmveth.c:974: error: expected expression before '}' token
+> drivers/net/ibmveth.c:914: error: label 'out' used but not defined m
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  drivers/net/ibmveth.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> Compiler tested for ppc64_defconfig.
 
-Then we're going to have to work on the i2s subsystem more to get them
-to allow arbitrary modalias strings like serial-eeprom-24c32.
-
-The current i2c code has linked the use of modalias strings and the
-i2c sysfs attribute  'name'. Currently those two always need to be the
-same. Existing user space apps are expecting to get the linux name for
-the device from the name field.  That linkage needs to be broken.
-
-Then you need entries like this:
-
-static const struct i2c_device_id at24_ids[] = {
-	{ "24c01", "24c01", AT24_DEVICE_MAGIC(1024 / 8, 0) },
-	{ "24c02", "24c02", AT24_DEVICE_MAGIC(2048 / 8, 0) },
-	OF( "serial-eeprom-24c01", "24c01", AT24_DEVICE_MAGIC(1024 / 8, 0) ),
-	OF( "serial-eeprom-24c02", "24c02", AT24_DEVICE_MAGIC(2048 / 8, 0) ),
-
-First column is the modalias, second is the string that is going into
-the 'name' attribute. OF() causes the entries to disappear on non-OF
-platforms.
-
-We should argue for another macro that makes the non-OF strings
-disappear on our platform.
-
-I have submitted a patch like this before and Jean declared that he
-doesn't recognize open firmware as a naming authority and NACK'd it.
-
-
->
->
->  >> How
->  >> about "serial-eeprom,24c32" or "generic,24x32"?
->  >
->  > Neither "serial-eeprom" nor "generic" is the name of a vendor, so
->  > no.  The comma has a well-defined meaning.  Why would a comma be
->  > easier than a dash for your device matching code, anyway?
->
->
-> Just to add my voice; I 100% agree.  If it is not documented, and it
->  doesn't fit with established conventions, then it shouldn't be used in
->  the compatible field.
->
->
->  g.
->
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+applied
