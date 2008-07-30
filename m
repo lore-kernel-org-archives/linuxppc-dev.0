@@ -1,36 +1,31 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 90B71DE21E
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 79328DDF40
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jul 2008 05:39:24 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m6TJd3D8007458 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Jul 2008 12:39:03 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m6TJd2VI010233
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Jul 2008 14:39:02 -0500 (CDT)
-Date: Tue, 29 Jul 2008 14:39:01 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Matvejchikov Ilya <matvejchikov@gmail.com>
-Subject: Re: No output from SMC1 console with the 2.6.26 kernel (8xx based
-	board)
-Message-ID: <20080729193901.GC8051@ld0162-tx32.am.freescale.net>
-References: <8496f91a0807281243y2193dad5hc758444fe0a10258@mail.gmail.com>
-	<488E2510.7070209@freescale.com>
-	<8496f91a0807282310r5e70fe01v85b2ff2da7a80416@mail.gmail.com>
-	<488F385B.9030504@nanometrics.ca>
-	<8496f91a0807291136v172b3b16t170088faf3f30b5b@mail.gmail.com>
+	Wed, 30 Jul 2008 10:02:37 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6U02SJv019927
+	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jul 2008 20:02:28 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6U02S1p211120
+	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jul 2008 20:02:28 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6U02S5m014054
+	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jul 2008 20:02:28 -0400
+Date: Tue, 29 Jul 2008 20:02:25 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Henry Bausley" <hbausley@deltatau.com>
+Subject: Re: Writing to CPLD mapped to EBC Port of AMCC440EP
+Message-ID: <20080729200225.57634f94@zod.rchland.ibm.com>
+In-Reply-To: <23b401c8f10b$54ecf9d0$0109220a@deltatau.local>
+References: <23b401c8f10b$54ecf9d0$0109220a@deltatau.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8496f91a0807291136v172b3b16t170088faf3f30b5b@mail.gmail.com>
-Cc: Ben Gardiner <BenGardiner@nanometrics.ca>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -41,16 +36,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 29, 2008 at 10:36:30PM +0400, Matvejchikov Ilya wrote:
-> Have you tired to run 2.6.25 kernel? With 2.6.25.4 my console works
-> fine! I suspect there is something like a regression....
+On Mon, 28 Jul 2008 16:40:35 -0700
+"Henry Bausley" <hbausley@deltatau.com> wrote:
 
-Did you use CONFIG_PPC_CPM_NEW_BINDING in 2.6.25?  It became mandatory in
-2.6.26.  Also, try commenting out cpm_setbrg() calls in case the
-frequency is not being set properly.
+> 
+> I am attempting to write to a CPLD mapped to the EBC port of a AMCC 440EP.  When I attempt to write using an unsigned variable
+> ie. unsigned *pbase = (unsigned char *)ioremap64(0x8F000000,0x1000000);
+> I get a kernel access of bad area, sig: 11 fault.  However, if I change to an unsigned char ie. unsigned char *pbase = (unsigned char *)ioremap64(0x8F000000,
+> 0x1000000); The system doesn't crash.  I need to write using an unsigned.  Does any one have any ideas what I am doing wrong?
 
-2.6.26 introduced the allocation of the CPM2 SMC parameter RAM area; what
-did your device node look like in 2.6.25?  What happens if you use that
-device tree with 2.6.26?
+The documentation I have for the Bamboo board says the EPLD is at
+address 0x80002000 and is only 8 bytes in size.  Similarly, the
+Yosemite board CPLD is at 0x80002000 and is only 16 bytes in size.  Why
+you are ioremapping 16MiB at 0x8F000000 I have no idea.
 
--Scott
+Also, the individual registers of the EPLD/CPLD on both boards are only
+8 bits, so an unsigned char seems appropriate.  If you have a custom
+board that does something totally different from how the eval boards
+are set up, then I'm not sure many people will be able to help you
+without documentation for that board.
+
+josh
