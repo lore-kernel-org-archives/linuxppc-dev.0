@@ -1,19 +1,27 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Bugme-new] [Bug 11185] New: Device/host RESET in SCSI
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080730232409.81965504.akpm@linux-foundation.org>
-References: <bug-11185-10286@http.bugzilla.kernel.org/>
-	<20080730232409.81965504.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-TNskNxM7jTfQ3c1n5q/P"
-Date: Thu, 31 Jul 2008 16:43:03 +1000
-Message-Id: <1217486583.1487.47.camel@localhost>
-Mime-Version: 1.0
-Cc: cijoml@volny.cz, linuxppc-dev@ozlabs.org, bugme-daemon@bugzilla.kernel.org,
-	linux-scsi@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <sachinp@in.ibm.com>
+Received: from e28esmtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E7C49DDEFA
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 16:54:16 +1000 (EST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by e28esmtp02.in.ibm.com (8.13.1/8.13.1) with ESMTP id m6V6sAq4016653
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 12:24:10 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6V6sA1k794710
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 12:24:10 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.13.1/8.13.3) with ESMTP id m6V6s9fP007886
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 12:24:09 +0530
+Message-ID: <489161A4.6060801@in.ibm.com>
+Date: Thu, 31 Jul 2008 12:24:28 +0530
+From: "Sachin P. Sant" <sachinp@in.ibm.com>
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/kdump: Fix /dev/oldmem interface
+Content-Type: multipart/mixed; boundary="------------020906020009090102040509"
+Cc: linuxppc-dev@ozlabs.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,164 +31,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------020906020009090102040509
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
---=-TNskNxM7jTfQ3c1n5q/P
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This patch fixes the /dev/oldmem interface for kdump on ppc64.
+The patch originally came from Michael Ellerman hence have
+retained the signed-off line. I just rediffed/tested against
+latest git. Michael has ack'ed this patch.
 
-On Wed, 2008-07-30 at 23:24 -0700, Andrew Morton wrote:
-> (switched to email.  Please respond via emailed reply-to-all, not via the
-> bugzilla web interface).
->=20
-> On Wed, 30 Jul 2008 23:18:04 -0700 (PDT) bugme-daemon@bugzilla.kernel.org=
- wrote:
->=20
-> > http://bugzilla.kernel.org/show_bug.cgi?id=3D11185
-> >=20
-> >            Summary: Device/host RESET in SCSI
-> >            Product: Platform Specific/Hardware
-> >            Version: 2.5
-> >      KernelVersion: 2.6.26
-> >           Platform: All
-> >         OS/Version: Linux
-> >               Tree: Mainline
-> >             Status: NEW
-> >           Severity: blocking
-> >           Priority: P1
-> >          Component: PPC-64
-> >         AssignedTo: anton@samba.org
-> >         ReportedBy: cijoml@volny.cz
-> >=20
-> >=20
-> > Latest working kernel version: 2.6.25, 2.6.18??? both tested are Debian
-> > distribution kernels
-> > Earliest failing kernel version: unknown
-> > Distribution: Debian stable
-> > Hardware Environment: IBM H70, PPC64 kernel
-> > Software Environment: Debian stable, 2.6.26 self compiled
->=20
-> Why do you describe this regression as a powerpc problem rather than a
-> scsi one?
->=20
-> (It could be either or both, I'm just wondering...)
->=20
-> > Problem Description:
-> >=20
-> > [    3.881326] sym53c8xx 0000:00:0c.0: enabling device (0140 -> 0143)
-> > [    3.959117] sym0: <875> rev 0x4 at pci 0000:00:0c.0 irq 17
-> > [    4.029503] sym0: No NVRAM, ID 7, Fast-20, SE, parity checking
-> > [    4.108967] sym0: SCSI BUS has been reset.
-> > [    4.160753] scsi0 : sym-2.2.3
-> > [    4.200066] sym53c8xx 0000:00:11.0: enabling device (0140 -> 0143)
-> > [    4.278375] sym1: <895> rev 0x1 at pci 0000:00:11.0 irq 19
-> > [    4.349340] sym1: No NVRAM, ID 7, Fast-40, SE, parity checking
-> > [    4.429359] sym1: SCSI BUS has been reset.
-> > [    4.481660] scsi1 : sym-2.2.3
-> > [    4.521351] sym53c8xx 0001:40:0c.0: enabling device (0140 -> 0143)
-> > [    4.600250] sym2: <875> rev 0x3 at pci 0001:40:0c.0 irq 29
-> > [    4.756252] sym2: No NVRAM, ID 7, Fast-20, SE, parity checking
-> > [    4.836739] sym2: SCSI BUS has been reset.
-> > [    4.889450] scsi2 : sym-2.2.3
+Ben this is not a must for 2.6.27 but would be good if it's 
+included.
+
+Thanks
+-Sachin
+
+Signed-off-by : Michael Ellerman <michael@ellerman.id.au>
+Acked-by : Michael Ellerman <michael@ellerman.id.au>
+
+---
 
 
-I don't know much about scsi, but I have a 44P (POWER3) which boots fine:
+--------------020906020009090102040509
+Content-Type: text/x-patch;
+ name="fix-oldmem-interface-of-kdump.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fix-oldmem-interface-of-kdump.patch"
 
-Linux version 2.6.27-rc1 (benh@grosgo) (gcc version 4.2.3 (Ubuntu 4.2.3-2ub=
-untu8
-...
-sym53c8xx 0000:00:0c.0: enabling device (0140 -> 0143)
-sym0: <896> rev 0x7 at pci 0000:00:0c.0 irq 17
-sym0: No NVRAM, ID 7, Fast-40, SE, parity checking
-sym0: SCSI BUS has been reset.
-scsi0 : sym-2.2.3
-scsi 0:0:1:0: CD-ROM            IBM      CDRM00203        1_05 PQ: 0 ANSI: =
-2
- target0:0:1: Beginning Domain Validation
- target0:0:1: asynchronous
- target0:0:1: wide asynchronous
- target0:0:1: FAST-20 WIDE SCSI 40.0 MB/s ST (50 ns, offset 15)
- target0:0:1: Domain Validation skipping write tests
- target0:0:1: Ending Domain Validation
- target0:0:4: FAST-20 WIDE SCSI 40.0 MB/s ST (50 ns, offset 31)
-scsi 0:0:4:0: Direct-Access     IBM      DDYS-T09170N     S96F PQ: 0 ANSI: =
-3
- target0:0:4: tagged command queuing enabled, command queue depth 16.
- target0:0:4: Beginning Domain Validation
- target0:0:4: asynchronous
- target0:0:4: wide asynchronous
- target0:0:4: FAST-20 WIDE SCSI 40.0 MB/s ST (50 ns, offset 31)
- target0:0:4: Domain Validation skipping write tests
- target0:0:4: Ending Domain Validation
- target0:0:5: FAST-20 WIDE SCSI 40.0 MB/s ST (50 ns, offset 31)
-scsi 0:0:5:0: Direct-Access     IBM      DDYS-T09170N     S96F PQ: 0 ANSI: =
-3
- target0:0:5: tagged command queuing enabled, command queue depth 16.
- target0:0:5: Beginning Domain Validation
- target0:0:5: asynchronous
- target0:0:5: wide asynchronous
- target0:0:5: FAST-20 WIDE SCSI 40.0 MB/s ST (50 ns, offset 31)
- target0:0:5: Domain Validation skipping write tests
- target0:0:5: Ending Domain Validation
-sym53c8xx 0000:00:0c.1: enabling device (0140 -> 0143)
-sym1: <896> rev 0x7 at pci 0000:00:0c.1 irq 18
-sym1: No NVRAM, ID 7, Fast-40, LVD, parity checking
-sym1: SCSI BUS has been reset.
-scsi1 : sym-2.2.3
-ipr: IBM Power RAID SCSI Device Driver version: 2.4.1 (April 24, 2007)
-st: Version 20080504, fixed bufsize 32768, s/g segs 256
-Driver 'st' needs updating - please use bus_type methods
-Driver 'sd' needs updating - please use bus_type methods
-sd 0:0:4:0: [sda] 17774160 512-byte hardware sectors (9100 MB)
-sd 0:0:4:0: [sda] Write Protect is off
-sd 0:0:4:0: [sda] Write cache: disabled, read cache: enabled, doesn't suppo=
-rt DA
-sd 0:0:4:0: [sda] 17774160 512-byte hardware sectors (9100 MB)
-sd 0:0:4:0: [sda] Write Protect is off
-sd 0:0:4:0: [sda] Write cache: disabled, read cache: enabled, doesn't suppo=
-rt DA
- sda: sda1
-sd 0:0:4:0: [sda] Attached SCSI disk
-sd 0:0:5:0: [sdb] Spinning up disk..............ready
-sd 0:0:5:0: [sdb] 17774160 512-byte hardware sectors (9100 MB)
-sd 0:0:5:0: [sdb] Write Protect is off
-sd 0:0:5:0: [sdb] Write cache: disabled, read cache: enabled, doesn't suppo=
-rt DA
-sd 0:0:5:0: [sdb] 17774160 512-byte hardware sectors (9100 MB)
-sd 0:0:5:0: [sdb] Write Protect is off
-sd 0:0:5:0: [sdb] Write cache: disabled, read cache: enabled, doesn't suppo=
-rt DA
- sdb: sdb1 sdb2 sdb3 < sdb5 sdb6 >
-sd 0:0:5:0: [sdb] Attached SCSI disk
-Driver 'sr' needs updating - please use bus_type methods
-sr0: scsi-1 drive
-Uniform CD-ROM driver Revision: 3.20
-sr 0:0:1:0: Attached scsi generic sg0 type 5
-sd 0:0:4:0: Attached scsi generic sg1 type 0
-sd 0:0:5:0: Attached scsi generic sg2 type 0
+Fix /dev/oldmem for kdump
 
+A change to __ioremap() broke reading /dev/oldmem because we're no
+longer able to ioremap pfn 0 (d177c207ba16b1db31283e2d1fee7ad4a863584b).
 
-cheers
+We actually don't need to ioremap for anything that's part of the linear
+mapping, so just read it directly.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Also make sure we're only reading one page or less at a time.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Signed-off-by : Michael Ellerman <michael@ellerman.id.au>
+---
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+diff -Naurp 1/arch/powerpc/kernel/crash_dump.c 2/arch/powerpc/kernel/crash_dump.c
+--- 1/arch/powerpc/kernel/crash_dump.c	2008-07-31 11:55:39.000000000 +0530
++++ 2/arch/powerpc/kernel/crash_dump.c	2008-07-31 12:09:49.000000000 +0530
+@@ -86,6 +86,19 @@ static int __init parse_savemaxmem(char 
+ }
+ __setup("savemaxmem=", parse_savemaxmem);
+ 
++
++static size_t copy_oldmem_vaddr(void *vaddr, char *buf, size_t csize,
++                               unsigned long offset, int userbuf)
++{
++	if (userbuf) {
++		if (copy_to_user((char __user *)buf, (vaddr + offset), csize))
++			return -EFAULT;
++	} else
++		memcpy(buf, (vaddr + offset), csize);
++
++	return csize;
++}
++
+ /**
+  * copy_oldmem_page - copy one page from "oldmem"
+  * @pfn: page frame number to be copied
+@@ -107,16 +120,16 @@ ssize_t copy_oldmem_page(unsigned long p
+ 	if (!csize)
+ 		return 0;
+ 
+-	vaddr = __ioremap(pfn << PAGE_SHIFT, PAGE_SIZE, 0);
++	csize = min(csize, PAGE_SIZE);
+ 
+-	if (userbuf) {
+-		if (copy_to_user((char __user *)buf, (vaddr + offset), csize)) {
+-			iounmap(vaddr);
+-			return -EFAULT;
+-		}
+-	} else
+-		memcpy(buf, (vaddr + offset), csize);
++	if (pfn < max_pfn) {
++		vaddr = __va(pfn << PAGE_SHIFT);
++		csize = copy_oldmem_vaddr(vaddr, buf, csize, offset, userbuf);
++	} else {
++		vaddr = __ioremap(pfn << PAGE_SHIFT, PAGE_SIZE, 0);
++		csize = copy_oldmem_vaddr(vaddr, buf, csize, offset, userbuf);
++		iounmap(vaddr);
++	}
+ 
+-	iounmap(vaddr);
+ 	return csize;
+ }
 
---=-TNskNxM7jTfQ3c1n5q/P
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIkV73dSjSd0sB4dIRAgj0AJ45xmYjgdeLYGo0zLVUP6M1t5iNBACfccsQ
-BQM0Ao3klYIgQZT2Johpcnk=
-=WoeK
------END PGP SIGNATURE-----
-
---=-TNskNxM7jTfQ3c1n5q/P--
+--------------020906020009090102040509--
