@@ -1,26 +1,22 @@
-Return-Path: <timur@freescale.com>
-Message-ID: <48922BE4.5030507@freescale.com>
-Date: Thu, 31 Jul 2008 16:17:24 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
-	FDT
-References: <20080731182810.GB29097@secretlab.ca>	
-	<48921888.3020900@grandegger.com> <48921954.4020103@freescale.com>	
-	<48921DED.6010403@grandegger.com>	
-	<9e4733910807311332q611b43b3y26f64b5269ccb657@mail.gmail.com>	
-	<fa686aa40807311335t1dd123d0mc385234ebe55248@mail.gmail.com>	
-	<48922273.6070801@freescale.com>
-	<20080731204838.GA29834@secretlab.ca>	
-	<9e4733910807311355q3394b4bfg66c37055384451f7@mail.gmail.com>	
-	<48922715.2000304@freescale.com>
-	<9e4733910807311403o63c37366ldae30e873f33a21e@mail.gmail.com>
-	<48922B40.3010808@grandegger.com>
-In-Reply-To: <48922B40.3010808@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>,
-	Linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 68AF3DE1A4
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 07:58:12 +1000 (EST)
+Message-Id: <DAE7C7B4-CE5B-45EB-B3B4-E5491A843CD9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20080731210410.GA623@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: libata badness
+Date: Thu, 31 Jul 2008 16:58:05 -0500
+References: <95646AC3-5385-4F59-8EBA-20F811168A87@kernel.crashing.org>
+	<20080731210410.GA623@polina.dev.rtsoft.ru>
+Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,18 +26,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Grandegger wrote:
+I figured out the issue.  Its related to the interrupt routing being  
+conveyed to the code from the device tree.  We have a missing 'space'  
+causing issues.
 
-> U-Boot does not (yet) use the FDT and it has therefore to use that ugly 
-> code to derive the I2C input clock frequency. I think its completely 
-> legal to put that hardware specific information into the FDT and get rid 
-> of such code.
-
-Huh?  U-Boot initializes several fields and creates several properties in the
-FDT today, so what's wrong with adding another one?  The clock frequencies have
-always been calculated by U-Boot, because putting them in the device tree is a
-bad idea.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+- k
