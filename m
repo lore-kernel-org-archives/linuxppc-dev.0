@@ -1,23 +1,20 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910807311403o63c37366ldae30e873f33a21e@mail.gmail.com>
-Date: Thu, 31 Jul 2008 17:03:07 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
-	FDT
-In-Reply-To: <48922715.2000304@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id ACA95DF243
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 07:04:13 +1000 (EST)
+Date: Fri, 1 Aug 2008 01:04:10 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: libata badness
+Message-ID: <20080731210410.GA623@polina.dev.rtsoft.ru>
+References: <95646AC3-5385-4F59-8EBA-20F811168A87@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080731182810.GB29097@secretlab.ca>
-	<48921888.3020900@grandegger.com> <48921954.4020103@freescale.com>
-	<48921DED.6010403@grandegger.com>
-	<9e4733910807311332q611b43b3y26f64b5269ccb657@mail.gmail.com>
-	<fa686aa40807311335t1dd123d0mc385234ebe55248@mail.gmail.com>
-	<48922273.6070801@freescale.com> <20080731204838.GA29834@secretlab.ca>
-	<9e4733910807311355q3394b4bfg66c37055384451f7@mail.gmail.com>
-	<48922715.2000304@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>,
-	Linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <95646AC3-5385-4F59-8EBA-20F811168A87@kernel.crashing.org>
+Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,40 +24,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/31/08, Timur Tabi <timur@freescale.com> wrote:
-> Jon Smirl wrote:
+On Thu, Jul 31, 2008 at 01:53:45PM -0500, Kumar Gala wrote:
+> I'm getting the following badness with top of tree on a embedded PowerPC 
+> w/a ULI 1575 bridge (M5229 IDE):
 >
->  > Isn't there a single global divider that generates all the i2c source
->  > clocks? You don't want to copy a global value into each i2c node.
->
->
-> Why not?  There are only two I2C devices, and it's theoretically possible for
->  them to have different input clock frequencies.   Keeping it in the I2C node
->  allows the I2C driver to reference a property directly in the node that its probing.
+> 02:1f.0 IDE interface: Acer Laboratories Inc. [ALi] M5229 IDE (rev c8)
 
-But that's the same as saying we should copy the system clock
-frequency into all of the PSC nodes because we might implement
-hardware where they aren't all clocked off from the same input clock
-source.
+Just to be sure that I didn't break the ULi for your board, could
+you try locally revert this patch:
 
->  > Aren't we talking about the /2 or /3 or /1 divider that appears to be
->  > randomly implemented on various members of the mpc8xxx family?
+commit 52ddd1cdc923802b224b15ba75000c6c5668227f
+Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+Date:   Thu Jun 12 03:04:17 2008 +0400
 
-I don't this these dividers or clocks need to be exposed at all if
-you'd just put that ugly code snippet into your platform driver.
+    powerpc/85xx/86xx: some refactoring for fsl_uli1575 code
 
+And see if this helps?
 
+> If you need more info let me know.
 >
+> - k
 >
-> Yes.
->
->
->  --
->  Timur Tabi
->  Linux kernel developer at Freescale
->
-
+> ahci 0000:02:1f.1: AHCI 0001.0000 32 slots 4 ports 3 Gbps 0xf impl SATA 
+> mode
+> ahci 0000:02:1f.1: flags: ncq sntf ilck pm led clo pmp pio slum part
+> ------------[ cut here ]------------
+> Badness at c021e700 [verbose debug info unavailable]
+> NIP: c021e700 LR: c021e6e8 CTR: c022ce90
+> REGS: ef82bca0 TRAP: 0700   Not tainted  (2.6.27-rc1-00495-g33bd9fe- 
+> dirty)
+> MSR: 00029032 <EE,ME,IR,DR>  CR: 22044022  XER: 20000000
+> TASK = ef830000[1] 'swapper' THREAD: ef82a000 CPU: 1
+> GPR00: 00000001 ef82bd50 ef830000 00000000 00009032 00000000 ef0b64fc  
+> 00000000
+> GPR08: ef937c10 c022f93f efbfc8e0 ef900b60 22044028 fffdd3ff 0ffe8700  
+> c044c17c
+> GPR16: c04d52ec ef82f458 ef82f4f4 ef82f4f4 c044c234 c044c5d8 c044c5d8  
+> c044c220
+> GPR24: c044c218 c04d52f0 00000080 c022f940 00000000 c044c244 efbec490  
+> 00000000
+> NIP [c021e700] ata_host_activate+0x40/0x10c
+> LR [c021e6e8] ata_host_activate+0x28/0x10c
+> Call Trace:
+> [ef82bd50] [c021e6e8] ata_host_activate+0x28/0x10c (unreliable)
+> [ef82bd80] [c022f48c] ahci_init_one+0x8b4/0xd68
+> [ef82be30] [c01b69c0] pci_device_probe+0x84/0xa8
+> [ef82be50] [c01e5438] driver_probe_device+0xb4/0x1e8
+> [ef82be70] [c01e55f0] __driver_attach+0x84/0x88
+> [ef82be90] [c01e4ba0] bus_for_each_dev+0x5c/0xa4
+> [ef82bec0] [c01e5254] driver_attach+0x24/0x34
+> [ef82bed0] [c01e44b8] bus_add_driver+0x1d8/0x24c
+> [ef82bef0] [c01e5810] driver_register+0x70/0x160
+> [ef82bf10] [c01b6c54] __pci_register_driver+0x64/0xc4
+> [ef82bf30] [c04aaa60] ahci_init+0x28/0x38
+> [ef82bf40] [c048717c] do_one_initcall+0x38/0x1ac
+> [ef82bfb0] [c04874e0] kernel_init+0x1f0/0x1fc
+> [ef82bff0] [c0013b04] kernel_thread+0x44/0x60
+> Instruction dump:
+> 7cbb2b78 90010034 7cda3378 7cf93b78 7c7e1b78 4bff9dbd 7c7f1b79 408200c8
+> 2f9c0000 409e002c 313bffff 7c09d910 <0f000000> 80010034 7fc3f378  
+> 7f24cb78
+> scsi0 : ahci
+> scsi1 : ahci
+> scsi2 : ahci
+> scsi3 : ahci
+> ata1: SATA max UDMA/133 abar m1024@0x80006000 port 0x80006100
+> ata2: SATA max UDMA/133 abar m1024@0x80006000 port 0x80006180
+> ata3: SATA max UDMA/133 abar m1024@0x80006000 port 0x80006200
+> ata4: SATA max UDMA/133 abar m1024@0x80006000 port 0x80006280
+> ata1: SATA link down (SStatus 0 SControl 300)
+> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ata2.00: qc timeout (cmd 0xec)
+> ata2.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
