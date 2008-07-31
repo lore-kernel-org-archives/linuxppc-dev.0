@@ -1,15 +1,16 @@
 Return-Path: <tony@bakeyournoodle.com>
 Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 191C7DDEF3
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 7EB53DDEE4
 	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 13:51:44 +1000 (EST)
 To: Paul Mackerras <paulus@samba.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <63d4252b846a0db6b7448854b7a584499b927e86.1217476198.git.tony@bakeyournoodle.com>
+Message-Id: <f8882848269193ffb7259de706f097d8f2fe3882.1217476198.git.tony@bakeyournoodle.com>
 In-Reply-To: <cac86e24e42bd05087b43663b687f04df91326ba.1217476198.git.tony@bakeyournoodle.com>
 References: <cac86e24e42bd05087b43663b687f04df91326ba.1217476198.git.tony@bakeyournoodle.com>
 From: Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH 2/8] Guard htab_dt_scan_hugepage_blocks appropriately
-Date: Thu, 31 Jul 2008 13:51:42 +1000 (EST)
+Subject: [PATCH 7/8] Guard from_rtc_time() in
+	arch/powerpc/platforms/powermac/time.c
+Date: Thu, 31 Jul 2008 13:51:43 +1000 (EST)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -20,33 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-htab_dt_scan_hugepage_blocks is only used when CONFIG_HUGETLB_PAGE is
-defined, likewise guard the declaration.
+from_rtc_time() is only called when one of 3 CONFIG options are defined.
+Guard the declaration appropriately.
 
 Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 ---
- arch/powerpc/mm/hash_utils_64.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/powermac/time.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 5ce5a4d..fa58777 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -329,6 +329,7 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
- 	return 0;
+diff --git a/arch/powerpc/platforms/powermac/time.c b/arch/powerpc/platforms/powermac/time.c
+index bbbefd6..59eb840 100644
+--- a/arch/powerpc/platforms/powermac/time.c
++++ b/arch/powerpc/platforms/powermac/time.c
+@@ -93,11 +93,14 @@ static void to_rtc_time(unsigned long now, struct rtc_time *tm)
  }
+ #endif
  
-+#ifdef CONFIG_HUGETLB_PAGE
- /* Scan for 16G memory blocks that have been set aside for huge pages
-  * and reserve those blocks for 16G huge pages.
-  */
-@@ -366,6 +367,7 @@ static int __init htab_dt_scan_hugepage_blocks(unsigned long node,
- 	add_gpage(phys_addr, block_size, expected_pages);
- 	return 0;
- }
-+#endif /* CONFIG_HUGETLB_PAGE */
- 
- static void __init htab_init_page_sizes(void)
++#if defined(CONFIG_ADB_CUDA) || defined(CONFIG_ADB_PMU) || \
++    defined(CONFIG_PMAC_SMU)
+ static unsigned long from_rtc_time(struct rtc_time *tm)
  {
+ 	return mktime(tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
+ 		      tm->tm_hour, tm->tm_min, tm->tm_sec);
+ }
++#endif
+ 
+ #ifdef CONFIG_ADB_CUDA
+ static unsigned long cuda_get_time(void)
 -- 
 1.5.6.3
