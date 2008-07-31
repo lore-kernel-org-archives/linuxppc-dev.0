@@ -1,31 +1,12 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 19554DE016
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 01:30:14 +1000 (EST)
-Date: Thu, 31 Jul 2008 17:29:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH 2/5] x86: Define elfcorehdr_addr in arch dependent section
-Message-ID: <20080731152926.GA20909@elte.hu>
-References: <20080727234529.GM6175@verge.net.au>
-	<20080728015117.GA12055@verge.net.au>
-	<20080728024526.GB3334@verge.net.au>
-	<20080728034007.GA30450@verge.net.au>
-	<20080728211025.GA9985@redhat.com>
-	<20080728211156.GB9985@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080728211156.GB9985@redhat.com>
-Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-	Paul Mundt <lethal@linux-sh.org>, kexec@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Terry Loftin <terry.loftin@hp.com>, Simon Horman <horms@verge.net.au>,
-	Paul Mackerras <paulus@samba.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: libfdt: Forgot one function when cleaning the namespace 
+In-reply-to: <20080729045122.GC19856@yookeroo.seuss> 
+References: <20080729045122.GC19856@yookeroo.seuss>
+Date: Thu, 31 Jul 2008 10:38:56 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1KOaEy-0006M6-F2@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,25 +16,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-* Vivek Goyal <vgoyal@redhat.com> wrote:
-
-> o Move elfcorehdr_addr definition in arch dependent crash dump file. This is
->   equivalent to defining elfcorehdr_addr under CONFIG_CRASH_DUMP instead of
->   CONFIG_PROC_VMCORE. This is needed by is_kdump_kernel() which can be
->   used irrespective of the fact whether CONFIG_PROC_VMCORE is enabled or
->   not.
+> In commit b6d80a20fc293f3b995c3ce1a6744a5574192125, we renamed all
+> libfdt functions to be prefixed with fdt_ or _fdt_ to minimise the
+> chance of collisions with things from whatever package libfdt is
+> embedded in, pulled into the libfdt build via that environment's
+> libfdt_env.h.
 > 
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> ---
+> Except... I missed one.  This patch applies the same treatment to
+> _stringlist_contains().  While we're at it, also make it static since
+> it's only used in the same file.
 > 
->  arch/x86/kernel/crash_dump_32.c |    3 +++
->  arch/x86/kernel/crash_dump_64.c |    3 +++
->  arch/x86/kernel/setup.c         |    8 +++++++-
->  3 files changed, 13 insertions(+), 1 deletion(-)
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-the x86 bits look fine to me.
+Applied.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+jdl
