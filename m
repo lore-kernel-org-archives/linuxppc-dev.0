@@ -1,21 +1,25 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4891A744.6060005@grandegger.com>
-Date: Thu, 31 Jul 2008 13:51:32 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable	via
-	FDT
-References: <488982B5.4070102@grandegger.com> <4889942C.4040800@scram.de>
-	<48899736.8020400@grandegger.com>
-	<fa686aa40807250612g34b5167dtbe70c810f30a5d32@mail.gmail.com>
-	<ed82fe3e0807250721n115d28c7ha1f641c9175c473d@mail.gmail.com>
-	<4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
-	<20080727012722.GH12191@secretlab.ca>
-In-Reply-To: <20080727012722.GH12191@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc - Initialize the irq radix tree earlier
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+In-Reply-To: <20080731152606.5ae7c379@bull.net>
+References: <1217497241-10685-1-git-send-email-sebastien.dugue@bull.net>
+	<1217497241-10685-2-git-send-email-sebastien.dugue@bull.net>
+	<1217504456.9817.22.camel@localhost> <20080731140002.31bbe4a0@bull.net>
+	<1217509104.19050.11.camel@localhost>
+	<1217509299.19050.15.camel@localhost>
+	<20080731152606.5ae7c379@bull.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-vW9406vhric++rHHzA/k"
+Date: Thu, 31 Jul 2008 23:39:26 +1000
+Message-Id: <1217511566.19050.26.camel@localhost>
+Mime-Version: 1.0
+Cc: tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
+	jean-pierre.dion@bull.net, rostedt@goodmis.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, gilles.carry@ext.bull.net, tglx@linutronix.de
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +29,132 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Fri, Jul 25, 2008 at 11:19:41AM -0500, Timur Tabi wrote:
->> Wolfgang Grandegger wrote:
->>
->>> I know but we still need an algorithm for MPC52xx and MPC82xx as well.
->> That's true, but I still think hard-coding values of DFSR and FDR in the device
->> tree is not a good way to do this.
-> 
-> I agree, it should encode real frequencies, not raw register values.
 
-Digging deeper I'm frightened by plenty of platform specific code. We 
-would need:
+--=-vW9406vhric++rHHzA/k
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-- one table of divider,fdr,dfsr values for the MPC82/3/5/6xx processors
-   (already available from Timur's U-Boot implementation)
+On Thu, 2008-07-31 at 15:26 +0200, Sebastien Dugue wrote:
+> On Thu, 31 Jul 2008 23:01:39 +1000 Michael Ellerman <michael@ellerman.id.=
+au> wrote:
+>=20
+> > On Thu, 2008-07-31 at 22:58 +1000, Michael Ellerman wrote:
+> > > On Thu, 2008-07-31 at 14:00 +0200, Sebastien Dugue wrote:
+> > > > On Thu, 31 Jul 2008 21:40:56 +1000 Michael Ellerman <michael@ellerm=
+an.id.au> wrote:
+> > > > >=20
+> > > > > This boot ordering stuff is pretty hairy, so I might have missed
+> > > > > something, but this is how the code is ordered AFAICT:
+> > > > > =EF=BB=BF
+> > > > > start_kernel()
+> > > > > 	init_IRQ()
+> > > > > 	...
+> > > > > 	local_irq_enable()
+> > > > > 	...
+> > > > > 	rest_init()
+> > > > > 		kernel_thread()
+> > > > > 			kernel_init()
+> > > > > 				smp_prepare_cpus()
+> > > > > 					smp_xics_probe()	(via smp_ops->probe())
+> > > > >=20
+> > > > >=20
+> > > > > What's stopping us from taking an irq between local_irq_enable() =
+and
+> > > > > smp_xics_probe() ?  Is it just that no one's request_irq()'ed the=
+m yet?
+> > > >=20
+> > > >   It's hairy, I agree, but as you've mentioned no one has done a re=
+quest_irq()
+> > > > at that point. The first one to do it is smp_xics_probe() for the I=
+PI.
+> > >=20
+> > > Hmm, I don't think that's strong enough. I can trivially cause irqs t=
+o
+> > > fire during a kexec reboot just by mashing the keyboard.
+> > >=20
+> > > And during a kdump boot all sorts of stuff could be firing. Even duri=
+ng
+> > > a clean boot, from firmware, I don't think we can guarantee that
+> > > nothing's going to fire.
+> > >=20
+> > > .. after a bit of testing ..
+> > >=20
+> > > It seems it actually works (sort of).=20
+> > >=20
+> > > xics_remap_irq() calls irq_radix_revmap_lookup(), which calls:
+> > >=20
+> > > ptr =3D radix_tree_lookup(&host->revmap_data.tree, hwirq);
+> > >=20
+> > > And because =EF=BB=BFhost->revmap_data.tree was zalloc'ed we trip on =
+the first
+> > > check here:
+> >=20
+> > @#$% ctrl-enter =3D=3D send!
+> >=20
+> > Continuing ...
+> >=20
+> > void *radix_tree_lookup(struct radix_tree_root *root, unsigned long ind=
+ex)
+> > {
+> >         unsigned int height, shift;
+> >         struct radix_tree_node *node, **slot;
+> >=20
+> >         node =3D rcu_dereference(root->rnode);
+> >         if (node =3D=3D NULL)
+> >                 return NULL;
+> >=20
+> > Which means =EF=BB=BFirq_radix_revmap_lookup() will return NO_IRQ, whic=
+h is cool.
+>=20
+>   Which is what I intended so that as long as no IRQ is registered we
+> return NO_IRQ.
+>=20
+> >=20
+> >=20
+> > So I think it can fly, as long as we're happy that we can't reverse map
+> > anything until smp_xics_probe() - and I think that's true, as any irq w=
+e
+> > take will be invalid.
+>=20
+>   That's true as no IRQs are registered before smp_xics_probe() and for a=
+ny
+> interrupt we might get before that, irq_radix_revmap_lookup() will return
+> NO_IRQ.
 
-- one table of divider,fdr values for the MPC5200 rev A.
+Cool, we agree :)=20
 
-- one table of divider,fdr values for the MPC5200 rev B.
-   (the Rev. B has two more pre-scaler bits).
+My only worry is that we might be relying on on the particular radix
+tree implementation a bit too much. Is it documented somewhere that
+the /very/ first check is for =EF=BB=BFroot->rnode !=3D NULL, and the rest =
+of the
+root may be unintialised?
 
-- furthermore, there are various mpc-specific I2C clock sources:
+And I think it needs a big fat comment in the irq code saying that it's
+safe because revmap_data is zalloc'ed, and that means the radix lookup
+will fail (safely).
 
-   MPC82xx                     : fsl_get_sys_freq()
-   MPC5200                     : IPB
-   MPC83xx                     : fsl_get_sys_freq()
-   MPC8540/41/60/55,MPC8610    : fsl_get_sys_freq()
-   MPC8543/45/47/48/68, MPC8641: fsl_get_sys_freq()/2
-   MPC8544                     : fsl_get_sys_freq()/2 or /3
+cheers
 
-   It would make sense to hand-over the I2C frequency from U-Boot to
-   Linux.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-Wolfgang.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-vW9406vhric++rHHzA/k
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIkcCOdSjSd0sB4dIRAuxGAJ0TguBTpS0p4xdDf+dAZKTcHyTkvQCeNc7S
+6UpVTe06vYU5VRVjCJNvKYU=
+=IyZ5
+-----END PGP SIGNATURE-----
+
+--=-vW9406vhric++rHHzA/k--
