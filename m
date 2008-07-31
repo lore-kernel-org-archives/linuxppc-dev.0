@@ -1,29 +1,34 @@
-Return-Path: <timur@freescale.com>
-Message-ID: <48922055.1040906@freescale.com>
-Date: Thu, 31 Jul 2008 15:28:05 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
-	FDT
-References: <4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
-	<20080727012722.GH12191@secretlab.ca>
-	<4891A744.6060005@grandegger.com>
-	<9e4733910807310849g7e5612dbk9536733e061af8ad@mail.gmail.com>
-	<4891F4D8.9090905@grandegger.com>
-	<fa686aa40807311031r66f6451aw206faf54509c14d9@mail.gmail.com>
-	<4891FC3A.7040609@freescale.com>
-	<20080731180959.GA29057@secretlab.ca>
-	<489200B6.9060906@freescale.com>
-	<20080731182810.GB29097@secretlab.ca>
-	<48920607.5040606@freescale.com> <48921187.1090101@grandegger.com>
-	<48921179.1080403@freescale.com> <48921888.3020900@grandegger.com>
-	<48921954.4020103@freescale.com> <48921DED.6010403@grandegger.com>
-	<48921E44.7010502@freescale.com> <48922087.4050903@grandegger.com>
-In-Reply-To: <48922087.4050903@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>,
-	Linuxppc-dev@ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E481CDE287
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 06:37:47 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m6VKbeP2028645
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 13:37:40 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m6VKbeUG000227
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 15:37:40 -0500 (CDT)
+Date: Thu, 31 Jul 2008 15:37:39 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: libata badness
+Message-ID: <20080731203739.GA17718@ld0162-tx32.am.freescale.net>
+References: <95646AC3-5385-4F59-8EBA-20F811168A87@kernel.crashing.org>
+	<20080731190259.GJ26938@trinity.fluff.org>
+	<836C281D-4D3A-4547-98D9-143A690698AF@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <836C281D-4D3A-4547-98D9-143A690698AF@kernel.crashing.org>
+Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	Ben Dooks <ben-linux@fluff.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,16 +38,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Grandegger wrote:
-
->> 2) The speed of the I2C bus, as seen by devices on that bus.  This is usually
->> 400KHz.
+On Thu, Jul 31, 2008 at 03:24:31PM -0500, Kumar Gala wrote:
+> >it would be helpful to compile a kernel with verbose fault information
+> >turned on.
 > 
-> Which should be defined with the property "current-speed", right?
+> Doesn't seem to provide too much more info on ppc.
 
-I would use something like "bus-speed", but yes.  The word "current" shouldn't
-be in a property string.
+I'm pretty sure it does the same thing on ppc as on all the other
+architectures.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+> just says the file/ line number of the badness.
+
+...which is a lot more useful than an address in someone else's kernel
+image.
+
+-Scott
