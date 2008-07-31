@@ -1,24 +1,21 @@
-Return-Path: <timur@freescale.com>
-Message-ID: <48922715.2000304@freescale.com>
-Date: Thu, 31 Jul 2008 15:56:53 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.228])
+	by ozlabs.org (Postfix) with ESMTP id 735D2DE3D4
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 07:09:50 +1000 (EST)
+Received: by qb-out-0506.google.com with SMTP id d11so834366qbd.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 14:09:49 -0700 (PDT)
+Date: Thu, 31 Jul 2008 15:09:46 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Board level compatibility matching
+Message-ID: <20080731210946.GC29834@secretlab.ca>
+References: <fa686aa40807311319k44d270b0t4fa9cb0e6523339@mail.gmail.com>
+	<20080731205906.GB17718@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
-	FDT
-References: <20080731182810.GB29097@secretlab.ca>	
-	<48921187.1090101@grandegger.com> <48921179.1080403@freescale.com>	
-	<48921888.3020900@grandegger.com> <48921954.4020103@freescale.com>	
-	<48921DED.6010403@grandegger.com>	
-	<9e4733910807311332q611b43b3y26f64b5269ccb657@mail.gmail.com>	
-	<fa686aa40807311335t1dd123d0mc385234ebe55248@mail.gmail.com>	
-	<48922273.6070801@freescale.com>
-	<20080731204838.GA29834@secretlab.ca>
-	<9e4733910807311355q3394b4bfg66c37055384451f7@mail.gmail.com>
-In-Reply-To: <9e4733910807311355q3394b4bfg66c37055384451f7@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>,
-	Linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080731205906.GB17718@ld0162-tx32.am.freescale.net>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: devicetree-discuss@ozlabs.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
+On Thu, Jul 31, 2008 at 03:59:06PM -0500, Scott Wood wrote:
+> On Thu, Jul 31, 2008 at 02:19:57PM -0600, Grant Likely wrote:
+> > - Add a property to the device tree that explicitly specifies the SoC
+> > that the board is based on.  Something like 'soc-model =
+> > "fsl,mpc5200b"' would be appropriate.
+> 
+> Shouldn't that go in the compatible property of the soc node?
 
-> Isn't there a single global divider that generates all the i2c source
-> clocks? You don't want to copy a global value into each i2c node.
+Not all SoC's (in particular 4xx SoCs) use an soc node.  Some of them
+instead just describe the internal busses on the SoC.
 
-Why not?  There are only two I2C devices, and it's theoretically possible for
-them to have different input clock frequencies.   Keeping it in the I2C node
-allows the I2C driver to reference a property directly in the node that its probing.
+> > - Prioritize board ports in the arch/powerpc/platforms directory to
+> > identify level-1 machines support from the level-2 ones.  Make sure
+> > that level-1 stuff always gets probed before level-2 stuff within each
+> > SoC family.  In all likelyhood, this would probably just involve
+> > making sure that board specific machines get linked in before the
+> > catchall machine.
+> 
+> I don't think we're too far away from being able to have a catch-all that
+> isn't even soc-type-specific -- the main things that come to mind are
+> instantiating PCI controllers (should be easily fixed) and finding the
+> root IRQ controller (I suppose we could pick a random interrupt
+> controller and follow the interrupt tree to its root, though it'd be more
+> robust if it were explicitly identified in the device tree).
 
-> Aren't we talking about the /2 or /3 or /1 divider that appears to be
-> randomly implemented on various members of the mpc8xxx family?
+Perhaps a root-interrupt-controller property?
 
-Yes.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+g.
