@@ -1,21 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0CC39DE102
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 05:04:11 +1000 (EST)
-Message-Id: <E4D699C2-07A8-42FF-A863-5595099CEC4D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <Pine.LNX.4.64.0807311345380.8012@blarg.am.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH] powerpc/mm: Implement _PAGE_SPECIAL & pte_special() for
-	32-bit
-Date: Thu, 31 Jul 2008 13:50:28 -0500
-References: <Pine.LNX.4.64.0807311345380.8012@blarg.am.freescale.net>
-Cc: Nick Piggin <npiggin@suse.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <scottwood@freescale.com>
+Message-ID: <48920C1A.7010605@freescale.com>
+Date: Thu, 31 Jul 2008 14:01:46 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
+	FDT
+References: <4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
+	<20080727012722.GH12191@secretlab.ca>
+	<4891A744.6060005@grandegger.com>
+	<9e4733910807310849g7e5612dbk9536733e061af8ad@mail.gmail.com>
+	<4891F4D8.9090905@grandegger.com>
+	<fa686aa40807311031r66f6451aw206faf54509c14d9@mail.gmail.com>
+	<4891FC3A.7040609@freescale.com>
+	<20080731180959.GA29057@secretlab.ca>
+	<489200B6.9060906@freescale.com>
+	<20080731182810.GB29097@secretlab.ca>
+	<48920607.5040606@freescale.com>
+In-Reply-To: <48920607.5040606@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-dev@ozlabs.org, Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Timur Tabi wrote:
+> Grant Likely wrote:
+> 
+>> No it doesn't, it depends on the register interface to decide
+>> compatibility.  Clock interface is part of that. 
+> 
+> I don't think so.  The interface for programming the clock registers is
+> identical on all 8[356]xx parts.  The only thing that matters is what specific
+> values to put in the FDR and DFSR registers to get a desired I2C bus speed.
 
-On Jul 31, 2008, at 1:48 PM, Kumar Gala wrote:
+If it affects the values you need to write to the registers to achieve a 
+given result, how is it not a difference in the register interface?
 
-> Implement _PAGE_SPECIAL and pte_special() for 32-bit powerpc. This  
-> bit will
-> be used by the fast get_user_pages() to differenciate PTEs that  
-> correspond
-> to a valid struct page from special mappings that don't such as IO  
-> mappings
-> obtained via io_remap_pfn_ranges().
->
-> We currently only implement this on sub-arch that support SMP or  
-> will so
-> in the future (6xx, 44x, FSL-BookE) and not (8xx, 40x).
->
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> Nick, do you forsee using _PAGE_SPECIAL for other applications that  
-> would
-> be of interested to non-SMP hw?
->
-> We can look at adding it into 8xx and 40x, but was being lazy as I  
-> assume
-> there is no point.
->
-> - k
+> I propose the property "clock-frequency", like this:
+> 
+> 		i2c@3000 {
+> 			#address-cells = <1>;
+> 			#size-cells = <0>;
+> 			cell-index = <0>;
+> 			compatible = "fsl-i2c";
+> 			reg = <0x3000 0x100>;
+> 			interrupts = <14 0x8>;
+> 			interrupt-parent = <&ipic>;
+> 			dfsrr;
+> 			clock-frequency = <0xblablabla>;  <-- added by U-Boot
+> 		};
 
-Josh,
+A clock-frequency property is OK, and is in line with what we do in 
+other types of nodes.  However, in the long run it might be nice to 
+introduce some sort of clock binding where, for example, the i2c node 
+can point to a clock elsewhere in the device tree as an input clock.
 
-Can you test this on 44x for me.
+That way, less knowledge is required by the firmware to poke values all 
+over the place, and it also allows one to describe situations where the 
+frequency of the input clock can change (such as in low-power modes).
 
-thanks
-
-- k
+-Scott
