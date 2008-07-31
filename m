@@ -1,21 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.237])
-	by ozlabs.org (Postfix) with ESMTP id 4ED02DE7C6
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 06:52:56 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id d11so828729qbd.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 13:52:54 -0700 (PDT)
-Date: Thu, 31 Jul 2008 14:52:51 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Board level compatibility matching
-Message-ID: <20080731205251.GB29834@secretlab.ca>
-References: <fa686aa40807311319k44d270b0t4fa9cb0e6523339@mail.gmail.com>
-	<9e4733910807311349l5770a17ib2ab2535bcd2868a@mail.gmail.com>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910807311355q3394b4bfg66c37055384451f7@mail.gmail.com>
+Date: Thu, 31 Jul 2008 16:55:20 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
+	FDT
+In-Reply-To: <20080731204838.GA29834@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910807311349l5770a17ib2ab2535bcd2868a@mail.gmail.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: devicetree-discuss@ozlabs.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080731182810.GB29097@secretlab.ca>
+	<48921187.1090101@grandegger.com> <48921179.1080403@freescale.com>
+	<48921888.3020900@grandegger.com> <48921954.4020103@freescale.com>
+	<48921DED.6010403@grandegger.com>
+	<9e4733910807311332q611b43b3y26f64b5269ccb657@mail.gmail.com>
+	<fa686aa40807311335t1dd123d0mc385234ebe55248@mail.gmail.com>
+	<48922273.6070801@freescale.com> <20080731204838.GA29834@secretlab.ca>
+Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>, Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 31, 2008 at 04:49:49PM -0400, Jon Smirl wrote:
-> On 7/31/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > This topic keeps coming up, so it is probably time to address it once
-> >  and for all.
-> >
-> >  When it comes to machine level support in arch/powerpc, there seems to
-> >  me that there are two levels or machine support.
-> >
-> ......
-> >
-> >  Thoughts?
-> >  g.
-> 
-> 
-> As part of this, how can we going to solve the problem with triggering
-> the load of a board specific machine/fabric driver in a generic way?
+On 7/31/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Thu, Jul 31, 2008 at 03:37:07PM -0500, Timur Tabi wrote:
+>  > Grant Likely wrote:
+>  >
+>  > > How is the divider controlled?  Is it a fixed property of the SoC?
+>  >
+>  > Yes.  The divider is either 1, 2, or 3, and the only way to know which one
+>  > it is is to look up the specific SOC model number.  And depending on the
+>  > SOC model, there may also be a register that needs to be looked up.
+>  >
+>  > > a
+>  > > shared register setting? or a register setting within the i2c device?
+>  >
+>  > The I2C device itself has no idea what the divider is.  It only sees the
+>  > result of the divider.
+>
+>
+> Then that absolutely suggests to me that either the final clock or the
+>  divider should be encoded in the i2c node; not in the soc node.
 
-That really is a separate problem.  We *could* do this with a board
-specific powerpc machine driver, but I don't think it is the best
-solution.
+Isn't there a single global divider that generates all the i2c source
+clocks? You don't want to copy a global value into each i2c node.
+Aren't we talking about the /2 or /3 or /1 divider that appears to be
+randomly implemented on various members of the mpc8xxx family?
 
-I'm still thinking that the drivers module_init() function could check
-the top level board model property and decide whether or not to load
-based on that.
+>
+>
+>  g.
+>
 
-g.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
