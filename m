@@ -1,9 +1,23 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 31 Jul 2008 15:24:13 +1000
-Subject: [PATCH] powerpc/pci: Don't keep ISA memory hole resources in the tree
-Message-Id: <20080731052417.5A94FDDF27@ozlabs.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
+	by ozlabs.org (Postfix) with ESMTP id 9EC9ADDF31
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 15:27:56 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so70974anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 22:27:55 -0700 (PDT)
+Message-ID: <fa686aa40807302227r7ef32bbpc8e517d5fe1d42ab@mail.gmail.com>
+Date: Wed, 30 Jul 2008 23:27:55 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: [PATCH 4/8] Silence warnings in
+	arch/powerpc/platforms/52xx/mpc52xx_pci.c
+In-Reply-To: <9e4733910807302108q689c9c82yb010c75cba770218@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <cac86e24e42bd05087b43663b687f04df91326ba.1217476198.git.tony@bakeyournoodle.com>
+	<96343fe00bd43a12b1739ff1513ba07224e3f302.1217476198.git.tony@bakeyournoodle.com>
+	<9e4733910807302108q689c9c82yb010c75cba770218@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,47 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When we have an ISA memory hole (ie, a PCI window that allows to
-generate PCI memory cycles at low PCI address) mixes with other
-resources using a different CPU <=> PCI mapping, we must not keep
-the ISA hole in the bridge resource list.
+On Wed, Jul 30, 2008 at 10:08 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> There are some warnings in mpc5200 spi that I haven't looked at....
+>
+> drivers/spi/mpc52xx_psc_spi.c: In function 'mpc52xx_psc_spi_activate_cs':
+> drivers/spi/mpc52xx_psc_spi.c:111: warning: passing argument 1 of
+> 'in_be16' from incompatible pointer type
+> drivers/spi/mpc52xx_psc_spi.c:117: warning: passing argument 1 of
+> 'out_be16' from incompatible pointer type
+> drivers/spi/mpc52xx_psc_spi.c: In function 'mpc52xx_psc_spi_port_config':
+> drivers/spi/mpc52xx_psc_spi.c:350: warning: passing argument 1 of
+> 'out_be16' from incompatible pointer type
 
-If we do, things might start trying to allocate device resources
-in there and will get the PCI addresses wrong.
+I've got a patch for these already in my tree.
 
-This patch fixes it, which fixes various cases of PCMCIA breakage
-on PowerBooks using the MPC106 "grackle" bridge that supports
-ISA holes.
+g.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
- arch/powerpc/kernel/pci-common.c |   17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
-
---- linux-work.orig/arch/powerpc/kernel/pci-common.c	2008-07-31 14:45:20.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/pci-common.c	2008-07-31 14:57:31.000000000 +1000
-@@ -650,11 +650,18 @@ void __devinit pci_process_bridge_OF_ran
- 		}
- 	}
- 
--	/* Out of paranoia, let's put the ISA hole last if any */
--	if (isa_hole >= 0 && memno > 0 && isa_hole != (memno-1)) {
--		struct resource tmp = hose->mem_resources[isa_hole];
--		hose->mem_resources[isa_hole] = hose->mem_resources[memno-1];
--		hose->mem_resources[memno-1] = tmp;
-+	/* If there's an ISA hole and the pci_mem_offset is -not- matching
-+	 * the ISA hole offset, then we need to remove the ISA hole from
-+	 * the resource list for that brige
-+	 */
-+	if (isa_hole >= 0 && hose->pci_mem_offset != isa_mb) {
-+		unsigned int next = isa_hole + 1;
-+		printk(KERN_INFO " Removing ISA hole at 0x%016llx\n", isa_mb);
-+		if (next < memno)
-+			memmove(&hose->mem_resources[isa_hole],
-+				&hose->mem_resources[next],
-+				sizeof(struct resource) * (memno - next));
-+		hose->mem_resources[--memno].flags = 0;
- 	}
- }
- 
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
