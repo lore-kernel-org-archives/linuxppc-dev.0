@@ -1,22 +1,21 @@
-Return-Path: <willy@parisc-linux.org>
-Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.parisc-linux.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D7465DE12B
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 17:22:16 +1000 (EST)
-Date: Thu, 31 Jul 2008 01:21:59 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <michael@ellerman.id.au>
 Subject: Re: [Bugme-new] [Bug 11185] New: Device/host RESET in SCSI
-Message-ID: <20080731072159.GB30534@parisc-linux.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Matthew Wilcox <matthew@wil.cx>
+In-Reply-To: <20080731072159.GB30534@parisc-linux.org>
 References: <bug-11185-10286@http.bugzilla.kernel.org/>
 	<20080730232409.81965504.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080730232409.81965504.akpm@linux-foundation.org>
-Cc: cijoml@volny.cz, linuxppc-dev@ozlabs.org, linux-scsi@vger.kernel.org,
-	bugme-daemon@bugzilla.kernel.org
+	<20080731072159.GB30534@parisc-linux.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-gbcjLm/evgTzEQPTNu4Q"
+Date: Thu, 31 Jul 2008 17:32:42 +1000
+Message-Id: <1217489562.1487.55.camel@localhost>
+Mime-Version: 1.0
+Cc: cijoml@volny.cz, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	bugme-daemon@bugzilla.kernel.org, linux-scsi@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 30, 2008 at 11:24:09PM -0700, Andrew Morton wrote:
-> Why do you describe this regression as a powerpc problem rather than a
-> scsi one?
-> 
-> (It could be either or both, I'm just wondering...)
 
-This seems quite astute of the reporter.  The error messages from sym2
-are consistent with an interrupt routing problem.  I have an idea for
-reporting this more effectively (because this comes up every 3-6 months
-or so) but testing that patch will have to wait until I'm back home.
+--=-gbcjLm/evgTzEQPTNu4Q
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+On Thu, 2008-07-31 at 01:21 -0600, Matthew Wilcox wrote:
+> On Wed, Jul 30, 2008 at 11:24:09PM -0700, Andrew Morton wrote:
+> > Why do you describe this regression as a powerpc problem rather than a
+> > scsi one?
+> >=20
+> > (It could be either or both, I'm just wondering...)
+>=20
+> This seems quite astute of the reporter.  The error messages from sym2
+> are consistent with an interrupt routing problem.=20
+
+Hmm I suppose.
+
+In that case can we see the full dmesg and a tarball
+of /proc/device-tree from a working kernel, Cijoml?
+
+Which begs the question what was the latest working kernel version?
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-gbcjLm/evgTzEQPTNu4Q
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIkWqadSjSd0sB4dIRAlDeAJ9WZI6+Q+2zeJG1Fha2oVipE7AsnACdEEdr
+kLrMnjJSWDOklwQvoMraVbU=
+=5iws
+-----END PGP SIGNATURE-----
+
+--=-gbcjLm/evgTzEQPTNu4Q--
