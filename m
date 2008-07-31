@@ -1,23 +1,25 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.188])
-	by ozlabs.org (Postfix) with ESMTP id 0499CDDF44
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 20:54:39 +1000 (EST)
-Received: by fk-out-0910.google.com with SMTP id e30so497948fke.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 03:54:37 -0700 (PDT)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: ide pmac breakage
-Date: Thu, 31 Jul 2008 12:51:01 +0200
-References: <1217208596.11188.144.camel@pasglop>
-	<200807302111.54514.bzolnier@gmail.com>
-	<1217478322.11188.410.camel@pasglop>
-In-Reply-To: <1217478322.11188.410.camel@pasglop>
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7E1CCDE010
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 21:27:40 +1000 (EST)
+Date: Thu, 31 Jul 2008 12:27:34 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
+Message-ID: <20080731112734.GE1704@csn.ul.ie>
+References: <cover.1216928613.git.ebmunson@us.ibm.com>
+	<200807311604.14349.nickpiggin@yahoo.com.au>
+	<20080730231428.a7bdcfa7.akpm@linux-foundation.org>
+	<200807311626.15709.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200807311251.02251.bzolnier@gmail.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linux-ide@vger.kernel.org,
-	petkovbb@gmail.com, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <200807311626.15709.nickpiggin@yahoo.com.au>
+Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Eric Munson <ebmunson@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,99 +29,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 31 July 2008, Benjamin Herrenschmidt wrote:
->=20
-> > Is it actually caused by additional reference counting on drive->gendev?
-> > IOW if you reverse the patch below instead of applying the previous fix
-> > do things work OK again?
-> >=20
-> > > Note that there shouldn't be anything fundamentally different from
-> > > ide-pmac here vs. something like pcmcia IDE cards... do you have one =
-of
-> > > these to test with ?
-> >=20
-> > Nope and I really don't intend to have one.  I count on other people
-> > to take some care of support for host drivers that they maintain/use. ;)
->=20
-> Reverting the patch below does the job. Thanks.
+On (31/07/08 16:26), Nick Piggin didst pronounce:
+> On Thursday 31 July 2008 16:14, Andrew Morton wrote:
+> > On Thu, 31 Jul 2008 16:04:14 +1000 Nick Piggin <nickpiggin@yahoo.com.au> 
+> wrote:
+> > > > Do we expect that this change will be replicated in other
+> > > > memory-intensive apps?  (I do).
+> > >
+> > > Such as what? It would be nice to see some numbers with some HPC or java
+> > > or DBMS workload using this. Not that I dispute it will help some cases,
+> > > but 10% (or 20% for ppc) I guess is getting toward the best case, short
+> > > of a specifically written TLB thrasher.
+> >
+> > I didn't realise the STREAM is using vast amounts of automatic memory.
+> > I'd assumed that it was using sane amounts of stack, but the stack TLB
+> > slots were getting zapped by all the heap-memory activity.  Oh well.
+> 
+> An easy mistake to make because that's probabably how STREAM would normally
+> work. I think what Mel had done is to modify the stream kernel so as to
+> have it operate on arrays of stack memory.
+> 
 
-Thanks, this narrows down the problem pretty nicely.
+Yes, I mentioned in the mail that STREAM was patched to use stack for
+its data. It was as much to show the patches were working as advertised
+even though it is an extreme case obviously.
 
-[ Unfortunately we cannot revert the whole patch as it would break
-  unloading of IDE host drivers modules so I still need you help on
-  fixing this one. ]
+I had seen stack-hugepage-backing as something that would improve performance
+in addition to something else as opposed to having to stand entirely on its
+own. For example, I would expect many memory-intensive applications to gain
+by just having malloc and stack backed more than backing either in isolation.
 
-Lets get back to the oops:
+> > I guess that effect is still there, but smaller.
+> 
+> I imagine it should be, unless you're using a CPU with seperate TLBs for
+> small and huge pages, and your large data set is mapped with huge pages,
+> in which case you might now introduce *new* TLB contention between the
+> stack and the dataset :)
 
-Vector: 300 (Data Access) at [c59dfdc0]
-=C2=A0 =C2=A0 pc: c0211f78: ide_device_put+0x18/0x58
-=C2=A0 =C2=A0 lr: c0223c34: ide_cd_put+0x40/0x5c
-=C2=A0 =C2=A0 sp: c59dfe70
-=C2=A0 =C2=A0msr: 9032
-=C2=A0 =C2=A0dar: 10
-=C2=A0dsisr: 40000000
-=C2=A0 current =3D 0xc58a9880
-=C2=A0 =C2=A0 pid =C2=A0 =3D 843, comm =3D media-bay
-enter ? for help
-[c59dfe80] c0223c34 ide_cd_put+0x40/0x5c
-[c59dfea0] c02114d4 generic_ide_remove+0x28/0x3c
-[c59dfeb0] c01ea108 __device_release_driver+0x78/0xb4
-[c59dfec0] c01ea218 device_release_driver+0x28/0x44
-[c59dfee0] c01e9350 bus_remove_device+0xac/0xd8
-[c59dff00] c01e77f8 device_del+0x104/0x198
-[c59dff20] c01e78a4 device_unregister+0x18/0x30
-[c59dff40] c0212598 __ide_port_unregister_devices+0x6c/0x88
-[c59dff60] c021276c ide_port_unregister_devices+0x38/0x80
-[c59dff80] c0209078 media_bay_step+0x1cc/0x5c0
-[c59dffb0] c02094f8 media_bay_task+0x8c/0xcc
-[c59dffd0] c0048640 kthread+0x48/0x84
-[c59dfff0] c0011b38 kernel_thread+0x44/0x60
+Yes, this can happen particularly on older CPUs. For example, on my
+crash-test laptop the Pentium III there reports
 
-On a fresh look at ide_device_put(), ide_host_alloc() and pmac.c
-it may be that the above oops is actually media-bay specific.
+TLB and cache info:
+01: Instruction TLB: 4KB pages, 4-way set assoc, 32 entries
+02: Instruction TLB: 4MB pages, 4-way set assoc, 2 entries
 
-ide_device_put():
-=2E..
-        struct device *host_dev =3D drive->hwif->host->dev[0];
-        struct module *module =3D host_dev ? host_dev->driver->owner : NULL;
-=2E..
+so a workload that sparsely addressed memory (i.e. >= 4MB strides on each
+reference) might suffer more TLB misses with large pages than with small.
+It's hardly new that there are is uncertainity around when and if hugepages
+are of benefit and where.
 
-ide_host_alloc():
-=2E..
-       if (hws[0])
-                host->dev[0] =3D hws[0]->dev;
-=2E..
+> Also, interestingly I have actually seen some CPUs whos memory operations
+> get significantly slower when operating on large pages than small (in the
+> case when there is full TLB coverage for both sizes). This would make
+> sense if the CPU only implements a fast L1 TLB for small pages.
+> 
 
-pmac.c:
-=2E..
-pmac_ide_macio_attach(struct macio_dev *mdev, const struct of_device_id *ma=
-tch)
-=2E..
-	dev_set_drvdata(&mdev->ofdev.dev, pmif);
+It's also possible there is a micro-TLB involved that only support small
+pages. It's been the case for a while that what wins on one machine type
+may lose on another.
 
-	memset(&hw, 0, sizeof(hw));
-	pmac_ide_init_ports(&hw, pmif->regbase);
-	hw.irq =3D irq;
-	hw.dev =3D &mdev->bus->pdev->dev;
-	hw.parent =3D &mdev->ofdev.dev;
-=2E..
+> So for the vast majority of workloads, where stacks are relatively small
+> (or slowly changing), and relatively hot, I suspect this could easily have
+> no benefit at best and slowdowns at worst.
+> 
 
-pmac macio is unique in using different devices for hwif->dev / host->dev
-(hw.dev) and hwif->gendev.parent / dev_set_drvdata() (hw.parent)
+I wouldn't expect an application with small stacks to request its stack
+to be backed by hugepages either. Ideally, it would be enabled because a
+large enough number of DTLB misses were found to be in the stack
+although catching this sort of data is tricky. 
 
-[ I has been actually wondering why is it so for some time...? ]
+> But I'm not saying that as a reason not to merge it -- this is no
+> different from any other hugepage allocations and as usual they have to be
+> used selectively where they help.... I just wonder exactly where huge
+> stacks will help.
+> 
 
-Thus we may be hitting oops in ide_device_put() on host_dev->driver
-because hw.dev is used as host->dev for pmac macio in ide_device_put()
-while we really want to use hw.parent.
+Benchmark wise, SPECcpu and SPEComp have stack-dependent benchmarks.
+Computations that partition problems with recursion I would expect to benefit
+as well as some JVMs that heavily use the stack (see how many docs suggest
+setting ulimit -s unlimited). Bit out there, but stack-based languages would
+stand to gain by this. The potential gap is for threaded apps as there will
+be stacks that are not the "main" stack.  Backing those with hugepages depends
+on how they are allocated (malloc, it's easy, MAP_ANONYMOUS not so much).
 
-=46ix should be as simple as:
+> > I agree that few real-world apps are likely to see gains of this
+> > order.  More benchmarks, please :)
+> 
+> Would be nice, if just out of morbid curiosity :)
+> 
 
-=2D                host->dev[0] =3D hws[0]->dev;
-+                host->dev[0] =3D hws[0]->parent ? hws[0]->parent : hws[0]-=
->dev;
+Benchmarks will happen, they just take time, you know the way. The STREAM one
+in the meantime is a "this works" and has an effect. I'm hoping Andrew Hastings
+will have figures at hand and I cc'd him elsewhere in the thread for comment.
 
-Could you please try it together with my previous patch for
-ide_device_{get,put}()?
+Thanks
 
-Bart
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
