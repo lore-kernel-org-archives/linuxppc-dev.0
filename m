@@ -1,9 +1,9 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <48922087.4050903@grandegger.com>
-Date: Thu, 31 Jul 2008 22:28:55 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <timur@freescale.com>
+Message-ID: <48921E44.7010502@freescale.com>
+Date: Thu, 31 Jul 2008 15:19:16 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
 Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
 	FDT
 References: <4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
@@ -19,9 +19,8 @@ References: <4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
 	<48920607.5040606@freescale.com> <48921187.1090101@grandegger.com>
 	<48921179.1080403@freescale.com> <48921888.3020900@grandegger.com>
 	<48921954.4020103@freescale.com> <48921DED.6010403@grandegger.com>
-	<48921E44.7010502@freescale.com>
-In-Reply-To: <48921E44.7010502@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <48921DED.6010403@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>,
 	Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -33,24 +32,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Wolfgang Grandegger wrote:
+Wolfgang Grandegger wrote:
+
+> I'm a bit confused. The frequency of the I2C source clock and the real 
+> I2C clock frequency are two different things. 
+
+There are two frequencies:
+
+1) The frequency of the input clock to the I2C device, after it has gone through
+a divider.  This is what I call the "I2C clock frequency" and what I think
+belongs in the clock-frequency property.  This is usually the platform clock
+divided by 1, 2, or 3.
+
+2) The speed of the I2C bus, as seen by devices on that bus.  This is usually
+400KHz.
+
+> The first one is common 
+> for all I2C devices, the second can be different. What properties would 
+> you like to use for defining both?
+
+The platform clock has no value to the I2C hardware, so I don't care anything
+about it.
+
+>> Besides, U-Boot does not currently store the divider value.  Look at the code
+>> I've posted twice already - it stores the frequency in i2c1_clk.  So now I would
+>> need to create another variable in the gd_t to store the divider?  No thanks.
 > 
->> I'm a bit confused. The frequency of the I2C source clock and the real 
->> I2C clock frequency are two different things. 
-> 
-> There are two frequencies:
-> 
-> 1) The frequency of the input clock to the I2C device, after it has gone through
-> a divider.  This is what I call the "I2C clock frequency" and what I think
-> belongs in the clock-frequency property.  This is usually the platform clock
-> divided by 1, 2, or 3.
+> OK, that's an argument but it's biased by U-Boot.
 
-OK.
+As long as a method that is favorable to U-Boot does not put any undo hardship
+on non-U-Boot methods, I would say that it is the preferred method.
 
-> 2) The speed of the I2C bus, as seen by devices on that bus.  This is usually
-> 400KHz.
-
-Which should be defined with the property "current-speed", right?
-
-Wolfgang.
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
