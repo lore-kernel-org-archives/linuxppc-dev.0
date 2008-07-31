@@ -1,7 +1,7 @@
-Return-Path: <scottwood@freescale.com>
-Message-ID: <48922707.5020107@freescale.com>
-Date: Thu, 31 Jul 2008 15:56:39 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <timur@freescale.com>
+Message-ID: <48922715.2000304@freescale.com>
+Date: Thu, 31 Jul 2008 15:56:53 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
 To: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
@@ -16,9 +16,9 @@ References: <20080731182810.GB29097@secretlab.ca>
 	<20080731204838.GA29834@secretlab.ca>
 	<9e4733910807311355q3394b4bfg66c37055384451f7@mail.gmail.com>
 In-Reply-To: <9e4733910807311355q3394b4bfg66c37055384451f7@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>,
-	Linux I2C <i2c@lm-sensors.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>,
+	Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,12 +29,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Jon Smirl wrote:
+
 > Isn't there a single global divider that generates all the i2c source
 > clocks? You don't want to copy a global value into each i2c node.
 
-Why not?  The "compatible" is pretty much always going to be the same 
-for the i2c node, but we copy that, as well.
+Why not?  There are only two I2C devices, and it's theoretically possible for
+them to have different input clock frequencies.   Keeping it in the I2C node
+allows the I2C driver to reference a property directly in the node that its probing.
 
-Likewise for the clock-frequency of serial nodes.
+> Aren't we talking about the /2 or /3 or /1 divider that appears to be
+> randomly implemented on various members of the mpc8xxx family?
 
--Scott
+Yes.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
