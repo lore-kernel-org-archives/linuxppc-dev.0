@@ -1,22 +1,25 @@
-Return-Path: <SSparks@aclaratech.com>
-Received: from SG2EHSOBE001.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 98B62DDFA9
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 00:26:08 +1000 (EST)
-Received: from mail82-sin (localhost.localdomain [127.0.0.1])	by
-	mail82-sin-R.bigfish.com (Postfix) with ESMTP id 469D3BE0213	for
-	<linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 14:26:04 +0000 (UTC)
-Received: from acl-exch.aclaratech.com (unknown [68.89.149.23])	by
-	mail82-sin.bigfish.com (Postfix) with ESMTP id C52ADF9806A	for
-	<linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 14:26:01 +0000 (UTC)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: Compact Flash on 8349mITX
-Date: Thu, 31 Jul 2008 09:24:35 -0500
-Message-ID: <6011A7C9CD0EE74792C3ED2A8355608634218F@mail.twacs.com>
-In-Reply-To: <6011A7C9CD0EE74792C3ED2A835560861FA9C0@mail.twacs.com>
-References: <6011A7C9CD0EE74792C3ED2A835560861FA9C0@mail.twacs.com>
-From: "Sparks, Sam" <SSparks@aclaratech.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Mel Gorman <mel@csn.ul.ie>
+In-Reply-To: <20080731135016.GG1704@csn.ul.ie>
+References: <cover.1216928613.git.ebmunson@us.ibm.com>
+	<200807311626.15709.nickpiggin@yahoo.com.au>
+	<20080731112734.GE1704@csn.ul.ie>
+	<200807312151.56847.nickpiggin@yahoo.com.au>
+	<20080731135016.GG1704@csn.ul.ie>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-ZnN6y2vs7iwYgoQWASLw"
+Date: Fri, 01 Aug 2008 00:32:55 +1000
+Message-Id: <1217514775.19050.41.camel@localhost>
+Mime-Version: 1.0
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+	libhugetlbfs-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Eric Munson <ebmunson@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,23 +29,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->From: Sparks, Sam=20
->Sent: Thursday, July 31, 2008 8:15 AM
->Does irq polling need to be used for compact flash to work=20
->with this version of the kernel on this board?
 
-When I remove the interrupt definition from the DTS (to cause
-irqpolling), the ata driver gets stuck in a loop displaying the
-following. Does anyone have any insight?
-ata1.00: status: { DRDY }
-ata1.00: qc timeout (cmd 0xec)
-ata1.00: failed to IDENTIFY (I/O error, err_mask=3D0x4)
-ata1.00: revalidation failed (errno=3D-5)
-ata1: hard resetting link
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ata1.00: configured for UDMA/100
-ata1: EH complete
-ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
-ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x20 (host bus
-error)
+--=-ZnN6y2vs7iwYgoQWASLw
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2008-07-31 at 14:50 +0100, Mel Gorman wrote:
+> On (31/07/08 21:51), Nick Piggin didst pronounce:
+> > On Thursday 31 July 2008 21:27, Mel Gorman wrote:
+> > > On (31/07/08 16:26), Nick Piggin didst pronounce:
+> >=20
+> > > > I imagine it should be, unless you're using a CPU with seperate TLB=
+s for
+> > > > small and huge pages, and your large data set is mapped with huge p=
+ages,
+> > > > in which case you might now introduce *new* TLB contention between =
+the
+> > > > stack and the dataset :)
+> > >
+> > > Yes, this can happen particularly on older CPUs. For example, on my
+> > > crash-test laptop the Pentium III there reports
+> > >
+> > > TLB and cache info:
+> > > 01: Instruction TLB: 4KB pages, 4-way set assoc, 32 entries
+> > > 02: Instruction TLB: 4MB pages, 4-way set assoc, 2 entries
+> >=20
+> > Oh? Newer CPUs tend to have unified TLBs?
+> >=20
+>=20
+> I've seen more unified DTLBs (ITLB tends to be split) than not but it cou=
+ld
+> just be where I'm looking. For example, on the machine I'm writing this
+> (Core Duo), it's
+>=20
+> TLB and cache info:
+> 51: Instruction TLB: 4KB and 2MB or 4MB pages, 128 entries
+> 5b: Data TLB: 4KB and 4MB pages, 64 entries
+>=20
+> DTLB is unified there but on my T60p laptop where I guess they want the C=
+PU
+> to be using less power and be cheaper, it's
+>=20
+> TLB info
+>  Instruction TLB: 4K pages, 4-way associative, 128 entries.
+>  Instruction TLB: 4MB pages, fully associative, 2 entries
+>  Data TLB: 4K pages, 4-way associative, 128 entries.
+>  Data TLB: 4MB pages, 4-way associative, 8 entries
+
+Clearly I've been living under a rock, but I didn't know one could get
+such nicely formatted info.
+
+In case I'm not the only one, a bit of googling turned up "x86info",
+courtesy of davej - apt-get'able and presumably yum'able too.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-ZnN6y2vs7iwYgoQWASLw
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIkc0XdSjSd0sB4dIRAjiFAKC/PVum23IXYylNmt+uZqHg6DDT4wCdGQqp
+QYIRIcLptVPjBPD/Yma2Tqs=
+=HNGl
+-----END PGP SIGNATURE-----
+
+--=-ZnN6y2vs7iwYgoQWASLw--
