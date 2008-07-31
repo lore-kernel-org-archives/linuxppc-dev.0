@@ -1,26 +1,23 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 05DF2DDF15
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 20:31:46 +1000 (EST)
-Date: Thu, 31 Jul 2008 11:31:38 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Message-ID: <20080731103137.GD1704@csn.ul.ie>
-References: <cover.1216928613.git.ebmunson@us.ibm.com>
-	<20080730014308.2a447e71.akpm@linux-foundation.org>
-	<20080730172317.GA14138@csn.ul.ie>
-	<20080730103407.b110afc2.akpm@linux-foundation.org>
-	<20080730193010.GB14138@csn.ul.ie>
-	<20080730130709.eb541475.akpm@linux-foundation.org>
+Return-Path: <bzolnier@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.188])
+	by ozlabs.org (Postfix) with ESMTP id 0499CDDF44
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 20:54:39 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id e30so497948fke.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 03:54:37 -0700 (PDT)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: benh@kernel.crashing.org
+Subject: Re: ide pmac breakage
+Date: Thu, 31 Jul 2008 12:51:01 +0200
+References: <1217208596.11188.144.camel@pasglop>
+	<200807302111.54514.bzolnier@gmail.com>
+	<1217478322.11188.410.camel@pasglop>
+In-Reply-To: <1217478322.11188.410.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20080730130709.eb541475.akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	abh@cray.com, ebmunson@us.ibm.com
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200807311251.02251.bzolnier@gmail.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linux-ide@vger.kernel.org,
+	petkovbb@gmail.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,50 +27,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (30/07/08 13:07), Andrew Morton didst pronounce:
-> On Wed, 30 Jul 2008 20:30:10 +0100
-> Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > With Erics patch and libhugetlbfs, we can automatically back text/data[1],
-> > malloc[2] and stacks without source modification. Fairly soon, libhugetlbfs
-> > will also be able to override shmget() to add SHM_HUGETLB. That should cover
-> > a lot of the memory-intensive apps without source modification.
-> 
-> The weak link in all of this still might be the need to reserve
-> hugepages and the unreliability of dynamically allocating them.
-> 
-> The dynamic allocation should be better nowadays, but I've lost track
-> of how reliable it really is.  What's our status there?
-> 
+On Thursday 31 July 2008, Benjamin Herrenschmidt wrote:
+>=20
+> > Is it actually caused by additional reference counting on drive->gendev?
+> > IOW if you reverse the patch below instead of applying the previous fix
+> > do things work OK again?
+> >=20
+> > > Note that there shouldn't be anything fundamentally different from
+> > > ide-pmac here vs. something like pcmcia IDE cards... do you have one =
+of
+> > > these to test with ?
+> >=20
+> > Nope and I really don't intend to have one.  I count on other people
+> > to take some care of support for host drivers that they maintain/use. ;)
+>=20
+> Reverting the patch below does the job. Thanks.
 
-We are a lot more reliable than we were although exact quantification is
-difficult because it's workload dependent. For a long time, I've been able
-to test bits and pieces with hugepages by allocating the pool at the time
-I needed it even after days of uptime. Previously this required a reboot.
+Thanks, this narrows down the problem pretty nicely.
 
-I've also been able to use the dynamic hugepage pool resizing effectively
-and we track how much it is succeeding and failing in /proc/vmstat (see the
-htlb fields) to watch for problems. Between that and /proc/pagetypeinfo, I am
-expecting to be able to identify availablilty problems. As an administrator
-can now set a minimum pool size and the maximum size of the pool (nr_hugepages
-and nr_overcommit_hugepages), the configuration difficulties should be relaxed.
+[ Unfortunately we cannot revert the whole patch as it would break
+  unloading of IDE host drivers modules so I still need you help on
+  fixing this one. ]
 
-If it is found that anti-fragmentation can be broken down and pool
-resizing starts failing after X amount of time on Y workloads, there is
-still the option of using movablecore=BiggestPoolSizeIWillEverNeed
-and writing 1 to /proc/sys/vm/hugepages_treat_as_movable so the hugepage
-pool can grow/shrink reliably there.
+Lets get back to the oops:
 
-Overall, it's in pretty good shape.
+Vector: 300 (Data Access) at [c59dfdc0]
+=C2=A0 =C2=A0 pc: c0211f78: ide_device_put+0x18/0x58
+=C2=A0 =C2=A0 lr: c0223c34: ide_cd_put+0x40/0x5c
+=C2=A0 =C2=A0 sp: c59dfe70
+=C2=A0 =C2=A0msr: 9032
+=C2=A0 =C2=A0dar: 10
+=C2=A0dsisr: 40000000
+=C2=A0 current =3D 0xc58a9880
+=C2=A0 =C2=A0 pid =C2=A0 =3D 843, comm =3D media-bay
+enter ? for help
+[c59dfe80] c0223c34 ide_cd_put+0x40/0x5c
+[c59dfea0] c02114d4 generic_ide_remove+0x28/0x3c
+[c59dfeb0] c01ea108 __device_release_driver+0x78/0xb4
+[c59dfec0] c01ea218 device_release_driver+0x28/0x44
+[c59dfee0] c01e9350 bus_remove_device+0xac/0xd8
+[c59dff00] c01e77f8 device_del+0x104/0x198
+[c59dff20] c01e78a4 device_unregister+0x18/0x30
+[c59dff40] c0212598 __ide_port_unregister_devices+0x6c/0x88
+[c59dff60] c021276c ide_port_unregister_devices+0x38/0x80
+[c59dff80] c0209078 media_bay_step+0x1cc/0x5c0
+[c59dffb0] c02094f8 media_bay_task+0x8c/0xcc
+[c59dffd0] c0048640 kthread+0x48/0x84
+[c59dfff0] c0011b38 kernel_thread+0x44/0x60
 
-To be fair, one snag is that that swap is almost required for pool
-resizing to work as I never pushed to complete memory compaction
-(http://lwn.net/Articles/238837/).  Hence, we depend on the workload to
-have lots of filesystem-backed data for lumpy-reclaim to do its job, for
-pool resizing to take place between batch jobs or for swap to be configured
-even if it's just for the duration of a pool resize.
+On a fresh look at ide_device_put(), ide_host_alloc() and pmac.c
+it may be that the above oops is actually media-bay specific.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+ide_device_put():
+=2E..
+        struct device *host_dev =3D drive->hwif->host->dev[0];
+        struct module *module =3D host_dev ? host_dev->driver->owner : NULL;
+=2E..
+
+ide_host_alloc():
+=2E..
+       if (hws[0])
+                host->dev[0] =3D hws[0]->dev;
+=2E..
+
+pmac.c:
+=2E..
+pmac_ide_macio_attach(struct macio_dev *mdev, const struct of_device_id *ma=
+tch)
+=2E..
+	dev_set_drvdata(&mdev->ofdev.dev, pmif);
+
+	memset(&hw, 0, sizeof(hw));
+	pmac_ide_init_ports(&hw, pmif->regbase);
+	hw.irq =3D irq;
+	hw.dev =3D &mdev->bus->pdev->dev;
+	hw.parent =3D &mdev->ofdev.dev;
+=2E..
+
+pmac macio is unique in using different devices for hwif->dev / host->dev
+(hw.dev) and hwif->gendev.parent / dev_set_drvdata() (hw.parent)
+
+[ I has been actually wondering why is it so for some time...? ]
+
+Thus we may be hitting oops in ide_device_put() on host_dev->driver
+because hw.dev is used as host->dev for pmac macio in ide_device_put()
+while we really want to use hw.parent.
+
+=46ix should be as simple as:
+
+=2D                host->dev[0] =3D hws[0]->dev;
++                host->dev[0] =3D hws[0]->parent ? hws[0]->parent : hws[0]-=
+>dev;
+
+Could you please try it together with my previous patch for
+ide_device_{get,put}()?
+
+Bart
