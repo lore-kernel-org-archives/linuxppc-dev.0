@@ -1,25 +1,21 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7E1CCDE010
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 21:27:40 +1000 (EST)
-Date: Thu, 31 Jul 2008 12:27:34 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Message-ID: <20080731112734.GE1704@csn.ul.ie>
-References: <cover.1216928613.git.ebmunson@us.ibm.com>
-	<200807311604.14349.nickpiggin@yahoo.com.au>
-	<20080730231428.a7bdcfa7.akpm@linux-foundation.org>
-	<200807311626.15709.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <200807311626.15709.nickpiggin@yahoo.com.au>
-Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc - Initialize the irq radix tree earlier
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+In-Reply-To: <1217497241-10685-2-git-send-email-sebastien.dugue@bull.net>
+References: <1217497241-10685-1-git-send-email-sebastien.dugue@bull.net>
+	<1217497241-10685-2-git-send-email-sebastien.dugue@bull.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-cyJ9/EU+3uZuS2poDX3Y"
+Date: Thu, 31 Jul 2008 21:40:56 +1000
+Message-Id: <1217504456.9817.22.camel@localhost>
+Mime-Version: 1.0
+Cc: tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
+	jean-pierre.dion@bull.net, rostedt@goodmis.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Eric Munson <ebmunson@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>
+	paulus@samba.org, gilles.carry@ext.bull.net, tglx@linutronix.de
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,102 +25,116 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (31/07/08 16:26), Nick Piggin didst pronounce:
-> On Thursday 31 July 2008 16:14, Andrew Morton wrote:
-> > On Thu, 31 Jul 2008 16:04:14 +1000 Nick Piggin <nickpiggin@yahoo.com.au> 
-> wrote:
-> > > > Do we expect that this change will be replicated in other
-> > > > memory-intensive apps?  (I do).
-> > >
-> > > Such as what? It would be nice to see some numbers with some HPC or java
-> > > or DBMS workload using this. Not that I dispute it will help some cases,
-> > > but 10% (or 20% for ppc) I guess is getting toward the best case, short
-> > > of a specifically written TLB thrasher.
-> >
-> > I didn't realise the STREAM is using vast amounts of automatic memory.
-> > I'd assumed that it was using sane amounts of stack, but the stack TLB
-> > slots were getting zapped by all the heap-memory activity.  Oh well.
-> 
-> An easy mistake to make because that's probabably how STREAM would normally
-> work. I think what Mel had done is to modify the stream kernel so as to
-> have it operate on arrays of stack memory.
-> 
 
-Yes, I mentioned in the mail that STREAM was patched to use stack for
-its data. It was as much to show the patches were working as advertised
-even though it is an extreme case obviously.
+--=-cyJ9/EU+3uZuS2poDX3Y
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-I had seen stack-hugepage-backing as something that would improve performance
-in addition to something else as opposed to having to stand entirely on its
-own. For example, I would expect many memory-intensive applications to gain
-by just having malloc and stack backed more than backing either in isolation.
+On Thu, 2008-07-31 at 11:40 +0200, Sebastien Dugue wrote:
+> The radix tree used for fast irq reverse mapping by the XICS is initializ=
+ed
+> late in the boot process, after the first interrupt (IPI) gets registered
+> and after the first IPI is received.
+>=20
+>   This patch moves the initialization of the XICS radix tree earlier into
+> the boot process in smp_xics_probe() (the mm is already up but no interru=
+pts
+> have been registered at that point) to avoid having to insert a mapping i=
+nto
+> the tree in interrupt context. This will help in simplifying the locking
+> constraints and move to a lockless radix tree in subsequent patches.
+>=20
+>   As a nice side effect, there is no need any longer to check for
+> (host->revmap_data.tree.gfp_mask !=3D 0) to know if the tree have been
+> initialized.
 
-> > I guess that effect is still there, but smaller.
-> 
-> I imagine it should be, unless you're using a CPU with seperate TLBs for
-> small and huge pages, and your large data set is mapped with huge pages,
-> in which case you might now introduce *new* TLB contention between the
-> stack and the dataset :)
+Hi Sebastien,
 
-Yes, this can happen particularly on older CPUs. For example, on my
-crash-test laptop the Pentium III there reports
+This is a nice cleanup, I think :)
 
-TLB and cache info:
-01: Instruction TLB: 4KB pages, 4-way set assoc, 32 entries
-02: Instruction TLB: 4MB pages, 4-way set assoc, 2 entries
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index 6ac8612..0a1445c 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -893,28 +890,28 @@ unsigned int irq_find_mapping(struct irq_host *host=
+,
+>  }
+>  EXPORT_SYMBOL_GPL(irq_find_mapping);
+> =20
+> +void __init irq_radix_revmap_init(void)
+> +{
+> + 	struct irq_host *h;
+> +
+> +	list_for_each_entry(h, &irq_hosts, link) {
+> +		if (h->revmap_type =3D=3D IRQ_HOST_MAP_TREE)
+> +			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
+> +	}
+> +}
 
-so a workload that sparsely addressed memory (i.e. >= 4MB strides on each
-reference) might suffer more TLB misses with large pages than with small.
-It's hardly new that there are is uncertainity around when and if hugepages
-are of benefit and where.
+Note irq_radix_revmap_init() loops over all irq_hosts ...
 
-> Also, interestingly I have actually seen some CPUs whos memory operations
-> get significantly slower when operating on large pages than small (in the
-> case when there is full TLB coverage for both sizes). This would make
-> sense if the CPU only implements a fast L1 TLB for small pages.
-> 
+> diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platform=
+s/pseries/smp.c
+> index 9d8f8c8..b143fe7 100644
+> --- a/arch/powerpc/platforms/pseries/smp.c
+> +++ b/arch/powerpc/platforms/pseries/smp.c
+> @@ -130,6 +130,7 @@ static void smp_xics_message_pass(int target, int msg=
+)
+> =20
+>  static int __init smp_xics_probe(void)
+>  {
+> +	irq_radix_revmap_init();
+>  	xics_request_IPIs();
 
-It's also possible there is a micro-TLB involved that only support small
-pages. It's been the case for a while that what wins on one machine type
-may lose on another.
+But now it's only called from the xics setup code.
 
-> So for the vast majority of workloads, where stacks are relatively small
-> (or slowly changing), and relatively hot, I suspect this could easily have
-> no benefit at best and slowdowns at worst.
-> 
+Which seems a bit ugly. In practice it doesn't matter because at the
+moment xics is the only user of the radix revmap. But if we're going to
+switch to this sort of initialisation I think xics should only be
+init'ing the revmap for itself.
 
-I wouldn't expect an application with small stacks to request its stack
-to be backed by hugepages either. Ideally, it would be enabled because a
-large enough number of DTLB misses were found to be in the stack
-although catching this sort of data is tricky. 
 
-> But I'm not saying that as a reason not to merge it -- this is no
-> different from any other hugepage allocations and as usual they have to be
-> used selectively where they help.... I just wonder exactly where huge
-> stacks will help.
-> 
+This boot ordering stuff is pretty hairy, so I might have missed
+something, but this is how the code is ordered AFAICT:
+=EF=BB=BF
+start_kernel()
+	init_IRQ()
+	...
+	local_irq_enable()
+	...
+	rest_init()
+		kernel_thread()
+			kernel_init()
+				smp_prepare_cpus()
+					smp_xics_probe()	(via smp_ops->probe())
 
-Benchmark wise, SPECcpu and SPEComp have stack-dependent benchmarks.
-Computations that partition problems with recursion I would expect to benefit
-as well as some JVMs that heavily use the stack (see how many docs suggest
-setting ulimit -s unlimited). Bit out there, but stack-based languages would
-stand to gain by this. The potential gap is for threaded apps as there will
-be stacks that are not the "main" stack.  Backing those with hugepages depends
-on how they are allocated (malloc, it's easy, MAP_ANONYMOUS not so much).
 
-> > I agree that few real-world apps are likely to see gains of this
-> > order.  More benchmarks, please :)
-> 
-> Would be nice, if just out of morbid curiosity :)
-> 
+What's stopping us from taking an irq between local_irq_enable() and
+smp_xics_probe() ?  Is it just that no one's request_irq()'ed them yet?
 
-Benchmarks will happen, they just take time, you know the way. The STREAM one
-in the meantime is a "this works" and has an effect. I'm hoping Andrew Hastings
-will have figures at hand and I cc'd him elsewhere in the thread for comment.
 
-Thanks
+cheers
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-cyJ9/EU+3uZuS2poDX3Y
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIkaTIdSjSd0sB4dIRAlLzAJ9UCXxhuVH9Lau6Ps3Yr8aelr4a+gCfd2el
+T0F4Q23W4JmI2+5fFQ89OvI=
+=NyUP
+-----END PGP SIGNATURE-----
+
+--=-cyJ9/EU+3uZuS2poDX3Y--
