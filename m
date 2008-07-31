@@ -1,24 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F177BDDE19
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 14:25:34 +1000 (EST)
-Subject: Re: ide pmac breakage
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-In-Reply-To: <200807302111.54514.bzolnier@gmail.com>
-References: <1217208596.11188.144.camel@pasglop>
-	<200807292126.12238.bzolnier@gmail.com>
-	<1217401052.11188.318.camel@pasglop>
-	<200807302111.54514.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Thu, 31 Jul 2008 14:25:22 +1000
-Message-Id: <1217478322.11188.410.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 6/8] Explictly undefine DEBUG in
+	arch/powerpc/platforms/pseries/eeh_driver.c
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <c5fdfe03bcac5d6964b6712a2a15ab0edc12ce83.1217476198.git.tony@bakeyournoodle.com>
+References: <cac86e24e42bd05087b43663b687f04df91326ba.1217476198.git.tony@bakeyournoodle.com>
+	<c5fdfe03bcac5d6964b6712a2a15ab0edc12ce83.1217476198.git.tony@bakeyournoodle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-1YTDiTxZzs6GL3W7gscS"
+Date: Thu, 31 Jul 2008 14:53:30 +1000
+Message-Id: <1217480010.1487.38.camel@localhost>
 Mime-Version: 1.0
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linux-ide@vger.kernel.org,
-	petkovbb@gmail.com, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,58 +24,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Is it actually caused by additional reference counting on drive->gendev?
-> IOW if you reverse the patch below instead of applying the previous fix
-> do things work OK again?
-> 
-> > Note that there shouldn't be anything fundamentally different from
-> > ide-pmac here vs. something like pcmcia IDE cards... do you have one of
-> > these to test with ?
-> 
-> Nope and I really don't intend to have one.  I count on other people
-> to take some care of support for host drivers that they maintain/use. ;)
+--=-1YTDiTxZzs6GL3W7gscS
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Reverting the patch below does the job. Thanks.
+On Thu, 2008-07-31 at 13:51 +1000, Tony Breeds wrote:
+> print_device_node_tree() is guarded by DEBUG but even when declared, it
+> isn't called.  Explicitly undefine DEBUG as you'll need to modify this
+> file anyway to use print_device_node_tree().
 
-Ben.
+Please don't, it breaks CONFIG_PPC_PSERIES_DEBUG.
 
-> Thanks,
-> Bart
-> 
-> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-> index 4e73aee..8f253e5 100644
-> --- a/drivers/ide/ide-cd.c
-> +++ b/drivers/ide/ide-cd.c
-> @@ -57,23 +57,29 @@ static DEFINE_MUTEX(idecd_ref_mutex);
->  #define ide_cd_g(disk) \
->  	container_of((disk)->private_data, struct cdrom_info, driver)
->  
-> +static void ide_cd_release(struct kref *);
-> +
->  static struct cdrom_info *ide_cd_get(struct gendisk *disk)
->  {
->  	struct cdrom_info *cd = NULL;
->  
->  	mutex_lock(&idecd_ref_mutex);
->  	cd = ide_cd_g(disk);
-> -	if (cd)
-> +	if (cd) {
->  		kref_get(&cd->kref);
-> +		if (ide_device_get(cd->drive)) {
-> +			kref_put(&cd->kref, ide_cd_release);
-> +			cd = NULL;
-> +		}
-> +	}
->  	mutex_unlock(&idecd_ref_mutex);
->  	return cd;
->  }
->  
-> -static void ide_cd_release(struct kref *);
-> -
->  static void ide_cd_put(struct cdrom_info *cd)
->  {
->  	mutex_lock(&idecd_ref_mutex);
-> +	ide_device_put(cd->drive);
->  	kref_put(&cd->kref, ide_cd_release);
->  	mutex_unlock(&idecd_ref_mutex);
->  }
+cheers
+
+/me refrains from ranting about stupid -Werror
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-1YTDiTxZzs6GL3W7gscS
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIkUVKdSjSd0sB4dIRAsckAJ0cJ4J2wr0Q17EumKNFScJtv2d87ACglM8P
+yCB6ztwXp6tKthire7Jp3nU=
+=nWMY
+-----END PGP SIGNATURE-----
+
+--=-1YTDiTxZzs6GL3W7gscS--
