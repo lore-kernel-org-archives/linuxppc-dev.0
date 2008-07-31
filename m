@@ -1,20 +1,24 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 2EA17DDF0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 14:21:57 +1000 (EST)
-Date: Thu, 31 Jul 2008 14:21:51 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH 4/8] Silence warnings in
-	arch/powerpc/platforms/52xx/mpc52xx_pci.c
-Message-ID: <20080731042150.GW20457@bakeyournoodle.com>
-References: <cac86e24e42bd05087b43663b687f04df91326ba.1217476198.git.tony@bakeyournoodle.com>
-	<96343fe00bd43a12b1739ff1513ba07224e3f302.1217476198.git.tony@bakeyournoodle.com>
-	<9e4733910807302108q689c9c82yb010c75cba770218@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <9e4733910807302108q689c9c82yb010c75cba770218@mail.gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F177BDDE19
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 14:25:34 +1000 (EST)
+Subject: Re: ide pmac breakage
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+In-Reply-To: <200807302111.54514.bzolnier@gmail.com>
+References: <1217208596.11188.144.camel@pasglop>
+	<200807292126.12238.bzolnier@gmail.com>
+	<1217401052.11188.318.camel@pasglop>
+	<200807302111.54514.bzolnier@gmail.com>
+Content-Type: text/plain
+Date: Thu, 31 Jul 2008 14:25:22 +1000
+Message-Id: <1217478322.11188.410.camel@pasglop>
+Mime-Version: 1.0
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linux-ide@vger.kernel.org,
+	petkovbb@gmail.com, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 31, 2008 at 12:08:04AM -0400, Jon Smirl wrote:
-> There are some warnings in mpc5200 spi that I haven't looked at....
+
+> Is it actually caused by additional reference counting on drive->gendev?
+> IOW if you reverse the patch below instead of applying the previous fix
+> do things work OK again?
 > 
-> drivers/spi/mpc52xx_psc_spi.c: In function 'mpc52xx_psc_spi_activate_cs':
-> drivers/spi/mpc52xx_psc_spi.c:111: warning: passing argument 1 of
-> 'in_be16' from incompatible pointer type
-> drivers/spi/mpc52xx_psc_spi.c:117: warning: passing argument 1 of
-> 'out_be16' from incompatible pointer type
-> drivers/spi/mpc52xx_psc_spi.c: In function 'mpc52xx_psc_spi_port_config':
-> drivers/spi/mpc52xx_psc_spi.c:350: warning: passing argument 1 of
-> 'out_be16' from incompatible pointer type
+> > Note that there shouldn't be anything fundamentally different from
+> > ide-pmac here vs. something like pcmcia IDE cards... do you have one of
+> > these to test with ?
+> 
+> Nope and I really don't intend to have one.  I count on other people
+> to take some care of support for host drivers that they maintain/use. ;)
 
-Right drivers/* is harder, and wont be affected by the addition of
--Werror in arch/powerpc
+Reverting the patch below does the job. Thanks.
 
-We'll get there eventiually.
+Ben.
 
-Yours Tony
-
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
+> Thanks,
+> Bart
+> 
+> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+> index 4e73aee..8f253e5 100644
+> --- a/drivers/ide/ide-cd.c
+> +++ b/drivers/ide/ide-cd.c
+> @@ -57,23 +57,29 @@ static DEFINE_MUTEX(idecd_ref_mutex);
+>  #define ide_cd_g(disk) \
+>  	container_of((disk)->private_data, struct cdrom_info, driver)
+>  
+> +static void ide_cd_release(struct kref *);
+> +
+>  static struct cdrom_info *ide_cd_get(struct gendisk *disk)
+>  {
+>  	struct cdrom_info *cd = NULL;
+>  
+>  	mutex_lock(&idecd_ref_mutex);
+>  	cd = ide_cd_g(disk);
+> -	if (cd)
+> +	if (cd) {
+>  		kref_get(&cd->kref);
+> +		if (ide_device_get(cd->drive)) {
+> +			kref_put(&cd->kref, ide_cd_release);
+> +			cd = NULL;
+> +		}
+> +	}
+>  	mutex_unlock(&idecd_ref_mutex);
+>  	return cd;
+>  }
+>  
+> -static void ide_cd_release(struct kref *);
+> -
+>  static void ide_cd_put(struct cdrom_info *cd)
+>  {
+>  	mutex_lock(&idecd_ref_mutex);
+> +	ide_device_put(cd->drive);
+>  	kref_put(&cd->kref, ide_cd_release);
+>  	mutex_unlock(&idecd_ref_mutex);
+>  }
