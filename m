@@ -2,16 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4588EDDF53
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 04:48:36 +1000 (EST)
-Date: Thu, 31 Jul 2008 13:48:31 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id 5FB9CDEB2C
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 04:53:53 +1000 (EST)
+Message-Id: <95646AC3-5385-4F59-8EBA-20F811168A87@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/mm: Implement _PAGE_SPECIAL & pte_special() for 32-bit
-Message-ID: <Pine.LNX.4.64.0807311345380.8012@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: npiggin@suse.de, linux-kernel@vger.kernel.org
+To: Jeff Garzik <jgarzik@pobox.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: libata badness
+Date: Thu, 31 Jul 2008 13:53:45 -0500
+Cc: linux-ide@vger.kernel.org, Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,108 +22,280 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Implement _PAGE_SPECIAL and pte_special() for 32-bit powerpc. This bit will
-be used by the fast get_user_pages() to differenciate PTEs that correspond
-to a valid struct page from special mappings that don't such as IO mappings
-obtained via io_remap_pfn_ranges().
+I'm getting the following badness with top of tree on a embedded  
+PowerPC w/a ULI 1575 bridge (M5229 IDE):
 
-We currently only implement this on sub-arch that support SMP or will so
-in the future (6xx, 44x, FSL-BookE) and not (8xx, 40x).
+02:1f.0 IDE interface: Acer Laboratories Inc. [ALi] M5229 IDE (rev c8)
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-Nick, do you forsee using _PAGE_SPECIAL for other applications that would
-be of interested to non-SMP hw?
-
-We can look at adding it into 8xx and 40x, but was being lazy as I assume
-there is no point.
+If you need more info let me know.
 
 - k
 
- include/asm-powerpc/pgtable-ppc32.h |   15 +++++++++++++--
- 1 files changed, 13 insertions(+), 2 deletions(-)
-
-diff --git a/include/asm-powerpc/pgtable-ppc32.h b/include/asm-powerpc/pgtable-ppc32.h
-index 6fe39e3..58afaee 100644
---- a/include/asm-powerpc/pgtable-ppc32.h
-+++ b/include/asm-powerpc/pgtable-ppc32.h
-@@ -261,6 +261,7 @@ extern int icache_44x_need_flush;
- #define _PAGE_HWEXEC	0x00000004		/* H: Execute permission */
- #define _PAGE_ACCESSED	0x00000008		/* S: Page referenced */
- #define _PAGE_DIRTY	0x00000010		/* S: Page dirty */
-+#define _PAGE_SPECIAL	0x00000020		/* S: Special page */
- #define _PAGE_USER	0x00000040		/* S: User page */
- #define _PAGE_ENDIAN	0x00000080		/* H: E bit */
- #define _PAGE_GUARDED	0x00000100		/* H: G bit */
-@@ -276,6 +277,7 @@ extern int icache_44x_need_flush;
- /* ERPN in a PTE never gets cleared, ignore it */
- #define _PTE_NONE_MASK	0xffffffff00000000ULL
-
-+#define __HAVE_ARCH_PTE_SPECIAL
-
- #elif defined(CONFIG_FSL_BOOKE)
- /*
-@@ -305,6 +307,7 @@ extern int icache_44x_need_flush;
- #define _PAGE_COHERENT	0x00100	/* H: M bit */
- #define _PAGE_NO_CACHE	0x00200	/* H: I bit */
- #define _PAGE_WRITETHRU	0x00400	/* H: W bit */
-+#define _PAGE_SPECIAL	0x00800 /* S: Special page */
-
- #ifdef CONFIG_PTE_64BIT
- /* ERPN in a PTE never gets cleared, ignore it */
-@@ -315,6 +318,8 @@ extern int icache_44x_need_flush;
- #define _PMD_PRESENT_MASK (PAGE_MASK)
- #define _PMD_BAD	(~PAGE_MASK)
-
-+#define __HAVE_ARCH_PTE_SPECIAL
-+
- #elif defined(CONFIG_8xx)
- /* Definitions for 8xx embedded chips. */
- #define _PAGE_PRESENT	0x0001	/* Page is valid */
-@@ -362,6 +367,7 @@ extern int icache_44x_need_flush;
- #define _PAGE_ACCESSED	0x100	/* R: page referenced */
- #define _PAGE_EXEC	0x200	/* software: i-cache coherency required */
- #define _PAGE_RW	0x400	/* software: user write access allowed */
-+#define _PAGE_SPECIAL	0x800	/* software: Special page */
-
- #define _PTE_NONE_MASK	_PAGE_HASHPTE
-
-@@ -372,6 +378,8 @@ extern int icache_44x_need_flush;
- /* Hash table based platforms need atomic updates of the linux PTE */
- #define PTE_ATOMIC_UPDATES	1
-
-+#define __HAVE_ARCH_PTE_SPECIAL
-+
- #endif
-
- /*
-@@ -404,6 +412,9 @@ extern int icache_44x_need_flush;
- #ifndef _PAGE_WRITETHRU
- #define _PAGE_WRITETHRU	0
- #endif
-+#ifndef _PAGE_SPECIAL
-+#define _PAGE_SPECIAL	0
-+#endif
- #ifndef _PMD_PRESENT_MASK
- #define _PMD_PRESENT_MASK	_PMD_PRESENT
- #endif
-@@ -533,7 +544,7 @@ static inline int pte_write(pte_t pte)		{ return pte_val(pte) & _PAGE_RW; }
- static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
- static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
- static inline int pte_file(pte_t pte)		{ return pte_val(pte) & _PAGE_FILE; }
--static inline int pte_special(pte_t pte)	{ return 0; }
-+static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
-
- static inline void pte_uncache(pte_t pte)       { pte_val(pte) |= _PAGE_NO_CACHE; }
- static inline void pte_cache(pte_t pte)         { pte_val(pte) &= ~_PAGE_NO_CACHE; }
-@@ -552,7 +563,7 @@ static inline pte_t pte_mkdirty(pte_t pte) {
- static inline pte_t pte_mkyoung(pte_t pte) {
- 	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
- static inline pte_t pte_mkspecial(pte_t pte) {
--	return pte; }
-+	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
- static inline unsigned long pte_pgprot(pte_t pte)
- {
- 	return __pgprot(pte_val(pte)) & PAGE_PROT_BITS;
--- 
-1.5.5.1
+ahci 0000:02:1f.1: AHCI 0001.0000 32 slots 4 ports 3 Gbps 0xf impl  
+SATA mode
+ahci 0000:02:1f.1: flags: ncq sntf ilck pm led clo pmp pio slum part
+------------[ cut here ]------------
+Badness at c021e700 [verbose debug info unavailable]
+NIP: c021e700 LR: c021e6e8 CTR: c022ce90
+REGS: ef82bca0 TRAP: 0700   Not tainted  (2.6.27-rc1-00495-g33bd9fe- 
+dirty)
+MSR: 00029032 <EE,ME,IR,DR>  CR: 22044022  XER: 20000000
+TASK = ef830000[1] 'swapper' THREAD: ef82a000 CPU: 1
+GPR00: 00000001 ef82bd50 ef830000 00000000 00009032 00000000 ef0b64fc  
+00000000
+GPR08: ef937c10 c022f93f efbfc8e0 ef900b60 22044028 fffdd3ff 0ffe8700  
+c044c17c
+GPR16: c04d52ec ef82f458 ef82f4f4 ef82f4f4 c044c234 c044c5d8 c044c5d8  
+c044c220
+GPR24: c044c218 c04d52f0 00000080 c022f940 00000000 c044c244 efbec490  
+00000000
+NIP [c021e700] ata_host_activate+0x40/0x10c
+LR [c021e6e8] ata_host_activate+0x28/0x10c
+Call Trace:
+[ef82bd50] [c021e6e8] ata_host_activate+0x28/0x10c (unreliable)
+[ef82bd80] [c022f48c] ahci_init_one+0x8b4/0xd68
+[ef82be30] [c01b69c0] pci_device_probe+0x84/0xa8
+[ef82be50] [c01e5438] driver_probe_device+0xb4/0x1e8
+[ef82be70] [c01e55f0] __driver_attach+0x84/0x88
+[ef82be90] [c01e4ba0] bus_for_each_dev+0x5c/0xa4
+[ef82bec0] [c01e5254] driver_attach+0x24/0x34
+[ef82bed0] [c01e44b8] bus_add_driver+0x1d8/0x24c
+[ef82bef0] [c01e5810] driver_register+0x70/0x160
+[ef82bf10] [c01b6c54] __pci_register_driver+0x64/0xc4
+[ef82bf30] [c04aaa60] ahci_init+0x28/0x38
+[ef82bf40] [c048717c] do_one_initcall+0x38/0x1ac
+[ef82bfb0] [c04874e0] kernel_init+0x1f0/0x1fc
+[ef82bff0] [c0013b04] kernel_thread+0x44/0x60
+Instruction dump:
+7cbb2b78 90010034 7cda3378 7cf93b78 7c7e1b78 4bff9dbd 7c7f1b79 408200c8
+2f9c0000 409e002c 313bffff 7c09d910 <0f000000> 80010034 7fc3f378  
+7f24cb78
+scsi0 : ahci
+scsi1 : ahci
+scsi2 : ahci
+scsi3 : ahci
+ata1: SATA max UDMA/133 abar m1024@0x80006000 port 0x80006100
+ata2: SATA max UDMA/133 abar m1024@0x80006000 port 0x80006180
+ata3: SATA max UDMA/133 abar m1024@0x80006000 port 0x80006200
+ata4: SATA max UDMA/133 abar m1024@0x80006000 port 0x80006280
+ata1: SATA link down (SStatus 0 SControl 300)
+ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata2.00: qc timeout (cmd 0xec)
+ata2.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata2.00: qc timeout (cmd 0xec)
+ata2.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata2.00: qc timeout (cmd 0xec)
+ata2.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata3: SATA link down (SStatus 0 SControl 300)
+ata4: SATA link down (SStatus 0 SControl 300)
+scsi4 : pata_ali
+scsi5 : pata_ali
+ata5: PATA max UDMA/133 cmd 0x1200 ctl 0x1208 bmdma 0x1220
+ata6: PATA max UDMA/133 cmd 0x1210 ctl 0x1218 bmdma 0x1228
+ata5.00: ATAPI: TSSTcorp CDW/DVD SH-M522C, TS06, max UDMA/33
+ata5.00: WARNING: ATAPI DMA disabled for reliablity issues.  It can be  
+enabled
+ata5.00: WARNING: via pata_ali.atapi_dma modparam or corresponding  
+sysfs node.
+ata5.00: configured for UDMA/33
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for UDMA/33
+ata5: EH complete
+ata5.00: limiting speed to UDMA/25:PIO4
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for UDMA/25
+ata5: EH complete
+ata5.00: limiting speed to PIO4
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO4
+ata5: EH complete
+ata5.00: limiting speed to PIO3
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO3
+ata5: EH complete
+ata5.00: limiting speed to PIO0
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata5.00: cmd a0/00:00:00:24:00/00:00:00:00:00/a0 tag 0 pio 36 in
+          cdb 12 00 00 00 24 00 00 00  00 00 00 00 00 00 00 00
+          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: status: { DRDY }
+ata5: soft resetting link
+ata5.00: configured for PIO0
+ata5: EH complete
+ata5: WARNING: synchronous SCSI scan failed without making any progress,
+                   switching to async
