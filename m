@@ -1,21 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
-	by ozlabs.org (Postfix) with ESMTP id 68694DF40C
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 06:19:59 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so137523anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 13:19:57 -0700 (PDT)
-Message-ID: <fa686aa40807311319k44d270b0t4fa9cb0e6523339@mail.gmail.com>
-Date: Thu, 31 Jul 2008 14:19:57 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>, devicetree-discuss@ozlabs.org,
-	"Kumar Gala" <galak@kernel.crashing.org>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Segher Boessenkool" <segher@kernel.crashing.org>
-Subject: Board level compatibility matching
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 39CFADEBEC
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 06:24:41 +1000 (EST)
+Message-Id: <836C281D-4D3A-4547-98D9-143A690698AF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Ben Dooks <ben-linux@fluff.org>
+In-Reply-To: <20080731190259.GJ26938@trinity.fluff.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: libata badness
+Date: Thu, 31 Jul 2008 15:24:31 -0500
+References: <95646AC3-5385-4F59-8EBA-20F811168A87@kernel.crashing.org>
+	<20080731190259.GJ26938@trinity.fluff.org>
+Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,68 +26,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This topic keeps coming up, so it is probably time to address it once
-and for all.
 
-When it comes to machine level support in arch/powerpc, there seems to
-me that there are two levels or machine support.
+On Jul 31, 2008, at 2:02 PM, Ben Dooks wrote:
 
-Level 1 is the board specific stuff.  Board X has a, b, and c things
-that need to be done for Linux to work correctly, but the fixups are
-entirely board specific and will only ever be used on a single board
-port.  The lite5200 support in arch/powerpc/platforms/52xx is an
-example of this kind of board support.  It binds on a value in the top
-level compatible property.
+> On Thu, Jul 31, 2008 at 01:53:45PM -0500, Kumar Gala wrote:
+>> I'm getting the following badness with top of tree on a embedded
+>> PowerPC w/a ULI 1575 bridge (M5229 IDE):
+>>
+>> 02:1f.0 IDE interface: Acer Laboratories Inc. [ALi] M5229 IDE (rev  
+>> c8)
+>>
+>> If you need more info let me know.
+>>
+>> - k
+>>
+>> ahci 0000:02:1f.1: AHCI 0001.0000 32 slots 4 ports 3 Gbps 0xf impl
+>> SATA mode
+>> ahci 0000:02:1f.1: flags: ncq sntf ilck pm led clo pmp pio slum part
+>> ------------[ cut here ]------------
+>> Badness at c021e700 [verbose debug info unavailable]
+>
+> it would be helpful to compile a kernel with verbose fault information
+> turned on.
 
-Level 2 is kind of the generic catch-all machine support for systems
-that are unremarkable and don't require any special code to be run.
-In most cases, new boards can be supported by this generic code
-without any changes to the Linux kernel.
-arch/powerpc/platforms/52xx/mpc5200_simple.c is an example here.
-mpc5200_simple maintains a list of boards that are known to work with
-it.
+Doesn't seem to provide too much more info on ppc.  just says the file/ 
+line number of the badness.
 
-At the moment, every new board port forces a linux kernel source tree
-change, even if it is just adding a single string to the match table.
-I'm willing to wager that 99 times out of 100, boards based on the
-mpc5200 SoC will want to use the common board support code and that
-maintaining an explicit list of supported boards is completely
-unnecessary.  I expect that the exact same is true for 8xxx and 4xx
-SoCs.  So, rather than continuing to need to maintain explicit lists,
-I propose the following:
+>> NIP: c021e700 LR: c021e6e8 CTR: c022ce90
+>> REGS: ef82bca0 TRAP: 0700   Not tainted  (2.6.27-rc1-00495-g33bd9fe-
+>> dirty)
+>> MSR: 00029032 <EE,ME,IR,DR>  CR: 22044022  XER: 20000000
+>> TASK = ef830000[1] 'swapper' THREAD: ef82a000 CPU: 1
+>> GPR00: 00000001 ef82bd50 ef830000 00000000 00009032 00000000 ef0b64fc
+>> 00000000
+>> GPR08: ef937c10 c022f93f efbfc8e0 ef900b60 22044028 fffdd3ff 0ffe8700
+>> c044c17c
+>> GPR16: c04d52ec ef82f458 ef82f4f4 ef82f4f4 c044c234 c044c5d8 c044c5d8
+>> c044c220
+>> GPR24: c044c218 c04d52f0 00000080 c022f940 00000000 c044c244 efbec490
+>> 00000000
+>> NIP [c021e700] ata_host_activate+0x40/0x10c
+>> LR [c021e6e8] ata_host_activate+0x28/0x10c
+>> Call Trace:
+>> [ef82bd50] [c021e6e8] ata_host_activate+0x28/0x10c (unreliable)
+>> [ef82bd80] [c022f48c] ahci_init_one+0x8b4/0xd68
+>> [ef82be30] [c01b69c0] pci_device_probe+0x84/0xa8
+>> [ef82be50] [c01e5438] driver_probe_device+0xb4/0x1e8
+>> [ef82be70] [c01e55f0] __driver_attach+0x84/0x88
+>> [ef82be90] [c01e4ba0] bus_for_each_dev+0x5c/0xa4
+>> [ef82bec0] [c01e5254] driver_attach+0x24/0x34
+>> [ef82bed0] [c01e44b8] bus_add_driver+0x1d8/0x24c
+>> [ef82bef0] [c01e5810] driver_register+0x70/0x160
+>> [ef82bf10] [c01b6c54] __pci_register_driver+0x64/0xc4
+>> [ef82bf30] [c04aaa60] ahci_init+0x28/0x38
+>> [ef82bf40] [c048717c] do_one_initcall+0x38/0x1ac
+>> [ef82bfb0] [c04874e0] kernel_init+0x1f0/0x1fc
+>> [ef82bff0] [c0013b04] kernel_thread+0x44/0x60
+>> Instruction dump:
+>> 7cbb2b78 90010034 7cda3378 7cf93b78 7c7e1b78 4bff9dbd 7c7f1b79  
+>> 408200c8
+>> 2f9c0000 409e002c 313bffff 7c09d910 <0f000000> 80010034 7fc3f378
+>> 7f24cb78
+>> scsi0 : ahci
+>> scsi1 : ahci
+>> scsi2 : ahci
+>> scsi3 : ahci
+>> ata1: SATA max UDMA/133 abar m1024@0x80006000 port 0x80006100
+>> ata2: SATA max UDMA/133 abar m1024@0x80006000 port 0x80006180
+>> ata3: SATA max UDMA/133 abar m1024@0x80006000 port 0x80006200
+>> ata4: SATA max UDMA/133 abar m1024@0x80006000 port 0x80006280
+>> ata1: SATA link down (SStatus 0 SControl 300)
+>> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>> ata2.00: qc timeout (cmd 0xec)
+>> ata2.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+>> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>> ata2.00: qc timeout (cmd 0xec)
+>> ata2.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+>> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>> ata2.00: qc timeout (cmd 0xec)
+>> ata2.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+>> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>> ata3: SATA link down (SStatus 0 SControl 300)
+>> ata4: SATA link down (SStatus 0 SControl 300)
+>> scsi4 : pata_ali
+>> scsi5 : pata_ali
+>> ata5: PATA max UDMA/133 cmd 0x1200 ctl 0x1208 bmdma 0x1220
+>> ata6: PATA max UDMA/133 cmd 0x1210 ctl 0x1218 bmdma 0x1228
+>
+> Looks like you're running into the same problem as I did, with the
+> fact that the M5529 is in native mode, but doesn't have any IRQ
+> available. Do you know if the bridge chip in it is in routes the
+> IRQs internally?
 
-- Add a property to the device tree that explicitly specifies the SoC
-that the board is based on.  Something like 'soc-model =
-"fsl,mpc5200b"' would be appropriate.  This in and of itself does not
-change the usage conventions, it just provides more information about
-the hardware.  (Another idea is to add a string to the top level
-compatible property, but there are still arguments about what
-compatible really means in the root node.)
+They are routed via an i8259 in the bridge.
 
-- Prioritize board ports in the arch/powerpc/platforms directory to
-identify level-1 machines support from the level-2 ones.  Make sure
-that level-1 stuff always gets probed before level-2 stuff within each
-SoC family.  In all likelyhood, this would probably just involve
-making sure that board specific machines get linked in before the
-catchall machine.
-
-- Change level-2 machine support to bind on soc-model instead of an
-explicit compatible list.
-
-Doing so should simplify adding new board ports.  In many cases it
-would just involve dropping in a new .dts file.  However, it retains
-the flexability of overriding generic code with platform specific
-fixups as the need arises.  I know we've been cautious about adding
-catch-all bindings to the device tree, and it is a big deal to avoid
-adding wildcards to compatible values.  However, this solution should
-be workable because it doesn't involve stating something that is not
-true in the device tree and it maintains the ability to override
-cleanly when new bugs are discovered.  It also doesn't try to define
-wildcard values in compatible or other device tree properties.
-
-Thoughts?
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+- k
