@@ -1,28 +1,23 @@
-Return-Path: <cl@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9AC67DDF0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 05:41:45 +1000 (EST)
-Message-ID: <4890C3A5.8050700@linux-foundation.org>
-Date: Wed, 30 Jul 2008 14:40:21 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
+Return-Path: <bzolnier@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.189])
+	by ozlabs.org (Postfix) with ESMTP id 3E1A4DDEF8
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 10:50:56 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id e30so275228fke.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jul 2008 17:50:54 -0700 (PDT)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: benh@kernel.crashing.org
+Subject: Re: ide pmac breakage
+Date: Thu, 31 Jul 2008 02:48:28 +0200
+References: <1217208596.11188.144.camel@pasglop>
+	<200807302111.54514.bzolnier@gmail.com>
+	<1217458152.11188.355.camel@pasglop>
+In-Reply-To: <1217458152.11188.355.camel@pasglop>
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-References: <cover.1216928613.git.ebmunson@us.ibm.com>
-	<20080730014308.2a447e71.akpm@linux-foundation.org>
-	<20080730172317.GA14138@csn.ul.ie>
-	<20080730103407.b110afc2.akpm@linux-foundation.org>
-	<20080730193010.GB14138@csn.ul.ie>
-In-Reply-To: <20080730193010.GB14138@csn.ul.ie>
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Hastings <abh@cray.com>, Eric Munson <ebmunson@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>
+Message-Id: <200807310248.29214.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linux-ide@vger.kernel.org,
+	petkovbb@gmail.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,11 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mel Gorman wrote:
+On Thursday 31 July 2008, Benjamin Herrenschmidt wrote:
+> On Wed, 2008-07-30 at 21:11 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > > Note that there shouldn't be anything fundamentally different from
+> > > ide-pmac here vs. something like pcmcia IDE cards... do you have one
+> > of
+> > > these to test with ?
+> > 
+> > Nope and I really don't intend to have one.  I count on other people
+> > to take some care of support for host drivers that they
+> > maintain/use. ;)
+> 
+> Hrm... that's not a very sane approach. You have some infrastructure for
+> adding / removing devices, in fact changes things in that area even, and
 
-> With Erics patch and libhugetlbfs, we can automatically back text/data[1],
-> malloc[2] and stacks without source modification. Fairly soon, libhugetlbfs
-> will also be able to override shmget() to add SHM_HUGETLB. That should cover
-> a lot of the memory-intensive apps without source modification.
+There seems to be some confusion between warm-plugging of IDE devices
+and hot-plugging of IDE devices.
 
-So we are quite far down the road to having a VM that supports 2 page sizes 4k and 2M?
+> not a single piece of HW to exercise those code path ? I don't ask you
+> to get a powermac with a media-bay, but ide_cs seems to be a pretty
+> important one that's part of what the ide maintainer should take care
+> of... And I suspect it's going to exercise the same code path as
+> mediabay.
+
+I'm open for offers of co-maintaince of the code (which includes taking
+over particular host drivers) and since you seem to have pretty good
+insight into what ide maintainer should be doing I presume that you want
+to be added to MAINTAINERS?
