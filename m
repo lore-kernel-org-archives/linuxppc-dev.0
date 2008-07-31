@@ -1,11 +1,12 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910807311035o4b95b83ficed437d463f2ad37@mail.gmail.com>
-Date: Thu, 31 Jul 2008 13:35:58 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Wolfgang Grandegger" <wg@grandegger.com>
+Return-Path: <glikely@secretlab.ca>
+Message-ID: <fa686aa40807311036l1f081780g667129bbd4df3d9c@mail.gmail.com>
+Date: Thu, 31 Jul 2008 11:36:06 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jon Smirl" <jonsmirl@gmail.com>
 Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
 	FDT
-In-Reply-To: <4891F4D8.9090905@grandegger.com>
+In-Reply-To: <9e4733910807311006t49372fa7m37bee031130cb4ac@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <488982B5.4070102@grandegger.com> <48899736.8020400@grandegger.com>
@@ -14,10 +15,10 @@ References: <488982B5.4070102@grandegger.com> <48899736.8020400@grandegger.com>
 	<4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
 	<20080727012722.GH12191@secretlab.ca>
 	<4891A744.6060005@grandegger.com>
-	<9e4733910807310849g7e5612dbk9536733e061af8ad@mail.gmail.com>
-	<4891F4D8.9090905@grandegger.com>
-Cc: Scott Wood <scottwood@freescale.com>, Timur Tabi <timur@freescale.com>,
-	Linux I2C <i2c@lm-sensors.org>, Linuxppc-dev@ozlabs.org
+	<fa686aa40807310951l48e2af8ep11ef83480397669a@mail.gmail.com>
+	<9e4733910807311006t49372fa7m37bee031130cb4ac@mail.gmail.com>
+Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/31/08, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> Jon Smirl wrote:
-> > There appears to be one for i2x8xxx but not the other CPUs.
-> >
-> > /* I2C
-> > */
-> > typedef struct i2c {
-> >        u_char  i2c_i2mod;
-> >        char    res1[3];
-> >        u_char  i2c_i2add;
-> >        char    res2[3];
-> >        u_char  i2c_i2brg;
-> >        char    res3[3];
-> >        u_char  i2c_i2com;
-> >        char    res4[3];
-> >        u_char  i2c_i2cer;
-> >        char    res5[3];
-> >        u_char  i2c_i2cmr;
-> >        char    res6[0x8b];
-> > } i2c8xx_t;
-> >
+On Thu, Jul 31, 2008 at 11:06 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On 7/31/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+>>  If you're careful, the table doesn't need to be huge.  It can be
+>>  marked as initdata and conditionally compiled depending on which
+>>  architectures are compiled in.  You should use .data in the driver's
+>>  of_device_id table to provide machine specific ops for setting
+>>  clocking to avoid a maze of if/else statements.
 >
->  The I2C interface for the MPC5200 is not compatible with the one for the
-> MPC83/4/5/6xx, AFAIK.
+> Does this look ok for the mpc5200 i2c struct?
+>
+> /* I2C Registers */
+> struct mpc52xx_i2c {
+>        u8 madr;                        /* I2C + 0x00 */
+>        u8 reserved1[3];                /* I2C + 0x01 */
+>        u8 mfdr;                        /* I2C + 0x04 */
+>        u8 reserved2[3];                /* I2C + 0x05 */
+>        u8 mcr;                         /* I2C + 0x08 */
+>        u8 reserved3[3];                /* I2C + 0x09 */
+>        u8 msr;                 /* I2C + 0x0c */
+>        u8 reserved4[3];                /* I2C + 0x0d */
+>        u8 mdr;                 /* I2C + 0x10 */
+>        u8 reserved5[15];       /* I2C + 0x11 */
+>        u8 interrupt;           /* I2C + 0x20 */
+>        u8 reserved6[3];                /* I2C + 0x21 */
+>        u8 mifr;                        /* I2C + 0x24 */
+> };
 
-Ignore that table, I mistook MPC8xx for MPC8xxx. That is a MPC8xx table.
+Ugh.  I hate all the registers defined in structures thing done for
+5200, but I guess it is better to stick with established convention
+than do it differently.
 
->
->  Wolfgang.
->
+Yes, I think this is okay (but I haven't double checked the values; I
+trust you).
+
+g.
 
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
