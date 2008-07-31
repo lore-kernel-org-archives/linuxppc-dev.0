@@ -1,66 +1,151 @@
-Return-Path: <littelld@verizon.net>
-Received: from vms173001pub.verizon.net (vms173001pub.verizon.net
-	[206.46.173.1]) by ozlabs.org (Postfix) with ESMTP id 49FFEDDEDA
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Jul 2008 12:57:21 +1000 (EST)
-Received: from [192.168.1.106] ([96.226.142.190]) by vms173001.mailsrvcs.net
-	(Sun Java System Messaging Server 6.2-6.01 (built Apr  3 2006))
-	with ESMTPA id <0K4U00E42LF26J01@vms173001.mailsrvcs.net> for
-	linuxppc-embedded@ozlabs.org; Wed, 30 Jul 2008 20:57:02 -0500 (CDT)
-Date: Wed, 30 Jul 2008 20:57:01 -0500
-From: Dave Littell <littelld@verizon.net>
-Subject: PPC440EPx skips instruction...
-To: linuxppc-embedded@ozlabs.org
-Message-id: <48911BED.4040903@verizon.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Return-Path: <sebastien.dugue@bull.net>
+Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
+	by ozlabs.org (Postfix) with ESMTP id 7E104DE2D1
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 00:14:06 +1000 (EST)
+Date: Thu, 31 Jul 2008 16:14:30 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] powerpc - Initialize the irq radix tree earlier
+Message-ID: <20080731161430.5de73ef8@bull.net>
+In-Reply-To: <1217511566.19050.26.camel@localhost>
+References: <1217497241-10685-1-git-send-email-sebastien.dugue@bull.net>
+	<1217497241-10685-2-git-send-email-sebastien.dugue@bull.net>
+	<1217504456.9817.22.camel@localhost>
+	<20080731140002.31bbe4a0@bull.net>
+	<1217509104.19050.11.camel@localhost>
+	<1217509299.19050.15.camel@localhost>
+	<20080731152606.5ae7c379@bull.net>
+	<1217511566.19050.26.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
+	jean-pierre.dion@bull.net, rostedt@goodmis.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, gilles.carry@ext.bull.net, tglx@linutronix.de
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+On Thu, 31 Jul 2008 23:39:26 +1000 Michael Ellerman <michael@ellerman.id.au=
+> wrote:
 
-I have a rather interesting problem with a PPC440EPx-based system.  I've
-localized the problem down to a single instruction in a function
-prologue that stores the return address to the stack:
+> On Thu, 2008-07-31 at 15:26 +0200, Sebastien Dugue wrote:
+> > On Thu, 31 Jul 2008 23:01:39 +1000 Michael Ellerman <michael@ellerman.i=
+d.au> wrote:
+> >=20
+> > > On Thu, 2008-07-31 at 22:58 +1000, Michael Ellerman wrote:
+> > > > On Thu, 2008-07-31 at 14:00 +0200, Sebastien Dugue wrote:
+> > > > > On Thu, 31 Jul 2008 21:40:56 +1000 Michael Ellerman <michael@elle=
+rman.id.au> wrote:
+> > > > > >=20
+> > > > > > This boot ordering stuff is pretty hairy, so I might have missed
+> > > > > > something, but this is how the code is ordered AFAICT:
+> > > > > > =EF=BB=BF
+> > > > > > start_kernel()
+> > > > > > 	init_IRQ()
+> > > > > > 	...
+> > > > > > 	local_irq_enable()
+> > > > > > 	...
+> > > > > > 	rest_init()
+> > > > > > 		kernel_thread()
+> > > > > > 			kernel_init()
+> > > > > > 				smp_prepare_cpus()
+> > > > > > 					smp_xics_probe()	(via smp_ops->probe())
+> > > > > >=20
+> > > > > >=20
+> > > > > > What's stopping us from taking an irq between local_irq_enable(=
+) and
+> > > > > > smp_xics_probe() ?  Is it just that no one's request_irq()'ed t=
+hem yet?
+> > > > >=20
+> > > > >   It's hairy, I agree, but as you've mentioned no one has done a =
+request_irq()
+> > > > > at that point. The first one to do it is smp_xics_probe() for the=
+ IPI.
+> > > >=20
+> > > > Hmm, I don't think that's strong enough. I can trivially cause irqs=
+ to
+> > > > fire during a kexec reboot just by mashing the keyboard.
+> > > >=20
+> > > > And during a kdump boot all sorts of stuff could be firing. Even du=
+ring
+> > > > a clean boot, from firmware, I don't think we can guarantee that
+> > > > nothing's going to fire.
+> > > >=20
+> > > > .. after a bit of testing ..
+> > > >=20
+> > > > It seems it actually works (sort of).=20
+> > > >=20
+> > > > xics_remap_irq() calls irq_radix_revmap_lookup(), which calls:
+> > > >=20
+> > > > ptr =3D radix_tree_lookup(&host->revmap_data.tree, hwirq);
+> > > >=20
+> > > > And because =EF=BB=BFhost->revmap_data.tree was zalloc'ed we trip o=
+n the first
+> > > > check here:
+> > >=20
+> > > @#$% ctrl-enter =3D=3D send!
+> > >=20
+> > > Continuing ...
+> > >=20
+> > > void *radix_tree_lookup(struct radix_tree_root *root, unsigned long i=
+ndex)
+> > > {
+> > >         unsigned int height, shift;
+> > >         struct radix_tree_node *node, **slot;
+> > >=20
+> > >         node =3D rcu_dereference(root->rnode);
+> > >         if (node =3D=3D NULL)
+> > >                 return NULL;
+> > >=20
+> > > Which means =EF=BB=BFirq_radix_revmap_lookup() will return NO_IRQ, wh=
+ich is cool.
+> >=20
+> >   Which is what I intended so that as long as no IRQ is registered we
+> > return NO_IRQ.
+> >=20
+> > >=20
+> > >=20
+> > > So I think it can fly, as long as we're happy that we can't reverse m=
+ap
+> > > anything until smp_xics_probe() - and I think that's true, as any irq=
+ we
+> > > take will be invalid.
+> >=20
+> >   That's true as no IRQs are registered before smp_xics_probe() and for=
+ any
+> > interrupt we might get before that, irq_radix_revmap_lookup() will retu=
+rn
+> > NO_IRQ.
+>=20
+> Cool, we agree :)=20
+>=20
+> My only worry is that we might be relying on on the particular radix
+> tree implementation a bit too much.
 
-stw r0,0x44(r1)
+  Well maybe we could revert back to testing a flag just like we
+do for host->revmap_data.tree.gfp_mask !=3D 0. Dunno.
 
-(lr is written to r0 earlier in the prologue.)
+> Is it documented somewhere that
+> the /very/ first check is for =EF=BB=BFroot->rnode !=3D NULL, and the res=
+t of the
+> root may be unintialised?
 
-This code is in a normal device driver and is not being executed at
-interrupt level or in some TLB miss handler or anything arcane - it's
-just regular code (execution-context-wise).
+  Not in anything I could read except in looking at the code.
 
-It appears that if I just let the code run the write never makes it to
-the stack, thus setting the stage for very interesting function returns.
- Whatever value happened to be on the stack becomes the IP with the
-accompanying "excitement" that follows.  If I single-step through the
-instruction using a JTAG debugger the write to the stack always occurs
-and the function does its work and returns correctly.
+>=20
+> And I think it needs a big fat comment in the irq code saying that it's
+> safe because revmap_data is zalloc'ed, and that means the radix lookup
+> will fail (safely).
 
-If I step right up to the stw, write a test value into 0x44(r1), then
-allow the processor to free run I am rewarded with an attempted return
-address equal to the test value I wrote to the stack - the stw memory
-write never makes it to the stack.
+  Yep, right. Will advertise this properly for the next round if this
+remains the prefered solution.
 
-Because the code is compiled from C I'm limited in where I can sprinkle
-sync instructions but I've tried adding asm("sync") as close as possible
-to before (and after) the offending write - all to no effect.  I'm at a
-loss to explain this as the remainder of the system seems to be running
-just fine but I get this particular behavior at will.  More like its
-will than mine... :-{
+  Thanks,
 
-Has anyone seen this kind of behavior with a PPC440 core?  Please note
-that workarounds for all known CPU core errata for the PPC440EPx are
-already in place (based on the AMCC errata document).
-
-
-Thanks very much,
-Dave
+  Sebastien.
