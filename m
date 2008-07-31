@@ -1,22 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910807311157q358640ddyef1f14865c069b8@mail.gmail.com>
-Date: Thu, 31 Jul 2008 14:57:25 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
-	FDT
-In-Reply-To: <48920607.5040606@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4889EFFE.2070201@grandegger.com> <4891A744.6060005@grandegger.com>
-	<9e4733910807310849g7e5612dbk9536733e061af8ad@mail.gmail.com>
-	<4891F4D8.9090905@grandegger.com>
-	<fa686aa40807311031r66f6451aw206faf54509c14d9@mail.gmail.com>
-	<4891FC3A.7040609@freescale.com> <20080731180959.GA29057@secretlab.ca>
-	<489200B6.9060906@freescale.com> <20080731182810.GB29097@secretlab.ca>
-	<48920607.5040606@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>,
-	Linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0CC39DE102
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 05:04:11 +1000 (EST)
+Message-Id: <E4D699C2-07A8-42FF-A863-5595099CEC4D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0807311345380.8012@blarg.am.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] powerpc/mm: Implement _PAGE_SPECIAL & pte_special() for
+	32-bit
+Date: Thu, 31 Jul 2008 13:50:28 -0500
+References: <Pine.LNX.4.64.0807311345380.8012@blarg.am.freescale.net>
+Cc: Nick Piggin <npiggin@suse.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,73 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/31/08, Timur Tabi <timur@freescale.com> wrote:
-> Grant Likely wrote:
->
->  > No it doesn't, it depends on the register interface to decide
->  > compatibility.  Clock interface is part of that.
->
->
-> I don't think so.  The interface for programming the clock registers is
->  identical on all 8[356]xx parts.  The only thing that matters is what specific
->  values to put in the FDR and DFSR registers to get a desired I2C bus speed.
->  That answer is dependent on the actual clock input to the device, which is
->  external to the device.  I wouldn't call the input frequency a property of the
->  I2C device.
->
->
->  > I suggested encoding
->  > the clock divider directly in compatible (implicit in the SoC version),
->  > but it doesn't have to be that way.  If clock freq is obtained from
->  > another property or some other method then that is okay too.
->
->
-> I think we agree on that.
->
->
->  > There is nothing wrong with it (as long as we agree and it gets
->  > documented).  I certainly don't have a problem with doing it this way.
->
->
-> I propose the property "clock-frequency", like this:
->
->                 i2c@3000 {
->                         #address-cells = <1>;
->                         #size-cells = <0>;
->                         cell-index = <0>;
->                         compatible = "fsl-i2c";
->                         reg = <0x3000 0x100>;
->                         interrupts = <14 0x8>;
->                         interrupt-parent = <&ipic>;
->                         dfsrr;
 
-The existence of the dfsrr and fsl,mpc5200-i2c attributes imply to me
-that the compatible strings were not done correctly. If these devices
-really were compatible we wouldn't need extra attributes to tell them
-apart.
+On Jul 31, 2008, at 1:48 PM, Kumar Gala wrote:
 
-So I'm with Grant on adding compatible strings sufficient to remove
-the need for dfsrr and fsl,mpc5200-i2c.
+> Implement _PAGE_SPECIAL and pte_special() for 32-bit powerpc. This  
+> bit will
+> be used by the fast get_user_pages() to differenciate PTEs that  
+> correspond
+> to a valid struct page from special mappings that don't such as IO  
+> mappings
+> obtained via io_remap_pfn_ranges().
+>
+> We currently only implement this on sub-arch that support SMP or  
+> will so
+> in the future (6xx, 44x, FSL-BookE) and not (8xx, 40x).
+>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> Nick, do you forsee using _PAGE_SPECIAL for other applications that  
+> would
+> be of interested to non-SMP hw?
+>
+> We can look at adding it into 8xx and 40x, but was being lazy as I  
+> assume
+> there is no point.
+>
+> - k
 
-Something like...
-static const struct of_device_id mpc_i2c_of_match[] = {
-       {.compatible = "fsl,mpc5200b-i2c", .data = fsl_i2c_mpc5200, },
-       {.compatible = "fsl,mpc5200-i2c", .data = fsl_i2c_mpc5200, },
-       {.compatible = "fsl,mpc8xxx-i2c", .data = fsl_i2c_dfsrr, },
+Josh,
 
+Can you test this on 44x for me.
 
-As for the source clock, how about creating a new global like
-ppc_proc_freq called ppc_ipb_freq. The platform code can then set the
-right clock value into the variable. For mpc8xxxx get it from uboot.
-mpc5200 can easily compute it from ppc_proc_freq and checking how the
-ipb divider is set. That will move the clock problem out of the i2c
-driver.
+thanks
 
-I'd like to move towards a more generic uboot that gets the processor
-minimally running and then use the device tree to customize as many
-things as possible. But that's just my opinion.
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+- k
