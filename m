@@ -1,23 +1,22 @@
-Return-Path: <xyzzy@speakeasy.org>
-Date: Thu, 31 Jul 2008 16:32:23 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [i2c] [PATCH] powerpc: i2c-mpc: make speed registers configurable
-	via FDT
-In-Reply-To: <4891E06A.4070608@freescale.com>
-Message-ID: <Pine.LNX.4.58.0807311610170.10341@shell4.speakeasy.net>
-References: <488982B5.4070102@grandegger.com> <4889942C.4040800@scram.de>
-	<48899736.8020400@grandegger.com>
-	<fa686aa40807250612g34b5167dtbe70c810f30a5d32@mail.gmail.com>
-	<ed82fe3e0807250721n115d28c7ha1f641c9175c473d@mail.gmail.com>
-	<4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
-	<20080727012722.GH12191@secretlab.ca> <4891A744.6060005@grandegger.com>
-	<9e4733910807310849g7e5612dbk9536733e061af8ad@mail.gmail.com>
-	<4891E06A.4070608@freescale.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>,
-	Linux I2C <i2c@lm-sensors.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 3C3D9DE006
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 09:43:30 +1000 (EST)
+Date: Fri, 1 Aug 2008 09:43:23 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>, Andrew Morton
+	<akpm@linux-foundation.org>
+Subject: [PATCH] Revert "Merge branch 'x86/iommu' of
+	git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+	into for-linus"
+Message-Id: <20080801094323.9601d87b.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Ingo, Joerg Roedel <joerg.roedel@amd.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	ppc-dev <linuxppc-dev@ozlabs.org>, sparclinux@vger.kernel.org,
+	Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,47 +26,162 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 31 Jul 2008, Timur Tabi wrote:
-> Jon Smirl wrote:
->
-> > Aren't the tables in the manual there just to make it easy for a human
-> > to pick out the line they want? For a computer you'd program the
-> > formula that was used to create the tables.
->
-> Actually, the tables in the manuals are just an example of what can be
-> programmed.  They don't cover all cases.  The tables assume a specific value of
-> DFSR.
->
-> For 8xxx, you want to use AN2919 to figure out how to really program the device.
->
-> The table I generated for U-Boot is based on the calculations outlined in
-> AN2919.  I debated trying to implement the actual algorithm, but decided that
-> pre-calculating the values was better.  The algorithm is very convoluted.
+This reverts commit 29111f579f4f3f2a07385f931854ab0527ae7ea5.
 
-And I decided to program the algorithm.  It's not that complex and overall
-compiles to less total size than the table method.  It doesn't involve some
-black box table either.
+This undoes the hasty addition of a global version of iommu_num_pages()
+that broke both the powerpc and sparc builds.  This function can be
+revisited later.
 
-The real problem, which kept me from making a patch to do this months ago,
-is that the source clock that the I2C freq divider applies to is different
-for just about every MPC8xxx platform.  Not just a different value, but a
-totally different internal clock.  Sometimes is CCB, sometimes CCB/2,
-sometimes tsec2's clock, etc.  Sometimes the two i2c controllers don't even
-have the same clock.  I didn't see any easy way to get this information.
-In U-Boot I get it from the global board info struct, but I didn't see
-anything like this in Linux.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/x86/kernel/amd_iommu.c   |   13 ++++++++-----
+ arch/x86/kernel/pci-gart_64.c |   11 +++++++----
+ include/linux/iommu-helper.h  |    1 -
+ lib/iommu-helper.c            |    8 --------
+ 4 files changed, 15 insertions(+), 18 deletions(-)
 
-> > I agree that it took me half an hour to figure out the formula that
-> > was needed to compute the i2s clocks, but once you figure out the
-> > formula it solves all of the cases and no one needs to read the manual
-> > any more. The i2c formula may even need a small loop which compares
-> > different solutions looking for the smallest error term. But it's a
-> > small space to search.
+This patch comes from
+git revert -m 1 29111f579f4f3f2a07385f931854ab0527ae7ea5
 
-Yes, I needed a loop.  The divider ends up having the form (a + c) << b,
-where a is from some set of eight integers between 2 and 15, b has a range
-of like 5 to 12, and c is usually zero.
+I have test built powerpc ppc64_defconfig and sparc64 defconfig.  The only
+references to iommu_num_pages() after this is applied are in the powerpc
+and sparc code.
 
-So, I find the divider I want to get, loop over each b, shift the divider
-right by b and find the closest (a+c) to that, calculate the error, and
-then use the best one.
+Linus, please apply.  This is impacting on both powerpc and sparc
+development and even the author of the patches said that those patches
+were not urgent.
+
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index 22d7d05..7469740 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -29,6 +29,9 @@
+ 
+ #define CMD_SET_TYPE(cmd, t) ((cmd)->data[1] |= ((t) << 28))
+ 
++#define to_pages(addr, size) \
++	 (round_up(((addr) & ~PAGE_MASK) + (size), PAGE_SIZE) >> PAGE_SHIFT)
++
+ #define EXIT_LOOP_COUNT 10000000
+ 
+ static DEFINE_RWLOCK(amd_iommu_devtable_lock);
+@@ -182,7 +185,7 @@ static int iommu_flush_pages(struct amd_iommu *iommu, u16 domid,
+ 		u64 address, size_t size)
+ {
+ 	int s = 0;
+-	unsigned pages = iommu_num_pages(address, size);
++	unsigned pages = to_pages(address, size);
+ 
+ 	address &= PAGE_MASK;
+ 
+@@ -554,8 +557,8 @@ static struct dma_ops_domain *dma_ops_domain_alloc(struct amd_iommu *iommu,
+ 	if (iommu->exclusion_start &&
+ 	    iommu->exclusion_start < dma_dom->aperture_size) {
+ 		unsigned long startpage = iommu->exclusion_start >> PAGE_SHIFT;
+-		int pages = iommu_num_pages(iommu->exclusion_start,
+-					    iommu->exclusion_length);
++		int pages = to_pages(iommu->exclusion_start,
++				iommu->exclusion_length);
+ 		dma_ops_reserve_addresses(dma_dom, startpage, pages);
+ 	}
+ 
+@@ -764,7 +767,7 @@ static dma_addr_t __map_single(struct device *dev,
+ 	unsigned int pages;
+ 	int i;
+ 
+-	pages = iommu_num_pages(paddr, size);
++	pages = to_pages(paddr, size);
+ 	paddr &= PAGE_MASK;
+ 
+ 	address = dma_ops_alloc_addresses(dev, dma_dom, pages);
+@@ -799,7 +802,7 @@ static void __unmap_single(struct amd_iommu *iommu,
+ 	if ((dma_addr == 0) || (dma_addr + size > dma_dom->aperture_size))
+ 		return;
+ 
+-	pages = iommu_num_pages(dma_addr, size);
++	pages = to_pages(dma_addr, size);
+ 	dma_addr &= PAGE_MASK;
+ 	start = dma_addr;
+ 
+diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
+index 49285f8..744126e 100644
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -67,6 +67,9 @@ static u32 gart_unmapped_entry;
+ 	(((x) & 0xfffff000) | (((x) >> 32) << 4) | GPTE_VALID | GPTE_COHERENT)
+ #define GPTE_DECODE(x) (((x) & 0xfffff000) | (((u64)(x) & 0xff0) << 28))
+ 
++#define to_pages(addr, size) \
++	(round_up(((addr) & ~PAGE_MASK) + (size), PAGE_SIZE) >> PAGE_SHIFT)
++
+ #define EMERGENCY_PAGES 32 /* = 128KB */
+ 
+ #ifdef CONFIG_AGP
+@@ -238,7 +241,7 @@ nonforced_iommu(struct device *dev, unsigned long addr, size_t size)
+ static dma_addr_t dma_map_area(struct device *dev, dma_addr_t phys_mem,
+ 				size_t size, int dir)
+ {
+-	unsigned long npages = iommu_num_pages(phys_mem, size);
++	unsigned long npages = to_pages(phys_mem, size);
+ 	unsigned long iommu_page = alloc_iommu(dev, npages);
+ 	int i;
+ 
+@@ -301,7 +304,7 @@ static void gart_unmap_single(struct device *dev, dma_addr_t dma_addr,
+ 		return;
+ 
+ 	iommu_page = (dma_addr - iommu_bus_base)>>PAGE_SHIFT;
+-	npages = iommu_num_pages(dma_addr, size);
++	npages = to_pages(dma_addr, size);
+ 	for (i = 0; i < npages; i++) {
+ 		iommu_gatt_base[iommu_page + i] = gart_unmapped_entry;
+ 		CLEAR_LEAK(iommu_page + i);
+@@ -384,7 +387,7 @@ static int __dma_map_cont(struct device *dev, struct scatterlist *start,
+ 		}
+ 
+ 		addr = phys_addr;
+-		pages = iommu_num_pages(s->offset, s->length);
++		pages = to_pages(s->offset, s->length);
+ 		while (pages--) {
+ 			iommu_gatt_base[iommu_page] = GPTE_ENCODE(addr);
+ 			SET_LEAK(iommu_page);
+@@ -467,7 +470,7 @@ gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
+ 
+ 		seg_size += s->length;
+ 		need = nextneed;
+-		pages += iommu_num_pages(s->offset, s->length);
++		pages += to_pages(s->offset, s->length);
+ 		ps = s;
+ 	}
+ 	if (dma_map_cont(dev, start_sg, i - start, sgmap, pages, need) < 0)
+diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
+index f8598f5..c975caf 100644
+--- a/include/linux/iommu-helper.h
++++ b/include/linux/iommu-helper.h
+@@ -8,4 +8,3 @@ extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
+ 				      unsigned long align_mask);
+ extern void iommu_area_free(unsigned long *map, unsigned long start,
+ 			    unsigned int nr);
+-extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
+diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
+index 889ddce..a3b8d4c 100644
+--- a/lib/iommu-helper.c
++++ b/lib/iommu-helper.c
+@@ -80,11 +80,3 @@ void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
+ 	}
+ }
+ EXPORT_SYMBOL(iommu_area_free);
+-
+-unsigned long iommu_num_pages(unsigned long addr, unsigned long len)
+-{
+-	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
+-
+-	return size >> PAGE_SHIFT;
+-}
+-EXPORT_SYMBOL(iommu_num_pages);
+-- 
+1.5.6.3
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
