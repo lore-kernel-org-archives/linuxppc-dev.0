@@ -1,9 +1,9 @@
 Return-Path: <timur@freescale.com>
-Message-ID: <48922A32.9080503@freescale.com>
-Date: Thu, 31 Jul 2008 16:10:10 -0500
+Message-ID: <48922BE4.5030507@freescale.com>
+Date: Thu, 31 Jul 2008 16:17:24 -0500
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
 Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
 	FDT
 References: <20080731182810.GB29097@secretlab.ca>	
@@ -16,7 +16,8 @@ References: <20080731182810.GB29097@secretlab.ca>
 	<9e4733910807311355q3394b4bfg66c37055384451f7@mail.gmail.com>	
 	<48922715.2000304@freescale.com>
 	<9e4733910807311403o63c37366ldae30e873f33a21e@mail.gmail.com>
-In-Reply-To: <9e4733910807311403o63c37366ldae30e873f33a21e@mail.gmail.com>
+	<48922B40.3010808@grandegger.com>
+In-Reply-To: <48922B40.3010808@grandegger.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>,
 	Linuxppc-dev@ozlabs.org
@@ -29,26 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
+Wolfgang Grandegger wrote:
 
-> But that's the same as saying we should copy the system clock
-> frequency into all of the PSC nodes because we might implement
-> hardware where they aren't all clocked off from the same input clock
-> source.
+> U-Boot does not (yet) use the FDT and it has therefore to use that ugly 
+> code to derive the I2C input clock frequency. I think its completely 
+> legal to put that hardware specific information into the FDT and get rid 
+> of such code.
 
-The I2C clock is only visible to the I2C devices.  The system clock is seen by
-many devices.  There's the difference.
-
->>  > Aren't we talking about the /2 or /3 or /1 divider that appears to be
->>  > randomly implemented on various members of the mpc8xxx family?
-> 
-> I don't this these dividers or clocks need to be exposed at all if
-> you'd just put that ugly code snippet into your platform driver.
-
-That's why I don't think the divider belongs in the device tree.  Just put the
-actual resulting clock frequency in the device tree.
-
-Besides, putting that snippet in the platform driver *is* exposing it.
+Huh?  U-Boot initializes several fields and creates several properties in the
+FDT today, so what's wrong with adding another one?  The clock frequencies have
+always been calculated by U-Boot, because putting them in the device tree is a
+bad idea.
 
 -- 
 Timur Tabi
