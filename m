@@ -1,27 +1,22 @@
-Return-Path: <sebastien.dugue@bull.net>
-Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id 7E104DE2D1
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 00:14:06 +1000 (EST)
-Date: Thu, 31 Jul 2008 16:14:30 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] powerpc - Initialize the irq radix tree earlier
-Message-ID: <20080731161430.5de73ef8@bull.net>
-In-Reply-To: <1217511566.19050.26.camel@localhost>
-References: <1217497241-10685-1-git-send-email-sebastien.dugue@bull.net>
-	<1217497241-10685-2-git-send-email-sebastien.dugue@bull.net>
-	<1217504456.9817.22.camel@localhost>
-	<20080731140002.31bbe4a0@bull.net>
-	<1217509104.19050.11.camel@localhost>
-	<1217509299.19050.15.camel@localhost>
-	<20080731152606.5ae7c379@bull.net>
-	<1217511566.19050.26.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
-	jean-pierre.dion@bull.net, rostedt@goodmis.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, gilles.carry@ext.bull.net, tglx@linutronix.de
+Return-Path: <SSparks@aclaratech.com>
+Received: from SG2EHSOBE001.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 98B62DDFA9
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 00:26:08 +1000 (EST)
+Received: from mail82-sin (localhost.localdomain [127.0.0.1])	by
+	mail82-sin-R.bigfish.com (Postfix) with ESMTP id 469D3BE0213	for
+	<linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 14:26:04 +0000 (UTC)
+Received: from acl-exch.aclaratech.com (unknown [68.89.149.23])	by
+	mail82-sin.bigfish.com (Postfix) with ESMTP id C52ADF9806A	for
+	<linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 14:26:01 +0000 (UTC)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: Compact Flash on 8349mITX
+Date: Thu, 31 Jul 2008 09:24:35 -0500
+Message-ID: <6011A7C9CD0EE74792C3ED2A8355608634218F@mail.twacs.com>
+In-Reply-To: <6011A7C9CD0EE74792C3ED2A835560861FA9C0@mail.twacs.com>
+References: <6011A7C9CD0EE74792C3ED2A835560861FA9C0@mail.twacs.com>
+From: "Sparks, Sam" <SSparks@aclaratech.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,121 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 31 Jul 2008 23:39:26 +1000 Michael Ellerman <michael@ellerman.id.au=
-> wrote:
+>From: Sparks, Sam=20
+>Sent: Thursday, July 31, 2008 8:15 AM
+>Does irq polling need to be used for compact flash to work=20
+>with this version of the kernel on this board?
 
-> On Thu, 2008-07-31 at 15:26 +0200, Sebastien Dugue wrote:
-> > On Thu, 31 Jul 2008 23:01:39 +1000 Michael Ellerman <michael@ellerman.i=
-d.au> wrote:
-> >=20
-> > > On Thu, 2008-07-31 at 22:58 +1000, Michael Ellerman wrote:
-> > > > On Thu, 2008-07-31 at 14:00 +0200, Sebastien Dugue wrote:
-> > > > > On Thu, 31 Jul 2008 21:40:56 +1000 Michael Ellerman <michael@elle=
-rman.id.au> wrote:
-> > > > > >=20
-> > > > > > This boot ordering stuff is pretty hairy, so I might have missed
-> > > > > > something, but this is how the code is ordered AFAICT:
-> > > > > > =EF=BB=BF
-> > > > > > start_kernel()
-> > > > > > 	init_IRQ()
-> > > > > > 	...
-> > > > > > 	local_irq_enable()
-> > > > > > 	...
-> > > > > > 	rest_init()
-> > > > > > 		kernel_thread()
-> > > > > > 			kernel_init()
-> > > > > > 				smp_prepare_cpus()
-> > > > > > 					smp_xics_probe()	(via smp_ops->probe())
-> > > > > >=20
-> > > > > >=20
-> > > > > > What's stopping us from taking an irq between local_irq_enable(=
-) and
-> > > > > > smp_xics_probe() ?  Is it just that no one's request_irq()'ed t=
-hem yet?
-> > > > >=20
-> > > > >   It's hairy, I agree, but as you've mentioned no one has done a =
-request_irq()
-> > > > > at that point. The first one to do it is smp_xics_probe() for the=
- IPI.
-> > > >=20
-> > > > Hmm, I don't think that's strong enough. I can trivially cause irqs=
- to
-> > > > fire during a kexec reboot just by mashing the keyboard.
-> > > >=20
-> > > > And during a kdump boot all sorts of stuff could be firing. Even du=
-ring
-> > > > a clean boot, from firmware, I don't think we can guarantee that
-> > > > nothing's going to fire.
-> > > >=20
-> > > > .. after a bit of testing ..
-> > > >=20
-> > > > It seems it actually works (sort of).=20
-> > > >=20
-> > > > xics_remap_irq() calls irq_radix_revmap_lookup(), which calls:
-> > > >=20
-> > > > ptr =3D radix_tree_lookup(&host->revmap_data.tree, hwirq);
-> > > >=20
-> > > > And because =EF=BB=BFhost->revmap_data.tree was zalloc'ed we trip o=
-n the first
-> > > > check here:
-> > >=20
-> > > @#$% ctrl-enter =3D=3D send!
-> > >=20
-> > > Continuing ...
-> > >=20
-> > > void *radix_tree_lookup(struct radix_tree_root *root, unsigned long i=
-ndex)
-> > > {
-> > >         unsigned int height, shift;
-> > >         struct radix_tree_node *node, **slot;
-> > >=20
-> > >         node =3D rcu_dereference(root->rnode);
-> > >         if (node =3D=3D NULL)
-> > >                 return NULL;
-> > >=20
-> > > Which means =EF=BB=BFirq_radix_revmap_lookup() will return NO_IRQ, wh=
-ich is cool.
-> >=20
-> >   Which is what I intended so that as long as no IRQ is registered we
-> > return NO_IRQ.
-> >=20
-> > >=20
-> > >=20
-> > > So I think it can fly, as long as we're happy that we can't reverse m=
-ap
-> > > anything until smp_xics_probe() - and I think that's true, as any irq=
- we
-> > > take will be invalid.
-> >=20
-> >   That's true as no IRQs are registered before smp_xics_probe() and for=
- any
-> > interrupt we might get before that, irq_radix_revmap_lookup() will retu=
-rn
-> > NO_IRQ.
->=20
-> Cool, we agree :)=20
->=20
-> My only worry is that we might be relying on on the particular radix
-> tree implementation a bit too much.
-
-  Well maybe we could revert back to testing a flag just like we
-do for host->revmap_data.tree.gfp_mask !=3D 0. Dunno.
-
-> Is it documented somewhere that
-> the /very/ first check is for =EF=BB=BFroot->rnode !=3D NULL, and the res=
-t of the
-> root may be unintialised?
-
-  Not in anything I could read except in looking at the code.
-
->=20
-> And I think it needs a big fat comment in the irq code saying that it's
-> safe because revmap_data is zalloc'ed, and that means the radix lookup
-> will fail (safely).
-
-  Yep, right. Will advertise this properly for the next round if this
-remains the prefered solution.
-
-  Thanks,
-
-  Sebastien.
+When I remove the interrupt definition from the DTS (to cause
+irqpolling), the ata driver gets stuck in a loop displaying the
+following. Does anyone have any insight?
+ata1.00: status: { DRDY }
+ata1.00: qc timeout (cmd 0xec)
+ata1.00: failed to IDENTIFY (I/O error, err_mask=3D0x4)
+ata1.00: revalidation failed (errno=3D-5)
+ata1: hard resetting link
+ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata1.00: configured for UDMA/100
+ata1: EH complete
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x20 (host bus
+error)
