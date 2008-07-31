@@ -1,13 +1,16 @@
 Return-Path: <tony@bakeyournoodle.com>
 Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 15A6EDDEED
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 1C89EDDEF7
 	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jul 2008 13:51:44 +1000 (EST)
 To: Paul Mackerras <paulus@samba.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <cac86e24e42bd05087b43663b687f04df91326ba.1217476198.git.tony@bakeyournoodle.com>
+Message-Id: <96343fe00bd43a12b1739ff1513ba07224e3f302.1217476198.git.tony@bakeyournoodle.com>
+In-Reply-To: <cac86e24e42bd05087b43663b687f04df91326ba.1217476198.git.tony@bakeyournoodle.com>
+References: <cac86e24e42bd05087b43663b687f04df91326ba.1217476198.git.tony@bakeyournoodle.com>
 From: Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH 1/8] Guard linkstation_physmap_partitions.
-Date: Thu, 31 Jul 2008 13:51:42 +1000 (EST)
+Subject: [PATCH 4/8] Silence warnings in
+	arch/powerpc/platforms/52xx/mpc52xx_pci.c
+Date: Thu, 31 Jul 2008 13:51:43 +1000 (EST)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -18,33 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-linkstation_physmap_partitions is only used when CONFIG_MTD_PHYSMAP is
-defined, so likewise guard the declaration.
+Explicitly cast resource fields to unsigned long long, and match format
+specifier.
 
 Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 ---
- arch/powerpc/platforms/embedded6xx/linkstation.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/52xx/mpc52xx_pci.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
-index eb5d74e..bec68af 100644
---- a/arch/powerpc/platforms/embedded6xx/linkstation.c
-+++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
-@@ -21,6 +21,7 @@
- 
- #include "mpc10x.h"
- 
-+#ifdef CONFIG_MTD_PHYSMAP
- static struct mtd_partition linkstation_physmap_partitions[] = {
- 	{
- 		.name   = "mtd_firmimg",
-@@ -53,6 +54,7 @@ static struct mtd_partition linkstation_physmap_partitions[] = {
- 		.size   = 0x0f0000,
- 	},
- };
-+#endif /* CONFIG_MTD_PHYSMAP */
- 
- static int __init linkstation_add_bridge(struct device_node *dev)
- {
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pci.c b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
+index 5a382bb..b49a185 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
+@@ -265,8 +265,11 @@ mpc52xx_pci_setup(struct pci_controller *hose,
+ 	/* Memory windows */
+ 	res = &hose->mem_resources[0];
+ 	if (res->flags) {
+-		pr_debug("mem_resource[0] = {.start=%x, .end=%x, .flags=%lx}\n",
+-		         res->start, res->end, res->flags);
++		pr_debug("mem_resource[0] = "
++		         "{.start=%llx, .end=%llx, .flags=%llx}\n",
++		         (unsigned long long)res->start,
++			 (unsigned long long)res->end,
++			 (unsigned long long)res->flags);
+ 		out_be32(&pci_regs->iw0btar,
+ 		         MPC52xx_PCI_IWBTAR_TRANSLATION(res->start, res->start,
+ 		                  res->end - res->start + 1));
+@@ -297,9 +300,11 @@ mpc52xx_pci_setup(struct pci_controller *hose,
+ 		printk(KERN_ERR "%s: Didn't find IO resources\n", __FILE__);
+ 		return;
+ 	}
+-	pr_debug(".io_resource={.start=%x,.end=%x,.flags=%lx} "
++	pr_debug(".io_resource={.start=%llx,.end=%llx,.flags=%llx} "
+ 	         ".io_base_phys=0x%p\n",
+-	         res->start, res->end, res->flags, (void*)hose->io_base_phys);
++	         (unsigned long long)res->start,
++		 (unsigned long long)res->end,
++		 (unsigned long long)res->flags, (void*)hose->io_base_phys);
+ 	out_be32(&pci_regs->iw2btar,
+ 	         MPC52xx_PCI_IWBTAR_TRANSLATION(hose->io_base_phys,
+ 	                                        res->start,
 -- 
 1.5.6.3
