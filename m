@@ -1,9 +1,9 @@
-Return-Path: <timur@freescale.com>
-Message-ID: <48920D9B.5060406@freescale.com>
-Date: Thu, 31 Jul 2008 14:08:11 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <wg@grandegger.com>
+Message-ID: <48921187.1090101@grandegger.com>
+Date: Thu, 31 Jul 2008 21:24:55 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
+To: Timur Tabi <timur@freescale.com>
 Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
 	FDT
 References: <4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
@@ -16,10 +16,11 @@ References: <4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
 	<20080731180959.GA29057@secretlab.ca>
 	<489200B6.9060906@freescale.com>
 	<20080731182810.GB29097@secretlab.ca>
-	<48920607.5040606@freescale.com> <48920C1A.7010605@freescale.com>
-In-Reply-To: <48920C1A.7010605@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-dev@ozlabs.org, Linux I2C <i2c@lm-sensors.org>
+	<48920607.5040606@freescale.com>
+In-Reply-To: <48920607.5040606@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>,
+	Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,69 +30,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Timur Tabi wrote:
->> Grant Likely wrote:
->>
->>> No it doesn't, it depends on the register interface to decide
->>> compatibility.  Clock interface is part of that. 
->> I don't think so.  The interface for programming the clock registers is
->> identical on all 8[356]xx parts.  The only thing that matters is what specific
->> values to put in the FDR and DFSR registers to get a desired I2C bus speed.
+Timur Tabi wrote:
+> Grant Likely wrote:
 > 
-> If it affects the values you need to write to the registers to achieve a 
-> given result, how is it not a difference in the register interface?
+>> No it doesn't, it depends on the register interface to decide
+>> compatibility.  Clock interface is part of that. 
+> 
+> I don't think so.  The interface for programming the clock registers is
+> identical on all 8[356]xx parts.  The only thing that matters is what specific
+> values to put in the FDR and DFSR registers to get a desired I2C bus speed.
+> That answer is dependent on the actual clock input to the device, which is
+> external to the device.  I wouldn't call the input frequency a property of the
+> I2C device.
 
-I think we're splitting hairs, here.  The code for actually programming the
-registers is the same, regardless of the input frequency.  It's just that the
-input frequency is a value needed to calculate the right value.  But like I
-said, I don't think this distinction is that relevant.
+No, the source clock is not identical for all 8[356]xx. Some use half or 
+even a third of the SOC clock frequency. Linux must determine the real 
+source clock frequency somehow. We may introduce the SOC property 
+"i2c-clock-frequency", which could be fixed up by U-Boot or a pre-loader 
+(in case U-Boot is not used). Like for other frequency properties as well.
 
-> A clock-frequency property is OK, and is in line with what we do in 
-> other types of nodes.  However, in the long run it might be nice to 
-> introduce some sort of clock binding where, for example, the i2c node 
-> can point to a clock elsewhere in the device tree as an input clock.
+>> I suggested encoding
+>> the clock divider directly in compatible (implicit in the SoC version),
+>> but it doesn't have to be that way.  If clock freq is obtained from
+>> another property or some other method then that is okay too.
+> 
+> I think we agree on that.
+> 
+>> There is nothing wrong with it (as long as we agree and it gets
+>> documented).  I certainly don't have a problem with doing it this way.
+> 
+> I propose the property "clock-frequency", like this:
+> 
+> 		i2c@3000 {
+> 			#address-cells = <1>;
+> 			#size-cells = <0>;
+> 			cell-index = <0>;
+> 			compatible = "fsl-i2c";
+> 			reg = <0x3000 0x100>;
+> 			interrupts = <14 0x8>;
+> 			interrupt-parent = <&ipic>;
+> 			dfsrr;
+> 			clock-frequency = <0xblablabla>;  <-- added by U-Boot
+> 		};
 
-The only problem with that is that the actual input clock to the I2C device is
-not the same as any other device.  It's a unique clock.  Look at the code I had
-to write to figure out this clock just on 85xx:
+I think we already agreed to use the property "clock-frequency" for the 
+real I2C clock frequency. If it is not provided, the old settings, e.g. 
+from U-Boot, will be kept.
 
-	/*
-	 * The base clock for I2C depends on the actual SOC.  Unfortunately,
-	 * there is no pattern that can be used to determine the frequency, so
-	 * the only choice is to look up the actual SOC number and use the value
-	 * for that SOC. This information is taken from application note
-	 * AN2919.
-	 */
-#if defined(CONFIG_MPC8540) || defined(CONFIG_MPC8541) || \
-	defined(CONFIG_MPC8560) || defined(CONFIG_MPC8555)
-	gd->i2c1_clk = sys_info.freqSystemBus;
-#elif defined(CONFIG_MPC8544)
-	/*
-	 * On the 8544, the I2C clock is the same as the SEC clock.  This can be
-	 * either CCB/2 or CCB/3, depending on the value of cfg_sec_freq. See
-	 * 4.4.3.3 of the 8544 RM.  Note that this might actually work for all
-	 * 85xx, but only the 8544 has cfg_sec_freq, so it's unknown if the
-	 * PORDEVSR2_SEC_CFG bit is 0 on all 85xx boards that are not an 8544.
-	 */
-	if (gur->pordevsr2 & MPC85xx_PORDEVSR2_SEC_CFG)
-		gd->i2c1_clk = sys_info.freqSystemBus / 3;
-	else
-		gd->i2c1_clk = sys_info.freqSystemBus / 2;
-#else
-	/* Most 85xx SOCs use CCB/2, so this is the default behavior. */
-	gd->i2c1_clk = sys_info.freqSystemBus / 2;
-#endif
+> Note that the dfsrr property already differentiates between 8xxx and 52xx, so
+> maybe we don't need any other device tree changes.
 
-This is just for 85xx, and it only applies to the I2C devices.
+It should be done via the compatible property.
 
-> That way, less knowledge is required by the firmware to poke values all 
-> over the place, and it also allows one to describe situations where the 
-> frequency of the input clock can change (such as in low-power modes).
-
-I don't think it's possible to do what you want to do.  I2C clocking is
-completely screwed up, and that's just the way the hardware was designed.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Wolfgang.
