@@ -1,25 +1,17 @@
-Return-Path: <timur@freescale.com>
-Message-ID: <48920607.5040606@freescale.com>
-Date: Thu, 31 Jul 2008 13:35:51 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4588EDDF53
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 04:48:36 +1000 (EST)
+Date: Thu, 31 Jul 2008 13:48:31 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/mm: Implement _PAGE_SPECIAL & pte_special() for 32-bit
+Message-ID: <Pine.LNX.4.64.0807311345380.8012@blarg.am.freescale.net>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] powerpc: i2c-mpc: make speed registers configurable via
-	FDT
-References: <4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
-	<20080727012722.GH12191@secretlab.ca>
-	<4891A744.6060005@grandegger.com>
-	<9e4733910807310849g7e5612dbk9536733e061af8ad@mail.gmail.com>
-	<4891F4D8.9090905@grandegger.com>
-	<fa686aa40807311031r66f6451aw206faf54509c14d9@mail.gmail.com>
-	<4891FC3A.7040609@freescale.com>
-	<20080731180959.GA29057@secretlab.ca>
-	<489200B6.9060906@freescale.com>
-	<20080731182810.GB29097@secretlab.ca>
-In-Reply-To: <20080731182810.GB29097@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org,
-	Linux I2C <i2c@lm-sensors.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: npiggin@suse.de, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,45 +21,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
+Implement _PAGE_SPECIAL and pte_special() for 32-bit powerpc. This bit will
+be used by the fast get_user_pages() to differenciate PTEs that correspond
+to a valid struct page from special mappings that don't such as IO mappings
+obtained via io_remap_pfn_ranges().
 
-> No it doesn't, it depends on the register interface to decide
-> compatibility.  Clock interface is part of that. 
+We currently only implement this on sub-arch that support SMP or will so
+in the future (6xx, 44x, FSL-BookE) and not (8xx, 40x).
 
-I don't think so.  The interface for programming the clock registers is
-identical on all 8[356]xx parts.  The only thing that matters is what specific
-values to put in the FDR and DFSR registers to get a desired I2C bus speed.
-That answer is dependent on the actual clock input to the device, which is
-external to the device.  I wouldn't call the input frequency a property of the
-I2C device.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+Nick, do you forsee using _PAGE_SPECIAL for other applications that would
+be of interested to non-SMP hw?
 
-> I suggested encoding
-> the clock divider directly in compatible (implicit in the SoC version),
-> but it doesn't have to be that way.  If clock freq is obtained from
-> another property or some other method then that is okay too.
+We can look at adding it into 8xx and 40x, but was being lazy as I assume
+there is no point.
 
-I think we agree on that.
+- k
 
-> There is nothing wrong with it (as long as we agree and it gets
-> documented).  I certainly don't have a problem with doing it this way.
+ include/asm-powerpc/pgtable-ppc32.h |   15 +++++++++++++--
+ 1 files changed, 13 insertions(+), 2 deletions(-)
 
-I propose the property "clock-frequency", like this:
+diff --git a/include/asm-powerpc/pgtable-ppc32.h b/include/asm-powerpc/pgtable-ppc32.h
+index 6fe39e3..58afaee 100644
+--- a/include/asm-powerpc/pgtable-ppc32.h
++++ b/include/asm-powerpc/pgtable-ppc32.h
+@@ -261,6 +261,7 @@ extern int icache_44x_need_flush;
+ #define _PAGE_HWEXEC	0x00000004		/* H: Execute permission */
+ #define _PAGE_ACCESSED	0x00000008		/* S: Page referenced */
+ #define _PAGE_DIRTY	0x00000010		/* S: Page dirty */
++#define _PAGE_SPECIAL	0x00000020		/* S: Special page */
+ #define _PAGE_USER	0x00000040		/* S: User page */
+ #define _PAGE_ENDIAN	0x00000080		/* H: E bit */
+ #define _PAGE_GUARDED	0x00000100		/* H: G bit */
+@@ -276,6 +277,7 @@ extern int icache_44x_need_flush;
+ /* ERPN in a PTE never gets cleared, ignore it */
+ #define _PTE_NONE_MASK	0xffffffff00000000ULL
 
-		i2c@3000 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			cell-index = <0>;
-			compatible = "fsl-i2c";
-			reg = <0x3000 0x100>;
-			interrupts = <14 0x8>;
-			interrupt-parent = <&ipic>;
-			dfsrr;
-			clock-frequency = <0xblablabla>;  <-- added by U-Boot
-		};
++#define __HAVE_ARCH_PTE_SPECIAL
 
-Note that the dfsrr property already differentiates between 8xxx and 52xx, so
-maybe we don't need any other device tree changes.
+ #elif defined(CONFIG_FSL_BOOKE)
+ /*
+@@ -305,6 +307,7 @@ extern int icache_44x_need_flush;
+ #define _PAGE_COHERENT	0x00100	/* H: M bit */
+ #define _PAGE_NO_CACHE	0x00200	/* H: I bit */
+ #define _PAGE_WRITETHRU	0x00400	/* H: W bit */
++#define _PAGE_SPECIAL	0x00800 /* S: Special page */
 
+ #ifdef CONFIG_PTE_64BIT
+ /* ERPN in a PTE never gets cleared, ignore it */
+@@ -315,6 +318,8 @@ extern int icache_44x_need_flush;
+ #define _PMD_PRESENT_MASK (PAGE_MASK)
+ #define _PMD_BAD	(~PAGE_MASK)
+
++#define __HAVE_ARCH_PTE_SPECIAL
++
+ #elif defined(CONFIG_8xx)
+ /* Definitions for 8xx embedded chips. */
+ #define _PAGE_PRESENT	0x0001	/* Page is valid */
+@@ -362,6 +367,7 @@ extern int icache_44x_need_flush;
+ #define _PAGE_ACCESSED	0x100	/* R: page referenced */
+ #define _PAGE_EXEC	0x200	/* software: i-cache coherency required */
+ #define _PAGE_RW	0x400	/* software: user write access allowed */
++#define _PAGE_SPECIAL	0x800	/* software: Special page */
+
+ #define _PTE_NONE_MASK	_PAGE_HASHPTE
+
+@@ -372,6 +378,8 @@ extern int icache_44x_need_flush;
+ /* Hash table based platforms need atomic updates of the linux PTE */
+ #define PTE_ATOMIC_UPDATES	1
+
++#define __HAVE_ARCH_PTE_SPECIAL
++
+ #endif
+
+ /*
+@@ -404,6 +412,9 @@ extern int icache_44x_need_flush;
+ #ifndef _PAGE_WRITETHRU
+ #define _PAGE_WRITETHRU	0
+ #endif
++#ifndef _PAGE_SPECIAL
++#define _PAGE_SPECIAL	0
++#endif
+ #ifndef _PMD_PRESENT_MASK
+ #define _PMD_PRESENT_MASK	_PMD_PRESENT
+ #endif
+@@ -533,7 +544,7 @@ static inline int pte_write(pte_t pte)		{ return pte_val(pte) & _PAGE_RW; }
+ static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
+ static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
+ static inline int pte_file(pte_t pte)		{ return pte_val(pte) & _PAGE_FILE; }
+-static inline int pte_special(pte_t pte)	{ return 0; }
++static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
+
+ static inline void pte_uncache(pte_t pte)       { pte_val(pte) |= _PAGE_NO_CACHE; }
+ static inline void pte_cache(pte_t pte)         { pte_val(pte) &= ~_PAGE_NO_CACHE; }
+@@ -552,7 +563,7 @@ static inline pte_t pte_mkdirty(pte_t pte) {
+ static inline pte_t pte_mkyoung(pte_t pte) {
+ 	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
+ static inline pte_t pte_mkspecial(pte_t pte) {
+-	return pte; }
++	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
+ static inline unsigned long pte_pgprot(pte_t pte)
+ {
+ 	return __pgprot(pte_val(pte)) & PAGE_PROT_BITS;
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.5.5.1
