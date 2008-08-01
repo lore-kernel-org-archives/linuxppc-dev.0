@@ -1,31 +1,33 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5D339DF02B
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 04:50:13 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m71Io8VH003562
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Aug 2008 11:50:08 -0700 (MST)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 349E5DDF8C
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 05:16:37 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m71J6jhr021396
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 Aug 2008 12:15:59 -0700 (MST)
 Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
 	[10.82.19.112])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m71InqSt008903
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Aug 2008 13:49:52 -0500 (CDT)
-Date: Fri, 1 Aug 2008 13:49:52 -0500
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m71IvFrf007717
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 Aug 2008 13:57:15 -0500 (CDT)
+Date: Fri, 1 Aug 2008 13:57:14 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 4/8] powerpc: add the ability for a classic ppc kernel to
-	be loaded at 32M
-Message-ID: <20080801184952.GA25225@ld0162-tx32.am.freescale.net>
-References: <20080801141306.GA29127@polina.dev.rtsoft.ru>
-	<20080801141420.GD1161@polina.dev.rtsoft.ru>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 03/10] fs-enet: remove code associated with
+	!CONFIG_PPC_MERGE
+Message-ID: <20080801185714.GA26062@ld0162-tx32.am.freescale.net>
+References: <1217609060-6381-1-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-2-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-3-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080801141420.GD1161@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,14 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 01, 2008 at 06:14:20PM +0400, Anton Vorontsov wrote:
-> From: Dale Farnsworth <dale@farnsworth.org>
-> 
-> Add the ability for a classic ppc kernel to be loaded at an address
-> of 32MB.  This done by fixing a few places that assume we are loaded
-> at address 0, and by changing several uses of KERNELBASE to use
-> PAGE_OFFSET, instead.
+On Fri, Aug 01, 2008 at 11:44:13AM -0500, Kumar Gala wrote:
+> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+> index 9a51ec8..e54d003 100644
+> --- a/drivers/net/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -669,7 +669,6 @@ static int fs_request_irq(struct net_device *dev, int irq, const char *name,
+>  {
+>  	struct fs_enet_private *fep = netdev_priv(dev);
+>  
+> -	(*fep->ops->pre_request_irq)(dev, irq);
+>  	return request_irq(irq, irqf, IRQF_SHARED, name, dev);
+>  }
 
-What do you do about the exception vectors?
+This makes "fep" an unused variable.  Eliminate this function entirely,
+and call request_irq directly from the caller.
+
+>  
+> @@ -678,7 +677,6 @@ static void fs_free_irq(struct net_device *dev, int irq)
+>  	struct fs_enet_private *fep = netdev_priv(dev);
+>  
+>  	free_irq(irq, dev);
+> -	(*fep->ops->post_free_irq)(dev, irq);
+>  }
+
+Likewise.
 
 -Scott
