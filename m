@@ -1,24 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f28.google.com (mail-gx0-f28.google.com
-	[209.85.217.28]) by ozlabs.org (Postfix) with ESMTP id 112F8DDF89
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 00:44:51 +1000 (EST)
-Received: by gxk9 with SMTP id 9so1298328gxk.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 01 Aug 2008 07:44:50 -0700 (PDT)
-Message-ID: <fa686aa40808010730p5e8a507evfa5e13bd4d2308cd@mail.gmail.com>
-Date: Fri, 1 Aug 2008 08:30:48 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Subject: Re: Board level compatibility matching
-In-Reply-To: <20080801080632.35edcb04@zod.rchland.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 23F65DE425
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 00:46:22 +1000 (EST)
+Date: Fri, 1 Aug 2008 18:46:20 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC][PATCH 0/8] kexec/kdump support for ppc32
+Message-ID: <20080801144620.GA4427@polina.dev.rtsoft.ru>
+References: <20080801141306.GA29127@polina.dev.rtsoft.ru>
+	<26A28837-B944-4CA6-83B5-5466CF1EDBF3@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa40807311319k44d270b0t4fa9cb0e6523339@mail.gmail.com>
-	<20080801025439.GB5008@yookeroo.seuss>
-	<20080801032533.GB6595@secretlab.ca>
-	<1217564739.11188.482.camel@pasglop>
-	<20080801080632.35edcb04@zod.rchland.ibm.com>
-Cc: devicetree-discuss@ozlabs.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <26A28837-B944-4CA6-83B5-5466CF1EDBF3@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,68 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 1, 2008 at 6:06 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> On Fri, 01 Aug 2008 14:25:39 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Fri, Aug 01, 2008 at 09:21:02AM -0500, Kumar Gala wrote:
 >
->> About this whole generic board mumbo-jumbo: not happening. It's a pipe
->> dream, it doesn't work, and it leads to the sort of mess we have in chrp
->> where we end up having hacks to identify what exact sort of chrp we have
->> and do things differently etc...
->>
->> NOT HAPPENING.
->>
->> Now, there are two approaches here that are possible:
->>
->>  - Your board is really pretty much exactly the same as board XXX,
->> except maybe you have a different flash size or such, and the support
->> for board XXX can cope perfectly with it simply due to the device-tree
->> the right information.
->>
->> If that happens to be the case, make your board compatible with board
->> XXX. Make that entry -second- in your compatible list, because one day
->> you'll figure out that there -is- indeed a difference and I don't want
->> to see board XXX code start to grow code to recognise your other board
->> and work around the difference. So at that stage, copy board XXX.c file
->> and start over with your own board support that matches on your first
->> compatible propery entry.
+> On Aug 1, 2008, at 9:13 AM, Anton Vorontsov wrote:
 >
-> 44x does this today for a small number of boards.  The "issue", if
-> there really is one, is that there's no clear definition on what is
-> acceptable to be called "compatible".  If _Linux_ platform support for
-> board FOO
+>> Hi all,
+>>
+>> I refreshed some Dale Farnsworth's kexec/kdump patches[1] against
+>> the latest kernel, and here they are.
+>>
+>> There is a difference though. Dale's patches were using
+>> kmap_atomic_pfn() to map oldmem memory, while for this patches
+>> I took PPC64 approach to use ioremap(). This is done to be able
+>> to support kdump on !HIGHMEM kernels.
+>>
+>> Also, please take a special look into 8/8 patch, there is a hunk
+>> marked with "XXX:", which I don't quite understand for PPC64 case
+>> (this hunk also persist in the original Dale's patch, and w/o it
+>> the capturing kernel doesn't boot on ppc32).
+>>
+>> I'll try to refresh BookE support as soon as I'll find some BookE
+>> board.
+>>
+>> The patchset includes:
+>>
+>> - Kexec support
+>>
+>>  [PATCH 1/8] powerpc: set up OF properties for ppc32 kexec
+>>  [PATCH 2/8] powerpc: make default kexec/crash_kernel ops implicit
+>>  [PATCH 3/8] powerpc: remove default kexec/crash_kernel ops  
+>> assignments
+>>
+>>  2/8 and 3/8 patches are used to avoid adding lots of default ops
+>>  to the board files.
+>>
+>> - Kdump support
+>>
+>>  [PATCH 4/8] powerpc: add the ability for a classic ppc kernel to be  
+>> loaded at 32M
+>>  [PATCH 5/8] powerpc: allow to ioremap RAM addresses for kdump kernel 
+>> on ppc32
+>>  [PATCH 6/8] powerpc: set up OF properties for ppc32 kdump
+>>  [PATCH 7/8] powerpc: implement crash_setup_regs for ppc32
+>>  [PATCH 8/8] powerpc: last bits to support kdump on ppc32
+>>
+>> [1] http://ozlabs.org/pipermail/linuxppc-dev/2007-November/046739.html
+>
+> What's the state of the kexec tools for ppc32?
 
-As stated in my previous email; I dislike this approach.  I far prefer
-making the board support code provide an explicit list rather than
-trying to define what it means for one board to be compatible with
-another.
+Current kexec-tools has split arch support, and ppc32 is officially
+broken.
 
->> I have no objection of having something like for each ppc_md field
->> called X, having a utility file providing an mpc52xx_generic_X function.
->> Such a board could then basically have a small .c file whose ppc_md just
->> use the generic functions for all except the ones that need to be
->> hooked/wrapped/replaced/whatever.
->
-> This is sort of the part that sucks.  Look at 44x.  There are 10
-> board.c files there.  There really only needs to be 3 or 4 (sam440ep,
-> warp, virtex, and "generic") because the board files are identical in
-> everything except name. By doing the library code approach, one still
-> has to create a board.c file for a new board and plug in the library
-> functions to ppc_md.
->
-> Alternatively, you could do the:
->
-> compatible = "specific-board", "similar-board"
->
-> approach that has been done for e.g. Bamboo and Yosemite.  Again, the
-> issue is that is that OK?  Is it OK for a board to claim compatibility
-> with another board when it might not have all the devices of that
-> board, or might have additional devices, etc.  I was of the opinion
-> it is, and the device tree handles this just fine, as does the platform
-> code. But it can be confusing, hence the discussion here.
+I use some old (20070330), patched kexec-tools with ppc32/ and ppc64/
+merged into powerpc (alike to Linux).
 
-I say no [but you already know that. :-) ]
+I hope one day I (or somebody else) will find time to cleanup or
+re-do the patches for the recent kexec-tools, and merge them after
+all.
+
+Though, I didn't look into the patches themselves yet, so I can't
+tell how much work is pending.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
