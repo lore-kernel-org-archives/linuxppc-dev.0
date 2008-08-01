@@ -1,25 +1,24 @@
 Return-Path: <timur.tabi@gmail.com>
-Message-ID: <ed82fe3e0808010617u101855f7x70d3cbd2bed31f8c@mail.gmail.com>
-Date: Fri, 1 Aug 2008 08:17:25 -0500
+Message-ID: <ed82fe3e0808010625q53680d42l83f28a6df835f959@mail.gmail.com>
+Date: Fri, 1 Aug 2008 08:25:59 -0500
 From: "Timur Tabi" <timur@freescale.com>
 Sender: timur.tabi@gmail.com
-To: "Trent Piepho" <xyzzy@speakeasy.org>
+To: "Jon Smirl" <jonsmirl@gmail.com>
 Subject: Re: [i2c] [PATCH] powerpc: i2c-mpc: make speed registers configurable
 	via FDT
-In-Reply-To: <Pine.LNX.4.58.0807311610170.10341@shell4.speakeasy.net>
+In-Reply-To: <9e4733910807311935n1f81f18dw135372d97d3dcb45@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <488982B5.4070102@grandegger.com>
-	<fa686aa40807250612g34b5167dtbe70c810f30a5d32@mail.gmail.com>
-	<ed82fe3e0807250721n115d28c7ha1f641c9175c473d@mail.gmail.com>
-	<4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
-	<20080727012722.GH12191@secretlab.ca>
-	<4891A744.6060005@grandegger.com>
-	<9e4733910807310849g7e5612dbk9536733e061af8ad@mail.gmail.com>
-	<4891E06A.4070608@freescale.com>
-	<Pine.LNX.4.58.0807311610170.10341@shell4.speakeasy.net>
-Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org,
-	Linux I2C <i2c@lm-sensors.org>
+References: <4891F4D8.9090905@grandegger.com>
+	<20080731180959.GA29057@secretlab.ca> <489200B6.9060906@freescale.com>
+	<20080731182810.GB29097@secretlab.ca> <48920607.5040606@freescale.com>
+	<9e4733910807311157q358640ddyef1f14865c069b8@mail.gmail.com>
+	<Pine.LNX.4.58.0807311656250.10341@shell4.speakeasy.net>
+	<9e4733910807311819i60872285ga4829c841185fdc0@mail.gmail.com>
+	<20080801020303.GA30947@secretlab.ca>
+	<9e4733910807311935n1f81f18dw135372d97d3dcb45@mail.gmail.com>
+Cc: Linuxppc-dev@ozlabs.org, Trent Piepho <xyzzy@speakeasy.org>,
+	Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,21 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 31, 2008 at 6:32 PM, Trent Piepho <xyzzy@speakeasy.org> wrote:
+On Thu, Jul 31, 2008 at 9:35 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
 
-> The real problem, which kept me from making a patch to do this months ago,
-> is that the source clock that the I2C freq divider applies to is different
-> for just about every MPC8xxx platform.  Not just a different value, but a
-> totally different internal clock.  Sometimes is CCB, sometimes CCB/2,
-> sometimes tsec2's clock, etc.
+> I've having trouble with whether these clocks are a system resource or
+> something that belongs to i2c. If they are a system resource then we
+> should make nodes in the root and use a phandle in the i2c node to
+> link to them.
 
-On which SOC is it the tesc2 clock?
+I can't speak for 52xx, but for 8[356]xx, I would say the clocks
+belong to the I2C devices.  The screwball determination of whether to
+divide by 1, 2, or 3 only applies to the I2C device only.  The divider
+itself is not used to drive a clock for any other device.  If you
+disable I2C support, then you don't need to care about the divider (or
+its output clock) at all.  That's why I think have the I2C clock in
+the parent node is wrong, because it would only be used if you had I2C
+child nodes.  If you didn't have any I2C nodes, then you would need to
+delete the property from the parent node as well.
 
->  Sometimes the two i2c controllers don't even
-> have the same clock.
+> The phandle in the mpc5200 case could be implicit since it is fixed in silicon.
 
-On which platform is that the case?  I thought I had all 8[356]xx
-boards covered.  Did I miss some?
+If we want to use the same I2C driver for 52xx and 83xx, it shouldn't
+be implicit.  Otherwise, the driver will have to check the platform to
+determine where to look.
+
+> Is this register in a system register bank or an i2c one?
+> gur->pordevsr2 & MPC85xx_PORDEVSR2_SEC_CFG
+
+That should be "guts->" I think.  The global utilities is a block of
+miscellaneous registers, one per SOC.  It's not part of the I2C block.
 
 -- 
 Timur Tabi
