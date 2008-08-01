@@ -1,21 +1,25 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 1 Aug 2008 14:25:05 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Board level compatibility matching
-Message-ID: <20080801042505.GK5008@yookeroo.seuss>
-References: <fa686aa40807311319k44d270b0t4fa9cb0e6523339@mail.gmail.com>
-	<9e4733910807311349l5770a17ib2ab2535bcd2868a@mail.gmail.com>
-	<20080731205251.GB29834@secretlab.ca>
-	<9e4733910807311358k54b5c088l1023d354fd0ad28e@mail.gmail.com>
-	<20080801024729.GA5008@yookeroo.seuss>
-	<9e4733910807312006l8e83d27qe1b5ca5f50b89e39@mail.gmail.com>
-	<20080801033009.GG5008@yookeroo.seuss>
-	<9e4733910807312100j6a8d1974k34054c2d69f417f4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910807312100j6a8d1974k34054c2d69f417f4@mail.gmail.com>
-Cc: devicetree-discuss@ozlabs.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1B1CBDDFBD
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 14:28:02 +1000 (EST)
+Date: Fri, 1 Aug 2008 14:27:54 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH] Revert "Merge branch 'x86/iommu' of
+	git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+	into for-linus"
+Message-Id: <20080801142754.8a6314fa.sfr@canb.auug.org.au>
+In-Reply-To: <20080801085106E.fujita.tomonori@lab.ntt.co.jp>
+References: <20080801094323.9601d87b.sfr@canb.auug.org.au>
+	<20080801085106E.fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__1_Aug_2008_14_27_54_+1000_qszNvBgVVH.GLi2S"
+Cc: joerg.roedel@amd.com, linux-kernel@vger.kernel.org,
+	jbarnes@virtuousgeek.org, davem@davemloft.net,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	akpm@linux-foundation.org, torvalds@linux-foundation.org, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,61 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 01, 2008 at 12:00:01AM -0400, Jon Smirl wrote:
-> On 7/31/08, David Gibson <david@gibson.dropbear.id.au> wrote:
-> > On Thu, Jul 31, 2008 at 11:06:20PM -0400, Jon Smirl wrote:
-> >  > On 7/31/08, David Gibson <david@gibson.dropbear.id.au> wrote:
-[snip]
-> >  > That is what I'm doing now. But it requires every board to add a file
-> >  > to arch/powerpc/platforms.  Can we have some common code to make the
-> >  > fabric device? Can it be an OF device instead of a platform one? An OF
-> >  > device could be compatible with boardname-fabric, generic-fabric. That
-> >  > allows a stub fabric driver to always bind.
-> >
-> >
-> > There are several ways to do this, and which is the most sensible
-> >  depends on the specific design, and whether / how many boards the
-> >  design is shared amongst.
-> >
-> >  In some cases it's suitable to have a "fake" device node for the sound
-> >  wiring, to which a fabric driver can bind.  I think I've argued
-> >  against this approach in the past, but I've since been convinced that
-> >  it is a reasonable approach for some situations.  There's precedent,
-> >  too, a number of Apple device trees do this.
-> >
-> >  In other cases it may be possible to deduce the correct fabric driver
-> >  from the interconnections of individual sound components.
-> >
-> >  In yet others, we need board-specific platform code to instantiate the
-> >  fabric driver.  In some cases that's simply the most straightforward
-> >  way to do things.  In others it's not ideal, but we can use it as a
-> >  fallback technique because deployed device trees simply don't have
-> >  sufficient information in other places to use another approach.
-> >
-> >  There doesn't have to be One True Method for doing this.
-> 
-> We're running into a need for the true method. With ALSA you need to
-> have the codec driver, i2s/ac97 driver and the fabric driver all load
-> and say here I am before ALSA can finish binding. ALSA won't complete
-> initializing on boards without all three.
-> 
-> So what do you do on board that doesn't need a fabric driver? That's
-> why you want the fake device with the compatible string =
-> board-fabric, noop-fabric. Now you know for sure one of those two
-> drivers will bind.
+--Signature=_Fri__1_Aug_2008_14_27_54_+1000_qszNvBgVVH.GLi2S
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-No... that would be exactly my example of a case where instantiating
-the fabric driver from the platform code isn't ideal, but is a usable
-fallback option.
+On Fri, 1 Aug 2008 08:51:23 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.=
+co.jp> wrote:
+>
+> Ingo has a patch to fix this problem in the x86 tree:
+>=20
+> http://marc.info/?l=3Dlinux-kernel&m=3D121754062325903&w=3D2
 
-> Why does the fake fabric device need to be in the device tree? Can't
-> we just dynamically create it as part of the boot process?
+Then consider this a poke (to the appropriate person) to get something
+merged to fix the breakage.
 
-Um.. yes.. that would be exactly what instatiating it from the
-platform code does.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+--Signature=_Fri__1_Aug_2008_14_27_54_+1000_qszNvBgVVH.GLi2S
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiSkMoACgkQjjKRsyhoI8yagACggFN1tewSUDhrbrS2gXAidcpg
+G+kAoK6AyhTIH4M2HSa8kfdfbTps5BPG
+=avUC
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__1_Aug_2008_14_27_54_+1000_qszNvBgVVH.GLi2S--
