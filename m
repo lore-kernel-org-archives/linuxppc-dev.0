@@ -1,19 +1,20 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 67790DE277
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 01:59:02 +1000 (EST)
-Date: Fri, 1 Aug 2008 11:59:01 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Subject: Re: platforms/44x/warp-nand.c bogosity
-Message-ID: <20080801115901.082491ba@lappy.seanm.ca>
-In-Reply-To: <20080801112628.35fb0ff2@zod.rchland.ibm.com>
-References: <20080801151401.GC24735@cs181140183.pp.htv.fi>
-	<20080801112628.35fb0ff2@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Adrian Bunk <bunk@kernel.org>,
-	Stefan Roese <sr@denx.de>, paulus@samba.org
+Return-Path: <SSparks@aclaratech.com>
+Received: from SG2EHSOBE003.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 5922DDE31E
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 02:00:31 +1000 (EST)
+Received: from mail166-sin (localhost.localdomain [127.0.0.1])	by
+	mail166-sin-R.bigfish.com (Postfix) with ESMTP id 92CCC16F8278	for
+	<linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 16:00:27 +0000 (UTC)
+Received: from acl-exch.aclaratech.com (unknown [68.89.149.23])	by
+	mail166-sin.bigfish.com (Postfix) with ESMTP id 5AF1684005C	for
+	<linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 16:00:26 +0000 (UTC)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: Compact flash on mpc8349eITX
+Date: Fri, 1 Aug 2008 10:58:58 -0500
+Message-ID: <6011A7C9CD0EE74792C3ED2A835560863421AB@mail.twacs.com>
+From: "Sparks, Sam" <SSparks@aclaratech.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 1 Aug 2008 11:26:28 -0400
-"Josh Boyer" <jwboyer@linux.vnet.ibm.com> wrote:
+I'm trying to get the compact flash up and running on an mpc8349eITX,
+and am continually running into issues where the IRQ is not processed,
+and the mmio commands are not getting response. At this point, I am
+starting to suspect a HW issue, but I was hoping to verify that I am
+using a known good kernel configuration.
 
-> I don't believe it is intentional, no.  Sean can you look at this and
-> see what's up?  I have a couple of fixes to queue up from you already
-> and if you can get this one done in the next few days I'll included it
-> as well.
+Has anyone successfully communicated with a compact flash device in true
+IDE mode on the MPC8349eITX? If so, do you happen to know the kernel
+configuration and/or revision?
 
-So I went back in the archives. Somebody else, Thomas Gleixner I
-believe, was already working on the ndfc port. So, since I *had* to
-have a working ndfc, I put a local copy in my kernel and forgot about
-it.
-
-It looks like Thomas has dropped the port. I should probably resubmit
-the patch with the arch/ppc code removed. However, I don't think this
-would be for 2.6.27 timeframe since there will probably be discussion.
-For one, my patch just gets it working... the warp-nand.c file shows
-that it is not a complete solution ;) Second, there are some byte order
-issues.
-
-So could we just leave warp-nand.c "there but disabled" for now?
-
-Cheers,
-   Sean
+I appreciate any help, as I am really getting stuck here.
+Regards,
+Sam
