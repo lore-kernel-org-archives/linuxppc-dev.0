@@ -1,22 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.236])
-	by ozlabs.org (Postfix) with ESMTP id 0B722DDEEF
+Return-Path: <reynekejunk@hotmail.com>
+Received: from bay0-omc2-s5.bay0.hotmail.com (bay0-omc2-s5.bay0.hotmail.com
+	[65.54.246.141]) by ozlabs.org (Postfix) with ESMTP id F3431DE0F6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Aug 2008 12:49:14 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id d11so941607qbd.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Jul 2008 19:49:13 -0700 (PDT)
-Date: Thu, 31 Jul 2008 20:34:12 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Naresh Bhat <nareshgbhat@gmail.com>
-Subject: Re: Board is not booting - Please Help me
-Message-ID: <20080801023412.GA32426@secretlab.ca>
-References: <cf9b3c760807300044y4625ca2am60367defaa98d49b@mail.gmail.com>
+	Fri,  1 Aug 2008 18:28:26 +1000 (EST)
+Message-ID: <BAY101-W342207B5C88AD0881CDC96BE7F0@phx.gbl>
+From: - Reyneke <reynekejunk@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Re: Lost time?
+Date: Fri, 1 Aug 2008 08:28:24 +0000
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cf9b3c760807300044y4625ca2am60367defaa98d49b@mail.gmail.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,25 +20,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 30, 2008 at 01:14:52PM +0530, Naresh Bhat wrote:
-> Hi Guys
-> I have ML507 board.  By using "ml507_bsb_design_ppc440.zip"
-> I have created the "Base System Builder" project and also
-> 
-> I am able to create the following files sucessfully.
-> 
-> 1. My own "DTS" file (attached with the mail)
-> 2. My own "download.bit" file
-> 3. My own ACE file. (Used the Montavista Pro 5.0 kernel., Kernel is compiled
-> with ARCH=powerpc, CROSS_COMPILE=ppc_440-, used the ml507_defconfig)
 
-Unfortunately, I'm not able to help much with the Montavista kernel
-since I don't know anything about which version it is based on.  Have
-you tried using the current mainline kernel source or Xilinx's published
-git repo?
+> Check the kernel's idea of what the timebase frequency is on both kernels=
+.
 
-To use mainline, try copying your .dts file to
-arch/powerpc/boot/dts/virtex440-myml507.dts and then build the kernel
-with 'make simpleImage.virtex440-myml507'
+> check for changes in the U-Boot and your u-Boot environment variables=2C =
+device tree bolb content=2C etc=2C not just the kernel
 
-g.
+
+Thanks for all the feedback. This going to hurt=2C but the problem was emba=
+rrassingly simple. Our CONFIG_SYS_CLK_FREQ in u-boot was wrongly defined (w=
+e did a u-boot upgrade as well - 1.3.3). Instead of 33000000 (doubled 16.5M=
+hz input clock) it was defined as 33333333. And there is your 0.6sec for ev=
+ery 60sec...
+
+Using 20/20 hind site this is the first thing I SHOULD have checked=2C but =
+there you go.
+
+ Regards
+   Jan Reyneke
+
+_________________________________________________________________
+The John Lewis Clearance - save up to 50% with FREE delivery
+http://clk.atdmt.com/UKM/go/101719806/direct/01/=
