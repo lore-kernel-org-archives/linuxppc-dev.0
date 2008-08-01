@@ -1,17 +1,19 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id EBC52DE3E2
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 00:14:36 +1000 (EST)
-Date: Fri, 1 Aug 2008 18:14:35 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 8/8] powerpc: last bits to support kdump on ppc32
-Message-ID: <20080801141435.GH1161@polina.dev.rtsoft.ru>
-References: <20080801141306.GA29127@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4464FDE0BB
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 00:27:23 +1000 (EST)
+Message-Id: <26A28837-B944-4CA6-83B5-5466CF1EDBF3@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
 In-Reply-To: <20080801141306.GA29127@polina.dev.rtsoft.ru>
-Cc: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [RFC][PATCH 0/8] kexec/kdump support for ppc32
+Date: Fri, 1 Aug 2008 09:21:02 -0500
+References: <20080801141306.GA29127@polina.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,62 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Dale Farnsworth <dale@farnsworth.org>
 
-Wire up the trampoline code for ppc32 to relay exceptions from the
-vectors at address 0 to vectors at address 32MB, and modify Kconfig
-to enable Kdump support for all powerpcs (except BookE, for now).
+On Aug 1, 2008, at 9:13 AM, Anton Vorontsov wrote:
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/Kconfig             |    2 +-
- arch/powerpc/kernel/crash_dump.c |    6 +++++-
- arch/powerpc/kernel/setup_32.c   |    2 ++
- 3 files changed, 8 insertions(+), 2 deletions(-)
+> Hi all,
+>
+> I refreshed some Dale Farnsworth's kexec/kdump patches[1] against
+> the latest kernel, and here they are.
+>
+> There is a difference though. Dale's patches were using
+> kmap_atomic_pfn() to map oldmem memory, while for this patches
+> I took PPC64 approach to use ioremap(). This is done to be able
+> to support kdump on !HIGHMEM kernels.
+>
+> Also, please take a special look into 8/8 patch, there is a hunk
+> marked with "XXX:", which I don't quite understand for PPC64 case
+> (this hunk also persist in the original Dale's patch, and w/o it
+> the capturing kernel doesn't boot on ppc32).
+>
+> I'll try to refresh BookE support as soon as I'll find some BookE
+> board.
+>
+> The patchset includes:
+>
+> - Kexec support
+>
+>  [PATCH 1/8] powerpc: set up OF properties for ppc32 kexec
+>  [PATCH 2/8] powerpc: make default kexec/crash_kernel ops implicit
+>  [PATCH 3/8] powerpc: remove default kexec/crash_kernel ops  
+> assignments
+>
+>  2/8 and 3/8 patches are used to avoid adding lots of default ops
+>  to the board files.
+>
+> - Kdump support
+>
+>  [PATCH 4/8] powerpc: add the ability for a classic ppc kernel to be  
+> loaded at 32M
+>  [PATCH 5/8] powerpc: allow to ioremap RAM addresses for kdump  
+> kernel on ppc32
+>  [PATCH 6/8] powerpc: set up OF properties for ppc32 kdump
+>  [PATCH 7/8] powerpc: implement crash_setup_regs for ppc32
+>  [PATCH 8/8] powerpc: last bits to support kdump on ppc32
+>
+> [1] http://ozlabs.org/pipermail/linuxppc-dev/2007-November/046739.html
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 587da5e..006a475 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -321,7 +321,7 @@ config KEXEC
- 
- config CRASH_DUMP
- 	bool "Build a kdump crash kernel"
--	depends on PPC_MULTIPLATFORM && PPC64
-+	depends on PPC_MULTIPLATFORM && !BOOKE
- 	help
- 	  Build a kernel suitable for use as a kdump capture kernel.
- 	  The kernel will be linked at a different address than normal, and
-diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
-index e0debcc..96cd521 100644
---- a/arch/powerpc/kernel/crash_dump.c
-+++ b/arch/powerpc/kernel/crash_dump.c
-@@ -34,7 +34,11 @@ void __init reserve_kdump_trampoline(void)
- 
- static void __init create_trampoline(unsigned long addr)
- {
--	unsigned int *p = (unsigned int *)addr;
-+	unsigned int *p;
-+
-+	/* XXX: why this code is working without += PAGE_OFFSET on PPC64? */
-+	addr += PAGE_OFFSET;
-+	p = (unsigned int *)addr;
- 
- 	/* The maximum range of a single instruction branch, is the current
- 	 * instruction's address + (32 MB - 4) bytes. For the trampoline we
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 066e65c..1d76afc 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -121,6 +121,8 @@ notrace void __init machine_init(unsigned long dt_ptr, unsigned long phys)
- 
- 	probe_machine();
- 
-+	setup_kdump_trampoline();
-+
- #ifdef CONFIG_6xx
- 	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
- 	    cpu_has_feature(CPU_FTR_CAN_NAP))
--- 
-1.5.5.4
+What's the state of the kexec tools for ppc32?
+
+- k
