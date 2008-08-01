@@ -2,18 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C786CDE8E2
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 02:44:28 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 09363DE9C7
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 02:44:31 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/10] fs-enet: remove code associated with !CONFIG_PPC_MERGE
-Date: Fri,  1 Aug 2008 11:44:13 -0500
-Message-Id: <1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1217609060-6381-3-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 06/10] serial/mpc52xx_uart: remove code associated with
+	!CONFIG_PPC_MERGE
+Date: Fri,  1 Aug 2008 11:44:16 -0500
+Message-Id: <1217609060-6381-7-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1217609060-6381-6-git-send-email-galak@kernel.crashing.org>
 References: <1217609060-6381-1-git-send-email-galak@kernel.crashing.org>
 	<1217609060-6381-2-git-send-email-galak@kernel.crashing.org>
 	<1217609060-6381-3-git-send-email-galak@kernel.crashing.org>
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linux-kernel@vger.kernel.org
+	<1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-5-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-6-git-send-email-galak@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,183 +27,296 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that arch/ppc is gone we don't need CONFIG_PPC_MERGE anymore remove
-the dead code associated with !CONFIG_PPC_MERGE.
-
-With this change the pre_request_irq() and post_free_irq() calls became
-nops so they have been removed.
+Now that arch/ppc is gone we don't need CONFIG_PPC_MERGE anymore
+remove the dead code associated with !CONFIG_PPC_MERGE.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- drivers/net/fs_enet/fs_enet-main.c |    2 --
- drivers/net/fs_enet/fs_enet.h      |    2 --
- drivers/net/fs_enet/mac-fcc.c      |   12 ------------
- drivers/net/fs_enet/mac-fec.c      |   30 ------------------------------
- drivers/net/fs_enet/mac-scc.c      |   26 --------------------------
- 5 files changed, 0 insertions(+), 72 deletions(-)
+ drivers/serial/mpc52xx_uart.c |  181 +----------------------------------------
+ 1 files changed, 1 insertions(+), 180 deletions(-)
 
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index 9a51ec8..e54d003 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -669,7 +669,6 @@ static int fs_request_irq(struct net_device *dev, int irq, const char *name,
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 
--	(*fep->ops->pre_request_irq)(dev, irq);
- 	return request_irq(irq, irqf, IRQF_SHARED, name, dev);
- }
- 
-@@ -678,7 +677,6 @@ static void fs_free_irq(struct net_device *dev, int irq)
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 
- 	free_irq(irq, dev);
--	(*fep->ops->post_free_irq)(dev, irq);
- }
- 
- static void fs_timeout(struct net_device *dev)
-diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
-index db46d2e..85a4bab 100644
---- a/drivers/net/fs_enet/fs_enet.h
-+++ b/drivers/net/fs_enet/fs_enet.h
-@@ -34,8 +34,6 @@ struct fs_ops {
- 	void (*adjust_link)(struct net_device *dev);
- 	void (*restart)(struct net_device *dev);
- 	void (*stop)(struct net_device *dev);
--	void (*pre_request_irq)(struct net_device *dev, int irq);
--	void (*post_free_irq)(struct net_device *dev, int irq);
- 	void (*napi_clear_rx_event)(struct net_device *dev);
- 	void (*napi_enable_rx)(struct net_device *dev);
- 	void (*napi_disable_rx)(struct net_device *dev);
-diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
-index 0a97fc2..b8c40d0 100644
---- a/drivers/net/fs_enet/mac-fcc.c
-+++ b/drivers/net/fs_enet/mac-fcc.c
-@@ -421,16 +421,6 @@ static void stop(struct net_device *dev)
- 	fs_cleanup_bds(dev);
- }
- 
--static void pre_request_irq(struct net_device *dev, int irq)
--{
--	/* nothing */
--}
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index 3612607..6117d3d 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -72,13 +72,8 @@
+ #include <linux/console.h>
+ #include <linux/delay.h>
+ #include <linux/io.h>
 -
--static void post_free_irq(struct net_device *dev, int irq)
--{
--	/* nothing */
--}
--
- static void napi_clear_rx_event(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
-@@ -540,8 +530,6 @@ const struct fs_ops fs_fcc_ops = {
- 	.set_multicast_list	= set_multicast_list,
- 	.restart		= restart,
- 	.stop			= stop,
--	.pre_request_irq	= pre_request_irq,
--	.post_free_irq		= post_free_irq,
- 	.napi_clear_rx_event	= napi_clear_rx_event,
- 	.napi_enable_rx		= napi_enable_rx,
- 	.napi_disable_rx	= napi_disable_rx,
-diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
-index 0a7d1c5..14e5753 100644
---- a/drivers/net/fs_enet/mac-fec.c
-+++ b/drivers/net/fs_enet/mac-fec.c
-@@ -313,11 +313,7 @@ static void restart(struct net_device *dev)
- 	 * Clear any outstanding interrupt.
- 	 */
- 	FW(fecp, ievent, 0xffc0);
--#ifndef CONFIG_PPC_MERGE
--	FW(fecp, ivec, (fep->interrupt / 2) << 29);
+-#if defined(CONFIG_PPC_MERGE)
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
 -#else
- 	FW(fecp, ivec, (virq_to_hw(fep->interrupt) / 2) << 29);
+-#include <linux/platform_device.h>
 -#endif
  
+ #include <asm/mpc52xx.h>
+ #include <asm/mpc512x.h>
+@@ -107,12 +102,11 @@ static struct uart_port mpc52xx_uart_ports[MPC52xx_PSC_MAXNUM];
+ 	 *        it's cleared, then a memset(...,0,...) should be added to
+ 	 *        the console_init
+ 	 */
+-#if defined(CONFIG_PPC_MERGE)
++
+ /* lookup table for matching device nodes to index numbers */
+ static struct device_node *mpc52xx_uart_nodes[MPC52xx_PSC_MAXNUM];
+ 
+ static void mpc52xx_uart_of_enumerate(void);
+-#endif
+ 
+ 
+ #define PSC(port) ((struct mpc52xx_psc __iomem *)((port)->membase))
+@@ -255,17 +249,12 @@ static void mpc52xx_psc_cw_restore_ints(struct uart_port *port)
+ /* Search for bus-frequency property in this node or a parent */
+ static unsigned long mpc52xx_getuartclk(void *p)
+ {
+-#if defined(CONFIG_PPC_MERGE)
  	/*
- 	 * adjust to speed (only for DUET & RMII)
-@@ -413,30 +409,6 @@ static void stop(struct net_device *dev)
+ 	 * 5200 UARTs have a / 32 prescaler
+ 	 * but the generic serial code assumes 16
+ 	 * so return ipb freq / 2
+ 	 */
+ 	return mpc52xx_find_ipb_freq(p) / 2;
+-#else
+-	pr_debug("unexpected call to mpc52xx_getuartclk with arch/ppc\n");
+-	return NULL;
+-#endif
+ }
+ 
+ static struct psc_ops mpc52xx_psc_ops = {
+@@ -886,10 +875,6 @@ mpc52xx_console_get_options(struct uart_port *port,
+ 
+ 	/* CT{U,L}R are write-only ! */
+ 	*baud = CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD;
+-#if !defined(CONFIG_PPC_MERGE)
+-	if (__res.bi_baudrate)
+-		*baud = __res.bi_baudrate;
+-#endif
+ 
+ 	/* Parse them */
+ 	switch (mr1 & MPC52xx_PSC_MODE_BITS_MASK) {
+@@ -946,42 +931,6 @@ mpc52xx_console_write(struct console *co, const char *s, unsigned int count)
+ 	psc_ops->cw_restore_ints(port);
+ }
+ 
+-#if !defined(CONFIG_PPC_MERGE)
+-static int __init
+-mpc52xx_console_setup(struct console *co, char *options)
+-{
+-	struct uart_port *port = &mpc52xx_uart_ports[co->index];
+-
+-	int baud = CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD;
+-	int bits = 8;
+-	int parity = 'n';
+-	int flow = 'n';
+-
+-	if (co->index < 0 || co->index >= MPC52xx_PSC_MAXNUM)
+-		return -EINVAL;
+-
+-	/* Basic port init. Needed since we use some uart_??? func before
+-	 * real init for early access */
+-	spin_lock_init(&port->lock);
+-	port->uartclk	= __res.bi_ipbfreq / 2; /* Look at CTLR doc */
+-	port->ops	= &mpc52xx_uart_ops;
+-	port->mapbase	= MPC52xx_PA(MPC52xx_PSCx_OFFSET(co->index+1));
+-
+-	/* We ioremap ourself */
+-	port->membase = ioremap(port->mapbase, MPC52xx_PSC_SIZE);
+-	if (port->membase == NULL)
+-		return -EINVAL;
+-
+-	/* Setup the port parameters accoding to options */
+-	if (options)
+-		uart_parse_options(options, &baud, &parity, &bits, &flow);
+-	else
+-		mpc52xx_console_get_options(port, &baud, &parity, &bits, &flow);
+-
+-	return uart_set_options(port, co, baud, parity, bits, flow);
+-}
+-
+-#else
+ 
+ static int __init
+ mpc52xx_console_setup(struct console *co, char *options)
+@@ -1053,7 +1002,6 @@ mpc52xx_console_setup(struct console *co, char *options)
+ 
+ 	return uart_set_options(port, co, baud, parity, bits, flow);
+ }
+-#endif /* defined(CONFIG_PPC_MERGE) */
+ 
+ 
+ static struct uart_driver mpc52xx_uart_driver;
+@@ -1072,9 +1020,7 @@ static struct console mpc52xx_console = {
+ static int __init
+ mpc52xx_console_init(void)
+ {
+-#if defined(CONFIG_PPC_MERGE)
+ 	mpc52xx_uart_of_enumerate();
+-#endif
+ 	register_console(&mpc52xx_console);
+ 	return 0;
+ }
+@@ -1100,115 +1046,6 @@ static struct uart_driver mpc52xx_uart_driver = {
+ 	.cons		= MPC52xx_PSC_CONSOLE,
+ };
+ 
+-
+-#if !defined(CONFIG_PPC_MERGE)
+-/* ======================================================================== */
+-/* Platform Driver                                                          */
+-/* ======================================================================== */
+-
+-static int __devinit
+-mpc52xx_uart_probe(struct platform_device *dev)
+-{
+-	struct resource *res = dev->resource;
+-
+-	struct uart_port *port = NULL;
+-	int i, idx, ret;
+-
+-	/* Check validity & presence */
+-	idx = dev->id;
+-	if (idx < 0 || idx >= MPC52xx_PSC_MAXNUM)
+-		return -EINVAL;
+-
+-	if (!mpc52xx_match_psc_function(idx, "uart"))
+-		return -ENODEV;
+-
+-	/* Init the port structure */
+-	port = &mpc52xx_uart_ports[idx];
+-
+-	spin_lock_init(&port->lock);
+-	port->uartclk	= __res.bi_ipbfreq / 2; /* Look at CTLR doc */
+-	port->fifosize	= 512;
+-	port->iotype	= UPIO_MEM;
+-	port->flags	= UPF_BOOT_AUTOCONF |
+-			  (uart_console(port) ? 0 : UPF_IOREMAP);
+-	port->line	= idx;
+-	port->ops	= &mpc52xx_uart_ops;
+-	port->dev	= &dev->dev;
+-
+-	/* Search for IRQ and mapbase */
+-	for (i = 0 ; i < dev->num_resources ; i++, res++) {
+-		if (res->flags & IORESOURCE_MEM)
+-			port->mapbase = res->start;
+-		else if (res->flags & IORESOURCE_IRQ)
+-			port->irq = res->start;
+-	}
+-	if (!port->irq || !port->mapbase)
+-		return -EINVAL;
+-
+-	/* Add the port to the uart sub-system */
+-	ret = uart_add_one_port(&mpc52xx_uart_driver, port);
+-	if (!ret)
+-		platform_set_drvdata(dev, (void *)port);
+-
+-	return ret;
+-}
+-
+-static int
+-mpc52xx_uart_remove(struct platform_device *dev)
+-{
+-	struct uart_port *port = (struct uart_port *) platform_get_drvdata(dev);
+-
+-	platform_set_drvdata(dev, NULL);
+-
+-	if (port)
+-		uart_remove_one_port(&mpc52xx_uart_driver, port);
+-
+-	return 0;
+-}
+-
+-#ifdef CONFIG_PM
+-static int
+-mpc52xx_uart_suspend(struct platform_device *dev, pm_message_t state)
+-{
+-	struct uart_port *port = (struct uart_port *) platform_get_drvdata(dev);
+-
+-	if (port)
+-		uart_suspend_port(&mpc52xx_uart_driver, port);
+-
+-	return 0;
+-}
+-
+-static int
+-mpc52xx_uart_resume(struct platform_device *dev)
+-{
+-	struct uart_port *port = (struct uart_port *) platform_get_drvdata(dev);
+-
+-	if (port)
+-		uart_resume_port(&mpc52xx_uart_driver, port);
+-
+-	return 0;
+-}
+-#endif
+-
+-/* work with hotplug and coldplug */
+-MODULE_ALIAS("platform:mpc52xx-psc");
+-
+-static struct platform_driver mpc52xx_uart_platform_driver = {
+-	.probe		= mpc52xx_uart_probe,
+-	.remove		= mpc52xx_uart_remove,
+-#ifdef CONFIG_PM
+-	.suspend	= mpc52xx_uart_suspend,
+-	.resume		= mpc52xx_uart_resume,
+-#endif
+-	.driver		= {
+-		.owner	= THIS_MODULE,
+-		.name	= "mpc52xx-psc",
+-	},
+-};
+-#endif /* !defined(CONFIG_PPC_MERGE) */
+-
+-
+-#if defined(CONFIG_PPC_MERGE)
+ /* ======================================================================== */
+ /* OF Platform Driver                                                       */
+ /* ======================================================================== */
+@@ -1402,7 +1239,6 @@ static struct of_platform_driver mpc52xx_uart_of_driver = {
+ 		.name	= "mpc52xx-psc-uart",
+ 	},
+ };
+-#endif /* defined(CONFIG_PPC_MERGE) */
+ 
+ 
+ /* ======================================================================== */
+@@ -1423,7 +1259,6 @@ mpc52xx_uart_init(void)
+ 		return ret;
  	}
- }
  
--static void pre_request_irq(struct net_device *dev, int irq)
--{
--#ifndef CONFIG_PPC_MERGE
--	immap_t *immap = fs_enet_immap;
--	u32 siel;
--
--	/* SIU interrupt */
--	if (irq >= SIU_IRQ0 && irq < SIU_LEVEL7) {
--
--		siel = in_be32(&immap->im_siu_conf.sc_siel);
--		if ((irq & 1) == 0)
--			siel |= (0x80000000 >> irq);
--		else
--			siel &= ~(0x80000000 >> (irq & ~1));
--		out_be32(&immap->im_siu_conf.sc_siel, siel);
+-#if defined(CONFIG_PPC_MERGE)
+ 	mpc52xx_uart_of_enumerate();
+ 
+ 	ret = of_register_platform_driver(&mpc52xx_uart_of_driver);
+@@ -1433,16 +1268,6 @@ mpc52xx_uart_init(void)
+ 		uart_unregister_driver(&mpc52xx_uart_driver);
+ 		return ret;
+ 	}
+-#else
+-	psc_ops = &mpc52xx_psc_ops;
+-	ret = platform_driver_register(&mpc52xx_uart_platform_driver);
+-	if (ret) {
+-		printk(KERN_ERR "%s: platform_driver_register failed (%i)\n",
+-		       __FILE__, ret);
+-		uart_unregister_driver(&mpc52xx_uart_driver);
+-		return ret;
 -	}
 -#endif
--}
--
--static void post_free_irq(struct net_device *dev, int irq)
--{
--	/* nothing */
--}
--
- static void napi_clear_rx_event(struct net_device *dev)
+ 
+ 	return 0;
+ }
+@@ -1450,11 +1275,7 @@ mpc52xx_uart_init(void)
+ static void __exit
+ mpc52xx_uart_exit(void)
  {
- 	struct fs_enet_private *fep = netdev_priv(dev);
-@@ -529,8 +501,6 @@ const struct fs_ops fs_fec_ops = {
- 	.set_multicast_list	= set_multicast_list,
- 	.restart		= restart,
- 	.stop			= stop,
--	.pre_request_irq	= pre_request_irq,
--	.post_free_irq		= post_free_irq,
- 	.napi_clear_rx_event	= napi_clear_rx_event,
- 	.napi_enable_rx		= napi_enable_rx,
- 	.napi_disable_rx	= napi_disable_rx,
-diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
-index 029b3c7..397608a 100644
---- a/drivers/net/fs_enet/mac-scc.c
-+++ b/drivers/net/fs_enet/mac-scc.c
-@@ -371,30 +371,6 @@ static void stop(struct net_device *dev)
- 	fs_cleanup_bds(dev);
+-#if defined(CONFIG_PPC_MERGE)
+ 	of_unregister_platform_driver(&mpc52xx_uart_of_driver);
+-#else
+-	platform_driver_unregister(&mpc52xx_uart_platform_driver);
+-#endif
+ 	uart_unregister_driver(&mpc52xx_uart_driver);
  }
  
--static void pre_request_irq(struct net_device *dev, int irq)
--{
--#ifndef CONFIG_PPC_MERGE
--	immap_t *immap = fs_enet_immap;
--	u32 siel;
--
--	/* SIU interrupt */
--	if (irq >= SIU_IRQ0 && irq < SIU_LEVEL7) {
--
--		siel = in_be32(&immap->im_siu_conf.sc_siel);
--		if ((irq & 1) == 0)
--			siel |= (0x80000000 >> irq);
--		else
--			siel &= ~(0x80000000 >> (irq & ~1));
--		out_be32(&immap->im_siu_conf.sc_siel, siel);
--	}
--#endif
--}
--
--static void post_free_irq(struct net_device *dev, int irq)
--{
--	/* nothing */
--}
--
- static void napi_clear_rx_event(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
-@@ -488,8 +464,6 @@ const struct fs_ops fs_scc_ops = {
- 	.set_multicast_list	= set_multicast_list,
- 	.restart		= restart,
- 	.stop			= stop,
--	.pre_request_irq	= pre_request_irq,
--	.post_free_irq		= post_free_irq,
- 	.napi_clear_rx_event	= napi_clear_rx_event,
- 	.napi_enable_rx		= napi_enable_rx,
- 	.napi_disable_rx	= napi_disable_rx,
 -- 
 1.5.5.1
