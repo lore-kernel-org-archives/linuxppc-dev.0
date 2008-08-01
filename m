@@ -1,25 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 1B1CBDDFBD
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 14:28:02 +1000 (EST)
-Date: Fri, 1 Aug 2008 14:27:54 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH] Revert "Merge branch 'x86/iommu' of
-	git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-	into for-linus"
-Message-Id: <20080801142754.8a6314fa.sfr@canb.auug.org.au>
-In-Reply-To: <20080801085106E.fujita.tomonori@lab.ntt.co.jp>
-References: <20080801094323.9601d87b.sfr@canb.auug.org.au>
-	<20080801085106E.fujita.tomonori@lab.ntt.co.jp>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: Board level compatibility matching
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20080801032533.GB6595@secretlab.ca>
+References: <fa686aa40807311319k44d270b0t4fa9cb0e6523339@mail.gmail.com>
+	<20080801025439.GB5008@yookeroo.seuss>
+	<20080801032533.GB6595@secretlab.ca>
+Content-Type: text/plain
+Date: Fri, 01 Aug 2008 14:25:39 +1000
+Message-Id: <1217564739.11188.482.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__1_Aug_2008_14_27_54_+1000_qszNvBgVVH.GLi2S"
-Cc: joerg.roedel@amd.com, linux-kernel@vger.kernel.org,
-	jbarnes@virtuousgeek.org, davem@davemloft.net,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	akpm@linux-foundation.org, torvalds@linux-foundation.org, mingo@elte.hu
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, devicetree-discuss@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,35 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__1_Aug_2008_14_27_54_+1000_qszNvBgVVH.GLi2S
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+About this whole generic board mumbo-jumbo: not happening. It's a pipe
+dream, it doesn't work, and it leads to the sort of mess we have in chrp
+where we end up having hacks to identify what exact sort of chrp we have
+and do things differently etc...
 
-On Fri, 1 Aug 2008 08:51:23 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.=
-co.jp> wrote:
->
-> Ingo has a patch to fix this problem in the x86 tree:
->=20
-> http://marc.info/?l=3Dlinux-kernel&m=3D121754062325903&w=3D2
+NOT HAPPENING.
 
-Then consider this a poke (to the appropriate person) to get something
-merged to fix the breakage.
+Now, there are two approaches here that are possible:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ - Your board is really pretty much exactly the same as board XXX,
+except maybe you have a different flash size or such, and the support
+for board XXX can cope perfectly with it simply due to the device-tree
+the right information.
 
---Signature=_Fri__1_Aug_2008_14_27_54_+1000_qszNvBgVVH.GLi2S
-Content-Type: application/pgp-signature
+If that happens to be the case, make your board compatible with board
+XXX. Make that entry -second- in your compatible list, because one day
+you'll figure out that there -is- indeed a difference and I don't want
+to see board XXX code start to grow code to recognise your other board
+and work around the difference. So at that stage, copy board XXX.c file
+and start over with your own board support that matches on your first
+compatible propery entry.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+ - Once you figure out that really, those 5 boards here -do- share 99%
+of the code... it's just that one need a workaround at the IRQ fixup
+level, maybe one needs a tweak on a GPIO at boot and one has an issue on
+reboot that needs to be whacked a bit differently ... well, make
+-library- code.
 
-iEYEARECAAYFAkiSkMoACgkQjjKRsyhoI8yagACggFN1tewSUDhrbrS2gXAidcpg
-G+kAoK6AyhTIH4M2HSa8kfdfbTps5BPG
-=avUC
------END PGP SIGNATURE-----
+I have no objection of having something like for each ppc_md field
+called X, having a utility file providing an mpc52xx_generic_X function.
+Such a board could then basically have a small .c file whose ppc_md just
+use the generic functions for all except the ones that need to be
+hooked/wrapped/replaced/whatever.
 
---Signature=_Fri__1_Aug_2008_14_27_54_+1000_qszNvBgVVH.GLi2S--
+In fact, if you start from the first approach, and then decide that you
+need to split off board XXX, it's legit to move some of board XXX ppc_md
+functions to such a library if you believe they can be of use to a few
+other boards, try to be a bit creative with the name tho :-)
+
+It's then just a matter of doing the right Kconfig select of
+non-user-visible options for your board support to build in the right
+libraries it needs.
+
+Ben.
