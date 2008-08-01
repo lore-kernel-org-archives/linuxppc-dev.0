@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 4D558DE3C0
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 00:14:18 +1000 (EST)
-Date: Fri, 1 Aug 2008 18:14:14 +0400
+	by ozlabs.org (Postfix) with ESMTP id 483FBDDF1B
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 00:14:20 +1000 (EST)
+Date: Fri, 1 Aug 2008 18:14:18 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/8] powerpc: set up OF properties for ppc32 kexec
-Message-ID: <20080801141414.GA1161@polina.dev.rtsoft.ru>
+Subject: [PATCH 3/8] powerpc: remove default kexec/crash_kernel ops assignments
+Message-ID: <20080801141418.GC1161@polina.dev.rtsoft.ru>
 References: <20080801141306.GA29127@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -21,113 +21,183 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Dale Farnsworth <dale@farnsworth.org>
+Default ops are implicit now.
 
-Refactor the setting of kexec OF properties, moving the common code
-from machine_kexec_64.c to machine_kexec.c where it can be used on
-both ppc64 and ppc32.  This is needed for kexec to work on ppc32
-platforms.
-
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/kernel/machine_kexec.c    |   27 +++++++++++++++++++++++++++
- arch/powerpc/kernel/machine_kexec_64.c |   20 +++++---------------
- 2 files changed, 32 insertions(+), 15 deletions(-)
+ arch/powerpc/platforms/cell/celleb_setup.c     |    9 ---------
+ arch/powerpc/platforms/cell/setup.c            |    6 ------
+ arch/powerpc/platforms/embedded6xx/c2k.c       |    6 ------
+ arch/powerpc/platforms/embedded6xx/prpmc2800.c |    6 ------
+ arch/powerpc/platforms/maple/setup.c           |    6 ------
+ arch/powerpc/platforms/powermac/setup.c        |    6 ------
+ arch/powerpc/platforms/ps3/setup.c             |    4 ----
+ 7 files changed, 0 insertions(+), 43 deletions(-)
 
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index aab7688..a625673 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -13,8 +13,10 @@
- #include <linux/reboot.h>
- #include <linux/threads.h>
- #include <linux/lmb.h>
-+#include <linux/of.h>
- #include <asm/machdep.h>
+diff --git a/arch/powerpc/platforms/cell/celleb_setup.c b/arch/powerpc/platforms/cell/celleb_setup.c
+index b11cb30..07c234f 100644
+--- a/arch/powerpc/platforms/cell/celleb_setup.c
++++ b/arch/powerpc/platforms/cell/celleb_setup.c
+@@ -45,7 +45,6 @@
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+ #include <asm/io.h>
+-#include <asm/kexec.h>
  #include <asm/prom.h>
-+#include <asm/sections.h>
- 
- void machine_crash_shutdown(struct pt_regs *regs)
- {
-@@ -116,3 +118,28 @@ int overlaps_crashkernel(unsigned long start, unsigned long size)
- {
- 	return (start + size) > crashk_res.start && start <= crashk_res.end;
- }
-+
-+/* Values we need to export to the second kernel via the device tree. */
-+static unsigned long kernel_end;
-+
-+static struct property kernel_end_prop = {
-+	.name = "linux,kernel-end",
-+	.length = sizeof(unsigned long),
-+	.value = &kernel_end,
-+};
-+
-+static int __init kexec_setup(void)
-+{
-+	struct device_node *node;
-+
-+	node = of_find_node_by_path("/chosen");
-+	if (!node)
-+		return -ENOENT;
-+
-+	kernel_end = __pa(_end);
-+	prom_add_property(node, &kernel_end_prop);
-+
-+	of_node_put(node);
-+	return 0;
-+}
-+__initcall(kexec_setup);
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index a168514..c30678d 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -289,7 +289,7 @@ void default_machine_kexec(struct kimage *image)
- }
- 
- /* Values we need to export to the second kernel via the device tree. */
--static unsigned long htab_base, kernel_end;
-+static unsigned long htab_base;
- 
- static struct property htab_base_prop = {
- 	.name = "linux,htab-base",
-@@ -303,32 +303,22 @@ static struct property htab_size_prop = {
- 	.value = &htab_size_bytes,
+ #include <asm/machdep.h>
+ #include <asm/cputable.h>
+@@ -226,9 +225,6 @@ define_machine(celleb_beat) {
+ 	.pci_setup_phb		= celleb_setup_phb,
+ #ifdef CONFIG_KEXEC
+ 	.kexec_cpu_down		= beat_kexec_cpu_down,
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+ #endif
  };
  
--static struct property kernel_end_prop = {
--	.name = "linux,kernel-end",
--	.length = sizeof(unsigned long),
--	.value = &kernel_end,
--};
--
- static void __init export_htab_values(void)
- {
- 	struct device_node *node;
+@@ -248,9 +244,4 @@ define_machine(celleb_native) {
+ 	.pci_probe_mode 	= celleb_pci_probe_mode,
+ 	.pci_setup_phb		= celleb_setup_phb,
+ 	.init_IRQ		= celleb_init_IRQ_native,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ };
+diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
+index ab721b5..5930536 100644
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -35,7 +35,6 @@
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+ #include <asm/io.h>
+-#include <asm/kexec.h>
+ #include <asm/pgtable.h>
+ #include <asm/prom.h>
+ #include <asm/rtas.h>
+@@ -289,9 +288,4 @@ define_machine(cell) {
+ 	.progress		= cell_progress,
+ 	.init_IRQ       	= cell_init_irq,
+ 	.pci_setup_phb		= cell_setup_phb,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ };
+diff --git a/arch/powerpc/platforms/embedded6xx/c2k.c b/arch/powerpc/platforms/embedded6xx/c2k.c
+index d0b25b8..19d3bc4 100644
+--- a/arch/powerpc/platforms/embedded6xx/c2k.c
++++ b/arch/powerpc/platforms/embedded6xx/c2k.c
+@@ -20,7 +20,6 @@
+ #include <linux/seq_file.h>
+ #include <linux/time.h>
+ #include <linux/of.h>
+-#include <linux/kexec.h>
  
-+	/* On machines with no htab htab_address is NULL */
-+	if (NULL == htab_address)
-+		return;
-+
- 	node = of_find_node_by_path("/chosen");
- 	if (!node)
- 		return;
+ #include <asm/machdep.h>
+ #include <asm/prom.h>
+@@ -150,9 +149,4 @@ define_machine(c2k) {
+ 	.get_irq		= mv64x60_get_irq,
+ 	.restart		= c2k_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ };
+diff --git a/arch/powerpc/platforms/embedded6xx/prpmc2800.c b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
+index 5a19b9a..e40b5a8 100644
+--- a/arch/powerpc/platforms/embedded6xx/prpmc2800.c
++++ b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
+@@ -19,7 +19,6 @@
+ #include <asm/prom.h>
+ #include <asm/system.h>
+ #include <asm/time.h>
+-#include <asm/kexec.h>
  
--	kernel_end = __pa(_end);
--	prom_add_property(node, &kernel_end_prop);
--
--	/* On machines with no htab htab_address is NULL */
--	if (NULL == htab_address)
--		goto out;
--
- 	htab_base = __pa(htab_address);
- 	prom_add_property(node, &htab_base_prop);
- 	prom_add_property(node, &htab_size_prop);
+ #include <mm/mmu_decl.h>
  
-- out:
- 	of_node_put(node);
- }
+@@ -158,9 +157,4 @@ define_machine(prpmc2800){
+ 	.get_irq		= mv64x60_get_irq,
+ 	.restart		= prpmc2800_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ };
+diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
+index 3647147..1be9b7c 100644
+--- a/arch/powerpc/platforms/maple/setup.c
++++ b/arch/powerpc/platforms/maple/setup.c
+@@ -51,7 +51,6 @@
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+ #include <asm/io.h>
+-#include <asm/kexec.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/iommu.h>
+ #include <asm/machdep.h>
+@@ -336,9 +335,4 @@ define_machine(maple) {
+       	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= maple_progress,
+ 	.power_save		= power4_idle,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ };
+diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
+index 88ccf3a..5e0999b 100644
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -61,7 +61,6 @@
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+ #include <asm/io.h>
+-#include <asm/kexec.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/ohare.h>
+ #include <asm/mediabay.h>
+@@ -741,11 +740,6 @@ define_machine(powermac) {
+ 	.pci_probe_mode		= pmac_pci_probe_mode,
+ 	.power_save		= power4_idle,
+ 	.enable_pmcs		= power4_enable_pmcs,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ #endif /* CONFIG_PPC64 */
+ #ifdef CONFIG_PPC32
+ 	.pcibios_enable_device_hook = pmac_pci_enable_device_hook,
+diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
+index a413abb..a8b99a6 100644
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -23,7 +23,6 @@
+ #include <linux/fs.h>
+ #include <linux/root_dev.h>
+ #include <linux/console.h>
+-#include <linux/kexec.h>
+ #include <linux/bootmem.h>
  
+ #include <asm/machdep.h>
+@@ -278,8 +277,5 @@ define_machine(ps3) {
+ 	.halt				= ps3_halt,
+ #if defined(CONFIG_KEXEC)
+ 	.kexec_cpu_down			= ps3_kexec_cpu_down,
+-	.machine_kexec			= default_machine_kexec,
+-	.machine_kexec_prepare		= default_machine_kexec_prepare,
+-	.machine_crash_shutdown		= default_machine_crash_shutdown,
+ #endif
+ };
 -- 
 1.5.5.4
