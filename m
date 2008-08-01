@@ -1,24 +1,37 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910808010905s2207ac4cn9cd7729045aa1908@mail.gmail.com>
-Date: Fri, 1 Aug 2008 12:05:32 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: [i2c] [PATCH] powerpc: i2c-mpc: make speed registers configurable
-	via FDT
-In-Reply-To: <48932579.3040705@freescale.com>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A6D4FDE1D2
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 02:16:33 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id m71GFuA7006595
+	for <linuxppc-dev@ozlabs.org>; Sat, 2 Aug 2008 02:15:56 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m71GGA3U301654
+	for <linuxppc-dev@ozlabs.org>; Sat, 2 Aug 2008 02:16:10 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m71GGAgR000336
+	for <linuxppc-dev@ozlabs.org>; Sat, 2 Aug 2008 02:16:10 +1000
+Message-ID: <489336C7.8010605@linux.vnet.ibm.com>
+Date: Fri, 01 Aug 2008 21:46:07 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4889EFFE.2070201@grandegger.com> <489200B6.9060906@freescale.com>
-	<20080731182810.GB29097@secretlab.ca>
-	<48920607.5040606@freescale.com>
-	<9e4733910807311157q358640ddyef1f14865c069b8@mail.gmail.com>
-	<Pine.LNX.4.58.0807311656250.10341@shell4.speakeasy.net>
-	<9e4733910807311819i60872285ga4829c841185fdc0@mail.gmail.com>
-	<Pine.LNX.4.58.0807311828580.10341@shell4.speakeasy.net>
-	<9e4733910807311844p142b26ffyb4105df3e136f65@mail.gmail.com>
-	<48932579.3040705@freescale.com>
-Cc: Trent Piepho <xyzzy@speakeasy.org>, Linuxppc-dev@ozlabs.org,
-	Linux I2C <i2c@lm-sensors.org>, Scott Wood <scottwood@freescale.com>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: [BUILD-FAILURE] 2.6.27-rc1-mm1 - allyesconfig build fails on
+	powerpc
+References: <20080731000354.24b55d5b.akpm@linux-foundation.org>
+	<4891B370.5040208@linux.vnet.ibm.com>
+	<20080801052936.GZ20457@bakeyournoodle.com>
+In-Reply-To: <20080801052936.GZ20457@bakeyournoodle.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,27 +41,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 8/1/08, Timur Tabi <timur@freescale.com> wrote:
-> Jon Smirl wrote:
->
->
-> > What about the Efika which is mpc5200 based and doesn't use uboot?
-> >
->
->  How does the Efika handle the dozen other properties that U-Boot normally
-> initializes in the device tree?
+Tony Breeds wrote:
+> On Thu, Jul 31, 2008 at 06:13:28PM +0530, Kamalesh Babulal wrote:
+>> Hi Andrew,
+>>
+>> make allyesconfig with 2.6.27-rc1-mm1 kernel on powerpc fails with build error
+> 
+> <snip>
+> 
+> Turning off GCOV "fixes" this.  Not really the best solution but at
+> least it narrows doen the search effort.
 
-Efika is like the original OpenFirmware. It has a Forth interpreter
-and builds the device tree itself. It doesn't use flat device trees
-that get filled in by the boot firmware.
-
->
->  --
->  Timur Tabi
->  Linux Kernel Developer @ Freescale
->
+Thanks, kernel compiles after turning off the GCOV profiling options.
+> 
+> Peter,
+> 	Can you have a look at how this can be fixed, if at all?
+Peter, 
+	kindly let me know if you want me to test any test patches/fixes.
+> 
+> Yours Tony
+> 
+>   linux.conf.au    http://www.marchsouth.org/
+>   Jan 19 - 24 2009 The Australian Linux Technical Conference!
+> 
 
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
