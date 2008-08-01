@@ -1,20 +1,16 @@
-Return-Path: <SSparks@aclaratech.com>
-Received: from SG2EHSOBE003.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 5922DDE31E
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 02:00:31 +1000 (EST)
-Received: from mail166-sin (localhost.localdomain [127.0.0.1])	by
-	mail166-sin-R.bigfish.com (Postfix) with ESMTP id 92CCC16F8278	for
-	<linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 16:00:27 +0000 (UTC)
-Received: from acl-exch.aclaratech.com (unknown [68.89.149.23])	by
-	mail166-sin.bigfish.com (Postfix) with ESMTP id 5AF1684005C	for
-	<linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 16:00:26 +0000 (UTC)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: Compact flash on mpc8349eITX
-Date: Fri, 1 Aug 2008 10:58:58 -0500
-Message-ID: <6011A7C9CD0EE74792C3ED2A835560863421AB@mail.twacs.com>
-From: "Sparks, Sam" <SSparks@aclaratech.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <imp@bsdimp.com>
+Date: Fri, 01 Aug 2008 10:01:07 -0600 (MDT)
+Message-Id: <20080801.100107.-1666252871.imp@bsdimp.com>
+To: jwboyer@linux.vnet.ibm.com
+Subject: Re: Board level compatibility matching
+From: "M. Warner Losh" <imp@bsdimp.com>
+In-Reply-To: <20080801111141.3543e23b@zod.rchland.ibm.com>
+References: <1217564739.11188.482.camel@pasglop>
+	<fa686aa40808010727v53fe3580q2813a12cb66f8f68@mail.gmail.com>
+	<20080801111141.3543e23b@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: devicetree-discuss@ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm trying to get the compact flash up and running on an mpc8349eITX,
-and am continually running into issues where the IRQ is not processed,
-and the mmio commands are not getting response. At this point, I am
-starting to suspect a HW issue, but I was hoping to verify that I am
-using a known good kernel configuration.
+I'd float a radical definition of 'compatible' here.
 
-Has anyone successfully communicated with a compact flash device in true
-IDE mode on the MPC8349eITX? If so, do you happen to know the kernel
-configuration and/or revision?
+If the generic code can handle it with just changes to the device
+tree, then it is compatible.  And by generic code, I wouldn't suggest
+a twisty maze of ifdefs or special case hacks.  I'm talking truly
+generic code that is table driven entirely from the dtc.  If you need
+special C code to initialize the board, then it isn't compatible.
 
-I appreciate any help, as I am really getting stuck here.
-Regards,
-Sam
+This is exactly analogous to the pc-net driver supporting dozens of
+different cards that differ only in their ID.  Are all these cards
+100% the same: no.  There's plenty of differences between them.
+However, the pc-net driver copes with the small differences so that
+one driver can handle most of the ne2000 class of network cards.
+
+Are there special drivers for ne2000-like cards that aren't quite
+compatible enough or have extra features, sure.
+
+That doesn't totally invalidate the utility.  There are always
+engineering trade offs to be made.
+
+Warner
