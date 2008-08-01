@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 6325ADE49C
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 00:14:27 +1000 (EST)
-Date: Fri, 1 Aug 2008 18:14:25 +0400
+	by ozlabs.org (Postfix) with ESMTP id 8AD2DDE43C
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 00:14:29 +1000 (EST)
+Date: Fri, 1 Aug 2008 18:14:27 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 6/8] powerpc: set up OF properties for ppc32 kdump
-Message-ID: <20080801141425.GF1161@polina.dev.rtsoft.ru>
+Subject: [PATCH 7/8] powerpc: implement crash_setup_regs for ppc32
+Message-ID: <20080801141427.GG1161@polina.dev.rtsoft.ru>
 References: <20080801141306.GA29127@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -23,137 +23,98 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Dale Farnsworth <dale@farnsworth.org>
 
-Refactor the setting of kexec OF properties, moving the common code
-from machine_kexec_64.c to machine_kexec.c where it can be used on
-both ppc64 and ppc32.  This will be needed for kdump to work on ppc32
-platforms.
-
 Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/kernel/machine_kexec.c    |   38 ++++++++++++++++++++++++++++
- arch/powerpc/kernel/machine_kexec_64.c |   43 --------------------------------
- 2 files changed, 38 insertions(+), 43 deletions(-)
+ include/asm-powerpc/kexec.h |   60 ++++++++++++++++++++++++++++++++++++------
+ 1 files changed, 51 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index ac42cfb..bfef717 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -117,6 +117,7 @@ int overlaps_crashkernel(unsigned long start, unsigned long size)
+diff --git a/include/asm-powerpc/kexec.h b/include/asm-powerpc/kexec.h
+index acdcdc6..9ecc307 100644
+--- a/include/asm-powerpc/kexec.h
++++ b/include/asm-powerpc/kexec.h
+@@ -38,7 +38,6 @@ typedef void (*crash_shutdown_t)(void);
  
- /* Values we need to export to the second kernel via the device tree. */
- static unsigned long kernel_end;
-+static unsigned long crashk_size;
+ #ifdef CONFIG_KEXEC
  
- static struct property kernel_end_prop = {
- 	.name = "linux,kernel-end",
-@@ -124,6 +125,41 @@ static struct property kernel_end_prop = {
- 	.value = &kernel_end,
- };
- 
-+static struct property crashk_base_prop = {
-+	.name = "linux,crashkernel-base",
-+	.length = sizeof(unsigned long),
-+	.value = &crashk_res.start,
-+};
-+
-+static struct property crashk_size_prop = {
-+	.name = "linux,crashkernel-size",
-+	.length = sizeof(unsigned long),
-+	.value = &crashk_size,
-+};
-+
-+static void __init export_crashk_values(struct device_node *node)
-+{
-+	struct property *prop;
-+
-+	/* There might be existing crash kernel properties, but we can't
-+	 * be sure what's in them, so remove them. */
-+	prop = of_find_property(node, "linux,crashkernel-base", NULL);
-+	if (prop)
-+		prom_remove_property(node, prop);
-+
-+	prop = of_find_property(node, "linux,crashkernel-size", NULL);
-+	if (prop)
-+		prom_remove_property(node, prop);
-+
-+	if (crashk_res.start != 0) {
-+		prom_add_property(node, &crashk_base_prop);
-+		crashk_size = crashk_res.end - crashk_res.start + 1;
-+		prom_add_property(node, &crashk_size_prop);
-+	}
-+
-+	of_node_put(node);
-+}
-+
- static int __init kexec_setup(void)
- {
- 	struct device_node *node;
-@@ -135,6 +171,8 @@ static int __init kexec_setup(void)
- 	kernel_end = __pa(_end);
- 	prom_add_property(node, &kernel_end_prop);
- 
-+	export_crashk_values(node);
-+
- 	of_node_put(node);
- 	return 0;
+-#ifdef __powerpc64__
+ /*
+  * This function is responsible for capturing register states if coming
+  * via panic or invoking dump using sysrq-trigger.
+@@ -51,6 +50,7 @@ static inline void crash_setup_regs(struct pt_regs *newregs,
+ 	else {
+ 		/* FIXME Merge this with xmon_save_regs ?? */
+ 		unsigned long tmp1, tmp2;
++#ifdef __powerpc64__
+ 		__asm__ __volatile__ (
+ 			"std    0,0(%2)\n"
+ 			"std    1,8(%2)\n"
+@@ -99,16 +99,58 @@ static inline void crash_setup_regs(struct pt_regs *newregs,
+ 			: "=&r" (tmp1), "=&r" (tmp2)
+ 			: "b" (newregs)
+ 			: "memory");
++#else /* __powerpc64__ */
++		__asm__ __volatile__ (
++			"stw    0,0(%2)\n"
++			"stw    1,4(%2)\n"
++			"stw    2,8(%2)\n"
++			"stw    3,12(%2)\n"
++			"stw    4,16(%2)\n"
++			"stw    5,20(%2)\n"
++			"stw    6,24(%2)\n"
++			"stw    7,28(%2)\n"
++			"stw    8,32(%2)\n"
++			"stw    9,36(%2)\n"
++			"stw    10,40(%2)\n"
++			"stw    11,44(%2)\n"
++			"stw    12,48(%2)\n"
++			"stw    13,52(%2)\n"
++			"stw    14,56(%2)\n"
++			"stw    15,60(%2)\n"
++			"stw    16,64(%2)\n"
++			"stw    17,68(%2)\n"
++			"stw    18,72(%2)\n"
++			"stw    19,76(%2)\n"
++			"stw    20,80(%2)\n"
++			"stw    21,84(%2)\n"
++			"stw    22,88(%2)\n"
++			"stw    23,92(%2)\n"
++			"stw    24,96(%2)\n"
++			"stw    25,100(%2)\n"
++			"stw    26,104(%2)\n"
++			"stw    27,108(%2)\n"
++			"stw    28,112(%2)\n"
++			"stw    29,116(%2)\n"
++			"stw    30,120(%2)\n"
++			"stw    31,124(%2)\n"
++			"mfmsr  %0\n"
++			"stw    %0,132(%2)\n"
++			"mfctr  %0\n"
++			"stw    %0,140(%2)\n"
++			"mflr   %0\n"
++			"stw    %0,144(%2)\n"
++			"bl     1f\n"
++		"1:     mflr   %1\n"
++			"stw    %1,128(%2)\n"
++			"mtlr   %0\n"
++			"mfxer  %0\n"
++			"stw    %0,148(%2)\n"
++			: "=&r" (tmp1), "=&r" (tmp2)
++			: "b" (newregs)
++			: "memory");
++#endif /* __powerpc64 __ */
+ 	}
  }
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index c30678d..2aab296 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -322,52 +322,9 @@ static void __init export_htab_values(void)
- 	of_node_put(node);
- }
+-#else
+-/*
+- * Provide a dummy definition to avoid build failures. Will remain
+- * empty till crash dump support is enabled.
+- */
+-static inline void crash_setup_regs(struct pt_regs *newregs,
+-					struct pt_regs *oldregs) { }
+-#endif /* !__powerpc64 __ */
  
--static struct property crashk_base_prop = {
--	.name = "linux,crashkernel-base",
--	.length = sizeof(unsigned long),
--	.value = &crashk_res.start,
--};
--
--static unsigned long crashk_size;
--
--static struct property crashk_size_prop = {
--	.name = "linux,crashkernel-size",
--	.length = sizeof(unsigned long),
--	.value = &crashk_size,
--};
--
--static void __init export_crashk_values(void)
--{
--	struct device_node *node;
--	struct property *prop;
--
--	node = of_find_node_by_path("/chosen");
--	if (!node)
--		return;
--
--	/* There might be existing crash kernel properties, but we can't
--	 * be sure what's in them, so remove them. */
--	prop = of_find_property(node, "linux,crashkernel-base", NULL);
--	if (prop)
--		prom_remove_property(node, prop);
--
--	prop = of_find_property(node, "linux,crashkernel-size", NULL);
--	if (prop)
--		prom_remove_property(node, prop);
--
--	if (crashk_res.start != 0) {
--		prom_add_property(node, &crashk_base_prop);
--		crashk_size = crashk_res.end - crashk_res.start + 1;
--		prom_add_property(node, &crashk_size_prop);
--	}
--
--	of_node_put(node);
--}
--
- static int __init kexec_setup(void)
- {
- 	export_htab_values();
--	export_crashk_values();
- 	return 0;
- }
- __initcall(kexec_setup);
+ extern void kexec_smp_wait(void);	/* get and clear naca physid, wait for
+ 					  master to copy new code to 0 */
 -- 
 1.5.5.4
