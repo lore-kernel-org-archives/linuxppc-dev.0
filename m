@@ -1,21 +1,23 @@
-Return-Path: <ben@trinity.fluff.org>
-Received: from trinity.fluff.org (trinity.fluff.org [89.145.97.151])
-	by ozlabs.org (Postfix) with ESMTP id 527C5DDF04
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 20:44:04 +1000 (EST)
-Date: Fri, 1 Aug 2008 11:43:47 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: libata badness
-Message-ID: <20080801104347.GM26938@trinity.fluff.org>
-References: <95646AC3-5385-4F59-8EBA-20F811168A87@kernel.crashing.org>
-	<20080731210410.GA623@polina.dev.rtsoft.ru>
-	<DAE7C7B4-CE5B-45EB-B3B4-E5491A843CD9@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DAE7C7B4-CE5B-45EB-B3B4-E5491A843CD9@kernel.crashing.org>
-Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <bzolnier@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.184])
+	by ozlabs.org (Postfix) with ESMTP id C3681DDE05
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 20:56:32 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id e30so1023425fke.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 01 Aug 2008 03:56:30 -0700 (PDT)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: benh@kernel.crashing.org
+Subject: Re: ide pmac breakage
+Date: Fri, 1 Aug 2008 12:54:02 +0200
+References: <1217208596.11188.144.camel@pasglop>
+	<1217478322.11188.410.camel@pasglop>
+	<200807311251.02251.bzolnier@gmail.com>
+In-Reply-To: <200807311251.02251.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200808011254.02989.bzolnier@gmail.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linux-ide@vger.kernel.org,
+	petkovbb@gmail.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 31, 2008 at 04:58:05PM -0500, Kumar Gala wrote:
-> I figured out the issue.  Its related to the interrupt routing being  
-> conveyed to the code from the device tree.  We have a missing 'space'  
-> causing issues.
 
-out of interest, is the M5229 attached to a single IRQ in this device
-or has the bridge been configured to route the IRQs from the IDE to
-the same pin on the PIC?
+On Thursday 31 July 2008, Bartlomiej Zolnierkiewicz wrote:
 
--- 
-Ben
+[...]
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+Sorry if my mails were a bit harsh but nobody likes to be pushed around.
+
+[ It is not like I don't want to add proper hot-plugging support or do test
+  on more hardware but my time schedule is already tight enough and there are
+  still more fundamental things to address (which take priority). ]
+
+> -                host->dev[0] = hws[0]->dev;
+> +                host->dev[0] = hws[0]->parent ? hws[0]->parent : hws[0]->dev;
+> 
+> Could you please try it together with my previous patch for
+> ide_device_{get,put}()?
+
+Please test it when you have some time.
