@@ -1,15 +1,19 @@
-Return-Path: <reynekejunk@hotmail.com>
-Received: from bay0-omc2-s5.bay0.hotmail.com (bay0-omc2-s5.bay0.hotmail.com
-	[65.54.246.141]) by ozlabs.org (Postfix) with ESMTP id F3431DE0F6
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 8BBBFDDF8F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Aug 2008 18:28:26 +1000 (EST)
-Message-ID: <BAY101-W342207B5C88AD0881CDC96BE7F0@phx.gbl>
-From: - Reyneke <reynekejunk@hotmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Re: Lost time?
-Date: Fri, 1 Aug 2008 08:28:24 +0000
-Content-Type: text/plain; charset="iso-8859-1"
+	Fri,  1 Aug 2008 20:57:54 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KOsKU-00028I-2h
+	for linuxppc-embedded@ozlabs.org; Fri, 01 Aug 2008 03:57:50 -0700
+Message-ID: <18772109.post@talk.nabble.com>
+Date: Fri, 1 Aug 2008 03:57:50 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: floating point support in the driver.
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,25 +25,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-> Check the kernel's idea of what the timebase frequency is on both kernels=
-.
+Hi all,
 
-> check for changes in the U-Boot and your u-Boot environment variables=2C =
-device tree bolb content=2C etc=2C not just the kernel
+I have a DSP algorithm which i am running in the application even after
+enabling the VFP support it is taking a lot of time to get executed hence 
 
+I want to transform the same into the driver insted of an user application.
+Can anybody suggest whether doing the same could be a better solution and
+what could be the chalenges that i have to face by implimenting such
+floating point support in the driver.
 
-Thanks for all the feedback. This going to hurt=2C but the problem was emba=
-rrassingly simple. Our CONFIG_SYS_CLK_FREQ in u-boot was wrongly defined (w=
-e did a u-boot upgrade as well - 1.3.3). Instead of 33000000 (doubled 16.5M=
-hz input clock) it was defined as 33333333. And there is your 0.6sec for ev=
-ery 60sec...
+Is there a way in the application itself to make it execute faster.
 
-Using 20/20 hind site this is the first thing I SHOULD have checked=2C but =
-there you go.
-
- Regards
-   Jan Reyneke
-
-_________________________________________________________________
-The John Lewis Clearance - save up to 50% with FREE delivery
-http://clk.atdmt.com/UKM/go/101719806/direct/01/=
+---- Misbah <>< 
+-- 
+View this message in context: http://www.nabble.com/floating-point-support-in-the-driver.-tp18772109p18772109.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
