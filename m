@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 0DD2EDDF1B
+	by ozlabs.org (Postfix) with ESMTP id 4D558DE3C0
 	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 00:14:18 +1000 (EST)
-Date: Fri, 1 Aug 2008 18:14:16 +0400
+Date: Fri, 1 Aug 2008 18:14:14 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/8] powerpc: make default kexec/crash_kernel ops implicit
-Message-ID: <20080801141416.GB1161@polina.dev.rtsoft.ru>
+Subject: [PATCH 1/8] powerpc: set up OF properties for ppc32 kexec
+Message-ID: <20080801141414.GA1161@polina.dev.rtsoft.ru>
 References: <20080801141306.GA29127@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -21,62 +21,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch removes need for each platform to specify default kexec and
-crash kernel ops, thus effectively adds a working kexec support for most
-boards.
+From: Dale Farnsworth <dale@farnsworth.org>
 
-Platforms that can't cope with default ops will explode in some weird
-way, which means that the board's kexec support should be fixed or
-blacklisted via dummy _prepare callback returning -ENOSYS.
+Refactor the setting of kexec OF properties, moving the common code
+from machine_kexec_64.c to machine_kexec.c where it can be used on
+both ppc64 and ppc32.  This is needed for kexec to work on ppc32
+platforms.
 
+Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/kernel/machine_kexec.c |   20 ++++++++------------
- 1 files changed, 8 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/machine_kexec.c    |   27 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/machine_kexec_64.c |   20 +++++---------------
+ 2 files changed, 32 insertions(+), 15 deletions(-)
 
 diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index a625673..ac42cfb 100644
+index aab7688..a625673 100644
 --- a/arch/powerpc/kernel/machine_kexec.c
 +++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -22,6 +22,8 @@ void machine_crash_shutdown(struct pt_regs *regs)
+@@ -13,8 +13,10 @@
+ #include <linux/reboot.h>
+ #include <linux/threads.h>
+ #include <linux/lmb.h>
++#include <linux/of.h>
+ #include <asm/machdep.h>
+ #include <asm/prom.h>
++#include <asm/sections.h>
+ 
+ void machine_crash_shutdown(struct pt_regs *regs)
  {
- 	if (ppc_md.machine_crash_shutdown)
- 		ppc_md.machine_crash_shutdown(regs);
-+	else
-+		return default_machine_crash_shutdown(regs);
+@@ -116,3 +118,28 @@ int overlaps_crashkernel(unsigned long start, unsigned long size)
+ {
+ 	return (start + size) > crashk_res.start && start <= crashk_res.end;
+ }
++
++/* Values we need to export to the second kernel via the device tree. */
++static unsigned long kernel_end;
++
++static struct property kernel_end_prop = {
++	.name = "linux,kernel-end",
++	.length = sizeof(unsigned long),
++	.value = &kernel_end,
++};
++
++static int __init kexec_setup(void)
++{
++	struct device_node *node;
++
++	node = of_find_node_by_path("/chosen");
++	if (!node)
++		return -ENOENT;
++
++	kernel_end = __pa(_end);
++	prom_add_property(node, &kernel_end_prop);
++
++	of_node_put(node);
++	return 0;
++}
++__initcall(kexec_setup);
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index a168514..c30678d 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -289,7 +289,7 @@ void default_machine_kexec(struct kimage *image)
  }
  
- /*
-@@ -33,11 +35,8 @@ int machine_kexec_prepare(struct kimage *image)
- {
- 	if (ppc_md.machine_kexec_prepare)
- 		return ppc_md.machine_kexec_prepare(image);
--	/*
--	 * Fail if platform doesn't provide its own machine_kexec_prepare
--	 * implementation.
--	 */
--	return -ENOSYS;
-+	else
-+		return default_machine_kexec_prepare(image);
- }
+ /* Values we need to export to the second kernel via the device tree. */
+-static unsigned long htab_base, kernel_end;
++static unsigned long htab_base;
  
- void machine_kexec_cleanup(struct kimage *image)
-@@ -54,13 +53,10 @@ void machine_kexec(struct kimage *image)
+ static struct property htab_base_prop = {
+ 	.name = "linux,htab-base",
+@@ -303,32 +303,22 @@ static struct property htab_size_prop = {
+ 	.value = &htab_size_bytes,
+ };
+ 
+-static struct property kernel_end_prop = {
+-	.name = "linux,kernel-end",
+-	.length = sizeof(unsigned long),
+-	.value = &kernel_end,
+-};
+-
+ static void __init export_htab_values(void)
  {
- 	if (ppc_md.machine_kexec)
- 		ppc_md.machine_kexec(image);
--	else {
--		/*
--		 * Fall back to normal restart if platform doesn't provide
--		 * its own kexec function, and user insist to kexec...
--		 */
--		machine_restart(NULL);
--	}
-+	else
-+		default_machine_kexec(image);
-+	/* Fall back to normal restart if we're still alive. */
-+	machine_restart(NULL);
- 	for(;;);
+ 	struct device_node *node;
+ 
++	/* On machines with no htab htab_address is NULL */
++	if (NULL == htab_address)
++		return;
++
+ 	node = of_find_node_by_path("/chosen");
+ 	if (!node)
+ 		return;
+ 
+-	kernel_end = __pa(_end);
+-	prom_add_property(node, &kernel_end_prop);
+-
+-	/* On machines with no htab htab_address is NULL */
+-	if (NULL == htab_address)
+-		goto out;
+-
+ 	htab_base = __pa(htab_address);
+ 	prom_add_property(node, &htab_base_prop);
+ 	prom_add_property(node, &htab_size_prop);
+ 
+- out:
+ 	of_node_put(node);
  }
  
 -- 
