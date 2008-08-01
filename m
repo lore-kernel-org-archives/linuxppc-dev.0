@@ -1,26 +1,23 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4892BB70.2040106@grandegger.com>
-Date: Fri, 01 Aug 2008 09:29:52 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <Joerg.Roedel@amd.com>
+Received: from WA4EHSOBE005.bigfish.com (outbound-wa4.frontbridge.com
+	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id 44D21DDFB7
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 17:03:41 +1000 (EST)
+Date: Fri, 1 Aug 2008 09:03:28 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH] Revert "Merge branch 'x86/iommu' of
+	git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+	into for-linus"
+Message-ID: <20080801070328.GA26894@amd.com>
+References: <20080801094323.9601d87b.sfr@canb.auug.org.au>
+	<20080801085106E.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-To: Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [i2c] [PATCH] powerpc: i2c-mpc: make speed registers configurable
-	via FDT
-References: <4889EFFE.2070201@grandegger.com> <4891F4D8.9090905@grandegger.com>
-	<fa686aa40807311031r66f6451aw206faf54509c14d9@mail.gmail.com>
-	<4891FC3A.7040609@freescale.com>
-	<20080731180959.GA29057@secretlab.ca>
-	<489200B6.9060906@freescale.com>
-	<20080731182810.GB29097@secretlab.ca>
-	<48920607.5040606@freescale.com>
-	<9e4733910807311157q358640ddyef1f14865c069b8@mail.gmail.com>
-	<Pine.LNX.4.58.0807311656250.10341@shell4.speakeasy.net>
-	<9e4733910807311819i60872285ga4829c841185fdc0@mail.gmail.com>
-	<Pine.LNX.4.58.0807311828580.10341@shell4.speakeasy.net>
-In-Reply-To: <Pine.LNX.4.58.0807311828580.10341@shell4.speakeasy.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>,
-	Timur Tabi <timur@freescale.com>, Linux I2C <i2c@lm-sensors.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20080801085106E.fujita.tomonori@lab.ntt.co.jp>
+Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+	jbarnes@virtuousgeek.org, davem@davemloft.net,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	akpm@linux-foundation.org, torvalds@linux-foundation.org, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,20 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Trent Piepho wrote:
-> On Thu, 31 Jul 2008, Jon Smirl wrote:
-[...snip...]
->> I don't see why we want to go through the trouble of having uboot tell
->> us things about a chip that are fixed in stone. Obviously something
->> like the frequency of the external crystal needs to be passed up, but
->> why pass up stuff that can be computed (or recovered by reading a
->> register)?
+On Fri, Aug 01, 2008 at 08:51:23AM +0900, FUJITA Tomonori wrote:
+> On Fri, 1 Aug 2008 09:43:23 +1000
+> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 > 
-> One could also say that if U-boot has to have the code and already
-> calculated the value, why duplicate the code and the calculation in Linux?
+> > This reverts commit 29111f579f4f3f2a07385f931854ab0527ae7ea5.
+> > 
+> > This undoes the hasty addition of a global version of iommu_num_pages()
+> > that broke both the powerpc and sparc builds.  This function can be
+> > revisited later.
+> > 
+> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> > ---
+> >  arch/x86/kernel/amd_iommu.c   |   13 ++++++++-----
+> >  arch/x86/kernel/pci-gart_64.c |   11 +++++++----
+> >  include/linux/iommu-helper.h  |    1 -
+> >  lib/iommu-helper.c            |    8 --------
+> >  4 files changed, 15 insertions(+), 18 deletions(-)
+> > 
+> > This patch comes from
+> > git revert -m 1 29111f579f4f3f2a07385f931854ab0527ae7ea5
+> > 
+> > I have test built powerpc ppc64_defconfig and sparc64 defconfig.  The only
+> > references to iommu_num_pages() after this is applied are in the powerpc
+> > and sparc code.
+> > 
+> > Linus, please apply.  This is impacting on both powerpc and sparc
+> > development and even the author of the patches said that those patches
+> > were not urgent.
+> 
+> Ingo has a patch to fix this problem in the x86 tree:
+> 
+> http://marc.info/?l=linux-kernel&m=121754062325903&w=2
 
-Right, if the "bus-frequency" property for the I2C device is not 
-defined, the Linux I2C bus driver should just overtake the pre-defined 
-values. That's what I (we?) wanted to implement anyhow.
+FUJITA,
 
-Wolfgang.
+can you send your fix directly to Linus again please? Andrew mentioned
+that the x86 maintainers are on vacation. That may be the reason that
+your fix is not yet upstream.
+
+Joerg
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
