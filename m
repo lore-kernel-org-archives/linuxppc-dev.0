@@ -1,24 +1,18 @@
-Return-Path: <sam@ravnborg.org>
-Received: from smtpout3.tre.se (smtpout3.tre.se [80.251.192.228])
-	by ozlabs.org (Postfix) with ESMTP id 698FCDE06D
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 02:53:30 +1000 (EST)
-Date: Fri, 1 Aug 2008 18:45:25 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUILD-FAILURE] 2.6.27-rc1-mm1 - allyesconfig build fails on
-	powerpc
-Message-ID: <20080801164525.GA2299@uranus.ravnborg.org>
-References: <20080731000354.24b55d5b.akpm@linux-foundation.org>
-	<4891B370.5040208@linux.vnet.ibm.com>
-	<20080801052936.GZ20457@bakeyournoodle.com>
-	<20080731231206.80940fba.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080731231206.80940fba.akpm@linux-foundation.org>
-Cc: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Kernel Testers List <kernel-testers@vger.kernel.org>
+Return-Path: <SSparks@aclaratech.com>
+Received: from WA4EHSOBE002.bigfish.com (outbound-wa4.frontbridge.com
+	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id 8BE6EDDE0F
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 03:38:10 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: Compact flash on mpc8349eITX
+Date: Fri, 1 Aug 2008 12:36:39 -0500
+Message-ID: <6011A7C9CD0EE74792C3ED2A835560863421AE@mail.twacs.com>
+In-Reply-To: <20080801165059.GA7047@polina.dev.rtsoft.ru>
+References: <6011A7C9CD0EE74792C3ED2A835560863421AB@mail.twacs.com>
+	<20080801165059.GA7047@polina.dev.rtsoft.ru>
+From: "Sparks, Sam" <SSparks@aclaratech.com>
+To: <avorontsov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,14 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> 
-> Am not terribly happy with the state of the gcov patches.  They STILL
-> leave thousands of dead symlinks lying around after `make mrproper' and
-> generally seem to muck up the kbuild system a bit, although nothing
-> that a bit of Sam love wouldn't fix.
+>From: Anton Vorontsov
+>Sent: Friday, August 01, 2008 11:51 AM
+>
+>Works like a charm here. I use quite outdated u-boot though. Which one
+>you use? I could try it (if it is community u-boot).
 
-Have not had time / energy to get aroud to it.
-Other things continue to pop up and time is limited at the moment
-as in more limited than usual).
+I'm using the head, which I grabbed last week: U-Boot
+1.3.4-rc1-00012-g1953d12
+TIA for checking your itx with this version.
 
-	Sam
+>
+>As for the backtrace you posted recently, I remeber I've noticed the
+>similar issue long ago on some mITX board. I believe the board had
+>hw issues indeed (or CF card I tested with). The problem could be in
+>the IRQ line itself (for some reason it always low), or it could be
+>IDE cmd/data lines at fault, so that IDE can't receive status read
+>command and does not deassert the interrupt line... quite hard to
+>tell.
+
+Thanks for confirming.. I was losing my mind :-)
+This looks like it is indeed a HW problem with the ITX. Are you aware of
+any threads/documents describing the issue? We based our custom HW off
+the ITX schematic with regards to the CF, and I hope we didn't copy over
+_that_ problem :-/
+
+Cheers,
+Sam
