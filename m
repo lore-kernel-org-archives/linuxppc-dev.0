@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8AD2DDE43C
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 00:14:29 +1000 (EST)
-Date: Fri, 1 Aug 2008 18:14:27 +0400
+	by ozlabs.org (Postfix) with ESMTP id EBC52DE3E2
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 00:14:36 +1000 (EST)
+Date: Fri, 1 Aug 2008 18:14:35 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 7/8] powerpc: implement crash_setup_regs for ppc32
-Message-ID: <20080801141427.GG1161@polina.dev.rtsoft.ru>
+Subject: [PATCH 8/8] powerpc: last bits to support kdump on ppc32
+Message-ID: <20080801141435.GH1161@polina.dev.rtsoft.ru>
 References: <20080801141306.GA29127@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -23,98 +23,60 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Dale Farnsworth <dale@farnsworth.org>
 
+Wire up the trampoline code for ppc32 to relay exceptions from the
+vectors at address 0 to vectors at address 32MB, and modify Kconfig
+to enable Kdump support for all powerpcs (except BookE, for now).
+
 Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- include/asm-powerpc/kexec.h |   60 ++++++++++++++++++++++++++++++++++++------
- 1 files changed, 51 insertions(+), 9 deletions(-)
+ arch/powerpc/Kconfig             |    2 +-
+ arch/powerpc/kernel/crash_dump.c |    6 +++++-
+ arch/powerpc/kernel/setup_32.c   |    2 ++
+ 3 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/include/asm-powerpc/kexec.h b/include/asm-powerpc/kexec.h
-index acdcdc6..9ecc307 100644
---- a/include/asm-powerpc/kexec.h
-+++ b/include/asm-powerpc/kexec.h
-@@ -38,7 +38,6 @@ typedef void (*crash_shutdown_t)(void);
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 587da5e..006a475 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -321,7 +321,7 @@ config KEXEC
  
- #ifdef CONFIG_KEXEC
+ config CRASH_DUMP
+ 	bool "Build a kdump crash kernel"
+-	depends on PPC_MULTIPLATFORM && PPC64
++	depends on PPC_MULTIPLATFORM && !BOOKE
+ 	help
+ 	  Build a kernel suitable for use as a kdump capture kernel.
+ 	  The kernel will be linked at a different address than normal, and
+diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
+index e0debcc..96cd521 100644
+--- a/arch/powerpc/kernel/crash_dump.c
++++ b/arch/powerpc/kernel/crash_dump.c
+@@ -34,7 +34,11 @@ void __init reserve_kdump_trampoline(void)
  
--#ifdef __powerpc64__
- /*
-  * This function is responsible for capturing register states if coming
-  * via panic or invoking dump using sysrq-trigger.
-@@ -51,6 +50,7 @@ static inline void crash_setup_regs(struct pt_regs *newregs,
- 	else {
- 		/* FIXME Merge this with xmon_save_regs ?? */
- 		unsigned long tmp1, tmp2;
-+#ifdef __powerpc64__
- 		__asm__ __volatile__ (
- 			"std    0,0(%2)\n"
- 			"std    1,8(%2)\n"
-@@ -99,16 +99,58 @@ static inline void crash_setup_regs(struct pt_regs *newregs,
- 			: "=&r" (tmp1), "=&r" (tmp2)
- 			: "b" (newregs)
- 			: "memory");
-+#else /* __powerpc64__ */
-+		__asm__ __volatile__ (
-+			"stw    0,0(%2)\n"
-+			"stw    1,4(%2)\n"
-+			"stw    2,8(%2)\n"
-+			"stw    3,12(%2)\n"
-+			"stw    4,16(%2)\n"
-+			"stw    5,20(%2)\n"
-+			"stw    6,24(%2)\n"
-+			"stw    7,28(%2)\n"
-+			"stw    8,32(%2)\n"
-+			"stw    9,36(%2)\n"
-+			"stw    10,40(%2)\n"
-+			"stw    11,44(%2)\n"
-+			"stw    12,48(%2)\n"
-+			"stw    13,52(%2)\n"
-+			"stw    14,56(%2)\n"
-+			"stw    15,60(%2)\n"
-+			"stw    16,64(%2)\n"
-+			"stw    17,68(%2)\n"
-+			"stw    18,72(%2)\n"
-+			"stw    19,76(%2)\n"
-+			"stw    20,80(%2)\n"
-+			"stw    21,84(%2)\n"
-+			"stw    22,88(%2)\n"
-+			"stw    23,92(%2)\n"
-+			"stw    24,96(%2)\n"
-+			"stw    25,100(%2)\n"
-+			"stw    26,104(%2)\n"
-+			"stw    27,108(%2)\n"
-+			"stw    28,112(%2)\n"
-+			"stw    29,116(%2)\n"
-+			"stw    30,120(%2)\n"
-+			"stw    31,124(%2)\n"
-+			"mfmsr  %0\n"
-+			"stw    %0,132(%2)\n"
-+			"mfctr  %0\n"
-+			"stw    %0,140(%2)\n"
-+			"mflr   %0\n"
-+			"stw    %0,144(%2)\n"
-+			"bl     1f\n"
-+		"1:     mflr   %1\n"
-+			"stw    %1,128(%2)\n"
-+			"mtlr   %0\n"
-+			"mfxer  %0\n"
-+			"stw    %0,148(%2)\n"
-+			: "=&r" (tmp1), "=&r" (tmp2)
-+			: "b" (newregs)
-+			: "memory");
-+#endif /* __powerpc64 __ */
- 	}
- }
--#else
--/*
-- * Provide a dummy definition to avoid build failures. Will remain
-- * empty till crash dump support is enabled.
-- */
--static inline void crash_setup_regs(struct pt_regs *newregs,
--					struct pt_regs *oldregs) { }
--#endif /* !__powerpc64 __ */
+ static void __init create_trampoline(unsigned long addr)
+ {
+-	unsigned int *p = (unsigned int *)addr;
++	unsigned int *p;
++
++	/* XXX: why this code is working without += PAGE_OFFSET on PPC64? */
++	addr += PAGE_OFFSET;
++	p = (unsigned int *)addr;
  
- extern void kexec_smp_wait(void);	/* get and clear naca physid, wait for
- 					  master to copy new code to 0 */
+ 	/* The maximum range of a single instruction branch, is the current
+ 	 * instruction's address + (32 MB - 4) bytes. For the trampoline we
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 066e65c..1d76afc 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -121,6 +121,8 @@ notrace void __init machine_init(unsigned long dt_ptr, unsigned long phys)
+ 
+ 	probe_machine();
+ 
++	setup_kdump_trampoline();
++
+ #ifdef CONFIG_6xx
+ 	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
+ 	    cpu_has_feature(CPU_FTR_CAN_NAP))
 -- 
 1.5.5.4
