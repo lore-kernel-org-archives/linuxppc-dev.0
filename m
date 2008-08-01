@@ -1,28 +1,23 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7AEC6DDFE6
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 16:12:58 +1000 (EST)
-Date: Thu, 31 Jul 2008 23:12:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [BUILD-FAILURE] 2.6.27-rc1-mm1 - allyesconfig build fails on
-	powerpc
-Message-Id: <20080731231206.80940fba.akpm@linux-foundation.org>
-In-Reply-To: <20080801052936.GZ20457@bakeyournoodle.com>
-References: <20080731000354.24b55d5b.akpm@linux-foundation.org>
-	<4891B370.5040208@linux.vnet.ibm.com>
-	<20080801052936.GZ20457@bakeyournoodle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
-	linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 1 Aug 2008 16:22:59 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: Board level compatibility matching
+Message-ID: <20080801062259.GL5008@yookeroo.seuss>
+References: <fa686aa40807311319k44d270b0t4fa9cb0e6523339@mail.gmail.com>
+	<9e4733910807311349l5770a17ib2ab2535bcd2868a@mail.gmail.com>
+	<20080731205251.GB29834@secretlab.ca>
+	<9e4733910807311358k54b5c088l1023d354fd0ad28e@mail.gmail.com>
+	<20080801024729.GA5008@yookeroo.seuss>
+	<9e4733910807312006l8e83d27qe1b5ca5f50b89e39@mail.gmail.com>
+	<20080801033009.GG5008@yookeroo.seuss>
+	<9e4733910807312100j6a8d1974k34054c2d69f417f4@mail.gmail.com>
+	<20080801042505.GK5008@yookeroo.seuss>
+	<9e4733910807312137w2dc9e73l39d4d99bd0cfe0c6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9e4733910807312137w2dc9e73l39d4d99bd0cfe0c6@mail.gmail.com>
+Cc: devicetree-discuss@ozlabs.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,29 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 1 Aug 2008 15:29:36 +1000 Tony Breeds <tony@bakeyournoodle.com> wrote:
-
-> On Thu, Jul 31, 2008 at 06:13:28PM +0530, Kamalesh Babulal wrote:
-> > Hi Andrew,
-> > 
-> > make allyesconfig with 2.6.27-rc1-mm1 kernel on powerpc fails with build error
+On Fri, Aug 01, 2008 at 12:37:25AM -0400, Jon Smirl wrote:
+> On 8/1/08, David Gibson <david@gibson.dropbear.id.au> wrote:
+> > On Fri, Aug 01, 2008 at 12:00:01AM -0400, Jon Smirl wrote:
+> >  > On 7/31/08, David Gibson <david@gibson.dropbear.id.au> wrote:
+> >  > > On Thu, Jul 31, 2008 at 11:06:20PM -0400, Jon Smirl wrote:
+> >  > >  > On 7/31/08, David Gibson <david@gibson.dropbear.id.au> wrote:
+[snip]
+> >  > Why does the fake fabric device need to be in the device tree? Can't
+> >  > we just dynamically create it as part of the boot process?
+> >
+> >
+> > Um.. yes.. that would be exactly what instantiating it from the
+> >  platform code does.
 > 
-> <snip>
-> 
-> Turning off GCOV "fixes" this.  Not really the best solution but at
-> least it narrows doen the search effort.
+> Platform devices are missing the compatible chain process. If we do
+> this with platform drivers the boot code creates a 'fabric' device
+> then I'll have to ensure that my board-fabric driver gets probed
+> before default-fabric because they both want to bind to the fabric
+> device.
 
-Thanks.
+If you need a board-specific fabric driver, the board platform code
+shouldn't be instantiating the generic fabric driver.  Given the board
+specific driver a different name...
 
-> Peter,
-> 	Can you have a look at how this can be fixed, if at all?
-> 
-
-Am not terribly happy with the state of the gcov patches.  They STILL
-leave thousands of dead symlinks lying around after `make mrproper' and
-generally seem to muck up the kbuild system a bit, although nothing
-that a bit of Sam love wouldn't fix.
-
-Plus it breaks the build on a few architectures (branch out of range,
-mainly), but that's a fairly minor thing which could even be worked
-around in Kconfig (disable the offending code if gcov is enabled)
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
