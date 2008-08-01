@@ -1,37 +1,23 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A6D4FDE1D2
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 02:16:33 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id m71GFuA7006595
-	for <linuxppc-dev@ozlabs.org>; Sat, 2 Aug 2008 02:15:56 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m71GGA3U301654
-	for <linuxppc-dev@ozlabs.org>; Sat, 2 Aug 2008 02:16:10 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m71GGAgR000336
-	for <linuxppc-dev@ozlabs.org>; Sat, 2 Aug 2008 02:16:10 +1000
-Message-ID: <489336C7.8010605@linux.vnet.ibm.com>
-Date: Fri, 01 Aug 2008 21:46:07 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f28.google.com (mail-gx0-f28.google.com
+	[209.85.217.28]) by ozlabs.org (Postfix) with ESMTP id 09674DDF79
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 02:25:00 +1000 (EST)
+Received: by gxk9 with SMTP id 9so1354189gxk.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 01 Aug 2008 09:24:58 -0700 (PDT)
+Message-ID: <fa686aa40808010924p48191472gdf51eab11f4e4d30@mail.gmail.com>
+Date: Fri, 1 Aug 2008 10:24:58 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "M. Warner Losh" <imp@bsdimp.com>
+Subject: Re: Board level compatibility matching
+In-Reply-To: <20080801.100107.-1666252871.imp@bsdimp.com>
 MIME-Version: 1.0
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [BUILD-FAILURE] 2.6.27-rc1-mm1 - allyesconfig build fails on
-	powerpc
-References: <20080731000354.24b55d5b.akpm@linux-foundation.org>
-	<4891B370.5040208@linux.vnet.ibm.com>
-	<20080801052936.GZ20457@bakeyournoodle.com>
-In-Reply-To: <20080801052936.GZ20457@bakeyournoodle.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Sam Ravnborg <sam@ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1217564739.11188.482.camel@pasglop>
+	<fa686aa40808010727v53fe3580q2813a12cb66f8f68@mail.gmail.com>
+	<20080801111141.3543e23b@zod.rchland.ibm.com>
+	<20080801.100107.-1666252871.imp@bsdimp.com>
+Cc: devicetree-discuss@ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,33 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tony Breeds wrote:
-> On Thu, Jul 31, 2008 at 06:13:28PM +0530, Kamalesh Babulal wrote:
->> Hi Andrew,
->>
->> make allyesconfig with 2.6.27-rc1-mm1 kernel on powerpc fails with build error
-> 
-> <snip>
-> 
-> Turning off GCOV "fixes" this.  Not really the best solution but at
-> least it narrows doen the search effort.
+On Fri, Aug 1, 2008 at 10:01 AM, M. Warner Losh <imp@bsdimp.com> wrote:
+> I'd float a radical definition of 'compatible' here.
+>
+> If the generic code can handle it with just changes to the device
+> tree, then it is compatible.  And by generic code, I wouldn't suggest
+> a twisty maze of ifdefs or special case hacks.  I'm talking truly
+> generic code that is table driven entirely from the dtc.  If you need
+> special C code to initialize the board, then it isn't compatible.
 
-Thanks, kernel compiles after turning off the GCOV profiling options.
-> 
-> Peter,
-> 	Can you have a look at how this can be fixed, if at all?
-Peter, 
-	kindly let me know if you want me to test any test patches/fixes.
-> 
-> Yours Tony
-> 
->   linux.conf.au    http://www.marchsouth.org/
->   Jan 19 - 24 2009 The Australian Linux Technical Conference!
-> 
+When doing the initial board port, you don't *know* if you're going to
+need special cases.  Or, you don't know if the special case code
+belongs in the platform code, or belongs somewhere else
+(implementation detail).  Or, the special code could get refactored in
+the future and be moved into or out of the platform code.
 
+Claiming one board is compatible with another tends to just encode a
+Linux implementation detail into the device tree.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+> This is exactly analogous to the pc-net driver supporting dozens of
+> different cards that differ only in their ID.  Are all these cards
+> 100% the same: no.  There's plenty of differences between them.
+> However, the pc-net driver copes with the small differences so that
+> one driver can handle most of the ne2000 class of network cards.
+
+Yes, and we use lists of compatible values for devices.  However, the
+board level has much higher complexity.  The likelyhood of getting it
+wrong is much greater.
+
+g.
