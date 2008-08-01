@@ -1,25 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40808010738v27814ac9lbd608c3fa1cd90e7@mail.gmail.com>
-Date: Fri, 1 Aug 2008 08:38:28 -0600
+Received: from mail-gx0-f28.google.com (mail-gx0-f28.google.com
+	[209.85.217.28]) by ozlabs.org (Postfix) with ESMTP id 8023FDE821
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 00:43:41 +1000 (EST)
+Received: by gxk9 with SMTP id 9so1297644gxk.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 01 Aug 2008 07:43:39 -0700 (PDT)
+Message-ID: <fa686aa40808010727v53fe3580q2813a12cb66f8f68@mail.gmail.com>
+Date: Fri, 1 Aug 2008 08:27:41 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Wolfgang Grandegger" <wg@grandegger.com>
-Subject: Re: [i2c] [PATCH] powerpc: i2c-mpc: make speed registers configurable
-	via FDT
-In-Reply-To: <4892BA6F.3010000@grandegger.com>
+To: benh@kernel.crashing.org
+Subject: Re: Board level compatibility matching
+In-Reply-To: <1217564739.11188.482.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <4889EFFE.2070201@grandegger.com> <4891FC3A.7040609@freescale.com>
-	<20080731180959.GA29057@secretlab.ca>
-	<489200B6.9060906@freescale.com>
-	<20080731182810.GB29097@secretlab.ca> <48920607.5040606@freescale.com>
-	<9e4733910807311157q358640ddyef1f14865c069b8@mail.gmail.com>
-	<Pine.LNX.4.58.0807311656250.10341@shell4.speakeasy.net>
-	<9e4733910807311819i60872285ga4829c841185fdc0@mail.gmail.com>
-	<4892BA6F.3010000@grandegger.com>
-Cc: Trent Piepho <xyzzy@speakeasy.org>, Linuxppc-dev@ozlabs.org,
-	Scott Wood <scottwood@freescale.com>,
-	Timur Tabi <timur@freescale.com>, Linux I2C <i2c@lm-sensors.org>
+References: <fa686aa40807311319k44d270b0t4fa9cb0e6523339@mail.gmail.com>
+	<20080801025439.GB5008@yookeroo.seuss>
+	<20080801032533.GB6595@secretlab.ca>
+	<1217564739.11188.482.camel@pasglop>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,108 +27,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 1, 2008 at 1:25 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> Jon Smirl wrote:
->>
->> On 7/31/08, Trent Piepho <xyzzy@speakeasy.org> wrote:
->>>
->>> On Thu, 31 Jul 2008, Jon Smirl wrote:
->>>  > As for the source clock, how about creating a new global like
->>>  > ppc_proc_freq called ppc_ipb_freq. The platform code can then set the
->>>  > right clock value into the variable. For mpc8xxxx get it from uboot.
->>>  > mpc5200 can easily compute it from ppc_proc_freq and checking how the
->>>  > ipb divider is set. That will move the clock problem out of the i2c
->>>  > driver.
->>>
->>>
->>> There is a huge variation in where the I2C source clock comes from.
->>>  Sometimes it's the system bus, sometimes ethernet, sometimes SEC, etc.
->>>  If
->>>  I look at u-boot (which might not be entirely correct or complete), I
->>> see:
->>>
->>>  83xx:  5 different clock sources
->>>  85xx:  3 different clock sources
->>>  86xx:  2 different clock sources
->>>
->>>  But there's more.  Sometimes the two I2C controllers don't use the same
->>>  clock!  So even if you add 10 globals with different clocks, and then
->>> add
->>>  code to the mpc i2c driver so if can figure out which one to use given
->>> the
->>>  platform, it's still not enough because you need to know which
->>> controller
->>>  the device node is for.
->>>
->>>  IMHO, what Timur suggested of having u-boot put the source clock into
->>> the
->>>  i2c node makes the most sense.  U-boot has to figure this out, so why
->>>  duplicate the work?
->>>
->>>  Here's my idea:
->>>
->>>        i2c@0 {
->>>                compatible = "fsl-i2c";
->>>                bus-frequency = <100000>;
->>>
->>>                /* Either */
->>>                source-clock-frequency = <0>;
->>>                /* OR */
->>>                source-clock = <&ccb>;
->>>        };
->>
->> Can't we hide a lot of this on platforms where the source clock is not
->> messed up? For example the mpc5200 doesn't need any of this, the
->> needed frequency is already available in mpc52xx_find_ipb_freq().
->> mpc5200 doesn't need any uboot change.
->>
->> Next would be normal mpc8xxx platforms where i2c is driven by a single
->> clock, add a uboot filled in parameter in the root node (or I think it
->> can be computed off of the ones uboot is already filling in). make a
->> mpc8xxx_find_i2c_freq() function. May not need to change device tree
->> and uboot.
->>
->> Finally use this for those days when the tea leaves were especially
->> bad. Both a device tree and uboot change.
->>
->>> Except the i2c clock isn't always a based on an integer divider of the
->>> CCB
->>>  frequency.  What's more, it's not always the same for both i2c
->>> controllers.
->>>  Suppose i2c #1 uses CCB times 2/3 and i2c #2 uses CCB/2, how would
->>>  fsl_get_i2c_freq() figure that out from bus-frequency and
->>>  i2c-clock-divider?
->>
->> If you get the CCB frequency from uboot and know the chip model, can't
->> you compute these in the platform code? Then make a
->> mpc8xxx_find_i2c_freq(cell_index).
+On Thu, Jul 31, 2008 at 10:25 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> About this whole generic board mumbo-jumbo: not happening. It's a pipe
+> dream, it doesn't work, and it leads to the sort of mess we have in chrp
+> where we end up having hacks to identify what exact sort of chrp we have
+> and do things differently etc...
+
+I am fully aware of the hell and hacks that went along with chrp.  I
+am *not* suggesting a do everything platform that must figure out all
+the quirks of a board in a single machine definition.  I know too well
+that is the way of pain.
+
 >
-> We can, of course, but do we want to? #ifdef's are not acceptable for Linux
-> which means scanning the model property to get the divider from some table.
-> And when a new MPC model shows up, we need to update the table. This can all
-> be saved and avoided by adding a I2C clock source divider or frequency
-> property to the FDT. The FDT is to describe the hardware and the fixed
-> divider value is a property of it.
+> NOT HAPPENING.
 >
-> I'm in favor of a I2C node specific "divider" property because it does not
-> rely on a boot-loader filling in the real value. It's fixed for a certain
-> MPC model. And the I2C source clock frequency is then just:
+> Now, there are two approaches here that are possible:
+>
+>  - Your board is really pretty much exactly the same as board XXX,
+> except maybe you have a different flash size or such, and the support
+> for board XXX can cope perfectly with it simply due to the device-tree
+> the right information.
+>
+> If that happens to be the case, make your board compatible with board
+> XXX. Make that entry -second- in your compatible list, because one day
+> you'll figure out that there -is- indeed a difference and I don't want
+> to see board XXX code start to grow code to recognise your other board
+> and work around the difference. So at that stage, copy board XXX.c file
+> and start over with your own board support that matches on your first
+> compatible propery entry.
 
-That is true; and if pin-strapping/dip-switch settings are changed,
-then that too should be described in the device tree.  However, as
-Trent stated, that still leaves the question of *which* clock is the
-divider applied against.  If it isn't the bus-frequency, then there
-needs to be a way to override it (an optional property would be usable
-here).
+I agree with most of your argument, except I really have problems with
+boards claiming compatibility with an older board.  My reason is
+exactly the reason you state; One day you'll figure out that there is
+indeed a difference.  The problem is; when the original board (the one
+others are claiming compatibility with) gains additional code to fixup
+quirks or something, then that code will get changed with no
+visibility that it is borking up other boards that are currently
+depending on it.
 
-> Furthermore, mpc52xx_find_ipb_freq() does the same as fsl_get_sys_freq(). It
-> looks up the value for the property "bus-frequency" of the soc. We don't
-> need a mpc8xxx_find_i2c_freq() but a common fsl_get_i2c_freq() for all MPCs.
+I far prefer the solution I'm currently using in 5200-land where there
+is a simple (boring?) board port which *explicitly* states which
+boards it supports (see arch/powerpc/platforms/52xx/mpc5200_simple.c).
+ When someone goes to modify that file, it is explicit that it
+currently supports multiple boards.  If a board becomes 'non-boring',
+then it is removed from the simple platform; the simple platform is
+*not* extended to accommodate it.
 
-implementation detail.  Get the device tree binding correct first.
+I *fully* agree that it is insane for the code to grow detection logic
+and I've been explicit about not doing anything of the sort in 5200
+land.  What I am suggesting is that if nothing else claims the board,
+then allow the simple platform to bind against it based on the fact
+that it uses the same SoC.
+
+However, if I can't get concensus on this approach, then I do /not/
+want to go to a boards compatible with other boards scheme.  It will
+cause breakage and pain that is non-obvious to debug for many users.
+
+BTW, I am also not suggesting that the .dts files themselves try to
+claim some kind of 'generic' compatibility.  I'm proposing handling
+any catch-all cases in the Linux code itself, where it is easy to
+change because it is just an implementation detail.  Trying to make
+the dt 'generic' doesn't make any sense because doing so is almost
+always wrong (or will become wrong in the future).
+
+>  - Once you figure out that really, those 5 boards here -do- share 99%
+> of the code... it's just that one need a workaround at the IRQ fixup
+> level, maybe one needs a tweak on a GPIO at boot and one has an issue on
+> reboot that needs to be whacked a bit differently ... well, make
+> -library- code.
+>
+> I have no objection of having something like for each ppc_md field
+> called X, having a utility file providing an mpc52xx_generic_X function.
+> Such a board could then basically have a small .c file whose ppc_md just
+> use the generic functions for all except the ones that need to be
+> hooked/wrapped/replaced/whatever.
+
+I agree.  5200 code already does this.
 
 g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
