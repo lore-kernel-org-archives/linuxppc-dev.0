@@ -1,20 +1,25 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 41FD0DE296
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 03:59:44 +1000 (EST)
-Date: Fri, 1 Aug 2008 21:59:41 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: "Sparks, Sam" <SSparks@aclaratech.com>
-Subject: Re: Compact flash on mpc8349eITX
-Message-ID: <20080801175941.GA21814@polina.dev.rtsoft.ru>
-References: <6011A7C9CD0EE74792C3ED2A835560863421AB@mail.twacs.com>
-	<20080801165059.GA7047@polina.dev.rtsoft.ru>
-	<6011A7C9CD0EE74792C3ED2A835560863421AE@mail.twacs.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <6011A7C9CD0EE74792C3ED2A835560863421AE@mail.twacs.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 53AFCDDE06
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 04:30:30 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 09/10] pata_sil680: convert CONFIG_PPC_MERGE to CONFIG_PPC
+Date: Fri,  1 Aug 2008 11:44:19 -0500
+Message-Id: <1217609060-6381-10-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1217609060-6381-9-git-send-email-galak@kernel.crashing.org>
+References: <1217609060-6381-1-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-2-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-3-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-5-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-6-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-7-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-8-git-send-email-galak@kernel.crashing.org>
+	<1217609060-6381-9-git-send-email-galak@kernel.crashing.org>
+Cc: linux-ide@vger.kernel.org, jgarzik@pobox.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 01, 2008 at 12:36:39PM -0500, Sparks, Sam wrote:
-> >From: Anton Vorontsov
-> >Sent: Friday, August 01, 2008 11:51 AM
-> >
-> >Works like a charm here. I use quite outdated u-boot though. Which one
-> >you use? I could try it (if it is community u-boot).
-> 
-> I'm using the head, which I grabbed last week: U-Boot
-> 1.3.4-rc1-00012-g1953d12
-> TIA for checking your itx with this version.
+Now that arch/ppc is dead CONFIG_PPC_MERGE is always defined for all
+powerpc platforms and we want to get rid of CONFIG_PPC_MERGE use
+CONFIG_PPC instead.
 
-U-Boot 1.3.4-rc1-00012-g1953d12 (Aug  1 2008 - 21:45:42) MPC83XX
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/ata/pata_sil680.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-The CF still works.
-
-> >As for the backtrace you posted recently, I remeber I've noticed the
-> >similar issue long ago on some mITX board. I believe the board had
-> >hw issues indeed (or CF card I tested with). The problem could be in
-> >the IRQ line itself (for some reason it always low), or it could be
-> >IDE cmd/data lines at fault, so that IDE can't receive status read
-> >command and does not deassert the interrupt line... quite hard to
-> >tell.
-> 
-> Thanks for confirming.. I was losing my mind :-)
-> This looks like it is indeed a HW problem with the ITX. Are you aware of
-> any threads/documents describing the issue? We based our custom HW off
-> the ITX schematic with regards to the CF, and I hope we didn't copy over
-> _that_ problem :-/
-
-I don't think it was a hw design problem, more likely somebody
-fried the CF slot on that board (either by hot-plugging the CF, or via
-inserting CF 5V only flash.. either of this is forbidden for the
-8349mITX boards).
-
+diff --git a/drivers/ata/pata_sil680.c b/drivers/ata/pata_sil680.c
+index 720b864..9655511 100644
+--- a/drivers/ata/pata_sil680.c
++++ b/drivers/ata/pata_sil680.c
+@@ -230,7 +230,7 @@ static u8 sil680_init_chip(struct pci_dev *pdev, int *try_mmio)
+ 		tmpbyte & 1, tmpbyte & 0x30);
+ 
+ 	*try_mmio = 0;
+-#ifdef CONFIG_PPC_MERGE
++#ifdef CONFIG_PPC
+ 	if (machine_is(cell))
+ 		*try_mmio = (tmpbyte & 1) || pci_resource_start(pdev, 5);
+ #endif
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.5.1
