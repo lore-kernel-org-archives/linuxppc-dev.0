@@ -1,24 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 65C60DDEEF
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 22:47:01 +1000 (EST)
-Message-Id: <48592693-41C0-4A71-8678-A0F44457BE47@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Ben Dooks <ben-linux@fluff.org>
-In-Reply-To: <20080801104347.GM26938@trinity.fluff.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: libata badness
-Date: Fri, 1 Aug 2008 07:46:50 -0500
-References: <95646AC3-5385-4F59-8EBA-20F811168A87@kernel.crashing.org>
-	<20080731210410.GA623@polina.dev.rtsoft.ru>
-	<DAE7C7B4-CE5B-45EB-B3B4-E5491A843CD9@kernel.crashing.org>
-	<20080801104347.GM26938@trinity.fluff.org>
-Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <timur.tabi@gmail.com>
+Message-ID: <ed82fe3e0808010617u101855f7x70d3cbd2bed31f8c@mail.gmail.com>
+Date: Fri, 1 Aug 2008 08:17:25 -0500
+From: "Timur Tabi" <timur@freescale.com>
+Sender: timur.tabi@gmail.com
+To: "Trent Piepho" <xyzzy@speakeasy.org>
+Subject: Re: [i2c] [PATCH] powerpc: i2c-mpc: make speed registers configurable
+	via FDT
+In-Reply-To: <Pine.LNX.4.58.0807311610170.10341@shell4.speakeasy.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <488982B5.4070102@grandegger.com>
+	<fa686aa40807250612g34b5167dtbe70c810f30a5d32@mail.gmail.com>
+	<ed82fe3e0807250721n115d28c7ha1f641c9175c473d@mail.gmail.com>
+	<4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
+	<20080727012722.GH12191@secretlab.ca>
+	<4891A744.6060005@grandegger.com>
+	<9e4733910807310849g7e5612dbk9536733e061af8ad@mail.gmail.com>
+	<4891E06A.4070608@freescale.com>
+	<Pine.LNX.4.58.0807311610170.10341@shell4.speakeasy.net>
+Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org,
+	Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,19 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Jul 31, 2008 at 6:32 PM, Trent Piepho <xyzzy@speakeasy.org> wrote:
 
-On Aug 1, 2008, at 5:43 AM, Ben Dooks wrote:
+> The real problem, which kept me from making a patch to do this months ago,
+> is that the source clock that the I2C freq divider applies to is different
+> for just about every MPC8xxx platform.  Not just a different value, but a
+> totally different internal clock.  Sometimes is CCB, sometimes CCB/2,
+> sometimes tsec2's clock, etc.
 
-> On Thu, Jul 31, 2008 at 04:58:05PM -0500, Kumar Gala wrote:
->> I figured out the issue.  Its related to the interrupt routing being
->> conveyed to the code from the device tree.  We have a missing 'space'
->> causing issues.
->
-> out of interest, is the M5229 attached to a single IRQ in this device
-> or has the bridge been configured to route the IRQs from the IDE to
-> the same pin on the PIC?
+On which SOC is it the tesc2 clock?
 
-The bridge is routing interrupts via an i8259 to a single interrupt on  
-the OpenPIC (primary pic).
+>  Sometimes the two i2c controllers don't even
+> have the same clock.
 
-- k
+On which platform is that the case?  I thought I had all 8[356]xx
+boards covered.  Did I miss some?
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
