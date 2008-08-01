@@ -1,22 +1,20 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 0F148DDF55
+Return-Path: <John.Linn@xilinx.com>
+Received: from VA3EHSOBE005.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 64CD0DE502
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Aug 2008 22:00:14 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KOtIn-0004V3-S9
-	for linuxppc-embedded@ozlabs.org; Fri, 01 Aug 2008 05:00:09 -0700
-Message-ID: <18772952.post@talk.nabble.com>
-Date: Fri, 1 Aug 2008 05:00:09 -0700 (PDT)
-From: Misbah khan <misbah_khan@engineer.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: floating point support in the driver.
-In-Reply-To: <200808011332.25368.laurentp@cse-semaphore.com>
+	Sat,  2 Aug 2008 01:00:23 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <18772109.post@talk.nabble.com>
-	<200808011332.25368.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset="US-ASCII"
+Subject: RE: Board is not booting - Please Help me
+Date: Fri, 1 Aug 2008 09:00:14 -0600
+In-Reply-To: <20080801023412.GA32426@secretlab.ca>
+References: <cf9b3c760807300044y4625ca2am60367defaa98d49b@mail.gmail.com>
+	<20080801023412.GA32426@secretlab.ca>
+From: John Linn <John.Linn@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>,
+	"Naresh Bhat" <nareshgbhat@gmail.com>
+Message-ID: <20080801150018.280251AC8066@mail216-va3.bigfish.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,65 +25,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Grant,
 
-I am not very clear Why floating point support in the Kernel should be
-avoided ?
+John Bonesio is working with Montavista to get these problems solved.
 
-We want our DSP algorithm to run at the boot time and since kernel thread
-having higher priority , i assume that it would be faster than user
-application.
+Thanks,
+John
 
-If i really have to speed up my application execution what mechanism will
-you suggest me to try ?
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-
+> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Grant Likely
+> Sent: Thursday, July 31, 2008 8:34 PM
+> To: Naresh Bhat
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: Board is not booting - Please Help me
+> =
 
-After using Hardware VFP support also i am still laging the timing
-requirement by 800 ms in my case 
+> On Wed, Jul 30, 2008 at 01:14:52PM +0530, Naresh Bhat wrote:
+> > Hi Guys
+> > I have ML507 board.  By using "ml507_bsb_design_ppc440.zip"
+> > I have created the "Base System Builder" project and also
+> >
+> > I am able to create the following files sucessfully.
+> >
+> > 1. My own "DTS" file (attached with the mail)
+> > 2. My own "download.bit" file
+> > 3. My own ACE file. (Used the Montavista Pro 5.0 kernel., Kernel is
+compiled
+> > with ARCH=3Dpowerpc, CROSS_COMPILE=3Dppc_440-, used the ml507_defconfig=
+)
+> =
 
----- Misbah <><
+> Unfortunately, I'm not able to help much with the Montavista kernel
+> since I don't know anything about which version it is based on.  Have
+> you tried using the current mainline kernel source or Xilinx's
+published
+> git repo?
+> =
 
+> To use mainline, try copying your .dts file to
+> arch/powerpc/boot/dts/virtex440-myml507.dts and then build the kernel
+> with 'make simpleImage.virtex440-myml507'
+> =
 
-Laurent Pinchart-4 wrote:
-> 
-> On Friday 01 August 2008, Misbah khan wrote:
->> 
->> Hi all,
->> 
->> I have a DSP algorithm which i am running in the application even after
->> enabling the VFP support it is taking a lot of time to get executed hence 
->> 
->> I want to transform the same into the driver insted of an user
->> application.
->> Can anybody suggest whether doing the same could be a better solution and
->> what could be the chalenges that i have to face by implimenting such
->> floating point support in the driver.
->> 
->> Is there a way in the application itself to make it execute faster.
-> 
-> Floating-point in the kernel should be avoided. FPU state save/restore
-> operations are costly and are not performed by the kernel when switching
-> from userspace to kernelspace context. You will have to protect
-> floating-point sections with kernel_fpu_begin/kernel_fpu_end which, if I'm
-> not mistaken, disables preemption. That's probably not something you want
-> to do. Why would the same code run faster in kernelspace then userspace ?
-> 
-> -- 
-> Laurent Pinchart
-> CSE Semaphore Belgium
-> 
-> Chaussee de Bruxelles, 732A
-> B-1410 Waterloo
-> Belgium
-> 
-> T +32 (2) 387 42 59
-> F +32 (2) 387 42 75
-> 
->  
+> g.
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
 
--- 
-View this message in context: http://www.nabble.com/floating-point-support-in-the-driver.-tp18772109p18772952.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
