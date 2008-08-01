@@ -1,6 +1,6 @@
 Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910808010728i29597225j2272bd56f7e5a184@mail.gmail.com>
-Date: Fri, 1 Aug 2008 10:28:38 -0400
+Message-ID: <9e4733910808010732u48ed06a4vc2121c133d91bbbd@mail.gmail.com>
+Date: Fri, 1 Aug 2008 10:32:12 -0400
 From: "Jon Smirl" <jonsmirl@gmail.com>
 To: "Timur Tabi" <timur@freescale.com>
 Subject: Re: [i2c] [PATCH] powerpc: i2c-mpc: make speed registers configurable
