@@ -1,23 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 1 Aug 2008 16:22:59 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Board level compatibility matching
-Message-ID: <20080801062259.GL5008@yookeroo.seuss>
-References: <fa686aa40807311319k44d270b0t4fa9cb0e6523339@mail.gmail.com>
-	<9e4733910807311349l5770a17ib2ab2535bcd2868a@mail.gmail.com>
-	<20080731205251.GB29834@secretlab.ca>
-	<9e4733910807311358k54b5c088l1023d354fd0ad28e@mail.gmail.com>
-	<20080801024729.GA5008@yookeroo.seuss>
-	<9e4733910807312006l8e83d27qe1b5ca5f50b89e39@mail.gmail.com>
-	<20080801033009.GG5008@yookeroo.seuss>
-	<9e4733910807312100j6a8d1974k34054c2d69f417f4@mail.gmail.com>
-	<20080801042505.GK5008@yookeroo.seuss>
-	<9e4733910807312137w2dc9e73l39d4d99bd0cfe0c6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910807312137w2dc9e73l39d4d99bd0cfe0c6@mail.gmail.com>
-Cc: devicetree-discuss@ozlabs.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 3215BDE027
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Aug 2008 17:04:19 +1000 (EST)
+Date: Fri, 01 Aug 2008 00:04:17 -0700 (PDT)
+Message-Id: <20080801.000417.85699799.davem@davemloft.net>
+To: joerg.roedel@amd.com
+Subject: Re: [PATCH] Revert "Merge branch 'x86/iommu' of
+	git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip into
+	for-linus"
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080801070328.GA26894@amd.com>
+References: <20080801094323.9601d87b.sfr@canb.auug.org.au>
+	<20080801085106E.fujita.tomonori@lab.ntt.co.jp>
+	<20080801070328.GA26894@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+	jbarnes@virtuousgeek.org, fujita.tomonori@lab.ntt.co.jp,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	akpm@linux-foundation.org, torvalds@linux-foundation.org, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +28,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 01, 2008 at 12:37:25AM -0400, Jon Smirl wrote:
-> On 8/1/08, David Gibson <david@gibson.dropbear.id.au> wrote:
-> > On Fri, Aug 01, 2008 at 12:00:01AM -0400, Jon Smirl wrote:
-> >  > On 7/31/08, David Gibson <david@gibson.dropbear.id.au> wrote:
-> >  > > On Thu, Jul 31, 2008 at 11:06:20PM -0400, Jon Smirl wrote:
-> >  > >  > On 7/31/08, David Gibson <david@gibson.dropbear.id.au> wrote:
-[snip]
-> >  > Why does the fake fabric device need to be in the device tree? Can't
-> >  > we just dynamically create it as part of the boot process?
-> >
-> >
-> > Um.. yes.. that would be exactly what instantiating it from the
-> >  platform code does.
-> 
-> Platform devices are missing the compatible chain process. If we do
-> this with platform drivers the boot code creates a 'fabric' device
-> then I'll have to ensure that my board-fabric driver gets probed
-> before default-fabric because they both want to bind to the fabric
-> device.
+From: Joerg Roedel <joerg.roedel@amd.com>
+Date: Fri, 1 Aug 2008 09:03:28 +0200
 
-If you need a board-specific fabric driver, the board platform code
-shouldn't be instantiating the generic fabric driver.  Given the board
-specific driver a different name...
+> That may be the reason that your fix is not yet upstream.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+The reason is more-so because Linus simply hasn't merged more
+than a couple of patches since 2.6.27-rc1 was released.
