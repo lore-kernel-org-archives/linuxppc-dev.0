@@ -1,33 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 349E5DDF8C
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 05:16:37 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m71J6jhr021396
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Aug 2008 12:15:59 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m71IvFrf007717
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Aug 2008 13:57:15 -0500 (CDT)
-Date: Fri, 1 Aug 2008 13:57:14 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 03/10] fs-enet: remove code associated with
-	!CONFIG_PPC_MERGE
-Message-ID: <20080801185714.GA26062@ld0162-tx32.am.freescale.net>
-References: <1217609060-6381-1-git-send-email-galak@kernel.crashing.org>
-	<1217609060-6381-2-git-send-email-galak@kernel.crashing.org>
-	<1217609060-6381-3-git-send-email-galak@kernel.crashing.org>
-	<1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1217609060-6381-4-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org
+Return-Path: <xyzzy@speakeasy.org>
+Date: Fri, 1 Aug 2008 12:47:13 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [i2c] [PATCH] powerpc: i2c-mpc: make speed registers configurable
+	via FDT
+In-Reply-To: <ed82fe3e0808010617u101855f7x70d3cbd2bed31f8c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0808011246290.10341@shell4.speakeasy.net>
+References: <488982B5.4070102@grandegger.com>
+	<fa686aa40807250612g34b5167dtbe70c810f30a5d32@mail.gmail.com>
+	<ed82fe3e0807250721n115d28c7ha1f641c9175c473d@mail.gmail.com>
+	<4889EFFE.2070201@grandegger.com> <4889FD1D.4010804@freescale.com>
+	<20080727012722.GH12191@secretlab.ca> <4891A744.6060005@grandegger.com>
+	<9e4733910807310849g7e5612dbk9536733e061af8ad@mail.gmail.com>
+	<4891E06A.4070608@freescale.com>
+	<Pine.LNX.4.58.0807311610170.10341@shell4.speakeasy.net>
+	<ed82fe3e0808010617u101855f7x70d3cbd2bed31f8c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, Linuxppc-dev@ozlabs.org,
+	Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,30 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 01, 2008 at 11:44:13AM -0500, Kumar Gala wrote:
-> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-> index 9a51ec8..e54d003 100644
-> --- a/drivers/net/fs_enet/fs_enet-main.c
-> +++ b/drivers/net/fs_enet/fs_enet-main.c
-> @@ -669,7 +669,6 @@ static int fs_request_irq(struct net_device *dev, int irq, const char *name,
->  {
->  	struct fs_enet_private *fep = netdev_priv(dev);
->  
-> -	(*fep->ops->pre_request_irq)(dev, irq);
->  	return request_irq(irq, irqf, IRQF_SHARED, name, dev);
->  }
+On Fri, 1 Aug 2008, Timur Tabi wrote:
+> On Thu, Jul 31, 2008 at 6:32 PM, Trent Piepho <xyzzy@speakeasy.org> wrote:
+>
+> > The real problem, which kept me from making a patch to do this months ago,
+> > is that the source clock that the I2C freq divider applies to is different
+> > for just about every MPC8xxx platform.  Not just a different value, but a
+> > totally different internal clock.  Sometimes is CCB, sometimes CCB/2,
+> > sometimes tsec2's clock, etc.
+>
+> On which SOC is it the tesc2 clock?
 
-This makes "fep" an unused variable.  Eliminate this function entirely,
-and call request_irq directly from the caller.
+834x
 
->  
-> @@ -678,7 +677,6 @@ static void fs_free_irq(struct net_device *dev, int irq)
->  	struct fs_enet_private *fep = netdev_priv(dev);
->  
->  	free_irq(irq, dev);
-> -	(*fep->ops->post_free_irq)(dev, irq);
->  }
+>
+> >  Sometimes the two i2c controllers don't even
+> > have the same clock.
+>
+> On which platform is that the case?  I thought I had all 8[356]xx
+> boards covered.  Did I miss some?
 
-Likewise.
-
--Scott
+All 83xx other than 832x.
