@@ -1,14 +1,18 @@
-Return-Path: <paul@burly.ondioline.org>
-Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
-	by ozlabs.org (Postfix) with ESMTP id B56CEDDD0C
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Aug 2008 22:10:19 +1000 (EST)
-From: Paul Collins <paul@burly.ondioline.org>
-To: linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org, linuxppc-dev@ozlabs.org
-Subject: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux, post-2.6.27-rc1
-Date: Sun, 03 Aug 2008 00:03:18 +1200
-Message-ID: <87tze38vzt.fsf@burly.wgtn.ondioline.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 61AD3DDE0D
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Aug 2008 03:14:03 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Compact flash on mpc8349eITX
+Date: Sat, 2 Aug 2008 19:13:56 +0200
+References: <6011A7C9CD0EE74792C3ED2A835560863421AB@mail.twacs.com>
+In-Reply-To: <6011A7C9CD0EE74792C3ED2A835560863421AB@mail.twacs.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808021913.56838.arnd@arndb.de>
+Cc: "Sparks, Sam" <SSparks@aclaratech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,55 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I just got the oops below on a ppc32 NFS4 server.  I was cross-compiling
-Linux with an amd64 client at the time.  The server is running Linus's
-tree as of 94ad374a0751f40d25e22e036c37f7263569d24c, the client is
-running 2.6.26.
+On Friday 01 August 2008, Sparks, Sam wrote:
+> Has anyone successfully communicated with a compact flash device in true
+> IDE mode on the MPC8349eITX? If so, do you happen to know the kernel
+> configuration and/or revision?
+> 
 
-The server's kernel was cross-compiled with gcc 4.2.4-3 and binutils
-2.18.50.20080610-1, both built from the Debian sources following their
-toolchain-building procedures.
+There are some CF cards and some IDE-CF adapters that are missing the lines
+for DMA mode, even if the controller on the card supports DMA.
+If a specific card doesn't work, try using a different one, or use PIO mode
+only.
 
-Annoyingly, I can't kill two of the client processes:
-
-    1 11634 11634   977 ?           -1 D     1000   0:00 make ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- oldconfig vmlinux modules
-    1 23887 11634   977 ?           -1 D     1000   0:00 [powerpc-linux-g]
-
-Here's the oops.  The instruction dump really was all Xes.
-
-  Unable to handle kernel paging request for instruction fetch
-  Faulting instruction address: 0x00000000
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  PowerMac
-  Modules linked in: snd_aoa_codec_tas snd_aoa_fabric_layout snd_aoa snd_aoa_i2sbus snd_aoa_soundbus radeon drm b43 mac80211 cfg80211 pcmcia snd_pcm_oss snd_pcm snd_page_alloc yenta_socket rsrc_nonstatic pcmcia_core ssb uninorth_agp agpgart ehci_hcd ohci_hcd [last unloaded: snd_aoa_soundbus]
-  NIP: 00000000 LR: c0159a44 CTR: 00000000
-  REGS: c1d81c70 TRAP: 0400   Not tainted  (2.6.27-rc1-00158-g643fbd8)
-  MSR: 40009032 <EE,ME,IR,DR>  CR: 82002024  XER: 20000000
-  TASK = c1c7b210[2306] 'nfsd' THREAD: c1d80000
-  GPR00: c0159bcc c1d81d20 c1c7b210 82002044 c2e538d4 82002044 002e499d f92d835f
-  GPR08: 00000000 c2e55ac4 c2e55adc c1d81d50 82002024 00000000 018985fc 01898404
-  GPR16: 01898710 018c7894 c04b03f4 c04b03e0 c0173da0 c05f4e84 fffff000 00000001
-  GPR24: c00c05dc 00000000 82002044 00000000 c2e538d4 c2e538d4 c0437120 c1d81d20
-  NIP [00000000] 0x0
-  LR [c0159a44] find_acceptable_alias+0x44/0x108
-  Call Trace:
-  [c1d81d20] [c00cbab8] exportfs_d_alloc+0x40/0x70 (unreliable)
-  [c1d81d50] [c0159bcc] exportfs_decode_fh+0xc4/0x200
-  [c1d81e80] [c015d568] fh_verify+0x2e8/0x578
-  [c1d81ed0] [c016b1ec] nfsd4_putfh+0x60/0x78
-  [c1d81ef0] [c016afd0] nfsd4_proc_compound+0x1e4/0x34c
-  [c1d81f30] [c015a060] nfsd_dispatch+0xfc/0x220
-  [c1d81f50] [c0400c70] svc_process+0x3e4/0x6e8
-  [c1d81f90] [c015a8bc] nfsd+0x1c4/0x294
-  [c1d81fd0] [c0049e48] kthread+0x5c/0x9c
-  [c1d81ff0] [c00125c0] kernel_thread+0x44/0x60
-  Instruction dump:
-  XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-  XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-  ---[ end trace 88de9451d0d3e759 ]---
-
--- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+	Arnd <><
