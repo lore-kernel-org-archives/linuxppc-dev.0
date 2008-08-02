@@ -1,21 +1,22 @@
-Return-Path: <paul@burly.ondioline.org>
-Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
-	by ozlabs.org (Postfix) with ESMTP id 0EE3EDDDD8
-	for <linuxppc-dev@ozlabs.org>; Sun,  3 Aug 2008 08:36:52 +1000 (EST)
-From: Paul Collins <paul@burly.ondioline.org>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
-	post-2.6.27-rc1
-References: <87tze38vzt.fsf@burly.wgtn.ondioline.org>
-	<20080802184554.GB715@fieldses.org>
-Date: Sun, 03 Aug 2008 10:36:51 +1200
-In-Reply-To: <20080802184554.GB715@fieldses.org> (J. Bruce Fields's message of
-	"Sat, 2 Aug 2008 14:45:54 -0400")
-Message-ID: <87abfvm4cc.fsf@burly.wgtn.ondioline.org>
+Return-Path: <jonsmirl@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.178])
+	by ozlabs.org (Postfix) with ESMTP id 7FDA8DDDF3
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Aug 2008 08:46:14 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so709107pyi.27
+	for <linuxppc-dev@ozlabs.org>; Sat, 02 Aug 2008 15:46:12 -0700 (PDT)
+Message-ID: <9e4733910808021546o4aa5ebdcv4caa2878e4c17cf0@mail.gmail.com>
+Date: Sat, 2 Aug 2008 18:46:12 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>,
+	"Anton Vorontsov" <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH v3 0/4 REPOST] OF infrastructure for SPI devices
+In-Reply-To: <9e4733910807250746g436307d7sbbf799b73a9f2c67@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Neil Brown <neilb@suse.de>, linuxppc-dev@ozlabs.org, nfsv4@linux-nfs.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080725072549.8485.90723.stgit@trillian.secretlab.ca>
+	<9e4733910807250746g436307d7sbbf799b73a9f2c67@mail.gmail.com>
+Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +26,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-"J. Bruce Fields" <bfields@fieldses.org> writes:
-
-> On Sun, Aug 03, 2008 at 12:03:18AM +1200, Paul Collins wrote:
->> I just got the oops below on a ppc32 NFS4 server.  I was cross-compiling
->> Linux with an amd64 client at the time.  The server is running Linus's
->> tree as of 94ad374a0751f40d25e22e036c37f7263569d24c, the client is
->> running 2.6.26.
->> 
->> The server's kernel was cross-compiled with gcc 4.2.4-3 and binutils
->> 2.18.50.20080610-1, both built from the Debian sources following their
->> toolchain-building procedures.
+On 7/25/08, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On 7/25/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+>  > I don't know what to do with these patches.  I'd really like to see them
+>  >  in .27, and now that akpm has cleared his queue, the prerequisite patch
+>  >  has been merged so they are ready to go in.  However, even though there
+>  >  has been favourable reception on the SPI and linuxppc lists for these
+>  >  changes I don't have any acks from anybody yet.
 >
-> Without having really thought about this,
 >
-> 	496d6c32d4d057cb44272d9bd587ff97d023ee92 "nfsd: fix spurious
-> 	EACCESS in reconnect_path()"
+> I have compatible hardware but it has an MMC card socket hooked up. I
+>  haven't figured out yet how to get this driver hooked to the MMC
+>  subsystem and make the file system on the card work.  (I've been
+>  working on ALSA).
 >
-> is one suspect; it might be worth checking whether the problem's
-> reproduceable with that reverted.  But I assume we're not so lucky as to
-> have a 100% reproduceable problem here?
+>  I believe I need this:
+>  http://lkml.org/lkml/2008/6/5/209
+>
+>  Then I need to get everything hooked together. Point me in the right
+>  direction and I can help with testing.
 
-Unknown.  I've kicked off a fresh build.  Here's hoping!
+Grant, your SPI driver works with MMC cards. I needed to add the patch
+noted above.
+http://lkml.org/lkml/2008/6/5/209
+What's the status of merging Anton's patch?
 
-> What do your export options look like?
+And then tweak names until everything matches.
 
-  $ cat /etc/exports
-  /srv/nfsv4            *(sec=krb5:krb5i:krb5p,rw,fsid=0,crossmnt,insecure,no_subtree_check)
-  /srv/nfsv4/home/paul  *(sec=krb5:krb5i:krb5p,rw,insecure,no_subtree_check)
-  $ mount | grep bind
-  /home/paul on /srv/nfsv4/home/paul type none (rw,bind)
+		spi@f00 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
+			reg = <0xf00 0x20>;
+			interrupts = <0x2 0xd 0x0 0x2 0xe 0x0>;
+			interrupt-parent = <&mpc5200_pic>;
+
+			mmc-slot@0 {
+				compatible = "linux,mmc-spi";
+				reg = <0>;
+				spi-max-frequency = <20000000>;
+				/* Unregulated slot. */
+				voltage-range = <3300 3300>;
+				/*gpios = <&sdcsr_pio 1 0   /*  WP */
+				/*		 &sdcsr_pio 0 1>; /* nCD */
+			};
+		};
+
+diff --git a/drivers/mmc/host/mmc_spi.c b/drivers/mmc/host/mmc_spi.c
+index 7503b81..eb056b9 100644
+--- a/drivers/mmc/host/mmc_spi.c
++++ b/drivers/mmc/host/mmc_spi.c
+@@ -1400,7 +1400,7 @@ static int __devexit mmc_spi_remove(struct
+spi_device *spi)
+
+ static struct spi_driver mmc_spi_driver = {
+ 	.driver = {
+-		.name =		"mmc_spi",
++		.name =		"mmc-spi",
+ 		.bus =		&spi_bus_type,
+ 		.owner =	THIS_MODULE,
+ 	},
+diff --git a/drivers/of/of_mmc_spi.c b/drivers/of/of_mmc_spi.c
+index aa4e017..f189cdb 100644
+--- a/drivers/of/of_mmc_spi.c
++++ b/drivers/of/of_mmc_spi.c
+@@ -95,7 +95,7 @@ static int of_mmc_spi_add(struct device *dev)
+ 	const u32 *voltage_range;
+ 	int size;
+
+-	if (!np || !of_device_is_compatible(np, "mmc-spi"))
++	if (!np || !of_device_is_compatible(np, "linux,mmc-spi"))
+ 		return NOTIFY_DONE;
+
+ 	oms = kzalloc(sizeof(*oms), GFP_KERNEL);
+@@ -152,7 +152,7 @@ static int of_mmc_spi_del(struct device *dev)
+ 	struct device_node *np = dev->archdata.of_node;
+ 	struct of_mmc_spi *oms;
+
+-	if (!np || !of_device_is_compatible(np, "mmc-spi") ||
++	if (!np || !of_device_is_compatible(np, "linux,mmc-spi") ||
+ 			!dev->platform_data)
+ 		return NOTIFY_DONE;
 
 -- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+Jon Smirl
+jonsmirl@gmail.com
