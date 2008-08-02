@@ -1,18 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 61AD3DDE0D
-	for <linuxppc-dev@ozlabs.org>; Sun,  3 Aug 2008 03:14:03 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Compact flash on mpc8349eITX
-Date: Sat, 2 Aug 2008 19:13:56 +0200
-References: <6011A7C9CD0EE74792C3ED2A835560863421AB@mail.twacs.com>
-In-Reply-To: <6011A7C9CD0EE74792C3ED2A835560863421AB@mail.twacs.com>
+Return-Path: <paul@burly.ondioline.org>
+Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
+	by ozlabs.org (Postfix) with ESMTP id 0EE3EDDDD8
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Aug 2008 08:36:52 +1000 (EST)
+From: Paul Collins <paul@burly.ondioline.org>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
+	post-2.6.27-rc1
+References: <87tze38vzt.fsf@burly.wgtn.ondioline.org>
+	<20080802184554.GB715@fieldses.org>
+Date: Sun, 03 Aug 2008 10:36:51 +1200
+In-Reply-To: <20080802184554.GB715@fieldses.org> (J. Bruce Fields's message of
+	"Sat, 2 Aug 2008 14:45:54 -0400")
+Message-ID: <87abfvm4cc.fsf@burly.wgtn.ondioline.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808021913.56838.arnd@arndb.de>
-Cc: "Sparks, Sam" <SSparks@aclaratech.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: Neil Brown <neilb@suse.de>, linuxppc-dev@ozlabs.org, nfsv4@linux-nfs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 01 August 2008, Sparks, Sam wrote:
-> Has anyone successfully communicated with a compact flash device in true
-> IDE mode on the MPC8349eITX? If so, do you happen to know the kernel
-> configuration and/or revision?
-> 
+"J. Bruce Fields" <bfields@fieldses.org> writes:
 
-There are some CF cards and some IDE-CF adapters that are missing the lines
-for DMA mode, even if the controller on the card supports DMA.
-If a specific card doesn't work, try using a different one, or use PIO mode
-only.
+> On Sun, Aug 03, 2008 at 12:03:18AM +1200, Paul Collins wrote:
+>> I just got the oops below on a ppc32 NFS4 server.  I was cross-compiling
+>> Linux with an amd64 client at the time.  The server is running Linus's
+>> tree as of 94ad374a0751f40d25e22e036c37f7263569d24c, the client is
+>> running 2.6.26.
+>> 
+>> The server's kernel was cross-compiled with gcc 4.2.4-3 and binutils
+>> 2.18.50.20080610-1, both built from the Debian sources following their
+>> toolchain-building procedures.
+>
+> Without having really thought about this,
+>
+> 	496d6c32d4d057cb44272d9bd587ff97d023ee92 "nfsd: fix spurious
+> 	EACCESS in reconnect_path()"
+>
+> is one suspect; it might be worth checking whether the problem's
+> reproduceable with that reverted.  But I assume we're not so lucky as to
+> have a 100% reproduceable problem here?
 
-	Arnd <><
+Unknown.  I've kicked off a fresh build.  Here's hoping!
+
+> What do your export options look like?
+
+  $ cat /etc/exports
+  /srv/nfsv4            *(sec=krb5:krb5i:krb5p,rw,fsid=0,crossmnt,insecure,no_subtree_check)
+  /srv/nfsv4/home/paul  *(sec=krb5:krb5i:krb5p,rw,insecure,no_subtree_check)
+  $ mount | grep bind
+  /home/paul on /srv/nfsv4/home/paul type none (rw,bind)
+
+-- 
+Paul Collins
+Wellington, New Zealand
+
+Dag vijandelijk luchtschip de huismeester is dood
