@@ -1,22 +1,12 @@
-Return-Path: <imp@bsdimp.com>
-Received: from harmony.bsdimp.com (bsdimp.com [199.45.160.85])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9B7C7DE04F
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Aug 2008 02:01:43 +1000 (EST)
-Date: Fri, 01 Aug 2008 09:54:29 -0600 (MDT)
-Message-Id: <20080801.095429.-1827411968.imp@bsdimp.com>
-To: misbah_khan@engineer.com
-Subject: Re: floating point support in the driver.
-From: "M. Warner Losh" <imp@bsdimp.com>
-In-Reply-To: <18772952.post@talk.nabble.com>
-References: <18772109.post@talk.nabble.com>
-	<200808011332.25368.laurentp@cse-semaphore.com>
-	<18772952.post@talk.nabble.com>
+Return-Path: <paul@mad-scientist.us>
+Subject: Creating a wrapped zImage.initrd -- can't start the trampoline?
+From: Paul Smith <paul@mad-scientist.us>
+To: Linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Fri, 01 Aug 2008 22:40:27 -0400
+Message-Id: <1217644827.6390.12.camel@homebase.localnet>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
+Reply-To: paul@mad-scientist.us
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,112 +17,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message: <18772952.post@talk.nabble.com>
-            Misbah khan <misbah_khan@engineer.com> writes:
-: I am not very clear Why floating point support in the Kernel should be
-: avoided ?
+Hi all;
+        
+I'm working with a PPC 460EX-based board.  I have a 2.6.25.10-based
+kernel I obtained from the DENX git tree which contains a port to this
+board, under arch/powerpc.
 
-Because saving the FPU state is expensive.  The kernel multiplexes the
-FPU hardware among all the userland processes that use it.  For parts
-of the kernel to effectively use the FPU, it would have to save the
-state on traps into the kernel, and restore the state when returning
-to userland.  This is a big drag on performance of the system.  There
-are ways around this optimization where you save the fpu state
-explicitly, but the expense si still there.
+I can build a kernel and have it downloaded and booting using u-boot,
+providing the blob and appropriate kernel parameters, after having done
+a standard "make zImage" with the appropriate configs etc.  All good so
+far.
 
-: We want our DSP algorithm to run at the boot time and since kernel thread
-: having higher priority , i assume that it would be faster than user
-: application.
+However, my ultimate target board uses a custom bootloader, not uboot,
+which is very, very simple (please don't suggest we just switch to
+uboot--that argument has been already had, and lost :-/)  I had a
+previous version of Linux, 2.6.14, booting on a predecessor of this
+board based on the 440GX with the same bootloader, but the creation of
+that image was done under arch/ppc and it was pretty different (I'm
+discovering).  And, I didn't do that port anyway.
 
-Bad assumption.  User threads can get boots in priority in certain
-cases.
+Anyway, I need to generate an all-in-one image containing the kernel and
+the initrd, and the trampoline code tacked onto it to turn it into an
+ELF image.  I'm worried I'll need to write a custom platform_init() but
+for now I'm just using of.c.
 
-If it really is just at boot time, before any other threads are
-started, you likely can get away with it.
+>From what I can tell, the wrapper script seems to be intended to have
+the ability to generate an image like this.  I've tried just running
+"make zImage.initrd" after putting the ramdisk.initrd.gz in the right
+place, and it seems to create an image OK: using file shows it to be
+"ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV),
+statically linked, not stripped", which seems correct.
 
-: If i really have to speed up my application execution what mechanism will
-: you suggest me to try ?
-: 
-: After using Hardware VFP support also i am still laging the timing
-: requirement by 800 ms in my case 
+But we can't get it to boot.
 
-This sounds like a classic case of putting 20 pounds in a 10 pound bag
-and complaining that the bag rips out.  You need a bigger bag.
+The bootloader downloads the image (tftp) and jumps to the start address
+in the ELF image, and immediately takes an illegal instruction.  We have
+set the bootloader to load the image at 0x00000000 and then we look
+through the ELF image for the start address, which (using objdump) I can
+see is the correct address for the _zimage_start symbol from crt0.S; in
+our case it's 0x00400204.
 
-If you are doing FPU intensive operations in userland, moving them to
-the kernel isn't going to help anything but maybe latency.  And if you
-are almost a full second short, your quest to move things into the
-kernel is almost certainly not going to help enough.  Moving things
-into the kernel only helps latency, and only when there's lots of
-context switches (since doing stuff in the kernel avoids the domain
-crossing that forces the save of the CPU state).
+When we use a debugger to look at what's loaded at that location, it's
+just a whole slew of 0xa bytes... obviously not right.  Is the start
+address not the offset from the start of the ELF image?  Should we be
+loading the image somewhere else (the previous incarnation loaded it at
+0x0, so we just did that too)?
 
-I don't know if the 800ms timing is relative to a task that must run
-once a second, or once an hour.  If the former, you're totally
-screwed and need to either be more clever about your algorithm
-(consider integer math, profiling the hot spots, etc), or you need
-more powerful silicon.  If you  are trying to shave 800ms off a task
-that runs for an hour, then you just might be able to do that with
-tiny code tweaks.
+I'm afraid I'm at the very outer limits of my knowledge on these
+matters.  I realize there is not enough detail in the above to really
+provide an answer but any suggestions anyone has would be very much
+appreciated.
 
-Sorry to be so harsh, but really, there's no such thing as a free lunch.
-
-Warner
-
-
-
-: ---- Misbah <><
-: 
-: 
-: Laurent Pinchart-4 wrote:
-: > 
-: > On Friday 01 August 2008, Misbah khan wrote:
-: >> 
-: >> Hi all,
-: >> 
-: >> I have a DSP algorithm which i am running in the application even after
-: >> enabling the VFP support it is taking a lot of time to get executed hence 
-: >> 
-: >> I want to transform the same into the driver insted of an user
-: >> application.
-: >> Can anybody suggest whether doing the same could be a better solution and
-: >> what could be the chalenges that i have to face by implimenting such
-: >> floating point support in the driver.
-: >> 
-: >> Is there a way in the application itself to make it execute faster.
-: > 
-: > Floating-point in the kernel should be avoided. FPU state save/restore
-: > operations are costly and are not performed by the kernel when switching
-: > from userspace to kernelspace context. You will have to protect
-: > floating-point sections with kernel_fpu_begin/kernel_fpu_end which, if I'm
-: > not mistaken, disables preemption. That's probably not something you want
-: > to do. Why would the same code run faster in kernelspace then userspace ?
-: > 
-: > -- 
-: > Laurent Pinchart
-: > CSE Semaphore Belgium
-: > 
-: > Chaussee de Bruxelles, 732A
-: > B-1410 Waterloo
-: > Belgium
-: > 
-: > T +32 (2) 387 42 59
-: > F +32 (2) 387 42 75
-: > 
-: >  
-: > _______________________________________________
-: > Linuxppc-embedded mailing list
-: > Linuxppc-embedded@ozlabs.org
-: > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-: > 
-: 
-: -- 
-: View this message in context: http://www.nabble.com/floating-point-support-in-the-driver.-tp18772109p18772952.html
-: Sent from the linuxppc-embedded mailing list archive at Nabble.com.
-: 
-: _______________________________________________
-: Linuxppc-embedded mailing list
-: Linuxppc-embedded@ozlabs.org
-: https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-: 
-: 
+Cheers!
