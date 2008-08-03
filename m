@@ -1,18 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 8/8] powerpc: last bits to support kdump on ppc32
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080801141435.GH1161@polina.dev.rtsoft.ru>
-References: <20080801141306.GA29127@polina.dev.rtsoft.ru>
-	<20080801141435.GH1161@polina.dev.rtsoft.ru>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-8aqR82PtE99b7vImT2Uy"
-Date: Mon, 04 Aug 2008 00:40:43 +1000
-Message-Id: <1217774443.7153.10.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id ECA86DDECA
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Aug 2008 00:58:34 +1000 (EST)
+Message-Id: <A5259752-468C-4CBA-BEF3-4E088ED1A5B9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20080801152030.ff10b6b2.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH v2] powerpc: move include files to arch/powerpc/include/asm
+Date: Sun, 3 Aug 2008 09:58:14 -0500
+References: <20080801152030.ff10b6b2.sfr@canb.auug.org.au>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Roland Dreier <rdreier@cisco.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	general@lists.openfabrics.org, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,69 +26,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-8aqR82PtE99b7vImT2Uy
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Aug 1, 2008, at 12:20 AM, Stephen Rothwell wrote:
 
-On Fri, 2008-08-01 at 18:14 +0400, Anton Vorontsov wrote:
-> From: Dale Farnsworth <dale@farnsworth.org>
->=20
-> Wire up the trampoline code for ppc32 to relay exceptions from the
-> vectors at address 0 to vectors at address 32MB, and modify Kconfig
-> to enable Kdump support for all powerpcs (except BookE, for now).
->=20
-> Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> from include/asm-powerpc.  This is the result of a
+>
+> mkdir arch/powerpc/include/asm
+> git mv include/asm-powerpc/* arch/powerpc/include/asm
+>
+> Followed by a few documentation/comment fixups and a couple of places
+> where <asm-powepc/...> was being used explicitly.  Of the latter only
+> one was outside the arch code and it is a driver only built for  
+> powerpc.
+>
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>
+> v2 don't change other arch files - the fixups are only in comments  
+> anyway.
+>
+> This patch can be applied with "git am" - the full patch is way to bug
+> for our mailing lists.
+>
+> This has been built for all the powerpc defconfigs including
+> all{no,mod,yes}config.  There was only one failure, but that is
+> expected anyway (I had to apply patches for the iommu and hfcmulti
+> breakages).
 
-> diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash=
-_dump.c
-> index e0debcc..96cd521 100644
-> --- a/arch/powerpc/kernel/crash_dump.c
-> +++ b/arch/powerpc/kernel/crash_dump.c
-> @@ -34,7 +34,11 @@ void __init reserve_kdump_trampoline(void)
-> =20
->  static void __init create_trampoline(unsigned long addr)
->  {
-> -	unsigned int *p =3D (unsigned int *)addr;
-> +	unsigned int *p;
-> +
-> +	/* XXX: why this code is working without +=3D PAGE_OFFSET on PPC64? */
-> +	addr +=3D PAGE_OFFSET;
-> +	p =3D (unsigned int *)addr;
+Paul, what's the plan for this change?  If this is something that will  
+go in so can we get a tree with it so we can base other patches on it  
+(like the PPC_MERGE cleanup)?
 
-Because we're still in real mode when we call it.
-
-It's kind of funny that it works on 32-bit as well. You're creating a
-branch from 0xc0000000 to 0xc2000000, and then expecting it to work when
-you're in real mode and you actually want to jump from 0x0 to 0x2000000
-- luckily it's a relative branch :)
-
-To clean this up you should just be able to change the definitions for
-KDUMP_TRAMPOLINE_START/END to include PAGE_OFFSET and that should work
-for 32 & 64-bit.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-8aqR82PtE99b7vImT2Uy
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIlcNrdSjSd0sB4dIRAvGVAKDCLDESo0RPNGLILND9JLXgsOr12ACfXzjl
-zDXsJ9ApmbrvEe5uHNOwU9Y=
-=JMJ9
------END PGP SIGNATURE-----
-
---=-8aqR82PtE99b7vImT2Uy--
+- k
