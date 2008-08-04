@@ -1,33 +1,20 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E3DB6DDECF
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Aug 2008 18:55:51 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m748teJk029775
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Aug 2008 01:55:40 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m748tcbN026242
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Aug 2008 03:55:39 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: RE: [2.6 patch] sata_fsl.c: fix 8315DS workaround
-Date: Mon, 4 Aug 2008 16:55:37 +0800
-Message-ID: <A94B04433DF4F44C9C2AB5DEFBF29A4E05E1E7@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20080804084611.GA6088@cs181140183.pp.htv.fi>
+Return-Path: <bunk@kernel.org>
+Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
+	by ozlabs.org (Postfix) with ESMTP id 7B399DDE03
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Aug 2008 19:23:32 +1000 (EST)
+Date: Mon, 4 Aug 2008 12:22:15 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Li Yang <LeoLi@freescale.com>
+Subject: Re: [2.6 patch] sata_fsl.c: fix 8315DS workaround
+Message-ID: <20080804092215.GE6088@cs181140183.pp.htv.fi>
 References: <20080804084611.GA6088@cs181140183.pp.htv.fi>
-From: "Li Yang" <LeoLi@freescale.com>
-To: "Adrian Bunk" <bunk@kernel.org>,
-	"Kalra Ashish" <ashish.kalra@freescale.com>,
-	"Jeff Garzik" <jeff@garzik.org>, <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, "Robert P. J. Day" <rpjday@crashcourse.ca>,
-	linux-ide@vger.kernel.org
+	<A94B04433DF4F44C9C2AB5DEFBF29A4E05E1E7@zch01exm26.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <A94B04433DF4F44C9C2AB5DEFBF29A4E05E1E7@zch01exm26.fsl.freescale.net>
+Cc: Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
+	Kalra Ashish <ashish.kalra@freescale.com>, linux-ide@vger.kernel.org,
+	"Robert P. J. Day" <rpjday@crashcourse.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,30 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBBZHJpYW4gQnVuayBbbWFpbHRv
-OmJ1bmtAa2VybmVsLm9yZ10gDQo+IFNlbnQ6IE1vbmRheSwgQXVndXN0IDA0LCAyMDA4IDQ6NDYg
-UE0NCj4gVG86IEthbHJhIEFzaGlzaDsgTGkgWWFuZzsgSmVmZiBHYXJ6aWs7IGdhbGFrQGtlcm5l
-bC5jcmFzaGluZy5vcmcNCj4gQ2M6IGxpbnV4cHBjLWRldkBvemxhYnMub3JnOyBsaW51eC1pZGVA
-dmdlci5rZXJuZWwub3JnOyANCj4gUm9iZXJ0IFAuIEouIERheQ0KPiBTdWJqZWN0OiBbMi42IHBh
-dGNoXSBzYXRhX2ZzbC5jOiBmaXggODMxNURTIHdvcmthcm91bmQNCj4gDQo+IENvbW1pdCBlN2Vh
-Yzk2ZThmMGU1N2E2ZTlmOTQ5NDM1NTdiYzJiMjNiZTMxNDcxIA0KPiAoYXRhL3NhdGFfZnNsOiBN
-b3ZlIE1QQzgzMTVEUyBsaW5rIHNwZWVkIGxpbWl0IHdvcmthcm91bmQgdG8gDQo+IHNwZWNpZmlj
-IGlmZGVmKSBhaW1lZCBhdCBsaW1pdGluZyB0aGUgd29ya2Fyb3VuZCBvbmx5IHRvIHRoZSANCj4g
-YWZmZWN0ZWQgaGFyZHdhcmUsIGJ1dCBzaW5jZSB0aGUgI2lmZGVmIHVzZWQgYSBub25leGlzdGlu
-ZyANCj4ga2NvbmZpZyB2YXJpYWJsZSBpdCBhY3R1YWxseSBraWxsZWQgdGhlIHdvcmthcm91bmQu
-DQoNClRoaXMgd29ya2Fyb3VuZCBpcyBvbmx5IGZvciBNUEM4MzE1X0RTIGJvYXJkIHdoaWNoIGlz
-IG5vdCBzdXBwb3J0ZWQgaW4gdGhlIG1haW4gbGluZSB5ZXQuICBXZSBjYW4gcmVtb3ZlIHRoZSB3
-b3JrYXJvdW5kIGlmIHdlIG5lZWQgdG8gZG8gc29tZXRoaW5nIGhlcmUuDQoNCi0gTGVvDQoNCj4g
-DQo+IFJlcG9ydGVkLWJ5OiBSb2JlcnQgUC4gSi4gRGF5IDxycGpkYXlAY3Jhc2hjb3Vyc2UuY2E+
-DQo+IFNpZ25lZC1vZmYtYnk6IEFkcmlhbiBCdW5rIDxidW5rQGtlcm5lbC5vcmc+DQo+IA0KPiAt
-LS0NCj4gY2Q1NGRkOGI2YThiY2E0NGVhZDIxMmQxMmZlMTE2NzAyY2MzMWVkNw0KPiBkaWZmIC0t
-Z2l0IGEvZHJpdmVycy9hdGEvc2F0YV9mc2wuYyBiL2RyaXZlcnMvYXRhL3NhdGFfZnNsLmMgDQo+
-IGluZGV4IDM5MjRlNzIuLjQ1ODc4ZWYgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvYXRhL3NhdGFf
-ZnNsLmMNCj4gKysrIGIvZHJpdmVycy9hdGEvc2F0YV9mc2wuYw0KPiBAQCAtNjQwLDcgKzY0MCw3
-IEBAIHN0YXRpYyBpbnQgc2F0YV9mc2xfcG9ydF9zdGFydChzdHJ1Y3QgDQo+IGF0YV9wb3J0ICph
-cCkNCj4gIAlWUFJJTlRLKCJIQ29udHJvbCA9IDB4JXhcbiIsIGlvcmVhZDMyKGhjcl9iYXNlICsg
-SENPTlRST0wpKTsNCj4gIAlWUFJJTlRLKCJDSEJBICA9IDB4JXhcbiIsIGlvcmVhZDMyKGhjcl9i
-YXNlICsgQ0hCQSkpOw0KPiAgDQo+IC0jaWZkZWYgQ09ORklHX01QQzgzMTVfRFMNCj4gKyNpZmRl
-ZiBDT05GSUdfTVBDODMxeF9SREINCj4gIAkvKg0KPiAgCSAqIFdvcmthcm91bmQgZm9yIDgzMTVE
-UyBib2FyZCAzZ2JwcyBsaW5rLXVwIGlzc3VlLA0KPiAgCSAqIGN1cnJlbnRseSBsaW1pdCBTQVRB
-IHBvcnQgdG8gR0VOMSBzcGVlZA0KPiANCj4gDQo=
+On Mon, Aug 04, 2008 at 04:55:37PM +0800, Li Yang wrote:
+> > -----Original Message-----
+> > From: Adrian Bunk [mailto:bunk@kernel.org] 
+> > Sent: Monday, August 04, 2008 4:46 PM
+> > To: Kalra Ashish; Li Yang; Jeff Garzik; galak@kernel.crashing.org
+> > Cc: linuxppc-dev@ozlabs.org; linux-ide@vger.kernel.org; 
+> > Robert P. J. Day
+> > Subject: [2.6 patch] sata_fsl.c: fix 8315DS workaround
+> > 
+> > Commit e7eac96e8f0e57a6e9f94943557bc2b23be31471 
+> > (ata/sata_fsl: Move MPC8315DS link speed limit workaround to 
+> > specific ifdef) aimed at limiting the workaround only to the 
+> > affected hardware, but since the #ifdef used a nonexisting 
+> > kconfig variable it actually killed the workaround.
+> 
+> This workaround is only for MPC8315_DS board which is not supported in the main line yet.  We can remove the workaround if we need to do something here.
+
+Thanks, in this case my patch is complete crap.
+
+There's no need for any action.
+
+> - Leo
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
