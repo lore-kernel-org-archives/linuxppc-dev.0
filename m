@@ -1,40 +1,20 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9B956DDF63
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 07:10:26 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m74LAH6E014879
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Aug 2008 17:10:17 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m74LAHwW121442
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Aug 2008 15:10:17 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m74LAGho013933
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Aug 2008 15:10:17 -0600
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <20080731103137.GD1704@csn.ul.ie>
-References: <cover.1216928613.git.ebmunson@us.ibm.com>
-	<20080730014308.2a447e71.akpm@linux-foundation.org>
-	<20080730172317.GA14138@csn.ul.ie>
-	<20080730103407.b110afc2.akpm@linux-foundation.org>
-	<20080730193010.GB14138@csn.ul.ie>
-	<20080730130709.eb541475.akpm@linux-foundation.org>
-	<20080731103137.GD1704@csn.ul.ie>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C1754DDF51
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 07:44:57 +1000 (EST)
+Subject: Re: PS3 early lock-up
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <Pine.LNX.4.64.0808041640220.31424@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0808041640220.31424@vixen.sonytel.be>
 Content-Type: text/plain
-Date: Mon, 04 Aug 2008 14:10:11 -0700
-Message-Id: <1217884211.20260.144.camel@nimitz>
+Date: Tue, 05 Aug 2008 07:44:47 +1000
+Message-Id: <1217886287.24157.87.camel@pasglop>
 Mime-Version: 1.0
-Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	abh@cray.com, ebmunson@us.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,22 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-07-31 at 11:31 +0100, Mel Gorman wrote:
-> We are a lot more reliable than we were although exact quantification is
-> difficult because it's workload dependent. For a long time, I've been able
-> to test bits and pieces with hugepages by allocating the pool at the time
-> I needed it even after days of uptime. Previously this required a reboot.
+On Mon, 2008-08-04 at 17:48 +0200, Geert Uytterhoeven wrote:
+> On PS3, recent kernels lock up in the very early stage (i.e. before mere
+> mortals get to see a working console). The kernel crashes with
+> 
+> | kernel BUG at linux/arch/powerpc/platforms/ps3/htab.c:141!
+> 
+> Bisecting shows this happens since:
+> 
+> | commit a1f242ff460e4b50a045fa237c3c56cce9eabf83
+> | Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> | Date:   Wed Jul 23 21:27:08 2008 -0700
+> | 
+> |     powerpc ioremap_prot
+> |     
+> |     This adds ioremap_prot and pte_pgprot() so that one can extract protection
+> |     bits from a PTE and use them to ioremap_prot() (in order to support ptrace
+> |     of VM_IO | VM_PFNMAP as per Rik's patch).
+> |     
+> |     This moves a couple of flag checks around in the ioremap implementations
+> |     of arch/powerpc.  There's a side effect of allowing non-cacheable and
+> |     non-guarded mappings on ppc32 which before would always have _PAGE_GUARDED
+> |     set whenever _PAGE_NO_CACHE is.
+> |     
+> |     (standard ioremap will still set _PAGE_GUARDED, but ioremap_prot will be
+> |     capable of setting such a non guarded mapping).
+>   
+> Inside ps3_hpte_insert(), lv1_write_htab_entry() fails with error code 5
+> (LV1_ACCESS_VIOLATION) when adding the PS3 hotplug memory.
+> 
+> debug_dump_hpte() prints for the offending hpte:
+> 
+> | pa     = 500001000000h
+> | lpar   = 500001000000h
+> | va     = adc7d4c2d0000000h
+> | group  = 6168h
+> | bitmap = 0h
+> | hpte.v = adc7d4c2d011h
+> | hpte.r = 500001000115h
+>                       ^
+> | psize  = 0h
+> | slot   = 6168h
+> 
+> After manually reverting the offending commit, the system boots again. The only
+> change is:
+> 
+> | pa     = 500001000000h
+> | lpar   = 500001000000h
+> | va     = adc7d4c2d0000000h
+> | group  = 6168h
+> | bitmap = 0h
+> | hpte.v = adc7d4c2d011h
+> | hpte.r = 500001000117h
+>                       ^
+> | psize  = 0h
+> | slot   = 6168h
+> 
+> Note that when adding the initial (non-hotplug) memory, hpte.r always ends in
+> `194', both before and after reverting the offending commit.
+> 
+> ps3_hpte_insert() seems to be called during system initialization with the
+> following values of rflags:
+>   - first call: 0x190
+>   - initial memory: 0x194 (455 times)
+>   - hotplug memory:
+>       o crash: 0x115
+>       o OK: 0x117
+> 
+> Do you have an idea of what's really going on?
 
-This is also a pretty big expansion of fs/hugetlb/ use outside of the
-filesystem itself.  It is hacking the existing shared memory
-kernel-internal user to spit out effectively anonymous memory.
+Weird... Both look incorrect. In fact, it's a bit scary...
 
-Where do we draw the line where we stop using the filesystem for this?
-Other than the immediate code reuse, does it gain us anything?
+The one with the 7 at the end means that user space as RO access to
+the segment (oops !) and supervisor too. The one with the 5 means
+RO for user and RW for supervisor.
 
-I have to think that actually refactoring the filesystem code and making
-it usable for really anonymous memory, then using *that* in these
-patches would be a lot more sane.  Especially for someone that goes to
-look at it in a year. :)
+That is unless your HV is munging them in strange ways... I don't
+know why LV1 is refusing a combination though.
 
--- Dave
+As for the flags, it depends what htab_bolt_mapping() is called
+with.
+
+Do you have a backtrace ? I'm a bit lots in the mem hotswap code
+trying to figure out where the mapping comes from..
+
+Ben.
