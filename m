@@ -1,20 +1,27 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
-	by ozlabs.org (Postfix) with ESMTP id 7B399DDE03
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Aug 2008 19:23:32 +1000 (EST)
-Date: Mon, 4 Aug 2008 12:22:15 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Li Yang <LeoLi@freescale.com>
-Subject: Re: [2.6 patch] sata_fsl.c: fix 8315DS workaround
-Message-ID: <20080804092215.GE6088@cs181140183.pp.htv.fi>
-References: <20080804084611.GA6088@cs181140183.pp.htv.fi>
-	<A94B04433DF4F44C9C2AB5DEFBF29A4E05E1E7@zch01exm26.fsl.freescale.net>
+Return-Path: <paul@burly.ondioline.org>
+Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
+	by ozlabs.org (Postfix) with ESMTP id 15A19DDF84
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Aug 2008 20:00:58 +1000 (EST)
+From: Paul Collins <paul@burly.ondioline.org>
+To: Neil Brown <neilb@suse.de>
+Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
+	post-2.6.27-rc1
+References: <87tze38vzt.fsf@burly.wgtn.ondioline.org>
+	<20080802184554.GB715@fieldses.org>
+	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
+	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
+	<18581.40960.737792.454035@notabene.brown>
+	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
+	<18582.32935.501672.689845@notabene.brown>
+	<87fxpll5zq.fsf@burly.wgtn.ondioline.org>
+Date: Mon, 04 Aug 2008 22:00:55 +1200
+In-Reply-To: <87fxpll5zq.fsf@burly.wgtn.ondioline.org> (Paul Collins's message
+	of "Mon, 04 Aug 2008 17:11:05 +1200")
+Message-ID: <87y73dcd60.fsf@burly.wgtn.ondioline.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <A94B04433DF4F44C9C2AB5DEFBF29A4E05E1E7@zch01exm26.fsl.freescale.net>
-Cc: Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
-	Kalra Ashish <ashish.kalra@freescale.com>, linux-ide@vger.kernel.org,
-	"Robert P. J. Day" <rpjday@crashcourse.ca>
+Content-Type: text/plain; charset=us-ascii
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, linuxppc-dev@ozlabs.org,
+	nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 04, 2008 at 04:55:37PM +0800, Li Yang wrote:
-> > -----Original Message-----
-> > From: Adrian Bunk [mailto:bunk@kernel.org] 
-> > Sent: Monday, August 04, 2008 4:46 PM
-> > To: Kalra Ashish; Li Yang; Jeff Garzik; galak@kernel.crashing.org
-> > Cc: linuxppc-dev@ozlabs.org; linux-ide@vger.kernel.org; 
-> > Robert P. J. Day
-> > Subject: [2.6 patch] sata_fsl.c: fix 8315DS workaround
-> > 
-> > Commit e7eac96e8f0e57a6e9f94943557bc2b23be31471 
-> > (ata/sata_fsl: Move MPC8315DS link speed limit workaround to 
-> > specific ifdef) aimed at limiting the workaround only to the 
-> > affected hardware, but since the #ifdef used a nonexisting 
-> > kconfig variable it actually killed the workaround.
-> 
-> This workaround is only for MPC8315_DS board which is not supported in the main line yet.  We can remove the workaround if we need to do something here.
+Paul Collins <paul@burly.ondioline.org> writes:
 
-Thanks, in this case my patch is complete crap.
+> Neil Brown <neilb@suse.de> writes:
+>> Could you try removing the 'static' declaration for nfsd_acceptable
+>> and recompile?
+>> Or maybe try a different compiler?
+>
+> I will give these a try this evening.
 
-There's no need for any action.
+I built myself a nice new cross compiler:
 
-> - Leo
+        powerpc-linux-gnu-gcc-4.1 (GCC) 4.1.3 20080623 (prerelease) (Debian 4.1.2-23)
 
-cu
-Adrian
+and rebuilt 94ad374a0751f40d25e22e036c37f7263569d24c.  Running that on
+the server and 2.6.26 on the client, I got yet another Oops.  This one
+locked the machine up pretty good, so all I have is a picture:
+
+http://ondioline.org/~paul/DSCN1608.JPG
 
 -- 
+Paul Collins
+Wellington, New Zealand
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Dag vijandelijk luchtschip de huismeester is dood
