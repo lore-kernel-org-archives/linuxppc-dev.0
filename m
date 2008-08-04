@@ -1,27 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
-	post-2.6.27-rc1
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Paul Collins <paul@burly.ondioline.org>
-In-Reply-To: <87y73dcd60.fsf@burly.wgtn.ondioline.org>
-References: <87tze38vzt.fsf@burly.wgtn.ondioline.org>
-	<20080802184554.GB715@fieldses.org>
-	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
-	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
-	<18581.40960.737792.454035@notabene.brown>
-	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
-	<18582.32935.501672.689845@notabene.brown>
-	<87fxpll5zq.fsf@burly.wgtn.ondioline.org>
-	<87y73dcd60.fsf@burly.wgtn.ondioline.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-MkOS6eDoTSlB2pgYL8IH"
-Date: Tue, 05 Aug 2008 00:36:37 +1000
-Message-Id: <1217860597.12535.2.camel@localhost>
-Mime-Version: 1.0
-Cc: Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-	nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id C1E56DE22C
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 01:48:19 +1000 (EST)
+Date: Mon, 4 Aug 2008 17:48:13 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: PS3 early lock-up
+Message-ID: <Pine.LNX.4.64.0808041640220.31424@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-173765489-1217861143=:31424"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,58 +21,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---=-MkOS6eDoTSlB2pgYL8IH
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+---584349381-173765489-1217861143=:31424
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0808041648421.31424@vixen.sonytel.be>
 
-On Mon, 2008-08-04 at 22:00 +1200, Paul Collins wrote:
-> Paul Collins <paul@burly.ondioline.org> writes:
->=20
-> > Neil Brown <neilb@suse.de> writes:
-> >> Could you try removing the 'static' declaration for nfsd_acceptable
-> >> and recompile?
-> >> Or maybe try a different compiler?
-> >
-> > I will give these a try this evening.
->=20
-> I built myself a nice new cross compiler:
->=20
->         powerpc-linux-gnu-gcc-4.1 (GCC) 4.1.3 20080623 (prerelease) (Debi=
-an 4.1.2-23)
->=20
-> and rebuilt 94ad374a0751f40d25e22e036c37f7263569d24c.  Running that on
-> the server and 2.6.26 on the client, I got yet another Oops.  This one
-> locked the machine up pretty good, so all I have is a picture:
->=20
-> http://ondioline.org/~paul/DSCN1608.JPG
+On PS3, recent kernels lock up in the very early stage (i.e. before mere
+mortals get to see a working console). The kernel crashes with
 
-Wow.
+| kernel BUG at linux/arch/powerpc/platforms/ps3/htab.c:141!
 
-Can you try building a kernel on the server? ie. not over NFS.
+Bisecting shows this happens since:
 
-cheers
+| commit a1f242ff460e4b50a045fa237c3c56cce9eabf83
+| Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+| Date:   Wed Jul 23 21:27:08 2008 -0700
+| 
+|     powerpc ioremap_prot
+|     
+|     This adds ioremap_prot and pte_pgprot() so that one can extract protection
+|     bits from a PTE and use them to ioremap_prot() (in order to support ptrace
+|     of VM_IO | VM_PFNMAP as per Rik's patch).
+|     
+|     This moves a couple of flag checks around in the ioremap implementations
+|     of arch/powerpc.  There's a side effect of allowing non-cacheable and
+|     non-guarded mappings on ppc32 which before would always have _PAGE_GUARDED
+|     set whenever _PAGE_NO_CACHE is.
+|     
+|     (standard ioremap will still set _PAGE_GUARDED, but ioremap_prot will be
+|     capable of setting such a non guarded mapping).
+  
+Inside ps3_hpte_insert(), lv1_write_htab_entry() fails with error code 5
+(LV1_ACCESS_VIOLATION) when adding the PS3 hotplug memory.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+debug_dump_hpte() prints for the offending hpte:
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+| pa     = 500001000000h
+| lpar   = 500001000000h
+| va     = adc7d4c2d0000000h
+| group  = 6168h
+| bitmap = 0h
+| hpte.v = adc7d4c2d011h
+| hpte.r = 500001000115h
+                      ^
+| psize  = 0h
+| slot   = 6168h
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+After manually reverting the offending commit, the system boots again. The only
+change is:
 
---=-MkOS6eDoTSlB2pgYL8IH
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+| pa     = 500001000000h
+| lpar   = 500001000000h
+| va     = adc7d4c2d0000000h
+| group  = 6168h
+| bitmap = 0h
+| hpte.v = adc7d4c2d011h
+| hpte.r = 500001000117h
+                      ^
+| psize  = 0h
+| slot   = 6168h
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Note that when adding the initial (non-hotplug) memory, hpte.r always ends in
+`194', both before and after reverting the offending commit.
 
-iD8DBQBIlxP1dSjSd0sB4dIRAgmYAJ9hCUcQnhwq+Py35p+cElMtYVaBhQCfdOM2
-vzAo/x4cd7NeQ8LPuUZN+ws=
-=S/Go
------END PGP SIGNATURE-----
+ps3_hpte_insert() seems to be called during system initialization with the
+following values of rflags:
+  - first call: 0x190
+  - initial memory: 0x194 (455 times)
+  - hotplug memory:
+      o crash: 0x115
+      o OK: 0x117
 
---=-MkOS6eDoTSlB2pgYL8IH--
+Do you have an idea of what's really going on?
+
+Thanks!
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis 293-0376800-10 GEBA-BE-BB
+---584349381-173765489-1217861143=:31424--
