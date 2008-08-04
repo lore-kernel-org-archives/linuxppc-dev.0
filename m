@@ -1,20 +1,15 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 89CBCDDEF3
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  4 Aug 2008 23:41:07 +1000 (EST)
-Message-ID: <4897076A.9020102@coritel.it>
-Date: Mon, 04 Aug 2008 15:43:06 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
+Return-Path: <glikely@secretlab.ca>
+Date: Mon, 4 Aug 2008 11:25:58 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Paul Smith <paul@mad-scientist.us>
+Subject: Re: Creating a wrapped zImage.initrd -- can't start the trampoline?
+Message-ID: <20080804172558.GA18317@secretlab.ca>
+References: <1217644827.6390.12.camel@homebase.localnet>
 MIME-Version: 1.0
-To: Fabien Oriede <fabien.oriede@yahoo.fr>
-Subject: Re: suffisant space for U-Boot, Linux and an initrd image ? (4MB
-	SDRAM)
-References: <789365.58211.qm@web27401.mail.ukl.yahoo.com>
-In-Reply-To: <789365.58211.qm@web27401.mail.ukl.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1217644827.6390.12.camel@homebase.localnet>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,36 +20,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Fabien Oriede ha scritto:
-> Hi all,
-> I would like to know if this is possible to port U-Boot, Linux and an initrd image on a board with 4MB of SDRAM ?
-> When Linux try to boot, there is this line on the terminal :
-> "Memory : 2036k available (1036k kernel code, 256k data, 80k init, 0k highmem)"
-> So I have 2036k memory available for my initrd image but I don't know if this is suffisant.
-> Thanks in advance.
-> Regards,
-> Fabien.
-> 
-> 
->       _____________________________________________________________________________ 
-> Envoyez avec Yahoo! Mail. Une boite mail plus intelligente http://mail.yahoo.fr
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+On Fri, Aug 01, 2008 at 10:40:27PM -0400, Paul Smith wrote:
 
-Only 4MB of sdram? As far as I know the smallest device with Linux is 
-picotux with 8MB of ram and 2MB of flash.
+> Anyway, I need to generate an all-in-one image containing the kernel and
+> the initrd, and the trampoline code tacked onto it to turn it into an
+> ELF image.  I'm worried I'll need to write a custom platform_init() but
+> for now I'm just using of.c.
 
--- 
-Marco Stornelli
-Embedded Software Engineer
-CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-http://www.coritel.it
+Take a look at Documentation/powerpc/bootwrapper.txt
 
-marco.stornelli@coritel.it
-+39 06 72582838
+You probably want the 'simpleImage.%' target.  It also binds in a copy
+of the device tree blob.
+
+g.
