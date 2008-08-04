@@ -1,15 +1,18 @@
 Return-Path: <sebastien.dugue@bull.net>
 Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id 384EBDDF1F
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Aug 2008 23:58:06 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id BE82FDE06E
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Aug 2008 23:58:10 +1000 (EST)
 From: Sebastien Dugue <sebastien.dugue@bull.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/3 V2] powerpc - Make the irq reverse mapping tree lockless
-Date: Mon,  4 Aug 2008 13:08:41 +0200
-Message-Id: <1217848124-3719-1-git-send-email-sebastien.dugue@bull.net>
+Subject: [PATCH 1/3] powerpc - Initialize the irq radix tree earlier
+Date: Mon,  4 Aug 2008 13:08:42 +0200
+Message-Id: <1217848124-3719-2-git-send-email-sebastien.dugue@bull.net>
+In-Reply-To: <1217848124-3719-1-git-send-email-sebastien.dugue@bull.net>
+References: <1217848124-3719-1-git-send-email-sebastien.dugue@bull.net>
 Cc: tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
 	linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-	jean-pierre.dion@bull.net, paulus@samba.org,
+	jean-pierre.dion@bull.net,
+	Sebastien Dugue <sebastien.dugue@bull.net>, paulus@samba.org,
 	gilles.carry@ext.bull.net, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -20,91 +23,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+  The radix tree used for fast irq reverse mapping by the XICS is initialized
+late in the boot process, after the first interrupt (IPI) gets registered
+and after the first IPI is received.
+
+  This patch moves the initialization of the XICS radix tree earlier into
+the boot process in smp_xics_probe() (the mm is already up but no interrupts
+have been registered at that point) to avoid having to insert a mapping into
+the tree in interrupt context. This will help in simplifying the locking
+constraints and move to a lockless radix tree in subsequent patches.
 
 
-  Hi ,
-
-  here is V2 of the patchset posted on July 31st updated from the comments
-made by Michael Ellerman.
-
-  V1 -> V2:
-
-  - Initialize the XICS radix tree in xics code and only for that irq_host
-    rather than doing it for all the hosts in the powerpc irq generic code
-    (although the hosts list only contain one entry at the moment).
-
-  - Add a comment in irq_radix_revmap_lookup() stating why it is safe to
-    perform a lookup even if the radix tree has not been initialized yet.
-
-
-  The goal of this patchset is to simplify the locking constraints on the radix
-tree used for IRQ reverse mapping on the pSeries machines and provide lockless
-access to this tree.
-
-  This also solves the following BUG under preempt-rt:
-
-BUG: sleeping function called from invalid context swapper(1) at kernel/rtmutex.c:739
-in_atomic():1 [00000002], irqs_disabled():1
-Call Trace:
-[c0000001e20f3340] [c000000000010370] .show_stack+0x70/0x1bc (unreliable)
-[c0000001e20f33f0] [c000000000049380] .__might_sleep+0x11c/0x138
-[c0000001e20f3470] [c0000000002a2f64] .__rt_spin_lock+0x3c/0x98
-[c0000001e20f34f0] [c0000000000c3f20] .kmem_cache_alloc+0x68/0x184
-[c0000001e20f3590] [c000000000193f3c] .radix_tree_node_alloc+0xf0/0x144
-[c0000001e20f3630] [c000000000195190] .radix_tree_insert+0x18c/0x2fc
-[c0000001e20f36f0] [c00000000000c710] .irq_radix_revmap+0x1a4/0x1e4
-[c0000001e20f37b0] [c00000000003b3f0] .xics_startup+0x30/0x54
-[c0000001e20f3840] [c00000000008b864] .setup_irq+0x26c/0x370
-[c0000001e20f38f0] [c00000000008ba68] .request_irq+0x100/0x158
-[c0000001e20f39a0] [c0000000001ee9c0] .hvc_open+0xb4/0x148
-[c0000001e20f3a40] [c0000000001d72ec] .tty_open+0x200/0x368
-[c0000001e20f3af0] [c0000000000ce928] .chrdev_open+0x1f4/0x25c
-[c0000001e20f3ba0] [c0000000000c8bf0] .__dentry_open+0x188/0x2c8
-[c0000001e20f3c50] [c0000000000c8dec] .do_filp_open+0x50/0x70
-[c0000001e20f3d70] [c0000000000c8e8c] .do_sys_open+0x80/0x148
-[c0000001e20f3e20] [c00000000000928c] .init_post+0x4c/0x100
-[c0000001e20f3ea0] [c0000000003c0e0c] .kernel_init+0x428/0x478
-[c0000001e20f3f90] [c000000000027448] .kernel_thread+0x4c/0x68
-
-  The root cause of this bug lies in the fact that the XICS interrupt
-controller uses a radix tree for its reverse irq mapping and that we cannot
-allocate the tree nodes (even GFP_ATOMIC) with preemption disabled.
-
-  In fact, we have 2 nested preemption disabling when we want to allocate
-a new node:
-
-  - setup_irq() does a spin_lock_irqsave() before calling xics_startup() which
-    then calls irq_radix_revmap() to insert a new node in the tree
-
-  - irq_radix_revmap() also does a spin_lock_irqsave() (in irq_radix_wrlock())
-    before the radix_tree_insert()
-
-  Also, if an IRQ gets registered before the tree is initialized (namely the
-IPI), it will be inserted into the tree in interrupt context once the tree
-have been initialized, hence the need for a spin_lock_irqsave() in the
-insertion path.
-
-  This serie is split into 3 patches:
-
-  - The first patch moves the initialization of the radix tree earlier in the
-    boot process before any IRQ gets registered, but after the mm is up.
-
-  - The second patch splits irq_radix_revmap() into its 2 components: one
-    for lookup and one for insertion into the radix tree.
-
-  - And finally, the third patch makes the radix tree fully lockless on the 
-    lookup side.
-
-
-  Here is the diffstat for the whole patchset:
-
- arch/powerpc/include/asm/irq.h        |   19 ++++-
- arch/powerpc/kernel/irq.c             |  130 +++++++--------------------------
+Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/kernel/irq.c             |   17 -----------------
  arch/powerpc/platforms/pseries/smp.c  |    1 +
- arch/powerpc/platforms/pseries/xics.c |   17 +++--
+ arch/powerpc/platforms/pseries/xics.c |    5 +++++
  arch/powerpc/platforms/pseries/xics.h |    1 +
- 5 files changed, 56 insertions(+), 112 deletions(-)
+ 4 files changed, 7 insertions(+), 17 deletions(-)
 
-  Thanks,
-
-  Sebastien.
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index d972dec..9bef9f3 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -1016,23 +1016,6 @@ void irq_early_init(void)
+ 		get_irq_desc(i)->status |= IRQ_NOREQUEST;
+ }
+ 
+-/* We need to create the radix trees late */
+-static int irq_late_init(void)
+-{
+-	struct irq_host *h;
+-	unsigned long flags;
+-
+-	irq_radix_wrlock(&flags);
+-	list_for_each_entry(h, &irq_hosts, link) {
+-		if (h->revmap_type == IRQ_HOST_MAP_TREE)
+-			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
+-	}
+-	irq_radix_wrunlock(flags);
+-
+-	return 0;
+-}
+-arch_initcall(irq_late_init);
+-
+ #ifdef CONFIG_VIRQ_DEBUG
+ static int virq_debug_show(struct seq_file *m, void *private)
+ {
+diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+index 9d8f8c8..3d4429a 100644
+--- a/arch/powerpc/platforms/pseries/smp.c
++++ b/arch/powerpc/platforms/pseries/smp.c
+@@ -130,6 +130,7 @@ static void smp_xics_message_pass(int target, int msg)
+ 
+ static int __init smp_xics_probe(void)
+ {
++	xics_radix_revmap_init();
+ 	xics_request_IPIs();
+ 
+ 	return cpus_weight(cpu_possible_map);
+diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
+index 0fc830f..d6e28f9 100644
+--- a/arch/powerpc/platforms/pseries/xics.c
++++ b/arch/powerpc/platforms/pseries/xics.c
+@@ -556,6 +556,11 @@ static struct irq_host_ops xics_host_ops = {
+ 	.xlate = xics_host_xlate,
+ };
+ 
++void __init xics_radix_revmap_init(void)
++{
++	INIT_RADIX_TREE(&xics_host->revmap_data.tree, GFP_ATOMIC);
++}
++
+ static void __init xics_init_host(void)
+ {
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+diff --git a/arch/powerpc/platforms/pseries/xics.h b/arch/powerpc/platforms/pseries/xics.h
+index 1c5321a..11490be 100644
+--- a/arch/powerpc/platforms/pseries/xics.h
++++ b/arch/powerpc/platforms/pseries/xics.h
+@@ -19,6 +19,7 @@ extern void xics_setup_cpu(void);
+ extern void xics_teardown_cpu(void);
+ extern void xics_kexec_teardown_cpu(int secondary);
+ extern void xics_cause_IPI(int cpu);
++extern void xics_radix_revmap_init(void);
+ extern  void xics_request_IPIs(void);
+ extern void xics_migrate_irqs_away(void);
+ 
+-- 
+1.5.5.1
