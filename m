@@ -1,27 +1,27 @@
-Return-Path: <paul@burly.ondioline.org>
-Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
-	by ozlabs.org (Postfix) with ESMTP id 15A19DDF84
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Aug 2008 20:00:58 +1000 (EST)
-From: Paul Collins <paul@burly.ondioline.org>
-To: Neil Brown <neilb@suse.de>
-Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
-	post-2.6.27-rc1
-References: <87tze38vzt.fsf@burly.wgtn.ondioline.org>
-	<20080802184554.GB715@fieldses.org>
-	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
-	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
-	<18581.40960.737792.454035@notabene.brown>
-	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
-	<18582.32935.501672.689845@notabene.brown>
-	<87fxpll5zq.fsf@burly.wgtn.ondioline.org>
-Date: Mon, 04 Aug 2008 22:00:55 +1200
-In-Reply-To: <87fxpll5zq.fsf@burly.wgtn.ondioline.org> (Paul Collins's message
-	of "Mon, 04 Aug 2008 17:11:05 +1200")
-Message-ID: <87y73dcd60.fsf@burly.wgtn.ondioline.org>
-MIME-Version: 1.0
+Return-Path: <kkeil@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AD52EDDE02
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Aug 2008 22:57:05 +1000 (EST)
+Date: Mon, 4 Aug 2008 14:56:50 +0200
+From: Karsten Keil <kkeil@suse.de>
+To: Sinan Akman <sinan@writeme.com>
+Subject: Re: mISDN still breaking the allmodconfig build...
+Message-ID: <20080804125650.GC20260@pingi.kke.suse.de>
+References: <20080727.170235.97056809.davem@davemloft.net>
+	<93120C4B-D2F4-4479-806B-2141AC3DC607@holtmann.org>
+	<20080727.180736.74131389.davem@davemloft.net>
+	<7949EA87-4340-4353-AFC9-79A718B95DF0@holtmann.org>
+	<20080728084024.GA23465@pingi.kke.suse.de>
+	<488DC046.7060802@writeme.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, linuxppc-dev@ozlabs.org,
-	nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <488DC046.7060802@writeme.com>
+Cc: sfr@canb.auug.org.au, Marcel Holtmann <marcel@holtmann.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org, torvalds@linux-foundation.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,27 +31,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Collins <paul@burly.ondioline.org> writes:
+On Mon, Jul 28, 2008 at 08:49:10AM -0400, Sinan Akman wrote:
+> Karsten Keil wrote:
+> >[...]
+> >virt_to_bus() I never got a complain before and yes I already have some 
+> >patches
+> >to solve the endian issues in the HFC driver, but it was not finaly
+> 
+>   Karsten, do you have those patches available somewhere ?
+> I could give it a try on  4xx with a 4s card in the near future.
+> 
 
-> Neil Brown <neilb@suse.de> writes:
->> Could you try removing the 'static' declaration for nfsd_acceptable
->> and recompile?
->> Or maybe try a different compiler?
->
-> I will give these a try this evening.
-
-I built myself a nice new cross compiler:
-
-        powerpc-linux-gnu-gcc-4.1 (GCC) 4.1.3 20080623 (prerelease) (Debian 4.1.2-23)
-
-and rebuilt 94ad374a0751f40d25e22e036c37f7263569d24c.  Running that on
-the server and 2.6.26 on the client, I got yet another Oops.  This one
-locked the machine up pretty good, so all I have is a picture:
-
-http://ondioline.org/~paul/DSCN1608.JPG
+Already fixed in
+git://git.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6.git
 
 -- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+Karsten Keil
+SuSE Labs
+ISDN and VOIP development
+SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
