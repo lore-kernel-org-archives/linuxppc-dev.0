@@ -1,26 +1,12 @@
-Return-Path: <paul@burly.ondioline.org>
-Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
-	by ozlabs.org (Postfix) with ESMTP id 91670DDDF0
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Aug 2008 15:11:06 +1000 (EST)
-From: Paul Collins <paul@burly.ondioline.org>
-To: Neil Brown <neilb@suse.de>
-Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
-	post-2.6.27-rc1
-References: <87tze38vzt.fsf@burly.wgtn.ondioline.org>
-	<20080802184554.GB715@fieldses.org>
-	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
-	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
-	<18581.40960.737792.454035@notabene.brown>
-	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
-	<18582.32935.501672.689845@notabene.brown>
-Date: Mon, 04 Aug 2008 17:11:05 +1200
-In-Reply-To: <18582.32935.501672.689845@notabene.brown> (Neil Brown's message
-	of "Mon, 4 Aug 2008 14:08:07 +1000")
-Message-ID: <87fxpll5zq.fsf@burly.wgtn.ondioline.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 4 Aug 2008 15:30:13 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Make many functions 'static'
+Message-ID: <20080804053013.GC7086@yookeroo.seuss>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, linuxppc-dev@ozlabs.org,
-	nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,121 +16,394 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Neil Brown <neilb@suse.de> writes:
+This patch marks various functions not shared between c files
+'static', as they should be.  There are a couple of functions in dtc,
+and many in the testsuite.
 
-> bctrl appears to be the indirect-function-call opcode.  There are
-> three of them one each for
->   ->fh_to_dentry
->   acceptable
->   ->fh_to_parent
->
-> 0xa8 is 'acceptable'.
->
-> In the first traceback, the crash was a call from very early in 
-> find_acceptable_alias,  The first significant thing it does is call
-> the 'acceptable' function.
->
-> So it seems clear that 'acceptable' is NULL.
-> It is equally clear that we never ever set it to NULL in the code.
-> The logical conclusion is "compiler error".
-> We can confirm (hopefully) by looking at a disassembly of fh_verify.
->
-> Maybe because nfsd_acceptable is 'static' and never explicitly called,
-> gcc gets confused and optimises it away.  Maybe a disassembly of 
-> nfsd_acceptable would be informative ... particularly if it turns out
-> to be empty.
+This is *almost* enough to enable the -Wmissing-prototypes warning.
+It's not quite enough, because there's a mess of junk in the flex
+generated code which triggers that warning which I'm not yet sure how
+to deal with.
 
-Here's the disassembly.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Dump of assembler code for function nfsd_acceptable:
-0xc015f450 <nfsd_acceptable+0>:	mflr    r0
-0xc015f454 <nfsd_acceptable+4>:	stw     r0,4(r1)
-0xc015f458 <nfsd_acceptable+8>:	bl      0xc0013154 <_mcount>
-0xc015f45c <nfsd_acceptable+12>:	stwu    r1,-32(r1)
-0xc015f460 <nfsd_acceptable+16>:	mflr    r0
-0xc015f464 <nfsd_acceptable+20>:	stmw    r28,16(r1)
-0xc015f468 <nfsd_acceptable+24>:	mr      r28,r3
-0xc015f46c <nfsd_acceptable+28>:	mr      r31,r1
-0xc015f470 <nfsd_acceptable+32>:	stw     r0,36(r1)
-0xc015f474 <nfsd_acceptable+36>:	li      r30,1
-0xc015f478 <nfsd_acceptable+40>:	lwz     r0,24(r3)
-0xc015f47c <nfsd_acceptable+44>:	mr      r3,r4
-0xc015f480 <nfsd_acceptable+48>:	andi.   r9,r0,1024
-0xc015f484 <nfsd_acceptable+52>:	bne-    0xc015f56c <nfsd_acceptable+284>
-0xc015f488 <nfsd_acceptable+56>:	cmpwi   cr7,r4,0
-0xc015f48c <nfsd_acceptable+60>:	beq-    cr7,0xc015f4b0 <nfsd_acceptable+96>
-0xc015f490 <nfsd_acceptable+64>:	lwz     r0,0(r4)
-0xc015f494 <nfsd_acceptable+68>:	cntlzw  r0,r0
-0xc015f498 <nfsd_acceptable+72>:	rlwinm  r0,r0,27,5,31
-0xc015f49c <nfsd_acceptable+76>:	twnei   r0,0
-0xc015f4a0 <nfsd_acceptable+80>:	lwarx   r0,0,r4
-0xc015f4a4 <nfsd_acceptable+84>:	addic   r0,r0,1
-0xc015f4a8 <nfsd_acceptable+88>:	stwcx.  r0,0,r4
-0xc015f4ac <nfsd_acceptable+92>:	bne-    0xc015f4a0 <nfsd_acceptable+80>
-0xc015f4b0 <nfsd_acceptable+96>:	mr      r29,r3
-0xc015f4b4 <nfsd_acceptable+100>:	b       0xc015f508 <nfsd_acceptable+184>
-0xc015f4b8 <nfsd_acceptable+104>:	beq-    cr6,0xc015f4dc <nfsd_acceptable+140>
-0xc015f4bc <nfsd_acceptable+108>:	lwz     r0,0(r30)
-0xc015f4c0 <nfsd_acceptable+112>:	cntlzw  r0,r0
-0xc015f4c4 <nfsd_acceptable+116>:	rlwinm  r0,r0,27,5,31
-0xc015f4c8 <nfsd_acceptable+120>:	twnei   r0,0
-0xc015f4cc <nfsd_acceptable+124>:	lwarx   r0,0,r30
-0xc015f4d0 <nfsd_acceptable+128>:	addic   r0,r0,1
-0xc015f4d4 <nfsd_acceptable+132>:	stwcx.  r0,0,r30
-0xc015f4d8 <nfsd_acceptable+136>:	bne-    0xc015f4cc <nfsd_acceptable+124>
-0xc015f4dc <nfsd_acceptable+140>:	lwz     r3,8(r30)
-0xc015f4e0 <nfsd_acceptable+144>:	li      r4,1
-0xc015f4e4 <nfsd_acceptable+148>:	bl      0xc00b2f50 <inode_permission>
-0xc015f4e8 <nfsd_acceptable+152>:	cmpwi   cr7,r3,0
-0xc015f4ec <nfsd_acceptable+156>:	mr      r3,r29
-0xc015f4f0 <nfsd_acceptable+160>:	bge+    cr7,0xc015f500 <nfsd_acceptable+176>
-0xc015f4f4 <nfsd_acceptable+164>:	mr      r3,r30
-0xc015f4f8 <nfsd_acceptable+168>:	bl      0xc00befb0 <dput>
-0xc015f4fc <nfsd_acceptable+172>:	b       0xc015f524 <nfsd_acceptable+212>
-0xc015f500 <nfsd_acceptable+176>:	bl      0xc00befb0 <dput>
-0xc015f504 <nfsd_acceptable+180>:	mr      r29,r30
-0xc015f508 <nfsd_acceptable+184>:	lwz     r0,32(r28)
-0xc015f50c <nfsd_acceptable+188>:	cmpw    cr7,r29,r0
-0xc015f510 <nfsd_acceptable+192>:	beq-    cr7,0xc015f524 <nfsd_acceptable+212>
-0xc015f514 <nfsd_acceptable+196>:	lwz     r30,20(r29)
-0xc015f518 <nfsd_acceptable+200>:	cmpw    cr7,r29,r30
-0xc015f51c <nfsd_acceptable+204>:	cmpwi   cr6,r30,0
-0xc015f520 <nfsd_acceptable+208>:	bne+    cr7,0xc015f4b8 <nfsd_acceptable+104>
-0xc015f524 <nfsd_acceptable+212>:	lwz     r0,32(r28)
-0xc015f528 <nfsd_acceptable+216>:	cmpw    cr7,r29,r0
-0xc015f52c <nfsd_acceptable+220>:	beq-    cr7,0xc015f554 <nfsd_acceptable+260>
-0xc015f530 <nfsd_acceptable+224>:	lis     r9,-16296
-0xc015f534 <nfsd_acceptable+228>:	lwz     r0,17792(r9)
-0xc015f538 <nfsd_acceptable+232>:	andi.   r9,r0,2
-0xc015f53c <nfsd_acceptable+236>:	beq+    0xc015f554 <nfsd_acceptable+260>
-0xc015f540 <nfsd_acceptable+240>:	lis     r3,-16309
-0xc015f544 <nfsd_acceptable+244>:	lwz     r5,32(r29)
-0xc015f548 <nfsd_acceptable+248>:	mr      r4,r29
-0xc015f54c <nfsd_acceptable+252>:	addi    r3,r3,7972
-0xc015f550 <nfsd_acceptable+256>:	bl      0xc00330d4 <printk>
-0xc015f554 <nfsd_acceptable+260>:	lwz     r0,32(r28)
-0xc015f558 <nfsd_acceptable+264>:	mr      r3,r29
-0xc015f55c <nfsd_acceptable+268>:	xor     r30,r29,r0
-0xc015f560 <nfsd_acceptable+272>:	cntlzw  r30,r30
-0xc015f564 <nfsd_acceptable+276>:	rlwinm  r30,r30,27,5,31
-0xc015f568 <nfsd_acceptable+280>:	bl      0xc00befb0 <dput>
-0xc015f56c <nfsd_acceptable+284>:	lwz     r11,0(r1)
-0xc015f570 <nfsd_acceptable+288>:	mr      r3,r30
-0xc015f574 <nfsd_acceptable+292>:	lwz     r0,4(r11)
-0xc015f578 <nfsd_acceptable+296>:	lmw     r28,-16(r11)
-0xc015f57c <nfsd_acceptable+300>:	mr      r1,r11
-0xc015f580 <nfsd_acceptable+304>:	mtlr    r0
-0xc015f584 <nfsd_acceptable+308>:	blr
-End of assembler dump.
-
-> Could you try removing the 'static' declaration for nfsd_acceptable
-> and recompile?
-> Or maybe try a different compiler?
-
-I will give these a try this evening.
+Index: dtc/data.c
+===================================================================
+--- dtc.orig/data.c	2008-08-04 15:12:33.000000000 +1000
++++ dtc/data.c	2008-08-04 15:12:46.000000000 +1000
+@@ -217,7 +217,7 @@ struct data data_insert_at_marker(struct
+ 	return d;
+ }
+ 
+-struct data data_append_markers(struct data d, struct marker *m)
++static struct data data_append_markers(struct data d, struct marker *m)
+ {
+ 	struct marker **mp = &d.markers;
+ 
+Index: dtc/tests/get_name.c
+===================================================================
+--- dtc.orig/tests/get_name.c	2008-08-04 15:14:38.000000000 +1000
++++ dtc/tests/get_name.c	2008-08-04 15:14:40.000000000 +1000
+@@ -28,7 +28,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-void check_name(void *fdt, const char *path)
++static void check_name(void *fdt, const char *path)
+ {
+ 	int offset;
+ 	const char *getname, *getname2, *checkname;
+Index: dtc/tests/get_path.c
+===================================================================
+--- dtc.orig/tests/get_path.c	2008-08-04 15:17:19.000000000 +1000
++++ dtc/tests/get_path.c	2008-08-04 15:17:41.000000000 +1000
+@@ -30,7 +30,7 @@
+ 
+ #define POISON	('\xff')
+ 
+-void check_path_buf(void *fdt, const char *path, int pathlen, int buflen)
++static void check_path_buf(void *fdt, const char *path, int pathlen, int buflen)
+ {
+ 	int offset;
+ 	char buf[buflen+1];
+@@ -63,7 +63,7 @@ void check_path_buf(void *fdt, const cha
+ 		FAIL("fdt_get_path([%d bytes]) overran buffer", buflen);
+ }
+ 
+-void check_path(void *fdt, const char *path)
++static void check_path(void *fdt, const char *path)
+ {
+ 	int pathlen = strlen(path);
+ 
+Index: dtc/tests/get_phandle.c
+===================================================================
+--- dtc.orig/tests/get_phandle.c	2008-08-04 15:14:50.000000000 +1000
++++ dtc/tests/get_phandle.c	2008-08-04 15:14:53.000000000 +1000
+@@ -28,7 +28,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-void check_phandle(void *fdt, const char *path, uint32_t checkhandle)
++static void check_phandle(void *fdt, const char *path, uint32_t checkhandle)
+ {
+ 	int offset;
+ 	uint32_t phandle;
+Index: dtc/tests/node_offset_by_prop_value.c
+===================================================================
+--- dtc.orig/tests/node_offset_by_prop_value.c	2008-08-04 15:15:40.000000000 +1000
++++ dtc/tests/node_offset_by_prop_value.c	2008-08-04 15:16:17.000000000 +1000
+@@ -29,7 +29,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-void vcheck_search(void *fdt, const char *propname, const void *propval,
++static void vcheck_search(void *fdt, const char *propname, const void *propval,
+ 		  int proplen, va_list ap)
+ {
+ 	int offset = -1, target;
+@@ -48,7 +48,7 @@ void vcheck_search(void *fdt, const char
+ 	} while (target >= 0);
+ }
+ 
+-void check_search(void *fdt, const char *propname, const void *propval,
++static void check_search(void *fdt, const char *propname, const void *propval,
+ 		  int proplen, ...)
+ {
+ 	va_list ap;
+@@ -58,7 +58,8 @@ void check_search(void *fdt, const char 
+ 	va_end(ap);
+ }
+ 
+-void check_search_str(void *fdt, const char *propname, const char *propval, ...)
++static void check_search_str(void *fdt, const char *propname,
++			     const char *propval, ...)
+ {
+ 	va_list ap;
+ 
+Index: dtc/tests/parent_offset.c
+===================================================================
+--- dtc.orig/tests/parent_offset.c	2008-08-04 15:15:19.000000000 +1000
++++ dtc/tests/parent_offset.c	2008-08-04 15:15:29.000000000 +1000
+@@ -28,7 +28,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-int path_parent_len(const char *path)
++static int path_parent_len(const char *path)
+ {
+ 	const char *p = strrchr(path, '/');
+ 
+@@ -40,7 +40,7 @@ int path_parent_len(const char *path)
+ 		return p - path;
+ }
+ 
+-void check_path(struct fdt_header *fdt, const char *path)
++static void check_path(struct fdt_header *fdt, const char *path)
+ {
+ 	char *parentpath;
+ 	int nodeoffset, parentoffset, parentpathoffset, pathparentlen;
+Index: dtc/tests/path_offset.c
+===================================================================
+--- dtc.orig/tests/path_offset.c	2008-08-04 15:14:18.000000000 +1000
++++ dtc/tests/path_offset.c	2008-08-04 15:14:20.000000000 +1000
+@@ -28,7 +28,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-int check_subnode(void *fdt, int parent, const char *name)
++static int check_subnode(void *fdt, int parent, const char *name)
+ {
+ 	int offset;
+ 	const struct fdt_node_header *nh;
+Index: dtc/tests/subnode_offset.c
+===================================================================
+--- dtc.orig/tests/subnode_offset.c	2008-08-04 15:13:27.000000000 +1000
++++ dtc/tests/subnode_offset.c	2008-08-04 15:13:43.000000000 +1000
+@@ -28,7 +28,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-int check_subnode(struct fdt_header *fdt, int parent, const char *name)
++static int check_subnode(struct fdt_header *fdt, int parent, const char *name)
+ {
+ 	int offset;
+ 	const struct fdt_node_header *nh;
+Index: dtc/tests/supernode_atdepth_offset.c
+===================================================================
+--- dtc.orig/tests/supernode_atdepth_offset.c	2008-08-04 15:16:38.000000000 +1000
++++ dtc/tests/supernode_atdepth_offset.c	2008-08-04 15:17:06.000000000 +1000
+@@ -28,7 +28,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-int path_depth(const char *path)
++static int path_depth(const char *path)
+ {
+ 	const char *p;
+ 	int depth = 0;
+@@ -49,7 +49,7 @@ int path_depth(const char *path)
+ 		return depth;
+ }
+ 
+-int path_prefix(const char *path, int depth)
++static int path_prefix(const char *path, int depth)
+ {
+ 	const char *p;
+ 	int i;
+@@ -67,7 +67,7 @@ int path_prefix(const char *path, int de
+ 	return p - path;
+ }
+ 
+-void check_supernode_atdepth(struct fdt_header *fdt, const char *path,
++static void check_supernode_atdepth(struct fdt_header *fdt, const char *path,
+ 			     int depth)
+ {
+ 	int pdepth = path_depth(path);
+@@ -106,7 +106,7 @@ void check_supernode_atdepth(struct fdt_
+ 		     "instead of %d", nodedepth, pdepth);
+ }
+ 
+-void check_supernode_overdepth(struct fdt_header *fdt, const char *path)
++static void check_supernode_overdepth(struct fdt_header *fdt, const char *path)
+ {
+ 	int pdepth = path_depth(path);
+ 	int nodeoffset, err;
+@@ -121,7 +121,7 @@ void check_supernode_overdepth(struct fd
+ 		     "of FDT_ERR_NOTFOUND", path, pdepth+1, err);
+ }
+ 
+-void check_path(struct fdt_header *fdt, const char *path)
++static void check_path(struct fdt_header *fdt, const char *path)
+ {
+ 	int i;
+ 
+Index: dtc/treesource.c
+===================================================================
+--- dtc.orig/treesource.c	2008-08-04 15:12:55.000000000 +1000
++++ dtc/treesource.c	2008-08-04 15:13:09.000000000 +1000
+@@ -52,7 +52,7 @@ static void write_prefix(FILE *f, int le
+ 		fputc('\t', f);
+ }
+ 
+-int isstring(char c)
++static int isstring(char c)
+ {
+ 	return (isprint(c)
+ 		|| (c == '\0')
+Index: dtc/tests/dtbs_equal_ordered.c
+===================================================================
+--- dtc.orig/tests/dtbs_equal_ordered.c	2008-08-04 15:25:06.000000000 +1000
++++ dtc/tests/dtbs_equal_ordered.c	2008-08-04 15:25:24.000000000 +1000
+@@ -29,7 +29,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-void compare_mem_rsv(const void *fdt1, const void *fdt2)
++static void compare_mem_rsv(const void *fdt1, const void *fdt2)
+ {
+ 	int i;
+ 	uint64_t addr1, size1, addr2, size2;
+@@ -56,7 +56,7 @@ void compare_mem_rsv(const void *fdt1, c
+ 	}
+ }
+ 
+-void compare_structure(const void *fdt1, const void *fdt2)
++static void compare_structure(const void *fdt1, const void *fdt2)
+ {
+ 	int nextoffset1 = 0, nextoffset2 = 0;
+ 	int offset1, offset2;
+Index: dtc/tests/incbin.c
+===================================================================
+--- dtc.orig/tests/incbin.c	2008-08-04 15:20:53.000000000 +1000
++++ dtc/tests/incbin.c	2008-08-04 15:21:08.000000000 +1000
+@@ -31,7 +31,7 @@
+ 
+ #define CHUNKSIZE	1024
+ 
+-char *load_file(const char *name, int *len)
++static char *load_file(const char *name, int *len)
+ {
+ 	FILE *f;
+ 	char *buf = NULL;
+Index: dtc/tests/mangle-layout.c
+===================================================================
+--- dtc.orig/tests/mangle-layout.c	2008-08-04 15:19:19.000000000 +1000
++++ dtc/tests/mangle-layout.c	2008-08-04 15:19:30.000000000 +1000
+@@ -35,7 +35,7 @@ struct bufstate {
+ 	int size;
+ };
+ 
+-void expand_buf(struct bufstate *buf, int newsize)
++static void expand_buf(struct bufstate *buf, int newsize)
+ {
+ 	buf->buf = realloc(buf->buf, newsize);
+ 	if (!buf->buf)
+@@ -43,7 +43,7 @@ void expand_buf(struct bufstate *buf, in
+ 	buf->size = newsize;
+ }
+ 
+-void new_header(struct bufstate *buf, int version, const void *fdt)
++static void new_header(struct bufstate *buf, int version, const void *fdt)
+ {
+ 	int hdrsize;
+ 
+@@ -63,7 +63,7 @@ void new_header(struct bufstate *buf, in
+ 	fdt_set_boot_cpuid_phys(buf->buf, fdt_boot_cpuid_phys(fdt));
+ }
+ 
+-void add_block(struct bufstate *buf, int version, char block, const void *fdt)
++static void add_block(struct bufstate *buf, int version, char block, const void *fdt)
+ {
+ 	int align, size;
+ 	const void *src;
+Index: dtc/tests/node_check_compatible.c
+===================================================================
+--- dtc.orig/tests/node_check_compatible.c	2008-08-04 15:18:13.000000000 +1000
++++ dtc/tests/node_check_compatible.c	2008-08-04 15:18:30.000000000 +1000
+@@ -29,7 +29,8 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-void check_compatible(const void *fdt, const char *path, const char *compat)
++static void check_compatible(const void *fdt, const char *path,
++			     const char *compat)
+ {
+ 	int offset, err;
+ 
+Index: dtc/tests/node_offset_by_compatible.c
+===================================================================
+--- dtc.orig/tests/node_offset_by_compatible.c	2008-08-04 15:18:35.000000000 +1000
++++ dtc/tests/node_offset_by_compatible.c	2008-08-04 15:18:47.000000000 +1000
+@@ -29,7 +29,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-void check_search(void *fdt, const char *compat, ...)
++static void check_search(void *fdt, const char *compat, ...)
+ {
+ 	va_list ap;
+ 	int offset = -1, target;
+Index: dtc/tests/node_offset_by_phandle.c
+===================================================================
+--- dtc.orig/tests/node_offset_by_phandle.c	2008-08-04 15:17:58.000000000 +1000
++++ dtc/tests/node_offset_by_phandle.c	2008-08-04 15:18:06.000000000 +1000
+@@ -29,7 +29,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-void check_search(void *fdt, uint32_t phandle, int target)
++static void check_search(void *fdt, uint32_t phandle, int target)
+ {
+ 	int offset;
+ 
+Index: dtc/tests/nopulate.c
+===================================================================
+--- dtc.orig/tests/nopulate.c	2008-08-04 15:19:44.000000000 +1000
++++ dtc/tests/nopulate.c	2008-08-04 15:19:56.000000000 +1000
+@@ -30,7 +30,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-int nopulate_struct(char *buf, const char *fdt)
++static int nopulate_struct(char *buf, const char *fdt)
+ {
+ 	int offset, nextoffset = 0;
+ 	uint32_t tag;
+Index: dtc/tests/notfound.c
+===================================================================
+--- dtc.orig/tests/notfound.c	2008-08-04 15:19:00.000000000 +1000
++++ dtc/tests/notfound.c	2008-08-04 15:19:10.000000000 +1000
+@@ -28,7 +28,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-void check_error(const char *s, int err)
++static void check_error(const char *s, int err)
+ {
+ 	if (err != -FDT_ERR_NOTFOUND)
+ 		FAIL("%s return error %s instead of -FDT_ERR_NOTFOUND", s,
+Index: dtc/tests/path-references.c
+===================================================================
+--- dtc.orig/tests/path-references.c	2008-08-04 15:24:35.000000000 +1000
++++ dtc/tests/path-references.c	2008-08-04 15:24:52.000000000 +1000
+@@ -28,7 +28,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-void check_ref(const void *fdt, int node, const char *checkpath)
++static void check_ref(const void *fdt, int node, const char *checkpath)
+ {
+ 	const char *p;
+ 	int len;
+Index: dtc/tests/references.c
+===================================================================
+--- dtc.orig/tests/references.c	2008-08-04 15:20:26.000000000 +1000
++++ dtc/tests/references.c	2008-08-04 15:20:39.000000000 +1000
+@@ -28,7 +28,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-void check_ref(const void *fdt, int node, uint32_t checkref)
++static void check_ref(const void *fdt, int node, uint32_t checkref)
+ {
+ 	const uint32_t *p;
+ 	uint32_t ref;
+Index: dtc/tests/set_name.c
+===================================================================
+--- dtc.orig/tests/set_name.c	2008-08-04 15:20:00.000000000 +1000
++++ dtc/tests/set_name.c	2008-08-04 15:20:13.000000000 +1000
+@@ -28,7 +28,7 @@
+ #include "tests.h"
+ #include "testdata.h"
+ 
+-void check_set_name(void *fdt, const char *path, const char *newname)
++static void check_set_name(void *fdt, const char *path, const char *newname)
+ {
+ 	int offset;
+ 	const char *getname, *oldname;
 
 -- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
