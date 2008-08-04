@@ -1,17 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40808041430q2d81f2a9i600e9ae17f658d01@mail.gmail.com>
-Date: Mon, 4 Aug 2008 15:30:07 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: paul@mad-scientist.us
-Subject: Re: Creating a wrapped zImage.initrd -- can't start the trampoline?
-In-Reply-To: <1217878996.29051.560.camel@psmith-ubeta.netezza.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1217644827.6390.12.camel@homebase.localnet>
-	<20080804172558.GA18317@secretlab.ca>
-	<1217878996.29051.560.camel@psmith-ubeta.netezza.com>
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id D3E24DDEF3
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  5 Aug 2008 09:00:00 +1000 (EST)
+To: Fabien Oriede <fabien.oriede@yahoo.fr>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: suffisant space for U-Boot,
+	Linux and an initrd image ? (4MB SDRAM)
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 04 Aug 2008 12:54:00 -0000."
+	<789365.58211.qm@web27401.mail.ukl.yahoo.com>
+Date: Tue, 05 Aug 2008 00:59:57 +0200
+Sender: wd@denx.de
+Message-Id: <20080804225958.0827524848@gemini.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -22,34 +25,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 4, 2008 at 1:43 PM, Paul Smith <paul@mad-scientist.us> wrote:
-> On Mon, 2008-08-04 at 11:25 -0600, Grant Likely wrote:
->> Take a look at Documentation/powerpc/bootwrapper.txt
->> You probably want the 'simpleImage.%' target.  It also binds in a copy
->> of the device tree blob.
+In message <789365.58211.qm@web27401.mail.ukl.yahoo.com> you wrote:
 >
-> Hm.  I'm using 2.6.25.14 and I don't see any bootwrapper.txt file in
-> Documentation/powerpc (or anywhere else).  I also can't see any target
-> simpleImage in any makefile.  Is this something new in 2.6.26?  :-(
->
-> Any help for folks still using 2.6.25?
+> I would like to know if this is possible to port U-Boot, Linux and an initrd image on a board with 4MB of SDRAM ?
 
-It's new in .26, but it is relevant for .25 also.
+In Theory it may be possible, but just for very tiny demo
+applications. Probably not for a useful device.
 
-Here's a link to it:
+> When Linux try to boot, there is this line on the terminal :
+> "Memory : 2036k available (1036k kernel code, 256k data, 80k init, 0k highmem)"
+> So I have 2036k memory available for my initrd image but I don't know if this is suffisant.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/powerpc/bootwrapper.txt;h=d60fced5e1cc69169d9bbf1b49faacb41ef8db9c;hb=8f616cd5249e03c9e1b371623d85e76d4b86bbc1
+Note that a ramdisk is NOT an efficient way to use memory. See fro
+example http://www.denx.de/wiki/view/DULG/RootFileSystemSelection
+which shows that for example a cramfs image is not only faster to boot
+but also needs less RAM.
 
-> I think I need some basic instruction on how bootloaders etc. work, with
-> a concentration on embedded PPC if possible.  Anyone have any pointers
-> that would be worth investigating?
+Best regards,
 
-The document above should help.
-Documentation/powerpc/booting-without-of.txt has some useful
-information also.
-
-g.
+Wolfgang Denk
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Keep your head and your heart going in the right  direction  and  you
+will not have to worry about your feet.
