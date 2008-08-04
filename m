@@ -1,13 +1,26 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <paul@burly.ondioline.org>
+Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
+	by ozlabs.org (Postfix) with ESMTP id 91670DDDF0
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Aug 2008 15:11:06 +1000 (EST)
+From: Paul Collins <paul@burly.ondioline.org>
+To: Neil Brown <neilb@suse.de>
+Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
+	post-2.6.27-rc1
+References: <87tze38vzt.fsf@burly.wgtn.ondioline.org>
+	<20080802184554.GB715@fieldses.org>
+	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
+	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
+	<18581.40960.737792.454035@notabene.brown>
+	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
+	<18582.32935.501672.689845@notabene.brown>
+Date: Mon, 04 Aug 2008 17:11:05 +1200
+In-Reply-To: <18582.32935.501672.689845@notabene.brown> (Neil Brown's message
+	of "Mon, 4 Aug 2008 14:08:07 +1000")
+Message-ID: <87fxpll5zq.fsf@burly.wgtn.ondioline.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18582.35404.120586.238398@drongo.ozlabs.ibm.com>
-Date: Mon, 4 Aug 2008 14:49:16 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, linuxppc-dev@ozlabs.org,
+	nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,578 +30,121 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+Neil Brown <neilb@suse.de> writes:
 
-Please pull from the 'merge' branch of
+> bctrl appears to be the indirect-function-call opcode.  There are
+> three of them one each for
+>   ->fh_to_dentry
+>   acceptable
+>   ->fh_to_parent
+>
+> 0xa8 is 'acceptable'.
+>
+> In the first traceback, the crash was a call from very early in 
+> find_acceptable_alias,  The first significant thing it does is call
+> the 'acceptable' function.
+>
+> So it seems clear that 'acceptable' is NULL.
+> It is equally clear that we never ever set it to NULL in the code.
+> The logical conclusion is "compiler error".
+> We can confirm (hopefully) by looking at a disassembly of fh_verify.
+>
+> Maybe because nfsd_acceptable is 'static' and never explicitly called,
+> gcc gets confused and optimises it away.  Maybe a disassembly of 
+> nfsd_acceptable would be informative ... particularly if it turns out
+> to be empty.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+Here's the disassembly.
 
-The main thing there is that we have moved the powerpc include files
-from include/asm-powerpc to arch/powerpc/include/asm.  There is also a
-commit from Kumar Gala that removes code that was only referenced when
-compiling with ARCH=ppc, and is now dead since arch/ppc is gone, plus
-a couple of warning fixes from Tony Breeds.
+Dump of assembler code for function nfsd_acceptable:
+0xc015f450 <nfsd_acceptable+0>:	mflr    r0
+0xc015f454 <nfsd_acceptable+4>:	stw     r0,4(r1)
+0xc015f458 <nfsd_acceptable+8>:	bl      0xc0013154 <_mcount>
+0xc015f45c <nfsd_acceptable+12>:	stwu    r1,-32(r1)
+0xc015f460 <nfsd_acceptable+16>:	mflr    r0
+0xc015f464 <nfsd_acceptable+20>:	stmw    r28,16(r1)
+0xc015f468 <nfsd_acceptable+24>:	mr      r28,r3
+0xc015f46c <nfsd_acceptable+28>:	mr      r31,r1
+0xc015f470 <nfsd_acceptable+32>:	stw     r0,36(r1)
+0xc015f474 <nfsd_acceptable+36>:	li      r30,1
+0xc015f478 <nfsd_acceptable+40>:	lwz     r0,24(r3)
+0xc015f47c <nfsd_acceptable+44>:	mr      r3,r4
+0xc015f480 <nfsd_acceptable+48>:	andi.   r9,r0,1024
+0xc015f484 <nfsd_acceptable+52>:	bne-    0xc015f56c <nfsd_acceptable+284>
+0xc015f488 <nfsd_acceptable+56>:	cmpwi   cr7,r4,0
+0xc015f48c <nfsd_acceptable+60>:	beq-    cr7,0xc015f4b0 <nfsd_acceptable+96>
+0xc015f490 <nfsd_acceptable+64>:	lwz     r0,0(r4)
+0xc015f494 <nfsd_acceptable+68>:	cntlzw  r0,r0
+0xc015f498 <nfsd_acceptable+72>:	rlwinm  r0,r0,27,5,31
+0xc015f49c <nfsd_acceptable+76>:	twnei   r0,0
+0xc015f4a0 <nfsd_acceptable+80>:	lwarx   r0,0,r4
+0xc015f4a4 <nfsd_acceptable+84>:	addic   r0,r0,1
+0xc015f4a8 <nfsd_acceptable+88>:	stwcx.  r0,0,r4
+0xc015f4ac <nfsd_acceptable+92>:	bne-    0xc015f4a0 <nfsd_acceptable+80>
+0xc015f4b0 <nfsd_acceptable+96>:	mr      r29,r3
+0xc015f4b4 <nfsd_acceptable+100>:	b       0xc015f508 <nfsd_acceptable+184>
+0xc015f4b8 <nfsd_acceptable+104>:	beq-    cr6,0xc015f4dc <nfsd_acceptable+140>
+0xc015f4bc <nfsd_acceptable+108>:	lwz     r0,0(r30)
+0xc015f4c0 <nfsd_acceptable+112>:	cntlzw  r0,r0
+0xc015f4c4 <nfsd_acceptable+116>:	rlwinm  r0,r0,27,5,31
+0xc015f4c8 <nfsd_acceptable+120>:	twnei   r0,0
+0xc015f4cc <nfsd_acceptable+124>:	lwarx   r0,0,r30
+0xc015f4d0 <nfsd_acceptable+128>:	addic   r0,r0,1
+0xc015f4d4 <nfsd_acceptable+132>:	stwcx.  r0,0,r30
+0xc015f4d8 <nfsd_acceptable+136>:	bne-    0xc015f4cc <nfsd_acceptable+124>
+0xc015f4dc <nfsd_acceptable+140>:	lwz     r3,8(r30)
+0xc015f4e0 <nfsd_acceptable+144>:	li      r4,1
+0xc015f4e4 <nfsd_acceptable+148>:	bl      0xc00b2f50 <inode_permission>
+0xc015f4e8 <nfsd_acceptable+152>:	cmpwi   cr7,r3,0
+0xc015f4ec <nfsd_acceptable+156>:	mr      r3,r29
+0xc015f4f0 <nfsd_acceptable+160>:	bge+    cr7,0xc015f500 <nfsd_acceptable+176>
+0xc015f4f4 <nfsd_acceptable+164>:	mr      r3,r30
+0xc015f4f8 <nfsd_acceptable+168>:	bl      0xc00befb0 <dput>
+0xc015f4fc <nfsd_acceptable+172>:	b       0xc015f524 <nfsd_acceptable+212>
+0xc015f500 <nfsd_acceptable+176>:	bl      0xc00befb0 <dput>
+0xc015f504 <nfsd_acceptable+180>:	mr      r29,r30
+0xc015f508 <nfsd_acceptable+184>:	lwz     r0,32(r28)
+0xc015f50c <nfsd_acceptable+188>:	cmpw    cr7,r29,r0
+0xc015f510 <nfsd_acceptable+192>:	beq-    cr7,0xc015f524 <nfsd_acceptable+212>
+0xc015f514 <nfsd_acceptable+196>:	lwz     r30,20(r29)
+0xc015f518 <nfsd_acceptable+200>:	cmpw    cr7,r29,r30
+0xc015f51c <nfsd_acceptable+204>:	cmpwi   cr6,r30,0
+0xc015f520 <nfsd_acceptable+208>:	bne+    cr7,0xc015f4b8 <nfsd_acceptable+104>
+0xc015f524 <nfsd_acceptable+212>:	lwz     r0,32(r28)
+0xc015f528 <nfsd_acceptable+216>:	cmpw    cr7,r29,r0
+0xc015f52c <nfsd_acceptable+220>:	beq-    cr7,0xc015f554 <nfsd_acceptable+260>
+0xc015f530 <nfsd_acceptable+224>:	lis     r9,-16296
+0xc015f534 <nfsd_acceptable+228>:	lwz     r0,17792(r9)
+0xc015f538 <nfsd_acceptable+232>:	andi.   r9,r0,2
+0xc015f53c <nfsd_acceptable+236>:	beq+    0xc015f554 <nfsd_acceptable+260>
+0xc015f540 <nfsd_acceptable+240>:	lis     r3,-16309
+0xc015f544 <nfsd_acceptable+244>:	lwz     r5,32(r29)
+0xc015f548 <nfsd_acceptable+248>:	mr      r4,r29
+0xc015f54c <nfsd_acceptable+252>:	addi    r3,r3,7972
+0xc015f550 <nfsd_acceptable+256>:	bl      0xc00330d4 <printk>
+0xc015f554 <nfsd_acceptable+260>:	lwz     r0,32(r28)
+0xc015f558 <nfsd_acceptable+264>:	mr      r3,r29
+0xc015f55c <nfsd_acceptable+268>:	xor     r30,r29,r0
+0xc015f560 <nfsd_acceptable+272>:	cntlzw  r30,r30
+0xc015f564 <nfsd_acceptable+276>:	rlwinm  r30,r30,27,5,31
+0xc015f568 <nfsd_acceptable+280>:	bl      0xc00befb0 <dput>
+0xc015f56c <nfsd_acceptable+284>:	lwz     r11,0(r1)
+0xc015f570 <nfsd_acceptable+288>:	mr      r3,r30
+0xc015f574 <nfsd_acceptable+292>:	lwz     r0,4(r11)
+0xc015f578 <nfsd_acceptable+296>:	lmw     r28,-16(r11)
+0xc015f57c <nfsd_acceptable+300>:	mr      r1,r11
+0xc015f580 <nfsd_acceptable+304>:	mtlr    r0
+0xc015f584 <nfsd_acceptable+308>:	blr
+End of assembler dump.
 
-(Note that the stuff in arch/powerpc/include/asm/irq.h all came from
-include/asm-powerpc/irq.h; there was enough stuff removed by Kumar's
-patch that the git rename detection logic didn't see it as a rename.)
+> Could you try removing the 'static' declaration for nfsd_acceptable
+> and recompile?
+> Or maybe try a different compiler?
 
-Thanks,
-Paul.
+I will give these a try this evening.
 
- Documentation/powerpc/booting-without-of.txt       |    4 +-
- Documentation/powerpc/eeh-pci-error-recovery.txt   |    2 +-
- arch/powerpc/Kconfig.debug                         |    2 +-
- arch/powerpc/boot/io.h                             |    2 +-
- .../powerpc/include/asm}/8253pit.h                 |    0 
- .../powerpc/include/asm}/8xx_immap.h               |    0 
- .../powerpc/include/asm}/Kbuild                    |    0 
- .../powerpc/include/asm}/a.out.h                   |    0 
- .../powerpc/include/asm}/abs_addr.h                |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/agp.h |    0 
- .../powerpc/include/asm}/asm-compat.h              |    0 
- .../powerpc/include/asm}/atomic.h                  |    0 
- .../powerpc/include/asm}/auxvec.h                  |    0 
- .../powerpc/include/asm}/backlight.h               |    0 
- .../powerpc/include/asm}/bitops.h                  |    0 
- .../powerpc/include/asm}/bootx.h                   |    0 
- .../powerpc/include/asm}/btext.h                   |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/bug.h |    0 
- .../powerpc/include/asm}/bugs.h                    |    0 
- .../powerpc/include/asm}/byteorder.h               |    0 
- .../powerpc/include/asm}/cache.h                   |    0 
- .../powerpc/include/asm}/cacheflush.h              |    0 
- .../powerpc/include/asm}/cell-pmu.h                |    0 
- .../powerpc/include/asm}/cell-regs.h               |    0 
- .../powerpc/include/asm}/checksum.h                |    0 
- .../powerpc/include/asm}/clk_interface.h           |    0 
- .../powerpc/include/asm}/code-patching.h           |    0 
- .../powerpc/include/asm}/compat.h                  |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/cpm.h |    0 
- .../powerpc/include/asm}/cpm1.h                    |    0 
- .../powerpc/include/asm}/cpm2.h                    |    0 
- .../powerpc/include/asm}/cputable.h                |    0 
- .../powerpc/include/asm}/cputhreads.h              |    0 
- .../powerpc/include/asm}/cputime.h                 |    0 
- .../powerpc/include/asm}/current.h                 |    0 
- .../powerpc/include/asm}/dbdma.h                   |    0 
- .../powerpc/include/asm}/dcr-generic.h             |    0 
- .../powerpc/include/asm}/dcr-mmio.h                |    0 
- .../powerpc/include/asm}/dcr-native.h              |    0 
- .../powerpc/include/asm}/dcr-regs.h                |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/dcr.h |    6 +-
- .../powerpc/include/asm}/delay.h                   |    0 
- .../powerpc/include/asm}/device.h                  |    0 
- .../powerpc/include/asm}/div64.h                   |    0 
- .../powerpc/include/asm}/dma-mapping.h             |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/dma.h |    0 
- .../powerpc/include/asm}/edac.h                    |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/eeh.h |    0 
- .../powerpc/include/asm}/eeh_event.h               |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/elf.h |    0 
- .../powerpc/include/asm}/emergency-restart.h       |    0 
- .../powerpc/include/asm}/errno.h                   |    0 
- .../powerpc/include/asm}/exception.h               |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/fb.h  |    0 
- .../powerpc/include/asm}/fcntl.h                   |    0 
- .../powerpc/include/asm}/feature-fixups.h          |    0 
- .../powerpc/include/asm}/firmware.h                |    0 
- .../powerpc/include/asm}/fixmap.h                  |    0 
- .../powerpc/include/asm}/floppy.h                  |    0 
- .../powerpc/include/asm}/fs_pd.h                   |    0 
- .../powerpc/include/asm}/fsl_gtm.h                 |    0 
- .../powerpc/include/asm}/fsl_lbc.h                 |    0 
- .../powerpc/include/asm}/ftrace.h                  |    0 
- .../powerpc/include/asm}/futex.h                   |    0 
- .../powerpc/include/asm}/gpio.h                    |    0 
- .../powerpc/include/asm}/grackle.h                 |    0 
- .../powerpc/include/asm}/hardirq.h                 |    0 
- .../powerpc/include/asm}/heathrow.h                |    0 
- .../powerpc/include/asm}/highmem.h                 |    0 
- .../powerpc/include/asm}/hugetlb.h                 |    0 
- .../powerpc/include/asm}/hvcall.h                  |    0 
- .../powerpc/include/asm}/hvconsole.h               |    0 
- .../powerpc/include/asm}/hvcserver.h               |    0 
- .../powerpc/include/asm}/hw_irq.h                  |    0 
- .../powerpc/include/asm}/hydra.h                   |    0 
- .../powerpc/include/asm}/i8259.h                   |    5 -
- .../powerpc/include/asm}/ibmebus.h                 |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/ide.h |    0 
- .../powerpc/include/asm}/immap_86xx.h              |    0 
- .../powerpc/include/asm}/immap_cpm2.h              |    0 
- .../powerpc/include/asm}/immap_qe.h                |    2 -
- .../powerpc/include/asm}/io-defs.h                 |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/io.h  |    0 
- .../powerpc/include/asm}/ioctl.h                   |    0 
- .../powerpc/include/asm}/ioctls.h                  |    0 
- .../powerpc/include/asm}/iommu.h                   |    0 
- .../powerpc/include/asm}/ipcbuf.h                  |    0 
- .../powerpc/include/asm}/ipic.h                    |    9 -
- arch/powerpc/include/asm/irq.h                     |  366 +++++++++++
- .../powerpc/include/asm}/irq_regs.h                |    0 
- .../powerpc/include/asm}/irqflags.h                |    4 +-
- .../powerpc/include/asm}/iseries/alpaca.h          |    0 
- .../powerpc/include/asm}/iseries/hv_call.h         |    0 
- .../powerpc/include/asm}/iseries/hv_call_event.h   |    0 
- .../powerpc/include/asm}/iseries/hv_call_sc.h      |    0 
- .../powerpc/include/asm}/iseries/hv_call_xm.h      |    0 
- .../powerpc/include/asm}/iseries/hv_lp_config.h    |    0 
- .../powerpc/include/asm}/iseries/hv_lp_event.h     |    0 
- .../powerpc/include/asm}/iseries/hv_types.h        |    0 
- .../powerpc/include/asm}/iseries/iommu.h           |    0 
- .../powerpc/include/asm}/iseries/it_lp_queue.h     |    0 
- .../powerpc/include/asm}/iseries/lpar_map.h        |    0 
- .../powerpc/include/asm}/iseries/mf.h              |    0 
- .../powerpc/include/asm}/iseries/vio.h             |    0 
- .../powerpc/include/asm}/kdebug.h                  |    0 
- .../powerpc/include/asm}/kdump.h                   |    0 
- .../powerpc/include/asm}/kexec.h                   |    0 
- .../powerpc/include/asm}/keylargo.h                |    0 
- .../powerpc/include/asm}/kgdb.h                    |    2 -
- .../powerpc/include/asm}/kmap_types.h              |    0 
- .../powerpc/include/asm}/kprobes.h                 |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/kvm.h |    0 
- .../powerpc/include/asm}/kvm_asm.h                 |    0 
- .../powerpc/include/asm}/kvm_host.h                |    0 
- .../powerpc/include/asm}/kvm_para.h                |    0 
- .../powerpc/include/asm}/kvm_ppc.h                 |    0 
- .../powerpc/include/asm}/libata-portmap.h          |    0 
- .../powerpc/include/asm}/linkage.h                 |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/lmb.h |    0 
- .../powerpc/include/asm}/local.h                   |    0 
- .../powerpc/include/asm}/lppaca.h                  |    0 
- .../powerpc/include/asm}/lv1call.h                 |    0 
- .../powerpc/include/asm}/machdep.h                 |    0 
- .../powerpc/include/asm}/macio.h                   |    0 
- .../powerpc/include/asm}/mc146818rtc.h             |    0 
- .../powerpc/include/asm}/mediabay.h                |    0 
- .../powerpc/include/asm}/mman.h                    |    0 
- .../powerpc/include/asm}/mmu-40x.h                 |    0 
- .../powerpc/include/asm}/mmu-44x.h                 |    0 
- .../powerpc/include/asm}/mmu-8xx.h                 |    0 
- .../powerpc/include/asm}/mmu-fsl-booke.h           |    0 
- .../powerpc/include/asm}/mmu-hash32.h              |    0 
- .../powerpc/include/asm}/mmu-hash64.h              |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/mmu.h |    0 
- .../powerpc/include/asm}/mmu_context.h             |    0 
- .../powerpc/include/asm}/mmzone.h                  |    0 
- .../powerpc/include/asm}/module.h                  |    0 
- .../powerpc/include/asm}/mpc512x.h                 |    0 
- .../powerpc/include/asm}/mpc52xx.h                 |    0 
- .../powerpc/include/asm}/mpc52xx_psc.h             |    0 
- .../powerpc/include/asm}/mpc6xx.h                  |    0 
- .../powerpc/include/asm}/mpc8260.h                 |    0 
- .../powerpc/include/asm}/mpc86xx.h                 |    0 
- .../powerpc/include/asm}/mpc8xx.h                  |    0 
- .../powerpc/include/asm}/mpic.h                    |    0 
- .../powerpc/include/asm}/msgbuf.h                  |    0 
- .../powerpc/include/asm}/mutex.h                   |    0 
- .../powerpc/include/asm}/nvram.h                   |    0 
- .../powerpc/include/asm}/of_device.h               |    0 
- .../powerpc/include/asm}/of_platform.h             |    0 
- .../powerpc/include/asm}/ohare.h                   |    0 
- .../powerpc/include/asm}/oprofile_impl.h           |    0 
- .../powerpc/include/asm}/pSeries_reconfig.h        |    0 
- .../powerpc/include/asm}/paca.h                    |    2 -
- .../powerpc/include/asm}/page.h                    |    0 
- .../powerpc/include/asm}/page_32.h                 |    0 
- .../powerpc/include/asm}/page_64.h                 |    0 
- .../powerpc/include/asm}/param.h                   |    0 
- .../powerpc/include/asm}/parport.h                 |    0 
- .../powerpc/include/asm}/pasemi_dma.h              |    0 
- .../powerpc/include/asm}/pci-bridge.h              |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/pci.h |    0 
- .../powerpc/include/asm}/percpu.h                  |    0 
- .../powerpc/include/asm}/pgalloc-32.h              |    0 
- .../powerpc/include/asm}/pgalloc-64.h              |    0 
- .../powerpc/include/asm}/pgalloc.h                 |    0 
- .../powerpc/include/asm}/pgtable-4k.h              |    0 
- .../powerpc/include/asm}/pgtable-64k.h             |    0 
- .../powerpc/include/asm}/pgtable-ppc32.h           |    0 
- .../powerpc/include/asm}/pgtable-ppc64.h           |    2 +-
- .../powerpc/include/asm}/pgtable.h                 |    0 
- .../powerpc/include/asm}/phyp_dump.h               |    0 
- .../powerpc/include/asm}/pmac_feature.h            |    0 
- .../powerpc/include/asm}/pmac_low_i2c.h            |    0 
- .../powerpc/include/asm}/pmac_pfunc.h              |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/pmc.h |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/pmi.h |    0 
- .../powerpc/include/asm}/poll.h                    |    0 
- .../powerpc/include/asm}/posix_types.h             |    0 
- .../powerpc/include/asm}/ppc-pci.h                 |    0 
- .../powerpc/include/asm}/ppc4xx.h                  |    0 
- .../powerpc/include/asm}/ppc_asm.h                 |    0 
- .../powerpc/include/asm}/processor.h               |    0 
- .../powerpc/include/asm}/prom.h                    |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/ps3.h |    0 
- .../powerpc/include/asm}/ps3av.h                   |    0 
- .../powerpc/include/asm}/ps3fb.h                   |    0 
- .../powerpc/include/asm}/ps3stor.h                 |    0 
- .../powerpc/include/asm}/ptrace.h                  |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/qe.h  |    0 
- .../powerpc/include/asm}/qe_ic.h                   |    2 -
- .../asm-powerpc => arch/powerpc/include/asm}/reg.h |    0 
- .../powerpc/include/asm}/reg_8xx.h                 |    0 
- .../powerpc/include/asm}/reg_booke.h               |    0 
- .../powerpc/include/asm}/reg_fsl_emb.h             |    0 
- .../powerpc/include/asm}/resource.h                |    0 
- .../powerpc/include/asm}/rheap.h                   |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/rio.h |    0 
- .../powerpc/include/asm}/rtas.h                    |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/rtc.h |    0 
- .../powerpc/include/asm}/rwsem.h                   |    4 +-
- .../powerpc/include/asm}/scatterlist.h             |    0 
- .../powerpc/include/asm}/seccomp.h                 |    0 
- .../powerpc/include/asm}/sections.h                |    0 
- .../powerpc/include/asm}/sembuf.h                  |    0 
- .../powerpc/include/asm}/serial.h                  |    0 
- .../powerpc/include/asm}/setjmp.h                  |    0 
- .../powerpc/include/asm}/setup.h                   |    0 
- .../powerpc/include/asm}/shmbuf.h                  |    0 
- .../powerpc/include/asm}/shmparam.h                |    0 
- .../powerpc/include/asm}/sigcontext.h              |    0 
- .../powerpc/include/asm}/siginfo.h                 |    0 
- .../powerpc/include/asm}/signal.h                  |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/smp.h |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/smu.h |    0 
- .../powerpc/include/asm}/socket.h                  |    0 
- .../powerpc/include/asm}/sockios.h                 |    0 
- .../powerpc/include/asm}/sparsemem.h               |    0 
- .../powerpc/include/asm}/spinlock.h                |    0 
- .../powerpc/include/asm}/spinlock_types.h          |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/spu.h |    0 
- .../powerpc/include/asm}/spu_csa.h                 |    0 
- .../powerpc/include/asm}/spu_info.h                |    0 
- .../powerpc/include/asm}/spu_priv1.h               |    0 
- .../powerpc/include/asm}/sstep.h                   |    0 
- .../powerpc/include/asm}/stat.h                    |    0 
- .../powerpc/include/asm}/statfs.h                  |    0 
- .../powerpc/include/asm}/string.h                  |    0 
- .../powerpc/include/asm}/suspend.h                 |    0 
- .../powerpc/include/asm}/synch.h                   |    0 
- .../powerpc/include/asm}/syscall.h                 |    0 
- .../powerpc/include/asm}/syscalls.h                |    0 
- .../powerpc/include/asm}/systbl.h                  |    0 
- .../powerpc/include/asm}/system.h                  |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/tce.h |    0 
- .../powerpc/include/asm}/termbits.h                |    0 
- .../powerpc/include/asm}/termios.h                 |    0 
- .../powerpc/include/asm}/thread_info.h             |    0 
- .../powerpc/include/asm}/time.h                    |    0 
- .../powerpc/include/asm}/timex.h                   |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/tlb.h |    0 
- .../powerpc/include/asm}/tlbflush.h                |    0 
- .../powerpc/include/asm}/topology.h                |    0 
- .../powerpc/include/asm}/tsi108.h                  |    0 
- .../powerpc/include/asm}/tsi108_irq.h              |    0 
- .../powerpc/include/asm}/tsi108_pci.h              |    0 
- .../powerpc/include/asm}/types.h                   |    0 
- .../powerpc/include/asm}/uaccess.h                 |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/ucc.h |    0 
- .../powerpc/include/asm}/ucc_fast.h                |    2 -
- .../powerpc/include/asm}/ucc_slow.h                |    0 
- .../powerpc/include/asm}/ucontext.h                |    0 
- .../powerpc/include/asm}/udbg.h                    |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/uic.h |    2 -
- .../powerpc/include/asm}/unaligned.h               |    0 
- .../powerpc/include/asm}/uninorth.h                |    0 
- .../powerpc/include/asm}/unistd.h                  |    0 
- .../powerpc/include/asm}/user.h                    |    0 
- .../powerpc/include/asm}/vdso.h                    |    0 
- .../powerpc/include/asm}/vdso_datapage.h           |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/vga.h |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/vio.h |    0 
- .../powerpc/include/asm}/xilinx_intc.h             |    0 
- .../powerpc/include/asm}/xmon.h                    |    0 
- .../asm-powerpc => arch/powerpc/include/asm}/xor.h |    0 
- arch/powerpc/kernel/Makefile                       |   14 -
- arch/powerpc/kernel/cpu_setup_44x.S                |    6 -
- arch/powerpc/kernel/irq.c                          |   25 +-
- arch/powerpc/kernel/process.c                      |    2 -
- arch/powerpc/kernel/vdso.c                         |    2 -
- arch/powerpc/lib/Makefile                          |    2 -
- arch/powerpc/mm/mem.c                              |    2 +-
- arch/powerpc/mm/ppc_mmu_32.c                       |    4 +-
- arch/powerpc/mm/tlb_64.c                           |    2 +-
- arch/powerpc/platforms/52xx/Makefile               |    4 +-
- arch/powerpc/platforms/86xx/mpc86xx_smp.c          |    2 +-
- arch/powerpc/platforms/Makefile                    |    6 -
- arch/powerpc/platforms/powermac/Makefile           |    3 +-
- arch/powerpc/sysdev/Makefile                       |    2 -
- drivers/char/hvc_console.h                         |    2 +-
- drivers/char/hvcs.c                                |    2 +-
- drivers/infiniband/hw/ehca/ehca_reqs.c             |    2 +-
- include/asm-powerpc/irq.h                          |  654 --------------------
- 283 files changed, 388 insertions(+), 766 deletions(-)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/8253pit.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/8xx_immap.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/Kbuild (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/a.out.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/abs_addr.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/agp.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/asm-compat.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/atomic.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/auxvec.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/backlight.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/bitops.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/bootx.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/btext.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/bug.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/bugs.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/byteorder.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/cache.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/cacheflush.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/cell-pmu.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/cell-regs.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/checksum.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/clk_interface.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/code-patching.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/compat.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/cpm.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/cpm1.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/cpm2.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/cputable.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/cputhreads.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/cputime.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/current.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/dbdma.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/dcr-generic.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/dcr-mmio.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/dcr-native.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/dcr-regs.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/dcr.h (94%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/delay.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/device.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/div64.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/dma-mapping.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/dma.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/edac.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/eeh.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/eeh_event.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/elf.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/emergency-restart.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/errno.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/exception.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/fb.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/fcntl.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/feature-fixups.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/firmware.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/fixmap.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/floppy.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/fs_pd.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/fsl_gtm.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/fsl_lbc.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ftrace.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/futex.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/gpio.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/grackle.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/hardirq.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/heathrow.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/highmem.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/hugetlb.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/hvcall.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/hvconsole.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/hvcserver.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/hw_irq.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/hydra.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/i8259.h (71%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ibmebus.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ide.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/immap_86xx.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/immap_cpm2.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/immap_qe.h (99%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/io-defs.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/io.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ioctl.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ioctls.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iommu.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ipcbuf.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ipic.h (93%)
- create mode 100644 arch/powerpc/include/asm/irq.h
- rename {include/asm-powerpc => arch/powerpc/include/asm}/irq_regs.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/irqflags.h (93%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/alpaca.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/hv_call.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/hv_call_event.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/hv_call_sc.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/hv_call_xm.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/hv_lp_config.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/hv_lp_event.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/hv_types.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/iommu.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/it_lp_queue.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/lpar_map.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/mf.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/iseries/vio.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/kdebug.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/kdump.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/kexec.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/keylargo.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/kgdb.h (98%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/kmap_types.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/kprobes.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/kvm.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/kvm_asm.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/kvm_host.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/kvm_para.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/kvm_ppc.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/libata-portmap.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/linkage.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/lmb.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/local.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/lppaca.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/lv1call.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/machdep.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/macio.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mc146818rtc.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mediabay.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mman.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mmu-40x.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mmu-44x.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mmu-8xx.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mmu-fsl-booke.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mmu-hash32.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mmu-hash64.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mmu.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mmu_context.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mmzone.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/module.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mpc512x.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mpc52xx.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mpc52xx_psc.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mpc6xx.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mpc8260.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mpc86xx.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mpc8xx.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mpic.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/msgbuf.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/mutex.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/nvram.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/of_device.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/of_platform.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ohare.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/oprofile_impl.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pSeries_reconfig.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/paca.h (99%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/page.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/page_32.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/page_64.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/param.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/parport.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pasemi_dma.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pci-bridge.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pci.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/percpu.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pgalloc-32.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pgalloc-64.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pgalloc.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pgtable-4k.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pgtable-64k.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pgtable-ppc32.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pgtable-ppc64.h (99%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pgtable.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/phyp_dump.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pmac_feature.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pmac_low_i2c.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pmac_pfunc.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pmc.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/pmi.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/poll.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/posix_types.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ppc-pci.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ppc4xx.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ppc_asm.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/processor.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/prom.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ps3.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ps3av.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ps3fb.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ps3stor.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ptrace.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/qe.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/qe_ic.h (99%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/reg.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/reg_8xx.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/reg_booke.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/reg_fsl_emb.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/resource.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/rheap.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/rio.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/rtas.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/rtc.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/rwsem.h (96%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/scatterlist.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/seccomp.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/sections.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/sembuf.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/serial.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/setjmp.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/setup.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/shmbuf.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/shmparam.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/sigcontext.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/siginfo.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/signal.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/smp.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/smu.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/socket.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/sockios.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/sparsemem.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/spinlock.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/spinlock_types.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/spu.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/spu_csa.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/spu_info.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/spu_priv1.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/sstep.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/stat.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/statfs.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/string.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/suspend.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/synch.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/syscall.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/syscalls.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/systbl.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/system.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/tce.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/termbits.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/termios.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/thread_info.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/time.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/timex.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/tlb.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/tlbflush.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/topology.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/tsi108.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/tsi108_irq.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/tsi108_pci.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/types.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/uaccess.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ucc.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ucc_fast.h (99%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ucc_slow.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/ucontext.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/udbg.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/uic.h (95%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/unaligned.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/uninorth.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/unistd.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/user.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/vdso.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/vdso_datapage.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/vga.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/vio.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/xilinx_intc.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/xmon.h (100%)
- rename {include/asm-powerpc => arch/powerpc/include/asm}/xor.h (100%)
- delete mode 100644 include/asm-powerpc/irq.h
+-- 
+Paul Collins
+Wellington, New Zealand
 
-Kumar Gala (1):
-      powerpc: Remove use of CONFIG_PPC_MERGE
-
-Stephen Rothwell (1):
-      powerpc: Move include files to arch/powerpc/include/asm
-
-Tony Breeds (2):
-      powerpc: Fix compiler warning in arch/powerpc/mm/mem.c
-      powerpc: Force printing of 'total_memory' to unsigned long long
+Dag vijandelijk luchtschip de huismeester is dood
