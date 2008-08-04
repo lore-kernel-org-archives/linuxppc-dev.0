@@ -1,22 +1,18 @@
-Return-Path: <dwalker@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 861D4DE2E0
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 02:31:57 +1000 (EST)
-Subject: Re: [PATCH 3/3] powerpc - Make the irq reverse mapping radix tree
-	lockless
-From: Daniel Walker <dwalker@mvista.com>
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-In-Reply-To: <1217848124-3719-4-git-send-email-sebastien.dugue@bull.net>
-References: <1217848124-3719-1-git-send-email-sebastien.dugue@bull.net>
-	<1217848124-3719-4-git-send-email-sebastien.dugue@bull.net>
-Content-Type: text/plain
-Date: Mon, 04 Aug 2008 09:31:36 -0700
-Message-Id: <1217867496.3946.33.camel@localhost.localdomain>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 2253EDDFDE
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 03:25:01 +1000 (EST)
+Date: Mon, 4 Aug 2008 13:24:59 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Arnd Bergmann" <arnd@arndb.de>
+Subject: Re: [PATCH] port ndfc driver to arch/powerpc
+Message-ID: <20080804132459.3fc12f59@lappy.seanm.ca>
+In-Reply-To: <200808041825.02314.arnd@arndb.de>
+References: <20080801233000.3574434f@lappy.seanm.ca>
+	<200808041825.02314.arnd@arndb.de>
 Mime-Version: 1.0
-Cc: tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
-	linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-	jean-pierre.dion@bull.net, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, gilles.carry@ext.bull.net, tglx@linutronix.de
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <sean.maclennan@ottawa.kanatek.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-08-04 at 13:08 +0200, Sebastien Dugue wrote:
+On Mon, 4 Aug 2008 18:25:02 +0200
+"Arnd Bergmann" <arnd@arndb.de> wrote:
 
-> --- a/arch/powerpc/include/asm/irq.h
-> +++ b/arch/powerpc/include/asm/irq.h
-> @@ -119,6 +119,7 @@ struct irq_host {
->  		} linear;
->  		struct radix_tree_root tree;
->  	} revmap_data;
-> +	spinlock_t	       tree_lock;
+> Shouldn't this instead use the device tree, like fsl_elbc, fsl_upm
+> and pasemi_nand do?
+> It feels awfully backwards to hardcode this stuff in the platform
+> source code.
 
-You have a tabbing issue above..
+Yes, yes it should. This is just a patch to get the driver working... it
+is not a full blown of platform driver.
 
-Daniel
+Currently there is no working NDFC driver in the kernel. I felt a
+working driver, even if less than optimal, is better than not
+supporting NAND on the 44x. This driver is no worse than the
+arch/ppc version was, it is just no better ;)
+
+Cheers,
+   Sean
