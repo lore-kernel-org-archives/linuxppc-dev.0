@@ -1,16 +1,21 @@
-Return-Path: <jrigby@freescale.com>
-Message-ID: <4898C845.3080606@freescale.com>
-Date: Tue, 05 Aug 2008 15:38:13 -0600
-From: John Rigby <jrigby@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH add immr alias 2/4] powerpc: 5121: Add immr alias
-	to	MPC5121 ADS device tree.
-References: <1217967220-30557-1-git-send-email-jrigby@freescale.com>		<1217967220-30557-2-git-send-email-jrigby@freescale.com>		<fa686aa40808051405j7268c216j8e5b526d6ad526c9@mail.gmail.com>	<fa686aa40808051405j7ea96957t9242e007c93d8e74@mail.gmail.com>
-	<4898C34C.5000305@freescale.com> <4898C434.4040408@freescale.com>
-In-Reply-To: <4898C434.4040408@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Return-Path: <jwboyer@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.232])
+	by ozlabs.org (Postfix) with ESMTP id 8E07ADDF3F
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 08:48:58 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so2058409wra.1
+	for <linuxppc-dev@ozlabs.org>; Tue, 05 Aug 2008 15:48:56 -0700 (PDT)
+Subject: Re: Kconfig debug help
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: John Linn <John.Linn@xilinx.com>
+In-Reply-To: <20080805213759.96642158806D@mail101-wa4.bigfish.com>
+References: <20080805213759.96642158806D@mail101-wa4.bigfish.com>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 05 Aug 2008 18:48:48 -0400
+Message-Id: <1217976528.2328.54.camel@localhost.localdomain>
+Mime-Version: 1.0
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: jwboyer@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,20 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> John Rigby wrote:
->>    I would like to use mpc83xx_add_bridge for 5121.  This is why I
->>    moved it to fsl_pci.c.  It currently uses get_immrbase and adds
->>    0x8300 and 0x8304 to it to pass to setup_indirect_pci as the
->>    cfg_addr, and cfg_data addresses.
->>
->>    I'm more than willing to change mpc83xx_add_bridge to not use
->>    get_immrbase.  One simple solution is to pass the cfg_addr and
->>    cfg_data addresses in.  If that seems ok then thats what I will do.
->
-> We should really be putting those addresses in the "reg" property of 
-> the PCI node.
->
-> -Scott
->
-Yes, which is what fsl_add_bridge does it.
+On Tue, 2008-08-05 at 15:37 -0600, John Linn wrote:
+> I’m trying to debug some Kconfig problems and am looking for a way to
+> get more debug output.
+> 
+>  
+> 
+> I have used KBUILD_VERBOSE=1 on the command line and it didn’t help
+> much.
+> 
+>  
+> 
+> I’m seeing an issue with creating a new defconfig file for a board.  I
+> get the .config created, then copy it to a defconfig, and then it
+> doesn’t do anything when I run make with the defconfig file.  
+
+Yeah, I hit that myself this weekend.  It's a bug in the Kconfig area.
+It's 1/2 fixed in the latest Linus and powerpc trees.
+
+josh
