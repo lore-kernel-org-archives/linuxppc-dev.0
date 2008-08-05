@@ -1,17 +1,36 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id D9766DDE03
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 16:27:24 +1000 (EST)
-Date: Tue, 5 Aug 2008 02:27:23 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Message-ID: <20080805022723.31df2f98@lappy.seanm.ca>
-In-Reply-To: <20080805021205.438365c0@lappy.seanm.ca>
-References: <18582.35404.120586.238398@drongo.ozlabs.ibm.com>
-	<20080805021205.438365c0@lappy.seanm.ca>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F3517DDDE1
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 17:17:15 +1000 (EST)
+Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
+	post-2.6.27-rc1
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Collins <paul@burly.ondioline.org>
+In-Reply-To: <871w145ar3.fsf@burly.wgtn.ondioline.org>
+References: <20080802184554.GB715@fieldses.org>
+	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
+	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
+	<18581.40960.737792.454035@notabene.brown>
+	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
+	<18582.32935.501672.689845@notabene.brown>
+	<87fxpll5zq.fsf@burly.wgtn.ondioline.org>
+	<87y73dcd60.fsf@burly.wgtn.ondioline.org>
+	<1217860597.12535.2.camel@localhost>
+	<87hca05ws4.fsf@burly.wgtn.ondioline.org>
+	<20080804205908.GA29890@fieldses.org>
+	<1217895418.7951.7.camel@localhost>
+	<8763qg5don.fsf@burly.wgtn.ondioline.org>
+	<1217910862.7951.22.camel@localhost>
+	<871w145ar3.fsf@burly.wgtn.ondioline.org>
+Content-Type: text/plain
+Date: Tue, 05 Aug 2008 17:16:58 +1000
+Message-Id: <1217920618.24157.161.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>,
+	nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,15 +40,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-False alarm. They hardcoded the arch into the include. So
+On Tue, 2008-08-05 at 16:47 +1200, Paul Collins wrote:
+> It's about four years old.  It was in storage for about six months and I
+> got it repaired a few weeks ago (display cable and inverter).  The sort
+> of crazy crap I've been reporting certainly smacks of memory corruption.
+> But on the other hand, 2.6.25 (Debian's) and 2.6.26 (my own) have been
+> trouble-free.
 
-#include <asm-powerpc/time.h>
-
-no longer works but
-
-#include <asm/time.h>
-
-does. This is an artifact from when we where trying to use arch/ppc.
+Any chance you can bisect the problem ?
 
 Cheers,
-   Sean
+Ben.
