@@ -1,21 +1,34 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 62737DDEFC
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 19:43:24 +1000 (EST)
-Date: Tue, 5 Aug 2008 11:43:22 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: PS3 early lock-up
-In-Reply-To: <1217900430.24157.142.camel@pasglop>
-Message-ID: <Pine.LNX.4.64.0808051142160.18419@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0808041640220.31424@vixen.sonytel.be>
-	<1217886287.24157.87.camel@pasglop> <1217886777.24157.91.camel@pasglop>
-	<48979F6F.1050507@am.sony.com> <1217900430.24157.142.camel@pasglop>
+Return-Path: <paul@burly.ondioline.org>
+Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
+	by ozlabs.org (Postfix) with ESMTP id 9A0CDDDF0A
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 19:43:39 +1000 (EST)
+From: Paul Collins <paul@burly.ondioline.org>
+To: michael@ellerman.id.au
+Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
+	post-2.6.27-rc1
+References: <20080802184554.GB715@fieldses.org>
+	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
+	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
+	<18581.40960.737792.454035@notabene.brown>
+	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
+	<18582.32935.501672.689845@notabene.brown>
+	<87fxpll5zq.fsf@burly.wgtn.ondioline.org>
+	<87y73dcd60.fsf@burly.wgtn.ondioline.org>
+	<1217860597.12535.2.camel@localhost>
+	<87hca05ws4.fsf@burly.wgtn.ondioline.org>
+	<20080804205908.GA29890@fieldses.org>
+	<1217895418.7951.7.camel@localhost>
+	<8763qg5don.fsf@burly.wgtn.ondioline.org>
+	<1217910862.7951.22.camel@localhost>
+Date: Tue, 05 Aug 2008 21:43:37 +1200
+In-Reply-To: <1217910862.7951.22.camel@localhost> (Michael Ellerman's message
+	of "Tue, 05 Aug 2008 04:34:22 +0000")
+Message-ID: <87zlnrer06.fsf@burly.wgtn.ondioline.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-367339035-1217929402=:18419"
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: Neil Brown <neilb@suse.de>, nfsv4@linux-nfs.org,
+	linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Michael Ellerman <michael@ellerman.id.au> writes:
 
----584349381-367339035-1217929402=:18419
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+> I see you have FTRACE enabled. That's new and could potentially bugger
+> things up without the compiler knowing, so can you turn that off.
 
-On Tue, 5 Aug 2008, Benjamin Herrenschmidt wrote:
-> > > Can you find out where that stupid value comes from ?
-> > 
-> > I didn't have time to look at in detail, but it fails from the
-> > ioremap call in ps3_map_htab (arch/powerpc/platfroms/ps3/htab.c):
-> > 
-> >  htab = (__force struct hash_pte *)ioremap_flags(htab_addr, htab_size,
-> >      pgprot_val(PAGE_READONLY_X));
-> > 
-> > IIRC, lv1 doesn't allow a read/write mapping of the htab, and that is
-> > why I used pgprot_val(PAGE_READONLY_X) here.
-> 
-> Why are you mapping it in the first place btw ? Do you actually use that
-> mapping ?
+With FTRACE disabled, doing cross-builds from the 2.6.26 amd64 client, a
+setup that normally triggers the problem on the 2nd or 3rd build, I was
+able to do 10 complete builds.  ("make clean oldconfig vmlinux modules")
 
-arch/powerpc/platfroms/ps3/htab.c:ps3_hpte_updatepp() uses `htab[slot].v'.
+So it looks like ftrace is the cause, or at least provokes some other
+usually-latent problem.  I wasn't using it, so I'll just leave it off.
 
-With kind regards,
+> And can you enable CONFIG_CODE_PATCHING_SELFTEST and
+> CONFIG_FTR_FIXUP_SELFTEST, that will enable tests of some code I changed
+> that /could/ (maybe) cause random blow ups.
 
-Geert Uytterhoeven
-Software Architect
+With those options enabled, I get this:
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+  Running code patching self-tests ...
+  Running feature fixup self-tests ...
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+-- 
+Paul Collins
+Wellington, New Zealand
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-367339035-1217929402=:18419--
+Dag vijandelijk luchtschip de huismeester is dood
