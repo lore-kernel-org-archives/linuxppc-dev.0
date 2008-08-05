@@ -1,19 +1,21 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 1A29DDDDFB
+Return-Path: <domino@mikroswiat.pl>
+Received: from jupiter.az.pl (jupiter.az.pl [62.146.68.61])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C10D4DDF69
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Aug 2008 17:33:13 +1000 (EST)
-Message-ID: <489802B3.805@coritel.it>
-Date: Tue, 05 Aug 2008 09:35:15 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
+	Tue,  5 Aug 2008 18:11:56 +1000 (EST)
+Received: from afp172.internetdsl.tpnet.pl ([83.16.145.172] helo=[192.168.2.8])
+	by jupiter.az.pl with esmtpsa (TLSv1:AES256-SHA:256) (Exim 4.68)
+	(envelope-from <domino@mikroswiat.pl>) id 1KQHSw-0003yf-LX
+	for linuxppc-embedded@ozlabs.org; Tue, 05 Aug 2008 10:00:23 +0200
+Message-ID: <4898092D.6040207@mikroswiat.pl>
+Date: Tue, 05 Aug 2008 10:02:53 +0200
+From: Dominik Bozek <domino@mikroswiat.pl>
 MIME-Version: 1.0
-To: "M. Warner Losh" <imp@bsdimp.com>
-Subject: Re: Quick question about dts
-References: <20080805.005649.1713918190.imp@bsdimp.com>
-In-Reply-To: <20080805.005649.1713918190.imp@bsdimp.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: gianfar on mpc8313
+Content-Type: text/plain; charset=ISO-8859-2
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,38 +26,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-M. Warner Losh ha scritto:
-> I have a .dts file that works with 2.6.18 (MV Pro 5.0).  I encode it
-> directly into the kernel image.  However, when I try to use it with my
-> 2.6.23, 2.6.24 or 2.6.25 kernel trees, it doesn't work at all.  In the
-> MV Pro 5.0 kernel, I hacked the startup sequence to store a pointer to
-> this blob in r3 so that it is moved in.  I've done something similar
-> in -current (for reasons that are too complicated to really explain
-> well, we can't do this via the normal boot loader mechanisms).  The
-> dtc complains that the interrupt-controller property is obsolete on
-> the chosen device.
-> 
-> Does any documentation exist for how dts has evolved?  I'd like to
-> forward port what I have without examining the .dts files from both
-> versions and guessing...
-> 
-> Warner
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+Hi all,
+do someone know how to speedup the gianfar on mpc8313? (core:333MHz,
+csb:133MHz, ddr:266MHz)
+I'm able to achieve 56MB/s (from device) and 48MB/s (to device), but
+only if the ethernet interface use jumbo packets (mtu 9000). With
+default mtu the transfers are 33MB/s and 27MB/s.
+I'm using kernel 2.6.20 + patches from freescale, but I make some tests
+with 2.6.26 (eg. because of DMA engine support). I haven't notice any
+improvement in the transfer (I don't take care about cpu usage).
 
-Check out the kernel documentation booting-without-of.txt of your version.
-
-Regards,
+Is there anybody who got higher transfers? Can you share some information?
 
 -- 
-Marco Stornelli
-Embedded Software Engineer
-CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-http://www.coritel.it
-
-marco.stornelli@coritel.it
-+39 06 72582838
+Regards
+Domino
