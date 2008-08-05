@@ -1,34 +1,23 @@
-Return-Path: <paul@burly.ondioline.org>
-Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
-	by ozlabs.org (Postfix) with ESMTP id 9A0CDDDF0A
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 19:43:39 +1000 (EST)
-From: Paul Collins <paul@burly.ondioline.org>
-To: michael@ellerman.id.au
-Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
-	post-2.6.27-rc1
-References: <20080802184554.GB715@fieldses.org>
-	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
-	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
-	<18581.40960.737792.454035@notabene.brown>
-	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
-	<18582.32935.501672.689845@notabene.brown>
-	<87fxpll5zq.fsf@burly.wgtn.ondioline.org>
-	<87y73dcd60.fsf@burly.wgtn.ondioline.org>
-	<1217860597.12535.2.camel@localhost>
-	<87hca05ws4.fsf@burly.wgtn.ondioline.org>
-	<20080804205908.GA29890@fieldses.org>
-	<1217895418.7951.7.camel@localhost>
-	<8763qg5don.fsf@burly.wgtn.ondioline.org>
-	<1217910862.7951.22.camel@localhost>
-Date: Tue, 05 Aug 2008 21:43:37 +1200
-In-Reply-To: <1217910862.7951.22.camel@localhost> (Michael Ellerman's message
-	of "Tue, 05 Aug 2008 04:34:22 +0000")
-Message-ID: <87zlnrer06.fsf@burly.wgtn.ondioline.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Neil Brown <neilb@suse.de>, nfsv4@linux-nfs.org,
-	linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 54E92DDE9E
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 20:28:46 +1000 (EST)
+Subject: Re: PS3 early lock-up
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <Pine.LNX.4.64.0808051142160.18419@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0808041640220.31424@vixen.sonytel.be>
+	<1217886287.24157.87.camel@pasglop> <1217886777.24157.91.camel@pasglop>
+	<48979F6F.1050507@am.sony.com> <1217900430.24157.142.camel@pasglop>
+	<Pine.LNX.4.64.0808051142160.18419@vixen.sonytel.be>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 05 Aug 2008 20:28:37 +1000
+Message-Id: <1217932117.24157.185.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,29 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman <michael@ellerman.id.au> writes:
 
-> I see you have FTRACE enabled. That's new and could potentially bugger
-> things up without the compiler knowing, so can you turn that off.
+> arch/powerpc/platfroms/ps3/htab.c:ps3_hpte_updatepp() uses `htab[slot].v'.
 
-With FTRACE disabled, doing cross-builds from the 2.6.26 amd64 client, a
-setup that normally triggers the problem on the 2nd or 3rd build, I was
-able to do 10 complete builds.  ("make clean oldconfig vmlinux modules")
+Ah, I missed that one. Indeed it -is- used.
 
-So it looks like ftrace is the cause, or at least provokes some other
-usually-latent problem.  I wasn't using it, so I'll just leave it off.
+Ok, that leaves us with 2 options:
 
-> And can you enable CONFIG_CODE_PATCHING_SELFTEST and
-> CONFIG_FTR_FIXUP_SELFTEST, that will enable tests of some code I changed
-> that /could/ (maybe) cause random blow ups.
+ - Change ps3_hpte_updatepp() to not read from the hash table via that
+mapping (ie, do you have an LV1 call to read an HPTE ? Do you measure
+any significant performance loss using that instead ? updatepp shouldn't
+be something called -that- often).
 
-With those options enabled, I get this:
+ - Add a way to setup HPTEs using 3 PPP bits. I'm not going to implement
+that for the main hash code just yet though (the assembly) but it might
+be possible to implement it specifically for mappings bolted. That
+means it would only work when the mapping is done early but on PS3, we
+know that the hash table is always mapped early.
 
-  Running code patching self-tests ...
-  Running feature fixup self-tests ...
+The later would be a matter of taking my ﻿htab_convert_pte_flags() function
+and making it capable, when _PAGE_USER is _not_ set and _PAGE_RW is not
+set neither, to set PPP to 110.
 
--- 
-Paul Collins
-Wellington, New Zealand
+You could do that by adding:
 
-Dag vijandelijk luchtschip de huismeester is dood
+	if (!(pteflags & (_PAGE_USER | _PAGE_RW)))
+		rflags |= (1 << 1) | (1 << 63);
+
+Dbl check that the resulting mapping isn't accessible to user space though.
+
+Ben.
