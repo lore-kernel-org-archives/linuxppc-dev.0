@@ -1,36 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F3517DDDE1
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 17:17:15 +1000 (EST)
-Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
-	post-2.6.27-rc1
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Collins <paul@burly.ondioline.org>
-In-Reply-To: <871w145ar3.fsf@burly.wgtn.ondioline.org>
-References: <20080802184554.GB715@fieldses.org>
-	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
-	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
-	<18581.40960.737792.454035@notabene.brown>
-	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
-	<18582.32935.501672.689845@notabene.brown>
-	<87fxpll5zq.fsf@burly.wgtn.ondioline.org>
-	<87y73dcd60.fsf@burly.wgtn.ondioline.org>
-	<1217860597.12535.2.camel@localhost>
-	<87hca05ws4.fsf@burly.wgtn.ondioline.org>
-	<20080804205908.GA29890@fieldses.org>
-	<1217895418.7951.7.camel@localhost>
-	<8763qg5don.fsf@burly.wgtn.ondioline.org>
-	<1217910862.7951.22.camel@localhost>
-	<871w145ar3.fsf@burly.wgtn.ondioline.org>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 17:16:58 +1000
-Message-Id: <1217920618.24157.161.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A4A7DDDE18
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 17:28:09 +1000 (EST)
+Date: Tue, 5 Aug 2008 17:28:03 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mm: Fix attribute confusion with
+	htab_bolt_mapping()
+Message-Id: <20080805172803.1c556b37.sfr@canb.auug.org.au>
+In-Reply-To: <20080805062012.2A161DDE1A@ozlabs.org>
+References: <20080805062012.2A161DDE1A@ozlabs.org>
 Mime-Version: 1.0
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>,
-	nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__5_Aug_2008_17_28_03_+1000_m4Kqo/87w=zEAazZ"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,14 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-08-05 at 16:47 +1200, Paul Collins wrote:
-> It's about four years old.  It was in storage for about six months and I
-> got it repaired a few weeks ago (display cable and inverter).  The sort
-> of crazy crap I've been reporting certainly smacks of memory corruption.
-> But on the other hand, 2.6.25 (Debian's) and 2.6.26 (my own) have been
-> trouble-free.
+--Signature=_Tue__5_Aug_2008_17_28_03_+1000_m4Kqo/87w=zEAazZ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Any chance you can bisect the problem ?
+Hi Ben,
 
+Just a trivial note ..
+
+On Tue, 05 Aug 2008 16:19:56 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> +++ linux-work/arch/powerpc/mm/hash_utils_64.c	2008-08-05 16:09:47.000000=
+000 +1000
+> @@ -18,7 +18,7 @@
+>   * 2 of the License, or (at your option) any later version.
+>   */
+> =20
+> -#undef DEBUG
+> +#define DEBUG
+
+You will turn this off again before it goes into Paulus' tree, right? :-)
+
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__5_Aug_2008_17_28_03_+1000_m4Kqo/87w=zEAazZ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiYAQMACgkQjjKRsyhoI8xePQCgsUpSd6ulF6wg7tcfJvKw5SbB
+BgwAnRbC+sxG2rad9Ue3d9q9vsCU1dcY
+=HQoi
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__5_Aug_2008_17_28_03_+1000_m4Kqo/87w=zEAazZ--
