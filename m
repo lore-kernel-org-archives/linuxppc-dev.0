@@ -1,18 +1,21 @@
-Return-Path: <grigore.mihaela@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id D6D43DDFB5
+Return-Path: <imp@bsdimp.com>
+Received: from harmony.bsdimp.com (bsdimp.com [199.45.160.85])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3D8E1DE149
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Aug 2008 23:04:13 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so1258842ywh.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 05 Aug 2008 06:04:12 -0700 (PDT)
-Message-ID: <78ef7ce10808050604h54b9b627r69e98c82c2cb464@mail.gmail.com>
-Date: Tue, 5 Aug 2008 14:04:12 +0100
-From: "Mihaela Grigore" <grigore.mihaela@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: linux kernel under psim (powerpc emulator)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed,  6 Aug 2008 00:43:59 +1000 (EST)
+Date: Tue, 05 Aug 2008 08:41:03 -0600 (MDT)
+Message-Id: <20080805.084103.74673921.imp@bsdimp.com>
+To: marco.stornelli@coritel.it
+Subject: Re: Quick question about dts
+From: Warner Losh <imp@bsdimp.com>
+In-Reply-To: <489802B3.805@coritel.it>
+References: <20080805.005649.1713918190.imp@bsdimp.com>
+	<489802B3.805@coritel.it>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,9 +26,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+From: Marco Stornelli <marco.stornelli@coritel.it>
+Subject: Re: Quick question about dts
+Date: Tue, 05 Aug 2008 09:35:15 +0200
 
-Has anyone tried or knows if it is possible to run a 2.6 linux kernel
-under psim?
+> M. Warner Losh ha scritto:
+> > I have a .dts file that works with 2.6.18 (MV Pro 5.0).  I encode it
+> > directly into the kernel image.  However, when I try to use it with my
+> > 2.6.23, 2.6.24 or 2.6.25 kernel trees, it doesn't work at all.  In the
+> > MV Pro 5.0 kernel, I hacked the startup sequence to store a pointer to
+> > this blob in r3 so that it is moved in.  I've done something similar
+> > in -current (for reasons that are too complicated to really explain
+> > well, we can't do this via the normal boot loader mechanisms).  The
+> > dtc complains that the interrupt-controller property is obsolete on
+> > the chosen device.
+> > 
+> > Does any documentation exist for how dts has evolved?  I'd like to
+> > forward port what I have without examining the .dts files from both
+> > versions and guessing...
+> > 
+> > Warner
+> > 
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> > 
+> 
+> Check out the kernel documentation booting-without-of.txt of your version.
 
-ps: please add me in cc in a reply to this message.
+Thanks.  I've already read this for both versions of the kernel.  It
+doesn't tell me how dts has evolved.  It just tells me, mostly, what
+is current for each version.
+
+I've poked a little at the diffs between different versions.  But
+these diffs are only what, not why.
+
+Warner
