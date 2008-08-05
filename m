@@ -1,20 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id D3E24DDEF3
+Return-Path: <imp@bsdimp.com>
+Received: from harmony.bsdimp.com (bsdimp.com [199.45.160.85])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 75C6BDDF01
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Aug 2008 09:00:00 +1000 (EST)
-To: Fabien Oriede <fabien.oriede@yahoo.fr>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: suffisant space for U-Boot,
-	Linux and an initrd image ? (4MB SDRAM)
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 04 Aug 2008 12:54:00 -0000."
-	<789365.58211.qm@web27401.mail.ukl.yahoo.com>
-Date: Tue, 05 Aug 2008 00:59:57 +0200
-Sender: wd@denx.de
-Message-Id: <20080804225958.0827524848@gemini.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue,  5 Aug 2008 16:58:14 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by harmony.bsdimp.com (8.14.2/8.14.1) with ESMTP id m756uRlL066590
+	for <linuxppc-embedded@ozlabs.org>; Tue, 5 Aug 2008 00:56:27 -0600 (MDT)
+	(envelope-from imp@bsdimp.com)
+Date: Tue, 05 Aug 2008 00:56:49 -0600 (MDT)
+Message-Id: <20080805.005649.1713918190.imp@bsdimp.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Quick question about dts
+From: "M. Warner Losh" <imp@bsdimp.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,29 +26,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <789365.58211.qm@web27401.mail.ukl.yahoo.com> you wrote:
->
-> I would like to know if this is possible to port U-Boot, Linux and an initrd image on a board with 4MB of SDRAM ?
+I have a .dts file that works with 2.6.18 (MV Pro 5.0).  I encode it
+directly into the kernel image.  However, when I try to use it with my
+2.6.23, 2.6.24 or 2.6.25 kernel trees, it doesn't work at all.  In the
+MV Pro 5.0 kernel, I hacked the startup sequence to store a pointer to
+this blob in r3 so that it is moved in.  I've done something similar
+in -current (for reasons that are too complicated to really explain
+well, we can't do this via the normal boot loader mechanisms).  The
+dtc complains that the interrupt-controller property is obsolete on
+the chosen device.
 
-In Theory it may be possible, but just for very tiny demo
-applications. Probably not for a useful device.
+Does any documentation exist for how dts has evolved?  I'd like to
+forward port what I have without examining the .dts files from both
+versions and guessing...
 
-> When Linux try to boot, there is this line on the terminal :
-> "Memory : 2036k available (1036k kernel code, 256k data, 80k init, 0k highmem)"
-> So I have 2036k memory available for my initrd image but I don't know if this is suffisant.
-
-Note that a ramdisk is NOT an efficient way to use memory. See fro
-example http://www.denx.de/wiki/view/DULG/RootFileSystemSelection
-which shows that for example a cramfs image is not only faster to boot
-but also needs less RAM.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Keep your head and your heart going in the right  direction  and  you
-will not have to worry about your feet.
+Warner
