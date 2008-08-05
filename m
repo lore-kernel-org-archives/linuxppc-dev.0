@@ -1,19 +1,34 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 01545DE040
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 21:40:50 +1000 (EST)
-Subject: 64-bit build failure without hugetlbfs
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
+	post-2.6.27-rc1
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Paul Collins <paul@burly.ondioline.org>
+In-Reply-To: <87zlnrer06.fsf@burly.wgtn.ondioline.org>
+References: <20080802184554.GB715@fieldses.org>
+	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
+	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
+	<18581.40960.737792.454035@notabene.brown>
+	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
+	<18582.32935.501672.689845@notabene.brown>
+	<87fxpll5zq.fsf@burly.wgtn.ondioline.org>
+	<87y73dcd60.fsf@burly.wgtn.ondioline.org>
+	<1217860597.12535.2.camel@localhost>
+	<87hca05ws4.fsf@burly.wgtn.ondioline.org>
+	<20080804205908.GA29890@fieldses.org>
+	<1217895418.7951.7.camel@localhost>
+	<8763qg5don.fsf@burly.wgtn.ondioline.org>
+	<1217910862.7951.22.camel@localhost>
+	<87zlnrer06.fsf@burly.wgtn.ondioline.org>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-F0UCc8qxJPvTeWtIZ5wP"
-Date: Tue, 05 Aug 2008 13:39:49 +0200
-Message-Id: <1217936390.3603.34.camel@johannes.berg>
+	boundary="=-A3Da8PDDgXmGQOem3kax"
+Date: Tue, 05 Aug 2008 21:53:39 +1000
+Message-Id: <1217937219.7758.9.camel@localhost>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+	"J. Bruce Fields" <bfields@fieldses.org>,
+	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,49 +39,64 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-F0UCc8qxJPvTeWtIZ5wP
+--=-A3Da8PDDgXmGQOem3kax
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-  LD      vmlinux.o
-mm/built-in.o: In function `.arch_get_unmapped_area_topdown':
-(.text+0x1d084): multiple definition of `.arch_get_unmapped_area_topdown'
-arch/powerpc/mm/built-in.o:(.text+0x7240): first defined here
-mm/built-in.o: In function `arch_get_unmapped_area_topdown':
-(.opd+0x2730): multiple definition of `arch_get_unmapped_area_topdown'
-arch/powerpc/mm/built-in.o:(.opd+0x918): first defined here
-mm/built-in.o: In function `.arch_get_unmapped_area':
-(.text+0x1ce3c): multiple definition of `.arch_get_unmapped_area'
-arch/powerpc/mm/built-in.o:(.text+0x72b8): first defined here
-mm/built-in.o: In function `arch_get_unmapped_area':
-(.opd+0x2718): multiple definition of `arch_get_unmapped_area'
-arch/powerpc/mm/built-in.o:(.opd+0x930): first defined here
-make: *** [vmlinux.o] Error 1
+On Tue, 2008-08-05 at 21:43 +1200, Paul Collins wrote:
+> Michael Ellerman <michael@ellerman.id.au> writes:
+>=20
+> > I see you have FTRACE enabled. That's new and could potentially bugger
+> > things up without the compiler knowing, so can you turn that off.
+>=20
+> With FTRACE disabled, doing cross-builds from the 2.6.26 amd64 client, a
+> setup that normally triggers the problem on the 2nd or 3rd build, I was
+> able to do 10 complete builds.  ("make clean oldconfig vmlinux modules")
+>=20
+> So it looks like ftrace is the cause, or at least provokes some other
+> usually-latent problem.  I wasn't using it, so I'll just leave it off.
 
-enabling hugetlbfs cures it.
+OK, that's sort of good, but also not. I can't see anything in the
+ftrace code that explains it, but I guess it's lurking. We'll try and
+reproduce locally and bang on it.
 
-johannes
+Thanks for chasing it, and let us know if you get an oops with
+CONFIG_FTRACE=3Dn.
 
---=-F0UCc8qxJPvTeWtIZ5wP
+> > And can you enable CONFIG_CODE_PATCHING_SELFTEST and
+> > CONFIG_FTR_FIXUP_SELFTEST, that will enable tests of some code I change=
+d
+> > that /could/ (maybe) cause random blow ups.
+>=20
+> With those options enabled, I get this:
+>=20
+>   Running code patching self-tests ...
+>   Running feature fixup self-tests ...
+
+That's good, they only print if they fail.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-A3Da8PDDgXmGQOem3kax
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-iQIcBAABAgAGBQJImDwCAAoJEKVg1VMiehFYYl4QAJXsxnoIC1/U35TdQtLzl1hc
-VjbpOQhJuZtYWnP105UaYKWPKeTa+Aav1tA3GJ5lHIJqiljVVbnUbdgIc35jALkS
-miAQtj9upHxZLTxxmbfXtUjxjLTiwtlzNgwLWCNBj92Flh2QXIqUc1pNjZRIsCct
-/mF6+7fDFt0SMkXXBn4S9SAhRaLyZFTwtgU5eatTz/nSuyNayfwRReIJT+jNySiR
-TYGxXZC85WWiqpj0JBVZik4UpbqmxKqyN572OZ8suQ2OFz1vzm0cAJtTv31Moq+E
-vZdmu21ghtztNVDVx3ymg3d3cvVwSEPfaJYdIQjdMQJ0wlkCot0zkoEdE47Q6+gI
-WbYmSxxrOEWwlGlt7PmpRMTKBmKsUWUP4xdk9YFkQ6JF2sOW4aci0LxxIF/OdD7d
-N+tQP2IMxD+Wh9VkhCRBTcsnbQUj2jPuwFbdt3QMTKdvo9Is+Enyk90C/+h1Rqyu
-kJc4UpHeOt9wfkBl5TiQxRMp5Ap8ppP5VTmkl7Urifk0TUhBrmMnr1SQnwX5dS30
-xkK1aWa4Xx77dr866kLXFwEV6i8zfaQBmqvACDsw0EzCNx7/7PC/ib2myiYqfEqs
-3LLUUtCD0hIf7wq6PP5ciDfVkQCu3Hd1YNXpKdugh1el7jtxjmIIpkDzcq70dX0Z
-11NwlDShLWVms3rrT24a
-=GfA7
+iD8DBQBImD9DdSjSd0sB4dIRAn0UAJsEzpBSJohfbeV1ylWGPph6FfmpeACfT9PI
+MYcKeYuuerTFyGgy+O8bQK4=
+=gMDp
 -----END PGP SIGNATURE-----
 
---=-F0UCc8qxJPvTeWtIZ5wP--
+--=-A3Da8PDDgXmGQOem3kax--
