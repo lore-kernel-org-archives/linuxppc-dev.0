@@ -1,29 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
-	post-2.6.27-rc1
-From: Michael Ellerman <michael@ellerman.id.au>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-In-Reply-To: <20080804205908.GA29890@fieldses.org>
-References: <20080802184554.GB715@fieldses.org>
-	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
-	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
-	<18581.40960.737792.454035@notabene.brown>
-	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
-	<18582.32935.501672.689845@notabene.brown>
-	<87fxpll5zq.fsf@burly.wgtn.ondioline.org>
-	<87y73dcd60.fsf@burly.wgtn.ondioline.org>
-	<1217860597.12535.2.camel@localhost>
-	<87hca05ws4.fsf@burly.wgtn.ondioline.org>
-	<20080804205908.GA29890@fieldses.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-+ixDnOjyyG3o7gE++zF7"
-Date: Tue, 05 Aug 2008 10:16:58 +1000
-Message-Id: <1217895418.7951.7.camel@localhost>
-Mime-Version: 1.0
-Cc: Neil Brown <neilb@suse.de>, linuxppc-dev@ozlabs.org, nfsv4@linux-nfs.org,
-	Paul Collins <paul@burly.ondioline.org>, linux-kernel@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from IE1EHSOBE001.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id E6671DDE0F
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 10:32:00 +1000 (EST)
+Message-ID: <48979F6F.1050507@am.sony.com>
+Date: Mon, 4 Aug 2008 17:31:43 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+Subject: Re: PS3 early lock-up
+References: <Pine.LNX.4.64.0808041640220.31424@vixen.sonytel.be>	
+	<1217886287.24157.87.camel@pasglop>
+	<1217886777.24157.91.camel@pasglop>
+In-Reply-To: <1217886777.24157.91.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,76 +24,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
---=-+ixDnOjyyG3o7gE++zF7
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Benjamin Herrenschmidt wrote:
+>> > ps3_hpte_insert() seems to be called during system initialization with the
+>> > following values of rflags:
+>> >   - first call: 0x190
+>> >   - initial memory: 0x194 (455 times)
+>> >   - hotplug memory:
+>> >       o crash: 0x115
+>> >       o OK: 0x117
+>> > 
+>> > Do you have an idea of what's really going on?
+>> 
+>> Weird... Both look incorrect. In fact, it's a bit scary...
+>> 
+>> The one with the 7 at the end means that user space as RO access to
+>> the segment (oops !) and supervisor too. The one with the 5 means
+>> RO for user and RW for supervisor.
+>> 
+>> That is unless your HV is munging them in strange ways... I don't
+>> know why LV1 is refusing a combination though.
+>> 
+>> As for the flags, it depends what htab_bolt_mapping() is called
+>> with.
+>> 
+>> Do you have a backtrace ? I'm a bit lots in the mem hotswap code
+>> trying to figure out where the mapping comes from..
+> 
+> Ah, found it... It should be ok... both the mapping of the RAM itself
+> and vmemmap_populate() should be passing 
+> 
+>   _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_COHERENT | PP_RWXX;
+> 
+> Which should be 0x194.
 
-On Mon, 2008-08-04 at 16:59 -0400, J. Bruce Fields wrote:
-> On Tue, Aug 05, 2008 at 08:51:23AM +1200, Paul Collins wrote:
-> > Michael Ellerman <michael@ellerman.id.au> writes:
-> >=20
-> > > On Mon, 2008-08-04 at 22:00 +1200, Paul Collins wrote:
-> > >> Paul Collins <paul@burly.ondioline.org> writes:
-> > >>=20
-> > >> > Neil Brown <neilb@suse.de> writes:
-> > >> >> Could you try removing the 'static' declaration for nfsd_acceptab=
-le
-> > >> >> and recompile?
-> > >> >> Or maybe try a different compiler?
-> > >> >
-> > >> > I will give these a try this evening.
-> > >>=20
-> > >> I built myself a nice new cross compiler:
-> > >>=20
-> > >>         powerpc-linux-gnu-gcc-4.1 (GCC) 4.1.3 20080623 (prerelease) =
-(Debian 4.1.2-23)
-> > >>=20
-> > >> and rebuilt 94ad374a0751f40d25e22e036c37f7263569d24c.  Running that =
-on
-> > >> the server and 2.6.26 on the client, I got yet another Oops.  This o=
-ne
-> > >> locked the machine up pretty good, so all I have is a picture:
-> > >>=20
-> > >> http://ondioline.org/~paul/DSCN1608.JPG
-> > >
-> > > Wow.
-> > >
-> > > Can you try building a kernel on the server? ie. not over NFS.
-> >=20
-> > Built kernels on the server with native gcc 4.2.4 and 4.3.1 and repeate=
-d
-> > the build test.
-> =20
-> But the build test itself was over nfs?  (And you can't reproduce the
-> same problem without nfs?)
+That is 0x190.
 
-Yeah, I'm not clear on that either. What I was aiming at was can you get
-it to oops somewhere else by not building over NFS - in which case we
-can rule NFS (more or less) out.
+0x194 = _PAGE_EXEC | _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_COHERENT | PP_RWXX
 
-cheers
+> 
+> Can you find out where that stupid value comes from ?
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+I didn't have time to look at in detail, but it fails from the
+ioremap call in ps3_map_htab (arch/powerpc/platfroms/ps3/htab.c):
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+ htab = (__force struct hash_pte *)ioremap_flags(htab_addr, htab_size,
+     pgprot_val(PAGE_READONLY_X));
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+IIRC, lv1 doesn't allow a read/write mapping of the htab, and that is
+why I used pgprot_val(PAGE_READONLY_X) here.
 
---=-+ixDnOjyyG3o7gE++zF7
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+I guess the value returned from pgprot_val(PAGE_READONLY_X)
+changed in recent kernels, and that is what is causing the failure.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Just FYI, I put these in:
 
-iD8DBQBIl5v6dSjSd0sB4dIRAsjlAJ9tZtOzK3BT9Wz6eGJ3yhIjzsOTSACcCX94
-yVsiEvvlHItT46eesIKSGTg=
-=iU3B
------END PGP SIGNATURE-----
+  printk("%s:%d: flags = %x\n", __func__, __LINE__, (_PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_COHERENT | PP_RWXX));
+  printk("%s:%d: flags = %x\n", __func__, __LINE__, pgprot_val(PAGE_READONLY_X));
 
---=-+ixDnOjyyG3o7gE++zF7--
+and got this (and lv1_write_htab_entry failed):
+
+  ps3_map_htab:288: flags = 190
+  ps3_map_htab:289: flags = 117
+
+-Geoff
