@@ -1,11 +1,38 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-Message-Id: <3d6dc055c5b18a641a5467b7331d935ede87efb2.1217943634.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc: EOI spurious irqs during boot so they can be
-	reenabled later
-Date: Tue,  5 Aug 2008 23:42:40 +1000 (EST)
-Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 347B8DE02F
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 00:31:21 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id m75EULIe266032
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Aug 2008 14:30:21 GMT
+Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
+	[9.149.165.212])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.0) with
+	ESMTP id m75EULF03018882
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Aug 2008 16:30:21 +0200
+Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m75EUKGH015673
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Aug 2008 16:30:20 +0200
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: Paul Mackerras <paulus@samba.org>,
+	"LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] ibmebus/of_platform: Move "name" sysfs attribute into generic
+	OF devices
+MIME-Version: 1.0
+Date: Tue, 5 Aug 2008 16:30:18 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808051630.19619.fenkes@de.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Olaf Hering <olaf@aepfle.de>,
+	Paul Mackerras <pmac@au1.ibm.com>, Christoph Raisch <raisch@de.ibm.com>,
+	Alexander Schmidt <alexschm@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,85 +42,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In the xics code, if we receive an irq during boot that hasn't been setup
-yet - ie. we have no reverse mapping for it - we mask the irq so we don't
-hear from it again.
+Recent of_platform changes made of_bus_type_init() overwrite the bus type's
+.dev_attrs list, so move ibmebus' "name" attribute (which is needed by eHCA
+userspace support) into generic OF device code. Tested on POWER.
 
-Later on if someone request_irq()'s that irq, we'll unmask it but it will
-still never fire. This is because we never EOI'ed the irq when we originally
-received it - when it was spurious.
-
-This can be reproduced trivially by banging the keyboard while kexec'ing on
-a P5 LPAR, even though the hvc_console driver request's the console irq later
-in boot, the console is non-functional because we're receiving no console
-interrupts.
-
-So when we receive a spurious irq, EOI it, and then mask it.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 ---
- arch/powerpc/platforms/pseries/xics.c |   29 ++++++++++++++++++++---------
- 1 files changed, 20 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/ibmebus.c |   12 ------------
+ drivers/of/device.c           |   10 ++++++++++
+ 2 files changed, 10 insertions(+), 12 deletions(-)
 
-
-Probably 27 material unless there are objections ..
-
-
-diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
-index 0fc830f..dc007f4 100644
---- a/arch/powerpc/platforms/pseries/xics.c
-+++ b/arch/powerpc/platforms/pseries/xics.c
-@@ -321,21 +321,26 @@ static unsigned int xics_startup(unsigned int virq)
- 	return 0;
+diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+index 9d42eb5..a063622 100644
+--- a/arch/powerpc/kernel/ibmebus.c
++++ b/arch/powerpc/kernel/ibmebus.c
+@@ -233,17 +233,6 @@ void ibmebus_free_irq(u32 ist, void *dev_id)
+ }
+ EXPORT_SYMBOL(ibmebus_free_irq);
+ 
+-static ssize_t name_show(struct device *dev,
+-			 struct device_attribute *attr, char *buf)
+-{
+-	return sprintf(buf, "%s\n", to_of_device(dev)->node->name);
+-}
+-
+-static struct device_attribute ibmebus_dev_attrs[] = {
+-	__ATTR_RO(name),
+-	__ATTR_NULL
+-};
+-
+ static char *ibmebus_chomp(const char *in, size_t count)
+ {
+ 	char *out = kmalloc(count + 1, GFP_KERNEL);
+@@ -327,7 +316,6 @@ static struct bus_attribute ibmebus_bus_attrs[] = {
+ 
+ struct bus_type ibmebus_bus_type = {
+ 	.uevent    = of_device_uevent,
+-	.dev_attrs = ibmebus_dev_attrs,
+ 	.bus_attrs = ibmebus_bus_attrs
+ };
+ EXPORT_SYMBOL(ibmebus_bus_type);
+diff --git a/drivers/of/device.c b/drivers/of/device.c
+index 8a1d93a..51e5214 100644
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -57,6 +57,15 @@ static ssize_t devspec_show(struct device *dev,
+ 	return sprintf(buf, "%s\n", ofdev->node->full_name);
  }
  
-+static void xics_eoi_hwirq_direct(unsigned int hwirq)
++static ssize_t name_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
 +{
-+	iosync();
-+	direct_xirr_info_set((0xff << 24) | hwirq);
++	struct of_device *ofdev;
++
++	ofdev = to_of_device(dev);
++	return sprintf(buf, "%s\n", ofdev->node->name);
 +}
 +
- static void xics_eoi_direct(unsigned int virq)
+ static ssize_t modalias_show(struct device *dev,
+ 				struct device_attribute *attr, char *buf)
  {
--	unsigned int irq = (unsigned int)irq_map[virq].hwirq;
-+	xics_eoi_hwirq_direct((unsigned int)irq_map[virq].hwirq);
-+}
+@@ -71,6 +80,7 @@ static ssize_t modalias_show(struct device *dev,
  
-+static void xics_eoi_hwirq_lpar(unsigned int hwirq)
-+{
- 	iosync();
--	direct_xirr_info_set((0xff << 24) | irq);
-+	lpar_xirr_info_set((0xff << 24) | hwirq);
- }
- 
--
- static void xics_eoi_lpar(unsigned int virq)
- {
--	unsigned int irq = (unsigned int)irq_map[virq].hwirq;
--
--	iosync();
--	lpar_xirr_info_set((0xff << 24) | irq);
-+	xics_eoi_hwirq_lpar((unsigned int)irq_map[virq].hwirq);
- }
- 
- static inline unsigned int xics_remap_irq(unsigned int vec)
-@@ -350,9 +355,15 @@ static inline unsigned int xics_remap_irq(unsigned int vec)
- 	if (likely(irq != NO_IRQ))
- 		return irq;
- 
--	printk(KERN_ERR "Interrupt %u (real) is invalid,"
--	       " disabling it.\n", vec);
-+	pr_err("%s: no mapping for hwirq %u, disabling it.\n", __func__, vec);
-+
-+	if (firmware_has_feature(FW_FEATURE_LPAR))
-+		xics_eoi_hwirq_lpar(vec);
-+	else
-+		xics_eoi_hwirq_direct(vec);
-+
- 	xics_mask_real_irq(vec);
-+
- 	return NO_IRQ;
- }
- 
+ struct device_attribute of_platform_device_attrs[] = {
+ 	__ATTR_RO(devspec),
++	__ATTR_RO(name),
+ 	__ATTR_RO(modalias),
+ 	__ATTR_NULL
+ };
 -- 
 1.5.5
