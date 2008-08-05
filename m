@@ -1,21 +1,27 @@
-Return-Path: <domino@mikroswiat.pl>
-Received: from jupiter.az.pl (jupiter.az.pl [62.146.68.61])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C10D4DDF69
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id A17CDDDD0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Aug 2008 18:11:56 +1000 (EST)
-Received: from afp172.internetdsl.tpnet.pl ([83.16.145.172] helo=[192.168.2.8])
-	by jupiter.az.pl with esmtpsa (TLSv1:AES256-SHA:256) (Exim 4.68)
-	(envelope-from <domino@mikroswiat.pl>) id 1KQHSw-0003yf-LX
-	for linuxppc-embedded@ozlabs.org; Tue, 05 Aug 2008 10:00:23 +0200
-Message-ID: <4898092D.6040207@mikroswiat.pl>
-Date: Tue, 05 Aug 2008 10:02:53 +0200
-From: Dominik Bozek <domino@mikroswiat.pl>
-MIME-Version: 1.0
+	Tue,  5 Aug 2008 19:49:20 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KQJAL-0007fH-0t
+	for linuxppc-embedded@ozlabs.org; Tue, 05 Aug 2008 02:49:17 -0700
+Message-ID: <18827857.post@talk.nabble.com>
+Date: Tue, 5 Aug 2008 02:49:17 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: gianfar on mpc8313
-Content-Type: text/plain; charset=ISO-8859-2
+Subject: Re: floating point support in the driver.
+In-Reply-To: <48969805.40904@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <18772109.post@talk.nabble.com>
+	<200808011332.25368.laurentp@cse-semaphore.com>
+	<18772952.post@talk.nabble.com>
+	<20080801.095429.-1827411968.imp@bsdimp.com>
+	<18805820.post@talk.nabble.com>
+	<20080803.233352.915266361.imp@bsdimp.com>
+	<48969805.40904@ovro.caltech.edu>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,18 +32,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
-do someone know how to speedup the gianfar on mpc8313? (core:333MHz,
-csb:133MHz, ddr:266MHz)
-I'm able to achieve 56MB/s (from device) and 48MB/s (to device), but
-only if the ethernet interface use jumbo packets (mtu 9000). With
-default mtu the transfers are 33MB/s and 27MB/s.
-I'm using kernel 2.6.20 + patches from freescale, but I make some tests
-with 2.6.26 (eg. because of DMA engine support). I haven't notice any
-improvement in the transfer (I don't take care about cpu usage).
 
-Is there anybody who got higher transfers? Can you share some information?
+Hi David ,
+
+Thank you for your reply.
+
+I am running the algorithm on OMAP processor (arm-core) and i did tried the
+same on iMX processor which takes 1.7 times more than OMAP.
+
+It is true that the algorithm is performing the vector operation which is
+blowing the cache .
+
+But the question is How to lock the cache ? In driver how should we
+implement the same ?
+
+An example code or a document could be helpful in this regard.
+
+--- Misbah <><
+
+David Hawkins-3 wrote:
+> 
+> 
+> Hi Misbah,
+> 
+> I would recommend you look at your floating-point code again
+> and benchmark each section. You should be able to estimate
+> the number of clock cycles required to complete an operation
+> and then check that against your measurements.
+> 
+> Depending on whether your algorithm is processing intensive
+> or data movement intensive, you may find that the big time
+> waster is moving data on or off chip, or perhaps its a large
+> vector operation that is blowing out the cache. If you
+> do find that, then on some processors you can lock the
+> cache, so your algorithm would require a custom driver
+> that steals part of the cache from the OS, but the floating point
+> code would not run in the kernel, it would run on data
+> stored in the stolen cache area. You can lock both instructions
+> and data in the cache; eg. an FFT routine can be locked in
+> the instruction cache, while FFT data is in the data cache.
+> I'm not sure how easy this is to do under Linux though.
+> 
+> Here's an example of the level of detail you can get
+> downto when benchmarking code:
+> 
+> http://www.ovro.caltech.edu/~dwh/correlator/pdf/dsp_programming.pdf
+> 
+> The FFT routine used on this processor made use of both
+> the instruction and data cache (on-chip SRAM) on the
+> DSP.
+> 
+> This code is being re-developed to run on a MPC8349EA PowerPC
+> with FPU. I did some initial testing to confirm that the
+> FPU operates as per the data sheet, and will eventually get
+> around to more complete testing.
+> 
+> Which processor were you running your code on, and what
+> frequency were you operating the processor at? How does
+> the algorithm timing compare when run on other processors,
+> eg. your desktop or laptop machine?
+> 
+> Cheers,
+> Dave
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
 -- 
-Regards
-Domino
+View this message in context: http://www.nabble.com/floating-point-support-in-the-driver.-tp18772109p18827857.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
