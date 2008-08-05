@@ -1,19 +1,11 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1DFF2DDFD3
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 23:21:36 +1000 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m75DLWKN009463
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Aug 2008 08:21:33 -0500
-Message-Id: <F2163BC0-08A2-4C17-AAE7-C37BD0CA66EA@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: ppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: hang w/ppc6xx_defconfig related to 'simple-bus' compatible
-Date: Tue, 5 Aug 2008 08:21:31 -0500
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-Id: <3d6dc055c5b18a641a5467b7331d935ede87efb2.1217943634.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc: EOI spurious irqs during boot so they can be
+	reenabled later
+Date: Tue,  5 Aug 2008 23:42:40 +1000 (EST)
+Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,14 +15,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm trying to get the ppc6xx_defconfig booting on any 8641 (74xx/e600)  
-system.  If I remove the 'simple-bus' compatible from the soc node in  
-the .dts it works.  Otherwise it hangs at but and looks to be crashed  
-in the serial driver due to accessing memory at 0.
+In the xics code, if we receive an irq during boot that hasn't been setup
+yet - ie. we have no reverse mapping for it - we mask the irq so we don't
+hear from it again.
 
-I've tried the same .dts (w/'simple-bus') using the  
-mpc8641_hpcn_defconfig and things work.
+Later on if someone request_irq()'s that irq, we'll unmask it but it will
+still never fire. This is because we never EOI'ed the irq when we originally
+received it - when it was spurious.
 
-Any one got any ideas?
+This can be reproduced trivially by banging the keyboard while kexec'ing on
+a P5 LPAR, even though the hvc_console driver request's the console irq later
+in boot, the console is non-functional because we're receiving no console
+interrupts.
 
-- k
+So when we receive a spurious irq, EOI it, and then mask it.
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/pseries/xics.c |   29 ++++++++++++++++++++---------
+ 1 files changed, 20 insertions(+), 9 deletions(-)
+
+
+Probably 27 material unless there are objections ..
+
+
+diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
+index 0fc830f..dc007f4 100644
+--- a/arch/powerpc/platforms/pseries/xics.c
++++ b/arch/powerpc/platforms/pseries/xics.c
+@@ -321,21 +321,26 @@ static unsigned int xics_startup(unsigned int virq)
+ 	return 0;
+ }
+ 
++static void xics_eoi_hwirq_direct(unsigned int hwirq)
++{
++	iosync();
++	direct_xirr_info_set((0xff << 24) | hwirq);
++}
++
+ static void xics_eoi_direct(unsigned int virq)
+ {
+-	unsigned int irq = (unsigned int)irq_map[virq].hwirq;
++	xics_eoi_hwirq_direct((unsigned int)irq_map[virq].hwirq);
++}
+ 
++static void xics_eoi_hwirq_lpar(unsigned int hwirq)
++{
+ 	iosync();
+-	direct_xirr_info_set((0xff << 24) | irq);
++	lpar_xirr_info_set((0xff << 24) | hwirq);
+ }
+ 
+-
+ static void xics_eoi_lpar(unsigned int virq)
+ {
+-	unsigned int irq = (unsigned int)irq_map[virq].hwirq;
+-
+-	iosync();
+-	lpar_xirr_info_set((0xff << 24) | irq);
++	xics_eoi_hwirq_lpar((unsigned int)irq_map[virq].hwirq);
+ }
+ 
+ static inline unsigned int xics_remap_irq(unsigned int vec)
+@@ -350,9 +355,15 @@ static inline unsigned int xics_remap_irq(unsigned int vec)
+ 	if (likely(irq != NO_IRQ))
+ 		return irq;
+ 
+-	printk(KERN_ERR "Interrupt %u (real) is invalid,"
+-	       " disabling it.\n", vec);
++	pr_err("%s: no mapping for hwirq %u, disabling it.\n", __func__, vec);
++
++	if (firmware_has_feature(FW_FEATURE_LPAR))
++		xics_eoi_hwirq_lpar(vec);
++	else
++		xics_eoi_hwirq_direct(vec);
++
+ 	xics_mask_real_irq(vec);
++
+ 	return NO_IRQ;
+ }
+ 
+-- 
+1.5.5
