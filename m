@@ -1,17 +1,19 @@
-Return-Path: <sebastien.dugue@bull.net>
-Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id 4D9A2DDDE6
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 23:13:23 +1000 (EST)
-Date: Tue, 5 Aug 2008 15:10:55 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: 64-bit build failure without hugetlbfs
-Message-ID: <20080805151055.5e2cdc21@bull.net>
-In-Reply-To: <1217936390.3603.34.camel@johannes.berg>
-References: <1217936390.3603.34.camel@johannes.berg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1DFF2DDFD3
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 23:21:36 +1000 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m75DLWKN009463
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Aug 2008 08:21:33 -0500
+Message-Id: <F2163BC0-08A2-4C17-AAE7-C37BD0CA66EA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: ppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: hang w/ppc6xx_defconfig related to 'simple-bus' compatible
+Date: Tue, 5 Aug 2008 08:21:31 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 05 Aug 2008 13:39:49 +0200 Johannes Berg <johannes@sipsolutions.net> wrote:
+I'm trying to get the ppc6xx_defconfig booting on any 8641 (74xx/e600)  
+system.  If I remove the 'simple-bus' compatible from the soc node in  
+the .dts it works.  Otherwise it hangs at but and looks to be crashed  
+in the serial driver due to accessing memory at 0.
 
->   LD      vmlinux.o
-> mm/built-in.o: In function `.arch_get_unmapped_area_topdown':
-> (.text+0x1d084): multiple definition of `.arch_get_unmapped_area_topdown'
-> arch/powerpc/mm/built-in.o:(.text+0x7240): first defined here
-> mm/built-in.o: In function `arch_get_unmapped_area_topdown':
-> (.opd+0x2730): multiple definition of `arch_get_unmapped_area_topdown'
-> arch/powerpc/mm/built-in.o:(.opd+0x918): first defined here
-> mm/built-in.o: In function `.arch_get_unmapped_area':
-> (.text+0x1ce3c): multiple definition of `.arch_get_unmapped_area'
-> arch/powerpc/mm/built-in.o:(.text+0x72b8): first defined here
-> mm/built-in.o: In function `arch_get_unmapped_area':
-> (.opd+0x2718): multiple definition of `arch_get_unmapped_area'
-> arch/powerpc/mm/built-in.o:(.opd+0x930): first defined here
-> make: *** [vmlinux.o] Error 1
-> 
-> enabling hugetlbfs cures it.
-> 
-> johannes
+I've tried the same .dts (w/'simple-bus') using the  
+mpc8641_hpcn_defconfig and things work.
 
-  Or disabling CONFIG_PPC_64K_PAGES if you do not want to enable hugetlbfs...
+Any one got any ideas?
 
-  Sebastien.
+- k
