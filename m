@@ -1,17 +1,17 @@
 Return-Path: <sebastien.dugue@bull.net>
 Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id 580CADDED8
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 20:50:47 +1000 (EST)
-Date: Tue, 5 Aug 2008 10:27:49 +0200
+	by ozlabs.org (Postfix) with ESMTP id E3ABCDDEF0
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 20:57:24 +1000 (EST)
+Date: Tue, 5 Aug 2008 10:28:27 +0200
 From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/3] powerpc - Initialize the irq radix tree earlier
-Message-ID: <20080805102749.6ae24947@bull.net>
-In-Reply-To: <1217898303.24157.122.camel@pasglop>
+To: Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH 3/3] powerpc - Make the irq reverse mapping radix tree
+	lockless
+Message-ID: <20080805102827.7d8dbc4b@bull.net>
+In-Reply-To: <1217867496.3946.33.camel@localhost.localdomain>
 References: <1217848124-3719-1-git-send-email-sebastien.dugue@bull.net>
-	<1217848124-3719-2-git-send-email-sebastien.dugue@bull.net>
-	<1217898226.24157.120.camel@pasglop>
-	<1217898303.24157.122.camel@pasglop>
+	<1217848124-3719-4-git-send-email-sebastien.dugue@bull.net>
+	<1217867496.3946.33.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
@@ -27,29 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 05 Aug 2008 11:05:03 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Mon, 04 Aug 2008 09:31:36 -0700 Daniel Walker <dwalker@mvista.com> wrote:
 
+> On Mon, 2008-08-04 at 13:08 +0200, Sebastien Dugue wrote:
 > 
-> >  - Remove the populating of the tree from the revmap function as
-> >    you already do
-> >  - Move it to irq_create_mapping() for the normal case
-> >  - For pre-existing interrupt, have the generic code that initializes
-> >    the radix tree walk through all interrupts and setup the revmap for
-> >    them. If that needs locking vs. concurrent irq_create_mapping, it's
-> >    easy to use one of the available spinlocks for that.
+> > --- a/arch/powerpc/include/asm/irq.h
+> > +++ b/arch/powerpc/include/asm/irq.h
+> > @@ -119,6 +119,7 @@ struct irq_host {
+> >  		} linear;
+> >  		struct radix_tree_root tree;
+> >  	} revmap_data;
+> > +	spinlock_t	       tree_lock;
 > 
-> And in fact, you may even be able to avoid GFP_ATOMIC completely here
-> and switch it to GFP_KERNEL since irq_create_mapping() can sleep afaik,
-> provided that you avoid the spinlocking.
+> You have a tabbing issue above..
 
-  Well, maybe, will have to look into this in details.
+  Yuck, right.
 
   Thanks,
 
   Sebastien.
-
-> 
-> Ben.
-> 
-> 
-> 
