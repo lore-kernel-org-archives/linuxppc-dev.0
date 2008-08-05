@@ -1,24 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D39DDDDF8F
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 21:31:20 +1000 (EST)
-Subject: Re: PS3 early lock-up
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1217932117.24157.185.camel@pasglop>
-References: <Pine.LNX.4.64.0808041640220.31424@vixen.sonytel.be>
-	<1217886287.24157.87.camel@pasglop> <1217886777.24157.91.camel@pasglop>
-	<48979F6F.1050507@am.sony.com> <1217900430.24157.142.camel@pasglop>
-	<Pine.LNX.4.64.0808051142160.18419@vixen.sonytel.be>
-	<1217932117.24157.185.camel@pasglop>
-Content-Type: text/plain
-Date: Tue, 05 Aug 2008 21:31:09 +1000
-Message-Id: <1217935869.24157.187.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTPS id 01545DE040
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Aug 2008 21:40:50 +1000 (EST)
+Subject: 64-bit build failure without hugetlbfs
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-F0UCc8qxJPvTeWtIZ5wP"
+Date: Tue, 05 Aug 2008 13:39:49 +0200
+Message-Id: <1217936390.3603.34.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,15 +24,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> You could do that by adding:
-> 
-> 	if (!(pteflags & (_PAGE_USER | _PAGE_RW)))
-> 		rflags |= (1 << 1) | (1 << 63);
-> 
-> Dbl check that the resulting mapping isn't accessible to user space though.
+--=-F0UCc8qxJPvTeWtIZ5wP
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Make these 1UL << x, and a proper patch would have to also test
-that the CPU supports the 3rd PP bit. We probably need to add
-a CPU feature bit for that.
+  LD      vmlinux.o
+mm/built-in.o: In function `.arch_get_unmapped_area_topdown':
+(.text+0x1d084): multiple definition of `.arch_get_unmapped_area_topdown'
+arch/powerpc/mm/built-in.o:(.text+0x7240): first defined here
+mm/built-in.o: In function `arch_get_unmapped_area_topdown':
+(.opd+0x2730): multiple definition of `arch_get_unmapped_area_topdown'
+arch/powerpc/mm/built-in.o:(.opd+0x918): first defined here
+mm/built-in.o: In function `.arch_get_unmapped_area':
+(.text+0x1ce3c): multiple definition of `.arch_get_unmapped_area'
+arch/powerpc/mm/built-in.o:(.text+0x72b8): first defined here
+mm/built-in.o: In function `arch_get_unmapped_area':
+(.opd+0x2718): multiple definition of `arch_get_unmapped_area'
+arch/powerpc/mm/built-in.o:(.opd+0x930): first defined here
+make: *** [vmlinux.o] Error 1
 
-Ben.
+enabling hugetlbfs cures it.
+
+johannes
+
+--=-F0UCc8qxJPvTeWtIZ5wP
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJImDwCAAoJEKVg1VMiehFYYl4QAJXsxnoIC1/U35TdQtLzl1hc
+VjbpOQhJuZtYWnP105UaYKWPKeTa+Aav1tA3GJ5lHIJqiljVVbnUbdgIc35jALkS
+miAQtj9upHxZLTxxmbfXtUjxjLTiwtlzNgwLWCNBj92Flh2QXIqUc1pNjZRIsCct
+/mF6+7fDFt0SMkXXBn4S9SAhRaLyZFTwtgU5eatTz/nSuyNayfwRReIJT+jNySiR
+TYGxXZC85WWiqpj0JBVZik4UpbqmxKqyN572OZ8suQ2OFz1vzm0cAJtTv31Moq+E
+vZdmu21ghtztNVDVx3ymg3d3cvVwSEPfaJYdIQjdMQJ0wlkCot0zkoEdE47Q6+gI
+WbYmSxxrOEWwlGlt7PmpRMTKBmKsUWUP4xdk9YFkQ6JF2sOW4aci0LxxIF/OdD7d
+N+tQP2IMxD+Wh9VkhCRBTcsnbQUj2jPuwFbdt3QMTKdvo9Is+Enyk90C/+h1Rqyu
+kJc4UpHeOt9wfkBl5TiQxRMp5Ap8ppP5VTmkl7Urifk0TUhBrmMnr1SQnwX5dS30
+xkK1aWa4Xx77dr866kLXFwEV6i8zfaQBmqvACDsw0EzCNx7/7PC/ib2myiYqfEqs
+3LLUUtCD0hIf7wq6PP5ciDfVkQCu3Hd1YNXpKdugh1el7jtxjmIIpkDzcq70dX0Z
+11NwlDShLWVms3rrT24a
+=GfA7
+-----END PGP SIGNATURE-----
+
+--=-F0UCc8qxJPvTeWtIZ5wP--
