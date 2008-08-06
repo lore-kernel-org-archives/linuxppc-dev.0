@@ -1,37 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EE6FFDDDE1
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 16:42:29 +1000 (EST)
-Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
-	post-2.6.27-rc1
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Collins <paul@burly.ondioline.org>
-In-Reply-To: <1217920618.24157.161.camel@pasglop>
-References: <20080802184554.GB715@fieldses.org>
-	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
-	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
-	<18581.40960.737792.454035@notabene.brown>
-	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
-	<18582.32935.501672.689845@notabene.brown>
-	<87fxpll5zq.fsf@burly.wgtn.ondioline.org>
-	<87y73dcd60.fsf@burly.wgtn.ondioline.org>
-	<1217860597.12535.2.camel@localhost>
-	<87hca05ws4.fsf@burly.wgtn.ondioline.org>
-	<20080804205908.GA29890@fieldses.org>
-	<1217895418.7951.7.camel@localhost>
-	<8763qg5don.fsf@burly.wgtn.ondioline.org>
-	<1217910862.7951.22.camel@localhost>
-	<871w145ar3.fsf@burly.wgtn.ondioline.org>
-	<1217920618.24157.161.camel@pasglop>
-Content-Type: text/plain
-Date: Wed, 06 Aug 2008 16:29:38 +1000
-Message-Id: <1218004178.24157.226.camel@pasglop>
-Mime-Version: 1.0
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>,
-	nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 46474DE1F4
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 16:45:52 +1000 (EST)
+Message-ID: <48994B9C.4050908@denx.de>
+Date: Wed, 06 Aug 2008 08:58:36 +0200
+From: Heiko Schocher <hs@denx.de>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: patches for 2.6.27... (Kumar Gala)
+References: <486B512B.9000004@denx.de>
+In-Reply-To: <486B512B.9000004@denx.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,27 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-08-05 at 17:16 +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2008-08-05 at 16:47 +1200, Paul Collins wrote:
-> > It's about four years old.  It was in storage for about six months and I
-> > got it repaired a few weeks ago (display cable and inverter).  The sort
-> > of crazy crap I've been reporting certainly smacks of memory corruption.
-> > But on the other hand, 2.6.25 (Debian's) and 2.6.26 (my own) have been
-> > trouble-free.
-> 
-> Any chance you can bisect the problem ?
+Hello Kumar,
 
-Ok, so I can reproduce on a few 32 bits configs with ftrace enabled.
+On Wed Jul 2 19:58:03 EST 2008 Heiko Schocher wrote:
+>On Wednesday 02 July 2008, Kumar Gala wrote:
+>> Please point out any patches that have been posted but havent made it
+>> into a git tree related to Freescale chips.
+>
+> Here are 2 patches that I'd like to see in 2.6.27. They haven't made into
+> any git tree as far as I know.
+>
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-June/058118.html
+>
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057972.html
 
-Looks like some non volatile GPRs get corrupted. I don't know yet if
-ftrace is the culprit though, I couldn't find anything obviously wrong
-with the mcount implementation we have.
+Can you tell me, if these patches go into the Tree?
+I had generally acks for this boards, but didnt see them in any tree yet?
 
-It looks like the corrupted GPR has been saved/restored on the stack
-and that the corruption is due to the stack itself being written
-to. It's not clear by whome though and in what circumstances.
+Are there some more issues?
 
-We'll have to dig more.
-
-Cheers,
-Ben.
+TIA
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
