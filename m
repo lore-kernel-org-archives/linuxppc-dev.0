@@ -1,22 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
-	by ozlabs.org (Postfix) with ESMTP id CB169DE430
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 23:50:00 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so5896075wfg.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 Aug 2008 06:49:59 -0700 (PDT)
-Date: Wed, 6 Aug 2008 07:49:56 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: hang w/ppc6xx_defconfig related to 'simple-bus' compatible
-Message-ID: <20080806134956.GB9533@secretlab.ca>
-References: <F2163BC0-08A2-4C17-AAE7-C37BD0CA66EA@kernel.crashing.org>
-	<20080806134128.GA9533@secretlab.ca>
-	<44E87CD5-FBF7-45D8-8700-6BD0CE4B41AC@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <44E87CD5-FBF7-45D8-8700-6BD0CE4B41AC@kernel.crashing.org>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: ppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 0D616DDFB3
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 00:10:15 +1000 (EST)
+Date: Thu, 7 Aug 2008 00:10:06 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH]: Remove bogons from the iSeries console
+Message-Id: <20080807001006.37a9fc4f.sfr@canb.auug.org.au>
+In-Reply-To: <20080806140629.268fcf07@lxorguk.ukuu.org.uk>
+References: <20080806140629.268fcf07@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__7_Aug_2008_00_10_06_+1000_TUCbgU3YDjZubQKp"
+Cc: boutcher@us.ibm.com, linuxppc-dev@ozlabs.org, torvalds@osdl.org,
+	devilbis@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 06, 2008 at 08:47:29AM -0500, Kumar Gala wrote:
->
-> On Aug 6, 2008, at 8:41 AM, Grant Likely wrote:
->
->> On Tue, Aug 05, 2008 at 08:21:31AM -0500, Kumar Gala wrote:
->>> I'm trying to get the ppc6xx_defconfig booting on any 8641 (74xx/ 
->>> e600)
->>> system.  If I remove the 'simple-bus' compatible from the soc node in
->>> the .dts it works.  Otherwise it hangs at but and looks to be  
->>> crashed in
->>> the serial driver due to accessing memory at 0.
->>>
->>> I've tried the same .dts (w/'simple-bus') using the
->>> mpc8641_hpcn_defconfig and things work.
->>
->> The Xilinx folks hit something similar.
->
-> did they have a fix?
+--Signature=_Thu__7_Aug_2008_00_10_06_+1000_TUCbgU3YDjZubQKp
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, they added code to check another property.  If the reg-shift or
-reg-offset properties were present, then it didn't try to use the port
+Hi Alan,
+
+On Wed, 6 Aug 2008 14:06:29 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>
+> The iSeries driver calls into the n_tty ldisc code directly for some
+> bizarre reason. I previously tagged this with a query but this actually
+> does need fixing as n_tty methods when you have a different ldisc set are
+> not a good thing to call.
+>=20
+> In n_tty mode this change should have no effect, the core tty layer has
+> always called the ldisc ioctl method *anyway* and will call the one for
+> the right ldisc.
+>=20
+> Signed-off-by: Alan Cox <alan@redhat.com>
+
+I will take your word for it as I have no idea.  This driver needs to be
+deprecated anyway (in favour of hcv_iseries).
+
+You may consider this
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+as defacto iSeries maintainer.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__7_Aug_2008_00_10_06_+1000_TUCbgU3YDjZubQKp
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiZsL4ACgkQjjKRsyhoI8z1sgCeLikhF/ur6iR8v4YWHZ5jtlCk
+e6AAn1Kp/vjUi9ga7nghA7QU4nrnOXjB
+=RYP2
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__7_Aug_2008_00_10_06_+1000_TUCbgU3YDjZubQKp--
