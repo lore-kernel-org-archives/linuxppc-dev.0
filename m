@@ -1,21 +1,20 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.224])
-	by ozlabs.org (Postfix) with ESMTP id E26D4DE801
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 01:47:54 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id c48so2292255wra.1
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 Aug 2008 08:47:53 -0700 (PDT)
-Message-ID: <ed82fe3e0808060847r227c298ey82f2c3e1ead40863@mail.gmail.com>
-Date: Wed, 6 Aug 2008 10:47:53 -0500
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
-To: "Li Yang" <leoli@freescale.com>
-Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
-In-Reply-To: <1218007000-27320-1-git-send-email-leoli@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1218007000-27320-1-git-send-email-leoli@freescale.com>
-Cc: david-b@pacbell.net, linuxppc-dev@ozlabs.org, gregkh@suse.de,
-	linux-usb@vger.kernel.org, Xie Xiaobo <X.Xie@freescale.com>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <fa686aa40808060631k278e187ej965f0ac08c837937@mail.gmail.com>
+References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
+	<20080806060239.30717.79273.stgit@trillian.secretlab.ca>
+	<20080805.233205.201125898.davem@davemloft.net>
+	<18585.31504.836857.829592@cargo.ozlabs.ibm.com>
+	<fa686aa40808060631k278e187ej965f0ac08c837937@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <C5C0AA60-C45F-4467-AC76-AA24A00CA4AC@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC/PATCH 2/3] of: add of_lookup_stdout() utility function
+Date: Wed, 6 Aug 2008 18:25:48 +0200
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	David Miller <davem@davemloft.net>, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 6, 2008 at 2:16 AM, Li Yang <leoli@freescale.com> wrote:
+> It's not what we do with flattened device trees blobs though.  In the
+> flattened tree we're not using a /chosen/stdout property, just the
+> linux,stdout-path one.
+>
+> The question that remains is; should there be?  Should the dt blobs
+> use /chosen/stdout also?  (I'm not familiar enough with real OF to
+> know the answer.  I'm assuming that an instance value is not the same
+> as a phandle).
 
-> +/*---------------------------------------------------------------------
-> + *             Mask definitions for usb BD                           *
-> + *--------------------------------------------------------------------*/
-> +#define QE_SIZEOF_BD       sizeof(struct qe_bd)
-> +
-> +#define BD_BUFFER_ARG(bd)                   (((struct qe_bd *)bd)->buf)
-> +#define BD_BUFFER_CLEAR(bd)                 out_be32(&(BD_BUFFER_ARG(bd)), 0);
-> +#define BD_BUFFER(bd)                       in_be32(&(BD_BUFFER_ARG(bd)))
-> +#define BD_STATUS_AND_LENGTH_SET(bd, val)   out_be32((u32 *)bd, val)
-> +#define BD_STATUS_AND_LENGTH(bd)            in_be32((u32 *)bd)
-> +#define BD_BUFFER_SET(bd, buffer)           out_be32(&(BD_BUFFER_ARG(bd)), \
-> +                                                       (u32)(buffer))
+ihandles and phandles are not the same thing in OF.  Since in the
+"flat world" we cannot have instances, we should use phandles instead
+of ihandles for the things in /chosen.  I thought we agreed on that
+already, perhaps I am wrong?
 
-Delete all of these.  Don't use these silly macros at all.  Reference
-the structure fields directly, and use the in_ and out_ functions
-directly.
 
-Using macros like these encourages unnecessary typecasts.  "struct
-qe_bd" has been defined, so you should use it.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Segher
