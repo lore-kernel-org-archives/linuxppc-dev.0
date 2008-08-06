@@ -1,18 +1,23 @@
-Return-Path: <rpjday@crashcourse.ca>
-Received: from astoria.ccjclearline.com (astoria.ccjclearline.com
-	[64.235.106.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9CD74DDF1B
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 07:35:53 +1000 (EST)
-Date: Wed, 6 Aug 2008 13:58:44 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] Delete completed "ppc removal" task from feature removal file.
-Message-ID: <alpine.LFD.1.10.0808061357380.29692@localhost.localdomain>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id 85218DDFA7
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 07:54:52 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so22983anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 Aug 2008 14:54:50 -0700 (PDT)
+Message-ID: <fa686aa40808061454t14737278h3fd15fb0ccdbf251@mail.gmail.com>
+Date: Wed, 6 Aug 2008 15:54:50 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: [RFC/PATCH 1/3] powerpc: add ioremap_bat() function for setting
+	up BAT translated IO regions.
+In-Reply-To: <CD66FAA8-BC99-4630-9FFF-E2C651E5DE9A@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
+	<20080806060223.30717.35175.stgit@trillian.secretlab.ca>
+	<CD66FAA8-BC99-4630-9FFF-E2C651E5DE9A@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,42 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Aug 6, 2008 at 8:07 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> On Aug 6, 2008, at 1:02 AM, Grant Likely wrote:
+>
+>> From: Grant Likely <grant.likely@secretlab.ca>
+>>
+>> ioremap_bat() is useful for things like mapping SoC internally memory
+>> mapped
+>> register and early text because it allows mappings to devices to be setup
+>> early in the boot process where they are needed, and the mappings persist
+>> after the MMU is configured.
+>>
+>> Without ioremap_bat(), setting up the MMU would cause the early text
+>> mappings to get lost and mostly likely result in a kernel panic on the
+>> next
+>> attempt at output.
+>>
+>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>> ---
+>
+> why can't we just do this in ioremap itself?
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+I suppose we could; but the usecase is somewhat different and I wanted
+to keep it simple.  Using a separate API also helps reenforce that the
+caller really needs to know what they are doing because BATs are a
+limited resource.
 
----
+g.
 
-  unless this is in someone's tree already.
-
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index c239554..17cab3c 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -205,19 +205,6 @@ Who:  Tejun Heo <htejun@gmail.com>
-
- ---------------------------
-
--What: The arch/ppc and include/asm-ppc directories
--When: Jun 2008
--Why:  The arch/powerpc tree is the merged architecture for ppc32 and ppc64
--      platforms.  Currently there are efforts underway to port the remaining
--      arch/ppc platforms to the merged tree.  New submissions to the arch/ppc
--      tree have been frozen with the 2.6.22 kernel release and that tree will
--      remain in bug-fix only mode until its scheduled removal.  Platforms
--      that are not ported by June 2008 will be removed due to the lack of an
--      interested maintainer.
--Who:  linuxppc-dev@ozlabs.org
--
-----------------------------
--
- What:	i386/x86_64 bzImage symlinks
- When:	April 2010
-
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
