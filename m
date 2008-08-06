@@ -1,22 +1,37 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 237CBDE0E9
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 16:35:25 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so549366anc.78
-	for <linuxppc-dev@ozlabs.org>; Tue, 05 Aug 2008 23:35:24 -0700 (PDT)
-Message-ID: <fa686aa40808052335i7a3bbc64g5bcdaca21c3550af@mail.gmail.com>
-Date: Wed, 6 Aug 2008 00:35:24 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [RFC/PATCH 2/3] of: add of_lookup_stdout() utility function
-In-Reply-To: <20080805.233205.201125898.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
-	<20080806060239.30717.79273.stgit@trillian.secretlab.ca>
-	<20080805.233205.201125898.davem@davemloft.net>
-Cc: miltonm@bga.com, linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EE6FFDDDE1
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 16:42:29 +1000 (EST)
+Subject: Re: nfsd, v4: oops in find_acceptable_alias, ppc32 Linux,
+	post-2.6.27-rc1
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Collins <paul@burly.ondioline.org>
+In-Reply-To: <1217920618.24157.161.camel@pasglop>
+References: <20080802184554.GB715@fieldses.org>
+	<87abfvm4cc.fsf@burly.wgtn.ondioline.org>
+	<877iayy4qc.fsf@burly.wgtn.ondioline.org>
+	<18581.40960.737792.454035@notabene.brown>
+	<87r696l1yo.fsf@burly.wgtn.ondioline.org>
+	<18582.32935.501672.689845@notabene.brown>
+	<87fxpll5zq.fsf@burly.wgtn.ondioline.org>
+	<87y73dcd60.fsf@burly.wgtn.ondioline.org>
+	<1217860597.12535.2.camel@localhost>
+	<87hca05ws4.fsf@burly.wgtn.ondioline.org>
+	<20080804205908.GA29890@fieldses.org>
+	<1217895418.7951.7.camel@localhost>
+	<8763qg5don.fsf@burly.wgtn.ondioline.org>
+	<1217910862.7951.22.camel@localhost>
+	<871w145ar3.fsf@burly.wgtn.ondioline.org>
+	<1217920618.24157.161.camel@pasglop>
+Content-Type: text/plain
+Date: Wed, 06 Aug 2008 16:29:38 +1000
+Message-Id: <1218004178.24157.226.camel@pasglop>
+Mime-Version: 1.0
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>,
+	nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +41,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 6, 2008 at 12:32 AM, David Miller <davem@davemloft.net> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
-> Date: Wed, 06 Aug 2008 00:02:44 -0600
->
->> of_lookup_stdout() is useful for figuring out what device to use as output
->> for early boot progress messages.  It returns the node pointed to by the
->> linux,stdout-path property in the chosen node.
->>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->
-> On sparc platforms this is obtained differently.  We obtain the 32-bit
-> instance value of "/chosen/stdout" and convert that into a prom device
-> node path using "instance-to-path".
+On Tue, 2008-08-05 at 17:16 +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2008-08-05 at 16:47 +1200, Paul Collins wrote:
+> > It's about four years old.  It was in storage for about six months and I
+> > got it repaired a few weeks ago (display cable and inverter).  The sort
+> > of crazy crap I've been reporting certainly smacks of memory corruption.
+> > But on the other hand, 2.6.25 (Debian's) and 2.6.26 (my own) have been
+> > trouble-free.
+> 
+> Any chance you can bisect the problem ?
 
-How about if I modify it to try both methods?
+Ok, so I can reproduce on a few 32 bits configs with ftrace enabled.
 
-g.
+Looks like some non volatile GPRs get corrupted. I don't know yet if
+ftrace is the culprit though, I couldn't find anything obviously wrong
+with the mcount implementation we have.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+It looks like the corrupted GPR has been saved/restored on the stack
+and that the corruption is due to the stack itself being written
+to. It's not clear by whome though and in what circumstances.
+
+We'll have to dig more.
+
+Cheers,
+Ben.
