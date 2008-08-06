@@ -1,16 +1,19 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 95852DDF19
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 22:23:05 +1000 (EST)
-Date: Wed, 6 Aug 2008 14:23:01 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: sam@ravnborg.org, linux-kernel@vger.kernel.org
-Subject: unconditional link object arch/powerpc/lib/crtsavres.o breaks
-	module build
-Message-ID: <20080806122301.GA27495@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <jwboyer@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id 00718DDF3E
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 22:43:11 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so1516641ywh.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 Aug 2008 05:43:10 -0700 (PDT)
+Subject: dtc update for in-kernel version
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: dwg@au1.ibm.com, paulus@samba.org
+Content-Type: text/plain
+Date: Wed, 06 Aug 2008 08:43:00 -0400
+Message-Id: <1218026580.2328.69.camel@localhost.localdomain>
+Mime-Version: 1.0
+Sender: Josh Boyer <jwboyer@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: jwboyer@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,16 +23,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+So we asked about this a while ago and I haven't seen anything yet, but
+is there going to be an update to the version of DTC that is in the
+kernel tree?  1.2 is out now, would be a good idea to update soon.
 
-Sam,
-
-please have a look at bug 11143.
-http://bugzilla.kernel.org/show_bug.cgi?id=11143
-
-
-arch/powerpc/lib/crtsavres.o is added inconditionally to the linker
-flags, but there is no rule to actually create the object file.
-This breaks building external modules on 32bit powerpc since 2.6.26.
-
-Thanks,
-Olaf
+josh
