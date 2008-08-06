@@ -1,21 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E6254DDFDF
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 00:17:07 +1000 (EST)
-Message-Id: <CD66FAA8-BC99-4630-9FFF-E2C651E5DE9A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20080806060223.30717.35175.stgit@trillian.secretlab.ca>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [RFC/PATCH 1/3] powerpc: add ioremap_bat() function for setting
-	up BAT translated IO regions.
-Date: Wed, 6 Aug 2008 09:07:40 -0500
-References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
-	<20080806060223.30717.35175.stgit@trillian.secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, miltonm@bga.com
+	by ozlabs.org (Postfix) with ESMTPS id 5D94DDE36A
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 00:22:05 +1000 (EST)
+In-Reply-To: <18585.14669.954874.540716@drongo.ozlabs.ibm.com>
+References: <18585.14669.954874.540716@drongo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A1BAD7C8-8459-4D6E-80BA-639D305611DD@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH] Link the bootwrapper as a position-independent
+	executable
+Date: Wed, 6 Aug 2008 16:21:57 +0200
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Instead we now link the bootwrapper with -pie to get a position-
+> independent executable, and process the relocations in the dynamic
+> relocation section that the linker puts into the executable.
 
-On Aug 6, 2008, at 1:02 AM, Grant Likely wrote:
+Hurray!  Looks good, just a few nits...
 
-> From: Grant Likely <grant.likely@secretlab.ca>
->
-> ioremap_bat() is useful for things like mapping SoC internally  
-> memory mapped
-> register and early text because it allows mappings to devices to be  
-> setup
-> early in the boot process where they are needed, and the mappings  
-> persist
-> after the MMU is configured.
->
-> Without ioremap_bat(), setting up the MMU would cause the early text
-> mappings to get lost and mostly likely result in a kernel panic on  
-> the next
-> attempt at output.
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
+> +	bl	.+4
+> +p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
 
-why can't we just do this in ioremap itself?
+bl p_base  instead?
 
-- k
+> +10:	or.	r8,r0,r9	/* skip relocation if we don't have both */
+>  	beq	3f
+
+Either the code or the comment is wrong -- the code says "skip  
+relocation
+if we don't have either".
+
+> +	cmpwi	r0,22		/* R_PPC_RELATIVE */
+> +	bne	3f
+
+It would be nice if there was some way to complain (at build time?)
+if there are unhandled relocations present.  Prevents a lot of headaches
+when things go wrong (and they will ;-) )
+
+>  4:	dcbf	r0,r9
+>  	icbi	r0,r9
+
+Fix these while you're at it?  It's not r0, it's 0.
+
+> +  .dynsym : { *(.dynsym) }
+> +  .dynstr : { *(.dynstr) }
+> +  .dynamic :
+> +  {
+> +    __dynamic_start = .;
+> +    *(.dynamic)
+> +  }
+> +  .hash : { *(.hash) }
+> +  .interp : { *(.interp) }
+> +  .rela.dyn : { *(.rela*) }
+
+Do some of these sections need alignment?
+
+
+Segher
