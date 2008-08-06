@@ -1,20 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0D616DDFB3
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 00:10:15 +1000 (EST)
-Date: Thu, 7 Aug 2008 00:10:06 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH]: Remove bogons from the iSeries console
-Message-Id: <20080807001006.37a9fc4f.sfr@canb.auug.org.au>
-In-Reply-To: <20080806140629.268fcf07@lxorguk.ukuu.org.uk>
-References: <20080806140629.268fcf07@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__7_Aug_2008_00_10_06_+1000_TUCbgU3YDjZubQKp"
-Cc: boutcher@us.ibm.com, linuxppc-dev@ozlabs.org, torvalds@osdl.org,
-	devilbis@us.ibm.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E6254DDFDF
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 00:17:07 +1000 (EST)
+Message-Id: <CD66FAA8-BC99-4630-9FFF-E2C651E5DE9A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20080806060223.30717.35175.stgit@trillian.secretlab.ca>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [RFC/PATCH 1/3] powerpc: add ioremap_bat() function for setting
+	up BAT translated IO regions.
+Date: Wed, 6 Aug 2008 09:07:40 -0500
+References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
+	<20080806060223.30717.35175.stgit@trillian.secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__7_Aug_2008_00_10_06_+1000_TUCbgU3YDjZubQKp
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Alan,
+On Aug 6, 2008, at 1:02 AM, Grant Likely wrote:
 
-On Wed, 6 Aug 2008 14:06:29 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
 >
-> The iSeries driver calls into the n_tty ldisc code directly for some
-> bizarre reason. I previously tagged this with a query but this actually
-> does need fixing as n_tty methods when you have a different ldisc set are
-> not a good thing to call.
->=20
-> In n_tty mode this change should have no effect, the core tty layer has
-> always called the ldisc ioctl method *anyway* and will call the one for
-> the right ldisc.
->=20
-> Signed-off-by: Alan Cox <alan@redhat.com>
+> ioremap_bat() is useful for things like mapping SoC internally  
+> memory mapped
+> register and early text because it allows mappings to devices to be  
+> setup
+> early in the boot process where they are needed, and the mappings  
+> persist
+> after the MMU is configured.
+>
+> Without ioremap_bat(), setting up the MMU would cause the early text
+> mappings to get lost and mostly likely result in a kernel panic on  
+> the next
+> attempt at output.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
 
-I will take your word for it as I have no idea.  This driver needs to be
-deprecated anyway (in favour of hcv_iseries).
+why can't we just do this in ioremap itself?
 
-You may consider this
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
-as defacto iSeries maintainer.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__7_Aug_2008_00_10_06_+1000_TUCbgU3YDjZubQKp
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkiZsL4ACgkQjjKRsyhoI8z1sgCeLikhF/ur6iR8v4YWHZ5jtlCk
-e6AAn1Kp/vjUi9ga7nghA7QU4nrnOXjB
-=RYP2
------END PGP SIGNATURE-----
-
---Signature=_Thu__7_Aug_2008_00_10_06_+1000_TUCbgU3YDjZubQKp--
+- k
