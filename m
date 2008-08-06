@@ -1,28 +1,28 @@
 Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 519E0DE0D3
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 16:50:06 +1000 (EST)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 05697DDF80
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 16:50:07 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m766o0dP000068
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Aug 2008 23:50:00 -0700 (MST)
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m766o2KE028175
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Aug 2008 23:50:02 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m766nrIY000135
-	for <linuxppc-dev@ozlabs.org>; Wed, 6 Aug 2008 01:49:59 -0500 (CDT)
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m766nrIa000135
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Aug 2008 01:50:01 -0500 (CDT)
 From: Li Yang <leoli@freescale.com>
 To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
-Subject: [PATCH 4/6] powerpc: add USB peripheral support to MPC8272ADS
-Date: Wed,  6 Aug 2008 15:04:43 +0800
-Message-Id: <1218006285-27138-4-git-send-email-leoli@freescale.com>
-In-Reply-To: <1218006285-27138-3-git-send-email-leoli@freescale.com>
+Subject: [PATCH 5/6] powerpc: add USB peripheral support to MPC836xMDS
+Date: Wed,  6 Aug 2008 15:04:44 +0800
+Message-Id: <1218006285-27138-5-git-send-email-leoli@freescale.com>
+In-Reply-To: <1218006285-27138-4-git-send-email-leoli@freescale.com>
 References: <1218006285-27138-1-git-send-email-leoli@freescale.com>
 	<1218006285-27138-2-git-send-email-leoli@freescale.com>
 	<1218006285-27138-3-git-send-email-leoli@freescale.com>
+	<1218006285-27138-4-git-send-email-leoli@freescale.com>
 Cc: Li Yang <leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -35,105 +35,180 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/boot/dts/mpc8272ads.dts      |    8 ++++++++
- arch/powerpc/platforms/82xx/mpc8272_ads.c |   25 +++++++++++++++++++++++++
- arch/powerpc/platforms/82xx/pq2ads.h      |    3 +++
- 3 files changed, 36 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/mpc836x_mds.dts     |   15 ++++++-
+ arch/powerpc/platforms/83xx/mpc836x_mds.c |   19 ++++++++-
+ arch/powerpc/platforms/83xx/mpc83xx.h     |    1 +
+ arch/powerpc/platforms/83xx/usb.c         |   67 +++++++++++++++++++++++++++++
+ 4 files changed, 100 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-index b2ce4c0..75cc94c 100644
---- a/arch/powerpc/boot/dts/mpc8272ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8272ads.dts
-@@ -256,6 +256,14 @@
- 				#address-cells = <1>;
- 				#size-cells = <0>;
+diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
+index a3b76a7..596377b 100644
+--- a/arch/powerpc/boot/dts/mpc836x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
+@@ -235,6 +235,17 @@
+ 					0  2  1  0  1  0>; /* MDC */
  			};
-+
-+			usb@11b60 {
-+				compatible = "fsl,qe_udc";
-+				reg = <0x11b60 0x40 0x8b00 0x100>;
-+				interrupts = <11 8>;
-+				interrupt-parent = <&PIC>;
-+				mode = "slave";
+ 
++			pio_usb: usb_pin@01 {
++				pio-map = <
++			/* port  pin  dir  open_drain  assignment  has_irq */
++					1  2  1  0  3  0        /* USBOE  */
++					1  3  1  0  3  0        /* USBTP  */
++					1  8  1  0  1  0        /* USBTN  */
++					1 10  2  0  3  0        /* USBRXD */
++					1  9  2  1  3  0        /* USBRP  */
++					1 11  2  1  3  0>;      /* USBRN  */
 +			};
++
+ 		};
+ 	};
+ 
+@@ -280,11 +291,13 @@
  		};
  
- 		PIC: interrupt-controller@10c00 {
-diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-index 8054c68..69781e6 100644
---- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
-+++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-@@ -23,6 +23,7 @@
- #include <asm/udbg.h>
- #include <asm/machdep.h>
- #include <asm/time.h>
-+#include <asm/fs_pd.h>
+ 		usb@6c0 {
+-			compatible = "qe_udc";
++			compatible = "fsl,qe_udc";
+ 			reg = <0x6c0 0x40 0x8b00 0x100>;
+ 			interrupts = <11>;
+ 			interrupt-parent = <&qeic>;
+ 			mode = "slave";
++			usb-clock = <21>;
++			pio-handle = <&pio_usb>;
+ 		};
  
- #include <platforms/82xx/pq2.h>
+ 		enet0: ucc@2000 {
+diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+index 9d46e5b..92afd40 100644
+--- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+@@ -93,6 +93,12 @@ static void __init mpc836x_mds_setup_arch(void)
  
-@@ -100,11 +101,22 @@ static struct cpm_pin mpc8272_ads_pins[] = {
- 	/* I2C */
- 	{3, 14, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
- 	{3, 15, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
+ 		for (np = NULL; (np = of_find_node_by_name(np, "ucc")) != NULL;)
+ 			par_io_of_config(np);
 +
-+	/* USB */
-+	{2, 20, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY}, /* output enable */
-+	{2, 11, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* RP */
-+	{2, 10, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* RN */
-+	{3, 25, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* Rxd */
-+	{3, 24, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY}, /* TN */
-+	{3, 23, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY}, /* TP */
-+	{2, 24, CPM_PIN_INPUT | CPM_PIN_PRIMARY},  /* Usb_clk */
- };
++		np = of_find_compatible_node(NULL, NULL, "fsl,qe_udc");
++		if (np) {
++			par_io_of_config(np);
++			qe_usb_clock_set(np);
++		}
+ 	}
  
- static void __init init_ioports(void)
- {
- 	int i;
-+	cpmux_t __iomem *im_cpmux;
-+	u32 reg;
+ 	if ((np = of_find_compatible_node(NULL, "network", "ucc_geth"))
+@@ -127,9 +133,20 @@ static void __init mpc836x_mds_setup_arch(void)
+ 			iounmap(immap);
+ 		}
  
- 	for (i = 0; i < ARRAY_SIZE(mpc8272_ads_pins); i++) {
- 		struct cpm_pin *pin = &mpc8272_ads_pins[i];
-@@ -119,6 +131,13 @@ static void __init init_ioports(void)
- 	cpm2_clk_setup(CPM_CLK_FCC1, CPM_CLK10, CPM_CLK_TX);
- 	cpm2_clk_setup(CPM_CLK_FCC2, CPM_CLK15, CPM_CLK_RX);
- 	cpm2_clk_setup(CPM_CLK_FCC2, CPM_CLK16, CPM_CLK_TX);
+-		iounmap(bcsr_regs);
+ 		of_node_put(np);
+ 	}
 +
-+	/* USB use clock of SCC3 */
-+	cpm2_clk_setup(CPM_CLK_SCC3, CPM_CLK8, CPM_CLK_TX);
-+	/* SCC3 cannot be used in NMSI mode */
-+	im_cpmux = cpm2_map(im_cpmux);
-+	reg = in_be32(&im_cpmux->cmx_scr);
-+	out_be32(&im_cpmux->cmx_scr, reg | CMXSCR_SC3);
- }
- 
- static void __init mpc8272_ads_setup_arch(void)
-@@ -150,6 +169,12 @@ static void __init mpc8272_ads_setup_arch(void)
- 	clrbits32(&bcsr[3], BCSR3_FETHIEN2);
- 	setbits32(&bcsr[3], BCSR3_FETH2_RST);
- 
-+	/* Enabling USB support in BCSR */
 +	np = of_find_compatible_node(NULL, NULL, "fsl,qe_udc");
 +	if (np != NULL) {
-+		clrbits32(&bcsr[3], BCSR3_USB_EN);
-+		clrbits32(&bcsr[3], BCSR3_USB_HI_SPEED);
++		/* Set the TESCs run on RGMII mode */
++		bcsr_regs[8] &= ~0xf0;
++		/* Enable the USB Device PHY */
++		bcsr_regs[13] &= ~0x0f;
++		udelay(1000);
++		bcsr_regs[13] |= 0x05;
++		of_node_put(np);
 +	}
- 	iounmap(bcsr);
++	iounmap(bcsr_regs);
+ #endif				/* CONFIG_QUICC_ENGINE */
+ }
  
- 	init_ioports();
-diff --git a/arch/powerpc/platforms/82xx/pq2ads.h b/arch/powerpc/platforms/82xx/pq2ads.h
-index 984db42..d0e82e2 100644
---- a/arch/powerpc/platforms/82xx/pq2ads.h
-+++ b/arch/powerpc/platforms/82xx/pq2ads.h
-@@ -43,6 +43,9 @@
- #define BCSR1_RS232_EN2		((uint)0x01000000)      /* 0 ==enable */
- #define BCSR3_FETHIEN2		((uint)0x10000000)      /* 0 == enable*/
- #define BCSR3_FETH2_RST		((uint)0x80000000)      /* 0 == reset */
-+#define BCSR3_USB_EN      ((uint)0x80000000)        /* 0 == enable*/
-+#define BCSR3_USB_HI_SPEED     ((uint)0x40000000)   /* 0 == highspeed */
-+#define BCSR3_USBVCC     ((uint)0x20000000)         /* 0 == disable */
+diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
+index 2a7cbab..d025b47 100644
+--- a/arch/powerpc/platforms/83xx/mpc83xx.h
++++ b/arch/powerpc/platforms/83xx/mpc83xx.h
+@@ -63,5 +63,6 @@ extern void mpc83xx_restart(char *cmd);
+ extern long mpc83xx_time_init(void);
+ extern int mpc834x_usb_cfg(void);
+ extern int mpc831x_usb_cfg(void);
++extern int qe_usb_clock_set(struct device_node *np);
  
- /* cpm serial driver works with constants below */
+ #endif				/* __MPC83XX_H__ */
+diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
+index cc99c28..3d04ab5 100644
+--- a/arch/powerpc/platforms/83xx/usb.c
++++ b/arch/powerpc/platforms/83xx/usb.c
+@@ -18,6 +18,7 @@
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <sysdev/fsl_soc.h>
++#include <asm/qe.h>
  
+ #include "mpc83xx.h"
+ 
+@@ -240,3 +241,69 @@ int mpc837x_usb_cfg(void)
+ 	return ret;
+ }
+ #endif /* CONFIG_PPC_MPC837x */
++
++#ifdef CONFIG_QUICC_ENGINE
++/* QE USB_CLOCK configure functions */
++int qe_usb_clock_set(struct device_node *np)
++{
++	u32 tmpreg = 0;
++	struct qe_mux *qemux = NULL;
++	const int *clock;
++
++	qemux = &qe_immr->qmx;
++
++	clock = of_get_property(np, "usb-clock", NULL);
++	if (!clock)
++		return -EINVAL;
++
++	/* CLK21 -> USBCLK on MPC8360-PB*/
++	tmpreg = in_be32(&qemux->cmxgcr) & ~QE_CMXGCR_USBCS;
++	switch (*clock) {
++	case 21:
++		tmpreg |= 0x8;
++		out_be32(&qemux->cmxgcr, tmpreg);
++		par_io_config_pin(2, 20, 2, 0, 1, 0);  /* PC20 for CLK21 */
++		break;
++	case 19:
++		tmpreg |= 0x7;
++		out_be32(&qemux->cmxgcr, tmpreg);
++		par_io_config_pin(2, 18, 2, 0, 1, 0);  /* PC18 for CLK19 */
++		break;
++	case 17:
++		tmpreg |= 0x6;
++		out_be32(&qemux->cmxgcr, tmpreg);
++		par_io_config_pin(2, 16, 2, 0, 1, 0);  /* PC16 for CLK17 */
++		break;
++	case 13:
++		tmpreg |= 0x5;
++		out_be32(&qemux->cmxgcr, tmpreg);
++		par_io_config_pin(2, 12, 2, 0, 1, 0);  /* PC12 for CLK13 */
++		break;
++	case 9:
++		tmpreg |= 0x4;
++		out_be32(&qemux->cmxgcr, tmpreg);
++		par_io_config_pin(2, 8, 2, 0, 1, 0);  /* PC8 for CLK9 */
++		break;
++	case 7:
++		tmpreg |= 0x3;
++		out_be32(&qemux->cmxgcr, tmpreg);
++		par_io_config_pin(2, 6, 2, 0, 1, 0);  /* PC6 for CLK7 */
++		break;
++	case 5:
++		tmpreg |= 0x2;
++		out_be32(&qemux->cmxgcr, tmpreg);
++		par_io_config_pin(2, 4, 2, 0, 1, 0);  /* PC4 for CLK5 */
++		break;
++	case 3:
++		tmpreg |= 0x1;
++		out_be32(&qemux->cmxgcr, tmpreg);
++		par_io_config_pin(2, 2, 2, 0, 1, 0);  /* PC2 for CLK3 */
++		break;
++	default:
++		printk(KERN_ERR "Unsupport usb-clock input pin\n");
++	}
++
++	return 0;
++}
++#endif
++
 -- 
 1.5.5.1.248.g4b17
