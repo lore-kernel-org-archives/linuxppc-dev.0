@@ -1,23 +1,23 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 43672DE207
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 17:50:33 +1000 (EST)
-Date: Wed, 6 Aug 2008 17:50:26 +1000
+	by ozlabs.org (Postfix) with ESMTP id 1ACFEDDFB6
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 17:57:48 +1000 (EST)
+Date: Wed, 6 Aug 2008 17:57:42 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH 5/6] powerpc: add USB peripheral support to MPC836xMDS
-Message-Id: <20080806175026.82797918.sfr@canb.auug.org.au>
-In-Reply-To: <1218006285-27138-5-git-send-email-leoli@freescale.com>
-References: <1218006285-27138-1-git-send-email-leoli@freescale.com>
-	<1218006285-27138-2-git-send-email-leoli@freescale.com>
-	<1218006285-27138-3-git-send-email-leoli@freescale.com>
-	<1218006285-27138-4-git-send-email-leoli@freescale.com>
-	<1218006285-27138-5-git-send-email-leoli@freescale.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [RFC/PATCH 2/3] of: add of_lookup_stdout() utility function
+Message-Id: <20080806175742.6bb26b8d.sfr@canb.auug.org.au>
+In-Reply-To: <20080806174233.3da5daea.sfr@canb.auug.org.au>
+References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
+	<20080806060239.30717.79273.stgit@trillian.secretlab.ca>
+	<1218003249.7893.19.camel@localhost>
+	<fa686aa40808052334m2946298aw453afce8b47e6bf7@mail.gmail.com>
+	<20080806174233.3da5daea.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__6_Aug_2008_17_50_26_+1000_BlpH/lFvlieOB2D9"
-Cc: linuxppc-dev@ozlabs.org
+	boundary="Signature=_Wed__6_Aug_2008_17_57_42_+1000_J3WOZP2QMjKcIVB0"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__6_Aug_2008_17_50_26_+1000_BlpH/lFvlieOB2D9
+--Signature=_Wed__6_Aug_2008_17_57_42_+1000_J3WOZP2QMjKcIVB0
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Li,
-
-On Wed,  6 Aug 2008 15:04:44 +0800 Li Yang <leoli@freescale.com> wrote:
+On Wed, 6 Aug 2008 17:42:33 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
+rote:
 >
-> @@ -93,6 +93,12 @@ static void __init mpc836x_mds_setup_arch(void)
-> =20
->  		for (np =3D NULL; (np =3D of_find_node_by_name(np, "ucc")) !=3D NULL;)
->  			par_io_of_config(np);
-> +
-> +		np =3D of_find_compatible_node(NULL, NULL, "fsl,qe_udc");
-> +		if (np) {
-> +			par_io_of_config(np);
-> +			qe_usb_clock_set(np);
+> Could you also send an email to Dave Miller to see if he has any objectio=
+ns
+> to this function being generic (since the Sparc guys share this code).
 
-			of_node_put(np);
+So I should read ahead :-)
 
-> +		}
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Wed__6_Aug_2008_17_50_26_+1000_BlpH/lFvlieOB2D9
+--Signature=_Wed__6_Aug_2008_17_57_42_+1000_J3WOZP2QMjKcIVB0
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkiZV8IACgkQjjKRsyhoI8wSwACfR0OiMaotJbtyOo4fHc84SFBf
-vWgAniNnTDvYQnNFC2TL4vs7ZORuKCYW
-=rDek
+iEYEARECAAYFAkiZWXYACgkQjjKRsyhoI8zqtwCfbCsgtQS4tagYidQStmnoAyo2
+Hl4AoIMVNhM2xGMIdtpzd4fWxzRwbx6E
+=znNf
 -----END PGP SIGNATURE-----
 
---Signature=_Wed__6_Aug_2008_17_50_26_+1000_BlpH/lFvlieOB2D9--
+--Signature=_Wed__6_Aug_2008_17_57_42_+1000_J3WOZP2QMjKcIVB0--
