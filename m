@@ -1,20 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <fa686aa40808060631k278e187ej965f0ac08c837937@mail.gmail.com>
-References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
-	<20080806060239.30717.79273.stgit@trillian.secretlab.ca>
-	<20080805.233205.201125898.davem@davemloft.net>
-	<18585.31504.836857.829592@cargo.ozlabs.ibm.com>
-	<fa686aa40808060631k278e187ej965f0ac08c837937@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <C5C0AA60-C45F-4467-AC76-AA24A00CA4AC@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC/PATCH 2/3] of: add of_lookup_stdout() utility function
-Date: Wed, 6 Aug 2008 18:25:48 +0200
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
-	David Miller <davem@davemloft.net>, miltonm@bga.com
+Return-Path: <vgallardo@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02-ext1.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 8CF1EDDED5
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 02:42:45 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C8F7E1.D3BD450D"
+Subject: test - ignore
+Date: Wed, 6 Aug 2008 09:31:07 -0700
+Message-ID: <0CA0A16855646F4FA96D25A158E299D604D28855@SDCEXCHANGE01.ad.amcc.com>
+From: "Victor Gallardo" <vgallardo@amcc.com>
+To: <linuxppc-dev@ozlabs.org>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> It's not what we do with flattened device trees blobs though.  In the
-> flattened tree we're not using a /chosen/stdout property, just the
-> linux,stdout-path one.
->
-> The question that remains is; should there be?  Should the dt blobs
-> use /chosen/stdout also?  (I'm not familiar enough with real OF to
-> know the answer.  I'm assuming that an instance value is not the same
-> as a phandle).
+This is a multi-part message in MIME format.
 
-ihandles and phandles are not the same thing in OF.  Since in the
-"flat world" we cannot have instances, we should use phandles instead
-of ihandles for the things in /chosen.  I thought we agreed on that
-already, perhaps I am wrong?
+------_=_NextPart_001_01C8F7E1.D3BD450D
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
 
-Segher
+test - ignore
+
+
+------_=_NextPart_001_01C8F7E1.D3BD450D
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7651.59">
+<TITLE>test - ignore</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+<BR>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">t</FONT><FONT SIZE=3D2 =
+FACE=3D"Arial">est - ignore</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C8F7E1.D3BD450D--
