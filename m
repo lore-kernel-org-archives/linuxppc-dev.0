@@ -1,19 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5D94DDE36A
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 00:22:05 +1000 (EST)
-In-Reply-To: <18585.14669.954874.540716@drongo.ozlabs.ibm.com>
-References: <18585.14669.954874.540716@drongo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A1BAD7C8-8459-4D6E-80BA-639D305611DD@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH] Link the bootwrapper as a position-independent
-	executable
-Date: Wed, 6 Aug 2008 16:21:57 +0200
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <daniel.schnell@marel.com>
+Received: from mail.marel.com (mail.marel.com [213.167.134.96])
+	by ozlabs.org (Postfix) with ESMTP id C91C6DE4A0
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 00:31:50 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH]: [MPC5200] Add ATA DMA support
+Date: Wed, 6 Aug 2008 14:31:47 -0000
+Message-ID: <DD39B5C3F4963040ADC9768BE7E430CB03202F8E@is-hdq-exchange.marel.net>
+In-Reply-To: <DD39B5C3F4963040ADC9768BE7E430CB03202F35@is-hdq-exchange.marel.net>
+References: <792f5f410806170128k7e435743x9892b559bd32b157@mail.gmail.com><DD39B5C3F4963040ADC9768BE7E430CB03202EDF@is-hdq-exchange.marel.net><792f5f410808060518r5e2c0124i2cfef450e264f012@mail.gmail.com>
+	<DD39B5C3F4963040ADC9768BE7E430CB03202F35@is-hdq-exchange.marel.net>
+From: "Daniel Schnell" <daniel.schnell@marel.com>
+To: "Tim Yamin" <plasm@roo.me.uk>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,48 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Instead we now link the bootwrapper with -pie to get a position-
-> independent executable, and process the relocations in the dynamic
-> relocation section that the linker puts into the executable.
+Hi,
 
-Hurray!  Looks good, just a few nits...
+Daniel Schnell wrote:
+> Tim Yamin wrote:
+>> On Wed, Aug 6, 2008 at 12:58 PM, Daniel Schnell
+>> <daniel.schnell@marel.com> wrote:
+>>> Hi,
+>>>=20
+>>> Sorry for testing this patch so late, but I get these if I apply
+>>> your patch to 2.6.24.7 and use it with my Sandisk Extreme IV 4GB
+>>> card:=20
+>>=20
+>> Hi,
+>>=20
+>> What board are you using? DMA requires a few more signals to be
+>> routed through correctly to the CF card slot so maybe that's your
+>> problem...=20
+>>=20
+>=20
+> Hi,
+>=20
+> We are using our own MPC5200B based board. Can you be a bit more
+> specific about which signals have to be routed ?=20
+>=20
 
-> +	bl	.+4
-> +p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
-
-bl p_base  instead?
-
-> +10:	or.	r8,r0,r9	/* skip relocation if we don't have both */
->  	beq	3f
-
-Either the code or the comment is wrong -- the code says "skip  
-relocation
-if we don't have either".
-
-> +	cmpwi	r0,22		/* R_PPC_RELATIVE */
-> +	bne	3f
-
-It would be nice if there was some way to complain (at build time?)
-if there are unhandled relocations present.  Prevents a lot of headaches
-when things go wrong (and they will ;-) )
-
->  4:	dcbf	r0,r9
->  	icbi	r0,r9
-
-Fix these while you're at it?  It's not r0, it's 0.
-
-> +  .dynsym : { *(.dynsym) }
-> +  .dynstr : { *(.dynstr) }
-> +  .dynamic :
-> +  {
-> +    __dynamic_start = .;
-> +    *(.dynamic)
-> +  }
-> +  .hash : { *(.hash) }
-> +  .interp : { *(.interp) }
-> +  .rela.dyn : { *(.rela*) }
-
-Do some of these sections need alignment?
+After checking our schematics with Tim Yamin, we found that our board
+has not the DMA lines connected. It seems I have to wait some time
+before I get an updated board and can test UDMA again ....
 
 
-Segher
+Sorry for the noise, although this was important for us to know.
+
+
+Best regards,
+
+Daniel.
