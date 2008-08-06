@@ -1,16 +1,31 @@
-Return-Path: <schwab@suse.de>
-From: Andreas Schwab <schwab@suse.de>
-To: Kevin Diggs <kevdig@hypersurf.com>
-Subject: Re: inline assembly & r0 SOS
-References: <4898EE60.9080206@hypersurf.com>
-	<200808061041.50577.jk@ozlabs.org> <48990D0F.6050909@hypersurf.com>
-Date: Wed, 06 Aug 2008 10:49:55 +0200
-In-Reply-To: <48990D0F.6050909@hypersurf.com> (Kevin Diggs's message of "Tue,
-	05 Aug 2008 19:31:43 -0700")
-Message-ID: <jetzdyttn0.fsf@sykes.suse.de>
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 036D0DDEDC
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 19:02:29 +1000 (EST)
+Date: Wed, 6 Aug 2008 10:02:22 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
+Message-ID: <20080806090222.GD21190@csn.ul.ie>
+References: <20080730172317.GA14138@csn.ul.ie>
+	<20080730103407.b110afc2.akpm@linux-foundation.org>
+	<20080730193010.GB14138@csn.ul.ie>
+	<20080730130709.eb541475.akpm@linux-foundation.org>
+	<20080731103137.GD1704@csn.ul.ie>
+	<1217884211.20260.144.camel@nimitz>
+	<20080805111147.GD20243@csn.ul.ie>
+	<1217952748.10907.18.camel@nimitz>
+	<20080805162800.GJ20243@csn.ul.ie>
+	<1217958805.10907.45.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <1217958805.10907.45.camel@nimitz>
+Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	abh@cray.com, ebmunson@us.ibm.com,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,44 +35,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kevin Diggs <kevdig@hypersurf.com> writes:
+On (05/08/08 10:53), Dave Hansen didst pronounce:
+> On Tue, 2008-08-05 at 17:28 +0100, Mel Gorman wrote:
+> > Ok sure, you could do direct inserts for MAP_PRIVATE as conceptually it
+> > suits this patch.  However, I don't see what you gain. By reusing hugetlbfs,
+> > we get things like proper reservations which we can do for MAP_PRIVATE these
+> > days. Again, we could call that sort of thing directly if the reservation
+> > layer was split out separate from hugetlbfs but I still don't see the gain
+> > for all that churn.
+> > 
+> > What am I missing?
+> 
+> This is good for getting us incremental functionality.  It is probably
+> the smallest amount of code to get it functional.
+> 
 
-> Jeremy Kerr wrote:
->> Hi Kevin,
->>
->>
->>>         /*
->>>          * Turn r3 (range) into a rotate count for the selected
->>>range. * 0 -> 23, 1 -> 31
->>>          */
->>>         __asm__ __volatile__ (  "slwi %0,%0,3\n"
->>>                                 "addi %0,%0,23\n"
->>>                                 "rlwnm %0,%1,%0,30,31\n":
->>>                 "=r"(ret):
->>>                 "r"(config),"0"(range)
->>>         );
->>
->>
->> Wouldn't this be much simpler in plain C?
->>
-> I just knew someone was gonna try to rain on my rlwnm'in fun parade!
-> Wonder if the C code can be made to compile down to 3 instructions?
+I'm not keen on the idea of introducing another specialised path just for
+stacks. Testing coverage is tricky enough as it is and problems still slip
+through occasionally. Maybe going through hugetlbfs is less than ideal,
+but at least it is a shared path.
 
-This will do:
+> My concern is that we're going down a path that all large page usage
+> should be through the one and only filesystem.  Once we establish that
+> dependency, it is going to be awfully hard to undo it;
 
-unsigned int get_PLL_range(unsigned int range, unsigned int config)
-{
-  range = range * 8 + 23;
-  return ((config << range) | (config >> (32 - range))) & 3;
-}
+Not much harder than it is to write any alternative in the first place
+:/
 
-The special pattern ((a << n) | (a >> (32 - n))) is recognized by gcc as
-a rotate operation.
+> just think of all
+> of the inherent behavior in hugetlbfs.  So, we better be sure that the
+> filesystem really is the way to go, especially if we're going to start
+> having other areas of the kernel depend on it internally.
+> 
 
-Andreas.
+So far, it is working out as a decent model. It is able to track reservations
+and deal with the differences between SHARED and PRIVATE without massive
+difficulties. While we could add another specialised path to directly insert
+the pages into pagetables for private mappings, I find it hard to justify
+adding more test coverage problems. There might be minimal gains to be had
+in lock granularity but that's about it.
+
+> That said, this particular patch doesn't appear *too* bound to hugetlb
+> itself.  But, some of its limitations *do* come from the filesystem,
+> like its inability to handle VM_GROWS...  
+> 
+
+The lack of VM_GROWSX is an issue, but on its own it does not justify
+the amount of churn necessary to support direct pagetable insertions for
+MAP_ANONYMOUS|MAP_PRIVATE. I think we'd need another case or two that would
+really benefit from direct insertions to pagetables instead of hugetlbfs so
+that the path would get adequately tested.
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
