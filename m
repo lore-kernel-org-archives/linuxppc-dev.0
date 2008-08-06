@@ -1,31 +1,21 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 036D0DDEDC
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 19:02:29 +1000 (EST)
-Date: Wed, 6 Aug 2008 10:02:22 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Message-ID: <20080806090222.GD21190@csn.ul.ie>
-References: <20080730172317.GA14138@csn.ul.ie>
-	<20080730103407.b110afc2.akpm@linux-foundation.org>
-	<20080730193010.GB14138@csn.ul.ie>
-	<20080730130709.eb541475.akpm@linux-foundation.org>
-	<20080731103137.GD1704@csn.ul.ie>
-	<1217884211.20260.144.camel@nimitz>
-	<20080805111147.GD20243@csn.ul.ie>
-	<1217952748.10907.18.camel@nimitz>
-	<20080805162800.GJ20243@csn.ul.ie>
-	<1217958805.10907.45.camel@nimitz>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 889B3DE079
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 19:46:08 +1000 (EST)
+Date: Wed, 6 Aug 2008 11:46:07 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: John Linn <John.Linn@xilinx.com>
+Subject: RE: Kconfig debug help
+In-Reply-To: <20080805225045.436FA68005D@mail2-dub.bigfish.com>
+Message-ID: <Pine.LNX.4.64.0808061145400.28556@vixen.sonytel.be>
+References: <20080805213759.96642158806D@mail101-wa4.bigfish.com>
+	<1217976528.2328.54.camel@localhost.localdomain>
+	<20080805225045.436FA68005D@mail2-dub.bigfish.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1217958805.10907.45.camel@nimitz>
-Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	abh@cray.com, ebmunson@us.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-1311117823-1218015967=:28556"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,58 +25,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (05/08/08 10:53), Dave Hansen didst pronounce:
-> On Tue, 2008-08-05 at 17:28 +0100, Mel Gorman wrote:
-> > Ok sure, you could do direct inserts for MAP_PRIVATE as conceptually it
-> > suits this patch.  However, I don't see what you gain. By reusing hugetlbfs,
-> > we get things like proper reservations which we can do for MAP_PRIVATE these
-> > days. Again, we could call that sort of thing directly if the reservation
-> > layer was split out separate from hugetlbfs but I still don't see the gain
-> > for all that churn.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584349381-1311117823-1218015967=:28556
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Tue, 5 Aug 2008, John Linn wrote:
+> Thanks Josh, I just came to the conclusion it was busted somehow in the
+> mainline after repeating it there.
+
+It was fixed in mainline by
+commit 22127f246dc37ed5bea0915f7860002ba6d87da7
+Author: Sam Ravnborg <sam@ravnborg.org>
+Date:   Mon Aug 4 22:18:07 2008 +0200
+
+    kconfig: always write out .config
+    
+    Always write out .config also in the case where config
+    did not change.
+    This fixes: http://bugzilla.kernel.org/show_bug.cgi?id=11230
+
+> > -----Original Message-----
+> > From: Josh Boyer [mailto:jwboyer@gmail.com] On Behalf Of Josh Boyer
+> > Sent: Tuesday, August 05, 2008 4:49 PM
+> > To: John Linn
+> > Cc: linuxppc-dev@ozlabs.org
+> > Subject: Re: Kconfig debug help
 > > 
-> > What am I missing?
-> 
-> This is good for getting us incremental functionality.  It is probably
-> the smallest amount of code to get it functional.
-> 
+> > On Tue, 2008-08-05 at 15:37 -0600, John Linn wrote:
+> > > I'm trying to debug some Kconfig problems and am looking for a way
+> to
+> > > get more debug output.
+> > >
+> > >
+> > >
+> > > I have used KBUILD_VERBOSE=1 on the command line and it didn't help
+> > > much.
+> > >
+> > >
+> > >
+> > > I'm seeing an issue with creating a new defconfig file for a board.
+> I
+> > > get the .config created, then copy it to a defconfig, and then it
+> > > doesn't do anything when I run make with the defconfig file.
+> > 
+> > Yeah, I hit that myself this weekend.  It's a bug in the Kconfig area.
+> > It's 1/2 fixed in the latest Linus and powerpc trees.
 
-I'm not keen on the idea of introducing another specialised path just for
-stacks. Testing coverage is tricky enough as it is and problems still slip
-through occasionally. Maybe going through hugetlbfs is less than ideal,
-but at least it is a shared path.
+With kind regards,
 
-> My concern is that we're going down a path that all large page usage
-> should be through the one and only filesystem.  Once we establish that
-> dependency, it is going to be awfully hard to undo it;
+Geert Uytterhoeven
+Software Architect
 
-Not much harder than it is to write any alternative in the first place
-:/
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-> just think of all
-> of the inherent behavior in hugetlbfs.  So, we better be sure that the
-> filesystem really is the way to go, especially if we're going to start
-> having other areas of the kernel depend on it internally.
-> 
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-So far, it is working out as a decent model. It is able to track reservations
-and deal with the differences between SHARED and PRIVATE without massive
-difficulties. While we could add another specialised path to directly insert
-the pages into pagetables for private mappings, I find it hard to justify
-adding more test coverage problems. There might be minimal gains to be had
-in lock granularity but that's about it.
-
-> That said, this particular patch doesn't appear *too* bound to hugetlb
-> itself.  But, some of its limitations *do* come from the filesystem,
-> like its inability to handle VM_GROWS...  
-> 
-
-The lack of VM_GROWSX is an issue, but on its own it does not justify
-the amount of churn necessary to support direct pagetable insertions for
-MAP_ANONYMOUS|MAP_PRIVATE. I think we'd need another case or two that would
-really benefit from direct insertions to pagetables instead of hugetlbfs so
-that the path would get adequately tested.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis 293-0376800-10 GEBA-BE-BB
+---584349381-1311117823-1218015967=:28556--
