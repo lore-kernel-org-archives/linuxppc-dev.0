@@ -1,12 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 6 Aug 2008 14:50:49 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: libfdt: Implement fdt_get_property_namelen() and fdt_getprop_namelen()
-Message-ID: <20080806045049.GC6690@yookeroo.seuss>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: EOI spurious irqs during boot so they can be
+	reenabled later
+From: Michael Ellerman <michael@ellerman.id.au>
+To: miltonm@bga.com
+In-Reply-To: <489912b6.cc.1809.1931903668@bga.com>
+References: <489912b6.cc.1809.1931903668@bga.com>
+Content-Type: text/plain
+Date: Wed, 06 Aug 2008 14:53:54 +1000
+Message-Id: <1217998434.7893.16.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,155 +20,253 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-As well as fdt_subnode_offset(), libfdt includes an
-fdt_subnode_offset_namelen() function that takes the subnode name to
-look up not as a NUL-terminated string, but as a string with an
-explicit length.  This can be useful when the caller has the name as
-part of a longer string, such as a full path.
+On Tue, 2008-08-05 at 20:55 -0600, miltonm wrote:
+> ----- Original Message Follows -----
+> From: Michael Ellerman <michael@ellerman.id.au>
+> To: Paul Mackerras <paulus@samba.org>
+> Cc: <linuxppc-dev@ozlabs.org>, Milton Miller
+> <miltonm@bga.com>, Segher Boessenkool
+> <segher@kernel.crashing.org>
+> Subject: [PATCH] powerpc: EOI spurious irqs during boot so
+> they can be reenabled later
+> Date: Wed,  6 Aug 2008 12:03:37 +1000 (EST)
+>  
+> > In the xics code, if we receive an irq during boot that
+> > hasn't been setup yet - ie. we have no reverse mapping for
+> > it - we mask the irq so we don't hear from it again.
+> > 
+> > Later on if someone request_irq()'s that irq, we'll unmask
+> > it but it will still never fire. This is because we never
+> > EOI'ed the irq when we originally received it - when it
+> > was spurious.
+> > 
+> > This can be reproduced trivially by banging the keyboard
+> > while kexec'ing on a P5 LPAR, even though the hvc_console
+> > driver request's the console irq, the console is
+> > non-functional because we're receiving no console
+> > interrupts.
+> > 
+>  
+> which means some driver didn't disable interrupts on its
+> shutdown, but I digress.
 
-However, we don't have corresponding 'namelen' versions for
-fdt_get_property() and fdt_getprop().  There are less obvious use
-cases for these variants on property names, but there are
-circumstances where they can be useful e.g. looking up property names
-which need to be parsed from a longer string buffer such as user input
-or a configuration file, or looking up an alias in a path with
-IEEE1275 style aliases.
+But in the case of kdump the driver never gets a chance to shutdown its
+irq, but I digress too :)
 
-So, since it's very easy to implement such variants, this patch does
-so.  The original NUL-terminated variants are, of course, implemented
-in terms of the namelen versions.
+> > diff --git a/arch/powerpc/platforms/pseries/xics.c
+> > b/arch/powerpc/platforms/pseries/xics.c index
+> > 0fc830f..4c692b2 100644 ---
+> > a/arch/powerpc/platforms/pseries/xics.c +++
+> > b/arch/powerpc/platforms/pseries/xics.c @@ -321,21 +321,26
+> > @@ static unsigned int xics_startup(unsigned int virq)
+> >      return 0;
+> >  }
+> >  
+> > +static void xics_eoi_hwirq_direct(unsigned int hwirq)
+> > +{
+> > +    iosync();
+> > +    direct_xirr_info_set((0xff << 24) | hwirq);
+> > +}
+> > +
+> >  static void xics_eoi_direct(unsigned int virq)
+> >  {
+> > -    unsigned int irq = (unsigned int)irq_map[virq].hwirq;
+> > +    xics_eoi_hwirq_direct((unsigned
+> > int)irq_map[virq].hwirq); +}
+> >  
+> > +static void xics_eoi_hwirq_lpar(unsigned int hwirq)
+> > +{
+> >      iosync();
+> > -    direct_xirr_info_set((0xff << 24) | irq);
+> > +    lpar_xirr_info_set((0xff << 24) | hwirq);
+> >  }
+> >  
+> > -
+> >  static void xics_eoi_lpar(unsigned int virq)
+> >  {
+> > -    unsigned int irq = (unsigned int)irq_map[virq].hwirq;
+> > -
+> > -    iosync();
+> > -    lpar_xirr_info_set((0xff << 24) | irq);
+> > +    xics_eoi_hwirq_lpar((unsigned
+> > int)irq_map[virq].hwirq);
+> >  }
+> >  
+> >  static inline unsigned int xics_remap_irq(unsigned int
+> > vec) @@ -350,9 +355,15 @@ static inline unsigned int
+> > xics_remap_irq(unsigned int vec)
+> >      if (likely(irq != NO_IRQ))
+> >          return irq;
+> >  
+> > -    printk(KERN_ERR "Interrupt %u (real) is invalid,"
+> > -           " disabling it.\n", vec);
+> > +    pr_err("%s: no mapping for hwirq %u, disabling it.\n"
+> > , __func__, vec); +
+> >      xics_mask_real_irq(vec);
+> > +
+> > +    if (firmware_has_feature(FW_FEATURE_LPAR))
+> > +        xics_eoi_hwirq_lpar(vec);
+> > +    else
+> > +        xics_eoi_hwirq_direct(vec);
+> > +
+> >      return NO_IRQ;
+> >  }
+>  
+> 
+> I really dislike this great big if in the middle of a
+> function.
+> we called this function from two different call sites where
+> the
+> choice of which to call was based on their environment.
+>  
+> Please move the call to eoi the hwirq to the callers, who
+> know which path to take.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+It's not pretty, but the alternative is worse I think:
 
-Index: dtc/libfdt/fdt_ro.c
-===================================================================
---- dtc.orig/libfdt/fdt_ro.c	2008-08-05 14:12:17.000000000 +1000
-+++ dtc/libfdt/fdt_ro.c	2008-08-05 14:39:19.000000000 +1000
-@@ -80,6 +80,14 @@ const char *fdt_string(const void *fdt, 
- 	return (const char *)fdt + fdt_off_dt_strings(fdt) + stroffset;
+>From 0a908825c8de6cd4c26288aba8c5b7fe3ed0a69f Mon Sep 17 00:00:00 2001
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 5 Aug 2008 22:34:48 +1000
+Subject: [PATCH] powerpc: EOI spurious irqs during boot so they can be reenabled later
+
+In the xics code, if we receive an irq during boot that hasn't been setup
+yet - ie. we have no reverse mapping for it - we mask the irq so we don't
+hear from it again.
+
+Later on if someone request_irq()'s that irq, we'll unmask it but it will
+still never fire. This is because we never EOI'ed the irq when we originally
+received it - when it was spurious.
+
+This can be reproduced trivially by banging the keyboard while kexec'ing on
+a P5 LPAR, even though the hvc_console driver request's the console irq, the
+console is non-functional because we're receiving no console interrupts.
+
+So when we receive a spurious irq mask it and then EOI it.
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/pseries/xics.c |   74 ++++++++++++++++++++++-----------
+ 1 files changed, 50 insertions(+), 24 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
+index 0fc830f..754706c 100644
+--- a/arch/powerpc/platforms/pseries/xics.c
++++ b/arch/powerpc/platforms/pseries/xics.c
+@@ -90,7 +90,7 @@ static inline unsigned int direct_xirr_info_get(void)
+ {
+ 	int cpu = smp_processor_id();
+ 
+-	return in_be32(&xics_per_cpu[cpu]->xirr.word);
++	return in_be32(&xics_per_cpu[cpu]->xirr.word) & 0x00ffffff;
  }
  
-+static int _fdt_string_eq(const void *fdt, int stroffset,
-+			  const char *s, int len)
-+{
-+	const char *p = fdt_string(fdt, stroffset);
+ static inline void direct_xirr_info_set(int value)
+@@ -124,7 +124,8 @@ static inline unsigned int lpar_xirr_info_get(void)
+ 	lpar_rc = plpar_xirr(&return_value);
+ 	if (lpar_rc != H_SUCCESS)
+ 		panic(" bad return code xirr - rc = %lx \n", lpar_rc);
+-	return (unsigned int)return_value;
 +
-+	return (strlen(p) == len) && (memcmp(p, s, len) == 0);
++	return (unsigned int)return_value & 0x00ffffff;
+ }
+ 
+ static inline void lpar_xirr_info_set(int value)
+@@ -321,49 +322,74 @@ static unsigned int xics_startup(unsigned int virq)
+ 	return 0;
+ }
+ 
++static void xics_eoi_hwirq_direct(unsigned int hwirq)
++{
++	iosync();
++	direct_xirr_info_set((0xff << 24) | hwirq);
 +}
 +
- int fdt_get_mem_rsv(const void *fdt, int n, uint64_t *address, uint64_t *size)
+ static void xics_eoi_direct(unsigned int virq)
  {
- 	FDT_CHECK_HEADER(fdt);
-@@ -175,9 +183,10 @@ const char *fdt_get_name(const void *fdt
- 	return NULL;
- }
- 
--const struct fdt_property *fdt_get_property(const void *fdt,
--					    int nodeoffset,
--					    const char *name, int *lenp)
-+const struct fdt_property *fdt_get_property_namelen(const void *fdt,
-+						    int nodeoffset,
-+						    const char *name,
-+						    int namelen, int *lenp)
- {
- 	uint32_t tag;
- 	const struct fdt_property *prop;
-@@ -210,7 +219,7 @@ const struct fdt_property *fdt_get_prope
- 			if (! prop)
- 				goto fail;
- 			namestroff = fdt32_to_cpu(prop->nameoff);
--			if (strcmp(fdt_string(fdt, namestroff), name) == 0) {
-+			if (_fdt_string_eq(fdt, namestroff, name, namelen)) {
- 				/* Found it! */
- 				int len = fdt32_to_cpu(prop->len);
- 				prop = fdt_offset_ptr(fdt, offset,
-@@ -238,18 +247,32 @@ const struct fdt_property *fdt_get_prope
- 	return NULL;
- }
- 
--const void *fdt_getprop(const void *fdt, int nodeoffset,
--		  const char *name, int *lenp)
-+const struct fdt_property *fdt_get_property(const void *fdt,
-+					    int nodeoffset,
-+					    const char *name, int *lenp)
-+{
-+	return fdt_get_property_namelen(fdt, nodeoffset, name,
-+					strlen(name), lenp);
+-	unsigned int irq = (unsigned int)irq_map[virq].hwirq;
++	xics_eoi_hwirq_direct((unsigned int)irq_map[virq].hwirq);
 +}
-+
-+const void *fdt_getprop_namelen(const void *fdt, int nodeoffset,
-+				const char *name, int namelen, int *lenp)
- {
- 	const struct fdt_property *prop;
  
--	prop = fdt_get_property(fdt, nodeoffset, name, lenp);
-+	prop = fdt_get_property_namelen(fdt, nodeoffset, name, namelen, lenp);
- 	if (! prop)
- 		return NULL;
- 
- 	return prop->data;
- }
- 
-+const void *fdt_getprop(const void *fdt, int nodeoffset,
-+			const char *name, int *lenp)
++static void xics_eoi_hwirq_lpar(unsigned int hwirq)
 +{
-+	return fdt_getprop_namelen(fdt, nodeoffset, name, strlen(name), lenp);
-+}
-+
- uint32_t fdt_get_phandle(const void *fdt, int nodeoffset)
- {
- 	const uint32_t *php;
-Index: dtc/libfdt/libfdt.h
-===================================================================
---- dtc.orig/libfdt/libfdt.h	2008-08-05 14:29:15.000000000 +1000
-+++ dtc/libfdt/libfdt.h	2008-08-05 14:40:58.000000000 +1000
-@@ -343,6 +343,22 @@ int fdt_path_offset(const void *fdt, con
- const char *fdt_get_name(const void *fdt, int nodeoffset, int *lenp);
- 
- /**
-+ * fdt_get_property_namelen - find a property based on substring
-+ * @fdt: pointer to the device tree blob
-+ * @nodeoffset: offset of the node whose property to find
-+ * @name: name of the property to find
-+ * @namelen: number of characters of name to consider
-+ * @lenp: pointer to an integer variable (will be overwritten) or NULL
-+ *
-+ * Identical to fdt_get_property_namelen(), but only examine the first
-+ * namelen characters of name for matching the property name.
-+ */
-+const struct fdt_property *fdt_get_property_namelen(const void *fdt,
-+						    int nodeoffset,
-+						    const char *name,
-+						    int namelen, int *lenp);
-+
-+/**
-  * fdt_get_property - find a given property in a given node
-  * @fdt: pointer to the device tree blob
-  * @nodeoffset: offset of the node whose property to find
-@@ -380,6 +396,20 @@ static inline struct fdt_property *fdt_g
+ 	iosync();
+-	direct_xirr_info_set((0xff << 24) | irq);
++	lpar_xirr_info_set((0xff << 24) | hwirq);
  }
  
- /**
-+ * fdt_getprop_namelen - get property value based on substring
-+ * @fdt: pointer to the device tree blob
-+ * @nodeoffset: offset of the node whose property to find
-+ * @name: name of the property to find
-+ * @namelen: number of characters of name to consider
-+ * @lenp: pointer to an integer variable (will be overwritten) or NULL
-+ *
-+ * Identical to fdt_getprop(), but only examine the first namelen
-+ * characters of name for matching the property name.
-+ */
-+const void *fdt_getprop_namelen(const void *fdt, int nodeoffset,
-+				const char *name, int namelen, int *lenp);
+-
+ static void xics_eoi_lpar(unsigned int virq)
+ {
+-	unsigned int irq = (unsigned int)irq_map[virq].hwirq;
+-
+-	iosync();
+-	lpar_xirr_info_set((0xff << 24) | irq);
++	xics_eoi_hwirq_lpar((unsigned int)irq_map[virq].hwirq);
+ }
+ 
+ static inline unsigned int xics_remap_irq(unsigned int vec)
+ {
+-	unsigned int irq;
+-
+-	vec &= 0x00ffffff;
+-
+-	if (vec == XICS_IRQ_SPURIOUS)
+-		return NO_IRQ;
+-	irq = irq_radix_revmap(xics_host, vec);
+-	if (likely(irq != NO_IRQ))
+-		return irq;
++	return irq_radix_revmap(xics_host, vec);
++}
+ 
+-	printk(KERN_ERR "Interrupt %u (real) is invalid,"
+-	       " disabling it.\n", vec);
+-	xics_mask_real_irq(vec);
+-	return NO_IRQ;
++static void xics_report_bad_irq(unsigned int hwirq)
++{
++	pr_err("%s: no mapping for hwirq %u, disabling it.\n", __func__, hwirq);
+ }
+ 
+ static unsigned int xics_get_irq_direct(void)
+ {
+-	return xics_remap_irq(direct_xirr_info_get());
++	unsigned int virq, hwirq;
 +
-+/**
-  * fdt_getprop - retrieve the value of a given property
-  * @fdt: pointer to the device tree blob
-  * @nodeoffset: offset of the node whose property to find
-
++	hwirq = direct_xirr_info_get();
++	if (hwirq == XICS_IRQ_SPURIOUS)
++		return NO_IRQ;
++
++	virq = xics_remap_irq(hwirq);
++
++	if (unlikely(virq == NO_IRQ)) {
++		xics_report_bad_irq(hwirq);
++		xics_mask_real_irq(hwirq);
++		xics_eoi_hwirq_direct(hwirq);
++	}
++
++	return virq;
+ }
+ 
+ static unsigned int xics_get_irq_lpar(void)
+ {
+-	return xics_remap_irq(lpar_xirr_info_get());
++	unsigned int virq, hwirq;
++
++	hwirq = lpar_xirr_info_get();
++	if (hwirq == XICS_IRQ_SPURIOUS)
++		return NO_IRQ;
++
++	virq = xics_remap_irq(hwirq);
++
++	if (unlikely(virq == NO_IRQ)) {
++		xics_report_bad_irq(hwirq);
++		xics_mask_real_irq(hwirq);
++		xics_eoi_hwirq_lpar(hwirq);
++	}
++
++	return virq;
+ }
+ 
+ #ifdef CONFIG_SMP
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.5.5
