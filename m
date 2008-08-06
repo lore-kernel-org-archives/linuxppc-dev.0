@@ -1,20 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id AD20EDEA94
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 07:12:17 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: to schedule() or not to schedule() ?
-Date: Wed, 6 Aug 2008 23:12:10 +0200
-References: <4895F9EB.8050508@hypersurf.com>
-	<1217977256.7593.2.camel@localhost>
-	<4899059A.3020703@hypersurf.com>
-In-Reply-To: <4899059A.3020703@hypersurf.com>
+Return-Path: <rpjday@crashcourse.ca>
+Received: from astoria.ccjclearline.com (astoria.ccjclearline.com
+	[64.235.106.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9CD74DDF1B
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 07:35:53 +1000 (EST)
+Date: Wed, 6 Aug 2008 13:58:44 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Delete completed "ppc removal" task from feature removal file.
+Message-ID: <alpine.LFD.1.10.0808061357380.29692@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808062312.11078.arnd@arndb.de>
-Cc: Kevin Diggs <kevdig@hypersurf.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Andrew Morton <akpm@osdl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 06 August 2008, Kevin Diggs wrote:
-> For the purpose of learning, there is no direct, correct way to yield 
-> the cpu when in a timer fired routine, right?
-> 
 
-No, in a timer, you interrupt a totally unrelated thread, so sleeping
-would prevent that from running on, as well as preventing other timers
-from being run, so it's not an option.
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-One thing that might work for you would be to re-arm the existing
-timer and return from your function, so you get back to it after
-a short while.
+---
 
-	Arnd <><
+  unless this is in someone's tree already.
+
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index c239554..17cab3c 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -205,19 +205,6 @@ Who:  Tejun Heo <htejun@gmail.com>
+
+ ---------------------------
+
+-What: The arch/ppc and include/asm-ppc directories
+-When: Jun 2008
+-Why:  The arch/powerpc tree is the merged architecture for ppc32 and ppc64
+-      platforms.  Currently there are efforts underway to port the remaining
+-      arch/ppc platforms to the merged tree.  New submissions to the arch/ppc
+-      tree have been frozen with the 2.6.22 kernel release and that tree will
+-      remain in bug-fix only mode until its scheduled removal.  Platforms
+-      that are not ported by June 2008 will be removed due to the lack of an
+-      interested maintainer.
+-Who:  linuxppc-dev@ozlabs.org
+-
+----------------------------
+-
+ What:	i386/x86_64 bzImage symlinks
+ When:	April 2010
+
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
