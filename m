@@ -1,19 +1,18 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id 00718DDF3E
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 22:43:11 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so1516641ywh.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 Aug 2008 05:43:10 -0700 (PDT)
-Subject: dtc update for in-kernel version
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: dwg@au1.ibm.com, paulus@samba.org
-Content-Type: text/plain
-Date: Wed, 06 Aug 2008 08:43:00 -0400
-Message-Id: <1218026580.2328.69.camel@localhost.localdomain>
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5EEE2DE271
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 23:23:49 +1000 (EST)
+Date: Wed, 6 Aug 2008 14:06:29 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: torvalds@osdl.org, devilbis@us.ibm.com, boutcher@us.ibm.com,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH]: Remove bogons from the iSeries console
+Message-ID: <20080806140629.268fcf07@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: jwboyer@linux.vnet.ibm.com
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,8 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So we asked about this a while ago and I haven't seen anything yet, but
-is there going to be an update to the version of DTC that is in the
-kernel tree?  1.2 is out now, would be a good idea to update soon.
+The iSeries driver calls into the n_tty ldisc code directly for some
+bizarre reason. I previously tagged this with a query but this actually
+does need fixing as n_tty methods when you have a different ldisc set are
+not a good thing to call.
 
-josh
+In n_tty mode this change should have no effect, the core tty layer has
+always called the ldisc ioctl method *anyway* and will call the one for
+the right ldisc.
+
+Signed-off-by: Alan Cox <alan@redhat.com>
+
+---
+
+ drivers/char/viocons.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
+
+
+diff --git a/drivers/char/viocons.c b/drivers/char/viocons.c
+index 65fb848..f48892b 100644
+--- a/drivers/char/viocons.c
++++ b/drivers/char/viocons.c
+@@ -705,10 +705,6 @@ static int viotty_ioctl(struct tty_struct *tty, struct file *file,
+ 	case KDSKBLED:
+ 		return 0;
+ 	}
+-	/* FIXME: WTF is this being called for ??? */
+-	lock_kernel();
+-	ret =  n_tty_ioctl(tty, file, cmd, arg);
+-	unlock_kernel();
+ 	return ret;
+ }
+ 
