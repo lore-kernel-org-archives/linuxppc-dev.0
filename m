@@ -1,16 +1,32 @@
-Return-Path: <wmb@firmworks.com>
-Message-ID: <4899DAD5.9050209@firmworks.com>
-Date: Wed, 06 Aug 2008 07:09:41 -1000
-From: Mitch Bradley <wmb@firmworks.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC/PATCH 2/3] of: add of_lookup_stdout() utility function
-References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>	<20080806060239.30717.79273.stgit@trillian.secretlab.ca>	<20080805.233205.201125898.davem@davemloft.net>	<18585.31504.836857.829592@cargo.ozlabs.ibm.com>	<fa686aa40808060631k278e187ej965f0ac08c837937@mail.gmail.com>
-	<C5C0AA60-C45F-4467-AC76-AA24A00CA4AC@kernel.crashing.org>
-In-Reply-To: <C5C0AA60-C45F-4467-AC76-AA24A00CA4AC@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	David Miller <davem@davemloft.net>, miltonm@bga.com
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 434AFDE258
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 03:19:56 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m76HJpvS024361
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Aug 2008 10:19:51 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m76HJosa023663
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Aug 2008 12:19:50 -0500 (CDT)
+Date: Wed, 6 Aug 2008 12:19:50 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH 4/6] powerpc: add USB peripheral support to MPC8272ADS
+Message-ID: <20080806171949.GA3138@ld0162-tx32.am.freescale.net>
+References: <1218006285-27138-1-git-send-email-leoli@freescale.com>
+	<1218006285-27138-2-git-send-email-leoli@freescale.com>
+	<1218006285-27138-3-git-send-email-leoli@freescale.com>
+	<1218006285-27138-4-git-send-email-leoli@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1218006285-27138-4-git-send-email-leoli@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,50 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Aug 06, 2008 at 03:04:43PM +0800, Li Yang wrote:
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+>  arch/powerpc/boot/dts/mpc8272ads.dts      |    8 ++++++++
+>  arch/powerpc/platforms/82xx/mpc8272_ads.c |   25 +++++++++++++++++++++++++
+>  arch/powerpc/platforms/82xx/pq2ads.h      |    3 +++
+>  3 files changed, 36 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
+> index b2ce4c0..75cc94c 100644
+> --- a/arch/powerpc/boot/dts/mpc8272ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc8272ads.dts
+> @@ -256,6 +256,14 @@
+>  				#address-cells = <1>;
+>  				#size-cells = <0>;
+>  			};
+> +
+> +			usb@11b60 {
+> +				compatible = "fsl,qe_udc";
 
+"fsl,mpc8272-usb", "fsl,cpm2-usb".
 
-Segher Boessenkool wrote:
->> It's not what we do with flattened device trees blobs though.  In the
->> flattened tree we're not using a /chosen/stdout property, just the
->> linux,stdout-path one.
->>
->> The question that remains is; should there be?  Should the dt blobs
->> use /chosen/stdout also?  (I'm not familiar enough with real OF to
->> know the answer.  I'm assuming that an instance value is not the same
->> as a phandle).
+Where is fsl,qe_udc documented or used (other than in the BCSR setup)?
+What does "udc" mean (the only reference to it in the 8272 manual is
+under ATM)?
 
-The difference between a phandle and an ihandle is similar to the 
-difference between (the inode of) an executable files on disk and (the 
-process id of) a running process.  A phandle refers to the static 
-information that describes a device, while an ihandle refers to a 
-particular (out of potentially several) active instantiation of the OFW 
-driver for that devices.  An "instance value" is a data item that can 
-have a different value for each of the running instances of a given 
-driver.  In the analogy, an instance value is like a data segment variable.
+> +				mode = "slave";
 
-Given an ihandle, you can get the corresponding phandle with 
-ihandle>phandle.  You can't go from phandle to ihandle, because that 
-direction is one-to-many.
+Please document this property.
 
-Why you you ever need more than one running instance of a given driver?  
-For leaf devices, it is pretty rare to have multiple instances.  
-Multiple instances are more often used for intermediate nodes.  The same 
-intermediate node - for example a usb node - is often the parent of 
-several leaf nodes that are active simultaneously.  When you open a 
-device, its device tree parents up to the root are implicitly opened.  
-Each such instance can hold dynamic state on behalf of its children.
-
->
-> ihandles and phandles are not the same thing in OF.  Since in the
-> "flat world" we cannot have instances, we should use phandles instead
-> of ihandles for the things in /chosen.  I thought we agreed on that
-> already, perhaps I am wrong?
->
->
-> Segher
->
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/devicetree-discuss
->
+-Scott
