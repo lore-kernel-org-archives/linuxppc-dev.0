@@ -1,20 +1,19 @@
-Return-Path: <daniel.schnell@marel.com>
-Received: from mail.marel.com (mail.marel.is [213.167.134.96])
-	by ozlabs.org (Postfix) with ESMTP id 4A39BDE458
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 23:26:51 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH]: [MPC5200] Add ATA DMA support
-Date: Wed, 6 Aug 2008 13:26:49 -0000
-Message-ID: <DD39B5C3F4963040ADC9768BE7E430CB03202F35@is-hdq-exchange.marel.net>
-In-Reply-To: <792f5f410808060518r5e2c0124i2cfef450e264f012@mail.gmail.com>
-References: <792f5f410806170128k7e435743x9892b559bd32b157@mail.gmail.com>
-	<DD39B5C3F4963040ADC9768BE7E430CB03202EDF@is-hdq-exchange.marel.net>
-	<792f5f410808060518r5e2c0124i2cfef450e264f012@mail.gmail.com>
-From: "Daniel Schnell" <daniel.schnell@marel.com>
-To: "Tim Yamin" <plasm@roo.me.uk>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 73EB8DE22F
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 23:29:55 +1000 (EST)
+Message-Id: <6606960D-022E-4B6E-AAB8-036839469820@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: jwboyer@linux.vnet.ibm.com
+In-Reply-To: <1218026580.2328.69.camel@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: dtc update for in-kernel version
+Date: Wed, 6 Aug 2008 08:29:30 -0500
+References: <1218026580.2328.69.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, dwg@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tim Yamin wrote:
-> On Wed, Aug 6, 2008 at 12:58 PM, Daniel Schnell
-> <daniel.schnell@marel.com> wrote:=20
->> Hi,
->>=20
->> Sorry for testing this patch so late, but I get these if I apply your
->> patch to 2.6.24.7 and use it with my Sandisk Extreme IV 4GB card:
->=20
-> Hi,
->=20
-> What board are you using? DMA requires a few more signals to be
-> routed through correctly to the CF card slot so maybe that's your
-> problem... =20
->=20
 
-Hi,
+On Aug 6, 2008, at 7:43 AM, Josh Boyer wrote:
 
-We are using our own MPC5200B based board. Can you be a bit more
-specific about which signals have to be routed ?
+> So we asked about this a while ago and I haven't seen anything yet,  
+> but
+> is there going to be an update to the version of DTC that is in the
+> kernel tree?  1.2 is out now, would be a good idea to update soon.
 
+is there any reason to update to 1.2 for 2.6.27?
 
-Best regards,
-
-Daniel Schnell.
+- k
