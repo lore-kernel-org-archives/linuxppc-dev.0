@@ -1,24 +1,32 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.247])
-	by ozlabs.org (Postfix) with ESMTP id BD196DE5EB
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 23:31:57 +1000 (EST)
-Received: by hs-out-0708.google.com with SMTP id z77so241626hsz.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 Aug 2008 06:31:55 -0700 (PDT)
-Message-ID: <fa686aa40808060631k278e187ej965f0ac08c837937@mail.gmail.com>
-Date: Wed, 6 Aug 2008 07:31:55 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: [RFC/PATCH 2/3] of: add of_lookup_stdout() utility function
-In-Reply-To: <18585.31504.836857.829592@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
-	<20080806060239.30717.79273.stgit@trillian.secretlab.ca>
-	<20080805.233205.201125898.davem@davemloft.net>
-	<18585.31504.836857.829592@cargo.ozlabs.ibm.com>
-Cc: devicetree-discuss@ozlabs.org, miltonm@bga.com, linuxppc-dev@ozlabs.org,
-	David Miller <davem@davemloft.net>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1B834DE34A
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 23:35:32 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m76DZRAN001474
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Aug 2008 09:35:27 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m76DZPVZ162932
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Aug 2008 07:35:26 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m76DZPUL011788
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Aug 2008 07:35:25 -0600
+Date: Wed, 6 Aug 2008 09:35:22 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: dtc update for in-kernel version
+Message-ID: <20080806093522.5e076fd6@zod.rchland.ibm.com>
+In-Reply-To: <6606960D-022E-4B6E-AAB8-036839469820@kernel.crashing.org>
+References: <1218026580.2328.69.camel@localhost.localdomain>
+	<6606960D-022E-4B6E-AAB8-036839469820@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, dwg@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 6, 2008 at 4:21 AM, Paul Mackerras <paulus@samba.org> wrote:
-> David Miller writes:
->
->> On sparc platforms this is obtained differently.  We obtain the 32-bit
->> instance value of "/chosen/stdout" and convert that into a prom device
->> node path using "instance-to-path".
->
-> That's actually exactly what we do too, the linux,stdout-path property
-> is just a cache of the result of that process.  The difference is that
-> we have to do it early on while we still have OF around, while you can
-> do it later.
+On Wed, 6 Aug 2008 08:29:30 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-It's not what we do with flattened device trees blobs though.  In the
-flattened tree we're not using a /chosen/stdout property, just the
-linux,stdout-path one.
+> 
+> On Aug 6, 2008, at 7:43 AM, Josh Boyer wrote:
+> 
+> > So we asked about this a while ago and I haven't seen anything yet,  
+> > but
+> > is there going to be an update to the version of DTC that is in the
+> > kernel tree?  1.2 is out now, would be a good idea to update soon.
+> 
+> is there any reason to update to 1.2 for 2.6.27?
 
-The question that remains is; should there be?  Should the dt blobs
-use /chosen/stdout also?  (I'm not familiar enough with real OF to
-know the answer.  I'm assuming that an instance value is not the same
-as a phandle).
+Probably not at this point in the lifecycle.  We brought this up
+before the merge window opened though, so I'm just wondering what the
+general plan is.  Seems lots of fixes and such are getting put out, but
+not pulled into the kernel.
 
-g.
-
->
-> Paul.
->
-
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+josh
