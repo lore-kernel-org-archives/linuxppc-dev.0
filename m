@@ -1,16 +1,11 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: EOI spurious irqs during boot so they can be
-	reenabled later
-From: Michael Ellerman <michael@ellerman.id.au>
-To: miltonm@bga.com
-In-Reply-To: <489912b6.cc.1809.1931903668@bga.com>
-References: <489912b6.cc.1809.1931903668@bga.com>
-Content-Type: text/plain
-Date: Wed, 06 Aug 2008 14:53:54 +1000
-Message-Id: <1217998434.7893.16.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18585.14669.954874.540716@drongo.ozlabs.ibm.com>
+Date: Wed, 6 Aug 2008 15:40:29 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC PATCH] Link the bootwrapper as a position-independent executable
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,253 +15,344 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-08-05 at 20:55 -0600, miltonm wrote:
-> ----- Original Message Follows -----
-> From: Michael Ellerman <michael@ellerman.id.au>
-> To: Paul Mackerras <paulus@samba.org>
-> Cc: <linuxppc-dev@ozlabs.org>, Milton Miller
-> <miltonm@bga.com>, Segher Boessenkool
-> <segher@kernel.crashing.org>
-> Subject: [PATCH] powerpc: EOI spurious irqs during boot so
-> they can be reenabled later
-> Date: Wed,  6 Aug 2008 12:03:37 +1000 (EST)
->  
-> > In the xics code, if we receive an irq during boot that
-> > hasn't been setup yet - ie. we have no reverse mapping for
-> > it - we mask the irq so we don't hear from it again.
-> > 
-> > Later on if someone request_irq()'s that irq, we'll unmask
-> > it but it will still never fire. This is because we never
-> > EOI'ed the irq when we originally received it - when it
-> > was spurious.
-> > 
-> > This can be reproduced trivially by banging the keyboard
-> > while kexec'ing on a P5 LPAR, even though the hvc_console
-> > driver request's the console irq, the console is
-> > non-functional because we're receiving no console
-> > interrupts.
-> > 
->  
-> which means some driver didn't disable interrupts on its
-> shutdown, but I digress.
+This changes the way we make the boot wrapper position-independent.
+Before we just added the offset (the difference between runtime
+address and link address) to each entry in the .got2 section.  That
+doesn't relocate pointer values in initialized variables and arrays.
 
-But in the case of kdump the driver never gets a chance to shutdown its
-irq, but I digress too :)
+Instead we now link the bootwrapper with -pie to get a position-
+independent executable, and process the relocations in the dynamic
+relocation section that the linker puts into the executable.  This
+means that initialized variables and arrays get relocated properly.
 
-> > diff --git a/arch/powerpc/platforms/pseries/xics.c
-> > b/arch/powerpc/platforms/pseries/xics.c index
-> > 0fc830f..4c692b2 100644 ---
-> > a/arch/powerpc/platforms/pseries/xics.c +++
-> > b/arch/powerpc/platforms/pseries/xics.c @@ -321,21 +321,26
-> > @@ static unsigned int xics_startup(unsigned int virq)
-> >      return 0;
-> >  }
-> >  
-> > +static void xics_eoi_hwirq_direct(unsigned int hwirq)
-> > +{
-> > +    iosync();
-> > +    direct_xirr_info_set((0xff << 24) | hwirq);
-> > +}
-> > +
-> >  static void xics_eoi_direct(unsigned int virq)
-> >  {
-> > -    unsigned int irq = (unsigned int)irq_map[virq].hwirq;
-> > +    xics_eoi_hwirq_direct((unsigned
-> > int)irq_map[virq].hwirq); +}
-> >  
-> > +static void xics_eoi_hwirq_lpar(unsigned int hwirq)
-> > +{
-> >      iosync();
-> > -    direct_xirr_info_set((0xff << 24) | irq);
-> > +    lpar_xirr_info_set((0xff << 24) | hwirq);
-> >  }
-> >  
-> > -
-> >  static void xics_eoi_lpar(unsigned int virq)
-> >  {
-> > -    unsigned int irq = (unsigned int)irq_map[virq].hwirq;
-> > -
-> > -    iosync();
-> > -    lpar_xirr_info_set((0xff << 24) | irq);
-> > +    xics_eoi_hwirq_lpar((unsigned
-> > int)irq_map[virq].hwirq);
-> >  }
-> >  
-> >  static inline unsigned int xics_remap_irq(unsigned int
-> > vec) @@ -350,9 +355,15 @@ static inline unsigned int
-> > xics_remap_irq(unsigned int vec)
-> >      if (likely(irq != NO_IRQ))
-> >          return irq;
-> >  
-> > -    printk(KERN_ERR "Interrupt %u (real) is invalid,"
-> > -           " disabling it.\n", vec);
-> > +    pr_err("%s: no mapping for hwirq %u, disabling it.\n"
-> > , __func__, vec); +
-> >      xics_mask_real_irq(vec);
-> > +
-> > +    if (firmware_has_feature(FW_FEATURE_LPAR))
-> > +        xics_eoi_hwirq_lpar(vec);
-> > +    else
-> > +        xics_eoi_hwirq_direct(vec);
-> > +
-> >      return NO_IRQ;
-> >  }
->  
-> 
-> I really dislike this great big if in the middle of a
-> function.
-> we called this function from two different call sites where
-> the
-> choice of which to call was based on their environment.
->  
-> Please move the call to eoi the hwirq to the callers, who
-> know which path to take.
+Currently we only process R_PPC_RELATIVE relocations, which is all we
+get provided C files are compiled with -fPIC (which they are already)
+and assembly code is written to be position-independent.  Some of the
+changes below are to make parts of crt0.S be PIC code (i.e. generate
+no relocations other than R_PPC_RELATIVE).
 
-It's not pretty, but the alternative is worse I think:
+The relocation code below does nothing if there is no dynamic section,
+which means that we can link without -pie and it will work provided
+that the bootwrapper executable is loaded at its linked-at address.
 
->From 0a908825c8de6cd4c26288aba8c5b7fe3ed0a69f Mon Sep 17 00:00:00 2001
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 5 Aug 2008 22:34:48 +1000
-Subject: [PATCH] powerpc: EOI spurious irqs during boot so they can be reenabled later
-
-In the xics code, if we receive an irq during boot that hasn't been setup
-yet - ie. we have no reverse mapping for it - we mask the irq so we don't
-hear from it again.
-
-Later on if someone request_irq()'s that irq, we'll unmask it but it will
-still never fire. This is because we never EOI'ed the irq when we originally
-received it - when it was spurious.
-
-This can be reproduced trivially by banging the keyboard while kexec'ing on
-a P5 LPAR, even though the hvc_console driver request's the console irq, the
-console is non-functional because we're receiving no console interrupts.
-
-So when we receive a spurious irq mask it and then EOI it.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/platforms/pseries/xics.c |   74 ++++++++++++++++++++++-----------
- 1 files changed, 50 insertions(+), 24 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
-index 0fc830f..754706c 100644
---- a/arch/powerpc/platforms/pseries/xics.c
-+++ b/arch/powerpc/platforms/pseries/xics.c
-@@ -90,7 +90,7 @@ static inline unsigned int direct_xirr_info_get(void)
- {
- 	int cpu = smp_processor_id();
+diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
+index f1c4dfc..a6901c3 100644
+--- a/arch/powerpc/boot/crt0.S
++++ b/arch/powerpc/boot/crt0.S
+@@ -6,16 +6,28 @@
+  * as published by the Free Software Foundation; either version
+  * 2 of the License, or (at your option) any later version.
+  *
+- * NOTE: this code runs in 32 bit mode and is packaged as ELF32.
++ * NOTE: this code runs in 32 bit mode, is position-independent,
++ * and is packaged as ELF32.
+  */
  
--	return in_be32(&xics_per_cpu[cpu]->xirr.word);
-+	return in_be32(&xics_per_cpu[cpu]->xirr.word) & 0x00ffffff;
- }
+ #include "ppc_asm.h"
  
- static inline void direct_xirr_info_set(int value)
-@@ -124,7 +124,8 @@ static inline unsigned int lpar_xirr_info_get(void)
- 	lpar_rc = plpar_xirr(&return_value);
- 	if (lpar_rc != H_SUCCESS)
- 		panic(" bad return code xirr - rc = %lx \n", lpar_rc);
--	return (unsigned int)return_value;
+ 	.text
+-	/* a procedure descriptor used when booting this as a COFF file */
++	/* A procedure descriptor used when booting this as a COFF file.
++	 * When making COFF, this comes first in the link and we're
++	 * linked at 0x500000.
++	 */
+ 	.globl	_zimage_start_opd
+ _zimage_start_opd:
+-	.long	_zimage_start, 0, 0, 0
++	.long	0x500000, 0, 0, 0
 +
-+	return (unsigned int)return_value & 0x00ffffff;
- }
- 
- static inline void lpar_xirr_info_set(int value)
-@@ -321,49 +322,74 @@ static unsigned int xics_startup(unsigned int virq)
- 	return 0;
- }
- 
-+static void xics_eoi_hwirq_direct(unsigned int hwirq)
-+{
-+	iosync();
-+	direct_xirr_info_set((0xff << 24) | hwirq);
-+}
++p_start:	.long	_start
++p_etext:	.long	_etext
++p_bss_start:	.long	__bss_start
++p_end:		.long	_end
 +
- static void xics_eoi_direct(unsigned int virq)
++	.weak	_platform_stack_top
++p_pstack:	.long	_platform_stack_top
+ 
+ 	.weak	_zimage_start
+ 	.globl	_zimage_start
+@@ -24,37 +36,60 @@ _zimage_start:
+ _zimage_start_lib:
+ 	/* Work out the offset between the address we were linked at
+ 	   and the address where we're running. */
+-	bl	1f
+-1:	mflr	r0
+-	lis	r9,1b@ha
+-	addi	r9,r9,1b@l
+-	subf.	r0,r9,r0
+-	beq	3f		/* if running at same address as linked */
++	bl	.+4
++p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
++	/* grab the link address of the dynamic section in r11 */
++	addis	r11,r10,(_GLOBAL_OFFSET_TABLE_-p_base)@ha
++	lwz	r11,(_GLOBAL_OFFSET_TABLE_-p_base)@l(r11)
++	cmpwi	r11,0
++	beq	3f		/* if not linked -pie */
++	/* get the runtime address of the dynamic section in r12 */
++	.weak	__dynamic_start
++	addis	r12,r10,(__dynamic_start-p_base)@ha
++	addi	r12,r12,(__dynamic_start-p_base)@l
++	subf	r11,r11,r12	/* runtime - linktime offset */
+ 
+-	/* The .got2 section contains a list of addresses, so add
+-	   the address offset onto each entry. */
+-	lis	r9,__got2_start@ha
+-	addi	r9,r9,__got2_start@l
+-	lis	r8,__got2_end@ha
+-	addi	r8,r8,__got2_end@l
+-	subf.	r8,r9,r8
++	/* The dynamic section contains a series of tagged entries.
++	 * We need the RELA and RELACOUNT entries. */
++RELA = 7
++RELACOUNT = 0x6ffffff9
++	li	r9,0
++	li	r0,0
++9:	lwz	r8,0(r12)	/* get tag */
++	cmpwi	r8,0
++	beq	10f		/* end of list */
++	cmpwi	r8,RELA
++	bne	11f
++	lwz	r9,4(r12)	/* get RELA pointer in r9 */
++	b	12f
++11:	addis	r8,r8,(-RELACOUNT)@ha
++	cmpwi	r8,RELACOUNT@l
++	bne	12f
++	lwz	r0,4(r12)	/* get RELACOUNT value in r0 */
++12:	addi	r12,r12,8
++	b	9b
++
++	/* The relocation section contains a list of relocations.
++	 * We now do the R_PPC_RELATIVE ones, which point to words
++	 * which need to be initialized with addend + offset.
++	 * The R_PPC_RELATIVE ones come first and there are RELACOUNT
++	 * of them. */
++10:	or.	r8,r0,r9	/* skip relocation if we don't have both */
+ 	beq	3f
+-	srwi.	r8,r8,2
+-	mtctr	r8
+-	add	r9,r0,r9
+-2:	lwz	r8,0(r9)
+-	add	r8,r8,r0
+-	stw	r8,0(r9)
+-	addi	r9,r9,4
++	mtctr	r0
++2:	lbz	r0,4+3(r9)	/* ELF32_R_INFO(reloc->r_info) */
++	cmpwi	r0,22		/* R_PPC_RELATIVE */
++	bne	3f
++	lwz	r12,0(r9)	/* reloc->r_offset */
++	lwz	r0,8(r9)	/* reloc->r_addend */
++	add	r0,r0,r11
++	stwx	r0,r11,r12
++	addi	r9,r9,12
+ 	bdnz	2b
+ 
+ 	/* Do a cache flush for our text, in case the loader didn't */
+-3:	lis	r9,_start@ha
+-	addi	r9,r9,_start@l
+-	add	r9,r0,r9
+-	lis	r8,_etext@ha
+-	addi	r8,r8,_etext@l
+-	add	r8,r0,r8
++3:	lwz	r9,p_start-p_base(r10)	/* note: these are relocated now */
++	lwz	r8,p_etext-p_base(r10)
+ 4:	dcbf	r0,r9
+ 	icbi	r0,r9
+ 	addi	r9,r9,0x20
+@@ -64,27 +99,19 @@ _zimage_start_lib:
+ 	isync
+ 
+ 	/* Clear the BSS */
+-	lis	r9,__bss_start@ha
+-	addi	r9,r9,__bss_start@l
+-	add	r9,r0,r9
+-	lis	r8,_end@ha
+-	addi	r8,r8,_end@l
+-	add	r8,r0,r8
+-	li	r10,0
+-5:	stw	r10,0(r9)
++	lwz	r9,p_bss_start-p_base(r10)
++	lwz	r8,p_end-p_base(r10)
++	li	r0,0
++5:	stw	r0,0(r9)
+ 	addi	r9,r9,4
+ 	cmplw	cr0,r9,r8
+ 	blt	5b
+ 
+ 	/* Possibly set up a custom stack */
+-.weak	_platform_stack_top
+-	lis	r8,_platform_stack_top@ha
+-	addi	r8,r8,_platform_stack_top@l
++	lwz	r8,p_pstack-p_base(r10)
+ 	cmpwi	r8,0
+ 	beq	6f
+-	add	r8,r0,r8
+ 	lwz	r1,0(r8)
+-	add	r1,r0,r1
+ 	li	r0,0
+ 	stwu	r0,-16(r1)	/* establish a stack frame */
+ 6:
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 644bf9d..64653b3 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -39,6 +39,7 @@ dts=
+ cacheit=
+ binary=
+ gzip=.gz
++pie=-pie
+ 
+ # cross-compilation prefix
+ CROSS=
+@@ -149,9 +150,10 @@ pmac|chrp)
+     platformo=$object/of.o
+     ;;
+ coff)
+-    platformo=$object/of.o
++    platformo=$object/crt0.o $object/of.o
+     lds=$object/zImage.coff.lds
+     link_address='0x500000'
++    pie=
+     ;;
+ miboot|uboot)
+     # miboot and U-boot want just the bare bits, not an ELF binary
+@@ -197,6 +199,7 @@ ps3)
+     ksection=.kernel:vmlinux.bin
+     isection=.kernel:initrd
+     link_address=''
++    pie=
+     ;;
+ ep88xc|ep405|ep8248e)
+     platformo="$object/fixed-head.o $object/$platform.o"
+@@ -288,9 +291,9 @@ fi
+ 
+ if [ "$platform" != "miboot" ]; then
+     if [ -n "$link_address" ] ; then
+-        text_start="-Ttext $link_address --defsym _start=$link_address"
++        text_start="-Ttext $link_address"
+     fi
+-    ${CROSS}ld -m elf32ppc -T $lds $text_start -o "$ofile" \
++    ${CROSS}ld -m elf32ppc -T $lds $text_start $pie -o "$ofile" \
+ 	$platformo $tmp $object/wrapper.a
+     rm $tmp
+ fi
+diff --git a/arch/powerpc/boot/zImage.coff.lds.S b/arch/powerpc/boot/zImage.coff.lds.S
+index 856dc78..de4c9e3 100644
+--- a/arch/powerpc/boot/zImage.coff.lds.S
++++ b/arch/powerpc/boot/zImage.coff.lds.S
+@@ -3,13 +3,13 @@ ENTRY(_zimage_start_opd)
+ EXTERN(_zimage_start_opd)
+ SECTIONS
  {
--	unsigned int irq = (unsigned int)irq_map[virq].hwirq;
-+	xics_eoi_hwirq_direct((unsigned int)irq_map[virq].hwirq);
-+}
+-  _start = .;
+   .text      :
+   {
++    _start = .;
+     *(.text)
+     *(.fixup)
++    _etext = .;
+   }
+-  _etext = .;
+   . = ALIGN(4096);
+   .data    :
+   {
+@@ -17,9 +17,7 @@ SECTIONS
+     *(.data*)
+     *(__builtin_*)
+     *(.sdata*)
+-    __got2_start = .;
+     *(.got2)
+-    __got2_end = .;
  
-+static void xics_eoi_hwirq_lpar(unsigned int hwirq)
-+{
- 	iosync();
--	direct_xirr_info_set((0xff << 24) | irq);
-+	lpar_xirr_info_set((0xff << 24) | hwirq);
- }
+     _dtb_start = .;
+     *(.kernel:dtb)
+diff --git a/arch/powerpc/boot/zImage.lds.S b/arch/powerpc/boot/zImage.lds.S
+index 0962d62..05af879 100644
+--- a/arch/powerpc/boot/zImage.lds.S
++++ b/arch/powerpc/boot/zImage.lds.S
+@@ -3,49 +3,63 @@ ENTRY(_zimage_start)
+ EXTERN(_zimage_start)
+ SECTIONS
+ {
+-  _start = .;
+   .text      :
+   {
++    _start = .;
+     *(.text)
+     *(.fixup)
++    _etext = .;
+   }
+-  _etext = .;
+   . = ALIGN(4096);
+   .data    :
+   {
+     *(.rodata*)
+     *(.data*)
+     *(.sdata*)
+-    __got2_start = .;
+     *(.got2)
+-    __got2_end = .;
+   }
++  .dynsym : { *(.dynsym) }
++  .dynstr : { *(.dynstr) }
++  .dynamic :
++  {
++    __dynamic_start = .;
++    *(.dynamic)
++  }
++  .hash : { *(.hash) }
++  .interp : { *(.interp) }
++  .rela.dyn : { *(.rela*) }
  
+   . = ALIGN(8);
+-  _dtb_start = .;
+-  .kernel:dtb : { *(.kernel:dtb) }
+-  _dtb_end = .;
 -
- static void xics_eoi_lpar(unsigned int virq)
- {
--	unsigned int irq = (unsigned int)irq_map[virq].hwirq;
--
--	iosync();
--	lpar_xirr_info_set((0xff << 24) | irq);
-+	xics_eoi_hwirq_lpar((unsigned int)irq_map[virq].hwirq);
+-  . = ALIGN(4096);
+-  _vmlinux_start =  .;
+-  .kernel:vmlinux.strip : { *(.kernel:vmlinux.strip) }
+-  _vmlinux_end =  .;
++  .kernel:dtb :
++  {
++    _dtb_start = .;
++    *(.kernel:dtb)
++    _dtb_end = .;
++  }
+ 
+   . = ALIGN(4096);
+-  _initrd_start =  .;
+-  .kernel:initrd : { *(.kernel:initrd) }
+-  _initrd_end =  .;
++  .kernel:vmlinux.strip :
++  {
++    _vmlinux_start =  .;
++    *(.kernel:vmlinux.strip)
++    _vmlinux_end =  .;
++  }
+ 
+   . = ALIGN(4096);
+-  _edata  =  .;
++  .kernel:initrd :
++  {
++    _initrd_start =  .;
++    *(.kernel:initrd)
++    _initrd_end =  .;
++  }
+ 
+   . = ALIGN(4096);
+-  __bss_start = .;
+   .bss       :
+   {
+-   *(.sbss)
+-   *(.bss)
++    _edata  =  .;
++    __bss_start = .;
++    *(.sbss)
++    *(.bss)
++    _end = . ;
+   }
+-  . = ALIGN(4096);
+-  _end = . ;
  }
- 
- static inline unsigned int xics_remap_irq(unsigned int vec)
- {
--	unsigned int irq;
--
--	vec &= 0x00ffffff;
--
--	if (vec == XICS_IRQ_SPURIOUS)
--		return NO_IRQ;
--	irq = irq_radix_revmap(xics_host, vec);
--	if (likely(irq != NO_IRQ))
--		return irq;
-+	return irq_radix_revmap(xics_host, vec);
-+}
- 
--	printk(KERN_ERR "Interrupt %u (real) is invalid,"
--	       " disabling it.\n", vec);
--	xics_mask_real_irq(vec);
--	return NO_IRQ;
-+static void xics_report_bad_irq(unsigned int hwirq)
-+{
-+	pr_err("%s: no mapping for hwirq %u, disabling it.\n", __func__, hwirq);
- }
- 
- static unsigned int xics_get_irq_direct(void)
- {
--	return xics_remap_irq(direct_xirr_info_get());
-+	unsigned int virq, hwirq;
-+
-+	hwirq = direct_xirr_info_get();
-+	if (hwirq == XICS_IRQ_SPURIOUS)
-+		return NO_IRQ;
-+
-+	virq = xics_remap_irq(hwirq);
-+
-+	if (unlikely(virq == NO_IRQ)) {
-+		xics_report_bad_irq(hwirq);
-+		xics_mask_real_irq(hwirq);
-+		xics_eoi_hwirq_direct(hwirq);
-+	}
-+
-+	return virq;
- }
- 
- static unsigned int xics_get_irq_lpar(void)
- {
--	return xics_remap_irq(lpar_xirr_info_get());
-+	unsigned int virq, hwirq;
-+
-+	hwirq = lpar_xirr_info_get();
-+	if (hwirq == XICS_IRQ_SPURIOUS)
-+		return NO_IRQ;
-+
-+	virq = xics_remap_irq(hwirq);
-+
-+	if (unlikely(virq == NO_IRQ)) {
-+		xics_report_bad_irq(hwirq);
-+		xics_mask_real_irq(hwirq);
-+		xics_eoi_hwirq_lpar(hwirq);
-+	}
-+
-+	return virq;
- }
- 
- #ifdef CONFIG_SMP
--- 
-1.5.5
