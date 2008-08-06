@@ -1,19 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 74D72DE30F
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 17:44:04 +1000 (EST)
-Date: Wed, 06 Aug 2008 00:44:03 -0700 (PDT)
-Message-Id: <20080806.004403.108134255.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Subject: Re: [RFC/PATCH 2/3] of: add of_lookup_stdout() utility function
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080806174233.3da5daea.sfr@canb.auug.org.au>
-References: <1218003249.7893.19.camel@localhost>
-	<fa686aa40808052334m2946298aw453afce8b47e6bf7@mail.gmail.com>
-	<20080806174233.3da5daea.sfr@canb.auug.org.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id AF1B5DDED9
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Aug 2008 17:48:37 +1000 (EST)
+Date: Wed, 6 Aug 2008 17:48:22 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH 4/6] powerpc: add USB peripheral support to MPC8272ADS
+Message-Id: <20080806174822.a23a9231.sfr@canb.auug.org.au>
+In-Reply-To: <1218006285-27138-4-git-send-email-leoli@freescale.com>
+References: <1218006285-27138-1-git-send-email-leoli@freescale.com>
+	<1218006285-27138-2-git-send-email-leoli@freescale.com>
+	<1218006285-27138-3-git-send-email-leoli@freescale.com>
+	<1218006285-27138-4-git-send-email-leoli@freescale.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, miltonm@bga.com
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__6_Aug_2008_17_48_23_+1000_fHQWKx1j0Dp=6RUU"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 6 Aug 2008 17:42:33 +1000
+--Signature=_Wed__6_Aug_2008_17_48_23_+1000_fHQWKx1j0Dp=6RUU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Hi Grant,
-> 
-> On Wed, 6 Aug 2008 00:34:04 -0600 "Grant Likely" <grant.likely@secretlab.ca> wrote:
-> >
-> > On Wed, Aug 6, 2008 at 12:14 AM, Michael Ellerman
-> > <michael@ellerman.id.au> wrote:
-> > > On Wed, 2008-08-06 at 00:02 -0600, Grant Likely wrote:
-> > >> From: Grant Likely <grant.likely@secretlab.ca>
-> > >>
-> > >> of_lookup_stdout() is useful for figuring out what device to use as output
-> > >> for early boot progress messages.  It returns the node pointed to by the
-> > >> linux,stdout-path property in the chosen node.
-> > >
-> > > Nice. You don't feel like converting all the places that currently do it
-> > > by hand to use this do you :)
-> > 
-> > Yep, I'll do this.  :-)
-> 
-> Could you also send an email to Dave Miller to see if he has any objections
-> to this function being generic (since the Sparc guys share this code).
+Hi Li,
 
-I already voiced my concerns.
+On Wed,  6 Aug 2008 15:04:43 +0800 Li Yang <leoli@freescale.com> wrote:
+>
+> @@ -150,6 +169,12 @@ static void __init mpc8272_ads_setup_arch(void)
+>  	clrbits32(&bcsr[3], BCSR3_FETHIEN2);
+>  	setbits32(&bcsr[3], BCSR3_FETH2_RST);
+> =20
+> +	/* Enabling USB support in BCSR */
+> +	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe_udc");
+> +	if (np !=3D NULL) {
+
+		of_node_put(np);
+
+> +		clrbits32(&bcsr[3], BCSR3_USB_EN);
+> +		clrbits32(&bcsr[3], BCSR3_USB_HI_SPEED);
+> +	}
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__6_Aug_2008_17_48_23_+1000_fHQWKx1j0Dp=6RUU
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkiZV0cACgkQjjKRsyhoI8zgKQCfUdpGwPX1xBGa57dh1DPEdVs7
+HtEAnjZeITxmHy4H2gqhIZmjolmgNJsX
+=Sp/a
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__6_Aug_2008_17_48_23_+1000_fHQWKx1j0Dp=6RUU--
