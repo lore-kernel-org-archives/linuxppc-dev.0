@@ -1,19 +1,16 @@
-Return-Path: <daniel.schnell@marel.com>
-Received: from mail.marel.com (mail.marel.com [213.167.134.96])
-	by ozlabs.org (Postfix) with ESMTP id C91C6DE4A0
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 00:31:50 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH]: [MPC5200] Add ATA DMA support
-Date: Wed, 6 Aug 2008 14:31:47 -0000
-Message-ID: <DD39B5C3F4963040ADC9768BE7E430CB03202F8E@is-hdq-exchange.marel.net>
-In-Reply-To: <DD39B5C3F4963040ADC9768BE7E430CB03202F35@is-hdq-exchange.marel.net>
-References: <792f5f410806170128k7e435743x9892b559bd32b157@mail.gmail.com><DD39B5C3F4963040ADC9768BE7E430CB03202EDF@is-hdq-exchange.marel.net><792f5f410808060518r5e2c0124i2cfef450e264f012@mail.gmail.com>
-	<DD39B5C3F4963040ADC9768BE7E430CB03202F35@is-hdq-exchange.marel.net>
-From: "Daniel Schnell" <daniel.schnell@marel.com>
-To: "Tim Yamin" <plasm@roo.me.uk>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <jetzdyttn0.fsf@sykes.suse.de>
+References: <4898EE60.9080206@hypersurf.com> <200808061041.50577.jk@ozlabs.org>
+	<48990D0F.6050909@hypersurf.com> <jetzdyttn0.fsf@sykes.suse.de>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <CD567BB1-7207-4E8D-8970-B6BD925D56C7@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: inline assembly & r0 SOS
+Date: Wed, 6 Aug 2008 16:39:44 +0200
+To: Andreas Schwab <schwab@suse.de>
+Cc: linuxppc-dev@ozlabs.org, Kevin Diggs <kevdig@hypersurf.com>,
+	Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,39 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+>>>> unsigned int get_PLL_range(unsigned int range, unsigned int config)
+> {
+>   range = range * 8 + 23;
+>   return ((config << range) | (config >> (32 - range))) & 3;
+> }
+>
+> The special pattern ((a << n) | (a >> (32 - n))) is recognized by  
+> gcc as
+> a rotate operation.
 
-Daniel Schnell wrote:
-> Tim Yamin wrote:
->> On Wed, Aug 6, 2008 at 12:58 PM, Daniel Schnell
->> <daniel.schnell@marel.com> wrote:
->>> Hi,
->>>=20
->>> Sorry for testing this patch so late, but I get these if I apply
->>> your patch to 2.6.24.7 and use it with my Sandisk Extreme IV 4GB
->>> card:=20
->>=20
->> Hi,
->>=20
->> What board are you using? DMA requires a few more signals to be
->> routed through correctly to the CF card slot so maybe that's your
->> problem...=20
->>=20
->=20
-> Hi,
->=20
-> We are using our own MPC5200B based board. Can you be a bit more
-> specific about which signals have to be routed ?=20
->=20
-
-After checking our schematics with Tim Yamin, we found that our board
-has not the DMA lines connected. It seems I have to wait some time
-before I get an updated board and can test UDMA again ....
+It's only valid for 1 <= n <= 31 though, so for input "range" 0 or 1.  
+(*)
+If that's the whole range needed, much simpler code is possible...
 
 
-Sorry for the noise, although this was important for us to know.
+Segher
 
-
-Best regards,
-
-Daniel.
+(*) or 0xffffffff or 0xfffffffe, but somehow I doubt that was intended.
