@@ -1,32 +1,15 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1F613DDF07
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 20:04:33 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m77A4R8d015433
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 03:04:27 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m77A4PSD015852
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 05:04:26 -0500 (CDT)
-Subject: Re: [PATCH 2/6] powerpc: export cpm2_immr symbol for CPM2 drivers
-	to compile as module
-From: Li Yang <leoli@freescale.com>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080806152454.GA18655@polina.dev.rtsoft.ru>
-References: <1218006285-27138-1-git-send-email-leoli@freescale.com>
-	<1218006285-27138-2-git-send-email-leoli@freescale.com>
-	<20080806152454.GA18655@polina.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Thu, 07 Aug 2008 18:19:22 +0800
-Message-Id: <1218104362.29628.41.camel@Gundam>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: leoli@freescale.com
+Return-Path: <wg@grandegger.com>
+Message-ID: <489ACC69.5070701@grandegger.com>
+Date: Thu, 07 Aug 2008 12:20:25 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] i2c-mpc: suppress I2C device probing
+References: <487F20EC.9040503@grandegger.com>	<fa686aa40807171102k6f638d9dn6dca86706673fde1@mail.gmail.com>
+	<20080807102126.5980c761@hyperion.delvare>
+In-Reply-To: <20080807102126.5980c761@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,31 +19,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-08-06 at 19:24 +0400, Anton Vorontsov wrote:
-> On Wed, Aug 06, 2008 at 03:04:41PM +0800, Li Yang wrote:
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
-> >  arch/powerpc/sysdev/cpm2.c |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
-> > index f1c3395..021480e 100644
-> > --- a/arch/powerpc/sysdev/cpm2.c
-> > +++ b/arch/powerpc/sysdev/cpm2.c
-> > @@ -52,6 +52,7 @@ cpm_cpm2_t __iomem *cpmp; /* Pointer to comm processor space */
-> >   * the communication processor devices.
-> >   */
-> >  cpm2_map_t __iomem *cpm2_immr;
-> > +EXPORT_SYMBOL(cpm2_immr);
+Jean Delvare wrote:
+> Hi Grant, Wolgang,
 > 
-> This is uneeded if you'll start using cpm_muram_* functions
-> from include/asm-powerpc/cpm.h.
+> On Thu, 17 Jul 2008 12:02:50 -0600, Grant Likely wrote:
+>> On Thu, Jul 17, 2008 at 4:37 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>>> This patch suppresses I2C device probing by clearing the class field
+>>> of the "struct i2c_adapter" for the MPC I2C bus adapters. Some board
+>>> configurations which rely on probing must be fixed up by adding a
+>>> proper I2C device node to the DTS file, like the TQM85xx modules.
+>>>
+>>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+>> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>>
+>>> ---
+>>> drivers/i2c/busses/i2c-mpc.c |    1 -
+>>> 1 file changed, 1 deletion(-)
+>>>
+>>> Index: powerpc/drivers/i2c/busses/i2c-mpc.c
+>>> ===================================================================
+>>> --- powerpc.orig/drivers/i2c/busses/i2c-mpc.c
+>>> +++ powerpc/drivers/i2c/busses/i2c-mpc.c
+>>> @@ -312,7 +312,6 @@ static struct i2c_adapter mpc_ops = {
+>>>        .name = "MPC adapter",
+>>>        .id = I2C_HW_MPC107,
+>>>        .algo = &mpc_algo,
+>>> -       .class = I2C_CLASS_HWMON | I2C_CLASS_SPD,
+>>>        .timeout = 1,
+>>> };
+> 
+> Unless you intend to push this patch upstream yourself (through the ppc
+> tree), you should send it to Ben Dooks (who is in charge of this part
+> of the i2c subsystem) with Cc to the i2c list.
 
-Right.  But there are still a few in tree drivers rely on this such as
-fs_enet.
+I just want to mention, that other I2 bus drivers set I2C_CLASS_HWMON as well. 
+Here are the PowerPC related ones:
 
-Ps: In your cpm_muram_init() you re-mapped the muram space separately .
-Are we planning to get rid of cpm2_immr completely and manage memory
-mapping by each block?
+  $ grep I2C_CLASS_HWMON *
+  i2c-cpm.c:	.class		= I2C_CLASS_HWMON | I2C_CLASS_SPD,
+  i2c-mpc.c:	.class = I2C_CLASS_HWMON | I2C_CLASS_SPD,
+  i2c-ibm_iic.c:	adap->class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
+  i2c-pasemi.c:	smbus->adapter.class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
+  i2c-mv64xxx.c:	drv_data->adapter.class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
 
-- Leo
+It would be consequent to remove them as well.
+
+Wolfgang.
