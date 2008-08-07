@@ -1,22 +1,19 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 9120ADDE98
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 21:38:11 +1000 (EST)
-Date: Thu, 7 Aug 2008 15:38:09 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH 2/6] powerpc: export cpm2_immr symbol for CPM2 drivers
-	to compile as module
-Message-ID: <20080807113809.GB28825@polina.dev.rtsoft.ru>
-References: <1218006285-27138-1-git-send-email-leoli@freescale.com>
-	<1218006285-27138-2-git-send-email-leoli@freescale.com>
-	<20080806152454.GA18655@polina.dev.rtsoft.ru>
-	<1218104362.29628.41.camel@Gundam>
+Return-Path: <j.beisert@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id EE333DDE45
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 20:24:12 +1000 (EST)
+From: Juergen Beisert <j.beisert@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Powerpc and ioremap
+Date: Thu, 7 Aug 2008 12:23:11 +0200
+References: <319b0ac50808070254x27606b48sb15fb4ee6105c6c6@mail.gmail.com>
+In-Reply-To: <319b0ac50808070254x27606b48sb15fb4ee6105c6c6@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <1218104362.29628.41.camel@Gundam>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200808071223.11156.j.beisert@pengutronix.de>
+Cc: =?iso-8859-15?q?S=E9bastien?= =?iso-8859-15?q?_Chr=E9tien?=
+	<sebastien.chretien.enseirb@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 07, 2008 at 06:19:22PM +0800, Li Yang wrote:
-> On Wed, 2008-08-06 at 19:24 +0400, Anton Vorontsov wrote:
-> > On Wed, Aug 06, 2008 at 03:04:41PM +0800, Li Yang wrote:
-> > > Signed-off-by: Li Yang <leoli@freescale.com>
-> > > ---
-> > >  arch/powerpc/sysdev/cpm2.c |    1 +
-> > >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
-> > > index f1c3395..021480e 100644
-> > > --- a/arch/powerpc/sysdev/cpm2.c
-> > > +++ b/arch/powerpc/sysdev/cpm2.c
-> > > @@ -52,6 +52,7 @@ cpm_cpm2_t __iomem *cpmp; /* Pointer to comm processor space */
-> > >   * the communication processor devices.
-> > >   */
-> > >  cpm2_map_t __iomem *cpm2_immr;
-> > > +EXPORT_SYMBOL(cpm2_immr);
-> > 
-> > This is uneeded if you'll start using cpm_muram_* functions
-> > from include/asm-powerpc/cpm.h.
-> 
-> Right.  But there are still a few in tree drivers rely on this such as
-> fs_enet.
+Am Donnerstag, 7. August 2008 11:54 schrieb S=E9bastien Chr=E9tien:
+> Hello,
+>
+> I am trying to port linux on my Powerpc Board. I have used Linux 2.6.26 a=
+nd
+> gcc 3.4.5.
+> I have used Uboot 1.2.
+> Linux seems running from _start to udbg_early_init(). That's why I
+> develloped a udbg_driver.
+> It must write in a register which is located at 0x2001b044. So I wrote :
+>
+> void __iomem *p;
+> p=3Dioremap(0x2001b044,4);
+> iowrite32('O',p);
+> iowrite32('K',p);
 
-Probably they should be fixed... Only two users left:
+try
 
-$ git-grep cpm2_immr drivers/
-drivers/mtd/maps/wr_sbc82xx_flash.c:    volatile memctl_cpm2_t *mc = &cpm2_immr->im_memctl;
-drivers/mtd/maps/wr_sbc82xx_flash.c:    mc = &cpm2_immr->im_memctl;
-drivers/net/fs_enet/fs_enet-main.c:     fs_enet_immap = cpm2_immr;
-drivers/net/fs_enet/mac-fcc.c:  fep->fcc.mem = (void __iomem *)cpm2_immr;
+p=3Dioremap(0x2001b000, 0x1000);
+iowrite32('O',p + 0x44);
+iowrite32('K',p + 0x44);
 
-I think wr_sbc82xx_flash.c is superseded by the physmap_of driver. There
-is no single CONFIG_MTD_SBC8240 enabled in the powerpc/configs.
+instead.
 
-Plus, I wonder how they didn't break the build all that time w/o
-EXPORT_SYMBOL(). Probably nobody tried to build them as modules.
-
-> Ps: In your cpm_muram_init() you re-mapped the muram space separately .
-> Are we planning to get rid of cpm2_immr completely and manage memory
-> mapping by each block?
-
-At least I always thought so...
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+jbe
+=2D-=20
+ Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
+  Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-7 |  Fax: +49-5121-206917-9
