@@ -1,19 +1,21 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id CF271DE124
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 21:11:59 +1000 (EST)
-Date: Thu, 7 Aug 2008 15:11:56 +0400
+	by ozlabs.org (Postfix) with ESMTP id 9120ADDE98
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 21:38:11 +1000 (EST)
+Date: Thu, 7 Aug 2008 15:38:09 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 6/8] powerpc: set up OF properties for ppc32 kdump
-Message-ID: <20080807111156.GA28825@polina.dev.rtsoft.ru>
-References: <20080801141306.GA29127@polina.dev.rtsoft.ru>
-	<20080801141425.GF1161@polina.dev.rtsoft.ru>
-	<1218106051.7914.12.camel@localhost>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH 2/6] powerpc: export cpm2_immr symbol for CPM2 drivers
+	to compile as module
+Message-ID: <20080807113809.GB28825@polina.dev.rtsoft.ru>
+References: <1218006285-27138-1-git-send-email-leoli@freescale.com>
+	<1218006285-27138-2-git-send-email-leoli@freescale.com>
+	<20080806152454.GA18655@polina.dev.rtsoft.ru>
+	<1218104362.29628.41.camel@Gundam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <1218106051.7914.12.camel@localhost>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1218104362.29628.41.camel@Gundam>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,61 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 07, 2008 at 08:47:31PM +1000, Michael Ellerman wrote:
-> On Fri, 2008-08-01 at 18:14 +0400, Anton Vorontsov wrote:
-> > From: Dale Farnsworth <dale@farnsworth.org>
+On Thu, Aug 07, 2008 at 06:19:22PM +0800, Li Yang wrote:
+> On Wed, 2008-08-06 at 19:24 +0400, Anton Vorontsov wrote:
+> > On Wed, Aug 06, 2008 at 03:04:41PM +0800, Li Yang wrote:
+> > > Signed-off-by: Li Yang <leoli@freescale.com>
+> > > ---
+> > >  arch/powerpc/sysdev/cpm2.c |    1 +
+> > >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
+> > > index f1c3395..021480e 100644
+> > > --- a/arch/powerpc/sysdev/cpm2.c
+> > > +++ b/arch/powerpc/sysdev/cpm2.c
+> > > @@ -52,6 +52,7 @@ cpm_cpm2_t __iomem *cpmp; /* Pointer to comm processor space */
+> > >   * the communication processor devices.
+> > >   */
+> > >  cpm2_map_t __iomem *cpm2_immr;
+> > > +EXPORT_SYMBOL(cpm2_immr);
 > > 
-> > Refactor the setting of kexec OF properties, moving the common code
-> > from machine_kexec_64.c to machine_kexec.c where it can be used on
-> > both ppc64 and ppc32.  This will be needed for kdump to work on ppc32
-> > platforms.
+> > This is uneeded if you'll start using cpm_muram_* functions
+> > from include/asm-powerpc/cpm.h.
 > 
-> Hi Anton,
+> Right.  But there are still a few in tree drivers rely on this such as
+> fs_enet.
 
-Hi,
+Probably they should be fixed... Only two users left:
 
-> > diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-> > index ac42cfb..bfef717 100644
-> > --- a/arch/powerpc/kernel/machine_kexec.c
-> > +++ b/arch/powerpc/kernel/machine_kexec.c
-> > @@ -117,6 +117,7 @@ int overlaps_crashkernel(unsigned long start, unsigned long size)
-> >  
-> 
-> >  static int __init kexec_setup(void)
-> >  {
-> >  	struct device_node *node;
-> > @@ -135,6 +171,8 @@ static int __init kexec_setup(void)
-> >  	kernel_end = __pa(_end);
-> >  	prom_add_property(node, &kernel_end_prop);
-> >  
-> > +	export_crashk_values(node);
-> > +
-> >  	of_node_put(node);
-> >  	return 0;
-> >  }
-> > diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-> > index c30678d..2aab296 100644
-> > --- a/arch/powerpc/kernel/machine_kexec_64.c
-> > +++ b/arch/powerpc/kernel/machine_kexec_64.c
-> ...
-> 
-> > -
-> >  static int __init kexec_setup(void)
-> >  {
-> >  	export_htab_values();
-> > -	export_crashk_values();
-> >  	return 0;
-> >  }
-> >  __initcall(kexec_setup);
-> 
-> This leaves us with two routines called kexec_setup(), do you mind
-> getting rid of this one and making export_htab_values() an initcall
-> directly.
+$ git-grep cpm2_immr drivers/
+drivers/mtd/maps/wr_sbc82xx_flash.c:    volatile memctl_cpm2_t *mc = &cpm2_immr->im_memctl;
+drivers/mtd/maps/wr_sbc82xx_flash.c:    mc = &cpm2_immr->im_memctl;
+drivers/net/fs_enet/fs_enet-main.c:     fs_enet_immap = cpm2_immr;
+drivers/net/fs_enet/mac-fcc.c:  fep->fcc.mem = (void __iomem *)cpm2_immr;
 
-Yup, good idea. Will do this, and will address your other comments,
-too.
+I think wr_sbc82xx_flash.c is superseded by the physmap_of driver. There
+is no single CONFIG_MTD_SBC8240 enabled in the powerpc/configs.
 
-Thanks!
+Plus, I wonder how they didn't break the build all that time w/o
+EXPORT_SYMBOL(). Probably nobody tried to build them as modules.
+
+> Ps: In your cpm_muram_init() you re-mapped the muram space separately .
+> Are we planning to get rid of cpm2_immr completely and manage memory
+> mapping by each block?
+
+At least I always thought so...
+
+Thanks,
 
 -- 
 Anton Vorontsov
