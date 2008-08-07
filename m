@@ -2,23 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 88EC8DDF30
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Aug 2008 08:13:54 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 2D4F3DDFC0
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Aug 2008 08:15:31 +1000 (EST)
 Subject: Re: [RFC/PATCH 1/3] powerpc: add ioremap_bat() function for
 	setting up BAT translated IO regions.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <63451E1F-30C1-4146-9D1A-BD4973E8F17A@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40808061611p616208bp2baf9a0d5e095870@mail.gmail.com>
 References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
 	<20080806060223.30717.35175.stgit@trillian.secretlab.ca>
-	<CD66FAA8-BC99-4630-9FFF-E2C651E5DE9A@kernel.crashing.org>
-	<fa686aa40808061454t14737278h3fd15fb0ccdbf251@mail.gmail.com>
-	<75A0A752-FF2C-41B6-A6D3-E510E8FD4E91@kernel.crashing.org>
-	<1218061709.24157.249.camel@pasglop>
-	<63451E1F-30C1-4146-9D1A-BD4973E8F17A@kernel.crashing.org>
+	<1218061585.24157.246.camel@pasglop>
+	<fa686aa40808061611p616208bp2baf9a0d5e095870@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 08 Aug 2008 08:13:44 +1000
-Message-Id: <1218147224.24157.308.camel@pasglop>
+Date: Fri, 08 Aug 2008 08:09:11 +1000
+Message-Id: <1218146951.24157.305.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, miltonm@bga.com
 Reply-To: benh@kernel.crashing.org
@@ -31,39 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-08-06 at 20:49 -0500, Kumar Gala wrote:
-> On Aug 6, 2008, at 5:28 PM, Benjamin Herrenschmidt wrote:
+On Wed, 2008-08-06 at 17:11 -0600, Grant Likely wrote:
+> I'm not sure what you're asking.  Are you asking about this particular
+> test, or are you asking why I don't also test the size?
+
+Badly worded. 
+
+I meant BAT sizes are masks of bits. IE, they are power of 2 and the
+BAT address must be aligned to that power of 2 (ie, the BAT matching
+uses the size as a bit mask of relevant bits to compare).
+
+Unless I misread, your code doesn't provide the necessary tests/rounding
+of size and alignment of the virtual address.. does it ?
+ 
+> I do this particular test to make absolute sure that the caller
+> absolutely understands the limitations of the block mapping.  If they
+> call this with something that isn't 128k aligned, then I make it fail
+> immediately so the coder is forced to go and understand what they are
+> allowed to do.  Basically, I'm reinforcing the fact that this is not
+> the same as ioremap().
 > 
-> >
-> >> there is a bunch of error checking and difference in semantics that
-> >> you need to fix.  I think introduce a new API for this is silly,
-> >> especially since we expect there to only be one actual invocation of
-> >> the API for serial console access.
-> >
-> > Not necessarily....
-> >
-> > There's another aspect to BAT mappings here. First, they should be
-> > permanent (ie, not unmappable). That way, we have ioremap just use
-> > an existing BAT mapping when asked for a device that is covered
-> > by a BAT. This allows to have platform code do something like setup
-> > a BAT over a bunch of SOC registers or over a device, to automagically
-> > get drivers doing ioremap to that area benefit from it.
-> 
-> why should they be permanent.. We could implement reference counting  
-> around the regions and free BATs if the count = 0.
-
-Do we care ?
-
-> I'm more concerned about this being implemented around the existing  
-> ioremap core in __ioremap().  We can easily use a flag bit to say use  
-> "large mappings" or the fact that mem_init_done == 0.
-
-mem_init_done isn't a good indication. We can do page tables when it's
-0, we would have to use a separate mem_preinit_done or something :-)
-
-I initially also though about a flag to ioremap_prot to be honest. But
-it does obfuscate the normal ioremap code path and if there's a flag,
-that means that callers know the difference and thus may as well call
-a separate function, don't you think ?
+> I haven't decided yet if I should test size in the same way.
+> Thoughts?
 
 Ben.
