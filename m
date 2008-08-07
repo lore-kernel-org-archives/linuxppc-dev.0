@@ -1,18 +1,39 @@
-Return-Path: <stuart.yoder@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [RFC/PATCH 2/3] of: add of_lookup_stdout() utility function
-Date: Thu, 7 Aug 2008 10:28:35 -0700
-Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA3043BC7D7@az33exm25.fsl.freescale.net>
-In-Reply-To: <20080807061254.GB12571@yookeroo.seuss>
-References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca><20080806060239.30717.79273.stgit@trillian.secretlab.ca><ed82fe3e0808060946v39992095pfb6b85726b7d307d@mail.gmail.com>
-	<20080807061254.GB12571@yookeroo.seuss>
-From: "Yoder Stuart" <stuart.yoder@freescale.com>
-To: "David Gibson" <david@gibson.dropbear.id.au>,
-	"TABI TIMUR" <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org, paulus@samba.org,
-	miltonm@bga.com
+Return-Path: <dave@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4003FDE3E6
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Aug 2008 03:30:18 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m77HU4uT024152
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 13:30:04 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m77HTsPx193354
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 13:29:54 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m77HTqKP025111
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 13:29:53 -0400
+Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+In-Reply-To: <20080807160605.GA9200@csn.ul.ie>
+References: <20080730193010.GB14138@csn.ul.ie>
+	<20080730130709.eb541475.akpm@linux-foundation.org>
+	<20080731103137.GD1704@csn.ul.ie> <1217884211.20260.144.camel@nimitz>
+	<20080805111147.GD20243@csn.ul.ie> <1217952748.10907.18.camel@nimitz>
+	<20080805162800.GJ20243@csn.ul.ie> <1217958805.10907.45.camel@nimitz>
+	<20080806090222.GD21190@csn.ul.ie> <1218052249.10907.125.camel@nimitz>
+	<20080807160605.GA9200@csn.ul.ie>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 07 Aug 2008 10:29:50 -0700
+Message-Id: <1218130190.10907.188.camel@nimitz>
+Mime-Version: 1.0
+Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	abh@cray.com, ebmunson@us.ibm.com,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,48 +43,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+On Thu, 2008-08-07 at 17:06 +0100, Mel Gorman wrote:
+> On (06/08/08 12:50), Dave Hansen didst pronounce:
+> > The main thing this set of patches does that I care about is take an
+> > anonymous VMA and replace it with a hugetlb VMA.  It does this on a
+> > special cue, but does it nonetheless.
+> 
+> This is not actually a new thing. For a long time now, it has been possible to
+> back  malloc() with hugepages at a userspace level using the morecore glibc
+> hook. That is replacing anonymous memory with a file-backed VMA. It happens
+> in a different place but it's just as deliberate as backing stack and the
+> end result is very similar. As the file is ram-based, it doesn't have the
+> same types of consequences like dirty page syncing that you'd ordinarily
+> watch for when moving from anonymous to file-backed memory.
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org]=20
-> On Behalf Of David Gibson
-> Sent: Thursday, August 07, 2008 1:13 AM
-> To: Tabi Timur
-> Cc: linuxppc-dev@ozlabs.org; paulus@samba.org; miltonm@bga.com
-> Subject: Re: [RFC/PATCH 2/3] of: add of_lookup_stdout()=20
-> utility function
->=20
-> On Wed, Aug 06, 2008 at 11:46:47AM -0500, Timur Tabi wrote:
-> > On Wed, Aug 6, 2008 at 1:02 AM, Grant Likely=20
-> <grant.likely@secretlab.ca> wrote:
-> > > From: Grant Likely <grant.likely@secretlab.ca>
-> > >
-> > > of_lookup_stdout() is useful for figuring out what device=20
-> to use as output
-> > > for early boot progress messages.  It returns the node=20
-> pointed to by the
-> > > linux,stdout-path property in the chosen node.
-> >=20
-> > I thought linux,stdout-path is deprecated are we're supposed to be
-> > using the aliases node instead?
->=20
-> During the ePAPR process this idea came up - standardising a 'stdout'
-> alias that would replace linux,stdout-path in chosen.  However that
-> was done in ignorance of the history of the linux,stdout-path property
-> and its connection to the stdout ihandle in chosen.  In any case, the
-> proposed 'stdout' alias didn't make the final cut for ePAPR, so how to
-> address this for flat-tree systems is still an open question.
+Yes, it has already been done in userspace.  That's fine.  It isn't
+adding any complexity to the kernel.  This is adding behavior that the
+kernel has to support as well as complexity.
 
-In the ePAPR discussion I think we generally agreed that
-an alias was better than a property under /chosen.  There
-were 2 things that caused us to delete the /aliases/stdout.
+> > This patch has crossed a line in that it is really the first
+> > *replacement* of a normal VMA with a hugetlb VMA instead of the creation
+> > of the VMAs at the user's request. 
+> 
+> We crossed that line with morecore, it's back there somewhere. We're just
+> doing in kernel this time because backing stacks with hugepages in userspace
+> turned out to be a hairy endevour.
+> 
+> Properly supporting anonymous hugepages would either require larger
+> changes to the core or reimplementing yet more of mm/ in mm/hugetlb.c.
+> Neither is a particularly appealing approach, nor is it likely to be a
+> very popular one.
 
-One was discussions around whether we needed to support
-multiple consoles somehow.
+I agree.  It is always much harder to write code that can work
+generically﻿ (and get it accepted) than just write the smallest possible
+hack and stick it in fs/exec.c.
 
-The second was the idea that we may need a /aliases/stdin as well.
-You could conceptually have stdout be a monitor and a stdin
-be a keyboard.
+Could this patch at least get fixed up to look like it could be used
+more generically?  Some code to look up and replace anonymous VMAs with
+hugetlb-backed ones.
+﻿
+> > Because of the limitations like its inability to grow the VMA, I can't
+> > imagine that this would be a generic mechanism that we can use
+> > elsewhere.
+> 
+> What other than a stack even cares about VM_GROWSDOWN working? Besides,
+> VM_GROWSDOWN could be supported in a hugetlbfs file by mapping the end of
+> the file and moving the offset backwards (yeah ok, it ain't the prettiest
+> but it's less churn than introducing significantly different codepaths). It's
+> just not something that needs to be supported at first cut.
+> 
+> brk() if you wanted to back hugepages with it conceivably needs a resizing
+> VMA but in that case it's growing up in which case just extend the end of
+> the VMA and increase the size of the file.
 
-Stuart
+I'm more worried about a small huge page size (say 64k) and not being
+able to merge the VMAs.  I guess it could start in the *middle* of a
+file and map both directions.
+
+I guess you could always just have a single (very sparse) hugetlb file
+per mm to do all of this 'anonymous' hugetlb memory memory stuff, and
+just map its offsets 1:1 on to the process's virtual address space.
+That would make sure you could always merge VMAs, no matter how they
+grew together.
+
+-- Dave
