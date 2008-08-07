@@ -1,39 +1,22 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Return-Path: <jrigby@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4003FDE3E6
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Aug 2008 03:30:18 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m77HU4uT024152
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 13:30:04 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m77HTsPx193354
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 13:29:54 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m77HTqKP025111
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 13:29:53 -0400
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <20080807160605.GA9200@csn.ul.ie>
-References: <20080730193010.GB14138@csn.ul.ie>
-	<20080730130709.eb541475.akpm@linux-foundation.org>
-	<20080731103137.GD1704@csn.ul.ie> <1217884211.20260.144.camel@nimitz>
-	<20080805111147.GD20243@csn.ul.ie> <1217952748.10907.18.camel@nimitz>
-	<20080805162800.GJ20243@csn.ul.ie> <1217958805.10907.45.camel@nimitz>
-	<20080806090222.GD21190@csn.ul.ie> <1218052249.10907.125.camel@nimitz>
-	<20080807160605.GA9200@csn.ul.ie>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 07 Aug 2008 10:29:50 -0700
-Message-Id: <1218130190.10907.188.camel@nimitz>
-Mime-Version: 1.0
-Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	abh@cray.com, ebmunson@us.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3F579DE4FE
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Aug 2008 03:36:37 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m77HaTvV013606
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 10:36:30 -0700 (MST)
+From: John Rigby <jrigby@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 5121 pci 1/3] powerpc: 83xx: pci: Remove need for get_immrbase
+	from mpc83xx_add_bridge.
+Date: Thu,  7 Aug 2008 11:36:25 -0600
+Message-Id: <1218130587-31176-1-git-send-email-jrigby@freescale.com>
+Cc: John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,67 +26,455 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-08-07 at 17:06 +0100, Mel Gorman wrote:
-> On (06/08/08 12:50), Dave Hansen didst pronounce:
-> > The main thing this set of patches does that I care about is take an
-> > anonymous VMA and replace it with a hugetlb VMA.  It does this on a
-> > special cue, but does it nonetheless.
-> 
-> This is not actually a new thing. For a long time now, it has been possible to
-> back  malloc() with hugepages at a userspace level using the morecore glibc
-> hook. That is replacing anonymous memory with a file-backed VMA. It happens
-> in a different place but it's just as deliberate as backing stack and the
-> end result is very similar. As the file is ram-based, it doesn't have the
-> same types of consequences like dirty page syncing that you'd ordinarily
-> watch for when moving from anonymous to file-backed memory.
+Modify mpc83xx_add_bridge to get config space register base address from the device
+tree instead of immr + hardcoded offset.
 
-Yes, it has already been done in userspace.  That's fine.  It isn't
-adding any complexity to the kernel.  This is adding behavior that the
-kernel has to support as well as complexity.
+83xx pci nodes have these changes:
+    register properties now contain two address length tuples:
+	First is the pci bridge register base, this has always been there.
+	Second is the config base, this is new.
+    The primary pci bus should have the "primary" property.
 
-> > This patch has crossed a line in that it is really the first
-> > *replacement* of a normal VMA with a hugetlb VMA instead of the creation
-> > of the VMAs at the user's request. 
-> 
-> We crossed that line with morecore, it's back there somewhere. We're just
-> doing in kernel this time because backing stacks with hugepages in userspace
-> turned out to be a hairy endevour.
-> 
-> Properly supporting anonymous hugepages would either require larger
-> changes to the core or reimplementing yet more of mm/ in mm/hugetlb.c.
-> Neither is a particularly appealing approach, nor is it likely to be a
-> very popular one.
+These are documented in Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt
 
-I agree.  It is always much harder to write code that can work
-generically﻿ (and get it accepted) than just write the smallest possible
-hack and stick it in fs/exec.c.
+The changes accomplish these things:
+    mpc83xx_add_bridge no longer needs to call get_immrbase
+    it uses hard coded addresses if the second register value is missing
+    it no longer needs to devine primary property from register base
 
-Could this patch at least get fixed up to look like it could be used
-more generically?  Some code to look up and replace anonymous VMAs with
-hugetlb-backed ones.
-﻿
-> > Because of the limitations like its inability to grow the VMA, I can't
-> > imagine that this would be a generic mechanism that we can use
-> > elsewhere.
-> 
-> What other than a stack even cares about VM_GROWSDOWN working? Besides,
-> VM_GROWSDOWN could be supported in a hugetlbfs file by mapping the end of
-> the file and moving the offset backwards (yeah ok, it ain't the prettiest
-> but it's less churn than introducing significantly different codepaths). It's
-> just not something that needs to be supported at first cut.
-> 
-> brk() if you wanted to back hugepages with it conceivably needs a resizing
-> VMA but in that case it's growing up in which case just extend the end of
-> the VMA and increase the size of the file.
+Signed-off-by: John Rigby <jrigby@freescale.com>
+---
+ .../powerpc/dts-bindings/fsl/83xx-512x-pci.txt     |   43 ++++++++++++++++
+ arch/powerpc/boot/dts/mpc8313erdb.dts              |    4 +-
+ arch/powerpc/boot/dts/mpc8315erdb.dts              |    4 +-
+ arch/powerpc/boot/dts/mpc832x_mds.dts              |    4 +-
+ arch/powerpc/boot/dts/mpc832x_rdb.dts              |    4 +-
+ arch/powerpc/boot/dts/mpc8349emitx.dts             |    7 ++-
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts           |    4 +-
+ arch/powerpc/boot/dts/mpc834x_mds.dts              |    7 ++-
+ arch/powerpc/boot/dts/mpc836x_mds.dts              |    4 +-
+ arch/powerpc/boot/dts/mpc836x_rdk.dts              |    4 +-
+ arch/powerpc/boot/dts/mpc8377_mds.dts              |    4 +-
+ arch/powerpc/boot/dts/mpc8377_rdb.dts              |    4 +-
+ arch/powerpc/boot/dts/mpc8378_mds.dts              |    4 +-
+ arch/powerpc/boot/dts/mpc8378_rdb.dts              |    4 +-
+ arch/powerpc/boot/dts/mpc8379_mds.dts              |    4 +-
+ arch/powerpc/boot/dts/mpc8379_rdb.dts              |    4 +-
+ arch/powerpc/boot/dts/sbc8349.dts                  |    4 +-
+ arch/powerpc/sysdev/fsl_pci.c                      |   53 +++++++++++++------
+ 18 files changed, 131 insertions(+), 35 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt
 
-I'm more worried about a small huge page size (say 64k) and not being
-able to merge the VMAs.  I guess it could start in the *middle* of a
-file and map both directions.
-
-I guess you could always just have a single (very sparse) hugetlb file
-per mm to do all of this 'anonymous' hugetlb memory memory stuff, and
-just map its offsets 1:1 on to the process's virtual address space.
-That would make sure you could always merge VMAs, no matter how they
-grew together.
-
--- Dave
+diff --git a/Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt b/Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt
+new file mode 100644
+index 0000000..51214a0
+--- /dev/null
++++ b/Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt
+@@ -0,0 +1,43 @@
++* Freescale 83xx and 512x PCI bridges
++
++Freescale 83xx and 512x SOCs include the same pci bridge core.
++
++83xx/512x specific notes:
++- reg: should contain two address length tuples
++    The first is for the internal pci bridge registers
++    The second is for the pci config space access registers
++- primary: 
++    This property should be present for the primary pci bridge
++
++Example (MPC8313ERDB)
++	pci0: pci@e0008500 {
++		cell-index = <1>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++				/* IDSEL 0x0E -mini PCI */
++				 0x7000 0x0 0x0 0x1 &ipic 18 0x8
++				 0x7000 0x0 0x0 0x2 &ipic 18 0x8
++				 0x7000 0x0 0x0 0x3 &ipic 18 0x8
++				 0x7000 0x0 0x0 0x4 &ipic 18 0x8
++
++				/* IDSEL 0x0F - PCI slot */
++				 0x7800 0x0 0x0 0x1 &ipic 17 0x8
++				 0x7800 0x0 0x0 0x2 &ipic 18 0x8
++				 0x7800 0x0 0x0 0x3 &ipic 17 0x8
++				 0x7800 0x0 0x0 0x4 &ipic 18 0x8>;
++		interrupt-parent = <&ipic>;
++		interrupts = <66 0x8>;
++		bus-range = <0x0 0x0>;
++		ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
++			  0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
++			  0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
++		clock-frequency = <66666666>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
++		compatible = "fsl,mpc8349-pci";
++		device_type = "pci";
++		primary;
++	};
+diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+index 2a94ae0..f4d84bb 100644
+--- a/arch/powerpc/boot/dts/mpc8313erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+@@ -359,9 +359,11 @@
+ 			#interrupt-cells = <1>;
+ 			#size-cells = <2>;
+ 			#address-cells = <3>;
+-			reg = <0xe0008500 0x100>;
++			reg = <0xe0008500 0x100		/* internal registers */
++			       0xe0008300 0x8>;		/* config space access registers */
+ 			compatible = "fsl,mpc8349-pci";
+ 			device_type = "pci";
++			primary;
+ 		};
+ 
+ 		dma@82a8 {
+diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
+index f704513..d7a6c4a 100644
+--- a/arch/powerpc/boot/dts/mpc8315erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
+@@ -314,8 +314,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
+index fbc9304..fe3bb7d 100644
+--- a/arch/powerpc/boot/dts/mpc832x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
+@@ -419,8 +419,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+index b157d18..74206e8 100644
+--- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+@@ -327,8 +327,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+index 700e076..f78feac 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+@@ -250,9 +250,11 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ 
+ 	pci1: pci@e0008600 {
+@@ -276,7 +278,8 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008600 0x100>;
++		reg = <0xe0008600 0x100		/* internal registers */
++		       0xe0008380 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
+ 	};
+diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+index cdd3063..2c1121b 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+@@ -224,8 +224,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008600 0x100>;
++		reg = <0xe0008600 0x100		/* internal registers */
++		       0xe0008380 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
+index 783241c..5df5ee1 100644
+--- a/arch/powerpc/boot/dts/mpc834x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
+@@ -311,9 +311,11 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ 
+ 	pci1: pci@e0008600 {
+@@ -372,7 +374,8 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008600 0x100>;
++		reg = <0xe0008600 0x100		/* internal registers */
++		       0xe0008380 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
+ 	};
+diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
+index a3b76a7..d735c82 100644
+--- a/arch/powerpc/boot/dts/mpc836x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
+@@ -405,8 +405,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
+index 89c9202..cef069f 100644
+--- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
++++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
+@@ -405,7 +405,8 @@
+ 		#interrupt-cells = <1>;
+ 		device_type = "pci";
+ 		compatible = "fsl,mpc8360-pci", "fsl,mpc8349-pci";
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		ranges = <0x02000000 0 0x90000000 0x90000000 0 0x10000000
+ 			  0x42000000 0 0x80000000 0x80000000 0 0x10000000
+ 			  0x01000000 0 0xe0300000 0xe0300000 0 0x00100000>;
+@@ -424,5 +425,6 @@
+ 		/* filled by u-boot */
+ 		bus-range = <0 0>;
+ 		clock-frequency = <0>;
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
+index 432782b..c206688 100644
+--- a/arch/powerpc/boot/dts/mpc8377_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
+@@ -374,8 +374,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index ed137aa..f79ede2 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -315,8 +315,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
+index ed32c8d..0f1f3d8 100644
+--- a/arch/powerpc/boot/dts/mpc8378_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
+@@ -360,8 +360,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index 34a7f2f..795fb08 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -301,8 +301,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dts/mpc8379_mds.dts
+index f4db9ed..0b75826 100644
+--- a/arch/powerpc/boot/dts/mpc8379_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
+@@ -388,8 +388,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index e4d7030..cc7cac1 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -329,8 +329,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/sbc8349.dts b/arch/powerpc/boot/dts/sbc8349.dts
+index 45f789b..ac41fad 100644
+--- a/arch/powerpc/boot/dts/sbc8349.dts
++++ b/arch/powerpc/boot/dts/sbc8349.dts
+@@ -268,8 +268,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
++		reg = <0xe0008500 0x100		/* internal registers */
++		       0xe0008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc8349-pci";
+ 		device_type = "pci";
++		primary;
+ 	};
+ };
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 61e6d77..c4bdfc2 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -256,15 +256,45 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+ {
+ 	int len;
+ 	struct pci_controller *hose;
+-	struct resource rsrc;
++	struct resource rsrc_reg;
++	struct resource rsrc_cfg;
+ 	const int *bus_range;
+-	int primary = 1, has_address = 0;
+-	phys_addr_t immr = get_immrbase();
++	int primary = 0;
+ 
+ 	pr_debug("Adding PCI host bridge %s\n", dev->full_name);
+ 
+ 	/* Fetch host bridge registers address */
+-	has_address = (of_address_to_resource(dev, 0, &rsrc) == 0);
++	if (of_address_to_resource(dev, 0, &rsrc_reg)) {
++		printk(KERN_WARNING "Can't get pci register base!\n");
++		return -ENOMEM;
++	}
++
++	memset(&rsrc_cfg, 0, sizeof(rsrc_cfg));
++
++	if (of_address_to_resource(dev, 1, &rsrc_cfg)) {
++		printk(KERN_WARNING
++			"No pci config register base in dev tree, "
++			"using default\n");
++		/*
++		 * MPC83xx supports up to two host controllers, one at 0x8500
++		 * from immrbar.  The other is at 0x8600.  We consider the
++		 * one at 0x8500 the primary controller.
++		 */
++		/* PCI 1 */
++		if ((rsrc_reg.start & 0xfffff) == 0x8500) {
++			rsrc_cfg.start = (rsrc_reg.start & 0xfff00000) + 0x8300;
++			primary = 1;
++		}
++		/* PCI 2 */
++		if ((rsrc_reg.start & 0xfffff) == 0x8600) {
++			rsrc_cfg.start = (rsrc_reg.start & 0xfff00000) + 0x8380;
++			primary = 0;
++		}
++	}
++
++	/* Check if primary bridge */
++	if (of_get_property(dev, "primary", NULL))
++		primary = 1;
+ 
+ 	/* Get bus range if any */
+ 	bus_range = of_get_property(dev, "bus-range", &len);
+@@ -281,22 +311,11 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+ 	hose->first_busno = bus_range ? bus_range[0] : 0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+ 
+-	/* MPC83xx supports up to two host controllers one at 0x8500 from immrbar
+-	 * the other at 0x8600, we consider the 0x8500 the primary controller
+-	 */
+-	/* PCI 1 */
+-	if ((rsrc.start & 0xfffff) == 0x8500) {
+-		setup_indirect_pci(hose, immr + 0x8300, immr + 0x8304, 0);
+-	}
+-	/* PCI 2 */
+-	if ((rsrc.start & 0xfffff) == 0x8600) {
+-		setup_indirect_pci(hose, immr + 0x8380, immr + 0x8384, 0);
+-		primary = 0;
+-	}
++	setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 4, 0);
+ 
+ 	printk(KERN_INFO "Found MPC83xx PCI host bridge at 0x%016llx. "
+ 	       "Firmware bus number: %d->%d\n",
+-	       (unsigned long long)rsrc.start, hose->first_busno,
++	       (unsigned long long)rsrc_reg.start, hose->first_busno,
+ 	       hose->last_busno);
+ 
+ 	pr_debug(" ->Hose at 0x%p, cfg_addr=0x%p,cfg_data=0x%p\n",
+-- 
