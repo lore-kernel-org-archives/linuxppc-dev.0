@@ -1,32 +1,18 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 120D7DDF42
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 12:36:16 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id m772ZVHK018810
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 12:35:31 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m772aCSb026220
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 12:36:12 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m772aBQ7005096
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 12:36:11 +1000
-Date: Thu, 7 Aug 2008 12:36:03 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: dtc update for in-kernel version
-Message-ID: <20080807023603.GD24443@yookeroo.seuss>
-References: <1218026580.2328.69.camel@localhost.localdomain>
-	<6606960D-022E-4B6E-AAB8-036839469820@kernel.crashing.org>
-	<20080806093522.5e076fd6@zod.rchland.ibm.com>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 1F182DDF82
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 13:10:25 +1000 (EST)
+Sender: miltonm@bga.com
+From: "miltonm" <miltonm@bga.com>
+To: michael@ellerman.id.au,miltonm@bga.com
+Subject: Re: [PATCH] powerpc: EOI spurious irqs during boot so they can be
+	reenabled later
+Date: Wed, 06 Aug 2008 21:10:19 -0600
+Message-id: <489a679b.80.592f.1469312305@bga.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080806093522.5e076fd6@zod.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset="iso-8859-1"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,42 +22,241 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 06, 2008 at 09:35:22AM -0400, Josh Boyer wrote:
-> On Wed, 6 Aug 2008 08:29:30 -0500
-> Kumar Gala <galak@kernel.crashing.org> wrote:
+----- Original Message Follows -----
+From: Michael Ellerman <michael@ellerman.id.au>
+To: miltonm@bga.com
+Cc: Paul Mackerras <paulus@samba.org>,
+linuxppc-dev@ozlabs.org, Segher Boessenkool
+<segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: EOI spurious irqs during boot
+so they can be reenabled later
+Date: Wed, 06 Aug 2008 14:53:54 +1000
+
+> On Tue, 2008-08-05 at 20:55 -0600, miltonm wrote:
+> > ----- Original Message Follows -----
+> > From: Michael Ellerman <michael@ellerman.id.au>
+> > To: Paul Mackerras <paulus@samba.org>
+> > Cc: <linuxppc-dev@ozlabs.org>, Milton Miller
+> > <miltonm@bga.com>, Segher Boessenkool
+> > <segher@kernel.crashing.org>
+> > Subject: [PATCH] powerpc: EOI spurious irqs during boot
+> > so they can be reenabled later
+> > Date: Wed,  6 Aug 2008 12:03:37 +1000 (EST)
+> >  
+>
+
+
+> > 
+> > I really dislike this great big if in the middle of a
+> > function.
+> > we called this function from two different call sites
+> > where the
+> > choice of which to call was based on their environment.
+> >  
+> > Please move the call to eoi the hwirq to the callers,
+> > who know which path to take.
 > 
-> > 
-> > On Aug 6, 2008, at 7:43 AM, Josh Boyer wrote:
-> > 
-> > > So we asked about this a while ago and I haven't seen anything yet,  
-> > > but
-> > > is there going to be an update to the version of DTC that is in the
-> > > kernel tree?  1.2 is out now, would be a good idea to update soon.
-> > 
-> > is there any reason to update to 1.2 for 2.6.27?
+> It's not pretty, but the alternative is worse I think:
 > 
-> Probably not at this point in the lifecycle.  We brought this up
-> before the merge window opened though, so I'm just wondering what the
-> general plan is.  Seems lots of fixes and such are getting put out, but
-> not pulled into the kernel.
 
-There isn't really a general plan, someone just needed to get around
-to assembling the patch.  I just sent out a patch which updates the
-in-kernel dtc and libfdt to 1.2.
+Well, it needs a bit of refinement.
 
-Longer term, once microblaze support goes into mainline, we probably
-should move the in-kernel copy to scripts/ and/or lib/ so that powerpc
-and microblaze can share it.
+> >From 0a908825c8de6cd4c26288aba8c5b7fe3ed0a69f Mon Sep 17
+> 00:00:00 2001 From: Michael Ellerman
+> <michael@ellerman.id.au> Date: Tue, 5 Aug 2008 22:34:48
+> +1000 Subject: [PATCH] powerpc: EOI spurious irqs during
+> boot so they can be reenabled later
+> 
+> In the xics code, if we receive an irq during boot that
+> hasn't been setup yet - ie. we have no reverse mapping for
+> it - we mask the irq so we don't hear from it again.
+> 
+> Later on if someone request_irq()'s that irq, we'll unmask
+> it but it will still never fire. This is because we never
+> EOI'ed the irq when we originally received it - when it
+> was spurious.
+> 
+> This can be reproduced trivially by banging the keyboard
+> while kexec'ing on a P5 LPAR, even though the hvc_console
+> driver request's the console irq, the console is
+> non-functional because we're receiving no console
+> interrupts.
+> 
+> So when we receive a spurious irq mask it and then EOI it.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
+>  arch/powerpc/platforms/pseries/xics.c |   74
+> ++++++++++++++++++++++-----------
+>  1 files changed, 50 insertions(+), 24 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/xics.c
+> b/arch/powerpc/platforms/pseries/xics.c index
+> 0fc830f..754706c 100644 ---
+> a/arch/powerpc/platforms/pseries/xics.c +++
+> b/arch/powerpc/platforms/pseries/xics.c @@ -90,7 +90,7 @@
+> static inline unsigned int direct_xirr_info_get(void)
+>  {
+>      int cpu = smp_processor_id();
+>  
+> -    return in_be32(&xics_per_cpu[cpu]->xirr.word);
+> +    return in_be32(&xics_per_cpu[cpu]->xirr.word) &
+> 0x00ffffff;
+>  }
+>  
+>  static inline void direct_xirr_info_set(int value)
+> @@ -124,7 +124,8 @@ static inline unsigned int
+> lpar_xirr_info_get(void)
+>      lpar_rc = plpar_xirr(&return_value);
+>      if (lpar_rc != H_SUCCESS)
+>          panic(" bad return code xirr - rc = %lx \n",
+> lpar_rc); -    return (unsigned int)return_value;
+> +
+> +    return (unsigned int)return_value & 0x00ffffff;
+>  }
+> 
 
-It would be nice to have some better automagical way of pulling the
-dtc git tree into a kernel git tree, but I haven't gotten my heard
-around the gittery involved.  There's a bit more to it than simply
-importing the dtc tree verbatim into the kernel tree - the pulls from
-upstream would need to be co-ordinated in some cases with updates to
-the in-kernel makefiles, libfdt_env.h and users of dtc and libfdt.
+No, don't put the & 0x00FFFFFF here.
+(1) this is not get_vector
+(2) we can take advantage of the full value
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Instead we need a macro to extract this out.
+
+The value returned is the value that is supposed to be used
+to EOI.  The top byte is the  old priority of the CPPR and
+the bottom 3 is the vector.   xics has priority levels
+even though linux does not, and hence can allow limited
+nesting.  we use that to allow
+only ipis to nest hardware irqs, but once we take an eoi we
+actually drop and let
+any new hwirq in.   that's a seperate bug/hole.
+ 
+>  static inline void lpar_xirr_info_set(int value)
+> @@ -321,49 +322,74 @@ static unsigned int
+> xics_startup(unsigned int virq)
+>      return 0;
+>  }
+>  
+> +static void xics_eoi_hwirq_direct(unsigned int hwirq)
+> +{
+> +    iosync();
+> +    direct_xirr_info_set((0xff << 24) | hwirq);
+> +}
+> +
+>  static void xics_eoi_direct(unsigned int virq)
+>  {
+> -    unsigned int irq = (unsigned int)irq_map[virq].hwirq;
+> +    xics_eoi_hwirq_direct((unsigned
+> int)irq_map[virq].hwirq); +}
+>  
+> +static void xics_eoi_hwirq_lpar(unsigned int hwirq)
+> +{
+>      iosync();
+> -    direct_xirr_info_set((0xff << 24) | irq);
+> +    lpar_xirr_info_set((0xff << 24) | hwirq);
+>  }
+>  
+> -
+>  static void xics_eoi_lpar(unsigned int virq)
+>  {
+> -    unsigned int irq = (unsigned int)irq_map[virq].hwirq;
+> -
+> -    iosync();
+> -    lpar_xirr_info_set((0xff << 24) | irq);
+> +    xics_eoi_hwirq_lpar((unsigned
+> int)irq_map[virq].hwirq);
+>  }
+
+so if we undo this part
+
+>  
+>  static inline unsigned int xics_remap_irq(unsigned int
+> vec)
+>  {
+> -    unsigned int irq;
+> -
+> -    vec &= 0x00ffffff;
+> -
+> -    if (vec == XICS_IRQ_SPURIOUS)
+> -        return NO_IRQ;
+> -    irq = irq_radix_revmap(xics_host, vec);
+> -    if (likely(irq != NO_IRQ))
+> -        return irq;
+> +    return irq_radix_revmap(xics_host, vec);
+> +}
+>  
+> -    printk(KERN_ERR "Interrupt %u (real) is invalid,"
+> -           " disabling it.\n", vec);
+> -    xics_mask_real_irq(vec);
+> -    return NO_IRQ;
+> +static void xics_report_bad_irq(unsigned int hwirq)
+> +{
+> +    pr_err("%s: no mapping for hwirq %u, disabling it.\n"
+> , __func__, hwirq);
+>  }
+>  
+
+merge the mask into here (we always call rtas)
+
+
+
+>  static unsigned int xics_get_irq_direct(void)
+>  {
+> -    return xics_remap_irq(direct_xirr_info_get());
+> +    unsigned int virq, hwirq;
+> +
+> +    hwirq = direct_xirr_info_get();
+
+store the whole xirr_get here, compare #define on the next
+line
+
+> +    if (hwirq == XICS_IRQ_SPURIOUS)
+> +        return NO_IRQ;
+> +
+> +    virq = xics_remap_irq(hwirq);
+> +
+> +    if (unlikely(virq == NO_IRQ)) {
+> +        xics_report_bad_irq(hwirq);
+> +        xics_mask_real_irq(hwirq);
+> +        xics_eoi_hwirq_direct(hwirq);
+
+and make this direct_xirr_set(hwirq) 
+
+
+> +    }
+> +
+> +    return virq;
+>  }
+>  
+
+Then I think it will be cleaner.
+
+>  static unsigned int xics_get_irq_lpar(void)
+>  {
+> -    return xics_remap_irq(lpar_xirr_info_get());
+> +    unsigned int virq, hwirq;
+> +
+> +    hwirq = lpar_xirr_info_get();
+> +    if (hwirq == XICS_IRQ_SPURIOUS)
+> +        return NO_IRQ;
+> +
+> +    virq = xics_remap_irq(hwirq);
+> +
+> +    if (unlikely(virq == NO_IRQ)) {
+> +        xics_report_bad_irq(hwirq);
+> +        xics_mask_real_irq(hwirq);
+> +        xics_eoi_hwirq_lpar(hwirq);
+> +    }
+> +
+> +    return virq;
+>  }
+
+similar
+
+hmm.. i see we can also avoid the masking in lpar if we make
+the argument unsigned int.  we build it from unsigned int
+anyways.
+
+i suppose i should just create this series.
+
+milton
