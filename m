@@ -1,20 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 7 Aug 2008 10:40:22 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC/PATCH 2/3] of: add of_lookup_stdout() utility function
-Message-ID: <20080807004022.GA24443@yookeroo.seuss>
-References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
-	<20080806060239.30717.79273.stgit@trillian.secretlab.ca>
-	<20080805.233205.201125898.davem@davemloft.net>
-	<18585.31504.836857.829592@cargo.ozlabs.ibm.com>
-	<fa686aa40808060631k278e187ej965f0ac08c837937@mail.gmail.com>
-	<C5C0AA60-C45F-4467-AC76-AA24A00CA4AC@kernel.crashing.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id 1EC19DDFBA
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 11:10:53 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so35662anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 Aug 2008 18:10:52 -0700 (PDT)
+Message-ID: <fa686aa40808061810h4ecf69bbj4f45082abd85d854@mail.gmail.com>
+Date: Wed, 6 Aug 2008 19:10:51 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: hang w/ppc6xx_defconfig related to 'simple-bus' compatible
+In-Reply-To: <20080806173547.GD3138@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <C5C0AA60-C45F-4467-AC76-AA24A00CA4AC@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	David Miller <davem@davemloft.net>, miltonm@bga.com
+Content-Type: text/plain; charset=ISO-8859-1
+References: <F2163BC0-08A2-4C17-AAE7-C37BD0CA66EA@kernel.crashing.org>
+	<20080806134128.GA9533@secretlab.ca>
+	<20080806173547.GD3138@ld0162-tx32.am.freescale.net>
+Cc: ppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 06, 2008 at 06:25:48PM +0200, Segher Boessenkool wrote:
->> It's not what we do with flattened device trees blobs though.  In the
->> flattened tree we're not using a /chosen/stdout property, just the
->> linux,stdout-path one.
+On Wed, Aug 6, 2008 at 11:35 AM, Scott Wood <scottwood@freescale.com> wrote:
+> On Wed, Aug 06, 2008 at 07:41:28AM -0600, Grant Likely wrote:
+>> On Tue, Aug 05, 2008 at 08:21:31AM -0500, Kumar Gala wrote:
+>> > I'm trying to get the ppc6xx_defconfig booting on any 8641 (74xx/e600)
+>> > system.  If I remove the 'simple-bus' compatible from the soc node in
+>> > the .dts it works.  Otherwise it hangs at but and looks to be crashed in
+>> > the serial driver due to accessing memory at 0.
+>> >
+>> > I've tried the same .dts (w/'simple-bus') using the
+>> > mpc8641_hpcn_defconfig and things work.
 >>
->> The question that remains is; should there be?  Should the dt blobs
->> use /chosen/stdout also?  (I'm not familiar enough with real OF to
->> know the answer.  I'm assuming that an instance value is not the same
->> as a phandle).
+>> The Xilinx folks hit something similar.  ns16550 nodes get matched if
+>> the parent claims simple-bus.  If extra stuff needs to be done to use
+>> that port, then bad things happen.
 >
-> ihandles and phandles are not the same thing in OF.  Since in the
-> "flat world" we cannot have instances, we should use phandles instead
-> of ihandles for the things in /chosen.  I thought we agreed on that
-> already, perhaps I am wrong?
+> If extra stuff needs to be done, it shouldn't claim to be a simple-bus.
 
-Not that I recall.  In general we've been avoiding using anything that
-traditionally contains an ihandle; hence the direct use of
-linux,stdout-path when using a flat tree.
+Heh, no, not the bus.  :-)  Extra stuff to use the serial device.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+g.
