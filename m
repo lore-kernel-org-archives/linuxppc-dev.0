@@ -1,31 +1,15 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0BE0BDDE1A
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Aug 2008 02:06:12 +1000 (EST)
-Date: Thu, 7 Aug 2008 17:06:06 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Message-ID: <20080807160605.GA9200@csn.ul.ie>
-References: <20080730193010.GB14138@csn.ul.ie>
-	<20080730130709.eb541475.akpm@linux-foundation.org>
-	<20080731103137.GD1704@csn.ul.ie>
-	<1217884211.20260.144.camel@nimitz>
-	<20080805111147.GD20243@csn.ul.ie>
-	<1217952748.10907.18.camel@nimitz>
-	<20080805162800.GJ20243@csn.ul.ie>
-	<1217958805.10907.45.camel@nimitz>
-	<20080806090222.GD21190@csn.ul.ie>
-	<1218052249.10907.125.camel@nimitz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1218052249.10907.125.camel@nimitz>
-Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	abh@cray.com, ebmunson@us.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id C3616DDF68
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Aug 2008 02:22:44 +1000 (EST)
+Date: Thu, 7 Aug 2008 12:22:42 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Josh Boyer
+	<jwboyer@linux.vnet.ibm.com>
+Subject: [RFC] Driver helper functions.....
+Message-ID: <20080807122242.63a9f156@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,77 +19,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (06/08/08 12:50), Dave Hansen didst pronounce:
-> On Wed, 2008-08-06 at 10:02 +0100, Mel Gorman wrote:
-> > > That said, this particular patch doesn't appear *too* bound to hugetlb
-> > > itself.  But, some of its limitations *do* come from the filesystem,
-> > > like its inability to handle VM_GROWS...  
-> > 
-> > The lack of VM_GROWSX is an issue, but on its own it does not justify
-> > the amount of churn necessary to support direct pagetable insertions for
-> > MAP_ANONYMOUS|MAP_PRIVATE. I think we'd need another case or two that would
-> > really benefit from direct insertions to pagetables instead of hugetlbfs so
-> > that the path would get adequately tested.
-> 
-> I'm jumping around here a bit, but I'm trying to get to the core of what
-> my problem with these patches is.  I'll see if I can close the loop
-> here.
-> 
-> The main thing this set of patches does that I care about is take an
-> anonymous VMA and replace it with a hugetlb VMA.  It does this on a
-> special cue, but does it nonetheless.
-> 
+The design of the warp is basically a processor, an FPGA, some RAM,
+some flash, and some glue logic. As the number of drivers rapidly
+expands... we are starting to hit inter-driver conflicts with a select
+few FPGA registers.
 
-This is not actually a new thing. For a long time now, it has been possible to
-back  malloc() with hugepages at a userspace level using the morecore glibc
-hook. That is replacing anonymous memory with a file-backed VMA. It happens
-in a different place but it's just as deliberate as backing stack and the
-end result is very similar. As the file is ram-based, it doesn't have the
-same types of consequences like dirty page syncing that you'd ordinarily
-watch for when moving from anonymous to file-backed memory.
+So we need a few "helper" functions to handle locking. Basically
+something like this:
 
-> This patch has crossed a line in that it is really the first
-> *replacement* of a normal VMA with a hugetlb VMA instead of the creation
-> of the VMAs at the user's request. 
+static DEFINE_SPINLOCK(fpga_lock);
 
-We crossed that line with morecore, it's back there somewhere. We're just
-doing in kernel this time because backing stacks with hugepages in userspace
-turned out to be a hairy endevour.
+void warp_fpga_set_imr(imr)
+{ /* imr = interrupt mask register */
+	lock
+	read/modify/write imr
+	unlock
+}
 
-Properly supporting anonymous hugepages would either require larger
-changes to the core or reimplementing yet more of mm/ in mm/hugetlb.c.
-Neither is a particularly appealing approach, nor is it likely to be a
-very popular one.
+void warp_fpga_clear_imr(imr);
+int warp_fpga_indirect_read();
+int warp_fpga_indirect_write();
 
-> I'm really curious what the plan is
-> to follow up on this.  Will this stack stuff turn out to be one-off
-> code, or is this *the* route for getting transparent large pages in the
-> future?
-> 
+Maybe a couple more, but I think it would basically be four functions.
 
-Conceivably, we could also implement MAP_LARGEPAGE for MAP_ANONYMOUS
-which would use the same hugetlb_file_setup() as for shmem and stacks
-with this patch. It would be a reliavely straight-forward patch if reusing
-hugetlb_file_setup() as the flags can be passed through almost verbatim. In
-that case, hugetlbfs still makes a good fit without making direct pagetable
-insertions necessary.
+So I see a few solutions:
 
-> Because of the limitations like its inability to grow the VMA, I can't
-> imagine that this would be a generic mechanism that we can use
-> elsewhere.
-> 
+1) Write an fpga driver. That seems overkill for basically exporting
+four functions.
 
-What other than a stack even cares about VM_GROWSDOWN working? Besides,
-VM_GROWSDOWN could be supported in a hugetlbfs file by mapping the end of
-the file and moving the offset backwards (yeah ok, it ain't the prettiest
-but it's less churn than introducing significantly different codepaths). It's
-just not something that needs to be supported at first cut.
+2) Add a non-static spinlock to the platform code and export that. This
+adds minimal code to the platform code but gives eveybody a lock that
+is always there.
 
-brk() if you wanted to back hugepages with it conceivably needs a resizing
-VMA but in that case it's growing up in which case just extend the end of
-the VMA and increase the size of the file.
+3) Add the above functions to the platform code.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+So my questions are, what would be best practice? Would adding the
+functions and/or spinlock to the platform code be kosher?
+
+And if I did add the spinlock and/or functions to the platform code,
+where would I put the include file to export them from? In the arch
+code itself? i.e. arch/powerpc/platforms/44x/warp.h?
+
+Cheers,
+   Sean
