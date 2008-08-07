@@ -1,22 +1,16 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from lxorguk.ukuu.org.uk (earthlight.etchedpixels.co.uk
-	[81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DF875DE180
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 09:53:12 +1000 (EST)
-Date: Thu, 7 Aug 2008 00:35:26 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 47AACDDF45
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 10:30:44 +1000 (EST)
+Date: Thu, 7 Aug 2008 10:30:40 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH]: Remove bogons from the iSeries console
-Message-ID: <20080807003526.66bc2c2a@lxorguk.ukuu.org.uk>
-In-Reply-To: <18586.14112.751080.325656@cargo.ozlabs.ibm.com>
-References: <20080806140629.268fcf07@lxorguk.ukuu.org.uk>
-	<18586.14112.751080.325656@cargo.ozlabs.ibm.com>
+Subject: [PATCH] of/powerpc: remove include of linux/of_platform.h from
+	asm/of_platform.h
+Message-Id: <20080807103040.34a0a015.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: boutcher@us.ibm.com, linuxppc-dev@ozlabs.org, torvalds@osdl.org,
-	devilbis@us.ibm.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 7 Aug 2008 09:43:28 +1000
-Paul Mackerras <paulus@samba.org> wrote:
+Now that we have removed all inclusions of asm/of_platform.h, this
+compatibility include can be removed.
 
-> Alan Cox writes:
-> 
-> > --- a/drivers/char/viocons.c
-> > +++ b/drivers/char/viocons.c
-> > @@ -705,10 +705,6 @@ static int viotty_ioctl(struct tty_struct *tty, struct file *file,
-> >  	case KDSKBLED:
-> >  		return 0;
-> >  	}
-> > -	/* FIXME: WTF is this being called for ??? */
-> > -	lock_kernel();
-> > -	ret =  n_tty_ioctl(tty, file, cmd, arg);
-> > -	unlock_kernel();
-> >  	return ret;
-> >  }
-> 
-> I think you want "return -ENOIOCTLCMD" rather than "return ret" since
-> ret is uninitialized with your patch applied.  I agree the call to
-> n_tty_ioctl is bogus but I think we just want to return -ENOIOCTLCMD.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/include/asm/of_platform.h |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-Agreed
+diff --git a/arch/powerpc/include/asm/of_platform.h b/arch/powerpc/include/asm/of_platform.h
+index 18659ef..53b4650 100644
+--- a/arch/powerpc/include/asm/of_platform.h
++++ b/arch/powerpc/include/asm/of_platform.h
+@@ -11,9 +11,6 @@
+  *
+  */
+ 
+-/* This is just here during the transition */
+-#include <linux/of_platform.h>
+-
+ /* Platform drivers register/unregister */
+ static inline int of_register_platform_driver(struct of_platform_driver *drv)
+ {
+-- 
+1.5.6.3
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
