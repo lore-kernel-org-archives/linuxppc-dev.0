@@ -1,21 +1,21 @@
 Return-Path: <jrigby@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3F579DE4FE
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Aug 2008 03:36:37 +1000 (EST)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BB741DE194
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Aug 2008 03:37:57 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m77HaTvV013606
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 10:36:30 -0700 (MST)
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m77HaUUu020053
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 Aug 2008 10:36:31 -0700 (MST)
 From: John Rigby <jrigby@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5121 pci 1/3] powerpc: 83xx: pci: Remove need for get_immrbase
-	from mpc83xx_add_bridge.
-Date: Thu,  7 Aug 2008 11:36:25 -0600
-Message-Id: <1218130587-31176-1-git-send-email-jrigby@freescale.com>
+Subject: [PATCH 5121 pci 2/3] powerpc: 5121: Add PCI support.
+Date: Thu,  7 Aug 2008 11:36:26 -0600
+Message-Id: <1218130587-31176-2-git-send-email-jrigby@freescale.com>
+In-Reply-To: <1218130587-31176-1-git-send-email-jrigby@freescale.com>
+References: <1218130587-31176-1-git-send-email-jrigby@freescale.com>
 Cc: John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,455 +26,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Modify mpc83xx_add_bridge to get config space register base address from the device
-tree instead of immr + hardcoded offset.
+Uses mpc83xx_add_bridge in fsl_pci.c
 
-83xx pci nodes have these changes:
-    register properties now contain two address length tuples:
-	First is the pci bridge register base, this has always been there.
-	Second is the config base, this is new.
-    The primary pci bus should have the "primary" property.
-
-These are documented in Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt
-
-The changes accomplish these things:
-    mpc83xx_add_bridge no longer needs to call get_immrbase
-    it uses hard coded addresses if the second register value is missing
-    it no longer needs to devine primary property from register base
+Adds second register tuple to pci node register property
+as previously done for 83xx device trees in a previous patch.
 
 Signed-off-by: John Rigby <jrigby@freescale.com>
 ---
- .../powerpc/dts-bindings/fsl/83xx-512x-pci.txt     |   43 ++++++++++++++++
- arch/powerpc/boot/dts/mpc8313erdb.dts              |    4 +-
- arch/powerpc/boot/dts/mpc8315erdb.dts              |    4 +-
- arch/powerpc/boot/dts/mpc832x_mds.dts              |    4 +-
- arch/powerpc/boot/dts/mpc832x_rdb.dts              |    4 +-
- arch/powerpc/boot/dts/mpc8349emitx.dts             |    7 ++-
- arch/powerpc/boot/dts/mpc8349emitxgp.dts           |    4 +-
- arch/powerpc/boot/dts/mpc834x_mds.dts              |    7 ++-
- arch/powerpc/boot/dts/mpc836x_mds.dts              |    4 +-
- arch/powerpc/boot/dts/mpc836x_rdk.dts              |    4 +-
- arch/powerpc/boot/dts/mpc8377_mds.dts              |    4 +-
- arch/powerpc/boot/dts/mpc8377_rdb.dts              |    4 +-
- arch/powerpc/boot/dts/mpc8378_mds.dts              |    4 +-
- arch/powerpc/boot/dts/mpc8378_rdb.dts              |    4 +-
- arch/powerpc/boot/dts/mpc8379_mds.dts              |    4 +-
- arch/powerpc/boot/dts/mpc8379_rdb.dts              |    4 +-
- arch/powerpc/boot/dts/sbc8349.dts                  |    4 +-
- arch/powerpc/sysdev/fsl_pci.c                      |   53 +++++++++++++------
- 18 files changed, 131 insertions(+), 35 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt
+ arch/powerpc/boot/dts/mpc5121ads.dts      |    4 +++-
+ arch/powerpc/platforms/512x/Kconfig       |    2 ++
+ arch/powerpc/platforms/512x/mpc5121_ads.c |   10 ++++++++++
+ arch/powerpc/sysdev/fsl_pci.c             |    4 ++--
+ 4 files changed, 17 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt b/Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt
-new file mode 100644
-index 0000000..51214a0
---- /dev/null
-+++ b/Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt
-@@ -0,0 +1,43 @@
-+* Freescale 83xx and 512x PCI bridges
-+
-+Freescale 83xx and 512x SOCs include the same pci bridge core.
-+
-+83xx/512x specific notes:
-+- reg: should contain two address length tuples
-+    The first is for the internal pci bridge registers
-+    The second is for the pci config space access registers
-+- primary: 
-+    This property should be present for the primary pci bridge
-+
-+Example (MPC8313ERDB)
-+	pci0: pci@e0008500 {
-+		cell-index = <1>;
-+		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-+		interrupt-map = <
-+				/* IDSEL 0x0E -mini PCI */
-+				 0x7000 0x0 0x0 0x1 &ipic 18 0x8
-+				 0x7000 0x0 0x0 0x2 &ipic 18 0x8
-+				 0x7000 0x0 0x0 0x3 &ipic 18 0x8
-+				 0x7000 0x0 0x0 0x4 &ipic 18 0x8
-+
-+				/* IDSEL 0x0F - PCI slot */
-+				 0x7800 0x0 0x0 0x1 &ipic 17 0x8
-+				 0x7800 0x0 0x0 0x2 &ipic 18 0x8
-+				 0x7800 0x0 0x0 0x3 &ipic 17 0x8
-+				 0x7800 0x0 0x0 0x4 &ipic 18 0x8>;
-+		interrupt-parent = <&ipic>;
-+		interrupts = <66 0x8>;
-+		bus-range = <0x0 0x0>;
-+		ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
-+			  0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
-+			  0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
-+		clock-frequency = <66666666>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
-+		compatible = "fsl,mpc8349-pci";
-+		device_type = "pci";
+diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts/mpc5121ads.dts
+index 1f9036c..b5444f7 100644
+--- a/arch/powerpc/boot/dts/mpc5121ads.dts
++++ b/arch/powerpc/boot/dts/mpc5121ads.dts
+@@ -403,8 +403,10 @@
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+ 		#address-cells = <3>;
+-		reg = <0x80008500 0x100>;
++		reg = <0x80008500 0x100		/* internal registers */
++		       0x80008300 0x8>;		/* config space access registers */
+ 		compatible = "fsl,mpc5121-pci";
+ 		device_type = "pci";
 +		primary;
-+	};
-diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
-index 2a94ae0..f4d84bb 100644
---- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-@@ -359,9 +359,11 @@
- 			#interrupt-cells = <1>;
- 			#size-cells = <2>;
- 			#address-cells = <3>;
--			reg = <0xe0008500 0x100>;
-+			reg = <0xe0008500 0x100		/* internal registers */
-+			       0xe0008300 0x8>;		/* config space access registers */
- 			compatible = "fsl,mpc8349-pci";
- 			device_type = "pci";
-+			primary;
- 		};
+ 	};
+ };
+diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
+index c62f893..326852c 100644
+--- a/arch/powerpc/platforms/512x/Kconfig
++++ b/arch/powerpc/platforms/512x/Kconfig
+@@ -3,6 +3,8 @@ config PPC_MPC512x
+ 	select FSL_SOC
+ 	select IPIC
+ 	select PPC_CLOCK
++	select PPC_PCI_CHOICE
++	select FSL_PCI if PCI
  
- 		dma@82a8 {
-diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
-index f704513..d7a6c4a 100644
---- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-@@ -314,8 +314,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
-index fbc9304..fe3bb7d 100644
---- a/arch/powerpc/boot/dts/mpc832x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
-@@ -419,8 +419,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-index b157d18..74206e8 100644
---- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-@@ -327,8 +327,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-index 700e076..f78feac 100644
---- a/arch/powerpc/boot/dts/mpc8349emitx.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -250,9 +250,11 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
+ config PPC_MPC5121
+ 	bool
+diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
+index 5ebf693..441abc4 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_ads.c
++++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
+@@ -22,16 +22,26 @@
+ #include <asm/prom.h>
+ #include <asm/time.h>
  
- 	pci1: pci@e0008600 {
-@@ -276,7 +278,8 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008600 0x100>;
-+		reg = <0xe0008600 0x100		/* internal registers */
-+		       0xe0008380 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-index cdd3063..2c1121b 100644
---- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-@@ -224,8 +224,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008600 0x100>;
-+		reg = <0xe0008600 0x100		/* internal registers */
-+		       0xe0008380 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
-index 783241c..5df5ee1 100644
---- a/arch/powerpc/boot/dts/mpc834x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
-@@ -311,9 +311,11 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
++#include <sysdev/fsl_pci.h>
++
+ #include "mpc512x.h"
+ #include "mpc5121_ads.h"
  
- 	pci1: pci@e0008600 {
-@@ -372,7 +374,8 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008600 0x100>;
-+		reg = <0xe0008600 0x100		/* internal registers */
-+		       0xe0008380 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
-index a3b76a7..d735c82 100644
---- a/arch/powerpc/boot/dts/mpc836x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
-@@ -405,8 +405,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-index 89c9202..cef069f 100644
---- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-@@ -405,7 +405,8 @@
- 		#interrupt-cells = <1>;
- 		device_type = "pci";
- 		compatible = "fsl,mpc8360-pci", "fsl,mpc8349-pci";
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		ranges = <0x02000000 0 0x90000000 0x90000000 0 0x10000000
- 			  0x42000000 0 0x80000000 0x80000000 0 0x10000000
- 			  0x01000000 0 0xe0300000 0xe0300000 0 0x00100000>;
-@@ -424,5 +425,6 @@
- 		/* filled by u-boot */
- 		bus-range = <0 0>;
- 		clock-frequency = <0>;
-+		primary;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
-index 432782b..c206688 100644
---- a/arch/powerpc/boot/dts/mpc8377_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-@@ -374,8 +374,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index ed137aa..f79ede2 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -315,8 +315,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
-index ed32c8d..0f1f3d8 100644
---- a/arch/powerpc/boot/dts/mpc8378_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
-@@ -360,8 +360,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index 34a7f2f..795fb08 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -301,8 +301,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dts/mpc8379_mds.dts
-index f4db9ed..0b75826 100644
---- a/arch/powerpc/boot/dts/mpc8379_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
-@@ -388,8 +388,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-index e4d7030..cc7cac1 100644
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-@@ -329,8 +329,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/sbc8349.dts b/arch/powerpc/boot/dts/sbc8349.dts
-index 45f789b..ac41fad 100644
---- a/arch/powerpc/boot/dts/sbc8349.dts
-+++ b/arch/powerpc/boot/dts/sbc8349.dts
-@@ -268,8 +268,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xe0008500 0x100>;
-+		reg = <0xe0008500 0x100		/* internal registers */
-+		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		primary;
- 	};
- };
+ static void __init mpc5121_ads_setup_arch(void)
+ {
++#ifdef CONFIG_PCI
++	struct device_node *np;
++#endif
+ 	printk(KERN_INFO "MPC5121 ADS board from Freescale Semiconductor\n");
+ 	/*
+ 	 * cpld regs are needed early
+ 	 */
+ 	mpc5121_ads_cpld_map();
++
++#ifdef CONFIG_PCI
++	for_each_compatible_node(np, "pci", "fsl,mpc5121-pci")
++		mpc83xx_add_bridge(np);
++#endif
+ }
+ 
+ static void __init mpc5121_ads_init_IRQ(void)
 diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 61e6d77..c4bdfc2 100644
+index c4bdfc2..0acdd1e 100644
 --- a/arch/powerpc/sysdev/fsl_pci.c
 +++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -256,15 +256,45 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+@@ -251,7 +251,7 @@ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8641D, quirk_fsl_pcie_header);
+ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8610, quirk_fsl_pcie_header);
+ #endif /* CONFIG_PPC_85xx || CONFIG_PPC_86xx */
+ 
+-#if defined(CONFIG_PPC_83xx)
++#if defined(CONFIG_PPC_83xx) || defined(CONFIG_PPC_MPC512x)
+ int __init mpc83xx_add_bridge(struct device_node *dev)
  {
  	int len;
- 	struct pci_controller *hose;
--	struct resource rsrc;
-+	struct resource rsrc_reg;
-+	struct resource rsrc_cfg;
- 	const int *bus_range;
--	int primary = 1, has_address = 0;
--	phys_addr_t immr = get_immrbase();
-+	int primary = 0;
+@@ -313,7 +313,7 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
  
- 	pr_debug("Adding PCI host bridge %s\n", dev->full_name);
+ 	setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 4, 0);
  
- 	/* Fetch host bridge registers address */
--	has_address = (of_address_to_resource(dev, 0, &rsrc) == 0);
-+	if (of_address_to_resource(dev, 0, &rsrc_reg)) {
-+		printk(KERN_WARNING "Can't get pci register base!\n");
-+		return -ENOMEM;
-+	}
-+
-+	memset(&rsrc_cfg, 0, sizeof(rsrc_cfg));
-+
-+	if (of_address_to_resource(dev, 1, &rsrc_cfg)) {
-+		printk(KERN_WARNING
-+			"No pci config register base in dev tree, "
-+			"using default\n");
-+		/*
-+		 * MPC83xx supports up to two host controllers, one at 0x8500
-+		 * from immrbar.  The other is at 0x8600.  We consider the
-+		 * one at 0x8500 the primary controller.
-+		 */
-+		/* PCI 1 */
-+		if ((rsrc_reg.start & 0xfffff) == 0x8500) {
-+			rsrc_cfg.start = (rsrc_reg.start & 0xfff00000) + 0x8300;
-+			primary = 1;
-+		}
-+		/* PCI 2 */
-+		if ((rsrc_reg.start & 0xfffff) == 0x8600) {
-+			rsrc_cfg.start = (rsrc_reg.start & 0xfff00000) + 0x8380;
-+			primary = 0;
-+		}
-+	}
-+
-+	/* Check if primary bridge */
-+	if (of_get_property(dev, "primary", NULL))
-+		primary = 1;
- 
- 	/* Get bus range if any */
- 	bus_range = of_get_property(dev, "bus-range", &len);
-@@ -281,22 +311,11 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
- 	hose->first_busno = bus_range ? bus_range[0] : 0;
- 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
- 
--	/* MPC83xx supports up to two host controllers one at 0x8500 from immrbar
--	 * the other at 0x8600, we consider the 0x8500 the primary controller
--	 */
--	/* PCI 1 */
--	if ((rsrc.start & 0xfffff) == 0x8500) {
--		setup_indirect_pci(hose, immr + 0x8300, immr + 0x8304, 0);
--	}
--	/* PCI 2 */
--	if ((rsrc.start & 0xfffff) == 0x8600) {
--		setup_indirect_pci(hose, immr + 0x8380, immr + 0x8384, 0);
--		primary = 0;
--	}
-+	setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 4, 0);
- 
- 	printk(KERN_INFO "Found MPC83xx PCI host bridge at 0x%016llx. "
+-	printk(KERN_INFO "Found MPC83xx PCI host bridge at 0x%016llx. "
++	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
  	       "Firmware bus number: %d->%d\n",
--	       (unsigned long long)rsrc.start, hose->first_busno,
-+	       (unsigned long long)rsrc_reg.start, hose->first_busno,
+ 	       (unsigned long long)rsrc_reg.start, hose->first_busno,
  	       hose->last_busno);
- 
- 	pr_debug(" ->Hose at 0x%p, cfg_addr=0x%p,cfg_data=0x%p\n",
 -- 
