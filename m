@@ -1,16 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 7 Aug 2008 16:12:54 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [RFC/PATCH 2/3] of: add of_lookup_stdout() utility function
-Message-ID: <20080807061254.GB12571@yookeroo.seuss>
-References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
-	<20080806060239.30717.79273.stgit@trillian.secretlab.ca>
-	<ed82fe3e0808060946v39992095pfb6b85726b7d307d@mail.gmail.com>
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8E4B3DDF07
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 17:59:05 +1000 (EST)
+Message-ID: <489AAB3E.8020507@pobox.com>
+Date: Thu, 07 Aug 2008 03:58:54 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ed82fe3e0808060946v39992095pfb6b85726b7d307d@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, miltonm@bga.com
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/3] gianfar: Magic Packet and suspend/resume support.
+References: <20080625215119.GB11784@loki.buserror.net>
+In-Reply-To: <20080625215119.GB11784@loki.buserror.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,26 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 06, 2008 at 11:46:47AM -0500, Timur Tabi wrote:
-> On Wed, Aug 6, 2008 at 1:02 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > From: Grant Likely <grant.likely@secretlab.ca>
-> >
-> > of_lookup_stdout() is useful for figuring out what device to use as output
-> > for early boot progress messages.  It returns the node pointed to by the
-> > linux,stdout-path property in the chosen node.
-> 
-> I thought linux,stdout-path is deprecated are we're supposed to be
-> using the aliases node instead?
+Scott Wood wrote:
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+>  Documentation/powerpc/booting-without-of.txt |    5 +-
+>  arch/powerpc/sysdev/fsl_soc.c                |    3 +
+>  drivers/net/gianfar.c                        |  118 +++++++++++++++++++++++++-
+>  drivers/net/gianfar.h                        |   12 ++-
+>  drivers/net/gianfar_ethtool.c                |   41 +++++++++-
+>  include/linux/fsl_devices.h                  |    1 +
+>  6 files changed, 172 insertions(+), 8 deletions(-)
 
-During the ePAPR process this idea came up - standardising a 'stdout'
-alias that would replace linux,stdout-path in chosen.  However that
-was done in ignorance of the history of the linux,stdout-path property
-and its connection to the stdout ihandle in chosen.  In any case, the
-proposed 'stdout' alias didn't make the final cut for ePAPR, so how to
-address this for flat-tree systems is still an open question.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+did this ever get ack'd by Kumar?  I don't have a record of it.
