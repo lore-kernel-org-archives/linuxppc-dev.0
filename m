@@ -1,23 +1,21 @@
-Return-Path: <sebastien.chretien.enseirb@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.228])
-	by ozlabs.org (Postfix) with ESMTP id A09BEDE1B9
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 22:56:53 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so397250rvb.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 07 Aug 2008 05:56:51 -0700 (PDT)
-Message-ID: <319b0ac50808070556t5291474bhcae9ff3fd45f1fab@mail.gmail.com>
-Date: Thu, 7 Aug 2008 14:56:51 +0200
-From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
-	<sebastien.chretien.enseirb@gmail.com>
-To: "Juergen Beisert" <j.beisert@pengutronix.de>
-Subject: Re: Powerpc and ioremap
-In-Reply-To: <319b0ac50808070515o7a28cf34ue190dd3dba0ee157@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_12298_16506828.1218113811504"
-References: <319b0ac50808070254x27606b48sb15fb4ee6105c6c6@mail.gmail.com>
-	<200808071223.11156.j.beisert@pengutronix.de>
-	<319b0ac50808070515o7a28cf34ue190dd3dba0ee157@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D264EDDF87
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Aug 2008 22:59:07 +1000 (EST)
+Message-Id: <E4AD279E-CA52-4F8C-BA74-15880AA29511@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jeff Garzik <jgarzik@pobox.com>
+In-Reply-To: <489AAB3E.8020507@pobox.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH 2/3] gianfar: Magic Packet and suspend/resume support.
+Date: Thu, 7 Aug 2008 07:58:57 -0500
+References: <20080625215119.GB11784@loki.buserror.net>
+	<489AAB3E.8020507@pobox.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,109 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_12298_16506828.1218113811504
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Can we call ioremap() during udbg_early_init ?
+On Aug 7, 2008, at 2:58 AM, Jeff Garzik wrote:
 
-2008/8/7, S=E9bastien Chr=E9tien <sebastien.chretien.enseirb@gmail.com>:
+> Scott Wood wrote:
+>> Signed-off-by: Scott Wood <scottwood@freescale.com>
+>> ---
+>> Documentation/powerpc/booting-without-of.txt |    5 +-
+>> arch/powerpc/sysdev/fsl_soc.c                |    3 +
+>> drivers/net/gianfar.c                        |  118 ++++++++++++++++ 
+>> +++++++++-
+>> drivers/net/gianfar.h                        |   12 ++-
+>> drivers/net/gianfar_ethtool.c                |   41 +++++++++-
+>> include/linux/fsl_devices.h                  |    1 +
+>> 6 files changed, 172 insertions(+), 8 deletions(-)
 >
-> Thanks for your answer.
-> But it doesn't work.
-> I think ioremap create a kernel panic. But I can't see because i have no
-> UART ready.
-> Is there a way in order to trace the failure ?
->
-> 2008/8/7, Juergen Beisert <j.beisert@pengutronix.de>:
->>
->> Am Donnerstag, 7. August 2008 11:54 schrieb S=E9bastien Chr=E9tien:
->>
->> > Hello,
->> >
->> > I am trying to port linux on my Powerpc Board. I have used Linux 2.6.2=
-6
->> and
->> > gcc 3.4.5.
->> > I have used Uboot 1.2.
->> > Linux seems running from _start to udbg_early_init(). That's why I
->> > develloped a udbg_driver.
->> > It must write in a register which is located at 0x2001b044. So I wrote=
- :
->> >
->> > void __iomem *p;
->> > p=3Dioremap(0x2001b044,4);
->> > iowrite32('O',p);
->> > iowrite32('K',p);
->>
->>
->> try
->>
->> p=3Dioremap(0x2001b000, 0x1000);
->> iowrite32('O',p + 0x44);
->> iowrite32('K',p + 0x44);
->>
->> instead.
->>
->> jbe
->>
->> --
->>   Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
->>   Pengutronix - Linux Solutions for Science and Industry
->>    Handelsregister:  Amtsgericht Hildesheim, HRA 2686
->>      Hannoversche Str. 2, 31134 Hildesheim, Germany
->>    Phone: +49-5121-206917-7 |  Fax: +49-5121-206917-9
->>
->
+> did this ever get ack'd by Kumar?  I don't have a record of it.
 >
 
-------=_Part_12298_16506828.1218113811504
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+A version of this is already in linus's tree.  I just forgot to add  
+your Ack to it (and I apologize for that).
 
-Can we call ioremap() during udbg_early_init ?<br><br><div><span class=3D"g=
-mail_quote">2008/8/7, S=E9bastien Chr=E9tien &lt;<a href=3D"mailto:sebastie=
-n.chretien.enseirb@gmail.com">sebastien.chretien.enseirb@gmail.com</a>&gt;:=
-</span><blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rg=
-b(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Thanks for your answer.<br>
-But it doesn&#39;t work.<br>
-I think ioremap create a kernel panic. But I can&#39;t see because i have n=
-o UART ready. <br>
-Is there a way in order to trace the failure ?<br><br><div><span class=3D"g=
-mail_quote">2008/8/7, Juergen Beisert &lt;<a href=3D"mailto:j.beisert@pengu=
-tronix.de" target=3D"_blank" onclick=3D"return top.js.OpenExtLink(window,ev=
-ent,this)">j.beisert@pengutronix.de</a>&gt;:</span><div>
-<span class=3D"e" id=3D"q_11b9d17c29b34c62_1"><blockquote class=3D"gmail_qu=
-ote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0p=
-t 0.8ex; padding-left: 1ex;">
-Am Donnerstag, 7. August 2008 11:54 schrieb S=E9bastien Chr=E9tien:<br> <br=
->&gt; Hello,<br> &gt;<br> &gt; I am trying to port linux on my Powerpc Boar=
-d. I have used Linux 2.6.26 and<br> &gt; gcc <a href=3D"http://3.4.5." targ=
-et=3D"_blank" onclick=3D"return top.js.OpenExtLink(window,event,this)">3.4.=
-5.</a><br>
+git commit d87eb12785c14de1586e3bad86ca2c0991300339
 
- &gt; I have used Uboot 1.2.<br> &gt; Linux seems running from _start to ud=
-bg_early_init(). That&#39;s why I<br> &gt; develloped a udbg_driver.<br> &g=
-t; It must write in a register which is located at 0x2001b044. So I wrote :=
-<br>
-
- &gt;<br> &gt; void __iomem *p;<br> &gt; p=3Dioremap(0x2001b044,4);<br> &gt=
-; iowrite32(&#39;O&#39;,p);<br> &gt; iowrite32(&#39;K&#39;,p);<br> <br> <br=
->try<br> <br> p=3Dioremap(0x2001b000, 0x1000);<br> iowrite32(&#39;O&#39;,p =
-+ 0x44);<br>
-
- iowrite32(&#39;K&#39;,p + 0x44);<br> <br> instead.<br> <br> jbe<br> <br>--=
-<br>&nbsp;&nbsp;Dipl.-Ing. Juergen Beisert | <a href=3D"http://www.pengutro=
-nix.de" target=3D"_blank" onclick=3D"return top.js.OpenExtLink(window,event=
-,this)">http://www.pengutronix.de</a><br>
-&nbsp;&nbsp;Pengutronix - Linux Solutions for Science and Industry<br>
-&nbsp;&nbsp; Handelsregister:&nbsp;&nbsp;Amtsgericht Hildesheim, HRA 2686<b=
-r>&nbsp;&nbsp;&nbsp;&nbsp; Hannoversche Str. 2, 31134 Hildesheim, Germany<b=
-r>&nbsp;&nbsp; Phone: +49-5121-206917-7 |&nbsp;&nbsp;Fax: +49-5121-206917-9=
-<br> </blockquote></span></div></div><br>
-</blockquote></div><br>
-
-------=_Part_12298_16506828.1218113811504--
+- k
