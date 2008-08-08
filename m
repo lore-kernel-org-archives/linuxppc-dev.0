@@ -1,21 +1,22 @@
-Return-Path: <greg@kroah.com>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EF131DDF2A
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Aug 2008 09:34:15 +1000 (EST)
-Date: Fri, 8 Aug 2008 16:26:35 -0700
-From: Greg KH <greg@kroah.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 0/3] Patches to support QE USB Host Controller
-Message-ID: <20080808232635.GB5352@kroah.com>
-References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
+Return-Path: <mchan@broadcom.com>
+Received: from mms1.broadcom.com (mms1.broadcom.com [216.31.210.17])
+	by ozlabs.org (Postfix) with ESMTP id D5F4ADDED9
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Aug 2008 10:21:15 +1000 (EST)
+Subject: Re: Strange tg3 regression with UMP fw. link reporting
+From: "Michael Chan" <mchan@broadcom.com>
+To: "benh@kernel.crashing.org" <benh@kernel.crashing.org>
+In-Reply-To: <1218233157.24157.343.camel@pasglop>
+References: <1218180939.24157.332.camel@pasglop>
+	<31233EB5-037E-4615-95C9-7C816E510752@kernel.crashing.org>
+	<1218187111.24157.336.camel@pasglop>
+	<20080808184359.GB23249@HP-xw6200.broadcom.net>
+	<1218233157.24157.343.camel@pasglop>
+Date: Fri, 08 Aug 2008 13:20:12 -0700
+Message-ID: <1218226812.12081.19.camel@HP1>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080808161717.GA19095@polina.dev.rtsoft.ru>
-Cc: David Brownell <dbrownell@users.sourceforge.net>, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
+Content-Type: text/plain
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Nathan Lynch <ntl@pobox.com>,
+	Matthew Carlson <mcarlson@broadcom.com>, netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 08, 2008 at 08:17:17PM +0400, Anton Vorontsov wrote:
-> Hi all,
+
+On Fri, 2008-08-08 at 15:05 -0700, Benjamin Herrenschmidt wrote:
+> On Fri, 2008-08-08 at 11:43 -0700, Matt Carlson wrote:
+> > We really shouldn't be displaying any error messages in the event of a
+> > timeout though.  Earlier versions of the UMP firmware did not support
+> > the link update interface.  The best thing the driver can do for all
+> > cases is give the firmware a chance to service the event but continue
+> > as if the event were serviced if it did not get an explicit ACK.
 > 
-> Most patches that were needed to support QE USB Host were merged during
-> 2.6.27 merge window, and only three more patches left over. Here they
-> are.
+> But that means that the driver will continuously spin 2.5ms every
+> timer tick or so ? Or do I miss something ? Could it be possible to
+> count timeouts and if after N attempts at an ack, they all timed out,
+> disable the feature completely ?
+
+Please see my other email.  Matt and I will fix it in a way to minimize
+the spin as much as possible regardless of firmware version.
+
 > 
-> David, could you bear with gpio_to_chip() exported function, just as
-> a stopgap for a proper api?
+> Or is there a way to test the version of the firmware ?
+> 
+> In any case, the fix should go into -stable as the problem is hurting
+> 2.6.26. Also, should we consider updating the tg3 firmware on those
+> machines ?
+> 
 
-I'll hold off on the 3rd patch until david takes the first two.
-
-thanks,
-
-greg k-h
+Right, we'll take care of -stable as well.  Thanks.
