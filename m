@@ -1,27 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 954D4DDF8D
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Aug 2008 10:04:40 +1000 (EST)
-Message-Id: <8A11E9B3-4B7D-48CF-ABAB-625050D8FFFE@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1218147224.24157.308.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [RFC/PATCH 1/3] powerpc: add ioremap_bat() function for setting
-	up BAT translated IO regions.
-Date: Thu, 7 Aug 2008 19:04:04 -0500
-References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
-	<20080806060223.30717.35175.stgit@trillian.secretlab.ca>
-	<CD66FAA8-BC99-4630-9FFF-E2C651E5DE9A@kernel.crashing.org>
-	<fa686aa40808061454t14737278h3fd15fb0ccdbf251@mail.gmail.com>
-	<75A0A752-FF2C-41B6-A6D3-E510E8FD4E91@kernel.crashing.org>
-	<1218061709.24157.249.camel@pasglop>
-	<63451E1F-30C1-4146-9D1A-BD4973E8F17A@kernel.crashing.org>
-	<1218147224.24157.308.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, miltonm@bga.com
+Return-Path: <gvb.linuxppc.dev@gmail.com>
+Received: from QMTA01.westchester.pa.mail.comcast.net
+	(qmta01.westchester.pa.mail.comcast.net [76.96.62.16])
+	by ozlabs.org (Postfix) with ESMTP id 6C0CEDDF0E
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Aug 2008 12:24:24 +1000 (EST)
+Message-ID: <489BAE69.9010400@gmail.com>
+Date: Thu, 07 Aug 2008 22:24:41 -0400
+From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
+MIME-Version: 1.0
+To: surendranath.moilla@cmcltd.com
+Subject: Re: problem in booting kernel with mpc836x_mds.dtb
+References: <19152.136.182.158.153.1218051991.squirrel@webmail.cmcltd.com>
+In-Reply-To: <19152.136.182.158.153.1218051991.squirrel@webmail.cmcltd.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,49 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+surendranath.moilla@cmcltd.com wrote:
+> Hi,
+>    I have the following problem, when i am trying to boot linux on
+> MPC8360E MDS board with the mpc836x_mds.dtb created using dtc and
+> mpc836x_mds.dts in from /arch/powerpc/boot/platforms/dts/ directory of
+> linux-2.6.22 version.
+> 
+> fdt_chosen: FDT_ERR_BADMAGIC
+> 
+> after this it is trying to re boot.
+> how to resolve this issue, so i need to apply any pathces to
+> mpc836x_mds.dts file.
+> NOTE: i am using dtc compiled from linux-2.6.26 version.
+> 
+> Regards
+> Surendra
 
-On Aug 7, 2008, at 5:13 PM, Benjamin Herrenschmidt wrote:
+Hi Surendra,
 
-> On Wed, 2008-08-06 at 20:49 -0500, Kumar Gala wrote:
->> On Aug 6, 2008, at 5:28 PM, Benjamin Herrenschmidt wrote:
->>
->>>
->>>> there is a bunch of error checking and difference in semantics that
->>>> you need to fix.  I think introduce a new API for this is silly,
->>>> especially since we expect there to only be one actual invocation  
->>>> of
->>>> the API for serial console access.
->>>
->>> Not necessarily....
->>>
->>> There's another aspect to BAT mappings here. First, they should be
->>> permanent (ie, not unmappable). That way, we have ioremap just use
->>> an existing BAT mapping when asked for a device that is covered
->>> by a BAT. This allows to have platform code do something like setup
->>> a BAT over a bunch of SOC registers or over a device, to  
->>> automagically
->>> get drivers doing ioremap to that area benefit from it.
->>
->> why should they be permanent.. We could implement reference counting
->> around the regions and free BATs if the count = 0.
->
-> Do we care ?
+Is the error message coming from u-boot or linux?  More lines from the 
+boot sequence (like most or all of them) would be useful.
 
-probably not for BATs but for other things we might.
+The error message is saying that whatever you are passing to the kernel 
+(or setting in u-boot with "fdt addr") for your dtb blob is not a valid 
+dtb blob.  Display memory where you think your blob resides: if it 
+doesn't have 0xd00dfeed in that location, it isn't a valid binary blob. 
+  I suspect you will find either you didn't compile your .dts file 
+correctly or your blob address is wrong.
 
->> I'm more concerned about this being implemented around the existing
->> ioremap core in __ioremap().  We can easily use a flag bit to say use
->> "large mappings" or the fact that mem_init_done == 0.
->
-> mem_init_done isn't a good indication. We can do page tables when it's
-> 0, we would have to use a separate mem_preinit_done or something :-)
->
-> I initially also though about a flag to ioremap_prot to be honest. But
-> it does obfuscate the normal ioremap code path and if there's a flag,
-> that means that callers know the difference and thus may as well call
-> a separate function, don't you think ?
+If you gave us your dtc command line, that might be helpful.
 
-I'm ok with exposing a separate function as far as the API goes.. I'm  
-not ok with duplicating the logic of __ioremap().
-
-- k
+HTH,
+gvb
