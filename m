@@ -1,16 +1,21 @@
-Return-Path: <cel@us.ibm.com>
-Subject: Re: [PATCH 2/2] Repost  Cell OProfile: SPU mutex lock fix, version 4
-From: Carl Love <cel@us.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200808081526.21405.arnd@arndb.de>
-References: <1217620879.15667.145.camel@carll-linux-desktop>
-	<200808081526.21405.arnd@arndb.de>
-Content-Type: text/plain
-Date: Fri, 08 Aug 2008 15:39:44 -0700
-Message-Id: <1218235184.6637.111.camel@carll-linux-desktop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cel <cel@linux.vnet.ibm.com>,
-	cbe-oss-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
+Return-Path: <greg@kroah.com>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EF131DDF2A
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Aug 2008 09:34:15 +1000 (EST)
+Date: Fri, 8 Aug 2008 16:26:35 -0700
+From: Greg KH <greg@kroah.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 0/3] Patches to support QE USB Host Controller
+Message-ID: <20080808232635.GB5352@kroah.com>
+References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080808161717.GA19095@polina.dev.rtsoft.ru>
+Cc: David Brownell <dbrownell@users.sourceforge.net>, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,42 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Updated to address Arnd's comments.
+On Fri, Aug 08, 2008 at 08:17:17PM +0400, Anton Vorontsov wrote:
+> Hi all,
+> 
+> Most patches that were needed to support QE USB Host were merged during
+> 2.6.27 merge window, and only three more patches left over. Here they
+> are.
+> 
+> David, could you bear with gpio_to_chip() exported function, just as
+> a stopgap for a proper api?
 
-If an error occurs on opcontrol start, the event and per cpu buffers 
-are released.  If later opcontrol shutdown is called then the free
-function will be called again to free buffers that no longer 
-exist.  This results in a kernel oops.  The following changes
-prevent the call to delete buffers that don't exist.
+I'll hold off on the 3rd patch until david takes the first two.
 
-Signed-off-by: Carl Love <carll@us.ibm.com>
+thanks,
 
-Index: Cell_kernel_6_26_2008/drivers/oprofile/cpu_buffer.c
-===================================================================
---- Cell_kernel_6_26_2008.orig/drivers/oprofile/cpu_buffer.c
-+++ Cell_kernel_6_26_2008/drivers/oprofile/cpu_buffer.c
-@@ -38,8 +38,10 @@ void free_cpu_buffers(void)
- {
- 	int i;
- 
--	for_each_online_cpu(i)
-+	for_each_online_cpu(i) {
- 		vfree(per_cpu(cpu_buffer, i).buffer);
-+		per_cpu(cpu_buffer, i).buffer = NULL;
-+	}
- }
- 
- unsigned long oprofile_get_cpu_buffer_size(void)
-Index: Cell_kernel_6_26_2008/drivers/oprofile/event_buffer.c
-===================================================================
---- Cell_kernel_6_26_2008.orig/drivers/oprofile/event_buffer.c
-+++ Cell_kernel_6_26_2008/drivers/oprofile/event_buffer.c
-@@ -93,6 +93,8 @@ out:
- void free_event_buffer(void)
- {
- 	vfree(event_buffer);
-+
-+	event_buffer = NULL;
- }
- 
-  
+greg k-h
