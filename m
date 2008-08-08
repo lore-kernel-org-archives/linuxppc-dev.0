@@ -1,19 +1,19 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id D0A01DDEF3
+Return-Path: <adams.ppc@gmail.com>
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.231])
+	by ozlabs.org (Postfix) with ESMTP id 37D3ADE03D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Aug 2008 20:16:05 +1000 (EST)
-Message-ID: <489ACBDF.5080108@coritel.it>
-Date: Thu, 07 Aug 2008 12:18:07 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
+	Sat,  9 Aug 2008 02:20:06 +1000 (EST)
+Received: by qb-out-0506.google.com with SMTP id d11so1085923qbd.39
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 08 Aug 2008 09:20:05 -0700 (PDT)
+Message-ID: <4a21eaea0808080920j5a3d4115t3085dc18fadc1457@mail.gmail.com>
+Date: Fri, 8 Aug 2008 10:20:05 -0600
+From: "bhanu jampala" <adams.ppc@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: 8270 MMC driver development
 MIME-Version: 1.0
-To: Fabien Oriede <fabien.oriede@yahoo.fr>
-Subject: Re: Re : kernel 2.6.26 & gcc 4.0.0
-References: <292718.59127.qm@web27401.mail.ukl.yahoo.com>
-In-Reply-To: <292718.59127.qm@web27401.mail.ukl.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: rmcguire@videopresence.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,95 +24,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Maybe the problem is in the ppc tree. Since 2.6.27 ppc will be removed, 
-perhaps, for your board the code isn't really tested in that tree. Check 
-out if your board is under powerpc tree. However strange errors, it 
-seems a lack of a semicolon or something like this.
+Hi all,
 
-Fabien Oriede ha scritto:
-> No, I did not modify this file.
-> 
-> 
-> ----- Message d'origine ----
-> De : Marco Stornelli <marco.stornelli@coritel.it>
-> À : Fabien Oriede <fabien.oriede@yahoo.fr>
-> Cc : linuxppc-embedded@ozlabs.org
-> Envoyé le : Jeudi, 7 Août 2008, 11h59mn 19s
-> Objet : Re: kernel 2.6.26 & gcc 4.0.0
-> 
-> Fabien Oriede ha scritto:
->> Hello all,
->> I'm trying to put a cramfs image on my custom board, and for this, I have followed this topic : http://www.denx.de/wiki/view/DULG/RootFileSystemOnACramfsFileSystem
->> Now I have my cramfs image, but I have seen that I need to download my cramfs image in a mtdblock and for that, I need to set some MTD options in the kernel. (http://www.denx.de/wiki/view/DULG/FlashFilesystemsMTD)
->> But when I make the command "make uImage", I have this problem :
->> [root@xxxx linux-2.6.26]# make uImage
->>   CHK    include/linux/version.h
->>   CHK    include/linux/utsrelease.h
->>   CALL    scripts/checksyscalls.sh
->>   CHK    include/linux/compile.h
->>   CALL    arch/powerpc/kernel/systbl_chk.sh
->>   CC      arch/ppc/syslib/m8xx_setup.o
->> arch/ppc/syslib/m8xx_setup.c:68: error: array type has incomplete element type
->> arch/ppc/syslib/m8xx_setup.c:70: error: field name not in record or union initializer
->> arch/ppc/syslib/m8xx_setup.c:70: error: (near initialization for 'mpc8xxads_partitions')
->> arch/ppc/syslib/m8xx_setup.c:71: error: field name not in record or union initializer
->> arch/ppc/syslib/m8xx_setup.c:71: error: (near initialization for 'mpc8xxads_partitions')
->> arch/ppc/syslib/m8xx_setup.c:72: error: field name not in record or union initializer
->> arch/ppc/syslib/m8xx_setup.c:72: error: (near initialization for 'mpc8xxads_partitions')
->> arch/ppc/syslib/m8xx_setup.c:73: error: field name not in record or union initializer
->> arch/ppc/syslib/m8xx_setup.c:73: error: (near initialization for 'mpc8xxads_partitions')
->> arch/ppc/syslib/m8xx_setup.c:73: error: 'MTD_WRITEABLE' undeclared here (not in a function)
->> arch/ppc/syslib/m8xx_setup.c:75: error: field name not in record or union initializer
->> arch/ppc/syslib/m8xx_setup.c:75: error: (near initialization for 'mpc8xxads_partitions')
->> arch/ppc/syslib/m8xx_setup.c:76: error: field name not in record or union initializer
->> arch/ppc/syslib/m8xx_setup.c:76: error: (near initialization for 'mpc8xxads_partitions')
->> arch/ppc/syslib/m8xx_setup.c: In function 'm8xx_show_percpuinfo':
->> arch/ppc/syslib/m8xx_setup.c:312: warning: format '%u' expects type 'unsigned int', but argument 3 has type 'long unsigned int'
->> arch/ppc/syslib/m8xx_setup.c:312: warning: format '%u' expects type 'unsigned int', but argument 4 has type 'long unsigned int'
->> arch/ppc/syslib/m8xx_setup.c: In function 'platform_init':
->> arch/ppc/syslib/m8xx_setup.c:451: warning: assignment from incompatible pointer type
->> make[1]: *** [arch/ppc/syslib/m8xx_setup.o] Erreur 1
->> make: *** [arch/ppc/syslib] Erreur 2
->>
->> [root@xxxx linux-2.6.26]# powerpc-linux-gcc --version
->> powerpc-linux-gcc (GCC) 4.0.0 (DENX ELDK 4.1 4.0.0)
->> Copyright (C) 2005 Free Software Foundation, Inc.
->> This is free software; see the source for copying conditions.  There is NO
->> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
->> It seems that this is a problem with the version 4 of the gcc, and I would like to know if I need to change for an old version of gcc ? like 3.0. Or may be a patch exists to bring down this problem ?
->> Thanks in advance.
->> Regards,
->> Fabien.
->>
->>
->>       _____________________________________________________________________________ 
->> Envoyez avec Yahoo! Mail. Une boite mail plus intelligente http://mail.yahoo.fr
->>
->>
->> ------------------------------------------------------------------------
->>
->> _______________________________________________
->> Linuxppc-embedded mailing list
->> Linuxppc-embedded@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> Have you modified that file?
-> 
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+I am working on an embedded 8270 based project requiring MCC support.
+The idea behind is to submit a acceptable MMC driver to the Linux community.
+I would like to know if there are some existing drivers for MMC in
+Linux which I can use.
 
+I see some drivers under drivers/serial/cpm_uart/ for SCC / SMC's.
+Any pointers would be helpful.
 
--- 
-Marco Stornelli
-Embedded Software Engineer
-CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-http://www.coritel.it
-
-marco.stornelli@coritel.it
-+39 06 72582838
+Regards,
+adams
