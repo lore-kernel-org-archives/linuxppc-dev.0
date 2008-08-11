@@ -1,18 +1,20 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 534B6DDED2
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 00:05:16 +1000 (EST)
-Message-ID: <48A04717.4040102@harris.com>
-Date: Mon, 11 Aug 2008 10:05:11 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 15D25DDE1F
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 00:39:00 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: [RFC 1/3] add support for exporting symbols from .S files
+Date: Mon, 11 Aug 2008 16:18:07 +0200
+References: <200808111606.44103.arnd@arndb.de>
+In-Reply-To: <200808111606.44103.arnd@arndb.de>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: Device tree question
-References: <489B5350.6050009@harris.com> <1218267682.24157.366.camel@pasglop>
-In-Reply-To: <1218267682.24157.366.camel@pasglop>
-Content-Type: multipart/alternative;
-	boundary="------------010704040501070505050200"
-Cc: linuxppc-dev@ozlabs.org
+Message-Id: <200808111618.08206.arnd@arndb.de>
+Content-Type: text/plain;
+  charset="utf-8"
+Cc: linux-arch@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	Rusty Russell <rusty@rustcorp.com.au>, linuxppc-dev@ozlabs.org,
+	Al Viro <viro@zeniv.linux.org.uk>, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,111 +24,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010704040501070505050200
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+This makes it possible to export symbols from assembly files, instead
+of having to export them through an extra ksyms.c file.
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2008-08-07 at 15:56 -0400, Steven A. Falco wrote:
->   
->> I have added a compact flash to the external bus of a Sequoia
->> (PPC440EPx) evaluation board.  It is wired to CS1, and U-boot is set to
->> configure CS1 to be at address 0xc1000000.  U-boot can access the
->> device, and reports the correct partition table, etc. so I believe the
->> hardware is ok.
->>
->> I've created a device-tree entry under the EBC0 section of the
->> sequoia.dts file:
->>
->>                 pata@1,0 {
->>                     compatible = "harris,hydra_temp-pata", "ata-generic";
->>                     bank-width = <2>;
->>                     reg = <1 0 20 1 80 20>;
->>                     reg-shift = <4>;
->>                     pio-mode = <4>;
->>                     interrupts = <27 4>;
->>                     interrupt-parent = <&UIC0>;
->>                 };
->>             };
->>
->> This seems to be correct, because if I turn on debug in prom_parse, I
->> see a translation that looks reasonable:
->>     
->
-> Did you check that the resulting physical address was indeed where you
-> device is supposed to be addressed ?
->
-> Ben
->   
+I found this nicer to implement using a gas macro than a cpp macro.
 
-They were wrong - I misinterpreted the reg-shift to be like the "stride"
-used by u-boot.  But u-boot uses it as a multiplier, and reg-shift is
-truly a shift.  So, I changed the shift to "2", and now the addresses
-are correct.  I'm still having problems, but I'll start a new thread,
-because the new problem concerns interrupts.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-    Thanks,
-    Steve
-
-
---------------010704040501070505050200
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=UTF-8" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Benjamin Herrenschmidt wrote:
-<blockquote cite="mid:1218267682.24157.366.camel@pasglop" type="cite">
-  <pre wrap="">On Thu, 2008-08-07 at 15:56 -0400, Steven A. Falco wrote:
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">I have added a compact flash to the external bus of a Sequoia
-(PPC440EPx) evaluation board.  It is wired to CS1, and U-boot is set to
-configure CS1 to be at address 0xc1000000.  U-boot can access the
-device, and reports the correct partition table, etc. so I believe the
-hardware is ok.
-
-I've created a device-tree entry under the EBC0 section of the
-sequoia.dts file:
-
-                pata@1,0 {
-                    compatible = "harris,hydra_temp-pata", "ata-generic";
-                    bank-width = &lt;2&gt;;
-                    reg = &lt;1 0 20 1 80 20&gt;;
-                    reg-shift = &lt;4&gt;;
-                    pio-mode = &lt;4&gt;;
-                    interrupts = &lt;27 4&gt;;
-                    interrupt-parent = &lt;&amp;UIC0&gt;;
-                };
-            };
-
-This seems to be correct, because if I turn on debug in prom_parse, I
-see a translation that looks reasonable:
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Did you check that the resulting physical address was indeed where you
-device is supposed to be addressed ?
-
-Ben
-  </pre>
-</blockquote>
-<br>
-They were wrong - I misinterpreted the reg-shift to be like the
-"stride" used by u-boot.  But u-boot uses it as a multiplier, and
-reg-shift is truly a shift.  So, I changed the shift to "2", and now
-the addresses are correct.  I'm still having problems, but I'll start a
-new thread, because the new problem concerns interrupts.<br>
-<br>
-    Thanks,<br>
-    Steve<br>
-<br>
-</body>
-</html>
-
---------------010704040501070505050200--
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -1,5 +1,7 @@
+ #ifndef _LINUX_MODULE_H
+ #define _LINUX_MODULE_H
++
++#ifndef __ASSEMBLY__
+ /*
+  * Dynamic loading of modules into the kernel.
+  *
+@@ -605,4 +607,54 @@ static inline void module_remove_modinfo_attrs(struct module *mod)
+ 
+ #define __MODULE_STRING(x) __stringify(x)
+ 
++#else /* __ASSEMBLY__ */
++#include <asm/types.h>
++
++#ifdef CONFIG_MODULES
++.macro __EXPORT_SYMBOL sym section symtab strtab
++	.section \section,"a",@progbits
++	.type \symtab, @object
++	.ifeq BITS_PER_LONG-32
++	.align 3
++\symtab:
++	.long \sym
++	.long \strtab
++	.else
++	.align 4
++\symtab:
++	.quad \sym
++	.quad \strtab
++	.endif
++	.size \symtab,.-\symtab
++	.previous
++
++	.section __ksymtab_strings,"a",@progbits
++	.type \strtab, @object
++\strtab:
++	.string "\sym"
++	.size \strtab,.-\strtab
++	.previous
++	.endm
++
++#define EXPORT_SYMBOL(sym) \
++	 __EXPORT_SYMBOL sym,__ksymtab,__ksymtab_ ## sym,__kstrtab_ ## sym
++#define EXPORT_SYMBOL_GPL(sym) \
++	 __EXPORT_SYMBOL sym,__ksymtab_gpl,__ksymtab_ ## sym,__kstrtab_ ## sym
++#define EXPORT_SYMBOL_GPL_FUTURE(sym) \
++	 __EXPORT_SYMBOL sym,__ksymtab_gpl_future,__ksymtab_ ## sym,__kstrtab_ ## sym
++#define EXPORT_UNUSED_SYMBOL(sym) \
++	 __EXPORT_SYMBOL sym,__ksymtab_unused,__ksymtab_ ## sym,__kstrtab_ ## sym
++#define EXPORT_UNUSED_SYMBOL_GPL(sym) \
++	 __EXPORT_SYMBOL sym,__ksymtab_unused_gpl,__ksymtab_ ## sym,__kstrtab_ ## sym
++
++#else /* CONFIG_MODULES... */
++#define EXPORT_SYMBOL(sym)
++#define EXPORT_SYMBOL_GPL(sym)
++#define EXPORT_SYMBOL_GPL_FUTURE(sym)
++#define EXPORT_UNUSED_SYMBOL(sym)
++#define EXPORT_UNUSED_SYMBOL_GPL(sym)
++#endif /* !CONFIG_MODULES... */
++
++#endif /* __ASSEMBLY__ */
++
+ #endif /* _LINUX_MODULE_H */
