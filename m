@@ -1,20 +1,24 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] please pull cell merge branch
-Date: Mon, 11 Aug 2008 09:18:56 +0200
-References: <1217620879.15667.145.camel@carll-linux-desktop>
-	<200808091513.05251.arnd@arndb.de>
-	<18591.30474.127939.243247@cargo.ozlabs.ibm.com>
-In-Reply-To: <18591.30474.127939.243247@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808110918.57293.arnd@arndb.de>
-Cc: Robert Richter <robert.richter@amd.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, oprofile-list@lists.sf.net,
-	Paul Mackerras <paulus@samba.org>, cel <cel@linux.vnet.ibm.com>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 09F45DDF0F
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Aug 2008 17:25:43 +1000 (EST)
+Date: Mon, 11 Aug 2008 09:25:17 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] powerpc/drivers: use linux/of_device.h instead of
+	asm/of_device.h
+Message-ID: <20080811092517.3ab0d0c1@hyperion.delvare>
+In-Reply-To: <20080811170432.f747ab5e.sfr@canb.auug.org.au>
+References: <20080811170432.f747ab5e.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org,
+	Michael Hanselmann <linux-kernel@hansmi.ch>,
+	lm-sensors@lm-sensors.org, Stelian Pop <stelian@popies.net>,
+	Paul Mackerras <paulus@samba.org>,
+	Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +28,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 11 August 2008, Paul Mackerras wrote:
-> Arnd Bergmann writes:
-> > I've fixed one last bug in Carl's update for cell-oprofile (int flags
-> > instead of unsigned long flags) and made sure the comments fit the
-> > usual style. This fixes a long-standing bug that prevented us from
-> > using oprofile on SPUs in many real-world scenarios.=20
->
-> Since you're touching generic oprofile code here, do you have an ack=20
-> from the oprofile maintainer? =A0Or is the oprofile maintainer listed in
-> MAINTAINERS (Robert Richter) no longer active or something?
->=20
+On Mon, 11 Aug 2008 17:04:32 +1000, Stephen Rothwell wrote:
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  drivers/hwmon/ams/ams.h       |    2 +-
+>  sound/aoa/soundbus/soundbus.h |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> These are the last two users of asm/of_device.h.  If everyone is happy,
+> we can put this through the powerpc tree.  I have build tested for
+> ppc64_defconfig and ppc6xx_defconfig (which uses the relevant drivers).
+> 
+> After this we can remove the include of linux/of_device.h from
+> asm/of_device.h
+> 
+> diff --git a/drivers/hwmon/ams/ams.h b/drivers/hwmon/ams/ams.h
+> index a6221e5..221ef69 100644
+> --- a/drivers/hwmon/ams/ams.h
+> +++ b/drivers/hwmon/ams/ams.h
+> @@ -4,7 +4,7 @@
+>  #include <linux/mutex.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/types.h>
+> -#include <asm/of_device.h>
+> +#include <linux/of_device.h>
+>  
+>  enum ams_irq {
+>  	AMS_IRQ_FREEFALL = 0x01,
+> diff --git a/sound/aoa/soundbus/soundbus.h b/sound/aoa/soundbus/soundbus.h
+> index 622cd37..a0f223c 100644
+> --- a/sound/aoa/soundbus/soundbus.h
+> +++ b/sound/aoa/soundbus/soundbus.h
+> @@ -8,7 +8,7 @@
+>  #ifndef __SOUNDBUS_H
+>  #define __SOUNDBUS_H
+>  
+> -#include <asm/of_device.h>
+> +#include <linux/of_device.h>
+>  #include <sound/pcm.h>
+>  #include <linux/list.h>
+>  
 
-Sorry about that. I had assumed that at the very least Carl had had
-the oprofile list on Cc and that people there just didn't care.
+No objection from me, go ahead.
 
-Robert has just recently taken over maintainership for oprofile,
-so I assume that he is indeed active and interested in the patches.
-I'll send them out again for his review on oprofile-list.
-
-	Arnd <><
+-- 
+Jean Delvare
