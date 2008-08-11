@@ -1,19 +1,17 @@
-Return-Path: <adams.ppc@gmail.com>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.233])
-	by ozlabs.org (Postfix) with ESMTP id D4E86DDECA
+Return-Path: <DWatkins@tranzeo.com>
+Received: from mail.tranzeo.com (mail.tranzeo.com [64.114.87.10])
+	by ozlabs.org (Postfix) with ESMTP id AFEFDDDF0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 10 Aug 2008 00:19:24 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id d11so1324749qbd.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 09 Aug 2008 07:19:23 -0700 (PDT)
-Message-ID: <4a21eaea0808090719s58ce1e98q96192432d3951409@mail.gmail.com>
-Date: Sat, 9 Aug 2008 08:19:22 -0600
-From: "bhanu jampala" <adams.ppc@gmail.com>
-To: "M. Warner Losh" <imp@bsdimp.com>
-Subject: Re: 8270 MCC driver development
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 12 Aug 2008 01:30:54 +1000 (EST)
+Subject: Re: Strange Badness with RT Spin Lock
+From: Darcy Watkins <dwatkins@tranzeo.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <1218225371.3465.51.camel@localhost>
+References: <1218225371.3465.51.camel@localhost>
+Content-Type: text/plain
+Date: Mon, 11 Aug 2008 08:30:52 -0700
+Message-Id: <1218468652.3465.60.camel@localhost>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,34 +22,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Warner,
+Further to what I reported earlier regarding my unusual bug, adding a
+memory barrier such as shown below also prevents the oops (and is a lot
+cleaner than putting in unused dummy static instance(s) of spinlocks).
 
-Sorry, I was asking about MCC not MMC. It is my mistake.
+This has me scratching my head.  Isn't the PPC405EP a uni-processor?  I
+suppose my problem could be an interaction of RT-Preemption with
+predictive loads / deferred stores or perhaps there is a memory barrier
+related bug in the spinlock/rtmutex code?.
 
-I am looking for a MCC(multi channel controller) driver to interface
-the 128 channels using TSA to interface with T1 signals coming form
-CO. I am right now figuring out and validating few drivers from which
-I would be choosing one to work on and modify it as per needs.
 
-Any pointers on MCC support code on Linux or in general would be helpful.
+>         // We dispatch the PDU.
+>          ...
+> 
+> #ifdef USE_MUTEX_CHECK_HACK
+>          MUTEX_CHECK_SAVE_LOCKED;
+> #endif
+>          spin_unlock(&tree_lock);
+> #ifdef USE_MUTEX_CHECK_HACK
+>          rt_mutex_owner_check("process_packed_pdu() - no frag - before
+> cblk()");
+>          MUTEX_CHECK_SAVE_UNLOCKED;
+> #endif
+>          clbk(new_skb, gen_header_p->cid);
+> 
+> 
 
-I have a custom board selected. I am looking to support the MCC along
-with TSA under Linux.
+         barrier(); // memory barrier
+
+> #ifdef USE_MUTEX_CHECK_HACK
+>          MUTEX_CHECK_DUMP_ON_BUG;
+>          rt_mutex_owner_check("process_packed_pdu() - no frag - after
+> cblk()");
+> #endif
+>          spin_lock(&tree_lock);
+
+
+
+
+On Fri, 2008-08-08 at 12:56 -0700, Darcy Watkins wrote:
+> Hello,
+> 
+> I have a very unusual bug I have been trying to get to the bottom of.
+> 
+--snip!--
+
+
+-- 
+
 
 Regards,
-Adams
 
+Darcy
 
-On Fri, Aug 8, 2008 at 10:57 AM, M. Warner Losh <imp@bsdimp.com> wrote:
-> In message: <4a21eaea0808080920j5a3d4115t3085dc18fadc1457@mail.gmail.com>
->            "bhanu jampala" <adams.ppc@gmail.com> writes:
-> : I am working on an embedded 8270 based project requiring MCC support.
-> : The idea behind is to submit a acceptable MMC driver to the Linux community.
-> : I would like to know if there are some existing drivers for MMC in
-> : Linux which I can use.
->
-> Are you asking about the base support for the mmc protocol in linux?
-> Or for the drivers for the 82xx parts?
->
-> Warner
->
+--------------
+Darcy L. Watkins - Senior Software Developer
+Tranzeo Wireless Technologies, Inc.
+19273 Fraser Way, Pitt Meadows, BC, Canada V3Y 2V4
+T:604-460-6002 ext:410
+http://www.tranzeo.com
