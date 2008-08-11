@@ -1,31 +1,13 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 95B39DDDFB
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Aug 2008 18:04:56 +1000 (EST)
-Date: Mon, 11 Aug 2008 09:04:49 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [RFC] [PATCH 0/5 V2] Huge page backed user-space stacks
-Message-ID: <20080811080449.GB17452@csn.ul.ie>
-References: <20080731103137.GD1704@csn.ul.ie>
-	<1217884211.20260.144.camel@nimitz>
-	<20080805111147.GD20243@csn.ul.ie>
-	<1217952748.10907.18.camel@nimitz>
-	<20080805162800.GJ20243@csn.ul.ie>
-	<1217958805.10907.45.camel@nimitz>
-	<20080806090222.GD21190@csn.ul.ie>
-	<1218052249.10907.125.camel@nimitz>
-	<20080807160605.GA9200@csn.ul.ie>
-	<1218130190.10907.188.camel@nimitz>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1218130190.10907.188.camel@nimitz>
-Cc: linux-mm@kvack.org, libhugetlbfs-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	abh@cray.com, ebmunson@us.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18592.7928.466322.954498@cargo.ozlabs.ibm.com>
+Date: Mon, 11 Aug 2008 21:14:00 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,87 +17,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (07/08/08 10:29), Dave Hansen didst pronounce:
-> On Thu, 2008-08-07 at 17:06 +0100, Mel Gorman wrote:
-> > On (06/08/08 12:50), Dave Hansen didst pronounce:
-> > > The main thing this set of patches does that I care about is take an
-> > > anonymous VMA and replace it with a hugetlb VMA.  It does this on a
-> > > special cue, but does it nonetheless.
-> > 
-> > This is not actually a new thing. For a long time now, it has been possible to
-> > back  malloc() with hugepages at a userspace level using the morecore glibc
-> > hook. That is replacing anonymous memory with a file-backed VMA. It happens
-> > in a different place but it's just as deliberate as backing stack and the
-> > end result is very similar. As the file is ram-based, it doesn't have the
-> > same types of consequences like dirty page syncing that you'd ordinarily
-> > watch for when moving from anonymous to file-backed memory.
-> 
-> Yes, it has already been done in userspace.  That's fine.  It isn't
-> adding any complexity to the kernel.  This is adding behavior that the
-> kernel has to support as well as complexity.
-> 
+Linus,
 
-The complexity is minimal and the progression logical.
-hugetlb_file_setup() is the API shmem was using to create a file on an
-internal mount suitable for MAP_SHARED. This patchset adds support for
-MAP_PRIVATE and the additional complexity is a lot less than supporting
-direct pagetable inserts.
+Please pull from the 'merge' branch of
 
-> > > This patch has crossed a line in that it is really the first
-> > > *replacement* of a normal VMA with a hugetlb VMA instead of the creation
-> > > of the VMAs at the user's request. 
-> > 
-> > We crossed that line with morecore, it's back there somewhere. We're just
-> > doing in kernel this time because backing stacks with hugepages in userspace
-> > turned out to be a hairy endevour.
-> > 
-> > Properly supporting anonymous hugepages would either require larger
-> > changes to the core or reimplementing yet more of mm/ in mm/hugetlb.c.
-> > Neither is a particularly appealing approach, nor is it likely to be a
-> > very popular one.
-> 
-> I agree.  It is always much harder to write code that can work
-> generically??? (and get it accepted) than just write the smallest possible
-> hack and stick it in fs/exec.c.
-> 
-> Could this patch at least get fixed up to look like it could be used
-> more generically?  Some code to look up and replace anonymous VMAs with
-> hugetlb-backed ones???
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-Ok, this latter point can be looked into at least although the
-underlying principal may still be using hugetlb_file_setup() rather than
-direct pagetable insertions.
+There are some assorted powerpc bugfixes and defconfig updates, plus a
+patch to Documentation/feature-removal-schedule.txt from Robert
+P. J. Day that removes the section on removing arch/ppc, since that is
+done, plus one from me removing include/linux/harrier_defs.h, since it
+was only used by code in arch/ppc which is now gone.
 
-> > > Because of the limitations like its inability to grow the VMA, I can't
-> > > imagine that this would be a generic mechanism that we can use
-> > > elsewhere.
-> > 
-> > What other than a stack even cares about VM_GROWSDOWN working? Besides,
-> > VM_GROWSDOWN could be supported in a hugetlbfs file by mapping the end of
-> > the file and moving the offset backwards (yeah ok, it ain't the prettiest
-> > but it's less churn than introducing significantly different codepaths). It's
-> > just not something that needs to be supported at first cut.
-> > 
-> > brk() if you wanted to back hugepages with it conceivably needs a resizing
-> > VMA but in that case it's growing up in which case just extend the end of
-> > the VMA and increase the size of the file.
-> 
-> I'm more worried about a small huge page size (say 64k) and not being
-> able to merge the VMAs.  I guess it could start in the *middle* of a
-> file and map both directions.
-> 
-> I guess you could always just have a single (very sparse) hugetlb file
-> per mm to do all of this 'anonymous' hugetlb memory memory stuff, and
-> just map its offsets 1:1 on to the process's virtual address space.
-> That would make sure you could always merge VMAs, no matter how they
-> grew together.
-> 
+Thanks,
+Paul.
 
-That's an interesting idea. It isn't as straight-forward as it sounds
-due to reservation tracking but at the face of it, I can't see why it
-couldn't be made work.
+ Documentation/feature-removal-schedule.txt     |   13 -
+ arch/powerpc/boot/dts/warp.dts                 |   22 +
+ arch/powerpc/configs/40x/ep405_defconfig       |  207 +++++++++----
+ arch/powerpc/configs/40x/kilauea_defconfig     |  196 +++++++++----
+ arch/powerpc/configs/40x/makalu_defconfig      |  196 +++++++++----
+ arch/powerpc/configs/40x/walnut_defconfig      |  203 +++++++++----
+ arch/powerpc/configs/44x/bamboo_defconfig      |  206 +++++++++----
+ arch/powerpc/configs/44x/canyonlands_defconfig |  116 +++++--
+ arch/powerpc/configs/44x/ebony_defconfig       |  207 +++++++++----
+ arch/powerpc/configs/44x/katmai_defconfig      |  259 ++++++++++++-----
+ arch/powerpc/configs/44x/rainier_defconfig     |  207 +++++++++----
+ arch/powerpc/configs/44x/sam440ep_defconfig    |  109 +++++--
+ arch/powerpc/configs/44x/sequoia_defconfig     |  207 +++++++++----
+ arch/powerpc/configs/44x/taishan_defconfig     |  208 +++++++++----
+ arch/powerpc/configs/44x/virtex5_defconfig     |  100 +++++-
+ arch/powerpc/configs/44x/warp_defconfig        |  232 ++++++++++-----
+ arch/powerpc/configs/ppc40x_defconfig          |  374 ++++++++++++++++++++----
+ arch/powerpc/configs/ppc44x_defconfig          |  375 ++++++++++++++++++++++--
+ arch/powerpc/include/asm/mmu-hash64.h          |    2 
+ arch/powerpc/kernel/pci-common.c               |   17 +
+ arch/powerpc/kernel/rtas.c                     |    5 
+ arch/powerpc/mm/hash_utils_64.c                |   63 ++--
+ arch/powerpc/mm/init_64.c                      |    9 -
+ arch/powerpc/platforms/44x/warp-nand.c         |    2 
+ arch/powerpc/platforms/44x/warp.c              |   25 +-
+ include/linux/harrier_defs.h                   |  212 --------------
+ 26 files changed, 2598 insertions(+), 1174 deletions(-)
+ delete mode 100644 include/linux/harrier_defs.h
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Benjamin Herrenschmidt (2):
+      powerpc/pci: Don't keep ISA memory hole resources in the tree
+      powerpc/mm: Fix attribute confusion with htab_bolt_mapping()
+
+Josh Boyer (1):
+      powerpc/4xx: Update defconfig files for 2.6.27-rc1
+
+Junio C Hamano (1):
+      powerpc: Do not ignore arch/powerpc/include
+
+Nathan Fontenot (1):
+      powerpc: Zero fill the return values of rtas argument buffer
+
+Paul Mackerras (1):
+      powerpc: Remove include/linux/harrier_defs.h
+
+Robert P. J. Day (1):
+      powerpc: Delete completed "ppc removal" task from feature removal file
+
+Sean MacLennan (3):
+      powerpc/4xx: Cleanup Warp for i2c driver changes.
+      powerpc/44x: Warp DTS changes for board updates
+      powerpc/44x: Incorrect NOR offset in Warp DTS
+
+Valentine Barshak (1):
+      powerpc/44x: Adjust warp-nand resource end address
