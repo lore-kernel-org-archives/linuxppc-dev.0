@@ -1,21 +1,29 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 7FB2FDE086
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 03:07:58 +1000 (EST)
-Date: Mon, 11 Aug 2008 21:07:56 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: "Steven A. Falco" <sfalco@harris.com>
-Subject: Re: [PATCH] pata_of_platform: fix no irq handling
-Message-ID: <20080811170756.GA29827@oksana.dev.rtsoft.ru>
-References: <48A05152.7020508@harris.com>
-	<20080811151913.GA14690@oksana.dev.rtsoft.ru>
-	<48A0676E.5020308@harris.com>
+Return-Path: <mohan@in.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E1A4BDE101
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 06:11:42 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7BKBakX011132
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Aug 2008 16:11:36 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m7BKBO0i216734
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Aug 2008 16:11:24 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m7BKBNm1013366
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Aug 2008 16:11:24 -0400
+Date: Tue, 12 Aug 2008 01:41:20 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
+To: ppcdev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 0/5] Relocatable kernel support for PPC64
+Message-ID: <20080811201120.GA25283@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <48A0676E.5020308@harris.com>
-Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jgarzik@pobox.com>, "Sparks,
-	Sam" <SSparks@aclaratech.com>, linux-ide@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org, miltonm@bga.com
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,82 +33,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 11, 2008 at 12:23:10PM -0400, Steven A. Falco wrote:
-> Anton Vorontsov wrote:
-> > When no irq specified, pata_of_platform fills irq_res with -1,
-> > which is wrong to do for two reasons:
-> >
-> > 1. By definition, 'no irq' should be IRQ 0, not some negative integer;
-> > 2. pata_platform checks for irq_res.start > 0, but since irq_res.start
-> >    is unsigned type, the check will be true for `-1'.
-> >
-> > Reported-by: Steven A. Falco <sfalco@harris.com>
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > ---
-> 
-> Thanks!  Your fix is better - I didn't really like the -1 stuff.
-> 
-> I found this bug because I had to disable the ATA interrupt on my system
-> in order to get a compact-flash card to work.  I am still trying to find
-> out why the interrupt doesn't work for me.  Here is part of the console
-> log with the interrupt enabled:
-> 
->     Uniform Multi-Platform E-IDE driver
->     ide: Assuming 33MHz system bus speed for PIO modes; override with
->     idebus=xx
->     Driver 'sd' needs updating - please use bus_type methods
->     irq: irq_create_mapping(0xc0574900, 0x1b)
->     irq: -> using host @c0574900
->     irq: -> obtained virq 32
->     scsi0 : pata_platform
->     ata1: PATA max PIO4 mmio cmd 0x1c1000000 ctl 0x1c1000080 irq 32
->     irq 32: nobody cared (try booting with the "irqpoll" option)
->     Call Trace:
->     [cf83fcc0] [c0005a64] show_stack+0x44/0x1ac (unreliable)
->     [cf83fd00] [c00489e4] __report_bad_irq+0x34/0xb8
->     [cf83fd20] [c0048cf0] note_interrupt+0x288/0x2d0
->     [cf83fd50] [c0049a94] handle_level_irq+0xac/0x114
->     [cf83fd60] [c0003df0] do_IRQ+0xa4/0xc8
->     [cf83fd70] [c000d60c] ret_from_except+0x0/0x18
->     [cf83fe30] [00000020] 0x20
->     [cf83fe50] [c0003d48] do_softirq+0x54/0x58
->     [cf83fe60] [c00241c0] irq_exit+0x90/0x94
->     [cf83fe70] [c0003df4] do_IRQ+0xa8/0xc8
->     [cf83fe80] [c000d60c] ret_from_except+0x0/0x18
->     [cf83ff40] [c01b2cc0] ata_pio_task+0x48/0x104
->     [cf83ff60] [c00307a0] run_workqueue+0xb8/0x148
->     [cf83ff90] [c0030d54] worker_thread+0x70/0xd0
->     [cf83ffd0] [c0034788] kthread+0x48/0x84
->     [cf83fff0] [c000cd6c] kernel_thread+0x44/0x60
->     handlers:
->     [<c01b2d7c>] (ata_sff_interrupt+0x0/0x234)
->     Disabling IRQ #32
-> 
-> 
-> So it looks like the ATA handler was attached - not sure yet why I got
-> the "nobody cared" message. 
+Hi,
 
-Nobody cared means that ata_sff_interrupt handler didn't notice
-any IDE events, and returned zero value. This could mean that
+Following five patches enable the "relocatable kernel" feature for
+PPC64 kernels.
+	1. Extract list of relocation offsets.patch
+	2. Build files needed for relocation.patch
+	3. Apply relocation.patch
+	4. Relocation support.patch
+	5. Relocation support for kdump kernel.patch
 
-1. IDE status read does not work. (But am I understand correctly
-   that IDE works well if IRQ is unspecified? Then this is hardly
-   an issue.)
-2. IDE interrupt comes when it should not. I'd recommend to use
-   oscilloscope to find out what is happening there, that is, if
-   the drive actually deasserts its irq line after status read.
-   If so, than this could be a PIC problem.
+Paul, can you please merge these patches to the powerpc git tree?
 
-What is the platform on which you're observing the issue, btw?
+With the patchset, vmcore image of a crashed system can be captured
+using the same kernel binary.
 
-Just asking because recently Sam Sparks reported that he is observing
-similar issue on MPC8349E-mITX-based boards, which I can't not
-reproduce on my board though:
+Still the kernel is not a fully relocatable kernel. It can either run at
+0 or 32MB based on which address its loaded. If its loaded by 'kexec -p',
+it behaves as a relocatable kernel and runs at 32MB(even though its
+compiled for 0). If the same kernel is loaded by yaboot or kexec -l, it
+will behave as a normal kernel and will run at the compiled address.
 
-http://www.nabble.com/Compact-Flash-on-8349mITX-td18754330.html
-http://www.nabble.com/Compact-flash-on-mpc8349eITX-td18777724.html
+Difference between previous patchset and current
+* The problem kdump kernel boot fail on some specific systems is fixed now.
+* Kdump kernel boot failed with git tree kernels, its fixed now.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Issues:
+* Relocatable vmlinux image is built in arch/powerpc/boot as
+  vmlinux.reloc. But it should be built in top level directory of kernel
+  source as vmlinux instead of vmlinux.reloc
+
+Limitation:
+
+* During kdump kernel boot, all secondary processors are stuck up. But
+  during yaboot all secondary processors are brought online.
+
+Since relocatable kernel is used only for kdump kernels and kdump
+kernel is always booted with "maxcpus=1" kernel parameter, there is no
+significant difference. It can be marked as a known issue.
+(I am trying to fix this issue)
+
+Tested on POWER5 systems.
+
+Regards,
+Mohan.
