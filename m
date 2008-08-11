@@ -1,24 +1,20 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 09F45DDF0F
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Aug 2008 17:25:43 +1000 (EST)
-Date: Mon, 11 Aug 2008 09:25:17 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] powerpc/drivers: use linux/of_device.h instead of
-	asm/of_device.h
-Message-ID: <20080811092517.3ab0d0c1@hyperion.delvare>
-In-Reply-To: <20080811170432.f747ab5e.sfr@canb.auug.org.au>
-References: <20080811170432.f747ab5e.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org,
-	Michael Hanselmann <linux-kernel@hansmi.ch>,
-	lm-sensors@lm-sensors.org, Stelian Pop <stelian@popies.net>,
-	Paul Mackerras <paulus@samba.org>,
-	Johannes Berg <johannes@sipsolutions.net>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: powerpc/cell/oprofile: avoid double free of profile buffer
+Date: Mon, 11 Aug 2008 09:25:43 +0200
+References: <1217620879.15667.145.camel@carll-linux-desktop>
+	<18591.30474.127939.243247@cargo.ozlabs.ibm.com>
+	<200808110918.57293.arnd@arndb.de>
+In-Reply-To: <200808110918.57293.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808110925.44243.arnd@arndb.de>
+Cc: Robert Richter <robert.richter@amd.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Paul Mackerras <paulus@samba.org>, oprofile-list@lists.sf.net,
+	cel <cel@linux.vnet.ibm.com>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,49 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 11 Aug 2008 17:04:32 +1000, Stephen Rothwell wrote:
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  drivers/hwmon/ams/ams.h       |    2 +-
->  sound/aoa/soundbus/soundbus.h |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> These are the last two users of asm/of_device.h.  If everyone is happy,
-> we can put this through the powerpc tree.  I have build tested for
-> ppc64_defconfig and ppc6xx_defconfig (which uses the relevant drivers).
-> 
-> After this we can remove the include of linux/of_device.h from
-> asm/of_device.h
-> 
-> diff --git a/drivers/hwmon/ams/ams.h b/drivers/hwmon/ams/ams.h
-> index a6221e5..221ef69 100644
-> --- a/drivers/hwmon/ams/ams.h
-> +++ b/drivers/hwmon/ams/ams.h
-> @@ -4,7 +4,7 @@
->  #include <linux/mutex.h>
->  #include <linux/spinlock.h>
->  #include <linux/types.h>
-> -#include <asm/of_device.h>
-> +#include <linux/of_device.h>
->  
->  enum ams_irq {
->  	AMS_IRQ_FREEFALL = 0x01,
-> diff --git a/sound/aoa/soundbus/soundbus.h b/sound/aoa/soundbus/soundbus.h
-> index 622cd37..a0f223c 100644
-> --- a/sound/aoa/soundbus/soundbus.h
-> +++ b/sound/aoa/soundbus/soundbus.h
-> @@ -8,7 +8,7 @@
->  #ifndef __SOUNDBUS_H
->  #define __SOUNDBUS_H
->  
-> -#include <asm/of_device.h>
-> +#include <linux/of_device.h>
->  #include <sound/pcm.h>
->  #include <linux/list.h>
->  
+From: Carl Love <cel@us.ibm.com>
 
-No objection from me, go ahead.
+If an error occurs on opcontrol start, the event and per cpu buffers
+are released.  If later opcontrol shutdown is called then the free
+function will be called again to free buffers that no longer
+exist.  This results in a kernel oops.  The following changes
+prevent the call to delete buffers that don't exist.
 
+Signed-off-by: Carl Love <carll@us.ibm.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/oprofile/cpu_buffer.c   |    4 +++-
+ drivers/oprofile/event_buffer.c |    2 ++
+ 2 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+index b8601dc..366b5d2 100644
+--- a/drivers/oprofile/cpu_buffer.c
++++ b/drivers/oprofile/cpu_buffer.c
+@@ -38,8 +38,10 @@ void free_cpu_buffers(void)
+ {
+ 	int i;
+ 
+-	for_each_online_cpu(i)
++	for_each_online_cpu(i) {
+ 		vfree(per_cpu(cpu_buffer, i).buffer);
++		per_cpu(cpu_buffer, i).buffer = NULL;
++	}
+ }
+ 
+ unsigned long oprofile_get_cpu_buffer_size(void)
+diff --git a/drivers/oprofile/event_buffer.c b/drivers/oprofile/event_buffer.c
+index e7fbac5..8d692a5 100644
+--- a/drivers/oprofile/event_buffer.c
++++ b/drivers/oprofile/event_buffer.c
+@@ -93,6 +93,8 @@ out:
+ void free_event_buffer(void)
+ {
+ 	vfree(event_buffer);
++
++	event_buffer = NULL;
+ }
+ 
+  
 -- 
-Jean Delvare
+1.5.4.3
