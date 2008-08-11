@@ -1,13 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
+	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 534B6DDED2
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 00:05:16 +1000 (EST)
+Message-ID: <48A04717.4040102@harris.com>
+Date: Mon, 11 Aug 2008 10:05:11 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18592.7928.466322.954498@cargo.ozlabs.ibm.com>
-Date: Mon, 11 Aug 2008 21:14:00 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+To: benh@kernel.crashing.org
+Subject: Re: Device tree question
+References: <489B5350.6050009@harris.com> <1218267682.24157.366.camel@pasglop>
+In-Reply-To: <1218267682.24157.366.camel@pasglop>
+Content-Type: multipart/alternative;
+	boundary="------------010704040501070505050200"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,73 +22,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+This is a multi-part message in MIME format.
+--------------010704040501070505050200
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Please pull from the 'merge' branch of
+Benjamin Herrenschmidt wrote:
+> On Thu, 2008-08-07 at 15:56 -0400, Steven A. Falco wrote:
+>   
+>> I have added a compact flash to the external bus of a Sequoia
+>> (PPC440EPx) evaluation board.  It is wired to CS1, and U-boot is set to
+>> configure CS1 to be at address 0xc1000000.  U-boot can access the
+>> device, and reports the correct partition table, etc. so I believe the
+>> hardware is ok.
+>>
+>> I've created a device-tree entry under the EBC0 section of the
+>> sequoia.dts file:
+>>
+>>                 pata@1,0 {
+>>                     compatible = "harris,hydra_temp-pata", "ata-generic";
+>>                     bank-width = <2>;
+>>                     reg = <1 0 20 1 80 20>;
+>>                     reg-shift = <4>;
+>>                     pio-mode = <4>;
+>>                     interrupts = <27 4>;
+>>                     interrupt-parent = <&UIC0>;
+>>                 };
+>>             };
+>>
+>> This seems to be correct, because if I turn on debug in prom_parse, I
+>> see a translation that looks reasonable:
+>>     
+>
+> Did you check that the resulting physical address was indeed where you
+> device is supposed to be addressed ?
+>
+> Ben
+>   
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+They were wrong - I misinterpreted the reg-shift to be like the "stride"
+used by u-boot.  But u-boot uses it as a multiplier, and reg-shift is
+truly a shift.  So, I changed the shift to "2", and now the addresses
+are correct.  I'm still having problems, but I'll start a new thread,
+because the new problem concerns interrupts.
 
-There are some assorted powerpc bugfixes and defconfig updates, plus a
-patch to Documentation/feature-removal-schedule.txt from Robert
-P. J. Day that removes the section on removing arch/ppc, since that is
-done, plus one from me removing include/linux/harrier_defs.h, since it
-was only used by code in arch/ppc which is now gone.
+    Thanks,
+    Steve
 
-Thanks,
-Paul.
 
- Documentation/feature-removal-schedule.txt     |   13 -
- arch/powerpc/boot/dts/warp.dts                 |   22 +
- arch/powerpc/configs/40x/ep405_defconfig       |  207 +++++++++----
- arch/powerpc/configs/40x/kilauea_defconfig     |  196 +++++++++----
- arch/powerpc/configs/40x/makalu_defconfig      |  196 +++++++++----
- arch/powerpc/configs/40x/walnut_defconfig      |  203 +++++++++----
- arch/powerpc/configs/44x/bamboo_defconfig      |  206 +++++++++----
- arch/powerpc/configs/44x/canyonlands_defconfig |  116 +++++--
- arch/powerpc/configs/44x/ebony_defconfig       |  207 +++++++++----
- arch/powerpc/configs/44x/katmai_defconfig      |  259 ++++++++++++-----
- arch/powerpc/configs/44x/rainier_defconfig     |  207 +++++++++----
- arch/powerpc/configs/44x/sam440ep_defconfig    |  109 +++++--
- arch/powerpc/configs/44x/sequoia_defconfig     |  207 +++++++++----
- arch/powerpc/configs/44x/taishan_defconfig     |  208 +++++++++----
- arch/powerpc/configs/44x/virtex5_defconfig     |  100 +++++-
- arch/powerpc/configs/44x/warp_defconfig        |  232 ++++++++++-----
- arch/powerpc/configs/ppc40x_defconfig          |  374 ++++++++++++++++++++----
- arch/powerpc/configs/ppc44x_defconfig          |  375 ++++++++++++++++++++++--
- arch/powerpc/include/asm/mmu-hash64.h          |    2 
- arch/powerpc/kernel/pci-common.c               |   17 +
- arch/powerpc/kernel/rtas.c                     |    5 
- arch/powerpc/mm/hash_utils_64.c                |   63 ++--
- arch/powerpc/mm/init_64.c                      |    9 -
- arch/powerpc/platforms/44x/warp-nand.c         |    2 
- arch/powerpc/platforms/44x/warp.c              |   25 +-
- include/linux/harrier_defs.h                   |  212 --------------
- 26 files changed, 2598 insertions(+), 1174 deletions(-)
- delete mode 100644 include/linux/harrier_defs.h
+--------------010704040501070505050200
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Benjamin Herrenschmidt (2):
-      powerpc/pci: Don't keep ISA memory hole resources in the tree
-      powerpc/mm: Fix attribute confusion with htab_bolt_mapping()
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=UTF-8" http-equiv="Content-Type">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Benjamin Herrenschmidt wrote:
+<blockquote cite="mid:1218267682.24157.366.camel@pasglop" type="cite">
+  <pre wrap="">On Thu, 2008-08-07 at 15:56 -0400, Steven A. Falco wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">I have added a compact flash to the external bus of a Sequoia
+(PPC440EPx) evaluation board.  It is wired to CS1, and U-boot is set to
+configure CS1 to be at address 0xc1000000.  U-boot can access the
+device, and reports the correct partition table, etc. so I believe the
+hardware is ok.
 
-Josh Boyer (1):
-      powerpc/4xx: Update defconfig files for 2.6.27-rc1
+I've created a device-tree entry under the EBC0 section of the
+sequoia.dts file:
 
-Junio C Hamano (1):
-      powerpc: Do not ignore arch/powerpc/include
+                pata@1,0 {
+                    compatible = "harris,hydra_temp-pata", "ata-generic";
+                    bank-width = &lt;2&gt;;
+                    reg = &lt;1 0 20 1 80 20&gt;;
+                    reg-shift = &lt;4&gt;;
+                    pio-mode = &lt;4&gt;;
+                    interrupts = &lt;27 4&gt;;
+                    interrupt-parent = &lt;&amp;UIC0&gt;;
+                };
+            };
 
-Nathan Fontenot (1):
-      powerpc: Zero fill the return values of rtas argument buffer
+This seems to be correct, because if I turn on debug in prom_parse, I
+see a translation that looks reasonable:
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Did you check that the resulting physical address was indeed where you
+device is supposed to be addressed ?
 
-Paul Mackerras (1):
-      powerpc: Remove include/linux/harrier_defs.h
+Ben
+  </pre>
+</blockquote>
+<br>
+They were wrong - I misinterpreted the reg-shift to be like the
+"stride" used by u-boot.  But u-boot uses it as a multiplier, and
+reg-shift is truly a shift.  So, I changed the shift to "2", and now
+the addresses are correct.  I'm still having problems, but I'll start a
+new thread, because the new problem concerns interrupts.<br>
+<br>
+    Thanks,<br>
+    Steve<br>
+<br>
+</body>
+</html>
 
-Robert P. J. Day (1):
-      powerpc: Delete completed "ppc removal" task from feature removal file
-
-Sean MacLennan (3):
-      powerpc/4xx: Cleanup Warp for i2c driver changes.
-      powerpc/44x: Warp DTS changes for board updates
-      powerpc/44x: Incorrect NOR offset in Warp DTS
-
-Valentine Barshak (1):
-      powerpc/44x: Adjust warp-nand resource end address
+--------------010704040501070505050200--
