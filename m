@@ -1,19 +1,12 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4B7ACDE13A
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Aug 2008 06:10:57 +1000 (EST)
-Date: Tue, 12 Aug 2008 15:10:46 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: jgarzik@pobox.com
-Subject: [PATCH] gianfar: Call gfar_halt_nodisable() from gfar_halt().
-Message-ID: <20080812201046.GC27956@loki.buserror.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] powerpc: some vmlinux files that should be ignored 
+In-reply-to: <20080811185629.11ed547f@lappy.seanm.ca> 
+References: <20080811185629.11ed547f@lappy.seanm.ca>
+Date: Tue, 12 Aug 2008 15:11:56 -0500
+Message-ID: <28951.1218571916@neuling.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,56 +16,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-gfar_halt() was factored out into halting and disabling by commit
-d87eb12785c14de1586e3bad86ca2c0991300339, as the suspend() method
-only wants to do the former.  However, the call to gfar_halt_nodisable()
-from gfar_halt() apparently got lost during the patch respin process.
+In message <20080811185629.11ed547f@lappy.seanm.ca> you wrote:
+> A couple of vmlinux output files that should be ignored: vmlinux.strip
+> and vmlinux.lds.
+> 
+> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+> ---
+> diff --git a/.gitignore b/.gitignore
 
-This adds it back.
+This will need to goto LKML.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- drivers/net/gianfar.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+Mikey
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index ca6cf6e..999d691 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -134,9 +134,7 @@ static int gfar_process_frame(struct net_device *dev, struct sk_buff *skb, int l
- static void gfar_vlan_rx_register(struct net_device *netdev,
- 		                struct vlan_group *grp);
- void gfar_halt(struct net_device *dev);
--#ifdef CONFIG_PM
- static void gfar_halt_nodisable(struct net_device *dev);
--#endif
- void gfar_start(struct net_device *dev);
- static void gfar_clear_exact_match(struct net_device *dev);
- static void gfar_set_mac_for_addr(struct net_device *dev, int num, u8 *addr);
-@@ -631,7 +629,6 @@ static void init_registers(struct net_device *dev)
- }
- 
- 
--#ifdef CONFIG_PM
- /* Halt the receive and transmit queues */
- static void gfar_halt_nodisable(struct net_device *dev)
- {
-@@ -657,7 +654,6 @@ static void gfar_halt_nodisable(struct net_device *dev)
- 			cpu_relax();
- 	}
- }
--#endif
- 
- /* Halt the receive and transmit queues */
- void gfar_halt(struct net_device *dev)
-@@ -666,6 +662,8 @@ void gfar_halt(struct net_device *dev)
- 	struct gfar __iomem *regs = priv->regs;
- 	u32 tempval;
- 
-+	gfar_halt_nodisable(dev);
-+
- 	/* Disable Rx and Tx */
- 	tempval = gfar_read(&regs->maccfg1);
- 	tempval &= ~(MACCFG1_RX_EN | MACCFG1_TX_EN);
--- 
-1.5.6.rc1.6.gc53ad.dirty
+> index 869e1a3..f7e924a 100644
+> --- a/.gitignore
+> +++ b/.gitignore
+> @@ -32,6 +32,7 @@
+>  tags
+>  TAGS
+>  vmlinux
+> +vmlinux.strip
+>  System.map
+>  Module.markers
+>  Module.symvers
+> diff --git a/arch/powerpc/kernel/.gitignore b/arch/powerpc/kernel/.gitignore
+> new file mode 100644
+> index 0000000..c5f676c
+> --- /dev/null
+> +++ b/arch/powerpc/kernel/.gitignore
+> @@ -0,0 +1 @@
+> +vmlinux.lds
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
