@@ -1,29 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.184])
-	by ozlabs.org (Postfix) with ESMTP id D9416DE245
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Aug 2008 05:50:33 +1000 (EST)
-Received: by rn-out-0910.google.com with SMTP id j40so35074rnf.16
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 12:50:31 -0700 (PDT)
-Date: Tue, 12 Aug 2008 13:50:28 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC/PATCH 1/3] powerpc: add ioremap_bat() function for
-	setting up BAT translated IO regions.
-Message-ID: <20080812195027.GB11386@secretlab.ca>
-References: <20080806055214.30717.86092.stgit@trillian.secretlab.ca>
-	<20080806060223.30717.35175.stgit@trillian.secretlab.ca>
-	<CD66FAA8-BC99-4630-9FFF-E2C651E5DE9A@kernel.crashing.org>
-	<fa686aa40808061454t14737278h3fd15fb0ccdbf251@mail.gmail.com>
-	<75A0A752-FF2C-41B6-A6D3-E510E8FD4E91@kernel.crashing.org>
-	<1218061709.24157.249.camel@pasglop>
-	<63451E1F-30C1-4146-9D1A-BD4973E8F17A@kernel.crashing.org>
-	<1218147224.24157.308.camel@pasglop>
-	<8A11E9B3-4B7D-48CF-ABAB-625050D8FFFE@kernel.crashing.org>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4B7ACDE13A
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Aug 2008 06:10:57 +1000 (EST)
+Date: Tue, 12 Aug 2008 15:10:46 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: jgarzik@pobox.com
+Subject: [PATCH] gianfar: Call gfar_halt_nodisable() from gfar_halt().
+Message-ID: <20080812201046.GC27956@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8A11E9B3-4B7D-48CF-ABAB-625050D8FFFE@kernel.crashing.org>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: paulus@samba.org, miltonm@bga.com, linuxppc-dev@ozlabs.org
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,24 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 07, 2008 at 07:04:04PM -0500, Kumar Gala wrote:
->> mem_init_done isn't a good indication. We can do page tables when it's
->> 0, we would have to use a separate mem_preinit_done or something :-)
->>
->> I initially also though about a flag to ioremap_prot to be honest. But
->> it does obfuscate the normal ioremap code path and if there's a flag,
->> that means that callers know the difference and thus may as well call
->> a separate function, don't you think ?
->
-> I'm ok with exposing a separate function as far as the API goes.. I'm  
-> not ok with duplicating the logic of __ioremap().
+gfar_halt() was factored out into halting and disabling by commit
+d87eb12785c14de1586e3bad86ca2c0991300339, as the suspend() method
+only wants to do the former.  However, the call to gfar_halt_nodisable()
+from gfar_halt() apparently got lost during the patch respin process.
 
-Turns out there is very little actual duplication of code with
-__ioremap().  The checks for p_mapped_by_* are the same, but all the
-alignment checks are different because different boundaries are used.
+This adds it back.
 
-I attempted to break things down to a common function, but there is not
-a lot there.  But I will add a function to manage modification of
-ioremap_bot.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ drivers/net/gianfar.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-g.
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index ca6cf6e..999d691 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -134,9 +134,7 @@ static int gfar_process_frame(struct net_device *dev, struct sk_buff *skb, int l
+ static void gfar_vlan_rx_register(struct net_device *netdev,
+ 		                struct vlan_group *grp);
+ void gfar_halt(struct net_device *dev);
+-#ifdef CONFIG_PM
+ static void gfar_halt_nodisable(struct net_device *dev);
+-#endif
+ void gfar_start(struct net_device *dev);
+ static void gfar_clear_exact_match(struct net_device *dev);
+ static void gfar_set_mac_for_addr(struct net_device *dev, int num, u8 *addr);
+@@ -631,7 +629,6 @@ static void init_registers(struct net_device *dev)
+ }
+ 
+ 
+-#ifdef CONFIG_PM
+ /* Halt the receive and transmit queues */
+ static void gfar_halt_nodisable(struct net_device *dev)
+ {
+@@ -657,7 +654,6 @@ static void gfar_halt_nodisable(struct net_device *dev)
+ 			cpu_relax();
+ 	}
+ }
+-#endif
+ 
+ /* Halt the receive and transmit queues */
+ void gfar_halt(struct net_device *dev)
+@@ -666,6 +662,8 @@ void gfar_halt(struct net_device *dev)
+ 	struct gfar __iomem *regs = priv->regs;
+ 	u32 tempval;
+ 
++	gfar_halt_nodisable(dev);
++
+ 	/* Disable Rx and Tx */
+ 	tempval = gfar_read(&regs->maccfg1);
+ 	tempval &= ~(MACCFG1_RX_EN | MACCFG1_TX_EN);
+-- 
+1.5.6.rc1.6.gc53ad.dirty
