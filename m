@@ -1,12 +1,15 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH] powerpc: some vmlinux files that should be ignored 
-In-reply-to: <20080811185629.11ed547f@lappy.seanm.ca> 
-References: <20080811185629.11ed547f@lappy.seanm.ca>
-Date: Tue, 12 Aug 2008 15:11:56 -0500
-Message-ID: <28951.1218571916@neuling.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 1AB03DDE11
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Aug 2008 07:35:22 +1000 (EST)
+Date: Tue, 12 Aug 2008 16:34:57 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] remove redundant sysfs_remove_file calls for cache info
+Message-ID: <20080812213457.GO6967@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,38 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <20080811185629.11ed547f@lappy.seanm.ca> you wrote:
-> A couple of vmlinux output files that should be ignored: vmlinux.strip
-> and vmlinux.lds.
-> 
-> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
-> ---
-> diff --git a/.gitignore b/.gitignore
+When removing a directory, the sysfs core takes care of removing files
+in the directory (see sysfs_remove_dir()).  So when we are about to
+delete a kobject (and thus cause its sysfs directory to be removed),
+we don't have to explicitly remove the files attached to it, although
+it's harmless to do so.
 
-This will need to goto LKML.
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ arch/powerpc/kernel/sysfs.c |   11 ++---------
+ 1 files changed, 2 insertions(+), 9 deletions(-)
 
-Mikey
-
-> index 869e1a3..f7e924a 100644
-> --- a/.gitignore
-> +++ b/.gitignore
-> @@ -32,6 +32,7 @@
->  tags
->  TAGS
->  vmlinux
-> +vmlinux.strip
->  System.map
->  Module.markers
->  Module.symvers
-> diff --git a/arch/powerpc/kernel/.gitignore b/arch/powerpc/kernel/.gitignore
-> new file mode 100644
-> index 0000000..c5f676c
-> --- /dev/null
-> +++ b/arch/powerpc/kernel/.gitignore
-> @@ -0,0 +1 @@
-> +vmlinux.lds
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 56d172d..12058db 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -641,16 +641,9 @@ static void remove_cache_info(struct sys_device *sysdev)
+ 	int cpu = sysdev->id;
+ 
+ 	cache_desc = per_cpu(cache_desc, cpu);
+-	if (cache_desc != NULL) {
+-		sysfs_remove_file(&cache_desc->kobj, &cache_size_attr.attr);
+-		sysfs_remove_file(&cache_desc->kobj, &cache_line_size_attr.attr);
+-		sysfs_remove_file(&cache_desc->kobj, &cache_type_attr.attr);
+-		sysfs_remove_file(&cache_desc->kobj, &cache_level_attr.attr);
+-		sysfs_remove_file(&cache_desc->kobj, &cache_nr_sets_attr.attr);
+-		sysfs_remove_file(&cache_desc->kobj, &cache_assoc_attr.attr);
+-
++	if (cache_desc != NULL)
+ 		kobject_put(&cache_desc->kobj);
+-	}
++
+ 	cache_toplevel = per_cpu(cache_toplevel, cpu);
+ 	if (cache_toplevel != NULL)
+ 		kobject_put(cache_toplevel);
+-- 
+1.5.5
