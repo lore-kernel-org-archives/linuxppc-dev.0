@@ -1,14 +1,15 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 0BD2CDE0E9
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 08:56:34 +1000 (EST)
-Date: Mon, 11 Aug 2008 18:56:29 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: some vmlinux files that should be ignored
-Message-ID: <20080811185629.11ed547f@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18592.55293.75051.615024@cargo.ozlabs.ibm.com>
+Date: Tue, 12 Aug 2008 10:23:25 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: mohan@in.ibm.com
+Subject: Re: [PATCH 3/5] Apply relocation
+In-Reply-To: <20080811201547.GC26566@in.ibm.com>
+References: <20080811201120.GA25283@in.ibm.com>
+	<20080811201547.GC26566@in.ibm.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,27 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A couple of vmlinux output files that should be ignored: vmlinux.strip
-and vmlinux.lds.
+Mohan Kumar M writes:
 
-Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
----
-diff --git a/.gitignore b/.gitignore
-index 869e1a3..f7e924a 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -32,6 +32,7 @@
- tags
- TAGS
- vmlinux
-+vmlinux.strip
- System.map
- Module.markers
- Module.symvers
-diff --git a/arch/powerpc/kernel/.gitignore b/arch/powerpc/kernel/.gitignore
-new file mode 100644
-index 0000000..c5f676c
---- /dev/null
-+++ b/arch/powerpc/kernel/.gitignore
-@@ -0,0 +1 @@
-+vmlinux.lds
+> Apply relocation
+> 
+> This code is a wrapper around regular kernel. This checks whether the
+> kernel is loaded at 32MB, if its not loaded at 32MB, its treated as a
+> regular kernel and the control is given to the kernel immediately. If
+> the kernel is loaded at 32MB, it applies relocation delta to each offset
+> in the list which was generated and appended by patch 1 and 2. After
+> updating all offsets, control is given to the relocatable kernel.
+> 
+> Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
+> ---
+>  arch/powerpc/boot/vmlinux.lds.S     |   28 ++++++++++++++++++++++++++++
+>  arch/powerpc/boot/vmlinux.reloc.scr |    8 ++++++++
+>  2 files changed, 36 insertions(+), 0 deletions(-)
+
+I think there is some stuff missing here...  This patch only adds two
+linker scripts.
+
+Paul.
