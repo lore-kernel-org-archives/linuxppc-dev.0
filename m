@@ -1,24 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (unknown [212.227.126.177])
-	by ozlabs.org (Postfix) with ESMTP id EF5E8DE1CF
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Aug 2008 00:00:47 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [RFC 1/3] add support for exporting symbols from .S files
-Date: Tue, 12 Aug 2008 15:58:52 +0200
-References: <200808111606.44103.arnd@arndb.de>
-	<200808111618.08206.arnd@arndb.de>
-	<20080812164352.ddcf1ef5.sfr@canb.auug.org.au>
-In-Reply-To: <20080812164352.ddcf1ef5.sfr@canb.auug.org.au>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 4416EDE16A
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Aug 2008 00:05:00 +1000 (EST)
+Date: Tue, 12 Aug 2008 18:04:57 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: [PATCH] pata_of_platform: fix no irq handling
+Message-ID: <20080812140457.GA9103@oksana.dev.rtsoft.ru>
+References: <48A05152.7020508@harris.com>
+	<20080811151913.GA14690@oksana.dev.rtsoft.ru>
+	<48A0676E.5020308@harris.com>
+	<20080811170756.GA29827@oksana.dev.rtsoft.ru>
+	<1218492032.8041.11.camel@pasglop> <48A19788.6050502@harris.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200808121558.53576.arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Al Viro <viro@zeniv.linux.org.uk>,
-	David Woodhouse <dwmw2@infradead.org>
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <48A19788.6050502@harris.com>
+Cc: linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, "Sparks,
+	Sam" <SSparks@aclaratech.com>, linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,104 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This makes it possible to export symbols from assembly files, instead
-of having to export them through an extra ksyms.c file.
+On Tue, Aug 12, 2008 at 10:00:40AM -0400, Steven A. Falco wrote:
+> Benjamin Herrenschmidt wrote:
+> >   
+> >> 1. IDE status read does not work. (But am I understand correctly
+> >>    that IDE works well if IRQ is unspecified? Then this is hardly
+> >>    an issue.)
+> >> 2. IDE interrupt comes when it should not. I'd recommend to use
+> >>    oscilloscope to find out what is happening there, that is, if
+> >>    the drive actually deasserts its irq line after status read.
+> >>    If so, than this could be a PIC problem.
+> >>
+> >> What is the platform on which you're observing the issue, btw?
+> >>     
+> >
+> > Another possibility is that you got the wrong interrupt number
+> > in the device-tree...
+> >
+> > Ben.
+> >   
+> 
+> The platform is the AMCC Sequoia board.  We've built a little adapter to
+> connect a compact flash card to the processor bus.  I believe the
+> interrupt selection in the device tree is correct, and I've checked over
+> the u-boot settings for the IRQ line (active high, level sensitive). 
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+IDE IRQs are active-low.
 
----
-
-On Tuesday 12 August 2008, Stephen Rothwell wrote:
-> This won't be portable across architectures as .align is sometimes in
-> bytes and sometimes a power of two.  You can use .balign or .p2align
-> portably on gas, though.
-
-Ok, this version uses the .balign as suggested by rusty, and also
-fixes building with modversions turned on, which did not work in the
-first version.
-
-	Arnd <><
-
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -1,5 +1,7 @@
- #ifndef _LINUX_MODULE_H
- #define _LINUX_MODULE_H
-+
-+#ifndef __ASSEMBLY__
- /*
-  * Dynamic loading of modules into the kernel.
-  *
-@@ -605,4 +607,72 @@ static inline void module_remove_modinfo_attrs(struct module *mod)
- 
- #define __MODULE_STRING(x) __stringify(x)
- 
-+#else /* __ASSEMBLY__ */
-+#include <asm/types.h>
-+
-+#ifdef CONFIG_MODULES
-+.macro __EXPORT_SYMBOL sym section symtab strtab crctab crc
-+	.section \section, "a", @progbits
-+	.type \symtab, @object
-+	.balign BITS_PER_LONG/8
-+\symtab:
-+	.ifeq BITS_PER_LONG - 32
-+	.long \sym
-+	.long \strtab
-+	.else
-+	.quad \sym
-+	.quad \strtab
-+	.endif
-+	.size \symtab, . - \symtab
-+	.previous
-+
-+	.section __ksymtab_strings, "a", @progbits
-+	.type \strtab, @object
-+\strtab:
-+	.string "\sym"
-+	.size \strtab, . - \strtab
-+	.previous
-+
-+#ifdef CONFIG_MODVERSIONS
-+	/*
-+	 * Modversions doesn't work with assembly files,
-+	 * so insert a dummy CRC.
-+	 */
-+	.section __kcrctab, "a", @progbits
-+	.balign 4
-+	.type \crctab, @object
-+\crctab:
-+	.long \crc
-+	.size \crctab, . - \crctab
-+	.set \crc, 0
-+	.previous
-+#endif
-+	.endm
-+
-+#define EXPORT_SYMBOL(sym) \
-+	 __EXPORT_SYMBOL sym, __ksymtab, __ksymtab_ ## sym, \
-+		__kstrtab_ ## sym, __kcrctab_ ## sym, __crc_ ## sym
-+#define EXPORT_SYMBOL_GPL(sym) \
-+	 __EXPORT_SYMBOL sym, __ksymtab_gpl, __ksymtab_ ## sym, \
-+		__kstrtab_ ## sym, __kcrctab_ ## sym, __crc_ ## sym
-+#define EXPORT_SYMBOL_GPL_FUTURE(sym) \
-+	 __EXPORT_SYMBOL sym, __ksymtab_gpl_future, __ksymtab_ ## sym, \
-+		__kstrtab_ ## sym, __kcrctab_ ## sym, __crc_ ## sym
-+#define EXPORT_UNUSED_SYMBOL(sym) \
-+	 __EXPORT_SYMBOL sym, __ksymtab_unused, __ksymtab_ ## sym, \
-+		__kstrtab_ ## sym, __kcrctab_ ## sym, __crc_ ## sym
-+#define EXPORT_UNUSED_SYMBOL_GPL(sym) \
-+	 __EXPORT_SYMBOL sym, __ksymtab_unused_gpl, __ksymtab_ ## sym, \
-+		__kstrtab_ ## sym, __kcrctab_ ## sym, __crc_ ## sym
-+
-+#else /* CONFIG_MODULES... */
-+#define EXPORT_SYMBOL(sym)
-+#define EXPORT_SYMBOL_GPL(sym)
-+#define EXPORT_SYMBOL_GPL_FUTURE(sym)
-+#define EXPORT_UNUSED_SYMBOL(sym)
-+#define EXPORT_UNUSED_SYMBOL_GPL(sym)
-+#endif /* !CONFIG_MODULES... */
-+
-+#endif /* __ASSEMBLY__ */
-+
- #endif /* _LINUX_MODULE_H */
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
