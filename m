@@ -1,21 +1,35 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id 6A0E5DDF97
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 22:46:24 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Does Dev Tree WORK with soc@y_xxxx_0000 <#address/size> = <2/1>
-Date: Tue, 12 Aug 2008 08:47:08 -0400
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010DF4ECC7@EMPBEDEX.empirix.com>
-In-Reply-To: <D308CF77-2E6F-4BD6-9668-750EC42961DC@kernel.crashing.org>
-References: <mailman.1745.1218472641.19168.linuxppc-dev@ozlabs.org>
-	<BD261180E6D35F4D9D32F3E44FD3D9010DF4EB31@EMPBEDEX.empirix.com>
-	<0120619E-B530-4605-B550-15085F7009E2@freescale.com>
-	<D308CF77-2E6F-4BD6-9668-750EC42961DC@kernel.crashing.org>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: ppc-dev list <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <alexs@linux.vnet.ibm.com>
+Received: from mtagate2.uk.ibm.com (mtagate2.uk.ibm.com [195.212.29.135])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate2.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 44F57DDF5E
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 22:49:38 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate2.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m7CCnSD2300866
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 12:49:28 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.0) with
+	ESMTP id m7CCnRmc3637362
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 13:49:28 +0100
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m7CCnPQv018494
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 13:49:26 +0100
+Date: Tue, 12 Aug 2008 14:49:24 +0200
+From: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>, lkml
+	<linux-kernel@vger.kernel.org>, of-ewg <ewg@lists.openfabrics.org>,
+	of-general <general@lists.openfabrics.org>, Roland Dreier
+	<rolandd@cisco.com>
+Subject: [PATCH 0/5] ib/ehca: Fix stability issues
+Message-ID: <20080812144924.4447933e@BL3D1974.boeblingen.de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Joachim Fenkes <fenkes@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>,
+	Christoph Raisch <raisch@de.ibm.com>, Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +39,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thank you...I will take that recommendation...
+Hi Roland,
 
-I will try that and get some results before I complete my=20
-response to Becky this morning...
+the following patchset contains four small fixes and one bigger patch
+(5/5) for addressing some ehca issues we found during cluster test.
 
+[1/5] update qp_state on cached modify_qp()
+[2/5] rename goto label in ehca_poll_cq_one()
+[3/5] repoll on invalid opcode instead of returning success
+[4/5] check idr_find() return value
+[5/5] discard double CQE for one WR
 
-T
+They all apply on top of 2.6.27-rc1. If possible, we would like to get
+them into 2.6.27.
 
-
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-Sent: Tuesday, August 12, 2008 8:42 AM
-To: Morrison, Tom
-Cc: ppc-dev list; Becky Bruce; Paul Mackerras
-Subject: Re: Does Dev Tree WORK with soc@y_xxxx_0000 <#address/size> =3D
-<2/1>
-
-I recommend you look at <2/2> instead of <2/1>.  <2/1> is just a =20
-degenerate case and it doesn't really get you much value.
-
-- k
+Regards,
+Alexander Schmidt
