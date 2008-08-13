@@ -1,23 +1,16 @@
-Return-Path: <jrigby@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <bigeasy@www.tglx.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B535FDE0F1
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 05:06:26 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m7DJ64H3024721
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Aug 2008 12:06:04 -0700 (MST)
-From: John Rigby <jrigby@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5121 pci rev2 2/3] powerpc: 5121: Add PCI support.
-Date: Wed, 13 Aug 2008 13:05:59 -0600
-Message-Id: <1218654360-7806-2-git-send-email-jrigby@freescale.com>
-In-Reply-To: <1218654360-7806-1-git-send-email-jrigby@freescale.com>
-References: <1218654360-7806-1-git-send-email-jrigby@freescale.com>
-Cc: John Rigby <jrigby@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E6D8ADDF95
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 05:18:08 +1000 (EST)
+Date: Wed, 13 Aug 2008 20:29:57 +0200
+From: Sebastian Siewior <bigeasy@linutronix.de>
+To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH / RFC] net: fix locking in ibm_newemac
+Message-ID: <20080813182957.GA12612@www.tglx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,98 +20,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Uses mpc83xx_add_bridge in fsl_pci.c
+|PPC 4xx OCP EMAC driver, version 3.54
+|MAL v2 /plb/mcmal, 2 TX channels, 2 RX channels
+|RGMII /plb/opb/emac-rgmii@ef600b00 initialized with MDIO support
+|/plb/opb/emac-rgmii@ef600b00: input 0 in RGMII mode
+|BUG: spinlock bad magic on CPU#0, swapper/1
+| lock: cf81632c, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
+|Call Trace:
+|[cf82bc70] [c00071c4] show_stack+0x34/0x194 (unreliable)
+|[cf82bca0] [c0136d5c] spin_bug+0x8c/0xd0
+|[cf82bcc0] [c0136f64] _raw_spin_lock+0x94/0x16c
+|[cf82bcf0] [c023b528] _spin_lock_bh+0x20/0x34
+|[cf82bd10] [c01d04a8] dev_mc_add+0x2c/0x84
+|[cf82bd30] [c0166f80] emac_configure+0x2a8/0x55c
+|[cf82bd60] [c02418bc] emac_probe+0xc24/0x105c
+|[cf82be40] [c01bb504] of_platform_device_probe+0x58/0x80
+|[cf82be60] [c016057c] driver_probe_device+0xb8/0x1ec
+|[cf82be80] [c0160734] __driver_attach+0x84/0x88
+|[cf82bea0] [c015fa4c] bus_for_each_dev+0x5c/0x98
+|[cf82bed0] [c0160384] driver_attach+0x24/0x34
+|[cf82bee0] [c01600b4] bus_add_driver+0x1d8/0x24c
+|[cf82bf00] [c0160944] driver_register+0x5c/0x158
+|[cf82bf20] [c01bb3dc] of_register_driver+0x54/0x70
+|[cf82bf30] [c030ba8c] emac_init+0x1c8/0x208
+|[cf82bf60] [c02f4184] kernel_init+0x84/0x27c
+|[cf82bff0] [c000e594] kernel_thread+0x44/0x60
 
-Adds second register tuple to pci node register property
-as done for 83xx device trees in a previous patch.
+The fix is to defer phy init until netdevice is registered / initialized.
 
-Signed-off-by: John Rigby <jrigby@freescale.com>
+Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
 ---
- arch/powerpc/boot/dts/mpc5121ads.dts      |    3 ++-
- arch/powerpc/platforms/512x/Kconfig       |    2 ++
- arch/powerpc/platforms/512x/mpc5121_ads.c |   10 ++++++++++
- arch/powerpc/sysdev/fsl_pci.c             |    4 ++--
- 4 files changed, 16 insertions(+), 3 deletions(-)
+Noticed with spinlock debug enabled & 40x/kilauea_defconfig on a kilaue
+board. With this patch, the board boots via NFS root, no problems were
+noticed so far
 
-diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts/mpc5121ads.dts
-index 1f9036c..c2b8dbf 100644
---- a/arch/powerpc/boot/dts/mpc5121ads.dts
-+++ b/arch/powerpc/boot/dts/mpc5121ads.dts
-@@ -403,7 +403,8 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0x80008500 0x100>;
-+		reg = <0x80008500 0x100		/* internal registers */
-+		       0x80008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc5121-pci";
- 		device_type = "pci";
- 	};
-diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
-index c62f893..326852c 100644
---- a/arch/powerpc/platforms/512x/Kconfig
-+++ b/arch/powerpc/platforms/512x/Kconfig
-@@ -3,6 +3,8 @@ config PPC_MPC512x
- 	select FSL_SOC
- 	select IPIC
- 	select PPC_CLOCK
-+	select PPC_PCI_CHOICE
-+	select FSL_PCI if PCI
+ drivers/net/ibm_newemac/core.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+index babc79a..c4130e1 100644
+--- a/drivers/net/ibm_newemac/core.c
++++ b/drivers/net/ibm_newemac/core.c
+@@ -2751,11 +2751,6 @@ static int __devinit emac_probe(struct of_device *ofdev,
+ 	dev->stop_timeout = STOP_TIMEOUT_100;
+ 	INIT_DELAYED_WORK(&dev->link_work, emac_link_timer);
  
- config PPC_MPC5121
- 	bool
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
-index 5ebf693..441abc4 100644
---- a/arch/powerpc/platforms/512x/mpc5121_ads.c
-+++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
-@@ -22,16 +22,26 @@
- #include <asm/prom.h>
- #include <asm/time.h>
+-	/* Find PHY if any */
+-	err = emac_init_phy(dev);
+-	if (err != 0)
+-		goto err_detach_tah;
+-
+ 	/* Fill in the driver function table */
+ 	ndev->open = &emac_open;
+ 	if (dev->tah_dev)
+@@ -2785,6 +2780,11 @@ static int __devinit emac_probe(struct of_device *ofdev,
+ 		goto err_detach_tah;
+ 	}
  
-+#include <sysdev/fsl_pci.h>
++	/* Find PHY if any */
++	err = emac_init_phy(dev);
++	if (err != 0)
++		goto err_detach_tah;
 +
- #include "mpc512x.h"
- #include "mpc5121_ads.h"
- 
- static void __init mpc5121_ads_setup_arch(void)
- {
-+#ifdef CONFIG_PCI
-+	struct device_node *np;
-+#endif
- 	printk(KERN_INFO "MPC5121 ADS board from Freescale Semiconductor\n");
- 	/*
- 	 * cpld regs are needed early
+ 	/* Set our drvdata last as we don't want them visible until we are
+ 	 * fully initialized
  	 */
- 	mpc5121_ads_cpld_map();
-+
-+#ifdef CONFIG_PCI
-+	for_each_compatible_node(np, "pci", "fsl,mpc5121-pci")
-+		mpc83xx_add_bridge(np);
-+#endif
- }
- 
- static void __init mpc5121_ads_init_IRQ(void)
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index a3f4aba..5b264eb 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -251,7 +251,7 @@ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8641D, quirk_fsl_pcie_header);
- DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8610, quirk_fsl_pcie_header);
- #endif /* CONFIG_PPC_85xx || CONFIG_PPC_86xx */
- 
--#if defined(CONFIG_PPC_83xx)
-+#if defined(CONFIG_PPC_83xx) || defined(CONFIG_PPC_MPC512x)
- int __init mpc83xx_add_bridge(struct device_node *dev)
- {
- 	int len;
-@@ -310,7 +310,7 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
- 
- 	setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 4, 0);
- 
--	printk(KERN_INFO "Found MPC83xx PCI host bridge at 0x%016llx. "
-+	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
- 	       "Firmware bus number: %d->%d\n",
- 	       (unsigned long long)rsrc_reg.start, hose->first_busno,
- 	       hose->last_busno);
 -- 
-1.5.6.2.255.gbed62
+1.5.5.2
