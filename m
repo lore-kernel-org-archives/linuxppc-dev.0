@@ -1,17 +1,16 @@
-Return-Path: <DWatkins@tranzeo.com>
-Received: from mail.tranzeo.com (isa.tranzeo.com [64.114.87.10])
-	by ozlabs.org (Postfix) with ESMTP id 2AF29DDF53
+Return-Path: <therealshowman@yahoo.ca>
+Received: from web32702.mail.mud.yahoo.com (web32702.mail.mud.yahoo.com
+	[68.142.207.246]) by ozlabs.org (Postfix) with SMTP id C7BAFDE155
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Aug 2008 05:55:24 +1000 (EST)
-Subject: Re: Strange Badness with RT Spin Lock
-From: Darcy Watkins <dwatkins@tranzeo.com>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <1218225371.3465.51.camel@localhost>
-References: <1218225371.3465.51.camel@localhost>
-Content-Type: text/plain
-Date: Wed, 13 Aug 2008 12:55:22 -0700
-Message-Id: <1218657322.3465.93.camel@localhost>
-Mime-Version: 1.0
+	Thu, 14 Aug 2008 07:01:20 +1000 (EST)
+Date: Wed, 13 Aug 2008 13:54:39 -0700 (PDT)
+From: NM <therealshowman@yahoo.ca>
+Subject: Is petting of watchdog supported in MPC827x?
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-1490348545-1218660879=:99436"
+Message-ID: <575218.99436.qm@web32702.mail.mud.yahoo.com>
+Reply-To: therealshowman@yahoo.ca
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -22,53 +21,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have an update...
+--0-1490348545-1218660879=:99436
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-First please disregard the follow-up email I sent mentioning memory
-barriers.  That blew up shortly after I sent out the email.
+Hi,
+=A0=A0 Is there any framework in place to support petting of a watchdog (in=
+ our case external) on MPC8271 powerpc platform?
 
-The problem appears to be resolved when I declare the spinlock variable
-using the __cacheline_aligned attribute (that is without the _in_smp
-suffix).
+Having searched around in the tree, I only see support for MPC8313 soc, but=
+ not for 8271.
 
-Does anyone know of an explanation as to why a spinlock may need to be
-cacheline aligned in a uniprocessor system?
+Any pointers would be appreciated in order to avoid duplication of effort.
 
+thanks
 
-Regards,
+=0A=0A=0A      ____________________________________________________________=
+______=0AInstant Messaging, free SMS, sharing photos and more... Try the ne=
+w Yahoo! Canada Messenger at http://ca.beta.messenger.yahoo.com/
+--0-1490348545-1218660879=:99436
+Content-Type: text/html; charset=us-ascii
 
-Darcy
+<table cellspacing="0" cellpadding="0" border="0" ><tr><td valign="top" style="font: inherit;">Hi,<br>&nbsp;&nbsp; Is there any framework in place to support petting of a watchdog (in our case external) on MPC8271 powerpc platform?<br><br>Having searched around in the tree, I only see support for MPC8313 soc, but not for 8271.<br><br>Any pointers would be appreciated in order to avoid duplication of effort.<br><br>thanks<br><br></td></tr></table><br>
+      <p class="MsoNormal"> </p>
 
+  <tbody><tr>
 
-On Fri, 2008-08-08 at 12:56 -0700, Darcy Watkins wrote:
-> Hello,
-> 
-> I have a very unusual bug I have been trying to get to the bottom of.
-> 
-> First the background...
-> 
->    AMCC PPC405EP on embedded network device (simpler than a Taihu)
->    Kernel 2.6.25.8-rt7 with incremental patches up to 2.6.25.13
->    mPCI slot with a WiMax radio card
-> 
-> This is an RT-Preemption kernel.
-> 
-> In my system, in a real time radio (WiMax) driver, I have code that
-> makes use of a spinlock to control access to a tree structure...
-> 
-> spinlock_t tree_lock;
-> 
+    <td style="padding: 0.75pt;">
 
--- 
+    <div class="MsoNormal" style="text-align: center;" align="center"><font face="Times New Roman" size="3"><span style="font-size: 12pt;">
 
+    <hr align="center" size="1" width="100%">
 
-Regards,
+    </span></font></div>
 
-Darcy
+ 
 
---------------
-Darcy L. Watkins - Senior Software Developer
-Tranzeo Wireless Technologies, Inc.
-19273 Fraser Way, Pitt Meadows, BC, Canada V3Y 2V4
-T:604-460-6002 ext:410
-http://www.tranzeo.com
+      <p class="MsoNormal"><font face="Times New Roman" size="3"><span style="font-size: 12pt;"><img id="_x0000_i1026" src="http://us.i1.yimg.com/us.yimg.com/i/ca/iotg_search.jpg" align="absbottom" border="0" height="25" hspace="4" width="25"><a href="http://ca.toolbar.yahoo.com/" target="_new"><b><span style="font-weight: bold;" lang="NO-BOK">Yahoo! 
+        Canada Toolbar :</span></b><span lang="NO-BOK"> Search from anywhere on 
+        the web and bookmark your favourite sites. Download it now! </span></a> 
+        </span></font><span lang="NO-BOK"><o:p></o:p></span></p>
+--0-1490348545-1218660879=:99436--
