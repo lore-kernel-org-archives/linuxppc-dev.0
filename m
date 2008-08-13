@@ -1,16 +1,20 @@
-Return-Path: <bigeasy@www.tglx.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+Return-Path: <yorksun@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E6D8ADDF95
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 05:18:08 +1000 (EST)
-Date: Wed, 13 Aug 2008 20:29:57 +0200
-From: Sebastian Siewior <bigeasy@linutronix.de>
-To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH / RFC] net: fix locking in ibm_newemac
-Message-ID: <20080813182957.GA12612@www.tglx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E46EEDDED7
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 06:55:49 +1000 (EST)
+From: York Sun <yorksun@freescale.com>
+To: akpm@linux-foundation.org
+Subject: [PATCH 1/2] Added virtual resolution and panning support.
+Date: Wed, 13 Aug 2008 15:55:03 -0500
+Message-Id: <12186609063047-git-send-email-yorksun@freescale.com>
+In-Reply-To: <12186609042933-git-send-email-yorksun@freescale.com>
+References: <12186609042933-git-send-email-yorksun@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, York Sun <yorksun@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,70 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-|PPC 4xx OCP EMAC driver, version 3.54
-|MAL v2 /plb/mcmal, 2 TX channels, 2 RX channels
-|RGMII /plb/opb/emac-rgmii@ef600b00 initialized with MDIO support
-|/plb/opb/emac-rgmii@ef600b00: input 0 in RGMII mode
-|BUG: spinlock bad magic on CPU#0, swapper/1
-| lock: cf81632c, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
-|Call Trace:
-|[cf82bc70] [c00071c4] show_stack+0x34/0x194 (unreliable)
-|[cf82bca0] [c0136d5c] spin_bug+0x8c/0xd0
-|[cf82bcc0] [c0136f64] _raw_spin_lock+0x94/0x16c
-|[cf82bcf0] [c023b528] _spin_lock_bh+0x20/0x34
-|[cf82bd10] [c01d04a8] dev_mc_add+0x2c/0x84
-|[cf82bd30] [c0166f80] emac_configure+0x2a8/0x55c
-|[cf82bd60] [c02418bc] emac_probe+0xc24/0x105c
-|[cf82be40] [c01bb504] of_platform_device_probe+0x58/0x80
-|[cf82be60] [c016057c] driver_probe_device+0xb8/0x1ec
-|[cf82be80] [c0160734] __driver_attach+0x84/0x88
-|[cf82bea0] [c015fa4c] bus_for_each_dev+0x5c/0x98
-|[cf82bed0] [c0160384] driver_attach+0x24/0x34
-|[cf82bee0] [c01600b4] bus_add_driver+0x1d8/0x24c
-|[cf82bf00] [c0160944] driver_register+0x5c/0x158
-|[cf82bf20] [c01bb3dc] of_register_driver+0x54/0x70
-|[cf82bf30] [c030ba8c] emac_init+0x1c8/0x208
-|[cf82bf60] [c02f4184] kernel_init+0x84/0x27c
-|[cf82bff0] [c000e594] kernel_thread+0x44/0x60
+Application can now have the virtual resoltuion and use FBIOPAN_DISPLAY ioctl to pan.
 
-The fix is to defer phy init until netdevice is registered / initialized.
-
-Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
+Signed-off-by: York Sun <yorksun@freescale.com>
 ---
-Noticed with spinlock debug enabled & 40x/kilauea_defconfig on a kilaue
-board. With this patch, the board boots via NFS root, no problems were
-noticed so far
+ drivers/video/fsl-diu-fb.c |   28 +++++++++++++++++++++++-----
+ 1 files changed, 23 insertions(+), 5 deletions(-)
 
- drivers/net/ibm_newemac/core.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
-index babc79a..c4130e1 100644
---- a/drivers/net/ibm_newemac/core.c
-+++ b/drivers/net/ibm_newemac/core.c
-@@ -2751,11 +2751,6 @@ static int __devinit emac_probe(struct of_device *ofdev,
- 	dev->stop_timeout = STOP_TIMEOUT_100;
- 	INIT_DELAYED_WORK(&dev->link_work, emac_link_timer);
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 9cd36c2..d67e79b 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -778,6 +778,22 @@ static void unmap_video_memory(struct fb_info *info)
+ }
  
--	/* Find PHY if any */
--	err = emac_init_phy(dev);
--	if (err != 0)
--		goto err_detach_tah;
--
- 	/* Fill in the driver function table */
- 	ndev->open = &emac_open;
- 	if (dev->tah_dev)
-@@ -2785,6 +2780,11 @@ static int __devinit emac_probe(struct of_device *ofdev,
- 		goto err_detach_tah;
- 	}
- 
-+	/* Find PHY if any */
-+	err = emac_init_phy(dev);
-+	if (err != 0)
-+		goto err_detach_tah;
+ /*
++ * Using the fb_var_screeninfo in fb_info we set the aoi of this
++ * particular framebuffer. It is a light version of fsl_diu_set_par.
++ */
++static int fsl_diu_set_aoi(struct fb_info *info)
++{
++	struct fb_var_screeninfo *var = &info->var;
++	struct mfb_info *mfbi = info->par;
++	struct diu_ad *ad = mfbi->ad;
 +
- 	/* Set our drvdata last as we don't want them visible until we are
- 	 * fully initialized
- 	 */
++	/* AOI should not be greater than display size */
++	ad->offset_xyi = cpu_to_le32((var->yoffset << 16) | var->xoffset);
++	ad->offset_xyd = cpu_to_le32((mfbi->y_aoi_d << 16) | mfbi->x_aoi_d);
++	return 0;
++}
++
++/*
+  * Using the fb_var_screeninfo in fb_info we set the resolution of this
+  * particular framebuffer. This function alters the fb_fix_screeninfo stored
+  * in fb_info. It does not alter var in fb_info since we are using that
+@@ -817,11 +833,11 @@ static int fsl_diu_set_par(struct fb_info *info)
+ 		diu_ops.get_pixel_format(var->bits_per_pixel,
+ 					 machine_data->monitor_port);
+ 	ad->addr    = cpu_to_le32(info->fix.smem_start);
+-	ad->src_size_g_alpha = cpu_to_le32((var->yres << 12) |
+-				var->xres) | mfbi->g_alpha;
+-	/* fix me. AOI should not be greater than display size */
++	ad->src_size_g_alpha = cpu_to_le32((var->yres_virtual << 12) |
++				var->xres_virtual) | mfbi->g_alpha;
++	/* AOI should not be greater than display size */
+ 	ad->aoi_size 	= cpu_to_le32((var->yres << 16) | var->xres);
+-	ad->offset_xyi = 0;
++	ad->offset_xyi = cpu_to_le32((var->yoffset << 16) | var->xoffset);
+ 	ad->offset_xyd = cpu_to_le32((mfbi->y_aoi_d << 16) | mfbi->x_aoi_d);
+ 
+ 	/* Disable chroma keying function */
+@@ -921,6 +937,8 @@ static int fsl_diu_pan_display(struct fb_var_screeninfo *var,
+ 	else
+ 		info->var.vmode &= ~FB_VMODE_YWRAP;
+ 
++	fsl_diu_set_aoi(info);
++
+ 	return 0;
+ }
+ 
+@@ -989,7 +1007,7 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
+ 		pr_debug("set AOI display offset of index %d to (%d,%d)\n",
+ 				 mfbi->index, aoi_d.x_aoi_d, aoi_d.y_aoi_d);
+ 		fsl_diu_check_var(&info->var, info);
+-		fsl_diu_set_par(info);
++		fsl_diu_set_aoi(info);
+ 		break;
+ 	case MFB_GET_AOID:
+ 		aoi_d.x_aoi_d = mfbi->x_aoi_d;
 -- 
-1.5.5.2
+1.5.2.2
