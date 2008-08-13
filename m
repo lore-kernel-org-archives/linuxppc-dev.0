@@ -1,19 +1,20 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id ED910DE158
+Return-Path: <sbershtein@Quantum3D.com>
+Received: from MAIL-SJC.quantum3d.com (owa-sjc.quantum3d.com [63.150.7.15])
+	by ozlabs.org (Postfix) with ESMTP id 75AABDE2EC
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Aug 2008 01:31:32 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KTIJs-0001of-VF
-	for linuxppc-embedded@ozlabs.org; Wed, 13 Aug 2008 08:31:28 -0700
-Message-ID: <18965524.post@talk.nabble.com>
-Date: Wed, 13 Aug 2008 08:31:28 -0700 (PDT)
-From: Misbah khan <misbah_khan@engineer.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: facing problem with io_p2v() function
+	Thu, 14 Aug 2008 01:33:34 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C8FD59.F1B049E9"
+Subject: RE: ml507 initrd problem
+Date: Wed, 13 Aug 2008 08:33:32 -0700
+Message-ID: <8BB04FAC749BD24BBA250E9D09F2F18B220AD6@MAIL-SJC.quantum3d.com>
+In-Reply-To: <20080813141107.92D4B948071@mail62-wa4.bigfish.com>
+References: <8BB04FAC749BD24BBA250E9D09F2F18B220ABB@MAIL-SJC.quantum3d.com>
+	<20080813141107.92D4B948071@mail62-wa4.bigfish.com>
+From: "Stu Bershtein" <sbershtein@Quantum3D.com>
+To: "John Linn" <John.Linn@xilinx.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,91 +25,1129 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-Hi all,
+------_=_NextPart_001_01C8FD59.F1B049E9
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I am using io_p2v() function in my driver to get the virtual address mapping
-timer control registers
+Morning John,
 
-i am passing address as 0x48304024 as base and after getting the virtual
-address of it i am reading and writing to it but my any attempt to read the
-location or write is giving segmentation fault
+=20
 
-If i use __pa() to read the corresponding location it returning as
-0x98304024 insted of 0x48304024
+Thanks for the tip.  Running said ramdisk things certainly look lively,
+I'll add a list of opens that I see at boot up at the bottom of this
+email.  Looks like it's opening a shell and everything and yet I see no
+serial communication from the shell, just quiet.  Am I correct to expect
+the console to be the serial port (9pin DB) on the ml507 board at 9600
+baud?  Also, if you could spare a desperate person a moment, could you
+send me the boot command line that you use for testing with the ramdisk?
+Finally, another member of this form suggested that there is a fully
+build BSP (rootfs and all) available as 'linux_support.tar.gz' on the
+Xilinx site.  Are you familiar with this?  I tried locating it a few
+days ago to no avail.
 
-I dont know where the mapping is going wrong 
+=20
 
-Even when i tried using ioremap() i got the same kernel panic 
+Thanks very much for your help!
 
-Below is the error message 
+Stu
+
+=20
+
+Freeing unused kernel memory: 144k init
+
+open /dev/console
+
+code 10000000 - 1009c134, data 1009a128 - 1009c134, stack bfdb9f00
+
+open /lib/libcrypt.so.0
+
+open /lib/libm.so.0
+
+open /lib/libc.so.0
+
+open /dev/console
+
+open /dev/console
+
+open /etc/TZ
+
+open /etc/inittab
+
+open /dev/console
+
+open /etc/TZ
+
+code 10000000 - 1009c134, data 1009a128 - 1009c134, stack bfd65eb0
+
+open /lib/libcrypt.so.0
+
+open /lib/libm.so.0
+
+open /lib/libc.so.0
+
+open /etc/rc.sh
+
+code 10000000 - 1009c134, data 1009a128 - 1009c134, stack bfef2ea0
+
+open /lib/libcrypt.so.0
+
+open /lib/libm.so.0
+
+open /lib/libc.so.0
+
+open /etc/mtab
+
+code 10000000 - 1009c134, data 1009a128 - 1009c134, stack bf9a8e90
+
+open /lib/libcrypt.so.0
+
+open /lib/libm.so.0
+
+open /lib/libc.so.0
+
+code 10000000 - 10039640, data 10039000 - 10039640, stack bfa47e70
+
+open /lib/libm.so.0
+
+open /lib/libcrypt.so.0
+
+open /lib/libc.so.0
+
+open /dev/null
+
+open /tmp/xinetd.pid
+
+open /etc/xinetd.conf
+
+open /etc/xinetd.d
+
+open /dev/console
+
+open /etc/TZ
+
+open /etc/xinetd.d/ftpd
+
+open /dev/console
+
+code 10000000 - 1009c134, data 1009a128 - 1009c134, stack bfda3ea0
+
+open /etc/TZ
+
+open /etc/TZ
+
+code 10000000 - 1009c134, data 1009a128 - 1009c134, stack bf9c5ec0
+
+open /etc/passwd
+
+open /etc/xinetd.d/telnet
+
+open /lib/libcrypt.so.0
+
+open /etc/TZ
+
+open /lib/libm.so.0
+
+open /lib/libcrypt.so.0
+
+open /etc/passwd
+
+open /lib/libc.so.0
+
+open /lib/libm.so.0
+
+open /etc/protocols
+
+open /bin/application
+
+open /lib/libc.so.0
+
+open /etc/services
+
+code 10000000 - 1009c134, data 1009a128 - 1009c134, stack bffa9ea0
+
+open .profile
+
+open /etc/services
+
+open /etc/profile
+
+open /etc/protocols
+
+open /etc/passwd
+
+open /etc/services
+
+open /lib/libcrypt.so.0
+
+open /etc/services
+
+open /lib/libm.so.0
+
+open /etc/TZ
+
+open /lib/libc.so.0
+
+open /etc/TZ
+
+code 10000000 - 1009c134, data 1009a128 - 1009c134, stack bfaa5eb0
+
+open /lib/libcrypt.so.0
+
+open /lib/libm.so.0
+
+open /lib/libc.so.0
+
+=20
+
+=20
+
+=20
+
+________________________________
+
+From: John Linn [mailto:John.Linn@xilinx.com]=20
+Sent: Wednesday, August 13, 2008 7:11 AM
+To: Stu Bershtein; linuxppc-embedded@ozlabs.org
+Subject: RE: ml507 initrd problem
+
+=20
+
+Hi Stu,
+
+=20
+
+I realize you are trying to get your own ram disk to work, but if you
+want to get a baseline you can use one we have on our wiki site, at
+http://xilinx.wikidot.com/open-source-linux, under Files To Download.
+This is the same ram disk that is included in the ELDK.
+
+=20
+
+This is the ram disk that I use to test the ML507 design in our Git
+tree.  I also use NFS a lot for testing.
+
+=20
+
+Looks like you're close with yours, but I'm certainly no expert in that
+area as I typically have something that works and don't change it.
+
+=20
+
+Good luck,
+
+John
+
+=20
+
+________________________________
+
+From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org] On
+Behalf Of Stu Bershtein
+Sent: Tuesday, August 12, 2008 5:28 PM
+To: linuxppc-embedded@ozlabs.org
+Subject: ml507 initrd problem
+
+=20
+
+I have been trying to boot linux on an ml507 board for a few days now.
+I am using xilinx's linux-2.6-xlnx.git kernel.  The rootfs is home
+rolled.  I have had experience with NFS mounted root filesystems (not an
+option here), cramfs, and romfs but have never tried running root out of
+a ramdisk.  Because of that I am quite sure I have dorked this up.  Any
+help will be appreciated!  I have added printk's in the kernel at
+do_sys_open to get an idea what is going on.  Here is a snip of the boot
+output:
+
+=20
+
+.
+
+Kernel command line: console=3DttyS0,9600 ip=3Don init=3D/linuxrc
+root=3D/dev/ram rw ram disk_size=3D9000
+
+.
+
+Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing
+disabled 83e00000.serial: ttyS0 at MMIO 0x83e00003 (irq =3D 16) is a
+16550A
+
+.
+
+eth0: XLlTemac: Send Threshold =3D 0, Receive Threshold =3D 0
+
+eth0: XLlTemac: Send Wait bound =3D 0, Receive Wait bound =3D 0
+
+IP-Config: Incomplete network configuration information.
+
+open /dev/ram
+
+fd 0
+
+open /initrd.image
+
+fd 1
+
+RAMDISK: Compressed image found at block 0
+
+VFS: Mounted root (ext2 filesystem).
+
+Freeing unused kernel memory: 144k init
+
+open /dev/console
+
+fd 0
+
+code 10000000 - 1019854c, data 10195000 - 1019854c, stack bf85df00
+
+open /dev/null
+
+fd 3
+
+open /etc/inittab
+
+fd 3
+
+=20
+
+And it gets very quiet at that point.  The kernel is still running in
+ppc44x_idle.  Does this suggest anything to anyone?  I'll be more than
+happy to send or describe any config files to any one who might take
+pity.
+
+=20
+
+Thanks,
+
+Stu
+
+=20
 
 
--------------------------------------------------------------------------------------------------------
-
-In init function
- Read reg address virt 0xd8304024 and phy 0x98304024 are
-Unhandled fault: external abort on non-linefetch (0x1028) at 0xd8304024
-Internal error: : 1028 [#1]
-Modules linked in: omap_timer
-CPU: 0    Not tainted  (2.6.22.1-omap3 #1)
-PC is at omap_timer_read_register+0x30/0x3c [omap_timer]
-LR is at release_console_sem+0x1c0/0x1d4
-pc : [<bf000160>]    lr : [<c005f650>]    psr: 60000013
-sp : c7f1bea0  ip : c7f1bdd8  fp : c7f1beb4
-r10: c8858000  r9 : 00000026  r8 : 00000027
-r7 : c06dfdf0  r6 : 00000000  r5 : bf001018  r4 : 00000024
-r3 : d8304000  r2 : 00000000  r1 : 60000013  r0 : 0000003d
-Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  Segment user
-Control: 00c5387f  Table: 80694018  DAC: 00000015
-Process insmod (pid: 306, stack limit = 0xc7f1a2d0)
-Stack: (0xc7f1bea0 to 0xc7f1c000)
-bea0: 00000000 bf001018 c7f1bed4 c7f1beb8 bf0001c4 bf00013c 00000000
-bf001280
-bec0: bf001100 c06dfdf0 c7f1bef4 c7f1bed8 bf0030c4 bf0001b0 00000000
-c006b5c4
-bee0: c06dfdc4 c06dfc00 c7f1bfa4 c7f1bef8 c007f514 bf00300c 00000000
-c0024380
-bf00: 000ce008 00000000 00000000 00000000 00000000 00000000 00000000
-00000000
-bf20: 00000000 00000000 00000000 00000000 00000000 00000000 c886ca30
-c07fc200
-bf40: 00000000 c8867c88 c88678f0 00000000 00000054 00000054 0000000a
-c886758f
-bf60: c8867cd8 bf00110c c8867cb0 00000024 00000000 c035da98 c0030184
-000a81fc
-bf80: bebf5d74 00014cdd 00000080 c0029f68 c7f1a000 00000000 00000000
-c7f1bfa8
-bfa0: c0029dc0 c007e1d8 000a81fc bebf5d74 000ce018 00014cdd 000ce008
-00000001
-bfc0: 000a81fc bebf5d74 00014cdd 00000080 00000000 bebf5d74 bebf5e54
-00000061
-bfe0: bebf5a20 bebf5a10 0001e1c0 401d2ec0 60000010 000ce018 00000017
-0011b8d8
-Backtrace:
-[<bf000130>] (omap_timer_read_register+0x0/0x3c [omap_timer]) from
-[<bf0001c4>] (omap_dm_timer_set_l
-oad+0x20/0x5c [omap_timer])
- r5:bf001018 r4:00000000
-[<bf0001a4>] (omap_dm_timer_set_load+0x0/0x5c [omap_timer]) from
-[<bf0030c4>] (omap_gp_timer_init_mo
-de+0xc4/0xf0 [omap_timer])
- r7:c06dfdf0 r6:bf001100 r5:bf001280 r4:00000000
-[<bf003000>] (omap_gp_timer_init_mode+0x0/0xf0 [omap_timer]) from
-[<c007f514>] (sys_init_module+0x13
-48/0x1400)
- r5:c06dfc00 r4:c06dfdc4
-[<c007e1cc>] (sys_init_module+0x0/0x1400) from [<c0029dc0>]
-(ret_fast_syscall+0x0/0x2c)
-Code: e1a01003 e59f000c eb417e8b e5953010 (e7930004)
-Segmentation fault
-
------------------------------------------------------------------------------------------------------------
-
-Looking forward for the suggestion for the above problem
+This email and any attachments are intended for the sole use of the
+named recipient(s) and contain(s) confidential information that may be
+proprietary, privileged or copyrighted under applicable law. If you are
+not the intended recipient, do not read, copy, or forward this email
+message or any attachments. Delete this email message and any
+attachments immediately.=20
 
 
------ Misbah <><
--- 
-View this message in context: http://www.nabble.com/facing-problem-with-io_p2v%28%29-function-tp18965524p18965524.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+------_=_NextPart_001_01C8FD59.F1B049E9
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal;
+	font-family:Arial;
+	color:blue;
+	font-weight:bold;
+	font-style:normal;
+	text-decoration:none none;}
+span.EmailStyle18
+	{mso-style-type:personal;
+	font-family:Arial;
+	color:navy;}
+span.EmailStyle19
+	{mso-style-type:personal-reply;
+	font-family:Arial;
+	color:blue;
+	font-weight:bold;
+	font-style:normal;
+	text-decoration:none none;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+Morning
+John,<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+<o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+Thanks
+for the tip.&nbsp; Running said ramdisk things certainly look lively, =
+I&#8217;ll
+add a list of opens that I see at boot up at the bottom of this =
+email.&nbsp;
+Looks like it&#8217;s opening a shell and everything and yet I see no =
+serial
+communication from the shell, just quiet.&nbsp; Am I correct to expect =
+the
+console to be the serial port (9pin DB) on the ml507 board at 9600 =
+baud?&nbsp;
+Also, if you could spare a desperate person a moment, could you send me =
+the
+boot command line that you use for testing with the ramdisk? =
+&nbsp;Finally,
+another member of this form suggested that there is a fully build BSP =
+(rootfs
+and all) available as &#8216;linux_support.tar.gz&#8217; on the Xilinx =
+site.&nbsp;
+Are you familiar with this?&nbsp; I tried locating it a few days ago to =
+no
+avail.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+<o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+Thanks
+very much for your help!<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+Stu<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+<o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+Freeing
+unused kernel memory: 144k init<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/dev/console<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+code
+10000000 - 1009c134, data 1009a128 - 1009c134, stack =
+bfdb9f00<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libcrypt.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libm.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libc.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/dev/console<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/dev/console<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/TZ<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/inittab<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/dev/console<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/TZ<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+code
+10000000 - 1009c134, data 1009a128 - 1009c134, stack =
+bfd65eb0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libcrypt.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libm.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libc.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open /etc/rc.sh<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+code
+10000000 - 1009c134, data 1009a128 - 1009c134, stack =
+bfef2ea0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libcrypt.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libm.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libc.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/mtab<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+code
+10000000 - 1009c134, data 1009a128 - 1009c134, stack =
+bf9a8e90<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libcrypt.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libm.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libc.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+code
+10000000 - 10039640, data 10039000 - 10039640, stack =
+bfa47e70<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libm.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libcrypt.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libc.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/dev/null<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/tmp/xinetd.pid<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/xinetd.conf<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/xinetd.d<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/dev/console<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/TZ<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/xinetd.d/ftpd<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/dev/console<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+code
+10000000 - 1009c134, data 1009a128 - 1009c134, stack =
+bfda3ea0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/TZ<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/TZ<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+code
+10000000 - 1009c134, data 1009a128 - 1009c134, stack =
+bf9c5ec0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/passwd<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/xinetd.d/telnet<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libcrypt.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/TZ<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libm.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libcrypt.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/passwd<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libc.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libm.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/protocols<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/bin/application<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libc.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/services<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+code
+10000000 - 1009c134, data 1009a128 - 1009c134, stack =
+bffa9ea0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+.profile<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/services<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/profile<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/protocols<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/passwd<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/services<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libcrypt.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/services<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libm.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/TZ<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libc.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/TZ<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+code
+10000000 - 1009c134, data 1009a128 - 1009c134, stack =
+bfaa5eb0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libcrypt.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libm.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/lib/libc.so.0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+<o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+<o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+<o:p>&nbsp;</o:p></span></font></b></p>
+
+<div>
+
+<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
+size=3D3
+face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
+
+<hr size=3D2 width=3D"100%" align=3Dcenter tabindex=3D-1>
+
+</span></font></div>
+
+<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
+style=3D'font-size:10.0pt;
+font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
+size=3D2
+face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> John =
+Linn
+[mailto:John.Linn@xilinx.com] <br>
+<b><span style=3D'font-weight:bold'>Sent:</span></b> Wednesday, August =
+13, 2008
+7:11 AM<br>
+<b><span style=3D'font-weight:bold'>To:</span></b> Stu Bershtein;
+linuxppc-embedded@ozlabs.org<br>
+<b><span style=3D'font-weight:bold'>Subject:</span></b> RE: ml507 initrd =
+problem</span></font><o:p></o:p></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Hi =
+Stu,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>I realize you are trying to get =
+your own
+ram disk to work, but if you want to get a baseline you can use one we =
+have on
+our wiki site, at <a =
+href=3D"http://xilinx.wikidot.com/open-source-linux">http://xilinx.wikido=
+t.com/open-source-linux</a>,
+under Files To Download. &nbsp;This is the same ram disk that is =
+included in
+the ELDK.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>This is the ram disk that I use to =
+test
+the ML507 design in our Git tree.&nbsp; I also use NFS a lot for =
+testing.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Looks like you&#8217;re close with =
+yours,
+but I&#8217;m certainly no expert in that area as I typically have =
+something
+that works and don&#8217;t change it.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Good =
+luck,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>John<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<div style=3D'border:none;border-left:solid blue 1.5pt;padding:0in 0in =
+0in 4.0pt'>
+
+<div>
+
+<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
+size=3D3
+face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
+
+<hr size=3D2 width=3D"100%" align=3Dcenter tabindex=3D-1>
+
+</span></font></div>
+
+<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
+style=3D'font-size:10.0pt;
+font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
+size=3D2
+face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'>
+linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org] =
+<b><span
+style=3D'font-weight:bold'>On Behalf Of </span></b>Stu Bershtein<br>
+<b><span style=3D'font-weight:bold'>Sent:</span></b> Tuesday, August 12, =
+2008
+5:28 PM<br>
+<b><span style=3D'font-weight:bold'>To:</span></b> =
+linuxppc-embedded@ozlabs.org<br>
+<b><span style=3D'font-weight:bold'>Subject:</span></b> ml507 initrd =
+problem</span></font><o:p></o:p></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+I have
+been trying to boot linux on an ml507 board for a few days now.&nbsp; I =
+am
+using xilinx&#8217;s linux-2.6-xlnx.git kernel.&nbsp; The rootfs is home
+rolled.&nbsp; I have had experience with NFS mounted root filesystems =
+(not an
+option here), cramfs, and romfs but have never tried running root out of =
+a
+ramdisk.&nbsp; Because of that I am quite sure I have dorked this =
+up.&nbsp; Any
+help will be appreciated!&nbsp; I have added printk&#8217;s in the =
+kernel at
+do_sys_open to get an idea what is going on.&nbsp; Here is a snip of the =
+boot
+output:<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+<o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+Kernel
+command line: console=3DttyS0,9600 ip=3Don init=3D/linuxrc =
+root=3D/dev/ram rw ram
+disk_size=3D9000<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+Serial:
+8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
+83e00000.serial: ttyS0 at MMIO 0x83e00003 (irq =3D 16) is a =
+16550A<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+eth0:
+XLlTemac: Send Threshold =3D 0, Receive Threshold =3D =
+0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+eth0:
+XLlTemac: Send Wait bound =3D 0, Receive Wait bound =3D =
+0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+IP-Config:
+Incomplete network configuration =
+information.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/dev/ram<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+fd 0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/initrd.image<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+fd 1<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+RAMDISK:
+Compressed image found at block 0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+VFS:
+Mounted root (ext2 filesystem).<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+Freeing
+unused kernel memory: 144k init<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/dev/console<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+fd 0<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+code
+10000000 - 1019854c, data 10195000 - 1019854c, stack =
+bf85df00<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open /dev/null<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+fd 3<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+open
+/etc/inittab<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+fd 3<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+<o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+And it
+gets very quiet at that point.&nbsp; The kernel is still running in
+ppc44x_idle.&nbsp; Does this suggest anything to anyone?&nbsp; =
+I&#8217;ll be
+more than happy to send or describe any config files to any one who =
+might take
+pity.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+<o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+Thanks,<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+Stu<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal><b><font size=3D2 color=3Dblue face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+<o:p>&nbsp;</o:p></span></font></b></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><br clear=3Dall>
+This email and any attachments are intended for the sole use of the =
+named
+recipient(s) and contain(s) confidential information that may be =
+proprietary,
+privileged or copyrighted under applicable law. If you are not the =
+intended
+recipient, do not read, copy, or forward this email message or any =
+attachments.
+Delete this email message and any attachments immediately. =
+<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C8FD59.F1B049E9--
