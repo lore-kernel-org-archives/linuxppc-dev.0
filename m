@@ -1,19 +1,19 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.226])
-	by ozlabs.org (Postfix) with ESMTP id 90D1EDDDF9
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Aug 2008 15:09:28 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so2710041rvb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 22:09:27 -0700 (PDT)
-Date: Tue, 12 Aug 2008 23:09:24 -0600
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.224])
+	by ozlabs.org (Postfix) with ESMTP id 519DBDDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Aug 2008 15:12:09 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so2710854rvb.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Aug 2008 22:12:08 -0700 (PDT)
+Date: Tue, 12 Aug 2008 23:12:05 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
 To: John Rigby <jrigby@freescale.com>
-Subject: Re: [PATCH 5121 pci 1/3] powerpc: 83xx: pci: Remove need for
-	get_immrbase from mpc83xx_add_bridge.
-Message-ID: <20080813050924.GD17587@secretlab.ca>
+Subject: Re: [PATCH 5121 pci 2/3] powerpc: 5121: Add PCI support.
+Message-ID: <20080813051205.GE17587@secretlab.ca>
 References: <1218130587-31176-1-git-send-email-jrigby@freescale.com>
+	<1218130587-31176-2-git-send-email-jrigby@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1218130587-31176-1-git-send-email-jrigby@freescale.com>
+In-Reply-To: <1218130587-31176-2-git-send-email-jrigby@freescale.com>
 Sender: Grant Likely <glikely@secretlab.ca>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,41 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 07, 2008 at 11:36:25AM -0600, John Rigby wrote:
-> Modify mpc83xx_add_bridge to get config space register base address from the device
-> tree instead of immr + hardcoded offset.
+On Thu, Aug 07, 2008 at 11:36:26AM -0600, John Rigby wrote:
+> Uses mpc83xx_add_bridge in fsl_pci.c
 > 
-> 83xx pci nodes have these changes:
->     register properties now contain two address length tuples:
-> 	First is the pci bridge register base, this has always been there.
-> 	Second is the config base, this is new.
->     The primary pci bus should have the "primary" property.
+> Adds second register tuple to pci node register property
+> as previously done for 83xx device trees in a previous patch.
 > 
-> These are documented in Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt
+> Signed-off-by: John Rigby <jrigby@freescale.com>
 
-Looks mostly good to me.  I only have one comment on the device tree
-binding...
+Looks good to me.
 
-> diff --git a/Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt b/Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt
-> new file mode 100644
-> index 0000000..51214a0
-> --- /dev/null
-> +++ b/Documentation/powerpc/dts-bindings/fsl/83xx-512x-pci.txt
-> @@ -0,0 +1,43 @@
-> +* Freescale 83xx and 512x PCI bridges
-> +
-> +Freescale 83xx and 512x SOCs include the same pci bridge core.
-> +
-> +83xx/512x specific notes:
-> +- reg: should contain two address length tuples
-> +    The first is for the internal pci bridge registers
-> +    The second is for the pci config space access registers
-> +- primary: 
-> +    This property should be present for the primary pci bridge
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-Can you use something like 'fsl,primary-pci-bridge' instead?  'primary'
-is a little too generic for my taste.  Also, the purpose of identifying
-one of the PCI bridges as primary should be documented (This is me
-pushing against encoding Linux internal implementation details into the
-device tree, I suspect that 'primary' doesn't belong in the device tree
-at all).
+I'll pick this one up once 1/3 is sorted out.
+
+g.
