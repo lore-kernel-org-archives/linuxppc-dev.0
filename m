@@ -1,17 +1,19 @@
-Return-Path: <sinisa.denic@abs-cs.com>
-Received: from abs-beograd.co.yu (mail.abs-beograd.co.yu [80.93.243.15])
-	by ozlabs.org (Postfix) with ESMTP id 223FEDDDF4
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:55:51 +1000 (EST)
-Received: from WorldClient by abs-beograd.co.yu (MDaemon PRO v9.6.6)
-	with ESMTP id md50000141900.msg
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 11:52:20 +0200
-Date: Thu, 14 Aug 2008 11:52:17 +0200
-From: "Sinisa Denic" <sinisa.denic@abs-cs.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: mpc52xx localplus bus and dm9000
+Return-Path: <rocky.craig@hp.com>
+Received: from g1t0028.austin.hp.com (g1t0028.austin.hp.com [15.216.28.35])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bastion.smtp.hp.com", Issuer "RSA Data Security,
+	Inc." (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3BEACDE081
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 23:18:26 +1000 (EST)
+Message-ID: <48A42F1A.6080903@hp.com>
+Date: Thu, 14 Aug 2008 07:11:54 -0600
+From: Rocky Craig <rocky.craig@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Message-ID: <WorldClient-F200808141152.AA52170076@abs-cs.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 2.6.27] [POWERPC] Invalidate all TLB entries in a specified
+	range
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: paulus@samba.org, Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,I have mpc52xx based board very similar to lite5200b.
-There is Davicom DM9000 connected to Local Plus Bus CS0.
-Does anybody have idea how should DTS part look like in order to add this 
-resource in system.
-I've written something like this:
+From: Rocky Craig <rocky.craig@hp.com>
 
-lpb {
-                        device_type = "network";
-                        compatible = "fsl,lpb";
-                        ranges = <0 0 ff000000 1000000>;
+The apparent intent of "flush_tlbs" is to invalidate TLB entries that
+might match in the address range 0 to 0x00400000.  A loop counter is 
+set up at the high value and decremented by page size.  However, the 
+loop is only done once as the sense of the conditional branch at the
+loop end does not match the setup/decrement.
 
-                        dm9000@0,0 {
-                                compatible = "dm9000";
-                                reg = <0 0 100000>;
-                                #size-cells = <1>;
-                                #address-cells = <1>;
-                        };
-                };
+Signed-off-by: Rocky Craig <rocky.craig@hp.com>
+---
 
-but it's not working.
-Is it enough to have right dts record for default dm9000 driver working
-or I have to change something more?
-Thank you in andvance.
+Source is from 2.6.27 development, but the bug appears as far back as 2.4.0.
+The small user-space program below demonstrates the loop behavior.  It was
+compiled via crosstool gcc 3.4.5 / glibc 2.3.6 for an MPC8347 target.
 
-Sinisa Denic
-System and software  engineer
-tel: +381(0)112016142
-ABS Control Systems
-bul.Zorana Djindjica 8a
-Belgrade,Serbia
+int main()
+{
+	long endval;				// 16(r31)
+
+	__asm__ __volatile__(
+		"	lis 10,0x40\n"
+		"1:	addic. 10,10,-0x1000\n"
+		"	bgt 1b\n"
+		"	stw 10,16(31)\n");	// endval
+
+	printf("end value = 0x%08lx\n", endval);
+}
+
+This might win the prize for "Smallest actual code patch ever".
+
+--- a/arch/powerpc/kernel/head_32.S.orig	2008-07-24 19:25:09.000000000 -0600
++++ a/arch/powerpc/kernel/head_32.S	2008-07-24 19:25:22.000000000 -0600
+@@ -1155,7 +1155,7 @@ flush_tlbs:
+ 	lis	r10, 0x40
+ 1:	addic.	r10, r10, -0x1000
+ 	tlbie	r10
+-	blt	1b
++	bgt	1b
+ 	sync
+ 	blr
+ 
