@@ -1,12 +1,12 @@
 Return-Path: <markn@au1.ibm.com>
 From: Mark Nelson <markn@au1.ibm.com>
 To: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
-Subject: [RFC 0/2] powerpc: copy_4K_page tweaked for Cell
-Date: Thu, 14 Aug 2008 16:17:32 +1000
+Subject: [RFC 1/2] powerpc: copy_4K_page tweaked for Cell
+Date: Thu, 14 Aug 2008 16:18:00 +1000
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200808141617.32033.markn@au1.ibm.com>
+Message-Id: <200808141618.00569.markn@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,80 +16,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+/*
+ * Copyright (C) 2008 Mark Nelson, IBM Corp.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version
+ * 2 of the License, or (at your option) any later version.
+ */
+#include <asm/processor.h>
+#include <asm/ppc_asm.h>
+#include <asm/asm-offsets.h>
 
-What follows is an updated version of copy_4K_page that has been tuned
-for the Cell processor. With this new routine it was found that the
-system time measured when compiling a 2.6.26 pseries_defconfig was
-reduced by ~10s:
-
-mainline (2.6.27-rc1-00632-g2e1e921):
-
-real    17m8.727s
-user    59m48.693s
-sys     3m56.089s
-
-real    17m9.350s
-user    59m44.822s
-sys     3m56.666s
-
-new routine:
-
-real    17m7.311s
-user    59m51.339s
-sys     3m47.043s
-
-real    17m7.863s
-user    59m49.028s
-sys     3m46.608s
-
-This same routine was also found to improve performance on 970 CPUs
-too (but by a much smaller amount):
-
-mainline (2.6.27-rc1-00632-g2e1e921):
-
-real    16m8.545s
-user    14m38.134s
-sys     1m55.156s
-
-real    16m7.089s
-user    14m37.974s
-sys     1m55.010s
-
-new routine:
-
-real    16m11.641s
-user    14m37.251s
-sys     1m52.618s
-
-real    16m6.139s
-user    14m38.282s
-sys     1m53.184s
+        .section        ".toc","aw"
+PPC64_CACHES:
+        .tc             ppc64_caches[TC],ppc64_caches
+        .section        ".text"
 
 
-I also did testing on Power{3..6} and I found that Power3, Power5 and
-Power6 did better with this new routine when the dcbt and dcbz
-weren't used (in which case they achieved performance comparable to
-the existing kernel copy_4K_page routine). Power4 on other hand
-performed slightly better with the dcbt and dcbz included (still
-comparable to the current kernel copy_4K_page).
+_GLOBAL(copy_4K_page)
+	li	r5,4096		/* 4K page size */
+	ld      r10,PPC64_CACHES@toc(r2)
+	lwz	r11,DCACHEL1LOGLINESIZE(r10)	/* log2 of cache line size */
+	lwz     r12,DCACHEL1LINESIZE(r10)	/* Get cache line size */
+	li	r9,0
+	srd	r8,r5,r11
 
-So in order to get the best performance across the board I created a
-new CPU feature that will govern whether the dcbt and dcbz are used
-(and un-creatively named it CPU_FTR_CP_USE_DCBTZ). I added it to the
-CPU features of Cell, Power4 and 970.
-Unfortunately I don't have access to a PA6T but judging by the
-marketing material I could find, it looks like it has a strong enough
-hardware prefetcher that it probably wouldn't benefit from the dcbt
-and dcbz...
+	mtctr	r8
+setup:
+	dcbt	r9,r4
+	dcbz	r9,r3
+	add	r9,r9,r12
+	bdnz	setup
 
-Okay, that's probably enough prattling along - you can all go and look
-at the code now.
+	addi	r3,r3,-8
+	srdi    r8,r5,7		/* page is copied in 128 byte strides */
+	addi	r8,r8,-1	/* one stride copied outside loop */
 
-All comments appreciated
+	mtctr	r8
 
-[I decided to post the whole copy routine rather than a diff between
-it and the current one because I found the diff quite unreadable. I'll post
-a real patchset after I've addressed any comments.]
+	ld	r5,0(r4)
+	ld	r6,8(r4)
+	ld	r7,16(r4)
+	ldu	r8,24(r4)
+1:	std	r5,8(r3)
+	ld	r9,8(r4)
+	std	r6,16(r3)
+	ld	r10,16(r4)
+	std	r7,24(r3)
+	ld	r11,24(r4)
+	std	r8,32(r3)
+	ld	r12,32(r4)
+	std	r9,40(r3)
+	ld	r5,40(r4)
+	std	r10,48(r3)
+	ld	r6,48(r4)
+	std	r11,56(r3)
+	ld	r7,56(r4)
+	std	r12,64(r3)
+	ld	r8,64(r4)
+	std	r5,72(r3)
+	ld	r9,72(r4)
+	std	r6,80(r3)
+	ld	r10,80(r4)
+	std	r7,88(r3)
+	ld	r11,88(r4)
+	std	r8,96(r3)
+	ld	r12,96(r4)
+	std	r9,104(r3)
+	ld	r5,104(r4)
+	std	r10,112(r3)
+	ld	r6,112(r4)
+	std	r11,120(r3)
+	ld	r7,120(r4)
+	stdu	r12,128(r3)
+	ldu	r8,128(r4)
+	bdnz	1b
 
-Many thanks!
+	std	r5,8(r3)
+	ld	r9,8(r4)
+	std	r6,16(r3)
+	ld	r10,16(r4)
+	std	r7,24(r3)
+	ld	r11,24(r4)
+	std	r8,32(r3)
+	ld	r12,32(r4)
+	std	r9,40(r3)
+	ld	r5,40(r4)
+	std	r10,48(r3)
+	ld	r6,48(r4)
+	std	r11,56(r3)
+	ld	r7,56(r4)
+	std	r12,64(r3)
+	ld	r8,64(r4)
+	std	r5,72(r3)
+	ld	r9,72(r4)
+	std	r6,80(r3)
+	ld	r10,80(r4)
+	std	r7,88(r3)
+	ld	r11,88(r4)
+	std	r8,96(r3)
+	ld	r12,96(r4)
+	std	r9,104(r3)
+	std	r10,112(r3)
+	std	r11,120(r3)
+	std	r12,128(r3)
+	blr
