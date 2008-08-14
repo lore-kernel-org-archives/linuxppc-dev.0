@@ -1,19 +1,21 @@
-Return-Path: <hachti@hachti.de>
-Received: from ente.hachti.de (ente.hachti.de [212.227.83.80])
-	by ozlabs.org (Postfix) with ESMTP id 1DB21DDFA5
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 2AB4EDDF80
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Aug 2008 13:34:59 +1000 (EST)
-Message-ID: <48A3A7E0.8020903@hachti.de>
-Date: Thu, 14 Aug 2008 05:34:56 +0200
-From: Philipp Hachtmann <hachti@hachti.de>
-MIME-Version: 1.0
-To: Stu Bershtein <sbershtein@Quantum3D.com>
+	Thu, 14 Aug 2008 13:50:29 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KTTqy-00036A-SQ
+	for linuxppc-embedded@ozlabs.org; Wed, 13 Aug 2008 20:50:24 -0700
+Message-ID: <18975316.post@talk.nabble.com>
+Date: Wed, 13 Aug 2008 20:50:24 -0700 (PDT)
+From: wangyanlong <killyouatonce@gmail.com>
+To: linuxppc-embedded@ozlabs.org
 Subject: Re: How to use ramdisk on the ml300?
+In-Reply-To: <931ae8260808132008i1cac2e91kc76c099ecc574cd0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 References: <931ae8260808132008i1cac2e91kc76c099ecc574cd0@mail.gmail.com>
-	<8BB04FAC749BD24BBA250E9D09F2F18B20CCAF@MAIL-SJC.quantum3d.com>
-In-Reply-To: <8BB04FAC749BD24BBA250E9D09F2F18B20CCAF@MAIL-SJC.quantum3d.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: yanlong wang <killyouatonce@gmail.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,18 +26,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-> As I discovered today, it is not necessary to use u-boot on the ml507
-> board.  I cannot speak with certainty about the ml300.  For the ml507
-> the ramdisk image gets saved as a separate section in the elf file
-> that is downloaded with the zImage.  In the ml507 case the image is a
-> gzipped ext2 filesystem.  Makes a very tidy package I'm sure you will
-> agree!
-But with U-boot it can be way more comfortable!
 
-Regards,
-Ph :)
-
+ I use the make zImage.initrd to build my linux and i creat a
+ramdisk file ,set the console root=/dev/ram.
+  next i download the zImage.initrd.elf to the board,and down load
+the ramdisk file to the right place , but  in the boot message , it
+not try to load the ramdisk as rootfiles , it really boring me ,why?
+  Thanks for your help
 -- 
-http://www.hachti.de
+View this message in context: http://www.nabble.com/How-to-use-ramdisk-on-the-ml300--tp18975066p18975316.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
