@@ -1,22 +1,15 @@
-Return-Path: <sebastian@breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9B49BDDF12
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 17:33:36 +1000 (EST)
-Date: Thu, 14 Aug 2008 09:33:19 +0200
-From: Sebastian Siewior <sebastian@breakpoint.cc>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH / RFC] net: fix locking in ibm_newemac
-Message-ID: <20080814073319.GA8716@Chamillionaire.breakpoint.cc>
-References: <20080813182957.GA12612@www.tglx.de>
-	<1218685554.8041.172.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1218685554.8041.172.camel@pasglop>
-Cc: netdev@vger.kernel.org, Sebastian Siewior <bigeasy@linutronix.de>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 39DC6DDFEC
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 18:20:05 +1000 (EST)
+Date: Thu, 14 Aug 2008 01:20:04 -0700 (PDT)
+Message-Id: <20080814.012004.193702132.davem@davemloft.net>
+To: linuxppc-dev@ozlabs.org
+Subject: bug in lmb_enforce_memory_limit()
+From: David Miller <davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +19,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Benjamin Herrenschmidt | 2008-08-14 13:45:54 [+1000]:
 
->> The fix is to defer phy init until netdevice is registered / initialized.
->
->I think it's better instead to take the dev_mc_add() statement
->out of emac_configure().
-I looked yesterday into that code and I saw that dev_mc_add() was called
-by the network core itself. Now I'm sure it was definitly too late for
-writing patches :)
+I just mentioned this to Ben H. on IRC and promised I would report it
+here. :-)
 
->What about this patch instead, does it fix it for you ?
-yep it does.
+The first loop over lmb.memory in this function interprets the
+memory_limit as a raw size limit, and that's fine so far.
 
-Sebastian
+But the second loop over lmb.reserved interprets this value
+instead as an "address limit."
+
+I haven't cobbled together a fix myself, but probably the way to do
+this is, when we're about break out of the first loop over lmb.memory,
+walk through the now-trimmed memory blobs and trim those from
+lmb.reserved, one by one.
+
+This bug got introduced by:
+
+   commit 2babf5c2ec2f2d5de3e38d20f7df7fd815fd10c9
+   Author: Michael Ellerman <michael@ellerman.id.au>
+   Date:   Wed May 17 18:00:46 2006 +1000
+
+       [PATCH] powerpc: Unify mem= handling
+
+back when LMB was still a powerpc local item. :-)
+
+This led me to another bug which probably a lot of platforms are
+effected by.
+
+If you do this command line memory limiting, and the kernel was placed
+by the boot loader into physical ram (say at the end of the available
+physical memory) that gets trimmed out by the command line option, we
+hang or crash right as we boot into userspace because freeing up
+initmem ends up freeing invalid page structs.
+
+I think, on sparc64, instead of adding all kinds of complicated logic
+to free_initmem() I'm simply going to only poison the pages and
+not free them at all if cmdline_memory_size has been set.
