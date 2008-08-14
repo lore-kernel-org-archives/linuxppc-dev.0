@@ -1,22 +1,19 @@
-Return-Path: <jewirth@googlemail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id A0A21DE206
+Return-Path: <netstv@gmail.com>
+Received: from gv-out-0910.google.com (gv-out-0910.google.com [216.239.58.187])
+	by ozlabs.org (Postfix) with ESMTP id 38D48DE641
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Aug 2008 23:54:42 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so358480ugf.0
+	Fri, 15 Aug 2008 01:27:41 +1000 (EST)
+Received: by gv-out-0910.google.com with SMTP id y18so209624gvf.14
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Aug 2008 06:54:39 -0700 (PDT)
-Message-ID: <f944af2a0808140654q2468e6a7m1424b90767ea765e@mail.gmail.com>
-Date: Thu, 14 Aug 2008 15:54:38 +0200
-From: "Jens Wirth" <jewirth@googlemail.com>
-To: linuxppc-embedded@ozlabs.org, wangyanlong <killyouatonce@gmail.com>
-Subject: Re: How to use ramdisk on the ml300?
-In-Reply-To: <18979320.post@talk.nabble.com>
+	Thu, 14 Aug 2008 08:27:39 -0700 (PDT)
+Message-ID: <b4b98b690808140827j64985663mbb6a12d953bee320@mail.gmail.com>
+Date: Thu, 14 Aug 2008 08:27:38 -0700
+From: "Steve Iribarne (GMail)" <netstv@gmail.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: RPC source code
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <931ae8260808132008i1cac2e91kc76c099ecc574cd0@mail.gmail.com>
-	<f944af2a0808140004w70948283nde0978d34d1db261@mail.gmail.com>
-	<18979320.post@talk.nabble.com>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_46952_22520006.1218727659014"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,27 +24,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+------=_Part_46952_22520006.1218727659014
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Thu, Aug 14, 2008 at 12:44 PM, wangyanlong <killyouatonce@gmail.com> wrote:
->
-> Hi JensWirth,
->    Thanks  for your reply :). I have some questions here.
->    (1)You told me "make simpleImage.virtex405-ml300",i only know "make
-> zImage" and "make zImage.initrd" ,what it is this command mean???
+Where in the heck does one find the source code for RPC?  I need to cross
+compile it... ideas??
 
-It's a relatively new target in the arch/powerpc/boot/Makefile which
-wraps your compressed kernel and bootcode together with a device tree
-blob. A device tree blob is created using a device tree source (dts).
+thanks.
+-stv
 
->    (2)What is dts ? I don't know what is this :(
+-- 
+/*
+* Steve Iribarne
+* Software Engineer
+* (aka Grunt)
+*/
 
-A device tree source is plain text. Look inside arch/powerpc/boot/dts.
-A device tree is essential if you want to boot an ARCH=powerpc
-Linux-Kernel. Read this:
-http://ols.fedoraproject.org/OLS/Reprints-2008/likely2-reprint.pdf
+------=_Part_46952_22520006.1218727659014
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I supposed you were using 2.6.26 or 2.6.27-rcX
+<div dir="ltr">Where in the heck does one find the source code for RPC?&nbsp; I need to cross compile it... ideas??<br><br>thanks.<br>-stv<br clear="all"><br>-- <br>/*<br> * Steve Iribarne<br> * Software Engineer<br> * (aka Grunt) <br>
+ */<br>
+</div>
 
-Regards
-Jens
+------=_Part_46952_22520006.1218727659014--
