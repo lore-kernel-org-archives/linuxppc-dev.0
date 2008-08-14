@@ -1,21 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 55DD4DE455
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 23:03:28 +1000 (EST)
-Message-Id: <1C19524E-8400-4F61-AEB1-19CF20E71098@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20080813025726.26033.29519.stgit@trillian.secretlab.ca>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [RFC/PATCH v2] powerpc: add ioremap_early() function for mapping
-	IO regions before MMU_init()
-Date: Thu, 14 Aug 2008 08:00:48 -0500
-References: <20080813025726.26033.29519.stgit@trillian.secretlab.ca>
-Cc: miltonm@bga.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	scottwood@freescale.com
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 14 Aug 2008 23:21:42 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2] libfdt: Add support for using aliases in
+	fdt_path_offset()
+Message-ID: <20080814132142.GE32158@yookeroo.seuss>
+References: <Pine.LNX.4.64.0808140750550.22943@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0808140750550.22943@blarg.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,78 +19,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Aug 14, 2008 at 07:51:47AM -0500, Kumar Gala wrote:
+> If the path doesn't start with '/' check to see if it matches some alias
+> under "/aliases" and substitute the matching alias value in the path
+> and retry the lookup.
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> 
+> Fixed the bug pointed out by David Gibson and added tests.
 
-On Aug 12, 2008, at 10:03 PM, Grant Likely wrote:
+Glad you spotted it in the end :)
 
-> +/**
-> + * ioremap_early - Allow large persistant IO regions to be mapped  
-> early.
-> + * @addr: physical address of region
-> + * @size: size of region
-> + *
-> + * This routine uses setbat() to set up IO ranges before the MMU is
-> + * fully configured.
-> + *
-> + * This routine can be called really early, before MMU_init() is  
-> called.  It
-> + * is useful for setting up early debug output consoles and  
-> frequently
-> + * accessed IO regions, like the internally memory mapped registers  
-> (IMMR)
-> + * in an SoC.  Ranges mapped with this function persist even after  
-> MMU_init()
-> + * is called and the MMU is turned on 'for real.'
-> + *
-> + * The region mapped is large (minimum size of 128k) and virtual  
-> mapping must
-> + * be aligned against this boundary.  Therefore, to avoid  
-> fragmentation all
-> + * calls to ioremap_early() are best made before any calls to ioremap
-> + * for smaller regions.
-> + */
-> +void __iomem * __init
-> +ioremap_early(phys_addr_t addr, unsigned long size)
-> +{
-> +	unsigned long v, p;
-> +	int i;
+[snip[]
+> diff --git a/libfdt/fdt_ro.c b/libfdt/fdt_ro.c
+> index ebd1260..2f3ff48 100644
+> --- a/libfdt/fdt_ro.c
+> +++ b/libfdt/fdt_ro.c
+> @@ -139,8 +139,25 @@ int fdt_path_offset(const void *fdt, const char *path)
+> 
+>  	FDT_CHECK_HEADER(fdt);
+> 
+> -	if (*path != '/')
+> -		return -FDT_ERR_BADPATH;
+> +	/* see if we have an alias */
+> +	if (*path != '/') {
+> +		const char *q;
+> +		int aliasoffset = fdt_path_offset(fdt, "/aliases");
 > +
-> +	/* Be loud and annoying if someone calls this too late.
-> +	 * No need to crash the kernel though */
-> +	WARN_ON(mem_init_done);
-> +	if (mem_init_done)
-> +		return NULL;
+> +		if (aliasoffset < 0)
+> +			return -FDT_ERR_BADPATH;
 > +
-> +	/* Make sure request is sane */
-> +	if (size == 0)
-> +		return NULL;
+> +		q = strchr(path, '/');
+> +		if (!q)
+> +			q = end;
 > +
-> +	/* If the region is already block mapped, then there is nothing
-> +	 * to do; just return the mapped address */
-> +	v = p_mapped_by_bats(addr);
-> +	if (v)
-> +		return (void __iomem *)v;
+> +		p = fdt_getprop_namelen(fdt, aliasoffset, path, q - p, NULL);
+> +		if (!p)
+> +			return -FDT_ERR_BADPATH;
+> +		offset = fdt_path_offset(fdt, p);
 > +
-> +	/* Adjust size to reflect aligned region */
-> +	p = _ALIGN_DOWN(addr, 128 << 10); /* BATs align on 128k boundaries  
-> */
-> +	size = ALIGN(addr - p + size, 128 << 10);
-> +
-> +	/* Allocate the aligned virtual base address.  ALIGN_DOWN is used
-> +	 * to ensure no overlaps occur with normal 4k ioremaps. */
-> +	v = ioremap_bot = _ALIGN_DOWN(ioremap_bot, 128 << 10) - size;
-> +
-> +	/* Set up a BAT for this IO region */
-> +	i = loadbat(v, p, size, _PAGE_IO);
+> +		p = q;
+> +	}
 
-what happens if we run out of bats?
+Much better.  It would be quite nice to have an explicit way of
+retreiving the aliases too, but I can factor that out easily enough in
+a later patch.
 
-
-does this actually build on any non-BAT based ppc32 system?
-
->
-> +	if (i < 0)
-> +		return NULL;
+[snip]
+> --- /dev/null
+> +++ b/tests/aliases.dts
+> @@ -0,0 +1,31 @@
+> +/dts-v1/;
 > +
-> +	return (void __iomem *) (v + (addr - p));
-> +}
+> +/memreserve/ 0xdeadbeef00000000 0x100000;
+> +/memreserve/ 123456789 010000;
+
+I'd drop these /memreserve/s, they're not relevant to the test.
+
 > +
+> +/ {
+> +	compatible = "test_tree1";
+> +	prop-int = <0xdeadbeef>;
+> +	prop-str = "hello world";
+
+Likewise the various prop-int and prop-str properties.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
