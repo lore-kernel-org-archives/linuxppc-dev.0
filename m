@@ -1,20 +1,23 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 4BABADDF6A
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 02:08:27 +1000 (EST)
-Date: Thu, 14 Aug 2008 12:08:29 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: [PATCH 1/2] port ndfc driver to of platform
-Message-ID: <20080814120829.1ad4ed74@lappy.seanm.ca>
-In-Reply-To: <200808141153.07983.arnd@arndb.de>
-References: <20080801233000.3574434f@lappy.seanm.ca>
-	<20080804132459.3fc12f59@lappy.seanm.ca>
-	<20080813173629.32ec73ee@lappy.seanm.ca>
-	<200808141153.07983.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 92FA2DDF99
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 02:24:38 +1000 (EST)
+Message-Id: <9E78DE5E-7B94-4990-81CB-1EBF806923C1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40808140800s417af75ex76ae73ec990be58d@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [RFC/PATCH v2] powerpc: add ioremap_early() function for mapping
+	IO regions before MMU_init()
+Date: Thu, 14 Aug 2008 11:24:08 -0500
+References: <20080813025726.26033.29519.stgit@trillian.secretlab.ca>
+	<1C19524E-8400-4F61-AEB1-19CF20E71098@kernel.crashing.org>
+	<fa686aa40808140800s417af75ex76ae73ec990be58d@mail.gmail.com>
+Cc: miltonm@bga.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 14 Aug 2008 11:53:07 +0200
-"Arnd Bergmann" <arnd@arndb.de> wrote:
+>> what happens if we run out of bats?
+>
+> Then it returns NULL and the caller must handle it.  The board port
+> maintainer needs understand the board/CPU/SoC and not depend on more
+> BATs than are available.  They also need to understand that there is a
+> tradeoff between BATs for IO and BATs for RAM.  If the board port uses
+> up all the BATs for IO, then RAM above 256MB ends up getting mapped
+> with PTEs and there is a performance hit.  My expectation is that only
+> platform code will use this facility.  Device drivers should continue
+> to use ioremap() and will gain the benefit of the BATs if platform
+> code already set them up.  I can add some text to the documentation to
+> describe this.
+>
+> I'm not going to make any attempt to fallback to PTEs for IO when
+> there isn't enough BATs.  Doing so adds an order of magnitude more
+> complexity.
 
-> > +	ndfc->ndfcbase = ioremap(reg[1], reg[2]);
-> 
-> This could be better expressed as of_iomap().
+that's fine.. I just didn't look at setbat() to see it errors out.
 
-I tried of_iomap(), but it doesn't seem to like the 3 value reg. i.e.
-It doesn't skip the chip select. And since I need to read the reg
-property to get the chip select any way, I just used the value directly.
+Also can we get rid of LOAD_BAT in head_32.S?
 
-> 
-> > -	platform_set_drvdata(pdev, ndfc);
-> > +	__raw_writel(ccr, ndfc->ndfcbase + NDFC_CCR);
-> >  
-> > -	printk("NDFC NAND Driver initialized. Chip-Rev: 0x%08x\n",
-> > -	       __raw_readl(ndfc->ndfcbase + NDFC_REVID));
-> > +	/* Set the bank settings */
-> > +	reg = of_get_property(ofdev->node, "bank_settings", NULL);
-> > +	bank_settings = reg ? *reg : 0x80002222;
-> 
-> Your device tree does have a bank_setting, so why not assume that
-> all others will have it as well? I would remove the default.
-
-I am thinking of making the bank settings an optional value. I assume
-most people with 44x chips with NAND will be using u-boot. If you
-enable NAND in u-boot, it should configure the bank settings for you.
-
-I put the bank setting in my dts just to show a "complete"
-configuration.
-
-Cheers,
-   Sean
+- k
