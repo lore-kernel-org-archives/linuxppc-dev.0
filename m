@@ -1,22 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id D6B1CDDF08
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw3.extranet.thmulti.com (dmzraw3.extranet.thmulti.com
+	[141.11.234.71]) by ozlabs.org (Postfix) with ESMTP id CFDE0DDEE3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Aug 2008 20:44:29 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KTaJd-0000Y6-UC
-	for linuxppc-embedded@ozlabs.org; Thu, 14 Aug 2008 03:44:25 -0700
-Message-ID: <18979320.post@talk.nabble.com>
-Date: Thu, 14 Aug 2008 03:44:25 -0700 (PDT)
-From: wangyanlong <killyouatonce@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: How to use ramdisk on the ml300?
-In-Reply-To: <f944af2a0808140004w70948283nde0978d34d1db261@mail.gmail.com>
+	Thu, 14 Aug 2008 22:32:07 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <931ae8260808132008i1cac2e91kc76c099ecc574cd0@mail.gmail.com>
-	<f944af2a0808140004w70948283nde0978d34d1db261@mail.gmail.com>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: [PATCH] RE: Some memory (DDR2 ECC Dual Rank) just doesn't work! Can
+	anyone pointme to how to debug this hang?
+Date: Thu, 14 Aug 2008 14:05:49 +0200
+Message-ID: <0B45E93C5FF65740AEAE690BF3848B7AD38359@rennsmail04.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: "Vince Asbridge" <vasbridge@sanblaze.com>,
+	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Cc: u-boot@lists.denx.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,64 +24,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Vince Asbridge wrote:
+> We have an 8548 design, which implements a DDR2 on a SODIMM=20
+> We have an issue with dual rank memory (specific part number Viking =
+VR5DR287218EBSS1), which is a 1G ECC Registered SODIMM part, with two =
+ranks.
+> Our platform wires CS0 and CS1 to the SODIMM slot.=20
+> At uBoot, all is well.=A0 Memory is discovered as ECC 533, 1G DDR2 =
+64Bit 4 beat bursts, and mtest can read and write all 1G of the SODIMM.
+[...]
+> Other DDR2s (identical except for vendor and # of ranks), work =
+perfectly!=20
+> Anyone got a clue what I could look at to try to figure this out?=20
+> We've tried enable / disable ECC at uboot=20
+> We've tried enable / disable Interleaving at uboot=20
+> uboot always works (and can read/write entire DDR), Linux always hangs =
+on boot!=20
 
-Hi JensWirth,
-    Thanks  for your reply :). I have some questions here.
-    (1)You told me "make simpleImage.virtex405-ml300",i only know "make
-zImage" and "make zImage.initrd" ,what it is this command mean???
-    (2)What is dts ? I don't know what is this :(
-Regards,
-YanLong:)
+U-Boot is too gentle when testing SDRAM. Make sure the caches are =
+enabled
+under U-Boot, and put on heavy stress with DMA, pipelined prefetch's, =
+etc.
+This is what your CPU is enduring under Linux.=20
 
-  
+Your question is definitely a question for the U-Boot mailing list.
+BTW, what is the version of U-Boot in use? U-Boot is still missing
+the following patch:
 
-Jens Wirth wrote:
-> 
-> Hi Yanlong,
-> 
-> On Thu, Aug 14, 2008 at 5:08 AM, yanlong wang <killyouatonce@gmail.com>
-> wrote:
->>      If i want use ramdisk on the ml300 , i must use u-boot in my system
->> ?
->>     many thanks
-> 
-> I suppose you want to use an initial ram filesystem as
-> rootfs to boot your system?
-> 
-> You have to point CONFIG_INITRAMFS_SOURCE="" to a cpio
-> archive or a directory which contains your rootfs. If
-> you use a directory structure then you should set your
-> uid/gid to make the build process convert the owner
-> to root:
-> 
-> # if your uid/gid is 500:
-> CONFIG_INITRAMFS_ROOT_UID=500
-> CONFIG_INITRAMFS_ROOT_GID=500
-> 
-> Don't forget to set CONFIG_BLK_DEV_RAM=y to be able
-> to use a ramdisk at all.
-> 
-> I'm also using the ml300 board and I create my kernel
-> with: make simpleImage.virtex405-ml300
-> 
-> My dts is arch/powerpc/boot/dts/virtex405-ml300.dts.
-> There is no kernel boot command line needed to use
-> the initramfs in my case (I only set up my console
-> to the uart). Just download the image
-> arch/powerpc/boot/simpleImage.virtex405-ml300.elf
-> with xmd to your ml300 and run it.
-> 
-> I hope this works for you.
-> 
-> Regards
-> Jens
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+MPC85xx BA bits not set for 3-bit bank address DIMM of CS1
 
--- 
-View this message in context: http://www.nabble.com/How-to-use-ramdisk-on-the-ml300--tp18975066p18979320.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+The current implementation set the number of bank address bits
+(BA) in the processor for CS0 but not for CS1.=20
+
+Signed-off-by: Stephane Fillod <stephane.fillod@thomson.net>
+
+--- u-boot/cpu/mpc85xx/spd_sdram.c
++++ u-boot/cpu/mpc85xx/spd_sdram.c
+@@ -365,6 +365,7 @@
+                ddr->cs1_config =3D ( 1<<31
+                                    | (odt_rd_cfg << 20)
+                                    | (odt_wr_cfg << 16)
++                                   | (ba_bits << 14)
+                                    | (spd.nrow_addr - 12) << 8
+                                    | (spd.ncol_addr - 8) );
+                debug("DDR: cs1_bnds   =3D 0x%08x\n", ddr->cs1_bnds);
+
+
+
+Otherwise, recompile with -DDEBUG and CFG_CMD_SDRAM, grab the Viking =
+datasheet=20
+and a scope, and a full cup of coffee/tea much needed during =
+cross-checking :-)
+
+Cheers
+--=20
+Stephane
