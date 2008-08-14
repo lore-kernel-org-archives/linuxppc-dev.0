@@ -1,24 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 94A7EDE6F7
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 01:32:24 +1000 (EST)
-Date: Thu, 14 Aug 2008 19:10:22 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH 1/3] gpiolib: make gpio_to_chip() public
-Message-ID: <20080814151022.GA9885@oksana.dev.rtsoft.ru>
-References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
-	<200808141604.22287.laurentp@cse-semaphore.com>
-	<20080814141428.GA32296@oksana.dev.rtsoft.ru>
-	<200808141645.56418.laurentp@cse-semaphore.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <200808141645.56418.laurentp@cse-semaphore.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 4BABADDF6A
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 02:08:27 +1000 (EST)
+Date: Thu, 14 Aug 2008 12:08:29 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Arnd Bergmann" <arnd@arndb.de>
+Subject: Re: [PATCH 1/2] port ndfc driver to of platform
+Message-ID: <20080814120829.1ad4ed74@lappy.seanm.ca>
+In-Reply-To: <200808141153.07983.arnd@arndb.de>
+References: <20080801233000.3574434f@lappy.seanm.ca>
+	<20080804132459.3fc12f59@lappy.seanm.ca>
+	<20080813173629.32ec73ee@lappy.seanm.ca>
+	<200808141153.07983.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,39 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 14, 2008 at 04:45:52PM +0200, Laurent Pinchart wrote:
-> On Thursday 14 August 2008, Anton Vorontsov wrote:
-> > On Thu, Aug 14, 2008 at 04:04:18PM +0200, Laurent Pinchart wrote:
-> > > On Friday 08 August 2008, Anton Vorontsov wrote:
-> > > > We'll need this function to write platform-specific hooks to deal
-> > > > with pin's dedicated functions. Quite obviously this will work only
-> > > > for the platforms with 1-to-1 GPIO to PIN mapping.
-> > > > 
-> > > > This is stopgap solution till we think out and implement a proper
-> > > > api (pinlib?).
-> > > 
-> > > How do you support reverting the GPIO mode to non-dedicated ?
-> > 
-> > As we always do with the GPIO API: gpio_direction_*() calls.
+On Thu, 14 Aug 2008 11:53:07 +0200
+"Arnd Bergmann" <arnd@arndb.de> wrote:
+
+> > +	ndfc->ndfcbase = ioremap(reg[1], reg[2]);
 > 
-> So the proper sequence to configure a pin in dedicated mode is to set
-> the direction first (which will unset the dedicated mode bit) and
-> then set dedicated mode (which will not touch the direction bit) ?
+> This could be better expressed as of_iomap().
 
-Not exactly. But you can do this way, if you need to preserve
-a direction. What I did is a bit different though.
+I tried of_iomap(), but it doesn't seem to like the 3 value reg. i.e.
+It doesn't skip the chip select. And since I need to read the reg
+property to get the chip select any way, I just used the value directly.
 
-qe_gpio_set_dedicated() actually just restores a mode that
-firmware had set up, including direction (since direction could
-be a part of dedicated configuration).
+> 
+> > -	platform_set_drvdata(pdev, ndfc);
+> > +	__raw_writel(ccr, ndfc->ndfcbase + NDFC_CCR);
+> >  
+> > -	printk("NDFC NAND Driver initialized. Chip-Rev: 0x%08x\n",
+> > -	       __raw_readl(ndfc->ndfcbase + NDFC_REVID));
+> > +	/* Set the bank settings */
+> > +	reg = of_get_property(ofdev->node, "bank_settings", NULL);
+> > +	bank_settings = reg ? *reg : 0x80002222;
+> 
+> Your device tree does have a bank_setting, so why not assume that
+> all others will have it as well? I would remove the default.
 
-That is, upon GPIO controller registration, we save all registers,
-then driver can set up a pin to a GPIO mode via standard API, and
-then it can _revert_ a pin to a dedicated function via
-qe_gpio_set_dedicated() call. Dedicated function is specified by
-the firmware (or board file), we're just restoring it.
+I am thinking of making the bank settings an optional value. I assume
+most people with 44x chips with NAND will be using u-boot. If you
+enable NAND in u-boot, it should configure the bank settings for you.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+I put the bank setting in my dts just to show a "complete"
+configuration.
+
+Cheers,
+   Sean
