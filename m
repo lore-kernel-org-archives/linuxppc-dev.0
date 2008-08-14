@@ -1,22 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 600B9DDF49
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 13:19:26 +1000 (EST)
-Message-Id: <3EF69848-F5B3-4C73-B7B6-8D61207B2306@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20080813051657.GF17587@secretlab.ca>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 5121 pci 3/3] powerpc: pci: 5121: Hide pci bridge.
-Date: Wed, 13 Aug 2008 22:19:15 -0500
-References: <1218130587-31176-1-git-send-email-jrigby@freescale.com>
-	<1218130587-31176-2-git-send-email-jrigby@freescale.com>
-	<1218130587-31176-3-git-send-email-jrigby@freescale.com>
-	<20080813051657.GF17587@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id EC071DDF1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 13:46:17 +1000 (EST)
+Subject: Re: [PATCH / RFC] net: fix locking in ibm_newemac
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sebastian Siewior <bigeasy@linutronix.de>
+In-Reply-To: <20080813182957.GA12612@www.tglx.de>
+References: <20080813182957.GA12612@www.tglx.de>
+Content-Type: text/plain
+Date: Thu, 14 Aug 2008 13:45:54 +1000
+Message-Id: <1218685554.8041.172.camel@pasglop>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,54 +24,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2008-08-13 at 20:29 +0200, Sebastian Siewior wrote:
+> |PPC 4xx OCP EMAC driver, version 3.54
+> |MAL v2 /plb/mcmal, 2 TX channels, 2 RX channels
+> |RGMII /plb/opb/emac-rgmii@ef600b00 initialized with MDIO support
+> |/plb/opb/emac-rgmii@ef600b00: input 0 in RGMII mode
+> |BUG: spinlock bad magic on CPU#0, swapper/1
+> | lock: cf81632c, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
+> |Call Trace:
+> |[cf82bc70] [c00071c4] show_stack+0x34/0x194 (unreliable)
+> |[cf82bca0] [c0136d5c] spin_bug+0x8c/0xd0
+> |[cf82bcc0] [c0136f64] _raw_spin_lock+0x94/0x16c
+> |[cf82bcf0] [c023b528] _spin_lock_bh+0x20/0x34
+> |[cf82bd10] [c01d04a8] dev_mc_add+0x2c/0x84
+> |[cf82bd30] [c0166f80] emac_configure+0x2a8/0x55c
+> |[cf82bd60] [c02418bc] emac_probe+0xc24/0x105c
+> |[cf82be40] [c01bb504] of_platform_device_probe+0x58/0x80
+> |[cf82be60] [c016057c] driver_probe_device+0xb8/0x1ec
+> |[cf82be80] [c0160734] __driver_attach+0x84/0x88
+> |[cf82bea0] [c015fa4c] bus_for_each_dev+0x5c/0x98
+> |[cf82bed0] [c0160384] driver_attach+0x24/0x34
+> |[cf82bee0] [c01600b4] bus_add_driver+0x1d8/0x24c
+> |[cf82bf00] [c0160944] driver_register+0x5c/0x158
+> |[cf82bf20] [c01bb3dc] of_register_driver+0x54/0x70
+> |[cf82bf30] [c030ba8c] emac_init+0x1c8/0x208
+> |[cf82bf60] [c02f4184] kernel_init+0x84/0x27c
+> |[cf82bff0] [c000e594] kernel_thread+0x44/0x60
+> 
+> The fix is to defer phy init until netdevice is registered / initialized.
 
-On Aug 13, 2008, at 12:16 AM, Grant Likely wrote:
+I think it's better instead to take the dev_mc_add() statement
+out of emac_configure().
 
-> On Thu, Aug 07, 2008 at 11:36:27AM -0600, John Rigby wrote:
->> The class of the MPC5121 pci host bridge is PCI_CLASS_BRIDGE_OTHER
->> while other freescale host bridges have class set to
->> PCI_CLASS_PROCESSOR_POWERPC.
->>
->> This patch makes fixup_hide_host_resource_fsl match
->> PCI_CLASS_BRIDGE_OTHER in addition to PCI_CLASS_PROCESSOR_POWERPC.
->>
->> Signed-off-by: John Rigby <jrigby@freescale.com>
->
-> I think this is okay, but it might need to be more conservative.  I'm
-> not the PCI expert.  Kumar, thoughts?
+What about this patch instead, does it fix it for you ?
 
-This is fine, since we qualify this with an FSL VendorID.
+ibm_newemac: Fix uninitialized spinlock at probe time
 
-- k
+We must not call dev_mc_add() from within our HW configure which happens
+before we initialize and register the netdev. Do it in open() instead.
 
->> ---
->> arch/powerpc/kernel/pci_32.c |    5 +++--
->> 1 files changed, 3 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/ 
->> pci_32.c
->> index 88db4ff..162c3a8 100644
->> --- a/arch/powerpc/kernel/pci_32.c
->> +++ b/arch/powerpc/kernel/pci_32.c
->> @@ -54,11 +54,12 @@ LIST_HEAD(hose_list);
->> static int pci_bus_count;
->>
->> static void
->> -fixup_hide_host_resource_fsl(struct pci_dev* dev)
->> +fixup_hide_host_resource_fsl(struct pci_dev *dev)
->> {
->> 	int i, class = dev->class >> 8;
->>
->> -	if ((class == PCI_CLASS_PROCESSOR_POWERPC) &&
->> +	if ((class == PCI_CLASS_PROCESSOR_POWERPC ||
->> +	     class == PCI_CLASS_BRIDGE_OTHER) &&
->> 		(dev->hdr_type == PCI_HEADER_TYPE_NORMAL) &&
->> 		(dev->bus->parent == NULL)) {
->> 		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
->> -- 
->>
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+Index: linux-work/drivers/net/ibm_newemac/core.c
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/core.c	2008-08-14 13:36:10.000000000 +1000
++++ linux-work/drivers/net/ibm_newemac/core.c	2008-08-14 13:42:10.000000000 +1000
+@@ -663,9 +663,6 @@ static int emac_configure(struct emac_in
+ 	if (emac_phy_gpcs(dev->phy.mode))
+ 		emac_mii_reset_phy(&dev->phy);
+ 
+-	/* Required for Pause packet support in EMAC */
+-	dev_mc_add(ndev, default_mcast_addr, sizeof(default_mcast_addr), 1);
+-
+ 	return 0;
+ }
+ 
+@@ -1150,6 +1147,9 @@ static int emac_open(struct net_device *
+ 	} else
+ 		netif_carrier_on(dev->ndev);
+ 
++	/* Required for Pause packet support in EMAC */
++	dev_mc_add(ndev, default_mcast_addr, sizeof(default_mcast_addr), 1);
++
+ 	emac_configure(dev);
+ 	mal_poll_add(dev->mal, &dev->commac);
+ 	mal_enable_tx_channel(dev->mal, dev->mal_tx_chan);
