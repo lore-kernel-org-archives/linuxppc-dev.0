@@ -1,21 +1,12 @@
-Return-Path: <kevdig@hypersurf.com>
-Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
-	by ozlabs.org (Postfix) with ESMTP id 5050DDDEE9
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 14:41:09 +1000 (EST)
-Received: from [192.168.1.37] (node119.78.251.72.1dial.com [72.251.78.119])
-	(authenticated bits=0)
-	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id m7E4dXiD051230
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Aug 2008 21:40:59 -0700 (PDT)
-Message-ID: <48A3B62C.90603@hypersurf.com>
-Date: Wed, 13 Aug 2008 21:35:56 -0700
-From: Kevin Diggs <kevdig@hypersurf.com>
+Return-Path: <markn@au1.ibm.com>
+From: Mark Nelson <markn@au1.ibm.com>
+To: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Subject: [RFC 0/2] powerpc: copy_4K_page tweaked for Cell
+Date: Thu, 14 Aug 2008 16:17:32 +1000
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: details, details ...
-References: <48A2CD2A.5020107@hypersurf.com> <200808131500.51018.arnd@arndb.de>
-	<48A33E6B.9010200@hypersurf.com> <200808132305.45507.arnd@arndb.de>
-In-Reply-To: <200808132305.45507.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200808141617.32033.markn@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,95 +16,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Wednesday 13 August 2008, Kevin Diggs wrote:
-> 
-> 
->>Arnd Bergmann wrote:
->>
->>>On Wednesday 13 August 2008, Kevin Diggs wrote:
->>>
->>>
->>>>In cpu exit function of a cpufreq driver:
->>>>
->>>>        while (test_bit(cf750gxmChangingPllBit, &cf750gxvStateBits))
->>>>                msleep(1);
->>>>
->>>>This bit will get cleared by a notifier callback.
->>>>
->>>>In module_exit function of a related module:
->>>>
->>>>        while (test_bit(PLL_LOCK_BIT, (unsigned long *)&boot_ratio)) {
->>>>                msleep(1);
->>>>        }
->>>>
->>>>This bit will get cleared by a timer. It will also fire the notifiers 
->>>>needed above.
->>>>
->>>>I don't think these are in interrupt context. The sleeps ok here?
->>>
->>>
->>>Technically ok, but not nice. Besides the coding style issues,
->>>it's still a busy loop that should be replaced by wait_for_completion().
->>>
->>
->>I took a brief look at wait_for_completion(). Looks kinda heavy weight. 
->>Just to be clear both of these code fragments are in code shutdown (i.e. 
->>exit) paths. Is the use of wait_for_completion() still preferred? I 
->>thought a "busy loop" used the delay routines?
-> 
-> 
-> You should always write code that is easy to understand and tells the
-> reader what you mean. If you want to wait for something to complete,
-> use wait_for_completion. If you look at what msleep does internally,
-> you will find that it isn't simpler than wait_for_completion either.
-> 
-> The loop doing msleep(1) is not as bad as a loop doing delays, but
-> it can still cause unnecessary wakeups and on average will sleep
-> one milisecond too long. Neither of these is a real problem, but
-> if you can do it correctly, just do.
-> 
-Please forgive me. I'm not trying to be argumentative. I'm just trying 
-to learn. I found a section in the O'Reilly Linux device driver guide on 
-this completion stuff. If I understand it correctly, I initialize a 
-completion thing. In the code that starts the task I do a complete(). In 
-the exit code I'll do a wait_for_completion(). In my usage paradigm I 
-will VERY rarely ever call wait_for_completion() and have it actually 
-wait. This still match completion's intended use?
-> 
->>Can you elaborate on the coding style issues? Variable names? Use of the 
->>bit stuff? Those brace thingies?
-> 
-> 
-> Variables should be lower-case names, constants should be upper-case.
-> Both should have names that tell you what they are used for.
-> The case in the second code sample is either wrong, or redundant.
-> You should leave out curly braces when you only have a single line
-> in the basic block. Read Documentation/CodingStyle to learn about
-> more things to consider.
-> 
-Can I post the 2 routines for RFC style comments? Or is that to much 
-trouble?
-> 
->>>Don't bother. Old gcc variants would put these variables into .data
->>>instead of .bss, but with a new (less than 5 years or so) gcc, both
->>>will result in .bss storage that is initialized to zero at boot time.
->>>
->>
->>??? So ... I can ignore the error? Or I should not be initializing 
->>variables to 0 (or NULL)?
-> 
-> 
-> Either fix checkpatch.pl not to warn about these, or just don't initialize
-> the variables. Initializing a variable at declaration time is frowned upon
-> by some people, because it is redundant in case of static or global
-> variables, and error-prone for automatic variables.
-> 
-When you say initializing is frowned upon, do you mean only when you are 
-initializing to zero? Is the redundancy (for the case of 0?) a part of 
-the C spec? Or is it gcc specific? error-prone for automatic variables?
+Hi All,
 
-kevin
-> 	Arnd <><
-> 
-> 
+What follows is an updated version of copy_4K_page that has been tuned
+for the Cell processor. With this new routine it was found that the
+system time measured when compiling a 2.6.26 pseries_defconfig was
+reduced by ~10s:
+
+mainline (2.6.27-rc1-00632-g2e1e921):
+
+real    17m8.727s
+user    59m48.693s
+sys     3m56.089s
+
+real    17m9.350s
+user    59m44.822s
+sys     3m56.666s
+
+new routine:
+
+real    17m7.311s
+user    59m51.339s
+sys     3m47.043s
+
+real    17m7.863s
+user    59m49.028s
+sys     3m46.608s
+
+This same routine was also found to improve performance on 970 CPUs
+too (but by a much smaller amount):
+
+mainline (2.6.27-rc1-00632-g2e1e921):
+
+real    16m8.545s
+user    14m38.134s
+sys     1m55.156s
+
+real    16m7.089s
+user    14m37.974s
+sys     1m55.010s
+
+new routine:
+
+real    16m11.641s
+user    14m37.251s
+sys     1m52.618s
+
+real    16m6.139s
+user    14m38.282s
+sys     1m53.184s
+
+
+I also did testing on Power{3..6} and I found that Power3, Power5 and
+Power6 did better with this new routine when the dcbt and dcbz
+weren't used (in which case they achieved performance comparable to
+the existing kernel copy_4K_page routine). Power4 on other hand
+performed slightly better with the dcbt and dcbz included (still
+comparable to the current kernel copy_4K_page).
+
+So in order to get the best performance across the board I created a
+new CPU feature that will govern whether the dcbt and dcbz are used
+(and un-creatively named it CPU_FTR_CP_USE_DCBTZ). I added it to the
+CPU features of Cell, Power4 and 970.
+Unfortunately I don't have access to a PA6T but judging by the
+marketing material I could find, it looks like it has a strong enough
+hardware prefetcher that it probably wouldn't benefit from the dcbt
+and dcbz...
+
+Okay, that's probably enough prattling along - you can all go and look
+at the code now.
+
+All comments appreciated
+
+[I decided to post the whole copy routine rather than a diff between
+it and the current one because I found the diff quite unreadable. I'll post
+a real patchset after I've addressed any comments.]
+
+Many thanks!
