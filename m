@@ -1,17 +1,16 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: bug in lmb_enforce_memory_limit()
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080814.012004.193702132.davem@davemloft.net>
-References: <20080814.012004.193702132.davem@davemloft.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-aLS6oDwPpRamzVL68u51"
-Date: Thu, 14 Aug 2008 21:26:53 +1000
-Message-Id: <1218713213.10673.17.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <markn@au1.ibm.com>
+From: Mark Nelson <markn@au1.ibm.com>
+To: michael@ellerman.id.au
+Subject: Re: [RFC 2/2] powerpc: copy_4K_page tweaked for Cell - add CPU feature
+Date: Thu, 14 Aug 2008 21:48:57 +1000
+References: <200808141618.23818.markn@au1.ibm.com>
+	<1218711095.10673.4.camel@localhost>
+In-Reply-To: <1218711095.10673.4.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808142148.57218.markn@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,86 +20,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Michael,
 
---=-aLS6oDwPpRamzVL68u51
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Thu, 14 Aug 2008 08:51:35 pm Michael Ellerman wrote:
+> On Thu, 2008-08-14 at 16:18 +1000, Mark Nelson wrote:
+> > Add a new CPU feature, CPU_FTR_CP_USE_DCBTZ, to be added to the CPUs that benefit
+> > from having dcbt and dcbz instructions used in copy_4K_page(). So far Cell, PPC970
+> > and Power4 benefit.
+> > 
+> > This way all the other 64bit powerpc chips will have the whole prefetching loop
+> > nop'ed out.
+> 
+> > Index: upstream/arch/powerpc/lib/copypage_64.S
+> > ===================================================================
+> > --- upstream.orig/arch/powerpc/lib/copypage_64.S
+> > +++ upstream/arch/powerpc/lib/copypage_64.S
+> > @@ -18,6 +18,7 @@ PPC64_CACHES:
+> >  
+> >  _GLOBAL(copy_4K_page)
+> >  	li	r5,4096		/* 4K page size */
+> > +BEGIN_FTR_SECTION
+> >  	ld      r10,PPC64_CACHES@toc(r2)
+> >  	lwz	r11,DCACHEL1LOGLINESIZE(r10)	/* log2 of cache line size */
+> >  	lwz     r12,DCACHEL1LINESIZE(r10)	/* Get cache line size */
+> > @@ -30,7 +31,7 @@ setup:
+> >  	dcbz	r9,r3
+> >  	add	r9,r9,r12
+> >  	bdnz	setup
+> > -
+> > +END_FTR_SECTION_IFSET(CPU_FTR_CP_USE_DCBTZ)
+> >  	addi	r3,r3,-8
+> >  	srdi    r8,r5,7		/* page is copied in 128 byte strides */
+> >  	addi	r8,r8,-1	/* one stride copied outside loop */
+> 
+> Instead of nop'ing it out, we could use an alternative feature section
+> to either run it or jump over it. It would look something like:
+> 
+> 
+> _GLOBAL(copy_4K_page)
+> BEGIN_FTR_SECTION
+>         li      r5,4096         /* 4K page size */
+>         ld      r10,PPC64_CACHES@toc(r2)
+>         lwz     r11,DCACHEL1LOGLINESIZE(r10)    /* log2 of cache line size */
+>         lwz     r12,DCACHEL1LINESIZE(r10)       /* Get cache line size */
+>         li      r9,0
+>         srd     r8,r5,r11
+> 
+>         mtctr   r8
+> setup:
+>         dcbt    r9,r4
+>         dcbz    r9,r3
+>         add     r9,r9,r12
+>         bdnz    setup
+> FTR_SECTION_ELSE
+> 	b	1f
+> ALT_FTR_SECTION_END_IFSET(CPU_FTR_CP_USE_DCBTZ)
+> 1:
+>         addi    r3,r3,-8
+> 
+> So in the no-dcbtz case you'd get a branch instead of 11 nops.
+> 
+> Of course you'd need to benchmark it to see if skipping the nops is
+> better than executing them ;P
 
-On Thu, 2008-08-14 at 01:20 -0700, David Miller wrote:
-> I just mentioned this to Ben H. on IRC and promised I would report it
-> here. :-)
->=20
-> The first loop over lmb.memory in this function interprets the
-> memory_limit as a raw size limit, and that's fine so far.
->=20
-> But the second loop over lmb.reserved interprets this value
-> instead as an "address limit."
->
-> I haven't cobbled together a fix myself, but probably the way to do
-> this is, when we're about break out of the first loop over lmb.memory,
-> walk through the now-trimmed memory blobs and trim those from
-> lmb.reserved, one by one.
+Thanks for looking through this.
 
-Perhaps after the first loop we should set memory_limit to equal
-lmb_end_of_DRAM(), then the second loop should work as it is.
+That does look a lot better. In the first version there wasn't quite
+as much to nop out (the cache line size was hardcoded to 128
+bytes) so I wasn't so worried but I'll definitely try this with an
+alternative section like you describe.
 
-I think that actually makes memory_limit (the variable) more useful, and
-avoids more code like we have in numa_enforce_memory_limit(), which
-doesn't use memory_limit exactly because it isn't the value we're
-actually interested in (because of holes).
+The jump probably will turn out to be better because I'd imagine
+that the same chips that don't need the dcbt and dcbz because
+they've got beefy enough hardware prefetchers also won't be
+disturbed by the jump (but benchmarks tomorrow will confirm;
+or prove me wrong :) )
 
+Thanks!
 
-> This bug got introduced by:
->=20
->    commit 2babf5c2ec2f2d5de3e38d20f7df7fd815fd10c9
->    Author: Michael Ellerman <michael@ellerman.id.au>
->    Date:   Wed May 17 18:00:46 2006 +1000
->=20
->        [PATCH] powerpc: Unify mem=3D handling
->=20
-> back when LMB was still a powerpc local item. :-)
-
-Guilty as charged. I have some tests for that code, but clearly not
-enough - and it gets very little exercise otherwise.
-
-> This led me to another bug which probably a lot of platforms are
-> effected by.
->=20
-> If you do this command line memory limiting, and the kernel was placed
-> by the boot loader into physical ram (say at the end of the available
-> physical memory) that gets trimmed out by the command line option, we
-> hang or crash right as we boot into userspace because freeing up
-> initmem ends up freeing invalid page structs.
->=20
-> I think, on sparc64, instead of adding all kinds of complicated logic
-> to free_initmem() I'm simply going to only poison the pages and
-> not free them at all if cmdline_memory_size has been set.
-
-Would it be that much extra logic to check that the address is less than
-the limit? Especially if we changed memory_limit to incorporate holes.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-aLS6oDwPpRamzVL68u51
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIpBZ9dSjSd0sB4dIRAmuRAJ9j/YhApVRVEiB7zL3v7C0ZC7NcbACdE7NW
-ITwV6zwMMX+z1HseQ2KIsJ0=
-=X0Dr
------END PGP SIGNATURE-----
-
---=-aLS6oDwPpRamzVL68u51--
+Mark
