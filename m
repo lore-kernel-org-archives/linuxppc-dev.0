@@ -1,31 +1,20 @@
-Return-Path: <chandru@in.ibm.com>
-Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 101A9DDFDF
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:51:58 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id m7E9or5i031569
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:50:53 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7E9ofCA688224
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:50:41 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7E9ofrr012294
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:50:41 +1000
-From: Chandru <chandru@in.ibm.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 9A5FEDE00C
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:53:18 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2][V3] kexec-tools: create a new linux,
-	drconf-usable-memory property
-Date: Thu, 14 Aug 2008 15:20:39 +0530
+Subject: Re: [PATCH 1/2] port ndfc driver to of platform
+Date: Thu, 14 Aug 2008 11:53:07 +0200
+References: <20080801233000.3574434f@lappy.seanm.ca>
+	<20080804132459.3fc12f59@lappy.seanm.ca>
+	<20080813173629.32ec73ee@lappy.seanm.ca>
+In-Reply-To: <20080813173629.32ec73ee@lappy.seanm.ca>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200808141520.39497.chandru@in.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
+  charset="iso-8859-1"
+Message-Id: <200808141153.07983.arnd@arndb.de>
+Cc: dwmw2@infradead.org, Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,99 +24,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add a new linux,drconf-usable-memory property to the device tree. This property stores the usable memory regions for kexec/kdump kernel. The other changes to kexec-tools which do not affect the kernel are not attached here.  These are the changes to kexec-tools. Patch 1/2 are the changes in kernel. 
+On Wednesday 13 August 2008, Sean MacLennan wrote:
+> Port of the ndfc driver to an of platform driver.
 
-Signed-off-by: Chandru Siddalingappa <chandru@in.ibm.com>
----
+Look good overall, thanks for following up on this.
 
- kexec/arch/ppc64/fs2dt.c |   72 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 72 insertions(+)
+> +struct ndfc_ctrl {
+> +	struct device *dev;
+> +	void __iomem *ndfcbase;
+> +	struct mtd_info mtd;
+> +	struct nand_chip chip;
+> +	int chip_select;
+> +	struct nand_hw_control ndfc_control;
+>  };
 
---- kexec-tools-testing-orig/kexec/arch/ppc64/fs2dt.c	2008-08-14 14:41:52.000000000 +0530
-+++ kexec-tools-testing/kexec/arch/ppc64/fs2dt.c	2008-08-14 14:46:15.000000000 +0530
-@@ -122,6 +122,74 @@ static unsigned propnum(const char *name
- 	return offset;
- }
- 
-+static void add_dyn_reconf_usable_mem_property(int fd)
-+{
-+	char fname[MAXPATH], *bname;
-+	uint64_t buf[32];
-+	uint64_t ranges[2*MAX_MEMORY_RANGES];
-+	uint64_t base, end, loc_base, loc_end;
-+	int range, rlen = 0, i;
-+	int rngs_cnt, tmp_indx;
-+
-+	strcpy(fname, pathname);
-+	bname = strrchr(fname, '/');
-+	bname[0] = '\0';
-+	bname = strrchr(fname, '/');
-+	if (strncmp(bname, "/ibm,dynamic-reconfiguration-memory", 36))
-+		return;
-+
-+	if (lseek(fd, 4, SEEK_SET) < 0)
-+		die("unrecoverable error: error seeking in \"%s\": %s\n",
-+			pathname, strerror(errno));
-+
-+	rlen = 0;
-+	for (i = 0; i < num_of_lmbs; i++) {
-+		if (read(fd, buf, 24) < 0)
-+			die("unrecoverable error: error reading \"%s\": %s\n",
-+				pathname, strerror(errno));
-+
-+		base = (uint64_t) buf[0];
-+		end = base + lmb_size;
-+		if (~0ULL - base < end)
-+			die("unrecoverable error: mem property overflow\n");
-+
-+		tmp_indx = rlen++;
-+
-+		rngs_cnt = 0;
-+		for (range = 0; range < usablemem_rgns.size; range++) {
-+			loc_base = usablemem_rgns.ranges[range].start;
-+			loc_end = usablemem_rgns.ranges[range].end;
-+			if (loc_base >= base && loc_end <= end) {
-+				ranges[rlen++] = loc_base;
-+				ranges[rlen++] = loc_end - loc_base;
-+				rngs_cnt++;
-+			} else if (base < loc_end && end > loc_base) {
-+				if (loc_base < base)
-+					loc_base = base;
-+				if (loc_end > end)
-+					loc_end = end;
-+				ranges[rlen++] = loc_base;
-+				ranges[rlen++] = loc_end - loc_base;
-+				rngs_cnt++;
-+			}
-+		}
-+		/* Store the count of (base, size) duple */
-+		ranges[tmp_indx] = rngs_cnt;
-+	}
-+		
-+	rlen = rlen * sizeof(uint64_t);
-+	/*
-+	 * Add linux,drconf-usable-memory property.
-+	 */
-+	*dt++ = 3;
-+	*dt++ = rlen;
-+	*dt++ = propnum("linux,drconf-usable-memory");
-+	if ((rlen >= 8) && ((unsigned long)dt & 0x4))
-+		dt++;
-+	memcpy(dt, &ranges, rlen);
-+	dt += (rlen + 3)/4;
-+}
-+
- static void add_usable_mem_property(int fd, int len)
- {
- 	char fname[MAXPATH], *bname;
-@@ -267,6 +335,10 @@ static void putprops(char *fn, struct di
- 		dt += (len + 3)/4;
- 		if (!strcmp(dp->d_name, "reg") && usablemem_rgns.size)
- 			add_usable_mem_property(fd, len);
-+		if (!strcmp(dp->d_name, "ibm,dynamic-memory") &&
-+					usablemem_rgns.size)
-+			add_dyn_reconf_usable_mem_property(fd);
-+
- 		close(fd);
- 	}
- 
+conceptually, I would lint to the ofdev, not the dev, even if you
+don't need the extra information.
+
+>  static void ndfc_select_chip(struct mtd_info *mtd, int chip)
+>  {
+>  	uint32_t ccr;
+> -	struct ndfc_controller *ndfc = &ndfc_ctrl;
+> -	struct nand_chip *nandchip = mtd->priv;
+> -	struct ndfc_nand_mtd *nandmtd = nandchip->priv;
+> -	struct platform_nand_chip *pchip = nandmtd->pl_chip;
+> +	struct ndfc_ctrl *ndfc = &ndfc_ctrl;
+>  
+>  	ccr = __raw_readl(ndfc->ndfcbase + NDFC_CCR);
+
+This already exists, but I noticed it now: device drivers should
+not user __raw_readl/__raw_writel for accessing ioremapped storage.
+Instead, you should use ioread32_be or in_be32.
+
+> @@ -83,7 +79,7 @@ static int ndfc_ready(struct mtd_info *mtd)
+>  static void ndfc_enable_hwecc(struct mtd_info *mtd, int mode)
+>  {
+>  	uint32_t ccr;
+> -	struct ndfc_controller *ndfc = &ndfc_ctrl;
+> +	struct ndfc_ctrl *ndfc = &ndfc_ctrl;
+>  
+>  	ccr = __raw_readl(ndfc->ndfcbase + NDFC_CCR);
+>  	ccr |= NDFC_CCR_RESET_ECC;
+
+You have lots of these changes, which do not appear necessary -- if you
+just keep the struct ndfc_controller name, your patch will be a lot
+smaller.
+
+> -static int ndfc_nand_probe(struct platform_device *pdev)
+> -{
+> -	struct platform_nand_ctrl *nc = pdev->dev.platform_data;
+> -	struct ndfc_controller_settings *settings = nc->priv;
+> -	struct resource *res = pdev->resource;
+> -	struct ndfc_controller *ndfc = &ndfc_ctrl;
+> -	unsigned long long phys = settings->ndfc_erpn | res->start;
+> +	spin_lock_init(&ndfc->ndfc_control.lock);
+> +	init_waitqueue_head(&ndfc->ndfc_control.wq);
+> +	ndfc->dev = &ofdev->dev;
+> +	dev_set_drvdata(&ofdev->dev, ndfc);
+> +
+> +	/* Read the reg property to get the chip select */
+> +	reg = of_get_property(ofdev->node, "reg", &len);
+> +	if (reg == NULL || len != 12) {
+> +		dev_err(&ofdev->dev, "unable read reg property (%d)\n", len);
+> +		return -ENOENT;
+> +	}
+> +	ndfc->chip_select = *reg;
+>  
+> -	ndfc->ndfcbase = ioremap((phys_addr_t)phys, res->end - res->start + 1);
+> +	ndfc->ndfcbase = ioremap(reg[1], reg[2]);
+
+This could be better expressed as of_iomap().
+
+> -	platform_set_drvdata(pdev, ndfc);
+> +	__raw_writel(ccr, ndfc->ndfcbase + NDFC_CCR);
+>  
+> -	printk("NDFC NAND Driver initialized. Chip-Rev: 0x%08x\n",
+> -	       __raw_readl(ndfc->ndfcbase + NDFC_REVID));
+> +	/* Set the bank settings */
+> +	reg = of_get_property(ofdev->node, "bank_settings", NULL);
+> +	bank_settings = reg ? *reg : 0x80002222;
+
+Your device tree does have a bank_setting, so why not assume that
+all others will have it as well? I would remove the default.
+
+	Arnd <><
