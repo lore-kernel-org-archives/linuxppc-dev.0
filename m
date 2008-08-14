@@ -1,29 +1,29 @@
 Return-Path: <chandru@in.ibm.com>
-Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
+Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 76175DDF58
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:49:06 +1000 (EST)
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 101A9DDFDF
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:51:58 +1000 (EST)
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id m7E9mDSR016915
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:48:13 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id m7E9or5i031569
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:50:53 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
 	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7E9llsG4243702
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:47:47 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7E9lkE0010615
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:47:47 +1000
+	m7E9ofCA688224
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:50:41 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m7E9ofrr012294
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 19:50:41 +1000
 From: Chandru <chandru@in.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2][V3] powerpc: add support for dynamic reconfiguration
-	memory in kexec/kdump kernels
-Date: Thu, 14 Aug 2008 15:17:32 +0530
+Subject: [PATCH 2/2][V3] kexec-tools: create a new linux,
+	drconf-usable-memory property
+Date: Thu, 14 Aug 2008 15:20:39 +0530
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200808141517.32956.chandru@in.ibm.com>
+Message-Id: <200808141520.39497.chandru@in.ibm.com>
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
 	Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -35,198 +35,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-kdump kernel needs to use only those memory regions that it is allowed to use (crashkernel, rtas, tce ..etc ). Each of these regions have their own sizes and are currently added under  'linux,usable-memory' property under each memory@ node of the device tree.  ibm,dynamic-memory property of ibm,dynamic-reconfiguration-memory node now stores in it the representation for most of the logical memory blocks with the size of each memory block being a constant (lmb_size).  If one or more or part of the above mentioned regions lie under one of the lmb from ibm,dynamic-memory property, there is a need to identify those regions within the given lmb. Following patch recognizes a new property 'linux,drconf-usable-memory' property added by kexec-tools. Each entry in this property is of the form 'a counter'  followed by those many (base, size) duple for the above mentioned regions.
+Add a new linux,drconf-usable-memory property to the device tree. This property stores the usable memory regions for kexec/kdump kernel. The other changes to kexec-tools which do not affect the kernel are not attached here.  These are the changes to kexec-tools. Patch 1/2 are the changes in kernel. 
 
 Signed-off-by: Chandru Siddalingappa <chandru@in.ibm.com>
 ---
 
-These patches were sent earlier but these are V3 of the patches. Pls let me know your thoughts. Thanks. 
+ kexec/arch/ppc64/fs2dt.c |   72 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 72 insertions(+)
 
- arch/powerpc/kernel/prom.c |   40 +++++++++++++++--
- arch/powerpc/mm/numa.c     |   79 +++++++++++++++++++++++++++--------
- 2 files changed, 96 insertions(+), 23 deletions(-)
-
-diff -Naurp powerpc-orig/arch/powerpc/kernel/prom.c powerpc/arch/powerpc/kernel/prom.c
---- powerpc-orig/arch/powerpc/kernel/prom.c	2008-08-14 08:23:25.000000000 +0530
-+++ powerpc/arch/powerpc/kernel/prom.c	2008-08-14 14:35:24.000000000 +0530
-@@ -888,9 +888,10 @@ static u64 __init dt_mem_next_cell(int s
-  */
- static int __init early_init_dt_scan_drconf_memory(unsigned long node)
- {
--	cell_t *dm, *ls;
-+	cell_t *dm, *ls, *usm;
- 	unsigned long l, n, flags;
- 	u64 base, size, lmb_size;
-+	unsigned int is_kexec_kdump = 0, rngs;
- 
- 	ls = (cell_t *)of_get_flat_dt_prop(node, "ibm,lmb-size", &l);
- 	if (ls == NULL || l < dt_root_size_cells * sizeof(cell_t))
-@@ -905,6 +906,12 @@ static int __init early_init_dt_scan_drc
- 	if (l < (n * (dt_root_addr_cells + 4) + 1) * sizeof(cell_t))
- 		return 0;
- 
-+	/* check if this is a kexec/kdump kernel. */
-+	usm = (cell_t *)of_get_flat_dt_prop(node, "linux,drconf-usable-memory",
-+						 &l);
-+	if (usm != NULL)
-+		is_kexec_kdump = 1;
-+
- 	for (; n != 0; --n) {
- 		base = dt_mem_next_cell(dt_root_addr_cells, &dm);
- 		flags = dm[3];
-@@ -915,13 +922,34 @@ static int __init early_init_dt_scan_drc
- 		if ((flags & 0x80) || !(flags & 0x8))
- 			continue;
- 		size = lmb_size;
--		if (iommu_is_off) {
--			if (base >= 0x80000000ul)
-+		rngs = 1;
-+		if (is_kexec_kdump) {
-+			/*
-+			 * For each lmb in ibm,dynamic-memory, a corresponding
-+			 * entry in linux,drconf-usable-memory property contains
-+			 * a counter 'p' followed by 'p' (base, size) duple.
-+			 * Now read the counter from
-+			 * linux,drconf-usable-memory property
-+			 */
-+			rngs = dt_mem_next_cell(dt_root_size_cells, &usm);
-+			if (!rngs) /* there are no (base, size) duple */
- 				continue;
--			if ((base + size) > 0x80000000ul)
--				size = 0x80000000ul - base;
- 		}
--		lmb_add(base, size);
-+		do {
-+			if (is_kexec_kdump) {
-+				base = dt_mem_next_cell(dt_root_addr_cells,
-+							 &usm);
-+				size = dt_mem_next_cell(dt_root_size_cells,
-+							 &usm);
-+			}
-+			if (iommu_is_off) {
-+				if (base >= 0x80000000ul)
-+					continue;
-+				if ((base + size) > 0x80000000ul)
-+					size = 0x80000000ul - base;
-+			}
-+			lmb_add(base, size);
-+		} while (--rngs);
- 	}
- 	lmb_dump_all();
- 	return 0;
-diff -Naurp powerpc-orig/arch/powerpc/mm/numa.c powerpc/arch/powerpc/mm/numa.c
---- powerpc-orig/arch/powerpc/mm/numa.c	2008-08-14 08:23:25.000000000 +0530
-+++ powerpc/arch/powerpc/mm/numa.c	2008-08-14 14:35:42.000000000 +0530
-@@ -150,6 +150,21 @@ static const int *of_get_associativity(s
- 	return of_get_property(dev, "ibm,associativity", NULL);
+--- kexec-tools-testing-orig/kexec/arch/ppc64/fs2dt.c	2008-08-14 14:41:52.000000000 +0530
++++ kexec-tools-testing/kexec/arch/ppc64/fs2dt.c	2008-08-14 14:46:15.000000000 +0530
+@@ -122,6 +122,74 @@ static unsigned propnum(const char *name
+ 	return offset;
  }
  
-+/*
-+ * Returns the property linux,drconf-usable-memory if
-+ * it exists (the property exists only in kexec/kdump kernels,
-+ * added by kexec-tools)
-+ */
-+static const u32 *of_get_usable_memory(struct device_node *memory)
++static void add_dyn_reconf_usable_mem_property(int fd)
 +{
-+	const u32 *prop;
-+	u32 len;
-+	prop = of_get_property(memory, "linux,drconf-usable-memory", &len);
-+	if (!prop || len < sizeof(unsigned int))
-+		return 0;
-+	return prop;
-+}
++	char fname[MAXPATH], *bname;
++	uint64_t buf[32];
++	uint64_t ranges[2*MAX_MEMORY_RANGES];
++	uint64_t base, end, loc_base, loc_end;
++	int range, rlen = 0, i;
++	int rngs_cnt, tmp_indx;
 +
- /* Returns nid in the range [0..MAX_NUMNODES-1], or -1 if no useful numa
-  * info is found.
-  */
-@@ -487,14 +502,29 @@ static unsigned long __init numa_enforce
- }
- 
- /*
-+ * Reads the counter for a given entry in
-+ * linux,drconf-usable-memory property
-+ */
-+static inline int __init read_usm_ranges(const u32 **usm)
-+{
-+	/*
-+	 * For each lmb in ibm,dynamic-memory a corresponding
-+	 * entry in linux,drconf-usable-memory property contains
-+	 * a counter followed by that many (base, size) duple.
-+	 * read the counter from linux,drconf-usable-memory
-+	 */
-+	return read_n_cells(n_mem_size_cells, usm);
-+}
++	strcpy(fname, pathname);
++	bname = strrchr(fname, '/');
++	bname[0] = '\0';
++	bname = strrchr(fname, '/');
++	if (strncmp(bname, "/ibm,dynamic-reconfiguration-memory", 36))
++		return;
 +
-+/*
-  * Extract NUMA information from the ibm,dynamic-reconfiguration-memory
-  * node.  This assumes n_mem_{addr,size}_cells have been set.
-  */
- static void __init parse_drconf_memory(struct device_node *memory)
- {
--	const u32 *dm;
--	unsigned int n, rc;
--	unsigned long lmb_size, size;
-+	const u32 *dm, *usm;
-+	unsigned int n, rc, ranges, is_kexec_kdump = 0;
-+	unsigned long lmb_size, base, size, sz;
- 	int nid;
- 	struct assoc_arrays aa;
- 
-@@ -510,6 +540,11 @@ static void __init parse_drconf_memory(s
- 	if (rc)
- 		return;
- 
-+	/* check if this is a kexec/kdump kernel */
-+	usm = of_get_usable_memory(memory);
-+	if (usm != NULL)
-+		is_kexec_kdump = 1;
++	if (lseek(fd, 4, SEEK_SET) < 0)
++		die("unrecoverable error: error seeking in \"%s\": %s\n",
++			pathname, strerror(errno));
 +
- 	for (; n != 0; --n) {
- 		struct of_drconf_cell drmem;
- 
-@@ -521,21 +556,31 @@ static void __init parse_drconf_memory(s
- 		    || !(drmem.flags & DRCONF_MEM_ASSIGNED))
- 			continue;
- 
--		nid = of_drconf_to_nid_single(&drmem, &aa);
--
--		fake_numa_create_new_node(
--				((drmem.base_addr + lmb_size) >> PAGE_SHIFT),
-+		base = drmem.base_addr;
-+		size = lmb_size;
-+		ranges = 1;
++	rlen = 0;
++	for (i = 0; i < num_of_lmbs; i++) {
++		if (read(fd, buf, 24) < 0)
++			die("unrecoverable error: error reading \"%s\": %s\n",
++				pathname, strerror(errno));
 +
-+		if (is_kexec_kdump) {
-+			ranges = read_usm_ranges(&usm);
-+			if (!ranges) /* there are no (base, size) duple */
-+				continue;
++		base = (uint64_t) buf[0];
++		end = base + lmb_size;
++		if (~0ULL - base < end)
++			die("unrecoverable error: mem property overflow\n");
++
++		tmp_indx = rlen++;
++
++		rngs_cnt = 0;
++		for (range = 0; range < usablemem_rgns.size; range++) {
++			loc_base = usablemem_rgns.ranges[range].start;
++			loc_end = usablemem_rgns.ranges[range].end;
++			if (loc_base >= base && loc_end <= end) {
++				ranges[rlen++] = loc_base;
++				ranges[rlen++] = loc_end - loc_base;
++				rngs_cnt++;
++			} else if (base < loc_end && end > loc_base) {
++				if (loc_base < base)
++					loc_base = base;
++				if (loc_end > end)
++					loc_end = end;
++				ranges[rlen++] = loc_base;
++				ranges[rlen++] = loc_end - loc_base;
++				rngs_cnt++;
++			}
 +		}
-+		do {
-+			if (is_kexec_kdump) {
-+				base = read_n_cells(n_mem_addr_cells, &usm);
-+				size = read_n_cells(n_mem_size_cells, &usm);
-+			}
-+			nid = of_drconf_to_nid_single(&drmem, &aa);
-+			fake_numa_create_new_node(
-+				((base + size) >> PAGE_SHIFT),
- 					   &nid);
--
--		node_set_online(nid);
--
--		size = numa_enforce_memory_limit(drmem.base_addr, lmb_size);
--		if (!size)
--			continue;
--
--		add_active_range(nid, drmem.base_addr >> PAGE_SHIFT,
--				 (drmem.base_addr >> PAGE_SHIFT)
--				 + (size >> PAGE_SHIFT));
-+			node_set_online(nid);
-+			sz = numa_enforce_memory_limit(base, size);
-+			if (sz)
-+				add_active_range(nid, base >> PAGE_SHIFT,
-+						 (base >> PAGE_SHIFT)
-+						 + (sz >> PAGE_SHIFT));
-+		} while (--ranges);
++		/* Store the count of (base, size) duple */
++		ranges[tmp_indx] = rngs_cnt;
++	}
++		
++	rlen = rlen * sizeof(uint64_t);
++	/*
++	 * Add linux,drconf-usable-memory property.
++	 */
++	*dt++ = 3;
++	*dt++ = rlen;
++	*dt++ = propnum("linux,drconf-usable-memory");
++	if ((rlen >= 8) && ((unsigned long)dt & 0x4))
++		dt++;
++	memcpy(dt, &ranges, rlen);
++	dt += (rlen + 3)/4;
++}
++
+ static void add_usable_mem_property(int fd, int len)
+ {
+ 	char fname[MAXPATH], *bname;
+@@ -267,6 +335,10 @@ static void putprops(char *fn, struct di
+ 		dt += (len + 3)/4;
+ 		if (!strcmp(dp->d_name, "reg") && usablemem_rgns.size)
+ 			add_usable_mem_property(fd, len);
++		if (!strcmp(dp->d_name, "ibm,dynamic-memory") &&
++					usablemem_rgns.size)
++			add_dyn_reconf_usable_mem_property(fd);
++
+ 		close(fd);
  	}
- }
  
