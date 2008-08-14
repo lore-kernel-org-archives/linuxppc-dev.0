@@ -1,12 +1,21 @@
 Return-Path: <galak@kernel.crashing.org>
-Date: Thu, 14 Aug 2008 07:51:47 -0500 (CDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 55DD4DE455
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Aug 2008 23:03:28 +1000 (EST)
+Message-Id: <1C19524E-8400-4F61-AEB1-19CF20E71098@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: jdl@freescale.com, devicetree-discuss@ozlabs.org
-Subject: [PATCH v2] libfdt: Add support for using aliases in fdt_path_offset()
-Message-ID: <Pine.LNX.4.64.0808140750550.22943@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20080813025726.26033.29519.stgit@trillian.secretlab.ca>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [RFC/PATCH v2] powerpc: add ioremap_early() function for mapping
+	IO regions before MMU_init()
+Date: Thu, 14 Aug 2008 08:00:48 -0500
+References: <20080813025726.26033.29519.stgit@trillian.secretlab.ca>
+Cc: miltonm@bga.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,187 +25,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If the path doesn't start with '/' check to see if it matches some alias
-under "/aliases" and substitute the matching alias value in the path
-and retry the lookup.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+On Aug 12, 2008, at 10:03 PM, Grant Likely wrote:
 
-Fixed the bug pointed out by David Gibson and added tests.
+> +/**
+> + * ioremap_early - Allow large persistant IO regions to be mapped  
+> early.
+> + * @addr: physical address of region
+> + * @size: size of region
+> + *
+> + * This routine uses setbat() to set up IO ranges before the MMU is
+> + * fully configured.
+> + *
+> + * This routine can be called really early, before MMU_init() is  
+> called.  It
+> + * is useful for setting up early debug output consoles and  
+> frequently
+> + * accessed IO regions, like the internally memory mapped registers  
+> (IMMR)
+> + * in an SoC.  Ranges mapped with this function persist even after  
+> MMU_init()
+> + * is called and the MMU is turned on 'for real.'
+> + *
+> + * The region mapped is large (minimum size of 128k) and virtual  
+> mapping must
+> + * be aligned against this boundary.  Therefore, to avoid  
+> fragmentation all
+> + * calls to ioremap_early() are best made before any calls to ioremap
+> + * for smaller regions.
+> + */
+> +void __iomem * __init
+> +ioremap_early(phys_addr_t addr, unsigned long size)
+> +{
+> +	unsigned long v, p;
+> +	int i;
+> +
+> +	/* Be loud and annoying if someone calls this too late.
+> +	 * No need to crash the kernel though */
+> +	WARN_ON(mem_init_done);
+> +	if (mem_init_done)
+> +		return NULL;
+> +
+> +	/* Make sure request is sane */
+> +	if (size == 0)
+> +		return NULL;
+> +
+> +	/* If the region is already block mapped, then there is nothing
+> +	 * to do; just return the mapped address */
+> +	v = p_mapped_by_bats(addr);
+> +	if (v)
+> +		return (void __iomem *)v;
+> +
+> +	/* Adjust size to reflect aligned region */
+> +	p = _ALIGN_DOWN(addr, 128 << 10); /* BATs align on 128k boundaries  
+> */
+> +	size = ALIGN(addr - p + size, 128 << 10);
+> +
+> +	/* Allocate the aligned virtual base address.  ALIGN_DOWN is used
+> +	 * to ensure no overlaps occur with normal 4k ioremaps. */
+> +	v = ioremap_bot = _ALIGN_DOWN(ioremap_bot, 128 << 10) - size;
+> +
+> +	/* Set up a BAT for this IO region */
+> +	i = loadbat(v, p, size, _PAGE_IO);
 
-- k
+what happens if we run out of bats?
 
- libfdt/fdt_ro.c             |   21 ++++++++++++++-
- tests/Makefile.tests        |    2 +-
- tests/aliases.dts           |   31 ++++++++++++++++++++++
- tests/path_offset_aliases.c |   59 +++++++++++++++++++++++++++++++++++++++++++
- tests/run_tests.sh          |    4 +++
- 5 files changed, 114 insertions(+), 3 deletions(-)
- create mode 100644 tests/aliases.dts
- create mode 100644 tests/path_offset_aliases.c
 
-diff --git a/libfdt/fdt_ro.c b/libfdt/fdt_ro.c
-index ebd1260..2f3ff48 100644
---- a/libfdt/fdt_ro.c
-+++ b/libfdt/fdt_ro.c
-@@ -139,8 +139,25 @@ int fdt_path_offset(const void *fdt, const char *path)
+does this actually build on any non-BAT based ppc32 system?
 
- 	FDT_CHECK_HEADER(fdt);
-
--	if (*path != '/')
--		return -FDT_ERR_BADPATH;
-+	/* see if we have an alias */
-+	if (*path != '/') {
-+		const char *q;
-+		int aliasoffset = fdt_path_offset(fdt, "/aliases");
-+
-+		if (aliasoffset < 0)
-+			return -FDT_ERR_BADPATH;
-+
-+		q = strchr(path, '/');
-+		if (!q)
-+			q = end;
-+
-+		p = fdt_getprop_namelen(fdt, aliasoffset, path, q - p, NULL);
-+		if (!p)
-+			return -FDT_ERR_BADPATH;
-+		offset = fdt_path_offset(fdt, p);
-+
-+		p = q;
-+	}
-
- 	while (*p) {
- 		const char *q;
-diff --git a/tests/Makefile.tests b/tests/Makefile.tests
-index 704c95d..44021b0 100644
---- a/tests/Makefile.tests
-+++ b/tests/Makefile.tests
-@@ -11,7 +11,7 @@ LIB_TESTS_L = get_mem_rsv \
- 	open_pack rw_tree1 set_name setprop del_property del_node \
- 	string_escapes references path-references boot-cpuid incbin \
- 	dtbs_equal_ordered \
--	add_subnode_with_nops
-+	add_subnode_with_nops path_offset_aliases
- LIB_TESTS = $(LIB_TESTS_L:%=$(TESTS_PREFIX)%)
-
- LIBTREE_TESTS_L = truncated_property
-diff --git a/tests/aliases.dts b/tests/aliases.dts
-new file mode 100644
-index 0000000..bd0e6bf
---- /dev/null
-+++ b/tests/aliases.dts
-@@ -0,0 +1,31 @@
-+/dts-v1/;
-+
-+/memreserve/ 0xdeadbeef00000000 0x100000;
-+/memreserve/ 123456789 010000;
-+
-+/ {
-+	compatible = "test_tree1";
-+	prop-int = <0xdeadbeef>;
-+	prop-str = "hello world";
-+
-+	aliases {
-+		s1 = &sub1;
-+		ss1 = &subsub1;
-+		sss1 = &subsubsub1;
-+	};
-+
-+	sub1: subnode@1 {
-+		compatible = "subnode1";
-+		prop-int = [deadbeef];
-+
-+		subsub1: subsubnode {
-+			compatible = "subsubnode1", "subsubnode";
-+			prop-int = <0xdeadbeef>;
-+
-+			subsubsub1: subsubsubnode {
-+				compatible = "subsubsubnode1", "subsubsubnode";
-+				prop-int = <0xdeadbeef>;
-+			};
-+		};
-+	};
-+};
-diff --git a/tests/path_offset_aliases.c b/tests/path_offset_aliases.c
-new file mode 100644
-index 0000000..191edd2
---- /dev/null
-+++ b/tests/path_offset_aliases.c
-@@ -0,0 +1,59 @@
-+/*
-+ * libfdt - Flat Device Tree manipulation
-+ *	Testcase for fdt_path_offset()
-+ * Copyright (C) 2006 David Gibson, IBM Corporation.
-+ * Copyright 2008 Kumar Gala, Freescale Semiconductor, Inc.
-+ *
-+ * This library is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU Lesser General Public License
-+ * as published by the Free Software Foundation; either version 2.1 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This library is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public
-+ * License along with this library; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-+ */
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <string.h>
-+#include <stdint.h>
-+
-+#include <fdt.h>
-+#include <libfdt.h>
-+
-+#include "tests.h"
-+#include "testdata.h"
-+
-+void check_alias(void *fdt, const char *full_path, const char *alias_path)
-+{
-+	int offset, offset_a;
-+
-+	offset = fdt_path_offset(fdt, full_path);
-+	offset_a = fdt_path_offset(fdt, alias_path);
-+
-+	if (offset != offset_a)
-+		FAIL("Mismatch between %s path_offset (%d) and %s path_offset alias (%d)",
-+		     full_path, offset, alias_path, offset_a);
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	void *fdt;
-+
-+	test_init(argc, argv);
-+	fdt = load_blob_arg(argc, argv);
-+
-+	check_alias(fdt, "/subnode@1", "s1");
-+	check_alias(fdt, "/subnode@1/subsubnode", "ss1");
-+	check_alias(fdt, "/subnode@1/subsubnode", "s1/subsubnode");
-+	check_alias(fdt, "/subnode@1/subsubnode/subsubsubnode", "sss1");
-+	check_alias(fdt, "/subnode@1/subsubnode/subsubsubnode", "ss1/subsubsubnode");
-+	check_alias(fdt, "/subnode@1/subsubnode/subsubsubnode", "s1/subsubnode/subsubsubnode");
-+
-+	PASS();
-+}
-diff --git a/tests/run_tests.sh b/tests/run_tests.sh
-index 7bfc399..eb29462 100755
---- a/tests/run_tests.sh
-+++ b/tests/run_tests.sh
-@@ -214,6 +214,10 @@ dtc_tests () {
-     run_dtc_test -I dts -O dtb -o dtc_comments-cmp.test.dtb comments-cmp.dts
-     run_test dtbs_equal_ordered dtc_comments.test.dtb dtc_comments-cmp.test.dtb
-
-+    # Check aliases support in fdt_path_offset
-+    run_dtc_test -I dts -O dtb -o aliases.dtb aliases.dts
-+    run_test path_offset_aliases aliases.dtb
-+
-     # Check /include/ directive
-     run_dtc_test -I dts -O dtb -o includes.test.dtb include0.dts
-     run_test dtbs_equal_ordered includes.test.dtb test_tree1.dtb
--- 
-1.5.5.1
+>
+> +	if (i < 0)
+> +		return NULL;
+> +
+> +	return (void __iomem *) (v + (addr - p));
+> +}
+> +
