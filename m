@@ -1,10 +1,20 @@
-Return-Path: <benh@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 15 Aug 2008 17:11:31 +1000
-Subject: [PATCH] powerpc: Fix lockdep IRQ tracing bug
-Message-Id: <20080815071200.61259DE140@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 7E043DE0E1
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 17:27:51 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH 1/2] port ndfc driver to of platform
+Date: Fri, 15 Aug 2008 09:27:41 +0200
+References: <20080801233000.3574434f@lappy.seanm.ca>
+	<20080814165422.62339a5f@lappy.seanm.ca>
+	<20080814191041.60ffed5c@lappy.seanm.ca>
+In-Reply-To: <20080814191041.60ffed5c@lappy.seanm.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808150927.41993.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,39 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A small bogon sneaked into the ppc64 lockdep support. A test is
-branching slightly off causing a clobbered register value to
-overwrite the irq state under some circumstances.
+On Friday 15 August 2008, Sean MacLennan wrote:
+> Port the ndfc driver to an OF platform driver.
+> 
+> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-This explains some of the reported weird lockdep errors, maybe
-even all of them, we'll see.
+Looks great, but I just noticed one more detail:
 
-We should probably backport that to 2.6.26-stable too, any candidate ?
+> +static const struct of_device_id ndfc_match[] = {
+> +	{ .compatible = "amcc,ndfc", },
+> +	{}
+>  };
+>  
 
- arch/powerpc/include/asm/irqflags.h |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+You should add
 
---- linux-work.orig/arch/powerpc/include/asm/irqflags.h	2008-08-15 16:48:43.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/irqflags.h	2008-08-15 16:51:02.000000000 +1000
-@@ -20,7 +20,7 @@
- #define TRACE_ENABLE_INTS	bl .trace_hardirqs_on
- #define TRACE_DISABLE_INTS	bl .trace_hardirqs_off
- #define TRACE_AND_RESTORE_IRQ_PARTIAL(en,skip)	\
--	cmpdi	en, 0;				\
-+	cmpdi	en,0;				\
- 	bne	95f;				\
- 	stb	en,PACASOFTIRQEN(r13);		\
- 	bl	.trace_hardirqs_off;		\
-@@ -29,7 +29,8 @@
- 	li	en,1;
- #define TRACE_AND_RESTORE_IRQ(en)		\
- 	TRACE_AND_RESTORE_IRQ_PARTIAL(en,96f);	\
--96:	stb	en,PACASOFTIRQEN(r13)
-+	stb	en,PACASOFTIRQEN(r13);	        \
-+96:
- #else
- #define TRACE_ENABLE_INTS
- #define TRACE_DISABLE_INTS
+MODULE_DEVICE_TABLE(of, &ndfc_match);
+
+to enable module auto-loading.
+
+	Arnd <><
