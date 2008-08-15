@@ -1,17 +1,22 @@
-Return-Path: <markn@au1.ibm.com>
-From: Mark Nelson <markn@au1.ibm.com>
-To: michael@ellerman.id.au
-Subject: Re: [RFC 2/2] powerpc: copy_4K_page tweaked for Cell - add CPU feature
-Date: Fri, 15 Aug 2008 16:33:30 +1000
-References: <200808141618.23818.markn@au1.ibm.com>
-	<200808142148.57218.markn@au1.ibm.com>
-	<1218715848.10673.33.camel@localhost>
-In-Reply-To: <1218715848.10673.33.camel@localhost>
+Return-Path: <hugh@veritas.com>
+Received: from extu-mxob-1.symantec.com (extu-mxob-1.symantec.com
+	[216.10.194.28])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "extu-mxob-1.symantec.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8ED5CDE09C
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 16:48:29 +1000 (EST)
+Date: Fri, 15 Aug 2008 07:48:52 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: oops in proc_sys_compare
+In-Reply-To: <20080815045149.GC28946@ZenIV.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0808150735290.970@blonde.site>
+References: <Pine.LNX.4.64.0808141908290.15191@blonde.site>
+	<20080815045149.GC28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808151633.30260.markn@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,112 +26,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 14 Aug 2008 10:10:48 pm Michael Ellerman wrote:
-> On Thu, 2008-08-14 at 21:48 +1000, Mark Nelson wrote:
-> > Hi Michael,
+On Fri, 15 Aug 2008, Al Viro wrote:
+> On Thu, Aug 14, 2008 at 07:31:06PM +0100, Hugh Dickins wrote:
+> > I got this oops below, after several hours of swap-heavy kernel builds
+> > in tmpfs, on 2.6.27-rc1-mm1 a couple of weeks ago.  Tried to reproduce
+> > it without success, then got a very similar trace (not saved) from
+> > 2.6.27-rc3 itself doing the same test yesterday: again oopsing in
+> > proc_sys_compare on address -16, looks like it's trying for
+> > PROC_I(dentry->d_inode)->sysctl but d_inode is NULL.
 > > 
-> > On Thu, 14 Aug 2008 08:51:35 pm Michael Ellerman wrote:
-> > > On Thu, 2008-08-14 at 16:18 +1000, Mark Nelson wrote:
-> > > > Add a new CPU feature, CPU_FTR_CP_USE_DCBTZ, to be added to the CPUs that benefit
-> > > > from having dcbt and dcbz instructions used in copy_4K_page(). So far Cell, PPC970
-> > > > and Power4 benefit.
-> > > > 
-> > > > This way all the other 64bit powerpc chips will have the whole prefetching loop
-> > > > nop'ed out.
-> > > 
-> > > > Index: upstream/arch/powerpc/lib/copypage_64.S
-> > > > ===================================================================
-> > > > --- upstream.orig/arch/powerpc/lib/copypage_64.S
-> > > > +++ upstream/arch/powerpc/lib/copypage_64.S
-> > > > @@ -18,6 +18,7 @@ PPC64_CACHES:
-> > > >  
-> > > >  _GLOBAL(copy_4K_page)
-> > > >  	li	r5,4096		/* 4K page size */
-> > > > +BEGIN_FTR_SECTION
-> > > >  	ld      r10,PPC64_CACHES@toc(r2)
-> > > >  	lwz	r11,DCACHEL1LOGLINESIZE(r10)	/* log2 of cache line size */
-> > > >  	lwz     r12,DCACHEL1LINESIZE(r10)	/* Get cache line size */
-> > > > @@ -30,7 +31,7 @@ setup:
-> > > >  	dcbz	r9,r3
-> > > >  	add	r9,r9,r12
-> > > >  	bdnz	setup
-> > > > -
-> > > > +END_FTR_SECTION_IFSET(CPU_FTR_CP_USE_DCBTZ)
-> > > >  	addi	r3,r3,-8
-> > > >  	srdi    r8,r5,7		/* page is copied in 128 byte strides */
-> > > >  	addi	r8,r8,-1	/* one stride copied outside loop */
-> > > 
-> > > Instead of nop'ing it out, we could use an alternative feature section
-> > > to either run it or jump over it. It would look something like:
-> > > 
-> > > 
-> > > _GLOBAL(copy_4K_page)
-> > > BEGIN_FTR_SECTION
-> > >         li      r5,4096         /* 4K page size */
-> > >         ld      r10,PPC64_CACHES@toc(r2)
-> > >         lwz     r11,DCACHEL1LOGLINESIZE(r10)    /* log2 of cache line size */
-> > >         lwz     r12,DCACHEL1LINESIZE(r10)       /* Get cache line size */
-> > >         li      r9,0
-> > >         srd     r8,r5,r11
-> > > 
-> > >         mtctr   r8
-> > > setup:
-> > >         dcbt    r9,r4
-> > >         dcbz    r9,r3
-> > >         add     r9,r9,r12
-> > >         bdnz    setup
-> > > FTR_SECTION_ELSE
-> > > 	b	1f
-> > > ALT_FTR_SECTION_END_IFSET(CPU_FTR_CP_USE_DCBTZ)
-> > > 1:
-> > >         addi    r3,r3,-8
-> > > 
-> > > So in the no-dcbtz case you'd get a branch instead of 11 nops.
-> > > 
-> > > Of course you'd need to benchmark it to see if skipping the nops is
-> > > better than executing them ;P
-> > 
-> > Thanks for looking through this.
-> > 
-> > That does look a lot better. In the first version there wasn't quite
-> > as much to nop out (the cache line size was hardcoded to 128
-> > bytes) so I wasn't so worried but I'll definitely try this with an
-> > alternative section like you describe.
-> > 
-> > The jump probably will turn out to be better because I'd imagine
-> > that the same chips that don't need the dcbt and dcbz because
-> > they've got beefy enough hardware prefetchers also won't be
-> > disturbed by the jump (but benchmarks tomorrow will confirm;
-> > or prove me wrong :) )
+> > I looked to see what's been going on in fs/proc recently, and your
+> > [PATCH] sanitize proc_sysctl 9043476f726802f4b00c96d0c4f418dde48d1304
+> > does sound like it might be implicated.  I've only seen this on
+> > PowerPC G5, similar tests on x86_32 and _64 haven't shown it:
+> > maybe a memory barrier needed somewhere?
+>  
+> Bloody interesting.  We never create negative hashed dentries in there and
+> AFAICS we should never get d_delete() called on those...  Missing barrier
+> would mean serious trouble in dcache.c and not just for /proc/sys...
 > 
-> Yeah, that would make sense. But you never know :)
+> Are you sure about oops decoding?  At least disassembly of proc_sys_compare()
+> in the kernel image in question would be nice to see...
 
-It turns out that on Power6 using the alternative section doesn't
-have any noticeable effect on performance. On Power5 though it
-actually made the compile test a tiny bit slower:
+Here it is: I'd changed config meanwhile, so this is from a rebuild,
+but symbol addresses fit exactly with the trace (and the 2.6.27-rc1-mm1
+fs/proc/proc_sysctl.c is identical to that in 2.6.27-rc3 or current git).
+I did try "objdump -Sd" at first, but that just looked more confusing.
 
-with alternative feature section:
-
-real    5m7.549s
-user    17m24.256s
-sys     1m0.621s
-
-real    5m7.829s
-user    17m24.879s
-sys     1m0.465s
-
-original implementation:
-
-real    5m6.468s
-user    17m22.891s
-sys     0m59.765s
-
-real    5m6.965s
-user    17m23.160s
-sys     0m59.844s
-
-So I guess I'll leave it the way it is...
-
-Thanks!
-
-Mark
+c000000000121e7c <.proc_sys_compare>:
+proc_sys_compare():
+/home/hugh/26271E1/fs/proc/proc_sysctl.c:383
+c000000000121e7c:	7c 08 02 a6 	mflr    r0
+c000000000121e80:	fb e1 ff f0 	std     r31,-16(r1)
+c000000000121e84:	7c a9 2b 78 	mr      r9,r5
+c000000000121e88:	7c 9f 23 78 	mr      r31,r4
+c000000000121e8c:	f8 01 00 10 	std     r0,16(r1)
+c000000000121e90:	f8 21 ff 81 	stdu    r1,-128(r1)
+/home/hugh/26271E1/fs/proc/proc_sysctl.c:385
+c000000000121e94:	60 00 00 00 	nop
+c000000000121e98:	80 a4 00 04 	lwz     r5,4(r4)
+c000000000121e9c:	80 09 00 04 	lwz     r0,4(r9)
+c000000000121ea0:	7f 80 28 00 	cmpw    cr7,r0,r5
+c000000000121ea4:	40 9e 00 3c 	bne-    cr7,c000000000121ee0 <.proc_sys_compare+0x64>
+/home/hugh/26271E1/fs/proc/proc_sysctl.c:387
+c000000000121ea8:	e8 89 00 08 	ld      r4,8(r9)
+c000000000121eac:	e8 7f 00 08 	ld      r3,8(r31)
+c000000000121eb0:	4b f0 aa 45 	bl      c00000000002c8f4 <.memcmp>
+c000000000121eb4:	60 00 00 00 	nop
+c000000000121eb8:	2f a3 00 00 	cmpdi   cr7,r3,0
+c000000000121ebc:	40 9e 00 24 	bne-    cr7,c000000000121ee0 <.proc_sys_compare+0x64>
+PROC_I():
+/home/hugh/26271E1/fs/proc/proc_sysctl.c:384
+c000000000121ec0:	e9 3f ff e0 	ld      r9,-32(r31)
+c000000000121ec4:	e8 69 ff f0 	ld      r3,-16(r9)
+c000000000121ec8:	4b f2 f8 4d 	bl      c000000000051714 <.sysctl_is_seen>
+c000000000121ecc:	60 00 00 00 	nop
+proc_sys_compare():
+/home/hugh/26271E1/fs/proc/proc_sysctl.c:389
+c000000000121ed0:	7c 63 00 34 	cntlzw  r3,r3
+c000000000121ed4:	54 63 d9 7e 	rlwinm  r3,r3,27,5,31
+c000000000121ed8:	78 63 00 20 	clrldi  r3,r3,32
+c000000000121edc:	48 00 00 08 	b       c000000000121ee4 <.proc_sys_compare+0x68>
+c000000000121ee0:	38 60 00 01 	li      r3,1
+/home/hugh/26271E1/fs/proc/proc_sysctl.c:390
+c000000000121ee4:	38 21 00 80 	addi    r1,r1,128
+c000000000121ee8:	e8 01 00 10 	ld      r0,16(r1)
+c000000000121eec:	eb e1 ff f0 	ld      r31,-16(r1)
+c000000000121ef0:	7c 08 03 a6 	mtlr    r0
+c000000000121ef4:	4e 80 00 20 	blr
