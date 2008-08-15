@@ -1,14 +1,20 @@
-Return-Path: <jdl@jdl.com>
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: [PATCH V2] DTC: Remove support for the legacy DTS source file
-	format.
-In-reply-to: <ed82fe3e0808150817k66d6c70fp17774fbd726ea2b2@mail.gmail.com> 
-References: <E1KTlq7-0005Gh-Co@jdl.com> <20080815002936.GA9877@yookeroo.seuss>
-	<ed82fe3e0808150817k66d6c70fp17774fbd726ea2b2@mail.gmail.com>
-Date: Fri, 15 Aug 2008 10:44:33 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1KU1Td-0006ub-8O@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
+	by ozlabs.org (Postfix) with ESMTP id 020EEDE12D
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Aug 2008 02:30:23 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so838493pyi.27
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 09:30:21 -0700 (PDT)
+Message-ID: <fa686aa40808150930icad997dl567391bd46766f29@mail.gmail.com>
+Date: Fri, 15 Aug 2008 10:30:21 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Sinisa Denic" <sinisa.denic@abs-cs.com>
+Subject: Re: mpc52xx localplus bus and dm9000
+In-Reply-To: <WorldClient-F200808141152.AA52170076@abs-cs.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <WorldClient-F200808141152.AA52170076@abs-cs.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,29 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> On Thu, Aug 14, 2008 at 7:29 PM, David Gibson
-> <david@gibson.dropbear.id.au> wrote:
-> > On Thu, Aug 14, 2008 at 06:02:43PM -0500, Jon Loeliger wrote:
-> >> Now that all in-kernel-tree DTS files are properly /dts-v1/,
-> >> remove direct support for the older, un-numbered DTS
-> >> source file format.
-> >
-> > Um.. why?  I just don't see a compelling reason to remove this
-> > backwards compatibility.  It costs us very little to keep it around
-> > indefinitely.
+On Thu, Aug 14, 2008 at 3:52 AM, Sinisa Denic <sinisa.denic@abs-cs.com> wrote:
+> Hi,I have mpc52xx based board very similar to lite5200b.
+> There is Davicom DM9000 connected to Local Plus Bus CS0.
+> Does anybody have idea how should DTS part look like in order to add this
+> resource in system.
+> I've written something like this:
+>
+> lpb {
+>                        device_type = "network";
 
-Because we are going to get rid of the cruft, simplify things,
-and move forward.  Really.  This was the plan from the onset.
+device_type doesn't make any sense here.  Drop this line.
 
-> I agree, why are we removing backwards compatibility?  The dts-v1
-> format isn't that old, so I'm sure there are plenty of device trees
-> out there, especially on our BSPs, that haven't been updated yet.
+>                        compatible = "fsl,lpb";
+>                        ranges = <0 0 ff000000 1000000>;
 
-They can run the conversion tool and be fine.
+You need to add #address-cells = <2> and #size-cells = <1> properties
+to this node.  Otherwise the address translation doesn't work.  The
+local plus bus uses 2 cells to describe address.  First cell is the
+chip select and second cell is the address offset on the chip select.
 
-> How about just printing a warning and saying that the device tree
-> should be updated with the conversion tool?
+The ranges property translates between the global address space to the
+local chip select address space.  In this case, "0 0" means 0 offset
+from chip select 0, and ff000000 is the address it is mapped to on the
+parent bus.
 
-How about all the in-tree DTS files are already V1?
+>
+>                        dm9000@0,0 {
+>                                compatible = "dm9000";
+>                                reg = <0 0 100000>;
+>                                #size-cells = <1>;
+>                                #address-cells = <1>;
 
-jdl
+You should not need #address-cells or #size-cells on the child node
+because it is not a bus.
+
+>                        };
+>                };
+>
+> but it's not working.
+> Is it enough to have right dts record for default dm9000 driver working
+> or I have to change something more?
+> Thank you in andvance.
+>
+> Sinisa Denic
+> System and software  engineer
+> tel: +381(0)112016142
+> ABS Control Systems
+> bul.Zorana Djindjica 8a
+> Belgrade,Serbia
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
