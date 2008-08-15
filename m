@@ -1,24 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B270CDDFE2
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Aug 2008 08:00:06 +1000 (EST)
-Message-Id: <87674E2E-05CB-41E8-A1C9-EC54D27798AD@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: hs@denx.de
-In-Reply-To: <4858C988.1000405@denx.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH] [82xx] powerpc: Add support for mpc8247 based
-	board	MGCOGE from keymile.
-Date: Fri, 15 Aug 2008 16:59:58 -0500
-References: <20080612153215.GB2756@loki.buserror.net>
-	<4852A144.6090204@denx.de> <20080616072625.GB28470@yookeroo.seuss>
-	<4856350E.4080602@denx.de>
-	<20080616164915.GA14020@loki.buserror.net>
-	<4858C988.1000405@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id AD632DDF6C
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Aug 2008 08:25:02 +1000 (EST)
+Date: Fri, 15 Aug 2008 15:25:01 -0700 (PDT)
+Message-Id: <20080815.152501.193746275.davem@davemloft.net>
+To: michael@ellerman.id.au
+Subject: Re: bug in lmb_enforce_memory_limit()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1218713213.10673.17.camel@localhost>
+References: <20080814.012004.193702132.davem@davemloft.net>
+	<1218713213.10673.17.camel@localhost>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,47 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 14 Aug 2008 21:26:53 +1000
 
-On Jun 18, 2008, at 3:38 AM, Heiko Schocher wrote:
+> Perhaps after the first loop we should set memory_limit to equal
+> lmb_end_of_DRAM(), then the second loop should work as it is.
 
-> Hello,
->
-> changes since the last patch:
->
-> update the Portpin initialization.
->
-> [powerpc]  Added support for the MPC8247 based board MGCOGE
->           from Keymile.
->
-> Signed-off-by: Heiko Schocher <hs@denx.de>
-> ---
-> arch/powerpc/boot/dts/mgcoge.dts      |  174 +++++++
-> arch/powerpc/configs/mgcoge_defconfig |  900 ++++++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/platforms/82xx/Kconfig   |    8 +
-> arch/powerpc/platforms/82xx/Makefile  |    1 +
-> arch/powerpc/platforms/82xx/mgcoge.c  |  129 +++++
-> 5 files changed, 1212 insertions(+), 0 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/mgcoge.dts
-> create mode 100644 arch/powerpc/configs/mgcoge_defconfig
-> create mode 100644 arch/powerpc/platforms/82xx/mgcoge.c
+Sounds great.  Mind if I push the following to Linus?
 
-This fails to compile for with 2.6.27-rc3:
+lmb: Fix reserved region handling in lmb_enforce_memory_limit().
 
-drivers/net/fs_enet/mac-scc.c: In function 'restart':
-drivers/net/fs_enet/mac-scc.c:256: error: implicit declaration of  
-function '__fs_out8'
-drivers/net/fs_enet/mac-scc.c:265: error: 'SCC_EB' undeclared (first  
-use in this function)
-drivers/net/fs_enet/mac-scc.c:265: error: (Each undeclared identifier  
-is reported only once
-drivers/net/fs_enet/mac-scc.c:265: error: for each function it appears  
-in.)
-make[3]: *** [drivers/net/fs_enet/mac-scc.o] Error 1
-make[2]: *** [drivers/net/fs_enet] Error 2
-make[1]: *** [drivers/net] Error 2
-make: *** [drivers] Error 2
-make: *** Waiting for unfinished jobs....
+The idea of the implementation of this fix is from Michael Ellerman.
 
+This function has two loops, but they each interpret the memory_limit
+value differently.  The first loop interprets it as a "size limit"
+whereas the second loop interprets it as an "address limit".
 
-- k
+Before the second loop runs, reset memory_limit to lmb_end_of_DRAM()
+so that it all works out.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/lib/lmb.c b/lib/lmb.c
+index 5d7b928..97e5470 100644
+--- a/lib/lmb.c
++++ b/lib/lmb.c
+@@ -462,6 +462,8 @@ void __init lmb_enforce_memory_limit(u64 memory_limit)
+ 	if (lmb.memory.region[0].size < lmb.rmo_size)
+ 		lmb.rmo_size = lmb.memory.region[0].size;
+ 
++	memory_limit = lmb_end_of_DRAM();
++
+ 	/* And truncate any reserves above the limit also. */
+ 	for (i = 0; i < lmb.reserved.cnt; i++) {
+ 		p = &lmb.reserved.region[i];
