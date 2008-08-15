@@ -1,37 +1,18 @@
-Return-Path: <rcjenn@austin.ibm.com>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C598CDDF3A
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Aug 2008 06:21:53 +1000 (EST)
-Received: from e2.ny.us.ibm.com ([192.168.1.102])
-	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m7FJAXr8001761
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 15:10:33 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7FJAJR1001214
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 15:10:19 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7FJAIBI238820
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 15:10:18 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7FJAInK024857
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 15:10:18 -0400
-Date: Fri, 15 Aug 2008 14:10:18 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 3/3] powerpc: add CMO enabled flag and paging space data to
-	lparcfg
-Message-ID: <20080815191017.GD20629@austin.ibm.com>
-References: <20080815190230.GA20629@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080815190230.GA20629@austin.ibm.com>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 0FEB3DE36D
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Aug 2008 07:11:54 +1000 (EST)
+To: Kumar Gala <galak@kernel.crashing.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: patches for 2.6.27... (Kumar Gala)
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <48994B9C.4050908@denx.de>
+References: <486B512B.9000004@denx.de> <48994B9C.4050908@denx.de>
+Date: Fri, 15 Aug 2008 23:11:52 +0200
+Sender: wd@denx.de
+Message-Id: <20080815211152.5205B243AB@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org, hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,37 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Dear Kumar,
 
-Add a field in lparcfg output to indicate whether the kernel is running on a 
-dedicated or shared memory lpar.  Added fields to show the paging space pool
-IDs and the CMO page size.
+In message <48994B9C.4050908@denx.de> Heiko Schocher wrote:
+> Hello Kumar,
+> 
+> On Wed Jul 2 19:58:03 EST 2008 Heiko Schocher wrote:
+> >On Wednesday 02 July 2008, Kumar Gala wrote:
+> >> Please point out any patches that have been posted but havent made it
+> >> into a git tree related to Freescale chips.
+> >
+> > Here are 2 patches that I'd like to see in 2.6.27. They haven't made into
+> > any git tree as far as I know.
+> >
+> > http://ozlabs.org/pipermail/linuxppc-dev/2008-June/058118.html
+> >
+> > http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057972.html
+> 
+> Can you tell me, if these patches go into the Tree?
+> I had generally acks for this boards, but didnt see them in any tree yet?
+> 
+> Are there some more issues?
 
-Submitted-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+As discussed, here the references to the patchwork locations:
 
----
- arch/powerpc/kernel/lparcfg.c |    5 +++++
- 1 file changed, 5 insertions(+)
+http://patchwork.ozlabs.org/linuxppc/list?q=8xx+mgsuvd
 
-Index: b/arch/powerpc/kernel/lparcfg.c
-===================================================================
---- a/arch/powerpc/kernel/lparcfg.c
-+++ b/arch/powerpc/kernel/lparcfg.c
-@@ -416,6 +416,8 @@ static void pseries_cmo_data(struct seq_
- 	unsigned long cmo_faults = 0;
- 	unsigned long cmo_fault_time = 0;
- 
-+	seq_printf(m, "cmo_enabled=%d\n", firmware_has_feature(FW_FEATURE_CMO));
-+
- 	if (!firmware_has_feature(FW_FEATURE_CMO))
- 		return;
- 
-@@ -427,6 +429,9 @@ static void pseries_cmo_data(struct seq_
- 	seq_printf(m, "cmo_faults=%lu\n", cmo_faults);
- 	seq_printf(m, "cmo_fault_time_usec=%lu\n",
- 		   cmo_fault_time / tb_ticks_per_usec);
-+	seq_printf(m, "cmo_primary_psp=%d\n", cmo_get_primary_psp());
-+	seq_printf(m, "cmo_secondary_psp=%d\n", cmo_get_secondary_psp());
-+	seq_printf(m, "cmo_page_size=%lu\n", cmo_get_page_size());
- }
- 
- static int pseries_lparcfg_data(struct seq_file *m, void *v)
+and
+
+http://patchwork.ozlabs.org/linuxppc/list?q=82xx+MGCOGE
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The shortest unit of time in the multiverse is the News York  Second,
+defined  as  the  period  of  time between the traffic lights turning
+green and the cab behind you honking.
+                                - Terry Pratchett, _Lords and Ladies_
