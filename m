@@ -1,19 +1,18 @@
-Return-Path: <liranrazlinux@gmail.com>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.225])
-	by ozlabs.org (Postfix) with ESMTP id DED96DE243
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE004.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 0A47ADE50E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Aug 2008 00:23:31 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id d11so1118557qbd.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Aug 2008 07:23:30 -0700 (PDT)
-Message-ID: <e3b3ab5c0808150723o5a4ff1f4je677c7a4475f89b7@mail.gmail.com>
-Date: Fri, 15 Aug 2008 10:23:29 -0400
-From: "liran raz" <liranrazlinux@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: flash partitioning
+	Sat, 16 Aug 2008 00:30:34 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_79193_29835615.1218810209347"
+Content-Type: text/plain; charset="US-ASCII"
+Subject: RE: Linux issues on Xilinx XUPV2P board
+Date: Fri, 15 Aug 2008 08:30:25 -0600
+In-Reply-To: <4891711700018E59@hawk.dcu.ie>
+References: <18997255.post@talk.nabble.com> <4891711700018E59@hawk.dcu.ie>
+From: John Linn <John.Linn@xilinx.com>
+To: <alan.casey5@mail.dcu.ie>, "wangyanlong" <killyouatonce@gmail.com>,
+	<linuxppc-embedded@ozlabs.org>
+Message-ID: <20080815143027.BD038B0004C@mail24-sin.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,86 +23,289 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_79193_29835615.1218810209347
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi Alan,
 
-hi,
-Using the following configuration in the
-dts file (mpc8272ads.dts):
+I'm assuming you must not have Git installed from the question,
+otherwise you would be using git clone as the site shows.
 
- localbus@f0010100 {
-  compatible = "fsl,mpc8272-localbus",
-               "fsl,pq2-localbus";
-  #address-cells = <2>;
-  #size-cells = <1>;
-  reg = <f0010100 40>;
+On the http://git.xilinx.com, it says the following, =
 
-  ranges = <0 0 fc000000 04000000>;
-        };
 
-flash@fc000000 {
-                device_type = "rom";
-                compatible = "direct-mapped";
-                probe-type = "CFI";
-  reg = <fc000000 04000000>;
-  bank-width = <4>;
-  device-width = <2>;
-  #address-cells = <1>;
-  #size-cells = <1>;
-                partitions = <0 200000
-                              2000000 a00000
-                              c000000 a00000
-                              16000000 600000
-                              1c000000 e00000
-                              2a000000 600000
-                              30000000 e00000
-                              3e000000 100000
-                              3f000000 80000
-                              3f800000 40000
-                              3fc00000 40000>;
-                partition-names =
-"part01","part02","part03","part04","part05","part06","part07","part08","part09","part10","part11";
- };
+Users without Git installed may create a tar file by using the snapshot
+feature. Select the tree view of the repository (far right side) on this
+page, then select snapshot (near the top) and a gziped tar file will be
+created and downloaded. =
 
-I can't see the different partitions linked to the /dev/mtd<x>
-devices in the startup messages. When testing the devices
-I see that only /dev/mtd0 is actually linked to the beginning
-of the flash. (other /dev/mtd1 etc.. can't be opened).
-I included below also the relevant startup messages.
-Does anyone have any idea what is wrong with my flash
-configuration format?
-Thanks, Liran.
 
-Linux version: 2.6.24
-Processor: mpc8272
-Startup messages:
-physmap platform flash device: 04000000 at fc000000
-physmap-flash.0: Found 2 x16 devices at 0x0 in 32-bit bank
- Amd/Fujitsu Extended Query Table at 0x0040
-physmap-flash.0: CFI does not contain boot bank location. Assuming top.
-number of CFI chips: 1
-cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+Is this what you're looking for?
 
-------=_Part_79193_29835615.1218810209347
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+-- John
 
-<p>hi,<br>Using the following configuration in the<br>dts file (mpc8272ads.dts):</p>
-<p>&nbsp;<a href="mailto:localbus@f0010100">localbus@f0010100</a> {<br>&nbsp;&nbsp;compatible = &quot;fsl,mpc8272-localbus&quot;,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot;fsl,pq2-localbus&quot;;<br>&nbsp;&nbsp;#address-cells = &lt;2&gt;;<br>&nbsp;&nbsp;#size-cells = &lt;1&gt;;<br>
-&nbsp;&nbsp;reg = &lt;f0010100 40&gt;;</p>
-<p>&nbsp;&nbsp;ranges = &lt;0 0 fc000000 04000000&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };</p>
-<p><a href="mailto:flash@fc000000">flash@fc000000</a> {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; device_type = &quot;rom&quot;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible = &quot;direct-mapped&quot;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; probe-type = &quot;CFI&quot;;<br>&nbsp;&nbsp;reg = &lt;fc000000 04000000&gt;;<br>
-&nbsp;&nbsp;bank-width = &lt;4&gt;;<br>&nbsp;&nbsp;device-width = &lt;2&gt;;<br>&nbsp;&nbsp;#address-cells = &lt;1&gt;;<br>&nbsp;&nbsp;#size-cells = &lt;1&gt;;</p>
-<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; partitions = &lt;0 200000<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2000000 a00000<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; c000000 a00000<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 16000000 600000<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1c000000 e00000<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2a000000 600000<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 30000000 e00000<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3e000000 100000<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3f000000 80000<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3f800000 40000<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3fc00000 40000&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; partition-names = &quot;part01&quot;,&quot;part02&quot;,&quot;part03&quot;,&quot;part04&quot;,&quot;part05&quot;,&quot;part06&quot;,&quot;part07&quot;,&quot;part08&quot;,&quot;part09&quot;,&quot;part10&quot;,&quot;part11&quot;;<br>
-&nbsp;};</div>
-<div><br>I can&#39;t see the different partitions linked to the /dev/mtd&lt;x&gt;<br>devices in the startup messages. When testing the devices<br>I see that only /dev/mtd0 is actually linked to the beginning<br>of the flash. (other /dev/mtd1 etc.. can&#39;t be opened).<br>
-I included below also the relevant startup messages.<br>Does anyone have any idea what is wrong with my flash<br>configuration format?<br>Thanks, Liran.</div>
-<p>Linux version: 2.6.24<br>Processor: mpc8272<br>Startup messages:<br>physmap platform flash device: 04000000 at fc000000<br>physmap-flash.0: Found 2 x16 devices at 0x0 in 32-bit bank<br>&nbsp;Amd/Fujitsu Extended Query Table at 0x0040<br>
-physmap-flash.0: CFI does not contain boot bank location. Assuming top.<br>number of CFI chips: 1<br>cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.<br></p>
+> -----Original Message-----
+> From: =
 
-------=_Part_79193_29835615.1218810209347--
+> linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org =
+
+> [mailto:linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.
+> org] On Behalf Of Alan Casey
+> Sent: Friday, August 15, 2008 6:34 AM
+> To: wangyanlong; linuxppc-embedded@ozlabs.org
+> Subject: Re: Linux issues on Xilinx XUPV2P board
+> =
+
+> Hi,
+> =
+
+>   I used version 2.6.24. Current version is 2.6.26+ but im
+>   not sure how to download previous versions from the git
+>   tree, there should be some info at http://git.xilinx.com
+>   about how to do this.
+> =
+
+>   Regards,
+>   Alan.
+> =
+
+> >-- Original Message --
+> >Date: Fri, 15 Aug 2008 04:35:01 -0700 (PDT)
+> >From: wangyanlong <killyouatonce@gmail.com>
+> >To: linuxppc-embedded@ozlabs.org
+> >Subject: Re: Linux issues on Xilinx XUPV2P board
+> >
+> >
+> >
+> >Hi Alan =
+
+> >  I dow load the kernel from "
+> >http://git.xilinx.com/cgi-bin/gitweb.cgi?p=3Dlinux-2.6-xlnx.git
+> ;a=3Dsummary
+> "
+> >
+> >Merge ../../linux-2.6 into 2.6.26-merge  master  commit | =
+
+> commitdiff | tree
+> >| snapshot
+> >  =
+
+> >this version ,but it not work well,which version you downloaded?
+> >
+> >Many thanks
+> >yanlong
+> > =
+
+> >
+> >Alan Casey wrote:
+> >> =
+
+> >> Hi,
+> >> =
+
+> >>   Yes i had a problem with using one of the Linux 2.6.26
+> >>   kernel versions on the XUPV2P board where the VGA
+> >>   display has not driven correctly, not sure why.
+> >>   The Linux 2.6.24 kernel from git.xilinx.com works fine.
+> >> =
+
+> >>   Regards,
+> >>   Alan.
+> >>   =
+
+> >> =
+
+> >>>-- Original Message --
+> >>>Date: Fri, 15 Aug 2008 01:43:37 -0700 (PDT)
+> >>>From: wangyanlong <killyouatonce@gmail.com>
+> >>>To: linuxppc-embedded@ozlabs.org
+> >>>Subject: Re: Linux issues on Xilinx XUPV2P board
+> >>>
+> >>>
+> >>>
+> >>>I meet the problem as yours . And  my vga's display is not =
+
+> clear , have
+> >> you
+> >>>meet this?
+> >>>
+> >>>Alan Casey wrote:
+> >>>> =
+
+> >>>> Hi,
+> >>>> =
+
+> >>>>   I have tried running the Linux 2.6.24 and Linux 2.6.26 =
+
+> kernels from
+> >> =
+
+> >>> =
+
+> >>>>   git.xilinx.com on the Xilinx XUPV2P board but have run =
+
+> into a few
+> >>>> problems.
+> >>>> =
+
+> >>>>   Cross-compiler i use to compile applications was built using
+> >>>> Crosstools
+> >>>> and
+> >>>>   based on gcc 3.3.4. I use Xilinx EDK 7.1 for =
+
+> integrating hardware
+> >>>> peripherals
+> >>>>   onto the board.
+> >>>> =
+
+> >>>>   The problems i've seen are:
+> >>>> =
+
+> >>>>   (i) gettimeofday software function returns time of 0 =
+
+> all the time.
+> >>>> =
+
+> >>>>   (ii) The Linux 2.6.24 kernel's Xilinx Framebuffer =
+
+> driver and/or the
+> >>>> Xilinx
+> >>>> 
+> >>>>        PLB TFT Controller IP block =
+
+> (plb_tft_cntlr_ref_v1_00_d) does
+> not
+> >>>> appear
+> >>>> =
+
+> >>>>        to centre the display on a VGA screen properly(vertically
+> >>>> offset).
+> >>>> =
+
+> >>>>   (iii) 64-bit write/read access to peripheral =
+
+> integrated onto the
+> >>>> Xilinx
+> >>>> =
+
+> >>>>         Virtex-II Pro FPGA either causes a system crash =
+
+> or only lower
+> >> part
+> >>>> =
+
+> >>>>         of 32-bit data to be written (i.e. lower part of =
+
+> 64-bit data
+> >>>> appears
+> >>>>         to be mirrored on the upper and lower 32-bits of =
+
+> the system
+> >>>> bus).
+> >>>>         However, 32-bit write/read access to the =
+
+> peripheral passes as
+> >> well
+> >>>>         as 64-bit write/read access to the SDRAM memory =
+
+> address space.
+> >>>>         Peripheral interface has been verified to be IBM =
+
+> PLB compliant
+> >>>
+> >>>>         via IBM bus functional model simulations. =
+
+> >>>> =
+
+> >>>>    (iv) The Linux 2.6.26 Xilinx Framebuffer driver on =
+
+> the Xilinx XUPV2P
+> >>>> board
+> >>>> =
+
+> >>>>         does not appear to be working - nothing displayed to
+> >>>> screen/console
+> >>>> =
+
+> >>>>         not switching to framebuffer device on bootup. =
+
+> >>>> =
+
+> >>>>    Just wondering if anybody has seen these issues =
+
+> before and know how
+> >>>to
+> >>>>    resolve them?
+> >>>> =
+
+> >>>>    Any info. appreciated,
+> >>>>    Regards,
+> >>>>    Alan.
+> >>>> =
+
+> >>>>   =
+
+> >>>> =
+
+> >>>> =
+
+> >>>> _______________________________________________
+> >>>> Linuxppc-embedded mailing list
+> >>>> Linuxppc-embedded@ozlabs.org
+> >>>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> >>>> =
+
+> >>>> =
+
+> >>>
+> >>>-- =
+
+> >>>View this message in context:
+> >http://www.nabble.com/Linux-issues-on-Xilinx-XUPV2P-board-tp1
+> 8262250p18995644.html
+> >>>Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+> >>>
+> >>>_______________________________________________
+> >>>Linuxppc-embedded mailing list
+> >>>Linuxppc-embedded@ozlabs.org
+> >>>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> >> =
+
+> >> =
+
+> >> _______________________________________________
+> >> Linuxppc-embedded mailing list
+> >> Linuxppc-embedded@ozlabs.org
+> >> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> >> =
+
+> >> =
+
+> >
+> >-- =
+
+> >View this message in context: =
+
+> http://www.nabble.com/Linux-issues-on-Xilinx-XUPV2P-board-tp18
+> 262250p18997255.html
+> >Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+> >
+> >_______________________________________________
+> >Linuxppc-embedded mailing list
+> >Linuxppc-embedded@ozlabs.org
+> >https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> =
+
+> =
+
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> =
+
+> =
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
