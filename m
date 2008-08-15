@@ -1,24 +1,31 @@
-Return-Path: <jdl@freescale.com>
+Return-Path: <scottwood@freescale.com>
 Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B4FAADE2E7
+	by ozlabs.org (Postfix) with ESMTPS id DF88BDE38D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Aug 2008 01:09:02 +1000 (EST)
-Message-ID: <48A59BE3.7000709@freescale.com>
-Date: Fri, 15 Aug 2008 10:08:19 -0500
-From: Jon Loeliger <jdl@freescale.com>
-MIME-Version: 1.0
-To: John Linn <John.Linn@xilinx.com>
-Subject: Re: Linux issues on Xilinx XUPV2P board
-References: <20080815143027.BD038B0004C@mail24-sin.bigfish.com>	<48917117000190E8@hawk.dcu.ie>
-	<20080815145328.670D4C7004F@mail23-sin.bigfish.com>
-In-Reply-To: <20080815145328.670D4C7004F@mail23-sin.bigfish.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: alan.casey5@mail.dcu.ie, wangyanlong <killyouatonce@gmail.com>,
-	linuxppc-embedded@ozlabs.org
+	Sat, 16 Aug 2008 01:47:20 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m7FFlFPC020748 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 15 Aug 2008 08:47:15 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m7FFlECv013959
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 15 Aug 2008 10:47:14 -0500 (CDT)
+Date: Fri, 15 Aug 2008 10:47:14 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: liran raz <liranrazlinux@gmail.com>
+Subject: Re: flash partitioning
+Message-ID: <20080815154713.GA1790@ld0162-tx32.am.freescale.net>
+References: <e3b3ab5c0808150723o5a4ff1f4je677c7a4475f89b7@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e3b3ab5c0808150723o5a4ff1f4je677c7a4475f89b7@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -29,29 +36,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-John Linn wrote:
-> Ah I see, sorry about that, misunderstood what was needed.
+On Fri, Aug 15, 2008 at 10:23:29AM -0400, liran raz wrote:
+>  localbus@f0010100 {
+>   compatible = "fsl,mpc8272-localbus",
+>                "fsl,pq2-localbus";
+>   #address-cells = <2>;
+>   #size-cells = <1>;
+>   reg = <f0010100 40>;
 > 
-> So there may be other ways as I'm not a Git expert, but I clone the
-> repository, then reset to the a Git tag.
+>   ranges = <0 0 fc000000 04000000>;
+>         };
 > 
->> git reset --hard <tag name>
+> flash@fc000000 {
+>                 device_type = "rom";
+>                 compatible = "direct-mapped";
+>                 probe-type = "CFI";
+>   reg = <fc000000 04000000>;
+>   bank-width = <4>;
+>   device-width = <2>;
+>   #address-cells = <1>;
+>   #size-cells = <1>;
+>                 partitions = <0 200000
+>                               2000000 a00000
+>                               c000000 a00000
+>                               16000000 600000
+>                               1c000000 e00000
+>                               2a000000 600000
+>                               30000000 e00000
+>                               3e000000 100000
+>                               3f000000 80000
+>                               3f800000 40000
+>                               3fc00000 40000>;
+>                 partition-names =
+> "part01","part02","part03","part04","part05","part06","part07","part08","part09","part10","part11";
+>  };
+
+This is an obsolete binding; please use the current one described in
+Documentation/powerpc/booting-without-of.txt, and demonstrated in the
+current device tree files.
+
+> I can't see the different partitions linked to the /dev/mtd<x>
+> devices in the startup messages. When testing the devices
+> I see that only /dev/mtd0 is actually linked to the beginning
+> of the flash. (other /dev/mtd1 etc.. can't be opened).
+> I included below also the relevant startup messages.
+> Does anyone have any idea what is wrong with my flash
+> configuration format?
+> Thanks, Liran.
 > 
-> We're working on a new frame buffer driver for a new core, but the old
-> frame buffer has not been high priority for us.
-> 
-> Thanks,
-> John 
+> Linux version: 2.6.24
+> Processor: mpc8272
+> Startup messages:
+> physmap platform flash device: 04000000 at fc000000
+> physmap-flash.0: Found 2 x16 devices at 0x0 in 32-bit bank
+>  Amd/Fujitsu Extended Query Table at 0x0040
+> physmap-flash.0: CFI does not contain boot bank location. Assuming top.
+> number of CFI chips: 1
+> cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
 
-While this "Works" in the sense that it makes your working
-directory look like the contents of the given tag, you are
-now using a "detached HEAD" -- ie, no real branch.
+You're using physmap; you need to use physmap_of.  You may need to use a
+newer kernel, as well.
 
-If you think you will ever want to make a change or check
-in something, you might be better to create a branch based
-on the original tag, perhaps something like:
-
-    $ git checkout -b my-v2.6.24 v2.6.24
-
-HTH,
-jdl
+-Scott
