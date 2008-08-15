@@ -2,32 +2,32 @@ Return-Path: <rcjenn@austin.ibm.com>
 Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 266B8DE245
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Aug 2008 06:17:37 +1000 (EST)
-Received: from e5.ny.us.ibm.com ([192.168.1.105])
+	by ozlabs.org (Postfix) with ESMTPS id 10B6FDE26E
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Aug 2008 06:18:24 +1000 (EST)
+Received: from e3.ny.us.ibm.com ([192.168.1.103])
 	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m7FJ88wZ001223
+	m7FJ9xXM001413
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 15:08:10 -0400
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7FJ7t0S024641
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 15:07:55 -0400
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 15:09:59 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7FJ9ix0007131
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 15:09:44 -0400
 Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7FJ7VE2150630
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 15:07:31 -0400
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m7FJ9Xv1220592
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 15:09:33 -0400
 Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
 	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7FJ7VM3018137
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 15:07:31 -0400
-Date: Fri, 15 Aug 2008 14:07:31 -0500
+	m7FJ9X5k024503
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Aug 2008 15:09:33 -0400
+Date: Fri, 15 Aug 2008 14:09:33 -0500
 From: Robert Jennings <rcj@linux.vnet.ibm.com>
 To: Paul Mackerras <paulus@samba.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/3] powerpc: make CMO paging space pool ID and page size
-	available
-Message-ID: <20080815190730.GB20629@austin.ibm.com>
+Subject: [PATCH 2/3] powerpc: Fix CMM page loaning on 64k page kernel with
+	4k hardware pages
+Message-ID: <20080815190932.GC20629@austin.ibm.com>
 References: <20080815190230.GA20629@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -41,107 +41,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-During platform setup, save off the primary/secondary paging space pool IDs
-and the page size.  Added accessors in hvcall.h for these variables.
+=46rom: Brian King <brking@linux.vnet.ibm.com>
 
-Submitted-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+If the firmware page size used for collaborative memory overcommit
+is 4k, but the kernel is using 64k pages, the page loaning is currently
+broken as it only marks the first 4k page of each 64k page as loaned.
+This fixes this to iterate through each 4k page and mark them all as
+loaned/active.
+
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
 ---
- arch/powerpc/include/asm/hvcall.h      |   21 +++++++++++++++++++++
- arch/powerpc/platforms/pseries/setup.c |   28 ++++++++++++++++++++--------
- 2 files changed, 41 insertions(+), 8 deletions(-)
 
-Index: b/arch/powerpc/include/asm/hvcall.h
-===================================================================
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -292,6 +292,27 @@ struct hvcall_mpp_data {
- 
- int h_get_mpp(struct hvcall_mpp_data *);
- 
-+#ifdef CONFIG_PPC_PSERIES
-+extern int CMO_PrPSP;
-+extern int CMO_SecPSP;
-+extern unsigned long CMO_PageSize;
-+
-+static inline int cmo_get_primary_psp(void)
-+{
-+	return CMO_PrPSP;
-+}
-+
-+static inline int cmo_get_secondary_psp(void)
-+{
-+	return CMO_SecPSP;
-+}
-+
-+static inline unsigned long cmo_get_page_size(void)
-+{
-+	return CMO_PageSize;
-+}
-+#endif /* CONFIG_PPC_PSERIES */
-+
- #endif /* __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_HVCALL_H */
-Index: b/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -68,6 +68,9 @@
- #include "plpar_wrappers.h"
- #include "pseries.h"
- 
-+int CMO_PrPSP = -1;
-+int CMO_SecPSP = -1;
-+unsigned long CMO_PageSize = (ASM_CONST(1) << IOMMU_PAGE_SHIFT);
- 
- int fwnmi_active;  /* TRUE if an FWNMI handler is present */
- 
-@@ -325,8 +328,7 @@ void pSeries_cmo_feature_init(void)
+ arch/powerpc/platforms/pseries/plpar_wrappers.h |   27 +++++++++++++++++++=
++++--
+ 1 file changed, 25 insertions(+), 2 deletions(-)
+
+Index: b/arch/powerpc/platforms/pseries/plpar_wrappers.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/arch/powerpc/platforms/pseries/plpar_wrappers.h
++++ b/arch/powerpc/platforms/pseries/plpar_wrappers.h
+@@ -2,6 +2,7 @@
+ #define _PSERIES_PLPAR_WRAPPERS_H
+=20
+ #include <asm/hvcall.h>
++#include <asm/page.h>
+=20
+ static inline long poll_pending(void)
  {
- 	char *ptr, *key, *value, *end;
- 	int call_status;
--	int PrPSP = -1;
--	int SecPSP = -1;
-+	int page_order = IOMMU_PAGE_SHIFT;
- 
- 	pr_debug(" -> fw_cmo_feature_init()\n");
- 	spin_lock(&rtas_data_buf_lock);
-@@ -365,21 +367,31 @@ void pSeries_cmo_feature_init(void)
- 				break;
- 			}
- 
--			if (0 == strcmp(key, "PrPSP"))
--				PrPSP = simple_strtol(value, NULL, 10);
-+			if (0 == strcmp(key, "CMOPageSize"))
-+				page_order = simple_strtol(value, NULL, 10);
-+			else if (0 == strcmp(key, "PrPSP"))
-+				CMO_PrPSP = simple_strtol(value, NULL, 10);
- 			else if (0 == strcmp(key, "SecPSP"))
--				SecPSP = simple_strtol(value, NULL, 10);
-+				CMO_SecPSP = simple_strtol(value, NULL, 10);
- 			value = key = ptr + 1;
- 		}
- 		ptr++;
- 	}
- 
--	if (PrPSP != -1 || SecPSP != -1) {
-+	/* Page size is returned as the power of 2 of the page size,
-+	 * convert to the page size in bytes before returning
-+	 */
-+	CMO_PageSize = 1 << page_order;
-+	pr_debug("CMO_PageSize = %lu\n", CMO_PageSize);
+@@ -44,12 +45,34 @@ static inline long register_slb_shadow(u
+=20
+ static inline long plpar_page_set_loaned(unsigned long vpa)
+ {
+-	return plpar_hcall_norets(H_PAGE_INIT, H_PAGE_SET_LOANED, vpa, 0);
++	unsigned long cmo_page_sz =3D cmo_get_page_size();
++	long rc =3D 0;
++	int i;
 +
-+	if (CMO_PrPSP != -1 || CMO_SecPSP != -1) {
- 		pr_info("CMO enabled\n");
--		pr_debug("CMO enabled, PrPSP=%d, SecPSP=%d\n", PrPSP, SecPSP);
-+		pr_debug("CMO enabled, PrPSP=%d, SecPSP=%d\n", CMO_PrPSP,
-+		         CMO_SecPSP);
- 		powerpc_firmware_features |= FW_FEATURE_CMO;
- 	} else
--		pr_debug("CMO not enabled, PrPSP=%d, SecPSP=%d\n", PrPSP, SecPSP);
-+		pr_debug("CMO not enabled, PrPSP=%d, SecPSP=%d\n", CMO_PrPSP,
-+		         CMO_SecPSP);
- 	spin_unlock(&rtas_data_buf_lock);
- 	pr_debug(" <- fw_cmo_feature_init()\n");
++	for (i =3D 0; !rc && i < PAGE_SIZE; i +=3D cmo_page_sz)
++		rc =3D plpar_hcall_norets(H_PAGE_INIT, H_PAGE_SET_LOANED, vpa + i, 0);
++
++	for (i -=3D cmo_page_sz; rc && i !=3D 0; i -=3D cmo_page_sz)
++		plpar_hcall_norets(H_PAGE_INIT, H_PAGE_SET_ACTIVE,
++				   vpa + i - cmo_page_sz, 0);
++
++	return rc;
  }
+=20
+ static inline long plpar_page_set_active(unsigned long vpa)
+ {
+-	return plpar_hcall_norets(H_PAGE_INIT, H_PAGE_SET_ACTIVE, vpa, 0);
++	unsigned long cmo_page_sz =3D cmo_get_page_size();
++	long rc =3D 0;
++	int i;
++
++	for (i =3D 0; !rc && i < PAGE_SIZE; i +=3D cmo_page_sz)
++		rc =3D plpar_hcall_norets(H_PAGE_INIT, H_PAGE_SET_ACTIVE, vpa + i, 0);
++
++	for (i -=3D cmo_page_sz; rc && i !=3D 0; i -=3D cmo_page_sz)
++		plpar_hcall_norets(H_PAGE_INIT, H_PAGE_SET_LOANED,
++				   vpa + i - cmo_page_sz, 0);
++
++	return rc;
+ }
+=20
+ extern void vpa_init(int cpu);
