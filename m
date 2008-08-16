@@ -1,20 +1,17 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 18900DDEE9
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Aug 2008 02:40:14 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KUOp0-0005tL-MO
-	for linuxppc-dev@ozlabs.org; Sat, 16 Aug 2008 09:40:10 -0700
-Message-ID: <19012925.post@talk.nabble.com>
-Date: Sat, 16 Aug 2008 09:40:10 -0700 (PDT)
-From: wangyanlong <killyouatonce@gmail.com>
+Return-Path: <hch@lst.de>
+Received: from verein.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 45636DDEFC
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Aug 2008 03:57:33 +1000 (EST)
+Date: Sat, 16 Aug 2008 19:57:30 +0200
+From: Christoph Hellwig <hch@lst.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: use plb_tft_cntlr_ref_d meet the problem
-In-Reply-To: <12503243.2535401218648358862.JavaMail.nabble@isper.nabble.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <12503243.2535401218648358862.JavaMail.nabble@isper.nabble.com>
+Subject: [PATHC] powerpc: use generic compat_sys_old_readdir
+Message-ID: <20080816175730.GA5233@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: viro@zeniv.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +21,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Use the generic compat_sys_old_readdir instead of the powerpc one which
+is almost the same except for the almost complete lack of error
+handling.
 
-It is work now , enable the plb_ddr 's burst mode ,thanks
+Note that we can't just use SYSCALL() in systbl.h because the native
+syscalls is named old_readdir, not sys_old_readdir or just sys_readdir
+beeing the only one.
 
-wangyanlong wrote:
->=20
->      Has anybody add the plb_tft_cntlr_ref  to the desgin ? I add
-> the pcores whcih copy from slideshow which is a reference desgin.
->>
->>     Something is  wrong. I show the  image in my design , the
->> plb_tft_cntlr_ref  ip core is works ,but it  not work very well . The
->> image shows in the lcd is fuzzy. The problem is not the software ,
->> beacause it use some software as reference desgin.
->      The image in the reference desgin is clear=EF=BC=8Cbut it fuzzy in m=
-y design
-> .Why ???
->  Many Thanks
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->=20
 
---=20
-View this message in context: http://www.nabble.com/use-plb_tft_cntlr_ref_d=
--meet-the-problem-tp18967613p19012925.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+
+Index: linux-2.6/arch/powerpc/include/asm/systbl.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/systbl.h	2008-08-16 13:08:35.000000000 -0300
++++ linux-2.6/arch/powerpc/include/asm/systbl.h	2008-08-16 13:14:37.000000000 -0300
+@@ -92,7 +92,7 @@ COMPAT_SYS_SPU(readlink)
+ SYSCALL(uselib)
+ SYSCALL(swapon)
+ SYSCALL(reboot)
+-SYSX(sys_ni_syscall,old32_readdir,old_readdir)
++SYSX(sys_ni_syscall,compat_sys_old_readdir,old_readdir)
+ SYSCALL_SPU(mmap)
+ SYSCALL_SPU(munmap)
+ SYSCALL_SPU(truncate)
+Index: linux-2.6/arch/powerpc/kernel/sys_ppc32.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/sys_ppc32.c	2008-08-16 13:07:16.000000000 -0300
++++ linux-2.6/arch/powerpc/kernel/sys_ppc32.c	2008-08-16 13:09:22.000000000 -0300
+@@ -52,63 +52,6 @@
+ #include <asm/ppc-pci.h>
+ #include <asm/syscalls.h>
+ 
+-struct old_linux_dirent32 {
+-	u32		d_ino;
+-	u32		d_offset;
+-	unsigned short	d_namlen;
+-	char		d_name[1];
+-};
+-
+-struct readdir_callback32 {
+-	struct old_linux_dirent32 __user * dirent;
+-	int count;
+-};
+-
+-static int fillonedir(void * __buf, const char * name, int namlen,
+-		                  off_t offset, u64 ino, unsigned int d_type)
+-{
+-	struct readdir_callback32 * buf = (struct readdir_callback32 *) __buf;
+-	struct old_linux_dirent32 __user * dirent;
+-	ino_t d_ino;
+-
+-	if (buf->count)
+-		return -EINVAL;
+-	d_ino = ino;
+-	if (sizeof(d_ino) < sizeof(ino) && d_ino != ino)
+-		return -EOVERFLOW;
+-	buf->count++;
+-	dirent = buf->dirent;
+-	put_user(d_ino, &dirent->d_ino);
+-	put_user(offset, &dirent->d_offset);
+-	put_user(namlen, &dirent->d_namlen);
+-	copy_to_user(dirent->d_name, name, namlen);
+-	put_user(0, dirent->d_name + namlen);
+-	return 0;
+-}
+-
+-asmlinkage int old32_readdir(unsigned int fd, struct old_linux_dirent32 __user *dirent, unsigned int count)
+-{
+-	int error = -EBADF;
+-	struct file * file;
+-	struct readdir_callback32 buf;
+-
+-	file = fget(fd);
+-	if (!file)
+-		goto out;
+-
+-	buf.count = 0;
+-	buf.dirent = dirent;
+-
+-	error = vfs_readdir(file, (filldir_t)fillonedir, &buf);
+-	if (error < 0)
+-		goto out_putf;
+-	error = buf.count;
+-
+-out_putf:
+-	fput(file);
+-out:
+-	return error;
+-}
+ 
+ asmlinkage long ppc32_select(u32 n, compat_ulong_t __user *inp,
+ 		compat_ulong_t __user *outp, compat_ulong_t __user *exp,
