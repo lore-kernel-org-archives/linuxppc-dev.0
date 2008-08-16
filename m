@@ -1,15 +1,20 @@
-Return-Path: <paul@burly.ondioline.org>
-Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
-	by ozlabs.org (Postfix) with ESMTP id E6BB0DDDDF
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Aug 2008 18:55:56 +1000 (EST)
-From: Paul Collins <paul@burly.ondioline.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] kexec: fix up KEXEC_CONTROL_CODE_SIZE missed during conversion
-Date: Sat, 16 Aug 2008 20:55:54 +1200
-Message-ID: <877iah8hk5.fsf@burly.wgtn.ondioline.org>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 18900DDEE9
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Aug 2008 02:40:14 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KUOp0-0005tL-MO
+	for linuxppc-dev@ozlabs.org; Sat, 16 Aug 2008 09:40:10 -0700
+Message-ID: <19012925.post@talk.nabble.com>
+Date: Sat, 16 Aug 2008 09:40:10 -0700 (PDT)
+From: wangyanlong <killyouatonce@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: use plb_tft_cntlr_ref_d meet the problem
+In-Reply-To: <12503243.2535401218648358862.JavaMail.nabble@isper.nabble.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, ying.huang@intel.com
+Content-Type: text/plain; charset=UTF-8
+References: <12503243.2535401218648358862.JavaMail.nabble@isper.nabble.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,39 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit 163f6876f5c3ff8215e900b93779e960a56b3694 missed one, resulting in
-the following compile error:
 
-  AS      arch/powerpc/kernel/misc_32.o
-arch/powerpc/kernel/misc_32.S: Assembler messages:
-arch/powerpc/kernel/misc_32.S:902: Error: unsupported relocation against KEXEC_CONTROL_CODE_SIZE
-make[2]: *** [arch/powerpc/kernel/misc_32.o] Error 1
-make[1]: *** [arch/powerpc/kernel] Error 2
-make: *** [vmlinux] Error 2
+It is work now , enable the plb_ddr 's burst mode ,thanks
 
-I grepped arch/ and found no further instances.
+wangyanlong wrote:
+>=20
+>      Has anybody add the plb_tft_cntlr_ref  to the desgin ? I add
+> the pcores whcih copy from slideshow which is a reference desgin.
+>>
+>>     Something is  wrong. I show the  image in my design , the
+>> plb_tft_cntlr_ref  ip core is works ,but it  not work very well . The
+>> image shows in the lcd is fuzzy. The problem is not the software ,
+>> beacause it use some software as reference desgin.
+>      The image in the reference desgin is clear=EF=BC=8Cbut it fuzzy in m=
+y design
+> .Why ???
+>  Many Thanks
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>=20
 
-Signed-off-by: Paul Collins <paul@ondioline.org>
----
- arch/powerpc/kernel/misc_32.S |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 6321ae3..7a6dfbc 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -899,7 +899,7 @@ relocate_new_kernel:
- 
- 	/* set a new stack at the bottom of our page... */
- 	/* (not really needed now) */
--	addi	r1, r4, KEXEC_CONTROL_CODE_SIZE - 8 /* for LR Save+Back Chain */
-+	addi	r1, r4, KEXEC_CONTROL_PAGE_SIZE - 8 /* for LR Save+Back Chain */
- 	stw	r0, 0(r1)
- 
- 	/* Do the copies */
-
--- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+--=20
+View this message in context: http://www.nabble.com/use-plb_tft_cntlr_ref_d=
+-meet-the-problem-tp18967613p19012925.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
