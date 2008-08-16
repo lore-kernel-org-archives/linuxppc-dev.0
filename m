@@ -1,18 +1,15 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20080815013439.GB12327@yookeroo.seuss>
-References: <Pine.LNX.4.64.0808140827220.2701@blarg.am.freescale.net>
-	<20080814174348.GA19488@ld0162-tx32.am.freescale.net>
-	<20080815013439.GB12327@yookeroo.seuss>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <B8AE3E9F-3F7A-4533-8C6C-1C6E2F45044A@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v3] libfdt: Add support for using aliases in
-	fdt_path_offset()
-Date: Sat, 16 Aug 2008 08:51:06 +0200
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	devicetree-discuss@ozlabs.org
+Return-Path: <paul@burly.ondioline.org>
+Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
+	by ozlabs.org (Postfix) with ESMTP id E6BB0DDDDF
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Aug 2008 18:55:56 +1000 (EST)
+From: Paul Collins <paul@burly.ondioline.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] kexec: fix up KEXEC_CONTROL_CODE_SIZE missed during conversion
+Date: Sat, 16 Aug 2008 20:55:54 +1200
+Message-ID: <877iah8hk5.fsf@burly.wgtn.ondioline.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, ying.huang@intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Hmm.. my reading of 1275 says that an alias pointing to another alias
-> is not permitted, but I'm not terribly confident I'm not misreading
-> it.  Segher, do you know whether this is allowed?
+Commit 163f6876f5c3ff8215e900b93779e960a56b3694 missed one, resulting in
+the following compile error:
 
-My reading is the same: if after expanding an alias the path does
-not start with "/", the search starts at the current package,
-otherwise it starts at the root node; and no further alias expansion
-is done.
+  AS      arch/powerpc/kernel/misc_32.o
+arch/powerpc/kernel/misc_32.S: Assembler messages:
+arch/powerpc/kernel/misc_32.S:902: Error: unsupported relocation against KEXEC_CONTROL_CODE_SIZE
+make[2]: *** [arch/powerpc/kernel/misc_32.o] Error 1
+make[1]: *** [arch/powerpc/kernel] Error 2
+make: *** [vmlinux] Error 2
 
-It's a corner case for sure, but at least the standard doesn't
-require us to implement recursive alias expansion; let's see if
-common practice does ;-)
+I grepped arch/ and found no further instances.
 
+Signed-off-by: Paul Collins <paul@ondioline.org>
+---
+ arch/powerpc/kernel/misc_32.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Segher
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 6321ae3..7a6dfbc 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -899,7 +899,7 @@ relocate_new_kernel:
+ 
+ 	/* set a new stack at the bottom of our page... */
+ 	/* (not really needed now) */
+-	addi	r1, r4, KEXEC_CONTROL_CODE_SIZE - 8 /* for LR Save+Back Chain */
++	addi	r1, r4, KEXEC_CONTROL_PAGE_SIZE - 8 /* for LR Save+Back Chain */
+ 	stw	r0, 0(r1)
+ 
+ 	/* Do the copies */
+
+-- 
+Paul Collins
+Wellington, New Zealand
+
+Dag vijandelijk luchtschip de huismeester is dood
