@@ -1,20 +1,15 @@
 Return-Path: <w.sang@pengutronix.de>
 Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id B7D08DDF0A
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id BB48EDDF0C
 	for <linuxppc-embedded@ozlabs.org>;
 	Sat, 16 Aug 2008 12:41:02 +1000 (EST)
-Received: from octopus.labnet.pengutronix.de ([10.1.1.3])
-	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
-	(envelope-from <w.sang@pengutronix.de>) id 1KUBip-0004js-F1
-	for linuxppc-embedded@ozlabs.org; Sat, 16 Aug 2008 04:40:55 +0200
-Received: from wsa by octopus.labnet.pengutronix.de with local (Exim 4.69)
-	(envelope-from <w.sang@pengutronix.de>) id 1KUBip-0004H5-5w
-	for linuxppc-embedded@ozlabs.org; Sat, 16 Aug 2008 04:40:55 +0200
-Message-Id: <20080816023159.126377505@pengutronix.de>
-Date: Sat, 16 Aug 2008 04:31:59 +0200
+Message-Id: <20080816024055.390926728@pengutronix.de>
+References: <20080816023159.126377505@pengutronix.de>
+Date: Sat, 16 Aug 2008 04:32:01 +0200
 From: Wolfram Sang <w.sang@pengutronix.de>
 To: linuxppc-embedded@ozlabs.org
-Subject: [patch 0/2] FEC_MPC52XX_PHY: Updates
+Subject: [patch 2/2] FEC_MPC52XX_PHY: Refactor read/write routines
+Cc: Wolfram Sang <w.sang@pengutronix.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,21 +20,115 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Read & write functions now call a generic transfer function, so identical
+code in both routines could be eliminated. The result is easier to maintain
+and smaller in source and binary code. Also, fix some checkpatch warnings.
 
-While debugging FEC-problems, I encountered some issues in the FEC_PHY
-driver.
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+---
+ drivers/net/fec_mpc52xx_phy.c |   55 ++++++++++++++++--------------------------
+ 1 file changed, 22 insertions(+), 33 deletions(-)
 
-- Patch 1 removes some obsolete code remaining from a (according to old
-  mails) broken attempt to handle irqs.
-- Patch 2 refactors read/write routines to use common code, so updates
-  regarding bus transfers just have to be made once.
-
-Tested on a Phytec phyCORE-MPC5200B-IO board.
-
-All the best,
-
-   Wolfram
+Index: .kernel/drivers/net/fec_mpc52xx_phy.c
+===================================================================
+--- .kernel.orig/drivers/net/fec_mpc52xx_phy.c
++++ .kernel/drivers/net/fec_mpc52xx_phy.c
+@@ -2,6 +2,7 @@
+  * Driver for the MPC5200 Fast Ethernet Controller - MDIO bus driver
+  *
+  * Copyright (C) 2007  Domen Puncer, Telargo, Inc.
++ * Copyright (C) 2008  Wolfram Sang, Pengutronix
+  *
+  * This file is licensed under the terms of the GNU General Public License
+  * version 2. This program is licensed "as is" without any warranty of any
+@@ -21,58 +22,45 @@
+ 	struct mpc52xx_fec __iomem *regs;
+ };
+ 
+-static int mpc52xx_fec_mdio_read(struct mii_bus *bus, int phy_id, int reg)
++static int mpc52xx_fec_mdio_transfer(struct mii_bus *bus, int phy_id,
++		int reg, u32 value)
+ {
+ 	struct mpc52xx_fec_mdio_priv *priv = bus->priv;
+ 	struct mpc52xx_fec __iomem *fec;
+ 	int tries = 100;
+-	u32 request = FEC_MII_READ_FRAME;
++
++	value |= (phy_id << FEC_MII_DATA_PA_SHIFT) & FEC_MII_DATA_PA_MSK;
++	value |= (reg << FEC_MII_DATA_RA_SHIFT) & FEC_MII_DATA_RA_MSK;
+ 
+ 	fec = priv->regs;
+ 	out_be32(&fec->ievent, FEC_IEVENT_MII);
+-
+-	request |= (phy_id << FEC_MII_DATA_PA_SHIFT) & FEC_MII_DATA_PA_MSK;
+-	request |= (reg << FEC_MII_DATA_RA_SHIFT) & FEC_MII_DATA_RA_MSK;
+-
+-	out_be32(&priv->regs->mii_data, request);
++	out_be32(&priv->regs->mii_data, value);
+ 
+ 	/* wait for it to finish, this takes about 23 us on lite5200b */
+ 	while (!(in_be32(&fec->ievent) & FEC_IEVENT_MII) && --tries)
+ 		udelay(5);
+ 
+-	if (tries == 0)
++	if (!tries)
+ 		return -ETIMEDOUT;
+ 
+-	return in_be32(&priv->regs->mii_data) & FEC_MII_DATA_DATAMSK;
++	return value & FEC_MII_DATA_OP_RD ?
++		in_be32(&priv->regs->mii_data) & FEC_MII_DATA_DATAMSK : 0;
+ }
+ 
+-static int mpc52xx_fec_mdio_write(struct mii_bus *bus, int phy_id, int reg, u16 data)
++static int mpc52xx_fec_mdio_read(struct mii_bus *bus, int phy_id, int reg)
+ {
+-	struct mpc52xx_fec_mdio_priv *priv = bus->priv;
+-	struct mpc52xx_fec __iomem *fec;
+-	u32 value = data;
+-	int tries = 100;
+-
+-	fec = priv->regs;
+-	out_be32(&fec->ievent, FEC_IEVENT_MII);
+-
+-	value |= FEC_MII_WRITE_FRAME;
+-	value |= (phy_id << FEC_MII_DATA_PA_SHIFT) & FEC_MII_DATA_PA_MSK;
+-	value |= (reg << FEC_MII_DATA_RA_SHIFT) & FEC_MII_DATA_RA_MSK;
+-
+-	out_be32(&priv->regs->mii_data, value);
+-
+-	/* wait for request to finish */
+-	while (!(in_be32(&fec->ievent) & FEC_IEVENT_MII) && --tries)
+-		udelay(5);
+-
+-	if (tries == 0)
+-		return -ETIMEDOUT;
++	return mpc52xx_fec_mdio_transfer(bus, phy_id, reg, FEC_MII_READ_FRAME);
++}
+ 
+-	return 0;
++static int mpc52xx_fec_mdio_write(struct mii_bus *bus, int phy_id, int reg,
++		u16 data)
++{
++	return mpc52xx_fec_mdio_transfer(bus, phy_id, reg,
++		data | FEC_MII_WRITE_FRAME);
+ }
+ 
+-static int mpc52xx_fec_mdio_probe(struct of_device *of, const struct of_device_id *match)
++static int mpc52xx_fec_mdio_probe(struct of_device *of,
++		const struct of_device_id *match)
+ {
+ 	struct device *dev = &of->dev;
+ 	struct device_node *np = of->node;
+@@ -121,7 +109,8 @@
+ 	dev_set_drvdata(dev, bus);
+ 
+ 	/* set MII speed */
+-	out_be32(&priv->regs->mii_speed, ((mpc52xx_find_ipb_freq(of->node) >> 20) / 5) << 1);
++	out_be32(&priv->regs->mii_speed,
++		((mpc52xx_find_ipb_freq(of->node) >> 20) / 5) << 1);
+ 
+ 	err = mdiobus_register(bus);
+ 	if (err)
 
 -- 
   Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
