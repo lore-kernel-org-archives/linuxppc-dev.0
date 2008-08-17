@@ -1,11 +1,15 @@
 Return-Path: <wg@grandegger.com>
-Message-ID: <48A7E68D.8090405@grandegger.com>
-Date: Sun, 17 Aug 2008 10:51:25 +0200
+Message-ID: <48A7E95C.4090501@grandegger.com>
+Date: Sun, 17 Aug 2008 11:03:24 +0200
 From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: Linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: 85xx: TQM8548: DTS file fixes and cleanup
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCH] powerpc: 85xx: add proper OF bus ids for the TQM85xx
+References: <48898470.80109@grandegger.com>	<fa686aa40807250620r1ab574basd07ecce6be2bc238@mail.gmail.com>	<4889EE4C.9040705@grandegger.com>
+	<4889F180.80203@freescale.com> <4889F32F.3020606@grandegger.com>
+In-Reply-To: <4889F32F.3020606@grandegger.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,65 +19,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Due to the missing compatible property for the SOC, the MPC I2C buses are
-not found any more. This patch fixes this issue. Furthermore it corrects
-the name of the SOC node and adds the missing I2C node for the RTC.
+Wolfgang Grandegger wrote:
+> Jon Loeliger wrote:
+>> Wolfgang Grandegger wrote:
+>>
+>>> Ah, I see. For the TQM8548 adding the following compatible line:
+>>>
+>>>         soc8548@e0000000 {
+>>>         ...
+>>>         compatible = "fsl,mpc8548-immr", "simple-bus";
+>>>
+>>
+>>
+>> Hmmmm..... While you are there, I think you should drop
+>> the "8548" part of "soc8548" to get just "soc@e0000000".
+> 
+> Well, right. I'm going to check the tqm8548.dts file more carefully.
 
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
----
- arch/powerpc/boot/dts/tqm8548-bigflash.dts |    8 +++++++-
- arch/powerpc/boot/dts/tqm8548.dts          |    3 ++-
- 2 files changed, 9 insertions(+), 2 deletions(-)
+Looking into 2.6.27-rc3, I realized that these issues have not yet been
+fixed :-(. I just sent out a patch for 2.6.27 doing so:
 
-Index: linux-2.6-galak/arch/powerpc/boot/dts/tqm8548.dts
-===================================================================
---- linux-2.6-galak.orig/arch/powerpc/boot/dts/tqm8548.dts
-+++ linux-2.6-galak/arch/powerpc/boot/dts/tqm8548.dts
-@@ -50,13 +50,14 @@
- 		reg = <0x00000000 0x00000000>;	// Filled in by U-Boot
- 	};
- 
--	soc8548@e0000000 {
-+	soc@e0000000 {
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		device_type = "soc";
- 		ranges = <0x0 0xe0000000 0x100000>;
- 		reg = <0xe0000000 0x1000>;	// CCSRBAR
- 		bus-frequency = <0>;
-+		compatible = "fsl,mpc8548-immr", "simple-bus";
- 
- 		memory-controller@2000 {
- 			compatible = "fsl,mpc8548-memory-controller";
-Index: linux-2.6-galak/arch/powerpc/boot/dts/tqm8548-bigflash.dts
-===================================================================
---- linux-2.6-galak.orig/arch/powerpc/boot/dts/tqm8548-bigflash.dts
-+++ linux-2.6-galak/arch/powerpc/boot/dts/tqm8548-bigflash.dts
-@@ -50,13 +50,14 @@
- 		reg = <0x00000000 0x00000000>;	// Filled in by U-Boot
- 	};
- 
--	soc8548@a0000000 {
-+	soc@a0000000 {
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		device_type = "soc";
- 		ranges = <0x0 0xa0000000 0x100000>;
- 		reg = <0xa0000000 0x1000>;	// CCSRBAR
- 		bus-frequency = <0>;
-+		compatible = "fsl,mpc8548-immr", "simple-bus";
- 
- 		memory-controller@2000 {
- 			compatible = "fsl,mpc8548-memory-controller";
-@@ -83,6 +84,11 @@
- 			interrupts = <43 2>;
- 			interrupt-parent = <&mpic>;
- 			dfsrr;
-+
-+			rtc@68 {
-+				compatible = "dallas,ds1337";
-+				reg = <0x68>;
-+			};
- 		};
- 
- 		i2c@3100 {
+  http://ozlabs.org/pipermail/linuxppc-dev/2008-August/061725.html
+
+Thanks.
+
+Wolfgang.
