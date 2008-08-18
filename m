@@ -1,24 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id DDB08DE03C
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 00:33:45 +1000 (EST)
-Date: Mon, 18 Aug 2008 18:33:43 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH 1/3] gpiolib: make gpio_to_chip() public
-Message-ID: <20080818143343.GA30812@oksana.dev.rtsoft.ru>
-References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
-	<200808141645.56418.laurentp@cse-semaphore.com>
-	<20080814151022.GA9885@oksana.dev.rtsoft.ru>
-	<200808181558.50182.laurentp@cse-semaphore.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <200808181558.50182.laurentp@cse-semaphore.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F05F4DE1AA
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 00:35:29 +1000 (EST)
+Message-Id: <7993F0B5-401D-46D6-B6BD-29FE56D93905@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+In-Reply-To: <20080612003219.12670.66981.stgit@vitb-lp>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] [fs_enet] powerpc: Fix SCC Ethernet on CPM2,
+	and crash in fs_enet_rx_napi()
+Date: Mon, 18 Aug 2008 09:34:50 -0500
+References: <20080612003219.12670.66981.stgit@vitb-lp>
+Cc: linuxppc-dev@ozlabs.org, jeff@garzik.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,60 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 18, 2008 at 03:58:46PM +0200, Laurent Pinchart wrote:
-[...]
-> > Not exactly. But you can do this way, if you need to preserve
-> > a direction. What I did is a bit different though.
-> > 
-> > qe_gpio_set_dedicated() actually just restores a mode that
-> > firmware had set up, including direction (since direction could
-> > be a part of dedicated configuration).
-> > 
-> > That is, upon GPIO controller registration, we save all registers,
-> > then driver can set up a pin to a GPIO mode via standard API, and
-> > then it can _revert_ a pin to a dedicated function via
-> > qe_gpio_set_dedicated() call. Dedicated function is specified by
-> > the firmware (or board file), we're just restoring it.
-> 
-> The semantic of the set_dedicated() operation needs to be clearly
-> defined then.
 
-It is. We set up a dedicated function that firmware (or board file)
-has configured.
+On Jun 11, 2008, at 7:32 PM, Vitaly Bordug wrote:
 
-> I can live with this behaviour, but it might not be
-> acceptable for everybody.
+> From: Heiko Schocher <hs@denx.de>
+>
+> Initially posted on:
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-January/049682.html
+> Feedback is addressed in this version (yes, this patch was floating  
+> around for a while...)
+>
+> Signed-off-by: Heiko Schocher <hs@denx.de>
+> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> ---
+>
+> drivers/net/fs_enet/fs_enet-main.c |   10 +++++++++-
+> drivers/net/fs_enet/mac-scc.c      |    8 +++++++-
+> include/asm-powerpc/cpm2.h         |    5 +++++
+> 3 files changed, 21 insertions(+), 2 deletions(-)
 
-For example?
+Jeff, any reason this wasn't picked up ?
 
-> Your patch requires the firmware to set a pin in dedicated mode at
-> bootup in order to be used later in dedicated mode.
-
-Yes. On a PowerPC this is always true: firmware should set up PIO
-config. Linux' board file could fixup the firmware though.
-
-Another option would be to add some argument to the set_dedicated
-call, thus the software could specify arbitrary dedicated
-function (thus no need to save/restore anything). But this would
-be SOC-model specific, thus no driver can use this argument anyway.
-
-> If, for some
-> reason (driver not loaded, ...), no GPIO user shows up for that
-> pin, it will stay configured in dedicated mode.
-
-Yes.
-
-> It might be better to set the PAR bit unconditionally in
-
-Why it might be better? That way you may set up wrong _GPIO_
-mode, because you didn't set PAR bit (when PAR bit set
-DIR/ODR/DAT bits are losing their meanings).
-
-> qe_gpio_set_dedicated() instead of restoring its value. That way
-> the board initialization code could just set the DIR, DAT and ODR
-> bits for dedicated mode but still configure the pin in GPIO mode.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+- k
