@@ -1,20 +1,24 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from smarthost03.mail.zen.net.uk (smarthost03.mail.zen.net.uk
-	[212.23.3.142]) by ozlabs.org (Postfix) with ESMTP id 26509DDE1C
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 05848DE321
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Aug 2008 00:36:53 +1000 (EST)
-Date: Mon, 18 Aug 2008 15:36:51 +0100
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
-Subject: Re: [PATCH] Linux Device Driver for Xilinx LL TEMAC 10/100/1000
-	Ethernet NIC
-Message-ID: <20080818143649.GD7908@solarflare.com>
-References: <48A7B01C.2070403@dlasys.net>
-	<20080818123056.GA7908@solarflare.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080818123056.GA7908@solarflare.com>
-Cc: netdev@vger.kernel.org, linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Tue, 19 Aug 2008 02:04:40 +1000 (EST)
+Received: by gxk14 with SMTP id 14so3634578gxk.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 18 Aug 2008 09:04:39 -0700 (PDT)
+Message-ID: <fa686aa40808180857w7e1031den329584b3340d777a@mail.gmail.com>
+Date: Mon, 18 Aug 2008 09:57:57 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Wolfram Sang" <w.sang@pengutronix.de>
+Subject: Re: [PATCH V2] MPC52XX: Don't touch pipelining for MPC5200B
+In-Reply-To: <20080818141831.GD4282@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080818093132.GA4282@pengutronix.de>
+	<200808181249.37220.arnd@arndb.de>
+	<20080818141831.GD4282@pengutronix.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,23 +29,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I wrote:
-> > +static struct net_device_stats *
-> > +temac_get_stats(struct net_device *ndev)
-> > +{
-> > +    return netdev_priv(ndev);
-> 
-> Not even the right type.  Do you read your compiler warnings?
+On Mon, Aug 18, 2008 at 8:18 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
+>
+> MPC5200 needs to have pipelining disabled for ATA to work. MPC5200B does not.
+> So, for the latter, don't touch the original setting from the bootloader.
+>
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 
-Sorry, I now see that this is correct, though it's very fragile - it will
-silently break if struct temac_local is reordered.
+Thanks Wolfram, I'll pick this one up.
 
-struct net_device includes a stats buffer which you should be able to use
-instead of adding your own in struct temac_local.
-
-Ben.
+g.
 
 -- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
