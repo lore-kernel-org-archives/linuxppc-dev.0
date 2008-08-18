@@ -1,24 +1,31 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id AC8F4DE3FD
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 01:33:01 +1000 (EST)
-Date: Mon, 18 Aug 2008 19:33:00 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH 1/3] gpiolib: make gpio_to_chip() public
-Message-ID: <20080818153300.GA10163@oksana.dev.rtsoft.ru>
-References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
-	<200808181558.50182.laurentp@cse-semaphore.com>
-	<20080818143343.GA30812@oksana.dev.rtsoft.ru>
-	<200808181644.45480.laurentp@cse-semaphore.com>
+Return-Path: <rcjenn@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 356E8DE3F1
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 01:36:54 +1000 (EST)
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7IFa4cU024666
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 11:36:04 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m7IFYlD52023532
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 11:34:47 -0400
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m7IFYkGg009430
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 09:34:46 -0600
+Date: Mon, 18 Aug 2008 10:34:46 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc: Improve message for vio bus entitlement panic
+Message-ID: <20080818153446.GB27342@austin.ibm.com>
+References: <20080815191205.GE20629@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <200808181644.45480.laurentp@cse-semaphore.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080815191205.GE20629@austin.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,95 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 18, 2008 at 04:44:36PM +0200, Laurent Pinchart wrote:
-> On Monday 18 August 2008, Anton Vorontsov wrote:
-> > On Mon, Aug 18, 2008 at 03:58:46PM +0200, Laurent Pinchart wrote:
-> > [...]
-> > > > Not exactly. But you can do this way, if you need to preserve
-> > > > a direction. What I did is a bit different though.
-> > > > 
-> > > > qe_gpio_set_dedicated() actually just restores a mode that
-> > > > firmware had set up, including direction (since direction could
-> > > > be a part of dedicated configuration).
-> > > > 
-> > > > That is, upon GPIO controller registration, we save all registers,
-> > > > then driver can set up a pin to a GPIO mode via standard API, and
-> > > > then it can _revert_ a pin to a dedicated function via
-> > > > qe_gpio_set_dedicated() call. Dedicated function is specified by
-> > > > the firmware (or board file), we're just restoring it.
-> > > 
-> > > The semantic of the set_dedicated() operation needs to be clearly
-> > > defined then.
-> > 
-> > It is. We set up a dedicated function that firmware (or board file)
-> > has configured.
-> 
-> A comment in the source would help.
-> 
-> > > I can live with this behaviour, but it might not be
-> > > acceptable for everybody.
-> > 
-> > For example?
-> > 
-> > > Your patch requires the firmware to set a pin in dedicated mode at
-> > > bootup in order to be used later in dedicated mode.
-> > 
-> > Yes. On a PowerPC this is always true: firmware should set up PIO
-> > config. Linux' board file could fixup the firmware though.
-> 
-> That's not what I meant. What if the hardware requires to pin to be
-> configured in GPIO mode with a fixed value until the SOC-specific
-> driver that will drive the GPIO is loaded ? That's not possible
-> with your API.
+Add information regarding the available and required entitlement amounts
+to the message displayed for the panic when insufficient entitlement is
+provided at boot.
 
-Yes, this isn't possible with this API. Because you can do this
-with standard GPIO API! ;-)
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-Just call gpio_direction_*() in the board file, before probing the
-hardware.
+---
+I had typed "Submitted-by" instead of "Signed-off-by" previously.
+---
+ arch/powerpc/kernel/vio.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-> Until a SOC peripheral is initialized by its associated Linux driver,
-> the behaviour of a GPIO pin in dedicated mode will be undefined.
+Index: b/arch/powerpc/kernel/vio.c
+===================================================================
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -899,7 +899,9 @@ static void vio_cmo_bus_init(void)
+ 	if (vio_cmo.reserve.size > vio_cmo.entitled) {
+ 		printk(KERN_ERR "%s: insufficient system entitlement\n",
+ 		       __func__);
+-		panic("%s: Insufficient system entitlement", __func__);
++		panic("%s: Insufficient system entitlement. Available: %lu "
++		      "Required: %lu", __func__, vio_cmo.entitled,
++		      vio_cmo.reserve.size);
+ 	}
 
-Huh?! Then all current software is simply broken: we're setting pinmux
-config _prior_ to controller initialization.
-
-> The firmware/board code will probably want to set the pin as a GPIO
-> output with a fixed value until the driver initializes the hardware.
-
-Probably? Do you have any such hardware?
-
-> > Another option would be to add some argument to the set_dedicated
-> > call, thus the software could specify arbitrary dedicated
-> > function (thus no need to save/restore anything). But this would
-> > be SOC-model specific, thus no driver can use this argument anyway.
-> 
-> Drivers that require dedicated mode are SOC-specific anyway.
-
-I didn't say "SOC-specific". I said "SOC-model specific", which
-means that the driver would be not portable even across QE chips
-(i.e. MPC8323 vs. MPC8360, you can assume that the "CLK12" function
-is having same PAR/ODR/DAT/DIR bits).
-
-> > > If, for some
-> > > reason (driver not loaded, ...), no GPIO user shows up for that
-> > > pin, it will stay configured in dedicated mode.
-> > 
-> > Yes.
-> > 
-> > > It might be better to set the PAR bit unconditionally in
-> > 
-> > Why it might be better?
-> 
-> Because, as explained a few lines down, the board initialization code
-> will be able to configure a pin in a known state (PAR not set) at boot
-> time until a driver requests the pin to be switched to dedicated mode.
-
-You can do this as I described above. But prior to this, yes, you have
-to configure the pins and let Linux save these values. There is no other
-way to pass this information, unfortunately.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+ 	/* Set the remaining accounting variables */
