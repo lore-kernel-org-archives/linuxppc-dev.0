@@ -1,26 +1,30 @@
-Return-Path: <compudj@krystal.dyndns.org>
-Received: from tomts5-srv.bellnexxia.net (tomts5.bellnexxia.net
-	[209.226.175.25]) by ozlabs.org (Postfix) with ESMTP id B15D8DE71B
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 03:04:47 +1000 (EST)
-Received: from toip7.srvr.bell.ca ([209.226.175.124])
-	by tomts5-srv.bellnexxia.net
-	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
-	<20080818170445.KPYX1572.tomts5-srv.bellnexxia.net@toip7.srvr.bell.ca>
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 13:04:45 -0400
-Date: Mon, 18 Aug 2008 13:04:42 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <srostedt@redhat.com>
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-Message-ID: <20080818170442.GA29337@Krystal>
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
-	<48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
-	<48A99F51.8090504@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48A99F51.8090504@redhat.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	Eran Liberty <liberty@extricom.com>,
-	linux-kernel@vger.kernel.org, rostedt@goodmis.org, linuxppc-dev@ozlabs.org
+Return-Path: <mohan@in.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A1512DE4F3
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 03:20:52 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7IHKhqb011174
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 13:20:43 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m7IHJUeD237960
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 13:19:30 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m7IHJUcD004745
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 13:19:30 -0400
+Message-ID: <48A9AF1D.5050700@in.ibm.com>
+Date: Mon, 18 Aug 2008 22:49:25 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 0/5] Relocatable 64-bit kernel using linker PIE support
+References: <18594.14443.340604.693747@cargo.ozlabs.ibm.com>
+In-Reply-To: <18594.14443.340604.693747@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,100 +34,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Steven Rostedt (srostedt@redhat.com) wrote:
-> Mathieu Desnoyers wrote:
->>
->> Steve ? I just noticed this :
->>
->>
->> ftrace_modify_code(unsigned long ip, unsigned char *old_code,
->>                    unsigned char *new_code)
->> {
->>         unsigned replaced;
->>         unsigned old = *(unsigned *)old_code;
->>         unsigned new = *(unsigned *)new_code;
->>         int faulted = 0;
->>
->>         /*
->>          * Note: Due to modules and __init, code can
->>          *  disappear and change, we need to protect against faulting
->>          *  as well as code changing.
->>          *
->>          * No real locking needed, this code is run through
->>          * kstop_machine.
->>          */
->>         asm volatile (
->>                 "1: lwz         %1, 0(%2)\n"
->>                 "   cmpw        %1, %5\n"
->>                 "   bne         2f\n"
->>                 "   stwu        %3, 0(%2)\n"
->>                 "2:\n"
->>                 ".section .fixup, \"ax\"\n"
->>                 "3:     li %0, 1\n"
->>                 "       b 2b\n"
->>                 ".previous\n"
->>                 ".section __ex_table,\"a\"\n"
->>                 _ASM_ALIGN "\n"
->>                 _ASM_PTR "1b, 3b\n"
->>                 ".previous"
->>                 : "=r"(faulted), "=r"(replaced)
->>                 : "r"(ip), "r"(new),
->>                   "0"(faulted), "r"(old)
->>                 : "memory");
->>
->>         if (replaced != old && replaced != new)
->>                 faulted = 2;
->>
->>         if (!faulted)
->>                 flush_icache_range(ip, ip + 8);
->>
->>         return faulted;
->> }
->>
->> What happens if you are really unlucky and get the following execution
->> sequence ?
->>
->>
->> Load module A at address 0xddfc3e00
->> Populate ftrace function table while the system runs
->> Unload module A
->> Load module B at address 0xddfc3e00
->> Activate ftrace
->> -> At that point, since there is another module loaded in the same
->> address space, it won't fault. If there happens to be an instruction
->> which looks exactly like the instruction we are replacing at the same
->> location, we are introducing a bug. True both on x86 ans powerpc...
->>
->>   
->
-> Hi Mathieu,
->
-> Yep I know of this issue, and it is very unlikely it would happen.  But 
-> that's not good enough, so this is why I did this:
->
-> http://marc.info/?l=linux-kernel&m=121876928124384&w=2
-> http://marc.info/?l=linux-kernel&m=121876938524523&w=2
->
-> ;-)
->
-> On powerpc it would be less likely an issue since the code segments are all 
-> 4 bytes aligned. And a call being replaced would be a call to mcount 
-> (relative jump). A call to mcount would be the same for both. Then again, 
-> we could be replacing a nop, but most likely that wouldn't hurt either, 
-> since nops are seldom used, and if we did call mcount, it would probably 
-> not hurt. But it would be an issue if Module B happen to put a data section 
-> that matched the code to jmp to mcount or a nop.
->
+Hi Paul,
 
-Ah, I did not see this one passing by :) That's the right solution
-indeed. I guess it's not in 2.6.27-rc2/rc3 though ? I wonder if the
-bug can be repeated with a module-free kernel ?
+I can't boot zImage with your patches. I'm getting the following error 
+message from prom_init.c
 
-Mathieu
+Error: You can't boot a kdump kernel from OF!
 
-> -- Steve
->
+This is due to the check:
+if (PHYSICAL_START > 0)
+             prom_panic("Error: You can't boot a kdump kernel from OF!\n");
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+where PHYSICAL_START is kernstart_addr, and this variable needs to be 
+referred through RELOC macro
+
+But even after commenting the above check, I am not able to boot zImage.
+
+<snip boot message>
+
+Building dt structure...
+Device tree strings 0x0000000002ce4000 -> 0×0000000002ce5034
+Device tree struct 0×0000000002ce6000 -> 0×0000000002cf0000
+Calling quiesce …
+returning from prom_init
+
+<snip>
+
+and the system hangs
+
+It has CONFIG_RELOCATABLE set, (CONFIG_CRASH_DUMP is not set).
+
+I even tried booting zImage through netboot, it also fails at the same 
+place.
+
+If you need, I can give the .config I use.
+
+Regards,
+Mohan.
+
+Paul Mackerras wrote:
+> The following series of patches implement support for a relocatable
+> kernel by building it as a position-independent executable (PIE).
+> When the linker is given the -pie flag, it creates an executable that
+> contains dynamic relocations which can be used to relocate the image
+> at boot time for any desired base address.  This patch series adds a
+> CONFIG_RELOCATABLE config option for 64-bit which links the kernel
+> with -pie and arranges to process the relocations in early boot.
+> 
+> With the first 4 patches applied, a relocatable kernel will still copy
+> itself down to real address 0.  The last patch changes things so that
+> a relocatable kernel will run wherever it was loaded.  This last patch
+> is pretty much just a proof of concept since it doesn't do anything to
+> ensure appropriate alignment of the base address (the base address
+> needs to be 16kB aligned).  We probably want to work out whether we
+> are a kdump kernel and run in-place if so, or copy down to 0 if not.
+> 
+> Paul.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
