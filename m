@@ -1,20 +1,17 @@
-Return-Path: <srostedt@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id B9DC3DE3C5
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 02:12:16 +1000 (EST)
-Message-ID: <48A99F51.8090504@redhat.com>
-Date: Mon, 18 Aug 2008 12:12:01 -0400
-From: Steven Rostedt <srostedt@redhat.com>
+Return-Path: <roel.kluin@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id C30D2DDFFE
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 02:34:17 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id u2so216525uge.14
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 09:34:16 -0700 (PDT)
+Message-ID: <48A9F8E9.8030303@gmail.com>
+Date: Mon, 18 Aug 2008 18:34:17 -0400
+From: roel kluin <roel.kluin@gmail.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
-	<48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
-In-Reply-To: <20080818154746.GA26835@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	Eran Liberty <liberty@extricom.com>,
-	linux-kernel@vger.kernel.org, rostedt@goodmis.org, linuxppc-dev@ozlabs.org
+To: paulus@samba.org, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] POWERPC: duplicate test of MACIO_FLAG_SCCB_ON
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,87 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mathieu Desnoyers wrote:
->
-> Steve ? I just noticed this :
->
->
-> ftrace_modify_code(unsigned long ip, unsigned char *old_code,
->                    unsigned char *new_code)
-> {
->         unsigned replaced;
->         unsigned old = *(unsigned *)old_code;
->         unsigned new = *(unsigned *)new_code;
->         int faulted = 0;
->
->         /*
->          * Note: Due to modules and __init, code can
->          *  disappear and change, we need to protect against faulting
->          *  as well as code changing.
->          *
->          * No real locking needed, this code is run through
->          * kstop_machine.
->          */
->         asm volatile (
->                 "1: lwz         %1, 0(%2)\n"
->                 "   cmpw        %1, %5\n"
->                 "   bne         2f\n"
->                 "   stwu        %3, 0(%2)\n"
->                 "2:\n"
->                 ".section .fixup, \"ax\"\n"
->                 "3:     li %0, 1\n"
->                 "       b 2b\n"
->                 ".previous\n"
->                 ".section __ex_table,\"a\"\n"
->                 _ASM_ALIGN "\n"
->                 _ASM_PTR "1b, 3b\n"
->                 ".previous"
->                 : "=r"(faulted), "=r"(replaced)
->                 : "r"(ip), "r"(new),
->                   "0"(faulted), "r"(old)
->                 : "memory");
->
->         if (replaced != old && replaced != new)
->                 faulted = 2;
->
->         if (!faulted)
->                 flush_icache_range(ip, ip + 8);
->
->         return faulted;
-> }
->
-> What happens if you are really unlucky and get the following execution
-> sequence ?
->
->
-> Load module A at address 0xddfc3e00
-> Populate ftrace function table while the system runs
-> Unload module A
-> Load module B at address 0xddfc3e00
-> Activate ftrace
-> -> At that point, since there is another module loaded in the same
-> address space, it won't fault. If there happens to be an instruction
-> which looks exactly like the instruction we are replacing at the same
-> location, we are introducing a bug. True both on x86 ans powerpc...
->
->   
+untested, is it correct?
 
-Hi Mathieu,
+arch/powerpc/include/asm/pmac_feature.h:359:
+#define MACIO_FLAG_SCCA_ON  0x00000001
+#define MACIO_FLAG_SCCB_ON  0x00000002
+---
+duplicate test of MACIO_FLAG_SCCB_ON
 
-Yep I know of this issue, and it is very unlikely it would happen.  But 
-that's not good enough, so this is why I did this:
-
-http://marc.info/?l=linux-kernel&m=121876928124384&w=2
-http://marc.info/?l=linux-kernel&m=121876938524523&w=2
-
-;-)
-
-On powerpc it would be less likely an issue since the code segments are 
-all 4 bytes aligned. And a call being replaced would be a call to mcount 
-(relative jump). A call to mcount would be the same for both. Then 
-again, we could be replacing a nop, but most likely that wouldn't hurt 
-either, since nops are seldom used, and if we did call mcount, it would 
-probably not hurt. But it would be an issue if Module B happen to put a 
-data section that matched the code to jmp to mcount or a nop.
-
--- Steve
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
+index 5169ecc..e6c0040 100644
+--- a/arch/powerpc/platforms/powermac/feature.c
++++ b/arch/powerpc/platforms/powermac/feature.c
+@@ -2677,7 +2677,7 @@ static void __init probe_one_macio(const char *name, const char *compat, int typ
+ 	macio_chips[i].of_node	= node;
+ 	macio_chips[i].type	= type;
+ 	macio_chips[i].base	= base;
+-	macio_chips[i].flags	= MACIO_FLAG_SCCB_ON | MACIO_FLAG_SCCB_ON;
++	macio_chips[i].flags	= MACIO_FLAG_SCCA_ON | MACIO_FLAG_SCCB_ON;
+ 	macio_chips[i].name	= macio_names[type];
+ 	revp = of_get_property(node, "revision-id", NULL);
+ 	if (revp)
