@@ -1,16 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [MPC7448] machdep_calls
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
+Return-Path: <sebastien.chretien.enseirb@gmail.com>
+Message-ID: <319b0ac50808180422r504a012djb971bf80e819a6d2@mail.gmail.com>
+Date: Mon, 18 Aug 2008 13:22:58 +0200
+From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
 	<sebastien.chretien.enseirb@gmail.com>
-In-Reply-To: <319b0ac50808180145r44a1b64fhd09c038ce45bb206@mail.gmail.com>
+To: benh@kernel.crashing.org
+Subject: Re: [MPC7448] machdep_calls
+In-Reply-To: <1219051624.28339.39.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_2282_4651270.1219058578512"
 References: <319b0ac50808180145r44a1b64fhd09c038ce45bb206@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 18 Aug 2008 19:27:04 +1000
-Message-Id: <1219051624.28339.39.camel@pasglop>
-Mime-Version: 1.0
+	<1219051624.28339.39.camel@pasglop>
 Cc: Linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,18 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-08-18 at 10:45 +0200, Sébastien Chrétien wrote:
-> Hello,
-> 
-> I am developping a Linux for my PPC Board. I must write a
-> define_machine structure (marchdep_calls). Where can I find some
-> Information about functions of this structure ?
+------=_Part_2282_4651270.1219058578512
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-It isn't well documented unfortunately. Best is to look at what others
-do... and then find your way through.
+Ok I am going to copy some examples.
 
-I agree somebody should write dome doco one day ... in the meantime,
-feel free to ask questions here.
+2008/8/18, Benjamin Herrenschmidt <benh@kernel.crashing.org>:
+>
+> On Mon, 2008-08-18 at 10:45 +0200, S=E9bastien Chr=E9tien wrote:
+> > Hello,
+> >
+> > I am developping a Linux for my PPC Board. I must write a
+> > define_machine structure (marchdep_calls). Where can I find some
+> > Information about functions of this structure ?
+>
+>
+> It isn't well documented unfortunately. Best is to look at what others
+> do... and then find your way through.
+>
+> I agree somebody should write dome doco one day ... in the meantime,
+> feel free to ask questions here.
+>
+> Cheers,
+> Ben.
+>
+>
+>
 
-Cheers,
-Ben.
+------=_Part_2282_4651270.1219058578512
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Ok I am going to copy some examples.<br><br><div><span class=3D"gmail_quote=
+">2008/8/18, Benjamin Herrenschmidt &lt;<a href=3D"mailto:benh@kernel.crash=
+ing.org">benh@kernel.crashing.org</a>&gt;:</span><blockquote class=3D"gmail=
+_quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt=
+ 0pt 0.8ex; padding-left: 1ex;">
+On Mon, 2008-08-18 at 10:45 +0200, S=E9bastien Chr=E9tien wrote:<br> &gt; H=
+ello,<br> &gt;<br> &gt; I am developping a Linux for my PPC Board. I must w=
+rite a<br> &gt; define_machine structure (marchdep_calls). Where can I find=
+ some<br>
+ &gt; Information about functions of this structure ?<br> <br> <br>It isn&#=
+39;t well documented unfortunately. Best is to look at what others<br> do..=
+. and then find your way through.<br> <br> I agree somebody should write do=
+me doco one day ... in the meantime,<br>
+ feel free to ask questions here.<br> <br> Cheers,<br> Ben.<br> <br> <br> <=
+/blockquote></div><br>
+
+------=_Part_2282_4651270.1219058578512--
