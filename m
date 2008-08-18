@@ -1,19 +1,21 @@
-Return-Path: <richw@netcomuk.co.uk>
-Received: from xsmtp08.mail2web.com (xsmtp08.mail2web.com [168.144.250.208])
-	by ozlabs.org (Postfix) with ESMTP id 2B692DE042
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 22:14:54 +1000 (EST)
-Received: from [168.144.108.6] (helo=M2W006.mail2web.com)
-	by xsmtp08.mail2web.com with smtp (Exim 4.63)
-	(envelope-from <richw@netcomuk.co.uk>) id 1KV3HQ-00024c-En
-	for linuxppc-dev@ozlabs.org; Mon, 18 Aug 2008 07:52:13 -0400
-Message-ID: <380-220088118115212377@M2W006.mail2web.com>
-From: "richw@netcomuk.co.uk" <richw@netcomuk.co.uk>
-To: linuxppc-dev@ozlabs.org
-Date: Mon, 18 Aug 2008 07:52:12 -0400
-MIME-Version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Subject: Clock / Timebase / Bus Frequencies Help
-Reply-To: richw@netcomuk.co.uk
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [MPC7448] machdep_calls
+From: Michael Ellerman <michael@ellerman.id.au>
+To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
+	<sebastien.chretien.enseirb@gmail.com>
+In-Reply-To: <319b0ac50808180435o4a8e5bebr79f86e17ba2fb9af@mail.gmail.com>
+References: <319b0ac50808180145r44a1b64fhd09c038ce45bb206@mail.gmail.com>
+	<1219051624.28339.39.camel@pasglop>
+	<319b0ac50808180422r504a012djb971bf80e819a6d2@mail.gmail.com>
+	<319b0ac50808180435o4a8e5bebr79f86e17ba2fb9af@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-usWkxQXsVbVPMrmu3nRb"
+Date: Mon, 18 Aug 2008 22:20:04 +1000
+Message-Id: <1219062004.7946.5.camel@localhost>
+Mime-Version: 1.0
+Cc: Linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We've got an 8347 based board very similar to the A&M asp8347=2E Core cloc=
-k
-is 400MHz=2E Bus clock is 266666666Hz=2E
-According to the data sheet for the 8347, the decrementer clock runs at a
-quarter of the rate of the bus clock=2E I have two questions:
-In arch/powerpc/boot/redboot-83xx=2Ec, the timebase clock is passed to
-dt=5Ffixup=5Fcpu=5Fclocks() as bi=5Fbusfreq / 16=2E If I leave it like thi=
-s, my
-system clock runs approximately 4 times too fast=2E=20
-Can anyone point me in the direction of an explanation for the div by 16
-rather than 4=3F
 
-If I change the call to dt=5Ffixup=5Fcpu=5Fclocks so that bi=5Fbusfreq/4 i=
-s passed
-in, then the clock runs more accurately=2E However, its still not correct=2E=
+--=-usWkxQXsVbVPMrmu3nRb
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-This gives a decrementer frequency of 66666666Hz, but if I hard code the
-value to 66000000Hz, the clock runs accurately=2E
-Can anyone shed any light on why the value passed in by the boot loader
-(redboot) seems to be inaccurate=2E
+On Mon, 2008-08-18 at 13:35 +0200, S=C3=A9bastien Chr=C3=A9tien wrote:
+> Can somebody explain me the aim of the function  "setup_arch" in the
+> machine_call structure ?
 
-Cheers,
+Is this MPC7448 anything like an mpc7448hpc2 ?
 
+If so maybe you should start by looking at the code for it in:
 
-Richard=2E
+arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
 
+Even if it's not related, that will give you some idea of what the
+callbacks are for.
 
+cheers
 
---------------------------------------------------------------------
-mail2web LIVE =96 Free email based on Microsoft=AE Exchange technology -
-http://link=2Email2web=2Ecom/LIVE
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-usWkxQXsVbVPMrmu3nRb
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIqWj0dSjSd0sB4dIRAts5AJ9JsJowLdmPY7/wwwbFvA4lMqHltgCfRS3S
+f1lSG2Sd7elCBYgHya3XUhM=
+=+w/r
+-----END PGP SIGNATURE-----
+
+--=-usWkxQXsVbVPMrmu3nRb--
