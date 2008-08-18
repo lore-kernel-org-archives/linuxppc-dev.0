@@ -1,13 +1,16 @@
-Return-Path: <sebastien.chretien.enseirb@gmail.com>
-Message-ID: <319b0ac50808180145r44a1b64fhd09c038ce45bb206@mail.gmail.com>
-Date: Mon, 18 Aug 2008 10:45:53 +0200
-From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [MPC7448] machdep_calls
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
 	<sebastien.chretien.enseirb@gmail.com>
-To: Linuxppc-dev@ozlabs.org
-Subject: [MPC7448] machdep_calls
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_1177_29481030.1219049153170"
+In-Reply-To: <319b0ac50808180145r44a1b64fhd09c038ce45bb206@mail.gmail.com>
+References: <319b0ac50808180145r44a1b64fhd09c038ce45bb206@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 18 Aug 2008 19:27:04 +1000
+Message-Id: <1219051624.28339.39.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,32 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_1177_29481030.1219049153170
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, 2008-08-18 at 10:45 +0200, Sébastien Chrétien wrote:
+> Hello,
+> 
+> I am developping a Linux for my PPC Board. I must write a
+> define_machine structure (marchdep_calls). Where can I find some
+> Information about functions of this structure ?
 
-Hello,
+It isn't well documented unfortunately. Best is to look at what others
+do... and then find your way through.
 
-I am developping a Linux for my PPC Board. I must write a define_machine
-structure (marchdep_calls). Where can I find some Information about
-functions of this structure ?
+I agree somebody should write dome doco one day ... in the meantime,
+feel free to ask questions here.
 
-Thanx
-S=E9bastien Chr=E9tien
-
-------=_Part_1177_29481030.1219049153170
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hello,<br>
-<br>
-I am developping a Linux for my PPC Board. I must write a
-define_machine structure (marchdep_calls). Where can I find some
-Information about functions of this structure ?<br>
-<br>
-Thanx<br>
-S=E9bastien Chr=E9tien<br>
-
-------=_Part_1177_29481030.1219049153170--
+Cheers,
+Ben.
