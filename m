@@ -1,31 +1,21 @@
-Return-Path: <rcjenn@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 356E8DE3F1
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 01:36:54 +1000 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7IFa4cU024666
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 11:36:04 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7IFYlD52023532
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 11:34:47 -0400
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7IFYkGg009430
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 09:34:46 -0600
-Date: Mon, 18 Aug 2008 10:34:46 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc: Improve message for vio bus entitlement panic
-Message-ID: <20080818153446.GB27342@austin.ibm.com>
-References: <20080815191205.GE20629@austin.ibm.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D48E9DDF1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 01:59:48 +1000 (EST)
+Date: Mon, 18 Aug 2008 10:59:21 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "richw@netcomuk.co.uk" <richw@netcomuk.co.uk>
+Subject: Re: Clock / Timebase / Bus Frequencies Help
+Message-ID: <20080818155921.GA26475@loki.buserror.net>
+References: <380-220088118115212377@M2W006.mail2web.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080815191205.GE20629@austin.ibm.com>
+In-Reply-To: <380-220088118115212377@M2W006.mail2web.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,30 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add information regarding the available and required entitlement amounts
-to the message displayed for the panic when insufficient entitlement is
-provided at boot.
+On Mon, Aug 18, 2008 at 07:52:12AM -0400, richw@netcomuk.co.uk wrote:
+> We've got an 8347 based board very similar to the A&M asp8347. Core clock
+> is 400MHz. Bus clock is 266666666Hz.
+> According to the data sheet for the 8347, the decrementer clock runs at a
+> quarter of the rate of the bus clock. I have two questions:
+> In arch/powerpc/boot/redboot-83xx.c, the timebase clock is passed to
+> dt_fixup_cpu_clocks() as bi_busfreq / 16. If I leave it like this, my
+> system clock runs approximately 4 times too fast. 
+> Can anyone point me in the direction of an explanation for the div by 16
+> rather than 4?
 
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+It's a bug, which I pointed out here:
+http://ozlabs.org/pipermail/linuxppc-dev/2008-June/058704.html
 
----
-I had typed "Submitted-by" instead of "Signed-off-by" previously.
----
- arch/powerpc/kernel/vio.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+> If I change the call to dt_fixup_cpu_clocks so that bi_busfreq/4 is passed
+> in, then the clock runs more accurately. However, its still not correct.
+> This gives a decrementer frequency of 66666666Hz, but if I hard code the
+> value to 66000000Hz, the clock runs accurately.
+> Can anyone shed any light on why the value passed in by the boot loader
+> (redboot) seems to be inaccurate.
 
-Index: b/arch/powerpc/kernel/vio.c
-===================================================================
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -899,7 +899,9 @@ static void vio_cmo_bus_init(void)
- 	if (vio_cmo.reserve.size > vio_cmo.entitled) {
- 		printk(KERN_ERR "%s: insufficient system entitlement\n",
- 		       __func__);
--		panic("%s: Insufficient system entitlement", __func__);
-+		panic("%s: Insufficient system entitlement. Available: %lu "
-+		      "Required: %lu", __func__, vio_cmo.entitled,
-+		      vio_cmo.reserve.size);
- 	}
+Redboot probably has the wrong crystal frequency hardcoded.
 
- 	/* Set the remaining accounting variables */
+-Scott
