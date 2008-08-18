@@ -1,31 +1,23 @@
-Return-Path: <rcjenn@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DAA3CDE076
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 00:40:34 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7IEeSSw018352
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 10:40:28 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7IEeSXx162470
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 10:40:28 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7IEeRkj000509
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 10:40:27 -0400
-Date: Mon, 18 Aug 2008 09:40:23 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/3 v2] powerpc: make CMO paging space pool ID and page
-	size available
-Message-ID: <20080818144023.GA27342@austin.ibm.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id BF28EDE1B3
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 00:44:48 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 1/3] gpiolib: make gpio_to_chip() public
+Date: Mon, 18 Aug 2008 16:44:36 +0200
+References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
+	<200808181558.50182.laurentp@cse-semaphore.com>
+	<20080818143343.GA30812@oksana.dev.rtsoft.ru>
+In-Reply-To: <20080818143343.GA30812@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080815190730.GB20629@austin.ibm.com>
+Content-Type: multipart/signed; boundary="nextPart1295929.rOlv2Qjvov";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200808181644.45480.laurentp@cse-semaphore.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,113 +27,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-During platform setup, save off the primary/secondary paging space pool IDs
-and the page size.  Added accessors in hvcall.h for these variables.
+--nextPart1295929.rOlv2Qjvov
+Content-Type: text/plain;
+  charset="windows-1251"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+On Monday 18 August 2008, Anton Vorontsov wrote:
+> On Mon, Aug 18, 2008 at 03:58:46PM +0200, Laurent Pinchart wrote:
+> [...]
+> > > Not exactly. But you can do this way, if you need to preserve
+> > > a direction. What I did is a bit different though.
+> > >=20
+> > > qe_gpio_set_dedicated() actually just restores a mode that
+> > > firmware had set up, including direction (since direction could
+> > > be a part of dedicated configuration).
+> > >=20
+> > > That is, upon GPIO controller registration, we save all registers,
+> > > then driver can set up a pin to a GPIO mode via standard API, and
+> > > then it can _revert_ a pin to a dedicated function via
+> > > qe_gpio_set_dedicated() call. Dedicated function is specified by
+> > > the firmware (or board file), we're just restoring it.
+> >=20
+> > The semantic of the set_dedicated() operation needs to be clearly
+> > defined then.
+>=20
+> It is. We set up a dedicated function that firmware (or board file)
+> has configured.
 
----
-I wrote "Submitted-by" on the last patch for some strange reason, that't
-the only thing changed here.
+A comment in the source would help.
 
----
- arch/powerpc/include/asm/hvcall.h      |   21 +++++++++++++++++++++
- arch/powerpc/platforms/pseries/setup.c |   28 ++++++++++++++++++++--------
- 2 files changed, 41 insertions(+), 8 deletions(-)
+> > I can live with this behaviour, but it might not be
+> > acceptable for everybody.
+>=20
+> For example?
+>=20
+> > Your patch requires the firmware to set a pin in dedicated mode at
+> > bootup in order to be used later in dedicated mode.
+>=20
+> Yes. On a PowerPC this is always true: firmware should set up PIO
+> config. Linux' board file could fixup the firmware though.
 
-Index: b/arch/powerpc/include/asm/hvcall.h
-===================================================================
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -292,6 +292,27 @@ struct hvcall_mpp_data {
+That's not what I meant. What if the hardware requires to pin to be configu=
+red in GPIO mode with a fixed value until the SOC-specific driver that will=
+ drive the GPIO is loaded ? That's not possible with your API.
 
- int h_get_mpp(struct hvcall_mpp_data *);
+Until a SOC peripheral is initialized by its associated Linux driver, the b=
+ehaviour of a GPIO pin in dedicated mode will be undefined. The firmware/bo=
+ard code will probably want to set the pin as a GPIO output with a fixed va=
+lue until the driver initializes the hardware.
 
-+#ifdef CONFIG_PPC_PSERIES
-+extern int CMO_PrPSP;
-+extern int CMO_SecPSP;
-+extern unsigned long CMO_PageSize;
-+
-+static inline int cmo_get_primary_psp(void)
-+{
-+	return CMO_PrPSP;
-+}
-+
-+static inline int cmo_get_secondary_psp(void)
-+{
-+	return CMO_SecPSP;
-+}
-+
-+static inline unsigned long cmo_get_page_size(void)
-+{
-+	return CMO_PageSize;
-+}
-+#endif /* CONFIG_PPC_PSERIES */
-+
- #endif /* __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_HVCALL_H */
-Index: b/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -68,6 +68,9 @@
- #include "plpar_wrappers.h"
- #include "pseries.h"
+> Another option would be to add some argument to the set_dedicated
+> call, thus the software could specify arbitrary dedicated
+> function (thus no need to save/restore anything). But this would
+> be SOC-model specific, thus no driver can use this argument anyway.
 
-+int CMO_PrPSP = -1;
-+int CMO_SecPSP = -1;
-+unsigned long CMO_PageSize = (ASM_CONST(1) << IOMMU_PAGE_SHIFT);
+Drivers that require dedicated mode are SOC-specific anyway.
 
- int fwnmi_active;  /* TRUE if an FWNMI handler is present */
+> > If, for some
+> > reason (driver not loaded, ...), no GPIO user shows up for that
+> > pin, it will stay configured in dedicated mode.
+>=20
+> Yes.
+>=20
+> > It might be better to set the PAR bit unconditionally in
+>=20
+> Why it might be better?
 
-@@ -325,8 +328,7 @@ void pSeries_cmo_feature_init(void)
- {
- 	char *ptr, *key, *value, *end;
- 	int call_status;
--	int PrPSP = -1;
--	int SecPSP = -1;
-+	int page_order = IOMMU_PAGE_SHIFT;
+Because, as explained a few lines down, the board initialization code will =
+be able to configure a pin in a known state (PAR not set) at boot time unti=
+l a driver requests the pin to be switched to dedicated mode.
 
- 	pr_debug(" -> fw_cmo_feature_init()\n");
- 	spin_lock(&rtas_data_buf_lock);
-@@ -365,21 +367,31 @@ void pSeries_cmo_feature_init(void)
- 				break;
- 			}
+> That way you may set up wrong _GPIO_=20
+> mode, because you didn't set PAR bit (when PAR bit set
+> DIR/ODR/DAT bits are losing their meanings).
+>=20
+> > qe_gpio_set_dedicated() instead of restoring its value. That way
+> > the board initialization code could just set the DIR, DAT and ODR
+> > bits for dedicated mode but still configure the pin in GPIO mode.
 
--			if (0 == strcmp(key, "PrPSP"))
--				PrPSP = simple_strtol(value, NULL, 10);
-+			if (0 == strcmp(key, "CMOPageSize"))
-+				page_order = simple_strtol(value, NULL, 10);
-+			else if (0 == strcmp(key, "PrPSP"))
-+				CMO_PrPSP = simple_strtol(value, NULL, 10);
- 			else if (0 == strcmp(key, "SecPSP"))
--				SecPSP = simple_strtol(value, NULL, 10);
-+				CMO_SecPSP = simple_strtol(value, NULL, 10);
- 			value = key = ptr + 1;
- 		}
- 		ptr++;
- 	}
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
--	if (PrPSP != -1 || SecPSP != -1) {
-+	/* Page size is returned as the power of 2 of the page size,
-+	 * convert to the page size in bytes before returning
-+	 */
-+	CMO_PageSize = 1 << page_order;
-+	pr_debug("CMO_PageSize = %lu\n", CMO_PageSize);
-+
-+	if (CMO_PrPSP != -1 || CMO_SecPSP != -1) {
- 		pr_info("CMO enabled\n");
--		pr_debug("CMO enabled, PrPSP=%d, SecPSP=%d\n", PrPSP, SecPSP);
-+		pr_debug("CMO enabled, PrPSP=%d, SecPSP=%d\n", CMO_PrPSP,
-+		         CMO_SecPSP);
- 		powerpc_firmware_features |= FW_FEATURE_CMO;
- 	} else
--		pr_debug("CMO not enabled, PrPSP=%d, SecPSP=%d\n", PrPSP, SecPSP);
-+		pr_debug("CMO not enabled, PrPSP=%d, SecPSP=%d\n", CMO_PrPSP,
-+		         CMO_SecPSP);
- 	spin_unlock(&rtas_data_buf_lock);
- 	pr_debug(" <- fw_cmo_feature_init()\n");
- }
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
 
------ End forwarded message -----
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1295929.rOlv2Qjvov
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkipit0ACgkQ8y9gWxC9vpe+QQCfWz6zaXaM0LxM9zcMnSOJKSx/
+2toAnAiBcyCkeicsC6KM84XmvGhLGMqP
+=mHXR
+-----END PGP SIGNATURE-----
+
+--nextPart1295929.rOlv2Qjvov--
