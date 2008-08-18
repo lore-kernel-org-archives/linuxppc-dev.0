@@ -1,9 +1,22 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 18 Aug 2008 14:23:48 +1000
-Subject: [PATCH 1/2] powerpc: Turn get/set_hard_smp_proccessor_id into inlines
-Message-Id: <20080818042422.1283BDDE1D@ozlabs.org>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id C7805DDEF8
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 14:24:24 +1000 (EST)
+Date: Mon, 18 Aug 2008 12:24:23 +0800
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 11027] New: random forward time jumps
+Message-ID: <20080818042422.GA12933@bakeyournoodle.com>
+References: <bug-11027-10286@http.bugzilla.kernel.org/>
+	<20080702110614.4bd45cce.akpm@linux-foundation.org>
+	<1215132417.7849.2.camel@localhost>
+	<20080703175932.53ec7151.akpm@linux-foundation.org>
+	<20080704015022.GV20457@bakeyournoodle.com>
+	<20080703190220.a92d02fa.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20080703190220.a92d02fa.akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org, Martin Bligh <mbligh@mbligh.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,75 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-They don't need to be macros, and having them as inline
-functions avoids warnings about unused variables on some
-configurations when the argument isn't evaluated.
+On Thu, Jul 03, 2008 at 07:02:20PM -0700, Andrew Morton wrote:
+> On Fri, 4 Jul 2008 11:50:22 +1000 Tony Breeds <tony@bakeyournoodle.com> wrote:
+> 
+> > On Thu, Jul 03, 2008 at 05:59:32PM -0700, Andrew Morton wrote:
+> >  
+> > > Nope, the only account matching .*ppc.* and .*power.* is
+> > > platform_ppc-32@kernel-bugs.osdl.org.  (I have elevated bugzilla perms
+> > > so I can can query the users list) (everyone should have this - it's
+> > > handy).
+> > > 
+> > > There is a category "Platform Specific/Hardware"/PPC-64.  Those go to
+> > > anton@samba.org.
+> > 
+> > Can you get this changed to platform_ppc-64@kernel-bugs.osdl.org
+> > (obvisouly this'll need to be created)?
+> >  
+> > > There is a category "Platform Specific/Hardware"/PPC-62.  Those go to
+> > > platform_ppc-32@kernel-bugs.osdl.org.
+> > > 
+> > > So setting a watch on both those accounts would suit.
+> > 
+> > Then the linuxppc-dev "person" can watch both of them.  Seems slightly
+> > more "offical".
+> > 
+> > > Or you can just ignore it all.  I screen all bugzilla reports and will
+> > > ensure that suitable people know about them.
+> > 
+> > Yeah we could but it'd be easier for you if we didn't :)
+> > 
+> 
+> umm, Martin, can you please advise?
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Did we get anywhere with this?  I'm currently watching
+anton@samba.org and platform_ppc-32@kernel-bugs.osdl.org but I feel a little
+like a perv ;P
 
- arch/powerpc/include/asm/smp.h |   39 +++++++++++++++++++++++++++++----------
- 1 file changed, 29 insertions(+), 10 deletions(-)
+Yours Tony
 
---- linux-work.orig/arch/powerpc/include/asm/smp.h	2008-08-18 11:57:47.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/smp.h	2008-08-18 12:03:55.000000000 +1000
-@@ -56,9 +56,16 @@ extern int smp_hw_index[];
- 
- #define raw_smp_processor_id()	(current_thread_info()->cpu)
- #define hard_smp_processor_id() 	(smp_hw_index[smp_processor_id()])
--#define get_hard_smp_processor_id(cpu)	(smp_hw_index[(cpu)])
--#define set_hard_smp_processor_id(cpu, phys)\
--					(smp_hw_index[(cpu)] = (phys))
-+
-+static inline int get_hard_smp_processor_id(int cpu)
-+{
-+	return smp_hw_index[cpu];
-+}
-+
-+static inline void set_hard_smp_processor_id(int cpu, int phys)
-+{
-+	smp_hw_index[cpu] = phys;
-+}
- #endif
- 
- DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
-@@ -92,9 +99,15 @@ extern void __cpu_die(unsigned int cpu);
- #endif /* CONFIG_SMP */
- 
- #ifdef CONFIG_PPC64
--#define get_hard_smp_processor_id(CPU) (paca[(CPU)].hw_cpu_id)
--#define set_hard_smp_processor_id(CPU, VAL) \
--	do { (paca[(CPU)].hw_cpu_id = (VAL)); } while (0)
-+static inline int get_hard_smp_processor_id(int cpu)
-+{
-+	return paca[cpu].hw_cpu_id;
-+}
-+
-+static inline void set_hard_smp_processor_id(int cpu, int phys)
-+{
-+	paca[cpu].hw_cpu_id = phys;
-+}
- 
- extern void smp_release_cpus(void);
- 
-@@ -102,10 +115,16 @@ extern void smp_release_cpus(void);
- /* 32-bit */
- #ifndef CONFIG_SMP
- extern int boot_cpuid_phys;
--#define get_hard_smp_processor_id(cpu) 	boot_cpuid_phys
--#define set_hard_smp_processor_id(cpu, phys)
--#endif
--#endif
-+static inline int get_hard_smp_processor_id(int cpu)
-+{
-+	return boot_cpuid_phys;
-+}
-+
-+static inline void set_hard_smp_processor_id(int cpu, int phys)
-+{
-+}
-+#endif /* !CONFIG_SMP */
-+#endif /* !CONFIG_PPC64 */
- 
- extern int smt_enabled_at_boot;
- 
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
