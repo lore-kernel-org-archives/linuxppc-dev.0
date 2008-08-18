@@ -1,20 +1,24 @@
-Return-Path: <sebastien.chretien.enseirb@gmail.com>
-Message-ID: <319b0ac50808180717ka6731fdu591798ac0d8b4e82@mail.gmail.com>
-Date: Mon, 18 Aug 2008 16:17:58 +0200
-From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
-	<sebastien.chretien.enseirb@gmail.com>
-To: michael@ellerman.id.au
-Subject: Re: [MPC7448] machdep_calls
-In-Reply-To: <1219062004.7946.5.camel@localhost>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id DDB08DE03C
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 00:33:45 +1000 (EST)
+Date: Mon, 18 Aug 2008 18:33:43 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCH 1/3] gpiolib: make gpio_to_chip() public
+Message-ID: <20080818143343.GA30812@oksana.dev.rtsoft.ru>
+References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
+	<200808141645.56418.laurentp@cse-semaphore.com>
+	<20080814151022.GA9885@oksana.dev.rtsoft.ru>
+	<200808181558.50182.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_3282_23721124.1219069078041"
-References: <319b0ac50808180145r44a1b64fhd09c038ce45bb206@mail.gmail.com>
-	<1219051624.28339.39.camel@pasglop>
-	<319b0ac50808180422r504a012djb971bf80e819a6d2@mail.gmail.com>
-	<319b0ac50808180435o4a8e5bebr79f86e17ba2fb9af@mail.gmail.com>
-	<1219062004.7946.5.camel@localhost>
-Cc: Linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <200808181558.50182.laurentp@cse-semaphore.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,80 +28,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_3282_23721124.1219069078041
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, Aug 18, 2008 at 03:58:46PM +0200, Laurent Pinchart wrote:
+[...]
+> > Not exactly. But you can do this way, if you need to preserve
+> > a direction. What I did is a bit different though.
+> > 
+> > qe_gpio_set_dedicated() actually just restores a mode that
+> > firmware had set up, including direction (since direction could
+> > be a part of dedicated configuration).
+> > 
+> > That is, upon GPIO controller registration, we save all registers,
+> > then driver can set up a pin to a GPIO mode via standard API, and
+> > then it can _revert_ a pin to a dedicated function via
+> > qe_gpio_set_dedicated() call. Dedicated function is specified by
+> > the firmware (or board file), we're just restoring it.
+> 
+> The semantic of the set_dedicated() operation needs to be clearly
+> defined then.
 
-The mpc7448hpc2 uses a tsi108-bridge. My board uses an IP on a FPGA.. I rea=
-d
-the code of mpc7448_hpc2.c.
-It uses a ioremap in order to iniatilize the tsi108 registers. But I have
-already initialized MMU with my registers in HEAD_32.S. Do I need to use
-ioremap in setup_arch() ?
+It is. We set up a dedicated function that firmware (or board file)
+has configured.
 
+> I can live with this behaviour, but it might not be
+> acceptable for everybody.
 
+For example?
 
+> Your patch requires the firmware to set a pin in dedicated mode at
+> bootup in order to be used later in dedicated mode.
 
-2008/8/18, Michael Ellerman <michael@ellerman.id.au>:
->
-> On Mon, 2008-08-18 at 13:35 +0200, S=E9bastien Chr=E9tien wrote:
-> > Can somebody explain me the aim of the function  "setup_arch" in the
-> > machine_call structure ?
->
->
-> Is this MPC7448 anything like an mpc7448hpc2 ?
->
-> If so maybe you should start by looking at the code for it in:
->
-> arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
->
-> Even if it's not related, that will give you some idea of what the
-> callbacks are for.
->
-> cheers
->
-> --
-> Michael Ellerman
-> OzLabs, IBM Australia Development Lab
->
-> wwweb: http://michael.ellerman.id.au
-> phone: +61 2 6212 1183 (tie line 70 21183)
->
-> We do not inherit the earth from our ancestors,
-> we borrow it from our children. - S.M.A.R.T Person
->
->
+Yes. On a PowerPC this is always true: firmware should set up PIO
+config. Linux' board file could fixup the firmware though.
 
-------=_Part_3282_23721124.1219069078041
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Another option would be to add some argument to the set_dedicated
+call, thus the software could specify arbitrary dedicated
+function (thus no need to save/restore anything). But this would
+be SOC-model specific, thus no driver can use this argument anyway.
 
-The mpc7448hpc2 uses a tsi108-bridge. My board uses an IP on a FPGA.. I rea=
-d the code of mpc7448_hpc2.c.<br>
-It uses a ioremap in order to iniatilize the tsi108 registers. But I
-have already initialized MMU with my registers in HEAD_32.S. Do I need
-to use ioremap in setup_arch() ?<br><br>
-<br>
-<br>
-<br><div><span class=3D"gmail_quote">2008/8/18, Michael Ellerman &lt;<a hre=
-f=3D"mailto:michael@ellerman.id.au">michael@ellerman.id.au</a>&gt;:</span><=
-blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 2=
-04, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-On Mon, 2008-08-18 at 13:35 +0200, S=E9bastien Chr=E9tien wrote:<br> &gt; C=
-an somebody explain me the aim of the function&nbsp;&nbsp;&quot;setup_arch&=
-quot; in the<br> &gt; machine_call structure ?<br> <br> <br>Is this MPC7448=
- anything like an mpc7448hpc2 ?<br>
- <br> If so maybe you should start by looking at the code for it in:<br> <b=
-r> arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c<br> <br> Even if it&#3=
-9;s not related, that will give you some idea of what the<br> callbacks are=
- for.<br>
- <br> cheers<br> <br> --<br> Michael Ellerman<br> OzLabs, IBM Australia Dev=
-elopment Lab<br> <br> wwweb: <a href=3D"http://michael.ellerman.id.au">http=
-://michael.ellerman.id.au</a><br> phone: +61 2 6212 1183 (tie line 70 21183=
-)<br>
- <br> We do not inherit the earth from our ancestors,<br> we borrow it from=
- our children. - S.M.A.R.T Person<br> <br></blockquote></div><br>
+> If, for some
+> reason (driver not loaded, ...), no GPIO user shows up for that
+> pin, it will stay configured in dedicated mode.
 
-------=_Part_3282_23721124.1219069078041--
+Yes.
+
+> It might be better to set the PAR bit unconditionally in
+
+Why it might be better? That way you may set up wrong _GPIO_
+mode, because you didn't set PAR bit (when PAR bit set
+DIR/ODR/DAT bits are losing their meanings).
+
+> qe_gpio_set_dedicated() instead of restoring its value. That way
+> the board initialization code could just set the DIR, DAT and ODR
+> bits for dedicated mode but still configure the pin in GPIO mode.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
