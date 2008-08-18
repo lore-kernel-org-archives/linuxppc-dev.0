@@ -1,23 +1,15 @@
-Return-Path: <padmanabha@tesbv.com>
-Received: from hermes.tesbv.com (hermes.tesbv.com [213.215.41.187])
-	by ozlabs.org (Postfix) with ESMTP id D8C17DDED9
+Return-Path: <fabien.oriede@yahoo.fr>
+Received: from web27407.mail.ukl.yahoo.com (web27407.mail.ukl.yahoo.com
+	[217.146.177.183]) by ozlabs.org (Postfix) with SMTP id 09F31DDE2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Aug 2008 16:57:24 +1000 (EST)
-Received: from ganga.tes (unknown [10.20.0.1])
-	by hermes.tesbv.com (Postfix) with ESMTP id E6ECCF4112
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Aug 2008 08:35:14 +0200 (CEST)
-Received: from [10.20.0.64] (unknown [10.20.0.64])
-	by ganga.tes (Postfix) with ESMTP id BE7875C43C4
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Aug 2008 11:57:22 +0530 (IST)
-Message-ID: <48A916E8.1060401@tesbv.com>
-Date: Mon, 18 Aug 2008 12:00:00 +0530
-From: paddy <padmanabha@tesbv.com>
-MIME-Version: 1.0
+	Mon, 18 Aug 2008 19:11:33 +1000 (EST)
+Date: Mon, 18 Aug 2008 09:11:31 +0000 (GMT)
+From: Fabien Oriede <fabien.oriede@yahoo.fr>
+Subject: Kernel panic : No Init Found
 To: linuxppc-embedded@ozlabs.org
-Subject: how to measure usb data transfer rate.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-1204230445-1219050691=:65788"
+Message-ID: <642357.65788.qm@web27407.mail.ukl.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,11 +20,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+--0-1204230445-1219050691=:65788
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-I need to measure USB data transfer  rate ( target is USB peripheral & 
-running on Linux 2.6.21 ) . Can any one suggest me  how to measure USB 
-data transfer rate ?.
+Hi all,=0AI have downloaded the SELF pRamdisk image from the DENX website a=
+nd I placed it in FLASH at 0xFFC00000. The init file is in /sbin/init. When=
+ I try to boot Linux with "bootm ffa00000 ffc00000", Linux mounts the initr=
+d image and next,=C2=A0it=C2=A0shows the message "No Init Found" even if I =
+have "init=3D/sbin/init" in the kernel command line.=0ADoes I need to activ=
+ate MTD options in the kernel to use an initrd image ?=0AThanks,=0AFabien.=
+=0A=0A=0A      ____________________________________________________________=
+_________________ =0AEnvoyez avec Yahoo! Mail. Une boite mail plus intellig=
+ente http://mail.yahoo.fr
+--0-1204230445-1219050691=:65788
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Thanks & Regards,
-Padmanabha.s
+<html><head><style type=3D"text/css"><!-- DIV {margin:0px;} --></style></he=
+ad><body><div style=3D"font-family:arial, helvetica, sans-serif;font-size:1=
+0pt"><DIV>Hi all,</DIV>=0A<DIV>&nbsp;</DIV>=0A<DIV>I have downloaded the SE=
+LF pRamdisk image from the DENX website and I placed it in FLASH at 0xFFC00=
+000. The init file is in /sbin/init. When I try to boot Linux with "bootm f=
+fa00000 ffc00000", Linux mounts the initrd image and next,&nbsp;it&nbsp;sho=
+ws the message "No Init Found" even if I have "init=3D/sbin/init" in the ke=
+rnel command line.</DIV>=0A<DIV>&nbsp;</DIV>=0A<DIV>Does I need to activate=
+ MTD options in the kernel to use an initrd image ?</DIV>=0A<DIV>&nbsp;</DI=
+V>=0A<DIV>Thanks,</DIV>=0A<DIV>Fabien.</DIV></div><br>=0A=0A=0A      <hr si=
+ze=3D"1"> =0AEnvoy=C3=A9 avec <a href=3D"http://us.rd.yahoo.com/mailuk/tagl=
+ines/isp/control/*http://us.rd.yahoo.com/evt=3D52423/*http://fr.docs.yahoo.=
+com/mail/overview/index.html">Yahoo! Mail</a>.<br>Une boite mail plus intel=
+ligente. </a></body></html>
+--0-1204230445-1219050691=:65788--
