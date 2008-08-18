@@ -1,19 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [MPC7448] machdep_calls
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
-	<sebastien.chretien.enseirb@gmail.com>
-In-Reply-To: <319b0ac50808180435o4a8e5bebr79f86e17ba2fb9af@mail.gmail.com>
-References: <319b0ac50808180145r44a1b64fhd09c038ce45bb206@mail.gmail.com>
-	<1219051624.28339.39.camel@pasglop>
-	<319b0ac50808180422r504a012djb971bf80e819a6d2@mail.gmail.com>
-	<319b0ac50808180435o4a8e5bebr79f86e17ba2fb9af@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 19 Aug 2008 07:11:14 +1000
-Message-Id: <1219093874.28339.63.camel@pasglop>
-Mime-Version: 1.0
-Cc: Linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 92465DE544
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 07:12:33 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+	avorontsov@ru.mvista.com, benh@kernel.crashing.org, tony@bakeyournoodle.com
+Subject: [PATCH] powerpc: fix memory leaks in QE library
+Date: Mon, 18 Aug 2008 16:12:08 -0500
+Message-Id: <1219093928-5349-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,59 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-08-18 at 13:35 +0200, Sébastien Chrétien wrote:
-> Can somebody explain me the aim of the function  "setup_arch" in the
-> machine_call structure ?
+Fix two memory leaks in the Freescale QE library: add a missing kfree() in
+ucc_fast_init() if the ioremap() fails, and update ucc_fast_free() to call
+iounmap() on uf_regs.
 
-This is where most of your arch code gets a chance to initialize before
-most of the core is.
+Based on a patch from Tony Breeds <tony@bakeyournoodle.com>.
 
-The generic core linux code calls the architecture setup_arch() very
-early during boot, before most other initializations. The powerpc
-architecture code performs various early initialisations there, on
-32-bit that includes unflattening the device-tree, looking for legacy
-serial ports, etc... and initializing bootmem.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/sysdev/qe_lib/ucc_fast.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-It then calls ppc_md.setup_arch to give the platform a chance to perform
-other platform specific early initializations before the rest of the
-kernel starts initializing.
-
-This is very early, ie, for memory allocation you can only use bootmem
-for example. Interrupts haven't been initialized or switched on yet,
-etc...
-
-This is typically the place where your arch code will setup it's SMP ops
-if any, will discover the fixed PCI host bridges, and initialize low
-level HW components that need early initialization.
-
-Ben.
-
-> 2008/8/18, Sébastien Chrétien <sebastien.chretien.enseirb@gmail.com>:
->         Ok I am going to copy some examples.
->         
->         2008/8/18, Benjamin Herrenschmidt <benh@kernel.crashing.org>:
->                 On Mon, 2008-08-18 at 10:45 +0200, Sébastien Chrétien
->                 wrote:
->                 > Hello,
->                 >
->                 > I am developping a Linux for my PPC Board. I must
->                 write a
->                 > define_machine structure (marchdep_calls). Where can
->                 I find some
->                 > Information about functions of this structure ?
->                 
->                 
->                 It isn't well documented unfortunately. Best is to
->                 look at what others
->                 do... and then find your way through.
->                 
->                 I agree somebody should write dome doco one day ... in
->                 the meantime,
->                 feel free to ask questions here.
->                 
->                 Cheers,
->                 Ben.
->                 
->                 
->         
-> 
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
+index 1aecb07..25fbbfa 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
+@@ -208,6 +208,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+ 	uccf->uf_regs = ioremap(uf_info->regs, sizeof(struct ucc_fast));
+ 	if (uccf->uf_regs == NULL) {
+ 		printk(KERN_ERR "%s: Cannot map UCC registers\n", __func__);
++		kfree(uccf);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -355,6 +356,9 @@ void ucc_fast_free(struct ucc_fast_private * uccf)
+ 	if (uccf->ucc_fast_rx_virtual_fifo_base_offset)
+ 		qe_muram_free(uccf->ucc_fast_rx_virtual_fifo_base_offset);
+ 
++	if (uccf->uf_regs)
++		iounmap(uccf->uf_regs);
++
+ 	kfree(uccf);
+ }
+ EXPORT_SYMBOL(ucc_fast_free);
+-- 
+1.5.5
