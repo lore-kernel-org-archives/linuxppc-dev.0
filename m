@@ -1,16 +1,15 @@
-Return-Path: <roel.kluin@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id C30D2DDFFE
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 02:34:17 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id u2so216525uge.14
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 09:34:16 -0700 (PDT)
-Message-ID: <48A9F8E9.8030303@gmail.com>
-Date: Mon, 18 Aug 2008 18:34:17 -0400
-From: roel kluin <roel.kluin@gmail.com>
+Return-Path: <grigore.mihaela@gmail.com>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id D9BFADE231
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 02:09:00 +1000 (EST)
+Received: by gxk14 with SMTP id 14so3639378gxk.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Aug 2008 09:08:59 -0700 (PDT)
+Message-ID: <78ef7ce10808180901v6c694e63xefc37dd97485533@mail.gmail.com>
+Date: Mon, 18 Aug 2008 19:01:56 +0300
+From: "Mihaela Grigore" <grigore.mihaela@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: self-modifying code in 2.6 kernel for ppc writes into readonly section
 MIME-Version: 1.0
-To: paulus@samba.org, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] POWERPC: duplicate test of MACIO_FLAG_SCCB_ON
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,26 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-untested, is it correct?
+Hello,
 
-arch/powerpc/include/asm/pmac_feature.h:359:
-#define MACIO_FLAG_SCCA_ON  0x00000001
-#define MACIO_FLAG_SCCB_ON  0x00000002
----
-duplicate test of MACIO_FLAG_SCCB_ON
+First, I'm talkin about the 2.6.11 version. I know arch/ppc is gone in
+latest versions,
+but i assume the code is still the same and just moved to powerpc.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
-index 5169ecc..e6c0040 100644
---- a/arch/powerpc/platforms/powermac/feature.c
-+++ b/arch/powerpc/platforms/powermac/feature.c
-@@ -2677,7 +2677,7 @@ static void __init probe_one_macio(const char *name, const char *compat, int typ
- 	macio_chips[i].of_node	= node;
- 	macio_chips[i].type	= type;
- 	macio_chips[i].base	= base;
--	macio_chips[i].flags	= MACIO_FLAG_SCCB_ON | MACIO_FLAG_SCCB_ON;
-+	macio_chips[i].flags	= MACIO_FLAG_SCCA_ON | MACIO_FLAG_SCCB_ON;
- 	macio_chips[i].name	= macio_names[type];
- 	revp = of_get_property(node, "revision-id", NULL);
- 	if (revp)
+There is a piece of code in the early initialization of the 2.6 kernel
+that identifies the cpu type and then tries to eliminate code that
+does not apply to the current cpu. This is done by writing nop's over
+sections of code that are not needed (do_cpu_ftr_fixups in
+arch/ppc/kernel/misc.S)
+
+When I try to run the kernel in a ppc emulator, I get a segmentation
+fault in do_cpu_ftr_fixups. From examining the section headers of the
+vmlinux, the text section is marked as readonly. The piece of code
+above mentioned is trying to write a nop to memory location inside the
+text section which is readonly, so that explains the sigsegv  error.
+
+Since the kernel does run on boards with ppc cpu's, can somebody
+explain how come this is actually working ? Or if/where I am mistaking
+with my assumptions ?
+
+Thank you
+
+P.S. please add me in cc in a reply to this message
