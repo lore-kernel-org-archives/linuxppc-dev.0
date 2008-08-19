@@ -1,19 +1,15 @@
-Return-Path: <richard.whitlo@btconnect.com>
-Received: from c2beaomr09.btconnect.com (c2beaomr09.btconnect.com
-	[213.123.26.187]) by ozlabs.org (Postfix) with ESMTP id 8B0D8DE4EE
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 22:18:35 +1000 (EST)
-Message-ID: <48AABB2A.6030607@btconnect.com>
-Date: Tue, 19 Aug 2008 13:23:06 +0100
-From: Richard Whitlock <richard.whitlo@btconnect.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 684DCDDF33
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 22:20:28 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org
+Subject: cpm2: Fix race condition in CPM2 GPIO library.
+Date: Tue, 19 Aug 2008 14:20:23 +0200
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Clock / Timebase / Bus Frequencies Help
-References: <380-220088118115212377@M2W006.mail2web.com>
-	<20080818155921.GA26475@loki.buserror.net>
-In-Reply-To: <20080818155921.GA26475@loki.buserror.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: "richw@netcomuk.co.uk" <richw@netcomuk.co.uk>, linuxppc-dev@ozlabs.org
-Reply-To: richw@netcomuk.co.uk
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200808191420.24837.laurentp@cse-semaphore.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,48 +19,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott,
-Thanks for that - you're right - redboot has the wrong crystal frequency 
-in the cdl for our board.
+The CPM2 GPIO library code uses the non thread-safe clrbits32/setbits32
+macros. This patch protects them with a spinlock.
 
-Cheers,
+Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+---
+ arch/powerpc/sysdev/cpm_common.c |   37 ++++++++++++++++++++++++++-----------
+ 1 files changed, 26 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index 53da8a0..00d3d17 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -254,15 +254,11 @@ static int cpm2_gpio32_get(struct gpio_chip *gc, unsigned int gpio)
+ 	return !!(in_be32(&iop->dat) & pin_mask);
+ }
+ 
+-static void cpm2_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
++static void __cpm2_gpio32_set(struct of_mm_gpio_chip *mm_gc, u32 pin_mask,
++	int value)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
+ 	struct cpm2_ioports __iomem *iop = mm_gc->regs;
+-	unsigned long flags;
+-	u32 pin_mask = 1 << (31 - gpio);
+-
+-	spin_lock_irqsave(&cpm2_gc->lock, flags);
+ 
+ 	if (value)
+ 		cpm2_gc->cpdata |= pin_mask;
+@@ -270,6 +266,18 @@ static void cpm2_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
+ 		cpm2_gc->cpdata &= ~pin_mask;
+ 
+ 	out_be32(&iop->dat, cpm2_gc->cpdata);
++}
++
++static void cpm2_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
++	unsigned long flags;
++	u32 pin_mask = 1 << (31 - gpio);
++
++	spin_lock_irqsave(&cpm2_gc->lock, flags);
++
++	__cpm2_gpio32_set(mm_gc, pin_mask, value);
+ 
+ 	spin_unlock_irqrestore(&cpm2_gc->lock, flags);
+ }
+@@ -277,14 +285,17 @@ static void cpm2_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
+ static int cpm2_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ {
+ 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
+ 	struct cpm2_ioports __iomem *iop = mm_gc->regs;
+-	u32 pin_mask;
++	unsigned long flags;
++	u32 pin_mask = 1 << (31 - gpio);
+ 
+-	pin_mask = 1 << (31 - gpio);
++	spin_lock_irqsave(&cpm2_gc->lock, flags);
+ 
+ 	setbits32(&iop->dir, pin_mask);
++	__cpm2_gpio32_set(mm_gc, pin_mask, val);
+ 
+-	cpm2_gpio32_set(gc, gpio, val);
++	spin_unlock_irqrestore(&cpm2_gc->lock, flags);
+ 
+ 	return 0;
+ }
+@@ -292,13 +303,17 @@ static int cpm2_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ static int cpm2_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
+ {
+ 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
+ 	struct cpm2_ioports __iomem *iop = mm_gc->regs;
+-	u32 pin_mask;
++	unsigned long flags;
++	u32 pin_mask = 1 << (31 - gpio);
+ 
+-	pin_mask = 1 << (31 - gpio);
++	spin_lock_irqsave(&cpm2_gc->lock, flags);
+ 
+ 	clrbits32(&iop->dir, pin_mask);
+ 
++	spin_unlock_irqrestore(&cpm2_gc->lock, flags);
++
+ 	return 0;
+ }
+ 
+-- 
+1.5.0
 
 
-Richard.
+-- 
+Laurent Pinchart
+CSE Semaphore Belgium
 
-Scott Wood wrote:
-> On Mon, Aug 18, 2008 at 07:52:12AM -0400, richw@netcomuk.co.uk wrote:
->   
->> We've got an 8347 based board very similar to the A&M asp8347. Core clock
->> is 400MHz. Bus clock is 266666666Hz.
->> According to the data sheet for the 8347, the decrementer clock runs at a
->> quarter of the rate of the bus clock. I have two questions:
->> In arch/powerpc/boot/redboot-83xx.c, the timebase clock is passed to
->> dt_fixup_cpu_clocks() as bi_busfreq / 16. If I leave it like this, my
->> system clock runs approximately 4 times too fast. 
->> Can anyone point me in the direction of an explanation for the div by 16
->> rather than 4?
->>     
->
-> It's a bug, which I pointed out here:
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-June/058704.html
->
->   
->> If I change the call to dt_fixup_cpu_clocks so that bi_busfreq/4 is passed
->> in, then the clock runs more accurately. However, its still not correct.
->> This gives a decrementer frequency of 66666666Hz, but if I hard code the
->> value to 66000000Hz, the clock runs accurately.
->> Can anyone shed any light on why the value passed in by the boot loader
->> (redboot) seems to be inaccurate.
->>     
->
-> Redboot probably has the wrong crystal frequency hardcoded.
->
-> -Scott
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
->
->   
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+F +32 (2) 387 42 75
