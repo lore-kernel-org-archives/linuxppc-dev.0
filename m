@@ -1,15 +1,18 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 684DCDDF33
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 22:20:28 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-dev@ozlabs.org
-Subject: cpm2: Fix race condition in CPM2 GPIO library.
-Date: Tue, 19 Aug 2008 14:20:23 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200808191420.24837.laurentp@cse-semaphore.com>
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6DA99DE906
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 23:02:10 +1000 (EST)
+Date: Tue, 19 Aug 2008 22:02:00 +0900 (JST)
+Message-Id: <20080819.220200.-1300539182.kouish@swc.toshiba.co.jp>
+To: roel.kluin@gmail.com
+Subject: Re: [PATCH] powerpc, scc: duplicate SCC_UHC_USBCEN
+In-Reply-To: <48A9F256.2000901@gmail.com>
+From: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,107 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The CPM2 GPIO library code uses the non thread-safe clrbits32/setbits32
-macros. This patch protects them with a spinlock.
-
-Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
----
- arch/powerpc/sysdev/cpm_common.c |   37 ++++++++++++++++++++++++++-----------
- 1 files changed, 26 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index 53da8a0..00d3d17 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -254,15 +254,11 @@ static int cpm2_gpio32_get(struct gpio_chip *gc, unsigned int gpio)
- 	return !!(in_be32(&iop->dat) & pin_mask);
- }
- 
--static void cpm2_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
-+static void __cpm2_gpio32_set(struct of_mm_gpio_chip *mm_gc, u32 pin_mask,
-+	int value)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
- 	struct cpm2_ioports __iomem *iop = mm_gc->regs;
--	unsigned long flags;
--	u32 pin_mask = 1 << (31 - gpio);
--
--	spin_lock_irqsave(&cpm2_gc->lock, flags);
- 
- 	if (value)
- 		cpm2_gc->cpdata |= pin_mask;
-@@ -270,6 +266,18 @@ static void cpm2_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
- 		cpm2_gc->cpdata &= ~pin_mask;
- 
- 	out_be32(&iop->dat, cpm2_gc->cpdata);
-+}
-+
-+static void cpm2_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
-+	unsigned long flags;
-+	u32 pin_mask = 1 << (31 - gpio);
-+
-+	spin_lock_irqsave(&cpm2_gc->lock, flags);
-+
-+	__cpm2_gpio32_set(mm_gc, pin_mask, value);
- 
- 	spin_unlock_irqrestore(&cpm2_gc->lock, flags);
- }
-@@ -277,14 +285,17 @@ static void cpm2_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
- static int cpm2_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- {
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
- 	struct cpm2_ioports __iomem *iop = mm_gc->regs;
--	u32 pin_mask;
-+	unsigned long flags;
-+	u32 pin_mask = 1 << (31 - gpio);
- 
--	pin_mask = 1 << (31 - gpio);
-+	spin_lock_irqsave(&cpm2_gc->lock, flags);
- 
- 	setbits32(&iop->dir, pin_mask);
-+	__cpm2_gpio32_set(mm_gc, pin_mask, val);
- 
--	cpm2_gpio32_set(gc, gpio, val);
-+	spin_unlock_irqrestore(&cpm2_gc->lock, flags);
- 
- 	return 0;
- }
-@@ -292,13 +303,17 @@ static int cpm2_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- static int cpm2_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
- {
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm2_gpio32_chip *cpm2_gc = to_cpm2_gpio32_chip(mm_gc);
- 	struct cpm2_ioports __iomem *iop = mm_gc->regs;
--	u32 pin_mask;
-+	unsigned long flags;
-+	u32 pin_mask = 1 << (31 - gpio);
- 
--	pin_mask = 1 << (31 - gpio);
-+	spin_lock_irqsave(&cpm2_gc->lock, flags);
- 
- 	clrbits32(&iop->dir, pin_mask);
- 
-+	spin_unlock_irqrestore(&cpm2_gc->lock, flags);
-+
- 	return 0;
- }
- 
--- 
-1.5.0
 
 
--- 
-Laurent Pinchart
-CSE Semaphore Belgium
+Roel,
 
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
+> untested, is it correct?
 
-T +32 (2) 387 42 59
-F +32 (2) 387 42 75
+Your patch is correct.
+
+Thanks for your pointing it out and sending the patch. I tested your
+patch and it works good.
+
+Fortunately, this bug is not fatal because it seems that the SCC-UHC
+sets SCC_UHC_USBEN and SCC_UHC_USBCEN at once.
+
+
+Your patch does not contain 'Signed-off-by' line. Could you re-post it
+with your sign?
+
+
+> ---
+> arch/powerpc/platforms/cell/celleb_scc.h:224:
+> #define SCC_UHC_USBEN           0x00010000
+> #define SCC_UHC_USBCEN          0x00020000
+> 
+> ---
+> diff --git a/arch/powerpc/platforms/cell/celleb_scc_uhc.c b/arch/powerpc/platforms/cell/celleb_scc_uhc.c
+> index d63b720..b086f33 100644
+> --- a/arch/powerpc/platforms/cell/celleb_scc_uhc.c
+> +++ b/arch/powerpc/platforms/cell/celleb_scc_uhc.c
+> @@ -31,7 +31,7 @@
+>  
+>  static inline int uhc_clkctrl_ready(u32 val)
+>  {
+> -	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBCEN;
+> +	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBEN;
+>  	return((val & mask) == mask);
+>  }
+>  
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+Best regards,
+Kou Ishizaki
