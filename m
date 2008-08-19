@@ -1,21 +1,28 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 7E887DEA8D
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 02:20:20 +1000 (EST)
-Date: Tue, 19 Aug 2008 18:20:15 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 4/5] powerpc: Make the 64-bit kernel as a
-	position-independent executable
-In-Reply-To: <18594.15027.214064.283433@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.64.0808191816450.25348@vixen.sonytel.be>
-References: <18594.14443.340604.693747@cargo.ozlabs.ibm.com>
-	<18594.15027.214064.283433@cargo.ozlabs.ibm.com>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 66D2BDE1EC
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 02:47:43 +1000 (EST)
+Date: Tue, 19 Aug 2008 12:47:39 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+In-Reply-To: <20080819024707.GA22659@Krystal>
+Message-ID: <alpine.DEB.1.10.0808191247001.28232@gandalf.stny.rr.com>
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
+	<48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
+	<48A9AFA7.8080508@freescale.com>
+	<alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
+	<1219110814.8062.2.camel@pasglop>
+	<alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
+	<1219113549.8062.13.camel@pasglop>
+	<alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com>
+	<20080819024707.GA22659@Krystal>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-694076064-1219162815=:25348"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Steven Rostedt <srostedt@redhat.com>, Scott Wood <scottwood@freescale.com>,
+	Eran Liberty <liberty@extricom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,74 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584349381-694076064-1219162815=:25348
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 
-On Wed, 13 Aug 2008, Paul Mackerras wrote:
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -1163,7 +1163,9 @@ void __init early_init_devtree(void *params)
->  	parse_early_param();
->  
->  	/* Reserve LMB regions used by kernel, initrd, dt, etc... */
-> -	lmb_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
-> +	lmb_reserve(0, __end_interrupts - _stext);
-> +	lmb_reserve(__pa(__end_interrupts),
-> +		    klimit - (unsigned long)__end_interrupts);
->  	reserve_kdump_trampoline();
->  	reserve_crashkernel();
->  	early_reserve_mem();
+On Mon, 18 Aug 2008, Mathieu Desnoyers wrote:
 
-This part broke ppc32:
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > 
+> > On Tue, 19 Aug 2008, Benjamin Herrenschmidt wrote:
+> > 
+> > > 
+> > > > Hmm, this was originally copied from x86, where we did a cmpxchg, but that 
+> > > > is probably not needed since all of this is done in kstop_machine. Also, 
+> > > > only the "get" is needed. If we don't fault there, we wont fault on the 
+> > > > put (unless we have permissions wrong, and that would be a bug).
+> > > 
+> > > Would it ? How do we make sure the kernel text is mapped writeable ?
+> > 
+> > We map it writeable if FTRACE is enabled.
+> > 
+> 
+> Argh. See text_poke(). It's there exactly for this purpose on x86.
+> 
 
-| arch/powerpc/kernel/prom.c: In function 'early_init_devtree':
-| arch/powerpc/kernel/prom.c:1166: error: '__end_interrupts' undeclared (first use in this function)
-| arch/powerpc/kernel/prom.c:1166: error: (Each undeclared identifier is reported only once
-| arch/powerpc/kernel/prom.c:1166: error: for each function it appears in.)
+OK, I just tried text_poke and it unfortunately fails. The problem is that 
+it requires that the text you are changing is aligned and fits on one 
+page. We have no control over that.
 
-After applying the patch below, I was able to build and boot a kernel for the
-Sequoia.
-
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- arch/powerpc/kernel/prom.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -1163,9 +1163,13 @@ void __init early_init_devtree(void *par
- 	parse_early_param();
- 
- 	/* Reserve LMB regions used by kernel, initrd, dt, etc... */
-+#ifdef CONFIG_PPC64
- 	lmb_reserve(0, __end_interrupts - _stext);
- 	lmb_reserve(__pa(__end_interrupts),
- 		    klimit - (unsigned long)__end_interrupts);
-+#else
-+	lmb_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
-+#endif
- 	reserve_kdump_trampoline();
- 	reserve_crashkernel();
- 	early_reserve_mem();
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-694076064-1219162815=:25348--
+-- Steve
