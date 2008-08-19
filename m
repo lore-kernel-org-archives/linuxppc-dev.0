@@ -1,21 +1,21 @@
-Return-Path: <roel.kluin@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
-	by ozlabs.org (Postfix) with ESMTP id CE256DE491
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 01:54:00 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id e27so13431nfd.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 08:53:58 -0700 (PDT)
-Message-ID: <48AAEC92.8050108@gmail.com>
-Date: Tue, 19 Aug 2008 11:53:54 -0400
-From: roel kluin <roel.kluin@gmail.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 7E887DEA8D
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 02:20:20 +1000 (EST)
+Date: Tue, 19 Aug 2008 18:20:15 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 4/5] powerpc: Make the 64-bit kernel as a
+	position-independent executable
+In-Reply-To: <18594.15027.214064.283433@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.64.0808191816450.25348@vixen.sonytel.be>
+References: <18594.14443.340604.693747@cargo.ozlabs.ibm.com>
+	<18594.15027.214064.283433@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-Subject: [alsa-devel] [PATCH v2] duplicate SNDRV_PCM_FMTBIT_S{16,24}_BE
-References: <48AA407C.8090409@gmail.com>	<3ef3fed769e5aa57681bacea1230e82b.squirrel@secure.sipsolutions.net>
-	<s5hbpzpxrfh.wl%tiwai@suse.de>
-In-Reply-To: <s5hbpzpxrfh.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
-	alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-694076064-1219162815=:25348"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,47 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Takashi Iwai wrote:
-> At Tue, 19 Aug 2008 08:15:05 +0200 (CEST),
-> Johannes Berg wrote:
->> roel kluin wrote:
->>> untested, is it correct?
->> not a clue, do you know how long ago that was? :)
->> does the driver check endianness anywhere?
-> 
-> AFAIK snd-aoa supports only bit-endian formats (at least in
-> sound/aoa/soundbus/i2sbus-pcm.c), so this addition makes little
-> sense.
-> 
-> Better to drop the duplicated words there.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Thanks Johannes and Takashi,
+---584349381-694076064-1219162815=:25348
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-FWIW this removes the duplicates.
+On Wed, 13 Aug 2008, Paul Mackerras wrote:
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -1163,7 +1163,9 @@ void __init early_init_devtree(void *params)
+>  	parse_early_param();
+>  
+>  	/* Reserve LMB regions used by kernel, initrd, dt, etc... */
+> -	lmb_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
+> +	lmb_reserve(0, __end_interrupts - _stext);
+> +	lmb_reserve(__pa(__end_interrupts),
+> +		    klimit - (unsigned long)__end_interrupts);
+>  	reserve_kdump_trampoline();
+>  	reserve_crashkernel();
+>  	early_reserve_mem();
+
+This part broke ppc32:
+
+| arch/powerpc/kernel/prom.c: In function 'early_init_devtree':
+| arch/powerpc/kernel/prom.c:1166: error: '__end_interrupts' undeclared (first use in this function)
+| arch/powerpc/kernel/prom.c:1166: error: (Each undeclared identifier is reported only once
+| arch/powerpc/kernel/prom.c:1166: error: for each function it appears in.)
+
+After applying the patch below, I was able to build and boot a kernel for the
+Sequoia.
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
-Remove duplicate assignment of SNDRV_PCM_FMTBIT_S{16,24}_BE bits
+ arch/powerpc/kernel/prom.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/sound/aoa/codecs/snd-aoa-codec-tas.c b/sound/aoa/codecs/snd-aoa-codec-tas.c
-index 7a16a33..6c515b2 100644
---- a/sound/aoa/codecs/snd-aoa-codec-tas.c
-+++ b/sound/aoa/codecs/snd-aoa-codec-tas.c
-@@ -654,15 +654,13 @@ static struct snd_kcontrol_new bass_control = {
- static struct transfer_info tas_transfers[] = {
- 	{
- 		/* input */
--		.formats = SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S16_BE |
--			   SNDRV_PCM_FMTBIT_S24_BE | SNDRV_PCM_FMTBIT_S24_BE,
-+		.formats = SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S24_BE,
- 		.rates = SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 | SNDRV_PCM_RATE_48000,
- 		.transfer_in = 1,
- 	},
- 	{
- 		/* output */
--		.formats = SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S16_BE |
--			   SNDRV_PCM_FMTBIT_S24_BE | SNDRV_PCM_FMTBIT_S24_BE,
-+		.formats = SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S24_BE,
- 		.rates = SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 | SNDRV_PCM_RATE_48000,
- 		.transfer_in = 0,
- 	},
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -1163,9 +1163,13 @@ void __init early_init_devtree(void *par
+ 	parse_early_param();
+ 
+ 	/* Reserve LMB regions used by kernel, initrd, dt, etc... */
++#ifdef CONFIG_PPC64
+ 	lmb_reserve(0, __end_interrupts - _stext);
+ 	lmb_reserve(__pa(__end_interrupts),
+ 		    klimit - (unsigned long)__end_interrupts);
++#else
++	lmb_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
++#endif
+ 	reserve_kdump_trampoline();
+ 	reserve_crashkernel();
+ 	early_reserve_mem();
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-694076064-1219162815=:25348--
