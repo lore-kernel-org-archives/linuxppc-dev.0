@@ -1,24 +1,23 @@
-Return-Path: <jacmet@gmail.com>
-Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.182])
-	by ozlabs.org (Postfix) with ESMTP id 185DADDF8D
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 06:01:44 +1000 (EST)
-Received: by ik-out-1112.google.com with SMTP id c21so107658ika.1
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 13:01:42 -0700 (PDT)
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/2] rtc: rtc-ds1374: fix 'no irq' case handling
-References: <20080812161733.GA32164@oksana.dev.rtsoft.ru>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Tue, 19 Aug 2008 22:01:37 +0200
-In-Reply-To: <20080812161733.GA32164@oksana.dev.rtsoft.ru> (Anton Vorontsov's
-	message of "Tue\, 12 Aug 2008 20\:17\:33 +0400")
-Message-ID: <87d4k4n59a.fsf@macbook.be.48ers.dk>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 5550FDDF19
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 06:15:18 +1000 (EST)
+Date: Tue, 19 Aug 2008 16:15:15 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Eran Liberty <liberty@extricom.com>
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+In-Reply-To: <48AAB7FF.4070502@extricom.com>
+Message-ID: <alpine.DEB.1.10.0808191614380.4957@gandalf.stny.rr.com>
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
+	<48A9901B.1080900@redhat.com> <48A9BEA3.10906@extricom.com>
+	<alpine.DEB.1.10.0808181439480.796@gandalf.stny.rr.com>
+	<48AAB7FF.4070502@extricom.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: Alessandro Zummo <a.zummo@towertech.it>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com,
-	linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Anton" == Anton Vorontsov <avorontsov@ru.mvista.com> writes:
 
- Anton> On a PowerPC board with ds1374 RTC I'm getting this error while
- Anton> RTC tries to probe:
+On Tue, 19 Aug 2008, Eran Liberty wrote:
 
- Anton> rtc-ds1374 0-0068: unable to request IRQ
+> Steven Rostedt wrote:
+> >   
+> > > Testing tracer sched_switch: PASSED
+> > > Testing tracer ftrace: PASSED
+> > > Testing dynamic ftrace: PASSED
 
- Anton> This happens because I2C probing code (drivers/of/of_i2c.c) is
- Anton> specifying IRQ0 for 'no irq' case, which is correct.
+Do you have PREEMPT_TRACER enabled, or any other tracer for that matter?
 
- Anton> The driver handles this incorrectly, though. This patch fixes it.
+-- Steve
 
-Great, I was just about to send a similar patch. Another advantage of
-using 0 for 'no irq' is for I2C_BOARD_INFO(). With that you can simply
-not assign anything to .irq instead of having to set it to -1.
-
-Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
-
--- 
-Bye, Peter Korsgaard
+> > > 
+> > > Oops: Exception in kernel mode, sig: 11 [#1]
+> > > Exsw1600
+> > > Modules linked in:
+> > > NIP: c00bbb20 LR: c00bbb20 CTR: 00000000
+> > >     
+> > 
