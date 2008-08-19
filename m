@@ -1,15 +1,15 @@
 Return-Path: <jwboyer@gmail.com>
 Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id D65C9DED98
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 01:41:43 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9A627DEDC8
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 01:41:46 +1000 (EST)
 Received: by an-out-0708.google.com with SMTP id c34so1678anc.78
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 08:41:43 -0700 (PDT)
-Message-Id: <e4629b0ef407347130d9bab216c98c7095426e40.1219160188.git.jwboyer@linux.vnet.ibm.com>
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 08:41:46 -0700 (PDT)
+Message-Id: <298f818ce8359fbcd5763a9783882e6bec791a77.1219160188.git.jwboyer@linux.vnet.ibm.com>
 In-Reply-To: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
 References: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date: Tue, 19 Aug 2008 11:26:35 -0400
-Subject: [PATCH 3/9] powerpc/44x: Migrate Canyonlands support to ppc44x_simple
+Date: Tue, 19 Aug 2008 11:26:40 -0400
+Subject: [PATCH 4/9] powerpc/44x: Migrate Katmai support to ppc44x_simple
 To: linuxppc-dev@ozlabs.org
 Mime-Version: 1.0
 Sender: Josh Boyer <jwboyer@gmail.com>
@@ -22,52 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Migrate the AMCC Canyonlands board to use the ppc44x_simple platform file.
+Migrate the AMCC Katmai board to use the ppc44x_simple platform file.
 
 Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/44x/Kconfig       |    1 +
- arch/powerpc/platforms/44x/Makefile      |    1 -
- arch/powerpc/platforms/44x/canyonlands.c |   63 ------------------------------
- 3 files changed, 1 insertions(+), 64 deletions(-)
- delete mode 100644 arch/powerpc/platforms/44x/canyonlands.c
+ arch/powerpc/platforms/44x/Kconfig  |    1 +
+ arch/powerpc/platforms/44x/Makefile |    1 -
+ arch/powerpc/platforms/44x/katmai.c |   62 -----------------------------------
+ 3 files changed, 1 insertions(+), 63 deletions(-)
+ delete mode 100644 arch/powerpc/platforms/44x/katmai.c
 
 diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 0958285..92ba2d8 100644
+index 92ba2d8..66d4499 100644
 --- a/arch/powerpc/platforms/44x/Kconfig
 +++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -81,6 +81,7 @@ config CANYONLANDS
- 	bool "Canyonlands"
+@@ -49,6 +49,7 @@ config KATMAI
+ 	bool "Katmai"
  	depends on 44x
  	default n
 +	select PPC44x_SIMPLE
- 	select 460EX
+ 	select 440SPe
  	select PCI
  	select PPC4xx_PCI_EXPRESS
 diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-index ca18a32..0ab626d 100644
+index 0ab626d..2eb1cbe 100644
 --- a/arch/powerpc/platforms/44x/Makefile
 +++ b/arch/powerpc/platforms/44x/Makefile
-@@ -8,5 +8,4 @@ obj-$(CONFIG_KATMAI)	+= katmai.o
+@@ -4,7 +4,6 @@ obj-$(CONFIG_EBONY)	+= ebony.o
+ obj-$(CONFIG_TAISHAN)	+= taishan.o
+ obj-$(CONFIG_SAM440EP) 	+= sam440ep.o
+ obj-$(CONFIG_SEQUOIA)	+= sequoia.o
+-obj-$(CONFIG_KATMAI)	+= katmai.o
  obj-$(CONFIG_RAINIER)	+= rainier.o
  obj-$(CONFIG_WARP)	+= warp.o
  obj-$(CONFIG_WARP)	+= warp-nand.o
--obj-$(CONFIG_CANYONLANDS) += canyonlands.o
- obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
-diff --git a/arch/powerpc/platforms/44x/canyonlands.c b/arch/powerpc/platforms/44x/canyonlands.c
+diff --git a/arch/powerpc/platforms/44x/katmai.c b/arch/powerpc/platforms/44x/katmai.c
 deleted file mode 100644
-index 3949289..0000000
---- a/arch/powerpc/platforms/44x/canyonlands.c
+index 44f4b3a..0000000
+--- a/arch/powerpc/platforms/44x/katmai.c
 +++ /dev/null
-@@ -1,63 +0,0 @@
+@@ -1,62 +0,0 @@
 -/*
-- * Canyonlands board specific routines
+- * Katmai board specific routines
 - *
-- * Copyright 2008 DENX Software Engineering, Stefan Roese <sr@denx.de>
-- *
-- * Based on the Katmai code by
 - * Benjamin Herrenschmidt <benh@kernel.crashing.org>
 - * Copyright 2007 IBM Corp.
+- *
+- * Based on the Bamboo code by
 - * Josh Boyer <jwboyer@linux.vnet.ibm.com>
 - * Copyright 2007 IBM Corporation
 - *
@@ -87,26 +88,26 @@ index 3949289..0000000
 -#include <asm/pci-bridge.h>
 -#include <asm/ppc4xx.h>
 -
--static __initdata struct of_device_id canyonlands_of_bus[] = {
+-static __initdata struct of_device_id katmai_of_bus[] = {
 -	{ .compatible = "ibm,plb4", },
 -	{ .compatible = "ibm,opb", },
 -	{ .compatible = "ibm,ebc", },
 -	{},
 -};
 -
--static int __init canyonlands_device_probe(void)
+-static int __init katmai_device_probe(void)
 -{
--	of_platform_bus_probe(NULL, canyonlands_of_bus, NULL);
+-	of_platform_bus_probe(NULL, katmai_of_bus, NULL);
 -
 -	return 0;
 -}
--machine_device_initcall(canyonlands, canyonlands_device_probe);
+-machine_device_initcall(katmai, katmai_device_probe);
 -
--static int __init canyonlands_probe(void)
+-static int __init katmai_probe(void)
 -{
 -	unsigned long root = of_get_flat_dt_root();
 -
--	if (!of_flat_dt_is_compatible(root, "amcc,canyonlands"))
+-	if (!of_flat_dt_is_compatible(root, "amcc,katmai"))
 -		return 0;
 -
 -	ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
@@ -114,9 +115,9 @@ index 3949289..0000000
 -	return 1;
 -}
 -
--define_machine(canyonlands) {
--	.name 				= "Canyonlands",
--	.probe 				= canyonlands_probe,
+-define_machine(katmai) {
+-	.name 				= "Katmai",
+-	.probe 				= katmai_probe,
 -	.progress 			= udbg_progress,
 -	.init_IRQ 			= uic_init_tree,
 -	.get_irq 			= uic_get_irq,
