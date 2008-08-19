@@ -1,33 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B20A9DE1F8
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 07:48:23 +1000 (EST)
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <20080819173453.GA28239@Krystal>
-References: <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
-	<48A9AFA7.8080508@freescale.com>
-	<alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
-	<1219110814.8062.2.camel@pasglop>
-	<alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
-	<1219113549.8062.13.camel@pasglop>
-	<alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com>
-	<20080819024707.GA22659@Krystal>
-	<alpine.DEB.1.10.0808191247001.28232@gandalf.stny.rr.com>
-	<20080819173453.GA28239@Krystal>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 07:47:51 +1000
-Message-Id: <1219182471.7826.16.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTPS id 7F8E9DE257
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 08:22:24 +1000 (EST)
+Date: Tue, 19 Aug 2008 23:04:36 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: [PATCH 1/2] rtc: rtc-ds1374: fix 'no irq' case handling
+Message-ID: <20080819230436.6b2fbb4a@lxorguk.ukuu.org.uk>
+In-Reply-To: <9e4733910808191423u34946955lc85caa6b2217b390@mail.gmail.com>
+References: <20080812161733.GA32164@oksana.dev.rtsoft.ru>
+	<9e4733910808191339s28a05f90pef57961e8d24fbdb@mail.gmail.com>
+	<20080819212937.01dfd024@lxorguk.ukuu.org.uk>
+	<9e4733910808191423u34946955lc85caa6b2217b390@mail.gmail.com>
 Mime-Version: 1.0
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>, Scott Wood <scottwood@freescale.com>,
-	Eran Liberty <liberty@extricom.com>
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,17 +29,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
+> I don't know the status of these platforms....
 > 
-> Ok, there are two cases where it's ok :
-> 
-> 1 - in stop_machine, considering we are not touching code executed in
-> NMI handlers.
-> 2 - when using my replace_instruction_safe() which uses a temporary
-> breakpoint when doing the instruction replacement.
-> 
-> In those cases you could use text_poke_early().
+> asm-blackfin/irq.h:#define NO_IRQ ((unsigned int)(-1))
+> asm-mn10300/irq.h:#define NO_IRQ		INT_MAX
+> asm-parisc/irq.h:#define NO_IRQ		(-1)
 
-Note that vmap/vunmap will be very slow.
+In need of fixing, assuming they actually use NO_IRQ for anything - don't
+be mislead by the fact they may have old defines lying around.
 
-Ben.
+Alan
