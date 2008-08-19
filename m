@@ -1,15 +1,15 @@
 Return-Path: <jwboyer@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
-	by ozlabs.org (Postfix) with ESMTP id 35440DEDE9
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id F04C1DED9D
 	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 01:42:05 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id n7so4199wag.13
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 08:42:03 -0700 (PDT)
-Message-Id: <faaaa9f9e286063b3f2363e9fc43cd59002861d3.1219160188.git.jwboyer@linux.vnet.ibm.com>
+Received: by an-out-0708.google.com with SMTP id c34so1678anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 08:42:05 -0700 (PDT)
+Message-Id: <6746a2a9b2c279d5f195d90b060d4c91edd7a128.1219160188.git.jwboyer@linux.vnet.ibm.com>
 In-Reply-To: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
 References: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date: Tue, 19 Aug 2008 11:27:01 -0400
-Subject: [PATCH 8/9] powerpc/44x: Add explicit support for AMCC Glacier
+Date: Tue, 19 Aug 2008 11:27:05 -0400
+Subject: [PATCH 9/9] powerpc/44x: Add explicit Yosemite support
 To: linuxppc-dev@ozlabs.org
 Mime-Version: 1.0
 Sender: Josh Boyer <jwboyer@gmail.com>
@@ -22,63 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add explicit support for the AMCC Glacier eval board to Kconfig and the
-ppc44x_simple file.  Also removes the cayonlands compatible entry from the
-DTS file.
+Add the Yosemite board to the explicitly supported list for ppc44x_simple
+boards and remove the compatible entry for bamboo from the DTS file.
 
 Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 ---
- arch/powerpc/boot/dts/glacier.dts          |    2 +-
- arch/powerpc/platforms/44x/Kconfig         |   11 +++++++++++
+ arch/powerpc/boot/dts/yosemite.dts         |    2 +-
  arch/powerpc/platforms/44x/ppc44x_simple.c |    1 +
- 3 files changed, 13 insertions(+), 1 deletions(-)
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/glacier.dts b/arch/powerpc/boot/dts/glacier.dts
-index 24cf0db..f3787a2 100644
---- a/arch/powerpc/boot/dts/glacier.dts
-+++ b/arch/powerpc/boot/dts/glacier.dts
-@@ -14,7 +14,7 @@
+diff --git a/arch/powerpc/boot/dts/yosemite.dts b/arch/powerpc/boot/dts/yosemite.dts
+index e39422a..1fa3cb4 100644
+--- a/arch/powerpc/boot/dts/yosemite.dts
++++ b/arch/powerpc/boot/dts/yosemite.dts
+@@ -15,7 +15,7 @@
  	#address-cells = <2>;
  	#size-cells = <1>;
- 	model = "amcc,glacier";
--	compatible = "amcc,glacier", "amcc,canyonlands";
-+	compatible = "amcc,glacier";
+ 	model = "amcc,yosemite";
+-	compatible = "amcc,yosemite","amcc,bamboo";
++	compatible = "amcc,yosemite";
  	dcr-parent = <&{/cpus/cpu@0}>;
  
  	aliases {
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index e0bea83..f8ef279 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -92,6 +92,17 @@ config CANYONLANDS
- 	help
- 	  This option enables support for the AMCC PPC460EX evaluation board.
- 
-+config GLACIER
-+	bool "Glacier"
-+	depends on 44x
-+	default n
-+	select PPC44x_SIMPLE
-+	select 460EX # Odd since it uses 460GT but the effects are the same
-+	select PCI
-+	select PPC4xx_PCI_EXPRESS
-+	help
-+	  This option enables support for the AMCC PPC460GT evaluation board.
-+
- config YOSEMITE
- 	bool "Yosemite"
- 	depends on 44x
 diff --git a/arch/powerpc/platforms/44x/ppc44x_simple.c b/arch/powerpc/platforms/44x/ppc44x_simple.c
-index 067cddb..4e78e04 100644
+index 4e78e04..43b8db9 100644
 --- a/arch/powerpc/platforms/44x/ppc44x_simple.c
 +++ b/arch/powerpc/platforms/44x/ppc44x_simple.c
-@@ -43,6 +43,7 @@ machine_device_initcall(ppc44x_simple, ppc44x_device_probe);
- static char *board[] __initdata = {
- 	"amcc,bamboo",
- 	"amcc,cayonlands",
-+	"amcc,glacier",
- 	"ibm,ebony",
- 	"amcc,katmai",
+@@ -49,6 +49,7 @@ static char *board[] __initdata = {
  	"amcc,rainier",
+ 	"amcc,sequoia",
+ 	"amcc,taishan",
++	"amcc,yosemite",
+ 	NULL
+ };
+ 
 -- 
 1.5.5.1
