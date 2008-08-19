@@ -1,24 +1,34 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <jeremy@goop.org>
+Received: from mail.goop.org (gw.goop.org [64.81.55.164])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 368D8DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 10:09:28 +1000 (EST)
+Message-ID: <48AB5E36.8030400@goop.org>
+Date: Tue, 19 Aug 2008 16:58:46 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18603.22359.447836.113347@cargo.ozlabs.ibm.com>
-Date: Wed, 20 Aug 2008 09:29:27 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Joachim Fenkes <FENKES@de.ibm.com>
-Subject: Re: [PATCH] ibmebus/of_platform: Move "name" sysfs attribute into
-	generic OF devices
-In-Reply-To: <OFD6515867.CFE29C04-ONC12574AA.003B8D55-C12574AA.003BB443@de.ibm.com>
-References: <200808051630.19619.fenkes@de.ibm.com>
-	<18602.18568.338552.482669@cargo.ozlabs.ibm.com>
-	<OFD6515867.CFE29C04-ONC12574AA.003B8D55-C12574AA.003BB443@de.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Olaf Hering <olaf@aepfle.de>,
-	Paul Mackerras <pmac@au1.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <RAISCH@de.ibm.com>,
-	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
-	Alexander Schmidt1 <ALEXSCHM@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>,
-	"David S. Miller" <davem@davemloft.net>
+To: benh@kernel.crashing.org
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+References: <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>	
+	<48A9AFA7.8080508@freescale.com>	
+	<alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>	
+	<1219110814.8062.2.camel@pasglop>	
+	<alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>	
+	<1219113549.8062.13.camel@pasglop>	
+	<alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com>	
+	<20080819024707.GA22659@Krystal>	
+	<alpine.DEB.1.10.0808191247001.28232@gandalf.stny.rr.com>	
+	<20080819173453.GA28239@Krystal> <1219182471.7826.16.camel@pasglop>
+In-Reply-To: <1219182471.7826.16.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	linux-kernel@vger.kernel.org,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	Steven Rostedt <srostedt@redhat.com>, Scott Wood <scottwood@freescale.com>,
+	Eran Liberty <liberty@extricom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +38,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Joachim Fenkes writes:
+Benjamin Herrenschmidt wrote:
+>> Ok, there are two cases where it's ok :
+>>
+>> 1 - in stop_machine, considering we are not touching code executed in
+>> NMI handlers.
+>> 2 - when using my replace_instruction_safe() which uses a temporary
+>> breakpoint when doing the instruction replacement.
+>>
+>> In those cases you could use text_poke_early().
+>>     
+>
+> Note that vmap/vunmap will be very slow.
+>   
 
-> > Is this a bugfix that is needed for 2.6.27?
-> 
-> Yes, definitely. The eHCA userspace driver relies on the name attribute to 
-> check for valid adapters (it checks that the name is "lhca"), so with the 
-> name attribute gone, eHCA userspace will cease to work.
+Don't we have Nick's speedups now?
 
-OK, I'll put it in.  Please, in future, always say explicitly if you
-think a patch needs to go in to the kernel we're currently
-stablizing.  Otherwise, I'll generally assume it's for the next merge
-window.
-
-Paul.
+    J
