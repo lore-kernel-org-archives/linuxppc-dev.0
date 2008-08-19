@@ -1,31 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 02F63DE953
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 04:47:10 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7JIl3V4015991
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 14:47:03 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7JIjl5P151798
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 14:45:47 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7JIjkkA018539
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 14:45:47 -0400
-Date: Tue, 19 Aug 2008 14:45:45 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 0/9] Rework PowerPC 44x board support
-Message-ID: <20080819144545.4cebe670@zod.rchland.ibm.com>
-In-Reply-To: <200808192026.12632.sr@denx.de>
-References: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
-	<200808192026.12632.sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jacmet@gmail.com>
+Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.182])
+	by ozlabs.org (Postfix) with ESMTP id 185DADDF8D
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 06:01:44 +1000 (EST)
+Received: by ik-out-1112.google.com with SMTP id c21so107658ika.1
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 13:01:42 -0700 (PDT)
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/2] rtc: rtc-ds1374: fix 'no irq' case handling
+References: <20080812161733.GA32164@oksana.dev.rtsoft.ru>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Tue, 19 Aug 2008 22:01:37 +0200
+In-Reply-To: <20080812161733.GA32164@oksana.dev.rtsoft.ru> (Anton Vorontsov's
+	message of "Tue\, 12 Aug 2008 20\:17\:33 +0400")
+Message-ID: <87d4k4n59a.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: Alessandro Zummo <a.zummo@towertech.it>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,28 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 19 Aug 2008 20:26:12 +0200
-Stefan Roese <sr@denx.de> wrote:
+>>>>> "Anton" == Anton Vorontsov <avorontsov@ru.mvista.com> writes:
 
-> On Tuesday 19 August 2008, Josh Boyer wrote:
-> > The following patch series reworks the board support code for PowerPC 44x
-> > platforms.  It eliminates a number of redundant <board>.c files and add a
-> > ppc44x_simple.c file that has an explicit list of boards that are supported
-> > by it.  This is the same mechanism that Grant Likely has used for MPC 5200
-> > boards.
-> >
-> > It also adds some more explicit support for Glacier and Yosemite boards, as
-> > those boards were using a board level compatible property in their DTS
-> > files that was a bit confusing.
-> >
-> > Review would be appreciated.  Tested on Sequoia, and I plan on testing on
-> > as many boards as I can before committing to my tree.
-> 
-> Looks great at first glance. I'll try to do some testing here too in the next 
-> few days.
+ Anton> On a PowerPC board with ds1374 RTC I'm getting this error while
+ Anton> RTC tries to probe:
 
-That would be much appreciated.  I have a number of the effected
-boards, but I don't have them all so any testing you can do would be
-awesome.
+ Anton> rtc-ds1374 0-0068: unable to request IRQ
 
-josh
+ Anton> This happens because I2C probing code (drivers/of/of_i2c.c) is
+ Anton> specifying IRQ0 for 'no irq' case, which is correct.
+
+ Anton> The driver handles this incorrectly, though. This patch fixes it.
+
+Great, I was just about to send a similar patch. Another advantage of
+using 0 for 'no irq' is for I2C_BOARD_INFO(). With that you can simply
+not assign anything to .irq instead of having to set it to -1.
+
+Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
+
+-- 
+Bye, Peter Korsgaard
