@@ -1,29 +1,22 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 86F7BDE065
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 07:08:17 +1000 (EST)
-Date: Tue, 19 Aug 2008 17:08:15 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-In-Reply-To: <20080819173453.GA28239@Krystal>
-Message-ID: <alpine.DEB.1.10.0808191705590.4957@gandalf.stny.rr.com>
-References: <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
-	<48A9AFA7.8080508@freescale.com>
-	<alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
-	<1219110814.8062.2.camel@pasglop>
-	<alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
-	<1219113549.8062.13.camel@pasglop>
-	<alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com>
-	<20080819024707.GA22659@Krystal>
-	<alpine.DEB.1.10.0808191247001.28232@gandalf.stny.rr.com>
-	<20080819173453.GA28239@Krystal>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 89CCDDDF63
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 07:12:12 +1000 (EST)
+Date: Wed, 20 Aug 2008 01:12:10 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH 1/2] rtc: rtc-ds1374: fix 'no irq' case handling
+Message-ID: <20080819211210.GA16708@oksana.dev.rtsoft.ru>
+References: <20080812161733.GA32164@oksana.dev.rtsoft.ru>
+	<9e4733910808191339s28a05f90pef57961e8d24fbdb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>, Scott Wood <scottwood@freescale.com>,
-	Eran Liberty <liberty@extricom.com>
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <9e4733910808191339s28a05f90pef57961e8d24fbdb@mail.gmail.com>
+Cc: Alessandro Zummo <a.zummo@towertech.it>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com,
+	linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,41 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Aug 19, 2008 at 04:39:09PM -0400, Jon Smirl wrote:
+> On 8/12/08, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > On a PowerPC board with ds1374 RTC I'm getting this error while
+> >  RTC tries to probe:
+> >
+> >  rtc-ds1374 0-0068: unable to request IRQ
+> >
+> >  This happens because I2C probing code (drivers/of/of_i2c.c) is
+> >  specifying IRQ0 for 'no irq' case, which is correct.
+> 
+> Shouldn't this be
+> 
+> >  -       if (client->irq <= NO_IRQ)
+> 
+> instead of
+> 
+> >  -       if (client->irq < 0)
+> >  +       if (client->irq <= 0)
+> 
+> Since NO_IRQ can vary by platform (0 or -1)?
 
-On Tue, 19 Aug 2008, Mathieu Desnoyers wrote:
-> 
-> Ok, there are two cases where it's ok :
-> 
-> 1 - in stop_machine, considering we are not touching code executed in
-> NMI handlers.
-> 2 - when using my replace_instruction_safe() which uses a temporary
-> breakpoint when doing the instruction replacement.
-> 
-> In those cases you could use text_poke_early().
-> 
-> See
-> http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=blob;f=arch/x86/kernel/immediate.c;h=7789e2c75bf03e645f15759d5dff0c1698493f92;hb=HEAD
-> 
-> For a use example. Basically it looks like :
-> 
-> 
-> 360                 pages[0] = virt_to_page((void *)bypass_eip);
-> 361                 vaddr = vmap(pages, 1, VM_MAP, PAGE_KERNEL);
-> 362                 BUG_ON(!vaddr);
-> 363                 text_poke_early(&vaddr[bypass_eip & ~PAGE_MASK],
-> 364                         (void *)addr, size);
-> 365                 /*
-> 366                  * Fill the rest with nops.
-> 367                  */
-> 368                 len = NR_NOPS - size;
-> 369                 add_nops((void *)
-> 370                         &vaddr[(bypass_eip & ~PAGE_MASK) + size],
-> 371                         len);
-> 372                 print_dbg_bytes("inserted nops",
-> 373                         &vaddr[(bypass_eip & ~PAGE_MASK) + size], len);
-> 374                 vunmap(vaddr);
+First of all, NO_IRQ is not defined for every architecture. You can't
+use it for truly cross-platform drivers.
 
-vunmap can not be called with interrupts disabled, and this is exactly 
-what my code does.
+Secondly, "<= 0" will work for both NO_IRQ == 0 and NO_IRQ == -1,
+since client->irq is signed type.
 
--- Steve
+As for false positives, I don't believe that there is any platform
+that use IRQ0 for external interrupts.
+
+[...]
+> In of_i2c.c shouldn't there be an error check?
+> 
+> 		info.irq = irq_of_parse_and_map(node, 0);
+> 
+> if (info.irq < NO_IRQ) {report error; continue }
+
+irq_of_parse_and_map() returns unsigned type, plus it is defined
+only for PowerPC, and for PowerPC NO_IRQ is always 0.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
