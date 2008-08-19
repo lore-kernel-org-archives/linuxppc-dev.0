@@ -1,17 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CEDC7DE0F9
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 11:46:07 +1000 (EST)
-Date: Tue, 19 Aug 2008 11:45:55 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] hotplug/rpaphp: remove unused error path code
-Message-Id: <20080819114555.c0d2bd50.sfr@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DD4F8DDF38
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 11:57:01 +1000 (EST)
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <48A9901B.1080900@redhat.com>
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
+	<48A9901B.1080900@redhat.com>
+Content-Type: text/plain
+Date: Tue, 19 Aug 2008 11:51:32 +1000
+Message-Id: <1219110692.8062.0.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Alex Chiang <achiang@hp.com>, LKML <linux-kernel@vger.kernel.org>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>, linuxppc-dev@ozlabs.org,
-	Linda Xie <lxie@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+	linuxppc-dev@ozlabs.org, Eran Liberty <liberty@extricom.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit f46753c5e354b857b20ab8e0fe7b2579831dc369 ("PCI: introduce pci_slot") removed the need for this error path.  Eliminate this warning:
+On Mon, 2008-08-18 at 11:07 -0400, Steven Rostedt wrote:
+> Eran Liberty wrote:
+> > After compiling a kernel with ftrace I started to experience all sorts 
+> > of crashes.
+> 
+> Just to make sure...
+> 
+> ftrace enables markers too, and RCU has tracing with the markers. This 
+> may not be the problem, but I just want to eliminate as many variables 
+> as possible.
+> Could you disable ftrace, but keep the markers on too.  Also, could you 
+> enable ftrace again and turn on the FTRACE_STARTUP_TEST.
 
-drivers/pci/hotplug/rpaphp_slot.c: In function 'rpaphp_register_slot':
-drivers/pci/hotplug/rpaphp_slot.c:151: warning: label 'sysfs_fail' defined but not used
+I spent some time last week tracking one of those crashes and it appears
+that we are getting corruption of some of the non-volatile registers.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/pci/hotplug/rpaphp_slot.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+So far, I found out that it -seems- to be coming from stack frame
+corruption during a timer interrupt.
 
-diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
-index 9b714ea..5088450 100644
---- a/drivers/pci/hotplug/rpaphp_slot.c
-+++ b/drivers/pci/hotplug/rpaphp_slot.c
-@@ -147,9 +147,5 @@ int rpaphp_register_slot(struct slot *slot)
- 	list_add(&slot->rpaphp_slot_list, &rpaphp_slot_head);
- 	info("Slot [%s] registered\n", slot->name);
- 	return 0;
--
--sysfs_fail:
--	pci_hp_deregister(php_slot);
--	return retval;
- }
- 
--- 
-1.5.6.3
+I haven't had a chance to dig further yet.
 
--- 
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ben.
