@@ -1,16 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B2BC4DE072
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 18:19:28 +1000 (EST)
-Date: Tue, 19 Aug 2008 18:19:25 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: remove include of linux/of_device.h from
-	asm/of_device.h
-Message-Id: <20080819181925.cff9b5cb.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 97BA2DE044
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 19:02:59 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Corrections please ...
+Date: Tue, 19 Aug 2008 11:02:53 +0200
+References: <48A9E2C6.1030205@hypersurf.com>
+In-Reply-To: <48A9E2C6.1030205@hypersurf.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808191102.53911.arnd@arndb.de>
+Cc: Kevin Diggs <kevdig@hypersurf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,34 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that we have removed all inclusions of asm/of_device.h, this
-compatability include can be removed.
+On Monday 18 August 2008, Kevin Diggs wrote:
+> Subject: Corrections please ...
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/include/asm/of_device.h |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+The subject should be the one line change log, e.g.
 
-This depends on my previous patch "powerpc/drivers: use linux/of_device.h
-instead of asm/of_device.h".
+[PATCH] add kerneldoc comments for completion.h
 
-diff --git a/arch/powerpc/include/asm/of_device.h b/arch/powerpc/include/asm/of_device.h
-index 3c12399..a64debf 100644
---- a/arch/powerpc/include/asm/of_device.h
-+++ b/arch/powerpc/include/asm/of_device.h
-@@ -24,8 +24,5 @@ extern struct of_device *of_device_alloc(struct device_node *np,
- extern int of_device_uevent(struct device *dev,
- 			    struct kobj_uevent_env *env);
- 
--/* This is just here during the transition */
--#include <linux/of_device.h>
--
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_OF_DEVICE_H */
--- 
-1.5.6.3
+Also, cc the maintainer of the code. If you can't tell
+from the MAINTAINERS file, look for the most common
+name when doing 'git log path/to/file.c'. In this case,
+there does not seem to be an actual maintainer, but I
+would expect Willy and Ingo to be interested in the code.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Read Documentation/SubmittingPatches.
+
+> Could I get any needed corrections on this. Especially on the "???"
+> 
+
+The introductory text should explain why the patch is needed.
+If you have more comments, put them behind the changelog text,
+under a '---' line.
+
+> [kevdig@PowerMac8600B linux-2.6.26]$ diff -U3 
+> include/linux/completion.{h.orig,h}|more
+> --- include/linux/completion.h.orig     2008-08-13 00:56:52.000000000 -0700
+> +++ include/linux/completion.h  2008-08-18 13:00:23.000000000 -0700
+
+Patches should be in -p1 format. Best use a tool like quilt, git or
+mercurial to generate the patch instead of doing it by hand.
+
+> @@ -10,6 +10,16 @@
+> 
+>   #include <linux/wait.h>
+> 
+> +/**
+> + * struct completion - structure used to maintain state for a "completion"
+> + * @done:  counting variable used to signal completion
+> + * @wait:  internal wait queue head; used for locking and synchronization
+> + *
+> + * This is the structure used to maintain the state for a "completion". See
+> + * also:  complete(), wait_for_completion() (and friends _timeout,
+> + * _interruptible, _interruptible_timeout, and _killable), 
+> init_completion(),
+> + * and macros DECLARE_COMPLETION() and INIT_COMPLETION().
+> + */
+
+Line wrapping is broken, you need the right settings for sending unmodified
+emails from your mail client.
+
+	Arnd <><
