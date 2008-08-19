@@ -2,23 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 48825DDF64
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 11:57:29 +1000 (EST)
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+	by ozlabs.org (Postfix) with ESMTPS id DBC50DDE2A
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 11:59:14 +1000 (EST)
+Subject: Re: Finding cpuid in entry_64.S
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <20080818184158.GA1798@Krystal>
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
-	<48A9901B.1080900@redhat.com> <48A9BEA3.10906@extricom.com>
-	<20080818184158.GA1798@Krystal>
+To: "Mitesh R. Meswani" <mmeswani@miners.utep.edu>
+In-Reply-To: <BLU103-DS41DBE50328F80B52EA442936E0@phx.gbl>
+References: <BLU103-DS41DBE50328F80B52EA442936E0@phx.gbl>
 Content-Type: text/plain
-Date: Tue, 19 Aug 2008 11:54:08 +1000
-Message-Id: <1219110848.8062.4.camel@pasglop>
+Date: Tue, 19 Aug 2008 11:59:07 +1000
+Message-Id: <1219111147.8062.6.camel@pasglop>
 Mime-Version: 1.0
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	Eran Liberty <liberty@extricom.com>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,35 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2008-08-18 at 17:33 -0600, Mitesh R. Meswani wrote:
+> Hello 
+>  
+> I am trying to find the cpuid when the functions that handle return
+> from context switch and interrupts are called, based on the cpu the
+> return code is executing on, I want to take some specific actions. 
 
-> > Oops: Exception in kernel mode, sig: 11 [#1]
-> > Exsw1600
-> > Modules linked in:
-> > NIP: c00bbb20 LR: c00bbb20 CTR: 00000000
-> > REGS: dd5b1c50 TRAP: 0700   Not tainted  (2.6.27-rc2)
-> > MSR: 00029000 <EE,ME>  CR: 24082282  XER: 20000000
-> > TASK = ddcce060[1707] 'find' THREAD: dd5b0000
-> > GPR00: 00000000 dd5b1d00 ddcce060 dd801180 dd5b1d68 dd5b1d58 dd80125b 
-> > 100234ec
-> > GPR08: c0800000 00019330 0000ffff dd5b1d20 24000288 100ad874 100936f8 
-> > 1008a1d0
-> > GPR16: 10083f80 dd5b1e2c dd5b1d68 fffffff4 c0380000 dd5b1d60 dd5b1d58 
-> > dd802084
-> > GPR24: dc3d7700 dd802018 dd5b1d68 c0380000 dd801180 dd5b1d68 00000000 
-> > dd5b1d00
-> > NIP [c00bbb20] d_lookup+0x40/0x90
-> > LR [c00bbb20] d_lookup+0x40/0x90
-> > Call Trace:
-> > [dd5b1d00] [dd5b1d58] 0xdd5b1d58 (unreliable)
-> 
-> Can you check if, at some point during the system execution (starting
-> from boot), 0xdd5b1d58 is an address where a module is loaded ? (the
-> module can be later unloaded, what I wonder is if this address would
-> appear to have had a loaded+unloaded module).
-> 
-> Actually, could you try to compile your kernel without "MODULE_UNLOAD" ?
-
-I've had similar crashes (with similar backtraces in the VFS) on
-machines with no modules, netbooted zImages.
+What are you trying to do more precisely ? It sounds like the wrong
+solution to whatever problem you have ... 
 
 Ben.
