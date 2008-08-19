@@ -1,23 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [MPC7448] machdep_calls
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
-	<sebastien.chretien.enseirb@gmail.com>
-In-Reply-To: <319b0ac50808190000m211ff885ucbf05a85b43f5c14@mail.gmail.com>
-References: <319b0ac50808180145r44a1b64fhd09c038ce45bb206@mail.gmail.com>
-	<1219051624.28339.39.camel@pasglop>
-	<319b0ac50808180422r504a012djb971bf80e819a6d2@mail.gmail.com>
-	<319b0ac50808180435o4a8e5bebr79f86e17ba2fb9af@mail.gmail.com>
-	<1219062004.7946.5.camel@localhost>
-	<319b0ac50808180717ka6731fdu591798ac0d8b4e82@mail.gmail.com>
-	<1219095576.28339.74.camel@pasglop>
-	<319b0ac50808190000m211ff885ucbf05a85b43f5c14@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 19 Aug 2008 17:27:43 +1000
-Message-Id: <1219130863.8062.39.camel@pasglop>
-Mime-Version: 1.0
-Cc: Linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <mohan@in.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4F867DE15D
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 18:14:41 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7J8EZDp019629
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 04:14:35 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m7J8CJYJ233904
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 04:12:19 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m7J8CJ1C016709
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 04:12:19 -0400
+Message-ID: <48AA804B.4050508@in.ibm.com>
+Date: Tue, 19 Aug 2008 13:41:55 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 0/5] Relocatable 64-bit kernel using linker PIE support
+References: <18594.14443.340604.693747@cargo.ozlabs.ibm.com>
+	<48A9AF1D.5050700@in.ibm.com>
+	<18602.9527.358136.469335@cargo.ozlabs.ibm.com>
+	<48AA5B8E.2000801@in.ibm.com>
+	<18602.27761.214066.779209@cargo.ozlabs.ibm.com>
+In-Reply-To: <18602.27761.214066.779209@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,91 +38,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-08-19 at 09:00 +0200, Sébastien Chrétien wrote:
-> I have no screen that's why I have to use UART. I followed the CPM
-> model in head_32.S : 
-> #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
-> setup_cpm_bat:
->     lis    r8, 0xf000
->     ori    r8, r8,    0x002a
->     mtspr    SPRN_DBAT1L, r8
+Paul Mackerras wrote:
+> Mohan Kumar M writes:
 > 
->     lis    r11, 0xf000
->     ori    r11, r11, (BL_1M << 2) | 2
->     mtspr    SPRN_DBAT1U, r11
+>> Attaching the .config
 > 
->     blr
-> #endif
+> Hmmm, your config works for me on a POWER6 partition here, whether I
+> netboot the zImage.pseries or boot it with yaboot.  I wonder if your
+> toolchain is an older version.  What is the output from ld --version
+> and gcc --version?
 
-The "EARLY DEBUG" stuff is a pile of hacks to help with bringup,
-it's definitely not a long term solution to your problems.
+# ld --version
+GNU ld version 2.16.91.0.5 20051219 (SUSE Linux)
 
-You may also want to look at Grant Likely's work on doing proper
-early ioremap using BATs.
+# gcc --version
+gcc (GCC) 4.1.2 20070115 (prerelease) (SUSE Linux)
 
-> With this code  I can use udbg.
+If the problem is related to toolchain version, which one you recommend 
+to test?
+
 > 
-> According to you, what is the best way ?
+> Also, could you send me off-list your compiled vmlinux?
 
-The above is fine for early debug console. But that's definitely
-not the only kind of thing you may want to put in your setup_arch()...
-Look at what others do. 
+You can download the zipped vmlinux at
+http://mohankumar.m.googlepages.com/vmlinux.gz
 
-Ben.
-
-> 2008/8/18, Benjamin Herrenschmidt <benh@kernel.crashing.org>:
->         On Mon, 2008-08-18 at 16:17 +0200, Sébastien Chrétien wrote:
->         > The mpc7448hpc2 uses a tsi108-bridge. My board uses an IP on
->         a FPGA..
->         > I read the code of mpc7448_hpc2.c.
->         > It uses a ioremap in order to iniatilize the tsi108
->         registers. But I
->         > have already initialized MMU with my registers in HEAD_32.S.
->         Do I need
->         > to use ioremap in setup_arch() ?
->         
->         
->         Why did you hack head_32.S ? You shouldn't do that... This is
->         common
->         code, not platform code.
->         
->         Ben.
->         
->         >
->         >
->         >
->         > 2008/8/18, Michael Ellerman <michael@ellerman.id.au>:
->         >         On Mon, 2008-08-18 at 13:35 +0200, Sébastien
->         Chrétien wrote:
->         >         > Can somebody explain me the aim of the
->         >         function  "setup_arch" in the
->         >         > machine_call structure ?
->         >
->         >
->         >         Is this MPC7448 anything like an mpc7448hpc2 ?
->         >
->         >         If so maybe you should start by looking at the code
->         for it in:
->         >
->         >         arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
->         >
->         >         Even if it's not related, that will give you some
->         idea of what
->         >         the
->         >         callbacks are for.
->         >
->         >         cheers
->         >
->         >         --
->         >         Michael Ellerman
->         >         OzLabs, IBM Australia Development Lab
->         >
->         >         wwweb: http://michael.ellerman.id.au
->         >         phone: +61 2 6212 1183 (tie line 70 21183)
->         >
->         >         We do not inherit the earth from our ancestors,
->         >         we borrow it from our children. - S.M.A.R.T Person
->         >
->         >
->         
-> 
+Regards,
+Mohan.
