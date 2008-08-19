@@ -1,23 +1,29 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from lxorguk.ukuu.org.uk (earthlight.etchedpixels.co.uk
-	[81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E79C4DE56A
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 06:47:00 +1000 (EST)
-Date: Tue, 19 Aug 2008 21:29:37 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [PATCH 1/2] rtc: rtc-ds1374: fix 'no irq' case handling
-Message-ID: <20080819212937.01dfd024@lxorguk.ukuu.org.uk>
-In-Reply-To: <9e4733910808191339s28a05f90pef57961e8d24fbdb@mail.gmail.com>
-References: <20080812161733.GA32164@oksana.dev.rtsoft.ru>
-	<9e4733910808191339s28a05f90pef57961e8d24fbdb@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 86F7BDE065
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 07:08:17 +1000 (EST)
+Date: Tue, 19 Aug 2008 17:08:15 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+In-Reply-To: <20080819173453.GA28239@Krystal>
+Message-ID: <alpine.DEB.1.10.0808191705590.4957@gandalf.stny.rr.com>
+References: <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
+	<48A9AFA7.8080508@freescale.com>
+	<alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
+	<1219110814.8062.2.camel@pasglop>
+	<alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
+	<1219113549.8062.13.camel@pasglop>
+	<alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com>
+	<20080819024707.GA22659@Krystal>
+	<alpine.DEB.1.10.0808191247001.28232@gandalf.stny.rr.com>
+	<20080819173453.GA28239@Krystal>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>
+	Steven Rostedt <srostedt@redhat.com>, Scott Wood <scottwood@freescale.com>,
+	Eran Liberty <liberty@extricom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,13 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Shouldn't this be
-> 
-> >  -       if (client->irq <= NO_IRQ)
-> 
-> instead of
 
-NO_IRQ is obsolete. client->irq != is the test and IRQ numbers are
-unsigned.
+On Tue, 19 Aug 2008, Mathieu Desnoyers wrote:
+> 
+> Ok, there are two cases where it's ok :
+> 
+> 1 - in stop_machine, considering we are not touching code executed in
+> NMI handlers.
+> 2 - when using my replace_instruction_safe() which uses a temporary
+> breakpoint when doing the instruction replacement.
+> 
+> In those cases you could use text_poke_early().
+> 
+> See
+> http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=blob;f=arch/x86/kernel/immediate.c;h=7789e2c75bf03e645f15759d5dff0c1698493f92;hb=HEAD
+> 
+> For a use example. Basically it looks like :
+> 
+> 
+> 360                 pages[0] = virt_to_page((void *)bypass_eip);
+> 361                 vaddr = vmap(pages, 1, VM_MAP, PAGE_KERNEL);
+> 362                 BUG_ON(!vaddr);
+> 363                 text_poke_early(&vaddr[bypass_eip & ~PAGE_MASK],
+> 364                         (void *)addr, size);
+> 365                 /*
+> 366                  * Fill the rest with nops.
+> 367                  */
+> 368                 len = NR_NOPS - size;
+> 369                 add_nops((void *)
+> 370                         &vaddr[(bypass_eip & ~PAGE_MASK) + size],
+> 371                         len);
+> 372                 print_dbg_bytes("inserted nops",
+> 373                         &vaddr[(bypass_eip & ~PAGE_MASK) + size], len);
+> 374                 vunmap(vaddr);
 
-Alan
+vunmap can not be called with interrupts disabled, and this is exactly 
+what my code does.
+
+-- Steve
