@@ -1,24 +1,23 @@
-Return-Path: <sebastien.chretien.enseirb@gmail.com>
-Message-ID: <319b0ac50808190223y7f378b46o3e485335e619e0cc@mail.gmail.com>
-Date: Tue, 19 Aug 2008 11:23:05 +0200
-From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
-	<sebastien.chretien.enseirb@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: [MPC7448] machdep_calls
-In-Reply-To: <1219130863.8062.39.camel@pasglop>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 665EDDE0BD
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 19:26:37 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 1/3] gpiolib: make gpio_to_chip() public
+Date: Tue, 19 Aug 2008 11:26:28 +0200
+References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
+	<200808181644.45480.laurentp@cse-semaphore.com>
+	<20080818153300.GA10163@oksana.dev.rtsoft.ru>
+In-Reply-To: <20080818153300.GA10163@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_2909_31295603.1219137785497"
-References: <319b0ac50808180145r44a1b64fhd09c038ce45bb206@mail.gmail.com>
-	<1219051624.28339.39.camel@pasglop>
-	<319b0ac50808180422r504a012djb971bf80e819a6d2@mail.gmail.com>
-	<319b0ac50808180435o4a8e5bebr79f86e17ba2fb9af@mail.gmail.com>
-	<1219062004.7946.5.camel@localhost>
-	<319b0ac50808180717ka6731fdu591798ac0d8b4e82@mail.gmail.com>
-	<1219095576.28339.74.camel@pasglop>
-	<319b0ac50808190000m211ff885ucbf05a85b43f5c14@mail.gmail.com>
-	<1219130863.8062.39.camel@pasglop>
-Cc: Linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; boundary="nextPart1695237.BSJEQFJojn";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200808191126.33133.laurentp@cse-semaphore.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,229 +27,150 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_2909_31295603.1219137785497
-Content-Type: text/plain; charset=ISO-8859-1
+--nextPart1695237.BSJEQFJojn
+Content-Type: text/plain;
+  charset="windows-1251"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-So I will write .setup_arch of machine_call  structure.
-When is ppc_md.setup_arch() called ?
+On Monday 18 August 2008, Anton Vorontsov wrote:
+> On Mon, Aug 18, 2008 at 04:44:36PM +0200, Laurent Pinchart wrote:
+> > On Monday 18 August 2008, Anton Vorontsov wrote:
+> > > On Mon, Aug 18, 2008 at 03:58:46PM +0200, Laurent Pinchart wrote:
+> > > [...]
+> > > > > Not exactly. But you can do this way, if you need to preserve
+> > > > > a direction. What I did is a bit different though.
+> > > > >=20
+> > > > > qe_gpio_set_dedicated() actually just restores a mode that
+> > > > > firmware had set up, including direction (since direction could
+> > > > > be a part of dedicated configuration).
+> > > > >=20
+> > > > > That is, upon GPIO controller registration, we save all registers,
+> > > > > then driver can set up a pin to a GPIO mode via standard API, and
+> > > > > then it can _revert_ a pin to a dedicated function via
+> > > > > qe_gpio_set_dedicated() call. Dedicated function is specified by
+> > > > > the firmware (or board file), we're just restoring it.
+> > > >=20
+> > > > The semantic of the set_dedicated() operation needs to be clearly
+> > > > defined then.
+> > >=20
+> > > It is. We set up a dedicated function that firmware (or board file)
+> > > has configured.
+> >=20
+> > A comment in the source would help.
+> >=20
+> > > > I can live with this behaviour, but it might not be
+> > > > acceptable for everybody.
+> > >=20
+> > > For example?
+> > >=20
+> > > > Your patch requires the firmware to set a pin in dedicated mode at
+> > > > bootup in order to be used later in dedicated mode.
+> > >=20
+> > > Yes. On a PowerPC this is always true: firmware should set up PIO
+> > > config. Linux' board file could fixup the firmware though.
+> >=20
+> > That's not what I meant. What if the hardware requires to pin to be
+> > configured in GPIO mode with a fixed value until the SOC-specific
+> > driver that will drive the GPIO is loaded ? That's not possible
+> > with your API.
+>=20
+> Yes, this isn't possible with this API. Because you can do this
+> with standard GPIO API! ;-)
+>=20
+> Just call gpio_direction_*() in the board file, before probing the
+> hardware.
 
-2008/8/19, Benjamin Herrenschmidt <benh@kernel.crashing.org>:
->
-> On Tue, 2008-08-19 at 09:00 +0200, S=E9bastien Chr=E9tien wrote:
-> > I have no screen that's why I have to use UART. I followed the CPM
-> > model in head_32.S :
-> > #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
-> > setup_cpm_bat:
-> >     lis    r8, 0xf000
-> >     ori    r8, r8,    0x002a
-> >     mtspr    SPRN_DBAT1L, r8
-> >
-> >     lis    r11, 0xf000
-> >     ori    r11, r11, (BL_1M << 2) | 2
-> >     mtspr    SPRN_DBAT1U, r11
-> >
-> >     blr
-> > #endif
->
->
-> The "EARLY DEBUG" stuff is a pile of hacks to help with bringup,
-> it's definitely not a long term solution to your problems.
->
-> You may also want to look at Grant Likely's work on doing proper
-> early ioremap using BATs.
->
->
-> > With this code  I can use udbg.
-> >
-> > According to you, what is the best way ?
->
->
-> The above is fine for early debug console. But that's definitely
-> not the only kind of thing you may want to put in your setup_arch()...
-> Look at what others do.
->
-> Ben.
->
->
-> > 2008/8/18, Benjamin Herrenschmidt <benh@kernel.crashing.org>:
-> >         On Mon, 2008-08-18 at 16:17 +0200, S=E9bastien Chr=E9tien wrote=
-:
-> >         > The mpc7448hpc2 uses a tsi108-bridge. My board uses an IP on
-> >         a FPGA..
-> >         > I read the code of mpc7448_hpc2.c.
-> >         > It uses a ioremap in order to iniatilize the tsi108
-> >         registers. But I
-> >         > have already initialized MMU with my registers in HEAD_32.S.
-> >         Do I need
-> >         > to use ioremap in setup_arch() ?
-> >
-> >
-> >         Why did you hack head_32.S ? You shouldn't do that... This is
-> >         common
-> >         code, not platform code.
-> >
-> >         Ben.
-> >
-> >         >
-> >         >
-> >         >
-> >         > 2008/8/18, Michael Ellerman <michael@ellerman.id.au>:
-> >         >         On Mon, 2008-08-18 at 13:35 +0200, S=E9bastien
-> >         Chr=E9tien wrote:
-> >         >         > Can somebody explain me the aim of the
-> >         >         function  "setup_arch" in the
-> >         >         > machine_call structure ?
-> >         >
-> >         >
-> >         >         Is this MPC7448 anything like an mpc7448hpc2 ?
-> >         >
-> >         >         If so maybe you should start by looking at the code
-> >         for it in:
-> >         >
-> >         >         arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-> >         >
-> >         >         Even if it's not related, that will give you some
-> >         idea of what
-> >         >         the
-> >         >         callbacks are for.
-> >         >
-> >         >         cheers
-> >         >
-> >         >         --
-> >         >         Michael Ellerman
-> >         >         OzLabs, IBM Australia Development Lab
-> >         >
-> >         >         wwweb: http://michael.ellerman.id.au
-> >         >         phone: +61 2 6212 1183 (tie line 70 21183)
-> >         >
-> >         >         We do not inherit the earth from our ancestors,
-> >         >         we borrow it from our children. - S.M.A.R.T Person
-> >         >
-> >         >
-> >
-> >
->
->
+You'd have to do that after the GPIO drivers saved the pin registers.
 
-------=_Part_2909_31295603.1219137785497
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> > Until a SOC peripheral is initialized by its associated Linux driver,
+> > the behaviour of a GPIO pin in dedicated mode will be undefined.
+>=20
+> Huh?! Then all current software is simply broken: we're setting pinmux
+> config _prior_ to controller initialization.
 
-So I will write .setup_arch of machine_call&nbsp; structure.<br>
-When is ppc_md.setup_arch() called ?<br><br><div><span class=3D"gmail_quote=
-">2008/8/19, Benjamin Herrenschmidt &lt;<a href=3D"mailto:benh@kernel.crash=
-ing.org">benh@kernel.crashing.org</a>&gt;:</span><blockquote class=3D"gmail=
-_quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt=
- 0pt 0.8ex; padding-left: 1ex;">
-On Tue, 2008-08-19 at 09:00 +0200, S=E9bastien Chr=E9tien wrote:<br> &gt; I=
- have no screen that&#39;s why I have to use UART. I followed the CPM<br> &=
-gt; model in head_32.S :<br> &gt; #ifdef CONFIG_PPC_EARLY_DEBUG_CPM<br> &gt=
-; setup_cpm_bat:<br>
- &gt;&nbsp;&nbsp;&nbsp;&nbsp; lis&nbsp;&nbsp;&nbsp;&nbsp;r8, 0xf000<br> &gt=
-;&nbsp;&nbsp;&nbsp;&nbsp; ori&nbsp;&nbsp;&nbsp;&nbsp;r8, r8,&nbsp;&nbsp;&nb=
-sp;&nbsp;0x002a<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp; mtspr&nbsp;&nbsp;&nbsp;&nb=
-sp;SPRN_DBAT1L, r8<br> &gt;<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp; lis&nbsp;&nbsp=
-;&nbsp;&nbsp;r11, 0xf000<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp; ori&nbsp;&nbsp;&n=
-bsp;&nbsp;r11, r11, (BL_1M &lt;&lt; 2) | 2<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;=
- mtspr&nbsp;&nbsp;&nbsp;&nbsp;SPRN_DBAT1U, r11<br>
- &gt;<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp; blr<br> &gt; #endif<br> <br> <br>The=
- &quot;EARLY DEBUG&quot; stuff is a pile of hacks to help with bringup,<br>=
- it&#39;s definitely not a long term solution to your problems.<br> <br> Yo=
-u may also want to look at Grant Likely&#39;s work on doing proper<br>
- early ioremap using BATs.<br> <br><br> &gt; With this code&nbsp;&nbsp;I ca=
-n use udbg.<br> &gt;<br> &gt; According to you, what is the best way ?<br> =
-<br> <br>The above is fine for early debug console. But that&#39;s definite=
-ly<br>
- not the only kind of thing you may want to put in your setup_arch()...<br>=
- Look at what others do.<br> <br> Ben.<br> <br><br> &gt; 2008/8/18, Benjami=
-n Herrenschmidt &lt;<a href=3D"mailto:benh@kernel.crashing.org">benh@kernel=
-.crashing.org</a>&gt;:<br>
- &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; On Mon, 2008-08-18 at=
- 16:17 +0200, S=E9bastien Chr=E9tien wrote:<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp; &gt; The mpc7448hpc2 uses a tsi108-bridge. My boa=
-rd uses an IP on<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; a=
- FPGA..<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt; I rea=
-d the code of mpc7448_hpc2.c.<br>
- &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt; It uses a iorema=
-p in order to iniatilize the tsi108<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; registers. But I<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp; &gt; have already initialized MMU with my registers in HEA=
-D_32.S.<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Do I need<=
-br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt; to use iorema=
-p in setup_arch() ?<br>
- &gt;<br> &gt;<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Why=
- did you hack head_32.S ? You shouldn&#39;t do that... This is<br> &gt;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; common<br> &gt;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; code, not platform code.<br> &gt;<br> &gt=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Ben.<br> &gt;<br> &gt;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt;<br>
- &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt;<br> &gt;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt;<br> &gt;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp; &gt; 2008/8/18, Michael Ellerman &lt;<a href=3D=
-"mailto:michael@ellerman.id.au">michael@ellerman.id.au</a>&gt;:<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; On Mon, 2008-08-18
-at 13:35 +0200, S=E9bastien<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp; Chr=E9tien wrote:<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt; Can somebody
-explain me the aim of the<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-function&nbsp;&nbsp;&quot;setup_arch&quot; in the<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt; machine_call
-structure ?<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt;<b=
-r> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt;<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Is this MPC7448
-anything like an mpc7448hpc2 ?<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp; &gt;<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; If so maybe you
-should start by looking at the code<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; for it in:<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; &gt;<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c<br> &gt;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt;<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Even if it&#39;s not
-related, that will give you some<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp; idea of what<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the<br> &gt;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp; callbacks are for.<br> &gt;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp; &gt;<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cheers<=
-br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt;<br>
- &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Micha=
-el Ellerman<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OzLabs, IBM
-Australia Development Lab<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp; &gt;<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; wwweb:
-<a href=3D"http://michael.ellerman.id.au">http://michael.ellerman.id.au</a>=
-<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; phone: +61 2 6212
-1183 (tie line 70 21183)<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp; &gt;<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; We do not inherit
-the earth from our ancestors,<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; we borrow it from
-our children. - S.M.A.R.T Person<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp; &gt;<br> &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-; &gt;<br> &gt;<br> &gt;<br> <br> </blockquote></div><br>
+Undefined behaviour doesn't mean broken behaviour :-) Signals coming from S=
+OC peripherals are mostly undefined until the peripheral is initialized. Fo=
+r most hardware that doesn't matter much, but it might in some cases. For i=
+nstance the state of the RTS signal on a serial port probably doesn't matte=
+r before we start serial communication, but some boards might require that =
+RTS is deasserted before the controller is initialized. We can just ignore =
+the issue for now and wait until it bites us.
 
-------=_Part_2909_31295603.1219137785497--
+> > The firmware/board code will probably want to set the pin as a GPIO
+> > output with a fixed value until the driver initializes the hardware.
+>=20
+> Probably? Do you have any such hardware?
+
+Nope. I was referring to the hardware such as in the above example.
+
+> > > Another option would be to add some argument to the set_dedicated
+> > > call, thus the software could specify arbitrary dedicated
+> > > function (thus no need to save/restore anything). But this would
+> > > be SOC-model specific, thus no driver can use this argument anyway.
+> >=20
+> > Drivers that require dedicated mode are SOC-specific anyway.
+>=20
+> I didn't say "SOC-specific". I said "SOC-model specific", which
+> means that the driver would be not portable even across QE chips
+> (i.e. MPC8323 vs. MPC8360, you can assume that the "CLK12" function
+> is having same PAR/ODR/DAT/DIR bits).
+
+If I'm not mistaken, the PAR bit is used to select between GPIO and dedicat=
+ed mode by definition. It should be safe to assume that setting a GPIO in d=
+edicated mode requires the PAR bit to be set. But as I stated above, we can=
+ ignore that for now until a hardware use case comes up.
+
+> > > > If, for some
+> > > > reason (driver not loaded, ...), no GPIO user shows up for that
+> > > > pin, it will stay configured in dedicated mode.
+> > >=20
+> > > Yes.
+> > >=20
+> > > > It might be better to set the PAR bit unconditionally in
+> > >=20
+> > > Why it might be better?
+> >=20
+> > Because, as explained a few lines down, the board initialization code
+> > will be able to configure a pin in a known state (PAR not set) at boot
+> > time until a driver requests the pin to be switched to dedicated mode.
+>=20
+> You can do this as I described above. But prior to this, yes, you have
+> to configure the pins and let Linux save these values. There is no other
+> way to pass this information, unfortunately.
+
+Ok.
+
+I started implementing CPM2 dedicated mode support to be used in the CPM UA=
+RT driver for RTS/CTS flow control, and soon realized there was a show stop=
+per. The CPM UART driver is mostly CPM1/CPM2 agnostic. I can't use a functi=
+on such as cpm2_gpio32_set_dedicated, as that wouldn't work on a CPM1 (at l=
+east not on all its ports). I could call the right function depending on wh=
+ich port the GPIO is on, but that's really hackish and would defeat the pur=
+pose of using GPIOs. What we really need there is a set_dedicated/set_optio=
+n/set_whatever function in the GPIO API :-/
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1695237.BSJEQFJojn
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkiqkckACgkQ8y9gWxC9vpceWACfUW3rS3oHtefEa4ZPz+2NGjbE
+1mAAn37NoerqMJpKp3gFQlrhHHwDO2sN
+=tyTF
+-----END PGP SIGNATURE-----
+
+--nextPart1695237.BSJEQFJojn--
