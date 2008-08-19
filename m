@@ -1,21 +1,31 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18602.18568.338552.482669@cargo.ozlabs.ibm.com>
-Date: Tue, 19 Aug 2008 14:14:00 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH] ibmebus/of_platform: Move "name" sysfs attribute into
-	generic OF devices
-In-Reply-To: <200808051630.19619.fenkes@de.ibm.com>
-References: <200808051630.19619.fenkes@de.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Olaf Hering <olaf@aepfle.de>,
-	Paul Mackerras <pmac@au1.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	Alexander Schmidt <alexschm@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>,
-	"David S. Miller" <davem@davemloft.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 28A61DE2EE
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 14:18:28 +1000 (EST)
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
+	<48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
+	<48A9AFA7.8080508@freescale.com>
+	<alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
+	<1219110814.8062.2.camel@pasglop>
+	<alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
+	<1219113549.8062.13.camel@pasglop> <1219114600.8062.15.camel@pasglop>
+	<alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Tue, 19 Aug 2008 14:17:11 +1000
+Message-Id: <1219119431.8062.35.camel@pasglop>
+Mime-Version: 1.0
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Steven Rostedt <srostedt@redhat.com>, Scott Wood <scottwood@freescale.com>,
+	Eran Liberty <liberty@extricom.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,10 +35,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Joachim Fenkes writes:
+On Mon, 2008-08-18 at 23:12 -0400, Steven Rostedt wrote:
+> On Tue, 19 Aug 2008, Benjamin Herrenschmidt wrote:
+> 
+> > Ok, so i did a patch, but it doesn't fix the problem. So
+> > there's something else whacking on the stack frames.
+> 
+> Is it 32 bit or 64?  I've tested the 64 bit quite a bit, but not so much 
+> the 32 (my powerbook is not usually that stable).
 
-> Recent of_platform changes made of_bus_type_init() overwrite the bus type's
-> .dev_attrs list, so move ibmebus' "name" attribute (which is needed by eHCA
-> userspace support) into generic OF device code. Tested on POWER.
+32-bit. Reproduced on powerbook by a user, 440, 750, ...
 
-Is this a bugfix that is needed for 2.6.27?
+> You might want to look at the entry.S mcount code too.
+
+Yeah, I had a look, nothing obviously bad there, but I may just
+have missed it :-)
+
+Ben.
