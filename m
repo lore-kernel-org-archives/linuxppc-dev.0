@@ -1,18 +1,19 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id F04C1DED9D
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 01:42:05 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so1678anc.78
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 08:42:05 -0700 (PDT)
-Message-Id: <6746a2a9b2c279d5f195d90b060d4c91edd7a128.1219160188.git.jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
-References: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date: Tue, 19 Aug 2008 11:27:05 -0400
-Subject: [PATCH 9/9] powerpc/44x: Add explicit Yosemite support
-To: linuxppc-dev@ozlabs.org
-Mime-Version: 1.0
-Sender: Josh Boyer <jwboyer@gmail.com>
+Return-Path: <roel.kluin@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
+	by ozlabs.org (Postfix) with ESMTP id D55AEDEED9
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 01:43:43 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id e27so11053nfd.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Aug 2008 08:43:41 -0700 (PDT)
+Message-ID: <48AAEA2A.3010107@gmail.com>
+Date: Tue, 19 Aug 2008 11:43:38 -0400
+From: roel kluin <roel.kluin@gmail.com>
+MIME-Version: 1.0
+To: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+Subject: [PATCH v2] powerpc, scc: duplicate SCC_UHC_USBCEN
+References: <20080819.220200.-1300539182.kouish@swc.toshiba.co.jp>
+In-Reply-To: <20080819.220200.-1300539182.kouish@swc.toshiba.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,39 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add the Yosemite board to the explicitly supported list for ppc44x_simple
-boards and remove the compatible entry for bamboo from the DTS file.
+Kou Ishizaki wrote:
+> 
+> Roel,
+> 
+>> untested, is it correct?
+> 
+> Your patch is correct.
+> 
+> Thanks for your pointing it out and sending the patch. I tested your
+> patch and it works good.
+> 
+> Fortunately, this bug is not fatal because it seems that the SCC-UHC
+> sets SCC_UHC_USBEN and SCC_UHC_USBCEN at once.
+> 
+> 
+> Your patch does not contain 'Signed-off-by' line. Could you re-post it
+> with your sign?
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Sorry for that and thanks for testing.
 ---
- arch/powerpc/boot/dts/yosemite.dts         |    2 +-
- arch/powerpc/platforms/44x/ppc44x_simple.c |    1 +
- 2 files changed, 2 insertions(+), 1 deletions(-)
+duplicate SCC_UHC_USBCEN
 
-diff --git a/arch/powerpc/boot/dts/yosemite.dts b/arch/powerpc/boot/dts/yosemite.dts
-index e39422a..1fa3cb4 100644
---- a/arch/powerpc/boot/dts/yosemite.dts
-+++ b/arch/powerpc/boot/dts/yosemite.dts
-@@ -15,7 +15,7 @@
- 	#address-cells = <2>;
- 	#size-cells = <1>;
- 	model = "amcc,yosemite";
--	compatible = "amcc,yosemite","amcc,bamboo";
-+	compatible = "amcc,yosemite";
- 	dcr-parent = <&{/cpus/cpu@0}>;
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/arch/powerpc/platforms/cell/celleb_scc_uhc.c b/arch/powerpc/platforms/cell/celleb_scc_uhc.c
+index d63b720..b086f33 100644
+--- a/arch/powerpc/platforms/cell/celleb_scc_uhc.c
++++ b/arch/powerpc/platforms/cell/celleb_scc_uhc.c
+@@ -31,7 +31,7 @@
  
- 	aliases {
-diff --git a/arch/powerpc/platforms/44x/ppc44x_simple.c b/arch/powerpc/platforms/44x/ppc44x_simple.c
-index 4e78e04..43b8db9 100644
---- a/arch/powerpc/platforms/44x/ppc44x_simple.c
-+++ b/arch/powerpc/platforms/44x/ppc44x_simple.c
-@@ -49,6 +49,7 @@ static char *board[] __initdata = {
- 	"amcc,rainier",
- 	"amcc,sequoia",
- 	"amcc,taishan",
-+	"amcc,yosemite",
- 	NULL
- };
+ static inline int uhc_clkctrl_ready(u32 val)
+ {
+-	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBCEN;
++	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBEN;
+ 	return((val & mask) == mask);
+ }
  
--- 
-1.5.5.1
