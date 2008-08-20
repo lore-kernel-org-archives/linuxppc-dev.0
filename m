@@ -1,15 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 7A4DADE25A
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 16:38:51 +1000 (EST)
+Date: Wed, 20 Aug 2008 16:38:50 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc: fix memory leaks in QE library
+Message-ID: <20080820063850.GK934@bakeyournoodle.com>
+References: <1219093928-5349-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18603.45843.518370.934966@cargo.ozlabs.ibm.com>
-Date: Wed, 20 Aug 2008 16:00:51 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Robert Jennings <rcj@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc: Improve message for vio bus entitlement panic
-In-Reply-To: <20080818153446.GB27342@austin.ibm.com>
-References: <20080815191205.GE20629@austin.ibm.com>
-	<20080818153446.GB27342@austin.ibm.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1219093928-5349-1-git-send-email-timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,13 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Robert Jennings writes:
+On Mon, Aug 18, 2008 at 04:12:08PM -0500, Timur Tabi wrote:
+> Fix two memory leaks in the Freescale QE library: add a missing kfree() in
+> ucc_fast_init() if the ioremap() fails, and update ucc_fast_free() to call
+> iounmap() on uf_regs.
 
-> Add information regarding the available and required entitlement amounts
-> to the message displayed for the panic when insufficient entitlement is
-> provided at boot.
+It's been pointed out in
+http://bugzilla.kernel.org/show_bug.cgi?id=11371
+that ucc_slow suffers from the same (welll clsoe enough) 2 problems.
+Care to fix them aswell?
 
-I'll queue this up for 2.6.28, unless you tell me it's needed for
-2.6.27.
+Yours Tony
 
-Paul.
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
