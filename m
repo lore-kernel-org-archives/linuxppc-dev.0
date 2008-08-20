@@ -1,16 +1,16 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 7A4DADE25A
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 16:38:51 +1000 (EST)
-Date: Wed, 20 Aug 2008 16:38:50 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc: fix memory leaks in QE library
-Message-ID: <20080820063850.GK934@bakeyournoodle.com>
-References: <1219093928-5349-1-git-send-email-timur@freescale.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1219093928-5349-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18603.47874.394343.506908@cargo.ozlabs.ibm.com>
+Date: Wed, 20 Aug 2008 16:34:42 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 4/5] powerpc: Make the 64-bit kernel as a
+	position-independent executable
+In-Reply-To: <Pine.LNX.4.64.0808191816450.25348@vixen.sonytel.be>
+References: <18594.14443.340604.693747@cargo.ozlabs.ibm.com>
+	<18594.15027.214064.283433@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0808191816450.25348@vixen.sonytel.be>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,17 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 18, 2008 at 04:12:08PM -0500, Timur Tabi wrote:
-> Fix two memory leaks in the Freescale QE library: add a missing kfree() in
-> ucc_fast_init() if the ioremap() fails, and update ucc_fast_free() to call
-> iounmap() on uf_regs.
+Geert Uytterhoeven writes:
 
-It's been pointed out in
-http://bugzilla.kernel.org/show_bug.cgi?id=11371
-that ucc_slow suffers from the same (welll clsoe enough) 2 problems.
-Care to fix them aswell?
+> This part broke ppc32:
+> 
+> | arch/powerpc/kernel/prom.c: In function 'early_init_devtree':
+> | arch/powerpc/kernel/prom.c:1166: error: '__end_interrupts' undeclared (first use in this function)
+> | arch/powerpc/kernel/prom.c:1166: error: (Each undeclared identifier is reported only once
+> | arch/powerpc/kernel/prom.c:1166: error: for each function it appears in.)
 
-Yours Tony
+I'm not totally surprised I broke ppc32 somewhere along the line
+there. :)  I think we will end up with having to have a #ifdef
+CONFIG_RELOCATABLE in there or maybe a test on PHYSICAL_START.  It
+will depend a bit on whether we want to make relocatable 32-bit
+kernels as PIEs as well.
 
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
+Paul.
