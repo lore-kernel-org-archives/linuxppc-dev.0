@@ -1,19 +1,35 @@
-Return-Path: <robert.richter@amd.com>
-Date: Wed, 20 Aug 2008 14:39:45 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: powerpc/cell/oprofile: fix mutex locking for spu-oprofile
-Message-ID: <20080820123944.GQ13011@erda.amd.com>
-References: <1217620879.15667.145.camel@carll-linux-desktop>
-	<18591.30474.127939.243247@cargo.ozlabs.ibm.com>
-	<200808110918.57293.arnd@arndb.de>
-	<200808110925.08485.arnd@arndb.de>
+Return-Path: <ehrhardt@linux.vnet.ibm.com>
+Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [195.212.29.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7AED9DE2C8
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 22:41:37 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate5.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m7KCfU2m366460
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 12:41:30 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.0) with
+	ESMTP id m7KCfUY72764888
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 13:41:30 +0100
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m7KCfTN8005244
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 13:41:29 +0100
+Message-ID: <48AC10F5.2010506@linux.vnet.ibm.com>
+Date: Wed, 20 Aug 2008 14:41:25 +0200
+From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <200808110925.08485.arnd@arndb.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, oprofile-list@lists.sourceforge.net,
-	cel <cel@linux.vnet.ibm.com>, cbe-oss-dev@ozlabs.org
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 2/4] kvmppc: add hypercall infrastructure - guest part
+References: <1219142204-12044-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	<1219142204-12044-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	<200808191328.16934.arnd@arndb.de>
+In-Reply-To: <200808191328.16934.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: jimix@us.ibm.com, linuxppc-dev@ozlabs.org, hollisb@us.ibm.com,
+	kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +39,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11.08.08 09:25:07, Arnd Bergmann wrote:
-> From: Carl Love <cel@us.ibm.com>
-> 
-> The issue is the SPU code is not holding the kernel mutex lock while
-> adding samples to the kernel buffer.
-> 
-> This patch creates per SPU buffers to hold the data.  Data
-> is added to the buffers from in interrupt context.  The data
-> is periodically pushed to the kernel buffer via a new Oprofile
-> function oprofile_put_buff(). The oprofile_put_buff() function
-> is called via a work queue enabling the funtion to acquire the
-> mutex lock.
-> 
-> The existing user controls for adjusting the per CPU buffer
-> size is used to control the size of the per SPU buffers.
-> Similarly, overflows of the SPU buffers are reported by
-> incrementing the per CPU buffer stats.  This eliminates the
-> need to have architecture specific controls for the per SPU
-> buffers which is not acceptable to the OProfile user tool
-> maintainer.
-> 
-> The export of the oprofile add_event_entry() is removed as it
-> is no longer needed given this patch.
-> 
-> Note, this patch has not addressed the issue of indexing arrays
-> by the spu number.  This still needs to be fixed as the spu
-> numbering is not guarenteed to be 0 to max_num_spus-1.
-> 
-> Signed-off-by: Carl Love <carll@us.ibm.com>
-> Signed-off-by: Maynard Johnson <maynardj@us.ibm.com>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Arnd Bergmann wrote:
+> On Tuesday 19 August 2008, ehrhardt@linux.vnet.ibm.com wrote:
+>   
+>> +static inline long kvm_hypercall1(unsigned int nr, unsigned long p1)
+>> +{
+>> +       register unsigned long hcall asm ("r0") = nr;
+>> +       register unsigned long arg1 asm ("r3") = p1;
+>> +       register long ret asm ("r11");
+>> +
+>> +       asm volatile(".long %1"
+>> +                       : "=r"(ret)
+>> +                       : "i"(KVM_HYPERCALL_BIN), "r"(hcall), "r"(arg1)
+>> +                       : "r4", "r5", "r6", "r7", "r8",
+>> +                         "r9", "r10", "r12", "cc");
+>> +       return ret;
+>> +}
+>>     
+>
+> What is the reasoning for making the calling convention different from
+> all the existing hcall interfaces here?
+>
+> pseries uses r3 for the hcall number, lv1 and beat use r11, so using
+> r0 just for the sake of being different seems counterintuitive.
+>
+> 	Arnd <><
+>   
+Some documentation is here 
+http://kvm.qumranet.com/kvmwiki/PowerPC_Hypercall_ABI
+As far as I remember it was oriented on system calls, from my point we 
+can still change it atm.
+When we discussed about that I was too new to the power architecture to 
+really get all the details, but I assume Hollis and Jimi can answer you 
+that.
 
-Acked-by: Robert Richter <robert.richter@amd.com>
-
--Robert
 
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+
+Grüsse / regards, 
+Christian Ehrhardt
+IBM Linux Technology Center, Open Virtualization
