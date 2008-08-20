@@ -1,13 +1,15 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from VA3EHSOBE003.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 41C72DEF82
+Received: from SG2EHSOBE003.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 8D027DF0DC
 	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 06:19:13 +1000 (EST)
-Message-ID: <48AC7AAB.4090109@am.sony.com>
-Date: Wed, 20 Aug 2008 13:12:27 -0700
+Message-ID: <48AC7C1D.5070509@am.sony.com>
+Date: Wed, 20 Aug 2008 13:18:37 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 0/4] PS3 patches for 2.6.27
+Subject: [patch 1/4] powerpc: Fix typo in pgtable-ppc64.h
+References: <48AC78BA.3070902@am.sony.com>
+In-Reply-To: <48AC78BA.3070902@am.sony.com>
 Content-Type: text/plain; charset="UTF-8"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,19 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+Fix a minor comment typo in pgtable-ppc64.h.
 
-This is a set of PS3 fixup patches for 2.6.27.
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ arch/powerpc/include/asm/pgtable-ppc64.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Patch 4/4, Fix ioremap of spu shadow regs, is a bit of a hack, but I
-can't think of a better way to get the needed protection bits.
-
- [patch 1/4] powerpc: Fix typo in pgtable-ppc64.h
- [patch 2/4] powerpc/ps3: Update ps3_defconfig
- [patch 3/4] powerpc/ps3: Rework htab to remove ioremap
- [patch 4/4] powerpc/ps3: Fix ioremap of spu shadow regs
-
--Geoff
-
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -100,7 +100,7 @@
+ 
+ #define _PAGE_WRENABLE	(_PAGE_RW | _PAGE_DIRTY)
+ 
+-/* __pgprot defined in arch/powerpc/incliude/asm/page.h */
++/* __pgprot defined in arch/powerpc/include/asm/page.h */
+ #define PAGE_NONE	__pgprot(_PAGE_PRESENT | _PAGE_ACCESSED)
+ 
+ #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW | _PAGE_USER)
 
 -- 
