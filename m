@@ -1,33 +1,24 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 21D5EDDF0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 00:22:52 +1000 (EST)
-Date: Wed, 20 Aug 2008 10:22:49 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-In-Reply-To: <1219241819.26429.24.camel@jdub.homelinux.org>
-Message-ID: <alpine.DEB.1.10.0808201022080.23571@gandalf.stny.rr.com>
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
-	<48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
-	<48A9AFA7.8080508@freescale.com>
-	<alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
-	<1219110814.8062.2.camel@pasglop>
-	<alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
-	<1219113549.8062.13.camel@pasglop>
-	<1219114600.8062.15.camel@pasglop>
-	<alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
-	<1219119431.8062.35.camel@pasglop>
-	<1219216705.21386.46.camel@pasglop>
-	<alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>
-	<1219241819.26429.24.camel@jdub.homelinux.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>, Alan Modra <amodra@au1.ibm.com>,
-	Scott Wood <scottwood@freescale.com>, Eran Liberty <liberty@extricom.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id 4F32CDE8A8
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 00:46:12 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so118088anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 07:46:10 -0700 (PDT)
+Subject: Re: [PATCH 1/9] powerpc/44x: Add PowerPC 44x simple platform support
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40808200715x6c850593p5655d8b5b8e7b61e@mail.gmail.com>
+References: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
+	<496103659f7b122a8301703b055ef4c6bd3092af.1219160188.git.jwboyer@linux.vnet.ibm.com>
+	<200808201533.22258.arnd@arndb.de>
+	<fa686aa40808200715x6c850593p5655d8b5b8e7b61e@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 10:45:47 -0400
+Message-Id: <1219243548.26429.25.camel@jdub.homelinux.org>
+Mime-Version: 1.0
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Reply-To: jwboyer@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,14 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Wed, 20 Aug 2008, Josh Boyer wrote:
+On Wed, 2008-08-20 at 08:15 -0600, Grant Likely wrote:
+> On Wed, Aug 20, 2008 at 7:33 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+> > On Tuesday 19 August 2008, Josh Boyer wrote:
+> >> This adds a common board file for almost all of the "simple" PowerPC 44x
+> >> boards that exist today.  This is intended to be a single place to add
+> >> support for boards that do not differ in platform support from most of the
+> >> evaluation boards that are used as reference platforms.  Boards that have
+> >> specific requirements or custom hardware setup should still have their own
+> >> board.c file.
+> >
+> > The code looks correct, but since this is going to be example code
+> > that may get copied into other platforms, I would take extra care
+> > for coding style:
 > 
-> Segher was looking at this a bit this morning.  He thinks it's really
-> -fno-omit-frame-pointer that is causing this.  That really shouldn't
-> even be set on PowerPC, but FTRACE uses select which overrides the
-> depends on stuff in Kconfig.
+> I second Arnd's comments.  Otherwise, this looks pretty good to me.
 
-I can easily make a patch that makes that select an x86 only.
+You should fix 52xx with the same for loop change then, since I
+blatantly most of this file from you ;)
 
--- Steve
+josh
