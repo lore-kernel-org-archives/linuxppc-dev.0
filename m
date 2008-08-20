@@ -1,34 +1,30 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CF3E2DE518
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 01:19:34 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7KFJNYI020940
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 11:19:23 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7KFJDlD144792
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 11:19:13 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7KFJC0E003139
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 11:19:12 -0400
-Date: Wed, 20 Aug 2008 11:19:11 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/9] powerpc/44x: Add PowerPC 44x simple platform support
-Message-ID: <20080820111911.483a0576@zod.rchland.ibm.com>
-In-Reply-To: <1219243548.26429.25.camel@jdub.homelinux.org>
-References: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
-	<496103659f7b122a8301703b055ef4c6bd3092af.1219160188.git.jwboyer@linux.vnet.ibm.com>
-	<200808201533.22258.arnd@arndb.de>
-	<fa686aa40808200715x6c850593p5655d8b5b8e7b61e@mail.gmail.com>
-	<1219243548.26429.25.camel@jdub.homelinux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 7D3AEDE5D4
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 01:23:22 +1000 (EST)
+Date: Wed, 20 Aug 2008 11:23:19 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+In-Reply-To: <9e4733910808200755y1128ae56p6a1235684bfbb3ec@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0808201122260.23571@gandalf.stny.rr.com>
+References: <48591941.4070408@extricom.com> <1219114600.8062.15.camel@pasglop>
+	<alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
+	<1219119431.8062.35.camel@pasglop>
+	<1219216705.21386.46.camel@pasglop>
+	<alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>
+	<alpine.DEB.1.10.0808200916090.13132@gandalf.stny.rr.com>
+	<48AC1DD8.9080702@extricom.com>
+	<alpine.DEB.1.10.0808200941560.13132@gandalf.stny.rr.com>
+	<48AC23F4.80900@extricom.com>
+	<9e4733910808200755y1128ae56p6a1235684bfbb3ec@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Steven Rostedt <srostedt@redhat.com>, Alan Modra <amodra@au1.ibm.com>,
+	Scott Wood <scottwood@freescale.com>, Eran Liberty <liberty@extricom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,29 +34,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 20 Aug 2008 10:45:47 -0400
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 
-> On Wed, 2008-08-20 at 08:15 -0600, Grant Likely wrote:
-> > On Wed, Aug 20, 2008 at 7:33 AM, Arnd Bergmann <arnd@arndb.de> wrote:
-> > > On Tuesday 19 August 2008, Josh Boyer wrote:
-> > >> This adds a common board file for almost all of the "simple" PowerPC 44x
-> > >> boards that exist today.  This is intended to be a single place to add
-> > >> support for boards that do not differ in platform support from most of the
-> > >> evaluation boards that are used as reference platforms.  Boards that have
-> > >> specific requirements or custom hardware setup should still have their own
-> > >> board.c file.
+On Wed, 20 Aug 2008, Jon Smirl wrote:
 > > >
-> > > The code looks correct, but since this is going to be example code
-> > > that may get copied into other platforms, I would take extra care
-> > > for coding style:
-> > 
-> > I second Arnd's comments.  Otherwise, this looks pretty good to me.
+> > > > c00bb690:       bb 0b ff e0     lmw     r24,-32(r11)
+> > > > c00bb694:       7c 08 03 a6     mtlr    r0
+> > > > c00bb698:       4e 80 00 20     blr
+> > > >
+> > > >
+> > >
+> > > Yep, you have the same bug in your compiler.
+> > >
+> > > -- Steve
+> > >
+> > >
+> >  Hmm... so whats now?
+> >
+> >  Is there a way to prove this scenario is indeed the one that caused the
+> > opps?
 > 
-> You should fix 52xx with the same for loop change then, since I
-> blatantly most of this file from you ;)
-           ^ stole
+> Manually edit the broken binary to change the order of the restore and
+> see if the problem disappears. That will keep everything else
+> constant.
 
-/me sighs.
+Does it only happen on this function? Or is it happening on others as 
+well. So manually fixing it here won't help much unless we fix it 
+everywhere.
 
-josh
+-- Steve
