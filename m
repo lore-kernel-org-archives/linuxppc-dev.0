@@ -1,21 +1,34 @@
-Return-Path: <cel@us.ibm.com>
-Subject: Re: powerpc/cell/oprofile: fix mutex locking for spu-oprofile
-From: Carl Love <cel@us.ibm.com>
-To: Robert Richter <robert.richter@amd.com>
-In-Reply-To: <20080820123907.GP13011@erda.amd.com>
-References: <1217620879.15667.145.camel@carll-linux-desktop>
-	<200808110925.08485.arnd@arndb.de>
-	<20080820115750.GO13011@erda.amd.com>
-	<200808201405.32101.arnd@arndb.de>
-	<20080820123907.GP13011@erda.amd.com>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 07:58:16 -0700
-Message-Id: <1219244296.6637.223.camel@carll-linux-desktop>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CF3E2DE518
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 01:19:34 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7KFJNYI020940
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 11:19:23 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m7KFJDlD144792
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 11:19:13 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m7KFJC0E003139
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 11:19:12 -0400
+Date: Wed, 20 Aug 2008 11:19:11 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/9] powerpc/44x: Add PowerPC 44x simple platform support
+Message-ID: <20080820111911.483a0576@zod.rchland.ibm.com>
+In-Reply-To: <1219243548.26429.25.camel@jdub.homelinux.org>
+References: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
+	<496103659f7b122a8301703b055ef4c6bd3092af.1219160188.git.jwboyer@linux.vnet.ibm.com>
+	<200808201533.22258.arnd@arndb.de>
+	<fa686aa40808200715x6c850593p5655d8b5b8e7b61e@mail.gmail.com>
+	<1219243548.26429.25.camel@jdub.homelinux.org>
 Mime-Version: 1.0
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	oprofile-list@lists.sourceforge.net,
-	cel <cel@linux.vnet.ibm.com>, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,53 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 20 Aug 2008 10:45:47 -0400
+Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 
-On Wed, 2008-08-20 at 14:39 +0200, Robert Richter wrote:
-> On 20.08.08 14:05:31, Arnd Bergmann wrote:
-> > On Wednesday 20 August 2008, Robert Richter wrote:
-> > > I am fine with the changes with the exception of removing
-> > > add_event_entry() from include/linux/oprofile.h. Though there is no
-> > > usage of the function also in other architectures anymore, this change
-> > > in the API should be discussed on the oprofile mailing list. Please
-> > > separate the change in a different patch and submit it to the mailing
-> > > list. If there are no objections then, this change can go upstream as
-> > > well.
+> On Wed, 2008-08-20 at 08:15 -0600, Grant Likely wrote:
+> > On Wed, Aug 20, 2008 at 7:33 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+> > > On Tuesday 19 August 2008, Josh Boyer wrote:
+> > >> This adds a common board file for almost all of the "simple" PowerPC 44x
+> > >> boards that exist today.  This is intended to be a single place to add
+> > >> support for boards that do not differ in platform support from most of the
+> > >> evaluation boards that are used as reference platforms.  Boards that have
+> > >> specific requirements or custom hardware setup should still have their own
+> > >> board.c file.
+> > >
+> > > The code looks correct, but since this is going to be example code
+> > > that may get copied into other platforms, I would take extra care
+> > > for coding style:
 > > 
-> > As an explanation, the removal of add_event_entry is the whole point
-> > of this patch. add_event_entry must only be called with buffer_mutex
-> > held, but buffer_mutex itself is not exported.
+> > I second Arnd's comments.  Otherwise, this looks pretty good to me.
 > 
-> Thanks for pointing this out.
-> 
+> You should fix 52xx with the same for loop change then, since I
+> blatantly most of this file from you ;)
+           ^ stole
 
-We originally added add_event_entry() to include/linux/oprofile.h
-specifically because it was needed for the CELL SPU support.  As it
-turns out it the approach was not completely thought through.  We were
-using the function call without holding the mutex lock.  As we
-discovered later, this can result in corrupting the data put into the
-event buffer.  So exposing the function without a way to hold the mutex
-lock is actually a really bad idea as it would encourage others to fall
-into the same mistake that we made.  So, as Arnd said, the whole point
-of this patch is to come up with a correct approach to adding the data.
+/me sighs.
 
-> > I'm pretty sure that no other user of add_event_entry exists, as it
-> > was exported specifically for the SPU support and that never worked.
-> > Any other (theoretical) code using it would be broken in the same way
-> > and need a corresponding fix.
-> > 
-> > We can easily leave the declaration in place, but I'd recommend removing
-> > it eventually. If you prefer to keep it, how about marking it as
-> > __deprecated?
-> 
-> No, since this is broken by design we remove it. The patch can go
-> upstream as it is.
-> 
-> Thanks,
-
-> -Robert
-> 
-
-It really is best to remove it.  Thank you for taking the time to review
-and comment on the patch.
-
-               Carl Love
+josh
