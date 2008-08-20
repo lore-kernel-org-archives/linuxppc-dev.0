@@ -1,26 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 231EDDF1A8
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 03:35:09 +1000 (EST)
-Date: Wed, 20 Aug 2008 13:35:00 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH 1/9] powerpc/44x: Add PowerPC 44x simple platform support
-Message-ID: <20080820133500.1b15fb0a@zod.rchland.ibm.com>
-In-Reply-To: <ada7iabpptl.fsf@cisco.com>
-References: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
-	<496103659f7b122a8301703b055ef4c6bd3092af.1219160188.git.jwboyer@linux.vnet.ibm.com>
-	<200808201533.22258.arnd@arndb.de>
-	<fa686aa40808200715x6c850593p5655d8b5b8e7b61e@mail.gmail.com>
-	<1219243548.26429.25.camel@jdub.homelinux.org>
-	<adak5ebpry5.fsf@cisco.com>
-	<20080820131124.05cfee9f@zod.rchland.ibm.com>
-	<ada7iabpptl.fsf@cisco.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
+	by ozlabs.org (Postfix) with ESMTP id 13CCCDF1C2
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 03:37:12 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so780007qwb.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 10:37:10 -0700 (PDT)
+Subject: Re: cache model of ppc
+From: Josh Boyer <jwboyer@gmail.com>
+To: Felix Schmidt <felix_schmidt@web.de>
+In-Reply-To: <48AC388D.1090609@web.de>
+References: <48AC388D.1090609@web.de>
+Content-Type: text/plain
+Date: Wed, 20 Aug 2008 13:36:13 -0400
+Message-Id: <1219253773.26429.27.camel@jdub.homelinux.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Arnd@ozlabs.org, Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,26 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 20 Aug 2008 10:19:02 -0700
-Roland Dreier <rdreier@cisco.com> wrote:
-
->  > Except that logically doesn't make much sense.  Why would you have a
->  > list of mpc52xx and 44x boards together?  They require completely
->  > different kernels because the MMU and drive set is entirely different.
->  > 
->  > Or am I totally missing what you are saying?
+On Wed, 2008-08-20 at 17:30 +0200, Felix Schmidt wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>  
+> Dear,
 > 
-> Yeah, I wasn't clear -- I meant to add a new helper like
-> of_flat_dt_is_compatible_list() (not sure of the name) that takes a node
-> and a NULL-terminated array of strings, and then mpc5200_simple_probe()
-> can become a one-liner, along with mpc5121_generic_probe(),
-> tqm85xx_probe(), ppc44x_probe(), etc.
+> I some questions about the PowerPC cache model.
 
-Ah, I see.
-
-I worry about doing that though.  I don't want to give people the
-impression that these boards are "of" compatible.  I want it to be more
-"this file supports these explicit platforms and makes no claim on
-compatibility between them".
+It depends greatly on the core, chip, and cache used.  That varies
+widely across the PPC universe.
 
 josh
