@@ -1,35 +1,26 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D0F03DE079
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 03:11:31 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7KHBQ8i021305
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 13:11:26 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7KHBPdQ241508
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 13:11:25 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7KHBPVB023848
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 13:11:25 -0400
-Date: Wed, 20 Aug 2008 13:11:24 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3.cisco.com [171.71.176.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-3.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 127DCDDE41
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 03:19:10 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 Subject: Re: [PATCH 1/9] powerpc/44x: Add PowerPC 44x simple platform support
-Message-ID: <20080820131124.05cfee9f@zod.rchland.ibm.com>
-In-Reply-To: <adak5ebpry5.fsf@cisco.com>
 References: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
 	<496103659f7b122a8301703b055ef4c6bd3092af.1219160188.git.jwboyer@linux.vnet.ibm.com>
 	<200808201533.22258.arnd@arndb.de>
 	<fa686aa40808200715x6c850593p5655d8b5b8e7b61e@mail.gmail.com>
 	<1219243548.26429.25.camel@jdub.homelinux.org>
 	<adak5ebpry5.fsf@cisco.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Bergmann <arnd@arndb.de>, Arnd
+	<20080820131124.05cfee9f@zod.rchland.ibm.com>
+Date: Wed, 20 Aug 2008 10:19:02 -0700
+In-Reply-To: <20080820131124.05cfee9f@zod.rchland.ibm.com> (Josh Boyer's
+	message of "Wed, 20 Aug 2008 13:11:24 -0400")
+Message-ID: <ada7iabpptl.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Arnd@ozlabs.org, Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,23 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 20 Aug 2008 09:33:06 -0700
-Roland Dreier <rdreier@cisco.com> wrote:
+ > Except that logically doesn't make much sense.  Why would you have a
+ > list of mpc52xx and 44x boards together?  They require completely
+ > different kernels because the MMU and drive set is entirely different.
+ > 
+ > Or am I totally missing what you are saying?
 
->  > You should fix 52xx with the same for loop change then, since I
->  > blatantly most of this file from you ;)
-> 
-> Heh, then factor out mpc5200_simple_probe() into a helper and use it
-> instead of copying it as ppc44x_probe?  ;)
-> 
-> If you stick to the NULL-terminated array version, then it becomes easy
-> to convert some other platform probing code to use your new code too, eg
-> tqm85xx_probe() could use an array too.
+Yeah, I wasn't clear -- I meant to add a new helper like
+of_flat_dt_is_compatible_list() (not sure of the name) that takes a node
+and a NULL-terminated array of strings, and then mpc5200_simple_probe()
+can become a one-liner, along with mpc5121_generic_probe(),
+tqm85xx_probe(), ppc44x_probe(), etc.
 
-Except that logically doesn't make much sense.  Why would you have a
-list of mpc52xx and 44x boards together?  They require completely
-different kernels because the MMU and drive set is entirely different.
-
-Or am I totally missing what you are saying?
-
-josh
+ - R.
