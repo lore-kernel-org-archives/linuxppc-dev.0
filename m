@@ -1,36 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2A8B8DDFBD
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 11:19:54 +1000 (EST)
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-In-Reply-To: <48AB5E36.8030400@goop.org>
-References: <48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
-	<48A9AFA7.8080508@freescale.com>
-	<alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
-	<1219110814.8062.2.camel@pasglop>
-	<alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
-	<1219113549.8062.13.camel@pasglop>
-	<alpine.DEB.1.10.0808182240330.13401@gandalf.stny.rr.com>
-	<20080819024707.GA22659@Krystal>
-	<alpine.DEB.1.10.0808191247001.28232@gandalf.stny.rr.com>
-	<20080819173453.GA28239@Krystal> <1219182471.7826.16.camel@pasglop>
-	<48AB5E36.8030400@goop.org>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 11:17:28 +1000
-Message-Id: <1219195048.7826.23.camel@pasglop>
-Mime-Version: 1.0
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	linux-kernel@vger.kernel.org,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>, Scott Wood <scottwood@freescale.com>,
-	Eran Liberty <liberty@extricom.com>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 48E6EDDDE3
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 12:29:14 +1000 (EST)
+Date: Wed, 20 Aug 2008 12:29:13 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: ehrhardt@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/4] kvmppc: magic page paravirtualization - guest part
+Message-ID: <20080820022912.GJ934@bakeyournoodle.com>
+References: <1219142204-12044-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	<1219142204-12044-4-git-send-email-ehrhardt@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1219142204-12044-4-git-send-email-ehrhardt@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, hollisb@us.ibm.com, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,25 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-08-19 at 16:58 -0700, Jeremy Fitzhardinge wrote:
-> Benjamin Herrenschmidt wrote:
-> >> Ok, there are two cases where it's ok :
-> >>
-> >> 1 - in stop_machine, considering we are not touching code executed in
-> >> NMI handlers.
-> >> 2 - when using my replace_instruction_safe() which uses a temporary
-> >> breakpoint when doing the instruction replacement.
-> >>
-> >> In those cases you could use text_poke_early().
-> >>     
-> >
-> > Note that vmap/vunmap will be very slow.
-> >   
-> 
-> Don't we have Nick's speedups now?
+Hi Christian,
+	One very minor nit.
 
-Not sure what speedups this is, but it's stlil not something you want to
-do a lot ... setting up and tearing down MMU mappings isn't something
-I'd like to see happening on a per-mcount basis.
+On Tue, Aug 19, 2008 at 12:36:43PM +0200, ehrhardt@linux.vnet.ibm.com wrote:
+ 
+> [diffstat]
+>  mm/page_alloc.c                |    1
 
-Ben
+<snip>
+
+>  void kvm_guest_init(void);
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -550,6 +550,7 @@
+>  				prefetchw(p + 1);
+>  			__ClearPageReserved(p);
+>  			set_page_count(p, 0);
+> +
+>  		}
+>  
+>  		set_page_refcounted(page);
+
+I guess this is a leftover from some debugging but still should be
+killed :)
+
+Yours Tony
+
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
