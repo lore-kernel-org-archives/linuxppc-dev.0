@@ -1,36 +1,17 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id AEB88DE122
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 01:27:49 +1000 (EST)
-Date: Wed, 20 Aug 2008 11:27:47 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Eran Liberty <liberty@extricom.com>
-Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-In-Reply-To: <48AC23F4.80900@extricom.com>
-Message-ID: <alpine.DEB.1.10.0808201014190.23571@gandalf.stny.rr.com>
-References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
-	<48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
-	<48A9AFA7.8080508@freescale.com>
-	<alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
-	<1219110814.8062.2.camel@pasglop>
-	<alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
-	<1219113549.8062.13.camel@pasglop>
-	<1219114600.8062.15.camel@pasglop>
-	<alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
-	<1219119431.8062.35.camel@pasglop>
-	<1219216705.21386.46.camel@pasglop>
-	<alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0808200916090.13132@gandalf.stny.rr.com>
-	<48AC1DD8.9080702@extricom.com>
-	<alpine.DEB.1.10.0808200941560.13132@gandalf.stny.rr.com>
-	<48AC23F4.80900@extricom.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>, Alan Modra <amodra@au1.ibm.com>,
-	Scott Wood <scottwood@freescale.com>,
-	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9D5A7DE1DE
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 01:29:29 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+	avorontsov@ru.mvista.com, benh@kernel.crashing.org, tony@bakeyournoodle.com
+Subject: [PATCH v2] powerpc: fix memory leaks in QE library
+Date: Wed, 20 Aug 2008 10:29:09 -0500
+Message-Id: <1219246149-23812-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,40 +21,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Fix two memory leaks in the Freescale QE library: add a missing kfree() in
+ucc_fast_init() and ucc_slow_init() if the ioremap() fails, and update
+ucc_fast_free() and ucc_slow_free() to call iounmap() if necessary.
 
-On Wed, 20 Aug 2008, Eran Liberty wrote:
-> > 
-> >   
-> > > c00bb670:       41 9e 00 50     beq-    cr7,c00bb6c0 <__d_lookup+0x13c>
-> > > c00bb674:       83 de 00 00     lwz     r30,0(r30)
-> > > c00bb678:       2f 9e 00 00     cmpwi   cr7,r30,0
-> > > c00bb67c:       40 9e ff 98     bne+    cr7,c00bb614 <__d_lookup+0x90>
-> > > c00bb680:       38 60 00 00     li      r3,0
-> > > c00bb684:       81 61 00 00     lwz     r11,0(r1)
-> > > c00bb688:       80 0b 00 04     lwz     r0,4(r11)
-> > > c00bb68c:       7d 61 5b 78     mr      r1,r11
-> > >     
-> > 
-> > [ BUG HERE IF INTERRUPT HAPPENS ]
-> > 
-> >   
-> > > c00bb690:       bb 0b ff e0     lmw     r24,-32(r11)
-> > > c00bb694:       7c 08 03 a6     mtlr    r0
-> > > c00bb698:       4e 80 00 20     blr
-> > >     
-> > 
-> > Yep, you have the same bug in your compiler.
-> > 
-> > -- Steve
-> >   
-> Hmm... so whats now?
+Based on a patch from Tony Breeds <tony@bakeyournoodle.com>.
 
-Try anothe gcc version ;-)
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/sysdev/qe_lib/ucc_fast.c |    4 ++++
+ arch/powerpc/sysdev/qe_lib/ucc_slow.c |    8 +++++---
+ 2 files changed, 9 insertions(+), 3 deletions(-)
 
-> 
-> Is there a way to prove this scenario is indeed the one that caused the opps?
-
-I'm not convinced that this is the bug you were seeing. Do you still get 
-the crash if you disable dynamic ftrace but leave ftrace on?
-
--- Steve
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
+index 1aecb07..25fbbfa 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
+@@ -208,6 +208,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+ 	uccf->uf_regs = ioremap(uf_info->regs, sizeof(struct ucc_fast));
+ 	if (uccf->uf_regs == NULL) {
+ 		printk(KERN_ERR "%s: Cannot map UCC registers\n", __func__);
++		kfree(uccf);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -355,6 +356,9 @@ void ucc_fast_free(struct ucc_fast_private * uccf)
+ 	if (uccf->ucc_fast_rx_virtual_fifo_base_offset)
+ 		qe_muram_free(uccf->ucc_fast_rx_virtual_fifo_base_offset);
+ 
++	if (uccf->uf_regs)
++		iounmap(uccf->uf_regs);
++
+ 	kfree(uccf);
+ }
+ EXPORT_SYMBOL(ucc_fast_free);
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc_slow.c b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
+index a578bc7..e1d6a13 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc_slow.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
+@@ -171,6 +171,7 @@ int ucc_slow_init(struct ucc_slow_info * us_info, struct ucc_slow_private ** ucc
+ 	uccs->us_regs = ioremap(us_info->regs, sizeof(struct ucc_slow));
+ 	if (uccs->us_regs == NULL) {
+ 		printk(KERN_ERR "%s: Cannot map UCC registers\n", __func__);
++		kfree(uccs);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -367,10 +368,11 @@ void ucc_slow_free(struct ucc_slow_private * uccs)
+ 	if (uccs->tx_base_offset)
+ 		qe_muram_free(uccs->tx_base_offset);
+ 
+-	if (uccs->us_pram) {
++	if (uccs->us_pram)
+ 		qe_muram_free(uccs->us_pram_offset);
+-		uccs->us_pram = NULL;
+-	}
++
++	if (uccs->us_regs)
++		iounmap(uccs->us_regs);
+ 
+ 	kfree(uccs);
+ }
+-- 
+1.5.5
