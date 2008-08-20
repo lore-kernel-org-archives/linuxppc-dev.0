@@ -1,14 +1,22 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id EA263DE7BE
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 06:55:56 +1000 (EST)
-Message-ID: <48AC84D9.8050809@harris.com>
-Date: Wed, 20 Aug 2008 16:55:53 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Strange behavior with I2C on Sequoia board
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 51D74DE7B9
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 07:03:36 +1000 (EST)
+Date: Thu, 21 Aug 2008 01:03:15 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: benh@kernel.crashing.org
+Subject: Re: [RFC][USB] powerpc: Workaround for the PPC440EPX USBH_23 errrata
+Message-ID: <20080821010315.1f0a443d@vitb-lp>
+In-Reply-To: <1219111423.8062.10.camel@pasglop>
+References: <20080819021040.27ce7dbe@vitb-lp>
+	<1219111423.8062.10.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=KOI8-R
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Stefan Roese <sr@denx.de>, "linux-usb-devel@lists.sourceforge.net"
+	<linux-usb-devel@lists.sourceforge.net>, Mark Miesfeld <mmiesfeld@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,97 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have just tried enabling I2C on a Sequoia board (kernel is DENX 2.6.26) and
-doing that appears to corrupt the u-boot / kernel communications.
+В Tue, 19 Aug 2008 12:03:42 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> пишет:
 
-Prior to turning on I2C, I see the ethernet mac and kernel command line
-correctly passed, but once I turn on I2C, the ethernet mac becomes 0 and the
-kernel command line is missing many parameters.  I'll paste in a good log, then
-a bad one.  The only configuration difference is that the bad one has
-CONFIG_I2C_CHARDEV=y and CONFIG_I2C_IBM_IIC=y in the configuration.
+> 
+>  .../...
+> 
+> > There is a software workaround that uses a trick to detect if
+> > full-speed interface is enabled from the hi-speed driver(and vice
+> > versa), and use suspend control for ohci to enable/disable it
+> > appropriately. 
+> > Initial version of the software workaround was posted to
+> > linux-usb-devel:
+> > 
+> > http://www.mail-archive.com/linux-usb-devel@lists.sourceforge.net/msg54019.html
+> > 
+> > and later were made available from amcc.com:
+> > http://www.amcc.com/Embedded/Downloads/download.html?cat=1&family=15&ins=2
+> > 
+> > The patch below is generally based on the latter, but reworked to
+> > powerpc/of_device USB drivers, and uses a few devicetree inquiries
+> > to get rid of (some) hardcoded defines.
+> 
+> Well, it seems to still call things based on #ifdef CONFIG_* instead
+> of testing for whatever "errata" bit or flag you can initialize.
+> 
+> A proper approach is to have the OF probe code detect via some
+> device-tree compatible testing or such, that it's indeed hitting the
+> broken chip, use that to set a quirk in the controller, and then
+> have the core ehci-hub.c code do whatever it has to do based on
+> the presence of that quirk.
+Makes sense, thanks. I'll look into rearranging stuff appropriately
+over this weekend.
 
-I'll start digging into it, but if anyone has any experience or ideas regarding
-I2C on PPC440, I'd appreciate your thoughts on this.
-
-	Steve
-
-Good log:
-=========
-
-## Booting kernel from Legacy Image at fd400000 ...
-   Image Name:   Linux-2.6.26.1-00033-g088efe4-di
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1801234 Bytes =  1.7 MB
-   Load Address: 00400000
-   Entry Point:  00400454
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Loading init Ramdisk from Legacy Image at fd900000 ...
-   Image Name:   initramfs
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    2442283 Bytes =  2.3 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Loading Ramdisk to 0fcb8000, end 0ff0c42b ... OK
-CPU clock-frequency <- 0x27bc86a4 (667MHz)
-CPU timebase-frequency <- 0x27bc86a4 (667MHz)
-/plb: clock-frequency <- 9ef21a9 (167MHz)
-/plb/opb: clock-frequency <- 4f790d4 (83MHz)
-/plb/opb/ebc: clock-frequency <- 34fb5e3 (56MHz)
-/plb/opb/serial@ef600300: clock-frequency <- a8c000 (11MHz)
-/plb/opb/serial@ef600400: clock-frequency <- a8c000 (11MHz)
-/plb/opb/serial@ef600500: clock-frequency <- a8c000 (11MHz)
-/plb/opb/serial@ef600600: clock-frequency <- a8c000 (11MHz)
-Memory <- <0x0 0x0 0xffff000> (255MB)
-ENET0: local-mac-address <- 00:10:ec:01:04:d0
-ENET1: local-mac-address <- 00:10:ec:01:04:d1
-
-zImage starting: loaded at 0x00400000 (sp: 0x0ff0d220)
-Allocating 0x3dbc2c bytes for kernel ...
-gunzipping (0x00000000 <- 0x0040e000:0x007ed9c8)...done 0x39c1c4 bytes
-Using loader supplied ramdisk at 0xfcb8000-0xff0c42b
-initrd head: 0x1f8b0808
-
-Linux/PowerPC load: root=/dev/sda3 rw
-ip=137.237.178.105:137.237.179.31:137.237.178.1:255.255.255.0:hydra_temp:eth0:off
-panic=1 console=ttyS0,115200
-
-Bad log:
-========
-## Booting kernel from Legacy Image at fd400000 ...
-   Image Name:   Linux-2.6.26.1-00034-gf084326-di
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1811651 Bytes =  1.7 MB
-   Load Address: 00400000
-   Entry Point:  00400454
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Loading init Ramdisk from Legacy Image at fd900000 ...
-   Image Name:   initramfs
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    2442283 Bytes =  2.3 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Loading Ramdisk to 0fcb8000, end 0ff0c42b ... OK
-CPU clock-frequency <- 0x27bc86a4 (667MHz)
-CPU timebase-frequency <- 0x27bc86a4 (667MHz)
-/plb: clock-frequency <- 9ef21a9 (167MHz)
-/plb/opb: clock-frequency <- 4f790d4 (83MHz)
-/plb/opb/ebc: clock-frequency <- 34fb5e3 (56MHz)
-/plb/opb/serial@ef600300: clock-frequency <- a8c000 (11MHz)
-/plb/opb/serial@ef600400: clock-frequency <- a8c000 (11MHz)
-/plb/opb/serial@ef600500: clock-frequency <- a8c000 (11MHz)
-/plb/opb/serial@ef600600: clock-frequency <- a8c000 (11MHz)
-Memory <- <0x0 0x0 0xffff000> (255MB)
-ENET0: local-mac-address <- 00:00:00:00:00:00
-ENET1: local-mac-address <- 00:00:00:00:00:00
-
-zImage starting: loaded at 0x00400000 (sp: 0x0ff0d220)
-Allocating 0x3e1c48 bytes for kernel ...
-gunzipping (0x00000000 <- 0x0040e000:0x007f3a24)...done 0x3a21c4 bytes
-Using loader supplied ramdisk at 0xfcb8000-0xff0c42b
-initrd head: 0x1f8b0808
-
-Linux/PowerPC load: console=ttyS0,115200
+Thanks,
+-Vitaly
