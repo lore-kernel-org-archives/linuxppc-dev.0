@@ -1,33 +1,35 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 27F01DE02F
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 03:09:17 +1000 (EST)
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D0F03DE079
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 03:11:31 +1000 (EST)
 Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7KH9EHW005777
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 13:09:14 -0400
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7KHBQ8i021305
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 13:11:26 -0400
 Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
 	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7KH9EHC046384
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 13:09:14 -0400
+	m7KHBPdQ241508
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 13:11:25 -0400
 Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
 	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7KH9DJi014997
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 13:09:13 -0400
-Date: Wed, 20 Aug 2008 13:09:13 -0400
+	m7KHBPVB023848
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 13:11:25 -0400
+Date: Wed, 20 Aug 2008 13:11:24 -0400
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "prodyut hazarika" <prodyuth@gmail.com>
-Subject: Re: [PATCH 0/9] Rework PowerPC 44x board support
-Message-ID: <20080820130913.5e48848e@zod.rchland.ibm.com>
-In-Reply-To: <49c0ff980808200954p38e00e7aqb612e7e7eb1bbc51@mail.gmail.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH 1/9] powerpc/44x: Add PowerPC 44x simple platform support
+Message-ID: <20080820131124.05cfee9f@zod.rchland.ibm.com>
+In-Reply-To: <adak5ebpry5.fsf@cisco.com>
 References: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
-	<200808192026.12632.sr@denx.de>
-	<20080819144545.4cebe670@zod.rchland.ibm.com>
-	<49c0ff980808200954p38e00e7aqb612e7e7eb1bbc51@mail.gmail.com>
+	<496103659f7b122a8301703b055ef4c6bd3092af.1219160188.git.jwboyer@linux.vnet.ibm.com>
+	<200808201533.22258.arnd@arndb.de>
+	<fa686aa40808200715x6c850593p5655d8b5b8e7b61e@mail.gmail.com>
+	<1219243548.26429.25.camel@jdub.homelinux.org>
+	<adak5ebpry5.fsf@cisco.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, Bergmann <arnd@arndb.de>, Arnd
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,33 +39,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 20 Aug 2008 09:54:40 -0700
-"prodyut hazarika" <prodyuth@gmail.com> wrote:
+On Wed, 20 Aug 2008 09:33:06 -0700
+Roland Dreier <rdreier@cisco.com> wrote:
 
-> Hi Josh,
+>  > You should fix 52xx with the same for loop change then, since I
+>  > blatantly most of this file from you ;)
 > 
-> >> >
-> >> > Review would be appreciated.  Tested on Sequoia, and I plan on testing on
-> >> > as many boards as I can before committing to my tree.
-> >>
+> Heh, then factor out mpc5200_simple_probe() into a helper and use it
+> instead of copying it as ppc44x_probe?  ;)
 > 
-> The changes looks great.
-> >
-> > That would be much appreciated.  I have a number of the effected
-> > boards, but I don't have them all so any testing you can do would be
-> > awesome.
-> 
-> I tried pulling up the latest code from your git tree. Seems it is not
-> yet put in there.
+> If you stick to the NULL-terminated array version, then it becomes easy
+> to convert some other platform probing code to use your new code too, eg
+> tqm85xx_probe() could use an array too.
 
-Right.  I tend to not commit patches that even I send out until they've
-at least had some review.
+Except that logically doesn't make much sense.  Why would you have a
+list of mpc52xx and 44x boards together?  They require completely
+different kernels because the MMU and drive set is entirely different.
 
-> Do I have to manually apply all the patches to my git tree. I was
-> planning to test the changes on Canyonlands, glacier and Kilauea
-> boards here.
-
-For now, yes.  In a day or so I'll probably fix the small comments I've
-gotten and then commit the series to my next branch.
+Or am I totally missing what you are saying?
 
 josh
