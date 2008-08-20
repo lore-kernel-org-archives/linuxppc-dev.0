@@ -1,13 +1,18 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <18603.37996.974247.668984@cargo.ozlabs.ibm.com>
-Date: Wed, 20 Aug 2008 13:50:04 +1000
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18603.42058.670289.732716@cargo.ozlabs.ibm.com>
+Date: Wed, 20 Aug 2008 14:57:46 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 4/8] powerpc: add the ability for a classic ppc kernel
+	to be loaded at 32M
+In-Reply-To: <20080801203819.GA27753@polina.dev.rtsoft.ru>
+References: <20080801141306.GA29127@polina.dev.rtsoft.ru>
+	<20080801141420.GD1161@polina.dev.rtsoft.ru>
+	<20080801184952.GA25225@ld0162-tx32.am.freescale.net>
+	<20080801203819.GA27753@polina.dev.rtsoft.ru>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,39 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+Anton Vorontsov writes:
 
-Please pull from the 'merge' branch of
+> > What do you do about the exception vectors?
+> 
+> Making a trampoline code in place of exception vectors. See this patch:
+> 
+> [PATCH 8/8] powerpc: last bits to support kdump on ppc32
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-
-to get some more bug-fixes for powerpc.
+It would probably be worth looking at whether we could do a
+relocatable 32-bit kernel by linking it as a PIE and processing the
+dynamic relocations at boot time (like the patches I posted recently
+for 64-bit).
 
 Paul.
-
- arch/powerpc/kernel/crash_dump.c          |   31 +++++++++++++++++++++=
---------
- arch/powerpc/kernel/ibmebus.c             |   12 -----------
- arch/powerpc/kernel/vio.c                 |    2 +-
- arch/powerpc/platforms/cell/spufs/run.c   |   15 +++++++-------
- arch/powerpc/platforms/cell/spufs/sched.c |   11 ++++++++--
- drivers/of/device.c                       |   10 +++++++++
- 6 files changed, 50 insertions(+), 31 deletions(-)
-
-Brian King (1):
-      powerpc: Fix vio_bus_probe oops on probe error
-
-Ilpo J=E4rvinen (1):
-      powerpc/spufs: Remove invalid semicolon after if statement
-
-Jeremy Kerr (2):
-      powerpc/spufs: fix npc setting for NOSCHED contexts
-      powerpc/spufs: reference context while dropping state mutex in sc=
-heduler
-
-Joachim Fenkes (1):
-      powerpc/ibmebus: Restore "name" sysfs attribute on ibmebus device=
-s
-
-Michael Ellerman (1):
-      powerpc: Fix /dev/oldmem interface for kdump
