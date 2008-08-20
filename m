@@ -1,23 +1,24 @@
-Return-Path: <nickpiggin@yahoo.com.au>
-Received: from smtp115.mail.mud.yahoo.com (smtp115.mail.mud.yahoo.com
-	[209.191.84.164]) by ozlabs.org (Postfix) with SMTP id BB7DBDDDE3
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 19:41:02 +1000 (EST)
-From: Nick Piggin <nickpiggin@yahoo.com.au>
+Return-Path: <liberty@extricom.com>
+Received: from smtp.extricom.com (smtp.extricom.com [192.114.46.18])
+	by ozlabs.org (Postfix) with SMTP id D3222DDF30
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 21:20:36 +1000 (EST)
+Message-ID: <48ABFD77.6030701@extricom.com>
+Date: Wed, 20 Aug 2008 14:18:15 +0300
+From: Eran Liberty <liberty@extricom.com>
+MIME-Version: 1.0
 To: Steven Rostedt <rostedt@goodmis.org>
 Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
-Date: Wed, 20 Aug 2008 19:40:51 +1000
-References: <48A9901B.1080900@redhat.com> <20080819173453.GA28239@Krystal>
-	<alpine.DEB.1.10.0808191705590.4957@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.1.10.0808191705590.4957@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808201940.51916.nickpiggin@yahoo.com.au>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
+	<48A9901B.1080900@redhat.com> <48A9BEA3.10906@extricom.com>
+	<alpine.DEB.1.10.0808181439480.796@gandalf.stny.rr.com>
+	<48AAB7FF.4070502@extricom.com>
+	<alpine.DEB.1.10.0808191614380.4957@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0808191614380.4957@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
 	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>, Scott Wood <scottwood@freescale.com>,
-	Eran Liberty <liberty@extricom.com>
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,45 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 20 August 2008 07:08, Steven Rostedt wrote:
-> On Tue, 19 Aug 2008, Mathieu Desnoyers wrote:
-> > Ok, there are two cases where it's ok :
-> >
-> > 1 - in stop_machine, considering we are not touching code executed in
-> > NMI handlers.
-> > 2 - when using my replace_instruction_safe() which uses a temporary
-> > breakpoint when doing the instruction replacement.
-> >
-> > In those cases you could use text_poke_early().
-> >
-> > See
-> > http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=b
-> >lob;f=arch/x86/kernel/immediate.c;h=7789e2c75bf03e645f15759d5dff0c1698493f
-> >92;hb=HEAD
-> >
-> > For a use example. Basically it looks like :
-> >
-> >
-> > 360                 pages[0] = virt_to_page((void *)bypass_eip);
-> > 361                 vaddr = vmap(pages, 1, VM_MAP, PAGE_KERNEL);
-> > 362                 BUG_ON(!vaddr);
-> > 363                 text_poke_early(&vaddr[bypass_eip & ~PAGE_MASK],
-> > 364                         (void *)addr, size);
-> > 365                 /*
-> > 366                  * Fill the rest with nops.
-> > 367                  */
-> > 368                 len = NR_NOPS - size;
-> > 369                 add_nops((void *)
-> > 370                         &vaddr[(bypass_eip & ~PAGE_MASK) + size],
-> > 371                         len);
-> > 372                 print_dbg_bytes("inserted nops",
-> > 373                         &vaddr[(bypass_eip & ~PAGE_MASK) + size],
-> > len); 374                 vunmap(vaddr);
+Steven Rostedt wrote:
+> On Tue, 19 Aug 2008, Eran Liberty wrote:
 >
-> vunmap can not be called with interrupts disabled, and this is exactly
-> what my code does.
+>   
+>> Steven Rostedt wrote:
+>>     
+>>>   
+>>>       
+>>>> Testing tracer sched_switch: PASSED
+>>>> Testing tracer ftrace: PASSED
+>>>> Testing dynamic ftrace: PASSED
+>>>>         
+>
+> Do you have PREEMPT_TRACER enabled, or any other tracer for that matter?
+>
+> -- Steve
+>   
+I can see stack trace & context trace, but they are derived from other 
+choices (I can not un select them)
 
-It could be after the vmap rewrite (with a few other small tweaks).
-But a) it would be less robust when called from interrupt context
-and this code looks broken as it is WRT error handling; and b) it
-still costs several thousand cycles to vmap+touch+vunmap...
+cat .config | grep TRACE
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_HAVE_ARCH_TRACEHOOK=y
+# CONFIG_BLK_DEV_IO_TRACE is not set
+CONFIG_STACKTRACE=y
+# CONFIG_BACKTRACE_SELF_TEST is not set
+CONFIG_HAVE_FTRACE=y
+CONFIG_HAVE_DYNAMIC_FTRACE=y
+CONFIG_FTRACE=y
+# CONFIG_SCHED_TRACER is not set
+CONFIG_CONTEXT_SWITCH_TRACER=y
+CONFIG_DYNAMIC_FTRACE=y
+CONFIG_FTRACE_SELFTEST=y
+CONFIG_FTRACE_STARTUP_TEST=y
+>   
+>>>> Oops: Exception in kernel mode, sig: 11 [#1]
+>>>> Exsw1600
+>>>> Modules linked in:
+>>>> NIP: c00bbb20 LR: c00bbb20 CTR: 00000000
+>>>>     
+>>>>         
+>
+>
+>   
