@@ -1,28 +1,38 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1.cisco.com [171.71.176.70])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-1.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D2653DE33E
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 07:15:06 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/9] powerpc/44x: Add PowerPC 44x simple platform support
-References: <cover.1219160188.git.jwboyer@linux.vnet.ibm.com>
-	<496103659f7b122a8301703b055ef4c6bd3092af.1219160188.git.jwboyer@linux.vnet.ibm.com>
-	<200808201533.22258.arnd@arndb.de>
-	<fa686aa40808200715x6c850593p5655d8b5b8e7b61e@mail.gmail.com>
-	<1219243548.26429.25.camel@jdub.homelinux.org>
-	<adak5ebpry5.fsf@cisco.com>
-	<20080820131124.05cfee9f@zod.rchland.ibm.com>
-	<ada7iabpptl.fsf@cisco.com>
-	<20080820133500.1b15fb0a@zod.rchland.ibm.com>
-Date: Wed, 20 Aug 2008 14:15:02 -0700
-In-Reply-To: <20080820133500.1b15fb0a@zod.rchland.ibm.com> (Josh Boyer's
-	message of "Wed, 20 Aug 2008 13:35:00 -0400")
-Message-ID: <aday72ro0bt.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Arnd@ozlabs.org, Bergmann <arnd@arndb.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 21D74DE71A
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 07:40:26 +1000 (EST)
+Subject: Re: ftrace introduces instability into kernel 2.6.27(-rc2,-rc3)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eran Liberty <liberty@extricom.com>
+In-Reply-To: <48AC23F4.80900@extricom.com>
+References: <48591941.4070408@extricom.com> <48A92E15.2080709@extricom.com>
+	<48A9901B.1080900@redhat.com> <20080818154746.GA26835@Krystal>
+	<48A9AFA7.8080508@freescale.com>
+	<alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
+	<1219110814.8062.2.camel@pasglop>
+	<alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
+	<1219113549.8062.13.camel@pasglop> <1219114600.8062.15.camel@pasglop>
+	<alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
+	<1219119431.8062.35.camel@pasglop> <1219216705.21386.46.camel@pasglop>
+	<alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>
+	<alpine.DEB.1.10.0808200916090.13132@gandalf.stny.rr.com>
+	<48AC1DD8.9080702@extricom.com>
+	<alpine.DEB.1.10.0808200941560.13132@gandalf.stny.rr.com>
+	<48AC23F4.80900@extricom.com>
+Content-Type: text/plain
+Date: Thu, 21 Aug 2008 07:37:51 +1000
+Message-Id: <1219268271.21386.67.camel@pasglop>
+Mime-Version: 1.0
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	linux-kernel@vger.kernel.org,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	Steven Rostedt <srostedt@redhat.com>, Alan Modra <amodra@au1.ibm.com>,
+	Scott Wood <scottwood@freescale.com>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,23 +42,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > > Yeah, I wasn't clear -- I meant to add a new helper like
- > > of_flat_dt_is_compatible_list() (not sure of the name) that takes a node
- > > and a NULL-terminated array of strings, and then mpc5200_simple_probe()
- > > can become a one-liner, along with mpc5121_generic_probe(),
- > > tqm85xx_probe(), ppc44x_probe(), etc.
 
- > I worry about doing that though.  I don't want to give people the
- > impression that these boards are "of" compatible.  I want it to be more
- > "this file supports these explicit platforms and makes no claim on
- > compatibility between them".
+> Hmm... so whats now?
+> 
+> Is there a way to prove this scenario is indeed the one that caused the 
+> opps?
 
-It's no big deal really -- just my knee-jerk reaction to seeing a
-comment like "this should also be fixed in some other place because I
-copied the code from there."  My reaction to that is always, "why not
-use one common copy of the code then?"
+I've verified in sim that the crash in do_lookup() I was seeing (similar
+backtrace) was indeed caused by an interrupt coming between those two
+instructions and clobbering the saved GPRs.
 
-You could call it something like of_flat_dt_match_list() if that makes
-more sense to you.  Or just copy the for loop around, it's not much code.
+So I think it's very likely our problem.
 
- - R.
+Ben.
