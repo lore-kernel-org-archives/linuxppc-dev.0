@@ -1,20 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8D5E2DE06A
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 14:07:46 +1000 (EST)
-Subject: Re: CONFIG_BOOTX_TEXT breaks PowerBook 3400 with BootX
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Finn Thain <fthain@telegraphics.com.au>
-In-Reply-To: <Pine.LNX.4.64.0808200148080.24338@loopy.telegraphics.com.au>
-References: <Pine.LNX.4.64.0808200148080.24338@loopy.telegraphics.com.au>
-Content-Type: text/plain
-Date: Wed, 20 Aug 2008 14:07:29 +1000
-Message-Id: <1219205249.21386.7.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <18603.37996.974247.668984@cargo.ozlabs.ibm.com>
+Date: Wed, 20 Aug 2008 13:50:04 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +17,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-08-20 at 03:23 +1000, Finn Thain wrote:
-> Hi All,
-> 
-> When I build kernels with CONFIG_BOOTX_TEXT enabled I can't boot a PB 3400 
-> with BootX. I get a black screen with "Welcome to Linux" at the top, then 
-> it appears to hang. Debian kernels are configured this way and suffer the 
-> same problem.
-> 
-> I don't know if Quik is affected. It is a bit of a hassle at install time 
-> since the (mediabay) floppy drive can't co-exist with the (mediabay) 
-> CDROM, so I'm using BootX to do the Debian install.
-> 
-> The Debian Sarge 2.6.8-4 kernel does not seem to have this problem though 
-> kernel.org 2.6.16 and later versions do.
-> 
-> Any ideas?
+Linus,
 
-How "late" have you tried ? I remember fixing something at one point...
+Please pull from the 'merge' branch of
 
-Ben.
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+
+to get some more bug-fixes for powerpc.
+
+Paul.
+
+ arch/powerpc/kernel/crash_dump.c          |   31 +++++++++++++++++++++=
+--------
+ arch/powerpc/kernel/ibmebus.c             |   12 -----------
+ arch/powerpc/kernel/vio.c                 |    2 +-
+ arch/powerpc/platforms/cell/spufs/run.c   |   15 +++++++-------
+ arch/powerpc/platforms/cell/spufs/sched.c |   11 ++++++++--
+ drivers/of/device.c                       |   10 +++++++++
+ 6 files changed, 50 insertions(+), 31 deletions(-)
+
+Brian King (1):
+      powerpc: Fix vio_bus_probe oops on probe error
+
+Ilpo J=E4rvinen (1):
+      powerpc/spufs: Remove invalid semicolon after if statement
+
+Jeremy Kerr (2):
+      powerpc/spufs: fix npc setting for NOSCHED contexts
+      powerpc/spufs: reference context while dropping state mutex in sc=
+heduler
+
+Joachim Fenkes (1):
+      powerpc/ibmebus: Restore "name" sysfs attribute on ibmebus device=
+s
+
+Michael Ellerman (1):
+      powerpc: Fix /dev/oldmem interface for kdump
