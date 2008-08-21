@@ -1,17 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AB4BDDEA39
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 22:50:28 +1000 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] math-emu: Add support for reporting exact invalid exception
-Date: Thu, 21 Aug 2008 07:50:21 -0500
-Message-Id: <1219323021-7273-2-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1219323021-7273-1-git-send-email-galak@kernel.crashing.org>
-References: <1219323021-7273-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, davem@davemloft.net
+Return-Path: <super.firetwister@googlemail.com>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 1F159DDF18
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 22:53:35 +1000 (EST)
+Received: by gxk14 with SMTP id 14so547684gxk.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 05:53:34 -0700 (PDT)
+Message-ID: <6a6049b80808210546k51728cd2mf47c73487fe5033f@mail.gmail.com>
+Date: Thu, 21 Aug 2008 14:46:32 +0200
+From: "M B" <super.firetwister@googlemail.com>
+To: jwboyer@linux.vnet.ibm.com
+Subject: Re: [PATCH] add a simple 405EP based board
+In-Reply-To: <1219319729.26429.40.camel@jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200808211007.59965.super.firetwister@gmail.com>
+	<1219319729.26429.40.camel@jdub.homelinux.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,103 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some architectures (like powerpc) provide status information on the exact
-type of invalid exception.  This is pretty straight forward as we already
-report invalid exceptions via FP_SET_EXCEPTION.
+On 8/21/08, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 
-We add new flags (FP_EX_INVALID_*) the architecture code can define if it
-wants the exact invalid exception reported.
+> I plan on adding more 405 board support very soon.  When I do, it'll be
+> along the lines of the patch series I just sent out for 44x.  There's
+> really no reason to have a per CPU/board file if we can avoid it.
+>
+> Your code is simple enough overall, so I might even use it as a starting
 
-We had to split out the INF/INF and 0/0 cases for divide to allow reporting
-the two invalid forms properly.
+>
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-I intend these patches to go via the powerpc.git tree if no one has issues.
+I've seen your patches for 44x support and I like the idea of a
+general board setup.
+I wanted to make the dts public, because I needed some help to figure
+out the "mdio-device" tag. So if you have further use for this you're
+welcome.
 
-- k
+> Though it's incomplete
+> in that you have a DTS that requires something to poke values into it,
+> and nothing readily apparent to do so.  A cuImage wrapper is probably
+> warranted here.
 
- include/math-emu/op-common.h |   12 ++++++++----
- include/math-emu/soft-fp.h   |   19 +++++++++++++++++++
- 2 files changed, 27 insertions(+), 4 deletions(-)
+The missing values in the dts get filled in by ft_cpu_setup(...) from
+uboot, it's generic code and not board specific, but the board setup
+in u-boot must call it, so it won't work for all boards.
 
-diff --git a/include/math-emu/op-common.h b/include/math-emu/op-common.h
-index bb46e76..cc1ec39 100644
---- a/include/math-emu/op-common.h
-+++ b/include/math-emu/op-common.h
-@@ -73,7 +73,7 @@ do {									\
- 	X##_c = FP_CLS_NAN;						\
- 	/* Check for signaling NaN */					\
- 	if (!(_FP_FRAC_HIGH_RAW_##fs(X) & _FP_QNANBIT_##fs))		\
--	  FP_SET_EXCEPTION(FP_EX_INVALID);				\
-+	  FP_SET_EXCEPTION(FP_EX_INVALID | FP_EX_INVALID_SNAN);		\
-       }									\
-     break;								\
-   }									\
-@@ -324,7 +324,7 @@ do {									     \
- 	_FP_FRAC_SET_##wc(R, _FP_NANFRAC_##fs);				     \
- 	R##_s = _FP_NANSIGN_##fs;					     \
- 	R##_c = FP_CLS_NAN;						     \
--	FP_SET_EXCEPTION(FP_EX_INVALID);				     \
-+	FP_SET_EXCEPTION(FP_EX_INVALID | FP_EX_INVALID_ISI);		     \
- 	break;								     \
-       }									     \
-     /* FALLTHRU */							     \
-@@ -431,7 +431,7 @@ do {							\
-     R##_s = _FP_NANSIGN_##fs;				\
-     R##_c = FP_CLS_NAN;					\
-     _FP_FRAC_SET_##wc(R, _FP_NANFRAC_##fs);		\
--    FP_SET_EXCEPTION(FP_EX_INVALID);			\
-+    FP_SET_EXCEPTION(FP_EX_INVALID | FP_EX_INVALID_IMZ);\
-     break;						\
- 							\
-   default:						\
-@@ -490,11 +490,15 @@ do {							\
-     break;						\
- 							\
-   case _FP_CLS_COMBINE(FP_CLS_INF,FP_CLS_INF):		\
-+    R##_s = _FP_NANSIGN_##fs;				\
-+    R##_c = FP_CLS_NAN;					\
-+    _FP_FRAC_SET_##wc(R, _FP_NANFRAC_##fs);		\
-+    FP_SET_EXCEPTION(FP_EX_INVALID | FP_EX_INVALID_IDI);\
-   case _FP_CLS_COMBINE(FP_CLS_ZERO,FP_CLS_ZERO):	\
-     R##_s = _FP_NANSIGN_##fs;				\
-     R##_c = FP_CLS_NAN;					\
-     _FP_FRAC_SET_##wc(R, _FP_NANFRAC_##fs);		\
--    FP_SET_EXCEPTION(FP_EX_INVALID);			\
-+    FP_SET_EXCEPTION(FP_EX_INVALID | FP_EX_INVALID_ZDZ);\
-     break;						\
- 							\
-   default:						\
-diff --git a/include/math-emu/soft-fp.h b/include/math-emu/soft-fp.h
-index a6f873b..3f284bc 100644
---- a/include/math-emu/soft-fp.h
-+++ b/include/math-emu/soft-fp.h
-@@ -51,6 +51,25 @@
- #ifndef FP_EX_INVALID
- #define FP_EX_INVALID		0
- #endif
-+#ifndef FP_EX_INVALID_SNAN
-+#define FP_EX_INVALID_SNAN	0
-+#endif
-+/* inf - inf */
-+#ifndef FP_EX_INVALID_ISI
-+#define FP_EX_INVALID_ISI	0
-+#endif
-+/* inf / inf */
-+#ifndef FP_EX_INVALID_IDI
-+#define FP_EX_INVALID_IDI	0
-+#endif
-+/* 0 / 0 */
-+#ifndef FP_EX_INVALID_ZDZ
-+#define FP_EX_INVALID_ZDZ	0
-+#endif
-+/* inf * 0 */
-+#ifndef FP_EX_INVALID_IMZ
-+#define FP_EX_INVALID_IMZ	0
-+#endif
- #ifndef FP_EX_OVERFLOW
- #define FP_EX_OVERFLOW		0
- #endif
--- 
-1.5.5.1
+Best regards
+
+Markus
