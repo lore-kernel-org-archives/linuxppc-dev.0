@@ -1,13 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18604.63159.163718.167197@drongo.ozlabs.ibm.com>
-Date: Thu, 21 Aug 2008 15:01:43 +1000
+Message-ID: <18604.62202.618599.18902@drongo.ozlabs.ibm.com>
+Date: Thu, 21 Aug 2008 14:45:46 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: powerpc allmodconfig in current -mm
-In-Reply-To: <20080820181626.0347c270.akpm@linux-foundation.org>
-References: <20080820181626.0347c270.akpm@linux-foundation.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 1/4] powerpc: Fix typo in pgtable-ppc64.h
+In-Reply-To: <48AC7C1D.5070509@am.sony.com>
+References: <48AC78BA.3070902@am.sony.com>
+	<48AC7C1D.5070509@am.sony.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -18,20 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton writes:
+Geoff Levand writes:
 
-> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/powerpc64-unknown-linux-gnu-ld: .tmp_vmlinux1: section .data.gcov lma 0xc000000002c2bb78 overlaps previous sections
+> Fix a minor comment typo in pgtable-ppc64.h.
 
-I suspect your binutils are too old, and the stress that the gcov
-stuff puts on the toolchain is showing up a bug in ld.
+I don't see why this needs to go in 2.6.27.  See Linus' recent
+comments on what should go in outside the merge window:
 
-> powerpc allmodconfig:
-> 
-> ERROR: "CMO_PageSize" [arch/powerpc/platforms/pseries/cmm.ko] undefined!
-> 
-> (needed for 2.6.27)
+http://lkml.org/lkml/2008/8/20/251
 
-OK.  I think we need to export CMO_PrPSP and CMO_SecPSP as well.
-(Lovely names. :()
+I'll queue it for 2.6.28.
 
 Paul.
