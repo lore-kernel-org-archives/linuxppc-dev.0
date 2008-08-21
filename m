@@ -1,21 +1,20 @@
-Return-Path: <bigeasy@www.tglx.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 160F7DE69D
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 18:37:53 +1000 (EST)
-Date: Thu, 21 Aug 2008 10:28:05 +0200
-From: Sebastian Siewior <sebastian@breakpoint.cc>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC] mtd: add OF2PDEV convertor for the NDFC driver
-Message-ID: <20080821082805.GA8013@www.tglx.de>
-References: <20080820205958.GA13371@www.tglx.de>
-	<200808210040.58809.arnd@arndb.de>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 2CF7DDE842
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 18:40:15 +1000 (EST)
+Date: Thu, 21 Aug 2008 18:40:08 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: powerpc allmodconfig in current -mm
+Message-Id: <20080821184008.d363d5c6.sfr@canb.auug.org.au>
+In-Reply-To: <18604.63159.163718.167197@drongo.ozlabs.ibm.com>
+References: <20080820181626.0347c270.akpm@linux-foundation.org>
+	<18604.63159.163718.167197@drongo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <200808210040.58809.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, linux-mtd@lists.infradead.org,
-	Sean MacLennan <smaclennan@pikatech.com>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__21_Aug_2008_18_40_08_+1000_T9q9GXWIjUDvk9WI"
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Arnd Bergmann | 2008-08-21 00:40:58 [+0200]:
+--Signature=_Thu__21_Aug_2008_18_40_08_+1000_T9q9GXWIjUDvk9WI
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->On Wednesday 20 August 2008, Sebastian Siewior wrote:
->> I didn't convert the NDFC driver to support OF because there are
->> non-OF-aware platforms with the ndfc chip.
->> All settings are mandatory except the oob layout.
+Hi Paul,
+
+On Thu, 21 Aug 2008 15:01:43 +1000 Paul Mackerras <paulus@samba.org> wrote:
 >
->Are you aware of Sean's patch from
->http://patchwork.ozlabs.org/linuxppc/patch?id=20183 ?
+> OK.  I think we need to export CMO_PrPSP and CMO_SecPSP as well.
+> (Lovely names. :()
 
-Yes, I heard of it. tglx told me that the IP-Core might show up in
-non-IBM HW and it would be better not to drop the platform support.
+These are only used (indirectly) in lparcfg.c which is never a module, so
+should be OK.
 
->	Arnd <><
-Sebastian
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__21_Aug_2008_18_40_08_+1000_T9q9GXWIjUDvk9WI
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkitKegACgkQjjKRsyhoI8y7BwCfcENt6N38WwxMY4vQ1Ib1b5gr
+z/4An04NqnSkYEbdE0oYIzSHINCnLUHO
+=br7j
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__21_Aug_2008_18_40_08_+1000_T9q9GXWIjUDvk9WI--
