@@ -1,23 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7D690DEC97
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 00:26:38 +1000 (EST)
-Message-Id: <9E570AE9-6811-489F-9E2C-EF5A6B95ED5C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-In-Reply-To: <48AD7815.70107@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 4/4] kvmppc: convert wrteei to wrtee as kvm guest
-	optimization
-Date: Thu, 21 Aug 2008 09:21:39 -0500
-References: <1219142204-12044-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
-	<1219142204-12044-5-git-send-email-ehrhardt@linux.vnet.ibm.com>
-	<81439C52-0CB6-4C46-9A97-3D30B84F58AF@kernel.crashing.org>
-	<48AD7815.70107@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, hollisb@us.ibm.com, kvm-ppc@vger.kernel.org
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id A1432DE42D
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 00:33:06 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: Strange behavior with I2C on Sequoia board
+Date: Thu, 21 Aug 2008 16:32:36 +0200
+References: <48AC84D9.8050809@harris.com> <48AD5FD1.1090809@ru.mvista.com>
+	<48AD6D3B.6030701@harris.com>
+In-Reply-To: <48AD6D3B.6030701@harris.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808211632.36633.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 21 August 2008, Steven A. Falco wrote:
+> Your diagnosis is correct!  I changed the define from 8<<20 to 8<<21 and it
+> now boots.  Previously the parameters were at 7ffe70, and this change moved
+> them to fffe70.
 
-On Aug 21, 2008, at 9:13 AM, Christian Ehrhardt wrote:
+Good.
 
-> Kumar Gala wrote:
->>
->> On Aug 19, 2008, at 5:36 AM, ehrhardt@linux.vnet.ibm.com wrote:
->>
->>> From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
->>>
->>> Dependent on the already existing CONFIG_KVM_GUEST config option  
->>> this patch
->>> changes wrteei to wrtee allowing the hypervisor to rewrite those  
->>> to nontrapping
->>> instructions. Maybe we should split the kvm guest otpimizations in  
->>> two parts
->>> one for the overhead free optimizations and on for the rest that  
->>> might add
->>> some complexity for non virtualized execution (like this one).
->>>
->>> Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
->>> ---
->>
->> So this commit message doesnt explain why 'wrtee' facilities doing  
->> whatever optimization and 'wrteei' doesnt.
->>
-> yep I only explained it elsewhere.
-> I'll add it here too in the next version - thanks Kumar
-> (and fix the word otpimizations)
+> I would like to switch over to using a uImage rather than the
+> cuboot.uImage. But I have not figured out whether it is the U-boot build
+> that converts the .dts to a .dtb or if the kernel build should do that. 
 
-Where is the other discussion?  I'd like to understand what's going on  
-here.. (especially since I added the wrtee[i] changes to kernel way  
-back when).
+The dts is part of the kernel source, so its part of the kernel build 
+procedure. You can either do this by hand or use the "make kilauea.dtb" 
+target.
 
-- k
+See also:
+
+http://www.denx.de/wiki/DULG/LinuxFDTBlob
+
+> Also, I have not figured out whether the .dtb can remain part of the kernel
+> image, as it is with the cuboot kernel, or if the .dtb must be a separate
+> image in a different part of the rom.
+
+When you use uImage, then U-Boot needs the dtb additionally to the kernel 
+image. Those two images (and more) can be combined to a single image using 
+the new U-Boot image format FIT (Flattened Image Tree) though.
+
+Best regards,
+Stefan
