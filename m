@@ -1,20 +1,20 @@
-Return-Path: <linuxppc-embedded@ml.breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B484FDED6F
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 01:10:06 +1000 (EST)
-Received: id: bigeasy by Chamillionaire.breakpoint.cc with local
-	(easymta 1.00 BETA 1) id 1KVpJu-0006Su-Jx
-	for linuxppc-dev@ozlabs.org; Wed, 20 Aug 2008 17:09:58 +0200
-Date: Wed, 20 Aug 2008 17:09:58 +0200
-From: Sebastian Siewior <linuxppc-embedded@ml.breakpoint.cc>
-To: linuxppc-dev@ozlabs.org
-Subject: boot cuImage on an old u-boot
-Message-ID: <20080820150958.GA23294@Chamillionaire.breakpoint.cc>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18604.60738.523963.886786@drongo.ozlabs.ibm.com>
+Date: Thu, 21 Aug 2008 14:21:22 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: powerpc/cell/oprofile: fix mutex locking for spu-oprofile
+In-Reply-To: <200808201519.19453.arnd@arndb.de>
+References: <1217620879.15667.145.camel@carll-linux-desktop>
+	<200808110925.08485.arnd@arndb.de>
+	<20080820123944.GQ13011@erda.amd.com>
+	<200808201519.19453.arnd@arndb.de>
+Cc: Robert Richter <robert.richter@amd.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
+	cel <cel@linux.vnet.ibm.com>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have here a mpc8540ads board and a u-boot 1.0.0. I've build the
-defconfig for the board and I tried to boot the genarated
-cuImage.mpc8540ads image. After the bootm command I see just
+Arnd Bergmann writes:
 
-|8540> bootm 1000000
-|## Booting image at 01000000 ...
-|   Image Name:   Linux-2.6.26
-|   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-|   Data Size:    1232711 Bytes =  1.2 MB
-|   Load Address: 00400000
-|   Entry Point:  004005ac
-|   Verifying Checksum ... OK
-|   Uncompressing Kernel Image ... OK
-|
+> Paul, any chance we can still get this into 2.6.27?
 
-I don't see the device tree fixups printfs, so crash happend quite
-early. Anyone an idea what I could have done wrong?
+Possibly.  We'll need a really good explanation for Linus as to why
+this is needed (what regression or serious bug this fixes) and why it
+is late.  Can you send me something explaining that?
 
-Sebastian
+> I've added the Ack and uploaded it again for you to
+> pull from
+> 
+>  master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git merge
+
+Are you sure you actually managed to update that?
+
+$ git ls-remote master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git merge
+f90a87b5f5fa46dc6c556e9267a6f25a95fbef14        refs/heads/merge
+
+and f90a87b5f5fa46dc6c556e9267a6f25a95fbef14 is the same commit from
+2008-08-09 that you asked me to pull previously.
+
+Paul.
