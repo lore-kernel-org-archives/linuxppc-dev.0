@@ -1,11 +1,12 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id A7514DE37C
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 17:10:14 +1000 (EST)
-Date: Thu, 21 Aug 2008 00:10:12 -0700 (PDT)
-Message-Id: <20080821.001012.265401427.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 50B3DDE433
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 17:10:18 +1000 (EST)
+Date: Thu, 21 Aug 2008 00:10:17 -0700 (PDT)
+Message-Id: <20080821.001017.261408123.davem@davemloft.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/3]: Sparc OF I2C support.
+Subject: [PATCH 1/3]: sparc: Implement irq_of_parse_and_map() and
+	irq_dispose_mapping().
 From: David Miller <davem@davemloft.net>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -20,56 +21,80 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-I'm working on some drivers for I2C bus support on some of my sparc64
-workstations (for lm-sensor and eeprom type devices sitting behind
-them) so I went back to trying to get of_i2c.c usable on sparc.
+sparc: Implement irq_of_parse_and_map() and irq_dispose_mapping().
 
-Mostly straightforward stuff _except_ for the I2C address encoding.
-
-What I2C IEEE1275 device binding was used to write that code in
-of_i2c.c?  Is it some PowerPC specific thing?  Was it "invented"
-by the embedded folks (I hope not)?
-
-On sparc, the encoding is either 1 cell or 2 cell.
-
-If it's one cell, it's just the device address.
-
-If it's two cells, it's a bus number (for I2C controllers that
-can manage multiple I2C bus segments, think PCI domains) in the
-first cell and the device address in the second cell.
-
-And, furthermore, the device address is shifted up 1 bit higher
-than the Linux I2C layer expects.  It includes the low direction
-bit, bit 0, so we have to shift it down by 1 bit before we give
-it to the Linux I2C layer.
-
-Does PowerPC really encode these things differently?  And if so what
-IEEE1275 I2C device binding specification covers that?
-
-If PowerPC really does encode the device address in the same format as
-the Linux I2C layer expects, that's OK and I used some property tests
-and ifdefs to make it all work out.  What I did in these patches is:
-
-1) Check the #address-cells property.  If not present, assume the value
-   is "1".  Only accept values of "1" and "2".
-
-2) When CONFIG_SPARC, shift the device address down by one bit before
-   giving it to the Linux I2C layer.
-
-I haven't added support to the I2C layer for the bus number yet, that
-will come later.
-
-The first patch in this series add the powerpc-compat IRQ probing
-interfaces, mostly straightforward stuff as we precompute these
-IRQs in of_device objects so we just search for the of_device corresponding
-to the device node and return the interrupt, if any.  Dispost is a NOP.
-
-The second patch deals with the addressing issues described above and
-lets it be compiled on non-ppc systems.
-
-The third patch adds device modaliases for a couple of I2C chip devices
-I've seen on my SunBlade2500 workstation.  More will come later as I
-flesh out my I2C sparc64 drivers which are not being posted here yet.
-I have a fully functional Sun pcf8584 I2C bus driver.
+This allows more OF layer code to be shared between powerpc and
+sparc.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ arch/sparc/include/asm/prom.h   |    8 ++++++++
+ arch/sparc/kernel/of_device.c   |   11 +++++++++++
+ arch/sparc64/kernel/of_device.c |   11 +++++++++++
+ 3 files changed, 30 insertions(+), 0 deletions(-)
+
+diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
+index b5efc4d..58b85fa 100644
+--- a/arch/sparc/include/asm/prom.h
++++ b/arch/sparc/include/asm/prom.h
+@@ -96,6 +96,14 @@ static inline void of_node_put(struct device_node *node)
+ {
+ }
+ 
++/* These routines are here to provide compatibility with how powerpc
++ * handles IRQ mapping for OF device nodes.  We precompute and permanently
++ * register them in the of_device objects, whereas powerpc computes them
++ * on request.
++ */
++extern int irq_of_parse_and_map(struct device_node *node, int index);
++#define irq_dispose_mapping(irq) do { } while (0)
++
+ /*
+  * NB:  This is here while we transition from using asm/prom.h
+  * to linux/of.h
+diff --git a/arch/sparc/kernel/of_device.c b/arch/sparc/kernel/of_device.c
+index cc4c235..56e9a71 100644
+--- a/arch/sparc/kernel/of_device.c
++++ b/arch/sparc/kernel/of_device.c
+@@ -29,6 +29,17 @@ struct of_device *of_find_device_by_node(struct device_node *dp)
+ }
+ EXPORT_SYMBOL(of_find_device_by_node);
+ 
++int irq_of_parse_and_map(struct device_node *node, int index)
++{
++	struct of_device *op = of_find_device_by_node(node);
++
++	if (!op || index >= op->num_irqs)
++		return 0xffffffff;
++
++	return op->irqs[index];
++}
++EXPORT_SYMBOL(irq_of_parse_and_map);
++
+ #ifdef CONFIG_PCI
+ struct bus_type ebus_bus_type;
+ EXPORT_SYMBOL(ebus_bus_type);
+diff --git a/arch/sparc64/kernel/of_device.c b/arch/sparc64/kernel/of_device.c
+index f8b50cb..8a0d823 100644
+--- a/arch/sparc64/kernel/of_device.c
++++ b/arch/sparc64/kernel/of_device.c
+@@ -55,6 +55,17 @@ struct of_device *of_find_device_by_node(struct device_node *dp)
+ }
+ EXPORT_SYMBOL(of_find_device_by_node);
+ 
++int irq_of_parse_and_map(struct device_node *node, int index)
++{
++	struct of_device *op = of_find_device_by_node(node);
++
++	if (!op || index >= op->num_irqs)
++		return 0xffffffff;
++
++	return op->irqs[index];
++}
++EXPORT_SYMBOL(irq_of_parse_and_map);
++
+ #ifdef CONFIG_PCI
+ struct bus_type ebus_bus_type;
+ EXPORT_SYMBOL(ebus_bus_type);
+-- 
+1.5.6.5.GIT
