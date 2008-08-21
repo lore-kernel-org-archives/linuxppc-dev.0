@@ -1,18 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [machdep_calls] IRQ
-From: Michael Ellerman <michael@ellerman.id.au>
-To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
-	<sebastien.chretien.enseirb@gmail.com>
-In-Reply-To: <319b0ac50808210013p677ebb91vf3b30748138c6d4c@mail.gmail.com>
-References: <319b0ac50808210013p677ebb91vf3b30748138c6d4c@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-XCrTmY/egBnbFnpB7WBE"
-Date: Thu, 21 Aug 2008 18:02:47 +1000
-Message-Id: <1219305767.8008.14.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: cbe-oss-dev@ozlabs.org
+Subject: Re: [Cbe-oss-dev] powerpc/cell/oprofile: fix mutex locking for
+	spu-oprofile
+Date: Thu, 21 Aug 2008 10:14:42 +0200
+References: <1217620879.15667.145.camel@carll-linux-desktop>
+	<200808201519.19453.arnd@arndb.de>
+	<18604.60738.523963.886786@drongo.ozlabs.ibm.com>
+In-Reply-To: <18604.60738.523963.886786@drongo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808211014.42683.arnd@arndb.de>
+Cc: Robert Richter <robert.richter@amd.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	oprofile-list@lists.sourceforge.net, cel <cel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,66 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 21 August 2008, Paul Mackerras wrote:
+> Arnd Bergmann writes:
+> 
+> > Paul, any chance we can still get this into 2.6.27?
+> 
+> Possibly.  We'll need a really good explanation for Linus as to why
+> this is needed (what regression or serious bug this fixes) and why it
+> is late.  Can you send me something explaining that?
 
---=-XCrTmY/egBnbFnpB7WBE
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+The patch does not fix a regression, the spu-oprofile code basically never
+worked. With the current code in Linux, samples in the profile buffer
+can get corrupted because reader and writer to that buffer use different
+locks for accessing it. It took us several iterations to come up with
+a solution that does not introduce other problems and I didn't want to
+push an earlier version that would need more fixups.
 
-On Thu, 2008-08-21 at 09:13 +0200, S=C3=A9bastien Chr=C3=A9tien wrote:
-> Hello,
->=20
-> What are the constraints in order to implement a irq_init function ?=20
+Since rc4 is out now, I understand if you feel more comfortable with
+putting the patch into -next instead of -merge.
+Note that the second patch is trivial and fixes an oopsable condition
+of the kernel, so at least that should still go into 2.6.27.
 
-You mean ppc_md.init_IRQ() ?
+> > I've added the Ack and uploaded it again for you to
+> > pull from
+> > 
+> >  master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git merge
+> 
+> Are you sure you actually managed to update that?
 
-If so, it's a hook you can use to setup your interrupt controller. It's
-called from init_IRQ() (arch/powerpc/kernel/irq.c), which is called from
-start_kernel() (init/main.c).
+No, but it's there now. I was missing the '-f' for git-push.
 
-Not long after it is called irqs are enabled. I think it is the last
-callback into arch code before irqs are enabled.
-
-When it is called the device tree is unflattened, so you can use the of_
-API. Bootmem is setup so you can use alloc_bootmem(), but you can't
-kmalloc yet. ioremap should work.
-
-
-> What is the aim or get_irq ? Does it retun an information about the
-> mask, the states, or... ?
-
-The aim of ppc_md.get_irq() ? It's called from do_IRQ()
-(arch/powerpc/kernel/irq.c) which is called from assembler in the
-appropriate head_x.S
-
-It just returns the number (virtual number) of the irq that just fired.
-If for some reason you took a spurious interrupt it should return
-NO_IRQ.
-
-I'm not sure what you mean about masks or states, someone else might
-though.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-XCrTmY/egBnbFnpB7WBE
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIrSEndSjSd0sB4dIRAtC7AKCfUvxs7aFQbeISt/vAI0rYWYf9aQCbBEA/
-7WRUKxOhNHtVtKheFP5uy3c=
-=muo/
------END PGP SIGNATURE-----
-
---=-XCrTmY/egBnbFnpB7WBE--
+	Arnd <><
