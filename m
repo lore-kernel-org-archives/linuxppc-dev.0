@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AD0FADF901
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 07:41:13 +1000 (EST)
-Message-Id: <B835DA11-AB52-476B-8DD9-327235DACB65@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Becky Bruce <becky.bruce@freescale.com>
-In-Reply-To: <1219352996-22243-1-git-send-email-becky.bruce@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH] POWERPC: Allow 32-bit pgtable code to support 36-bit
-	physical
-Date: Thu, 21 Aug 2008 16:40:59 -0500
-References: <1219352996-22243-1-git-send-email-becky.bruce@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 2DB45DF8D8
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 07:45:47 +1000 (EST)
+Date: Thu, 21 Aug 2008 14:45:45 -0700 (PDT)
+Message-Id: <20080821.144545.54542588.davem@davemloft.net>
+To: scottwood@freescale.com
+Subject: Re: [PATCH 0/3]: Sparc OF I2C support.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48ADDF86.2040200@freescale.com>
+References: <20080821163256.GC15669@ld0162-tx32.am.freescale.net>
+	<20080821.142134.127315039.davem@davemloft.net>
+	<48ADDF86.2040200@freescale.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,52 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> #define _PMD_PRESENT	0
-> #define _PMD_PRESENT_MASK (PAGE_MASK)
-> @@ -517,7 +522,13 @@ extern unsigned long  
-> bad_call_to_PMD_PAGE_SIZE(void);
->
-> #define pte_none(pte)		((pte_val(pte) & ~_PTE_NONE_MASK) == 0)
-> #define pte_present(pte)	(pte_val(pte) & _PAGE_PRESENT)
-> +
-> +#if (defined(CONFIG_PTE_64BIT) && (_PAGE_HASHPTE != 0))
-> +#define pte_clear(mm, addr, ptep) \
-> +	do { pte_update((ptep), (~_PAGE_HASHPTE), __pte(0)); } while (0)
+From: Scott Wood <scottwood@freescale.com>
+Date: Thu, 21 Aug 2008 16:35:02 -0500
 
-drop the __pte(0), doesn't make sense for pte_update
->
-> +#else
-> #define pte_clear(mm,addr,ptep)	do { set_pte_at((mm), (addr),  
-> (ptep), __pte(0)); } while (0)
-> +#endif
+> David Miller wrote:
+> > If you guys created this format in your compressed openfirmware
+> > trees, is it possible for you to "fix" it to match what Sparc
+> > systems following the proper bindings do?
+> 
+> Possibly, though it'll cause some pain when old trees are used with a 
+> kernel that expects the new binding.
+> 
+> You mentioned having an actual binding document for I2C on Open 
+> Firmware; is it available online anywhere?
 
-Can we just always (for all ppc32) do:
+It's a Sun internal document I got from a Sun employee, I'll ask
+if there is a way I can at least share it with you privately so
+you can use it as a reference.
 
-#define pte_clear(mm,addr,ptep)        do { pte_update(ptep,  
-(~_PAGE_HASHPTE), 0); } while (0)
+> > Don't PowerMACs and such have I2C controllers and devices?
+> > How do they encode these I2C client device reg properties?
+> 
+> As far as I can tell from poking around 
+> http://penguinppc.org/historical/dev-trees-html/, they don't include reg 
+> at all for i2c clients.
 
-I've already changed this to be:
-
-#define pte_clear(mm,addr,ptep) do { pte_update(ptep, ~0, 0); } while  
-(0)
-
-
-> /*
-> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/ 
-> asm/types.h
-> index d3374bc..a9a9262 100644
-> --- a/arch/powerpc/include/asm/types.h
-> +++ b/arch/powerpc/include/asm/types.h
-> @@ -55,7 +55,7 @@ typedef u64 phys_addr_t;
-> typedef u32 phys_addr_t;
-> #endif
->
-> -#ifdef __powerpc64__
-> +#if defined(__powerpc64__) || defined(CONFIG_PHYS_64BIT)
-> typedef u64 dma_addr_t;
-> #else
-> typedef u32 dma_addr_t;
-
-is this really part of this patchset of the IOMMU changes?
-
-- k
+That actually simplifies things for us, thanks for checking.
