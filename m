@@ -1,23 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0272ADDE1D
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 04:39:22 +1000 (EST)
-Message-ID: <48ADB628.30508@freescale.com>
-Date: Thu, 21 Aug 2008 13:38:32 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc: Board support for GE Fanuc SBC610
-References: <20080821133852.17201.3862.stgit@welchma.Radstone.Local>	<20080821144144.fed06908.martyn.welch@gefanuc.com>
-	<48ADB153.20208@freescale.com>
-In-Reply-To: <48ADB153.20208@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Martyn Welch <martyn.welch@gefanuc.com>,
-	paulus@samba.org
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 8F779DE436
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 04:45:09 +1000 (EST)
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Strange behavior with I2C on Sequoia board
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <Pine.LNX.4.64.0808211630170.20704@vixen.sonytel.be>
+References: <48AC84D9.8050809@harris.com>
+	<1219279463.26429.35.camel@jdub.homelinux.org>
+	<20080820231828.3c22da08@lappy.seanm.ca>
+	<200808211151.40499.sr@denx.de>
+	<48AD5FD1.1090809@ru.mvista.com> <48AD6D3B.6030701@harris.com>
+	<Pine.LNX.4.64.0808211630170.20704@vixen.sonytel.be>
+Date: Thu, 21 Aug 2008 20:45:00 +0200
+Sender: wd@denx.de
+Message-Id: <20080821184500.8DD3F248FF@gemini.denx.de>
+Cc: Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org,
+	Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Loeliger wrote:
->> +        mpic: pic@40000 {
->> +            clock-frequency = <0>;
->> +            interrupt-controller;
->> +            #address-cells = <0>;
->> +            #interrupt-cells = <2>;
->> +            reg = <0x00040000 0x00040000>;
->> +            built-in;
->> +            compatible = "chrp,open-pic";
->> +            device_type = "open-pic";
->> +                        big-endian;
+Dear Geert,
+
+In message <Pine.LNX.4.64.0808211630170.20704@vixen.sonytel.be> you wrote:
+>
+> Can you actually boot a plain uImage from U-Boot?
+
+yes, of course you can (you will need a device tree, too).
+
+> I've just gave it a try.  While arch/powerpc/boot/cuImage.sequoia boots fine,
+> after `make uImage', I get arch/powerpc/boot/uImage, but it doesn't boot:
 > 
-> IIRC, we dropped "big-endian" too. (?)
+> | ## Booting image at 00100000 ...
+> |    Image Name:   Linux-2.6.27-rc4-dirty
+> |    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+> |    Data Size:    1398827 Bytes =  1.3 MB
+> |    Load Address: 00000000
+> |    Entry Point:  00000000
+> |    Verifying Checksum ... OK
+> |    Uncompressing Kernel Image ... Error: inflate() returned -3
+> | GUNZIP ERROR - must RESET board to recover
+> | 
+> | U-Boot 1.2.0-gc0c292b2 (Jun  5 2007 - 07:16:12)
+> 
+> and I'm back to U-Boot...
 
-And "built-in".
+See the FAQ: http://www.denx.de/wiki/view/DULG/LinuxUncompressingError
 
--Scott
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A conservative is a man who believes that nothing should be done for
+the first time.                                   - Alfred E. Wiggam
