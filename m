@@ -1,22 +1,19 @@
-Return-Path: <a.schmid@systeme-steuerungen.de>
-Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.160])
-	by ozlabs.org (Postfix) with ESMTP id C6D30DDEE0
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 05B0ADE44B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Aug 2008 16:32:51 +1000 (EST)
-Received: from sys-b1 (pD95F65A8.dip.t-dialin.net [217.95.101.168])
-	by post.webmailer.de (mrclete mo47) (RZmta 16.47)
-	with ESMTP id K0311dk7L08jru for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Aug 2008 08:21:19 +0200 (MEST)
-	(envelope-from: <a.schmid@systeme-steuerungen.de>)
-Date: Thu, 21 Aug 2008 08:21:13 +0200
-From: "Schmid Alexander" <a.schmid@systeme-steuerungen.de>
-Subject: 
-To: <linuxppc-embedded@ozlabs.org>
-Message-Id: <FCELKENEBBOLLHKPHCCBEECMCDAA.a.schmid@systeme-steuerungen.de>
-Mime-Version: 1.0
-Content-Type: text/plain;
-   charset="iso-8859-1"
-Reply-To: a.schmid@systeme-steuerungen.de
+	Thu, 21 Aug 2008 19:48:46 +1000 (EST)
+To: a.schmid@systeme-steuerungen.de
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <FCELKENEBBOLLHKPHCCBEECMCDAA.a.schmid@systeme-steuerungen.de>
+References: <FCELKENEBBOLLHKPHCCBEECMCDAA.a.schmid@systeme-steuerungen.de>
+Date: Thu, 21 Aug 2008 11:48:43 +0200
+Sender: wd@denx.de
+Message-Id: <20080821094843.83511243AB@gemini.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,40 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Dear Alexander,
 
-Hello,
-I use U-Boot 1.2.0 on MPC5200B. Console over serial works fine. I have a
-Grafic controller at LPB Bus and U-Boot shows his console output at VGa too.
-But I would need a keyboard. I compiled U-Boot with USB and if i type "usb
-reset" the ohci controller scans the USB devices and finds a keyboard. But
-nothing happens if i push the buttons on the keyboard!
-Can anyone help me please?
-Thanks
+In message <FCELKENEBBOLLHKPHCCBEECMCDAA.a.schmid@systeme-steuerungen.de> you wrote:
+> 
+> I use U-Boot 1.2.0 on MPC5200B. Console over serial works fine. I have a
 
+U-Boot related questions are off topic here. Please post such
+questions on the U-Boot mailing list, see
+http://lists.denx.de/mailman/listinfo/u-boot
 
+Second, U-Boot 1.2.0 is *very* old, please use recent code (1.3.4 or
+later).
 
+> Grafic controller at LPB Bus and U-Boot shows his console output at VGa too.
+> But I would need a keyboard. I compiled U-Boot with USB and if i type "usb
+> reset" the ohci controller scans the USB devices and finds a keyboard. But
+> nothing happens if i push the buttons on the keyboard!
 
-Alexander Schmid
-Dipl. Ing. (FH)
--Entwicklung-
-Systeme & Steuerungen GmbH
-Josef-Buchinger-Strasse 8
-DE-94481 Grafenau
+There is no USB keyboard driver in U-Boot yet. Please let me know if
+you need help to develop one.
 
+Best regards,
 
-Amtsgericht Passau; HRB-Nr.: 1248
-Geschäftsführer: Wolfgang Biewald
+Wolfgang Denk
 
-
-Tel.:  +49 85 52 96 39 37
-Fax.:    +49 85 52 96 39 40
-Email:  a.schmid@systeme-steuerungen.de
-
-
-Der Inhalt dieser E-Mail ist vertraulich. Wenn Sie nicht der berechtigte
-Empfänger sind, bitten wir Sie, uns umgehend zu informieren und den Inhalt
-weder für eigene Zwecke zu nutzen noch an Dritte weiterzugeben.
-
-This e-mail is confidential. If you are not the intended recipient, please
-notify us immediately. You should not disclose its contents to any other
-person nor use it for any purposes.
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Time is fluid ... like a river with currents, eddies, backwash.
+	-- Spock, "The City on the Edge of Forever", stardate 3134.0
