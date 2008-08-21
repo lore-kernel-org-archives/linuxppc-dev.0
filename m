@@ -1,22 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6ABF4DF8FA
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 07:35:39 +1000 (EST)
-Message-ID: <48ADDF86.2040200@freescale.com>
-Date: Thu, 21 Aug 2008 16:35:02 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 0/3]: Sparc OF I2C support.
-References: <20080821.001012.265401427.davem@davemloft.net>	<20080821163256.GC15669@ld0162-tx32.am.freescale.net>
-	<20080821.142134.127315039.davem@davemloft.net>
-In-Reply-To: <20080821.142134.127315039.davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AD0FADF901
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 07:41:13 +1000 (EST)
+Message-Id: <B835DA11-AB52-476B-8DD9-327235DACB65@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Becky Bruce <becky.bruce@freescale.com>
+In-Reply-To: <1219352996-22243-1-git-send-email-becky.bruce@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] POWERPC: Allow 32-bit pgtable code to support 36-bit
+	physical
+Date: Thu, 21 Aug 2008 16:40:59 -0500
+References: <1219352996-22243-1-git-send-email-becky.bruce@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Miller wrote:
->> On Thu, Aug 21, 2008 at 12:10:12AM -0700, David Miller wrote:
->>> 2) When CONFIG_SPARC, shift the device address down by one bit before
->>>    giving it to the Linux I2C layer.
->> Maybe we should distinguish by the type of I2C bus node instead.
-> 
-> How so?  If a Sparc and a PowerPC system use similar I2C
-> controllers, we risk double matches.
+> #define _PMD_PRESENT	0
+> #define _PMD_PRESENT_MASK (PAGE_MASK)
+> @@ -517,7 +522,13 @@ extern unsigned long  
+> bad_call_to_PMD_PAGE_SIZE(void);
+>
+> #define pte_none(pte)		((pte_val(pte) & ~_PTE_NONE_MASK) == 0)
+> #define pte_present(pte)	(pte_val(pte) & _PAGE_PRESENT)
+> +
+> +#if (defined(CONFIG_PTE_64BIT) && (_PAGE_HASHPTE != 0))
+> +#define pte_clear(mm, addr, ptep) \
+> +	do { pte_update((ptep), (~_PAGE_HASHPTE), __pte(0)); } while (0)
 
-It's not really an instruction-set architecture issue, it's a binding 
-issue.  What if a non-OF embedded SPARC comes along that copies i2c from 
-a PowerPC DTS file, or we come across a real-OF PowerPC that does it the 
-SPARC way?
+drop the __pte(0), doesn't make sense for pte_update
+>
+> +#else
+> #define pte_clear(mm,addr,ptep)	do { set_pte_at((mm), (addr),  
+> (ptep), __pte(0)); } while (0)
+> +#endif
 
-If we do come across two systems that claim their i2c bus nodes are 
-compatible but use different bindings, *then* we'll find some 
-out-of-band information to disambiguate.
+Can we just always (for all ppc32) do:
 
-> If you guys created this format in your compressed openfirmware
-> trees, is it possible for you to "fix" it to match what Sparc
-> systems following the proper bindings do?
+#define pte_clear(mm,addr,ptep)        do { pte_update(ptep,  
+(~_PAGE_HASHPTE), 0); } while (0)
 
-Possibly, though it'll cause some pain when old trees are used with a 
-kernel that expects the new binding.
+I've already changed this to be:
 
-You mentioned having an actual binding document for I2C on Open 
-Firmware; is it available online anywhere?
+#define pte_clear(mm,addr,ptep) do { pte_update(ptep, ~0, 0); } while  
+(0)
 
-> Don't PowerMACs and such have I2C controllers and devices?
-> How do they encode these I2C client device reg properties?
 
-As far as I can tell from poking around 
-http://penguinppc.org/historical/dev-trees-html/, they don't include reg 
-at all for i2c clients.
+> /*
+> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/ 
+> asm/types.h
+> index d3374bc..a9a9262 100644
+> --- a/arch/powerpc/include/asm/types.h
+> +++ b/arch/powerpc/include/asm/types.h
+> @@ -55,7 +55,7 @@ typedef u64 phys_addr_t;
+> typedef u32 phys_addr_t;
+> #endif
+>
+> -#ifdef __powerpc64__
+> +#if defined(__powerpc64__) || defined(CONFIG_PHYS_64BIT)
+> typedef u64 dma_addr_t;
+> #else
+> typedef u32 dma_addr_t;
 
--Scott
+is this really part of this patchset of the IOMMU changes?
+
+- k
