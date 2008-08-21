@@ -1,19 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 95D98DF5A0
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 07:59:47 +1000 (EST)
-Date: Thu, 21 Aug 2008 14:59:46 -0700 (PDT)
-Message-Id: <20080821.145946.01710005.davem@davemloft.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 1/3]: sparc: Implement irq_of_parse_and_map() and
-	irq_dispose_mapping().
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080821215611.GA14354@oksana.dev.rtsoft.ru>
-References: <20080821.001017.261408123.davem@davemloft.net>
-	<20080821215611.GA14354@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 534DB47678
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 07:59:52 +1000 (EST)
+Message-Id: <C7EDF44A-277E-4157-B2D6-0DEDCF65AED7@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20080821.140346.236252915.davem@davemloft.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] math-emu: Fix compiler warnings
+Date: Thu, 21 Aug 2008 16:59:44 -0500
+References: <1219323021-7273-1-git-send-email-galak@kernel.crashing.org>
+	<20080821.140346.236252915.davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,52 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Fri, 22 Aug 2008 01:56:11 +0400
 
-> On Thu, Aug 21, 2008 at 12:10:17AM -0700, David Miller wrote:
-> > @@ -96,6 +96,14 @@ static inline void of_node_put(struct device_node *node)
-> >  {
-> >  }
-> >  
-> > +/* These routines are here to provide compatibility with how powerpc
-> > + * handles IRQ mapping for OF device nodes.  We precompute and permanently
-> > + * register them in the of_device objects, whereas powerpc computes them
-> > + * on request.
-> > + */
-> > +extern int irq_of_parse_and_map(struct device_node *node, int index);
-> 
-> On powerpc irq_of_parse_and_map() returns unsigned type.
-> 
-> > +#define irq_dispose_mapping(irq) do { } while (0)
-> 
-> I'd rather write it as a static inline function, for type checking,
-> plus, I think with this macros gcc may generate warnings about
-> defined but unused variables.
+On Aug 21, 2008, at 4:03 PM, David Miller wrote:
 
-Thanks, I'll fix that.
+> From: Kumar Gala <galak@kernel.crashing.org>
+> Date: Thu, 21 Aug 2008 07:50:20 -0500
+>
+>> Fix warnings of the form:
+>> arch/powerpc/math-emu/fsubs.c:15: warning: 'R_f1' may be used  
+>> uninitialized in this function
+>> arch/powerpc/math-emu/fsubs.c:15: warning: 'R_f0' may be used  
+>> uninitialized in this function
+>>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>
+> You should look at the compiler options we use on sparc to build this
+> stuff :-)
+>
+> EXTRA_CFLAGS = -Iinclude/math-emu -w
 
-> > +
-> >  /*
-> >   * NB:  This is here while we transition from using asm/prom.h
-> >   * to linux/of.h
-> > diff --git a/arch/sparc/kernel/of_device.c b/arch/sparc/kernel/of_device.c
-> > index cc4c235..56e9a71 100644
-> > --- a/arch/sparc/kernel/of_device.c
-> > +++ b/arch/sparc/kernel/of_device.c
-> > @@ -29,6 +29,17 @@ struct of_device *of_find_device_by_node(struct device_node *dp)
-> >  }
-> >  EXPORT_SYMBOL(of_find_device_by_node);
-> >  
-> > +int irq_of_parse_and_map(struct device_node *node, int index)
-> > +{
-> > +	struct of_device *op = of_find_device_by_node(node);
-> > +
-> > +	if (!op || index >= op->num_irqs)
-> > +		return 0xffffffff;
-> 
-> This is valid virq, unfortunately. There is only one invalid virq: 0.
-> With this most drivers will fail to identify 'there is no irq' case.
-> Does virq0 has special meaning on sparc?
+Yeah, I plan on doing that on PPC once I move over the global include/ 
+math-emu files.
 
-No, I'll fix this up, thanks.
+- k
