@@ -2,15 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ABC8DDE0B8
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 14:27:50 +1000 (EST)
-Date: Wed, 20 Aug 2008 23:27:46 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id 67628DDFDB
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 14:50:16 +1000 (EST)
+Message-Id: <D84FB45E-DD03-4F27-91D6-61C66C9BB59D@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'for-2.6.27' branch
-Message-ID: <Pine.LNX.4.64.0808202327280.11962@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <1219246149-23812-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH v2] powerpc: fix memory leaks in QE library
+Date: Wed, 20 Aug 2008 23:49:49 -0500
+References: <1219246149-23812-1-git-send-email-timur@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,25 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'for-2.6.27' branch of
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.27
+On Aug 20, 2008, at 10:29 AM, Timur Tabi wrote:
 
-to receive the following updates:
+> Fix two memory leaks in the Freescale QE library: add a missing  
+> kfree() in
+> ucc_fast_init() and ucc_slow_init() if the ioremap() fails, and update
+> ucc_fast_free() and ucc_slow_free() to call iounmap() if necessary.
+>
+> Based on a patch from Tony Breeds <tony@bakeyournoodle.com>.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+> arch/powerpc/sysdev/qe_lib/ucc_fast.c |    4 ++++
+> arch/powerpc/sysdev/qe_lib/ucc_slow.c |    8 +++++---
+> 2 files changed, 9 insertions(+), 3 deletions(-)
 
- arch/powerpc/boot/dts/mpc8641_hpcn.dts     |    2 -
- arch/powerpc/boot/dts/tqm8548-bigflash.dts |    8 +++++-
- arch/powerpc/boot/dts/tqm8548.dts          |    3 +-
- arch/powerpc/sysdev/qe_lib/ucc_fast.c      |    4 +++
- drivers/serial/Kconfig                     |   36 -----------------------------
- 5 files changed, 14 insertions(+), 39 deletions(-)
+applied.  (this just became ucc_slow since I had already applied v1).
 
-Kumar Gala (2):
-      powerpc: Fix whitespace merge in mpc8641 hpcn device tree
-      serial/cpm_uart: Remove dead Kconfig options
-
-Timur Tabi (1):
-      powerpc: fix memory leaks in QE library
-
-Wolfgang Grandegger (1):
-      powerpc/85xx: TQM8548: DTS file fixes and cleanup
+- k
