@@ -1,20 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id B02C1DEF38
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 23:43:17 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org,
- jwboyer@linux.vnet.ibm.com
-Subject: Re: [PATCH] add a simple 405EP based board
-Date: Thu, 21 Aug 2008 15:42:37 +0200
-References: <200808211007.59965.super.firetwister@gmail.com>
-	<1219319729.26429.40.camel@jdub.homelinux.org>
-In-Reply-To: <1219319729.26429.40.camel@jdub.homelinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808211542.38395.arnd@arndb.de>
-Cc: Markus Brunner <super.firetwister@googlemail.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8BE9BDEFE4
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 23:46:24 +1000 (EST)
+Message-Id: <81439C52-0CB6-4C46-9A97-3D30B84F58AF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: ehrhardt@linux.vnet.ibm.com
+In-Reply-To: <1219142204-12044-5-git-send-email-ehrhardt@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH 4/4] kvmppc: convert wrteei to wrtee as kvm guest
+	optimization
+Date: Thu, 21 Aug 2008 08:41:10 -0500
+References: <1219142204-12044-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	<1219142204-12044-5-git-send-email-ehrhardt@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, hollisb@us.ibm.com, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 21 August 2008, Josh Boyer wrote:
-> On Thu, 2008-08-21 at 10:07 +0200, Markus Brunner wrote:
-> > This adds support for a simple ppc405ep board.=20
-> > At the moment, there are no 405ep boards in arch/powerpc, so this can b=
-e used as a template
-> > for new boards, or migrating them from arch/ppc.
-> > I2c, UART and EMAC are working. PCI could not be tested, so it was not =
-included in the dts.
->=20
-> I plan on adding more 405 board support very soon. =A0When I do, it'll be
-> along the lines of the patch series I just sent out for 44x. =A0There's
-> really no reason to have a per CPU/board file if we can avoid it.
->=20
 
-This may be a stupid question, but is there really a reason to keep 40x and=
- 44x
-setup files separate? AFAICT, the ppc_md structures are the same, so even y=
-ou
-can never have a common binary between 40x and 44x, you may have the same p=
-latform
-file.
+On Aug 19, 2008, at 5:36 AM, ehrhardt@linux.vnet.ibm.com wrote:
 
-	Arnd <><
+> From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+>
+> Dependent on the already existing CONFIG_KVM_GUEST config option  
+> this patch
+> changes wrteei to wrtee allowing the hypervisor to rewrite those to  
+> nontrapping
+> instructions. Maybe we should split the kvm guest otpimizations in  
+> two parts
+> one for the overhead free optimizations and on for the rest that  
+> might add
+> some complexity for non virtualized execution (like this one).
+>
+> Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+> ---
+
+So this commit message doesnt explain why 'wrtee' facilities doing  
+whatever optimization and 'wrteei' doesnt.
+
+- k
