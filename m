@@ -1,24 +1,20 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
-	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 4AABADFEEF
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 08:53:08 +1000 (EST)
-Received: by gxk14 with SMTP id 14so789677gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 15:53:07 -0700 (PDT)
-Subject: Re: New Patchwork beta
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <985DF0C9-8615-439A-8DBB-06FAB53CE68F@kernel.crashing.org>
-References: <200808211822.27786.jk@ozlabs.org>
-	<985DF0C9-8615-439A-8DBB-06FAB53CE68F@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 21 Aug 2008 18:52:42 -0400
-Message-Id: <1219359163.26429.62.camel@jdub.homelinux.org>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 62746DF2B3
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 08:55:04 +1000 (EST)
+Date: Thu, 21 Aug 2008 15:55:03 -0700 (PDT)
+Message-Id: <20080821.155503.96223365.davem@davemloft.net>
+To: grant.likely@secretlab.ca
+Subject: Re: [PATCH 3/3]: of: Add some I2C mod aliases table entries for
+	sparc64 systems.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <fa686aa40808211552x4ff22c4bve2b8c9dbc88ff0e4@mail.gmail.com>
+References: <20080821.001025.76289480.davem@davemloft.net>
+	<fa686aa40808211552x4ff22c4bve2b8c9dbc88ff0e4@mail.gmail.com>
 Mime-Version: 1.0
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: bazaar-ng@lists.canonical.com, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, Jeremy Kerr <jk@ozlabs.org>,
-	linuxppc-embedded@ozlabs.org, cbe-oss-dev@ozlabs.org
-Reply-To: jwboyer@linux.vnet.ibm.com
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	devicetree-discuss@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-08-21 at 15:32 -0500, Kumar Gala wrote:
-> Some feedback:
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Date: Thu, 21 Aug 2008 16:52:32 -0600
+
+> On Thu, Aug 21, 2008 at 1:10 AM, David Miller <davem@davemloft.net> wrote:
+> >
+> > of: Add some I2C mod aliases table entries for sparc64 systems.
+> >
+> > Signed-off-by: David S. Miller <davem@davemloft.net>
 > 
-> * Can we increase the font size a bit?
+> I'd like to see a comment above these three lines stating that they
+> appear in Sparc systems, but otherwise...
+> 
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-NOO.  Just use CTRL-SHIFT-+.
-
-> * For the list of patches can we change the background of every other  
-> line (light gray)
-
-That would work well.
-
-> * Parsing subject header for determining state -- "[RFC]"
-
-That is going to fail miserably because people tend to do silly things
-like post final patches in the middle of an [RFC] thread.
-
-josh
+Ok, I'll add that.
