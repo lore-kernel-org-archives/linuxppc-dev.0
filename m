@@ -1,18 +1,17 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 107C0DE755
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 22:32:36 +1000 (EST)
-Message-ID: <48AD5FD1.1090809@ru.mvista.com>
-Date: Thu, 21 Aug 2008 16:30:09 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 68F40DE45B
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 22:41:46 +1000 (EST)
+Date: Thu, 21 Aug 2008 07:41:40 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'for-2.6.27' (updated)
+Message-ID: <Pine.LNX.4.64.0808210740500.6958@blarg.am.freescale.net>
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: Strange behavior with I2C on Sequoia board
-References: <48AC84D9.8050809@harris.com>	<1219279463.26429.35.camel@jdub.homelinux.org>	<20080820231828.3c22da08@lappy.seanm.ca>
-	<200808211151.40499.sr@denx.de>
-In-Reply-To: <200808211151.40499.sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,50 +21,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stefan Roese wrote:
-> On Thursday 21 August 2008, Sean MacLennan wrote:
->>> That's all output from the wrapper, not the kernel.  And the kernel
->>> config doesn't make a difference at all to the wrapper.  I wonder if
->>> there is some weird size issue going on there or if whatever U-Boot
->>> version you are using is doing odd things...
->> Any chance something in the DTS could affect it? Maybe try commenting
->> out the second IIC controller?
-> 
-> Yes, I2C is generally working and should make a difference in Linux kernel 
-> booting.
-> 
-> It seems that your bootwrapper is somehow not copying the correct MAC address 
-> to the device-tree. Not sure what's going wrong here. We usually don't use 
-> the bootwrapper but boot the uImage directly from U-Boot on all 4xx systems.
-> 
-> You might want to debug the bootwrapper code, if possible drop the bootwrapper 
-> and use the uImage with a newer, device-tree enabled U-Boot version.
-> 
+Please pull from 'for-2.6.27' branch of
 
-U-boot thinks that all memory above the first 8MB is out of reach for 
-the kernel and puts kernel bootargs and boardinfo structure below 8MB as 
-close as possible to this limit. Including the i2c driver into the 
-kernel increases the kernel image size. So when u-boot unpacks the 
-kernel to 0x400000 (Load Address: 00400000) it overwrites the kernel 
-parameters. So when the kernel actually starts, it reads zeros instead 
-of boardinfo (and mac addresses)
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.27
 
-The 8MB limit is set for all AMCC boards in include/configs/amcc-common.h:
-#define CFG_BOOTMAPSZ		(8 << 20) /* Initial Memory map for Linux */
+to receive the following updates:
 
-I think this limit is obsolete and can be moved to at least 64MB.
-But you'll need to rebuild u-boot.
+This is bug fixes and defconfig updates.  I dropped the Kconfig cpm serial
+patch for 2.6.27 since its not really a bug fix and put it into my
+powerpc-next branch for .28.  (I also moved 2 defconfigs since we were
+already touching them).
 
-Stefan, what do you think? Can we increase the default initial memory 
-map for AMCC boards in the next u-boot release, since u-boot has all 
-memory identity-mapped on ppc 44x?
+- k
 
-Thanks,
-Valentine.
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts            |    2
+ arch/powerpc/boot/dts/tqm8548-bigflash.dts        |    8
+ arch/powerpc/boot/dts/tqm8548.dts                 |    3
+ arch/powerpc/boot/wrapper                         |    2
+ arch/powerpc/configs/83xx/asp8347_defconfig       | 1334 +++++++++++++++++
+ arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |  188 +-
+ arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  188 +-
+ arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |  172 +-
+ arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |  176 +-
+ arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |  175 +-
+ arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |  172 +-
+ arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |  168 +-
+ arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |  172 +-
+ arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |  183 +-
+ arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |  351 ++++
+ arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |  340 ++++
+ arch/powerpc/configs/83xx/sbc834x_defconfig       |  239 ++-
+ arch/powerpc/configs/85xx/ksi8560_defconfig       |   95 -
+ arch/powerpc/configs/85xx/mpc8536_ds_defconfig    | 1654 ++++++++++++++++++++++
+ arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   71
+ arch/powerpc/configs/85xx/mpc8544_ds_defconfig    |  178 +-
+ arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   98 -
+ arch/powerpc/configs/85xx/mpc8568mds_defconfig    |  121 +
+ arch/powerpc/configs/85xx/mpc8572_ds_defconfig    |  177 +-
+ arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   85 -
+ arch/powerpc/configs/85xx/sbc8548_defconfig       |   63
+ arch/powerpc/configs/85xx/sbc8560_defconfig       |   69
+ arch/powerpc/configs/85xx/stx_gp3_defconfig       |  163 +-
+ arch/powerpc/configs/85xx/tqm8540_defconfig       |  112 +
+ arch/powerpc/configs/85xx/tqm8541_defconfig       |  139 +
+ arch/powerpc/configs/85xx/tqm8548_defconfig       |  129 +
+ arch/powerpc/configs/85xx/tqm8555_defconfig       |  139 +
+ arch/powerpc/configs/85xx/tqm8560_defconfig       |  139 +
+ arch/powerpc/configs/adder875_defconfig           |   55
+ arch/powerpc/configs/asp8347_defconfig            | 1214 ----------------
+ arch/powerpc/configs/c2k_defconfig                |  245 +--
+ arch/powerpc/configs/ep8248e_defconfig            |  198 ++
+ arch/powerpc/configs/ep88xc_defconfig             |   57
+ arch/powerpc/configs/linkstation_defconfig        |  133 +
+ arch/powerpc/configs/mpc7448_hpc2_defconfig       |   72
+ arch/powerpc/configs/mpc8272_ads_defconfig        |  132 +
+ arch/powerpc/configs/mpc83xx_defconfig            |  389 ++++-
+ arch/powerpc/configs/mpc8536_ds_defconfig         | 1637 ---------------------
+ arch/powerpc/configs/mpc85xx_defconfig            |  207 +-
+ arch/powerpc/configs/mpc8610_hpcd_defconfig       |  165 +-
+ arch/powerpc/configs/mpc8641_hpcn_defconfig       |  215 +-
+ arch/powerpc/configs/mpc866_ads_defconfig         |   61
+ arch/powerpc/configs/mpc885_ads_defconfig         |   57
+ arch/powerpc/configs/pq2fads_defconfig            |  147 +
+ arch/powerpc/configs/prpmc2800_defconfig          |  125 +
+ arch/powerpc/configs/sbc8641d_defconfig           |  173 +-
+ arch/powerpc/configs/storcenter_defconfig         |  113 +
+ arch/powerpc/sysdev/cpm_common.c                  |   37
+ arch/powerpc/sysdev/qe_lib/ucc_fast.c             |    4
+ arch/powerpc/sysdev/qe_lib/ucc_slow.c             |    8
+ 55 files changed, 8093 insertions(+), 4656 deletions(-)
 
-> Best regards,
-> Stefan
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Kumar Gala (2):
+      powerpc: Fix whitespace merge in mpc8641 hpcn device tree
+      powerpc: Update defconfigs for FSL PPC boards
+
+Laurent Pinchart (1):
+      cpm2: Fix race condition in CPM2 GPIO library.
+
+Scott Wood (1):
+      powerpc: Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx target
+
+Timur Tabi (1):
+      powerpc: fix memory leaks in QE library
+
+Wolfgang Grandegger (1):
+      powerpc/85xx: TQM8548: DTS file fixes and cleanup
