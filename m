@@ -1,34 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <markos@codex.gr>
+Received: from lvps87-230-20-158.dedicated.hosteurope.de
+	(lvps87-230-20-158.dedicated.hosteurope.de [87.230.20.158])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DE458DE4BE
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 02:16:30 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m7LGGOA5027826
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 09:16:24 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m7LGGNmT004314
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 11:16:23 -0500 (CDT)
-Date: Thu, 21 Aug 2008 11:16:22 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/4] kvmppc: convert wrteei to wrtee as kvm guest
-	optimization
-Message-ID: <20080821161622.GB15669@ld0162-tx32.am.freescale.net>
-References: <1219142204-12044-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
-	<1219142204-12044-5-git-send-email-ehrhardt@linux.vnet.ibm.com>
-	<81439C52-0CB6-4C46-9A97-3D30B84F58AF@kernel.crashing.org>
-	<48AD7815.70107@linux.vnet.ibm.com>
-	<9E570AE9-6811-489F-9E2C-EF5A6B95ED5C@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9E570AE9-6811-489F-9E2C-EF5A6B95ED5C@kernel.crashing.org>
-Cc: kvm-ppc@vger.kernel.org, hollisb@us.ibm.com, linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9213FDE52E
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 02:19:13 +1000 (EST)
+Received: from vector.lan (athedsl-252509.home.otenet.gr [85.73.33.251])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by lvps87-230-20-158.dedicated.hosteurope.de (Postfix) with ESMTPSA id
+	80FD8BF3808C
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 18:10:12 +0200 (CEST)
+From: Konstantinos Margaritis <markos@codex.gr>
+To: linuxppc-dev@ozlabs.org
+Subject: libfreevec benchmarks
+Date: Thu, 21 Aug 2008 19:09:15 +0300
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200808211909.16852.markos@codex.gr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,13 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 21, 2008 at 09:21:39AM -0500, Kumar Gala wrote:
-> Where is the other discussion?  I'd like to understand what's going on  
-> here.. (especially since I added the wrtee[i] changes to kernel way  
-> back when).
+Benh suggested that I made this more known, and in particular to this list, so 
+I send this mail in hope that some people might be interested. In particular, 
+I ran the following benchmarks against libfreevec/glibc:
 
-Presumably, they want to be able to replace wrtee with a store to a
-hypervisor/guest shared memory area, and there's no store-immediate
-instruction.
+http://www.freevec.org/content/libfreevec_104_benchmarks_updated
 
--Scott
+libfreevec has reached a very stable point, where me and a couple of others 
+(the OpenSuse PowerPC port developer being one) have been using it for weeks 
+(personally I've been using it for months), using the LD_PRELOAD mechanism (as 
+explained here: 
+http://www.freevec.org/content/howto_using_libfreevec_using_ld_preload).
+The OpenSuse guys even consider using it by default on the ppc port even, but 
+that's not final of course.
+
+glibc integration _might_ happen if glibc developers change their attitude (my 
+mails have been mostly ignored).
+
+Last, I've also been working on a libm rewrite, though this will take some 
+time still. I've reimplemented most math functions at the algorithm level, eg. 
+so far, most functions achieve 50%-200% speed increase at full IEEE754 
+accuracy (mathematically proven, soon to be published online) without using 
+Altivec yet, just by choosing a different approximation method (Taylor 
+approximation is pretty dumb if you ask me anyway).
+
+Regards
+
+Konstantinos Margaritis
+Codex
+http://www.codex.gr
