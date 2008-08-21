@@ -1,20 +1,24 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 8A89FDDDD8
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 19:51:53 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Strange behavior with I2C on Sequoia board
-Date: Thu, 21 Aug 2008 11:51:40 +0200
-References: <48AC84D9.8050809@harris.com>
-	<1219279463.26429.35.camel@jdub.homelinux.org>
-	<20080820231828.3c22da08@lappy.seanm.ca>
-In-Reply-To: <20080820231828.3c22da08@lappy.seanm.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808211151.40499.sr@denx.de>
-Cc: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [Cbe-oss-dev] powerpc/cell/oprofile: fix mutex locking for
+	spu-oprofile
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200808211014.42683.arnd@arndb.de>
+References: <1217620879.15667.145.camel@carll-linux-desktop>
+	<200808201519.19453.arnd@arndb.de>
+	<18604.60738.523963.886786@drongo.ozlabs.ibm.com>
+	<200808211014.42683.arnd@arndb.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-JqgvIhwwsQmTK+CI1mt6"
+Date: Thu, 21 Aug 2008 20:20:10 +1000
+Message-Id: <1219314010.7827.4.camel@localhost>
+Mime-Version: 1.0
+Cc: Robert Richter <robert.richter@amd.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
+	cel <cel@linux.vnet.ibm.com>, cbe-oss-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 21 August 2008, Sean MacLennan wrote:
-> > That's all output from the wrapper, not the kernel.  And the kernel
-> > config doesn't make a difference at all to the wrapper.  I wonder if
-> > there is some weird size issue going on there or if whatever U-Boot
-> > version you are using is doing odd things...
->
-> Any chance something in the DTS could affect it? Maybe try commenting
-> out the second IIC controller?
 
-Yes, I2C is generally working and should make a difference in Linux kernel 
-booting.
+--=-JqgvIhwwsQmTK+CI1mt6
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-It seems that your bootwrapper is somehow not copying the correct MAC address 
-to the device-tree. Not sure what's going wrong here. We usually don't use 
-the bootwrapper but boot the uImage directly from U-Boot on all 4xx systems.
+On Thu, 2008-08-21 at 10:14 +0200, Arnd Bergmann wrote:
+> On Thursday 21 August 2008, Paul Mackerras wrote:
+> > Arnd Bergmann writes:
+> >=20
+> > > Paul, any chance we can still get this into 2.6.27?
+> >=20
+> > Possibly.  We'll need a really good explanation for Linus as to why
+> > this is needed (what regression or serious bug this fixes) and why it
+> > is late.  Can you send me something explaining that?
+>=20
+> The patch does not fix a regression, the spu-oprofile code basically neve=
+r
+> worked. With the current code in Linux, samples in the profile buffer
+> can get corrupted because reader and writer to that buffer use different
+> locks for accessing it.
 
-You might want to debug the bootwrapper code, if possible drop the bootwrapper 
-and use the uImage with a newer, device-tree enabled U-Boot version.
+Actually for me it worked[1] a reasonable amount of the time, enough to
+be useful. So the spu-oprofile code has always been broken in this way,
+but it's not always fatal. So the patch doesn't fix a regression, but it
+fixes a serious user-visible bug, which makes it legit rc4 material
+IMHO.
 
-Best regards,
-Stefan
+[1] that was late last year, so possibly a kernel or two ago.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-JqgvIhwwsQmTK+CI1mt6
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIrUFadSjSd0sB4dIRAlHKAJ4oBE3v9ppU4oEOPWkj14wwKwLLSQCgs6iu
+GyCYGC3opKCqo8n1WiZtmME=
+=uCJc
+-----END PGP SIGNATURE-----
+
+--=-JqgvIhwwsQmTK+CI1mt6--
