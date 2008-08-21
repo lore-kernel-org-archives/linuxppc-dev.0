@@ -1,19 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 419D4DE5EB
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 18:52:13 +1000 (EST)
-Date: Thu, 21 Aug 2008 18:52:02 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Markus Brunner <super.firetwister@googlemail.com>
-Subject: Re: [PATCH] add a simple 405EP based board
-Message-Id: <20080821185202.24cb6810.sfr@canb.auug.org.au>
-In-Reply-To: <200808211007.59965.super.firetwister@gmail.com>
-References: <200808211007.59965.super.firetwister@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__21_Aug_2008_18_52_02_+1000_TkI3muAWrinLI6KG"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 8A89FDDDD8
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 19:51:53 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Strange behavior with I2C on Sequoia board
+Date: Thu, 21 Aug 2008 11:51:40 +0200
+References: <48AC84D9.8050809@harris.com>
+	<1219279463.26429.35.camel@jdub.homelinux.org>
+	<20080820231828.3c22da08@lappy.seanm.ca>
+In-Reply-To: <20080820231828.3c22da08@lappy.seanm.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808211151.40499.sr@denx.de>
+Cc: Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,48 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__21_Aug_2008_18_52_02_+1000_TkI3muAWrinLI6KG
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Markus,
-
-One small nit:
-
-On Thu, 21 Aug 2008 10:07:58 +0200 Markus Brunner <super.firetwister@google=
-mail.com> wrote:
+On Thursday 21 August 2008, Sean MacLennan wrote:
+> > That's all output from the wrapper, not the kernel.  And the kernel
+> > config doesn't make a difference at all to the wrapper.  I wonder if
+> > there is some weird size issue going on there or if whatever U-Boot
+> > version you are using is doing odd things...
 >
-> +#include <linux/init.h>
-> +#include <linux/of_platform.h>
-> +
-> +#include <asm/machdep.h>
-> +#include <asm/ppc4xx.h>
-> +#include <asm/time.h>
-> +#include <asm/udbg.h>
-> +#include <asm/uic.h>
-> +
-> +static int __init ppc405ep_probe(void)
-> +{
-> +	unsigned long root =3D of_get_flat_dt_root();
-> +	if (!of_flat_dt_is_compatible(root, "company,ppc405ep"))
+> Any chance something in the DTS could affect it? Maybe try commenting
+> out the second IIC controller?
 
-You need to include <asm/prom.h> to use the of_flat ... routines.
+Yes, I2C is generally working and should make a difference in Linux kernel 
+booting.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+It seems that your bootwrapper is somehow not copying the correct MAC address 
+to the device-tree. Not sure what's going wrong here. We usually don't use 
+the bootwrapper but boot the uImage directly from U-Boot on all 4xx systems.
 
---Signature=_Thu__21_Aug_2008_18_52_02_+1000_TkI3muAWrinLI6KG
-Content-Type: application/pgp-signature
+You might want to debug the bootwrapper code, if possible drop the bootwrapper 
+and use the uImage with a newer, device-tree enabled U-Boot version.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkitLLIACgkQjjKRsyhoI8w/aQCfVeKVxbb8D5koBZXEC0N2YSyl
-31IAn3Jdmhez0wSkgjkjrvfeyhgS9j6z
-=glcZ
------END PGP SIGNATURE-----
-
---Signature=_Thu__21_Aug_2008_18_52_02_+1000_TkI3muAWrinLI6KG--
+Best regards,
+Stefan
