@@ -1,14 +1,23 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 300B9DDF02
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 02:03:48 +1000 (EST)
-Message-ID: <48AD91E1.4080304@harris.com>
-Date: Thu, 21 Aug 2008 12:03:45 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: I2C probe not happening
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <jwboyer@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.228])
+	by ozlabs.org (Postfix) with ESMTP id B3B8CDDFED
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 02:10:43 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so55260wra.1
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 09:10:41 -0700 (PDT)
+Subject: Re: [PATCH] add a simple 405EP based board
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200808211542.38395.arnd@arndb.de>
+References: <200808211007.59965.super.firetwister@gmail.com>
+	<1219319729.26429.40.camel@jdub.homelinux.org>
+	<200808211542.38395.arnd@arndb.de>
+Content-Type: text/plain
+Date: Thu, 21 Aug 2008 12:10:06 -0400
+Message-Id: <1219335007.26429.51.camel@jdub.homelinux.org>
+Mime-Version: 1.0
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: Markus Brunner <super.firetwister@googlemail.com>, linuxppc-dev@ozlabs.org
+Reply-To: jwboyer@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,64 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm using DENX-2.6.26, and I've enabled the I2C_IBM_IIC on a Sequoia board,
-but I don't see any probes happening.
+On Thu, 2008-08-21 at 15:42 +0200, Arnd Bergmann wrote:
+> On Thursday 21 August 2008, Josh Boyer wrote:
+> > On Thu, 2008-08-21 at 10:07 +0200, Markus Brunner wrote:
+> > > This adds support for a simple ppc405ep board. 
+> > > At the moment, there are no 405ep boards in arch/powerpc, so this can be used as a template
+> > > for new boards, or migrating them from arch/ppc.
+> > > I2c, UART and EMAC are working. PCI could not be tested, so it was not included in the dts.
+> > 
+> > I plan on adding more 405 board support very soon.  When I do, it'll be
+> > along the lines of the patch series I just sent out for 44x.  There's
+> > really no reason to have a per CPU/board file if we can avoid it.
+> > 
+> 
+> This may be a stupid question, but is there really a reason to keep 40x and 44x
+> setup files separate? AFAICT, the ppc_md structures are the same, so even you
+> can never have a common binary between 40x and 44x, you may have the same platform
+> file.
 
-It looks like of_register_i2c_devices is never being called.  According to
-cscope, it would be called in i2c-ibm_of.c, but that file is not part of
-the build.
+arch/ppc had them all lumped under platforms/4xx, but this was split in
+the original arch/powerpc port when arch/powerpc/platforms/44x was
+created.  That left arch/powerpc/platforms/4xx for 40x which didn't
+really make sense, so it was renamed to 40x.  
 
-i2c-ibm_of.c would be compiled if CONFIG_I2C_IBM_OF was selected, but there
-is no place in the Kconfig files that I2C_IBM_OF is mentioned.  So, I added
-it like so:
+I can understand why, as they are really two different platforms.  So
+logically it makes sense to have them separate.  I'm not overly
+motivated to convert it back to the old way but I might be able to be
+convinced.
 
-diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index e9f88fe..a221b15 100644
---- a/drivers/i2c/busses/Kconfig
-+++ b/drivers/i2c/busses/Kconfig
-@@ -247,9 +247,16 @@ config I2C_PIIX4
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called i2c-piix4.
- 
-+config I2C_IBM_OF
-+	tristate "IBM PPC 4xx open-firmware driver"
-+	depends on 4xx
-+	help
-+	  Use openfirmware driver mechanism.
-+
- config I2C_IBM_IIC
- 	tristate "IBM PPC 4xx on-chip I2C interface"
- 	depends on 4xx
-+	select I2C_IBM_OF
- 	help
- 	  Say Y here if you want to use IIC peripheral found on
- 	  embedded IBM PPC 4xx based systems.
-
-Also, I noticed that i2c-ibm_of.c doesn't have an entry for the 440EPx, so
-I added one:
-
-diff --git a/drivers/i2c/busses/i2c-ibm_of.c b/drivers/i2c/busses/i2c-ibm_of.c
-index 08440ab..df35686 100644
---- a/drivers/i2c/busses/i2c-ibm_of.c
-+++ b/drivers/i2c/busses/i2c-ibm_of.c
-@@ -906,6 +906,7 @@ static const struct of_device_id ibm_iic_match[] = {
- 	{ .compatible = "ibm,iic-405ex", },
- 	{ .compatible = "ibm,iic-405exr", },
- 	{ .compatible = "ibm,iic-405gp", },
-+	{ .compatible = "ibm,iic-440epx", },
- 	{ .compatible = "ibm,iic-440gp", },
- 	{ .compatible = "ibm,iic-440gpx", },
- 	{ .compatible = "ibm,iic-440grx", },
-
-However, the file does not compile.  I get:
-
-linux-2.6-denx/drivers/i2c/busses/i2c-ibm_of.c:702: 
-error: 'struct i2c_board_info' has no member named 'driver_name'
-make[4]: *** [drivers/i2c/busses/i2c-ibm_of.o] Error 1
-
-So perhaps it should not be part of the build.  But in that case, I see
-no way for the probes to run.
-
-I must be missing something - hints gratefully accepted.
-
-	Steve
+josh
