@@ -1,11 +1,12 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 16C8BDE5E9
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 17:10:24 +1000 (EST)
-Date: Thu, 21 Aug 2008 00:10:22 -0700 (PDT)
-Message-Id: <20080821.001022.25151381.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 45D6FDE430
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 17:10:26 +1000 (EST)
+Date: Thu, 21 Aug 2008 00:10:25 -0700 (PDT)
+Message-Id: <20080821.001025.76289480.davem@davemloft.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/3]: of_i2c: Add sparc support.
+Subject: [PATCH 3/3]: of: Add some I2C mod aliases table entries for
+	sparc64 systems.
 From: David Miller <davem@davemloft.net>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -20,107 +21,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-of_i2c: Add sparc support.
+of: Add some I2C mod aliases table entries for sparc64 systems.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- drivers/of/Kconfig  |    2 +-
- drivers/of/of_i2c.c |   58 ++++++++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 52 insertions(+), 8 deletions(-)
+ drivers/of/base.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-index f821dbc..67dea24 100644
---- a/drivers/of/Kconfig
-+++ b/drivers/of/Kconfig
-@@ -10,7 +10,7 @@ config OF_GPIO
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index ad8ac1a..e849f69 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -410,7 +410,9 @@ struct of_modalias_table {
+ 	char *modalias;
+ };
+ static struct of_modalias_table of_modalias_table[] = {
+-	/* Empty for now; add entries as needed */
++	{ "i2c-adm1031", "adm1031" },
++	{ "i2c-at24c64", "24c64" },
++	{ "i2c-at34c02", "spd" },
+ };
  
- config OF_I2C
- 	def_tristate I2C
--	depends on PPC_OF && I2C
-+	depends on OF && I2C
- 	help
- 	  OpenFirmware I2C accessors
- 
-diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
-index 6a98dc8..beb4102 100644
---- a/drivers/of/of_i2c.c
-+++ b/drivers/of/of_i2c.c
-@@ -19,8 +19,20 @@
- void of_register_i2c_devices(struct i2c_adapter *adap,
- 			     struct device_node *adap_node)
- {
--	void *result;
- 	struct device_node *node;
-+	int num_addr_cells = 1;
-+	const int *prop;
-+	void *result;
-+
-+	prop = of_get_property(adap_node, "#address-cells", NULL);
-+	if (prop)
-+		num_addr_cells = *prop;
-+
-+	if (num_addr_cells != 1 && num_addr_cells != 2) {
-+		printk(KERN_ERR "of-i2c: invalid address cells %d\n",
-+		       num_addr_cells);
-+		return;
-+	}
- 
- 	for_each_child_of_node(adap_node, node) {
- 		struct i2c_board_info info = {};
-@@ -31,16 +43,48 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
- 			continue;
- 
- 		addr = of_get_property(node, "reg", &len);
--		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
--			printk(KERN_ERR
--			       "of-i2c: invalid i2c device entry\n");
-+		if (!addr || len < (num_addr_cells * sizeof(int))) {
-+			printk(KERN_ERR "of-i2c: invalid i2c device entry\n");
- 			continue;
- 		}
-+		switch (num_addr_cells) {
-+		case 1:
-+			info.addr = addr[0];
-+			break;
-+		case 2:
-+			/* XXX addr[0], the first cell, is bus number XXX */
-+			info.addr = addr[1];
-+			break;
-+		}
- 
-+#ifdef CONFIG_SPARC
-+		/* In my copy of the I2C bindings for IEEE1275 the
-+		 * register value is encoded as a 2-cell value:
-+		 *
-+		 * Bit #    33222222 22221111 11111100 00000000
-+		 *          10987654 32109876 54321098 76543210
-+		 *
-+		 * bus:     00000000 00000000 00000000 bbbbbbbb
-+		 * address: 00000000 00000000 00000sss sssssss0
-+		 *
-+		 * where:
-+		 * bbbbbbbb        8-bit unsigned number representing
-+		 *                 the I2C bus address within this I2C bus
-+		 *                 controller node
-+		 * ssssssssss      10-bit unsigned number representing the
-+		 *                 slave address
-+		 *
-+		 * When doing I2C transfers to a device the low bit of
-+		 * the address indicates whether the transfer is a read or
-+		 * a write, and the upper bits indicate the device address.
-+		 *
-+		 * The Linux I2C layer wants device addresses which elide this
-+		 * direction bit.  Thus we should shift the OF provided reg
-+		 * property address down by one bit.
-+		 */
-+		info.addr >>= 1;
-+#endif
- 		info.irq = irq_of_parse_and_map(node, 0);
--
--		info.addr = *addr;
--
- 		request_module(info.type);
- 
- 		result = i2c_new_device(adap, &info);
+ /**
 -- 
 1.5.6.5.GIT
