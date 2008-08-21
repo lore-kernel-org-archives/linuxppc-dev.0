@@ -1,24 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Cbe-oss-dev] powerpc/cell/oprofile: fix mutex locking for
-	spu-oprofile
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200808211014.42683.arnd@arndb.de>
-References: <1217620879.15667.145.camel@carll-linux-desktop>
-	<200808201519.19453.arnd@arndb.de>
-	<18604.60738.523963.886786@drongo.ozlabs.ibm.com>
-	<200808211014.42683.arnd@arndb.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-JqgvIhwwsQmTK+CI1mt6"
-Date: Thu, 21 Aug 2008 20:20:10 +1000
-Message-Id: <1219314010.7827.4.camel@localhost>
-Mime-Version: 1.0
-Cc: Robert Richter <robert.richter@amd.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	cel <cel@linux.vnet.ibm.com>, cbe-oss-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <jk@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: New Patchwork beta
+Date: Thu, 21 Aug 2008 18:22:26 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200808211822.27786.jk@ozlabs.org>
+Cc: linux-mtd@lists.infradead.org, bazaar-ng@lists.canonical.com,
+	cbe-oss-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,57 +18,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi all,
 
---=-JqgvIhwwsQmTK+CI1mt6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I've just put up a new beta of patchwork:
 
-On Thu, 2008-08-21 at 10:14 +0200, Arnd Bergmann wrote:
-> On Thursday 21 August 2008, Paul Mackerras wrote:
-> > Arnd Bergmann writes:
-> >=20
-> > > Paul, any chance we can still get this into 2.6.27?
-> >=20
-> > Possibly.  We'll need a really good explanation for Linus as to why
-> > this is needed (what regression or serious bug this fixes) and why it
-> > is late.  Can you send me something explaining that?
->=20
-> The patch does not fix a regression, the spu-oprofile code basically neve=
-r
-> worked. With the current code in Linux, samples in the profile buffer
-> can get corrupted because reader and writer to that buffer use different
-> locks for accessing it.
+  http://patchwork2.ozlabs.org/
 
-Actually for me it worked[1] a reasonable amount of the time, enough to
-be useful. So the spu-oprofile code has always been broken in this way,
-but it's not always fatal. So the patch doesn't fix a regression, but it
-fixes a serious user-visible bug, which makes it legit rc4 material
-IMHO.
+I intend to replace the existing patchwork with the new code, but would 
+like to get it tested first. There aren't many patches in the system at 
+the moment, but it'll receive patches from the relevant lists. I'll 
+also import a set of existing mails tomorrow, to give some sample data 
+to test with.
 
-[1] that was late last year, so possibly a kernel or two ago.
+One important note - after beta testing, I'm planning to clear the test 
+database and start from scratch. So, don't go spending too much time 
+updating patches!
 
-cheers
+However, have a play with the new site, let me know what breaks, and any 
+suggestions for changing, and we can work towards a full replacement 
+for the current site.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Some differences from the old patchwork:
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+  * Patches can now be 'delegated' to other maintainers - this means
+    that maintainers can offload subsystem-specific patches to other
+    maintainers.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+  * Anyone can create an account, and work with bundles, and manage
+    their own patches.
 
---=-JqgvIhwwsQmTK+CI1mt6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+  * Pagination. No more 10MB patch lists!
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+  * Bundles can be made public, allow users to share patchsets
 
-iD8DBQBIrUFadSjSd0sB4dIRAlHKAJ4oBE3v9ppU4oEOPWkj14wwKwLLSQCgs6iu
-GyCYGC3opKCqo8n1WiZtmME=
-=uCJc
------END PGP SIGNATURE-----
+  * Better filtering interface
 
---=-JqgvIhwwsQmTK+CI1mt6--
+Project Maintainers:
+
+  Create an account, then send me your username, and I'll add maintainer
+  privileges to your account. Again, don't go too crazy with the   
+  maintaining work, as it'll all be cleared out once we replace 
+  patchwork.ozlabs.org
+
+  Also: bazaar-ng, linux-mtd and linux-embedded folks: are you still
+  using patchwork?
+
+Existing patches:
+
+  After talking to the powerpc maintainers, we've decided that we're
+  going to start with a clean slate, and not import patches from the
+  existing patchwork database. If you'd prefer to keep current patches
+  for your project, let me know. This will be a bit of work, but I'm
+  sure we can work something out.
+
+Happy patchworking,
+
+
+Jeremy
