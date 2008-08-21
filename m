@@ -1,20 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 13AD3DEA31
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 7492DDE42B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Aug 2008 20:10:06 +1000 (EST)
-To: rmcguire@videopresence.com
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: ELDK Fedora Core 9
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <2EA59411B5534D8893C7CB74569C2DC2@absolutdaddy>
-References: <mailman.1.1217383202.19379.linuxppc-embedded@ozlabs.org>
-	<2EA59411B5534D8893C7CB74569C2DC2@absolutdaddy>
-Date: Thu, 21 Aug 2008 12:10:04 +0200
-Sender: wd@denx.de
-Message-Id: <20080821101004.29A82243AB@gemini.denx.de>
-Cc: eldk@lists.denx.de, linuxppc-embedded@ozlabs.org
+	Thu, 21 Aug 2008 20:14:27 +1000 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: porting linux 2.6.27 to embedded powerpc board
+Date: Thu, 21 Aug 2008 11:43:45 +0200
+References: <424724.49343.qm@web46312.mail.sp1.yahoo.com>
+In-Reply-To: <424724.49343.qm@web46312.mail.sp1.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200808211143.45782.david.jander@protonic.nl>
+Cc: Laxmikant Rashinkar <lk.atwork@yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,77 +24,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear "Russell McGuire",
+On Thursday 21 August 2008 01:24:46 Laxmikant Rashinkar wrote:
+> Hi,
+>
+> I have an embedded PowerPC (MPC8347) board that works fine with uboot and
+> Linux 2.6.15.
+>
+> I am trying to upgrade the kernel so that it runs on the latest release -
+> Linux 2.6.27. So far, I have gotten the kernel to compile on my platform,
+> but of course it does not boot.
 
-In message <2EA59411B5534D8893C7CB74569C2DC2@absolutdaddy> you wrote:
-> 
-> I know that DENX doesn't list ELDK 4.1 with FC9 as officially supported, but
-> has anyone tried to install it with FC9?
-> 
-> Attempts last night resulted in the install script freezing during install,
-> and no apparent error messages.
+Well, honestly I don't know where to look for information either (other than 
+the source-code and examples from others), but here is a list with points to 
+look out for (I have just done the same thing as you for a MPC5200B-based 
+board):
 
-Where exactly did it hang? What was the command you used, and what was the exact output?
+1. Upgrade to latest u-boot first (recent git seems to be fine). There have 
+been a lot of changes in u-boot lately about OF and device-tree related 
+things. I suspect you need a fairly recent version of u-boot to go well with 
+the latest kernel. It's also generally a good idea IMHO.
 
-> 1) Has anyone tried this? Success?
+2. I assume you are porting to arch/powerpc (the old arch/ppc you used back in 
+2.6.15 is obsolete and broken now).
 
-I tried it now, and it got stuck indeed:
+3. Look at other platforms that use the same processor, and pick a simple one 
+as starting point. Look out for the dts (device-tree-source file in 
+arch/powerpc/boot/dts), copy and modify one to reflect your hardware. 
+Recently a lot of changes happend in the kernel, changing device names, 
+obsoleting "device-type" tags, etc..., so some of the current DTS sources 
+included in the kernel might not even work (wrong device name, missing 
+information, wrong use of "device-type", etc...), so watch out for these kind 
+of issues too.
 
-...
-Preparing...                ########################################### [100%]
-   1:db4-devel-ppc_4xx      ########################################### [100%]
-Preparing...                ########################################### [100%]
-   1:db4-utils-ppc_4xx      ########################################### [100%]
-Preparing...                ########################################### [100%]
-   1:glib2-ppc_4xx          ########################################### [100%]
-Preparing...                ########################################### [100%]
-   1:glib2-devel-ppc_4xx    ########################################### [100%]
-Preparing...                ########################################### [100%]
+4. Be sure that the device(s) necessary to produce output on your console are 
+correctly placed in the DT. Also make sure that u-boot knows about it 
+(#define OF_STDOUT_PATH... in your u-boot board config file)
 
-<hangs here>
+5. When compiling the device tree, it may be necessary to add some extra 
+reserved entries to the compiled tree (I am using dtc -p 10240 -R 20, which 
+might be slightly exaggerated), because u-boot may add something to it, and 
+if it can't, linux won't boot.
 
-> 2) Does anyone have suggestion on how turn on debugging with the install
-> script?
+6. Remember to always specify the "rootfstype=" option on the commandline if 
+booting from anything other than NFS. This was not necessary back in the 
+2.6.15-times AFAICR.
 
-It's not a a script, but a binary, so you are limited to  tools  like
-strace, ltrace etc.
+7. Boot with a device-tree (in u-boot: "bootm $addrofkernel - $addrofdtb", 
+don't forget the dash if you are not using an initrd). If you don't do this, 
+u-boot can't fix your DT, and the kernel probably won't find it either.
 
-In my case I see this:
+8. Be sure to use the correct version of the DTC (DT compiler) for your kernel 
+(the sources are included nowadays, somewhere in arch/powerpc/boot IIRC). The 
+command used to compile, should probably be something like this:
 
-# strace -p 21197
-Process 21197 attached - interrupt to quit
-futex(0x96fe17c, FUTEX_WAIT_PRIVATE, 1, NULL
+$ ./dtc -p 10240 -R 20 -I dts -o myplatform.dtb -O dtb -b 0 dts/myplatform.dts
 
-i. e. it's hanging in a futex call. [Futextes have often before  been
-a major PITA].
+Load the resulting .dtb file directly with u-boot (don't make an u-image out 
+of it).
 
-A quick workaround seems to be to build the installer on  the  native
-(Fedora  9) system; download the source and the Makefile from the git
-repository:
+That's all I remember right now... hope it helps.
 
-http://git.denx.de/?p=eldk/build.git;a=tree;f=install;h=5f1a9bb9ca5757f4efbca7ff4f48bf869a2ef949;hb=90ed3ca5e1163d771badf1c26f76e95d95e13990
-
-and run:
-
-$ make TARGET_ARCH=ppc
-
-Then use this "install" binary to replace 
-
-Then reboot, and then try again.  Note  that  the  reboot  is  really
-necessary,  or  at least I do not know of any other way to get rid of
-the stuck futexes.
-
-
-BTW: ELDK related questions are better posted on the ELDK mailing
-list, see http://lists.denx.de/mailman/listinfo/eldk
-
-Best regards,
-
-Wolfgang Denk
+Regards,
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-People seldom know what they want until you give them what  they  ask
-for.
+David Jander
