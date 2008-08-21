@@ -1,21 +1,18 @@
 Return-Path: <smaclennan@pikatech.com>
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 8DE21DDF53
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 13:10:29 +1000 (EST)
-Date: Wed, 20 Aug 2008 23:10:32 -0400
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 239B7DE10C
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 13:18:24 +1000 (EST)
+Date: Wed, 20 Aug 2008 23:18:28 -0400
 From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [RFC] mtd: add OF2PDEV convertor for the NDFC driver
-Message-ID: <20080820231032.5abfa45e@lappy.seanm.ca>
-In-Reply-To: <20080820203719.5224dc78@zod.rchland.ibm.com>
-References: <20080820205958.GA13371@www.tglx.de>
-	<200808210040.58809.arnd@arndb.de>
-	<20080820203719.5224dc78@zod.rchland.ibm.com>
+To: "Josh Boyer" <jwboyer@gmail.com>
+Subject: Re: Strange behavior with I2C on Sequoia board
+Message-ID: <20080820231828.3c22da08@lappy.seanm.ca>
+In-Reply-To: <1219279463.26429.35.camel@jdub.homelinux.org>
+References: <48AC84D9.8050809@harris.com>
+	<1219279463.26429.35.camel@jdub.homelinux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Sebastian
-	Siewior <bigeasy@linutronix.de>, linux-mtd@lists.infradead.org,
-	tglx@linutronix.de, Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 20 Aug 2008 20:37:19 -0400
-"Josh Boyer" <jwboyer@linux.vnet.ibm.com> wrote:
+On Wed, 20 Aug 2008 20:44:23 -0400
+"Josh Boyer" <jwboyer@gmail.com> wrote:
 
-> On Thu, 21 Aug 2008 00:40:58 +0200
-> Arnd Bergmann <arnd@arndb.de> wrote:
-> 
-> > On Wednesday 20 August 2008, Sebastian Siewior wrote:  
-> > > I didn't convert the NDFC driver to support OF because there are
-> > > non-OF-aware platforms with the ndfc chip.
-> > > All settings are mandatory except the oob layout.  
-> > 
-> > Are you aware of Sean's patch from
-> > http://patchwork.ozlabs.org/linuxppc/patch?id=20183 ?  
-> 
-> I need to look at that hard for .28 still.
+> That's all output from the wrapper, not the kernel.  And the kernel
+> config doesn't make a difference at all to the wrapper.  I wonder if
+> there is some weird size issue going on there or if whatever U-Boot
+> version you are using is doing odd things...
 
-Please do, I know it works, but I am not sure it is correct.
-
-I haven't had a chance to really look at the new driver from Sebastian,
-but it is more complete than mine. It has to be decided if that is a
-good thing. I modeled my driver after the existing nand of drivers. They
-also limit, even more than mine, what can be configured.
-
-My gut feel is that it is better to let the upper level nand drivers
-default correctly based on the chip. For example, on the warp we need to
-let the ecc layout default since then it can handle the differences
-between 64M and 256M nand chips without a fixup at boot time. (I
-believe Sebastian's driver *does* allow this)
-
-I also believe that some fields are now obsolete when going to an of
-platform driver. For example, chip select is part of the reg entry.
-
-So my goal was to configure as little as possible and then add as
-needed.
+Any chance something in the DTS could affect it? Maybe try commenting
+out the second IIC controller?
 
 Cheers,
    Sean
