@@ -1,33 +1,11 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3A4DFDDE98
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 10:37:27 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7L0bOk7013250
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 20:37:24 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7L0bOpd214460
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 20:37:24 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7L0bNnp008178
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Aug 2008 20:37:24 -0400
-Date: Wed, 20 Aug 2008 20:37:19 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC] mtd: add OF2PDEV convertor for the NDFC driver
-Message-ID: <20080820203719.5224dc78@zod.rchland.ibm.com>
-In-Reply-To: <200808210040.58809.arnd@arndb.de>
-References: <20080820205958.GA13371@www.tglx.de>
-	<200808210040.58809.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Sebastian Siewior <bigeasy@linutronix.de>,
-	linux-mtd@lists.infradead.org, tglx@linutronix.de,
-	Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18604.47717.829929.695541@cargo.ozlabs.ibm.com>
+Date: Thu, 21 Aug 2008 10:44:21 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Patches pushed to powerpc.git master & powerpc-next branches
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,27 +15,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 21 Aug 2008 00:40:58 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
+I have committed the following patches to the master and powerpc-next
+branches of the powerpc.git repository.  These will be going upstream
+in the 2.6.28 merge window.
 
-> On Wednesday 20 August 2008, Sebastian Siewior wrote:
-> > I didn't convert the NDFC driver to support OF because there are
-> > non-OF-aware platforms with the ndfc chip.
-> > All settings are mandatory except the oob layout.
-> 
-> Are you aware of Sean's patch from
-> http://patchwork.ozlabs.org/linuxppc/patch?id=20183 ?
+Paul.
 
-I need to look at that hard for .28 still.
+Adrian Bunk (1):
+      powerpc: Use bcd2bin/bin2bcd
 
-> What are the other platforms using it?
+Benjamin Herrenschmidt (2):
+      powerpc: Turn get/set_hard_smp_proccessor_id into inlines
+      powerpc: Expose PMCs & cache topology in sysfs on 32-bit
 
-There should be none.  It was an arch/ppc driver originally, and
-arch/ppc is dead.  Since it's only found on 4xx SoCs, there's no reason
-that I'm aware of to keep it as a platform driver.
+David Gibson (1):
+      powerpc: Update in-kernel dtc and libfdt to version 1.2.0
 
-Other than the fact that the whole of_platform thing might be replaced
-with shims to convert them to platform devices.  There was talk of that
-at one time and it made sense to me.
+Harvey Harrison (2):
+      powerpc: Use the common ascii hex helpers
+      powerpc: Replace __FUNCTION__ with __func__
 
-josh
+Michael Ellerman (5):
+      powerpc: Streamline ret_from_except_lite for non-iSeries platforms
+      powerpc: fsl_msi doesn't need it's own of_node
+      powerpc: Split-out common MSI bitmap logic into msi_bitmap.c
+      powerpc: Convert the FSL MSI code to use msi_bitmap
+      powerpc: Convert the MPIC MSI code to use msi_bitmap
+
+Nathan Lynch (1):
+      powerpc: Remove redundant sysfs_remove_file calls for cache info
+
+Stephen Rothwell (4):
+      powerpc: Remove include of linux/of_platform.h from asm/of_platform.h
+      hotplug/rpaphp: Remove unused error path code
+      powerpc/drivers: Use linux/of_device.h instead of asm/of_device.h
+      powerpc: Remove include of linux/of_device.h from asm/of_device.h
+
+Tony Breeds (3):
+      powerpc: Guard htab_dt_scan_hugepage_blocks appropriately
+      powerpc: Guard from_rtc_time() in platforms/powermac/time.c
+      powerpc: Guard print_device_node_tree() with #if 0
