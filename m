@@ -1,19 +1,20 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id C79CBDDF36
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 00:16:56 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: Strange behavior with I2C on Sequoia board
-Date: Thu, 21 Aug 2008 16:16:44 +0200
-References: <48AC84D9.8050809@harris.com> <200808211151.40499.sr@denx.de>
-	<48AD5FD1.1090809@ru.mvista.com>
-In-Reply-To: <48AD5FD1.1090809@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808211616.44937.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 73B98DF150
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 00:20:50 +1000 (EST)
+Message-Id: <C72E63F0-AF40-46F4-B910-59EE9AADC5B0@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20080821234935.33de917e.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] math-emu: Fix compiler warnings
+Date: Thu, 21 Aug 2008 09:20:26 -0500
+References: <1219323021-7273-1-git-send-email-galak@kernel.crashing.org>
+	<20080821234935.33de917e.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 21 August 2008, Valentine Barshak wrote:
-> > It seems that your bootwrapper is somehow not copying the correct MAC
-> > address to the device-tree. Not sure what's going wrong here. We usually
-> > don't use the bootwrapper but boot the uImage directly from U-Boot on all
-> > 4xx systems.
-> >
-> > You might want to debug the bootwrapper code, if possible drop the
-> > bootwrapper and use the uImage with a newer, device-tree enabled U-Boot
-> > version.
->
-> U-boot thinks that all memory above the first 8MB is out of reach for
-> the kernel and puts kernel bootargs and boardinfo structure below 8MB as
-> close as possible to this limit. Including the i2c driver into the
-> kernel increases the kernel image size. So when u-boot unpacks the
-> kernel to 0x400000 (Load Address: 00400000) it overwrites the kernel
-> parameters. So when the kernel actually starts, it reads zeros instead
-> of boardinfo (and mac addresses)
->
-> The 8MB limit is set for all AMCC boards in include/configs/amcc-common.h:
-> #define CFG_BOOTMAPSZ		(8 << 20) /* Initial Memory map for Linux */
->
-> I think this limit is obsolete and can be moved to at least 64MB.
-> But you'll need to rebuild u-boot.
->
-> Stefan, what do you think? Can we increase the default initial memory
-> map for AMCC boards in the next u-boot release, since u-boot has all
-> memory identity-mapped on ppc 44x?
 
-Yes, it was our intention to increase the default map to a higher value a few 
-weeks ago. I just forgot to really do it. I'll do this shortly.
+On Aug 21, 2008, at 8:49 AM, Stephen Rothwell wrote:
 
-Thanks.
+> Hi Kumar,
+>
+> On Thu, 21 Aug 2008 07:50:20 -0500 Kumar Gala <galak@kernel.crashing.org 
+> > wrote:
+>>
+>> Fix warnings of the form:
+>> arch/powerpc/math-emu/fsubs.c:15: warning: 'R_f1' may be used  
+>> uninitialized in this function
+>> arch/powerpc/math-emu/fsubs.c:15: warning: 'R_f0' may be used  
+>> uninitialized in this function
+>>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>>
+>> I intend these patches to go via the powerpc.git tree if no one has  
+>> issues.
+>>
+>> - k
+>>
+>> include/math-emu/op-2.h |    2 +-
+>
+> Are you modifying the right file here?  There is also
+> arch/powerpc/math-emu/op-2.h which contains the same construct.
 
-Best regards,
-Stefan
+I forgot to mention this is a precursor to moving arch/powerpc to  
+using the generic math-emu code in include/math-emu/
 
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+I don't see any reason to fixup the old code.
+
+- k
