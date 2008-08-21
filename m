@@ -1,19 +1,19 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
-	by ozlabs.org (Postfix) with ESMTP id E70A6DF3C8
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 07:53:04 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so120316pyi.27
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 14:53:02 -0700 (PDT)
-Message-ID: <9e4733910808211453t63f0a6f5h2139e027319263f1@mail.gmail.com>
-Date: Thu, 21 Aug 2008 17:53:02 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 0/3]: Sparc OF I2C support.
-In-Reply-To: <20080821.001012.265401427.davem@davemloft.net>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id F0866DF6B9
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 07:56:13 +1000 (EST)
+Date: Fri, 22 Aug 2008 01:56:11 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 1/3]: sparc: Implement irq_of_parse_and_map() and
+	irq_dispose_mapping().
+Message-ID: <20080821215611.GA14354@oksana.dev.rtsoft.ru>
+References: <20080821.001017.261408123.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080821.001012.265401427.davem@davemloft.net>
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <20080821.001017.261408123.davem@davemloft.net>
 Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,70 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 8/21/08, David Miller <davem@davemloft.net> wrote:
->
->  I'm working on some drivers for I2C bus support on some of my sparc64
->  workstations (for lm-sensor and eeprom type devices sitting behind
->  them) so I went back to trying to get of_i2c.c usable on sparc.
->
->  Mostly straightforward stuff _except_ for the I2C address encoding.
->
->  What I2C IEEE1275 device binding was used to write that code in
->  of_i2c.c?  Is it some PowerPC specific thing?  Was it "invented"
->  by the embedded folks (I hope not)?
->
->  On sparc, the encoding is either 1 cell or 2 cell.
->
->  If it's one cell, it's just the device address.
->
->  If it's two cells, it's a bus number (for I2C controllers that
->  can manage multiple I2C bus segments, think PCI domains) in the
->  first cell and the device address in the second cell.
->
->  And, furthermore, the device address is shifted up 1 bit higher
->  than the Linux I2C layer expects.  It includes the low direction
->  bit, bit 0, so we have to shift it down by 1 bit before we give
->  it to the Linux I2C layer.
->
->  Does PowerPC really encode these things differently?  And if so what
->  IEEE1275 I2C device binding specification covers that?
->
->  If PowerPC really does encode the device address in the same format as
->  the Linux I2C layer expects, that's OK and I used some property tests
->  and ifdefs to make it all work out.  What I did in these patches is:
->
->  1) Check the #address-cells property.  If not present, assume the value
->    is "1".  Only accept values of "1" and "2".
->
->  2) When CONFIG_SPARC, shift the device address down by one bit before
->    giving it to the Linux I2C layer.
+On Thu, Aug 21, 2008 at 12:10:17AM -0700, David Miller wrote:
+> 
+> sparc: Implement irq_of_parse_and_map() and irq_dispose_mapping().
+> 
+> This allows more OF layer code to be shared between powerpc and
+> sparc.
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> ---
+>  arch/sparc/include/asm/prom.h   |    8 ++++++++
+>  arch/sparc/kernel/of_device.c   |   11 +++++++++++
+>  arch/sparc64/kernel/of_device.c |   11 +++++++++++
+>  3 files changed, 30 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
+> index b5efc4d..58b85fa 100644
+> --- a/arch/sparc/include/asm/prom.h
+> +++ b/arch/sparc/include/asm/prom.h
+> @@ -96,6 +96,14 @@ static inline void of_node_put(struct device_node *node)
+>  {
+>  }
+>  
+> +/* These routines are here to provide compatibility with how powerpc
+> + * handles IRQ mapping for OF device nodes.  We precompute and permanently
+> + * register them in the of_device objects, whereas powerpc computes them
+> + * on request.
+> + */
+> +extern int irq_of_parse_and_map(struct device_node *node, int index);
 
-How do you deal with a 10-bit address i2c device? Is it multiplied by two too?
+On powerpc irq_of_parse_and_map() returns unsigned type.
 
-Here's the i2c spec,
-http://www.semiconductors.philips.com/acrobat_download/literature/9398/39340011.pdf
- It says the basic addresses are 7 bit.
+> +#define irq_dispose_mapping(irq) do { } while (0)
 
->  I haven't added support to the I2C layer for the bus number yet, that
->  will come later.
->
->  The first patch in this series add the powerpc-compat IRQ probing
->  interfaces, mostly straightforward stuff as we precompute these
->  IRQs in of_device objects so we just search for the of_device corresponding
->  to the device node and return the interrupt, if any.  Dispost is a NOP.
->
->  The second patch deals with the addressing issues described above and
->  lets it be compiled on non-ppc systems.
->
->  The third patch adds device modaliases for a couple of I2C chip devices
->  I've seen on my SunBlade2500 workstation.  More will come later as I
->  flesh out my I2C sparc64 drivers which are not being posted here yet.
->  I have a fully functional Sun pcf8584 I2C bus driver.
->
->  Signed-off-by: David S. Miller <davem@davemloft.net>
->
+I'd rather write it as a static inline function, for type checking,
+plus, I think with this macros gcc may generate warnings about
+defined but unused variables.
 
+> +
+>  /*
+>   * NB:  This is here while we transition from using asm/prom.h
+>   * to linux/of.h
+> diff --git a/arch/sparc/kernel/of_device.c b/arch/sparc/kernel/of_device.c
+> index cc4c235..56e9a71 100644
+> --- a/arch/sparc/kernel/of_device.c
+> +++ b/arch/sparc/kernel/of_device.c
+> @@ -29,6 +29,17 @@ struct of_device *of_find_device_by_node(struct device_node *dp)
+>  }
+>  EXPORT_SYMBOL(of_find_device_by_node);
+>  
+> +int irq_of_parse_and_map(struct device_node *node, int index)
+> +{
+> +	struct of_device *op = of_find_device_by_node(node);
+> +
+> +	if (!op || index >= op->num_irqs)
+> +		return 0xffffffff;
+
+This is valid virq, unfortunately. There is only one invalid virq: 0.
+With this most drivers will fail to identify 'there is no irq' case.
+Does virq0 has special meaning on sparc?
+
+Thanks,
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
