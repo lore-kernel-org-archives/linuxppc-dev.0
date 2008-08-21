@@ -1,24 +1,19 @@
-Return-Path: <bgill@blarg.am.freescale.net>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8002EDF01F
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 04:50:30 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m7LIoN47021830
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 11:50:24 -0700 (MST)
-Received: from blarg.am.freescale.net (blarg.am.freescale.net [10.82.19.176])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	m7LIoMUh027916
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 13:50:23 -0500 (CDT)
-From: Becky Bruce <becky.bruce@freescale.com>
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id ADC0F474D3
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 05:12:16 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] 85xx: fix build warning, remove silly cast
-Date: Thu, 21 Aug 2008 13:50:22 -0500
-Message-Id: <1219344622-13638-1-git-send-email-becky.bruce@freescale.com>
+Subject: Re: [RFC][PATCH] I2C driver
+Date: Thu, 21 Aug 2008 21:05:29 +0200
+References: <48AD9610.8090205@harris.com> <48ADA090.8020100@harris.com>
+	<20080821132731.47a2f49a@lappy.seanm.ca>
+In-Reply-To: <20080821132731.47a2f49a@lappy.seanm.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808212105.29963.sr@denx.de>
+Cc: Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,37 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This fixes a build warning when PHYS_64BIT is enabled, and
-removes an unnecessary cast to phys_addr_t (the variable
-being cast is already a phys_addr_t)
+On Thursday 21 August 2008, Sean MacLennan wrote:
+> On Thu, 21 Aug 2008 13:06:24 -0400
+>
+> "Steven A. Falco" <sfalco@harris.com> wrote:
+> > However, while the i2c-ibm_of.c driver works with the sequoia .dts,
+> > i2c-ibm_iic.c does not, because it is looking for an "index" property,
+> > which is not in the .dts file.  I added one:
+>
+> I don't know where i2c-ibm_of.c came from....
 
-Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
----
- arch/powerpc/mm/fsl_booke_mmu.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+It's a temporary DENX version for arch/powerpc which we created, since it took 
+too long to get something accepted upstream (I remember endless discussions 
+about index properties...). And we needed something functional quite a while 
+ago.
 
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index ce10e2b..23cee39 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -202,7 +202,7 @@ adjust_total_lowmem(void)
- 		cam_max_size = max_lowmem_size;
- 
- 	/* adjust lowmem size to max_lowmem_size */
--	ram = min(max_lowmem_size, (phys_addr_t)total_lowmem);
-+	ram = min(max_lowmem_size, total_lowmem);
- 
- 	/* Calculate CAM values */
- 	__cam0 = 1UL << 2 * (__ilog2(ram) / 2);
-@@ -225,7 +225,8 @@ adjust_total_lowmem(void)
- 	printk(KERN_INFO "Memory CAM mapping: CAM0=%ldMb, CAM1=%ldMb,"
- 			" CAM2=%ldMb residual: %ldMb\n",
- 			__cam0 >> 20, __cam1 >> 20, __cam2 >> 20,
--			(total_lowmem - __cam0 - __cam1 - __cam2) >> 20);
-+			(long int)((total_lowmem - __cam0 - __cam1 - __cam2)
-+				   >> 20));
- 	__max_low_memory = __cam0 + __cam1 + __cam2;
- 	__initial_memory_limit_addr = memstart_addr + __max_low_memory;
- }
--- 
-1.5.5.1
+> but in the 2.6.26 kernel 
+> you need the index property.
+>
+> The 2.6.27 kernel has a fully OF aware i2c-ibm_iic driver. You do
+> not need the index. And it will walk the device tree and setup the
+> devices for you.
+
+Yes. Since 2.6.27 the "original" IBM I2C driver should be enough. We will drop 
+our local special version soon.
+
+Best regards,
+Stefan
+
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
