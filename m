@@ -1,20 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18604.60738.523963.886786@drongo.ozlabs.ibm.com>
-Date: Thu, 21 Aug 2008 14:21:22 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: powerpc/cell/oprofile: fix mutex locking for spu-oprofile
-In-Reply-To: <200808201519.19453.arnd@arndb.de>
-References: <1217620879.15667.145.camel@carll-linux-desktop>
-	<200808110925.08485.arnd@arndb.de>
-	<20080820123944.GQ13011@erda.amd.com>
-	<200808201519.19453.arnd@arndb.de>
-Cc: Robert Richter <robert.richter@amd.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	cel <cel@linux.vnet.ibm.com>, cbe-oss-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 862BDDDF53
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 14:25:25 +1000 (EST)
+Message-Id: <E9D51976-A3DA-42E3-8D51-B9F8AACA574A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <1219093928-5349-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] powerpc: fix memory leaks in QE library
+Date: Wed, 20 Aug 2008 23:24:50 -0500
+References: <1219093928-5349-1-git-send-email-timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann writes:
 
-> Paul, any chance we can still get this into 2.6.27?
+On Aug 18, 2008, at 4:12 PM, Timur Tabi wrote:
 
-Possibly.  We'll need a really good explanation for Linus as to why
-this is needed (what regression or serious bug this fixes) and why it
-is late.  Can you send me something explaining that?
+> Fix two memory leaks in the Freescale QE library: add a missing  
+> kfree() in
+> ucc_fast_init() if the ioremap() fails, and update ucc_fast_free()  
+> to call
+> iounmap() on uf_regs.
+>
+> Based on a patch from Tony Breeds <tony@bakeyournoodle.com>.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+> arch/powerpc/sysdev/qe_lib/ucc_fast.c |    4 ++++
+> 1 files changed, 4 insertions(+), 0 deletions(-)
 
-> I've added the Ack and uploaded it again for you to
-> pull from
-> 
->  master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git merge
+applied.
 
-Are you sure you actually managed to update that?
-
-$ git ls-remote master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git merge
-f90a87b5f5fa46dc6c556e9267a6f25a95fbef14        refs/heads/merge
-
-and f90a87b5f5fa46dc6c556e9267a6f25a95fbef14 is the same commit from
-2008-08-09 that you asked me to pull previously.
-
-Paul.
+- k
