@@ -1,12 +1,11 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id A88A3DE56E
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 14:21:43 +1000 (EST)
-Date: Thu, 21 Aug 2008 21:21:42 -0700 (PDT)
-Message-Id: <20080821.212142.31324813.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 60CB7DE235
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 14:21:46 +1000 (EST)
+Date: Thu, 21 Aug 2008 21:21:45 -0700 (PDT)
+Message-Id: <20080821.212145.141028767.davem@davemloft.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3]: sparc: Implement irq_of_parse_and_map() and
-	irq_dispose_mapping().
+Subject: [PATCH 3/3]: of_i2c: Add Sparc support.
 From: David Miller <davem@davemloft.net>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -21,84 +20,100 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-sparc: Implement irq_of_parse_and_map() and irq_dispose_mapping().
-
-This allows more OF layer code to be shared between powerpc and
-sparc.
-
-With feedback and suggestions from Anton Vorontsov.
+of_i2c: Add Sparc support.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- arch/sparc/include/asm/prom.h   |   10 ++++++++++
- arch/sparc/kernel/of_device.c   |   11 +++++++++++
- arch/sparc64/kernel/of_device.c |   11 +++++++++++
- 3 files changed, 32 insertions(+), 0 deletions(-)
+ arch/sparc/include/asm/of_i2c.h |   67 +++++++++++++++++++++++++++++++++++++++
+ drivers/of/Kconfig              |    2 +-
+ 2 files changed, 68 insertions(+), 1 deletions(-)
+ create mode 100644 arch/sparc/include/asm/of_i2c.h
 
-diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
-index fd55522..b44e0c7 100644
---- a/arch/sparc/include/asm/prom.h
-+++ b/arch/sparc/include/asm/prom.h
-@@ -94,6 +94,16 @@ static inline void of_node_put(struct device_node *node)
- {
- }
- 
-+/* These routines are here to provide compatibility with how powerpc
-+ * handles IRQ mapping for OF device nodes.  We precompute and permanently
-+ * register them in the of_device objects, whereas powerpc computes them
-+ * on request.
+diff --git a/arch/sparc/include/asm/of_i2c.h b/arch/sparc/include/asm/of_i2c.h
+new file mode 100644
+index 0000000..93c7c05
+--- /dev/null
++++ b/arch/sparc/include/asm/of_i2c.h
+@@ -0,0 +1,67 @@
++#ifndef _ASM_SPARC_OF_I2C_H
++#define _ASM_SPARC_OF_I2C_H
++
++/* In my copy of the I2C bindings for IEEE1275 the register value is
++ * encoded as a 2-cell value:
++ *
++ * Bit #    33222222 22221111 11111100 00000000
++ *          10987654 32109876 54321098 76543210
++ *
++ * bus:     00000000 00000000 00000000 bbbbbbbb
++ * address: 00000000 00000000 00000sss sssssss0
++ *
++ * where:
++ * bbbbbbbb        8-bit unsigned number representing
++ *                 the I2C bus address within this I2C bus
++ *                 controller node
++ * ssssssssss      10-bit unsigned number representing the
++ *                 slave address
++ *
++ * When doing I2C transfers to a device the low bit of the address
++ * indicates whether the transfer is a read or a write, and the upper
++ * bits indicate the device address.
++ *
++ * The Linux I2C layer wants device addresses which elide this
++ * direction bit.  Thus we should shift the OF provided reg property
++ * address down by one bit.
 + */
-+extern unsigned int irq_of_parse_and_map(struct device_node *node, int index);
-+static inline void irq_dispose_mapping(unsigned int virq)
++static inline int of_i2c_fetch_addr(struct i2c_board_info *bp,
++				    struct device_node *client_node,
++				    struct device_node *adap_node,
++				    int num_addr_cells)
 +{
++	const u32 *addr;
++	int len;
++
++	addr = of_get_property(client_node, "reg", &len);
++	if (!addr)
++		goto out_inval;
++
++	if (len < (num_addr_cells * sizeof(int)))
++		goto out_inval;
++
++	if (addr[num_addr_cells - 1] > (1 << 10) - 1)
++		goto out_inval;
++
++	switch (num_addr_cells) {
++	case 1:
++		bp->addr = addr[0];
++		break;
++
++	case 2:
++		/* XXX cell 0 contains bus number XXX */
++		bp->addr = addr[1];
++		break;
++
++	default:
++		goto out_inval;
++	}
++
++	return 0;
++
++out_inval:
++	printk(KERN_ERR "of-i2c: invalid i2c device entry\n");
++	return -EINVAL;
 +}
 +
- /*
-  * NB:  This is here while we transition from using asm/prom.h
-  * to linux/of.h
-diff --git a/arch/sparc/kernel/of_device.c b/arch/sparc/kernel/of_device.c
-index cc4c235..aace71f 100644
---- a/arch/sparc/kernel/of_device.c
-+++ b/arch/sparc/kernel/of_device.c
-@@ -29,6 +29,17 @@ struct of_device *of_find_device_by_node(struct device_node *dp)
- }
- EXPORT_SYMBOL(of_find_device_by_node);
++#endif /* _ASM_SPARC_OF_I2C_H */
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index f821dbc..493c717 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -10,7 +10,7 @@ config OF_GPIO
  
-+unsigned int irq_of_parse_and_map(struct device_node *node, int index)
-+{
-+	struct of_device *op = of_find_device_by_node(node);
-+
-+	if (!op || index >= op->num_irqs)
-+		return 0;
-+
-+	return op->irqs[index];
-+}
-+EXPORT_SYMBOL(irq_of_parse_and_map);
-+
- #ifdef CONFIG_PCI
- struct bus_type ebus_bus_type;
- EXPORT_SYMBOL(ebus_bus_type);
-diff --git a/arch/sparc64/kernel/of_device.c b/arch/sparc64/kernel/of_device.c
-index f8b50cb..a30f2af 100644
---- a/arch/sparc64/kernel/of_device.c
-+++ b/arch/sparc64/kernel/of_device.c
-@@ -55,6 +55,17 @@ struct of_device *of_find_device_by_node(struct device_node *dp)
- }
- EXPORT_SYMBOL(of_find_device_by_node);
+ config OF_I2C
+ 	def_tristate I2C
+-	depends on PPC_OF && I2C
++	depends on I2C
+ 	help
+ 	  OpenFirmware I2C accessors
  
-+unsigned int irq_of_parse_and_map(struct device_node *node, int index)
-+{
-+	struct of_device *op = of_find_device_by_node(node);
-+
-+	if (!op || index >= op->num_irqs)
-+		return 0;
-+
-+	return op->irqs[index];
-+}
-+EXPORT_SYMBOL(irq_of_parse_and_map);
-+
- #ifdef CONFIG_PCI
- struct bus_type ebus_bus_type;
- EXPORT_SYMBOL(ebus_bus_type);
 -- 
 1.5.6.5.GIT
