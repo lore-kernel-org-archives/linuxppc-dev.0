@@ -1,21 +1,20 @@
-Return-Path: <becky.bruce@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8FA32DE06E
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Aug 2008 04:20:35 +1000 (EST)
-Message-Id: <E183BF58-6F63-4E6E-860A-FF6C9650A93C@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <B835DA11-AB52-476B-8DD9-327235DACB65@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH] POWERPC: Allow 32-bit pgtable code to support 36-bit
-	physical
-Date: Fri, 22 Aug 2008 13:20:26 -0500
-References: <1219352996-22243-1-git-send-email-becky.bruce@freescale.com>
-	<B835DA11-AB52-476B-8DD9-327235DACB65@kernel.crashing.org>
+Return-Path: <jwboyer@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.226])
+	by ozlabs.org (Postfix) with ESMTP id 1410ADF44B
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Aug 2008 04:43:07 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so505892wra.1
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 11:43:06 -0700 (PDT)
+Date: Fri, 22 Aug 2008 14:42:13 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Zhou Rui <vancasperz@yahoo.com.cn>
+Subject: Re: Why does one "stw" fail with address translation disabled in
+	PPC405EP?
+Message-ID: <20080822184213.GA24526@yoda.jdub.homelinux.org>
+References: <1219429635.8882.22.camel@zr.gii.upv.es>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1219429635.8882.22.camel@zr.gii.upv.es>
+Sender: Josh Boyer <jwboyer@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,68 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Aug 22, 2008 at 08:27:15PM +0200, Zhou Rui wrote:
+>Hi, all:
+>    I think I meet an odd problem with PPC405EP (PPChameleonEVB Board).
 
-On Aug 21, 2008, at 4:40 PM, Kumar Gala wrote:
+What kernel version are you using?
 
->> #define _PMD_PRESENT	0
->> #define _PMD_PRESENT_MASK (PAGE_MASK)
->> @@ -517,7 +522,13 @@ extern unsigned long  
->> bad_call_to_PMD_PAGE_SIZE(void);
->>
->> #define pte_none(pte)		((pte_val(pte) & ~_PTE_NONE_MASK) == 0)
->> #define pte_present(pte)	(pte_val(pte) & _PAGE_PRESENT)
->> +
->> +#if (defined(CONFIG_PTE_64BIT) && (_PAGE_HASHPTE != 0))
->> +#define pte_clear(mm, addr, ptep) \
->> +	do { pte_update((ptep), (~_PAGE_HASHPTE), __pte(0)); } while (0)
->
-> drop the __pte(0), doesn't make sense for pte_update
+>    I am running a kernel module which will execute a user space
+>application. The entry point of the application is 0x100000a0. At the
 
-Cut-and-paste strikes again :) Will fix, thanks.
+That should be the first clue that you are doing it wrong.  Don't do
+stuff like that in modules...
 
->
->>
->> +#else
->> #define pte_clear(mm,addr,ptep)	do { set_pte_at((mm), (addr),  
->> (ptep), __pte(0)); } while (0)
->> +#endif
->
-> Can we just always (for all ppc32) do:
->
-> #define pte_clear(mm,addr,ptep)        do { pte_update(ptep,  
-> (~_PAGE_HASHPTE), 0); } while (0)
->
-> I've already changed this to be:
->
-> #define pte_clear(mm,addr,ptep) do { pte_update(ptep, ~0, 0); }  
-> while (0)
+>moment when the processor tries to execute the application, 0x100000a0
+>is not in TLB (this can be seen from BDI by printing out TLB entries),
+>so DTLBMiss is called automatically and then finish_tlb_load. However,
+>InstructionAccess is followed and the problem arises here.
+>InstructionAccess starts from 0x400, and after instruction "0xc0000434
+><InstructionAccess+52>:      stw     r12,64(r11)", machine check occurs.
+>This instruction will store the value of r12, which is 0x0 at this
+>moment, to address 0x03072de0. I am puzzled why this action leads to
+>machine check. Is it illegal to store 0x0 in a memory address? Or is
+>there some other cause of the machine check here?
 
-That's fine, but it makes me dependent on your tree.  Shall I respin  
-on top of your tree and have you pick this up, or are you going to  
-push your changes to Paulus?
+I have no idea if you're using physical or virtual addresses here, so
+there isn't much we can do to help you.
 
->
->
->
->> /*
->> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/ 
->> include/asm/types.h
->> index d3374bc..a9a9262 100644
->> --- a/arch/powerpc/include/asm/types.h
->> +++ b/arch/powerpc/include/asm/types.h
->> @@ -55,7 +55,7 @@ typedef u64 phys_addr_t;
->> typedef u32 phys_addr_t;
->> #endif
->>
->> -#ifdef __powerpc64__
->> +#if defined(__powerpc64__) || defined(CONFIG_PHYS_64BIT)
->> typedef u64 dma_addr_t;
->> #else
->> typedef u32 dma_addr_t;
->
-> is this really part of this patchset of the IOMMU changes?
+Do you have enough DRAM to cover that?  Some of those boards only come
+with 32MiB of DRAM.
 
-It doesn't really belong here - I'll move it.
-
-Thanks,
-B
+josh
