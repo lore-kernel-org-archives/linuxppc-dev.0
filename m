@@ -1,23 +1,21 @@
-Return-Path: <fkan@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02-ext1.amcc.com [198.137.200.73])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 60E27DE041
+Return-Path: <skepper@chara.vm.bytemark.co.uk>
+Received: from chara.vm.bytemark.co.uk (chara.vm.bytemark.co.uk [80.68.89.253])
+	by ozlabs.org (Postfix) with ESMTP id 6DC47DE6A1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Aug 2008 01:46:37 +1000 (EST)
+	Sat, 23 Aug 2008 01:53:03 +1000 (EST)
+Received: from skepper (helo=localhost)
+	by chara.vm.bytemark.co.uk with local-esmtp (Exim 3.36 #1 (Debian))
+	id 1KWYZt-0008Gc-00
+	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Aug 2008 16:29:29 +0100
+Date: Fri, 22 Aug 2008 16:29:29 +0100 (BST)
+From: Chris Skepper <skepper@ukf.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: Early boot problem with MPC8247 and Linux 2.6.26
+Message-ID: <Pine.LNX.4.62.0808221515450.31216@chara.vm.bytemark.co.uk>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C9046C.9610C681"
-Subject: RE: [PATCH] AMCC PPC460GT/EX PCI-E de-emphasis adjustment fix
-Date: Fri, 22 Aug 2008 08:33:52 -0700
-Message-ID: <2B3B2AA816369A4E87D7BE63EC9D2F26049F7995@SDCEXCHANGE01.ad.amcc.com>
-References: <1219380814-17229-1-git-send-email-fkan@amcc.com>
-	<20080822133020.GE22283@yoda.jdub.homelinux.org>
-From: "Feng Kan" <fkan@amcc.com>
-To: "Josh Boyer" <jwboyer@gmail.com>
-Cc: sr@denx.de, Tirumala Reddy Marri <tmarri@amcc.com>,
-	linuxppc-embedded@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Sender: Chris Skepper <skepper@chara.vm.bytemark.co.uk>
+Reply-To: skepper@ukf.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,77 +26,74 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi all,
 
-------_=_NextPart_001_01C9046C.9610C681
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+I have a custom MPC8247 based board which has been running U-boot 1.3.5 
+and Linux 2.6.26.  It has been working fine with ARCH=ppc, but I now want 
+to make it work using ARCH=powerpc.
 
-Signed-off-by: Feng Kan fkan@amcc.com
+However, using ARCH=powerpc I have encountered a problem.  Whatever I do 
+it always appears to reset in the very early stages of booting the kernel. 
+This is before the kernel can print anything on the console, so the last 
+thing you see is this from the bootloader:
 
-________________________________
+## Booting kernel from Legacy Image at 00400000 ...
+    Image Name:   Linux-2.6.26
+    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+    Data Size:    1555842 Bytes =  1.5 MB
+    Load Address: 00000000
+    Entry Point:  00000000
+    Verifying Checksum ... OK
+    Uncompressing Kernel Image ... OK
+## Current stack ends at 0x07bb6c68
+*  fdt: cmdline image address = 0x00800000
+## Checking for 'FDT'/'FDT Image' at 00800000
+*  fdt: raw FDT blob
+## Flattened Device Tree blob at 00800000
+    Booting using the fdt blob at 0x800000
+    of_flat_tree at 0x00800000 size 0x00000d3d
+## device tree at 0x00800000 ... 0x00800D3C (len=15677=0x3D3D)
+    Loading Device Tree to 007fc000, end 007ffd3c ... OK
+## Transferring control to Linux (at address 00000000) ...
+    Booting using OF flat tree...
 
-From: Josh Boyer [mailto:jwboyer@gmail.com]
-Sent: Fri 8/22/2008 6:30 AM
-To: Feng Kan
-Cc: linuxppc-embedded@ozlabs.org; Tirumala Reddy Marri; sr@denx.de
-Subject: Re: [PATCH] AMCC PPC460GT/EX PCI-E de-emphasis adjustment fix
+I am using U-boot to pass a DTB, which could be buggy or incomplete, 
+however, I think it encounters problems before the DTB is accessed by the 
+kernel.
 
+Using code to flash an LED I have traced execution from the entry point in 
+head_32.S, through to call_setup_cpu in misc.S, __setup_cpu_603 and into 
+setup_common_caches in cpu_setup_6xx.S.  It appears to reset when enabling 
+the cache on the CPU:
 
+setup_common_caches:
+ 	mfspr	r11,SPRN_HID0
+ 	andi.	r0,r11,HID0_DCE
+ 	ori	r11,r11,HID0_ICE|HID0_DCE
+ 	ori	r8,r11,HID0_ICFI
+ 	bne	1f			/* don't invalidate the D-cache */
+ 	ori	r8,r8,HID0_DCI		/* unless it wasn't enabled */
+1:	sync
+     /* Chris: Reaches here. */
+ 	mtspr	SPRN_HID0,r8		/* enable and invalidate caches */
+ 	sync
+ 	mtspr	SPRN_HID0,r11		/* enable caches */
+ 	sync
+ 	isync
+     /* Chris: Never gets to here. */
+ 	blr
 
-On Thu, Aug 21, 2008 at 09:53:34PM -0700, fkan@amcc.com wrote:
->From: Tirumala R Marri <tmarri@amcc.com>
->
->During recent tests with PCI-E , it has been found the
->DRV + De-Emphasis values are not optimum. These new values
->are tested thouroughly.
->
->Signed-off-by: Tirumala R Marri <tmarri@amcc.com>
+FWIW, commenting out the lines above causes it to hang when attempting to 
+enable the MMU, which is the next step in the process.
 
-If you are sending out a patch for someone, you need to include your
-Signed-off-by as well.  Just reply to this with it, no need to resend
-the just for this.
+I assume it's likely that something has already gone wrong before this 
+point.  Has anyone got any idea how the CPU could have got into a state 
+where trying to enable the caches could cause it to reset?
 
-Stefan, this looks good to me.  Or at least as far as I can tell from
-the somewhat magic values :)  Any comments?
+Also, can anyone confirm that the MPC8247 is supported by a 2.6.26 kernel 
+with ARCH=powerpc mode?  I think it should be, but it would be good to 
+know that someone has tried it.
 
-josh
+Cheers,
 
-
-
-------_=_NextPart_001_01C9046C.9610C681
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<HTML dir=3Dltr><HEAD><TITLE>Re: [PATCH] AMCC PPC460GT/EX PCI-E =
-de-emphasis adjustment fix</TITLE>=0A=
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
-<META content=3D"MSHTML 6.00.6000.16711" name=3DGENERATOR></HEAD>=0A=
-<BODY>=0A=
-<DIV id=3DidOWAReplyText70825 dir=3Dltr>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2>Signed-off-by: Feng Kan <A =
-href=3D"mailto:fkan@amcc.com">fkan@amcc.com</A></FONT></DIV></DIV>=0A=
-<DIV dir=3Dltr><BR>=0A=
-<HR tabIndex=3D-1>=0A=
-<FONT face=3DTahoma size=3D2><B>From:</B> Josh Boyer =
-[mailto:jwboyer@gmail.com]<BR><B>Sent:</B> Fri 8/22/2008 6:30 =
-AM<BR><B>To:</B> Feng Kan<BR><B>Cc:</B> linuxppc-embedded@ozlabs.org; =
-Tirumala Reddy Marri; sr@denx.de<BR><B>Subject:</B> Re: [PATCH] AMCC =
-PPC460GT/EX PCI-E de-emphasis adjustment fix<BR></FONT><BR></DIV>=0A=
-<DIV>=0A=
-<P><FONT size=3D2>On Thu, Aug 21, 2008 at 09:53:34PM -0700, =
-fkan@amcc.com wrote:<BR>&gt;From: Tirumala R Marri =
-&lt;tmarri@amcc.com&gt;<BR>&gt;<BR>&gt;During recent tests with PCI-E , =
-it has been found the<BR>&gt;DRV + De-Emphasis values are not optimum. =
-These new values<BR>&gt;are tested =
-thouroughly.<BR>&gt;<BR>&gt;Signed-off-by: Tirumala R Marri =
-&lt;tmarri@amcc.com&gt;<BR><BR>If you are sending out a patch for =
-someone, you need to include your<BR>Signed-off-by as well.&nbsp; Just =
-reply to this with it, no need to resend<BR>the just for =
-this.<BR><BR>Stefan, this looks good to me.&nbsp; Or at least as far as =
-I can tell from<BR>the somewhat magic values :)&nbsp; Any =
-comments?<BR><BR>josh<BR></FONT></P></DIV></BODY></HTML>
-------_=_NextPart_001_01C9046C.9610C681--
+Chris.
