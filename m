@@ -1,33 +1,22 @@
-Return-Path: <chandru@in.ibm.com>
-Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4B858DE1F3
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 20:30:21 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id m7MATQK1005648
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 20:29:26 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7MAUHZQ228672
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 20:30:17 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7MAUHFO028145
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 20:30:17 +1000
-From: Chandru <chandru@in.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2][V3] powerpc: add support for dynamic reconfiguration
-	memory in kexec/kdump kernels
-Date: Fri, 22 Aug 2008 16:00:07 +0530
-References: <200808141517.32956.chandru@in.ibm.com>
-In-Reply-To: <200808141517.32956.chandru@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808221600.07401.chandru@in.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A11EDDEC6C
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 20:44:46 +1000 (EST)
+Message-Id: <0AFFA88B-E4B4-4B27-8B6F-8BA0463D7245@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: ehrhardt@linux.vnet.ibm.com
+In-Reply-To: <1219142204-12044-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH 2/4] kvmppc: add hypercall infrastructure - guest part
+Date: Fri, 22 Aug 2008 05:38:54 -0500
+References: <1219142204-12044-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	<1219142204-12044-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
+Cc: ppc-dev list <linuxppc-dev@ozlabs.org>,
+	Hollis Blanchard <hollisb@us.ibm.com>, kvm-ppc <kvm-ppc@vger.kernel.org>,
+	Yoder Stuart <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,211 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Pls let me know the status of this patch. 
 
-Thanks,
-Chandru
+On Aug 19, 2008, at 5:36 AM, ehrhardt@linux.vnet.ibm.com wrote:
 
-On Thursday 14 August 2008 15:17:32 Chandru wrote:
-> kdump kernel needs to use only those memory regions that it is allowed to use (crashkernel, rtas, tce ..etc ). Each of these regions have their own sizes and are currently added under  'linux,usable-memory' property under each memory@ node of the device tree.  ibm,dynamic-memory property of ibm,dynamic-reconfiguration-memory node now stores in it the representation for most of the logical memory blocks with the size of each memory block being a constant (lmb_size).  If one or more or part of the above mentioned regions lie under one of the lmb from ibm,dynamic-memory property, there is a need to identify those regions within the given lmb. Following patch recognizes a new property 'linux,drconf-usable-memory' property added by kexec-tools. Each entry in this property is of the form 'a counter'  followed by those many (base, size) duple for the above mentioned regions.
-> 
-> Signed-off-by: Chandru Siddalingappa <chandru@in.ibm.com>
+> From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+>
+> This adds the guest portion of the hypercall infrastructure,  
+> basically an
+> illegal instruction with a defined layout.
+> See http://kvm.qumranet.com/kvmwiki/PowerPC_Hypercall_ABI for more  
+> detail
+> on the hypercall ABI for powerpc.
+>
+> Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 > ---
-> 
-> These patches were sent earlier but these are V3 of the patches. Pls let me know your thoughts. Thanks. 
-> 
->  arch/powerpc/kernel/prom.c |   40 +++++++++++++++--
->  arch/powerpc/mm/numa.c     |   79 +++++++++++++++++++++++++++--------
->  2 files changed, 96 insertions(+), 23 deletions(-)
-> 
-> diff -Naurp powerpc-orig/arch/powerpc/kernel/prom.c powerpc/arch/powerpc/kernel/prom.c
-> --- powerpc-orig/arch/powerpc/kernel/prom.c	2008-08-14 08:23:25.000000000 +0530
-> +++ powerpc/arch/powerpc/kernel/prom.c	2008-08-14 14:35:24.000000000 +0530
-> @@ -888,9 +888,10 @@ static u64 __init dt_mem_next_cell(int s
->   */
->  static int __init early_init_dt_scan_drconf_memory(unsigned long node)
->  {
-> -	cell_t *dm, *ls;
-> +	cell_t *dm, *ls, *usm;
->  	unsigned long l, n, flags;
->  	u64 base, size, lmb_size;
-> +	unsigned int is_kexec_kdump = 0, rngs;
-> 
->  	ls = (cell_t *)of_get_flat_dt_prop(node, "ibm,lmb-size", &l);
->  	if (ls == NULL || l < dt_root_size_cells * sizeof(cell_t))
-> @@ -905,6 +906,12 @@ static int __init early_init_dt_scan_drc
->  	if (l < (n * (dt_root_addr_cells + 4) + 1) * sizeof(cell_t))
->  		return 0;
-> 
-> +	/* check if this is a kexec/kdump kernel. */
-> +	usm = (cell_t *)of_get_flat_dt_prop(node, "linux,drconf-usable-memory",
-> +						 &l);
-> +	if (usm != NULL)
-> +		is_kexec_kdump = 1;
-> +
->  	for (; n != 0; --n) {
->  		base = dt_mem_next_cell(dt_root_addr_cells, &dm);
->  		flags = dm[3];
-> @@ -915,13 +922,34 @@ static int __init early_init_dt_scan_drc
->  		if ((flags & 0x80) || !(flags & 0x8))
->  			continue;
->  		size = lmb_size;
-> -		if (iommu_is_off) {
-> -			if (base >= 0x80000000ul)
-> +		rngs = 1;
-> +		if (is_kexec_kdump) {
-> +			/*
-> +			 * For each lmb in ibm,dynamic-memory, a corresponding
-> +			 * entry in linux,drconf-usable-memory property contains
-> +			 * a counter 'p' followed by 'p' (base, size) duple.
-> +			 * Now read the counter from
-> +			 * linux,drconf-usable-memory property
-> +			 */
-> +			rngs = dt_mem_next_cell(dt_root_size_cells, &usm);
-> +			if (!rngs) /* there are no (base, size) duple */
->  				continue;
-> -			if ((base + size) > 0x80000000ul)
-> -				size = 0x80000000ul - base;
->  		}
-> -		lmb_add(base, size);
-> +		do {
-> +			if (is_kexec_kdump) {
-> +				base = dt_mem_next_cell(dt_root_addr_cells,
-> +							 &usm);
-> +				size = dt_mem_next_cell(dt_root_size_cells,
-> +							 &usm);
-> +			}
-> +			if (iommu_is_off) {
-> +				if (base >= 0x80000000ul)
-> +					continue;
-> +				if ((base + size) > 0x80000000ul)
-> +					size = 0x80000000ul - base;
-> +			}
-> +			lmb_add(base, size);
-> +		} while (--rngs);
->  	}
->  	lmb_dump_all();
->  	return 0;
-> diff -Naurp powerpc-orig/arch/powerpc/mm/numa.c powerpc/arch/powerpc/mm/numa.c
-> --- powerpc-orig/arch/powerpc/mm/numa.c	2008-08-14 08:23:25.000000000 +0530
-> +++ powerpc/arch/powerpc/mm/numa.c	2008-08-14 14:35:42.000000000 +0530
-> @@ -150,6 +150,21 @@ static const int *of_get_associativity(s
->  	return of_get_property(dev, "ibm,associativity", NULL);
->  }
-> 
-> +/*
-> + * Returns the property linux,drconf-usable-memory if
-> + * it exists (the property exists only in kexec/kdump kernels,
-> + * added by kexec-tools)
-> + */
-> +static const u32 *of_get_usable_memory(struct device_node *memory)
-> +{
-> +	const u32 *prop;
-> +	u32 len;
-> +	prop = of_get_property(memory, "linux,drconf-usable-memory", &len);
-> +	if (!prop || len < sizeof(unsigned int))
-> +		return 0;
-> +	return prop;
-> +}
-> +
->  /* Returns nid in the range [0..MAX_NUMNODES-1], or -1 if no useful numa
->   * info is found.
->   */
-> @@ -487,14 +502,29 @@ static unsigned long __init numa_enforce
->  }
-> 
->  /*
-> + * Reads the counter for a given entry in
-> + * linux,drconf-usable-memory property
-> + */
-> +static inline int __init read_usm_ranges(const u32 **usm)
-> +{
-> +	/*
-> +	 * For each lmb in ibm,dynamic-memory a corresponding
-> +	 * entry in linux,drconf-usable-memory property contains
-> +	 * a counter followed by that many (base, size) duple.
-> +	 * read the counter from linux,drconf-usable-memory
-> +	 */
-> +	return read_n_cells(n_mem_size_cells, usm);
-> +}
-> +
-> +/*
->   * Extract NUMA information from the ibm,dynamic-reconfiguration-memory
->   * node.  This assumes n_mem_{addr,size}_cells have been set.
->   */
->  static void __init parse_drconf_memory(struct device_node *memory)
->  {
-> -	const u32 *dm;
-> -	unsigned int n, rc;
-> -	unsigned long lmb_size, size;
-> +	const u32 *dm, *usm;
-> +	unsigned int n, rc, ranges, is_kexec_kdump = 0;
-> +	unsigned long lmb_size, base, size, sz;
->  	int nid;
->  	struct assoc_arrays aa;
-> 
-> @@ -510,6 +540,11 @@ static void __init parse_drconf_memory(s
->  	if (rc)
->  		return;
-> 
-> +	/* check if this is a kexec/kdump kernel */
-> +	usm = of_get_usable_memory(memory);
-> +	if (usm != NULL)
-> +		is_kexec_kdump = 1;
-> +
->  	for (; n != 0; --n) {
->  		struct of_drconf_cell drmem;
-> 
-> @@ -521,21 +556,31 @@ static void __init parse_drconf_memory(s
->  		    || !(drmem.flags & DRCONF_MEM_ASSIGNED))
->  			continue;
-> 
-> -		nid = of_drconf_to_nid_single(&drmem, &aa);
-> -
-> -		fake_numa_create_new_node(
-> -				((drmem.base_addr + lmb_size) >> PAGE_SHIFT),
-> +		base = drmem.base_addr;
-> +		size = lmb_size;
-> +		ranges = 1;
-> +
-> +		if (is_kexec_kdump) {
-> +			ranges = read_usm_ranges(&usm);
-> +			if (!ranges) /* there are no (base, size) duple */
-> +				continue;
-> +		}
-> +		do {
-> +			if (is_kexec_kdump) {
-> +				base = read_n_cells(n_mem_addr_cells, &usm);
-> +				size = read_n_cells(n_mem_size_cells, &usm);
-> +			}
-> +			nid = of_drconf_to_nid_single(&drmem, &aa);
-> +			fake_numa_create_new_node(
-> +				((base + size) >> PAGE_SHIFT),
->  					   &nid);
-> -
-> -		node_set_online(nid);
-> -
-> -		size = numa_enforce_memory_limit(drmem.base_addr, lmb_size);
-> -		if (!size)
-> -			continue;
-> -
-> -		add_active_range(nid, drmem.base_addr >> PAGE_SHIFT,
-> -				 (drmem.base_addr >> PAGE_SHIFT)
-> -				 + (size >> PAGE_SHIFT));
-> +			node_set_online(nid);
-> +			sz = numa_enforce_memory_limit(base, size);
-> +			if (sz)
-> +				add_active_range(nid, base >> PAGE_SHIFT,
-> +						 (base >> PAGE_SHIFT)
-> +						 + (sz >> PAGE_SHIFT));
-> +		} while (--ranges);
->  	}
->  }
-> 
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+>
+> [diffstat]
+> kvm_para.h |   33 +++++++++++++++++++++++++++++++++
+> 1 file changed, 33 insertions(+)
+>
+> [diff]
+
+Can we make this more generic (naming) and location.  I believe there  
+is some interesting in using the same ABI on the Freescale HV so it  
+seems like have the wrappers be a bit more generic saves us.
+
+- k
