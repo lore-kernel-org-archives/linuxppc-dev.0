@@ -1,16 +1,22 @@
-Return-Path: <fkan@amcc.com>
-Received: from svdc-dhcp-10-66-6-202.amcc.com (unknown [76.195.33.70])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B1A15DE7CE
+Return-Path: <vbendeb@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 56B2ADE0DF
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Aug 2008 14:54:23 +1000 (EST)
-From: fkan@amcc.com
+	Fri, 22 Aug 2008 15:14:17 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so175888yxg.39
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 21 Aug 2008 22:14:16 -0700 (PDT)
+Message-ID: <f608b67d0808212214p3c3e008fxa5418d108b7205f5@mail.gmail.com>
+Date: Thu, 21 Aug 2008 22:14:15 -0700
+From: vb <vb@vsbe.com>
+Sender: vbendeb@gmail.com
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] AMCC PPC460GT/EX PCI-E de-emphasis adjustment fix
-Date: Thu, 21 Aug 2008 21:53:34 -0700
-Message-Id: <1219380814-17229-1-git-send-email-fkan@amcc.com>
-Cc: Tirumala R Marri <tmarri@amcc.com>
+Subject: Re: TLB programming in powerpc tree. Was: Accessing peripheral bus
+	devices on 460GT
+In-Reply-To: <f608b67d0808211929g3ae2cf7dm2ba2d65b0043d306@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <f608b67d0808211929g3ae2cf7dm2ba2d65b0043d306@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,44 +27,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-From: Tirumala R Marri <tmarri@amcc.com>
+On Thu, Aug 21, 2008 at 7:29 PM, vb <vb@vsbe.com> wrote:
+>
+> But the main problem is that the kernel never sets up TLBs for neither
+> the peripheral device, nor the onboard flash. I don't seem to be able
+> to find the place where this is supposed to happen. I assumed that
+> ioremap_nocache would take care of that, but this is not the case.
+>
 
-During recent tests with PCI-E , it has been found the
-DRV + De-Emphasis values are not optimum. These new values
-are tested thouroughly.
-
-Signed-off-by: Tirumala R Marri <tmarri@amcc.com>
----
- arch/powerpc/sysdev/ppc4xx_pci.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-index bdb3663..0ce3f46 100644
---- a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@ -815,7 +815,7 @@ static int ppc460ex_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
- 	switch (port->index) {
- 	case 0:
- 		mtdcri(SDR0, PESDR0_460EX_L0CDRCTL, 0x00003230);
--		mtdcri(SDR0, PESDR0_460EX_L0DRV, 0x00000136);
-+		mtdcri(SDR0, PESDR0_460EX_L0DRV, 0x00000130);
- 		mtdcri(SDR0, PESDR0_460EX_L0CLK, 0x00000006);
- 
- 		mtdcri(SDR0, PESDR0_460EX_PHY_CTL_RST,0x10000000);
-@@ -826,10 +826,10 @@ static int ppc460ex_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
- 		mtdcri(SDR0, PESDR1_460EX_L1CDRCTL, 0x00003230);
- 		mtdcri(SDR0, PESDR1_460EX_L2CDRCTL, 0x00003230);
- 		mtdcri(SDR0, PESDR1_460EX_L3CDRCTL, 0x00003230);
--		mtdcri(SDR0, PESDR1_460EX_L0DRV, 0x00000136);
--		mtdcri(SDR0, PESDR1_460EX_L1DRV, 0x00000136);
--		mtdcri(SDR0, PESDR1_460EX_L2DRV, 0x00000136);
--		mtdcri(SDR0, PESDR1_460EX_L3DRV, 0x00000136);
-+		mtdcri(SDR0, PESDR1_460EX_L0DRV, 0x00000130);
-+		mtdcri(SDR0, PESDR1_460EX_L1DRV, 0x00000130);
-+		mtdcri(SDR0, PESDR1_460EX_L2DRV, 0x00000130);
-+		mtdcri(SDR0, PESDR1_460EX_L3DRV, 0x00000130);
- 		mtdcri(SDR0, PESDR1_460EX_L0CLK, 0x00000006);
- 		mtdcri(SDR0, PESDR1_460EX_L1CLK, 0x00000006);
- 		mtdcri(SDR0, PESDR1_460EX_L2CLK, 0x00000006);
--- 
-1.5.5
+well, in fact the TLB is set up as soon as an attempt to access the
+peripheral is made. The problem apparently is the fact that the TLB
+entry uses a wrong value in the nibble specifying the internal 460GT
+block...
