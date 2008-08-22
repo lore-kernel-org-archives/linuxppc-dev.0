@@ -1,24 +1,24 @@
 Return-Path: <temerkhanov@yandex.ru>
-Received: from smtp4.yandex.ru (smtp4.yandex.ru [213.180.223.136])
-	by ozlabs.org (Postfix) with ESMTP id 793FEDE283
+Received: from smtp11.yandex.ru (smtp11.yandex.ru [213.180.223.93])
+	by ozlabs.org (Postfix) with ESMTP id 81386DF0E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Aug 2008 02:10:24 +1000 (EST)
-Received: from cifronik.21th.com ([62.16.86.116]:61650 "EHLO
+	Sat, 23 Aug 2008 02:13:42 +1000 (EST)
+Received: from cifronik.21th.com ([62.16.86.116]:63970 "EHLO
 	satanklaus.cifronic.local" smtp-auth: "temerkhanov" TLS-CIPHER: <none>
-	TLS-PEER-CN1: <none>) by mail.yandex.ru with ESMTP id S737730AbYHVQKI
+	TLS-PEER-CN1: <none>) by mail.yandex.ru with ESMTP id S1246717AbYHVQNd
 	(ORCPT <rfc822;linuxppc-embedded@ozlabs.org>);
-	Fri, 22 Aug 2008 20:10:08 +0400
+	Fri, 22 Aug 2008 20:13:33 +0400
 From: Sergey Temerkhanov <temerkhanov@yandex.ru>
 To: linuxppc-embedded@ozlabs.org
 Subject: Re: [PATCH] Linux Device Driver for Xilinx LL TEMAC 10/100/1000
 	Ethernet NIC
-Date: Fri, 22 Aug 2008 20:10:34 +0400
+Date: Fri, 22 Aug 2008 20:14:01 +0400
 References: <48AA938C.4060309@dlasys.net>
 In-Reply-To: <48AA938C.4060309@dlasys.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Message-Id: <200808222010.35183.temerkhanov@yandex.ru>
+Message-Id: <200808222014.01248.temerkhanov@yandex.ru>
 Reply-To: temerkhanov@cifronik.ru
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -30,38 +30,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 19 August 2008 13:34:04 David H. Lynch Jr. wrote:
-> Pass II
-
-> +       cur_p->phys = (unsigned char *)pci_map_single(NULL,
-> +                       skb->data, skb->len,
-> +                       PCI_DMA_TODEVICE);
-> +       cur_p->app4 = (unsigned long)skb;
-> +
-> +       for (ii = 0; ii < num_frag; ii++) {
-> +               lp->tx_bd_tail++;
-> +               if (lp->tx_bd_tail >= TX_BD_NUM)
-> +                       lp->tx_bd_tail = 0;
-> +
-> +               cur_p = &lp->tx_bd_v[lp->tx_bd_tail];
-> +               cur_p->phys = (unsigned char *)pci_map_single(NULL,
-> +                               (void *)page_address(frag->page)
-> +                               + frag->page_offset,
-> +                               frag->size,
-> +                               PCI_DMA_TODEVICE);
-
-1. Why is pci_* API is used instead of dma_*?
-2. Why pci_map_single() in skb_shinfo(skb)->frags processing instead of 
-dma_map_page()?
-
-> +               if (ii == (TX_BD_NUM - 1))
-> +                       lp->tx_bd_v[ii].next = &lp->tx_bd_p[0];
-> +               else
-> +                       lp->tx_bd_v[ii].next = &lp->tx_bd_p[ii + 1];
-
-3. It would be much simpler to use masking by (TX_BD_NUM - 1) instead of  "if 
-(ii == (TX_BD_NUM - 1))" constructs.
-
-4. There is a need of global locking mechanism for indirect registers access, 
-as according to Xilinx documentation only one hard core at a a time can be 
-accessed.
+T24gVHVlc2RheSAxOSBBdWd1c3QgMjAwOCAxMzozNDowNCBEYXZpZCBILiBMeW5jaCBKci4gd3Jv
+dGU6Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHN3aXRjaCAoaXAtPnByb3RvY29s
+KSB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNhc2UgSVBQUk9UT19UQ1A6Cj4g
+K8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBzdGFydCA9IHNp
+emVvZihzdHJ1Y3QgaXBoZHIpICsgRVRIX0hMRU47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBpbnNlcnQgPSBzaXplb2Yoc3RydWN0IGlwaGRyKSArIEVU
+SF9ITEVOICsgMTY7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqBsZW5ndGggPSBpcC0+dG90X2xlbiAtIHNpemVvZihzdHJ1Y3QgaXBoZHIpOwo+ICvCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgaGVhZGxlbiA9IEVUSF9I
+TEVOCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgKyBzaXplb2Yoc3RydWN0IGlwaGRyKQo+ICvCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCsgc2l6ZW9mKHN0cnVj
+dCB0Y3BoZHIpOwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgYnJlYWs7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNhc2UgSVBQUk9UT19V
+RFA6Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBzdGFy
+dCA9IHNpemVvZihzdHJ1Y3QgaXBoZHIpICsgRVRIX0hMRU47Cj4gK8KgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBpbnNlcnQgPSBzaXplb2Yoc3RydWN0IGlwaGRy
+KSArIEVUSF9ITEVOICsgNjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoGxlbmd0aCA9IGlwLT50b3RfbGVuIC0gc2l6ZW9mKHN0cnVjdCBpcGhkcik7Cj4g
+K8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBoZWFkbGVuID0g
+RVRIX0hMRU4KPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqArIHNpemVvZihzdHJ1Y3QgaXBoZHIpCj4gK8KgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgKyBzaXplb2Yo
+c3RydWN0IHVkcGhkcik7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqBicmVhazsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgZGVmYXVsdDoK
+PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGJyZWFrOwo+
+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB9CgpXaHkgYWxsIHRoZXNlIGNhbGN1bGF0
+aW9ucyBpbnN0ZWFkIG9mIHNrYl90cmFuc3BvcnRfb2Zmc2V0KHNrYikgYW5kIApza2ItPmNzdW1f
+b2Zmc2V0IHVzYWdlPwoK
