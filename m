@@ -1,22 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-cn0ut-3.online-age.net (ext-cn0ut-3.online-age.net
+	[63.210.253.232])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A11EDDEC6C
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 20:44:46 +1000 (EST)
-Message-Id: <0AFFA88B-E4B4-4B27-8B6F-8BA0463D7245@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: ehrhardt@linux.vnet.ibm.com
-In-Reply-To: <1219142204-12044-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 2/4] kvmppc: add hypercall infrastructure - guest part
-Date: Fri, 22 Aug 2008 05:38:54 -0500
-References: <1219142204-12044-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
-	<1219142204-12044-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
-Cc: ppc-dev list <linuxppc-dev@ozlabs.org>,
-	Hollis Blanchard <hollisb@us.ibm.com>, kvm-ppc <kvm-ppc@vger.kernel.org>,
-	Yoder Stuart <stuart.yoder@freescale.com>
+	(Client CN "ext-cn0ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 0D674DE6DA
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 20:46:44 +1000 (EST)
+Received: from int-cn0ut-4.online-age.net (int-cn0ut-4.online-age.net
+	[3.159.252.73])
+	by ext-cn0ut-3.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id m7MAkd4Y001924
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 06:46:40 -0400
+Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-4.online-age.net
+	[3.159.252.73])
+	by int-cn0ut-4.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m7MAkdcL029634
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 06:46:39 -0400
+From: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [PATCH v2 0/2] powerpc: Board support for GE Fanuc SBC610
+To: linuxppc-dev@ozlabs.org
+Date: Fri, 22 Aug 2008 06:46:15 -0400
+Message-ID: <20080822104615.11984.93838.stgit@ubuntu8041.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: scottwood@freescale.com, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The following series implements basic board support for GE Fanuc's SBC610, a 
+6U single board computer, based on Freescale's MPC8641D.
 
-On Aug 19, 2008, at 5:36 AM, ehrhardt@linux.vnet.ibm.com wrote:
+This series provides basic functionality:
+- The board can boot with a serial console.
+- Ethernet works, though the phys are polled.
+- The PCI bus is scanned and sata functions.
 
-> From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
->
-> This adds the guest portion of the hypercall infrastructure,  
-> basically an
-> illegal instruction with a defined layout.
-> See http://kvm.qumranet.com/kvmwiki/PowerPC_Hypercall_ABI for more  
-> detail
-> on the hypercall ABI for powerpc.
->
-> Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> ---
->
-> [diffstat]
-> kvm_para.h |   33 +++++++++++++++++++++++++++++++++
-> 1 file changed, 33 insertions(+)
->
-> [diff]
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+---
 
-Can we make this more generic (naming) and location.  I believe there  
-is some interesting in using the same ABI on the Freescale HV so it  
-seems like have the wrappers be a bit more generic saves us.
+Kumar, Jon & Scott: Thank you for your comments, I hope this revision resolves
+the issues you highlighted.
 
-- k
+Martyn
+
+Martyn Welch (2):
+      powerpc: Default configuration for GE Fanuc SBC610
+      powerpc: Board support for GE Fanuc SBC610
+
+
+ arch/powerpc/boot/dts/gef_sbc610.dts      |  268 +++++
+ arch/powerpc/configs/gef_sbc610_defconfig | 1654 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/86xx/Kconfig       |    9 
+ arch/powerpc/platforms/86xx/Makefile      |    1 
+ arch/powerpc/platforms/86xx/gef_sbc610.c  |  187 +++
+ 5 files changed, 2118 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/gef_sbc610.dts
+ create mode 100644 arch/powerpc/configs/gef_sbc610_defconfig
+ create mode 100644 arch/powerpc/platforms/86xx/gef_sbc610.c
