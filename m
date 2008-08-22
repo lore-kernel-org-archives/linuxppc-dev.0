@@ -1,20 +1,38 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [machdep_calls] IRQ
-From: Michael Ellerman <michael@ellerman.id.au>
-To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
-	<sebastien.chretien.enseirb@gmail.com>
-In-Reply-To: <319b0ac50808210123m81e8364od983d5dbbb601104@mail.gmail.com>
-References: <319b0ac50808210013p677ebb91vf3b30748138c6d4c@mail.gmail.com>
-	<1219305767.8008.14.camel@localhost>
-	<319b0ac50808210123m81e8364od983d5dbbb601104@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-wRp+5Z/TZZJ8asJvBaw6"
-Date: Fri, 22 Aug 2008 15:20:45 +1000
-Message-Id: <1219382445.7861.60.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <ehrhardt@linux.vnet.ibm.com>
+Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 14CEBDDF74
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 18:08:16 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id m7M88AWE562396
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 08:08:10 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.0) with
+	ESMTP id m7M88AdL3395664
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 10:08:10 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m7M889lx015521
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 10:08:10 +0200
+Message-ID: <48AE73E2.2010706@linux.vnet.ibm.com>
+Date: Fri, 22 Aug 2008 10:08:02 +0200
+From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 4/4] kvmppc: convert wrteei to wrtee as kvm guest
+	optimization
+References: <1219142204-12044-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	<1219142204-12044-5-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	<81439C52-0CB6-4C46-9A97-3D30B84F58AF@kernel.crashing.org>
+	<48AD7815.70107@linux.vnet.ibm.com>
+	<9E570AE9-6811-489F-9E2C-EF5A6B95ED5C@kernel.crashing.org>
+	<20080821161622.GB15669@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20080821161622.GB15669@ld0162-tx32.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org, hollisb@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,48 +42,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Scott Wood wrote:
+> On Thu, Aug 21, 2008 at 09:21:39AM -0500, Kumar Gala wrote:
+>   
+>> Where is the other discussion?  I'd like to understand what's going on  
+>> here.. (especially since I added the wrtee[i] changes to kernel way  
+>> back when).
+>>     
+>
+> Presumably, they want to be able to replace wrtee with a store to a
+> hypervisor/guest shared memory area, and there's no store-immediate
+> instruction.
+>
+> -Scott
+>   
+Exactly Scott
 
---=-wRp+5Z/TZZJ8asJvBaw6
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+And for your question Kumar, in the last submission I was asked to split 
+host and guest patches.
+So the host discussion lives on kvm-ppc@vger.kernel.org as I mentioned 
+(maybe a bit too hidden)
+in the [0/4] mail of this series.
 
-On Thu, 2008-08-21 at 10:23 +0200, S=C3=A9bastien Chr=C3=A9tien wrote:
-> Exactly, I mean ppc_md.init_IRQ().
 
-> Ok. What have I to setup in this function ? I set the mask and other
-> registers. Is it right ?  How do I chose the mask ?
+-- 
 
-It totally depends on your platform, I really can't tell you. You can
-look at similar platform code if there is some, otherwise the reference
-manual for your hardware or similar should have what you need.
-
-> At the end of this funtion, IRQ are disable. Is that right ? So who
-> does enable IRQs ?
-
-Yes, irqs get enabled a bit later in start_kernel().
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-wRp+5Z/TZZJ8asJvBaw6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIrkytdSjSd0sB4dIRAhgQAKCjAntNPJ/ih8B4WfmExNI55lRQrwCbBILa
-+GMHdeLEsRbKYaLTYbiCG4s=
-=QcGx
------END PGP SIGNATURE-----
-
---=-wRp+5Z/TZZJ8asJvBaw6--
+Grüsse / regards, 
+Christian Ehrhardt
+IBM Linux Technology Center, Open Virtualization
