@@ -1,15 +1,17 @@
-Return-Path: <yanok@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 313DCDDF7F
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 18:44:57 +1000 (EST)
-From: Ilya Yanok <yanok@emcraft.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] ppc4xx_pci: necessary fixes for 4GB RAM size
-Date: Fri, 22 Aug 2008 11:43:35 +0400
-Message-Id: <1219391015-6317-1-git-send-email-yanok@emcraft.com>
-Cc: sr@denx.de, wd@denx.de, Ilya Yanok <yanok@emcraft.com>
+Return-Path: <jk@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] New Patchwork beta
+Date: Fri, 22 Aug 2008 16:55:42 +0800
+References: <200808211822.27786.jk@ozlabs.org>
+	<1219359163.26429.62.camel@jdub.homelinux.org>
+	<255B3FE9-1938-4CC0-ACA6-E8B4302531AC@kernel.crashing.org>
+In-Reply-To: <255B3FE9-1938-4CC0-ACA6-E8B4302531AC@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808221655.42958.jk@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,56 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-1. total_memory should be phys_addr_t not unsigned long
-2. is_power_of_2() works with u32 so I just inlined (size & (size-1)) != 0
-instead.
-Also this patch fixes default initialization: res->end should be 0x7fffffff
-not 0x80000000.
+Hi Kumar,
 
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
----
- arch/powerpc/sysdev/ppc4xx_pci.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+[trimming CC list]
 
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-index e1c7df9..645b2c9 100644
---- a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@ -36,7 +36,7 @@
- static int dma_offset_set;
- 
- /* Move that to a useable header */
--extern unsigned long total_memory;
-+extern phys_addr_t total_memory;
- 
- #define U64_TO_U32_LOW(val)	((u32)((val) & 0x00000000ffffffffULL))
- #define U64_TO_U32_HIGH(val)	((u32)((val) >> 32))
-@@ -105,7 +105,8 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
- 
- 	/* Default */
- 	res->start = 0;
--	res->end = size = 0x80000000;
-+	size = 0x80000000;
-+	res->end = size - 1;
- 	res->flags = IORESOURCE_MEM | IORESOURCE_PREFETCH;
- 
- 	/* Get dma-ranges property */
-@@ -167,13 +168,13 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
- 	 */
- 	if (size < total_memory) {
- 		printk(KERN_ERR "%s: dma-ranges too small "
--		       "(size=%llx total_memory=%lx)\n",
--		       hose->dn->full_name, size, total_memory);
-+		       "(size=%llx total_memory=%llx)\n",
-+		       hose->dn->full_name, size, (u64)total_memory);
- 		return -ENXIO;
- 	}
- 
- 	/* Check we are a power of 2 size and that base is a multiple of size*/
--	if (!is_power_of_2(size) ||
-+	if ((size & (size - 1)) != 0  ||
- 	    (res->start & (size - 1)) != 0) {
- 		printk(KERN_ERR "%s: dma-ranges unaligned\n",
- 		       hose->dn->full_name);
--- 
-1.5.6.1
+> Now that I can log in, can I get "maintainer" privileges (user:
+> galak)
+
+Yep, you should already have maintainer privs for linuxppc-dev
+
+> also is it possible to put the patch controls in a separate frame so
+> they are always visible (dont have to scoll to the bottom to find
+> them).
+
+I'm trying to avoid using frames; it makes it hard to link to individual 
+pages, and makes patch updating much more complex.
+
+However, there shouldn't be a need for too much scrolling now - to 
+prevent patch lists from growing too long, the results are paginated 
+into groups of 100 patches.
+
+Also, when there are more than about 30 patches on a page, you'll get a 
+small link on the left-hand side to scroll straight to the form area.
+
+Is this OK?
+
+Cheers,
+
+
+Jeremy
