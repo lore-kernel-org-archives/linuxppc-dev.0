@@ -1,11 +1,11 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 60CB7DE235
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 14:21:46 +1000 (EST)
-Date: Thu, 21 Aug 2008 21:21:45 -0700 (PDT)
-Message-Id: <20080821.212145.141028767.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 9180BDE7BD
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 14:22:02 +1000 (EST)
+Date: Thu, 21 Aug 2008 21:22:01 -0700 (PDT)
+Message-Id: <20080821.212201.252967290.davem@davemloft.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3]: of_i2c: Add Sparc support.
+Subject: [PATCH 2/3]: of_i2c: Abstract out register property interpretation.
 From: David Miller <davem@davemloft.net>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -20,48 +20,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-of_i2c: Add Sparc support.
+of_i2c: Abstract out register property interpretation.
+
+Pull out client I2C device address calculation into a
+helper function, of_i2c_fetch_addr.
+
+At the top level we try to determine the reported
+#address-cells property in the I2C bus adapter node,
+and default to "1" if the property is not found.
+
+We pass this down to of_i2c_fetch_addr() so that it does
+not have to do this probe every iteration.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- arch/sparc/include/asm/of_i2c.h |   67 +++++++++++++++++++++++++++++++++++++++
- drivers/of/Kconfig              |    2 +-
- 2 files changed, 68 insertions(+), 1 deletions(-)
- create mode 100644 arch/sparc/include/asm/of_i2c.h
+ arch/powerpc/include/asm/of_i2c.h |   24 ++++++++++++++++++++++++
+ drivers/of/of_i2c.c               |   26 ++++++++++++++++----------
+ 2 files changed, 40 insertions(+), 10 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/of_i2c.h
 
-diff --git a/arch/sparc/include/asm/of_i2c.h b/arch/sparc/include/asm/of_i2c.h
+diff --git a/arch/powerpc/include/asm/of_i2c.h b/arch/powerpc/include/asm/of_i2c.h
 new file mode 100644
-index 0000000..93c7c05
+index 0000000..501a24b
 --- /dev/null
-+++ b/arch/sparc/include/asm/of_i2c.h
-@@ -0,0 +1,67 @@
-+#ifndef _ASM_SPARC_OF_I2C_H
-+#define _ASM_SPARC_OF_I2C_H
++++ b/arch/powerpc/include/asm/of_i2c.h
+@@ -0,0 +1,24 @@
++#ifndef _ASM_POWERPC_OF_I2C_H
++#define _ASM_POWERPC_OF_I2C_H
 +
-+/* In my copy of the I2C bindings for IEEE1275 the register value is
-+ * encoded as a 2-cell value:
-+ *
-+ * Bit #    33222222 22221111 11111100 00000000
-+ *          10987654 32109876 54321098 76543210
-+ *
-+ * bus:     00000000 00000000 00000000 bbbbbbbb
-+ * address: 00000000 00000000 00000sss sssssss0
-+ *
-+ * where:
-+ * bbbbbbbb        8-bit unsigned number representing
-+ *                 the I2C bus address within this I2C bus
-+ *                 controller node
-+ * ssssssssss      10-bit unsigned number representing the
-+ *                 slave address
-+ *
-+ * When doing I2C transfers to a device the low bit of the address
-+ * indicates whether the transfer is a read or a write, and the upper
-+ * bits indicate the device address.
-+ *
-+ * The Linux I2C layer wants device addresses which elide this
-+ * direction bit.  Thus we should shift the OF provided reg property
-+ * address down by one bit.
-+ */
 +static inline int of_i2c_fetch_addr(struct i2c_board_info *bp,
 +				    struct device_node *client_node,
 +				    struct device_node *adap_node,
@@ -71,49 +57,69 @@ index 0000000..93c7c05
 +	int len;
 +
 +	addr = of_get_property(client_node, "reg", &len);
-+	if (!addr)
-+		goto out_inval;
-+
-+	if (len < (num_addr_cells * sizeof(int)))
-+		goto out_inval;
-+
-+	if (addr[num_addr_cells - 1] > (1 << 10) - 1)
-+		goto out_inval;
-+
-+	switch (num_addr_cells) {
-+	case 1:
-+		bp->addr = addr[0];
-+		break;
-+
-+	case 2:
-+		/* XXX cell 0 contains bus number XXX */
-+		bp->addr = addr[1];
-+		break;
-+
-+	default:
-+		goto out_inval;
++	if (!addr || len < (num_addr_cells * sizeof(int)) ||
++	    addr[num_addr_cells - 1] > (1 << 10) - 1) {
++		printk(KERN_ERR "of-i2c: invalid i2c device entry\n");
++		return -EINVAL;
 +	}
 +
-+	return 0;
++	bp->addr = addr[num_addr_cells - 1];
 +
-+out_inval:
-+	printk(KERN_ERR "of-i2c: invalid i2c device entry\n");
-+	return -EINVAL;
++	return 0;
 +}
 +
-+#endif /* _ASM_SPARC_OF_I2C_H */
-diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-index f821dbc..493c717 100644
---- a/drivers/of/Kconfig
-+++ b/drivers/of/Kconfig
-@@ -10,7 +10,7 @@ config OF_GPIO
++#endif /* _ASM_POWERPC_OF_I2C_H */
+diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+index 6a98dc8..387c74e 100644
+--- a/drivers/of/of_i2c.c
++++ b/drivers/of/of_i2c.c
+@@ -16,31 +16,37 @@
+ #include <linux/of_i2c.h>
+ #include <linux/module.h>
  
- config OF_I2C
- 	def_tristate I2C
--	depends on PPC_OF && I2C
-+	depends on I2C
- 	help
- 	  OpenFirmware I2C accessors
++#include <asm/of_i2c.h>
++
+ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 			     struct device_node *adap_node)
+ {
+-	void *result;
+ 	struct device_node *node;
++	int num_addr_cells = 1;
++	const int *n_cells;
++	void *result;
++
++	n_cells = of_get_property(adap_node, "#address-cells", NULL);
++	if (n_cells)
++		num_addr_cells = *n_cells;
++
++	if (num_addr_cells != 1 && num_addr_cells != 2) {
++		printk(KERN_ERR "of-i2c: invalid address cells %d\n",
++		       num_addr_cells);
++		return;
++	}
  
+ 	for_each_child_of_node(adap_node, node) {
+ 		struct i2c_board_info info = {};
+-		const u32 *addr;
+-		int len;
+ 
+ 		if (of_modalias_node(node, info.type, sizeof(info.type)) < 0)
+ 			continue;
+ 
+-		addr = of_get_property(node, "reg", &len);
+-		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
+-			printk(KERN_ERR
+-			       "of-i2c: invalid i2c device entry\n");
++		if (of_i2c_fetch_addr(&info, node, adap_node, num_addr_cells))
+ 			continue;
+-		}
+ 
+ 		info.irq = irq_of_parse_and_map(node, 0);
+ 
+-		info.addr = *addr;
+-
+ 		request_module(info.type);
+ 
+ 		result = i2c_new_device(adap, &info);
 -- 
 1.5.6.5.GIT
