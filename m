@@ -1,16 +1,26 @@
-Return-Path: <wmb@firmworks.com>
-Message-ID: <48AE4093.8050504@firmworks.com>
-Date: Thu, 21 Aug 2008 18:29:07 -1000
-From: Mitch Bradley <wmb@firmworks.com>
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
+Return-Path: <glikely@secretlab.ca>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id EEB12DE727
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 14:30:59 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so197995pyi.27
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 21:30:58 -0700 (PDT)
+Message-ID: <fa686aa40808212130l365c6f5eu767b9969c8171e2@mail.gmail.com>
+Date: Thu, 21 Aug 2008 22:30:57 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Mitch Bradley" <wmb@firmworks.com>
 Subject: Re: [PATCH 0/3]: Sparc OF I2C support.
-References: <1219367743.26429.66.camel@jdub.homelinux.org>	<20080821.205305.74123372.davem@davemloft.net>	<fa686aa40808212118u710050bbg8ca8e04e01252310@mail.gmail.com>
+In-Reply-To: <48AE4093.8050504@firmworks.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1219367743.26429.66.camel@jdub.homelinux.org>
+	<20080821.205305.74123372.davem@davemloft.net>
+	<fa686aa40808212118u710050bbg8ca8e04e01252310@mail.gmail.com>
 	<20080821.212241.186479683.davem@davemloft.net>
-In-Reply-To: <20080821.212241.186479683.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	devicetree-discuss@ozlabs.org, scottwood@freescale.com
+	<48AE4093.8050504@firmworks.com>
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	devicetree-discuss@ozlabs.org,
+	David Miller <davem@davemloft.net>, scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,35 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, I wrote most of 1275.
+On Thu, Aug 21, 2008 at 10:29 PM, Mitch Bradley <wmb@firmworks.com> wrote:
+> Hi, I wrote most of 1275.
+>
+> Mitch Bradley  (wmb@firmworks.com)
 
-Mitch Bradley  (wmb@firmworks.com)
+Hi Mitch,
 
-David Miller wrote:
-> From: "Grant Likely" <grant.likely@secretlab.ca>
-> Date: Thu, 21 Aug 2008 22:18:56 -0600
->
->   
->> On Thu, Aug 21, 2008 at 9:53 PM, David Miller <davem@davemloft.net> wrote:
->>     
->>>> Have patience with the embedded people that are both new to
->>>> OpenFirmware and trying to make stuff work at the same time.  I
->>>> think the devicetree-discuss list will help here as new bindings are
->>>> proposed.  I hope you're subscribed.
->>>>         
->>> Why not ask the people who actually work on the standards?  That's who
->>> I go to when I want to know something about openfirmware issues.
->>>       
->> You mean email them privately?  Outside of a public forum?  That
->> doesn't help much when it comes to discussing/debating issues and
->> learning from other peoples conversations.
->>     
->
-> You can CC: them on the discussion to get their input, whatever
-> is appropriate.
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/devicetree-discuss
->
->   
+What is your suggestion.  Where should we be discussing new device
+tree bindings?  Whether it be real Open Firmware, or flattened device
+tree, or something in between
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
