@@ -1,24 +1,22 @@
 Return-Path: <jwboyer@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.235])
-	by ozlabs.org (Postfix) with ESMTP id D34CBDE081
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id 8E13EDE0F9
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Aug 2008 23:25:32 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id c48so385542wra.1
+	Fri, 22 Aug 2008 23:30:48 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so299620pyi.27
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Aug 2008 06:25:31 -0700 (PDT)
-Date: Fri, 22 Aug 2008 09:24:55 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: vb <vb@vsbe.com>
-Subject: Re: TLB programming in powerpc tree. Was: Accessing peripheral bus
-	devices on 460GT
-Message-ID: <20080822132455.GD22283@yoda.jdub.homelinux.org>
-References: <f608b67d0808211929g3ae2cf7dm2ba2d65b0043d306@mail.gmail.com>
-	<f608b67d0808212214p3c3e008fxa5418d108b7205f5@mail.gmail.com>
+	Fri, 22 Aug 2008 06:30:46 -0700 (PDT)
+Date: Fri, 22 Aug 2008 09:30:20 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: fkan@amcc.com
+Subject: Re: [PATCH] AMCC PPC460GT/EX PCI-E de-emphasis adjustment fix
+Message-ID: <20080822133020.GE22283@yoda.jdub.homelinux.org>
+References: <1219380814-17229-1-git-send-email-fkan@amcc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f608b67d0808212214p3c3e008fxa5418d108b7205f5@mail.gmail.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+In-Reply-To: <1219380814-17229-1-git-send-email-fkan@amcc.com>
+Cc: sr@denx.de, Tirumala R Marri <tmarri@amcc.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -29,20 +27,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 21, 2008 at 10:14:15PM -0700, vb wrote:
->On Thu, Aug 21, 2008 at 7:29 PM, vb <vb@vsbe.com> wrote:
->>
->> But the main problem is that the kernel never sets up TLBs for neither
->> the peripheral device, nor the onboard flash. I don't seem to be able
->> to find the place where this is supposed to happen. I assumed that
->> ioremap_nocache would take care of that, but this is not the case.
->>
+On Thu, Aug 21, 2008 at 09:53:34PM -0700, fkan@amcc.com wrote:
+>From: Tirumala R Marri <tmarri@amcc.com>
 >
->well, in fact the TLB is set up as soon as an attempt to access the
->peripheral is made. The problem apparently is the fact that the TLB
->entry uses a wrong value in the nibble specifying the internal 460GT
->block...
+>During recent tests with PCI-E , it has been found the
+>DRV + De-Emphasis values are not optimum. These new values
+>are tested thouroughly.
+>
+>Signed-off-by: Tirumala R Marri <tmarri@amcc.com>
 
-I'm not entirely sure what you mean here.  Can you elaborate a bit more?
+If you are sending out a patch for someone, you need to include your
+Signed-off-by as well.  Just reply to this with it, no need to resend
+the just for this.
+
+Stefan, this looks good to me.  Or at least as far as I can tell from
+the somewhat magic values :)  Any comments?
 
 josh
