@@ -1,19 +1,15 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 19D94DE596
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 18:39:11 +1000 (EST)
-Date: Fri, 22 Aug 2008 10:39:10 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Kevin Diggs <kevdig@hypersurf.com>
-Subject: Re: disable modules and get "multiple definition" errors?
-In-Reply-To: <48AE1644.8050102@hypersurf.com>
-Message-ID: <Pine.LNX.4.64.0808221038400.17105@vixen.sonytel.be>
-References: <48AE1644.8050102@hypersurf.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-891049496-1219394350=:17105"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <yanok@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 313DCDDF7F
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 18:44:57 +1000 (EST)
+From: Ilya Yanok <yanok@emcraft.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ppc4xx_pci: necessary fixes for 4GB RAM size
+Date: Fri, 22 Aug 2008 11:43:35 +0400
+Message-Id: <1219391015-6317-1-git-send-email-yanok@emcraft.com>
+Cc: sr@denx.de, wd@denx.de, Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,52 +19,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+1. total_memory should be phys_addr_t not unsigned long
+2. is_power_of_2() works with u32 so I just inlined (size & (size-1)) != 0
+instead.
+Also this patch fixes default initialization: res->end should be 0x7fffffff
+not 0x80000000.
 
----584349381-891049496-1219394350=:17105
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+---
+ arch/powerpc/sysdev/ppc4xx_pci.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-On Thu, 21 Aug 2008, Kevin Diggs wrote:
-> 	I am trying to do some compile testing of my cpufreq driver. If
-> I disable modules I am getting multiple definition errors of inline
-> functions:
-> 
-> inline volatile unsigned int get_PLL(void)
-> {
-> unsigned int ret;
-> 
->         __asm__ __volatile__ ("mfspr %0,%1":
->                 "=r"(ret):
->                 "i"(SPRN_HID1)
->         );
-> 
->         return ret;
-> }
-> 
-> arch/powerpc/kernel/cpu/pll_if.o(.text+0x1c): In function `get_PLL':
-> : multiple definition of `get_PLL'
-> arch/powerpc/kernel/cpu/cpufreq/built-in.o(.text+0x0): first defined here
-> 
-> What am I doing wrong?
-
-You forgot to make the inline functions static?
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-891049496-1219394350=:17105--
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+index e1c7df9..645b2c9 100644
+--- a/arch/powerpc/sysdev/ppc4xx_pci.c
++++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+@@ -36,7 +36,7 @@
+ static int dma_offset_set;
+ 
+ /* Move that to a useable header */
+-extern unsigned long total_memory;
++extern phys_addr_t total_memory;
+ 
+ #define U64_TO_U32_LOW(val)	((u32)((val) & 0x00000000ffffffffULL))
+ #define U64_TO_U32_HIGH(val)	((u32)((val) >> 32))
+@@ -105,7 +105,8 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
+ 
+ 	/* Default */
+ 	res->start = 0;
+-	res->end = size = 0x80000000;
++	size = 0x80000000;
++	res->end = size - 1;
+ 	res->flags = IORESOURCE_MEM | IORESOURCE_PREFETCH;
+ 
+ 	/* Get dma-ranges property */
+@@ -167,13 +168,13 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
+ 	 */
+ 	if (size < total_memory) {
+ 		printk(KERN_ERR "%s: dma-ranges too small "
+-		       "(size=%llx total_memory=%lx)\n",
+-		       hose->dn->full_name, size, total_memory);
++		       "(size=%llx total_memory=%llx)\n",
++		       hose->dn->full_name, size, (u64)total_memory);
+ 		return -ENXIO;
+ 	}
+ 
+ 	/* Check we are a power of 2 size and that base is a multiple of size*/
+-	if (!is_power_of_2(size) ||
++	if ((size & (size - 1)) != 0  ||
+ 	    (res->start & (size - 1)) != 0) {
+ 		printk(KERN_ERR "%s: dma-ranges unaligned\n",
+ 		       hose->dn->full_name);
+-- 
+1.5.6.1
