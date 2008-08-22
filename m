@@ -1,16 +1,20 @@
-Return-Path: <wmb@firmworks.com>
-Message-ID: <48AE4C4A.8040804@firmworks.com>
-Date: Thu, 21 Aug 2008 19:19:06 -1000
-From: Mitch Bradley <wmb@firmworks.com>
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 0/3]: Sparc OF I2C support.
-References: <48AE4093.8050504@firmworks.com>	<fa686aa40808212130l365c6f5eu767b9969c8171e2@mail.gmail.com>	<fa686aa40808212134l1e226845q41831ee567bb1a2@mail.gmail.com>
-	<20080821.213747.159824681.davem@davemloft.net>
-In-Reply-To: <20080821.213747.159824681.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	devicetree-discuss@ozlabs.org, scottwood@freescale.com
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [machdep_calls] IRQ
+From: Michael Ellerman <michael@ellerman.id.au>
+To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
+	<sebastien.chretien.enseirb@gmail.com>
+In-Reply-To: <319b0ac50808210123m81e8364od983d5dbbb601104@mail.gmail.com>
+References: <319b0ac50808210013p677ebb91vf3b30748138c6d4c@mail.gmail.com>
+	<1219305767.8008.14.camel@localhost>
+	<319b0ac50808210123m81e8364od983d5dbbb601104@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-wRp+5Z/TZZJ8asJvBaw6"
+Date: Fri, 22 Aug 2008 15:20:45 +1000
+Message-Id: <1219382445.7861.60.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,48 +25,47 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+--=-wRp+5Z/TZZJ8asJvBaw6
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-David Miller wrote:
-> From: "Grant Likely" <grant.likely@secretlab.ca>
-> Date: Thu, 21 Aug 2008 22:34:31 -0600
->
->   
->> On Thu, Aug 21, 2008 at 10:30 PM, Grant Likely
->> <grant.likely@secretlab.ca> wrote:
->>     
->>> On Thu, Aug 21, 2008 at 10:29 PM, Mitch Bradley <wmb@firmworks.com> wrote:
->>>       
->>>> Hi, I wrote most of 1275.
->>>>
->>>> Mitch Bradley  (wmb@firmworks.com)
->>>>         
->>> Hi Mitch,
->>>
->>> What is your suggestion.  Where should we be discussing new device
->>> tree bindings?  Whether it be real Open Firmware, or flattened device
->>> tree, or something in between
->>>       
->> ...and along those lines: is there a place for documenting new
->> bindings?  Lacking anything better, those of us in PowerPC-Linux-land
->> have been adding documentation to Documentation/powerpc/dts-bindings/*
->> in the Linux kernel tree.
->>     
->
-> In a discussion I am having with Greg Onufer, David K. and Tayfun
-> at Sun, Greg said the some of the newer binding documents are
-> being published on the opensolaris site, and he is trying to
-> get some of the older cases (like this I2C one) published there
-> too.
->
->   
+On Thu, 2008-08-21 at 10:23 +0200, S=C3=A9bastien Chr=C3=A9tien wrote:
+> Exactly, I mean ppc_md.init_IRQ().
 
-This collection of mailing lists is as good a place as any to discuss 
-new bindings.  I don't know how many Sun people are on the lists, but we 
-might be able to persuade various Sun people to lurk on one or more of 
-them;  I lurk on devicetree-discuss.
+> Ok. What have I to setup in this function ? I set the mask and other
+> registers. Is it right ?  How do I chose the mask ?
 
-The opensolaris site seems as good as anywhere for publishing the 
-bindings, especially if they can pull over the old ones from e.g. 
-playground.sun.com .
+It totally depends on your platform, I really can't tell you. You can
+look at similar platform code if there is some, otherwise the reference
+manual for your hardware or similar should have what you need.
 
-Another possible site might be openbios.org .
+> At the end of this funtion, IRQ are disable. Is that right ? So who
+> does enable IRQs ?
+
+Yes, irqs get enabled a bit later in start_kernel().
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-wRp+5Z/TZZJ8asJvBaw6
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIrkytdSjSd0sB4dIRAhgQAKCjAntNPJ/ih8B4WfmExNI55lRQrwCbBILa
++GMHdeLEsRbKYaLTYbiCG4s=
+=QcGx
+-----END PGP SIGNATURE-----
+
+--=-wRp+5Z/TZZJ8asJvBaw6--
