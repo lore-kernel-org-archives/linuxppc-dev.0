@@ -1,18 +1,17 @@
-Return-Path: <sebastien.chretien.enseirb@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.237])
-	by ozlabs.org (Postfix) with ESMTP id AB7A4DEA07
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 19:53:11 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so364459rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 02:53:10 -0700 (PDT)
-Message-ID: <319b0ac50808220253s1652f72alaff31be5eaef4244@mail.gmail.com>
-Date: Fri, 22 Aug 2008 11:53:10 +0200
-From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
-	<sebastien.chretien.enseirb@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Initrd
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_32075_33261448.1219398790263"
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <F53C31FF-D6BC-45EC-A9AD-FADFABBA2F7E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jeremy Kerr <jk@ozlabs.org>
+In-Reply-To: <200808221655.42958.jk@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [Cbe-oss-dev] New Patchwork beta
+Date: Fri, 22 Aug 2008 05:05:55 -0500
+References: <200808211822.27786.jk@ozlabs.org>
+	<1219359163.26429.62.camel@jdub.homelinux.org>
+	<255B3FE9-1938-4CC0-ACA6-E8B4302531AC@kernel.crashing.org>
+	<200808221655.42958.jk@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,56 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_32075_33261448.1219398790263
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hello,
+On Aug 22, 2008, at 3:55 AM, Jeremy Kerr wrote:
 
-I am using linux 2.6.26 on a powerpc board. I would like to use a initrd. So
-I set the initrd option in the kernel. But when I boot Linux, it crashes
-before  start_kernel(). And after the configuration of the MMU. The last
-words of the prompt are :
-Probing machine type ...
-  MPC7448 on IAD68 ... match !
-id mach(): done
-MMU:enter
-MMU:hw init
-hash:enter
-hash:find piece
-hash:patch
-hash:done
-MMU:mapin
-MMU:setio
-MMU:exi
+> Hi Kumar,
+>
+> [trimming CC list]
+>
+>> Now that I can log in, can I get "maintainer" privileges (user:
+>> galak)
+>
+> Yep, you should already have maintainer privs for linuxppc-dev
+>
+>> also is it possible to put the patch controls in a separate frame so
+>> they are always visible (dont have to scoll to the bottom to find
+>> them).
+>
+> I'm trying to avoid using frames; it makes it hard to link to  
+> individual
+> pages, and makes patch updating much more complex.
+>
+> However, there shouldn't be a need for too much scrolling now - to
+> prevent patch lists from growing too long, the results are paginated
+> into groups of 100 patches.
+>
+> Also, when there are more than about 30 patches on a page, you'll  
+> get a
+> small link on the left-hand side to scroll straight to the form area.
+>
+> Is this OK?
 
-Can you help me ?
+probably, will need to see when we get more patches how this actually  
+looks.  I know it was a big annoyance w/v1.
 
-------=_Part_32075_33261448.1219398790263
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hello,<br>
-<br>
-I am using linux 2.6.26 on a powerpc board. I would like to use a
-initrd. So I set the initrd option in the kernel. But when I boot
-Linux, it crashes before&nbsp; start_kernel(). And after the
-configuration of the MMU. The last words of the prompt are : <br>
-Probing machine type ...<br>
-&nbsp; MPC7448 on IAD68 ... match !<br>
-id mach(): done<br>
-MMU:enter<br>
-MMU:hw init<br>
-hash:enter<br>
-hash:find piece<br>
-hash:patch<br>
-hash:done<br>
-MMU:mapin<br>
-MMU:setio<br>
-MMU:exi<br>
-<br>
-Can you help me ?<br>
-
-------=_Part_32075_33261448.1219398790263--
+- k
