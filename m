@@ -1,27 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.178])
-	by ozlabs.org (Postfix) with ESMTP id 39BDCDE810
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 14:35:10 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so198548pyi.27
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 21:34:31 -0700 (PDT)
-Message-ID: <fa686aa40808212134l1e226845q41831ee567bb1a2@mail.gmail.com>
-Date: Thu, 21 Aug 2008 22:34:31 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Mitch Bradley" <wmb@firmworks.com>
-Subject: Re: [PATCH 0/3]: Sparc OF I2C support.
-In-Reply-To: <fa686aa40808212130l365c6f5eu767b9969c8171e2@mail.gmail.com>
+Return-Path: <markn@au1.ibm.com>
+From: Mark Nelson <markn@au1.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc: add new CPU feature: CPU_FTR_CP_USE_DCBTZ
+Date: Fri, 22 Aug 2008 14:36:19 +1000
+References: <200808141617.32033.markn@au1.ibm.com>
+In-Reply-To: <200808141617.32033.markn@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1219367743.26429.66.camel@jdub.homelinux.org>
-	<20080821.205305.74123372.davem@davemloft.net>
-	<fa686aa40808212118u710050bbg8ca8e04e01252310@mail.gmail.com>
-	<20080821.212241.186479683.davem@davemloft.net>
-	<48AE4093.8050504@firmworks.com>
-	<fa686aa40808212130l365c6f5eu767b9969c8171e2@mail.gmail.com>
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	devicetree-discuss@ozlabs.org,
-	David Miller <davem@davemloft.net>, scottwood@freescale.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808221436.19517.markn@au1.ibm.com>
+Cc: cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,26 +19,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 21, 2008 at 10:30 PM, Grant Likely
-<grant.likely@secretlab.ca> wrote:
-> On Thu, Aug 21, 2008 at 10:29 PM, Mitch Bradley <wmb@firmworks.com> wrote:
->> Hi, I wrote most of 1275.
->>
->> Mitch Bradley  (wmb@firmworks.com)
->
-> Hi Mitch,
->
-> What is your suggestion.  Where should we be discussing new device
-> tree bindings?  Whether it be real Open Firmware, or flattened device
-> tree, or something in between
+Add a new CPU feature bit, CPU_FTR_CP_USE_DCBTZ, to be added to the
+64bit powerpc chips that benefit from having dcbt and dcbz
+instructions used in their memory copy routines.
 
-...and along those lines: is there a place for documenting new
-bindings?  Lacking anything better, those of us in PowerPC-Linux-land
-have been adding documentation to Documentation/powerpc/dts-bindings/*
-in the Linux kernel tree.
+This will be used in a subsequent patch that updates copy_4K_page().
+The new bit is added to Cell, PPC970 and Power4 because they show
+better performance with the new copy_4K_page() when dcbt and dcbz
+instructions are used.
 
-g.
+Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+---
+ arch/powerpc/include/asm/cputable.h |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Index: upstream/arch/powerpc/include/asm/cputable.h
+===================================================================
+--- upstream.orig/arch/powerpc/include/asm/cputable.h
++++ upstream/arch/powerpc/include/asm/cputable.h
+@@ -192,6 +192,7 @@ extern const char *powerpc_base_platform
+ #define CPU_FTR_NO_SLBIE_B		LONG_ASM_CONST(0x0008000000000000)
+ #define CPU_FTR_VSX			LONG_ASM_CONST(0x0010000000000000)
+ #define CPU_FTR_SAO			LONG_ASM_CONST(0x0020000000000000)
++#define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -387,10 +388,11 @@ extern const char *powerpc_base_platform
+ 	    CPU_FTR_MMCRA | CPU_FTR_CTRL)
+ #define CPU_FTRS_POWER4	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+-	    CPU_FTR_MMCRA)
++	    CPU_FTR_MMCRA | CPU_FTR_CP_USE_DCBTZ)
+ #define CPU_FTRS_PPC970	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+-	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA)
++	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA | \
++	    CPU_FTR_CP_USE_DCBTZ)
+ #define CPU_FTRS_POWER5	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+@@ -411,7 +413,8 @@ extern const char *powerpc_base_platform
+ #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+-	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE | CPU_FTR_CELL_TB_BUG)
++	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE | \
++	    CPU_FTR_CELL_TB_BUG | CPU_FTR_CP_USE_DCBTZ)
+ #define CPU_FTRS_PA6T (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CI_LARGE_PAGE | \
