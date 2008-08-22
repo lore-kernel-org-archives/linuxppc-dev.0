@@ -1,17 +1,24 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 21 Aug 2008 20:53:05 -0700 (PDT)
-Message-Id: <20080821.205305.74123372.davem@davemloft.net>
-To: jwboyer@linux.vnet.ibm.com
+Return-Path: <glikely@secretlab.ca>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
+	by ozlabs.org (Postfix) with ESMTP id CDF79DE0BE
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Aug 2008 14:18:58 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so196035pyi.27
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Aug 2008 21:18:57 -0700 (PDT)
+Message-ID: <fa686aa40808212118u710050bbg8ca8e04e01252310@mail.gmail.com>
+Date: Thu, 21 Aug 2008 22:18:56 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "David Miller" <davem@davemloft.net>
 Subject: Re: [PATCH 0/3]: Sparc OF I2C support.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1219367743.26429.66.camel@jdub.homelinux.org>
+In-Reply-To: <20080821.205305.74123372.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <fa686aa40808211614q72f6719btd391830abded58f6@mail.gmail.com>
 	<20080821.163216.239892875.davem@davemloft.net>
 	<1219367743.26429.66.camel@jdub.homelinux.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	<20080821.205305.74123372.davem@davemloft.net>
 Cc: devicetree-discuss@ozlabs.org, linuxppc-dev@ozlabs.org,
-	sparclinux@vger.kernel.org, paulus@samba.org, scottwood@freescale.com
+	sparclinux@vger.kernel.org, scottwood@freescale.com, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,20 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date: Thu, 21 Aug 2008 21:15:37 -0400
+On Thu, Aug 21, 2008 at 9:53 PM, David Miller <davem@davemloft.net> wrote:
+>> Have patience with the embedded people that are both new to
+>> OpenFirmware and trying to make stuff work at the same time.  I
+>> think the devicetree-discuss list will help here as new bindings are
+>> proposed.  I hope you're subscribed.
+>
+> Why not ask the people who actually work on the standards?  That's who
+> I go to when I want to know something about openfirmware issues.
 
-> Huge?  I'd say mistake, but not necessarily huge.  I mean nobody other
-> than you (at least in the context of this conversation) had access to
-> the IEEE1275 proposed binding so it wasn't like there was tons to go on.
+You mean email them privately?  Outside of a public forum?  That
+doesn't help much when it comes to discussing/debating issues and
+learning from other peoples conversations.
 
-I guess all the PowerMAC G5 systems out there and their device trees
-were locked up in a highly secure vault somewhere :-)
+As far as I can tell there aren't any other active mailing lists
+purposed for discussing device tree bindings.
+http://openfirmware.org, http://firmworks.com, and
+http://playground.sun.com/1275/ don't list any mailing lists and the
+last meeting shown on playground.sun.com was scheduled for 1999.
+openbios.org has a mailing list which seems to be idle except for SVN
+commit messages and doesn't seem to be used for discussing bindings.
+We need a place to discuss these issues that I don't see anywhere
+else.  Please correct me if I'm missing a list.
 
-> Have patience with the embedded people that are both new to
-> OpenFirmware and trying to make stuff work at the same time.  I
-> think the devicetree-discuss list will help here as new bindings are
-> proposed.  I hope you're subscribed.
+g.
 
-Why not ask the people who actually work on the standards?  That's who
-I go to when I want to know something about openfirmware issues.
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
