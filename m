@@ -1,20 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 3C9B7DF0E1
+Return-Path: <fkan@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02-ext1.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 60E27DE041
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Aug 2008 00:03:25 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Add AMCC 4XX PCIe MSI support
-Date: Fri, 22 Aug 2008 16:03:14 +0200
-References: <1219380144-17175-1-git-send-email-fkan@amcc.com>
-In-Reply-To: <1219380144-17175-1-git-send-email-fkan@amcc.com>
+	Sat, 23 Aug 2008 01:46:37 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808221603.14925.arnd@arndb.de>
-Cc: Preetesh Parekh <pparekh@amcc.com>,
-	Michael Ellerman <michael@ellerman.id.au>, fkan@amcc.com
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C9046C.9610C681"
+Subject: RE: [PATCH] AMCC PPC460GT/EX PCI-E de-emphasis adjustment fix
+Date: Fri, 22 Aug 2008 08:33:52 -0700
+Message-ID: <2B3B2AA816369A4E87D7BE63EC9D2F26049F7995@SDCEXCHANGE01.ad.amcc.com>
+References: <1219380814-17229-1-git-send-email-fkan@amcc.com>
+	<20080822133020.GE22283@yoda.jdub.homelinux.org>
+From: "Feng Kan" <fkan@amcc.com>
+To: "Josh Boyer" <jwboyer@gmail.com>
+Cc: sr@denx.de, Tirumala Reddy Marri <tmarri@amcc.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,224 +28,77 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 22 August 2008, fkan@amcc.com wrote:
+This is a multi-part message in MIME format.
 
-Have you taken a look at the implementation of
-arch/powerpc/platforms/cell/axon_msi.c? I would guess
-that it should be possible to unify the code and put
-it into sysdev, because both drivers are made for the
-same hardware and the differences should all be
-abstracted through the device tree already.
+------_=_NextPart_001_01C9046C.9610C681
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> --- a/arch/powerpc/platforms/40x/kilauea.c
-> +++ b/arch/powerpc/platforms/40x/kilauea.c
-> @@ -22,6 +22,11 @@
->  #include <asm/pci-bridge.h>
->  #include <asm/ppc4xx.h>
->  
-> +#ifdef CONFIG_PCI_MSI
-> +extern int ppc4xx_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
-> +extern void ppc4xx_teardown_msi_irqs(struct pci_dev *dev);
-> +#endif
-> +
+Signed-off-by: Feng Kan fkan@amcc.com
 
-These declarations need to be in a header file.
+________________________________
 
-> diff --git a/arch/powerpc/platforms/44x/canyonlands.c b/arch/powerpc/platforms/44x/canyonlands.c
-> index 3949289..ee38fb7 100644
-> --- a/arch/powerpc/platforms/44x/canyonlands.c
-> +++ b/arch/powerpc/platforms/44x/canyonlands.c
-> @@ -25,6 +25,12 @@
->  #include <asm/pci-bridge.h>
->  #include <asm/ppc4xx.h>
->  
-> +
-> +#ifdef CONFIG_PCI_MSI
-> +extern int ppc4xx_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
-> +extern void ppc4xx_teardown_msi_irqs(struct pci_dev *dev);
-> +#endif
-> +
->  static __initdata struct of_device_id canyonlands_of_bus[] = {
->  	{ .compatible = "ibm,plb4", },
->  	{ .compatible = "ibm,opb", },
-
-same here
-
-> @@ -49,6 +55,14 @@ static int __init canyonlands_probe(void)
->  
->  	ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
->  
-> +#ifdef CONFIG_PCI_MSI
-> +	/*
-> +	 * Setting callback functions for MSI support
-> +	 */
-> +	ppc_md.setup_msi_irqs = ppc4xx_setup_msi_irqs;
-> +	ppc_md.teardown_msi_irqs = ppc4xx_teardown_msi_irqs;
-> +#endif
-> +
->  	return 1;
->  }
->  
-
-If the header file looks like
-
-#ifdef CONFIG_PCI_MSI
-extern int ppc4xx_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
-extern void ppc4xx_teardown_msi_irqs(struct pci_dev *dev);
-#else
-#define ppc4xx_setup_msi_irqs NULL
-#define extern void ppc4xx_teardown_msi_irqs NULL
-#endif
-
-Then you don't need this #ifdef either.
+From: Josh Boyer [mailto:jwboyer@gmail.com]
+Sent: Fri 8/22/2008 6:30 AM
+To: Feng Kan
+Cc: linuxppc-embedded@ozlabs.org; Tirumala Reddy Marri; sr@denx.de
+Subject: Re: [PATCH] AMCC PPC460GT/EX PCI-E de-emphasis adjustment fix
 
 
 
-> diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-> index fb368df..bdb3663 100644
-> --- a/arch/powerpc/sysdev/ppc4xx_pci.c
-> +++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-> @@ -35,6 +35,11 @@
->  
->  static int dma_offset_set;
->  
-> +#ifdef CONFIG_PCI_MSI
-> +#include <linux/msi.h>
-> +#include "../../../drivers/pci/msi.h"
-> +#endif
-> +
+On Thu, Aug 21, 2008 at 09:53:34PM -0700, fkan@amcc.com wrote:
+>From: Tirumala R Marri <tmarri@amcc.com>
+>
+>During recent tests with PCI-E , it has been found the
+>DRV + De-Emphasis values are not optimum. These new values
+>are tested thouroughly.
+>
+>Signed-off-by: Tirumala R Marri <tmarri@amcc.com>
 
-#include should not be inside of #ifdef.
+If you are sending out a patch for someone, you need to include your
+Signed-off-by as well.  Just reply to this with it, no need to resend
+the just for this.
 
-You should also not #include a header from another directory through
-a relative path. Why do you think you need this?
+Stefan, this looks good to me.  Or at least as far as I can tell from
+the somewhat magic values :)  Any comments?
 
-> @@ -1704,6 +1723,97 @@ static void __init ppc4xx_probe_pciex_bridge(struct device_node *np)
->  	ppc4xx_pciex_port_setup_hose(port);
->  }
->  
-> +#ifdef CONFIG_PCI_MSI
-> +int ppc4xx_setup_peih(void)
-> +{
-> +	void __iomem *peih_base;
-> +
-> +	printk(KERN_INFO " %s \n",__FUNCTION__);	
-> +	/* Set base address for PEIH and enable PEIH */
-> +	SDR_WRITE(PESDR0_4XX_IHS1, PPC4XX_PEIH_REGBASE_HADDR);	
-> +	SDR_WRITE(PESDR0_4XX_IHS2, PPC4XX_PEIH_REGBASE_LADDR);	
-> +
-> +	/* Map in PCI-E Interrupt Handler Registers */
-> +	peih_base = ioremap(PPC4XX_PEIH_REGBASE, PPC4XX_PEIH_REGSIZE);
-> +	if(!peih_base) {
-> +		printk(KERN_ERR "%s: ioremap64 failed for addr 0x%08x\n",
-> +			__FUNCTION__, PPC4XX_PEIH_REGBASE);
-> +		return -ENODEV;
-> +	}
+josh
 
-Please use of_iomap to map the registers on the device.
 
-> +int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
-> +{
 
-I think this needs to go through ppc_md instead of just overriding
-the common function, probably something like
+------_=_NextPart_001_01C9046C.9610C681
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
-{
-	if (ppc_md->setup_msi_irq)
-		return ppc_md->setup_msi_irq(dev, desc);
-
-	return 0;
-}
-
-So that each platform can provide its own variant of it.
-
-> +int ppc4xx_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-> +{
-> +	struct msi_desc *entry;
-> +	int ret;
-> +
-> +	list_for_each_entry(entry, &dev->msi_list, list) {
-> +		ret = arch_setup_msi_irq(dev, entry);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +void ppc4xx_teardown_msi_irqs(struct pci_dev *dev)
-> +{
-> +	return;
-> +}
-
-These on the other hand don't look platform specific at all,
-so maybe you can put them as a generic implementation into
-arch/powerpc/kernel/msi.c.
-
-> +#ifdef CONFIG_PCI_MSI
-> +	ppc4xx_setup_peih();
-> +#endif
-> +
-
-Is it ok to call this function unconditionally? I can't see
-any check for whether there is an msi-controller device at
-all.
-
->  /*
-> + * 4xx PCIe IRQ Handler register definitions
-> + */
-> +#ifdef CONFIG_PCI_MSI
-> +
-> +#if defined(CONFIG_405EX)
-> +#define PESDR0_4XX_IHS1				0x04B0
-> +#define PESDR0_4XX_IHS2				0x04B1
-> +#define PPC4XX_PEIH_REGBASE			0x0EF620000
-> +#define PPC4XX_PEIH_REGBASE_HADDR   	0x0
-> +#define PPC4XX_PEIH_REGBASE_LADDR   	0xEF620000
-> +#define PPC4XX_PCIE_MSI_ADDR  			0x080000000
-> +#define PPC4XX_PCIE_MSI_HADDR  		0x0
-> +#define PPC4XX_PCIE_MSI_LADDR  		0x80000000
-> +
-> +#elif defined(CONFIG_460EX)
-> +#define PESDR0_4XX_IHS1				0x036C
-> +#define PESDR0_4XX_IHS2				0x036D
-> +#define PPC4XX_PEIH_REGBASE			0xC10000000
-> +#define PPC4XX_PEIH_REGBASE_HADDR   	0xC
-> +#define PPC4XX_PEIH_REGBASE_LADDR   	0x10000000
-> +#define PPC4XX_PCIE_MSI_ADDR  			0xe80000000
-> +#define PPC4XX_PCIE_MSI_HADDR  		0xe
-> +#define PPC4XX_PCIE_MSI_LADDR  		0x80000000
-> +#endif
-
-These should be read from the msi-controller node in the device tree.
-
-> diff --git a/include/asm-powerpc/dcr-native.h b/include/asm-powerpc/dcr-native.h
-> index 72d2b72..357ba36 100644
-> --- a/include/asm-powerpc/dcr-native.h
-> +++ b/include/asm-powerpc/dcr-native.h
-> @@ -111,6 +111,18 @@ static inline void __dcri_clrset(int base_addr, int base_data, int reg,
->  							      DCRN_ ## base ## _CONFIG_DATA,	\
->  							      reg, clr, set)
->  
-> +/* SDR read/write helper macros */
-> +
-> +#define DCRN_SDR_CONFIG_ADDR    0x00E
-> +#define DCRN_SDR_CONFIG_DATA    0x00F
-> +
-> +#define SDR_READ(offset) ({			\
-> +	mtdcr(DCRN_SDR_CONFIG_ADDR, offset);	\
-> +	mfdcr(DCRN_SDR_CONFIG_DATA);})
-> +#define SDR_WRITE(offset, data) ({		\
-> +	mtdcr(DCRN_SDR_CONFIG_ADDR, offset);	\
-> +	mtdcr(DCRN_SDR_CONFIG_DATA, data);})
-> +
->  #endif /* __ASSEMBLY__ */
->  #endif /* __KERNEL__ */
->  #endif /* _ASM_POWERPC_DCR_NATIVE_H */
-
-You should use dcr_map and friends to find the SDR register and define it in a
-platform independent way. There are systems using SDR that do not use dcr-native
-but dcr-mmio.
-
-	Arnd <><
+<HTML dir=3Dltr><HEAD><TITLE>Re: [PATCH] AMCC PPC460GT/EX PCI-E =
+de-emphasis adjustment fix</TITLE>=0A=
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
+<META content=3D"MSHTML 6.00.6000.16711" name=3DGENERATOR></HEAD>=0A=
+<BODY>=0A=
+<DIV id=3DidOWAReplyText70825 dir=3Dltr>=0A=
+<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
+size=3D2>Signed-off-by: Feng Kan <A =
+href=3D"mailto:fkan@amcc.com">fkan@amcc.com</A></FONT></DIV></DIV>=0A=
+<DIV dir=3Dltr><BR>=0A=
+<HR tabIndex=3D-1>=0A=
+<FONT face=3DTahoma size=3D2><B>From:</B> Josh Boyer =
+[mailto:jwboyer@gmail.com]<BR><B>Sent:</B> Fri 8/22/2008 6:30 =
+AM<BR><B>To:</B> Feng Kan<BR><B>Cc:</B> linuxppc-embedded@ozlabs.org; =
+Tirumala Reddy Marri; sr@denx.de<BR><B>Subject:</B> Re: [PATCH] AMCC =
+PPC460GT/EX PCI-E de-emphasis adjustment fix<BR></FONT><BR></DIV>=0A=
+<DIV>=0A=
+<P><FONT size=3D2>On Thu, Aug 21, 2008 at 09:53:34PM -0700, =
+fkan@amcc.com wrote:<BR>&gt;From: Tirumala R Marri =
+&lt;tmarri@amcc.com&gt;<BR>&gt;<BR>&gt;During recent tests with PCI-E , =
+it has been found the<BR>&gt;DRV + De-Emphasis values are not optimum. =
+These new values<BR>&gt;are tested =
+thouroughly.<BR>&gt;<BR>&gt;Signed-off-by: Tirumala R Marri =
+&lt;tmarri@amcc.com&gt;<BR><BR>If you are sending out a patch for =
+someone, you need to include your<BR>Signed-off-by as well.&nbsp; Just =
+reply to this with it, no need to resend<BR>the just for =
+this.<BR><BR>Stefan, this looks good to me.&nbsp; Or at least as far as =
+I can tell from<BR>the somewhat magic values :)&nbsp; Any =
+comments?<BR><BR>josh<BR></FONT></P></DIV></BODY></HTML>
+------_=_NextPart_001_01C9046C.9610C681--
