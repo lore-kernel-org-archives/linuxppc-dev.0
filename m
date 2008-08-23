@@ -1,18 +1,20 @@
-Return-Path: <dok@directfb.org>
-Received: from directfb.org (directfb.org [212.227.87.76])
-	by ozlabs.org (Postfix) with SMTP id 3E7FDDDDEF
+Return-Path: <vbendeb@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.227])
+	by ozlabs.org (Postfix) with ESMTP id DCE49DDED4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Aug 2008 21:56:04 +1000 (EST)
-Message-ID: <48AFF957.6060505@directfb.org>
-Date: Sat, 23 Aug 2008 13:49:43 +0200
-From: Denis Oliver Kropp <dok@directfb.org>
+	Sun, 24 Aug 2008 06:22:41 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so1069998rvb.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 23 Aug 2008 13:22:40 -0700 (PDT)
+Message-ID: <f608b67d0808231322l239d1014ydf84f53299adc053@mail.gmail.com>
+Date: Sat, 23 Aug 2008 13:22:40 -0700
+From: vb <vb@vsbe.com>
+Sender: vbendeb@gmail.com
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Re: TLB programming in powerpc tree
 MIME-Version: 1.0
-To: =?UTF-8?B?5YiY5bCP5Y+M?= <liuxs226@gmail.com>
-Subject: Re: [directfb-dev] no output on screen
-References: <e81b2fb40808222019hd8b7eb9va649b0771ed83f49@mail.gmail.com>
-In-Reply-To: <e81b2fb40808222019hd8b7eb9va649b0771ed83f49@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: directfb-dev@directfb.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,44 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-刘小双 wrote:
-> hi, all
-> I am writing a gfxdriver for Fujitsu mb86296 video card under DirectFB. 
-> When I run a example df_fire from DirectFB-examples-1.0.0.tar.gz, there 
-> is  no output on the computer screen, it is black completely, and the 
-> error result looks like this:
-> 
-> sh-3.00# ./df_fire
-> 
->      =======================|  DirectFB 1.0.0  |=======================
->           (c) 2001-2007  The DirectFB Organization (directfb.org 
-> <http://directfb.org>)
->           (c) 2000-2004  Convergence (integrated media) GmbH
->         ------------------------------------------------------------
-> 
-> (*) DirectFB/Core: Single Application Core. (2008-06-03 03:01) [ TRACE ]
-> (*) Direct/Memcpy: Using ppcasm_memcpy()
-> (*) Direct/Thread: Running 'VT Switcher' (CRITICAL, 502)...
-> (*) Direct/Thread: Running 'PS/2 Input' (INPUT, 503)...
-> (*) DirectFB/Input: IMPS/2 Mouse 1.0 (directfb.org <http://directfb.org>)
-> (*) Direct/Thread: Running 'Keyboard Input' (INPUT, 504)...
-> (*) DirectFB/Input: Keyboard 0.9 (directfb.org <http://directfb.org>)
-> (*) DirectFB/Graphics: Fujitsu MB86296 0.5 (Atom Create)
-> (!) [  493:    0.000] --> Caught signal 11 (at (nil), invalid address) <--
-> (-) [  493: -STACK- ]
->   #0  0x0fecef48 in signal_handler () from 
-> /mnt/gtkdfb/lib/libdirect-1.0.so.0
-> [0xfec4000]
->   #1  0x0ffc5b40 in dfb_screens_initialize () from
-> /mnt/gtkdfb/lib/libdirectfb-1.0.so.0 [0xff5f000]
+On Fri, Aug 22, 2008 at 6:24 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> On Thu, Aug 21, 2008 at 10:14:15PM -0700, vb wrote:
+>>On Thu, Aug 21, 2008 at 7:29 PM, vb <vb@vsbe.com> wrote:
+>>>
+>>> But the main problem is that the kernel never sets up TLBs for neither
+>>> the peripheral device, nor the onboard flash. I don't seem to be able
+>>> to find the place where this is supposed to happen. I assumed that
+>>> ioremap_nocache would take care of that, but this is not the case.
+>>>
+>>
+>>well, in fact the TLB is set up as soon as an attempt to access the
+>>peripheral is made. The problem apparently is the fact that the TLB
+>>entry uses a wrong value in the nibble specifying the internal 460GT
+>>block...
+>
+> I'm not entirely sure what you mean here.  Can you elaborate a bit more?
+>
 
-The code you sent is looking fine. Please try a build with debug enabled (assertions).
+I was referring to the top 4 MSB of the 36 bit address.
 
--- 
-Best regards,
-   Denis Oliver Kropp
+So, I finally was able to access that device after massaging the
+device tree definitions for it, but the next device (in a different
+branch of the tree) still can not be accessed. What I see is that the
+tlb record is created when the access is attempted, but the top
+address nibble is 0 instead of 4, even though the device tree now
+includes 36 bit addresses with the correct top bits.
 
-.------------------------------------------.
-| DirectFB - Hardware accelerated graphics |
-| http://www.directfb.org/                 |
-"------------------------------------------"
+I am trying to find code which configures the MMU and to understand
+how this whole subsystem works and where the wrong top 4 bits come
+from. Is there a document describing 44x powerpc memory management?
+
+/vb
+
+> josh
+>
