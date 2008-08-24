@@ -1,34 +1,21 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E856EDDDE0
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 02:08:00 +1000 (EST)
-Received: from mail-in-02-z2.arcor-online.net (mail-in-02-z2.arcor-online.net
-	[151.189.8.14])
-	by mail-in-10.arcor-online.net (Postfix) with ESMTP id 2F6B61F58BA
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Aug 2008 18:07:54 +0200 (CEST)
-Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
-	[151.189.21.41])
-	by mail-in-02-z2.arcor-online.net (Postfix) with ESMTP id 1409E11462F
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Aug 2008 18:07:54 +0200 (CEST)
-Received: from bunny.home (dslb-088-070-072-108.pools.arcor-ip.net
-	[88.70.72.108])
-	by mail-in-01.arcor-online.net (Postfix) with ESMTP id E372B1075FD
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Aug 2008 18:07:53 +0200 (CEST)
-Received: from fox.home (fox.home [192.168.2.13])
-	by bunny.home (Postfix) with ESMTPS id 2F7B425104DE
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Aug 2008 18:11:59 +0200 (CEST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-To: linuxppc-dev@ozlabs.org
-Subject: ppc4xx_pci: disable PCI (PnP) via fdt
-Date: Sun, 24 Aug 2008 18:07:52 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200808241807.52547.matthias.fuchs@esd-electronics.com>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id DB194DDDF5
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 04:55:50 +1000 (EST)
+To: Zhou Rui <vancasperz@yahoo.com.cn>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Why does one "stw" fail with address translation disabled in
+	PPC405EP?
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <1219479992.7565.17.camel@localhost>
+References: <1219429635.8882.22.camel@zr.gii.upv.es>
+	<20080822184213.GA24526@yoda.jdub.homelinux.org>
+	<1219479992.7565.17.camel@localhost>
+Date: Sun, 24 Aug 2008 20:55:47 +0200
+Sender: wd@denx.de
+Message-Id: <20080824185547.94A0724899@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,30 +25,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Dear Zhou Rui,
 
-is it possible to disable PCI PnP via the device tree on a 4xx system?
+In message <1219479992.7565.17.camel@localhost> you wrote:
+>
+> > >    I am running a kernel module which will execute a user space
+> > >application. The entry point of the application is 0x100000a0. At the
+> > 
+> > That should be the first clue that you are doing it wrong.  Don't do
+> > stuff like that in modules...
+> 
+> Oh, but our project needs a function like that ...
 
-I am working with a 440EPx board that can be system CPU (with PCI hostbridge)
-or a PCI adapter board. In the latter setup I want to disable PCI PnP, 
-preferred by manipulating the fdt by U-Boot. The PCI mode is 
-detected by U-Boot through a GPIO signal. I do not want to remove the 
-complete /plb/pci... path of the device tree for adapter mode , because I do 
-not want the PCI bus to be totally invisible. lspci and friends should still 
-show devices on the local PCI bus.
+You should really think about this. Why do you think you  need  this?
+What  exactly  are  you  trying  to  do?  [Probably  there are better
+approaches to solve your problem...]
 
-The 4xx PCIE fdt handling handles a 'status' and 'device_type' property.
-These properties behave not the way I need and also they are only
-available for PCIE. 
+> It is physical address at this moment. Address translation is disabled
+> automatically (MSR[IR, DR] = [0, 0]) because of TLB Miss Exception and
+> Instrunction Storage Exception.
 
-With arch/ppc kernels I did this by returning '1' from 
-ppc_md.pci_exclude_device when PCI PnP should not be done.
-Even though I could do it the same way with arch/powerpc, I hope
-that there is a fdt-way.
+Hm.. are you absolutely sure that the 0x100000a0 mentioned above is a
+physical address?
 
-Any ideas?
+> > Do you have enough DRAM to cover that?  Some of those boards only come
+> > with 32MiB of DRAM.
+> 
+> My board only has 32MB DRAM. Do you mean 32MB is not enough for that?
 
-BTW, isn't it a good idea to handle the 'status' and 'device_type' property 
-for PCI in the same way as for PCIE?
+Well, 0x1000'00A0 is above 256 MB, while you  have  only  32  MB  RAM
+which is most probably mapped from 0x0000'0000...0x01FF'FFFF... So
+what you claim to be a physical address (and I think your claim is
+wrong) is far outside available physical memory.
 
-Matthias
+> The same codes can run well in a PPC440EP (Yosemite Board) which owns
+> 256MB DRAM. At the beginning of my work, I thought memory size may be
+> the cause of failure. But I did not know how to demonstrate it. So if
+> the limitation of 32MB DRAM leads to the failure, are there any methods
+> for the codes to solve it?
+
+I think you got lost on the wrong track. Please describe  which  task
+you  want  to  implement, and there might be another, better approach
+for it.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The management question ... is not _whether_ to build a pilot  system
+and  throw  it away. You _will_ do that. The only question is whether
+to plan in advance to build a throwaway, or to promise to deliver the
+throwaway to customers.       - Fred Brooks, "The Mythical Man Month"
