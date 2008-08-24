@@ -1,20 +1,34 @@
-Return-Path: <mb@bu3sch.de>
-Received: from vs166246.vserver.de (bu3sch.de [62.75.166.246])
-	by ozlabs.org (Postfix) with ESMTP id A421BDDD04
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 01:00:52 +1000 (EST)
-From: Michael Buesch <mb@bu3sch.de>
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: Random crashes with 2.6.27-rc3 on PPC
-Date: Sun, 24 Aug 2008 17:00:22 +0200
-References: <200808231610.46473.mb@bu3sch.de> <200808241544.12412.mb@bu3sch.de>
-	<je7ia6bhdd.fsf@sykes.suse.de>
-In-Reply-To: <je7ia6bhdd.fsf@sykes.suse.de>
+Return-Path: <matthias.fuchs@esd-electronics.com>
+Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
+	[151.189.21.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E856EDDDE0
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 02:08:00 +1000 (EST)
+Received: from mail-in-02-z2.arcor-online.net (mail-in-02-z2.arcor-online.net
+	[151.189.8.14])
+	by mail-in-10.arcor-online.net (Postfix) with ESMTP id 2F6B61F58BA
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Aug 2008 18:07:54 +0200 (CEST)
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
+	by mail-in-02-z2.arcor-online.net (Postfix) with ESMTP id 1409E11462F
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Aug 2008 18:07:54 +0200 (CEST)
+Received: from bunny.home (dslb-088-070-072-108.pools.arcor-ip.net
+	[88.70.72.108])
+	by mail-in-01.arcor-online.net (Postfix) with ESMTP id E372B1075FD
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Aug 2008 18:07:53 +0200 (CEST)
+Received: from fox.home (fox.home [192.168.2.13])
+	by bunny.home (Postfix) with ESMTPS id 2F7B425104DE
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Aug 2008 18:11:59 +0200 (CEST)
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+To: linuxppc-dev@ozlabs.org
+Subject: ppc4xx_pci: disable PCI (PnP) via fdt
+Date: Sun, 24 Aug 2008 18:07:52 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808241700.22815.mb@bu3sch.de>
-Cc: Linus Torvalds <torvalds@osdl.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+  charset="us-ascii"
+Message-Id: <200808241807.52547.matthias.fuchs@esd-electronics.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +38,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 24 August 2008 16:46:38 Andreas Schwab wrote:
-> Michael Buesch <mb@bu3sch.de> writes:
-> 
-> > The following workaround seems to fix the crashes on powerpc.
-> > However, this patch is clearly not what we want for other architectures,
-> > as they might need -fno-omit-frame-pointer to function properly.
-> 
-> This has a better chance to be accepted. :-)
-> 
-> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> index 8b5a7d3..f9a2e48 100644
-> --- a/lib/Kconfig.debug
-> +++ b/lib/Kconfig.debug
-> @@ -394,7 +394,7 @@ config LOCKDEP
->  	bool
->  	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
->  	select STACKTRACE
-> -	select FRAME_POINTER if !X86 && !MIPS
-> +	select FRAME_POINTER if !X86 && !MIPS && !PPC
->  	select KALLSYMS
->  	select KALLSYMS_ALL
+Hi,
 
-This is not what my patch is doing.
-Your patch always forces FRAME_POINTER off. At least as far as lockdep is concerned.
-What about other parts of the kernel that enable FRAME_POINTER?
+is it possible to disable PCI PnP via the device tree on a 4xx system?
 
-I think this should be fixed in the makefile by substitution of
--fno-omit-frame-pointer on PPC (and probably depending on the compiler
-version).
+I am working with a 440EPx board that can be system CPU (with PCI hostbridge)
+or a PCI adapter board. In the latter setup I want to disable PCI PnP, 
+preferred by manipulating the fdt by U-Boot. The PCI mode is 
+detected by U-Boot through a GPIO signal. I do not want to remove the 
+complete /plb/pci... path of the device tree for adapter mode , because I do 
+not want the PCI bus to be totally invisible. lspci and friends should still 
+show devices on the local PCI bus.
 
-Otherwise, if somebody else decides to do select FRAME_POINTER in some other
-code, the bug will reappear.
-I'm also not sure if it's desired to always force FRAME_POINTER off.
+The 4xx PCIE fdt handling handles a 'status' and 'device_type' property.
+These properties behave not the way I need and also they are only
+available for PCIE. 
 
--- 
-Greetings Michael.
+With arch/ppc kernels I did this by returning '1' from 
+ppc_md.pci_exclude_device when PCI PnP should not be done.
+Even though I could do it the same way with arch/powerpc, I hope
+that there is a fdt-way.
+
+Any ideas?
+
+BTW, isn't it a good idea to handle the 'status' and 'device_type' property 
+for PCI in the same way as for PCIE?
+
+Matthias
