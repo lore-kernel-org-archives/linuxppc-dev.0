@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E1888DDDDF
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 08:38:08 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 3661CDDDDC
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 08:39:58 +1000 (EST)
 Subject: Re: Random crashes with 2.6.27-rc3 on PPC
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Buesch <mb@bu3sch.de>
-In-Reply-To: <200808241544.12412.mb@bu3sch.de>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <je7ia6bhdd.fsf@sykes.suse.de>
 References: <200808231610.46473.mb@bu3sch.de>
 	<1219531969.21386.205.camel@pasglop> <200808241544.12412.mb@bu3sch.de>
+	<je7ia6bhdd.fsf@sykes.suse.de>
 Content-Type: text/plain
-Date: Mon, 25 Aug 2008 08:37:52 +1000
-Message-Id: <1219617472.21386.226.camel@pasglop>
+Date: Mon, 25 Aug 2008 08:39:46 +1000
+Message-Id: <1219617586.21386.228.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
 	linux-kernel <linux-kernel@vger.kernel.org>
@@ -26,32 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> Thanks for your random guess.
-> The following workaround seems to fix the crashes on powerpc.
-> However, this patch is clearly not what we want for other architectures,
-> as they might need -fno-omit-frame-pointer to function properly.
-
-Well, and -pg requires it, even on powerpc, so that won't work for
-ftrace. Any chance you can try the workaround that segher proposed
-though ?
-
-http://penguinppc.de/~segher/0001-powerpc-Workaround-for-the-ftrace-problem.patch
-
-His workaround only kicks in with CONFIG_FTRACE, that would have to be
-fixed of course. Also, I suspect the bits that have -pg in a flag
-"remove" section should have also "fno-omit-frame-pointer" in that
-remove section too.
-
-> I reproduced the random crashes of kernel and userspace applications
-> (without the following patch) on a vanilla 2.6.26 and 2.6.27-rc{1-4}
-> kernel. I did _not_ try a 2.6.25 kernel with -fno-omit-frame-pointer, so
-> I don't know if it would also crash then.
+On Sun, 2008-08-24 at 16:46 +0200, Andreas Schwab wrote:
+> Michael Buesch <mb@bu3sch.de> writes:
 > 
-> I'm currently running more tests on a patched 2.6.27-rc4 kernel, but it
-> didn't crash, yet. I already did 5 complete kernel tree compilations. It
-> should have crashed by now, but it didn't :)
+> > The following workaround seems to fix the crashes on powerpc.
+> > However, this patch is clearly not what we want for other architectures,
+> > as they might need -fno-omit-frame-pointer to function properly.
+> 
+> This has a better chance to be accepted. :-)
 
-Thanks !
+Unfortunately, that won't solve the FTRACE problem.
 
 Ben.
+
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index 8b5a7d3..f9a2e48 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -394,7 +394,7 @@ config LOCKDEP
+>  	bool
+>  	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
+>  	select STACKTRACE
+> -	select FRAME_POINTER if !X86 && !MIPS
+> +	select FRAME_POINTER if !X86 && !MIPS && !PPC
+>  	select KALLSYMS
+>  	select KALLSYMS_ALL
+>  
+> 
+> > Index: linux-2.6/kernel/Makefile
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/Makefile	2008-08-24 11:50:23.000000000 +0200
+> > +++ linux-2.6/kernel/Makefile	2008-08-24 12:15:54.000000000 +0200
+> > @@ -92,13 +92,13 @@ obj-$(CONFIG_SMP) += sched_cpupri.o
+> >  ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
+> >  # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+> >  # needed for x86 only.  Why this used to be enabled for all architectures is beyond
+> >  # me.  I suspect most platforms don't need this, but until we know that for sure
+> >  # I turn this off for IA-64 only.  Andreas Schwab says it's also needed on m68k
+> >  # to get a correct value for the wait-channel (WCHAN in ps). --davidm
+> > -CFLAGS_sched.o := $(PROFILING) -fno-omit-frame-pointer
+> > +CFLAGS_sched.o := $(PROFILING)
+> 
+> CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER is already enabled on powerpc.
+> 
+> Andreas.
+> 
