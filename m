@@ -1,20 +1,22 @@
-Return-Path: <mb@bu3sch.de>
-Received: from vs166246.vserver.de (bu3sch.de [62.75.166.246])
-	by ozlabs.org (Postfix) with ESMTP id 5967CDDD04
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 00:07:28 +1000 (EST)
-From: Michael Buesch <mb@bu3sch.de>
-To: benh@kernel.crashing.org
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (mx1.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 46E7FDDDF3
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 00:46:47 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Michael Buesch <mb@bu3sch.de>
 Subject: Re: Random crashes with 2.6.27-rc3 on PPC
-Date: Sun, 24 Aug 2008 15:44:11 +0200
 References: <200808231610.46473.mb@bu3sch.de>
-	<1219531969.21386.205.camel@pasglop>
-In-Reply-To: <1219531969.21386.205.camel@pasglop>
+	<1219531969.21386.205.camel@pasglop> <200808241544.12412.mb@bu3sch.de>
+Date: Sun, 24 Aug 2008 16:46:38 +0200
+In-Reply-To: <200808241544.12412.mb@bu3sch.de> (Michael Buesch's message of
+	"Sun, 24 Aug 2008 15:44:11 +0200")
+Message-ID: <je7ia6bhdd.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Message-Id: <200808241544.12412.mb@bu3sch.de>
-Content-Type: text/plain;
-  charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Linus Torvalds <torvalds@osdl.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,72 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 24 August 2008, Benjamin Herrenschmidt wrote:
-> Random guess:
-> 
-> CONFIG_FRAME_POINTER=y
-> CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-> 
-> Note sure what those together do, check if you have any file compiled
-> with -fno-omit-frame-pointer and if you do, try to change things so
-> that you don't ... we found some miscompiles when that is set, exposed
-> by FTRACE typically (which you don't have enabled) but possibly by other
-> things.
+Michael Buesch <mb@bu3sch.de> writes:
 
+> The following workaround seems to fix the crashes on powerpc.
+> However, this patch is clearly not what we want for other architectures,
+> as they might need -fno-omit-frame-pointer to function properly.
 
-Thanks for your random guess.
-The following workaround seems to fix the crashes on powerpc.
-However, this patch is clearly not what we want for other architectures,
-as they might need -fno-omit-frame-pointer to function properly.
+This has a better chance to be accepted. :-)
 
-I reproduced the random crashes of kernel and userspace applications
-(without the following patch) on a vanilla 2.6.26 and 2.6.27-rc{1-4}
-kernel. I did _not_ try a 2.6.25 kernel with -fno-omit-frame-pointer, so
-I don't know if it would also crash then.
-
-I'm currently running more tests on a patched 2.6.27-rc4 kernel, but it
-didn't crash, yet. I already did 5 complete kernel tree compilations. It
-should have crashed by now, but it didn't :)
-
-The compiler is:
-gcc (GCC) 4.1.3 20070929 (prerelease) (Ubuntu 4.1.2-16ubuntu2)
-
-
-Index: linux-2.6/Makefile
-===================================================================
---- linux-2.6.orig/Makefile	2008-08-24 11:49:53.000000000 +0200
-+++ linux-2.6/Makefile	2008-08-24 12:16:42.000000000 +0200
-@@ -523,13 +523,13 @@ endif
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 8b5a7d3..f9a2e48 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -394,7 +394,7 @@ config LOCKDEP
+ 	bool
+ 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
+ 	select STACKTRACE
+-	select FRAME_POINTER if !X86 && !MIPS
++	select FRAME_POINTER if !X86 && !MIPS && !PPC
+ 	select KALLSYMS
+ 	select KALLSYMS_ALL
  
- # Force gcc to behave correct even for buggy distributions
- # Arch Makefiles may override this setting
- KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
- 
- ifdef CONFIG_FRAME_POINTER
--KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
-+KBUILD_CFLAGS	+= -fno-optimize-sibling-calls
- else
- KBUILD_CFLAGS	+= -fomit-frame-pointer
- endif
- 
- ifdef CONFIG_DEBUG_INFO
- KBUILD_CFLAGS	+= -g
-Index: linux-2.6/kernel/Makefile
-===================================================================
---- linux-2.6.orig/kernel/Makefile	2008-08-24 11:50:23.000000000 +0200
-+++ linux-2.6/kernel/Makefile	2008-08-24 12:15:54.000000000 +0200
-@@ -92,13 +92,13 @@ obj-$(CONFIG_SMP) += sched_cpupri.o
- ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
- # needed for x86 only.  Why this used to be enabled for all architectures is beyond
- # me.  I suspect most platforms don't need this, but until we know that for sure
- # I turn this off for IA-64 only.  Andreas Schwab says it's also needed on m68k
- # to get a correct value for the wait-channel (WCHAN in ps). --davidm
--CFLAGS_sched.o := $(PROFILING) -fno-omit-frame-pointer
-+CFLAGS_sched.o := $(PROFILING)
- endif
- 
- $(obj)/configs.o: $(obj)/config_data.h
- 
- # config_data.h contains the same information as ikconfig.h but gzipped.
- # Info from config_data can be extracted from /proc/config*
+
+> Index: linux-2.6/kernel/Makefile
+> ===================================================================
+> --- linux-2.6.orig/kernel/Makefile	2008-08-24 11:50:23.000000000 +0200
+> +++ linux-2.6/kernel/Makefile	2008-08-24 12:15:54.000000000 +0200
+> @@ -92,13 +92,13 @@ obj-$(CONFIG_SMP) += sched_cpupri.o
+>  ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
+>  # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+>  # needed for x86 only.  Why this used to be enabled for all architectures is beyond
+>  # me.  I suspect most platforms don't need this, but until we know that for sure
+>  # I turn this off for IA-64 only.  Andreas Schwab says it's also needed on m68k
+>  # to get a correct value for the wait-channel (WCHAN in ps). --davidm
+> -CFLAGS_sched.o := $(PROFILING) -fno-omit-frame-pointer
+> +CFLAGS_sched.o := $(PROFILING)
+
+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER is already enabled on powerpc.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
