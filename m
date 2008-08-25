@@ -1,15 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id EB16ADE7D5
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 01:27:37 +1000 (EST)
-Date: Mon, 25 Aug 2008 19:27:36 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [RFC PATCH 2/2] powerpc/83xx: mpc836x_mds: add support for USB Host
-Message-ID: <20080825152736.GB25178@oksana.dev.rtsoft.ru>
+Return-Path: <sebastien.chretien.enseirb@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
+	by ozlabs.org (Postfix) with ESMTP id 77545DE8B6
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 01:37:27 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so1065338pyi.27
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 08:37:25 -0700 (PDT)
+Message-ID: <319b0ac50808250837r73d88349p1ecad4214d5f7ae3@mail.gmail.com>
+Date: Mon, 25 Aug 2008 17:37:25 +0200
+From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
+	<sebastien.chretien.enseirb@gmail.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Re: initramfs vs initrd
+In-Reply-To: <319b0ac50808250729i2043c4d6h57577e0a2eda7ed8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_13388_24653994.1219678645056"
+References: <319b0ac50808250557g4bd1d267t14e3bd8887c76e24@mail.gmail.com>
+	<20080825131018.GA4199@yoda.jdub.homelinux.org>
+	<319b0ac50808250729i2043c4d6h57577e0a2eda7ed8@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,172 +27,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Various changes to support QE USB Host on a MPC8360E-MDS board:
+------=_Part_13388_24653994.1219678645056
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-- Update the device tree per QE USB bindings;
-- Configure QE Par IO;
-- Set up BCSR for both USB Host and Peripheral modes;
-- Add timer (GTM) node;
-- Add gpio-controller node for BCSR13 bank;
-- Select FSL_GTM, QE_GPIO and OF_SIMPLE_GPIO.
+When the kernel is booting, is it possible to check if the initrd is good ?
 
-The work is loosely based on Li Yang's patch[1], which is used
-to support peripheral mode only.
+2008/8/25, S=E9bastien Chr=E9tien <sebastien.chretien.enseirb@gmail.com>:
+>
+> ok thank you
+>
+>
+>
+> 2008/8/25, Josh Boyer <jwboyer@linux.vnet.ibm.com>:
+>>
+>> On Mon, Aug 25, 2008 at 02:57:14PM +0200,
+>> =3D?ISO-8859-1?Q?S=3DE9bastien_Chr=3DE9tien_ wrote:
+>> >Hello,
+>> >
+>> >What is the difference between initramfs and initrd ?
+>>
+>>
+>> You could poke around in the Documentation directory of the kernel.  Tha=
+t
+>> should answer your question.
+>>
+>> Briefly, initramfs is a gzipped cpio archive.  initrd is typically a
+>> compressed ext2 filesystem and requires a ramdisk to be unpacked to.
+>>
+>> josh
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>>
+>
+>
 
-[1] http://ozlabs.org/pipermail/linuxppc-dev/2008-August/061357.html
+------=_Part_13388_24653994.1219678645056
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-The s-o-b line of the original patch preserved here.
+When the kernel is booting, is it possible to check if the initrd is good ?=
+<br><br><div><span class=3D"gmail_quote">2008/8/25, S=E9bastien Chr=E9tien =
+&lt;<a href=3D"mailto:sebastien.chretien.enseirb@gmail.com">sebastien.chret=
+ien.enseirb@gmail.com</a>&gt;:</span><blockquote class=3D"gmail_quote" styl=
+e=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; =
+padding-left: 1ex;">
+ok thank you<br>
+<br>
+<br>
+<br><div><span class=3D"gmail_quote">2008/8/25, Josh Boyer &lt;<a href=3D"m=
+ailto:jwboyer@linux.vnet.ibm.com" target=3D"_blank" onclick=3D"return top.j=
+s.OpenExtLink(window,event,this)">jwboyer@linux.vnet.ibm.com</a>&gt;:</span=
+><div>
+<span class=3D"e" id=3D"q_11bfa4533d1145ea_1"><blockquote class=3D"gmail_qu=
+ote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0p=
+t 0.8ex; padding-left: 1ex;">
+On Mon, Aug 25, 2008 at 02:57:14PM +0200, =3D?ISO-8859-1?Q?S=3DE9bastien_Ch=
+r=3DE9tien_ wrote:<br> &gt;Hello,<br> &gt;<br> &gt;What is the difference b=
+etween initramfs and initrd ?<br> <br> <br>You could poke around in the Doc=
+umentation directory of the kernel.&nbsp;&nbsp;That<br>
 
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/boot/dts/mpc836x_mds.dts     |   44 +++++++++++++++++++++++++++-
- arch/powerpc/platforms/83xx/Kconfig       |    3 ++
- arch/powerpc/platforms/83xx/mpc836x_mds.c |   31 +++++++++++++++++++-
- 3 files changed, 75 insertions(+), 3 deletions(-)
+ should answer your question.<br> <br> Briefly, initramfs is a gzipped cpio=
+ archive.&nbsp;&nbsp;initrd is typically a<br> compressed ext2 filesystem a=
+nd requires a ramdisk to be unpacked to.<br> <br> josh<br> ________________=
+_______________________________<br>
 
-diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
-index ada8446..0be98f3 100644
---- a/arch/powerpc/boot/dts/mpc836x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
-@@ -69,8 +69,19 @@
- 		};
- 
- 		bcsr@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
- 			device_type = "board-control";
- 			reg = <1 0 0x8000>;
-+			ranges = <0 1 0 0x8000>;
-+
-+			bcsr13: gpio-controller@d {
-+				#gpio-cells = <2>;
-+				compatible = "fsl,mpc8360mds-bcsr-gpio",
-+					     "simple-gpio-bank";
-+				reg = <0xd 1>;
-+				gpio-controller;
-+			};
- 		};
- 	};
- 
-@@ -191,10 +202,21 @@
- 		};
- 
- 		par_io@1400 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
- 			reg = <0x1400 0x100>;
-+			ranges = <0 0x1400 0x100>;
- 			device_type = "par_io";
- 			num-ports = <7>;
- 
-+			qe_pio_b: gpio-controller@18 {
-+				#gpio-cells = <2>;
-+				compatible = "fsl,mpc8360-qe-pario-bank",
-+					     "fsl,mpc8323-qe-pario-bank";
-+				reg = <0x18 0x18>;
-+				gpio-controller;
-+			};
-+
- 			pio1: ucc_pin@01 {
- 				pio-map = <
- 			/* port  pin  dir  open_drain  assignment  has_irq */
-@@ -278,6 +300,15 @@
- 			};
- 		};
- 
-+		timer@440 {
-+			compatible = "fsl,mpc8360-qe-gtm",
-+				     "fsl,qe-gtm", "fsl,gtm";
-+			reg = <0x440 0x40>;
-+			clock-frequency = <132000000>;
-+			interrupts = <12 13 14 15>;
-+			interrupt-parent = <&qeic>;
-+		};
-+
- 		spi@4c0 {
- 			cell-index = <0>;
- 			compatible = "fsl,spi";
-@@ -297,11 +328,20 @@
- 		};
- 
- 		usb@6c0 {
--			compatible = "qe_udc";
-+			compatible = "fsl,mpc8360-qe-usb",
-+				     "fsl,mpc8323-qe-usb";
- 			reg = <0x6c0 0x40 0x8b00 0x100>;
- 			interrupts = <11>;
- 			interrupt-parent = <&qeic>;
--			mode = "slave";
-+			fsl,fullspeed-clock = "clk21";
-+			fsl,lowspeed-clock = "brg9";
-+			gpios = <&qe_pio_b  2 0   /* USBOE */
-+				 &qe_pio_b  3 0   /* USBTP */
-+				 &qe_pio_b  8 0   /* USBTN */
-+				 &qe_pio_b  9 0   /* USBRP */
-+				 &qe_pio_b 11 0   /* USBRN */
-+				 &bcsr13    5 0   /* SPEED */
-+				 &bcsr13    4 1>; /* POWER */
- 		};
- 
- 		enet0: ucc@2000 {
-diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index 6159c5d..558458d 100644
---- a/arch/powerpc/platforms/83xx/Kconfig
-+++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -58,6 +58,9 @@ config MPC836x_MDS
- 	bool "Freescale MPC836x MDS"
- 	select DEFAULT_UIMAGE
- 	select QUICC_ENGINE
-+	select QE_GPIO
-+	select OF_SIMPLE_GPIO
-+	select FSL_GTM
- 	help
- 	  This option enables support for the MPC836x MDS Processor Board.
- 
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-index 9d46e5b..58aabfb 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-@@ -127,9 +127,38 @@ static void __init mpc836x_mds_setup_arch(void)
- 			iounmap(immap);
- 		}
- 
--		iounmap(bcsr_regs);
- 		of_node_put(np);
- 	}
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc8323-qe-usb");
-+	if (np) {
-+		const char *mode = of_get_property(np, "mode", NULL);
-+
-+		par_io_config_pin(1,  2, 1, 0, 3, 0); /* USBOE  */
-+		par_io_config_pin(1,  3, 1, 0, 3, 0); /* USBTP  */
-+		par_io_config_pin(1,  8, 1, 0, 1, 0); /* USBTN  */
-+		par_io_config_pin(1, 10, 2, 0, 3, 0); /* USBRXD */
-+		par_io_config_pin(1,  9, 2, 1, 3, 0); /* USBRP  */
-+		par_io_config_pin(1, 11, 2, 1, 3, 0); /* USBRN  */
-+		par_io_config_pin(2, 20, 2, 0, 1, 0); /* CLK21  */
-+
-+#define BCSR13_USBMASK	0x0f
-+#define BCSR13_nUSBEN	0x08 /* 1 - Disable, 0 - Enable			*/
-+#define BCSR13_USBSPEED 0x04 /* 1 - Full, 0 - Low			*/
-+#define BCSR13_USBMODE	0x02 /* 1 - Host, 0 - Function			*/
-+#define BCSR13_nUSBVCC	0x01 /* 1 - gets VBUS, 0 - supplies VBUS 	*/
-+
-+		clrsetbits_8(&bcsr_regs[13], BCSR13_USBMASK, BCSR13_USBSPEED);
-+
-+		if (mode && !strcmp(mode, "peripheral"))
-+			setbits8(&bcsr_regs[13], BCSR13_nUSBVCC);
-+		else
-+			setbits8(&bcsr_regs[13], BCSR13_USBMODE);
-+
-+		of_node_put(np);
-+	}
-+
-+	iounmap(bcsr_regs);
- #endif				/* CONFIG_QUICC_ENGINE */
- }
- 
--- 
-1.5.6.3
+ Linuxppc-dev mailing list<br> <a href=3D"mailto:Linuxppc-dev@ozlabs.org" t=
+arget=3D"_blank" onclick=3D"return top.js.OpenExtLink(window,event,this)">L=
+inuxppc-dev@ozlabs.org</a><br> <a href=3D"https://ozlabs.org/mailman/listin=
+fo/linuxppc-dev" target=3D"_blank" onclick=3D"return top.js.OpenExtLink(win=
+dow,event,this)">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a><br>
+ </blockquote>
+</span></div></div><br>
+</blockquote></div><br>
+
+------=_Part_13388_24653994.1219678645056--
