@@ -1,23 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3661CDDDDC
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 08:39:58 +1000 (EST)
-Subject: Re: Random crashes with 2.6.27-rc3 on PPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <je7ia6bhdd.fsf@sykes.suse.de>
-References: <200808231610.46473.mb@bu3sch.de>
-	<1219531969.21386.205.camel@pasglop> <200808241544.12412.mb@bu3sch.de>
-	<je7ia6bhdd.fsf@sykes.suse.de>
-Content-Type: text/plain
-Date: Mon, 25 Aug 2008 08:39:46 +1000
-Message-Id: <1219617586.21386.228.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18610.20951.764057.574721@cargo.ozlabs.ibm.com>
+Date: Mon, 25 Aug 2008 16:31:51 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Cbe-oss-dev] powerpc/cell/oprofile: fix mutex locking for
+	spu-oprofile
+In-Reply-To: <200808211014.42683.arnd@arndb.de>
+References: <1217620879.15667.145.camel@carll-linux-desktop>
+	<200808201519.19453.arnd@arndb.de>
+	<18604.60738.523963.886786@drongo.ozlabs.ibm.com>
+	<200808211014.42683.arnd@arndb.de>
+Cc: Robert Richter <robert.richter@amd.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
+	cel <cel@linux.vnet.ibm.com>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,48 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2008-08-24 at 16:46 +0200, Andreas Schwab wrote:
-> Michael Buesch <mb@bu3sch.de> writes:
-> 
-> > The following workaround seems to fix the crashes on powerpc.
-> > However, this patch is clearly not what we want for other architectures,
-> > as they might need -fno-omit-frame-pointer to function properly.
-> 
-> This has a better chance to be accepted. :-)
+Arnd Bergmann writes:
 
-Unfortunately, that won't solve the FTRACE problem.
+> The patch does not fix a regression, the spu-oprofile code basically never
+> worked. With the current code in Linux, samples in the profile buffer
+> can get corrupted because reader and writer to that buffer use different
+> locks for accessing it. It took us several iterations to come up with
+> a solution that does not introduce other problems and I didn't want to
+> push an earlier version that would need more fixups.
+> 
+> Since rc4 is out now, I understand if you feel more comfortable with
+> putting the patch into -next instead of -merge.
 
-Ben.
+Linus has been getting stricter about only putting in fixes for
+regressions and serious bugs (see his recent email to Dave Airlie on
+LKML for instance).  I assume that the corruption is just in the data
+that is supplied to userspace and doesn't extend to any kernel data
+structures.  If it does then we have a much stronger argument for
+pushing this stuff for 2.6.27.
 
-> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> index 8b5a7d3..f9a2e48 100644
-> --- a/lib/Kconfig.debug
-> +++ b/lib/Kconfig.debug
-> @@ -394,7 +394,7 @@ config LOCKDEP
->  	bool
->  	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
->  	select STACKTRACE
-> -	select FRAME_POINTER if !X86 && !MIPS
-> +	select FRAME_POINTER if !X86 && !MIPS && !PPC
->  	select KALLSYMS
->  	select KALLSYMS_ALL
->  
-> 
-> > Index: linux-2.6/kernel/Makefile
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/Makefile	2008-08-24 11:50:23.000000000 +0200
-> > +++ linux-2.6/kernel/Makefile	2008-08-24 12:15:54.000000000 +0200
-> > @@ -92,13 +92,13 @@ obj-$(CONFIG_SMP) += sched_cpupri.o
-> >  ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
-> >  # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-> >  # needed for x86 only.  Why this used to be enabled for all architectures is beyond
-> >  # me.  I suspect most platforms don't need this, but until we know that for sure
-> >  # I turn this off for IA-64 only.  Andreas Schwab says it's also needed on m68k
-> >  # to get a correct value for the wait-channel (WCHAN in ps). --davidm
-> > -CFLAGS_sched.o := $(PROFILING) -fno-omit-frame-pointer
-> > +CFLAGS_sched.o := $(PROFILING)
-> 
-> CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER is already enabled on powerpc.
-> 
-> Andreas.
-> 
+> Note that the second patch is trivial and fixes an oopsable condition
+> of the kernel, so at least that should still go into 2.6.27.
+
+OK, I'll cherry-pick that one for my next batch for Linus.
+
+Paul.
