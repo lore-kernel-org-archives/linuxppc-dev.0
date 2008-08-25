@@ -1,18 +1,21 @@
-Return-Path: <sebastien.chretien.enseirb@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
-	by ozlabs.org (Postfix) with ESMTP id 166A6DE3E8
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 00:16:13 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so1042031pyi.27
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 07:16:12 -0700 (PDT)
-Message-ID: <319b0ac50808250716r4f2d42b6ud7293c6b95817048@mail.gmail.com>
-Date: Mon, 25 Aug 2008 16:16:11 +0200
-From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
-	<sebastien.chretien.enseirb@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: ttyS0
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id DE572DE5E6
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 00:26:56 +1000 (EST)
+Received: by gxk14 with SMTP id 14so1905270gxk.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 07:26:54 -0700 (PDT)
+Message-ID: <fa686aa40808250726q69a40f9crd814ce52685c071b@mail.gmail.com>
+Date: Mon, 25 Aug 2008 08:26:54 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: temerkhanov@cifronik.ru
+Subject: Re: [PATCH] [RFC] Fix level IRQ handling on Xilinx INTC with
+	ARCH=powerpc
+In-Reply-To: <200808251656.00247.temerkhanov@yandex.ru>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_12115_23126158.1219673771912"
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200808251656.00247.temerkhanov@yandex.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,30 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_12115_23126158.1219673771912
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, Aug 25, 2008 at 6:55 AM, Sergey Temerkhanov
+<temerkhanov@yandex.ru> wrote:
+> This fixes the missing acknowledge at the end of handle_level_irq().
+>
+> It adds a field flags to struct irq_chip. If IRQ_CHIP_UNMASK_ACK is set in
+> this field, acknowledge is performed before unmasking.
 
-Hello,
+Can this fix be handled in the XINTC controller driver itself?  This
+patch unconditionally adds what is essentially a device specific fixup
+to *every* Linux platform.  I cannot see that flying very far.
 
-I must create a ttyS0 console for my ppc board. Can someone advice an
-example ?
-
-Thanks
-S=E9bastien Chr=E9tien
-
-------=_Part_12115_23126158.1219673771912
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hello,<br>
-<br>
-I must create a ttyS0 console for my ppc board. Can someone advice an examp=
-le ?<br>
-<br>
-Thanks<br>
-S=E9bastien Chr=E9tien<br>
-
-------=_Part_12115_23126158.1219673771912--
+g.
