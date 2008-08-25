@@ -1,22 +1,18 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.236])
-	by ozlabs.org (Postfix) with ESMTP id AE6D2DE00A
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 23:10:55 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id c48so1235785wra.1
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 06:10:53 -0700 (PDT)
-Date: Mon, 25 Aug 2008 09:10:19 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: =?us-ascii?B?PT9JU08tODg1OS0xP1E/Uz1FOWJhc3RpZW5fQ2hyPUU5dGllbl8=?=
-	<sebasti?==?ISO-8859-1?Q?en.chretien.enseirb@gmail.com>,
-	?=@yoda.jdub.homelinux.org
-Subject: Re: initramfs vs initrd
-Message-ID: <20080825131018.GA4199@yoda.jdub.homelinux.org>
-References: <319b0ac50808250557g4bd1d267t14e3bd8887c76e24@mail.gmail.com>
+Return-Path: <sebastien.chretien.enseirb@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id 166A6DE3E8
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 00:16:13 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so1042031pyi.27
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 07:16:12 -0700 (PDT)
+Message-ID: <319b0ac50808250716r4f2d42b6ud7293c6b95817048@mail.gmail.com>
+Date: Mon, 25 Aug 2008 16:16:11 +0200
+From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
+	<sebastien.chretien.enseirb@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: ttyS0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <319b0ac50808250557g4bd1d267t14e3bd8887c76e24@mail.gmail.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_12115_23126158.1219673771912"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 25, 2008 at 02:57:14PM +0200, =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien_ wrote:
->Hello,
->
->What is the difference between initramfs and initrd ?
+------=_Part_12115_23126158.1219673771912
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-You could poke around in the Documentation directory of the kernel.  That
-should answer your question.
+Hello,
 
-Briefly, initramfs is a gzipped cpio archive.  initrd is typically a
-compressed ext2 filesystem and requires a ramdisk to be unpacked to.
+I must create a ttyS0 console for my ppc board. Can someone advice an
+example ?
 
-josh
+Thanks
+S=E9bastien Chr=E9tien
+
+------=_Part_12115_23126158.1219673771912
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hello,<br>
+<br>
+I must create a ttyS0 console for my ppc board. Can someone advice an examp=
+le ?<br>
+<br>
+Thanks<br>
+S=E9bastien Chr=E9tien<br>
+
+------=_Part_12115_23126158.1219673771912--
