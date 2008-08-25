@@ -1,17 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 9B9B0DE7ED
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 04:20:56 +1000 (EST)
-To: Daniele Bosi <d.bosi@selcomgroup.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: gdb problems with threads on mpc512x
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <48B28A65.2050409@selcomgroup.com>
-References: <48B28A65.2050409@selcomgroup.com>
-Date: Mon, 25 Aug 2008 20:20:53 +0200
-Sender: wd@denx.de
-Message-Id: <20080825182053.B804B248CA@gemini.denx.de>
+Return-Path: <vancasperz@yahoo.com.cn>
+Received: from n8.bullet.re3.yahoo.com (n8.bullet.re3.yahoo.com
+	[68.142.237.93]) by ozlabs.org (Postfix) with SMTP id 994B8DE355
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 04:48:41 +1000 (EST)
+Subject: Re: Why does one "stw" fail with address translation disabled in
+	PPC405EP?
+From: Zhou Rui <vancasperz@yahoo.com.cn>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20080824185547.94A0724899@gemini.denx.de>
+References: <1219429635.8882.22.camel@zr.gii.upv.es>
+	<20080822184213.GA24526@yoda.jdub.homelinux.org>
+	<1219479992.7565.17.camel@localhost>
+	<20080824185547.94A0724899@gemini.denx.de>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 25 Aug 2008 21:16:45 +0200
+Message-Id: <1219691805.6735.63.camel@zr.gii.upv.es>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,31 +25,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Daniele Bosi,
+Hi,
+I think maybe you have known this project named XtratuM
+(http://www.xtratum.org). I'm porting it from x86 to PPC405. The
+implementation on PPC440 has been basically finished
+(ftp://dslab.lzu.edu.cn/pub/xtratum/xtratum-ppc/snapshots/xtratum-ppc-20071205.tar.bz2) and I know there was discussion about it in this mail list before. XtratuM is an ADEOS based nano kernel. It aims for realtime and is designed to provide virtual timer, virtual interrupt and memory space sperations for domains. Each domain is loaded by a userspace program (instead of the root domain as a kernel module) and the loader will load the domain's (ELF staticly excutable) PT_LOAD section into memory, and then raise a properly system call (passing the structurized loaded data as arguments) to load the domain via load_domain_sys() of XtratuM, and at the last step of loading the domain, xtratum will jump to the entry code of the new domain(asm wrappered start() routine) and then everything should be fine. 0x100000a0 is the entry point of the test domain, and that is why I need to start execution from it.
 
-In message <48B28A65.2050409@selcomgroup.com> you wrote:
->
-> <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-> <html>
+I think I can say something of my analysis so far for the cause of my
+problem. Thanks for the mention of memory size. Once the kernel module
+of XtratuM is loaded, the symbols of it are placed to virtual addresses
+like 0xc3xxxxxx. Because in normal state, address translation is enabled
+(MSR[IR, DR] = [1, 1]), these addresses are okay. However, when loading
+the domain, because the entry point 0x100000a0 is not in TLB and it
+should be reloaded, Data TLB Miss Exception arises and DTLBMiss is
+called. The exception clears MSR[IR, DR], so address translation is
+disabled and physical address should be used at this moment. If we want
+something at the virtual address of 0xc3xxxxxx, we must access the
+physical addresses like 0x03xxxxxx. Nevertheless, the limitation of 32MB
+memory makes the valid physical address range from 0x0 to 0x1ffffff.
+Therefore, during the exception handling, the addresses out of range
+should not be accessed, but the instructions cannot know the memory
+limitation in advance and tries to do something in addresses such as
+0x03072da0 based on the address translation mechanism, which leads to
+machine check.
+I haved tried to append "mem=32M" to kernel command line but no help. I
+think it is because when loading the kernel in normal state, address
+translation is enabled and the virtual addresses are okay. Kernel cannot
+foresee that there is going to be a TLB miss exception and the illegal
+physical addresses like 0x03xxxxxx may be accessed.
 
-Please post plain text only on mailing lists.
+So any ideas for this problem are welcome.
 
-> I encountered several problem debugging multithreated software with gdb
-> on mpc512x, remotely (gdbserver) and locally.<br>
-> I built gdb 6.8 from scratch, but it's crashing when I stop execution
-> into a thread.<br>
-> <br>
-> Did anyone get it to work correctly?<br>
+Thank you very much for taking care.
 
-We use GDB 6.7 in our ELDK 4.2; we didn't encounter such problems in
-our tests.
+Best Wishes
 
-Best regards,
+Zhou Rui
+2008-08-25
 
-Wolfgang Denk
+Âú® 2008-08-24Êó•ÁöÑ 20:55 +0200ÔºåWolfgang DenkÂÜôÈÅìÔºö
+> Dear Zhou Rui,
+> 
+> In message <1219479992.7565.17.camel@localhost> you wrote:
+> >
+> > > >    I am running a kernel module which will execute a user space
+> > > >application. The entry point of the application is 0x100000a0. At the
+> > > 
+> > > That should be the first clue that you are doing it wrong.  Don't do
+> > > stuff like that in modules...
+> > 
+> > Oh, but our project needs a function like that ...
+> 
+> You should really think about this. Why do you think you  need  this?
+> What  exactly  are  you  trying  to  do?  [Probably  there are better
+> approaches to solve your problem...]
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-I often quote myself; it adds spice to my conversation.  - G. B. Shaw
+> > It is physical address at this moment. Address translation is disabled
+> > automatically (MSR[IR, DR] = [0, 0]) because of TLB Miss Exception and
+> > Instrunction Storage Exception.
+> 
+> Hm.. are you absolutely sure that the 0x100000a0 mentioned above is a
+> physical address?
+> 
+> > > Do you have enough DRAM to cover that?  Some of those boards only come
+> > > with 32MiB of DRAM.
+> > 
+> > My board only has 32MB DRAM. Do you mean 32MB is not enough for that?
+> 
+> Well, 0x1000'00A0 is above 256 MB, while you  have  only  32  MB  RAM
+> which is most probably mapped from 0x0000'0000...0x01FF'FFFF... So
+> what you claim to be a physical address (and I think your claim is
+> wrong) is far outside available physical memory.
+> 
+> > The same codes can run well in a PPC440EP (Yosemite Board) which owns
+> > 256MB DRAM. At the beginning of my work, I thought memory size may be
+> > the cause of failure. But I did not know how to demonstrate it. So if
+> > the limitation of 32MB DRAM leads to the failure, are there any methods
+> > for the codes to solve it?
+> 
+> I think you got lost on the wrong track. Please describe  which  task
+> you  want  to  implement, and there might be another, better approach
+> for it.
+> 
+> Best regards,
+> 
+> Wolfgang Denk
+
+__________________________________________________
+∏œøÏ◊¢≤·—≈ª¢≥¨¥Û»›¡ø√‚∑—” œ‰?
+http://cn.mail.yahoo.com
