@@ -1,21 +1,35 @@
-Return-Path: <vancasperz@yahoo.com.cn>
-Received: from n8.bullet.re3.yahoo.com (n8.bullet.re3.yahoo.com
-	[68.142.237.93]) by ozlabs.org (Postfix) with SMTP id 994B8DE355
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 04:48:41 +1000 (EST)
-Subject: Re: Why does one "stw" fail with address translation disabled in
-	PPC405EP?
-From: Zhou Rui <vancasperz@yahoo.com.cn>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20080824185547.94A0724899@gemini.denx.de>
-References: <1219429635.8882.22.camel@zr.gii.upv.es>
-	<20080822184213.GA24526@yoda.jdub.homelinux.org>
-	<1219479992.7565.17.camel@localhost>
-	<20080824185547.94A0724899@gemini.denx.de>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 25 Aug 2008 21:16:45 +0200
-Message-Id: <1219691805.6735.63.camel@zr.gii.upv.es>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <nfont@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 64F23DE089
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 05:34:37 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7PJXYbu005231
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 15:33:34 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m7PJXYbs194898
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 13:33:34 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m7PJXYNo007780
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 13:33:34 -0600
+Received: from austin.ibm.com (netmail2.austin.ibm.com [9.41.248.176])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m7PJXX4q007765
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 13:33:34 -0600
+Received: from [9.53.40.161] (mudbug-009053040161.austin.ibm.com [9.53.40.161])
+	by austin.ibm.com (8.13.8/8.12.10) with ESMTP id m7PJXXXD042802
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Aug 2008 14:33:33 -0500
+Message-ID: <48B3090E.70606@austin.ibm.com>
+Date: Mon, 25 Aug 2008 14:33:34 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Check rc of notifier chain for memory remove
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,92 +39,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-I think maybe you have known this project named XtratuM
-(http://www.xtratum.org). I'm porting it from x86 to PPC405. The
-implementation on PPC440 has been basically finished
-(ftp://dslab.lzu.edu.cn/pub/xtratum/xtratum-ppc/snapshots/xtratum-ppc-20071205.tar.bz2) and I know there was discussion about it in this mail list before. XtratuM is an ADEOS based nano kernel. It aims for realtime and is designed to provide virtual timer, virtual interrupt and memory space sperations for domains. Each domain is loaded by a userspace program (instead of the root domain as a kernel module) and the loader will load the domain's (ELF staticly excutable) PT_LOAD section into memory, and then raise a properly system call (passing the structurized loaded data as arguments) to load the domain via load_domain_sys() of XtratuM, and at the last step of loading the domain, xtratum will jump to the entry code of the new domain(asm wrappered start() routine) and then everything should be fine. 0x100000a0 is the entry point of the test domain, and that is why I need to start execution from it.
+The return code from invocation of the notifier for
+pSeries_reconfig_chain during update of the device tree is not 
+checked.  This causes writes to /proc/ppc64/ofdt to update memory
+properties (i.e. ibm,dyamic-reconfiguration-memory) to always 
+return success, instead of the result of the notifier chain.
 
-I think I can say something of my analysis so far for the cause of my
-problem. Thanks for the mention of memory size. Once the kernel module
-of XtratuM is loaded, the symbols of it are placed to virtual addresses
-like 0xc3xxxxxx. Because in normal state, address translation is enabled
-(MSR[IR, DR] = [1, 1]), these addresses are okay. However, when loading
-the domain, because the entry point 0x100000a0 is not in TLB and it
-should be reloaded, Data TLB Miss Exception arises and DTLBMiss is
-called. The exception clears MSR[IR, DR], so address translation is
-disabled and physical address should be used at this moment. If we want
-something at the virtual address of 0xc3xxxxxx, we must access the
-physical addresses like 0x03xxxxxx. Nevertheless, the limitation of 32MB
-memory makes the valid physical address range from 0x0 to 0x1ffffff.
-Therefore, during the exception handling, the addresses out of range
-should not be accessed, but the instructions cannot know the memory
-limitation in advance and tries to do something in addresses such as
-0x03072da0 based on the address translation mechanism, which leads to
-machine check.
-I haved tried to append "mem=32M" to kernel command line but no help. I
-think it is because when loading the kernel in normal state, address
-translation is enabled and the virtual addresses are okay. Kernel cannot
-foresee that there is going to be a TLB miss exception and the illegal
-physical addresses like 0x03xxxxxx may be accessed.
+This happens specifically when we remove/add memory from the
+device tree on machines using memory specified in the
+ibm,dynamic-reconfiguration-memory property of the device tree.
 
-So any ideas for this problem are welcome.
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+---
 
-Thank you very much for taking care.
-
-Best Wishes
-
-Zhou Rui
-2008-08-25
-
-Âú® 2008-08-24Êó•ÁöÑ 20:55 +0200ÔºåWolfgang DenkÂÜôÈÅìÔºö
-> Dear Zhou Rui,
-> 
-> In message <1219479992.7565.17.camel@localhost> you wrote:
-> >
-> > > >    I am running a kernel module which will execute a user space
-> > > >application. The entry point of the application is 0x100000a0. At the
-> > > 
-> > > That should be the first clue that you are doing it wrong.  Don't do
-> > > stuff like that in modules...
-> > 
-> > Oh, but our project needs a function like that ...
-> 
-> You should really think about this. Why do you think you  need  this?
-> What  exactly  are  you  trying  to  do?  [Probably  there are better
-> approaches to solve your problem...]
-
-> > It is physical address at this moment. Address translation is disabled
-> > automatically (MSR[IR, DR] = [0, 0]) because of TLB Miss Exception and
-> > Instrunction Storage Exception.
-> 
-> Hm.. are you absolutely sure that the 0x100000a0 mentioned above is a
-> physical address?
-> 
-> > > Do you have enough DRAM to cover that?  Some of those boards only come
-> > > with 32MiB of DRAM.
-> > 
-> > My board only has 32MB DRAM. Do you mean 32MB is not enough for that?
-> 
-> Well, 0x1000'00A0 is above 256 MB, while you  have  only  32  MB  RAM
-> which is most probably mapped from 0x0000'0000...0x01FF'FFFF... So
-> what you claim to be a physical address (and I think your claim is
-> wrong) is far outside available physical memory.
-> 
-> > The same codes can run well in a PPC440EP (Yosemite Board) which owns
-> > 256MB DRAM. At the beginning of my work, I thought memory size may be
-> > the cause of failure. But I did not know how to demonstrate it. So if
-> > the limitation of 32MB DRAM leads to the failure, are there any methods
-> > for the codes to solve it?
-> 
-> I think you got lost on the wrong track. Please describe  which  task
-> you  want  to  implement, and there might be another, better approach
-> for it.
-> 
-> Best regards,
-> 
-> Wolfgang Denk
-
-__________________________________________________
-∏œøÏ◊¢≤·—≈ª¢≥¨¥Û»›¡ø√‚∑—” œ‰?
-http://cn.mail.yahoo.com
+Index: linux-2.6-paulus/arch/powerpc/platforms/pseries/reconfig.c
+===================================================================
+--- linux-2.6-paulus.orig/arch/powerpc/platforms/pseries/reconfig.c	2008-08-25 13:08:27.000000000 -0500
++++ linux-2.6-paulus/arch/powerpc/platforms/pseries/reconfig.c	2008-08-25 13:45:12.000000000 -0500
+@@ -466,11 +466,11 @@
+ 		else
+ 			action = PSERIES_DRCONF_MEM_REMOVE;
+ 
+-		blocking_notifier_call_chain(&pSeries_reconfig_chain,
+-					     action, value);
++		rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
++						  action, value);
+ 	}
+ 
+-	return 0;
++	return rc;
+ }
+ 
+ /**
