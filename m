@@ -1,19 +1,36 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id EDC4EDE425
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 21:29:30 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Kevin Diggs <kevdig@hypersurf.com>
-Subject: Re: [PATCH 2/4] Add cpufreq driver for the IBM PowerPC 750GX
-Date: Tue, 26 Aug 2008 13:29:22 +0200
-References: <48B28F23.1000906@hypersurf.com> <200808251343.18027.arnd@arndb.de>
-	<48B354FC.1090001@hypersurf.com>
-In-Reply-To: <48B354FC.1090001@hypersurf.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808261329.22699.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-cn0ut-4.online-age.net (ext-cn0ut-4.online-age.net
+	[63.210.253.233])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ext-cn0ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 51899DE703
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 22:33:36 +1000 (EST)
+Received: from int-cn0ut-3.online-age.net (int-cn0ut-3.online-age.net
+	[3.159.252.72])
+	by ext-cn0ut-4.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id m7QCXVYa030084
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 08:33:31 -0400
+Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-3.online-age.net
+	[3.159.252.72])
+	by int-cn0ut-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m7QCXVHH010705
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 08:33:31 -0400
+Date: Tue, 26 Aug 2008 13:33:28 +0100
+From: Martyn Welch <martyn.welch@gefanuc.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2 1/2] powerpc: Board support for GE Fanuc SBC610
+Message-Id: <20080826133328.5458c581.martyn.welch@gefanuc.com>
+In-Reply-To: <20080822171135.GA15623@ld0162-tx32.am.freescale.net>
+References: <20080822104615.11984.93838.stgit@ubuntu8041.localdomain>
+	<20080822104620.11984.30369.stgit@ubuntu8041.localdomain>
+	<72120CFB-62D9-44B0-AD4F-26332C90F3C9@kernel.crashing.org>
+	<20080822121152.70f01597.martyn.welch@gefanuc.com>
+	<20080822122601.162dddd4.martyn.welch@gefanuc.com>
+	<20080822171135.GA15623@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,205 +40,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 26 August 2008, Kevin Diggs wrote:
-> Arnd Bergmann wrote:
-> > On Monday 25 August 2008, Kevin Diggs wrote:
+On Fri, 22 Aug 2008 12:11:35 -0500
+Scott Wood <scottwood@freescale.com> wrote:
 
-> > Most people list their email address here as well
+> On Fri, Aug 22, 2008 at 12:26:01PM +0100, Martyn Welch wrote:
+> > > > drop device_type.
+> > > > 
+> > > 
+> > > Ah - _all_ device_type!
+> > > 
 > > 
-> For reasons I'd rather not go into, my email address is not likely
-> to remain valid for much longer.
-
-Maybe you should get a freemail account somewhere then.
-It's better if people have a way to Cc the author of
-a file when they make changes to it.
-
-> > drop the _t here, or make explicit what is meant by it.
-> > 
-> Now that I look at it the _t is supposed to be at the end. It is
-> meant to indicate that this is a structure tag or type. I'll
-> remove it.
-
-Ok, thanks for the explanation. I now saw that you also
-use '_v' for variables (I guess). These should probably
-go the same way.
-
-> >>+static DECLARE_COMPLETION(cf750gx_v_exit_completion);
-> >>+
-> >>+static unsigned int override_min_core = 0;
-> >>+static unsigned int override_max_core = 0;
-> >>+static unsigned int minmaxmode = 0;
-> >>+
-> >>+static unsigned int cf750gx_v_min_core = 0;
-> >>+static unsigned int cf750gx_v_max_core = 0;
-> >>+static int cf750gx_v_idle_pll_off = 0;
-> >>+static int cf750gx_v_min_max_mode = 0;
-> >>+static unsigned long cf750gx_v_state_bits = 0;
-> > 
-> > 
-> > Is 0 a meaningful value for these? If it just means 'uninitialized',
-> > then better don't initialize them in the first place, for clarity.
-> > 
-> The first 3 are module parameters. For the first 2, 0 means
-> that they were not set. minmaxmode is a boolean. 0 is the
-> default of disabled.
-
-Then at least for the first two, the common coding style would
-be to leave out the '= 0'. For minmaxmode, the most expressive
-way would be to define an enum, like
-
-enum {
-	MODE_NORMAL,
-	MODE_MINMAX,
-};
-
-int minmaxmode = MODE_NORMAL;
-
-> When I was initially writing the code I figured I would
-> need the min and max core frequencies in several places.
-> As it turns out they are only used in the code
-> initialization routine (cf750gx_init()). I have made
-> them locals.
-
-ah, good.
- 
-> ..._idle_pll_off is a boolean for a sysfs attribute. 0 is
-> the default of disabled.
-
-ok
-
-> ..._min_max_mode is a boolean to hold the state of
-> minmaxmode. Seems to be only used to print the current
-> value.
-
-this looks like a duplicate then. why would you need both?
-It seems really confusing to have both a cpufreq attribute
-and a module attribute with the same name, writing to
-different variables. 
-
-> ..._state_bits is a global to maintain state.
+> > Um, not all - just the ones where the name of the block matches the
+> > device type(?)
 > 
-> Does the PowerPC suffer any performance penalties when
-> accessing shorts compared to ints? Can I save a few bytes
-> by using shorts?
-
-Don't bother. Using int is the general way to say 'some number'.
-If you use short, people will wonder why you require a 16 bit
-number.
-
-> >>+static struct cpufreq_frequency_table *cf750gx_v_f_table;
-> >>+static struct cpufreq_frequency_table *cf750gx_v_freq_table;
-> >>+static struct cpufreq_frequency_table *cf750gx_v_min_max_freq_table;
-> >>+
-> >>+static struct cf750gx_t_call_data cf750gx_v_switch_call_data;
-> >>+static struct cf750gx_t_call_data cf750gx_v_lock_call_data;
-> >>+static struct notifier_block cf750gx_v_pll_switch_nb;
-> >>+static struct notifier_block cf750gx_v_pll_lock_nb;
-> > 
-> > 
-> > Also, in general, try to avoid global variables here, even 
-> > in file scope (static), but rather put all device specific
-> > data into a per-device data structure.
-> > 
-> How big of a problem is this? I regret the decision to rip
-> the SMP stuff out. But it is kinda done. If absolutely
-> necessary I can put these into a structure?
-
-Not a huge problem in this case, because it is not strictly a
-device driver to start with. In most device drivers, you want
-a strict separation between global (per-driver) data and
-per-instance data.
-
-Are there even SMP boards based on a 750? I thought only 74xx
-and 603/604 were SMP capable.
-
-> >>+static int cf750gx_pll_switch_cb(struct notifier_block *nb, unsigned long
-> >>+       action, void *data)
-> >>+{
-> >>+struct cf750gx_t_call_data *cd;
-> >>+unsigned int idle_pll;
-> >>+unsigned int pll_off_cmd;
-> >>+unsigned int new_pll;
-> > 
-> > 
-> > The whitespace appears damaged here.
-> > 
-> Just a coding style thing. I put declarations (or definitions -
-> I get the two confused?) on the same indent as the block they are
-> in. Is this a 15 yard illegal procedure penalty?
-
-I've never seen that style before. Better do what everyone
-else does here, e.g. using 'indent -kr -i8'.
-
-> >>+       dprintk(__FILE__">%s()-%d:  Modifying PLL:  0x%x\n", __func__, __LINE__,
-> >>+               new_pll);
-> > 
-> > 
-> > Please go through all your dprintk and see if you really really need all of them.
-> > Usually they are useful while you are doing the initial code, but only get in the
-> > way as soon as it starts working.
-> > 
-> This from a code readability standpoint? Or an efficiency one?
-> I think the cpufreq stuff has a debug configure option that
-> disables compilation of these unless enabled.
-
-It's more about readability.
-
-> >>+       result = pllif_register_pll_switch_cb(&cf750gx_v_pll_switch_nb);
-> >>+
-> >>+       cf750gx_v_pll_lock_nb.notifier_call = cf750gx_pll_lock_cb;
-> >>+       cf750gx_v_pll_lock_nb.next =
-> >>+               (struct notifier_block *)&cf750gx_v_lock_call_data;
-> > 
-> > 
-> > These casts look wrong, cf750gx_v_lock_call_data is not a notifier_block.
-> > What are you trying to do here?
-> > 
-> Just a little sneaky. I should document in the kernel doc though.
-
-No, better avoid such hacks instead of documenting them. I think I
-now understand what you do there, and if I got it right, you should
-just pass two arguments to pllif_register_pll_switch_cb.
-
-> >>+static int cf750gx_cpu_exit(struct cpufreq_policy *policy)
-> >>+{
-> >>+       dprintk("%s()\n", __func__);
-> >>+
-> >>+       /*
-> >>+        * Wait for any active requests to ripple through before exiting
-> >>+        */
-> >>+       wait_for_completion(&cf750gx_v_exit_completion);
-> > 
-> > 
-> > This "wait for anything" use of wait_for_completion looks wrong, 
-> > because once any other function has done the 'complete', you won't
-> > wait here any more.
-> > 
-> > What exactly are you trying to accomplish with this?
-> > 
-> Originall I had something like:
+> All except "cpu" and "memory".
 > 
-> 	while(some_bit_is_still_set)
-> 		sleep
-> 
-> I think you suggested I use a completion because it is in
-> fact simpler than a sleep. Now that I think about it also seems
-> intuitive to give the system a hint as to when something will
-> be done. 'complete' just means there is no timer pending (unless,
-> of course, I screwed up the code).
+> -Scott
 
-The completion would certainly be better than the sleep here, but
-I think you shouldn't need that in the first place. AFAICT, you
-have three different kinds of events that you need to protect
-against, when some other code can call into your module:
+And, it would appear, "soc" as well.
 
-1. timer function,
-2. cpufreq notifier, and
-3. sysfs attribute.
+Martyn
 
-In each case, the problem is a race between two threads that you
-need to close. In case of the timer, you need to call del_timer_sync
-because the timers already have this method builtin. For the other
-two, you already unregister the interfaces, which ought to be enough.
-
-	Arnd <><
+-- 
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
