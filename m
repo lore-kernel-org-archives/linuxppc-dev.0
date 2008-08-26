@@ -1,20 +1,17 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 23B9EDDF17
+Return-Path: <mustafa.cayir@bte.mam.gov.tr>
+Received: from itri.bte.mam.gov.tr (bte.mam.gov.tr [193.140.75.15])
+	by ozlabs.org (Postfix) with SMTP id 3C006DE64B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Aug 2008 18:00:39 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: AMCC PPC460EX Canyonlands Hardwired interrupt
-Date: Tue, 26 Aug 2008 10:00:27 +0200
-References: <1219380814-17229-1-git-send-email-fkan@amcc.com>
-	<200808222144.15235.sr@denx.de>
-	<02f101c9074f$26d2cd90$0109220a@deltatau.local>
-In-Reply-To: <02f101c9074f$26d2cd90$0109220a@deltatau.local>
+	Tue, 26 Aug 2008 19:42:47 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808261000.27333.sr@denx.de>
+	charset="iso-8859-9"
+Subject: Linux booting problem MPC7457 based board with U-boot 1.1.4 and Linux
+	2.6.12.6
+Date: Tue, 26 Aug 2008 12:28:11 +0300
+Message-ID: <7B9A8FF57DBB524190E98CABF6E56F07D2C3F4@itri.bte.mam.gov.tr>
+From: =?iso-8859-9?Q?Mustafa_Cay=FDr?= <mustafa.cayir@bte.mam.gov.tr>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,22 +22,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 26 August 2008, Henry Bausley wrote:
-> How do I go about using one of the gpio pins for my own interrupt with the
-> Canyonlands board.  Previously I used a yosemite (ppc) board and modified
-> the yosemite.c file so that IRQ0 and IRQ1 were edge sensitive and and stole
-> the ETH0/1 phy hardware interrupts for my own purposes and everything
-> worked.
->
-> I am trying to do the same with the Canyonlands (powerpc) board.but cannot
-> seem to enable the interrupt.
+Hi all,
 
-arch/powerpc now uses virtual interrupts instead of the physical interrupts 
-used in arch/ppc. So you can't just use the physical interrupt number in your 
-request_irq() anymore. You need an of-platform driver to generate the virtual 
-interrupt from the physical interrupt in the device-tree 
-(irq_of_parse_and_map()). And you need to add this new node with the 
-interrupt property to your device-tree of course.
+I have a custom MPC7457 based board which has been running U-boot 1.1.4. =
+I am trying to port Linux 2.6.12.6 .
 
-Best regards,
-Stefan
+When booting, Linux hangs when calling "call_setup_cpu" function.
+
+arch\ppc\kernel\head.S
+
+/*
+ * Call setup_cpu for CPU 0 and initialize 6xx Idle
+ */
+	bl	reloc_offset
+	li	r24,0			/* cpu# */
+	bl	call_setup_cpu		/* Call setup_cpu for this CPU */
+
+
+Regards.
