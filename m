@@ -1,19 +1,24 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from WA4EHSOBE002.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id 7058DDE450
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp3.netcologne.de (smtp3.netcologne.de [194.8.194.66])
+	by ozlabs.org (Postfix) with ESMTP id 71178DE85B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Aug 2008 02:41:10 +1000 (EST)
+	Wed, 27 Aug 2008 03:02:09 +1000 (EST)
+Received: from antares (xdsl-87-78-252-224.netcologne.de [87.78.252.224])
+	by smtp3.netcologne.de (Postfix) with ESMTP id C324C674AB
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 26 Aug 2008 19:02:06 +0200 (CEST)
+Received: from antares (localhost [127.0.0.1])
+	by antares (Postfix) with ESMTPS id 7AEEBBA065
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 26 Aug 2008 19:02:06 +0200 (CEST)
+Date: Tue, 26 Aug 2008 19:01:59 +0200
+From: =?UTF-8?q?Albrecht_Dre=C3=9F?= <albrecht.dress@arcor.de>
+Subject: Compile new kernel for 5200B w/ ELDK
+To: LinuxPPC Embedded <linuxppc-embedded@ozlabs.org>
+Message-Id: <1219770125l.5709l.0l@antares>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C9079A.86DC7B11"
-Subject: RE: PPC405EP errata CPU 213 (Incorrect data may be flushed from
-	thedata cache)
-Date: Tue, 26 Aug 2008 09:41:02 -0700
-References: <1219766507.26004.92.camel@localhost>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: "Darcy Watkins" <dwatkins@tranzeo.com>,
-	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Message-ID: <20080826164104.A31DA818052@mail1-wa4.bigfish.com>
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature"; boundary="=-BGDXFSTMGN/QIpVu8da0"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,265 +29,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------_=_NextPart_001_01C9079A.86DC7B11
-Content-Type: text/plain; charset="iso-8859-1"
+--=-BGDXFSTMGN/QIpVu8da0
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
-arch/powerpc/boot/virtex405-head.S has:
+please excuse a probably really dumb question about compiling a new =20
+kernel for a Freescale 5200B using the ELDK 4.2...
 
-#include "ppc_asm.h"
+I am playing with a Lite5200B eval board.  The software coming from =20
+Freescale, including an older kernel (2.6.16.11-rt18), works fine.
 
-        .text
-        .global _zimage_start
-_zimage_start:
+I installed ELDK 4.2 on a FC box, and first compiled u-boot 1.3.4.  =20
+Wrote it to flash, and it works nicely afaict.
 
-        /* PPC errata 213: needed by Virtex-4 FX */
-        mfccr0  0
-        oris    0,0,0x50000000@h
-        mtccr0  0
+Then I compiled the 2.6.24.2 kernel coming with the ELDK, using the =20
+commands "make ARCH=3Dpowerpc CROSS_COMPILE=3Dppc_6xx- lite5200_defconfig ;=
+ =20
+make ARCH=3Dpowerpc CROSS_COMPILE=3Dppc_6xx- uImage".  The kernel loads, =20
+decompresses, but then there is no output any more after "Uncompressing =20
+Kernel Image ... OK".  The u-boot environment contains (quoted from =20
+printenv) "bootargs=3Dconsole=3DttyPSC0,115200 root=3D/dev/mtdblock0 rw =20
+rootfstype=3Djffs2 verbose" (and, again, the Freescale kernel is not =20
+silent).
 
-So, this happens first before anything else.
-Without this, the boards that I've used crash pretty quickly, so it may be =
-obvious that the status register is set properly.
-As a result, you probably need to do it in the boot loader and not in the k=
-ernel proper.
+I found a message which stated that I should include
 
-Steve
+<snip>
+         chosen {
+                 linux,stdout-path =3D "/soc5200@f0000000/serial@2000";
+	};
+</snip>
 
------Original Message-----
-From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org on b=
-ehalf of Darcy Watkins
-Sent: Tue 8/26/2008 9:01 AM
-To: linuxppc-embedded
-Subject: PPC405EP errata CPU 213 (Incorrect data may be flushed from thedat=
-a cache)
- =
+in the file arch/powerpc/boot/dts/lite5200.dts.  Recompiled, but =20
+without success.  I believe it's a minor tweak I need to add, but I =20
+don't have a clue what.  Unfortunately neither the wiki nor Google gave =20
+answers.  Can anyone enlighten me??
 
-Hello,
+Thanks,
+Albrecht.
 
-The IBM/AMCC errata document recommends setting reserved bits 1 & 3 in
-CCR0 as a workaround to PPC405EP errata CPU 213 (Incorrect data may be
-flushed from the data cache).  For a start, I just tried hacking in a
-few lines of assembly code into...
+--=-BGDXFSTMGN/QIpVu8da0
+Content-Type: application/pgp-signature
 
-  arch/powerpc/kernel/head_40x.S
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
 
----
+iD8DBQBItDcNn/9unNAn/9ERAoOQAJ9WRngM6IU9iVkQef9c7LtFSTpjugCfbkY1
+EvGTIAmiAtpcZ4pq9v4Mvk8=
+=cH5H
+-----END PGP SIGNATURE-----
 
-Around line #839 ...
-
-	bl	early_init	/* We have to do this with MMU on */
-
-/*
- * Decide what sort of machine this is and initialize the MMU.
- */
-	mr	r3,r31
-	mr	r4,r30
-	mr	r5,r29
-	mr	r6,r28
-	mr	r7,r27
-	bl	machine_init
-	bl	MMU_init
-/* DLW hack!! - for PPC405EP errata CPU 213 */
-	mfspr	r4,SPRN_CCR0
-	oris	r4,r4,0x5000
-	mtspr	SPRN_CCR0,r4
-	isync
-
-/* Go back to running unmapped so we can load up new values
- * and change to using our exception vectors.
- * On the 4xx, all we have to do is invalidate the TLB to clear
- * the old 16M byte TLB mappings.
- */
-	lis	r4,2f@h
-...
-
-Since I am not a PowerPC assembler guru, does this appear right?
-
-I think that eventually I'd want to create a cpu_setup_40x.S with the
-fixup code as part of a setup_cpu_405ep function and then hook this into
-cputable.c, but first I want to make sure that the errata workaround is
-actually taking effect (and also not being undone by later startup
-code).
-
--- =
-
-
-
-Regards,
-
-Darcy
-
---------------
-Darcy L. Watkins - Senior Software Developer
-Tranzeo Wireless Technologies, Inc.
-19273 Fraser Way, Pitt Meadows, BC, Canada V3Y 2V4
-T:604-460-6002 ext:410
-http://www.tranzeo.com
-
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
-
-
-------_=_NextPart_001_01C9079A.86DC7B11
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Diso-8859-=
-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version 6.5.7652.24"=
->
-<TITLE>RE: PPC405EP errata CPU 213 (Incorrect data may be flushed from thed=
-ata cache)</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-<BR>
-
-<P><FONT SIZE=3D2>arch/powerpc/boot/virtex405-head.S has:<BR>
-<BR>
-#include &quot;ppc_asm.h&quot;<BR>
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .text<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .global _zimage_start<BR>
-_zimage_start:<BR>
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* PPC errata 213: needed by Vir=
-tex-4 FX */<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mfccr0&nbsp; 0<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; oris&nbsp;&nbsp;&nbsp; 0,0,0x500=
-00000@h<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mtccr0&nbsp; 0<BR>
-<BR>
-So, this happens first before anything else.<BR>
-Without this, the boards that I've used crash pretty quickly, so it may be =
-obvious that the status register is set properly.<BR>
-As a result, you probably need to do it in the boot loader and not in the k=
-ernel proper.<BR>
-<BR>
-Steve<BR>
-<BR>
------Original Message-----<BR>
-From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org on b=
-ehalf of Darcy Watkins<BR>
-Sent: Tue 8/26/2008 9:01 AM<BR>
-To: linuxppc-embedded<BR>
-Subject: PPC405EP errata CPU 213 (Incorrect data may be flushed from thedat=
-a cache)<BR>
-<BR>
-Hello,<BR>
-<BR>
-The IBM/AMCC errata document recommends setting reserved bits 1 &amp; 3 in<=
-BR>
-CCR0 as a workaround to PPC405EP errata CPU 213 (Incorrect data may be<BR>
-flushed from the data cache).&nbsp; For a start, I just tried hacking in a<=
-BR>
-few lines of assembly code into...<BR>
-<BR>
-&nbsp; arch/powerpc/kernel/head_40x.S<BR>
-<BR>
----<BR>
-<BR>
-Around line #839 ...<BR>
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
- early_init&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* We have to do this with MMU on=
- */<BR>
-<BR>
-/*<BR>
-&nbsp;* Decide what sort of machine this is and initialize the MMU.<BR>
-&nbsp;*/<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
- r3,r31<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
- r4,r30<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
- r5,r29<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
- r6,r28<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
- r7,r27<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
- machine_init<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
- MMU_init<BR>
-/* DLW hack!! - for PPC405EP errata CPU 213 */<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mfspr&nbsp;&nbsp; r4,SPRN_CCR0<B=
-R>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; oris&nbsp;&nbsp;&nbsp; r4,r4,0x5=
-000<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mtspr&nbsp;&nbsp; SPRN_CCR0,r4<B=
-R>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; isync<BR>
-<BR>
-/* Go back to running unmapped so we can load up new values<BR>
-&nbsp;* and change to using our exception vectors.<BR>
-&nbsp;* On the 4xx, all we have to do is invalidate the TLB to clear<BR>
-&nbsp;* the old 16M byte TLB mappings.<BR>
-&nbsp;*/<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lis&nbsp;&nbsp;&nbsp;&nbsp; r4,2=
-f@h<BR>
-...<BR>
-<BR>
-Since I am not a PowerPC assembler guru, does this appear right?<BR>
-<BR>
-I think that eventually I'd want to create a cpu_setup_40x.S with the<BR>
-fixup code as part of a setup_cpu_405ep function and then hook this into<BR=
->
-cputable.c, but first I want to make sure that the errata workaround is<BR>=
-
-actually taking effect (and also not being undone by later startup<BR>
-code).<BR>
-<BR>
---<BR>
-<BR>
-<BR>
-Regards,<BR>
-<BR>
-Darcy<BR>
-<BR>
---------------<BR>
-Darcy L. Watkins - Senior Software Developer<BR>
-Tranzeo Wireless Technologies, Inc.<BR>
-19273 Fraser Way, Pitt Meadows, BC, Canada V3Y 2V4<BR>
-T:604-460-6002 ext:410<BR>
-<A HREF=3D"http://www.tranzeo.com">http://www.tranzeo.com</A><BR>
-<BR>
-<BR>
-_______________________________________________<BR>
-Linuxppc-embedded mailing list<BR>
-Linuxppc-embedded@ozlabs.org<BR>
-<A HREF=3D"https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://o=
-zlabs.org/mailman/listinfo/linuxppc-embedded</A><BR>
-<BR>
-<BR>
-</FONT>
-</P>
-
-<br clear=3Dall> This email and any attachments are intended for the sole u=
-se of the named recipient(s) and contain(s) confidential information that m=
-ay be proprietary, privileged or copyrighted under applicable law. If you a=
-re not the intended recipient, do not read, copy, or forward this email mes=
-sage or any attachments. Delete this email message and any attachments imme=
-diately.
-</BODY>
-</HTML>
-
-
-------_=_NextPart_001_01C9079A.86DC7B11--
+--=-BGDXFSTMGN/QIpVu8da0--
