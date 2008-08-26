@@ -1,21 +1,19 @@
-Return-Path: <skepper@chara.vm.bytemark.co.uk>
-Received: from chara.vm.bytemark.co.uk (chara.vm.bytemark.co.uk [80.68.89.253])
-	by ozlabs.org (Postfix) with ESMTP id C022ADDF6F
+Return-Path: <liuxs226@gmail.com>
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.239])
+	by ozlabs.org (Postfix) with ESMTP id 3DDDDDE6FC
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Aug 2008 22:00:14 +1000 (EST)
-Date: Tue, 26 Aug 2008 13:00:05 +0100 (BST)
-From: Chris Skepper <skepper@ukf.net>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Early boot problem with MPC8247 and Linux 2.6.26
-In-Reply-To: <48AEF220.7080506@freescale.com>
-Message-ID: <Pine.LNX.4.62.0808261219210.3327@chara.vm.bytemark.co.uk>
-References: <Pine.LNX.4.62.0808221515450.31216@chara.vm.bytemark.co.uk>
-	<48AEF220.7080506@freescale.com>
+	Tue, 26 Aug 2008 22:19:10 +1000 (EST)
+Received: by qb-out-0506.google.com with SMTP id d11so3266234qbd.39
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 26 Aug 2008 05:19:09 -0700 (PDT)
+Message-ID: <e81b2fb40808260519u4698c601q23b4e97fa7b69c47@mail.gmail.com>
+Date: Tue, 26 Aug 2008 20:19:08 +0800
+From: "=?GB2312?B?wfXQocur?=" <liuxs226@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: some question about Fujitsu mb86296 video card
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Sender: Chris Skepper <skepper@chara.vm.bytemark.co.uk>
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: skepper@ukf.net
+Content-Type: multipart/alternative;
+	boundary="----=_Part_2684_31314051.1219753148439"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,43 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 22 Aug 2008, Scott Wood wrote:
+------=_Part_2684_31314051.1219753148439
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> Chris Skepper wrote:
->> Using code to flash an LED I have traced execution from the entry point in 
->> head_32.S, through to call_setup_cpu in misc.S, __setup_cpu_603 and into 
->> setup_common_caches in cpu_setup_6xx.S.  It appears to reset when enabling 
->> the cache on the CPU:
->> 
->> setup_common_caches:
->>     mfspr    r11,SPRN_HID0
->>     andi.    r0,r11,HID0_DCE
->>     ori    r11,r11,HID0_ICE|HID0_DCE
->>     ori    r8,r11,HID0_ICFI
->>     bne    1f            /* don't invalidate the D-cache */
->>     ori    r8,r8,HID0_DCI        /* unless it wasn't enabled */
->> 1:    sync
->>     /* Chris: Reaches here. */
->>     mtspr    SPRN_HID0,r8        /* enable and invalidate caches */
->>     sync
->>     mtspr    SPRN_HID0,r11        /* enable caches */
->>     sync
->>     isync
->>     /* Chris: Never gets to here. */
->>     blr
->> 
->> FWIW, commenting out the lines above causes it to hang when attempting to 
->> enable the MMU, which is the next step in the process.
->
-> How are you determining that it never gets to that point?  If it's via serial 
-> I/O or similar, be aware that I/O isn't going to work when caches are enabled 
-> but the MMU is not.
+hi,
 
-Hi Scott,
+does anyone know how to open or set or use L0, L1, L2 layer for Fujitsu
+mb86296 video card in the linux fbdriver? and how to use it in Application?
 
-I'm triggering an LED which is connected to port A.  Are you saying that 
-wouldn't work once the caching is enabled?
+Thanks in advance
 
-Cheers,
+liuxs
 
-Chris.
+------=_Part_2684_31314051.1219753148439
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div>hi,</div>
+<div>&nbsp;</div>
+<div>does anyone know how to open or set or use L0, L1, L2 layer for Fujitsu mb86296 video card in the linux fbdriver? and how to use it in <span class="hl">Application? </span></div>
+<div><span class="hl"></span>&nbsp;</div>
+<div><span class="hl">Thanks in advance</span></div>
+<div><span class="hl"></span>&nbsp;</div>
+<div><span class="hl">liuxs</span></div>
+<div><span class="hl"></span>&nbsp;</div>
+<div><span class="hl"></span>&nbsp;</div>
+
+------=_Part_2684_31314051.1219753148439--
