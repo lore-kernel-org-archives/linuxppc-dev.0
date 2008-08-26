@@ -1,19 +1,33 @@
-Return-Path: <liuxs226@gmail.com>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.239])
-	by ozlabs.org (Postfix) with ESMTP id 3DDDDDE6FC
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3D857DDE06
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Aug 2008 22:19:10 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id d11so3266234qbd.39
+	Wed, 27 Aug 2008 00:03:56 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m7QE3fJ4022697 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 26 Aug 2008 07:03:42 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m7QE3RTb013154
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Aug 2008 05:19:09 -0700 (PDT)
-Message-ID: <e81b2fb40808260519u4698c601q23b4e97fa7b69c47@mail.gmail.com>
-Date: Tue, 26 Aug 2008 20:19:08 +0800
-From: "=?GB2312?B?wfXQocur?=" <liuxs226@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: some question about Fujitsu mb86296 video card
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_2684_31314051.1219753148439"
+	Tue, 26 Aug 2008 09:03:27 -0500 (CDT)
+Date: Tue, 26 Aug 2008 09:03:24 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Chris Skepper <skepper@ukf.net>
+Subject: Re: Early boot problem with MPC8247 and Linux 2.6.26
+Message-ID: <20080826140324.GB3783@ld0162-tx32.am.freescale.net>
+References: <Pine.LNX.4.62.0808221515450.31216@chara.vm.bytemark.co.uk>
+	<48AEF220.7080506@freescale.com>
+	<Pine.LNX.4.62.0808261219210.3327@chara.vm.bytemark.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.62.0808261219210.3327@chara.vm.bytemark.co.uk>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,33 +38,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_2684_31314051.1219753148439
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, Aug 26, 2008 at 01:00:05PM +0100, Chris Skepper wrote:
+> >How are you determining that it never gets to that point?  If it's via 
+> >serial I/O or similar, be aware that I/O isn't going to work when caches 
+> >are enabled but the MMU is not.
+> 
+> I'm triggering an LED which is connected to port A.  Are you saying that 
+> wouldn't work once the caching is enabled?
 
-hi,
+It's quite possible.  What other registers are in the same cache line as
+the LED, and are any of them non-memory-like?  And even if all registers
+in the cache line are OK with this sort of access, you need to use dcbf
+afterwards.
 
-does anyone know how to open or set or use L0, L1, L2 layer for Fujitsu
-mb86296 video card in the linux fbdriver? and how to use it in Application?
+It's usually easiest to just trust that that part of the code works (in
+my experience, that's rarely where a hang actually occurs when bringing
+up a new board), and resume tracing after the MMU is on and you've
+inserted a caching-inhibited BAT entry.
 
-Thanks in advance
-
-liuxs
-
-------=_Part_2684_31314051.1219753148439
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div>hi,</div>
-<div>&nbsp;</div>
-<div>does anyone know how to open or set or use L0, L1, L2 layer for Fujitsu mb86296 video card in the linux fbdriver? and how to use it in <span class="hl">Application? </span></div>
-<div><span class="hl"></span>&nbsp;</div>
-<div><span class="hl">Thanks in advance</span></div>
-<div><span class="hl"></span>&nbsp;</div>
-<div><span class="hl">liuxs</span></div>
-<div><span class="hl"></span>&nbsp;</div>
-<div><span class="hl"></span>&nbsp;</div>
-
-------=_Part_2684_31314051.1219753148439--
+-Scott
