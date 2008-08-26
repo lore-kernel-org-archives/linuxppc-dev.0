@@ -1,23 +1,18 @@
-Return-Path: <mingo@elte.hu>
-Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BD7D5DE02A
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 19:27:51 +1000 (EST)
-Received: from mx3.mail.elte.hu ([157.181.1.138])
-	by fallback.mail.elte.hu with esmtp (Exim) id 1KXu3Q-0000x2-Uk
-	from <mingo@elte.hu>
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 10:37:33 +0200
-Date: Tue, 26 Aug 2008 10:32:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id EDC4EDE425
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 21:29:30 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: Kevin Diggs <kevdig@hypersurf.com>
-Subject: Re: [PATCH 4/4] Add kernel doc for the completion, fix
-	kernel-doc-nano-HOWTO.txt
-Message-ID: <20080826083202.GA24733@elte.hu>
-References: <48B29696.3070808@hypersurf.com>
+Subject: Re: [PATCH 2/4] Add cpufreq driver for the IBM PowerPC 750GX
+Date: Tue, 26 Aug 2008 13:29:22 +0200
+References: <48B28F23.1000906@hypersurf.com> <200808251343.18027.arnd@arndb.de>
+	<48B354FC.1090001@hypersurf.com>
+In-Reply-To: <48B354FC.1090001@hypersurf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48B29696.3070808@hypersurf.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808261329.22699.arnd@arndb.de>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -28,15 +23,205 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tuesday 26 August 2008, Kevin Diggs wrote:
+> Arnd Bergmann wrote:
+> > On Monday 25 August 2008, Kevin Diggs wrote:
 
-* Kevin Diggs <kevdig@hypersurf.com> wrote:
+> > Most people list their email address here as well
+> > 
+> For reasons I'd rather not go into, my email address is not likely
+> to remain valid for much longer.
 
-> This patch adds kernel doc for the completion feature. It is in 
-> kernel/sched.c and include/linux/completion.h.
->
-> An error in the split-man.pl PERL snippet in kernel-doc-nano-HOWTO.txt 
-> is also fixed.
+Maybe you should get a freemail account somewhere then.
+It's better if people have a way to Cc the author of
+a file when they make changes to it.
 
-applied to tip/sched/devel - thanks Kevin!
+> > drop the _t here, or make explicit what is meant by it.
+> > 
+> Now that I look at it the _t is supposed to be at the end. It is
+> meant to indicate that this is a structure tag or type. I'll
+> remove it.
 
-	Ingo
+Ok, thanks for the explanation. I now saw that you also
+use '_v' for variables (I guess). These should probably
+go the same way.
+
+> >>+static DECLARE_COMPLETION(cf750gx_v_exit_completion);
+> >>+
+> >>+static unsigned int override_min_core = 0;
+> >>+static unsigned int override_max_core = 0;
+> >>+static unsigned int minmaxmode = 0;
+> >>+
+> >>+static unsigned int cf750gx_v_min_core = 0;
+> >>+static unsigned int cf750gx_v_max_core = 0;
+> >>+static int cf750gx_v_idle_pll_off = 0;
+> >>+static int cf750gx_v_min_max_mode = 0;
+> >>+static unsigned long cf750gx_v_state_bits = 0;
+> > 
+> > 
+> > Is 0 a meaningful value for these? If it just means 'uninitialized',
+> > then better don't initialize them in the first place, for clarity.
+> > 
+> The first 3 are module parameters. For the first 2, 0 means
+> that they were not set. minmaxmode is a boolean. 0 is the
+> default of disabled.
+
+Then at least for the first two, the common coding style would
+be to leave out the '= 0'. For minmaxmode, the most expressive
+way would be to define an enum, like
+
+enum {
+	MODE_NORMAL,
+	MODE_MINMAX,
+};
+
+int minmaxmode = MODE_NORMAL;
+
+> When I was initially writing the code I figured I would
+> need the min and max core frequencies in several places.
+> As it turns out they are only used in the code
+> initialization routine (cf750gx_init()). I have made
+> them locals.
+
+ah, good.
+ 
+> ..._idle_pll_off is a boolean for a sysfs attribute. 0 is
+> the default of disabled.
+
+ok
+
+> ..._min_max_mode is a boolean to hold the state of
+> minmaxmode. Seems to be only used to print the current
+> value.
+
+this looks like a duplicate then. why would you need both?
+It seems really confusing to have both a cpufreq attribute
+and a module attribute with the same name, writing to
+different variables. 
+
+> ..._state_bits is a global to maintain state.
+> 
+> Does the PowerPC suffer any performance penalties when
+> accessing shorts compared to ints? Can I save a few bytes
+> by using shorts?
+
+Don't bother. Using int is the general way to say 'some number'.
+If you use short, people will wonder why you require a 16 bit
+number.
+
+> >>+static struct cpufreq_frequency_table *cf750gx_v_f_table;
+> >>+static struct cpufreq_frequency_table *cf750gx_v_freq_table;
+> >>+static struct cpufreq_frequency_table *cf750gx_v_min_max_freq_table;
+> >>+
+> >>+static struct cf750gx_t_call_data cf750gx_v_switch_call_data;
+> >>+static struct cf750gx_t_call_data cf750gx_v_lock_call_data;
+> >>+static struct notifier_block cf750gx_v_pll_switch_nb;
+> >>+static struct notifier_block cf750gx_v_pll_lock_nb;
+> > 
+> > 
+> > Also, in general, try to avoid global variables here, even 
+> > in file scope (static), but rather put all device specific
+> > data into a per-device data structure.
+> > 
+> How big of a problem is this? I regret the decision to rip
+> the SMP stuff out. But it is kinda done. If absolutely
+> necessary I can put these into a structure?
+
+Not a huge problem in this case, because it is not strictly a
+device driver to start with. In most device drivers, you want
+a strict separation between global (per-driver) data and
+per-instance data.
+
+Are there even SMP boards based on a 750? I thought only 74xx
+and 603/604 were SMP capable.
+
+> >>+static int cf750gx_pll_switch_cb(struct notifier_block *nb, unsigned long
+> >>+       action, void *data)
+> >>+{
+> >>+struct cf750gx_t_call_data *cd;
+> >>+unsigned int idle_pll;
+> >>+unsigned int pll_off_cmd;
+> >>+unsigned int new_pll;
+> > 
+> > 
+> > The whitespace appears damaged here.
+> > 
+> Just a coding style thing. I put declarations (or definitions -
+> I get the two confused?) on the same indent as the block they are
+> in. Is this a 15 yard illegal procedure penalty?
+
+I've never seen that style before. Better do what everyone
+else does here, e.g. using 'indent -kr -i8'.
+
+> >>+       dprintk(__FILE__">%s()-%d:  Modifying PLL:  0x%x\n", __func__, __LINE__,
+> >>+               new_pll);
+> > 
+> > 
+> > Please go through all your dprintk and see if you really really need all of them.
+> > Usually they are useful while you are doing the initial code, but only get in the
+> > way as soon as it starts working.
+> > 
+> This from a code readability standpoint? Or an efficiency one?
+> I think the cpufreq stuff has a debug configure option that
+> disables compilation of these unless enabled.
+
+It's more about readability.
+
+> >>+       result = pllif_register_pll_switch_cb(&cf750gx_v_pll_switch_nb);
+> >>+
+> >>+       cf750gx_v_pll_lock_nb.notifier_call = cf750gx_pll_lock_cb;
+> >>+       cf750gx_v_pll_lock_nb.next =
+> >>+               (struct notifier_block *)&cf750gx_v_lock_call_data;
+> > 
+> > 
+> > These casts look wrong, cf750gx_v_lock_call_data is not a notifier_block.
+> > What are you trying to do here?
+> > 
+> Just a little sneaky. I should document in the kernel doc though.
+
+No, better avoid such hacks instead of documenting them. I think I
+now understand what you do there, and if I got it right, you should
+just pass two arguments to pllif_register_pll_switch_cb.
+
+> >>+static int cf750gx_cpu_exit(struct cpufreq_policy *policy)
+> >>+{
+> >>+       dprintk("%s()\n", __func__);
+> >>+
+> >>+       /*
+> >>+        * Wait for any active requests to ripple through before exiting
+> >>+        */
+> >>+       wait_for_completion(&cf750gx_v_exit_completion);
+> > 
+> > 
+> > This "wait for anything" use of wait_for_completion looks wrong, 
+> > because once any other function has done the 'complete', you won't
+> > wait here any more.
+> > 
+> > What exactly are you trying to accomplish with this?
+> > 
+> Originall I had something like:
+> 
+> 	while(some_bit_is_still_set)
+> 		sleep
+> 
+> I think you suggested I use a completion because it is in
+> fact simpler than a sleep. Now that I think about it also seems
+> intuitive to give the system a hint as to when something will
+> be done. 'complete' just means there is no timer pending (unless,
+> of course, I screwed up the code).
+
+The completion would certainly be better than the sleep here, but
+I think you shouldn't need that in the first place. AFAICT, you
+have three different kinds of events that you need to protect
+against, when some other code can call into your module:
+
+1. timer function,
+2. cpufreq notifier, and
+3. sysfs attribute.
+
+In each case, the problem is a race between two threads that you
+need to close. In case of the timer, you need to call del_timer_sync
+because the timers already have this method builtin. For the other
+two, you already unregister the interfaces, which ought to be enough.
+
+	Arnd <><
