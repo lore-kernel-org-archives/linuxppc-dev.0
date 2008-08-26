@@ -2,16 +2,15 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AB43ADEC53
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 11:59:30 +1000 (EST)
-Date: Mon, 25 Aug 2008 20:59:20 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id B3058DEC84
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 12:09:00 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: Fix determining TI_CPU in power_save_ppc32_restore()
-Message-ID: <Pine.LNX.4.64.0808252058320.21303@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, G.Chen@freescale.com
+To: paulus@samba.org
+Subject: [PATCH v2] powerpc: Fix determining TI_CPU in
+	power_save_ppc32_restore()
+Date: Mon, 25 Aug 2008 21:08:56 -0500
+Message-Id: <1219716536-21643-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,80 +21,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 The calculation to get TI_CPU based off of SPRG3 was just plain wrong.
-Since we already have thread_info in r9 there is no reason to bother
-to figure it out again.
+Just offset off the stack pointer (to get to thread_info) like all the
+other references to TI_CPU do.
 
 This was pointed out by Chen Gong <G.Chen@freescale.com>
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
 
-Paul, this is in for-2.6.27 branch.
+The first version was just brain damaged.  This version should be cleaner and
+doesn't assume anything about the call site having r9 setup already.
+
+(updated for-2.6.27 w/this and rebased to top of linus).
 
 - k
 
- arch/powerpc/kernel/idle_6xx.S  |   13 +++++++------
- arch/powerpc/kernel/idle_e500.S |   11 ++++++-----
- 2 files changed, 13 insertions(+), 11 deletions(-)
+ arch/powerpc/kernel/idle_6xx.S  |    3 ++-
+ arch/powerpc/kernel/idle_e500.S |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/kernel/idle_6xx.S b/arch/powerpc/kernel/idle_6xx.S
-index 019b02d..0138d88 100644
+index 019b02d..6dfcdb6 100644
 --- a/arch/powerpc/kernel/idle_6xx.S
 +++ b/arch/powerpc/kernel/idle_6xx.S
-@@ -151,19 +151,20 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
-  * Return from NAP/DOZE mode, restore some CPU specific registers,
-  * we are called with DR/IR still off and r2 containing physical
-  * address of current.  R11 points to the exception frame (physical
-- * address).  We have to preserve r10.
-+ * address).  We have to preserve r10.  R9 contains the physical
-+ * address of thread_info.
-  */
- _GLOBAL(power_save_ppc32_restore)
--	lwz	r9,_LINK(r11)		/* interrupted in ppc6xx_idle: */
--	stw	r9,_NIP(r11)		/* make it do a blr */
--
+@@ -158,7 +158,8 @@ _GLOBAL(power_save_ppc32_restore)
+ 	stw	r9,_NIP(r11)		/* make it do a blr */
+ 
  #ifdef CONFIG_SMP
 -	mfspr	r12,SPRN_SPRG3
--	lwz	r11,TI_CPU(r12)		/* get cpu number * 4 */
-+	lwz	r11,TI_CPU(r9)		/* get cpu number * 4 */
++	rlwinm	r12,r1,0,0,31-THREAD_SHIFT
++	tophys(r12,r12)			/* check local flags */
+ 	lwz	r11,TI_CPU(r12)		/* get cpu number * 4 */
  	slwi	r11,r11,2
  #else
- 	li	r11,0
- #endif
-+
-+	lwz	r9,_LINK(r11)		/* interrupted in ppc6xx_idle: */
-+	stw	r9,_NIP(r11)		/* make it do a blr */
-+
- 	/* Todo make sure all these are in the same page
- 	 * and load r11 (@ha part + CPU offset) only once
- 	 */
 diff --git a/arch/powerpc/kernel/idle_e500.S b/arch/powerpc/kernel/idle_e500.S
-index 0630403..c9d7234 100644
+index 0630403..47a1a98 100644
 --- a/arch/powerpc/kernel/idle_e500.S
 +++ b/arch/powerpc/kernel/idle_e500.S
-@@ -76,18 +76,19 @@ END_FTR_SECTION_IFSET(CPU_FTR_L2CSR|CPU_FTR_CAN_NAP)
- /*
-  * Return from NAP/DOZE mode, restore some CPU specific registers,
-  * r2 containing physical address of current.
-+ * r9 points to thread_info
-  * r11 points to the exception frame (physical address).
-  * We have to preserve r10.
-  */
- _GLOBAL(power_save_ppc32_restore)
--	lwz	r9,_LINK(r11)		/* interrupted in e500_idle */
--	stw	r9,_NIP(r11)		/* make it do a blr */
--
+@@ -84,10 +84,11 @@ _GLOBAL(power_save_ppc32_restore)
+ 	stw	r9,_NIP(r11)		/* make it do a blr */
+ 
  #ifdef CONFIG_SMP
 -	mfspr	r12,SPRN_SPRG3
--	lwz	r11,TI_CPU(r12)		/* get cpu number * 4 */
-+	lwz	r11,TI_CPU(r9)		/* get cpu number * 4 */
++	rlwinm	r12,r1,0,0,31-THREAD_SHIFT
+ 	lwz	r11,TI_CPU(r12)		/* get cpu number * 4 */
  	slwi	r11,r11,2
  #else
  	li	r11,0
  #endif
-+
-+	lwz	r9,_LINK(r11)		/* interrupted in e500_idle */
-+	stw	r9,_NIP(r11)		/* make it do a blr */
 +
  	b	transfer_to_handler_cont
 -- 
