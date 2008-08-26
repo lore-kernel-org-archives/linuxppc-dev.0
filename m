@@ -2,17 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9CFC2DE77C
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 11:21:58 +1000 (EST)
-Date: Mon, 25 Aug 2008 20:20:53 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id AB43ADEC53
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 11:59:30 +1000 (EST)
+Date: Mon, 25 Aug 2008 20:59:20 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>, davem@davemloft.net
-Subject: [PATCH][for 2.6.27] fs_enet: Fix SCC Ethernet on CPM2, and crash in
-	fs_enet_rx_napi()
-Message-ID: <Pine.LNX.4.64.0808252019030.20949@blarg.am.freescale.net>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: Fix determining TI_CPU in power_save_ppc32_restore()
+Message-ID: <Pine.LNX.4.64.0808252058320.21303@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: netdev@vger.kernel.org, hs@denx.de, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, G.Chen@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,98 +21,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Heiko Schocher <hs@denx.de>
+The calculation to get TI_CPU based off of SPRG3 was just plain wrong.
+Since we already have thread_info in r9 there is no reason to bother
+to figure it out again.
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+This was pointed out by Chen Gong <G.Chen@freescale.com>
+
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
 
-Updated to apply cleanly to top of linus's tree.
+Paul, this is in for-2.6.27 branch.
 
 - k
 
- arch/powerpc/include/asm/cpm2.h    |    5 +++++
- drivers/net/fs_enet/fs_enet-main.c |    8 ++++++++
- drivers/net/fs_enet/mac-scc.c      |    8 +++++++-
- 3 files changed, 20 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/idle_6xx.S  |   13 +++++++------
+ arch/powerpc/kernel/idle_e500.S |   11 ++++++-----
+ 2 files changed, 13 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cpm2.h b/arch/powerpc/include/asm/cpm2.h
-index 2a6fa01..0f5e8ff 100644
---- a/arch/powerpc/include/asm/cpm2.h
-+++ b/arch/powerpc/include/asm/cpm2.h
-@@ -337,6 +337,11 @@ typedef struct scc_param {
- 	uint	scc_tcrc;	/* Internal */
- } sccp_t;
-
-+/* Function code bits.
-+*/
-+#define SCC_EB	((u_char) 0x10)	/* Set big endian byte order */
-+#define SCC_GBL	((u_char) 0x20) /* Snooping enabled */
-+
- /* CPM Ethernet through SCC1.
+diff --git a/arch/powerpc/kernel/idle_6xx.S b/arch/powerpc/kernel/idle_6xx.S
+index 019b02d..0138d88 100644
+--- a/arch/powerpc/kernel/idle_6xx.S
++++ b/arch/powerpc/kernel/idle_6xx.S
+@@ -151,19 +151,20 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+  * Return from NAP/DOZE mode, restore some CPU specific registers,
+  * we are called with DR/IR still off and r2 containing physical
+  * address of current.  R11 points to the exception frame (physical
+- * address).  We have to preserve r10.
++ * address).  We have to preserve r10.  R9 contains the physical
++ * address of thread_info.
   */
- typedef struct scc_enet {
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index 9a51ec8..9d46182 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -792,6 +792,10 @@ static int fs_enet_open(struct net_device *dev)
- 	int r;
- 	int err;
-
-+	/* to initialize the fep->cur_rx,... */
-+	/* not doing this, will cause a crash in fs_enet_rx_napi */
-+	fs_init_bds(fep->ndev);
-+
- 	if (fep->fpi->use_napi)
- 		napi_enable(&fep->napi);
-
-@@ -1167,6 +1171,10 @@ static struct of_device_id fs_enet_match[] = {
- 		.compatible = "fsl,cpm1-scc-enet",
- 		.data = (void *)&fs_scc_ops,
- 	},
-+	{
-+		.compatible = "fsl,cpm2-scc-enet",
-+		.data = (void *)&fs_scc_ops,
-+	},
- #endif
- #ifdef CONFIG_FS_ENET_HAS_FCC
- 	{
-diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
-index 029b3c7..22f50dd 100644
---- a/drivers/net/fs_enet/mac-scc.c
-+++ b/drivers/net/fs_enet/mac-scc.c
-@@ -47,7 +47,6 @@
- #include "fs_enet.h"
-
- /*************************************************/
+ _GLOBAL(power_save_ppc32_restore)
+-	lwz	r9,_LINK(r11)		/* interrupted in ppc6xx_idle: */
+-	stw	r9,_NIP(r11)		/* make it do a blr */
 -
- #if defined(CONFIG_CPM1)
- /* for a 8xx __raw_xxx's are sufficient */
- #define __fs_out32(addr, x)	__raw_writel(x, addr)
-@@ -62,6 +61,8 @@
- #define __fs_out16(addr, x)	out_be16(addr, x)
- #define __fs_in32(addr)	in_be32(addr)
- #define __fs_in16(addr)	in_be16(addr)
-+#define __fs_out8(addr, x)	out_8(addr, x)
-+#define __fs_in8(addr)	in_8(addr)
+ #ifdef CONFIG_SMP
+-	mfspr	r12,SPRN_SPRG3
+-	lwz	r11,TI_CPU(r12)		/* get cpu number * 4 */
++	lwz	r11,TI_CPU(r9)		/* get cpu number * 4 */
+ 	slwi	r11,r11,2
+ #else
+ 	li	r11,0
  #endif
-
- /* write, read, set bits, clear bits */
-@@ -262,8 +263,13 @@ static void restart(struct net_device *dev)
-
- 	/* Initialize function code registers for big-endian.
++
++	lwz	r9,_LINK(r11)		/* interrupted in ppc6xx_idle: */
++	stw	r9,_NIP(r11)		/* make it do a blr */
++
+ 	/* Todo make sure all these are in the same page
+ 	 * and load r11 (@ha part + CPU offset) only once
  	 */
-+#ifndef CONFIG_NOT_COHERENT_CACHE
-+	W8(ep, sen_genscc.scc_rfcr, SCC_EB | SCC_GBL);
-+	W8(ep, sen_genscc.scc_tfcr, SCC_EB | SCC_GBL);
-+#else
- 	W8(ep, sen_genscc.scc_rfcr, SCC_EB);
- 	W8(ep, sen_genscc.scc_tfcr, SCC_EB);
-+#endif
-
- 	/* Set maximum bytes per receive buffer.
- 	 * This appears to be an Ethernet frame size, not the buffer
+diff --git a/arch/powerpc/kernel/idle_e500.S b/arch/powerpc/kernel/idle_e500.S
+index 0630403..c9d7234 100644
+--- a/arch/powerpc/kernel/idle_e500.S
++++ b/arch/powerpc/kernel/idle_e500.S
+@@ -76,18 +76,19 @@ END_FTR_SECTION_IFSET(CPU_FTR_L2CSR|CPU_FTR_CAN_NAP)
+ /*
+  * Return from NAP/DOZE mode, restore some CPU specific registers,
+  * r2 containing physical address of current.
++ * r9 points to thread_info
+  * r11 points to the exception frame (physical address).
+  * We have to preserve r10.
+  */
+ _GLOBAL(power_save_ppc32_restore)
+-	lwz	r9,_LINK(r11)		/* interrupted in e500_idle */
+-	stw	r9,_NIP(r11)		/* make it do a blr */
+-
+ #ifdef CONFIG_SMP
+-	mfspr	r12,SPRN_SPRG3
+-	lwz	r11,TI_CPU(r12)		/* get cpu number * 4 */
++	lwz	r11,TI_CPU(r9)		/* get cpu number * 4 */
+ 	slwi	r11,r11,2
+ #else
+ 	li	r11,0
+ #endif
++
++	lwz	r9,_LINK(r11)		/* interrupted in e500_idle */
++	stw	r9,_NIP(r11)		/* make it do a blr */
++
+ 	b	transfer_to_handler_cont
 -- 
 1.5.5.1
