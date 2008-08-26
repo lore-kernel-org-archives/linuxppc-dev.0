@@ -1,16 +1,16 @@
 Return-Path: <skepper@chara.vm.bytemark.co.uk>
 Received: from chara.vm.bytemark.co.uk (chara.vm.bytemark.co.uk [80.68.89.253])
-	by ozlabs.org (Postfix) with ESMTP id 1CB54DE420
+	by ozlabs.org (Postfix) with ESMTP id C022ADDF6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Aug 2008 21:18:20 +1000 (EST)
-Date: Tue, 26 Aug 2008 12:17:58 +0100 (BST)
+	Tue, 26 Aug 2008 22:00:14 +1000 (EST)
+Date: Tue, 26 Aug 2008 13:00:05 +0100 (BST)
 From: Chris Skepper <skepper@ukf.net>
-To: Artur Barkhudaryan <Artur.Barkhudaryan@epygiarm.am>
+To: Scott Wood <scottwood@freescale.com>
 Subject: Re: Early boot problem with MPC8247 and Linux 2.6.26
-In-Reply-To: <1732780698.20080825104615@epygiarm.am>
-Message-ID: <Pine.LNX.4.62.0808261117140.2935@chara.vm.bytemark.co.uk>
+In-Reply-To: <48AEF220.7080506@freescale.com>
+Message-ID: <Pine.LNX.4.62.0808261219210.3327@chara.vm.bytemark.co.uk>
 References: <Pine.LNX.4.62.0808221515450.31216@chara.vm.bytemark.co.uk>
-	<1732780698.20080825104615@epygiarm.am>
+	<48AEF220.7080506@freescale.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: Chris Skepper <skepper@chara.vm.bytemark.co.uk>
@@ -26,22 +26,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->> I have a custom MPC8247 based board which has been running U-boot 1.3.5
->> and Linux 2.6.26.  It has been working fine with ARCH=ppc, but I now want
->> to make it work using ARCH=powerpc.
->
->> However, using ARCH=powerpc I have encountered a problem.  Whatever I do
->> it always appears to reset in the very early stages of booting the kernel.
->
-> could this be the hardware watchdog resetting the CPU ? Do you disable
-> it in u-boot ?
+On Fri, 22 Aug 2008, Scott Wood wrote:
 
-Thanks for the suggestion, but I've just double-checked and the watchdog 
-is disabled in U-boot.  In any case, I have been using an infinite loop 
-flashing an LED to trace where execution gets to, and it never resets once 
-it has started doing that.
+> Chris Skepper wrote:
+>> Using code to flash an LED I have traced execution from the entry point in 
+>> head_32.S, through to call_setup_cpu in misc.S, __setup_cpu_603 and into 
+>> setup_common_caches in cpu_setup_6xx.S.  It appears to reset when enabling 
+>> the cache on the CPU:
+>> 
+>> setup_common_caches:
+>>     mfspr    r11,SPRN_HID0
+>>     andi.    r0,r11,HID0_DCE
+>>     ori    r11,r11,HID0_ICE|HID0_DCE
+>>     ori    r8,r11,HID0_ICFI
+>>     bne    1f            /* don't invalidate the D-cache */
+>>     ori    r8,r8,HID0_DCI        /* unless it wasn't enabled */
+>> 1:    sync
+>>     /* Chris: Reaches here. */
+>>     mtspr    SPRN_HID0,r8        /* enable and invalidate caches */
+>>     sync
+>>     mtspr    SPRN_HID0,r11        /* enable caches */
+>>     sync
+>>     isync
+>>     /* Chris: Never gets to here. */
+>>     blr
+>> 
+>> FWIW, commenting out the lines above causes it to hang when attempting to 
+>> enable the MMU, which is the next step in the process.
+>
+> How are you determining that it never gets to that point?  If it's via serial 
+> I/O or similar, be aware that I/O isn't going to work when caches are enabled 
+> but the MMU is not.
 
-Any other ideas?
+Hi Scott,
+
+I'm triggering an LED which is connected to port A.  Are you saying that 
+wouldn't work once the caching is enabled?
 
 Cheers,
 
