@@ -1,17 +1,21 @@
-Return-Path: <mustafa.cayir@bte.mam.gov.tr>
-Received: from itri.bte.mam.gov.tr (bte.mam.gov.tr [193.140.75.15])
-	by ozlabs.org (Postfix) with SMTP id 3C006DE64B
+Return-Path: <skepper@chara.vm.bytemark.co.uk>
+Received: from chara.vm.bytemark.co.uk (chara.vm.bytemark.co.uk [80.68.89.253])
+	by ozlabs.org (Postfix) with ESMTP id 1CB54DE420
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Aug 2008 19:42:47 +1000 (EST)
+	Tue, 26 Aug 2008 21:18:20 +1000 (EST)
+Date: Tue, 26 Aug 2008 12:17:58 +0100 (BST)
+From: Chris Skepper <skepper@ukf.net>
+To: Artur Barkhudaryan <Artur.Barkhudaryan@epygiarm.am>
+Subject: Re: Early boot problem with MPC8247 and Linux 2.6.26
+In-Reply-To: <1732780698.20080825104615@epygiarm.am>
+Message-ID: <Pine.LNX.4.62.0808261117140.2935@chara.vm.bytemark.co.uk>
+References: <Pine.LNX.4.62.0808221515450.31216@chara.vm.bytemark.co.uk>
+	<1732780698.20080825104615@epygiarm.am>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-9"
-Subject: Linux booting problem MPC7457 based board with U-boot 1.1.4 and Linux
-	2.6.12.6
-Date: Tue, 26 Aug 2008 12:28:11 +0300
-Message-ID: <7B9A8FF57DBB524190E98CABF6E56F07D2C3F4@itri.bte.mam.gov.tr>
-From: =?iso-8859-9?Q?Mustafa_Cay=FDr?= <mustafa.cayir@bte.mam.gov.tr>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Sender: Chris Skepper <skepper@chara.vm.bytemark.co.uk>
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: skepper@ukf.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -22,21 +26,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+>> I have a custom MPC8247 based board which has been running U-boot 1.3.5
+>> and Linux 2.6.26.  It has been working fine with ARCH=ppc, but I now want
+>> to make it work using ARCH=powerpc.
+>
+>> However, using ARCH=powerpc I have encountered a problem.  Whatever I do
+>> it always appears to reset in the very early stages of booting the kernel.
+>
+> could this be the hardware watchdog resetting the CPU ? Do you disable
+> it in u-boot ?
 
-I have a custom MPC7457 based board which has been running U-boot 1.1.4. =
-I am trying to port Linux 2.6.12.6 .
+Thanks for the suggestion, but I've just double-checked and the watchdog 
+is disabled in U-boot.  In any case, I have been using an infinite loop 
+flashing an LED to trace where execution gets to, and it never resets once 
+it has started doing that.
 
-When booting, Linux hangs when calling "call_setup_cpu" function.
+Any other ideas?
 
-arch\ppc\kernel\head.S
+Cheers,
 
-/*
- * Call setup_cpu for CPU 0 and initialize 6xx Idle
- */
-	bl	reloc_offset
-	li	r24,0			/* cpu# */
-	bl	call_setup_cpu		/* Call setup_cpu for this CPU */
-
-
-Regards.
+Chris.
