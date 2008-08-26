@@ -1,17 +1,22 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id AD9EBDE7AC
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 16:18:49 +1000 (EST)
-Date: Tue, 26 Aug 2008 08:18:41 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Gary Thomas <gary@mlbassoc.com>
-Subject: Re: MPC5200 FEC problems
-Message-ID: <20080826061841.GA4253@pengutronix.de>
-References: <48B2D167.40008@mlbassoc.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 53A36DE155
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 18:56:20 +1000 (EST)
+Date: Tue, 26 Aug 2008 10:56:09 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
+	<sebastien.chretien.enseirb@gmail.com>
+Subject: Re: initramfs vs initrd
+In-Reply-To: <319b0ac50808250837r73d88349p1ecad4214d5f7ae3@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0808261046320.7597@vixen.sonytel.be>
+References: <319b0ac50808250557g4bd1d267t14e3bd8887c76e24@mail.gmail.com>
+	<20080825131018.GA4199@yoda.jdub.homelinux.org>
+	<319b0ac50808250729i2043c4d6h57577e0a2eda7ed8@mail.gmail.com>
+	<319b0ac50808250837r73d88349p1ecad4214d5f7ae3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="8t9RHnE3ZwKMSgU+"
-In-Reply-To: <48B2D167.40008@mlbassoc.com>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-1815494733-1219740969=:7597"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,64 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---8t9RHnE3ZwKMSgU+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+---584349381-1815494733-1219740969=:7597
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Hello Gary,
+On Mon, 25 Aug 2008, S閎astien Chr閠ien wrote:
+> When the kernel is booting, is it possible to check if the initrd is good ?
 
-On Mon, Aug 25, 2008 at 09:36:07AM -0600, Gary Thomas wrote:
+Sure, the kernel does some basic checking in init/do_mounts_rd.c.
 
-> I'm adding the Analogue & Micro Boa (MPC5200/B) platform to the
-> public 2.6.26 tree.  Under heavy network load (sometimes even
-> not so heavy!), I get this error:
->   net eth0: FEC_IEVENT_RFIFO_ERROR
+With kind regards,
 
-Yeah, I know this one :(
+Geert Uytterhoeven
+Software Architect
 
-> My question is - what exactly does this error imply?  Looking at
-> the MPC5200 manual doesn't give much info - just that there was
-> a Rx FIFO error.
+Sony Techsoft Centre Europe
+The Corporate Village 路 Da Vincilaan 7-D1 路 B-1935 Zaventem 路 Belgium
 
-In deed, the manual seems not very helpful. The description of the set FIFO
-status bit did not help me that much.
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-> I'm also perplexed by the fact that I have two slightly different
-> Boa boards (same CPU rev, speed, etc).  About the only thing that's
-> different is the SDRAM setup.  One board is rock solid while the
-> other gets this error almost immediately.
-
-I'm not sure if this is really of importance, but do the boards have
-different PHYs?
-
-> Note that I don't have any trouble with this platform running RedBoot
-> or eCos, just Linux :-(
-Try this patch and please report if it worked for you:
-
-http://www.nabble.com/-PATCH--MPC52XX:-Don't-touch-pipelining-for-MPC5200B-=
-td19028341.html
-
-All the best,
-
-   Wolfram
-
---=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-
---8t9RHnE3ZwKMSgU+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIs6BBD27XaX1/VRsRAlQBAJ4xKlXy5IMJj4dDob9BcJZFyDyU5ACgvexH
-UQ7Y3mWFg7AZ/IRU8M0re5g=
-=LnWY
------END PGP SIGNATURE-----
-
---8t9RHnE3ZwKMSgU+--
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 路 RPR Brussels
+Fortis 路 BIC GEBABEBB 路 IBAN BE41293037680010
+---584349381-1815494733-1219740969=:7597--
