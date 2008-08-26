@@ -1,36 +1,29 @@
 Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-cn0ut-4.online-age.net (ext-cn0ut-4.online-age.net
-	[63.210.253.233])
+Received: from ext-nj2ut-2.online-age.net (ext-nj2ut-2.online-age.net
+	[64.14.54.231])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-cn0ut.online-age.net",
+	(Client CN "ext-nj2ut.online-age.net",
 	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 51899DE703
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 22:33:36 +1000 (EST)
-Received: from int-cn0ut-3.online-age.net (int-cn0ut-3.online-age.net
-	[3.159.252.72])
-	by ext-cn0ut-4.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id m7QCXVYa030084
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 08:33:31 -0400
-Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-3.online-age.net
-	[3.159.252.72])
-	by int-cn0ut-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id m7QCXVHH010705
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 08:33:31 -0400
-Date: Tue, 26 Aug 2008 13:33:28 +0100
+	by ozlabs.org (Postfix) with ESMTPS id CF2A8DE6DB
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 23:14:00 +1000 (EST)
+Received: from int-nj2ut-2.online-age.net (int-nj2ut-2.online-age.net
+	[3.159.237.71])
+	by ext-nj2ut-2.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id m7QDDurQ017096
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 09:13:56 -0400
+Received: from alpmlip01.e2k.ad.ge.com (int-nj2ut-2.online-age.net
+	[3.159.237.71])
+	by int-nj2ut-2.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m7QDDp1w002015
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Aug 2008 09:13:56 -0400
 From: Martyn Welch <martyn.welch@gefanuc.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 1/2] powerpc: Board support for GE Fanuc SBC610
-Message-Id: <20080826133328.5458c581.martyn.welch@gefanuc.com>
-In-Reply-To: <20080822171135.GA15623@ld0162-tx32.am.freescale.net>
-References: <20080822104615.11984.93838.stgit@ubuntu8041.localdomain>
-	<20080822104620.11984.30369.stgit@ubuntu8041.localdomain>
-	<72120CFB-62D9-44B0-AD4F-26332C90F3C9@kernel.crashing.org>
-	<20080822121152.70f01597.martyn.welch@gefanuc.com>
-	<20080822122601.162dddd4.martyn.welch@gefanuc.com>
-	<20080822171135.GA15623@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH v3 0/2] powerpc: Board support for GE Fanuc SBC610
+To: linuxppc-dev@ozlabs.org
+Date: Tue, 26 Aug 2008 09:13:39 -0400
+Message-ID: <20080826131339.12883.61796.stgit@ubuntu8041.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: scottwood@freescale.com, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,29 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 22 Aug 2008 12:11:35 -0500
-Scott Wood <scottwood@freescale.com> wrote:
+The following series implements basic board support for GE Fanuc's SBC610, a 
+6U single board computer, based on Freescale's MPC8641D.
 
-> On Fri, Aug 22, 2008 at 12:26:01PM +0100, Martyn Welch wrote:
-> > > > drop device_type.
-> > > > 
-> > > 
-> > > Ah - _all_ device_type!
-> > > 
-> > 
-> > Um, not all - just the ones where the name of the block matches the
-> > device type(?)
-> 
-> All except "cpu" and "memory".
-> 
-> -Scott
+This series provides basic functionality:
+- The board can boot with a serial console.
+- Ethernet works, though the phys are polled.
+- The PCI bus is scanned and sata functions.
 
-And, it would appear, "soc" as well.
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+---
+
+Kumar & Scott: Thanks again for your comments.
+
+I have:
+- Removed all of the "device_type" entries I believe I can
+- Moved the default config to new directory "arch/powerpc/configs/86xx/"
+- "mac-address" changed to "local-mac-address"
+- Removed un-needed #add/size and other defunct entries
+- Use common interrupt routine.
 
 Martyn
 
--- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
+Martyn Welch (2):
+      powerpc: Default configuration for GE Fanuc SBC610
+      powerpc: Board support for GE Fanuc SBC610
+
+
+ arch/powerpc/boot/dts/gef_sbc610.dts      |  268 +++++
+ arch/powerpc/configs/gef_sbc610_defconfig | 1654 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/86xx/Kconfig       |    9 
+ arch/powerpc/platforms/86xx/Makefile      |    1 
+ arch/powerpc/platforms/86xx/gef_sbc610.c  |  187 +++
+ 5 files changed, 2118 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/gef_sbc610.dts
+ create mode 100644 arch/powerpc/configs/gef_sbc610_defconfig
+ create mode 100644 arch/powerpc/platforms/86xx/gef_sbc610.c
