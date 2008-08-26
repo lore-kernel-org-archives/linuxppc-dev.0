@@ -1,21 +1,16 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 0A892DE89B
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Aug 2008 01:49:07 +1000 (EST)
-Date: Tue, 26 Aug 2008 19:49:04 +0400
+	by ozlabs.org (Postfix) with ESMTP id 24A4EDE807
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Aug 2008 03:58:57 +1000 (EST)
+Date: Tue, 26 Aug 2008 21:58:55 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 0/3] Patches to support QE USB Host Controller
-Message-ID: <20080826154904.GA26294@oksana.dev.rtsoft.ru>
-References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
-	<20080808232635.GB5352@kroah.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH -rt] powerpc/qeic: fix sleeping in atomic context
+Message-ID: <20080826175855.GA9853@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20080808232635.GB5352@kroah.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Cc: linuxppc-dev@ozlabs.org, Daniel Walker <dwalker@mvista.com>,
+	Timur Tabi <timur@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +20,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 08, 2008 at 04:26:35PM -0700, Greg KH wrote:
-> On Fri, Aug 08, 2008 at 08:17:17PM +0400, Anton Vorontsov wrote:
-> > Hi all,
-> > 
-> > Most patches that were needed to support QE USB Host were merged during
-> > 2.6.27 merge window, and only three more patches left over. Here they
-> > are.
-> > 
-> > David, could you bear with gpio_to_chip() exported function, just as
-> > a stopgap for a proper api?
-> 
-> I'll hold off on the 3rd patch until david takes the first two.
+Cascade interrupts do not use threads, thus handlers are called
+with interrupts disabled. This means that we must not grab regular
+spinlocks, since they might sleep:
 
-David, are there any issues with the first patch in the series?
+BUG: sleeping function called from invalid context swapper(0) at kernel/rtmutex.c:743
+in_atomic():1 [00010002], irqs_disabled():1
+Call Trace:
+[c0353e00] [c0008a04] show_stack+0x4c/0x1ac (unreliable)
+[c0353e40] [c001ca18] __might_sleep+0xc0/0x108
+[c0353e50] [c0254218] __rt_spin_lock+0x30/0xa0
+[c0353e60] [c0018238] qe_ic_mask_irq+0x58/0xc4
+[c0353e80] [c0057bc8] handle_level_irq+0x40/0x178
+[c0353ea0] [c001a5c0] qe_ic_cascade_low_ipic+0x50/0x68
+[c0353eb0] [c00066d0] do_IRQ+0x9c/0xc0
+[c0353ec0] [c001167c] ret_from_except+0x0/0x14
+--- Exception: 501 at cpu_idle+0xa0/0x104
+    LR = cpu_idle+0xa0/0x104
+[c0353f80] [c0009b5c] cpu_idle+0x50/0x104 (unreliable)
+[c0353fa0] [c0256088] _etext+0x88/0x9c
+[c0353fc0] [c0304af8] start_kernel+0x1c4/0x244
+[c0353ff0] [00003438] 0x3438
 
-It would be great if you'll ack the first patch, so that I'll
-respin the whole patchset with some minor fixes in the 3rd patch.
+To fix the issue we should use raw spin lock.
 
-Thanks,
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
+Note, the patch is for -rt tree only.
+
+ arch/powerpc/sysdev/qe_lib/qe_ic.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/arch/powerpc/sysdev/qe_lib/qe_ic.c
+index f59444d..a30169c 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
++++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
+@@ -33,7 +33,7 @@
+ 
+ #include "qe_ic.h"
+ 
+-static DEFINE_SPINLOCK(qe_ic_lock);
++static DEFINE_RAW_SPINLOCK(qe_ic_lock);
+ 
+ static struct qe_ic_info qe_ic_info[] = {
+ 	[1] = {
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.6.3
