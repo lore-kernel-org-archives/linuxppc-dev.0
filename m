@@ -1,33 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3D857DDE06
+Return-Path: <DWatkins@tranzeo.com>
+Received: from mail.tranzeo.com (unknown [64.114.87.10])
+	by ozlabs.org (Postfix) with ESMTP id A0D5DDDF71
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Aug 2008 00:03:56 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m7QE3fJ4022697 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Aug 2008 07:03:42 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m7QE3RTb013154
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Aug 2008 09:03:27 -0500 (CDT)
-Date: Tue, 26 Aug 2008 09:03:24 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Chris Skepper <skepper@ukf.net>
-Subject: Re: Early boot problem with MPC8247 and Linux 2.6.26
-Message-ID: <20080826140324.GB3783@ld0162-tx32.am.freescale.net>
-References: <Pine.LNX.4.62.0808221515450.31216@chara.vm.bytemark.co.uk>
-	<48AEF220.7080506@freescale.com>
-	<Pine.LNX.4.62.0808261219210.3327@chara.vm.bytemark.co.uk>
+	Wed, 27 Aug 2008 02:01:49 +1000 (EST)
+Subject: PPC405EP errata CPU 213 (Incorrect data may be flushed from the
+	data cache)
+From: Darcy Watkins <dwatkins@tranzeo.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain
+Date: Tue, 26 Aug 2008 09:01:47 -0700
+Message-Id: <1219766507.26004.92.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.62.0808261219210.3327@chara.vm.bytemark.co.uk>
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -38,22 +21,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 26, 2008 at 01:00:05PM +0100, Chris Skepper wrote:
-> >How are you determining that it never gets to that point?  If it's via 
-> >serial I/O or similar, be aware that I/O isn't going to work when caches 
-> >are enabled but the MMU is not.
-> 
-> I'm triggering an LED which is connected to port A.  Are you saying that 
-> wouldn't work once the caching is enabled?
+Hello,
 
-It's quite possible.  What other registers are in the same cache line as
-the LED, and are any of them non-memory-like?  And even if all registers
-in the cache line are OK with this sort of access, you need to use dcbf
-afterwards.
+The IBM/AMCC errata document recommends setting reserved bits 1 & 3 in
+CCR0 as a workaround to PPC405EP errata CPU 213 (Incorrect data may be
+flushed from the data cache).  For a start, I just tried hacking in a
+few lines of assembly code into...
 
-It's usually easiest to just trust that that part of the code works (in
-my experience, that's rarely where a hang actually occurs when bringing
-up a new board), and resume tracing after the MMU is on and you've
-inserted a caching-inhibited BAT entry.
+  arch/powerpc/kernel/head_40x.S
 
--Scott
+---
+
+Around line #839 ...
+
+	bl	early_init	/* We have to do this with MMU on */
+
+/*
+ * Decide what sort of machine this is and initialize the MMU.
+ */
+	mr	r3,r31
+	mr	r4,r30
+	mr	r5,r29
+	mr	r6,r28
+	mr	r7,r27
+	bl	machine_init
+	bl	MMU_init
+/* DLW hack!! - for PPC405EP errata CPU 213 */
+	mfspr	r4,SPRN_CCR0
+	oris	r4,r4,0x5000
+	mtspr	SPRN_CCR0,r4
+	isync
+
+/* Go back to running unmapped so we can load up new values
+ * and change to using our exception vectors.
+ * On the 4xx, all we have to do is invalidate the TLB to clear
+ * the old 16M byte TLB mappings.
+ */
+	lis	r4,2f@h
+...
+
+Since I am not a PowerPC assembler guru, does this appear right?
+
+I think that eventually I'd want to create a cpu_setup_40x.S with the
+fixup code as part of a setup_cpu_405ep function and then hook this into
+cputable.c, but first I want to make sure that the errata workaround is
+actually taking effect (and also not being undone by later startup
+code).
+
+-- 
+
+
+Regards,
+
+Darcy
+
+--------------
+Darcy L. Watkins - Senior Software Developer
+Tranzeo Wireless Technologies, Inc.
+19273 Fraser Way, Pitt Meadows, BC, Canada V3Y 2V4
+T:604-460-6002 ext:410
+http://www.tranzeo.com
