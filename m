@@ -1,24 +1,23 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp3.netcologne.de (smtp3.netcologne.de [194.8.194.66])
-	by ozlabs.org (Postfix) with ESMTP id 71178DE85B
+Return-Path: <skepper@chara.vm.bytemark.co.uk>
+Received: from chara.vm.bytemark.co.uk (chara.vm.bytemark.co.uk [80.68.89.253])
+	by ozlabs.org (Postfix) with ESMTP id 801F9DDF95
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Aug 2008 03:02:09 +1000 (EST)
-Received: from antares (xdsl-87-78-252-224.netcologne.de [87.78.252.224])
-	by smtp3.netcologne.de (Postfix) with ESMTP id C324C674AB
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Aug 2008 19:02:06 +0200 (CEST)
-Received: from antares (localhost [127.0.0.1])
-	by antares (Postfix) with ESMTPS id 7AEEBBA065
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Aug 2008 19:02:06 +0200 (CEST)
-Date: Tue, 26 Aug 2008 19:01:59 +0200
-From: =?UTF-8?q?Albrecht_Dre=C3=9F?= <albrecht.dress@arcor.de>
-Subject: Compile new kernel for 5200B w/ ELDK
-To: LinuxPPC Embedded <linuxppc-embedded@ozlabs.org>
-Message-Id: <1219770125l.5709l.0l@antares>
+	Wed, 27 Aug 2008 03:13:21 +1000 (EST)
+Date: Tue, 26 Aug 2008 18:09:23 +0100 (BST)
+From: Chris Skepper <skepper@ukf.net>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Early boot problem with MPC8247 and Linux 2.6.26
+In-Reply-To: <20080826140324.GB3783@ld0162-tx32.am.freescale.net>
+Message-ID: <Pine.LNX.4.62.0808261742270.5064@chara.vm.bytemark.co.uk>
+References: <Pine.LNX.4.62.0808221515450.31216@chara.vm.bytemark.co.uk>
+	<48AEF220.7080506@freescale.com>
+	<Pine.LNX.4.62.0808261219210.3327@chara.vm.bytemark.co.uk>
+	<20080826140324.GB3783@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature"; boundary="=-BGDXFSTMGN/QIpVu8da0"
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Sender: Chris Skepper <skepper@chara.vm.bytemark.co.uk>
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: skepper@ukf.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -29,57 +28,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---=-BGDXFSTMGN/QIpVu8da0
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 26 Aug 2008, Scott Wood wrote:
 
-Hi all,
+> On Tue, Aug 26, 2008 at 01:00:05PM +0100, Chris Skepper wrote:
+>
+>> I'm triggering an LED which is connected to port A.  Are you saying that
+>> wouldn't work once the caching is enabled?
+>
+> It's quite possible.  What other registers are in the same cache line as
+> the LED, and are any of them non-memory-like?
 
-please excuse a probably really dumb question about compiling a new =20
-kernel for a Freescale 5200B using the ELDK 4.2...
+There are some ethernet signals, a compact flash card detect, other LEDs 
+and a push button also on port A.  Are those what you'd call 
+non-memory-like?
 
-I am playing with a Lite5200B eval board.  The software coming from =20
-Freescale, including an older kernel (2.6.16.11-rt18), works fine.
+> It's usually easiest to just trust that that part of the code works (in
+> my experience, that's rarely where a hang actually occurs when bringing
+> up a new board), and resume tracing after the MMU is on and you've
+> inserted a caching-inhibited BAT entry.
 
-I installed ELDK 4.2 on a FC box, and first compiled u-boot 1.3.4.  =20
-Wrote it to flash, and it works nicely afaict.
+Where can I find out how to do that?  Since I have this board working with 
+the old ARCH=ppc, can I copy anything from there?
 
-Then I compiled the 2.6.24.2 kernel coming with the ELDK, using the =20
-commands "make ARCH=3Dpowerpc CROSS_COMPILE=3Dppc_6xx- lite5200_defconfig ;=
- =20
-make ARCH=3Dpowerpc CROSS_COMPILE=3Dppc_6xx- uImage".  The kernel loads, =20
-decompresses, but then there is no output any more after "Uncompressing =20
-Kernel Image ... OK".  The u-boot environment contains (quoted from =20
-printenv) "bootargs=3Dconsole=3DttyPSC0,115200 root=3D/dev/mtdblock0 rw =20
-rootfstype=3Djffs2 verbose" (and, again, the Freescale kernel is not =20
-silent).
+Also, where would be a good place in the code to resume tracing?
 
-I found a message which stated that I should include
+Thanks for your help so far.  I see now it's probably not the code for 
+enabling the cache that's causing the problem, it just masks my attempts 
+at tracing using the LED.
 
-<snip>
-         chosen {
-                 linux,stdout-path =3D "/soc5200@f0000000/serial@2000";
-	};
-</snip>
+Cheers,
 
-in the file arch/powerpc/boot/dts/lite5200.dts.  Recompiled, but =20
-without success.  I believe it's a minor tweak I need to add, but I =20
-don't have a clue what.  Unfortunately neither the wiki nor Google gave =20
-answers.  Can anyone enlighten me??
-
-Thanks,
-Albrecht.
-
---=-BGDXFSTMGN/QIpVu8da0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQBItDcNn/9unNAn/9ERAoOQAJ9WRngM6IU9iVkQef9c7LtFSTpjugCfbkY1
-EvGTIAmiAtpcZ4pq9v4Mvk8=
-=cH5H
------END PGP SIGNATURE-----
-
---=-BGDXFSTMGN/QIpVu8da0--
+Chris.
