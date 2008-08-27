@@ -1,17 +1,19 @@
-Return-Path: <blofeldus@yahoo.com>
-Received: from web53504.mail.re2.yahoo.com (web53504.mail.re2.yahoo.com
-	[206.190.37.65]) by ozlabs.org (Postfix) with SMTP id 3DF33DDF71
+Return-Path: <andresfcalderon@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 0C2C0DDF0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Aug 2008 05:07:46 +1000 (EST)
-Date: Wed, 27 Aug 2008 12:07:44 -0700 (PDT)
-From: roger blofeld <blofeldus@yahoo.com>
-Subject: Re: [PATCH V2] MPC52XX: Don't touch pipelining for MPC5200B
-To: Scott Wood <scottwood@freescale.com>
+	Thu, 28 Aug 2008 08:07:13 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so40393yxg.39
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 27 Aug 2008 15:07:12 -0700 (PDT)
+Message-ID: <6e36f2f00808271507w5b58d646w66c73c5af5931e50@mail.gmail.com>
+Date: Wed, 27 Aug 2008 17:07:11 -0500
+From: "=?ISO-8859-1?Q?Andr=E9s_Calder=F3n?=" <andres.calderon@emqbit.com>
+Sender: andresfcalderon@gmail.com
+To: linuxppc-embedded@ozlabs.org
+Subject: mpc5121e port status
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <5890.66500.qm@web53504.mail.re2.yahoo.com>
-Cc: Wolfram Sang <w.sang@pengutronix.de>, Arnd Bergmann <arnd@arndb.de>,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -22,28 +24,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Is the mpc5121e kernel port mature enough to be used in commercial applianc=
+e?
 
+Thanks,
 
-> From: Scott Wood <scottwood@freescale.com>
-> To: roger blofeld <blofeldus@yahoo.com>
-> Cc: Wolfram Sang <w.sang@pengutronix.de>; Arnd Bergmann <arnd@arndb.de>; linuxppc-embedded@ozlabs.org
-> Sent: Monday, August 25, 2008 10:36:48 AM
-> Subject: Re: [PATCH V2] MPC52XX: Don't touch pipelining for MPC5200B
-> 
-> roger blofeld wrote:
-> > Hi
-> >  Since this bug is ATA specific, shouldn't this code be conditioned by 
-> CONFIG_IDE ?
-> 
-> And then what happens if IDE is built as a module?
-> 
-> -Scott
-
-Good point. Still it seems unfortunate to slow everything down when only ATA requires the fix. I'll just continue to disable this code on my board which has no IDE.
-
-Thanks
--rb
-
-
-
-      
+ Andr=E9s Calder=F3n
+ Cel: +57 (300) 275 3666
+ Email: andres.calderon@emqbit.com
+ Web: www.emqbit.com
