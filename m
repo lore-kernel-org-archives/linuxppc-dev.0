@@ -1,20 +1,24 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-39.bluehost.com (outbound-mail-39.bluehost.com
-	[69.89.20.193]) by ozlabs.org (Postfix) with SMTP id 88266DDE03
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 10:34:22 +1000 (EST)
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] hotplug/rpaphp: remove unused error path code
-Date: Wed, 27 Aug 2008 16:34:03 -0700
-References: <20080819114555.c0d2bd50.sfr@canb.auug.org.au>
-In-Reply-To: <20080819114555.c0d2bd50.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808271634.06199.jbarnes@virtuousgeek.org>
-Cc: Alex Chiang <achiang@hp.com>, LKML <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Linda Xie <lxie@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4F848DDEE3
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 10:38:18 +1000 (EST)
+Subject: Re: [PATCH 04/59] CRED: Wrap task credential accesses in the
+	PowerPC arch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080827134602.19980.59222.stgit@warthog.procyon.org.uk>
+References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
+	<20080827134602.19980.59222.stgit@warthog.procyon.org.uk>
+Content-Type: text/plain
+Date: Thu, 28 Aug 2008 09:45:33 +1000
+Message-Id: <1219880733.13162.220.camel@pasglop>
+Mime-Version: 1.0
+Cc: Serge Hallyn <serue@us.ibm.com>, linux-security-module@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday, August 18, 2008 6:45 pm Stephen Rothwell wrote:
-> Commit f46753c5e354b857b20ab8e0fe7b2579831dc369 ("PCI: introduce pci_slot")
-> removed the need for this error path.  Eliminate this warning:
->
-> drivers/pci/hotplug/rpaphp_slot.c: In function 'rpaphp_register_slot':
-> drivers/pci/hotplug/rpaphp_slot.c:151: warning: label 'sysfs_fail' defined
-> but not used
->
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+On Wed, 2008-08-27 at 14:46 +0100, David Howells wrote:
+> Wrap access to task credentials so that they can be separated more easily from
+> the task_struct during the introduction of COW creds.
+> 
+> Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
+> 
+> Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
+> sense to use RCU directly rather than a convenient wrapper; these will be
+> addressed by later patches.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> Reviewed-by: James Morris <jmorris@namei.org>
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: linuxppc-dev@ozlabs.org
+> ---
 
-Applied to linux-next, thanks.
+Ack.
 
-Jesse
+Ben.
