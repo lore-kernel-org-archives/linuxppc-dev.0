@@ -1,35 +1,18 @@
-Return-Path: <munroesj@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E6D2FDDE01
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 06:59:25 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7RKxMOJ015799
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Aug 2008 16:59:22 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m7RKxMHU220816
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Aug 2008 14:59:22 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m7RKxLMm027125
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Aug 2008 14:59:22 -0600
-Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
-From: Steven Munroe <munroesj@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-In-Reply-To: <1219703291.13162.106.camel@pasglop>
-References: <200808251131.02071.david.jander@protonic.nl>
-	<48B290BA.7060202@genesi-usa.com>
-	<200808251506.34450.david.jander@protonic.nl>
-	<1219703291.13162.106.camel@pasglop>
-Content-Type: text/plain
-Date: Wed, 27 Aug 2008 16:04:39 -0500
-Message-Id: <1219871079.28869.149.camel@spokane1.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, David Jander <david.jander@protonic.nl>
-Reply-To: munroesj@us.ibm.com
+Return-Path: <kevdig@hypersurf.com>
+Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
+	by ozlabs.org (Postfix) with ESMTP id 71B89DE341
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 07:03:10 +1000 (EST)
+Message-ID: <48B5C0AD.9040006@hypersurf.com>
+Date: Wed, 27 Aug 2008 14:01:33 -0700
+From: Kevin Diggs <kevdig@hypersurf.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 2/4] Add cpufreq driver for the IBM PowerPC 750GX
+References: <48B28F23.1000906@hypersurf.com> <200808261329.22699.arnd@arndb.de>
+	<48B51A31.8090909@hypersurf.com> <200808271334.16712.arnd@arndb.de>
+In-Reply-To: <200808271334.16712.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,40 +22,129 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-08-26 at 08:28 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2008-08-25 at 15:06 +0200, David Jander wrote:
-> > Hi Matt,
-> > 
-> > On Monday 25 August 2008 13:00:10 Matt Sealey wrote:
-> > > The focus has definitely been on VMX but that's not to say lower power
-> > > processors were forgotten :)
-> > 
-> > lower-power (pun intended) is coming strong these days, as energy-efficiency 
-> > is getteing more important every day. And the MPC5121 is a brand-new embedded 
-> > processor, that will pop-up in quite a lot devices around you most 
-> > probably ;-)
+Arnd Bergmann wrote:
+> On Wednesday 27 August 2008, Kevin Diggs wrote:
 > 
-> It would be useful of somebody interested in getting things things
-> into glibc did the necessary FSF copyright assignment stuff and worked
-> toward integrating them.
+>>Arnd Bergmann wrote:
 > 
+> 
+>>>Ok, thanks for the explanation. I now saw that you also
+>>>use '_v' for variables (I guess). These should probably
+>>>go the same way.
+>>>
+>>
+>>Actually the _v means global variable. I would prefer to keep it.
+> 
+> 
+> The reasoning on Linux is that you can tell from the declaration
+> whether something is global or automatic. In fact, functions should
+> be so short that you can always see all automatic declarations
+> when you look at some code.
+> 
+> If you use nonstandard variable naming, people will never stop
+> asking you about that, so it's easier to just to the same as
+> everyone else.
+> 
+I will remove the "_v".
+> 
+>>>Then at least for the first two, the common coding style would
+>>>be to leave out the '= 0'. For minmaxmode, the most expressive
+>>>way would be to define an enum, like
+>>>
+>>>enum {
+>>>	MODE_NORMAL,
+>>>	MODE_MINMAX,
+>>>};
+>>>
+>>>int minmaxmode = MODE_NORMAL;
+>>>
+>>
+>>Since this is a boolean parameter I don't know? What if I change the
+>>name to enable_minmax. And actually use the "bool" module parameter
+>>type?
+> 
+> 
+> Module parameter names should be short, so just "minmax" would
+> be a good name, but better put the module_param() line right
+> after that. If it's a bool type, I would just leave out the
+> initialization.
+> 
+Ok. But leaving out the initialization will make me itch. Should I
+also replace "override_min_core" with "mincore" (or "min_core")? And
+"override_max_core" with "maxcore" (or "max_core")?
 
-Ben makes a very good point!
+Leaving out the initializations makes me ... uneasy. It's ok to leave
+them out if they are 0?
+> 
+>>>>..._min_max_mode is a boolean to hold the state of
+>>>>minmaxmode. Seems to be only used to print the current
+>>>>value.
+>>>
+>>>
+>>>this looks like a duplicate then. why would you need both?
+>>>It seems really confusing to have both a cpufreq attribute
+>>>and a module attribute with the same name, writing to
+>>>different variables. 
+>>>
+>>
+>>I probably don't need both? I kinda treat the variables tied to module
+>>parameters as read only.
+> 
+> 
+> But you have marked as read/write in the module_param line.
+> 
+> I would prefer to just have the module parameter and have
+> a tool to modify that one.
+> 
+> If a module parameter only makes sense as read-only, you
+> should mark it as 0444 instead of 0644, but this one looks
+> like it can be writable.
+> 
+I meant I treat them as read only from the code. That is why I have a
+separate variable to change from the sysfs routines. I'll eliminate it
+if you like. I have removed the auto added sysfs attributes.
+> 
+>>>The completion would certainly be better than the sleep here, but
+>>>I think you shouldn't need that in the first place. AFAICT, you
+>>>have three different kinds of events that you need to protect
+>>>against, when some other code can call into your module:
+>>>
+>>>1. timer function,
+>>>2. cpufreq notifier, and
+>>>3. sysfs attribute.
+>>>
+>>>In each case, the problem is a race between two threads that you
+>>>need to close. In case of the timer, you need to call del_timer_sync
+>>>because the timers already have this method builtin. For the other
+>>>two, you already unregister the interfaces, which ought to be enough.
+>>>
+>>
+>>The choice I made here was to wait for the timer to fire rather than
+>>to delete it. I think it is easier to just wait for it than to delete
+>>it and try to get things back in order. Though since this is in a
+>>module exit routine it probably does not matter. Also I would have to
+>>check whether there was an analogous HRTimer call and call the right
+>>one.
+> 
+> 
+> I think the module_exit() function should leave the frequency in a
+> well-defined state, so the easiest way to get there is probably
+> to delete the timer, and then manually set the frequency.
+> 
+I really don't follow you here? If I let the timer fire then the cpu
+(and the cpufreq sub-system) will be left in a well-defined state. I
+don't understand why you want me to delete the timer and then
+basically do manually what it was going to do anyway. There are two
+calls to cpufreq_notify_transition(). One just before the modify_PLL()
+call, with CPUFREQ_PRECHANGE as an argument, and one in the
+pll_switch_cb() routine, with CPUFREQ_POSTCHANGE as an argument. I
+would need to make sure that these are matched up.
 
-There is a process for contributing code to GLIBC, which starts with an
-FSF copyright assignment.
+Even without the HRTimer stuff being used the timer fires in less than
+4 ms (@ 250 HZ). So I can't see the user actually trying to interrupt
+a frequency change. With HRTimers it is 100 us.
 
-There is also a framework for adding and maintaining optimizations of
-this type:
-
-http://penguinppc.org/dev/glibc/glibc-powerpc-cpu-addon.html
-
-Since this original effort the powerpc changes have been merged into
-mainline glibc (GLIBC-2.7) and no longer require a separate
-(powerpc-cpu) addon. But the --with-cpu= configure option still works.
-This mechanism also works with the glibc ports addon and eglibc.
-
-So it does no good to complain here. If you have core you want to
-contribute, Get your FSF CR assignment and join #glibc on freenode IRC.
-
-And we will help you.
+Can we please, please leave this part as is?
+> 
+> 	Arnd <><
+> 
