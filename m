@@ -1,18 +1,20 @@
-Return-Path: <sebastien.chretien.enseirb@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.225])
-	by ozlabs.org (Postfix) with ESMTP id 86186DDE1E
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 01:37:42 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so2946022rvb.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Aug 2008 08:37:41 -0700 (PDT)
-Message-ID: <319b0ac50808270837ofa75as3b47f975ad3ffaa2@mail.gmail.com>
-Date: Wed, 27 Aug 2008 17:37:41 +0200
-From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
-	<sebastien.chretien.enseirb@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [TTY] driver sriel tty on ppc board
+Return-Path: <flar@cynthia.pants.nu>
+Received: from cynthia.pants.nu (unknown [76.245.85.235])
+	by ozlabs.org (Postfix) with ESMTP id 4042ADDF06
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 02:09:15 +1000 (EST)
+Date: Wed, 27 Aug 2008 09:08:59 -0700
+From: Brad Boyer <flar@allandria.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 2/4] Add cpufreq driver for the IBM PowerPC 750GX
+Message-ID: <20080827160859.GA2009@cynthia.pants.nu>
+References: <48B28F23.1000906@hypersurf.com> <200808261329.22699.arnd@arndb.de>
+	<48B51A31.8090909@hypersurf.com> <200808271334.16712.arnd@arndb.de>
+	<Pine.LNX.4.64.0808271339230.22151@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_10424_19886856.1219851461234"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0808271339230.22151@vixen.sonytel.be>
+Cc: linuxppc-dev@ozlabs.org, Kevin Diggs <kevdig@hypersurf.com>,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,130 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_10424_19886856.1219851461234
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Wed, Aug 27, 2008 at 01:40:10PM +0200, Geert Uytterhoeven wrote:
+> On Wed, 27 Aug 2008, Arnd Bergmann wrote:
+> > On Wednesday 27 August 2008, Kevin Diggs wrote:
+> > > Arnd Bergmann wrote:
+> > > > Are there even SMP boards based on a 750? I thought only 74xx
+> > > > and 603/604 were SMP capable.
+> > > > 
+> > > Not that I have heard of. I thought it was lacking some hardware that
+> > > was needed to do SMP? Can the 603 do SMP?
+> > 
+> > No, I was wrong about the 603. The machine I was thinking of is actually
+> > 604e.
+> 
+> The BeBox had a dual 603.
 
-Hello,
+I remember going to a talk by some of the Be engineers, and I think they
+said that the 603 had terrible SMP performance. My understanding was that
+Motorola recommended the 604 for SMP configurations but the 603 was much
+cheaper and mostly worked. The 750 is much more like the 603 than the 604.
 
-I am trying to code a tty serial driver (UART link). The initialization is :
-(model LDD 3)
-
-static int __init tiny_tty_init(void)
-{
-    int i, retval;
-
-    printk("Initialization of ttyS -> \n");
-    tiny_tty_driver=alloc_tty_driver(NB_TTY);
-    if(!tiny_tty_driver)
-        return -ENOMEM;
-
-    /*Initialize the tty driver*/
-
-    tiny_tty_driver->owner =THIS_MODULE;
-    tiny_tty_driver->driver_name = "ttyS";
-    tiny_tty_driver->name = "ttyS";
-    tiny_tty_driver->major = TTY_MAJOR;
-    tiny_tty_driver->type = TTY_DRIVER_TYPE_SERIAL;
-    tiny_tty_driver->subtype = SERIAL_TYPE_NORMAL;
-    tiny_tty_driver->flags = TTY_DRIVER_REAL_RAW;
-    tiny_tty_driver->init_termios = tty_std_termios;
-    tiny_tty_driver->init_termios.c_cflag = B9600 | CS8 | CREAD
-|HUPCL|CLOCAL;
-
-    tty_set_operations(tiny_tty_driver, &serial_ops);
-    /*register the tty driver*/
-    retval=tty_register_driver(tiny_tty_driver);
-    if(retval)
-    {
-        printk(KERN_ERR "Failed to register tiny tty driver");
-        put_tty_driver(tiny_tty_driver);
-        return retval;
-    }
-
-    for(i=0; i< NB_TTY; ++i)
-        tty_register_device(tiny_tty_driver,i,NULL);
-    printk("<-Initialization of ttyS \n");
-    return retval;
-}
-
-module_init(tiny_tty_init);
-
-
-but I have a kernel panic :
-
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered (default)
-Kernel panic - not syncing: Couldn't register /dev/tty0 driver
-
-Can someone help me to trace the failure ?
-
-Thanks
-
-------=_Part_10424_19886856.1219851461234
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hello,<br>
-<br>
-I am trying to code a tty serial driver (UART link). The initialization is :<br>
-(model LDD 3)<br>
-<br>
-static int __init tiny_tty_init(void)<br>
-{<br>
-&nbsp;&nbsp;&nbsp; int i, retval;<br>
-<br>
-&nbsp;&nbsp;&nbsp; printk(&quot;Initialization of ttyS -&gt; \n&quot;);<br>
-&nbsp;&nbsp;&nbsp; tiny_tty_driver=alloc_tty_driver(NB_TTY);<br>
-&nbsp;&nbsp;&nbsp; if(!tiny_tty_driver)<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; return -ENOMEM;<br>
-<br>
-&nbsp;&nbsp;&nbsp; /*Initialize the tty driver*/<br>
-<br>
-&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;owner =THIS_MODULE;<br>
-&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;driver_name = &quot;ttyS&quot;;<br>
-&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;name = &quot;ttyS&quot;;<br>
-&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;major = TTY_MAJOR;<br>
-&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;type = TTY_DRIVER_TYPE_SERIAL;<br>
-&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;subtype = SERIAL_TYPE_NORMAL;<br>
-&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;flags = TTY_DRIVER_REAL_RAW;<br>
-&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;init_termios = tty_std_termios;<br>
-&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;init_termios.c_cflag = B9600 | CS8 | CREAD |HUPCL|CLOCAL;<br>
-<br>
-&nbsp;&nbsp;&nbsp; tty_set_operations(tiny_tty_driver, &amp;serial_ops);<br>
-&nbsp;&nbsp;&nbsp; /*register the tty driver*/<br>
-&nbsp;&nbsp;&nbsp; retval=tty_register_driver(tiny_tty_driver);<br>
-&nbsp;&nbsp;&nbsp; if(retval)<br>
-&nbsp;&nbsp;&nbsp; {<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; printk(KERN_ERR &quot;Failed to register tiny tty driver&quot;);<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; put_tty_driver(tiny_tty_driver);<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; return retval;<br>
-&nbsp;&nbsp;&nbsp; }<br>
-<br>
-&nbsp;&nbsp;&nbsp; for(i=0; i&lt; NB_TTY; ++i)<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; tty_register_device(tiny_tty_driver,i,NULL);<br>
-&nbsp;&nbsp;&nbsp; printk(&quot;&lt;-Initialization of ttyS \n&quot;);<br>
-&nbsp;&nbsp;&nbsp; return retval;<br>
-}<br>
-<br>
-module_init(tiny_tty_init);<br>
-<br>
-<br>
-but I have a kernel panic : <br>
-<br>
-io scheduler noop registered<br>
-io scheduler anticipatory registered<br>
-io scheduler deadline registered<br>
-io scheduler cfq registered (default)<br>
-Kernel panic - not syncing: Couldn&#39;t register /dev/tty0 driver<br>
-<br>
-Can someone help me to trace the failure ?<br>
-<br>
-Thanks<br>
-<br>
-
-------=_Part_10424_19886856.1219851461234--
+	Brad Boyer
+	flar@allandria.com
