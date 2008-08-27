@@ -1,18 +1,18 @@
-Return-Path: <stern+48acf28e@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
-	by ozlabs.org (Postfix) with SMTP id 7E28EDDF3D
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 00:43:02 +1000 (EST)
-Date: Wed, 27 Aug 2008 10:36:20 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [RFC][USB] powerpc: Workaround for the PPC440EPX USBH_23 errata
-In-Reply-To: <20080827022351.67e8a9b2@vitb-lp>
-Message-ID: <Pine.LNX.4.44L0.0808271024420.2498-100000@iolanthe.rowland.org>
+Return-Path: <sebastien.chretien.enseirb@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.225])
+	by ozlabs.org (Postfix) with ESMTP id 86186DDE1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 01:37:42 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so2946022rvb.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Aug 2008 08:37:41 -0700 (PDT)
+Message-ID: <319b0ac50808270837ofa75as3b47f975ad3ffaa2@mail.gmail.com>
+Date: Wed, 27 Aug 2008 17:37:41 +0200
+From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
+	<sebastien.chretien.enseirb@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [TTY] driver sriel tty on ppc board
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stefan Roese <sr@denx.de>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	linux-usb@vger.kernel.org, Mark Miesfeld <mmiesfeld@amcc.com>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_10424_19886856.1219851461234"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,168 +22,130 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 27 Aug 2008, Vitaly Bordug wrote:
+------=_Part_10424_19886856.1219851461234
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> A published errata for ppc440epx states, that when running Linux with both
-> EHCI and OHCI modules loaded, the EHCI module experiences a fatal error 
-> when a high-speed device is connected to the USB2.0, and functions normally
-> if OHCI module is not loaded. 
-> 
-> Quote from original descriprion:
-> 
-> The 440EPx USB 2.0 Host controller is an EHCI compliant controller.  In USB
-> 2.0 Host controllers, each EHCI controller has one or more companion
-> controllers, which may be OHCI or UHCI.  An USB 2.0 Host controller will
-> contain one or more ports.  For each port, only one of the controllers is
-> connected at any one time. In the 440EPx, there is only one OHCI companion controller, 
-> and only one USB 2.0 Host port.
-> All ports on an USB 2.0 controller default to the companion controller.  If
-> you load only an ohci driver, it will have control of the ports and any
-> deviceplugged in will operate, although high speed devices will be forced to
-> operate at full speed.  When an ehci driver is loaded, it explicitly takes control
-> of the ports.  If there is a device connected, and / or every time there is a
-> new device connected, the ehci driver determines if the device is high speed or
-> not.  If it is high speed, the driver retains control of the port.  If it
-> is not, the driver explicitly gives the companion controller control of the
-> port.
+Hello,
 
-This doesn't explain why the fatal error occurs.
+I am trying to code a tty serial driver (UART link). The initialization is :
+(model LDD 3)
 
-> The is a software workaround that uses 
-> Initial version of the software workaround was posted to linux-usb-devel:
-> 
-> http://www.mail-archive.com/linux-usb-devel@lists.sourceforge.net/msg54019.html
-> 
-> and later available from amcc.com:
-> http://www.amcc.com/Embedded/Downloads/download.html?cat=1&family=15&ins=2
-> 
-> The patch below is generally based on the latter, but reworked to
-> powerpc/of_device USB drivers, and uses a few devicetree inquiries to get
-> rid of all the hardcoded defines and CONFIG_* stuff, in favor to
-> defining specific quirk. The latter required to add more accurate
-> description into compatible field of USB node for 'sequioia' board. 
+static int __init tiny_tty_init(void)
+{
+    int i, retval;
 
-I have some doubts about parts of this patch.
+    printk("Initialization of ttyS -> \n");
+    tiny_tty_driver=alloc_tty_driver(NB_TTY);
+    if(!tiny_tty_driver)
+        return -ENOMEM;
 
-> --- a/drivers/usb/host/ehci-ppc-of.c
-> +++ b/drivers/usb/host/ehci-ppc-of.c
-> @@ -107,16 +107,17 @@ ehci_hcd_ppc_of_probe(struct of_device *op, const struct of_device_id *match)
->  {
->  	struct device_node *dn = op->node;
->  	struct usb_hcd *hcd;
-> -	struct ehci_hcd	*ehci;
-> +	struct ehci_hcd	*ehci = NULL;
->  	struct resource res;
->  	int irq;
->  	int rv;
->  
-> +	struct device_node *np;
-> +
->  	if (usb_disabled())
->  		return -ENODEV;
->  
->  	dev_dbg(&op->dev, "initializing PPC-OF USB Controller\n");
-> -
->  	rv = of_address_to_resource(dn, 0, &res);
->  	if (rv)
->  		return rv;
-> @@ -125,6 +126,7 @@ ehci_hcd_ppc_of_probe(struct of_device *op, const struct of_device_id *match)
->  	if (!hcd)
->  		return -ENOMEM;
->  
-> +
+    /*Initialize the tty driver*/
 
-Is there any reason for these apparently gratuitous whitespace changes?
+    tiny_tty_driver->owner =THIS_MODULE;
+    tiny_tty_driver->driver_name = "ttyS";
+    tiny_tty_driver->name = "ttyS";
+    tiny_tty_driver->major = TTY_MAJOR;
+    tiny_tty_driver->type = TTY_DRIVER_TYPE_SERIAL;
+    tiny_tty_driver->subtype = SERIAL_TYPE_NORMAL;
+    tiny_tty_driver->flags = TTY_DRIVER_REAL_RAW;
+    tiny_tty_driver->init_termios = tty_std_termios;
+    tiny_tty_driver->init_termios.c_cflag = B9600 | CS8 | CREAD
+|HUPCL|CLOCAL;
 
->  	hcd->rsrc_start = res.start;
->  	hcd->rsrc_len = res.end - res.start + 1;
->  
-> @@ -172,6 +174,21 @@ ehci_hcd_ppc_of_probe(struct of_device *op, const struct of_device_id *match)
->  				rv ? "NOT ": "");
->  	}
->  
-> +	np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
-> +	if (np != NULL) {
-> +	/* claim we really affected by usb23 erratum */
-> +		ehci->has_amcc_usb23 = 1;
-> +		if (!of_address_to_resource(np, 0, &res))
-> +			ehci->ohci_hcctrl_reg = ioremap(res.start +
-> +					OHCI_HCCTRL_OFFSET, OHCI_HCCTRL_LEN);
-> +		else
-> +			pr_debug(__FILE__ ": no ohci offset in fdt\n");
-> +		if (!ehci->ohci_hcctrl_reg) {
-> +			pr_debug(__FILE__ ": ioremap for ohci hcctrl failed\n");
-> +			return -ENOMEM;
+    tty_set_operations(tiny_tty_driver, &serial_ops);
+    /*register the tty driver*/
+    retval=tty_register_driver(tiny_tty_driver);
+    if(retval)
+    {
+        printk(KERN_ERR "Failed to register tiny tty driver");
+        put_tty_driver(tiny_tty_driver);
+        return retval;
+    }
 
-This is a memory leak.
+    for(i=0; i< NB_TTY; ++i)
+        tty_register_device(tiny_tty_driver,i,NULL);
+    printk("<-Initialization of ttyS \n");
+    return retval;
+}
 
-> --- a/drivers/usb/host/ehci.h
-> +++ b/drivers/usb/host/ehci.h
-> @@ -809,6 +819,20 @@ static inline u32 hc32_to_cpup (const struct ehci_hcd *ehci, const __hc32 *x)
->  		le32_to_cpup((__force __le32 *)x);
->  }
->  
-> +static inline void set_ohci_hcfs(struct ehci_hcd *ehci, int operational)
-> +{
-> +	u32 hc_control;
-> +
-> +	hc_control = (readl_be(ehci->ohci_hcctrl_reg) & ~OHCI_CTRL_HCFS);
-> +	if (operational)
-> +		hc_control |= OHCI_USB_OPER;
-> +	else
-> +		hc_control |= OHCI_USB_SUSPEND;
-> +
-> +	writel_be(hc_control, ehci->ohci_hcctrl_reg);
-> +	(void) readl_be(ehci->ohci_hcctrl_reg);
-> +}
-> +
+module_init(tiny_tty_init);
 
-This should be protected by a preprocessor test so that the code 
-doesn't get compiled on architectures that don't need it.
 
-> --- a/drivers/usb/host/ohci-ppc-of.c
-> +++ b/drivers/usb/host/ohci-ppc-of.c
-> @@ -148,6 +148,31 @@ ohci_hcd_ppc_of_probe(struct of_device *op, const struct of_device_id *match)
->  	if (rv == 0)
->  		return 0;
->  
-> +	/* by now, 440epx is known to show usb_23 erratum */
-> +	np = of_find_compatible_node(NULL, NULL, "ibm,usb-ehci-440epx");
-> +
-> +	/* Work around - At this point ohci_run has executed, the
-> +	* controller is running, everything, the root ports, etc., is
-> +	* set up.  If the ehci driver is loaded, put the ohci core in
-> +	* the suspended state.  The ehci driver will bring it out of
-> +	* suspended state when / if a non-high speed USB device is
-> +	* attached to the USB Host port.  If the ehci driver is not
-> +	* loaded, do nothing. request_mem_region is used to test if
-> +	* the ehci driver is loaded.
-> +	*/
-> +	if (np !=  NULL) {
-> +		ohci->flags |= OHCI_QUIRK_AMCC_USB23;
-> +		if (!of_address_to_resource(np, 0, &res))
-> +			if (!request_mem_region(res.start, 0x4, hcd_name)) {
-> +				writel_be((readl_be(&ohci->regs->control) |
-> +				    OHCI_USB_SUSPEND), &ohci->regs->control);
-> +				    (void) readl_be(&ohci->regs->control);
+but I have a kernel panic :
 
-Wrong indentation level.
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered
+io scheduler cfq registered (default)
+Kernel panic - not syncing: Couldn't register /dev/tty0 driver
 
-> +			} else  {
-> +				release_mem_region(res.start, 0x4);
-> +			}
-> +		else
-> +		    pr_debug(__FILE__ ": cannot get ehci offset from fdt\n");
+Can someone help me to trace the failure ?
 
-Wrong indentation amount.
+Thanks
 
-> +	}
->  	iounmap(hcd->regs);
->  err_ioremap:
->  	irq_dispose_mapping(irq);
+------=_Part_10424_19886856.1219851461234
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I doubt this will interact properly with usbcore and the rest of
-ohci-hcd.  They do not expect the root hub to be suspended unless they
-know about it.
+Hello,<br>
+<br>
+I am trying to code a tty serial driver (UART link). The initialization is :<br>
+(model LDD 3)<br>
+<br>
+static int __init tiny_tty_init(void)<br>
+{<br>
+&nbsp;&nbsp;&nbsp; int i, retval;<br>
+<br>
+&nbsp;&nbsp;&nbsp; printk(&quot;Initialization of ttyS -&gt; \n&quot;);<br>
+&nbsp;&nbsp;&nbsp; tiny_tty_driver=alloc_tty_driver(NB_TTY);<br>
+&nbsp;&nbsp;&nbsp; if(!tiny_tty_driver)<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; return -ENOMEM;<br>
+<br>
+&nbsp;&nbsp;&nbsp; /*Initialize the tty driver*/<br>
+<br>
+&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;owner =THIS_MODULE;<br>
+&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;driver_name = &quot;ttyS&quot;;<br>
+&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;name = &quot;ttyS&quot;;<br>
+&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;major = TTY_MAJOR;<br>
+&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;type = TTY_DRIVER_TYPE_SERIAL;<br>
+&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;subtype = SERIAL_TYPE_NORMAL;<br>
+&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;flags = TTY_DRIVER_REAL_RAW;<br>
+&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;init_termios = tty_std_termios;<br>
+&nbsp;&nbsp;&nbsp; tiny_tty_driver-&gt;init_termios.c_cflag = B9600 | CS8 | CREAD |HUPCL|CLOCAL;<br>
+<br>
+&nbsp;&nbsp;&nbsp; tty_set_operations(tiny_tty_driver, &amp;serial_ops);<br>
+&nbsp;&nbsp;&nbsp; /*register the tty driver*/<br>
+&nbsp;&nbsp;&nbsp; retval=tty_register_driver(tiny_tty_driver);<br>
+&nbsp;&nbsp;&nbsp; if(retval)<br>
+&nbsp;&nbsp;&nbsp; {<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; printk(KERN_ERR &quot;Failed to register tiny tty driver&quot;);<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; put_tty_driver(tiny_tty_driver);<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; return retval;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+<br>
+&nbsp;&nbsp;&nbsp; for(i=0; i&lt; NB_TTY; ++i)<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; tty_register_device(tiny_tty_driver,i,NULL);<br>
+&nbsp;&nbsp;&nbsp; printk(&quot;&lt;-Initialization of ttyS \n&quot;);<br>
+&nbsp;&nbsp;&nbsp; return retval;<br>
+}<br>
+<br>
+module_init(tiny_tty_init);<br>
+<br>
+<br>
+but I have a kernel panic : <br>
+<br>
+io scheduler noop registered<br>
+io scheduler anticipatory registered<br>
+io scheduler deadline registered<br>
+io scheduler cfq registered (default)<br>
+Kernel panic - not syncing: Couldn&#39;t register /dev/tty0 driver<br>
+<br>
+Can someone help me to trace the failure ?<br>
+<br>
+Thanks<br>
+<br>
 
-Alan Stern
+------=_Part_10424_19886856.1219851461234--
