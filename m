@@ -1,20 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id C8162DDEE9
+Return-Path: <skepper@chara.vm.bytemark.co.uk>
+Received: from chara.vm.bytemark.co.uk (chara.vm.bytemark.co.uk [80.68.89.253])
+	by ozlabs.org (Postfix) with ESMTP id A7099DDF00
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Aug 2008 18:13:53 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: mmap and ppc460gt
-Date: Wed, 27 Aug 2008 10:13:18 +0200
-References: <f608b67d0808261926p67e27770mb7c64cc14015b9ab@mail.gmail.com>
-	<ada3akri1i5.fsf@cisco.com>
-In-Reply-To: <ada3akri1i5.fsf@cisco.com>
+	Wed, 27 Aug 2008 23:31:12 +1000 (EST)
+Date: Wed, 27 Aug 2008 14:30:47 +0100 (BST)
+From: Chris Skepper <skepper@ukf.net>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Early boot problem with MPC8247 and Linux 2.6.26
+In-Reply-To: <48B43C42.5040407@freescale.com>
+Message-ID: <Pine.LNX.4.62.0808271413001.14220@chara.vm.bytemark.co.uk>
+References: <Pine.LNX.4.62.0808221515450.31216@chara.vm.bytemark.co.uk>
+	<48AEF220.7080506@freescale.com>
+	<Pine.LNX.4.62.0808261219210.3327@chara.vm.bytemark.co.uk>
+	<20080826140324.GB3783@ld0162-tx32.am.freescale.net>
+	<Pine.LNX.4.62.0808261742270.5064@chara.vm.bytemark.co.uk>
+	<48B43C42.5040407@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808271013.18659.arnd@arndb.de>
-Cc: vb <vb@vsbe.com>, Roland Dreier <rdreier@cisco.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Sender: Chris Skepper <skepper@chara.vm.bytemark.co.uk>
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: skepper@ukf.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,32 +30,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 27 August 2008, Roland Dreier wrote:
-> =A0> I don't seem to be able to port this to ppc460gt: on this architectu=
-re
-> =A0> the PCI register space can be mapped only to 36 bit address ranges
-> =A0> with nonzero top nibbles. But mmap() =A0(at least the one I have in
-> =A0> 2.6.25) =A0accepts only 32 bit values for addresses, hence there is =
-no
-> =A0> way to map PCI space into user space.
->=20
-> In the past I've been able to use mmap64() on ppc440 to get at 36-bit
-> addresses. =A0As far as I know this should still work.
+On Tue, 26 Aug 2008, Scott Wood wrote:
 
-Right, this is supposed to work. If it doesn't, report it as a bug.
+>>> It's usually easiest to just trust that that part of the code works (in
+>>> my experience, that's rarely where a hang actually occurs when bringing
+>>> up a new board), and resume tracing after the MMU is on and you've
+>>> inserted a caching-inhibited BAT entry.
+>> 
+>> Where can I find out how to do that?  Since I have this board working with 
+>> the old ARCH=ppc, can I copy anything from there?
+>
+> See setup_cpm_bat in arch/powerpc/kernel/head_32.S.
+>
+>> Also, where would be a good place in the code to resume tracing?
+>
+> As soon as you can set up a BAT -- though first, I would try just enabling 
+> the CPM debug console and see if you get anything from that.
 
-> Also you should be able to get at the BAR of a PCI device by using
-> mmap() on a resource file under /sys/devices, eg something like
-> /sys/devices/pci0000:00/0000:00:04.0/0000:0b:00.0/resource0
-> (where the bus numbers obviously depend on your system and the resource
-> number depends on what BAR your device has registers in)
+Thanks very much for your help so far.  I tried enabling the console and 
+didn't get anything output.  So I resumed tracing and discovered it gets 
+much further, as far as udbg_init_cpm and udbg_putc_cpm in cpm_common.c 
+However, it never gets that first 'X' printed because it appears to hang 
+when it gets to this bit:
 
-This should work as well.
+   out_8(txbuf, c);
+   out_be32(&cpm_udbg_txdesc[0], 0xa0000001);
 
-The best way to do it however would be to implement a UIO device driver
-for your device, see e.g. http://lwn.net/Articles/232575/.
+I just left CONFIG_PPC_EARLY_DEBUG_CPM_ADDR at the default value for CPM2? 
+Is that likely to be correct for SMC1?  (I tried looking in the MPC8272 
+reference manual, but couldn't find it.)
 
-That gives you proper control over the permissions and lets you handle
-interrupts and other things as well.
+Is it likely the port isn't set up properly?  udbg_early_init and 
+udbg_init_cpm get called before it probes the machine so there's been no 
+chance to do cpm2_set_pin or anything.
 
-	Arnd <><
+Cheers,
+
+Chris.
