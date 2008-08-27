@@ -1,21 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 289F3DDF91
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Aug 2008 21:40:34 +1000 (EST)
-Date: Wed, 27 Aug 2008 13:40:10 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 2/4] Add cpufreq driver for the IBM PowerPC 750GX
-In-Reply-To: <200808271334.16712.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.64.0808271339230.22151@vixen.sonytel.be>
-References: <48B28F23.1000906@hypersurf.com> <200808261329.22699.arnd@arndb.de>
-	<48B51A31.8090909@hypersurf.com> <200808271334.16712.arnd@arndb.de>
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 4AB5ADDF56
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Aug 2008 23:46:08 +1000 (EST)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 04/59] CRED: Wrap task credential accesses in the PowerPC arch
+To: linux-kernel@vger.kernel.org
+Date: Wed, 27 Aug 2008 14:46:02 +0100
+Message-ID: <20080827134602.19980.59222.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
+References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-1757792643-1219837210=:22151"
-Cc: linuxppc-dev@ozlabs.org, Kevin Diggs <kevdig@hypersurf.com>,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org, linux-security-module@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, Serge Hallyn <serue@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Wrap access to task credentials so that they can be separated more easily from
+the task_struct during the introduction of COW creds.
 
----584349381-1757792643-1219837210=:22151
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
 
-On Wed, 27 Aug 2008, Arnd Bergmann wrote:
-> On Wednesday 27 August 2008, Kevin Diggs wrote:
-> > Arnd Bergmann wrote:
-> > > Are there even SMP boards based on a 750? I thought only 74xx
-> > > and 603/604 were SMP capable.
-> > > 
-> > Not that I have heard of. I thought it was lacking some hardware that
-> > was needed to do SMP? Can the 603 do SMP?
-> 
-> No, I was wrong about the 603. The machine I was thinking of is actually
-> 604e.
+Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
+sense to use RCU directly rather than a convenient wrapper; these will be
+addressed by later patches.
 
-The BeBox had a dual 603.
+Signed-off-by: David Howells <dhowells@redhat.com>
+Reviewed-by: James Morris <jmorris@namei.org>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+---
 
-With kind regards,
+ arch/powerpc/mm/fault.c                   |    2 +-
+ arch/powerpc/platforms/cell/spufs/inode.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-Geert Uytterhoeven
-Software Architect
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-1757792643-1219837210=:22151--
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 565b7a2..8660986 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -339,7 +339,7 @@ bad_area_nosemaphore:
+ 	    && printk_ratelimit())
+ 		printk(KERN_CRIT "kernel tried to execute NX-protected"
+ 		       " page (%lx) - exploit attempt? (uid: %d)\n",
+-		       address, current->uid);
++		       address, current_uid());
+ 
+ 	return SIGSEGV;
+ 
+diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
+index 690ca7b..60bd5ed 100644
+--- a/arch/powerpc/platforms/cell/spufs/inode.c
++++ b/arch/powerpc/platforms/cell/spufs/inode.c
+@@ -95,8 +95,8 @@ spufs_new_inode(struct super_block *sb, int mode)
+ 		goto out;
+ 
+ 	inode->i_mode = mode;
+-	inode->i_uid = current->fsuid;
+-	inode->i_gid = current->fsgid;
++	inode->i_uid = current_fsuid();
++	inode->i_gid = current_fsgid();
+ 	inode->i_blocks = 0;
+ 	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+ out:
