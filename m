@@ -1,9 +1,9 @@
 Return-Path: <kevdig@hypersurf.com>
 Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
-	by ozlabs.org (Postfix) with ESMTP id 71B89DE341
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 07:03:10 +1000 (EST)
-Message-ID: <48B5C0AD.9040006@hypersurf.com>
-Date: Wed, 27 Aug 2008 14:01:33 -0700
+	by ozlabs.org (Postfix) with ESMTP id A60B5DE379
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 07:06:43 +1000 (EST)
+Message-ID: <48B5C171.2000301@hypersurf.com>
+Date: Wed, 27 Aug 2008 14:04:49 -0700
 From: Kevin Diggs <kevdig@hypersurf.com>
 MIME-Version: 1.0
 To: Arnd Bergmann <arnd@arndb.de>
@@ -44,8 +44,7 @@ Arnd Bergmann wrote:
 > If you use nonstandard variable naming, people will never stop
 > asking you about that, so it's easier to just to the same as
 > everyone else.
-> 
-I will remove the "_v".
+>  
 > 
 >>>Then at least for the first two, the common coding style would
 >>>be to leave out the '= 0'. For minmaxmode, the most expressive
@@ -69,12 +68,6 @@ I will remove the "_v".
 > after that. If it's a bool type, I would just leave out the
 > initialization.
 > 
-Ok. But leaving out the initialization will make me itch. Should I
-also replace "override_min_core" with "mincore" (or "min_core")? And
-"override_max_core" with "maxcore" (or "max_core")?
-
-Leaving out the initializations makes me ... uneasy. It's ok to leave
-them out if they are 0?
 > 
 >>>>..._min_max_mode is a boolean to hold the state of
 >>>>minmaxmode. Seems to be only used to print the current
@@ -100,9 +93,18 @@ them out if they are 0?
 > should mark it as 0444 instead of 0644, but this one looks
 > like it can be writable.
 > 
-I meant I treat them as read only from the code. That is why I have a
-separate variable to change from the sysfs routines. I'll eliminate it
-if you like. I have removed the auto added sysfs attributes.
+> 
+>>>Are there even SMP boards based on a 750? I thought only 74xx
+>>>and 603/604 were SMP capable.
+>>>
+>>
+>>Not that I have heard of. I thought it was lacking some hardware that
+>>was needed to do SMP? Can the 603 do SMP?
+> 
+> 
+> No, I was wrong about the 603. The machine I was thinking of is actually
+> 604e.
+> 
 > 
 >>>The completion would certainly be better than the sleep here, but
 >>>I think you shouldn't need that in the first place. AFAICT, you
@@ -131,20 +133,6 @@ if you like. I have removed the auto added sysfs attributes.
 > well-defined state, so the easiest way to get there is probably
 > to delete the timer, and then manually set the frequency.
 > 
-I really don't follow you here? If I let the timer fire then the cpu
-(and the cpufreq sub-system) will be left in a well-defined state. I
-don't understand why you want me to delete the timer and then
-basically do manually what it was going to do anyway. There are two
-calls to cpufreq_notify_transition(). One just before the modify_PLL()
-call, with CPUFREQ_PRECHANGE as an argument, and one in the
-pll_switch_cb() routine, with CPUFREQ_POSTCHANGE as an argument. I
-would need to make sure that these are matched up.
-
-Even without the HRTimer stuff being used the timer fires in less than
-4 ms (@ 250 HZ). So I can't see the user actually trying to interrupt
-a frequency change. With HRTimers it is 100 us.
-
-Can we please, please leave this part as is?
-> 
 > 	Arnd <><
+> 
 > 
