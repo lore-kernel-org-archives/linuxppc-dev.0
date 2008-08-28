@@ -1,19 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 80033DE046
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 01:04:48 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
-Date: Thu, 28 Aug 2008 17:04:20 +0200
-References: <1219916613-28827-1-git-send-email-leoli@freescale.com>
-In-Reply-To: <1219916613-28827-1-git-send-email-leoli@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808281704.20999.arnd@arndb.de>
-Cc: greg@kroah.com, Li Yang <leoli@freescale.com>, linux-usb@vger.kernel.org,
-	dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org
+Return-Path: <vancasperz@yahoo.com.cn>
+Received: from n1.bullet.mail.re3.yahoo.com (n1.bullet.mail.re3.yahoo.com
+	[68.142.237.108]) by ozlabs.org (Postfix) with SMTP id BAE2EDE227
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 01:25:22 +1000 (EST)
+Subject: Re: Why does one "stw" fail with address translation disabled in
+	PPC405EP?
+From: Zhou Rui <vancasperz@yahoo.com.cn>
+To: Linuxppc-dev <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <1219691805.6735.63.camel@zr.gii.upv.es>
+References: <1219429635.8882.22.camel@zr.gii.upv.es>
+	<20080822184213.GA24526@yoda.jdub.homelinux.org>
+	<1219479992.7565.17.camel@localhost>
+	<20080824185547.94A0724899@gemini.denx.de>
+	<1219691805.6735.63.camel@zr.gii.upv.es>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 28 Aug 2008 17:53:43 +0200
+Message-Id: <1219938823.7588.74.camel@localhost>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,137 +25,132 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 28 August 2008, Li Yang wrote:
-> Some of Freescale SoC chips have a QE or CPM co-processor which
-> supports full speed USB.  The driver adds device mode support
-> of both QE and CPM USB controller to Linux USB gadget.  The
-> driver is tested with MPC8360 and MPC8272, and should work with
-> other models having QE/CPM given minor tweaks.
+Hi, all:
+Well, as described before, the problem happens at "0xc0000434
+<InstructionAccess+52>:      stw     r12,64(r11)". At this moment,
+address translation is disabled and physical addresses are used, but r11
+contains 0x03072da0 which is a physical address out of the range of 0x0
+and 0x01ffffff. I check backward and see that value of r11 is from r1 by
+tophys(r11,r1). r1 should hold the stack pointer, whose value is in the
+form of 0xc3xxxxxx when the problem happens.
+In this project, we make use of the concept of domain for high level
+OSes above XtratuM kernel. Here Linux is the root domain and the problem
+happens when we tries to load and transfer to a testing domain which
+just prints some sentences, and 0x100000a0 is the entry point of the
+testing domain, so we need to execute this address. We define a struct
+domain_t for the domain and the stack pointer is achieved by:
+....
+  d->sstack_st = vmalloc (DEFAULT_SSTACK_SIZE); /* DEFAULT_SSTACK_SIZE
+is 0x1000 */
 
-Looks pretty good, just a few comments on the driver:
-  
-> +config USB_GADGET_FSL_QE
-> +	boolean "Freescale QE/CPM USB Device Controller"
-> +	depends on FSL_SOC && (QUICC_ENGINE || CPM)
-> +	help
-> +	   Some of Freescale PowerPC processors have a Full Speed
-> +	   QE/CPM2 USB controller, which support device mode with 4
-> +	   programmable endpoints. This driver supports the
-> +	   controller in the MPC8360 and MPC8272, and should work with
-> +	   controllers having QE or CPM2, given minor tweaks.
-> +
-> +	   Say "y" to link the driver statically, or "m" to build a
-> +	   dynamically linked module called "fsl_qe_udc" and force all
-> +	   gadget drivers to also be dynamically linked.
-> +
-> +config USB_FSL_QE
-> +	tristate
-> +	depends on USB_GADGET_FSL_QE
-> +	default USB_GADGET
-> +	select USB_GADGET_SELECTED
+  if (!d->sstack_st) {
+    destroy_domain (d);
+    id = -OUT_OF_MEMORY;
+    goto exit_load_domain;
+  }
 
+  d->sstack = (unsigned long *)((unsigned long)d->sstack_st +
+DEFAULT_SSTACK_SIZE); /* sstack is the new domain's stack pointer that
+will be moved to r1 */
 
-Why do you need the two config options, not just one?
+After doing this, sstack will get the value of 0xc3xxxxxx.
 
-> +#ifdef CONFIG_CPM2
-> +#include <asm/cpm.h>
-> +
-> +#define qe_muram_addr cpm_muram_addr
-> +#define qe_muram_offset cpm_muram_offset
-> +#define qe_muram_alloc cpm_muram_alloc
-> +#define qe_muram_free cpm_muram_free
-> +#endif
-...
-> +static int qe_ep_cmd_restarttx(struct qe_ep *ep)
-> +{
-> +	u8 ep_num;
-> +#ifdef CONFIG_CPM2
-> +	u32 command;
-> +	u8 opcode;
-> +
-> +	ep_num = ep->epnum << CPM_USB_EP_SHIFT;
-> +	command = CPM_USB_RESTART_TX | (u32)ep_num;
-> +	opcode = CPM_USB_RESTART_TX_OPCODE;
-> +	cpm_command(command, opcode);
-> +#else
-> +	ep_num = ep->epnum;
-> +	qe_issue_cmd(QE_USB_RESTART_TX, QE_CR_SUBBLOCK_USB, ep_num, 0);
-> +#endif
-> +	return 0;
-> +}
+Shouln't I use vmalloc here? Or are there any other solution?
 
-This part doesn't look good, you should try to avoid hardcoding
-the specific type of chip (QE or CPM2) here. AFAICT, you can build
-a multiplatform kernel that supports both QE and CPM2, but your code
-here would be broken in that case if you try to run it on QE.
+Thanks in advance for any advice!
 
-> +static void setup_received_handle(struct qe_udc *udc,
-> +					struct usb_ctrlrequest *setup);
-> +static int qe_ep_rxframe_handle(struct qe_ep *ep);
-> +static void ep0_req_complete(struct qe_udc *udc, struct qe_req *req);
+Best Wishes
 
-Better try to avoid static forward declarations by reordering your
-functions in call order. That is the common coding style and makes
-drivers easier to read when you're used to it.
+Zhou Rui
+2008-08-28
 
-> +
-> +	tasklet_schedule(&udc->rx_tasklet);
+åœ¨ 2008-08-25ä¸€çš„ 21:16 +0200ï¼ŒZhou Ruiå†™é“ï¼š
+> Hi,
+> I think maybe you have known this project named XtratuM
+> (http://www.xtratum.org). I'm porting it from x86 to PPC405. The
+> implementation on PPC440 has been basically finished
+> (ftp://dslab.lzu.edu.cn/pub/xtratum/xtratum-ppc/snapshots/xtratum-ppc-20071205.tar.bz2) and I know there was discussion about it in this mail list before. XtratuM is an ADEOS based nano kernel. It aims for realtime and is designed to provide virtual timer, virtual interrupt and memory space sperations for domains. Each domain is loaded by a userspace program (instead of the root domain as a kernel module) and the loader will load the domain's (ELF staticly excutable) PT_LOAD section into memory, and then raise a properly system call (passing the structurized loaded data as arguments) to load the domain via load_domain_sys() of XtratuM, and at the last step of loading the domain, xtratum will jump to the entry code of the new domain(asm wrappered start() routine) and then everything should be fine. 0x100000a0 is the entry point of the test domain, and that is why I need to start execution from it.
+> 
+> I think I can say something of my analysis so far for the cause of my
+> problem. Thanks for the mention of memory size. Once the kernel module
+> of XtratuM is loaded, the symbols of it are placed to virtual addresses
+> like 0xc3xxxxxx. Because in normal state, address translation is enabled
+> (MSR[IR, DR] = [1, 1]), these addresses are okay. However, when loading
+> the domain, because the entry point 0x100000a0 is not in TLB and it
+> should be reloaded, Data TLB Miss Exception arises and DTLBMiss is
+> called. The exception clears MSR[IR, DR], so address translation is
+> disabled and physical address should be used at this moment. If we want
+> something at the virtual address of 0xc3xxxxxx, we must access the
+> physical addresses like 0x03xxxxxx. Nevertheless, the limitation of 32MB
+> memory makes the valid physical address range from 0x0 to 0x1ffffff.
+> Therefore, during the exception handling, the addresses out of range
+> should not be accessed, but the instructions cannot know the memory
+> limitation in advance and tries to do something in addresses such as
+> 0x03072da0 based on the address translation mechanism, which leads to
+> machine check.
+> I haved tried to append "mem=32M" to kernel command line but no help. I
+> think it is because when loading the kernel in normal state, address
+> translation is enabled and the virtual addresses are okay. Kernel cannot
+> foresee that there is going to be a TLB miss exception and the illegal
+> physical addresses like 0x03xxxxxx may be accessed.
+> 
+> So any ideas for this problem are welcome.
+> 
+> Thank you very much for taking care.
+> 
+> Best Wishes
+> 
+> Zhou Rui
+> 2008-08-25
+> 
+> åœ¨ 2008-08-24æ—¥çš„ 20:55 +0200ï¼ŒWolfgang Denkå†™é“ï¼š
+> > Dear Zhou Rui,
+> > 
+> > In message <1219479992.7565.17.camel@localhost> you wrote:
+> > >
+> > > > >    I am running a kernel module which will execute a user space
+> > > > >application. The entry point of the application is 0x100000a0. At the
+> > > > 
+> > > > That should be the first clue that you are doing it wrong.  Don't do
+> > > > stuff like that in modules...
+> > > 
+> > > Oh, but our project needs a function like that ...
+> > 
+> > You should really think about this. Why do you think you  need  this?
+> > What  exactly  are  you  trying  to  do?  [Probably  there are better
+> > approaches to solve your problem...]
+> 
+> > > It is physical address at this moment. Address translation is disabled
+> > > automatically (MSR[IR, DR] = [0, 0]) because of TLB Miss Exception and
+> > > Instrunction Storage Exception.
+> > 
+> > Hm.. are you absolutely sure that the 0x100000a0 mentioned above is a
+> > physical address?
+> > 
+> > > > Do you have enough DRAM to cover that?  Some of those boards only come
+> > > > with 32MiB of DRAM.
+> > > 
+> > > My board only has 32MB DRAM. Do you mean 32MB is not enough for that?
+> > 
+> > Well, 0x1000'00A0 is above 256 MB, while you  have  only  32  MB  RAM
+> > which is most probably mapped from 0x0000'0000...0x01FF'FFFF... So
+> > what you claim to be a physical address (and I think your claim is
+> > wrong) is far outside available physical memory.
+> > 
+> > > The same codes can run well in a PPC440EP (Yosemite Board) which owns
+> > > 256MB DRAM. At the beginning of my work, I thought memory size may be
+> > > the cause of failure. But I did not know how to demonstrate it. So if
+> > > the limitation of 32MB DRAM leads to the failure, are there any methods
+> > > for the codes to solve it?
+> > 
+> > I think you got lost on the wrong track. Please describe  which  task
+> > you  want  to  implement, and there might be another, better approach
+> > for it.
+> > 
+> > Best regards,
+> > 
+> > Wolfgang Denk
 
-Not a problem, but an observation: Most new code uses work queues instead
-of tasklets these days, which gives you more predictable real time
-latencies.
-If you don't have a specific reason to prefer a tasklet, just use
-a workqueue here.
-
-> +/*-------------------------------------------------------------------------
-> +	Gadget driver register and unregister.
-> + --------------------------------------------------------------------------*/
-> +int usb_gadget_register_driver(struct usb_gadget_driver *driver)
-> +EXPORT_SYMBOL(usb_gadget_register_driver);
-> +
-> +int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
-> +EXPORT_SYMBOL(usb_gadget_unregister_driver);
-
-Not addressing this driver in particular, but the USB gadget layer in
-general: This is a horrible interface, since every gadget driver exports
-the same symbols, you can never build a kernel that includes more than
-one gadget driver. Even if the drivers are all built as modules, simply
-loading one of them prevents loading another one.
-
-> +	udc->dev = &ofdev->dev;
-> +
-> +	/* use the default address for the usb parameter */
-> +	prop = of_get_property(np, "reg", &nsize);
-> +	offset = of_read_number(prop + 2, 1);
-> +	size = of_read_number(prop + 3, 1);
-
-You should not assume a specific layout of the reg property but
-rather use the simpler of_iomap function to get the registers,
-independent of the bus mapping.
-
-> +/*-------------------------------------------------------------------------*/
-> +static struct of_device_id qe_udc_match[] = {
-> +	{
-> +		.compatible = "fsl,mpc8360-qe-usb",
-> +	},
-> +	{
-> +		.compatible = "fsl,mpc8272-cpm-usb",
-> +	},
-> +	{},
-> +};
-
-Since they are evidently different implementations, you should
-fill out the data field in the device id as the easiest way
-to identify the two (and possible future) versions of the hardware.
-
-> +#ifdef DEBUG
-> +#define VDBG(fmt, args...)	printk(KERN_DEBUG "[%s]  " fmt "\n", \
-> +				__func__, ## args)
-> +#else
-> +#define VDBG(fmt, args...)       do {} while (0)
-> +#endif
-
-please use the standard dev_debug and pr_debug macros instead of defining
-your own.
-
-	Arnd <><
+__________________________________________________
+¸Ï¿ì×¢²áÑÅ»¢³¬´óÈÝÁ¿Ãâ·ÑÓÊÏä?
+http://cn.mail.yahoo.com
