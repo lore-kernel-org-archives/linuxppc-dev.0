@@ -1,23 +1,17 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1.cisco.com [171.71.176.70])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-1.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C5A0DDE187
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CE2DCDE180
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Aug 2008 00:48:04 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: paul@mad-scientist.us
-Subject: Re: 2.6.25: include/asm-ppc vs. include/asm-powerpc
-References: <1219928864.16802.69.camel@homebase.localnet>
-	<200808281553.18167.arnd@arndb.de>
-	<1219933848.16802.96.camel@homebase.localnet>
-Date: Thu, 28 Aug 2008 07:48:00 -0700
-In-Reply-To: <1219933848.16802.96.camel@homebase.localnet> (Paul Smith's
-	message of "Thu, 28 Aug 2008 10:30:48 -0400")
-Message-ID: <adaej49jivz.fsf@cisco.com>
+	Fri, 29 Aug 2008 01:07:08 +1000 (EST)
+Message-ID: <48B6B201.2070101@embedded-sol.com>
+Date: Thu, 28 Aug 2008 17:11:13 +0300
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org, Stefan Roese <sr@denx.de>
+Subject: GPIO interrupt on AMCC 460EX
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,18 +22,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- > It doesn't matter whether I build my code in the kernel as patches, or
- > not.  The problem is not that I don't have the headers handy, it's that
- > they simply don't exist in asm-ppc anymore, not even in the linux source
- > tree.
+Hi,
 
-I believe that the kernel's build system (before arch/ppc was removed
-entirely) had some magic to include files from asm-powerpc if they
-didn't exist in asm-ppc.  So building your code with the kernel's build
-system (and Documentation/kbuild/modules.txt explains how to do that
-even without building in the kernel tree itself) should work.
+I'm writing a Linux driver for CPLD access on custom
+460EX based board. CPLD generates interrupt, which
+is connected to GPIO pin 45. According to 460EX user
+manual, this pin, if configured as alternate function 3,
+will generate external interrupt 12, which is mapped into
+irq 20 on UIC3.  My question is - how do I get irq number
+suitable for passing to request_irq().
 
-For example, the reason include/asm-ppc/ppc_asm.h doesn't exist is
-because of commit 5f7c6907, which moved the file to asm-powerpc.
+Thanks a lot.
 
- - R.
+Felix Radensky
+Embedded Solutions Ltd.
+http://www.embedded-sol.com
+ 
