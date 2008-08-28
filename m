@@ -1,19 +1,23 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id AFAB4DE394
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 03:07:57 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: RFC: Could cpm2_clk_setup and cpm2_set_pin be exported ?
-Date: Thu, 28 Aug 2008 19:07:49 +0200
-References: <200808281757.16903.laurentp@cse-semaphore.com>
-	<20080828164142.GB1185@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20080828164142.GB1185@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2661842.IqiUU8RjiB";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200808281907.53607.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <miltonm@sullivan.realtime.net>
+Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B1165DE15A
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 03:19:07 +1000 (EST)
+Date: Thu, 28 Aug 2008 12:14:39 -0500 (CDT)
+Message-Id: <200808281714.m7SHEdCX096569@sullivan.realtime.net>
+From: Milton Miller <miltonm@bga.com>
+Sender: Milton Miller <miltonm@realtime.net>
+Subject: Re: [BUG] linux-next: Tree for August 26 - Badness at
+	kernel/notifier.c:25
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1219935307.7107.302.camel@pmac.infradead.org>
+References: <1219935307.7107.302.camel@pmac.infradead.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	mingo@elte.hu, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,53 +27,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart2661842.IqiUU8RjiB
-Content-Type: text/plain;
-  charset="ansi_x3.4-1968"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Thursday 28 August 2008, Scott Wood wrote:
-> On Thu, Aug 28, 2008 at 05:57:13PM +0200, Laurent Pinchart wrote:
-> > I'm facing a situation where I need to call cpm2_clk_setup and
-> > cpm2_set_pin from a device driver compiled as a module. Before
-> > submitting a patch to export both functions, I'd like to make sure
-> > there isn't a cleaner way to implement the desired functionality
-> > without calling functions that are supposed to be used by board setup
-> > code.
->=20
-> Have you looked at using the GPIO API?
+David Woodhouse dwmw2 at infradead.org
+Fri Aug 29 00:55:07 EST 2008
 
-Yes, but the GPIO API doesn't support dedicated pin usage. Basically all I =
-can do is configure a pin as a general purpose input or output, and set its=
- level when configured as an output. The GPIO API doesn't provide any way t=
-o access the PAR and SOR registers.
+> On Thu, 2008-08-28 at 15:23 +0100, David Woodhouse wrote:
+>> On Thu, 2008-08-28 at 00:38 +1000, Stephen Rothwell wrote:
+>>> Hi Arjan,
+>>> 
+>>> On Thu, 28 Aug 2008 00:33:08 +1000 Stephen Rothwell <sfr at canb.auug.org.au> wrote:
+>>>>
+>>>> The original reported trace was during setup_system which is very early in
+>>>> the boot.
+>>> 
+>>> But, of course, that version didn't have the necessary extra dereference
+>>> of the function address ...
+>>> 
+>>> And the later debug patch did not check the address at register time,
+>>> only at notify time.
+>>> 
+>>> The later trace also looks to be early in the boot.
+>> 
+>> It's isa_bridge_notify(), which is neither within _[se]text nor
+>> _[se]inittext, so the core_kernel_text() function disavows it.
+>> 
+>> Where are __devinit functions supposed to end up?
+> 
+> The TEXT_TEXT macro defined in <asm-generic/vmlinux.lds.h> should get
+> this right... but we don't use it. Is there any particular reason for
+> that, or should we....
 
-Beside, the GPIO API won't help configuring clock routing.
+gitk -- arch/powerpc/kernel/vmlinux.S
 
-Best regards,
+	e95c91821fa56b489d7beb74103a419466c5ec10
+	[POWERPC] Fix link errors for allyesconfig
+    
+    An allyesconfig build creates a .text section that is so big that the
+    .text.init.refok and .fixup sections are too far away for the relocations
+    to be fixed up correctly. This patch fixes that by linking all the
+    relevent text sections for each file together.
+    
+    Suggested by Paul Mackerras.
+    
+    Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
 
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
+Although I think its really fac23fe4be23259a8eaa9bad822f5b14dd07d15c 
+powerpc: Introduce infrastructure for feature sections with alternatives
+that causes the problems.
 
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+If the problem is only reaching the branch-out-of-fixup-section, then
+we could create a macro that caculates the branch as if it were already
+at the destination address (using something like
 
---nextPart2661842.IqiUU8RjiB
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+	b (target-fixup_start)-(current-alternative_start)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+and then removing the code that determines the branch target goes beyond
+the feature section.
 
-iEYEABECAAYFAki222kACgkQ8y9gWxC9vpf7tgCcDUsQw8DI5F1QoM8zagzTnC8r
-kRUAoK04utXKFZfCuc1jWJenmJGR4gI+
-=ifu1
------END PGP SIGNATURE-----
+Just a concept, have't tried it yet and don't know if there are other
+problems with .text.init.refok.
 
---nextPart2661842.IqiUU8RjiB--
+Or we fix our defintion and put a comment next to TEXT_TEXT that we
+don't use it for future editors.
+
+> 
+> Signed-off-by: David Woodhouse <David.Woodhouse at intel.com>
+> 
+> --- linux-2.6.26.ppc64/arch/powerpc/kernel/vmlinux.lds.S~	2008-07-13 22:51:29.000000000 +0100
+> +++ linux-2.6.26.ppc64/arch/powerpc/kernel/vmlinux.lds.S	2008-08-28 15:39:14.000000000 +0100
+> @@ -35,10 +35,11 @@ SECTIONS
+>  		ALIGN_FUNCTION();
+>  		*(.text.head)
+>  		_text = .;
+> -		*(.text .fixup .text.init.refok .exit.text.refok)
+> +		TEXT_TEXT
+>  		SCHED_TEXT
+>  		LOCK_TEXT
+>  		KPROBES_TEXT
+> +		*(.fixup)
+>  
+>  #ifdef CONFIG_PPC32
+>  		*(.got1)
+> 
+> -- 
+> David Woodhouse                            Open Source Technology Centre
+> David.Woodhouse at intel.com                              Intel Corporation
