@@ -1,18 +1,20 @@
-Return-Path: <stern+48acf28e@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
-	by ozlabs.org (Postfix) with SMTP id DEEECDDE1D
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 07:33:01 +1000 (EST)
-Date: Thu, 28 Aug 2008 17:33:00 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: "Steven A. Falco" <sfalco@harris.com>
-Subject: Re: [RFC][USB] powerpc: Workaround for the PPC440EPX USBH_23 errata
-In-Reply-To: <48B71497.30500@harris.com>
-Message-ID: <Pine.LNX.4.44L0.0808281727090.4308-100000@iolanthe.rowland.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 99BB6DDF22
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 08:28:42 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
+Date: Fri, 29 Aug 2008 00:27:58 +0200
+References: <Pine.LNX.4.44L0.0808281613540.3844-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808281613540.3844-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stefan Roese <sr@denx.de>, linux-usb@vger.kernel.org,
-	Mark Miesfeld <mmiesfeld@amcc.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200808290027.59127.arnd@arndb.de>
+Cc: dbrownell@users.sourceforge.net, greg@kroah.com, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Scott Wood <scottwood@freescale.com>, Li Yang <leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 28 Aug 2008, Steven A. Falco wrote:
+On Thursday 28 August 2008, Alan Stern wrote:
+> On Thu, 28 Aug 2008, Scott Wood wrote:
+>=20
+> > Alan Stern wrote:
+> > > This was done deliberately. =A0The relevant standards state that a USB
+> > > device can have no more than one peripheral interface.
+> >=20
+> > Does building a kernel image that can run on different hardware without=
+=20
+> > rebuilding also violate the "relevant standards"?
+>=20
+> No. =A0That isn't what Arnd was concerned about. =A0He noted that even if=
+=20
+> you did build multiple modules, only one of them could be loaded at any=20
+> time.
 
-> Alan Stern wrote:
-> > Your original post mentioned that the 440EPx has only one USB 2.0 host
-> > port.  Then how can you use a keyboard and memory stick at the same
-> > time?  You'd have to plug them into a hub -- in which case only one
-> > controller would be needed, the one driving the hub.  The patch would 
-> > be unnecessary.
-> I have one of these processors on a Sequoia board.  What happens is that
-> if you build the kernel with both EHCI and OHCI support, then plug in
-> a modern USB memory stick, it initially tries EHCI, the driver fails, and
-> the whole thing falls back to OHCI.  So you wind up running at 12 Mbps.
-> The only way to make high speed work is to turn off the OHCI driver, and
-> then you cannot support slow devices with that kernel.
-> 
-> So, hile you cannot plug two devices in at one time, you can plug in
-> different speed devices at different times, and my understanding is that
-> this patch will let that work seamlessly.
+Well, actually it was exactly what I was concerned about ;-)
 
-Is there some reason why it doesn't work already?  All the patch does
-is suspend the OHCI root hub when you plug in the memory stick -- but
-the root hub should already be suspended.
+The way I understand the code, it is layered into the hardware specific
+part and the protocol specific part, which are connected through
+the interfaces I pointed out.
 
-Unless the memory stick is already plugged in when the kernel boots.  
-In which case the root hub won't be suspended -- it won't suspend until 
-1 second after ohci-hcd initializes the controller.  Is that the 
-scenario you're worried about?
+The standard requires that there can only be one protocol handler
+per physical interface, which is a reasonable limitation.
+However, what the Linux implementation actually enforces is
+that there can only be one hardware specific driver built or loaded
+into the kernel, which just looks like an arbitrary restriction
+that does not actually help.
 
-Alan Stern
+If the gadget hardware drivers were registering the device with a
+gadget_bus_type, you could still enforce the "only one protocol"
+rule by binding every protocol to every device in that bus type.
+
+	Arnd <><
