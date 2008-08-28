@@ -1,19 +1,29 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id ECDA8DE137
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 00:20:50 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc4xx_pci: necessary fixes for 4GB RAM size
-Date: Thu, 28 Aug 2008 16:18:31 +0200
-References: <1219391015-6317-1-git-send-email-yanok@emcraft.com>
-	<20080828092820.2cacaba7@zod.rchland.ibm.com>
-In-Reply-To: <20080828092820.2cacaba7@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808281618.31652.sr@denx.de>
-Cc: wd@denx.de, Ilya Yanok <yanok@emcraft.com>
+Return-Path: <SRS0+49dc8b6c736af31a1e2a+1831+infradead.org+dwmw2@casper.srs.infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 43AEBDE154
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 00:23:45 +1000 (EST)
+Subject: Re: [BUG] linux-next: Tree for August 26 - Badness at
+	kernel/notifier.c:25
+From: David Woodhouse <dwmw2@infradead.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20080828003821.d29d2a03.sfr@canb.auug.org.au>
+References: <20080826184008.6be39f19.sfr@canb.auug.org.au>
+	<48B44B2D.8070809@linux.vnet.ibm.com>
+	<48B46610.1010809@linux.intel.com>
+	<48B53695.3020703@linux.vnet.ibm.com>
+	<48B55B16.7060804@linux.intel.com>
+	<20080828003308.400038e0.sfr@canb.auug.org.au>
+	<20080828003821.d29d2a03.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Thu, 28 Aug 2008 14:23:30 +0000
+Message-Id: <1219933410.7107.296.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	mingo@elte.hu, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +33,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 28 August 2008, Josh Boyer wrote:
-> > 1. total_memory should be phys_addr_t not unsigned long
-> > 2. is_power_of_2() works with u32 so I just inlined (size & (size-1)) !=
-> > 0 instead.
-> > Also this patch fixes default initialization: res->end should be
-> > 0x7fffffff not 0x80000000.
+On Thu, 2008-08-28 at 00:38 +1000, Stephen Rothwell wrote:
+> Hi Arjan,
+> 
+> On Thu, 28 Aug 2008 00:33:08 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 > >
-> > Signed-off-by: Ilya Yanok <yanok@emcraft.com>
->
-> Ben, any comments here?  Looks right to me.
+> > The original reported trace was during setup_system which is very early in
+> > the boot.
+> 
+> But, of course, that version didn't have the necessary extra dereference
+> of the function address ...
+> 
+> And the later debug patch did not check the address at register time,
+> only at notify time.
+> 
+> The later trace also looks to be early in the boot.
 
-Looks good to me too. So:
+It's isa_bridge_notify(), which is neither within _[se]text nor
+_[se]inittext, so the core_kernel_text() function disavows it.
 
-Acked-by: Stefan Roese <sr@denx.de>
+Where are __devinit functions supposed to end up?
 
-Best regards,
-Stefan
+ $ egrep _[es]init\|_[es]text\|isa_bridge_notify System.map 
+c000000000000000 T _stext
+c00000000045d000 T _etext
+c000000000463ca8 t .isa_bridge_notify
+c00000000063a000 T _sinittext
+c00000000067c3bc T _einittext
+c00000000071fd80 d isa_bridge_notify
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
