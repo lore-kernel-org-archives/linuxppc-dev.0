@@ -1,18 +1,29 @@
-Return-Path: <stern+48acf28e@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
-	by ozlabs.org (Postfix) with SMTP id B1774DE607
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 03:22:44 +1000 (EST)
-Date: Thu, 28 Aug 2008 13:22:38 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
-In-Reply-To: <200808281704.20999.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.44L0.0808281320010.2464-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: dbrownell@users.sourceforge.net, greg@kroah.com, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Li Yang <leoli@freescale.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 38B35DE0C1
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 04:13:23 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m7SID0EB012003
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 11:13:17 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m7SGfhko022338
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 11:41:43 -0500 (CDT)
+Date: Thu, 28 Aug 2008 11:41:42 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: RFC: Could cpm2_clk_setup and cpm2_set_pin be exported ?
+Message-ID: <20080828164142.GB1185@ld0162-tx32.am.freescale.net>
+References: <200808281757.16903.laurentp@cse-semaphore.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200808281757.16903.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +33,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 28 Aug 2008, Arnd Bergmann wrote:
+On Thu, Aug 28, 2008 at 05:57:13PM +0200, Laurent Pinchart wrote:
+> I'm facing a situation where I need to call cpm2_clk_setup and
+> cpm2_set_pin from a device driver compiled as a module. Before
+> submitting a patch to export both functions, I'd like to make sure
+> there isn't a cleaner way to implement the desired functionality
+> without calling functions that are supposed to be used by board setup
+> code.
 
-> Not addressing this driver in particular, but the USB gadget layer in
-> general: This is a horrible interface, since every gadget driver exports
-> the same symbols, you can never build a kernel that includes more than
-> one gadget driver. Even if the drivers are all built as modules, simply
-> loading one of them prevents loading another one.
+Have you looked at using the GPIO API?
 
-This was done deliberately.  The relevant standards state that a USB
-device can have no more than one peripheral interface.
-
-Now, I don't claim to fully support this decision.  But there is a 
-reason behind it; it's not just a case of bad design.
-
-Alan Stern
+-Scott
