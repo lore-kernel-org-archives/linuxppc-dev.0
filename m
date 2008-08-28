@@ -1,25 +1,22 @@
-Return-Path: <paul@mad-scientist.us>
-Received: from netezza.com (mta.netezza.com [12.148.248.132])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "Domain-Confidentiality-authority",
-	Issuer "Domain-Confidentiality-authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id CD223DE71A
+Return-Path: <adams.ppc@gmail.com>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 0E6EFDE4EE
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Aug 2008 04:22:30 +1000 (EST)
-Subject: Re: 2.6.25: include/asm-ppc vs. include/asm-powerpc
-From: Paul Smith <paul@mad-scientist.us>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200808281642.26647.arnd@arndb.de>
-References: <1219928864.16802.69.camel@homebase.localnet>
-	<200808281553.18167.arnd@arndb.de>
-	<1219933848.16802.96.camel@homebase.localnet>
-	<200808281642.26647.arnd@arndb.de>
-Content-Type: text/plain
-Date: Thu, 28 Aug 2008 14:07:10 -0400
-Message-Id: <1219946830.16629.551.camel@psmith-ubeta.netezza.com>
-Mime-Version: 1.0
+	Fri, 29 Aug 2008 05:03:44 +1000 (EST)
+Received: by gxk14 with SMTP id 14so4963802gxk.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 28 Aug 2008 12:03:42 -0700 (PDT)
+Message-ID: <4a21eaea0808281203x78a05bb4l4fbd287db4fe59c5@mail.gmail.com>
+Date: Thu, 28 Aug 2008 13:03:42 -0600
+From: "bhanu jampala" <adams.ppc@gmail.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: cpm_dpalloc questions
+In-Reply-To: <48B6D107.30106@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4a21eaea0808272212y6be97789nb6b94dd1d4987881@mail.gmail.com>
+	<48B6D107.30106@freescale.com>
 Cc: linuxppc-embedded@ozlabs.org
-Reply-To: paul@mad-scientist.us
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -30,19 +27,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-08-28 at 16:42 +0200, Arnd Bergmann wrote:
-> The trick that arch/ppc uses is to create a symlink
-> arch/ppc/include/asm pointing to include/asm-powerpc and then passing
-> "-Iinclude -Iarch/ppc/include" to the compiler.
+Hi Scott,
 
-Aha!!
+> No, MCC1 PRAM starts at offset 0x8700.  Any other areas used are under
+> software control.
+Yes, you are right. But, I was refereing to MCC channel specific HDLC
+parameters.
 
-Changing that arch/ppc/include/asm symlink to be relative
-(-> ../../../include/asm-powerpc) instead of absolute solves all these
-problems!
+Reason: I am using the MCC2 which uses memory from offset 0x2000 to
+0x4000 for Chan Specific parameters.
+you can see that in MCC chapter i.e. 29.3.1 on a MPC8280 manual.
+(channel specific HDLC parameters)
 
-Now I'm just down to real portability issues (since the drivers were
-originally written for 2.6.14).
+I need to make sure that cpm_dpalloc is not using this part of DPRAM
+to allocate memory.
+I just wanne make sure no other device driver that use cpm_dpalloc to
+allocate memory for their BDs i.e. scc, smc, fcc.
 
+and it looks to me like it is allocating me memory starting from 0x128 or 0x400.
 
-Thanks very much!
+> This is obsolete arch/ppc stuff and should be removed; the SMC pram is now
+> dynamically allocated and relocated (and before that, it came from the
+> device tree).
+
+Yes, I am using 2.6.19.2. I am right now in the middle of finalizing
+the BSP port. So, I cannot move on further to device trees. I will
+doing that stuff with in a month but now I am with 2.6.19.2.
+
+Regards,
+Adams
