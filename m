@@ -1,19 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id AB9D7DDF10
+Return-Path: <DWatkins@tranzeo.com>
+Received: from mail.tranzeo.com (mail.tranzeo.com [64.114.87.10])
+	by ozlabs.org (Postfix) with ESMTP id 834D0DDF3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Aug 2008 23:53:27 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org,
- paul@mad-scientist.us
+	Thu, 28 Aug 2008 23:56:46 +1000 (EST)
 Subject: Re: 2.6.25: include/asm-ppc vs. include/asm-powerpc
-Date: Thu, 28 Aug 2008 15:53:17 +0200
-References: <1219928864.16802.69.camel@homebase.localnet>
+From: Darcy Watkins <dwatkins@tranzeo.com>
+To: paul@mad-scientist.us
 In-Reply-To: <1219928864.16802.69.camel@homebase.localnet>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808281553.18167.arnd@arndb.de>
+References: <1219928864.16802.69.camel@homebase.localnet>
+Content-Type: text/plain
+Date: Thu, 28 Aug 2008 06:56:44 -0700
+Message-Id: <1219931804.21952.15.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,25 +23,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 28 August 2008, Paul Smith wrote:
-> However, looking in the include/asm-ppc directory I see that many of the
-> files that used to be there are not there anymore... although they do
-> appear in include/asm-powerpc. =A0In particular I'm interested in
-> ppc_asm.h which used to exist in both asm-ppc64 AND in asm-ppc, but now
-> only exists in asm-powerpc. =A0What's the approved way to include this
-> header if asm points to asm-ppc?
->=20
+Hi Paul,
+
+A hack we did when building a ported WiMax driver against 2.6.19 was to
+merge the two asm-p.*pc directories.
+
+Below is a snippet from one of our build scripts that does this.
+Assuming KERNEL_SRC_PATH is set to point to your kernel source...
+
+#------------------
+if [ ! -d $KERNEL_SRC_PATH/include/asm-ppc-merged ]; then
+echo "Creating a merged include/asm for arch/ppc and arch/powerpc"
+mkdir $KERNEL_SRC_PATH/include/asm-ppc-merged
+cp -r $KERNEL_SRC_PATH/include/asm-powerpc/* $KERNEL_SRC_PATH/include/asm-ppc-merged
+cp -r $KERNEL_SRC_PATH/include/asm-ppc/* $KERNEL_SRC_PATH/include/asm-ppc-merged
+fi
+
+echo "Symlinking the merged include/asm"
+cd $KERNEL_SRC_PATH/include
+rm asm
+ln -s asm-ppc-merged asm
+#------------------
+
+Based on this order, files from arch/ppc win but missing files will come
+from arch/powerpc.
+
+You could try it out.  Mileage may vary, especially newer than 2.6.23
+since there may be device tree dependent stuff that gets into the merged
+directory.  We stopped using this hack for kernel 2.6.23 and newer since
+we migrated to arch/powerpc for 2.6.23 and later (presently using
+2.6.25) so I really don't know whether or not it will work for you.
+
+If you use the symlinked shadow source tree facility of the Xenomai
+build with your kernel, then use "-rs" instead of "-r" in the "cp"'s
+above.  Otherwise just use "-r" as shown above.
+
+Regards,
+
+Darcy
+
+
+On Thu, 2008-08-28 at 06:07 -0700, Paul Smith wrote:
+--snip!--
 > In general it seems like lots of headers that used to be in both asm
-> directories now appear in only asm-powerpc; I don't really see how this
-> is supposed to work. =A0Any tips on this would be most welcome.
->=20
+> directories now appear in only asm-powerpc; I don't really see how
+> this
+> is supposed to work.  Any tips on this would be most welcome.
+--snip!--
+-- 
 
-The easiest solution should be to just include all your modules in
-the kernel source as patches, rather than building them externally.
 
-That will give you access to all the headers you need.
+Regards,
 
-Of course that is only possible if all your modules are GPL, but I
-assume that you would not have asked here if they were not.
+Darcy
 
-	Arnd <><
+--------------
+Darcy L. Watkins - Senior Software Developer
+Tranzeo Wireless Technologies, Inc.
+19273 Fraser Way, Pitt Meadows, BC, Canada V3Y 2V4
+T:604-460-6002 ext:410
+http://www.tranzeo.com
