@@ -1,28 +1,36 @@
-Return-Path: <ralf.muller@nsn.com>
-Received: from demumfd002.nsn-inter.net (demumfd002.nsn-inter.net
-	[217.115.75.234])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DF080DDDF4
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0C534DDEE4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Aug 2008 16:55:58 +1000 (EST)
-Received: from demuprx017.emea.nsn-intra.net ([10.150.129.56])
-	by demumfd002.nsn-inter.net (8.12.11.20060308/8.12.11) with ESMTP id
-	m7S6bana013820
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>; Thu, 28 Aug 2008 08:37:36 +0200
-Received: from demuexc023.nsn-intra.net (webmail.nsn-intra.net [10.150.128.36])
-	by demuprx017.emea.nsn-intra.net (8.12.11.20060308/8.12.11) with ESMTP
-	id m7S6baSH001546
-	for <linuxppc-embedded@ozlabs.org>; Thu, 28 Aug 2008 08:37:36 +0200
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C908D8.8E5C58A3"
-Subject: Virtual IRQs on 82xx
-Date: Thu, 28 Aug 2008 09:37:34 +0300
-Message-ID: <F9730D1BBC18E749AE72728B74D189E968356A@FIESEXC006.nsn-intra.net>
-From: "Muller, Ralf (NSN - FI/Espoo)" <ralf.muller@nsn.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Thu, 28 Aug 2008 20:36:59 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7SAalKN018715
+	for <linuxppc-embedded@ozlabs.org>; Thu, 28 Aug 2008 06:36:47 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m7SAalRk224046
+	for <linuxppc-embedded@ozlabs.org>; Thu, 28 Aug 2008 06:36:47 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m7SAakUw003592
+	for <linuxppc-embedded@ozlabs.org>; Thu, 28 Aug 2008 06:36:47 -0400
+Date: Thu, 28 Aug 2008 06:36:44 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: vb <vb@vsbe.com>
+Subject: Re: mmap and ppc460gt
+Message-ID: <20080828063644.2ee4cf7c@zod.rchland.ibm.com>
+In-Reply-To: <f608b67d0808272047i1c455c8bsb820d61bd8051bcf@mail.gmail.com>
+References: <f608b67d0808261926p67e27770mb7c64cc14015b9ab@mail.gmail.com>
+	<ada3akri1i5.fsf@cisco.com> <200808271013.18659.arnd@arndb.de>
+	<f608b67d0808271613g2092b287o44c3418fb7d33499@mail.gmail.com>
+	<adawsi2j8wt.fsf@cisco.com> <adak5e1kf2u.fsf@cisco.com>
+	<f608b67d0808272047i1c455c8bsb820d61bd8051bcf@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Roland Dreier <rdreier@cisco.com>, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -33,97 +41,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Wed, 27 Aug 2008 20:47:24 -0700
+vb <vb@vsbe.com> wrote:
 
-------_=_NextPart_001_01C908D8.8E5C58A3
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+> On Wed, Aug 27, 2008 at 8:12 PM, Roland Dreier <rdreier@cisco.com> wrote:
+> > OK, please try this and let me know if it helps:
+> >
+> > diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> > index 1c93c25..98d7bf9 100644
+> > --- a/arch/powerpc/mm/mem.c
+> > +++ b/arch/powerpc/mm/mem.c
+> > @@ -75,11 +75,10 @@ static inline pte_t *virt_to_kpte(unsigned long vaddr)
+> >
+> >  int page_is_ram(unsigned long pfn)
+> >  {
+> > -       unsigned long paddr = (pfn << PAGE_SHIFT);
+> > -
+> >  #ifndef CONFIG_PPC64   /* XXX for now */
+> > -       return paddr < __pa(high_memory);
+> > +       return pfn < max_pfn;
+> >  #else
+> > +       unsigned long paddr = (pfn << PAGE_SHIFT);
+> >        int i;
+> >        for (i=0; i < lmb.memory.cnt; i++) {
+> >                unsigned long base;
+> >
+> 
+> Ronald, thank you for the hint,  I actually tried something slightly different:
+> 
+> return pfn < (__pa(high_memory) >> PAGE_SHIFT);
+> 
+> and it worked. I guess your fix is faster, I'll try it tomorrow.
+> 
+> I also checked that the problem is there in the top of the tree in
+> Linus' git - isn't it amazing - I guess very few people use mmap()
+> nowadays, everybody must be using UIO device :-)
 
-Hi,
+No, most people use device drivers in the kernel.
 
-I'm using a 8247 custom board and kernl 2.6.21.7 on the arch/powerpc
-branch. Here the irq are virtualized  in the irq map functions now I'm
-facing several problems.
-* I have to manually call irq_create_of_mapping for each CPM interrupt
-* The irq_map structure, which associates virtual to HW IRQs is not
-initialized auto matically
-* The reverse map isn't initialized
-
-And the major problem is:
-Now the kernel mixes virtual- and HW-IRQs, e.g. request_irq works with
-HW_IRQs but the interrupt handler with virtual interrupts, which can't
-work.
-For some reason even on a powerpc the first 16 interrupts are reserved
-for legacy (PC) IRQs, so the easiest mapping HW-IRQ0 -> VIRQ16 a.s.o
-Is there an solution available for this problem, at least for it looks
-like the problem still persists in 2.6.26?
-
-Regards,
-Ralf
-
-
-------_=_NextPart_001_01C908D8.8E5C58A3
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7654.2">
-<TITLE>Virtual IRQs on 82xx</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><SPAN LANG=3D"fi"><FONT SIZE=3D2 FACE=3D"Arial">Hi,</FONT></SPAN>
-</P>
-
-<P><SPAN LANG=3D"fi"><FONT SIZE=3D2 FACE=3D"Arial">I'm using a 8247 =
-custom board and kernl 2.6.21.7 on the arch/powerpc branch. Here the irq =
-are virtualized&nbsp; in the irq map functions now I'm facing several =
-problems.</FONT></SPAN></P>
-
-<P><SPAN LANG=3D"fi"><FONT SIZE=3D2 FACE=3D"Arial">* I have to manually =
-call irq_create_of_mapping for each CPM interrupt</FONT></SPAN>
-
-<BR><SPAN LANG=3D"fi"><FONT SIZE=3D2 FACE=3D"Arial">* The irq_map =
-structure, which associates virtual to HW IRQs is not initialized auto =
-matically</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN>
-
-<BR><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">* The reverse map =
-isn't initialized</FONT></SPAN>
-</P>
-
-<P><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">And the major =
-problem is:</FONT></SPAN>
-
-<BR><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">Now the kernel =
-mixes virtual- and HW-IRQs, e.g. request_irq works with HW_IRQs but the =
-interrupt handler with virtual interrupts, which can't =
-work.</FONT></SPAN></P>
-
-<P><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">For some reason =
-even on a powerpc the first 16 interrupts are reserved for legacy (PC) =
-IRQs, so the easiest mapping HW-IRQ0 -&gt; VIRQ16 =
-a.s.o</FONT></SPAN></P>
-
-<P><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">Is there an =
-solution available for this problem, at least for it looks like the =
-problem still persists in 2.6.26?</FONT></SPAN>
-</P>
-
-<P><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">Regards,</FONT></SPAN>
-
-<BR><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">Ralf</FONT></SPAN>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C908D8.8E5C58A3--
+josh
