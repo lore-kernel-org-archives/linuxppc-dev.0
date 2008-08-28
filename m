@@ -1,22 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E2C84DE530
+Return-Path: <skepper@chara.vm.bytemark.co.uk>
+Received: from chara.vm.bytemark.co.uk (chara.vm.bytemark.co.uk [80.68.89.253])
+	by ozlabs.org (Postfix) with ESMTP id 7C678DE715
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Aug 2008 02:27:52 +1000 (EST)
-Message-ID: <48B6D1D4.7020202@freescale.com>
-Date: Thu, 28 Aug 2008 11:27:00 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Fri, 29 Aug 2008 03:08:27 +1000 (EST)
+Date: Thu, 28 Aug 2008 18:00:32 +0100 (BST)
+From: Chris Skepper <skepper@ukf.net>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Early boot problem with MPC8247 and Linux 2.6.26
+In-Reply-To: <20080827150105.GB16041@ld0162-tx32.am.freescale.net>
+Message-ID: <Pine.LNX.4.62.0808281747440.24851@chara.vm.bytemark.co.uk>
+References: <Pine.LNX.4.62.0808221515450.31216@chara.vm.bytemark.co.uk>
+	<48AEF220.7080506@freescale.com>
+	<Pine.LNX.4.62.0808261219210.3327@chara.vm.bytemark.co.uk>
+	<20080826140324.GB3783@ld0162-tx32.am.freescale.net>
+	<Pine.LNX.4.62.0808261742270.5064@chara.vm.bytemark.co.uk>
+	<48B43C42.5040407@freescale.com>
+	<Pine.LNX.4.62.0808271413001.14220@chara.vm.bytemark.co.uk>
+	<20080827150105.GB16041@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: "Muller, Ralf (NSN - FI/Espoo)" <ralf.muller@nsn.com>
-Subject: Re: Virtual IRQs on 82xx
-References: <F9730D1BBC18E749AE72728B74D189E968356A@FIESEXC006.nsn-intra.net>
-In-Reply-To: <F9730D1BBC18E749AE72728B74D189E968356A@FIESEXC006.nsn-intra.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Sender: Chris Skepper <skepper@chara.vm.bytemark.co.uk>
 Cc: linuxppc-embedded@ozlabs.org
+Reply-To: skepper@ukf.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,35 +32,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Muller, Ralf (NSN - FI/Espoo) wrote:
-> I'm using a 8247 custom board and kernl 2.6.21.7
 
-I strongly recommend using something newer.  There was a lot of 82xx 
-work going on around that time.
+On Wed, 27 Aug 2008, Scott Wood wrote:
 
-> on the arch/powerpc 
-> branch. Here the irq are virtualized  in the irq map functions now I'm 
-> facing several problems.
-> 
-> * I have to manually call irq_create_of_mapping for each CPM interrupt
+> On Wed, Aug 27, 2008 at 02:30:47PM +0100, Chris Skepper wrote:
+>> I just left CONFIG_PPC_EARLY_DEBUG_CPM_ADDR at the default value for CPM2?
+>> Is that likely to be correct for SMC1?  (I tried looking in the MPC8272
+>> reference manual, but couldn't find it.)
+>
+> The value depends on how the port was set up by firmware (or by the
+> bootwrapper).  It should be set to wherever the descriptor is, and there
+> should only be one descriptor that loops back on itself.
 
-What's wrong with irq_of_parse_and_map()?
+Hi Scott,
 
-> And the major problem is:
-> Now the kernel mixes virtual- and HW-IRQs, e.g. request_irq works with 
-> HW_IRQs but the interrupt handler with virtual interrupts, which can't work.
+Thanks so much for your help so far.  I was able to find out this address 
+from the bootloader and get some output on the early debug console which 
+was very pleasing.  It now gets as far as console_init() called from 
+init/main.c, which completes but then any printk seems to stall it and 
+you get no more output.
 
-No, request_irq works with virtual interrupts as well.
+I am using SMC1 and have this in the DTS file for the linux,stdout-path:
 
-> For some reason even on a powerpc the first 16 interrupts are reserved 
-> for legacy (PC) IRQs,
+serial@11a80 {
+ 	device_type = "serial";
+ 	compatible = "fsl,mpc8247-smc-uart",
+ 	            "fsl,cpm2-smc-uart";
+ 	reg = <0x11a80 0x20 0x87fc 2>;
+ 	interrupts = <4 8>;
+ 	interrupt-parent = <&PIC>;
+ 	fsl,cpm-brg = <7>;
+ 	fsl,cpm-command = <0x1d000000>;
+};
 
-Right, there are powerpc systems with the same legacy interrupts and the 
-same ISA drivers that expect to be able to use ISA IRQs directly as virqs.
+Any ideas what sorts of things I should check next?
 
-> so the easiest mapping HW-IRQ0 -> VIRQ16 a.s.o
+Cheers,
 
-The "easiest mapping" is whatever the IRQ subsystem gives you.  This 
-isn't something that should be hardcoded.
-
--Scott
+Chris.
