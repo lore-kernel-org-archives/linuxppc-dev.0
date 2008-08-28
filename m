@@ -1,20 +1,31 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id C1951DE071
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 22:26:38 +1000 (EST)
-Date: Thu, 28 Aug 2008 14:26:30 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 0/5] Relocatable 64-bit kernel using linker PIE support
-In-Reply-To: <1219925555.7107.276.camel@pmac.infradead.org>
-Message-ID: <Pine.LNX.4.64.0808281425400.28552@vixen.sonytel.be>
-References: <18594.14443.340604.693747@cargo.ozlabs.ibm.com>
-	<1219925555.7107.276.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-721297833-1219926390=:28552"
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 687D4DDFC0
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 23:28:33 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m7SDSOXj007389
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 09:28:24 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m7SDSNGd163186
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 09:28:24 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m7SDSNb8032100
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Aug 2008 09:28:23 -0400
+Date: Thu, 28 Aug 2008 09:28:20 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Ilya Yanok <yanok@emcraft.com>, benh@kernel.crashing.org
+Subject: Re: [PATCH] ppc4xx_pci: necessary fixes for 4GB RAM size
+Message-ID: <20080828092820.2cacaba7@zod.rchland.ibm.com>
+In-Reply-To: <1219391015-6317-1-git-send-email-yanok@emcraft.com>
+References: <1219391015-6317-1-git-send-email-yanok@emcraft.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de, wd@denx.de,
+	Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,51 +35,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, 22 Aug 2008 11:43:35 +0400
+Ilya Yanok <yanok@emcraft.com> wrote:
 
----584349381-721297833-1219926390=:28552
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Thu, 28 Aug 2008, David Woodhouse wrote:
-> On Wed, 2008-08-13 at 11:27 +1000, Paul Mackerras wrote:
-> > The following series of patches implement support for a relocatable
-> > kernel by building it as a position-independent executable (PIE).
-> > When the linker is given the -pie flag, it creates an executable that
-> > contains dynamic relocations which can be used to relocate the image
-> > at boot time for any desired base address.  This patch series adds a
-> > CONFIG_RELOCATABLE config option for 64-bit which links the kernel
-> > with -pie and arranges to process the relocations in early boot.
-> > 
-> > With the first 4 patches applied, a relocatable kernel will still copy
-> > itself down to real address 0.  The last patch changes things so that
-> > a relocatable kernel will run wherever it was loaded.  This last patch
-> > is pretty much just a proof of concept since it doesn't do anything to
-> > ensure appropriate alignment of the base address (the base address
-> > needs to be 16kB aligned).  We probably want to work out whether we
-> > are a kdump kernel and run in-place if so, or copy down to 0 if not.
+> 1. total_memory should be phys_addr_t not unsigned long
+> 2. is_power_of_2() works with u32 so I just inlined (size & (size-1)) != 0
+> instead.
+> Also this patch fixes default initialization: res->end should be 0x7fffffff
+> not 0x80000000.
 > 
-> Is this mature enough for us to consider putting it in Fedora? We'd
-> _love_ to stop building a separate kdump kernel for ppc64...
+> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
 
-I tried CONFIG_RELOCATABLE=y on PS3 a while ago, and the resulting kernel
-locked up during early boot.
+Ben, any comments here?  Looks right to me.
 
-With kind regards,
+josh
 
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-721297833-1219926390=:28552--
+> ---
+>  arch/powerpc/sysdev/ppc4xx_pci.c |   11 ++++++-----
+>  1 files changed, 6 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+> index e1c7df9..645b2c9 100644
+> --- a/arch/powerpc/sysdev/ppc4xx_pci.c
+> +++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+> @@ -36,7 +36,7 @@
+>  static int dma_offset_set;
+> 
+>  /* Move that to a useable header */
+> -extern unsigned long total_memory;
+> +extern phys_addr_t total_memory;
+> 
+>  #define U64_TO_U32_LOW(val)	((u32)((val) & 0x00000000ffffffffULL))
+>  #define U64_TO_U32_HIGH(val)	((u32)((val) >> 32))
+> @@ -105,7 +105,8 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
+> 
+>  	/* Default */
+>  	res->start = 0;
+> -	res->end = size = 0x80000000;
+> +	size = 0x80000000;
+> +	res->end = size - 1;
+>  	res->flags = IORESOURCE_MEM | IORESOURCE_PREFETCH;
+> 
+>  	/* Get dma-ranges property */
+> @@ -167,13 +168,13 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
+>  	 */
+>  	if (size < total_memory) {
+>  		printk(KERN_ERR "%s: dma-ranges too small "
+> -		       "(size=%llx total_memory=%lx)\n",
+> -		       hose->dn->full_name, size, total_memory);
+> +		       "(size=%llx total_memory=%llx)\n",
+> +		       hose->dn->full_name, size, (u64)total_memory);
+>  		return -ENXIO;
+>  	}
+> 
+>  	/* Check we are a power of 2 size and that base is a multiple of size*/
+> -	if (!is_power_of_2(size) ||
+> +	if ((size & (size - 1)) != 0  ||
+>  	    (res->start & (size - 1)) != 0) {
+>  		printk(KERN_ERR "%s: dma-ranges unaligned\n",
+>  		       hose->dn->full_name);
