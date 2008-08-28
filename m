@@ -1,18 +1,20 @@
-Return-Path: <DWatkins@tranzeo.com>
-Received: from mail.tranzeo.com (mail.tranzeo.com [64.114.87.10])
-	by ozlabs.org (Postfix) with ESMTP id 834D0DDF3D
+Return-Path: <paul@mad-scientist.us>
+Received: from smtp02.lnh.mail.rcn.net (smtp02.lnh.mail.rcn.net
+	[207.172.157.102]) by ozlabs.org (Postfix) with ESMTP id 060BBDE298
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Aug 2008 23:56:46 +1000 (EST)
+	Fri, 29 Aug 2008 00:30:59 +1000 (EST)
 Subject: Re: 2.6.25: include/asm-ppc vs. include/asm-powerpc
-From: Darcy Watkins <dwatkins@tranzeo.com>
-To: paul@mad-scientist.us
-In-Reply-To: <1219928864.16802.69.camel@homebase.localnet>
+From: Paul Smith <paul@mad-scientist.us>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200808281553.18167.arnd@arndb.de>
 References: <1219928864.16802.69.camel@homebase.localnet>
+	<200808281553.18167.arnd@arndb.de>
 Content-Type: text/plain
-Date: Thu, 28 Aug 2008 06:56:44 -0700
-Message-Id: <1219931804.21952.15.camel@localhost>
+Date: Thu, 28 Aug 2008 10:30:48 -0400
+Message-Id: <1219933848.16802.96.camel@homebase.localnet>
 Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
+Reply-To: paul@mad-scientist.us
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,63 +25,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+On Thu, 2008-08-28 at 15:53 +0200, Arnd Bergmann wrote:
+> The easiest solution should be to just include all your modules in
+> the kernel source as patches, rather than building them externally.
+> 
+> That will give you access to all the headers you need.
 
-A hack we did when building a ported WiMax driver against 2.6.19 was to
-merge the two asm-p.*pc directories.
+It doesn't matter whether I build my code in the kernel as patches, or
+not.  The problem is not that I don't have the headers handy, it's that
+they simply don't exist in asm-ppc anymore, not even in the linux source
+tree.
 
-Below is a snippet from one of our build scripts that does this.
-Assuming KERNEL_SRC_PATH is set to point to your kernel source...
+There is no asm-ppc/ppc_asm.h in the kernel anymore.  In my code that
+includes it, where ARCH=ppc and include/asm is linked to asm-ppc, how do
+I get ahold of that file?  I can't use #include <asm/ppc_asm.h> like I
+used to.  Do I have to use #include <asm-powerpc/ppc_asm.h> explicitly?
+At least this will work... but read on:
 
-#------------------
-if [ ! -d $KERNEL_SRC_PATH/include/asm-ppc-merged ]; then
-echo "Creating a merged include/asm for arch/ppc and arch/powerpc"
-mkdir $KERNEL_SRC_PATH/include/asm-ppc-merged
-cp -r $KERNEL_SRC_PATH/include/asm-powerpc/* $KERNEL_SRC_PATH/include/asm-ppc-merged
-cp -r $KERNEL_SRC_PATH/include/asm-ppc/* $KERNEL_SRC_PATH/include/asm-ppc-merged
-fi
+Even more troublesome are headers like <linux/posix_types.h>, which
+includes <asm/posix_types.h>, but there IS NO asm-ppc/posix_types.h file
+in the kernel tree!  There is only an asm-powerpc/posix_types.h... but
+if asm is a link to asm-ppc, this fails and I have no way to fix it!
 
-echo "Symlinking the merged include/asm"
-cd $KERNEL_SRC_PATH/include
-rm asm
-ln -s asm-ppc-merged asm
-#------------------
-
-Based on this order, files from arch/ppc win but missing files will come
-from arch/powerpc.
-
-You could try it out.  Mileage may vary, especially newer than 2.6.23
-since there may be device tree dependent stuff that gets into the merged
-directory.  We stopped using this hack for kernel 2.6.23 and newer since
-we migrated to arch/powerpc for 2.6.23 and later (presently using
-2.6.25) so I really don't know whether or not it will work for you.
-
-If you use the symlinked shadow source tree facility of the Xenomai
-build with your kernel, then use "-rs" instead of "-r" in the "cp"'s
-above.  Otherwise just use "-r" as shown above.
-
-Regards,
-
-Darcy
+On the other hand, if I cheat and set the asm symlink pointing to
+asm-powerpc instead, then when I include files like <linux/interrupt.h>.
+which includes <linux/hardirq.h>, which includes <asm/hardirq.h>, which
+(because I have CONFIG_40X defined) includes <asm/ibm44x.h>, I get the
+opposite problem: there is no asm-powerpc/ibm4xx.h; that header exists
+only in the asm-ppc directory.  So now THAT include fails.
 
 
-On Thu, 2008-08-28 at 06:07 -0700, Paul Smith wrote:
---snip!--
-> In general it seems like lots of headers that used to be in both asm
-> directories now appear in only asm-powerpc; I don't really see how
-> this
-> is supposed to work.  Any tips on this would be most welcome.
---snip!--
--- 
 
-
-Regards,
-
-Darcy
-
---------------
-Darcy L. Watkins - Senior Software Developer
-Tranzeo Wireless Technologies, Inc.
-19273 Fraser Way, Pitt Meadows, BC, Canada V3Y 2V4
-T:604-460-6002 ext:410
-http://www.tranzeo.com
+I seem to be out of luck here.
