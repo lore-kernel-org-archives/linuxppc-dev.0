@@ -1,25 +1,18 @@
-Return-Path: <vbendeb@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.234])
-	by ozlabs.org (Postfix) with ESMTP id 58BBFDDE45
+Return-Path: <adams.ppc@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 56E44DDE22
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Aug 2008 13:47:26 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so206810rvb.9
+	Thu, 28 Aug 2008 15:12:53 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so119661yxg.39
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Aug 2008 20:47:24 -0700 (PDT)
-Message-ID: <f608b67d0808272047i1c455c8bsb820d61bd8051bcf@mail.gmail.com>
-Date: Wed, 27 Aug 2008 20:47:24 -0700
-From: vb <vb@vsbe.com>
-Sender: vbendeb@gmail.com
-To: "Roland Dreier" <rdreier@cisco.com>
-Subject: Re: mmap and ppc460gt
-In-Reply-To: <adak5e1kf2u.fsf@cisco.com>
+	Wed, 27 Aug 2008 22:12:52 -0700 (PDT)
+Message-ID: <4a21eaea0808272212y6be97789nb6b94dd1d4987881@mail.gmail.com>
+Date: Wed, 27 Aug 2008 22:12:51 -0700
+From: "bhanu jampala" <adams.ppc@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: cpm_dpalloc questions
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <f608b67d0808261926p67e27770mb7c64cc14015b9ab@mail.gmail.com>
-	<ada3akri1i5.fsf@cisco.com> <200808271013.18659.arnd@arndb.de>
-	<f608b67d0808271613g2092b287o44c3418fb7d33499@mail.gmail.com>
-	<adawsi2j8wt.fsf@cisco.com> <adak5e1kf2u.fsf@cisco.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -30,38 +23,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 27, 2008 at 8:12 PM, Roland Dreier <rdreier@cisco.com> wrote:
-> OK, please try this and let me know if it helps:
->
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 1c93c25..98d7bf9 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -75,11 +75,10 @@ static inline pte_t *virt_to_kpte(unsigned long vaddr)
->
->  int page_is_ram(unsigned long pfn)
->  {
-> -       unsigned long paddr = (pfn << PAGE_SHIFT);
-> -
->  #ifndef CONFIG_PPC64   /* XXX for now */
-> -       return paddr < __pa(high_memory);
-> +       return pfn < max_pfn;
->  #else
-> +       unsigned long paddr = (pfn << PAGE_SHIFT);
->        int i;
->        for (i=0; i < lmb.memory.cnt; i++) {
->                unsigned long base;
->
+Hi Guys,
 
-Ronald, thank you for the hint,  I actually tried something slightly different:
+I am working on MCC HDLC controller on MCC8260. I have two important questions:
 
-return pfn < (__pa(high_memory) >> PAGE_SHIFT);
+1. What is the range of DPRAM from which the cpm_dpalloc allocates memory?
+    How does the cpm_dpalloc work?
+    I need this because, I need to reserve the DPRAM memory for MCC2
+from (128 * 60) to (255 * 60)
+    for channels ranging from 128 - 255.
 
-and it worked. I guess your fix is faster, I'll try it tomorrow.
+2. PROFF_SMC1 pointer placed at 0 , 64 offsets. is this not an area of
+MCC1 controller?
+    how if I want to use the MCC channel on MCC1.
 
-I also checked that the problem is there in the top of the tree in
-Linus' git - isn't it amazing - I guess very few people use mmap()
-nowadays, everybody must be using UIO device :-)
+ In file include/asm-powerpc/cpm2.h.
 
-cheers,
-vadim
+ /* The SMCs are relocated to any of the first eight DPRAM pages.
+  * We will fix these at the first locations of DPRAM, until we
+  * get some microcode patches :-).
+  * The parameter ram space for the SMCs is fifty-some bytes, and
+  * they are required to start on a 64 byte boundary.
+  */
+ #define PROFF_SMC1      (0)
+ #define PROFF_SMC2      (64)
+
+Regards,
+Adams
