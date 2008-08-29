@@ -4,22 +4,22 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3E392DE44A
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Aug 2008 03:28:17 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by ozlabs.org (Postfix) with ESMTPS id CB3EE474D6
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Aug 2008 03:32:15 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
 	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m7THS8Ua020608
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 10:28:09 -0700 (MST)
+	m7THW6ho022697
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 10:32:07 -0700 (MST)
 Received: from blarg.am.freescale.net (blarg.am.freescale.net [10.82.19.176])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	m7THR9ww003618
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 12:27:10 -0500 (CDT)
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	m7THW6lI011705
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 12:32:06 -0500 (CDT)
 From: Becky Bruce <becky.bruce@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH V3] POWERPC: Allow 32-bit hashed pgtable code to support
+Subject: [PATCH V4] POWERPC: Allow 32-bit hashed pgtable code to support
 	36-bit physical
-Date: Fri, 29 Aug 2008 12:27:08 -0500
-Message-Id: <1220030829-21575-1-git-send-email-becky.bruce@freescale.com>
+Date: Fri, 29 Aug 2008 12:32:05 -0500
+Message-Id: <1220031125-24394-1-git-send-email-becky.bruce@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,13 +37,15 @@ explicitly enabled via the config system.
 
 This patch *only* expands the page table code to accomodate
 large physical addresses on 32-bit systems and enables the
-PHYS_64BIT config option for 6xx.  It does *not*
+PHYS_64BIT config option for 86xx.  It does *not*
 allow you to boot a board with more than about 3.5GB of
 RAM - for that, SWIOTLB support is also required (and
 coming soon).
 
 Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
 ---
+Updated commit commentary to indicate 86xx, not 6xx.
+
 Incorporated comments from the peanut gallery - restricted the Kconfig
 option to PPC_86xx for now, as it breaks old 603x parts with DTLB/ITLB
 software miss handling. Also changed hash_page and add_hash_page to not
