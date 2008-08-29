@@ -1,19 +1,24 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id F1174DDEE0
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 23:25:43 +1000 (EST)
-Message-ID: <48B7F8D1.3030500@harris.com>
-Date: Fri, 29 Aug 2008 09:25:37 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <jdl@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DF9E0DDFB4
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 23:52:00 +1000 (EST)
+Message-ID: <48B7FED5.2010203@freescale.com>
+Date: Fri, 29 Aug 2008 08:51:17 -0500
+From: Jon Loeliger <jdl@freescale.com>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][USB] powerpc: Workaround for the PPC440EPX USBH_23 errata
-References: <Pine.LNX.4.44L0.0808281727090.4308-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808281727090.4308-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stefan Roese <sr@denx.de>, linux-usb@vger.kernel.org,
-	Mark Miesfeld <mmiesfeld@amcc.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [82xx] powerpc: Add support for mpc8247 based	board	MGCOGE
+	from keymile.
+References: <20080612153215.GB2756@loki.buserror.net>	<4852A144.6090204@denx.de>
+	<20080616072625.GB28470@yookeroo.seuss>	<4856350E.4080602@denx.de>	<20080616164915.GA14020@loki.buserror.net>	<4858C988.1000405@denx.de>
+	<B7142E81-8992-4F05-BCAA-A4AAA41C0689@kernel.crashing.org>
+In-Reply-To: <B7142E81-8992-4F05-BCAA-A4AAA41C0689@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,47 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Alan Stern wrote:
-> On Thu, 28 Aug 2008, Steven A. Falco wrote:
-> 
->> Alan Stern wrote:
->>> Your original post mentioned that the 440EPx has only one USB 2.0 host
->>> port.  Then how can you use a keyboard and memory stick at the same
->>> time?  You'd have to plug them into a hub -- in which case only one
->>> controller would be needed, the one driving the hub.  The patch would 
->>> be unnecessary.
->> I have one of these processors on a Sequoia board.  What happens is that
->> if you build the kernel with both EHCI and OHCI support, then plug in
->> a modern USB memory stick, it initially tries EHCI, the driver fails, and
->> the whole thing falls back to OHCI.  So you wind up running at 12 Mbps.
->> The only way to make high speed work is to turn off the OHCI driver, and
->> then you cannot support slow devices with that kernel.
->>
->> So, hile you cannot plug two devices in at one time, you can plug in
->> different speed devices at different times, and my understanding is that
->> this patch will let that work seamlessly.
-> 
-> Is there some reason why it doesn't work already?  All the patch does
-> is suspend the OHCI root hub when you plug in the memory stick -- but
-> the root hub should already be suspended.
-> 
-> Unless the memory stick is already plugged in when the kernel boots.  
-> In which case the root hub won't be suspended -- it won't suspend until 
-> 1 second after ohci-hcd initializes the controller.  Is that the 
-> scenario you're worried about?
-Not sure about other users, but in my case, yes.  I was using a USB stick
-as the root filesystem.  When the kernel first came up, it would try the
-EHCI driver, which would fail.  Then the drive would be recognized by the
-OHCI driver, but would only run at full (12 Mbps) speed rather than high
-speed.
+Kumar Gala wrote:
 
-I've since gone to a directly attached CF card on the processor external
-bus, and I'm not using USB anymore.  But I think the patch is still
-desirable to work around the processor bug.
+>> arch/powerpc/boot/dts/mgcoge.dts      |  174 +++++++
+>> arch/powerpc/configs/mgcoge_defconfig |  900 
+>> +++++++++++++++++++++++++++++++++
+>> arch/powerpc/platforms/82xx/Kconfig   |    8 +
+>> arch/powerpc/platforms/82xx/Makefile  |    1 +
+>> arch/powerpc/platforms/82xx/mgcoge.c  |  129 +++++
+>> 5 files changed, 1212 insertions(+), 0 deletions(-)
+>> create mode 100644 arch/powerpc/boot/dts/mgcoge.dts
+>> create mode 100644 arch/powerpc/configs/mgcoge_defconfig
+>> create mode 100644 arch/powerpc/platforms/82xx/mgcoge.c
+> 
+> 
+> applied to powerpc-next.
+> 
+> - k
 
-	Steve
+This is a bit ambiguous.  Do you mean your galak next branch?
+Or the Ben/Paul powerpc next branch?
 
-> 
-> Alan Stern
-> 
-> 
+Thanks,
+jdl
