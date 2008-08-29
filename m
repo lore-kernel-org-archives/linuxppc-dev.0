@@ -1,19 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 59E6CDDEF9
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 19:44:52 +1000 (EST)
-Message-Id: <11BD2B27-0611-404B-AE5D-EC040913FA0B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: =?ISO-8859-1?Q?=22S=E9bastien_Chr=E9tien=22?=
-	<sebastien.chretien.enseirb@gmail.com>
-In-Reply-To: <319b0ac50808290240o973f96ckdc85a134646e1378@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: Advice : console
-Date: Fri, 29 Aug 2008 04:44:44 -0500
-References: <319b0ac50808290240o973f96ckdc85a134646e1378@mail.gmail.com>
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 3D20FDE078
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 21:49:06 +1000 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: munroesj@us.ibm.com
+Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
+Date: Fri, 29 Aug 2008 13:48:26 +0200
+References: <200808251131.02071.david.jander@protonic.nl>
+	<1219703291.13162.106.camel@pasglop>
+	<1219871079.28869.149.camel@spokane1.rchland.ibm.com>
+In-Reply-To: <1219871079.28869.149.camel@spokane1.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200808291348.27652.david.jander@protonic.nl>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,27 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Aug 29, 2008, at 4:40 AM, S=E9bastien Chr=E9tien wrote:
-
-> Hello,
+On Wednesday 27 August 2008 23:04:39 Steven Munroe wrote:
+> On Tue, 2008-08-26 at 08:28 +1000, Benjamin Herrenschmidt wrote:
+> > On Mon, 2008-08-25 at 15:06 +0200, David Jander wrote:
+> > > Hi Matt,
+> > >
+> > > On Monday 25 August 2008 13:00:10 Matt Sealey wrote:
+> > > > The focus has definitely been on VMX but that's not to say lower
+> > > > power processors were forgotten :)
+> > >
+> > > lower-power (pun intended) is coming strong these days, as
+> > > energy-efficiency is getteing more important every day. And the MPC5121
+> > > is a brand-new embedded processor, that will pop-up in quite a lot
+> > > devices around you most probably ;-)
+> >
+> > It would be useful of somebody interested in getting things things
+> > into glibc did the necessary FSF copyright assignment stuff and worked
+> > toward integrating them.
 >
-> I am trying to port linux for my ppc board. There is no keybord and =20=
+> Ben makes a very good point!
 
-> no scree. There is only UART.
-> I would like to have a console/terminal using UART.
-> What is the best way ? to write a serial driver using "struct  =20
-> uart_driver" or using "tty_driver" or to write a driver from scratch.
-> Maybe there is other way.
+Sounds reasonable... but I am still wondering about what you mean 
+with "things"?
+AFAICS there is almost nothing there (besides the memcpy() routine from Gunnar 
+von Boehn, which is apparently still far from optimal). And I was asking for 
+someone to correct me here ;-)
 
-What powerpc chip is this?  Most of the current SoC based chips 4xx/=20
-8xx/8xxx should have UART drivers in existence already.  If this is =20
-something custom you are probably better of asking on the linux-kernel =20=
+> There is also a framework for adding and maintaining optimizations of
+> this type:
+> 
+> http://penguinppc.org/dev/glibc/glibc-powerpc-cpu-addon.html
 
-list this question since its not specific to PPC but just writing a =20
-driver.
+I had already stumbled across this one, but it seems to focus on G3 or newer 
+processors (power4). There is no optimal memcpy() for G2/PPC603/e300.
 
-(and I'm guessing the answer is uart_driver, but I haven't looked at =20
-what Alan Cox has been up to w/tty vs uart lately).
+>[...]
+> So it does no good to complain here. If you have core you want to
+> contribute, Get your FSF CR assignment and join #glibc on freenode IRC.
 
-- k
+I am not complaining. I was only wondering if it is just me or there really is 
+very little that has been done (for either uClibc, glibc, or whatever for 
+powerpc) to improve performance of (linux-) applications on "lower"-power 
+platforms (G2 core), AFAICS there is a LOT that can be gained by simple 
+tweaks.
+
+> And we will help you.
+
+Thanks, now that I know which is the "correct" way to contribute, I only need 
+to come up with a good set of optimization, worthy of inclusion in glibc.
+OTOH, maybe it is easier and simpler to start with a collection of functions 
+in a shared-library, that may be suited for preloading via LD_PRELOAD 
+or /etc/ld_preload...
+
+Maybe once this collection is more stable (in terms of that heavy tweaking has 
+stopped) one could try the pilgrimage towards glibc inclusion....
+
+The problem is: I have very little experience with powerpc assembly and only 
+very limited time to dedicate to this and I am looking for others who have 
+
+Greetings,
+
+-- 
+David Jander
