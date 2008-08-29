@@ -1,12 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 1A0B7DE057
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 22:32:43 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18615.57144.503255.254203@cargo.ozlabs.ibm.com>
-Date: Fri, 29 Aug 2008 21:36:24 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] powerpc: Only make kernel text pages of linear mapping
-	executable
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <200808291348.27652.david.jander@protonic.nl>
+Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
+Date: Fri, 29 Aug 2008 14:21:43 +0200
+Message-ID: <1220012433.5234.162.camel@gentoo-jocke.transmode.se>
+References: <200808251131.02071.david.jander@protonic.nl>
+	<1219703291.13162.106.camel@pasglop>
+	<1219871079.28869.149.camel@spokane1.rchland.ibm.com>
+	<200808291348.27652.david.jander@protonic.nl>
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "David Jander" <david.jander@protonic.nl>
+Cc: munroesj@us.ibm.com, linuxppc-dev@ozlabs.org
+Reply-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,88 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit bc033b63bbfeb6c4b4eb0a1d083c650e4a0d2af8 ("powerpc/mm: Fix
-attribute confusion with htab_bolt_mapping()") moved the check for
-whether we should make pages of the linear mapping executable from
-htab_bolt_mapping into its callers, including htab_initialize.
-A side-effect of this is that the decision is now made once for
-each contiguous section in the LMB array rather than for each page
-individually.  This can often mean that the whole of the linear
-mapping ends up being executable.
+On Fri, 2008-08-29 at 13:48 +0200, David Jander wrote:
+> On Wednesday 27 August 2008 23:04:39 Steven Munroe wrote:
+> > On Tue, 2008-08-26 at 08:28 +1000, Benjamin Herrenschmidt wrote:
+> > > On Mon, 2008-08-25 at 15:06 +0200, David Jander wrote:
+> > > > Hi Matt,
 
-This reverts to the previous behaviour, where individual pages are
-checked for being part of the kernel text or not, by moving the check
-back down into htab_bolt_mapping.
+[SNIP]
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-Previous version left all pages non-executable.  Oops.
+> I am not complaining. I was only wondering if it is just me or there =
+really is=20
+> very little that has been done (for either uClibc, glibc, or whatever =
+for=20
+> powerpc) to improve performance of (linux-) applications on =
+"lower"-power=20
+> platforms (G2 core), AFAICS there is a LOT that can be gained by =
+simple=20
+> tweaks.
 
-diff a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -191,12 +191,17 @@ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 		unsigned long hash, hpteg;
- 		unsigned long vsid = get_kernel_vsid(vaddr, ssize);
- 		unsigned long va = hpt_va(vaddr, vsid, ssize);
-+		unsigned long tprot = prot;
-+
-+		/* Make kernel text executable */
-+		if (overlaps_kernel_text(vaddr, vaddr + step))
-+			tprot &= ~HPTE_R_N;
- 
- 		hash = hpt_hash(va, shift, ssize);
- 		hpteg = ((hash & htab_hash_mask) * HPTES_PER_GROUP);
- 
- 		BUG_ON(!ppc_md.hpte_insert);
--		ret = ppc_md.hpte_insert(hpteg, va, paddr, prot,
-+		ret = ppc_md.hpte_insert(hpteg, va, paddr, tprot,
- 					 HPTE_V_BOLTED, psize, ssize);
- 
- 		if (ret < 0)
-@@ -584,7 +589,7 @@ void __init htab_initialize(void)
- {
- 	unsigned long table;
- 	unsigned long pteg_count;
--	unsigned long prot, tprot;
-+	unsigned long prot;
- 	unsigned long base = 0, size = 0, limit;
- 	int i;
- 
-@@ -660,10 +665,9 @@ void __init htab_initialize(void)
- 	for (i=0; i < lmb.memory.cnt; i++) {
- 		base = (unsigned long)__va(lmb.memory.region[i].base);
- 		size = lmb.memory.region[i].size;
--		tprot = prot | (in_kernel_text(base) ? _PAGE_EXEC : 0);
- 
- 		DBG("creating mapping for region: %lx..%lx (prot: %x)\n",
--		    base, size, tprot);
-+		    base, size, prot);
- 
- #ifdef CONFIG_U3_DART
- 		/* Do not map the DART space. Fortunately, it will be aligned
-@@ -680,21 +684,21 @@ void __init htab_initialize(void)
- 			unsigned long dart_table_end = dart_tablebase + 16 * MB;
- 			if (base != dart_tablebase)
- 				BUG_ON(htab_bolt_mapping(base, dart_tablebase,
--							__pa(base), tprot,
-+							__pa(base), prot,
- 							mmu_linear_psize,
- 							mmu_kernel_ssize));
- 			if ((base + size) > dart_table_end)
- 				BUG_ON(htab_bolt_mapping(dart_tablebase+16*MB,
- 							base + size,
- 							__pa(dart_table_end),
--							 tprot,
-+							 prot,
- 							 mmu_linear_psize,
- 							 mmu_kernel_ssize));
- 			continue;
- 		}
- #endif /* CONFIG_U3_DART */
- 		BUG_ON(htab_bolt_mapping(base, base + size, __pa(base),
--				tprot, mmu_linear_psize, mmu_kernel_ssize));
-+				prot, mmu_linear_psize, mmu_kernel_ssize));
-        }
- 
- 	/*
+[SNIP]
+
+>=20
+> The problem is: I have very little experience with powerpc assembly =
+and only=20
+> very limited time to dedicate to this and I am looking for others who =
+have=20
+
+I improved the PowerPC memcpy and friends in uClibc a while ago. It does
+basically the same a the kernel memcpy but without any cache
+instructions. It is written in C, but in such a way that
+optimal assembly is generated.
+
+ Jocke
