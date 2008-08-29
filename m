@@ -1,22 +1,19 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 1A0B7DE057
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 22:32:43 +1000 (EST)
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id F1174DDEE0
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 23:25:43 +1000 (EST)
+Message-ID: <48B7F8D1.3030500@harris.com>
+Date: Fri, 29 Aug 2008 09:25:37 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <200808291348.27652.david.jander@protonic.nl>
-Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
-Date: Fri, 29 Aug 2008 14:21:43 +0200
-Message-ID: <1220012433.5234.162.camel@gentoo-jocke.transmode.se>
-References: <200808251131.02071.david.jander@protonic.nl>
-	<1219703291.13162.106.camel@pasglop>
-	<1219871079.28869.149.camel@spokane1.rchland.ibm.com>
-	<200808291348.27652.david.jander@protonic.nl>
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "David Jander" <david.jander@protonic.nl>
-Cc: munroesj@us.ibm.com, linuxppc-dev@ozlabs.org
-Reply-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][USB] powerpc: Workaround for the PPC440EPX USBH_23 errata
+References: <Pine.LNX.4.44L0.0808281727090.4308-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808281727090.4308-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stefan Roese <sr@denx.de>, linux-usb@vger.kernel.org,
+	Mark Miesfeld <mmiesfeld@amcc.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-08-29 at 13:48 +0200, David Jander wrote:
-> On Wednesday 27 August 2008 23:04:39 Steven Munroe wrote:
-> > On Tue, 2008-08-26 at 08:28 +1000, Benjamin Herrenschmidt wrote:
-> > > On Mon, 2008-08-25 at 15:06 +0200, David Jander wrote:
-> > > > Hi Matt,
+Alan Stern wrote:
+> On Thu, 28 Aug 2008, Steven A. Falco wrote:
+> 
+>> Alan Stern wrote:
+>>> Your original post mentioned that the 440EPx has only one USB 2.0 host
+>>> port.  Then how can you use a keyboard and memory stick at the same
+>>> time?  You'd have to plug them into a hub -- in which case only one
+>>> controller would be needed, the one driving the hub.  The patch would 
+>>> be unnecessary.
+>> I have one of these processors on a Sequoia board.  What happens is that
+>> if you build the kernel with both EHCI and OHCI support, then plug in
+>> a modern USB memory stick, it initially tries EHCI, the driver fails, and
+>> the whole thing falls back to OHCI.  So you wind up running at 12 Mbps.
+>> The only way to make high speed work is to turn off the OHCI driver, and
+>> then you cannot support slow devices with that kernel.
+>>
+>> So, hile you cannot plug two devices in at one time, you can plug in
+>> different speed devices at different times, and my understanding is that
+>> this patch will let that work seamlessly.
+> 
+> Is there some reason why it doesn't work already?  All the patch does
+> is suspend the OHCI root hub when you plug in the memory stick -- but
+> the root hub should already be suspended.
+> 
+> Unless the memory stick is already plugged in when the kernel boots.  
+> In which case the root hub won't be suspended -- it won't suspend until 
+> 1 second after ohci-hcd initializes the controller.  Is that the 
+> scenario you're worried about?
+Not sure about other users, but in my case, yes.  I was using a USB stick
+as the root filesystem.  When the kernel first came up, it would try the
+EHCI driver, which would fail.  Then the drive would be recognized by the
+OHCI driver, but would only run at full (12 Mbps) speed rather than high
+speed.
 
-[SNIP]
+I've since gone to a directly attached CF card on the processor external
+bus, and I'm not using USB anymore.  But I think the patch is still
+desirable to work around the processor bug.
 
-> I am not complaining. I was only wondering if it is just me or there =
-really is=20
-> very little that has been done (for either uClibc, glibc, or whatever =
-for=20
-> powerpc) to improve performance of (linux-) applications on =
-"lower"-power=20
-> platforms (G2 core), AFAICS there is a LOT that can be gained by =
-simple=20
-> tweaks.
+	Steve
 
-[SNIP]
-
->=20
-> The problem is: I have very little experience with powerpc assembly =
-and only=20
-> very limited time to dedicate to this and I am looking for others who =
-have=20
-
-I improved the PowerPC memcpy and friends in uClibc a while ago. It does
-basically the same a the kernel memcpy but without any cache
-instructions. It is written in C, but in such a way that
-optimal assembly is generated.
-
- Jocke
+> 
+> Alan Stern
+> 
+> 
