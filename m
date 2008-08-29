@@ -1,24 +1,22 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from mail-in-16.arcor-online.net (mail-in-16.arcor-online.net
-	[151.189.21.56])
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0641EDDEFF
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Aug 2008 03:56:11 +1000 (EST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-To: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 29F97DE15C
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Aug 2008 04:21:07 +1000 (EST)
+Date: Fri, 29 Aug 2008 22:20:44 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC][USB] powerpc: Workaround for the PPC440EPX USBH_23 errata
-Date: Fri, 29 Aug 2008 19:56:02 +0200
-References: <Pine.LNX.4.44L0.0808281558320.3844-100000@iolanthe.rowland.org>
-	<48B71497.30500@harris.com>
-In-Reply-To: <48B71497.30500@harris.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200808291956.03269.matthias.fuchs@esd-electronics.com>
-Cc: Stefan Roese <sr@denx.de>, Mark Miesfeld <mmiesfeld@amcc.com>,
-	Alan Stern <stern@rowland.harvard.edu>
+Message-ID: <20080829222044.53c56bca@vitb-lp>
+In-Reply-To: <Pine.LNX.4.44L0.0808291121180.4447-100000@netrider.rowland.org>
+References: <1219963406.13162.368.camel@pasglop>
+	<Pine.LNX.4.44L0.0808291121180.4447-100000@netrider.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=KOI8-R
+Cc: linux-usb@vger.kernel.org,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Mark Miesfeld <mmiesfeld@amcc.com>, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,32 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+В Fri, 29 Aug 2008 11:26:07 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> пишет:
 
-please see my comment below. It might be helpful for some of you.
+> On Fri, 29 Aug 2008, Benjamin Herrenschmidt wrote:
+> 
+> > I suppose some embedded platforms don't use CONFIG_PM, is this
+> > still a requirement for autosuspend ? Or do that happen always on
+> > an empty port nowadays ?
+> 
+> ohci-hcd doesn't automatically suspend the root hub if CONFIG_PM isn't
+> set.  However it isn't necessary to set CONFIG_SLEEP,
+> CONFIG_HIBERNATION, or CONFIG_USB_SUSPEND.
 
-On Thursday 28 August 2008 23:11:51 Steven A. Falco wrote:
-> Alan Stern wrote:
-> > Your original post mentioned that the 440EPx has only one USB 2.0 host
-> > port.  Then how can you use a keyboard and memory stick at the same
-> > time?  You'd have to plug them into a hub -- in which case only one
-> > controller would be needed, the one driving the hub.  The patch would
-> > be unnecessary.
->
-> I have one of these processors on a Sequoia board.  What happens is that
-> if you build the kernel with both EHCI and OHCI support, then plug in
-> a modern USB memory stick, it initially tries EHCI, the driver fails, and
-> the whole thing falls back to OHCI.  So you wind up running at 12 Mbps.
-> The only way to make high speed work is to turn off the OHCI driver, and
-> then you cannot support slow devices with that kernel.
-There is a simple trick to get all types (full, low ang high speed) of  
-devices work: use a USB hub with transaction translators. We are doing so on 
-a custom design based on the 440EPx. So we only build the kernel with EHCI 
-support and there was no need for this ugly hack.
->
-> So, hile you cannot plug two devices in at one time, you can plug in
-> different speed devices at different times, and my understanding is that
-> this patch will let that work seamlessly.
-That's true.
+That is good to know. 
 
-Matthias
+But even assuming PM set, common use-case of
+embedded systems to have stuff on USB bus that is never plugged off;
+and in case of compiled-in ehci and ohci there is just 
+
+Initializing USB Mass Storage driver...
+usb 1-1: new high speed USB device using ppc-of-ehci and address 2
+usb 1-1: device descriptor read/all, error -110
+hub 1-0:1.0: unable to enumerate USB device on port 1
+
+(not touching PM here to be clear)
+
+even 1-second delay would be enough for root hub to be hosed... So, is
+the patch (with all the issues addressed) acceptable for mainline?
+
+Thanks, 
+-Vitaly
