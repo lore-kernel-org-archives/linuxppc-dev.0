@@ -1,33 +1,20 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4EB6FDDEE3
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 18:41:03 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m7T8eviq010858
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 01:40:57 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m7T8es8o025167
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 03:40:55 -0500 (CDT)
-Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
-From: Li Yang <leoli@freescale.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200808281704.20999.arnd@arndb.de>
-References: <1219916613-28827-1-git-send-email-leoli@freescale.com>
-	<200808281704.20999.arnd@arndb.de>
-Content-Type: text/plain
-Date: Fri, 29 Aug 2008 16:57:45 +0800
-Message-Id: <1220000265.30607.10.camel@Gundam>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-	greg@kroah.com
-Reply-To: leoli@freescale.com
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 03F75DDECA
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 18:45:35 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: RFC: Could cpm2_clk_setup and cpm2_set_pin be exported ?
+Date: Fri, 29 Aug 2008 10:45:27 +0200
+References: <200808281757.16903.laurentp@cse-semaphore.com>
+	<200808281907.53607.laurentp@cse-semaphore.com>
+	<48B6DCFD.4020802@freescale.com>
+In-Reply-To: <48B6DCFD.4020802@freescale.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1459860.kPh0mcWAeo";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200808291045.31668.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,98 +24,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-08-28 at 17:04 +0200, Arnd Bergmann wrote:
-> On Thursday 28 August 2008, Li Yang wrote:
-> > Some of Freescale SoC chips have a QE or CPM co-processor which
-> > supports full speed USB.  The driver adds device mode support
-> > of both QE and CPM USB controller to Linux USB gadget.  The
-> > driver is tested with MPC8360 and MPC8272, and should work with
-> > other models having QE/CPM given minor tweaks.
-> 
-> Looks pretty good, just a few comments on the driver:
->   
-> > +config USB_GADGET_FSL_QE
-> > +	boolean "Freescale QE/CPM USB Device Controller"
-> > +	depends on FSL_SOC && (QUICC_ENGINE || CPM)
-> > +	help
-> > +	   Some of Freescale PowerPC processors have a Full Speed
-> > +	   QE/CPM2 USB controller, which support device mode with 4
-> > +	   programmable endpoints. This driver supports the
-> > +	   controller in the MPC8360 and MPC8272, and should work with
-> > +	   controllers having QE or CPM2, given minor tweaks.
-> > +
-> > +	   Say "y" to link the driver statically, or "m" to build a
-> > +	   dynamically linked module called "fsl_qe_udc" and force all
-> > +	   gadget drivers to also be dynamically linked.
-> > +
-> > +config USB_FSL_QE
-> > +	tristate
-> > +	depends on USB_GADGET_FSL_QE
-> > +	default USB_GADGET
-> > +	select USB_GADGET_SELECTED
-> 
-> 
-> Why do you need the two config options, not just one?
+--nextPart1459860.kPh0mcWAeo
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-This is common for udc drivers.  I guess this measure is used to make
-the selection of udc drivers a choice list while still make it possible
-to compiled as module.
+Hi Scott,
 
-> 
-> > +#ifdef CONFIG_CPM2
-> > +#include <asm/cpm.h>
-> > +
-> > +#define qe_muram_addr cpm_muram_addr
-> > +#define qe_muram_offset cpm_muram_offset
-> > +#define qe_muram_alloc cpm_muram_alloc
-> > +#define qe_muram_free cpm_muram_free
-> > +#endif
-> ...
-> > +static int qe_ep_cmd_restarttx(struct qe_ep *ep)
-> > +{
-> > +	u8 ep_num;
-> > +#ifdef CONFIG_CPM2
-> > +	u32 command;
-> > +	u8 opcode;
-> > +
-> > +	ep_num = ep->epnum << CPM_USB_EP_SHIFT;
-> > +	command = CPM_USB_RESTART_TX | (u32)ep_num;
-> > +	opcode = CPM_USB_RESTART_TX_OPCODE;
-> > +	cpm_command(command, opcode);
-> > +#else
-> > +	ep_num = ep->epnum;
-> > +	qe_issue_cmd(QE_USB_RESTART_TX, QE_CR_SUBBLOCK_USB, ep_num, 0);
-> > +#endif
-> > +	return 0;
-> > +}
-> 
-> This part doesn't look good, you should try to avoid hardcoding
-> the specific type of chip (QE or CPM2) here. AFAICT, you can build
-> a multiplatform kernel that supports both QE and CPM2, but your code
-> here would be broken in that case if you try to run it on QE.
+On Thursday 28 August 2008, Scott Wood wrote:
+> Laurent Pinchart wrote:
+> > On Thursday 28 August 2008, Scott Wood wrote:
+> >> On Thu, Aug 28, 2008 at 05:57:13PM +0200, Laurent Pinchart wrote:
+> >>> I'm facing a situation where I need to call cpm2_clk_setup and=20
+> >>> cpm2_set_pin from a device driver compiled as a module. Before=20
+> >>> submitting a patch to export both functions, I'd like to make
+> >>> sure there isn't a cleaner way to implement the desired
+> >>> functionality without calling functions that are supposed to be
+> >>> used by board setup code.
+> >> Have you looked at using the GPIO API?
+> >=20
+> > Yes, but the GPIO API doesn't support dedicated pin usage. Basically
+> > all I can do is configure a pin as a general purpose input or output,
+> > and set its level when configured as an output. The GPIO API doesn't
+> > provide any way to access the PAR and SOR registers.
+>=20
+> OK, wasn't sure what it was that you needed to set at runtime.  Are you=20
+> actually switching between dedicated functions dynamically?  Why do you=20
+> need to do this?
+>
+> > Beside, the GPIO API won't help configuring clock routing.
+>=20
+> Why does the clock routing need to change dynamically?
 
-Ok.
+The Infineon SHDSL chip uses separate clocks for transmit and receives. The=
+ receive clock is always derived from the analog line and is routed from th=
+e SHDSL chip to a clock input on the MPC8248.
 
-> 
-> > +static void setup_received_handle(struct qe_udc *udc,
-> > +					struct usb_ctrlrequest *setup);
-> > +static int qe_ep_rxframe_handle(struct qe_ep *ep);
-> > +static void ep0_req_complete(struct qe_udc *udc, struct qe_req *req);
-> 
-> Better try to avoid static forward declarations by reordering your
-> functions in call order. That is the common coding style and makes
-> drivers easier to read when you're used to it.
-> 
-> > +
-> > +	tasklet_schedule(&udc->rx_tasklet);
-> 
-> Not a problem, but an observation: Most new code uses work queues instead
-> of tasklets these days, which gives you more predictable real time
-> latencies.
-> If you don't have a specific reason to prefer a tasklet, just use
-> a workqueue here.
+The transmit clock is a bit trickier to handle, as it depends on which mode=
+ the SHDSL channel is configured in. When in Central Office mode, the trans=
+mit clock is generated by the MPC8248 using one of its BRG and output on an=
+ I/O pin. Clock routing on the MPC8248 routes CLKx to the SCC RX clock and =
+BRGx to the SCC transmit clock. The CLKx and BRGx I/O pins must be configur=
+ed accordingly.
 
-Is this truly a trend?  Work queue is more flexible but it has higher
-latency.  Why are work queues preferred?
+When in Remote Terminal mode, the receive clock must be looped to the trans=
+mit clock. This is achieved using a tristate buffer. The transmit clock sig=
+nal is thus driven by the buffer instead of being driven by the MPC8248 BRG=
+x pin. To avoid electrical conflicts I have to switch the BRGx I/O pin to a=
+n input. Clock routing must be reconfigured to route CLKx to both the SCC R=
+X and TX clocks.
 
-- Leo
+> If it turns out this really does need to happen, we can add some locks=20
+> and export the functions, but I'd like to hear more about the use case=20
+> first.
+
+GPIO configuration might be worked around by extending the GPIO API or prov=
+iding CPM2-specific extensions. Clock routing configuration is in my opinio=
+n required at runtime and I can't see any easy work around this. Feel free =
+to prove me wrong :-)
+
+Best regards,
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1459860.kPh0mcWAeo
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAki3tysACgkQ8y9gWxC9vpfyLACeM+xy4Hp7ejgsg3HZDX/lnNwm
+e08An0nD11Uc+hn7hUpkGn4pKGQ0hn07
+=JWwF
+-----END PGP SIGNATURE-----
+
+--nextPart1459860.kPh0mcWAeo--
