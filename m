@@ -1,27 +1,12 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BC737DE22E
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 11:24:22 +1000 (EST)
-Date: Thu, 28 Aug 2008 18:22:01 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/2] leds: make the default trigger name const
-In-Reply-To: <20080728095309.GA31809@polina.dev.rtsoft.ru>
-Message-ID: <Pine.LNX.4.64.0808281818400.3610@t2.domain.actdsltmp>
-References: <Pine.LNX.4.64.0807181339500.10116@t2.domain.actdsltmp>
-	<1217019705-24244-1-git-send-email-tpiepho@freescale.com>
-	<20080727020857.GM12191@secretlab.ca>
-	<20080727231149.1b2508da.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0807271304350.26456@t2.domain.actdsltmp>
-	<20080728095309.GA31809@polina.dev.rtsoft.ru>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 29 Aug 2008 14:19:13 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: libfdt: Fix bugs in fdt_get_path()
+Message-ID: <20080829041913.GC30197@yookeroo.seuss>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Richard Purdie <rpurdie@rpsys.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,45 +16,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The default_trigger fields of struct gpio_led and thus struct led_classdev
-are pretty much always assigned from a string literal, which means the
-string can't be modified.  Which is fine, since there is no reason to
-modify the string and in fact it never is.
+The current implementation of fdt_get_path() has a couple of bugs,
+fixed by this patch.
 
-But they should be marked const to prevent such code from being added, to
-prevent warnings if -Wwrite-strings is used and when assigned from a
-constant string other than a string literal (which produces a warning under
-current kernel compiler flags), and for general good coding practices.
+First, contrary to its documentation, on success it returns the length
+of the node's path, rather than 0.  The testcase is correspondingly
+wrong, and the patch fixes this as well.
 
-Signed-off-by: Trent Piepho <tpiepho@freescale.com>
----
-Reposting this again.  It still applies to powerpc-next as of Aug 28 and I
-don't think anyone had any problems with it.
+Second, in some circumstances, it will return -FDT_ERR_BADOFFSET
+instead of -FDT_ERR_NOSPACE when given insufficient buffer space.
+Specifically this happens when there is insufficient space even to
+hold the path's second last component.  This behaviour is corrected,
+and the testcase updated to check it.
 
-  include/linux/leds.h |    4 ++--
-  1 files changed, 2 insertions(+), 2 deletions(-)
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-diff --git a/include/linux/leds.h b/include/linux/leds.h
-index d41ccb5..d3a73f5 100644
---- a/include/linux/leds.h
-+++ b/include/linux/leds.h
-@@ -123,7 +123,7 @@ extern void ledtrig_ide_activity(void);
-   */
-  struct led_info {
-  	const char	*name;
--	char		*default_trigger;
-+	const char	*default_trigger;
-  	int		flags;
-  };
+Index: dtc/tests/get_path.c
+===================================================================
+--- dtc.orig/tests/get_path.c	2008-08-29 14:11:09.000000000 +1000
++++ dtc/tests/get_path.c	2008-08-29 14:11:11.000000000 +1000
+@@ -43,6 +43,8 @@ static void check_path_buf(void *fdt, co
+ 	memset(buf, POISON, sizeof(buf)); /* poison the buffer */
+ 
+ 	len = fdt_get_path(fdt, offset, buf, buflen);
++	verbose_printf("get_path() %s -> %d -> %s\n", path, offset, buf);
++
+ 	if (buflen <= pathlen) {
+ 		if (len != -FDT_ERR_NOSPACE)
+ 			FAIL("fdt_get_path([%d bytes]) returns %d with "
+@@ -51,9 +53,9 @@ static void check_path_buf(void *fdt, co
+ 		if (len < 0)
+ 			FAIL("fdt_get_path([%d bytes]): %s", buflen,
+ 			     fdt_strerror(len));
+-		if (len != pathlen)
+-			FAIL("fdt_get_path([%d bytes]) reports length %d "
+-			     "instead of %d", buflen, len, pathlen);
++		if (len != 0)
++			FAIL("fdt_get_path([%d bytes]) returns %d "
++			     "instead of 0", buflen, len);
+ 		if (strcmp(buf, path) != 0)
+ 			FAIL("fdt_get_path([%d bytes]) returns \"%s\" "
+ 			     "instead of \"%s\"", buflen, buf, path);
+@@ -70,6 +72,8 @@ static void check_path(void *fdt, const 
+ 	check_path_buf(fdt, path, pathlen, 1024);
+ 	check_path_buf(fdt, path, pathlen, pathlen+1);
+ 	check_path_buf(fdt, path, pathlen, pathlen);
++	check_path_buf(fdt, path, pathlen, 0);
++	check_path_buf(fdt, path, pathlen, 2);
+ }
+ 
+ int main(int argc, char *argv[])
+Index: dtc/libfdt/fdt_ro.c
+===================================================================
+--- dtc.orig/libfdt/fdt_ro.c	2008-08-29 14:11:11.000000000 +1000
++++ dtc/libfdt/fdt_ro.c	2008-08-29 14:11:11.000000000 +1000
+@@ -328,9 +328,6 @@ int fdt_get_path(const void *fdt, int no
+ 	for (offset = 0, depth = 0;
+ 	     (offset >= 0) && (offset <= nodeoffset);
+ 	     offset = fdt_next_node(fdt, offset, &depth)) {
+-		if (pdepth < depth)
+-			continue; /* overflowed buffer */
+-
+ 		while (pdepth > depth) {
+ 			do {
+ 				p--;
+@@ -338,14 +335,16 @@ int fdt_get_path(const void *fdt, int no
+ 			pdepth--;
+ 		}
+ 
+-		name = fdt_get_name(fdt, offset, &namelen);
+-		if (!name)
+-			return namelen;
+-		if ((p + namelen + 1) <= buflen) {
+-			memcpy(buf + p, name, namelen);
+-			p += namelen;
+-			buf[p++] = '/';
+-			pdepth++;
++		if (pdepth >= depth) {
++			name = fdt_get_name(fdt, offset, &namelen);
++			if (!name)
++				return namelen;
++			if ((p + namelen + 1) <= buflen) {
++				memcpy(buf + p, name, namelen);
++				p += namelen;
++				buf[p++] = '/';
++				pdepth++;
++			}
+ 		}
+ 
+ 		if (offset == nodeoffset) {
+@@ -355,7 +354,7 @@ int fdt_get_path(const void *fdt, int no
+ 			if (p > 1) /* special case so that root path is "/", not "" */
+ 				p--;
+ 			buf[p] = '\0';
+-			return p;
++			return 0;
+ 		}
+ 	}
+ 
 
-@@ -135,7 +135,7 @@ struct led_platform_data {
-  /* For the leds-gpio driver */
-  struct gpio_led {
-  	const char *name;
--	char *default_trigger;
-+	const char *default_trigger;
-  	unsigned 	gpio;
-  	u8 		active_low;
-  };
 -- 
-1.5.4.3
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
