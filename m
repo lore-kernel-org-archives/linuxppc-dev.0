@@ -1,32 +1,18 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A977ADDF40
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 19:18:41 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m7T9IZPL024701
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 02:18:35 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m7T9IXrY002045
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 04:18:34 -0500 (CDT)
-Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
-From: Li Yang <leoli@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20080828163910.GA1185@ld0162-tx32.am.freescale.net>
-References: <1219916613-28827-1-git-send-email-leoli@freescale.com>
-	<20080828163910.GA1185@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain
-Date: Fri, 29 Aug 2008 17:35:24 +0800
-Message-Id: <1220002524.30607.18.camel@Gundam>
-Mime-Version: 1.0
-Cc: greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
-Reply-To: leoli@freescale.com
+Return-Path: <sebastien.chretien.enseirb@gmail.com>
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.227])
+	by ozlabs.org (Postfix) with ESMTP id 130FBDDF6D
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 19:40:18 +1000 (EST)
+Received: by qb-out-0506.google.com with SMTP id d11so1112958qbd.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Aug 2008 02:40:17 -0700 (PDT)
+Message-ID: <319b0ac50808290240o973f96ckdc85a134646e1378@mail.gmail.com>
+Date: Fri, 29 Aug 2008 11:40:17 +0200
+From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
+	<sebastien.chretien.enseirb@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Advice : console
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_16751_3738513.1220002817251"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,26 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-08-28 at 11:39 -0500, Scott Wood wrote:
-> On Thu, Aug 28, 2008 at 05:43:33PM +0800, Li Yang wrote:
-> > +config USB_GADGET_FSL_QE
-> > +	boolean "Freescale QE/CPM USB Device Controller"
-> > +	depends on FSL_SOC && (QUICC_ENGINE || CPM)
-> > +	help
-> > +	   Some of Freescale PowerPC processors have a Full Speed
-> > +	   QE/CPM2 USB controller, which support device mode with 4
-> > +	   programmable endpoints. This driver supports the
-> > +	   controller in the MPC8360 and MPC8272, and should work with
-> > +	   controllers having QE or CPM2, given minor tweaks.
-> > +
-> > +	   Say "y" to link the driver statically, or "m" to build a
-> > +	   dynamically linked module called "fsl_qe_udc" and force all
-> > +	   gadget drivers to also be dynamically linked.
-> 
-> How can you say "m" to something that is not a tristate?
+------=_Part_16751_3738513.1220002817251
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Well, I copied these from other udc drivers.  Udc drivers can be
-compiled as module, through the CONFIG_USB_GADGET option.  Though, the
-description here is not accurate.
+Hello,
 
-- Leo
+I am trying to port linux for my ppc board. There is no keybord and no
+scree. There is only UART.
+I would like to have a console/terminal using UART.
+What is the best way ? to write a serial driver using "struct  uart_driver"
+or using "tty_driver" or to write a driver from scratch.
+Maybe there is other way.
+
+------=_Part_16751_3738513.1220002817251
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hello,<br>
+<br>
+I am trying to port linux for my ppc board. There is no keybord and no scree. There is only UART.<br>
+I would like to have a console/terminal using UART.<br>
+What is the best way ? to write a serial driver using &quot;struct&nbsp;
+uart_driver&quot; or using &quot;tty_driver&quot; or to write a driver from scratch.<br>
+Maybe there is other way.<br>
+
+------=_Part_16751_3738513.1220002817251--
