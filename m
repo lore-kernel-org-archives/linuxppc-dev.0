@@ -1,13 +1,13 @@
 Return-Path: <kevdig@hypersurf.com>
 Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
-	by ozlabs.org (Postfix) with ESMTP id AE651DDDE7
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Aug 2008 19:30:09 +1000 (EST)
-Message-ID: <48B912B7.9030806@hypersurf.com>
-Date: Sat, 30 Aug 2008 02:28:23 -0700
+	by ozlabs.org (Postfix) with ESMTP id 090EFDDF21
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Aug 2008 19:41:55 +1000 (EST)
+Message-ID: <48B91582.5060008@hypersurf.com>
+Date: Sat, 30 Aug 2008 02:40:18 -0700
 From: Kevin Diggs <kevdig@hypersurf.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/5] Add low level PLL config register interface module
+Subject: [PATCH v2 2/5] Add cpufreq driver for the IBM PowerPC 750GX
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -18,18 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds a small module to handle the low level details of dealing with the
-PLL config register (HID1) found in the IBM 750GX. It provides 2 possible
-interfaces, both selectable via kernel config options. One is a sysfs attribute
-and the other is a normal function API. It is called pll_if.
+This adds the actual cpufreq driver for the 750GX. It supports all integer
+ratios that are valid for the processor model and bus frequency. It is called
+cf750gx.
 
-The determination of the bus frequency is what worked on a PowerMac 8600. Any
-suggestions on a more general solution are welcome.
+It has two modes of operation. Normal mode uses all valid frequencies. In
+minmaxmode, only the minimum and maximum are used. This provides the ability
+for very low latency frequency switches.
 
-After receiving comments, I added an argument for the data item to the
-notifier register functions exported for the cpufreq API.
+There is also a sysfs attribute to have it switch off the unused PLL for
+additional power savings.
 
-I also fixed a deadlock if the module is unloaded before _modify_PLL() is ever
+This does NOT support SMP.
+
+I fixed a deadlock if the module is unloaded before _target() is ever
 called.
 
 My name is Kevin Diggs and I approve this patch.
@@ -37,13 +39,516 @@ My name is Kevin Diggs and I approve this patch.
 Signed-off-by: Kevin Diggs <kevdig@hypersurf.com>
 
 
-Index: arch/powerpc/kernel/cpu/pll_if.c
+Index: Documentation/DocBook/cf750gx.tmpl
 ===================================================================
 --- /dev/null	2004-08-10 18:55:00.000000000 -0700
-+++ arch/powerpc/kernel/cpu/pll_if.c	2008-08-29 13:42:35.000000000 -0700
-@@ -0,0 +1,807 @@
++++ Documentation/DocBook/cf750gx.tmpl	2008-08-27 13:59:45.000000000 -0700
+@@ -0,0 +1,441 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
++	"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" []>
++
++<book id="ppc750gx-cpufreq-guide">
++ <bookinfo>
++  <title>PowerPC 750GX (and FX?) cpufreq driver guide</title>
++
++  <authorgroup>
++   <author>
++    <firstname>Kevin</firstname>
++    <surname>Diggs</surname>
++   </author>
++  </authorgroup>
++
++    <revhistory>
++      <revision>
++	<revnumber>1.0&nbsp;</revnumber>
++	<date>August 12, 2008</date>
++	<revremark>Initial revision posted to linuxppc-dev</revremark>
++      </revision>
++    </revhistory>
++
++  <copyright>
++   <year>2008</year>
++   <holder>Kevin Diggs</holder>
++  </copyright>
++
++  <legalnotice>
++   <para>
++    This documentation is free software; you can redistribute
++    it and/or modify it under the terms of the GNU General Public
++    License as published by the Free Software Foundation; either
++    version 2 of the License, or (at your option) any later
++    version.
++   </para>
++
++   <para>
++    This program is distributed in the hope that it will be
++    useful, but WITHOUT ANY WARRANTY; without even the implied
++    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++    See the GNU General Public License for more details.
++   </para>
++
++   <para>
++    You should have received a copy of the GNU General Public
++    License along with this program; if not, write to the Free
++    Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++    MA 02111-1307 USA
++   </para>
++
++   <para>
++    For more details see the file COPYING in the source
++    distribution of Linux.
++   </para>
++  </legalnotice>
++
++  <releaseinfo>
++   This is the first release of this document coincident with submission of the
++   driver for inclusion in the kernel.
++  </releaseinfo>
++
++ </bookinfo>
++
++ <toc></toc>
++
++ <chapter id="introduction">
++  <title>Introduction</title>
++  <para>
++   This guide documents the cpufreq driver for the IBM PowerPC 750GX processor.
++   It "should" also work with the 750FX but has not been tested.
++  </para>
++  <para>
++   The driver is split into two main parts. The first provides the low level
++   interface to the PLL configuration register (HID1 - SPR 1009). It is called
++   pll_if. The second is the actual cpufreq driver, called cf750gx. The pll_if
++   component handles the details of dealing with the PLL like PLL lock delay
++   requirements and preventing illegal operations. The cf750gx driver provides
++   the interface to the cpufreq subsystem. Under control of the specified
++   governor it will generate the required commands to switch the processor
++   frequency as requested and send them to pll_if to carry them out.
++  </para>
++ </chapter>
++
++ <chapter id="MajorComponents">
++  <title>Major Components</title>
++
++  <para>
++   The IBM 750GX (and FX) processor has a pair of PLLs that can be programmed to
++   operate at a number of different frequencies. The frequencies are specified
++   as ratios to the system bus and range from 2 to 20. From 2 to 10 it also
++   supports half ratios (i.e. 2.5, 3.5) though they are not supported in the
++   cpufreq driver due to a limitation of not being able to switch from one half
++   ratio directly to another. It takes 100 usec for a PLL to relock to a
++   new frequency before it can be used [750GX_ds2-17-05.pdf, Table 3-7,
++   page 18]. It takes 3 bus clocks for the cpu to switch from one PLL to
++   another [750GX_ds2-17-05.pdf, paragraph 3, page 44].
++  </para>
++
++  <para>
++   The cpufreq driver consists of two main parts:
++  </para>
++
++  <itemizedlist>
++   <listitem>
++    <para>
++     cf750gx - the cpufreq driver module
++    </para>
++   </listitem>
++
++   <listitem>
++    <para>
++     pll_if - a low level interface that encapsulates the details of dealing
++     with the PLL register
++    </para>
++   </listitem>
++  </itemizedlist>
++
++  <sect1 id="cf750gx">
++   <title>cf750gx - The CPUFreq 750GX driver</title>
++
++   <para>
++    cf750gx provides the standard entry points required of a cpufreq driver. They
++    are:
++
++   <itemizedlist>
++    <listitem>
++     <para>
++      cf750gx_verify - verify
++     </para>
++    </listitem>
++
++    <listitem>
++     <para>
++      cf750gx_target - target
++     </para>
++    </listitem>
++
++    <listitem>
++     <para>
++      cf750gx_cpu_init - cpu init
++     </para>
++    </listitem>
++
++    <listitem>
++     <para>
++      cf750gx_cpu_exit - cpu exit
++     </para>
++    </listitem>
++   </itemizedlist>
++
++    These routines perform functions as required by the cpufreq subsystem.
++   </para>
++
++   <para>
++    The driver functions in one of 2 modes:  normal and minmax. In normal mode
++    it switches between the available frequencies as requested by the current
++    cpufreq subsystem governor. In minmax mode, it switches between the minimum
++    and maximum frequencies only.
++   </para>
++
++   <sect2 id="cf750gxModesNormal"><title>Normal Mode</title>
++    <para>
++     In normal mode the driver switches between all valid frequencies under
++     control of the selected governor. The list of valid frequencies is
++     determined at startup based on the cpu model (FX or GX) and the determined
++     bus frequency. The cpu model determines the minimum and maximum core
++     frequencies, though these can be overriden at start up via module
++     parameters. See Module Parameters. The bus frequency is obtained from
++     pll_if.
++    </para>
++   </sect2>
++
++   <sect2 id="cf750gxModesMinMax"><title>MinMax Mode</title>
++    <para>
++     In minmax mode the driver switches between the minimum and maximum core
++     frequencies only. This provides the capability for very low latency
++     frequency switches. See Module Parameters and sysfs Attributes.
++    </para>
++   </sect2>
++
++   <sect2 id="cf750gxModuleParameters"><title>Module Parameters</title>
++    <para>
++     cf750gx has 3 module parameters:
++    </para>
++
++    <itemizedlist>
++     <listitem>
++      <para>
++       maxcore
++      </para>
++     </listitem>
++     <listitem>
++      <para>
++       mincore
++      </para>
++     </listitem>
++     <listitem>
++      <para>
++       minmax
++      </para>
++     </listitem>
++    </itemizedlist>
++
++    <sect3 id="cf750gxParamOverrideMaxCore"><title>maxcore</title>
++     <para>
++      Normally the maximum frequency the cpu can be clocked is defined by the
++      cpu model. For the FX it is 800 MHz and 1,000 MHz for the GX. This
++      parameter allows you to override this maximum. It is specified in KHz.
++     </para>
++    </sect3>
++
++    <sect3 id="cf750gxParamOverrideMinCore"><title>mincore</title>
++     <para>
++      Likewise for cpu minimum frequency.
++     </para>
++
++     <note>
++      <para>
++       The 750GX on my PowerForce 750GX cpu upgrade seems stable at 250 MHz.
++       The spec says the minimum for the GX is 500 MHz.
++      </para>
++     </note>
++    </sect3>
++
++    <sect3 id="cf750gxParamMinMaxMode"><title>minmax</title>
++     <para>
++      This boolean parameter allows one to enable minmax mode on startup.
++     </para>
++    </sect3>
++   </sect2>
++
++   <sect2 id="cf750gxsysfsAttributes"><title>sysfs Attributes</title>
++    <para>
++     cf750gx has 2 sysfs attributes that can be used to modify its operation.
++     They are:
++
++     <itemizedlist>
++      <listitem>
++       <para>
++	idle_pll_off
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        minmax
++       </para>
++      </listitem>
++     </itemizedlist>
++
++     Both are booleans.
++    </para>
++
++    <sect3 id="IdlePllOffAttr"><title>idle_pll_off</title>
++     <para>
++      This boolean tells the driver to switch the idle PLL (the one NOT
++      currently used to drive the cpu core clock) off. Turning the unused PLL
++      off results in a modest power savings [750GX_ds2-17-05.pdf,
++      section 5.2.1, page 44].
++     </para>
++    </sect3>
++
++    <sect3 id="MinMaxModeAttr"><title>minmax</title>
++     <para>
++      This attribute controls the same feature as the similarly named module
++      parameter.
++     </para>
++
++     <note>
++      <para>
++       In order to get this to work with the conservative governor, the
++       "freq_step" attribute must be set to a value that will pick the max
++       frequency from the 2 element frequency table. A good value is 80 (which
++       says to jump in frequency by 80% of the maximum on each change).
++      </para>
++     </note>
++    </sect3>
++   </sect2>
++  </sect1>
++
++  <sect1 id="pll_if">
++   <title>pll_if - The Low Level PLL Interface Module</title>
++   <para>
++    pll_if provides the choice of two interfaces to control the PLL register.
++    One is via a sysfs attribute. The other is through an exported, public
++    routine. At least one interface must be selected during kernel
++    configuration.
++   </para>
++
++   <sect2 id="sysfsInterface"><title>sysfs Interface - ppc750gxpll</title>
++    <para>
++     This interface provides a sysfs attribute that can be written to to
++     directly control the PLL configuration register. The upper 8 or so bits of
++     the PLL configuration register are read only. This interface takes
++     advantage of this by using these bits to define which of the writeable
++     bits contain valid data. The header file
++     <filename class="headerfile">include/asm-powerpc/pll_if.h</filename>
++     defines the following macros:
++
++     <itemizedlist>
++      <listitem>
++       <para>
++        PLL0_DO_CFG - PLL 0 config (ratio) valid
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        PLL0_DO_RNG - PLL 0 range valid
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        PLL1_DO_CFG - PLL 1 config (ratio) valid
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        PLL1_DO_RNG - PLL 1 range valid
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        PLL_DO_SEL - PLL selection bit valid
++       </para>
++      </listitem>
++     </itemizedlist>
++
++     See the PERL script pll.pl for an example of using the sysfs attribute.
++    </para>
++   </sect2>
++
++   <sect2 id="PublicAPI"><title>Exported, Public Functions Interface</title>
++    <para>
++     This interface provides a public API that other code can use. The list of
++     functions is:
++
++     <itemizedlist>
++      <listitem>
++       <para>
++        pllif_pack_state
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        pllif_get_latency
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        pllif_modify_PLL
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        pllif_get_bus_clock
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        pllif_cfg_to_freq
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        pllif_register_pll_switch_cb
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        pllif_unregister_pll_switch_cb
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        pllif_register_pll_lock_cb
++       </para>
++      </listitem>
++
++      <listitem>
++       <para>
++        pllif_unregister_pll_lock_cb
++       </para>
++      </listitem>
++     </itemizedlist>
++
++
++     The embedded documentation from
++     <filename class="headerfile">include/asm-powerpc/pll_if.h</filename>
++     and
++     <filename class="headerfile">arch/powerpc/kernel/cpu/pll_if.c</filename>
++     is included in the appendix.
++
++    </para>
++   </sect2>
++
++   <sect2 id="pllifModuleParameters"><title>Module Parameters</title>
++    <para>
++     pll_if has one tunable parameter. busclock allows you to specify
++     the bus frequency. This is useful if the code can not determine the value
++     or gets it wrong. It is in KHz.
++    </para>
++
++    <note>
++     <para>
++      This code was developed on a PowerMac 8600 with a PowerLogix 750GX
++      upgrade card in it. The method used in the code to get the bus frequency
++      is what worked on this system.
++     </para>
++    </note>
++   </sect2>
++  </sect1>
++ </chapter>
++
++ <chapter id="Misc"><title>Misc</title>
++  <sect1 id="pll.pl"><title>pll.pl - A User Friendly pll_if sysfs utility</title>
++   <para>
++    pll.pl is a PERL script that provides a user friendly interface to the
++    pll_if sysfs attribute, cf750gxpll. It provides options to query the
++    current PLL state, change the configuration of either PLL (when inactive),
++    and to switch the PLL in use. See the embedded documentation in pll.pl
++    for details.
++   </para>
++  </sect1>
++ </chapter>
++ <chapter id="Appendix"><title>Appendix</title>
++!Finclude/asm-powerpc/pll_if.h pllifGetLatency pllifPackState
++!Earch/powerpc/kernel/cpu/pll_if.c
++ </chapter>
++</book>
+Index: Documentation/DocBook/Makefile
+===================================================================
+--- Documentation/DocBook/Makefile.orig	2008-08-13 02:18:51.000000000 -0700
++++ Documentation/DocBook/Makefile	2008-08-14 02:47:33.000000000 -0700
+@@ -12,7 +12,7 @@ DOCBOOKS := wanbook.xml z8530book.xml mc
+  	    kernel-api.xml filesystems.xml lsm.xml usb.xml kgdb.xml \
+  	    gadget.xml libata.xml mtdnand.xml librs.xml rapidio.xml \
+  	    genericirq.xml s390-drivers.xml uio-howto.xml scsi.xml \
+-	    mac80211.xml debugobjects.xml
++	    mac80211.xml debugobjects.xml cf750gx.xml
+
+  ###
+  # The build process is as follows (targets):
+Index: arch/powerpc/kernel/cpu/cpufreq/Kconfig
+===================================================================
+--- /dev/null	2004-08-10 18:55:00.000000000 -0700
++++ arch/powerpc/kernel/cpu/cpufreq/Kconfig	2008-08-19 00:24:15.000000000 -0700
+@@ -0,0 +1,33 @@
++#
++# CPU Frequency scaling
++#
++
++menu "CPU Frequency scaling"
++
++source "drivers/cpufreq/Kconfig"
++
++if CPU_FREQ
++
++comment "CPUFreq processor drivers"
++
++config CPU_FREQ_PPC_750GX_DUAL_PLL
++	tristate "PowerPC 750 FX/GX Dual PLL driver"
++	depends on !SMP
++	select PPC_750GX_DUAL_PLL_IF
++	select CPU_FREQ_TABLE
++	help
++	  This driver adds a CPUFreq driver which utilizes the dual
++	  PLLs found in the IBM 750 FX & GX cpus. This will automatically
++	  select the pll_if module. It does NOT support SMP.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called cf750gx.
++
++	  For details, take a look at <file:Documentation/cpu-freq/> and also
++	  see the cf750gx DocBook.
++
++	  If in doubt, say N.
++
++endif	# CPU_FREQ
++
++endmenu
+Index: arch/powerpc/kernel/cpu/cpufreq/Makefile
+===================================================================
+--- /dev/null	2004-08-10 18:55:00.000000000 -0700
++++ arch/powerpc/kernel/cpu/cpufreq/Makefile	2008-08-14 02:44:30.000000000 -0700
+@@ -0,0 +1 @@
++obj-$(CONFIG_CPU_FREQ_PPC_750GX_DUAL_PLL)	+= cf750gx.o
+Index: arch/powerpc/kernel/cpu/cpufreq/cf750gx.c
+===================================================================
+--- /dev/null	2004-08-10 18:55:00.000000000 -0700
++++ arch/powerpc/kernel/cpu/cpufreq/cf750gx.c	2008-08-29 03:05:33.000000000 -0700
+@@ -0,0 +1,741 @@
 +/*
-+ * pll_if.c - low level interface to HID1 (PLL config) in the PowerPC 750GX
++ * cf750gx.c - cpufreq driver for the dual PLLs in the 750gx
 + *
 + *  Copyright (C) 2008       kevin Diggs
 + *
@@ -65,1123 +570,732 @@ Index: arch/powerpc/kernel/cpu/pll_if.c
 + *
 + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 + */
-+#include "linux/init.h"
-+#include "linux/module.h"
-+#include <linux/autoconf.h>
-+#include "linux/kernel.h"
-+#include <linux/errno.h>
-+#include <linux/cpu.h>
-+#include "linux/of.h"
-+#include "linux/notifier.h"
-+#include "linux/delay.h"
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/sched.h>
++#include <linux/cpufreq.h>
++#include <linux/compiler.h>
++#include <linux/dmi.h>
++#include <linux/delay.h>
 +#include "linux/completion.h"
 +
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_SYSFS
-+#include "linux/sysdev.h"
-+#endif
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_HRTIMER
-+#include "linux/hrtimer.h"
-+#endif
-+
-+#include "asm/time.h"
-+#include <asm/mmu.h>
 +#include <asm/processor.h>
-+#include <asm/pgtable.h>
-+#include <asm/cputable.h>
-+#include <asm/system.h>
-+#include <asm/pll_if.h>
-+#include <asm/pll.h>
-+#include <asm/smp.h>
++#include "asm/pll.h"
++#include "asm/pll_if.h"
++#include "asm/time.h"
 +
-+MODULE_LICENSE("GPL");
-+
-+static DECLARE_COMPLETION(pllif_exit_completion);
-+
-+static unsigned int boot_ratio;
-+
-+static unsigned int busclock = 0;
-+module_param(busclock, uint, 0);
-+MODULE_PARM_DESC(busclock,
-+	"Bus clock frequency in KHz used to compute core clock frequency from"
-+	" bus ratios.");
-+
-+static unsigned int pllif_bus_clock;
-+
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_HRTIMER
-+static enum hrtimer_restart pllif_i_timer_f(struct hrtimer *hrt);
-+static struct hrtimer pll_timer;
-+static unsigned long hrtimers_got_no_freakin_callback_data;
-+#ifdef DEBUG
-+cycles_t pll_time_stamp;
++#define cf750gxmChangingPll		(0x80000000)
++#define cf750gxmChangingPllBit		(31)
++#define cf750gxmTurningIdlePllOff	(0x40000000)
++#define cf750gxmTurningIdlePllOffBit	(30)
++#if 0
++#define cf750gxm_CHANGING_PLL			(0X80000000)
++#define cf750gxm_CHANGING_PLL_BIT_POS		(31)
++#define cf750gxm_TURNING_IDLE_PLL_OFF		(0X40000000)
++#define cf750gxm_TURNING_IDLE_PLL_OFF_BIT_POS	(30)
 +#endif
-+#else
-+static void pllif_i_timer_f(unsigned long newPLL);
-+static struct timer_list pll_timer;
-+cycles_t pll_time_stamp;
-+#endif
-+
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_SYSFS
-+
-+unsigned long boot_loops;
-+static struct sys_device *sysdev_cpu;
-+
-+static ssize_t show_ppc750gxpll(struct sys_device *dev, char *buf)
-+{
-+	return sprintf(buf, "%x\n", get_PLL());
-+}
-+
-+static ssize_t __used store_ppc750gxpll(struct sys_device *dev,
-+	const char *buf, size_t count)
-+{
-+	unsigned long pll_ul;
-+	int ret;
-+
-+	pr_debug(__FILE__">%s()-%d:  buf=%s, count=%d\n", __func__, __LINE__,
-+		buf, count);
-+
-+	ret = strict_strtoul(buf, 16, &pll_ul);
-+
-+	pr_debug(__FILE__">%s()-%d:  strict_strtoul() returns %d\n", __func__,
-+		__LINE__, ret);
-+	pr_debug(__FILE__">%s()-%d:  %lx (%lu)\n", __func__, __LINE__, pll_ul,
-+		pll_ul);
-+
-+	if (!ret) {
-+		ret = count;
-+
-+	/*	pllif_modify_PLL((unsigned int)pll_ul,!0); */
-+		pllif_modify_PLL((unsigned int)pll_ul, 0);
-+	}
-+
-+	return ret;
-+}
-+
-+static SYSDEV_ATTR(ppc750gxpll, 0600, show_ppc750gxpll, store_ppc750gxpll);
-+#endif
-+
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_CPU_FREQ
-+struct pllif_call_data_t {
-+	void *data;
-+	int scalar;
++struct pll_750fgx {
++	unsigned short min_ratio;	/* min bus ratio */
++	unsigned short max_ratio;	/* max bus ratio */
++	unsigned int min_core;		/* min core frequency per spec (KHz) */
++	unsigned int max_core;		/* max core frequency per spec (KHz) */
 +};
 +
-+static struct pllif_call_data_t pllif_switch_call_data;
-+static struct pllif_call_data_t pllif_lock_call_data;
-+static RAW_NOTIFIER_HEAD(pllif_pll_switch_chain);
-+static RAW_NOTIFIER_HEAD(pllif_pll_lock_chain);
-+#endif
++#define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, \
++	"ppc-750gx-cpufreq", msg)
++
++struct cf750gx_call_data {
++	struct cpufreq_freqs freqs;
++	unsigned long current_pll;
++	int idle_pll_off;
++};
++
++static const struct pll_750fgx __initdata pll_750fx = {
++	.min_ratio = 2,
++	.max_ratio = 20,
++	.min_core = 400000,
++	.max_core = 800000,
++};
++
++static const struct pll_750fgx __initdata pll_750gx = {
++	.min_ratio = 2,
++	.max_ratio = 20,
++	.min_core = 500000,
++	.max_core = 1000000,
++};
++
++static DECLARE_COMPLETION(cf750gx_exit_completion);
 +
 +/*
-+ * This initializes the code for the PLL control:
-+ * boot_ratio is used to scale the loops_per_jiffy value from its boot value
-+ * boot_loops is the boot value of loops_per_jiffy and is used to compute new
-+ * values
++ * mincore and maxcore are module params. 0 means unset.
++ * minmax is a boolean param. 0 means disabled.
 + */
-+static int __init init_PLL(void)
++static unsigned int mincore = 0;
++static unsigned int maxcore = 0;
++static int minmax;
++
++module_param(maxcore, uint, 0);
++MODULE_PARM_DESC(maxcore,
++	"clock frequency in KHz.");
++
++module_param(mincore, uint, 0);
++MODULE_PARM_DESC(mincore,
++	"clock frequency in KHz.");
++
++module_param(minmax, bool, 0);
++MODULE_PARM_DESC(minmax,
++	"Use only the minimum and maximum frequencies.");
++
++/*
++ * ..._idle_pll_off is a boolean for a sysfs attribute. 0 means disabled.
++ * ..._minmax is a boolean for the current state of minmax.
++ * ..._state_bits maintains global state information.
++ */
++static int cf750gx_idle_pll_off;
++static int cf750gx_minmax;
++static unsigned long cf750gx_state_bits;
++
++static struct cpufreq_frequency_table *cf750gx_f_table;
++static struct cpufreq_frequency_table *cf750gx_freq_table;
++static struct cpufreq_frequency_table *cf750gx_min_max_freq_table;
++
++static struct cf750gx_call_data cf750gx_switch_call_data;
++static struct cf750gx_call_data cf750gx_lock_call_data;
++static struct notifier_block cf750gx_pll_switch_nb;
++static struct notifier_block cf750gx_pll_lock_nb;
++
++static int cf750gx_pll_switch_cb(struct notifier_block *nb, unsigned long
++	action, void *data)
 +{
-+	unsigned int temp;
-+#ifdef CONFIG_PPC_OF
-+	const u32 *clk;
-+	struct device_node *tree_root;
-+#endif
++	struct cf750gx_call_data *cd;
++	unsigned int idle_pll;
++	unsigned int pll_off_cmd;
++	unsigned int new_pll;
 +
-+	if (!cpu_has_feature(CPU_FTR_DUAL_PLL_750FX))
-+		return -ENODEV;
++	cd = data;
 +
-+	boot_ratio = 0;
++	dprintk("%s():  cd->idle_pll_off is %d, new PLL is 0x%x"
++		", Switched to  %d KHz\n", __func__, cd->idle_pll_off,
++		cd->current_pll, cd->freqs.new);
 +
-+	/*
-+	 * See if bus clock override was specified
-+	 */
-+	if (busclock)
-+		pllif_bus_clock = busclock*1000;
++	cpufreq_notify_transition(&cd->freqs, CPUFREQ_POSTCHANGE);
 +
-+#ifdef CONFIG_PPC_OF
-+	/*
-+	 * If bus clock is not specified, try to get it via OF
-+	 */
-+	if (!pllif_bus_clock) {
++	if (cd->idle_pll_off) {
 +		/*
-+		 * Get root node (aka MacRISC bus)
++		 * Assemble call to turn idle PLL off. Use the value of
++		 * current_pll in the call data thing.
 +		 */
-+		tree_root = of_find_node_by_name(NULL, "");
++		idle_pll = get_next_PLL(cd->current_pll)^0x1;
 +
++		pll_off_cmd = pllif_pack_state(0, 2);
 +
-+		if (tree_root) {
-+			clk = of_get_property(tree_root, "clock-frequency",
-+				NULL);
++		/*
++		 * Put in correct spot
++		 */
++		if (idle_pll) {
++			/*
++			 * Use PLL 1
++			 */
++			new_pll = ((PLL1_DO_CFG|PLL1_DO_RNG)<<24);
++		} else {
++			/*
++			 * Since active PLL is 1, switch off PLL 0
++			 */
++			pll_off_cmd = pll_off_cmd<<(PLL0_CFG_SHIFT-
++				PLL1_CFG_SHIFT);
 +
-+			if (clk && *clk)
-+				pllif_bus_clock = (unsigned int) *clk;
++			new_pll = (PLL0_DO_CFG|PLL0_DO_RNG)<<24;
++		}
 +
-+			of_node_put(tree_root);
++		new_pll = new_pll|pll_off_cmd;
 +
-+			pr_debug(__FILE__">%s()-%d:  Bus clock from OF is %u\n",
-+				__func__, __LINE__, pllif_bus_clock);
++		set_bit(cf750gxmTurningIdlePllOffBit, &cf750gx_state_bits);
++
++		(void) pllif_modify_PLL(new_pll, 0);
++	} else {
++		clear_bit(cf750gxmChangingPllBit, &cf750gx_state_bits);
++
++		complete(&cf750gx_exit_completion);
++	}
++
++	return NOTIFY_OK;
++}
++
++static int cf750gx_pll_lock_cb(struct notifier_block *nb, unsigned long action,
++	void *data)
++{
++	struct cf750gx_call_data *cd;
++
++	cd = data;
++
++	dprintk("%s():  cd->idle_pll_off is %d, new PLL is 0x%x"
++		", Switched to  %d KHz\n", __func__, cd->idle_pll_off,
++		cd->current_pll, cd->freqs.new);
++
++	if (cd->idle_pll_off) {
++		/*
++		 * We want to turn off the inactive (idle) pll. Use the state
++		 * bits global to figure out whether this call back is for the
++		 * original, cpufreq ordered frequency change or our turning
++		 * off of the idle PLL.
++		 */
++		if (test_bit(cf750gxmTurningIdlePllOffBit,
++			&cf750gx_state_bits)) {
++			clear_bit(cf750gxmTurningIdlePllOffBit,
++				&cf750gx_state_bits);
++			clear_bit(cf750gxmChangingPllBit,
++				&cf750gx_state_bits);
++			complete(&cf750gx_exit_completion);
 +		}
 +	}
-+#endif /* CONFIG_PPC_OF */
 +
-+	if (!pllif_bus_clock) {
-+		pr_err(__FILE__">%s()-%d:  Can't determine bus clock.\n",
-+			__func__, __LINE__);
++	return NOTIFY_OK;
++}
 +
-+		return -EINVAL;
++static inline const char *cf750gx_i_relation_str(unsigned int relation)
++{
++	switch (relation) {
++	case CPUFREQ_RELATION_L:	return "CPUFREQ_RELATION_L";
++	case CPUFREQ_RELATION_H:	return "CPUFREQ_RELATION_H";
++	default:			return "relation ??";
++	}
++}
++
++static int cf750gx_target(struct cpufreq_policy *policy,
++			       unsigned int target_freq, unsigned int relation)
++{
++	unsigned int next_index;	/* Index into freq_table */
++	unsigned int next_freq;		/* next frequency from perf table */
++	unsigned int next_perf_state;	/* Index from perf table */
++	int result;
++	unsigned int pll;
++	unsigned int new_pll;
++	unsigned int active_pll;
++	struct cpufreq_freqs freqs;
++	struct cpufreq_frequency_table *ft;
++
++	dprintk(__FILE__">%s(, %u KHz, relation %u)-%d:  on cpu %d\n",
++		__func__, target_freq, relation, __LINE__, policy->cpu);
++
++	if (test_and_set_bit(cf750gxmChangingPllBit, &cf750gx_state_bits))
++		return -EAGAIN;
++
++	ft = cf750gx_f_table;
++	next_index = 0;
++	next_freq = 0;
++	next_perf_state = 0;
++	result = 0;
++
++	INIT_COMPLETION(cf750gx_exit_completion);
++
++	result = cpufreq_frequency_table_target(policy,
++						ft,
++						target_freq,
++						relation, &next_index);
++
++	if (unlikely(result)) {
++		result = -ENODEV;
++		goto cf750gxTargetUnlock;
 +	}
 +
-+	/*
-+	 * Make sure the clock frequency is correct
-+	 */
-+	temp = get_PLL();
-+	temp = get_PLL_ratio(get_active_PLL(temp), temp);
++	next_perf_state = ft[next_index].index;
++	next_freq = ft[next_index].frequency;
++	dprintk(__FILE__">%s()-%d:  %d KHz (state=%x) selected from table "
++		"(%s)\n", __func__, __LINE__, next_freq, next_perf_state,
++		cf750gx_i_relation_str(relation));
 +
-+	ppc_proc_freq = pllif_cfg_to_freq(temp);
++	pll = get_PLL();
++	active_pll = get_active_PLL(pll);
 +
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_SYSFS
-+	/*
-+	 * Units for boot ratio is halves, i.e. 20 is a ratio of 10.
-+	 * From 21 on the returned value needs to be converted to halves.
-+	 */
-+	if (temp > 20)
-+		temp = (temp-10)<<1;
-+
-+	boot_ratio = temp;
-+	boot_loops = loops_per_jiffy;
-+
-+	/*
-+	 * Try to get the cpu sysdev
-+	 */
-+	sysdev_cpu = get_cpu_sysdev(boot_cpuid);
-+
-+	if (sysdev_cpu != NULL)
-+		sysdev_create_file(sysdev_cpu, &attr_ppc750gxpll);
-+#endif
-+
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_HRTIMER
-+	hrtimer_init(&pll_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
++#if 0
++#ifdef CONFIG_HOTPLUG_CPU
++	/* cpufreq holds the hotplug lock, so we are safe from here on */
++	cpus_and(online_policy_cpus, cpu_online_map, policy->cpus);
 +#else
-+	init_timer(&pll_timer);
++	online_policy_cpus = policy->cpus;
++#endif
 +#endif
 +
-+	pll_timer.function = pllif_i_timer_f;
++	result = 0;
++	if (pllif_pack_state(get_PLL_ratio(active_pll, pll), get_PLL_range(
++		active_pll, pll)) == next_perf_state) {
++		dprintk("Already at target state (%x)\n",
++			next_perf_state);
++		goto cf750gxTargetUnlock;
++	}
++
++/*	cpus_clear(cmd.mask); */
++
++	dprintk(__FILE__">%s()-%d:  Current PLL:  0x%x\n", __func__, __LINE__,
++		pll);
++
++	if (active_pll) {
++		unsigned int current_state;
++
++		/*
++		 * Since active PLL is 1, modify PLL 0. First see if it is
++		 * already where we want it.
++		 */
++		current_state = pllif_pack_state(get_PLL_ratio(0, pll),
++			get_PLL_range(0, pll));
++
++		dprintk(__FILE__">%s()-%d:  pll 0 current state:  0x%x\n",
++			__func__, __LINE__, current_state);
++
++		if (current_state == next_perf_state) {
++			new_pll = PLL_DO_SEL<<24;
++			next_perf_state = 0;
++		} else {
++			next_perf_state = next_perf_state<<(PLL0_CFG_SHIFT-
++				PLL1_CFG_SHIFT);
++
++			new_pll = (PLL0_DO_CFG|PLL0_DO_RNG|PLL_DO_SEL)<<24;
++		}
++	} else {
++		unsigned int current_state;
++
++		/*
++		 * Use PLL 1. Again, see if it is already at the desired
++		 * configuration.
++		 */
++		current_state = pllif_pack_state(get_PLL_ratio(1, pll),
++			get_PLL_range(1, pll));
++
++		dprintk(__FILE__">%s()-%d:  pll 1 current state:  0x%x\n",
++			__func__, __LINE__, current_state);
++
++		if (current_state == next_perf_state) {
++			new_pll = (PLL_DO_SEL<<24)|PLL_SEL_MASK;
++			next_perf_state = 0;
++		} else {
++			new_pll = ((PLL1_DO_CFG|PLL1_DO_RNG|PLL_DO_SEL)<<24)|
++				PLL_SEL_MASK;
++		}
++	}
++
++	new_pll = new_pll|next_perf_state;
++
++	dprintk(__FILE__">%s()-%d:  Modifying PLL:  0x%x\n", __func__, __LINE__,
++		new_pll);
++
++	freqs.old = pllif_cfg_to_freq(get_PLL_ratio(active_pll, pll))/1000;
++	freqs.new = ft[next_index].frequency;
++	freqs.cpu = 0;
++
++	cf750gx_switch_call_data.freqs = freqs;
++	cf750gx_switch_call_data.current_pll = new_pll;
++	cf750gx_switch_call_data.idle_pll_off = cf750gx_idle_pll_off;
++
++	cf750gx_lock_call_data.freqs = freqs;
++	cf750gx_lock_call_data.current_pll = new_pll;
++	cf750gx_lock_call_data.idle_pll_off = cf750gx_switch_call_data.
++		idle_pll_off;
++
++	dprintk(__FILE__">%s()-%d:  freqs.old=%d, freqs.new=%d\n", __func__,
++		__LINE__, freqs.old, freqs.new);
++
++	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
++
++	result = pllif_modify_PLL(new_pll, 0);
++
++	if (result < 0)
++		goto cf750gxTargetUnlock;
++
++	return 0;
++
++cf750gxTargetUnlock:
++	clear_bit(cf750gxmChangingPllBit, &cf750gx_state_bits);
++	complete(&cf750gx_exit_completion);
++
++	return result;
++}
++
++static int cf750gx_verify(struct cpufreq_policy *policy)
++{
++	dprintk("%s()\n", __func__);
++
++	return cpufreq_frequency_table_verify(policy, cf750gx_f_table);
++}
++
++static int cf750gx_cpu_init(struct cpufreq_policy *policy)
++{
++	unsigned int pll;
++	unsigned int result = 0;
++
++	dprintk("%s()\n", __func__);
++
++	cf750gx_state_bits = 0;
++	cf750gx_minmax = minmax;
++	cf750gx_idle_pll_off = 0;
++
++	pll = get_PLL();
++
++	policy->cur = pllif_cfg_to_freq(get_PLL_ratio(get_active_PLL(pll),
++		pll))/1000;
++
++	policy->cpuinfo.transition_latency = pllif_get_latency();
++
++	result = cpufreq_frequency_table_cpuinfo(policy, cf750gx_f_table);
++	if (result)
++		goto err_freqfree;
++
++	cpufreq_frequency_table_get_attr(cf750gx_f_table, policy->cpu);
++
++	cf750gx_pll_switch_nb.notifier_call = cf750gx_pll_switch_cb;
++
++	result = pllif_register_pll_switch_cb(&cf750gx_pll_switch_nb,
++		&cf750gx_switch_call_data);
++
++	cf750gx_pll_lock_nb.notifier_call = cf750gx_pll_lock_cb;
++
++	result = pllif_register_pll_lock_cb(&cf750gx_pll_lock_nb,
++		&cf750gx_lock_call_data);
++
++err_freqfree:
++	return result;
++}
++
++static int cf750gx_cpu_exit(struct cpufreq_policy *policy)
++{
++	dprintk("%s()\n", __func__);
++
++	/*
++	 * Wait for any active requests to ripple through before exiting. The
++	 * test_bit() condition is to catch the case where we exit with the
++	 * cf750gx_target() routine never having been called.
++	 */
++	if (test_bit(cf750gxmChangingPllBit,
++		&cf750gx_state_bits))
++		wait_for_completion(
++			&cf750gx_exit_completion);
++
++	cpufreq_frequency_table_put_attr(policy->cpu);
++
++	pllif_unregister_pll_switch_cb(&cf750gx_pll_switch_nb);
++
++	pllif_unregister_pll_lock_cb(&cf750gx_pll_lock_nb);
++
++	cf750gx_pll_switch_nb.notifier_call = NULL;
++	cf750gx_pll_switch_nb.next = NULL;
++
++	cf750gx_pll_lock_nb.notifier_call = NULL;
++	cf750gx_pll_lock_nb.next = NULL;
 +
 +	return 0;
 +}
 +
-+/*__initcall(init_PLL); */
-+
-+static void exit_PLL(void)
++static int cf750gx_resume(struct cpufreq_policy *policy)
 +{
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_SYSFS
-+	if (sysdev_cpu != NULL)
-+		sysdev_remove_file(sysdev_cpu, &attr_ppc750gxpll);
-+#endif
-+
-+	/*
-+	 * Make sure there are no timers pending by making sure we are not
-+	 * doing anything. The test_bit() condition is to catch the case where
-+	 * we exit with the pllif_modify_PLL() routine never having been called.
-+	 */
-+	if (test_bit(PLL_LOCK_BIT, (unsigned long *)&boot_ratio))
-+		wait_for_completion(&pllif_exit_completion);
++	return 0;
 +}
 +
-+module_init(init_PLL);
-+module_exit(exit_PLL);
-+
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_SYSFS
-+static unsigned long pllif_i_new_LPJ(unsigned int oldRatio, unsigned int
-+	newRatio, unsigned long LPJ)
++/*
++ * cf750gx_i_show_idle_pll_off - Show state of idle pll off boolean
++ */
++static ssize_t cf750gx_i_show_idle_pll_off(struct cpufreq_policy *policy,
++	char *buf)
 +{
-+	if (LPJ > 200000000)
-+		return LPJ/oldRatio*newRatio;
++	return sprintf(buf, "%d\n", cf750gx_idle_pll_off);
++}
++
++static ssize_t cf750gx_i_store_pll_off(struct cpufreq_policy *policy,
++	const char *buf, size_t count)
++{
++	if (buf[0] == '0')
++		cf750gx_idle_pll_off = 0;
++	else if (buf[0] == '1')
++		cf750gx_idle_pll_off = !0;
++
++	return 1;
++}
++
++static struct freq_attr idle_pll_off_attr = {
++	.attr = { .name = "idle_pll_off",
++		  .mode = 0644,
++		},
++	.show = cf750gx_i_show_idle_pll_off,
++	.store = cf750gx_i_store_pll_off,
++};
++
++/*
++ * cf750gx_i_show_minmax - Show state of min max mode boolean
++ */
++static ssize_t cf750gx_i_show_minmax(struct cpufreq_policy *policy,
++	char *buf)
++{
++	return sprintf(buf, "%d\n", cf750gx_minmax);
++}
++
++static ssize_t cf750gx_i_store_minmax(struct cpufreq_policy *policy,
++	const char *buf, size_t count)
++{
++	int result;
++
++	if (buf[0] == '0') {
++		cf750gx_minmax = 0;
++
++		cf750gx_f_table = cf750gx_freq_table;
++
++		cpufreq_frequency_table_put_attr(policy->cpu);
++
++		cpufreq_frequency_table_get_attr(cf750gx_freq_table,
++			policy->cpu);
++
++		result = cpufreq_frequency_table_cpuinfo(policy,
++			cf750gx_freq_table);
++	} else if (buf[0] == '1') {
++		cf750gx_minmax = !0;
++
++		cf750gx_f_table = cf750gx_min_max_freq_table;
++
++		cpufreq_frequency_table_put_attr(policy->cpu);
++
++		cpufreq_frequency_table_get_attr(cf750gx_min_max_freq_table,
++			policy->cpu);
++
++		result = cpufreq_frequency_table_cpuinfo(policy,
++			cf750gx_min_max_freq_table);
++	}
++
++	return 1;
++}
++
++static struct freq_attr minmax_attr = {
++	.attr = { .name = "minmax",
++		  .mode = 0644,
++		},
++	.show = cf750gx_i_show_minmax,
++	.store = cf750gx_i_store_minmax,
++};
++
++
++static struct freq_attr *cf750gxvAttr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	&idle_pll_off_attr,
++	&minmax_attr,
++	NULL,
++};
++
++static struct cpufreq_driver cf750gx_drv = {
++	.verify = cf750gx_verify,
++	.target = cf750gx_target,
++	.init = cf750gx_cpu_init,
++	.exit = cf750gx_cpu_exit,
++	.resume = cf750gx_resume,
++	.name = "ppc750gx-cpufreq",
++	.owner = THIS_MODULE,
++	.attr = cf750gxvAttr,
++};
++
++static int __init cf750gx_init(void)
++{
++	int ret;
++	unsigned int freq, i, j, rng, bus_clock;
++	unsigned short min_ratio, max_ratio;
++	struct cpufreq_frequency_table *tbp;
++	const struct pll_750fgx *pll_defaults;
++	unsigned int cf750gx_min_core;
++	unsigned int cf750gx_max_core;
++
++	dprintk("%s()\n", __func__);
++
++	if (!cpu_has_feature(CPU_FTR_DUAL_PLL_750FX))
++		return 0;
++
++	/*
++	 * Get processor min and max core frequencies. If they have not been
++	 * overriden, then get them from version defaults.
++	 */
++	if ((cur_cpu_spec->pvr_value>>16) == 0x7000)
++		pll_defaults = &pll_750fx;
 +	else
-+		return LPJ*newRatio/oldRatio;
-+}
++		pll_defaults = &pll_750gx;
 +
-+static inline void pllif_i_update_LPJ(unsigned int oldRatio, unsigned int
-+	newRatio, unsigned long LPJ)
-+{
-+	loops_per_jiffy = pllif_i_new_LPJ(oldRatio, newRatio, LPJ);
-+}
-+#else
-+#define pllif_i_update_LPJ(a, b, c)
-+#endif
++	cf750gx_min_core = mincore?mincore:pll_defaults->
++			min_core;
++	cf750gx_max_core = maxcore?maxcore:pll_defaults->
++			max_core;
 +
-+static void pllif_i_switch_PLLs(unsigned int newPLL)
-+{
-+#if 0
-+	unsigned long flags;
-+#endif
-+	unsigned int new_ratio;
-+	unsigned int new_ratio_cp;
-+	unsigned int old_ratio;
-+	unsigned int current_pll;
-+	unsigned int masked_boot_ratio;
++	dprintk(__FILE__">%s()-%d:  cf750gx_min_core is %u, "
++		"cf750gx_max_core is %u\n", __func__, __LINE__,
++		cf750gx_min_core, cf750gx_max_core);
++	dprintk(__FILE__">%s()-%d:  pll_defaults:  min_ratio %d, max_ratio "
++		"%d\n", __func__, __LINE__, pll_defaults->min_ratio,
++		pll_defaults->max_ratio);
 +
-+	pr_debug(__FILE__">%s()-%d:  newPLL=0x%08x\n", __func__, __LINE__,
-+		newPLL);
++	ret = -EINVAL;
++	if (!cf750gx_min_core) {
++		dprintk("Can't determine minimum core frequency\n");
++		goto err_simple;
++	}
 +
-+	/*
-+	 * Compute new loops_per_jiffy
-+	 */
-+	current_pll = get_PLL();
-+	new_ratio = get_PLL_ratio(get_next_PLL(newPLL), current_pll);
-+	old_ratio = get_PLL_ratio(get_active_PLL(current_pll), current_pll);
-+	masked_boot_ratio = boot_ratio&0xff;
-+	new_ratio_cp = new_ratio;
++	if (!cf750gx_max_core) {
++		dprintk("Can't determine maximum core frequency\n");
++		goto err_simple;
++	}
 +
-+	pr_debug(__FILE__">%s()-%d:  current_pll=0x%08x, new=%d, old=%d\n",
-+		__func__, __LINE__, current_pll, new_ratio, old_ratio);
-+
-+	current_pll = (current_pll&~PLL_SEL_MASK)|(newPLL&PLL_SEL_MASK);
-+
-+	pr_debug(__FILE__">%s()-%d:  current_pll=0x%08x, new=%d, old=%d\n",
-+		__func__, __LINE__, current_pll, new_ratio, old_ratio);
++	bus_clock = pllif_get_bus_clock()/1000;
 +
 +	/*
-+	 * Convert to halves
++	 * Build maximum freq table. This will depend on the bus freq, the core
++	 * frequency limits, and the ratios.
 +	 */
-+	if (new_ratio > 20)
-+		new_ratio = (new_ratio-10)<<1;
-+	if (old_ratio > 20)
-+		old_ratio = (old_ratio-10)<<1;
++	min_ratio = pll_defaults->min_ratio;
++	freq = min_ratio*bus_clock;
 +
-+	/*
-+	 * Make sure that we never shorten the sleep values
-+	 */
-+	if (new_ratio > old_ratio) {
-+		if (newPLL&PLL_DO_LPJ)
-+			pllif_i_update_LPJ(masked_boot_ratio, new_ratio,
-+				boot_loops);
++	if (freq < cf750gx_min_core) {
++		/*
++		 * Core min is above min ratio and bus speed clock. Find min
++		 * ratio such that min ratio * bus speed >= core min.
++		 */
++		min_ratio = cf750gx_min_core/bus_clock;
++		j = cf750gx_min_core%bus_clock;
 +
-+		pr_debug(__FILE__">%s()-%d:  masked_boot_ratio=%d, new_ratio="
-+		"%d, boot_loops=%ld, loops_per_jiffy=%ld\n", __func__, __LINE__,
-+		masked_boot_ratio, new_ratio, boot_loops, loops_per_jiffy);
-+
-+		set_PLL(current_pll);
++		if (j)
++			min_ratio++;
 +	} else {
-+		pr_debug(__FILE__">%s()-%d:  masked_boot_ratio=%d, new_"
-+			"ratio=%d, boot_loops=%ld, loops_per_jiffy=%ld\n",
-+			__func__, __LINE__, masked_boot_ratio, new_ratio,
-+			boot_loops, loops_per_jiffy);
-+
-+		set_PLL(current_pll);
-+
-+		if (newPLL&PLL_DO_LPJ)
-+			pllif_i_update_LPJ(masked_boot_ratio, new_ratio,
-+				boot_loops);
-+
-+		pr_debug(__FILE__">%s()-%d:  masked_boot_ratio=%d, new_"
-+			"ratio=%d, boot_loops=%ld, loops_per_jiffy=%ld\n",
-+			__func__, __LINE__, masked_boot_ratio, new_ratio,
-+			boot_loops, loops_per_jiffy);
++		/*
++		 * Core min is below min ratio and speed clock. Reset core min.
++		 */
++		cf750gx_min_core = freq;
 +	}
 +
-+	raw_notifier_call_chain(&pllif_pll_switch_chain, pllifmPllSwitch,
-+		pllif_switch_call_data.data);
++	max_ratio = pll_defaults->max_ratio;
++	freq = max_ratio*bus_clock;
 +
-+	/*
-+	 * This is used to print the clock frequency in /proc/cpuinfo
-+	 */
-+	ppc_proc_freq = pllif_cfg_to_freq(new_ratio_cp);
-+	pr_debug(__FILE__">%s()-%d:  pllif_cfg_to_freq(%u)=%lu\n", __func__,
-+		__LINE__, new_ratio_cp, ppc_proc_freq);
-+
-+#if 0
-+	save_flags(flags);
-+	cli();
-+
-+	loops_per_jiffy = pllif_i_new_LPJ(masked_boot_ratio, new_ratio,
-+		boot_loops);
-+
-+	set_PLL(current_pll);
-+
-+	restore_flags(flags);
-+#endif
-+}
-+
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_HRTIMER
-+static enum hrtimer_restart pllif_i_timer_f(struct hrtimer *hrt)
-+{
-+#ifdef DEBUG
-+	cycles_t now;
-+	cycles_t usec, tmp, cntlz, cnttz;
-+
-+	now = get_cycles();
-+
-+	now = now-pll_time_stamp;
-+
-+	/*
-+	 * Aw cmon, I'm just havin' a little fun with PPC assembly.
-+	 * Just wish I could find a way to use an rlwinm ... (or the equally
-+	 * fun rlwnm). This gets the leading zeros (for the dividend) and the
-+	 * trailing zeros (for the divisor) to try to preserve some precision
-+	 * after the big divide.
-+	 */
-+	cnttz = tb_ticks_per_sec; /* needed to get the assembly to ...
-+				 * look right ... ??? */
-+	tmp = now*15625;
-+
-+	asm (
-+		"addi %0,%3,-1\n\t"
-+		"andc %1,%3,%0\n\t"
-+		"cntlzw %1,%1\n\t"
-+		"subfic %1,%1,31\n\t"
-+		"cntlzw %0,%2\n\t":
-+		"=r"(cntlz), "=r"(cnttz):
-+		"r"(tmp), "b"(cnttz)
-+	);
-+
-+	/*
-+	 * 1,000,000 usec per sec and 1,000,000 is 15625<<6
-+	 */
-+	usec = ((tmp<<cntlz)/(tb_ticks_per_sec>>cnttz))<<6;
-+	usec = (usec+(1UL<<(cntlz+cnttz-1)))>>(cntlz+cnttz);
-+
-+	pr_debug(__FILE__">%s()-%d:  Time delta is %lu cycles, "
-+		"%lu uS (cntlz=%lu, cnttz=%lu)\n", __func__, __LINE__, now,
-+		usec, cntlz, cnttz);
-+#endif
-+	raw_notifier_call_chain(&pllif_pll_lock_chain, pllifmPllLock,
-+		pllif_lock_call_data.data);
-+
-+	/*
-+	 * Clear all lock bits
-+	 */
-+	boot_ratio &= ~(PLL_TIMER|PLL0_LOCK|PLL1_LOCK);
-+
-+	if ((unsigned int) hrtimers_got_no_freakin_callback_data)
-+		pllif_i_switch_PLLs((unsigned int)
-+			hrtimers_got_no_freakin_callback_data);
-+
-+	complete(&pllif_exit_completion);
-+
-+	return HRTIMER_NORESTART;
-+}
-+#else
-+static void pllif_i_timer_f(unsigned long newPLL)
-+{
-+	cycles_t now;
-+
-+	now = get_cycles();
-+	now = now-pll_time_stamp;
-+
-+#ifdef DEBUG
-+	{
-+		cycles_t usec, tmp, cntlz, cnttz;
-+
++	if (freq > cf750gx_max_core) {
 +		/*
-+		 * Aw cmon, I'm just havin' a little fun with PPC assembly.
-+		 * Just wish I could find a way to use an rlwinm ... (or the
-+		 * equally fun rlwnm). This gets the leading zeros (for the
-+		 * dividend) and the trailing zeros (for the divisor) to try to
-+		 * preserve some precision after the big divide.
++		 * Core max is below max ratio and bus speed. Find max ratio
++		 * such that max ratio * bus speed <= core max.
 +		 */
-+		cnttz = tb_ticks_per_sec; /* needed to get the assembly to ...
-+					 * look right ... ??? */
-+#define MULFIRST
-+#ifdef MULFIRST
-+		tmp = now*15625;
-+#else
-+		tmp = now;
-+#endif
-+
-+		asm (
-+			"addi %0,%3,-1\n\t"
-+			"andc %1,%3,%0\n\t"
-+			"cntlzw %1,%1\n\t"
-+			"subfic %1,%1,31\n\t"
-+			"cntlzw %0,%2\n\t":
-+			"=r"(cntlz), "=r"(cnttz):
-+			"r"(tmp), "b"(cnttz)
-+		);
-+
++		max_ratio = cf750gx_max_core/bus_clock;
++	} else {
 +		/*
-+		 * 1,000,000 usec per sec and 1,000,000 is 15625<<6
++		 * Core max is above max ratio and bus speed clock. Reset core
++		 * max.
 +		 */
-+/*		usec = (((now<<cntlz)/(tb_ticks_per_sec>>cnttz)*15625)+(1UL<<
-+			(cntlz+cnttz-1-6)))>>(cntlz+cnttz-6); */
-+#ifdef MULFIRST
-+		usec = ((tmp<<cntlz)/(tb_ticks_per_sec>>cnttz))<<6;
-+		usec = (usec+(1UL<<(cntlz+cnttz-1)))>>(cntlz+cnttz);
-+#else
-+		usec = ((tmp<<cntlz)/(tb_ticks_per_sec>>cnttz)*15625)<<6;
-+		usec = (usec+(1UL<<(cntlz+cnttz-1)))>>(cntlz+cnttz);
-+#endif
-+
-+		pr_debug(__FILE__">%s()-%d:  Time delta is %lu cycles, "
-+			"%lu uS (cntlz=%lu, cnttz=%lu)\n", __func__, __LINE__,
-+			now, usec, cntlz, cnttz);
++		cf750gx_max_core = freq;
 +	}
-+#endif
-+	/*
-+	 * Make sure it has been at least 100 usec. 100 usec is 100 *
-+	 * tb_ticks_per_sec / 1,000,000 cycles, so:
-+	 *	if(now<100*tb_ticks_per_sec/1000000
-+	 * 1,000,000 is 15625<<6, so:
-+	 *	if((now<<6)<100*tb_ticks_per_sec/15625)
-+	 * 100 is 25<<2, so:
-+	 *	if((now<<4)<25*tb_ticks_per_sec/15625)
-+	 * 15625 is 3125*5, so:
-+	 *	if((now<<4)*5<25*tb_ticks_per_sec/3125)
-+	 * obviously 25/3125 -> 1/125:
-+	 *	if((now<<4)*5<tb_ticks_per_sec/125)
-+	 */
-+	if ((now<<4)*5 < tb_ticks_per_sec/125)
-+		udelay(100-now*1000000/tb_ticks_per_sec);
 +
-+	raw_notifier_call_chain(&pllif_pll_lock_chain, pllifmPllLock,
-+		pllif_lock_call_data.data);
++	dprintk(__FILE__">%s()-%d:  min_ratio is %d, max_ratio is %d\n",
++		__func__, __LINE__, min_ratio, max_ratio);
 +
 +	/*
-+	 * Clear all lock bits
++	 * Bus ratios for the GX range from 2-20 for 19 INTEGER frequencies.
++	 * The above checks may have changed this. There are max_ratio -
++	 * min_ratio + 1 different frequencies.
 +	 */
-+	boot_ratio &= ~(PLL_TIMER|PLL0_LOCK|PLL1_LOCK);
++	j = max_ratio-min_ratio+1;
++	cf750gx_freq_table = kmalloc(sizeof(struct cpufreq_frequency_table)*
++		(j+5), GFP_KERNEL);
 +
-+	if ((unsigned int)newPLL)
-+		pllif_i_switch_PLLs((unsigned int)newPLL);
++	ret = -ENOMEM;
++	if (cf750gx_freq_table == NULL)
++		goto err_simple;
 +
-+	complete(&pllif_exit_completion);
-+}
-+#endif
-+
-+/*
-+ * Handle accesses to the pll register. Examples for write:
-+ *	  value		CFGx/RNGx/res	   effect
-+ *	0x08010000			switch to PLL1
-+ *	0x08000000			switch to PLL0
-+ *	0xc000fa00	1111 1/01/0	PLL0 off (CFG/RNG 31/1)
-+ *	0xc000f200	1111 0/01/0	PLL0 to 20x (CFG/RNG 30/1)
-+ *	0x30000004	0000 0/10/0	PLL1 off (CFG/RNG 0/2)
-+ *	0x30000054	0101 0/10/0	PLL1 to 5x (CFG/RNG a/2)
-+ */
-+/**
-+ * modifyPLL: - Takes steps to modify PLL as requested
-+ * @pll: Specifies the new value and desired operation to be performed
-+ * @scaleLPJ: flag to indicate whether to scale the loops_per_jiffy value
-+ *
-+ * Based on the value passed in the pll argument, this takes the steps necessary
-+ * to change the PLL as requested. The upper 7 or 8 bits of the PLL are read
-+ * only. These bit positions in the pll argument are used to specify flags that
-+ * indicate the validity of the other fields in the pll argument. See the
-+ * pll_if.h header for detail and actual values.
-+ */
-+int pllif_modify_PLL(unsigned int pll, int scaleLPJ)
-+{
-+	unsigned int current_pll, work_mask, pll_x;
-+	int rval = 0;
-+
-+	pr_debug(__FILE__">%s()-%d:\n", __func__, __LINE__);
-+	pr_debug(__FILE__">%s()-%d:  pll=0x%08x\n", __func__, __LINE__, pll);
 +
 +	/*
-+	 * This is not reentrant
++	 * Use index of first entry to keep track of the count (one extra
++	 * entry)
 +	 */
-+	if (test_and_set_bit(PLL_LOCK_BIT, (unsigned long *)&boot_ratio)) {
-+		pr_debug(__FILE__">%s()-%d:  Busy!\n", __func__, __LINE__);
-+		return -EAGAIN;
++	cf750gx_freq_table[0].frequency = CPUFREQ_ENTRY_INVALID;
++	cf750gx_freq_table[0].index = j;
++
++	/*
++	 * Populate the table
++	 */
++	for (tbp = cf750gx_freq_table+1, i = min_ratio; i <= max_ratio;
++		tbp++, i++) {
++		tbp->frequency = i*bus_clock;
++
++		/*
++		 * I really don't know what the proper range values for 600 MHz
++		 * and 900 MHz are? (The processor may also get pretty mad if
++		 * you muck these up!)
++		 */
++		if (tbp->frequency < 600000)
++			rng = 2;
++		else if (tbp->frequency < 900000)
++			rng = 0;
++		else
++			rng = 1;
++
++		/*
++		 * The computation in the first argument converts the bus
++		 * ratio value to the PLL configuration value needed for the
++		 * given ratio
++		 */
++		tbp->index = pllif_pack_state(i > 10?i+10:(i<<1), rng);
++
++		dprintk(__FILE__">%s()-%d:  p->index=%x, ratio=%u, rng=%u\n",
++			__func__, __LINE__, tbp->index, i, rng);
 +	}
 +
 +	/*
-+	 * Don't allow any changes if a timer is pending
++	 * 2nd extra array member
 +	 */
-+	if (test_bit(PLL_TIMER_BIT, (unsigned long *)&boot_ratio))
-+		goto checkPLLBusy;
-+
-+	INIT_COMPLETION(pllif_exit_completion);
-+
-+	current_pll = get_PLL();
-+	work_mask = pll>>24;
++	tbp->frequency = CPUFREQ_TABLE_END;
 +
 +	/*
-+	 * Check to see if the currently selected PLL is being modified
++	 * The other 3 extra array members are for the min max table.
 +	 */
-+	pll_x = get_active_PLL(current_pll);
++	cf750gx_min_max_freq_table = cf750gx_freq_table+
++		cf750gx_freq_table[0].index + 2;
 +
-+	if ((pll_x == 0 && work_mask&(PLL0_DO_CFG|PLL0_DO_RNG|PLL0_DO_CONTROL))
-+		|| (pll_x == 1 && work_mask&(PLL1_DO_CFG|PLL1_DO_RNG)))
-+		goto checkPLLInVal;
++	cf750gx_min_max_freq_table[0] = cf750gx_freq_table[1];
++	cf750gx_min_max_freq_table[1] = cf750gx_freq_table[
++		cf750gx_freq_table[0].index];
++	cf750gx_min_max_freq_table[2].frequency = CPUFREQ_TABLE_END;
 +
-+	/*
-+	 * Can't change to a PLL that is off. Also can't immediately change to
-+	 * one that is not locked. Catch that supposedly impossible condition.
-+	 */
-+	if (work_mask&PLL_DO_SEL) {
-+		int next_ratio;
-+		unsigned int which_config;
++	cf750gx_f_table = minmax?cf750gx_min_max_freq_table:
++		cf750gx_freq_table;
 +
-+		pll_x = get_next_PLL(pll);
++	ret = cpufreq_register_driver(&cf750gx_drv);
 +
-+		/*
-+		 * Figure out where the next ratio comes from. It will be from
-+		 * pll if we are changing the next pll and current_pll if not.
-+		 */
-+		which_config = pll_x?((work_mask&PLL1_DO_CFG)?pll:current_pll):
-+			((work_mask&PLL0_DO_CFG)?pll:current_pll);
-+		next_ratio = get_PLL_ratio(pll_x, which_config);
-+		if (next_ratio < 4 || next_ratio > 30)
-+			goto checkPLLInVal;
++	if (ret)
++		goto err_freq_table;
 +
-+		pll_x = ((pll_x == 0 && boot_ratio&PLL0_LOCK) || (pll_x == 1 &&
-+			boot_ratio&PLL1_LOCK))?1:0;
++	return 0;
 +
-+	}
-+	/*
-+	 * To avoid complications, don't allow both plls to be half ratios
-+	 */
-+	if (work_mask&PLL0_DO_CFG) {
-+		int old_ratio1, new_ratio0;
-+
-+		old_ratio1 = get_PLL_ratio(1, current_pll);
-+		new_ratio0 = get_PLL_ratio(0, pll);
-+
-+		if (old_ratio1 > 4 && old_ratio1 < 20 && new_ratio0 > 4 &&
-+			new_ratio0 < 20 && (old_ratio1&0x1) & (new_ratio0&0x1))
-+			goto checkPLLInVal;
-+	} else if (work_mask&PLL1_DO_CFG) {
-+		int old_ratio0, new_ratio1;
-+
-+		old_ratio0 = get_PLL_ratio(0, current_pll);
-+		new_ratio1 = get_PLL_ratio(1, pll);
-+
-+		if (old_ratio0 > 4 && old_ratio0 < 20 && new_ratio1 > 4 &&
-+			new_ratio1 < 20 && (old_ratio0&0x1) & (new_ratio1&0x1))
-+			goto checkPLLInVal;
-+	}
-+
-+	/*
-+	 * Determine if we will need to schedule a timer for a PLL relock. If
-+	 * any PLL config is being changed then a timer will be needed. Also
-+	 * need one if changing to a PLL that is not locked, though that should
-+	 * not happen.
-+	 */
-+	if ((work_mask&(PLL0_DO_CFG|PLL0_DO_RNG|PLL1_DO_CFG|PLL1_DO_RNG|
-+		PLL0_DO_CONTROL)) || (work_mask&PLL_DO_SEL && pll_x)) {
-+		unsigned int pll_mask, temp;
-+
-+		pll_mask = 0;
-+
-+		if (work_mask&PLL0_DO_CFG) {
-+			pll_mask |= PLL0_CFG_MASK;
-+
-+			/*
-+			 * Flag that PLL0 needs to relock
-+			 */
-+			boot_ratio |= PLL0_LOCK;
-+		}
-+
-+		if (work_mask&PLL0_DO_RNG)
-+			pll_mask |= PLL0_RNG_MASK;
-+
-+		if (work_mask&PLL1_DO_CFG) {
-+			pll_mask |= PLL1_CFG_MASK;
-+
-+			/*
-+			 * Flag that PLL1 needs to relock
-+			 */
-+			boot_ratio |= PLL1_LOCK;
-+		}
-+
-+		if (work_mask&PLL1_DO_RNG)
-+			pll_mask |= PLL1_RNG_MASK;
-+
-+		temp = (current_pll&~pll_mask)|(pll&pll_mask);
-+
-+		if (pll_mask)
-+			set_PLL(temp);
-+
-+		/*
-+		 * Flag that a timer is pending
-+		 */
-+		boot_ratio |= PLL_TIMER;
-+
-+		/*
-+		 * Schedule a timer to clear the PLL lock bits (and signal that
-+		 * it is ok to select the PLL)
-+		 */
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_HRTIMER
-+		/*
-+		 * Oh please, someone tell me I'm just to stupid to know how
-+		 * to pass this to the timer function!
-+		 */
-+		hrtimers_got_no_freakin_callback_data = (work_mask&PLL_DO_SEL)?
-+			(PLL_DO_SEL<<24)|(scaleLPJ?PLL_DO_LPJ:0)|(pll&
-+			PLL_SEL_MASK):0;
-+
-+		pll_timer.expires = ktime_set(0, 100000);
-+
-+		hrtimer_start(&pll_timer, pll_timer.expires, HRTIMER_MODE_REL);
-+#ifdef DEBUG
-+		pll_time_stamp = get_cycles();
-+#endif
-+#else
-+		/*
-+		 * We might want to pass three pieces of data to the timer
-+		 *   i)	that we want to switch PLLs (PLL_DO_SEL)
-+		 *  ii)	which PLL to switch to (PLL_SEL_MASK)
-+		 * iii) flag to control whether loops_per_jiffy is updated
-+		 *      (PLL_DO_LPJ)
-+		 */
-+		pll_timer.data = (work_mask&PLL_DO_SEL)?(PLL_DO_SEL<<24)|(
-+			scaleLPJ?PLL_DO_LPJ:0)|(pll&PLL_SEL_MASK):0;
-+
-+		/*
-+		 * Relock takes 100 us. See how many jiffies will take care of
-+		 * it.
-+		 */
-+		pll_timer.expires = (100*HZ/1000000);
-+		if (pll_timer.expires == 0)
-+			pll_timer.expires = 1;
-+
-+		pll_timer.expires = jiffies+pll_timer.expires;
-+		add_timer(&pll_timer);
-+
-+		pll_time_stamp = get_cycles();
-+#endif
-+	} else if (work_mask&PLL_DO_SEL) {
-+		pllif_i_switch_PLLs(pll|(scaleLPJ?PLL_DO_LPJ:0));
-+		complete(&pllif_exit_completion);
-+	}
-+
-+checkPLLOut:
-+	clear_bit(PLL_LOCK_BIT, (unsigned long *)&boot_ratio);
-+
-+	return rval;
-+checkPLLBusy:
-+	rval = -EBUSY;
-+	goto checkPLLOut;
-+checkPLLInVal:
-+	rval = -EINVAL;
-+	complete(&pllif_exit_completion);
-+	goto checkPLLOut;
-+}
-+EXPORT_SYMBOL(pllif_modify_PLL);
-+
-+/**
-+ * pllif_cFg_to_freq: - Takes a ratio and returns the frequency
-+ * @cfg: The PLL ratio field value
-+ *
-+ * This takes a PLL ratio field value and uses it along with the bus frequency
-+ * to compute the processor frequency.
-+ */
-+unsigned int pllif_cfg_to_freq(unsigned int cfg)
-+{
-+	return (cfg < 21?cfg>>1:cfg-10)*pllif_bus_clock;
-+}
-+EXPORT_SYMBOL(pllif_cfg_to_freq);
-+
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_CPU_FREQ
-+/**
-+ * pllif_get_bus_clock: - Returns the bus frequency
-+ *
-+ * This returns the determined bus frequency in Hz.
-+ */
-+unsigned int pllif_get_bus_clock()
-+{
-+	return pllif_bus_clock;
-+}
-+EXPORT_SYMBOL(pllif_get_bus_clock);
-+
-+/**
-+ * pllif_register_pll_switch_cb: - Registers a pll switch call back
-+ * @nb: structure describing the call back to register
-+ * @data: data to be passed to the callback function
-+ *
-+ * This registers a call back function that will be called when the clock is
-+ * switched from one PLL to the other. The call back routine should be set in
-+ * the notifier_call member of @nb.
-+ */
-+int pllif_register_pll_switch_cb(struct notifier_block *nb, void *data)
-+{
-+	int ret;
-+
-+	pllif_switch_call_data.data = data;
-+
-+	ret = raw_notifier_chain_register(&pllif_pll_switch_chain, nb);
-+
++err_freq_table:
++	kfree(cf750gx_freq_table);
++err_simple:
 +	return ret;
 +}
-+EXPORT_SYMBOL(pllif_register_pll_switch_cb);
 +
-+/**
-+ * pllif_unregister_pll_switch_cb: - Cancels a previously registered call back
-+ * @nb: structure describing the call back to cancel
-+ *
-+ * This cancels a previously registered switch call back
-+ */
-+void pllif_unregister_pll_switch_cb(struct notifier_block *nb)
++static void __exit cf750gx_exit(void)
 +{
-+	raw_notifier_chain_unregister(&pllif_pll_switch_chain, nb);
++	dprintk("%s()\n", __func__);
++
++	cpufreq_unregister_driver(&cf750gx_drv);
++
++	if (cf750gx_freq_table)
++		kfree(cf750gx_freq_table);
++
++	cf750gx_freq_table = cf750gx_min_max_freq_table =
++		cf750gx_f_table = NULL;
++
++	return;
 +}
-+EXPORT_SYMBOL(pllif_unregister_pll_switch_cb);
 +
-+/**
-+ * pllif_register_pll_lock_cb: - Registers a pll lock call back
-+ * @nb: structure describing the call back to register
-+ * @data: data to be passed to the callback function
-+ *
-+ * This registers a call back function that will be called when a PLL has
-+ * locked to a new frequency. The call back routine should be set in the
-+ * notifier_call member of @nb.
-+ */
-+int pllif_register_pll_lock_cb(struct notifier_block *nb, void *data)
-+{
-+	int ret;
++late_initcall(cf750gx_init);
++module_exit(cf750gx_exit);
 +
-+	pllif_lock_call_data.data = data;
++MODULE_ALIAS("dual-pll");
 +
-+	ret = raw_notifier_chain_register(&pllif_pll_lock_chain, nb);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(pllif_register_pll_lock_cb);
-+
-+/**
-+ * pllif_unregister_pll_lock_cb: - Cancels a previously registered call back
-+ * @nb: structure describing the call back to cancel
-+ *
-+ * This cancels a previously registered PLL lock call back
-+ */
-+void pllif_unregister_pll_lock_cb(struct notifier_block *nb)
-+{
-+	raw_notifier_chain_unregister(&pllif_pll_lock_chain, nb);
-+}
-+EXPORT_SYMBOL(pllif_unregister_pll_lock_cb);
-+#endif
-Index: include/asm-powerpc/pll.h
++MODULE_AUTHOR("Kevin Diggs");
++MODULE_DESCRIPTION("750GX Dual PLL cpufreq driver");
++MODULE_LICENSE("GPL");
+Index: arch/powerpc/kernel/cpu/Makefile
 ===================================================================
 --- /dev/null	2004-08-10 18:55:00.000000000 -0700
-+++ include/asm-powerpc/pll.h	2008-08-23 02:05:14.000000000 -0700
-@@ -0,0 +1,209 @@
-+#ifndef __PLL_H
-+#define __PLL_H
-+/*
-+	Dual PLL functions, for 750FX & 750GX
-+	Copyright (C) 2005 by Kevin Diggs
++++ arch/powerpc/kernel/cpu/Makefile	2008-08-14 02:44:30.000000000 -0700
+@@ -0,0 +1,6 @@
++#
++# Makefile for ppc CPU details and quirks
++#
 +
-+	This program is free software; you can redistribute it and/or modify
-+	it under the terms of the GNU General Public License as published by
-+	the Free Software Foundation; either version 2 of the License, or
-+	(at your option) any later version.
-+
-+	This program is distributed in the hope that it will be useful,
-+	but WITHOUT ANY WARRANTY; without even the implied warranty of
-+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+	GNU General Public License for more details.
-+
-+	You should have received a copy of the GNU General Public License
-+	along with this program; if not, write to the Free Software
-+	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+*/
-+/*
-+	Tue, June 14, 2005.
-+	- First public release, contributed by Kevin Diggs.
-+	***********
-+	***********
-+
-+	Author:	Kevin Diggs ()
-+*/
-+
-+#include <asm/processor.h>
-+
-+/*
-+	The layout of the PLL register (HID1) is:
-+
-+	0  4|5 6|7|8| 9 11|12 13|14| 15 |16 20|21 22|23|24 28|29 30| 31
-+	PCE |PRE|v|v| Res | Res |v | PS | PC0 | PR0 |v | PC1 | PR1 |Res
-+	         | |             |                   |
-+	 PSTAT1 -| |             |                   |
-+	 ECLK -----|             |                   |
-+	 PI0 --------------------|                   |
-+	 Res ----------------------------------------|
-+
-+	PCE	PLL0 read-only external config
-+	PRE	PLL0 read-only external range
-+	PSTAT1	PLL status (0 -> PLL0, 1 -> PLL1)
-+	ECLK	1 -> enable clkout pin
-+	PI0	PLL0 control:  0 -> external
-+	PS	PLL select:  0 -> PLL0, 1 -> PLL1
-+	PC0	PLL0 configuration
-+	PR0	PLL0 range
-+	PC1	PLL1 configuration
-+	PR1	PLL1 range
-+
-+	PLL_CFG		bus ratio	PLL_CFG		bus ratio
-+	 00000		   off		 10000		    8
-+	 00001		   off		 10001		   8.5
-+	 00010		 bypass		 10010		    9
-+	 00011		 bypass		 10011		   9.5
-+	 00100		    2		 10100		   10
-+	 00101		   2.5		 10101		   11
-+	 00110		    3		 10110		   12
-+	 00111		   3.5		 10111		   13
-+	 01000		    4		 11000		   14
-+	 01001		   4.5		 11001		   15
-+	 01010		    5		 11010		   16
-+	 01011		   5.5		 11011		   17
-+	 01100		    6		 11100		   18
-+	 01101		   6.5		 11101		   19
-+	 01110		    7		 11110		   20
-+	 01111		   7.5		 11111		   off
-+
-+	PLL_RNG		  range
-+	  00		600 -  900
-+	  01		900 - 1000
-+	  10		500 -  600
-+ */
-+
-+/**
-+ * get_PLL: - return current value of PLL register (HID1)
-+ *
-+ * This returns the current value of the PLL configuration register (HID1).
-+ */
-+static inline volatile unsigned int get_PLL(void)
-+{
-+unsigned int ret;
-+
-+	__asm__ __volatile__ ("mfspr %0,%1":
-+		"=r"(ret):
-+		"i"(SPRN_HID1)
-+	);
-+
-+	return ret;
-+}
-+
-+/**
-+ * get_active_PLL: - Returns the active PLL (0 or 1)
-+ * @config: The PLL register value to return the active PLL from
-+ *
-+ * This returns the value of the PSTAT1 bit (bit 7, IBM numbering) , right
-+ * justified, which indicates which of the PLLs is currently clocking the CPU.
-+ */
-+static inline unsigned int get_active_PLL(unsigned int config)
-+{
-+unsigned int ret;
-+
-+	/*
-+	 * PSTAT1 to LSBit and mask
-+	 */
-+	__asm__ __volatile__ ("rlwinm %0,%0,8,31,31":
-+		"=r"(ret):
-+		"0"(config)
-+	);
-+
-+	return ret;
-+}
-+
-+/**
-+ * get_next_PLL: - Returns the PLL that is to become active
-+ * @config: The PLL register value to return the next PLL from
-+ *
-+ * This returns the value of the PS bit (bit 15, IBM numbering), right
-+ * justified, which indicates which of the PLLs is going to be clocking the CPU.
-+ */
-+static inline unsigned int get_next_PLL(unsigned int config)
-+{
-+unsigned int ret;
-+
-+	/*
-+	 * PS to LSBit and mask
-+	 */
-+	__asm__ __volatile__ ("rlwinm %0,%0,16,31,31":
-+		"=r"(ret):
-+		"0"(config)
-+	);
-+
-+	return ret;
-+}
-+
-+/**
-+ * get_PLL_ratio: - Returns the selected PLL ratio
-+ * @ratio: The ratio that is to be returned (0 or 1)
-+ * @config: The PLL register value to return the next PLL from
-+ *
-+ * This returns the value of the selected PLL ratio field (PC0 for 0, PC1 for
-+ * 1), right justified. It indicates the frequency of the selected PLL.
-+ */
-+static inline unsigned int get_PLL_ratio(unsigned int ratio, unsigned int
-+	config)
-+{
-+unsigned int ret;
-+
-+	/*
-+	 * Turn r3 (ratio) into a rotate count for the selected ratio.
-+	 * 0 -> 21, 1 -> 29
-+	 */
-+	__asm__ __volatile__ (
-+		"slwi %0,%0,3\n"
-+		"addi %0,%0,21\n"
-+		"rlwnm %0,%1,%0,27,31\n":
-+		"=b"(ret):
-+		"r"(config), "0"(ratio)
-+	);
-+
-+	return ret;
-+}
-+
-+/**
-+ * get_PLL_range: - Returns the selected PLL range
-+ * @range: The range that is to be returned (0 or 1)
-+ * @config: The PLL register value to return the next PLL from
-+ *
-+ * This returns the value of the selected PLL range field (PR0 for 0, PR1 for
-+ * 1), right justified.
-+ */
-+static inline unsigned int get_PLL_range(unsigned int range, unsigned int
-+	config)
-+{
-+unsigned int ret;
-+
-+	/*
-+	 * Turn r3 (range) into a rotate count for the selected range.
-+	 * 0 -> 23, 1 -> 31
-+	 */
-+	__asm__ __volatile__ (
-+		"slwi %0,%0,3\n"
-+		"addi %0,%0,23\n"
-+		"rlwnm %0,%1,%0,30,31\n":
-+		"=b"(ret):
-+		"r"(config), "0"(range)
-+	);
-+
-+	return ret;
-+}
-+
-+/**
-+ * get_PLL: - sets a new value in the PLL register
-+ * @config: The new value for the PLL register (HID1)
-+ *
-+ * This stores a new value in the PLL configuration register. It is possible to
-+ * freeze the system by storing certain illegal values.
-+ */
-+static inline volatile void set_PLL(unsigned int config)
-+{
-+	__asm__ __volatile__ ("mtspr %1,%0":
-+		:
-+		"r"(config), "i"(SPRN_HID1)
-+	);
-+}
-+#endif
-Index: include/asm-powerpc/pll_if.h
-===================================================================
---- /dev/null	2004-08-10 18:55:00.000000000 -0700
-+++ include/asm-powerpc/pll_if.h	2008-08-27 02:24:49.000000000 -0700
-@@ -0,0 +1,117 @@
-+#ifndef __PLL_IF_H
-+#define __PLL_IF_H
-+/*
-+	High Level wrapper functions for Dual PLL in 750FX & 750GX
-+	Copyright (C) 2008 by Kevin Diggs
-+
-+	This program is free software; you can redistribute it and/or modify
-+	it under the terms of the GNU General Public License as published by
-+	the Free Software Foundation; either version 2 of the License, or
-+	(at your option) any later version.
-+
-+	This program is distributed in the hope that it will be useful,
-+	but WITHOUT ANY WARRANTY; without even the implied warranty of
-+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+	GNU General Public License for more details.
-+
-+	You should have received a copy of the GNU General Public License
-+	along with this program; if not, write to the Free Software
-+	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+*/
-+/*
-+	Fri, April 18, 2008.
-+	- First public release, contributed by Kevin Diggs.
-+	***********
-+	***********
-+
-+	Author:	Kevin Diggs ()
-+*/
-+
-+/*
-+ * Update the value of the PLL configuration register based on the crap passed
-+ * in. The upper 8 bits (0 - 7) are read only and will be used as flags to con-
-+ * trol what we are doing:
-+ *	0x80	PLL0 configuration is valid
-+ *	0x40	PLL0 range is valid
-+ *	0x20	PLL1 configuration is valid
-+ *	0x10	PLL1 range is valid
-+ *	0x08	PLL select is valid
-+ *	0x04	PLL0 control is valid
-+ *	0x02	Update loops_per_jiffy value
-+ *
-+ * Make sure that sufficient time (100 us) is given for a PLL that is changed
-+ * to relock before selecting it.
-+ */
-+#define PLL0_DO_CFG	(0x80)
-+#define PLL0_DO_RNG	(0x40)
-+#define PLL1_DO_CFG	(0x20)
-+#define PLL1_DO_RNG	(0x10)
-+#define PLL_DO_SEL	(0x08)
-+#define PLL0_DO_CONTROL	(0x04)
-+#define PLL_DO_LPJ	(0x02)
-+
-+#define PLL0_CONTROL_MASK	(0x20000)
-+#define PLL_SEL_MASK		(0x10000)
-+#define PLL0_CFG_MASK		(0x0f800)
-+#define PLL0_CFG_SHIFT		(11)
-+#define PLL0_RNG_MASK		(0x00600)
-+#define PLL0_RNG_SHIFT		(9)
-+#define PLL1_CFG_MASK		(0x000f8)
-+#define PLL1_CFG_SHIFT		(3)
-+#define PLL1_RNG_MASK		(0x00006)
-+#define PLL1_RNG_SHIFT		(1)
-+
-+#define PLL_LOCK	(0x80000000)		/* Code lock bit */
-+#define PLL_LOCK_BIT (31)
-+#define PLL_TIMER	(0x40000000)		/* Timer is scheduled */
-+#define PLL_TIMER_BIT (30)
-+#define PLL0_LOCK	(0x20000000)		/* PLL 0 locking */
-+#define PLL0_LOCK_BIT (29)
-+#define PLL1_LOCK	(0x10000000)		/* PLL 1 locking */
-+#define PLL1_LOCK_BIT (28)
-+
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_CPU_FREQ
-+#define pllifmPllSwitch		(0x80000000)
-+#define pllifmPllLock		(0x40000000)
-+
-+extern int pllif_modify_PLL(unsigned int newPLL, int scaleLPJ);
-+extern unsigned int pllif_get_bus_clock(void);
-+extern unsigned int pllif_cfg_to_freq(unsigned int ratio);
-+extern int pllif_register_pll_switch_cb(struct notifier_block *nb, void *data);
-+extern void pllif_unregister_pll_switch_cb(struct notifier_block *nb);
-+extern int pllif_register_pll_lock_cb(struct notifier_block *nb, void *data);
-+extern void pllif_unregister_pll_lock_cb(struct notifier_block *nb);
-+
-+/**
-+ * pllif_get_latency: - Return processor frequency switch latency
-+ *
-+ * This returns the latency that a processor frequency switch takes. It is in
-+ * nano seconds. The value will depend on whether HRTIMERS are being used.
-+ */
-+static inline int pllif_get_latency(void)
-+{
-+#ifdef CONFIG_PPC_750GX_DUAL_PLL_IF_HRTIMER
-+	return 100000;
-+#else
-+	return 1000000000/HZ;
-+#endif
-+}
-+
-+/**
-+ * pllif_pack_state: - Returns the arguments packed together
-+ * @cfg: The ratio that is to be used
-+ * @rng: The range that is to be used
-+ *
-+ * This takes a ratio and range and packs them together in the right positions
-+ * relative to each other for creating a new PLL value. The value is positioned
-+ * correctly for PLL 1. To reposition for PLL 0 do a left shift of
-+ * (PLL0_CFG_SHIFT - PLL1_CFG_SHIFT).
-+ */
-+static inline unsigned int pllif_pack_state(unsigned int cfg, unsigned int
-+	rng)
-+{
-+	return (cfg<<PLL1_CFG_SHIFT)|(rng<<PLL1_RNG_SHIFT);
-+}
-+#endif
-+
-+#endif
++obj-$(CONFIG_CPU_FREQ)	+= cpufreq/
++obj-$(CONFIG_PPC_750GX_DUAL_PLL_IF)	+= pll_if.o
