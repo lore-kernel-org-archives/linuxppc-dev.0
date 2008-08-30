@@ -1,12 +1,12 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18616.42451.914835.305138@cargo.ozlabs.ibm.com>
-Date: Sat, 30 Aug 2008 11:43:47 +1000
+Message-ID: <18616.42248.663384.449549@cargo.ozlabs.ibm.com>
+Date: Sat, 30 Aug 2008 11:40:24 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/5] powerpc: Make the 64-bit kernel as a position-independent
-	executable
+Subject: [PATCH 2/5] powerpc: Make it possible to move the interrupt handlers
+	away from the kernel
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,494 +16,368 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This implements CONFIG_RELOCATABLE for 64-bit by making the kernel as
-a position-independent executable (PIE) when it is set.  This involves
-processing the dynamic relocations in the image in the early stages of
-booting, even if the kernel is being run at the address it is linked at,
-since the linker does not necessarily fill in words in the image for
-which there are dynamic relocations.  (In fact the linker does fill in
-such words for 64-bit executables, though not for 32-bit executables,
-so in principle we could avoid calling relocate() entirely when we're
-running a 64-bit kernel at the linked address.)
+This changes the way that the exception prologs transfer control to
+the handlers in 64-bit kernels with the aim of making it possible to
+have the prologs separate from the main body of the kernel.  Now,
+instead of computing the address of the handler by taking the top
+32 bits of the paca address (to get the 0xc0000000........ part) and
+ORing in something in the bottom 16 bits, we get the base address of
+the kernel by doing a load from the paca and add an offset.
 
-The dynamic relocations are processed by a new function relocate(addr),
-where the addr parameter is the virtual address where the image will be
-run.  In fact we call it twice; once before calling prom_init, and again
-when starting the main kernel.  This means that reloc_offset() returns
-0 in prom_init (since it has been relocated to the address it is running
-at), which necessitated a few adjustments.
+This also replaces an mfmsr and an ori to compute the MSR value for
+the handler with a load from the paca.  That makes it unnecessary to
+have a separate version of EXCEPTION_PROLOG_PSERIES that forces 64-bit
+mode.
 
-This also changes __va and __pa to use an equivalent definition that is
-simpler.  With the relocatable kernel, PAGE_OFFSET and MEMORY_START are
-constants (for 64-bit) whereas PHYSICAL_START is a variable (and
-KERNELBASE ideally should be too, but isn't yet).
+We can no longer use a direct branches in the exception prolog code,
+which means that the SLB miss handlers can't branch directly to
+.slb_miss_realmode any more.  Instead we have to compute the address
+and do an indirect branch.  This is conditional on CONFIG_RELOCATABLE;
+for non-relocatable kernels we use a direct branch as before.  (A later
+change will allow CONFIG_RELOCATABLE to be set on 64-bit powerpc.)
 
-With this, relocatable kernels still copy themselves down to physical
-address 0 and run there.
+Since the secondary CPUs on pSeries start execution in the first 0x100
+bytes of real memory and then have to get to wherever the kernel is,
+we can't use a direct branch to get there.  Instead this changes
+__secondary_hold_spinloop from a flag to a function pointer.  When it
+is set to a non-NULL value, the secondary CPUs jump to the function
+pointed to by that value.
+
+Finally this eliminates one code difference between 32-bit and 64-bit
+by making __secondary_hold be the text address of the secondary CPU
+spinloop rather than a function descriptor for it.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 587da5e..17c988b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -806,6 +806,19 @@ config PIN_TLB
- endmenu
+diff --git a/arch/powerpc/include/asm/exception.h b/arch/powerpc/include/asm/exception.h
+index 329148b..d3d4534 100644
+--- a/arch/powerpc/include/asm/exception.h
++++ b/arch/powerpc/include/asm/exception.h
+@@ -53,14 +53,8 @@
+  * low halfword of the address, but for Kdump we need the whole low
+  * word.
+  */
+-#ifdef CONFIG_CRASH_DUMP
+ #define LOAD_HANDLER(reg, label)					\
+-	oris	reg,reg,(label)@h;	/* virt addr of handler ... */	\
+-	ori	reg,reg,(label)@l;	/* .. and the rest */
+-#else
+-#define LOAD_HANDLER(reg, label)					\
+-	ori	reg,reg,(label)@l;	/* virt addr of handler ... */
+-#endif
++	addi	reg,reg,(label)-_stext;	/* virt addr of handler ... */
  
- if PPC64
-+config RELOCATABLE
-+	bool "Build a relocatable kernel"
-+	help
-+	  This builds a kernel image that is capable of running anywhere
-+	  in the RMA (real memory area) at any 16k-aligned base address.
-+	  The kernel is linked as a position-independent executable (PIE)
-+	  and contains dynamic relocations which are processed early
-+	  in the bootup process.
-+
-+	  One use is for the kexec on panic case where the recovery kernel
-+	  must live at a different physical address than the primary
-+	  kernel.
-+
- config PAGE_OFFSET
- 	hex
- 	default "0xc000000000000000"
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 9155c93..14c86fe 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -63,7 +63,9 @@ override CC	+= -m$(CONFIG_WORD_SIZE)
- override AR	:= GNUTARGET=elf$(CONFIG_WORD_SIZE)-powerpc $(AR)
- endif
+ #define EXCEPTION_PROLOG_1(area)				\
+ 	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
+@@ -72,37 +66,12 @@
+ 	std	r9,area+EX_R13(r13);					\
+ 	mfcr	r9
  
--LDFLAGS_vmlinux	:= -Bstatic
-+LDFLAGS_vmlinux-yy := -Bstatic
-+LDFLAGS_vmlinux-$(CONFIG_PPC64)$(CONFIG_RELOCATABLE) := -pie
-+LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-yy)
+-/*
+- * Equal to EXCEPTION_PROLOG_PSERIES, except that it forces 64bit mode.
+- * The firmware calls the registered system_reset_fwnmi and
+- * machine_check_fwnmi handlers in 32bit mode if the cpu happens to run
+- * a 32bit application at the time of the event.
+- * This firmware bug is present on POWER4 and JS20.
+- */
+-#define EXCEPTION_PROLOG_PSERIES_FORCE_64BIT(area, label)		\
+-	EXCEPTION_PROLOG_1(area);					\
+-	clrrdi	r12,r13,32;		/* get high part of &label */	\
+-	mfmsr	r10;							\
+-	/* force 64bit mode */						\
+-	li	r11,5;			/* MSR_SF_LG|MSR_ISF_LG */	\
+-	rldimi	r10,r11,61,0;		/* insert into top 3 bits */	\
+-	/* done 64bit mode */						\
+-	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
+-	LOAD_HANDLER(r12,label)						\
+-	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI;				\
+-	mtspr	SPRN_SRR0,r12;						\
+-	mfspr	r12,SPRN_SRR1;		/* and SRR1 */			\
+-	mtspr	SPRN_SRR1,r10;						\
+-	rfid;								\
+-	b	.	/* prevent speculative execution */
+-
+ #define EXCEPTION_PROLOG_PSERIES(area, label)				\
+ 	EXCEPTION_PROLOG_1(area);					\
+-	clrrdi	r12,r13,32;		/* get high part of &label */	\
+-	mfmsr	r10;							\
++	ld	r12,PACAKBASE(r13);	/* get high part of &label */	\
++	ld	r10,PACAKMSR(r13);	/* get MSR value for kernel */	\
+ 	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
+ 	LOAD_HANDLER(r12,label)						\
+-	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI;				\
+ 	mtspr	SPRN_SRR0,r12;						\
+ 	mfspr	r12,SPRN_SRR1;		/* and SRR1 */			\
+ 	mtspr	SPRN_SRR1,r10;						\
+@@ -210,11 +179,10 @@ label##_pSeries:							\
+ 	std	r10,PACA_EXGEN+EX_R13(r13);				\
+ 	std	r11,PACA_EXGEN+EX_R11(r13);				\
+ 	std	r12,PACA_EXGEN+EX_R12(r13);				\
+-	clrrdi	r12,r13,32;		/* get high part of &label */	\
+-	mfmsr	r10;							\
++	ld	r12,PACAKBASE(r13);	/* get high part of &label */	\
++	ld	r10,PACAKMSR(r13);	/* get MSR value for kernel */	\
+ 	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
+ 	LOAD_HANDLER(r12,label##_common)				\
+-	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI;				\
+ 	mtspr	SPRN_SRR0,r12;						\
+ 	mfspr	r12,SPRN_SRR1;		/* and SRR1 */			\
+ 	mtspr	SPRN_SRR1,r10;						\
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 6493a39..082b3ae 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -62,6 +62,8 @@ struct paca_struct {
+ 	u16 paca_index;			/* Logical processor number */
  
- CFLAGS-$(CONFIG_PPC64)	:= -mminimal-toc -mtraceback=none  -mcall-aixdesc
- CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 -mmultiple
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 14174aa..9109e1f 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -310,8 +310,11 @@ $(obj)/dtbImage.%: vmlinux $(wrapperbits) $(obj)/%.dtb
- $(obj)/vmlinux.strip: vmlinux
- 	$(STRIP) -s -R .comment $< -o $@
- 
-+# The iseries hypervisor won't take an ET_DYN executable, so this
-+# changes the type (byte 17) in the file to ET_EXEC (2).
- $(obj)/zImage.iseries: vmlinux
- 	$(STRIP) -s -R .comment $< -o $@
-+	printf "\x02" | dd of=$@ conv=notrunc bs=1 seek=17
- 
- $(obj)/uImage: vmlinux $(wrapperbits)
- 	$(call if_changed,wrap,uboot)
-diff --git a/arch/powerpc/boot/elf_util.c b/arch/powerpc/boot/elf_util.c
-index 7454aa4..1567a0c 100644
---- a/arch/powerpc/boot/elf_util.c
-+++ b/arch/powerpc/boot/elf_util.c
-@@ -27,7 +27,8 @@ int parse_elf64(void *hdr, struct elf_info *info)
- 	      elf64->e_ident[EI_MAG3]  == ELFMAG3	&&
- 	      elf64->e_ident[EI_CLASS] == ELFCLASS64	&&
- 	      elf64->e_ident[EI_DATA]  == ELFDATA2MSB	&&
--	      elf64->e_type            == ET_EXEC	&&
-+	      (elf64->e_type            == ET_EXEC ||
-+	       elf64->e_type            == ET_DYN)	&&
- 	      elf64->e_machine         == EM_PPC64))
- 		return 0;
- 
-@@ -58,7 +59,8 @@ int parse_elf32(void *hdr, struct elf_info *info)
- 	      elf32->e_ident[EI_MAG3]  == ELFMAG3	&&
- 	      elf32->e_ident[EI_CLASS] == ELFCLASS32	&&
- 	      elf32->e_ident[EI_DATA]  == ELFDATA2MSB	&&
--	      elf32->e_type            == ET_EXEC	&&
-+	      (elf32->e_type            == ET_EXEC ||
-+	       elf32->e_type            == ET_DYN)      &&
- 	      elf32->e_machine         == EM_PPC))
- 		return 0;
- 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index c2df53c..5a44174 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -437,7 +437,7 @@ typedef struct {
- 	})
- #endif /* 1 */
- 
--/* This is only valid for addresses >= KERNELBASE */
-+/* This is only valid for addresses >= PAGE_OFFSET */
- static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
- {
- 	if (ssize == MMU_SEGSIZE_256M)
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index e088545..64e1445 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -71,15 +71,21 @@
- #define PAGE_OFFSET	ASM_CONST(CONFIG_PAGE_OFFSET)
- #define LOAD_OFFSET	ASM_CONST((CONFIG_KERNEL_START-CONFIG_PHYSICAL_START))
- 
--#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_FLATMEM)
-+#if defined(CONFIG_RELOCATABLE)
- #ifndef __ASSEMBLY__
- extern phys_addr_t memstart_addr;
- extern phys_addr_t kernstart_addr;
- #endif
- #define PHYSICAL_START	kernstart_addr
--#define MEMORY_START	memstart_addr
- #else
- #define PHYSICAL_START	ASM_CONST(CONFIG_PHYSICAL_START)
-+#endif
-+
-+#ifdef CONFIG_PPC64
-+#define MEMORY_START	0UL
-+#elif defined(CONFIG_RELOCATABLE)
-+#define MEMORY_START	memstart_addr
-+#else
- #define MEMORY_START	(PHYSICAL_START + PAGE_OFFSET - KERNELBASE)
- #endif
- 
-@@ -92,8 +98,8 @@ extern phys_addr_t kernstart_addr;
- #define pfn_to_kaddr(pfn)	__va((pfn) << PAGE_SHIFT)
- #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
- 
--#define __va(x) ((void *)((unsigned long)(x) - PHYSICAL_START + KERNELBASE))
--#define __pa(x) ((unsigned long)(x) + PHYSICAL_START - KERNELBASE)
-+#define __va(x) ((void *)((unsigned long)(x) + PAGE_OFFSET - MEMORY_START))
-+#define __pa(x) ((unsigned long)(x) - PAGE_OFFSET + MEMORY_START)
- 
- /*
-  * Unfortunately the PLT is in the BSS in the PPC32 ELF ABI,
-diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
-index 916018e..14c0f45 100644
---- a/arch/powerpc/include/asm/sections.h
-+++ b/arch/powerpc/include/asm/sections.h
-@@ -16,6 +16,12 @@ static inline int in_kernel_text(unsigned long addr)
- 	return 0;
- }
- 
-+static inline int overlaps_kernel_text(unsigned long start, unsigned long end)
-+{
-+	return start < (unsigned long)__init_end &&
-+		(unsigned long)_stext < end;
-+}
-+
- #endif
- 
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 64f5948..1fbc953 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -34,6 +34,7 @@ obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
- 				   paca.o cpu_setup_ppc970.o \
- 				   cpu_setup_pa6t.o \
- 				   firmware.o nvram_64.o
-+obj64-$(CONFIG_RELOCATABLE)	+= reloc_64.o
- obj-$(CONFIG_PPC64)		+= vdso64/
- obj-$(CONFIG_ALTIVEC)		+= vecemu.o vector.o
- obj-$(CONFIG_PPC_970_NAP)	+= idle_power4.o
+ 	u64 kernel_toc;			/* Kernel TOC address */
++	u64 kernelbase;			/* Base address of kernel */
++	u64 kernel_msr;			/* MSR while running in kernel */
+ 	u64 stab_real;			/* Absolute address of segment table */
+ 	u64 stab_addr;			/* Virtual address of segment table */
+ 	void *emergency_sp;		/* pointer to emergency stack */
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 92768d3..e9c4044 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -122,6 +122,8 @@ int main(void)
+ 	DEFINE(PACASTABRR, offsetof(struct paca_struct, stab_rr));
+ 	DEFINE(PACAR1, offsetof(struct paca_struct, saved_r1));
+ 	DEFINE(PACATOC, offsetof(struct paca_struct, kernel_toc));
++	DEFINE(PACAKBASE, offsetof(struct paca_struct, kernelbase));
++	DEFINE(PACAKMSR, offsetof(struct paca_struct, kernel_msr));
+ 	DEFINE(PACASOFTIRQEN, offsetof(struct paca_struct, soft_enabled));
+ 	DEFINE(PACAHARDIRQEN, offsetof(struct paca_struct, hard_enabled));
+ 	DEFINE(PACASLBCACHE, offsetof(struct paca_struct, slb_cache));
 diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index df678ee..c0bba84 100644
+index 27935d1..97bb6e6 100644
 --- a/arch/powerpc/kernel/head_64.S
 +++ b/arch/powerpc/kernel/head_64.S
-@@ -1360,6 +1360,12 @@ _INIT_STATIC(__boot_from_prom)
- 	 */
- 	rldicr	r1,r1,0,59
- 
-+#ifdef CONFIG_RELOCATABLE
-+	/* Relocate code for where we are now */
-+	mr	r3,r26
-+	bl	.relocate
-+#endif
-+
- 	/* Restore parameters */
- 	mr	r3,r31
- 	mr	r4,r30
-@@ -1368,11 +1374,19 @@ _INIT_STATIC(__boot_from_prom)
- 	mr	r7,r27
- 
- 	/* Do all of the interaction with OF client interface */
-+	mr	r8,r26
- 	bl	.prom_init
- 	/* We never return */
+@@ -82,7 +82,11 @@ END_FTR_SECTION(0, 1)
+ 	/* Catch branch to 0 in real mode */
  	trap
  
- _STATIC(__after_prom_start)
-+#ifdef CONFIG_RELOCATABLE
-+	/* process relocations for the final address of the kernel */
-+	lis	r25,PAGE_OFFSET@highest	/* compute virtual base of kernel */
-+	sldi	r25,r25,32
-+	mr	r3,r25
-+	bl	.relocate
+-	/* Secondary processors spin on this value until it goes to 1. */
++	/* Secondary processors spin on this value until it becomes nonzero.
++	 * When it does it contains the real address of the descriptor
++	 * of the function that the cpu should jump to to continue
++	 * initialization.
++	 */
+ 	.globl  __secondary_hold_spinloop
+ __secondary_hold_spinloop:
+ 	.llong	0x0
+@@ -109,8 +113,11 @@ __secondary_hold_acknowledge:
+  * before the bulk of the kernel has been relocated.  This code
+  * is relocated to physical address 0x60 before prom_init is run.
+  * All of it must fit below the first exception vector at 0x100.
++ * Use .globl here not _GLOBAL because we want __secondary_hold
++ * to be the actual text address, not a descriptor.
+  */
+-_GLOBAL(__secondary_hold)
++	.globl	__secondary_hold
++__secondary_hold:
+ 	mfmsr	r24
+ 	ori	r24,r24,MSR_RI
+ 	mtmsrd	r24			/* RI on */
+@@ -126,11 +133,11 @@ _GLOBAL(__secondary_hold)
+ 
+ 	/* All secondary cpus wait here until told to start. */
+ 100:	ld	r4,__secondary_hold_spinloop@l(0)
+-	cmpdi	0,r4,1
+-	bne	100b
++	cmpdi	0,r4,0
++	beq	100b
+ 
+ #if defined(CONFIG_SMP) || defined(CONFIG_KEXEC)
+-	LOAD_REG_IMMEDIATE(r4, .generic_secondary_smp_init)
++	ld	r4,0(r4)		/* deref function descriptor */
+ 	mtctr	r4
+ 	mr	r3,r24
+ 	bctr
+@@ -147,6 +154,10 @@ exception_marker:
+ /*
+  * This is the start of the interrupt handlers for pSeries
+  * This code runs with relocation off.
++ * Code from here to __end_interrupts gets copied down to real
++ * address 0x100 when we are running a relocatable kernel.
++ * Therefore any relative branches in this section must only
++ * branch to labels in this section.
+  */
+ 	. = 0x100
+ 	.globl __start_interrupts
+@@ -200,7 +211,20 @@ data_access_slb_pSeries:
+ 	mfspr	r10,SPRN_SPRG1
+ 	std	r10,PACA_EXSLB+EX_R13(r13)
+ 	mfspr	r12,SPRN_SRR1		/* and SRR1 */
+-	b	.slb_miss_realmode	/* Rel. branch works in real mode */
++#ifndef CONFIG_RELOCATABLE
++	b	.slb_miss_realmode
++#else
++	/*
++	 * We can't just use a direct branch to .slb_miss_realmode
++	 * because the distance from here to there depends on where
++	 * the kernel ends up being put.
++	 */
++	mfctr	r11
++	ld	r10,PACAKBASE(r13)
++	LOAD_HANDLER(r10, .slb_miss_realmode)
++	mtctr	r10
++	bctr
 +#endif
+ 
+ 	STD_EXCEPTION_PSERIES(0x400, instruction_access)
+ 
+@@ -225,7 +249,15 @@ instruction_access_slb_pSeries:
+ 	mfspr	r10,SPRN_SPRG1
+ 	std	r10,PACA_EXSLB+EX_R13(r13)
+ 	mfspr	r12,SPRN_SRR1		/* and SRR1 */
+-	b	.slb_miss_realmode	/* Rel. branch works in real mode */
++#ifndef CONFIG_RELOCATABLE
++	b	.slb_miss_realmode
++#else
++	mfctr	r11
++	ld	r10,PACAKBASE(r13)
++	LOAD_HANDLER(r10, .slb_miss_realmode)
++	mtctr	r10
++	bctr
++#endif
+ 
+ 	MASKABLE_EXCEPTION_PSERIES(0x500, hardware_interrupt)
+ 	STD_EXCEPTION_PSERIES(0x600, alignment)
+@@ -244,14 +276,12 @@ BEGIN_FTR_SECTION
+ 	beq-	1f
+ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)
+ 	mr	r9,r13
+-	mfmsr	r10
+ 	mfspr	r13,SPRN_SPRG3
+ 	mfspr	r11,SPRN_SRR0
+-	clrrdi	r12,r13,32
+-	oris	r12,r12,system_call_common@h
+-	ori	r12,r12,system_call_common@l
++	ld	r12,PACAKBASE(r13)
++	ld	r10,PACAKMSR(r13)
++	LOAD_HANDLER(r12, system_call_entry)
+ 	mtspr	SPRN_SRR0,r12
+-	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI
+ 	mfspr	r12,SPRN_SRR1
+ 	mtspr	SPRN_SRR1,r10
+ 	rfid
+@@ -379,7 +409,10 @@ __end_interrupts:
  
  /*
-  * We need to run with _stext at physical address PHYSICAL_START.
-@@ -1381,10 +1395,9 @@ _STATIC(__after_prom_start)
-  *
-  * Note: This process overwrites the OF exception vectors.
+  * Code from here down to __end_handlers is invoked from the
+- * exception prologs above.
++ * exception prologs above.  Because the prologs assemble the
++ * addresses of these handlers using the LOAD_HANDLER macro,
++ * which uses an addi instruction, these handlers must be in
++ * the first 32k of the kernel image.
   */
--	LOAD_REG_IMMEDIATE(r3, PHYSICAL_START)	/* target addr */
--	cmpd	r3,r26			/* In some cases the loader may  */
-+	li	r3,0			/* target addr */
-+	mr.	r4,r26			/* In some cases the loader may  */
- 	beq	9f			/* have already put us at zero */
--	mr	r4,r26			/* source address */
- 	lis	r5,(copy_to_here - _stext)@ha
- 	addi	r5,r5,(copy_to_here - _stext)@l /* # bytes of memory to copy */
- 	li	r6,0x100		/* Start offset, the first 0x100 */
-@@ -1617,6 +1630,13 @@ _INIT_STATIC(start_here_multiplatform)
- 	ori	r6,r6,MSR_RI
- 	mtmsrd	r6			/* RI on */
  
-+#ifdef CONFIG_RELOCATABLE
-+	/* Save the physical address we're running at in kernstart_addr */
-+	LOAD_REG_ADDR(r4, kernstart_addr)
-+	clrldi	r0,r25,2
-+	std	r0,0(r4)
-+#endif
+ /*** Common interrupt handlers ***/
+@@ -419,6 +452,10 @@ machine_check_common:
+ 	STD_EXCEPTION_COMMON(0x1800, cbe_thermal, .cbe_thermal_exception)
+ #endif /* CONFIG_CBE_RAS */
+ 
++	.align	7
++system_call_entry:
++	b	system_call_common
 +
- 	/* The following gets the stack set up with the regs */
- 	/* pointing to the real addr of the kernel stack.  This is   */
- 	/* all done to support the C function call below which sets  */
+ /*
+  * Here we have detected that the kernel stack pointer is bad.
+  * R9 contains the saved CR, r13 points to the paca,
+@@ -562,6 +599,9 @@ unrecov_user_slb:
+  */
+ _GLOBAL(slb_miss_realmode)
+ 	mflr	r10
++#ifdef CONFIG_RELOCATABLE
++	mtctr	r11
++#endif
+ 
+ 	stw	r9,PACA_EXSLB+EX_CCR(r13)	/* save CR in exc. frame */
+ 	std	r10,PACA_EXSLB+EX_LR(r13)	/* save LR */
+@@ -612,11 +652,10 @@ BEGIN_FW_FTR_SECTION
+ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
+ #endif /* CONFIG_PPC_ISERIES */
+ 	mfspr	r11,SPRN_SRR0
+-	clrrdi	r10,r13,32
++	ld	r10,PACAKBASE(r13)
+ 	LOAD_HANDLER(r10,unrecov_slb)
+ 	mtspr	SPRN_SRR0,r10
+-	mfmsr	r10
+-	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI
++	ld	r10,PACAKMSR(r13)
+ 	mtspr	SPRN_SRR1,r10
+ 	rfid
+ 	b	.
 diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 623e8c3..48a3471 100644
+index c9bf17e..623e8c3 100644
 --- a/arch/powerpc/kernel/paca.c
 +++ b/arch/powerpc/kernel/paca.c
-@@ -12,6 +12,7 @@
- 
- #include <asm/lppaca.h>
- #include <asm/paca.h>
-+#include <asm/sections.h>
- 
- /* This symbol is provided by the linker - let it fill in the paca
-  * field correctly */
-@@ -79,7 +80,7 @@ void __init initialise_pacas(void)
+@@ -79,6 +79,8 @@ void __init initialise_pacas(void)
  		new_paca->lock_token = 0x8000;
  		new_paca->paca_index = cpu;
  		new_paca->kernel_toc = kernel_toc;
--		new_paca->kernelbase = KERNELBASE;
-+		new_paca->kernelbase = (unsigned long) _stext;
- 		new_paca->kernel_msr = MSR_KERNEL;
++		new_paca->kernelbase = KERNELBASE;
++		new_paca->kernel_msr = MSR_KERNEL;
  		new_paca->hw_cpu_id = 0xffff;
  		new_paca->slb_shadow_ptr = &slb_shadow[cpu];
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 87d83c5..3b93ed4 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -1164,6 +1164,9 @@ void __init early_init_devtree(void *params)
- 
- 	/* Reserve LMB regions used by kernel, initrd, dt, etc... */
- 	lmb_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
-+	/* If relocatable, reserve first 32k for interrupt vectors etc. */
-+	if (PHYSICAL_START > MEMORY_START)
-+		lmb_reserve(MEMORY_START, 0x8000);
- 	reserve_kdump_trampoline();
- 	reserve_crashkernel();
- 	early_reserve_mem();
+ 		new_paca->__current = &init_task;
 diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 1f89885..7cf274a 100644
+index b72849a..1f89885 100644
 --- a/arch/powerpc/kernel/prom_init.c
 +++ b/arch/powerpc/kernel/prom_init.c
-@@ -2309,13 +2309,14 @@ static void __init prom_check_initrd(unsigned long r3, unsigned long r4)
+@@ -1321,7 +1321,7 @@ static void __init prom_initialize_tce_table(void)
+  *
+  * -- Cort
+  */
+-extern void __secondary_hold(void);
++extern char __secondary_hold;
+ extern unsigned long __secondary_hold_spinloop;
+ extern unsigned long __secondary_hold_acknowledge;
  
- unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- 			       unsigned long pp,
--			       unsigned long r6, unsigned long r7)
-+			       unsigned long r6, unsigned long r7,
-+			       unsigned long kbase)
- {	
- 	struct prom_t *_prom;
- 	unsigned long hdr;
--	unsigned long offset = reloc_offset();
+@@ -1342,13 +1342,7 @@ static void __init prom_hold_cpus(void)
+ 		= (void *) LOW_ADDR(__secondary_hold_spinloop);
+ 	unsigned long *acknowledge
+ 		= (void *) LOW_ADDR(__secondary_hold_acknowledge);
+-#ifdef CONFIG_PPC64
+-	/* __secondary_hold is actually a descriptor, not the text address */
+-	unsigned long secondary_hold
+-		= __pa(*PTRRELOC((unsigned long *)__secondary_hold));
+-#else
+ 	unsigned long secondary_hold = LOW_ADDR(__secondary_hold);
+-#endif
  
- #ifdef CONFIG_PPC32
-+	unsigned long offset = reloc_offset();
- 	reloc_got2(offset);
- #endif
+ 	prom_debug("prom_hold_cpus: start...\n");
+ 	prom_debug("    1) spinloop       = 0x%x\n", (unsigned long)spinloop);
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 8b25f51..843c0af 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -255,9 +255,11 @@ void early_setup_secondary(void)
+ #endif /* CONFIG_SMP */
  
-@@ -2349,9 +2350,11 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- 	 */
- 	RELOC(of_platform) = prom_find_machine_type();
- 
-+#ifndef CONFIG_RELOCATABLE
- 	/* Bail if this is a kdump kernel. */
- 	if (PHYSICAL_START > 0)
- 		prom_panic("Error: You can't boot a kdump kernel from OF!\n");
-+#endif
- 
- 	/*
- 	 * Check for an initrd
-@@ -2371,7 +2374,7 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- 	 * Copy the CPU hold code
- 	 */
- 	if (RELOC(of_platform) != PLATFORM_POWERMAC)
--		copy_and_flush(0, KERNELBASE + offset, 0x100, 0);
-+		copy_and_flush(0, kbase, 0x100, 0);
- 
- 	/*
- 	 * Do early parsing of command line
-@@ -2474,7 +2477,7 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- 	reloc_got2(-offset);
- #endif
- 
--	__start(hdr, KERNELBASE + offset, 0);
-+	__start(hdr, kbase, 0);
- 
- 	return 0;
- }
-diff --git a/arch/powerpc/kernel/reloc_64.S b/arch/powerpc/kernel/reloc_64.S
-new file mode 100644
-index 0000000..b47a0e1
---- /dev/null
-+++ b/arch/powerpc/kernel/reloc_64.S
-@@ -0,0 +1,87 @@
-+/*
-+ * Code to process dynamic relocations in the kernel.
-+ *
-+ * Copyright 2008 Paul Mackerras, IBM Corp.
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; either version
-+ *  2 of the License, or (at your option) any later version.
-+ */
+ #if defined(CONFIG_SMP) || defined(CONFIG_KEXEC)
++extern unsigned long __secondary_hold_spinloop;
++extern void generic_secondary_smp_init(void);
 +
-+#include <asm/ppc_asm.h>
-+
-+RELA = 7
-+RELACOUNT = 0x6ffffff9
-+R_PPC64_RELATIVE = 22
-+
-+/*
-+ * r3 = desired final address of kernel
-+ */
-+_GLOBAL(relocate)
-+	mflr	r0
-+	bcl	20,31,$+4
-+0:	mflr	r12		/* r12 has runtime addr of label 0 */
-+	mtlr	r0
-+	ld	r11,(p_dyn - 0b)(r12)
-+	add	r11,r11,r12	/* r11 has runtime addr of .dynamic section */
-+	ld	r9,(p_rela - 0b)(r12)
-+	add	r9,r9,r12	/* r9 has runtime addr of .rela.dyn section */
-+	ld	r10,(p_st - 0b)(r12)
-+	add	r10,r10,r12	/* r10 has runtime addr of _stext */
-+
-+	/*
-+	 * Scan the dynamic section for the RELA and RELACOUNT entries.
-+	 */
-+	li	r7,0
-+	li	r8,0
-+1:	ld	r6,0(r11)	/* get tag */
-+	cmpdi	r6,0
-+	beq	4f		/* end of list */
-+	cmpdi	r6,RELA
-+	bne	2f
-+	ld	r7,8(r11)	/* get RELA pointer in r7 */
-+	b	3f
-+2:	addis	r6,r6,(-RELACOUNT)@ha
-+	cmpdi	r6,RELACOUNT@l
-+	bne	3f
-+	ld	r8,8(r11)	/* get RELACOUNT value in r8 */
-+3:	addi	r11,r11,16
-+	b	1b
-+4:	cmpdi	r7,0		/* check we have both RELA and RELACOUNT */
-+	cmpdi	cr1,r8,0
-+	beq	6f
-+	beq	cr1,6f
-+
-+	/*
-+	 * Work out linktime address of _stext and hence the
-+	 * relocation offset to be applied.
-+	 * cur_offset [r7] = rela.run [r9] - rela.link [r7]
-+	 * _stext.link [r10] = _stext.run [r10] - cur_offset [r7]
-+	 * final_offset [r3] = _stext.final [r3] - _stext.link [r10]
-+	 */
-+	subf	r7,r7,r9	/* cur_offset */
-+	subf	r10,r7,r10
-+	subf	r3,r10,r3	/* final_offset */
-+
-+	/*
-+	 * Run through the list of relocations and process the
-+	 * R_PPC64_RELATIVE ones.
-+	 */
-+	mtctr	r8
-+5:	lwz	r0,12(9)	/* ELF64_R_TYPE(reloc->r_info) */
-+	cmpwi	r0,R_PPC64_RELATIVE
-+	bne	6f
-+	ld	r6,0(r9)	/* reloc->r_offset */
-+	ld	r0,16(r9)	/* reloc->r_addend */
-+	add	r0,r0,r3
-+	stdx	r0,r7,r6
-+	addi	r9,r9,24
-+	bdnz	5b
-+
-+6:	blr
-+
-+p_dyn:	.llong	__dynamic_start - 0b
-+p_rela:	.llong	__rela_dyn_start - 0b
-+p_st:	.llong	_stext - 0b
-+
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 4a8ce62..4994aa0 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -186,6 +186,21 @@ SECTIONS
- 		*(.machine.desc)
- 		__machine_desc_end = . ;
- 	}
-+	. = ALIGN(8);
-+	.dynsym : AT(ADDR(.dynsym) - LOAD_OFFSET) { *(.dynsym) }
-+	.dynstr : AT(ADDR(.dynstr) - LOAD_OFFSET) { *(.dynstr) }
-+	.dynamic : AT(ADDR(.dynamic) - LOAD_OFFSET)
-+	{
-+		__dynamic_start = .;
-+		*(.dynamic)
-+	}
-+	.hash : AT(ADDR(.hash) - LOAD_OFFSET) { *(.hash) }
-+	.interp : AT(ADDR(.interp) - LOAD_OFFSET) { *(.interp) }
-+	.rela.dyn : AT(ADDR(.rela.dyn) - LOAD_OFFSET)
-+	{
-+		__rela_dyn_start = .;
-+		*(.rela*)
-+	}
- 
- 	/* freed after init ends here */
- 	. = ALIGN(PAGE_SIZE);
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 1fe7ac6..97b16d5 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -194,7 +194,7 @@ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 		unsigned long tprot = prot;
- 
- 		/* Make kernel text executable */
--		if (in_kernel_text(vaddr))
-+		if (overlaps_kernel_text(vaddr, vaddr + step))
- 			tprot &= ~HPTE_R_N;
- 
- 		hash = hpt_hash(va, shift, ssize);
-diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-index 4ae3d00..40f72c2 100644
---- a/arch/powerpc/platforms/powermac/smp.c
-+++ b/arch/powerpc/platforms/powermac/smp.c
-@@ -787,7 +787,7 @@ static void __devinit smp_core99_kick_cpu(int nr)
+ void smp_release_cpus(void)
  {
- 	unsigned int save_vector;
- 	unsigned long target, flags;
--	unsigned int *vector = (unsigned int *)(KERNELBASE+0x100);
-+	unsigned int *vector = (unsigned int *)(PAGE_OFFSET+0x100);
+-	extern unsigned long __secondary_hold_spinloop;
+ 	unsigned long *ptr;
  
- 	if (nr < 0 || nr > 3)
- 		return;
-@@ -801,7 +801,7 @@ static void __devinit smp_core99_kick_cpu(int nr)
- 	save_vector = *vector;
+ 	DBG(" -> smp_release_cpus()\n");
+@@ -266,12 +268,11 @@ void smp_release_cpus(void)
+ 	 * all now so they can start to spin on their individual paca
+ 	 * spinloops. For non SMP kernels, the secondary cpus never get out
+ 	 * of the common spinloop.
+-	 * This is useless but harmless on iSeries, secondaries are already
+-	 * waiting on their paca spinloops. */
++	 */
  
- 	/* Setup fake reset vector that does
--	 *   b __secondary_start_pmac_0 + nr*8 - KERNELBASE
-+	 *   b __secondary_start_pmac_0 + nr*8
- 	 */
- 	target = (unsigned long) __secondary_start_pmac_0 + nr * 8;
- 	patch_branch(vector, target, BRANCH_SET_LINK);
+ 	ptr  = (unsigned long *)((unsigned long)&__secondary_hold_spinloop
+ 			- PHYSICAL_START);
+-	*ptr = 1;
++	*ptr = __pa(generic_secondary_smp_init);
+ 	mb();
+ 
+ 	DBG(" <- smp_release_cpus()\n");
