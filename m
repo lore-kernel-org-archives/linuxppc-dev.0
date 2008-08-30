@@ -1,12 +1,11 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18616.41411.527668.160537@cargo.ozlabs.ibm.com>
-Date: Sat, 30 Aug 2008 11:26:27 +1000
+Message-ID: <18616.42498.549547.29589@cargo.ozlabs.ibm.com>
+Date: Sat, 30 Aug 2008 11:44:34 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3] powerpc: Only make kernel text pages of linear mapping
-	executable
+Subject: [PATCH 5/5] powerpc: Run relocatable kernel where it's loaded
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,89 +15,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit bc033b63bbfeb6c4b4eb0a1d083c650e4a0d2af8 ("powerpc/mm: Fix
-attribute confusion with htab_bolt_mapping()") moved the check for
-whether we should make pages of the linear mapping executable from
-htab_bolt_mapping into its callers, including htab_initialize.
-A side-effect of this is that the decision is now made once for
-each contiguous section in the LMB array rather than for each page
-individually.  This can often mean that the whole of the linear
-mapping ends up being executable.
-
-This reverts to the previous behaviour, where individual pages are
-checked for being part of the kernel text or not, by moving the check
-back down into htab_bolt_mapping.
+This demonstrates that the relocatable kernel doesn't have to run at
+real address 0.  It only copies the interrupt vectors down and leaves
+the rest of the kernel where it was loaded, and runs it there.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
-Previous version used overlaps_kernel_text(), which doesn't exist
-until my PIE patches go in.
-
-diff a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -191,12 +191,17 @@ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 		unsigned long hash, hpteg;
- 		unsigned long vsid = get_kernel_vsid(vaddr, ssize);
- 		unsigned long va = hpt_va(vaddr, vsid, ssize);
-+		unsigned long tprot = prot;
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index c0bba84..07a6d24 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -1384,6 +1384,7 @@ _STATIC(__after_prom_start)
+ 	/* process relocations for the final address of the kernel */
+ 	lis	r25,PAGE_OFFSET@highest	/* compute virtual base of kernel */
+ 	sldi	r25,r25,32
++	add	r25,r25,r26
+ 	mr	r3,r25
+ 	bl	.relocate
+ #endif
+@@ -1398,10 +1399,13 @@ _STATIC(__after_prom_start)
+ 	li	r3,0			/* target addr */
+ 	mr.	r4,r26			/* In some cases the loader may  */
+ 	beq	9f			/* have already put us at zero */
+-	lis	r5,(copy_to_here - _stext)@ha
+-	addi	r5,r5,(copy_to_here - _stext)@l /* # bytes of memory to copy */
+ 	li	r6,0x100		/* Start offset, the first 0x100 */
+ 					/* bytes were copied earlier.	 */
++#ifdef CONFIG_RELOCATABLE
++	li	r5,__end_interrupts - _stext	/* just copy interrupts */
++#else
++	lis	r5,(copy_to_here - _stext)@ha
++	addi	r5,r5,(copy_to_here - _stext)@l /* # bytes of memory to copy */
+ 
+ 	bl	.copy_and_flush		/* copy the first n bytes	 */
+ 					/* this includes the code being	 */
+@@ -1411,15 +1415,16 @@ _STATIC(__after_prom_start)
+ 	mtctr	r8
+ 	bctr
+ 
++p_end:	.llong	_end - _stext
 +
-+		/* Make kernel text executable */
-+		if (in_kernel_text(vaddr))
-+			tprot &= ~HPTE_R_N;
+ 4:	/* Now copy the rest of the kernel up to _end */
+ 	addis	r5,r26,(p_end - _stext)@ha
+ 	ld	r5,(p_end - _stext)@l(r5)	/* get _end */
++#endif
+ 	bl	.copy_and_flush		/* copy the rest */
  
- 		hash = hpt_hash(va, shift, ssize);
- 		hpteg = ((hash & htab_hash_mask) * HPTES_PER_GROUP);
+ 9:	b	.start_here_multiplatform
  
- 		BUG_ON(!ppc_md.hpte_insert);
--		ret = ppc_md.hpte_insert(hpteg, va, paddr, prot,
-+		ret = ppc_md.hpte_insert(hpteg, va, paddr, tprot,
- 					 HPTE_V_BOLTED, psize, ssize);
- 
- 		if (ret < 0)
-@@ -584,7 +589,7 @@ void __init htab_initialize(void)
- {
- 	unsigned long table;
- 	unsigned long pteg_count;
--	unsigned long prot, tprot;
-+	unsigned long prot;
- 	unsigned long base = 0, size = 0, limit;
- 	int i;
- 
-@@ -660,10 +665,9 @@ void __init htab_initialize(void)
- 	for (i=0; i < lmb.memory.cnt; i++) {
- 		base = (unsigned long)__va(lmb.memory.region[i].base);
- 		size = lmb.memory.region[i].size;
--		tprot = prot | (in_kernel_text(base) ? _PAGE_EXEC : 0);
- 
- 		DBG("creating mapping for region: %lx..%lx (prot: %x)\n",
--		    base, size, tprot);
-+		    base, size, prot);
- 
- #ifdef CONFIG_U3_DART
- 		/* Do not map the DART space. Fortunately, it will be aligned
-@@ -680,21 +684,21 @@ void __init htab_initialize(void)
- 			unsigned long dart_table_end = dart_tablebase + 16 * MB;
- 			if (base != dart_tablebase)
- 				BUG_ON(htab_bolt_mapping(base, dart_tablebase,
--							__pa(base), tprot,
-+							__pa(base), prot,
- 							mmu_linear_psize,
- 							mmu_kernel_ssize));
- 			if ((base + size) > dart_table_end)
- 				BUG_ON(htab_bolt_mapping(dart_tablebase+16*MB,
- 							base + size,
- 							__pa(dart_table_end),
--							 tprot,
-+							 prot,
- 							 mmu_linear_psize,
- 							 mmu_kernel_ssize));
- 			continue;
- 		}
- #endif /* CONFIG_U3_DART */
- 		BUG_ON(htab_bolt_mapping(base, base + size, __pa(base),
--				tprot, mmu_linear_psize, mmu_kernel_ssize));
-+				prot, mmu_linear_psize, mmu_kernel_ssize));
-        }
- 
- 	/*
+-p_end:	.llong	_end - _stext
+-
+ /*
+  * Copy routine used to copy the kernel to start at physical address 0
+  * and flush and invalidate the caches as needed.
