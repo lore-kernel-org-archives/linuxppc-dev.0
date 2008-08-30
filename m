@@ -1,11 +1,12 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18616.42498.549547.29589@cargo.ozlabs.ibm.com>
-Date: Sat, 30 Aug 2008 11:44:34 +1000
+Message-ID: <18616.42190.747960.142953@cargo.ozlabs.ibm.com>
+Date: Sat, 30 Aug 2008 11:39:26 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/5] powerpc: Run relocatable kernel where it's loaded
+Subject: [PATCH 1/5] powerpc: Rearrange head_64.S to move interrupt handler
+	code to the beginning
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,56 +16,260 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This demonstrates that the relocatable kernel doesn't have to run at
-real address 0.  It only copies the interrupt vectors down and leaves
-the rest of the kernel where it was loaded, and runs it there.
+This rearranges head_64.S so that we have all the first-level exception
+prologs together starting at 0x100, followed by all the second-level
+handlers that are invoked from the first-level prologs, followed by
+other code.  This doesn't make any functional change but will make
+following changes for relocatable kernel support easier.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
 diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index c0bba84..07a6d24 100644
+index cc8fb47..27935d1 100644
 --- a/arch/powerpc/kernel/head_64.S
 +++ b/arch/powerpc/kernel/head_64.S
-@@ -1384,6 +1384,7 @@ _STATIC(__after_prom_start)
- 	/* process relocations for the final address of the kernel */
- 	lis	r25,PAGE_OFFSET@highest	/* compute virtual base of kernel */
- 	sldi	r25,r25,32
-+	add	r25,r25,r26
- 	mr	r3,r25
- 	bl	.relocate
- #endif
-@@ -1398,10 +1399,13 @@ _STATIC(__after_prom_start)
- 	li	r3,0			/* target addr */
- 	mr.	r4,r26			/* In some cases the loader may  */
- 	beq	9f			/* have already put us at zero */
--	lis	r5,(copy_to_here - _stext)@ha
--	addi	r5,r5,(copy_to_here - _stext)@l /* # bytes of memory to copy */
- 	li	r6,0x100		/* Start offset, the first 0x100 */
- 					/* bytes were copied earlier.	 */
-+#ifdef CONFIG_RELOCATABLE
-+	li	r5,__end_interrupts - _stext	/* just copy interrupts */
-+#else
-+	lis	r5,(copy_to_here - _stext)@ha
-+	addi	r5,r5,(copy_to_here - _stext)@l /* # bytes of memory to copy */
+@@ -325,16 +325,32 @@ do_stab_bolted_pSeries:
+ 	mfspr	r12,SPRN_SPRG2
+ 	EXCEPTION_PROLOG_PSERIES(PACA_EXSLB, .do_stab_bolted)
  
- 	bl	.copy_and_flush		/* copy the first n bytes	 */
- 					/* this includes the code being	 */
-@@ -1411,15 +1415,16 @@ _STATIC(__after_prom_start)
- 	mtctr	r8
- 	bctr
- 
-+p_end:	.llong	_end - _stext
++#ifdef CONFIG_PPC_PSERIES
++/*
++ * Vectors for the FWNMI option.  Share common code.
++ */
++	.globl system_reset_fwnmi
++      .align 7
++system_reset_fwnmi:
++	HMT_MEDIUM
++	mtspr	SPRN_SPRG1,r13		/* save r13 */
++	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, system_reset_common)
 +
- 4:	/* Now copy the rest of the kernel up to _end */
- 	addis	r5,r26,(p_end - _stext)@ha
- 	ld	r5,(p_end - _stext)@l(r5)	/* get _end */
-+#endif
- 	bl	.copy_and_flush		/* copy the rest */
- 
- 9:	b	.start_here_multiplatform
- 
--p_end:	.llong	_end - _stext
--
++	.globl machine_check_fwnmi
++      .align 7
++machine_check_fwnmi:
++	HMT_MEDIUM
++	mtspr	SPRN_SPRG1,r13		/* save r13 */
++	EXCEPTION_PROLOG_PSERIES(PACA_EXMC, machine_check_common)
++
++#endif /* CONFIG_PPC_PSERIES */
++
++#ifdef __DISABLED__
  /*
-  * Copy routine used to copy the kernel to start at physical address 0
-  * and flush and invalidate the caches as needed.
+- * We have some room here  we use that to put
+- * the peries slb miss user trampoline code so it's reasonably
+- * away from slb_miss_user_common to avoid problems with rfid
+- *
+  * This is used for when the SLB miss handler has to go virtual,
+  * which doesn't happen for now anymore but will once we re-implement
+  * dynamic VSIDs for shared page tables
+  */
+-#ifdef __DISABLED__
+ slb_miss_user_pseries:
+ 	std	r10,PACA_EXGEN+EX_R10(r13)
+ 	std	r11,PACA_EXGEN+EX_R11(r13)
+@@ -357,25 +373,14 @@ slb_miss_user_pseries:
+ 	b	.				/* prevent spec. execution */
+ #endif /* __DISABLED__ */
+ 
+-#ifdef CONFIG_PPC_PSERIES
++	.align	7
++	.globl	__end_interrupts
++__end_interrupts:
++
+ /*
+- * Vectors for the FWNMI option.  Share common code.
++ * Code from here down to __end_handlers is invoked from the
++ * exception prologs above.
+  */
+-	.globl system_reset_fwnmi
+-      .align 7
+-system_reset_fwnmi:
+-	HMT_MEDIUM
+-	mtspr	SPRN_SPRG1,r13		/* save r13 */
+-	EXCEPTION_PROLOG_PSERIES_FORCE_64BIT(PACA_EXGEN, system_reset_common)
+-
+-	.globl machine_check_fwnmi
+-      .align 7
+-machine_check_fwnmi:
+-	HMT_MEDIUM
+-	mtspr	SPRN_SPRG1,r13		/* save r13 */
+-	EXCEPTION_PROLOG_PSERIES_FORCE_64BIT(PACA_EXMC, machine_check_common)
+-
+-#endif /* CONFIG_PPC_PSERIES */
+ 
+ /*** Common interrupt handlers ***/
+ 
+@@ -457,65 +462,6 @@ bad_stack:
+ 	b	1b
+ 
+ /*
+- * Return from an exception with minimal checks.
+- * The caller is assumed to have done EXCEPTION_PROLOG_COMMON.
+- * If interrupts have been enabled, or anything has been
+- * done that might have changed the scheduling status of
+- * any task or sent any task a signal, you should use
+- * ret_from_except or ret_from_except_lite instead of this.
+- */
+-fast_exc_return_irq:			/* restores irq state too */
+-	ld	r3,SOFTE(r1)
+-	TRACE_AND_RESTORE_IRQ(r3);
+-	ld	r12,_MSR(r1)
+-	rldicl	r4,r12,49,63		/* get MSR_EE to LSB */
+-	stb	r4,PACAHARDIRQEN(r13)	/* restore paca->hard_enabled */
+-	b	1f
+-
+-	.globl	fast_exception_return
+-fast_exception_return:
+-	ld	r12,_MSR(r1)
+-1:	ld	r11,_NIP(r1)
+-	andi.	r3,r12,MSR_RI		/* check if RI is set */
+-	beq-	unrecov_fer
+-
+-#ifdef CONFIG_VIRT_CPU_ACCOUNTING
+-	andi.	r3,r12,MSR_PR
+-	beq	2f
+-	ACCOUNT_CPU_USER_EXIT(r3, r4)
+-2:
+-#endif
+-
+-	ld	r3,_CCR(r1)
+-	ld	r4,_LINK(r1)
+-	ld	r5,_CTR(r1)
+-	ld	r6,_XER(r1)
+-	mtcr	r3
+-	mtlr	r4
+-	mtctr	r5
+-	mtxer	r6
+-	REST_GPR(0, r1)
+-	REST_8GPRS(2, r1)
+-
+-	mfmsr	r10
+-	rldicl	r10,r10,48,1		/* clear EE */
+-	rldicr	r10,r10,16,61		/* clear RI (LE is 0 already) */
+-	mtmsrd	r10,1
+-
+-	mtspr	SPRN_SRR1,r12
+-	mtspr	SPRN_SRR0,r11
+-	REST_4GPRS(10, r1)
+-	ld	r1,GPR1(r1)
+-	rfid
+-	b	.	/* prevent speculative execution */
+-
+-unrecov_fer:
+-	bl	.save_nvgprs
+-1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.unrecoverable_exception
+-	b	1b
+-
+-/*
+  * Here r13 points to the paca, r9 contains the saved CR,
+  * SRR0 and SRR1 are saved in r11 and r12,
+  * r9 - r13 are saved in paca->exgen.
+@@ -766,6 +712,85 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	bl	.altivec_unavailable_exception
+ 	b	.ret_from_except
+ 
++	.align	7
++	.globl vsx_unavailable_common
++vsx_unavailable_common:
++	EXCEPTION_PROLOG_COMMON(0xf40, PACA_EXGEN)
++#ifdef CONFIG_VSX
++BEGIN_FTR_SECTION
++	bne	.load_up_vsx
++1:
++END_FTR_SECTION_IFSET(CPU_FTR_VSX)
++#endif
++	bl	.save_nvgprs
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	ENABLE_INTS
++	bl	.vsx_unavailable_exception
++	b	.ret_from_except
++
++	.align	7
++	.globl	__end_handlers
++__end_handlers:
++
++/*
++ * Return from an exception with minimal checks.
++ * The caller is assumed to have done EXCEPTION_PROLOG_COMMON.
++ * If interrupts have been enabled, or anything has been
++ * done that might have changed the scheduling status of
++ * any task or sent any task a signal, you should use
++ * ret_from_except or ret_from_except_lite instead of this.
++ */
++fast_exc_return_irq:			/* restores irq state too */
++	ld	r3,SOFTE(r1)
++	TRACE_AND_RESTORE_IRQ(r3);
++	ld	r12,_MSR(r1)
++	rldicl	r4,r12,49,63		/* get MSR_EE to LSB */
++	stb	r4,PACAHARDIRQEN(r13)	/* restore paca->hard_enabled */
++	b	1f
++
++	.globl	fast_exception_return
++fast_exception_return:
++	ld	r12,_MSR(r1)
++1:	ld	r11,_NIP(r1)
++	andi.	r3,r12,MSR_RI		/* check if RI is set */
++	beq-	unrecov_fer
++
++#ifdef CONFIG_VIRT_CPU_ACCOUNTING
++	andi.	r3,r12,MSR_PR
++	beq	2f
++	ACCOUNT_CPU_USER_EXIT(r3, r4)
++2:
++#endif
++
++	ld	r3,_CCR(r1)
++	ld	r4,_LINK(r1)
++	ld	r5,_CTR(r1)
++	ld	r6,_XER(r1)
++	mtcr	r3
++	mtlr	r4
++	mtctr	r5
++	mtxer	r6
++	REST_GPR(0, r1)
++	REST_8GPRS(2, r1)
++
++	mfmsr	r10
++	rldicl	r10,r10,48,1		/* clear EE */
++	rldicr	r10,r10,16,61		/* clear RI (LE is 0 already) */
++	mtmsrd	r10,1
++
++	mtspr	SPRN_SRR1,r12
++	mtspr	SPRN_SRR0,r11
++	REST_4GPRS(10, r1)
++	ld	r1,GPR1(r1)
++	rfid
++	b	.	/* prevent speculative execution */
++
++unrecov_fer:
++	bl	.save_nvgprs
++1:	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	.unrecoverable_exception
++	b	1b
++
+ #ifdef CONFIG_ALTIVEC
+ /*
+  * load_up_altivec(unused, unused, tsk)
+@@ -840,22 +865,6 @@ _STATIC(load_up_altivec)
+ 	blr
+ #endif /* CONFIG_ALTIVEC */
+ 
+-	.align	7
+-	.globl vsx_unavailable_common
+-vsx_unavailable_common:
+-	EXCEPTION_PROLOG_COMMON(0xf40, PACA_EXGEN)
+-#ifdef CONFIG_VSX
+-BEGIN_FTR_SECTION
+-	bne	.load_up_vsx
+-1:
+-END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+-#endif
+-	bl	.save_nvgprs
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	ENABLE_INTS
+-	bl	.vsx_unavailable_exception
+-	b	.ret_from_except
+-
+ #ifdef CONFIG_VSX
+ /*
+  * load_up_vsx(unused, unused, tsk)
