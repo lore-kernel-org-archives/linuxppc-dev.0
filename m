@@ -1,21 +1,25 @@
-Return-Path: <rmcguire@videopresence.com>
-Received: from smtpauth11.prod.mesa1.secureserver.net
-	(smtpauth11.prod.mesa1.secureserver.net [64.202.165.33])
-	by ozlabs.org (Postfix) with SMTP id 23BD8DDF00
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-6.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 49D29DDEF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 30 Aug 2008 07:56:00 +1000 (EST)
-From: "Russell McGuire" <rmcguire@videopresence.com>
-To: "'bhanu jampala'" <adams.ppc@gmail.com>
-References: <4a21eaea0808291353p29992a2che64854f93829d706@mail.gmail.com>
-Subject: RE: How many super channels per TDM on MCC
-Date: Fri, 29 Aug 2008 14:55:58 -0700
-Message-ID: <A73DC0A13D5D4EA5B6648ED5498498CB@absolutdaddy>
+	Sat, 30 Aug 2008 13:39:08 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: paulus@samba.org, benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Avoid integer overflow in page_is_ram()
+References: <f608b67d0808261926p67e27770mb7c64cc14015b9ab@mail.gmail.com>
+	<ada3akri1i5.fsf@cisco.com> <200808271013.18659.arnd@arndb.de>
+	<f608b67d0808271613g2092b287o44c3418fb7d33499@mail.gmail.com>
+	<adawsi2j8wt.fsf@cisco.com> <adak5e1kf2u.fsf@cisco.com>
+Date: Fri, 29 Aug 2008 20:39:03 -0700
+In-Reply-To: <adak5e1kf2u.fsf@cisco.com> (Roland Dreier's message of "Wed, 27
+	Aug 2008 20:12:41 -0700")
+Message-ID: <adar687i33c.fsf_-_@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <4a21eaea0808291353p29992a2che64854f93829d706@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: rmcguire@videopresence.com
+Content-Type: text/plain; charset=us-ascii
+Cc: vb <vb@vsbe.com>, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,84 +30,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Commit 8b150478 ("ppc: make phys_mem_access_prot() work with pfns
+instead of addresses") fixed page_is_ram() in arch/ppc to avoid overflow
+for addresses above 4G on 32-bit kernels.  However arch/powerpc's
+page_is_ram() is missing the same fix -- it computes a physical address
+by doing pfn << PAGE_SHIFT, which overflows if pfn corresponds to a page
+above 4G.
 
-Jampala,
+In particular this causes pages above 4G to be mapped with the wrong
+caching attribute; for example many ppc440-based SoCs have PCI space
+above 4G, and mmap()ing MMIO space may end up with a mapping that has
+caching enabled.
 
-I think the bit part you are missing is the SI and TSA assignment in the
-82xx family manual.
+Fix this by working with the pfn and avoiding the conversion to
+physical address that causes the overflow.  This patch compares the
+pfn to max_pfn, which is a semantic change from the old code -- that
+code compared the physical address to high_memory, which corresponds
+to max_low_pfn.  However, I think that was is another bug, since
+highmem pages are still RAM.
 
-This is how the associations are created; we should really step away from
-the TDM and Super channel relationship as it is just a catch all for a port
-that is interfaced with the SI TSA. You need to focus on how you are
-breaking down your TDM stream with the SI TSA interface.
+Reported-by: vb <vb@vsbe.com>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+This is a fix but the bug is pretty long-standing -- I think this is
+2.6.28 material.
 
-Your question should be:
-How are super channels and the SIxRAM entries related?
-How big should I make my timeslots? 8 bits? 4 bits? 1 bit?
+ arch/powerpc/mm/mem.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-
-Assuming basic ideas:
-* Your TDM is running at 2Mhz for E1 rates.
-* You have a line protocol with a sync pulse every SFrame or ESFrame.
-* Divided your SIxRAM into 32 entries to parse your TDM.
-* 8 bit time slots works for channelized and clear channel.
-* One SI entry per time slot
-* 4 time slots routed to each super channel
-
-This would indicate that you can only get 4 super channels per TDM @ 2Mhz
-and ESF. As your TDM doesn't carry any more data, assuming you running a
-single E1 into a TDM interface.
-
-Now if you have scaled up your clock rate, from E1 rates to say 8Mhz. Then
-this all changes. 
-
-IF
-* Your TDM is running 8 Mhz <4 E1s combined into a single TDM>
-* You can still sync on your ESF Frames.
-
-* You Will need to figure out some way to sync you individual ESF frames
-within your 8Mhz stream. Not sure on your HW, is it one sync pulse for every
-ESF? Or one sync pulse for every four muxed ESFs?
-
-* Your SixRAM entry might still have the same entries, but just be repeated
-4x faster, good luck figuring out which time slot 1 is from which original
-E1 Phy.
-
-OR
-
-* You might have to create 128 SI entries to handle all the time slots. In
-this case you might have to consider using shadow entries and loops with the
-SI. Assuming only one sync pulse for all ESFs grouped together.  IN this
-case you could get 4 time slots per super channel and have 24 super channels
-running on a single TDM.
-
-As a side note there is a WhitePaper from Freescale that talks about a
-similar scenario on the 8360E. You might check that out, i.e. hooking 16
-T1/E1's into a system through a TDM backplane. In their case they only route
-2 E1's per TDM though. Same rules would apply.
-
-
-
-
-
-> -----Original Message-----
-> From: bhanu jampala [mailto:adams.ppc@gmail.com]
-> Sent: Friday, August 29, 2008 1:53 PM
-> To: linuxppc-embedded@ozlabs.org
-> Cc: rmcguire@videopresence.com; Robert Staven; Scott Wood
-> Subject: How many super channels per TDM on MCC
-> 
-> Hi Guys,
-> 
-> This is regarding MCC controller on MPC8260.
-> I am having problems figuring out how super channels fit into a TDM.
-> 
-> A superchannel is the combination of multiple MCC TX channels' FIFOs and
-> one
-> set of an MCC channel's parameters and buffer descriptors.
-> 
-> If I want to support 24 super channels with 4 timeslots each.
-> Can I use a single TDM (i.e. from A,B ,C, D) to accomplish this task.
-> (each TDM has 32 timeslots).
-> 
-> - Mukund Jampala
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 1c93c25..98d7bf9 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -75,11 +75,10 @@ static inline pte_t *virt_to_kpte(unsigned long vaddr)
+ 
+ int page_is_ram(unsigned long pfn)
+ {
+-	unsigned long paddr = (pfn << PAGE_SHIFT);
+-
+ #ifndef CONFIG_PPC64	/* XXX for now */
+-	return paddr < __pa(high_memory);
++	return pfn < max_pfn;
+ #else
++	unsigned long paddr = (pfn << PAGE_SHIFT);
+ 	int i;
+ 	for (i=0; i < lmb.memory.cnt; i++) {
+ 		unsigned long base;
