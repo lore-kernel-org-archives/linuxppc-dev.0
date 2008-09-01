@@ -1,17 +1,18 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 1DEAADDFB3
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 23:34:45 +1000 (EST)
-Date: Mon, 1 Sep 2008 17:34:42 +0400
+	by ozlabs.org (Postfix) with ESMTP id F0019DE09E
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 23:52:36 +1000 (EST)
+Date: Mon, 1 Sep 2008 17:52:35 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [RFC PATCH 2/2 v2] powerpc/83xx: mpc836x_mds: add support for USB Host
-Message-ID: <20080901133442.GA32632@oksana.dev.rtsoft.ru>
-References: <20080825152736.GB25178@oksana.dev.rtsoft.ru>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
+Message-ID: <20080901135235.GA677@oksana.dev.rtsoft.ru>
+References: <1219916613-28827-1-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20080825152736.GB25178@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
+In-Reply-To: <1219916613-28827-1-git-send-email-leoli@freescale.com>
+Cc: greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+	dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,188 +23,124 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Various changes to support QE USB Host on a MPC8360E-MDS board:
+On Thu, Aug 28, 2008 at 05:43:33PM +0800, Li Yang wrote:
+> Some of Freescale SoC chips have a QE or CPM co-processor which
+> supports full speed USB.  The driver adds device mode support
+> of both QE and CPM USB controller to Linux USB gadget.  The
+> driver is tested with MPC8360 and MPC8272, and should work with
+> other models having QE/CPM given minor tweaks.
+> 
+> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> This is the second submission of the driver.  This version addressed:
+> Comments from Anton Vorontsov.
+> A lot of cosmetic problem.
+> Sparse and various kernel DEBUG warnings.
 
-- Update the device tree per QE USB bindings;
-- Configure QE Par IO;
-- Set up BCSR for both USB Host and Peripheral modes;
-- Add timer (GTM) node;
-- Add gpio-controller node for BCSR13 bank;
-- Select FSL_GTM, QE_GPIO and OF_SIMPLE_GPIO.
+You might want to consider some of the following changes (they're
+tested with
+http://ozlabs.org/pipermail/linuxppc-dev/2008-September/062360.html).
 
-The work is loosely based on Li Yang's patch[1], which is used
-to support peripheral mode only.
+- remove qe_muram -> cpm_muram defines
+- configure clocks per device tree via qe_usb_clock_set(). To use this
+  function we should select QE_USB.
 
-[1] http://ozlabs.org/pipermail/linuxppc-dev/2008-August/061357.html
+  NOTE: currently this means that CPM build will break. :-( We should
+  probably implement generic cpm_clock_source() and cpm_usb_clock_set().
 
-The s-o-b line of the original patch preserved here.
+  Or.. we can move this to the board file (Do we ever need to change the
+  clocks in this driver? For the Host driver we need this, since it
+  can switch between low and full speed).
 
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
+  What do you think?
 
-v2:
-- We should bring TSECs to RGMII mode, the hunk was missing.
+- change 8360 compatible to 8323 (8323 is the first chip with QE USB,
+  device trees for 8360 boards should specify fsl,mpc8323-qe-usb
+  as a compatible).
 
- arch/powerpc/boot/dts/mpc836x_mds.dts     |   44 +++++++++++++++++++++++++++-
- arch/powerpc/platforms/83xx/Kconfig       |    3 ++
- arch/powerpc/platforms/83xx/mpc836x_mds.c |   43 +++++++++++++++++++++++++++-
- 3 files changed, 87 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
-index ada8446..0be98f3 100644
---- a/arch/powerpc/boot/dts/mpc836x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
-@@ -69,8 +69,19 @@
- 		};
- 
- 		bcsr@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
- 			device_type = "board-control";
- 			reg = <1 0 0x8000>;
-+			ranges = <0 1 0 0x8000>;
-+
-+			bcsr13: gpio-controller@d {
-+				#gpio-cells = <2>;
-+				compatible = "fsl,mpc8360mds-bcsr-gpio",
-+					     "simple-gpio-bank";
-+				reg = <0xd 1>;
-+				gpio-controller;
-+			};
- 		};
- 	};
- 
-@@ -191,10 +202,21 @@
- 		};
- 
- 		par_io@1400 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
- 			reg = <0x1400 0x100>;
-+			ranges = <0 0x1400 0x100>;
- 			device_type = "par_io";
- 			num-ports = <7>;
- 
-+			qe_pio_b: gpio-controller@18 {
-+				#gpio-cells = <2>;
-+				compatible = "fsl,mpc8360-qe-pario-bank",
-+					     "fsl,mpc8323-qe-pario-bank";
-+				reg = <0x18 0x18>;
-+				gpio-controller;
-+			};
-+
- 			pio1: ucc_pin@01 {
- 				pio-map = <
- 			/* port  pin  dir  open_drain  assignment  has_irq */
-@@ -278,6 +300,15 @@
- 			};
- 		};
- 
-+		timer@440 {
-+			compatible = "fsl,mpc8360-qe-gtm",
-+				     "fsl,qe-gtm", "fsl,gtm";
-+			reg = <0x440 0x40>;
-+			clock-frequency = <132000000>;
-+			interrupts = <12 13 14 15>;
-+			interrupt-parent = <&qeic>;
-+		};
-+
- 		spi@4c0 {
- 			cell-index = <0>;
- 			compatible = "fsl,spi";
-@@ -297,11 +328,20 @@
- 		};
- 
- 		usb@6c0 {
--			compatible = "qe_udc";
-+			compatible = "fsl,mpc8360-qe-usb",
-+				     "fsl,mpc8323-qe-usb";
- 			reg = <0x6c0 0x40 0x8b00 0x100>;
- 			interrupts = <11>;
- 			interrupt-parent = <&qeic>;
--			mode = "slave";
-+			fsl,fullspeed-clock = "clk21";
-+			fsl,lowspeed-clock = "brg9";
-+			gpios = <&qe_pio_b  2 0   /* USBOE */
-+				 &qe_pio_b  3 0   /* USBTP */
-+				 &qe_pio_b  8 0   /* USBTN */
-+				 &qe_pio_b  9 0   /* USBRP */
-+				 &qe_pio_b 11 0   /* USBRN */
-+				 &bcsr13    5 0   /* SPEED */
-+				 &bcsr13    4 1>; /* POWER */
- 		};
- 
- 		enet0: ucc@2000 {
-diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index 6159c5d..558458d 100644
---- a/arch/powerpc/platforms/83xx/Kconfig
-+++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -58,6 +58,9 @@ config MPC836x_MDS
- 	bool "Freescale MPC836x MDS"
- 	select DEFAULT_UIMAGE
- 	select QUICC_ENGINE
-+	select QE_GPIO
-+	select OF_SIMPLE_GPIO
-+	select FSL_GTM
+diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+index 4dbf622..e57c298 100644
+--- a/drivers/usb/gadget/Kconfig
++++ b/drivers/usb/gadget/Kconfig
+@@ -153,6 +153,7 @@ config USB_FSL_USB2
+ config USB_GADGET_FSL_QE
+ 	boolean "Freescale QE/CPM USB Device Controller"
+ 	depends on FSL_SOC && (QUICC_ENGINE || CPM)
++	select QE_USB
  	help
- 	  This option enables support for the MPC836x MDS Processor Board.
+ 	   Some of Freescale PowerPC processors have a Full Speed
+ 	   QE/CPM2 USB controller, which support device mode with 4
+diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
+index e448610..c1a0beb 100644
+--- a/drivers/usb/gadget/fsl_qe_udc.c
++++ b/drivers/usb/gadget/fsl_qe_udc.c
+@@ -36,20 +36,12 @@
+ #include <linux/usb/ch9.h>
+ #include <linux/usb/gadget.h>
+ #include <linux/usb/otg.h>
++#include <asm/cpm.h>
+ #include <asm/qe.h>
+ #include <asm/dma.h>
+ #include <asm/reg.h>
+ #include "fsl_qe_udc.h"
  
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-index 9d46e5b..e04fc57 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-@@ -127,9 +127,50 @@ static void __init mpc836x_mds_setup_arch(void)
- 			iounmap(immap);
- 		}
+-#ifdef CONFIG_CPM2
+-#include <asm/cpm.h>
+-
+-#define qe_muram_addr cpm_muram_addr
+-#define qe_muram_offset cpm_muram_offset
+-#define qe_muram_alloc cpm_muram_alloc
+-#define qe_muram_free cpm_muram_free
+-#endif
+-
+ #define DRIVER_DESC     "Freescale QE/CPM USB Device Controller driver"
+ #define DRIVER_AUTHOR   "Xie XiaoBo"
+ #define DRIVER_VERSION  "1.0"
+@@ -2490,6 +2482,7 @@ static int __devinit qe_udc_probe(struct of_device *ofdev,
+ 			const struct of_device_id *match)
+ {
+ 	struct device_node *np = ofdev->node;
++	enum qe_clock clk;
+ 	struct qe_ep *ep;
+ 	unsigned int ret = 0;
+ 	unsigned int i;
+@@ -2499,6 +2492,16 @@ static int __devinit qe_udc_probe(struct of_device *ofdev,
+ 	if (!prop || strcmp(prop, "peripheral"))
+ 		return -ENODEV;
  
--		iounmap(bcsr_regs);
- 		of_node_put(np);
- 	}
++	prop = of_get_property(np, "fsl,fullspeed-clock", NULL);
++	if (!prop)
++		return -EINVAL;
 +
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc8323-qe-usb");
-+	if (np) {
-+		const char *mode = of_get_property(np, "mode", NULL);
++	clk = qe_clock_source(prop);
++	if (clk == QE_CLK_NONE || clk == QE_CLK_DUMMY)
++		return -EINVAL;
 +
-+		par_io_config_pin(1,  2, 1, 0, 3, 0); /* USBOE  */
-+		par_io_config_pin(1,  3, 1, 0, 3, 0); /* USBTP  */
-+		par_io_config_pin(1,  8, 1, 0, 1, 0); /* USBTN  */
-+		par_io_config_pin(1, 10, 2, 0, 3, 0); /* USBRXD */
-+		par_io_config_pin(1,  9, 2, 1, 3, 0); /* USBRP  */
-+		par_io_config_pin(1, 11, 2, 1, 3, 0); /* USBRN  */
-+		par_io_config_pin(2, 20, 2, 0, 1, 0); /* CLK21  */
++	qe_usb_clock_set(clk, USB_CLOCK);
 +
-+#define BCSR8_TSEC1M_MASK	(0x3 << 6)
-+#define BCSR8_TSEC1M_RGMII	(0x0 << 6)
-+#define BCSR8_TSEC2M_MASK	(0x3 << 4)
-+#define BCSR8_TSEC2M_RGMII	(0x0 << 4)
-+		/*
-+		 * Default is GMII (2), but we should set it to RGMII (0) if
-+		 * we use USB (Eth PHY is in RGMII mode anyway).
-+		 */
-+		clrsetbits_8(&bcsr_regs[8],
-+			     BCSR8_TSEC1M_MASK | BCSR8_TSEC2M_MASK,
-+			     BCSR8_TSEC1M_RGMII | BCSR8_TSEC2M_RGMII);
-+
-+#define BCSR13_USBMASK	0x0f
-+#define BCSR13_nUSBEN	0x08 /* 1 - Disable, 0 - Enable			*/
-+#define BCSR13_USBSPEED 0x04 /* 1 - Full, 0 - Low			*/
-+#define BCSR13_USBMODE	0x02 /* 1 - Host, 0 - Function			*/
-+#define BCSR13_nUSBVCC	0x01 /* 1 - gets VBUS, 0 - supplies VBUS 	*/
-+
-+		clrsetbits_8(&bcsr_regs[13], BCSR13_USBMASK, BCSR13_USBSPEED);
-+
-+		if (mode && !strcmp(mode, "peripheral"))
-+			setbits8(&bcsr_regs[13], BCSR13_nUSBVCC);
-+		else
-+			setbits8(&bcsr_regs[13], BCSR13_USBMODE);
-+
-+		of_node_put(np);
-+	}
-+
-+	iounmap(bcsr_regs);
- #endif				/* CONFIG_QUICC_ENGINE */
- }
+ 	/* Initialize the udc structure including QH member and other member */
+ 	udc_controller = qe_udc_config(ofdev);
+ 	if (!udc_controller) {
+@@ -2689,7 +2692,7 @@ static int __devexit qe_udc_remove(struct of_device *ofdev)
+ /*-------------------------------------------------------------------------*/
+ static struct of_device_id qe_udc_match[] = {
+ 	{
+-		.compatible = "fsl,mpc8360-qe-usb",
++		.compatible = "fsl,mpc8323-qe-usb",
+ 	},
+ 	{
+ 		.compatible = "fsl,mpc8272-cpm-usb",
+diff --git a/drivers/usb/gadget/fsl_qe_udc.h b/drivers/usb/gadget/fsl_qe_udc.h
+index e2e9639..0ff9c00 100644
+--- a/drivers/usb/gadget/fsl_qe_udc.h
++++ b/drivers/usb/gadget/fsl_qe_udc.h
+@@ -17,6 +17,8 @@
+ #ifndef __FSL_QE_UDC_H
+ #define __FSL_QE_UDC_H
  
--- 
-1.5.6.3
++#define USB_CLOCK			48000000
++
+ #define USB_MAX_ENDPOINTS               4
+ #define USB_MAX_PIPES                   USB_MAX_ENDPOINTS
+ #define USB_EP0_MAX_SIZE		64
