@@ -1,22 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from verein.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2CBCFDDED9
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 10:49:13 +1000 (EST)
-Subject: Re: [PATCH] ppc4xx_pci: necessary fixes for 4GB RAM size
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20080828092820.2cacaba7@zod.rchland.ibm.com>
-References: <1219391015-6317-1-git-send-email-yanok@emcraft.com>
-	<20080828092820.2cacaba7@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Mon, 01 Sep 2008 10:19:00 +1000
-Message-Id: <1220228340.13162.401.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTPS id 2CAA1DDE1D
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 11:23:33 +1000 (EST)
+Received: from verein.lst.de (localhost [127.0.0.1])
+	by verein.lst.de (8.12.3/8.12.3/Debian-7.1) with ESMTP id
+	m811NVIF007593
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Sep 2008 03:23:31 +0200
+Received: (from hch@localhost)
+	by verein.lst.de (8.12.3/8.12.3/Debian-6.6) id m811NUih007591
+	for linuxppc-dev@ozlabs.org; Mon, 1 Sep 2008 03:23:30 +0200
+Date: Mon, 1 Sep 2008 03:23:30 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: use sys_pause for 32bit pause entry point
+Message-ID: <20080901012330.GA7544@lst.de>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, sr@denx.de, wd@denx.de,
-	Ilya Yanok <yanok@emcraft.com>
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,69 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-08-28 at 09:28 -0400, Josh Boyer wrote:
-> On Fri, 22 Aug 2008 11:43:35 +0400
-> Ilya Yanok <yanok@emcraft.com> wrote:
-> 
-> > 1. total_memory should be phys_addr_t not unsigned long
-> > 2. is_power_of_2() works with u32 so I just inlined (size & (size-1)) != 0
-> > instead.
-> > Also this patch fixes default initialization: res->end should be 0x7fffffff
-> > not 0x80000000.
-> > 
-> > Signed-off-by: Ilya Yanok <yanok@emcraft.com>
-> 
-> Ben, any comments here?  Looks right to me.
+sys32_pause is a useless copy of the generic sys_pause.
 
-Just one minor comment... The patch should do what I failed to do
-before, which is to move total_memory declaration to a header :-)
 
-Cheers,
-Ben.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-> josh
-> 
-> > ---
-> >  arch/powerpc/sysdev/ppc4xx_pci.c |   11 ++++++-----
-> >  1 files changed, 6 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-> > index e1c7df9..645b2c9 100644
-> > --- a/arch/powerpc/sysdev/ppc4xx_pci.c
-> > +++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-> > @@ -36,7 +36,7 @@
-> >  static int dma_offset_set;
-> > 
-> >  /* Move that to a useable header */
-> > -extern unsigned long total_memory;
-> > +extern phys_addr_t total_memory;
-> > 
-> >  #define U64_TO_U32_LOW(val)	((u32)((val) & 0x00000000ffffffffULL))
-> >  #define U64_TO_U32_HIGH(val)	((u32)((val) >> 32))
-> > @@ -105,7 +105,8 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
-> > 
-> >  	/* Default */
-> >  	res->start = 0;
-> > -	res->end = size = 0x80000000;
-> > +	size = 0x80000000;
-> > +	res->end = size - 1;
-> >  	res->flags = IORESOURCE_MEM | IORESOURCE_PREFETCH;
-> > 
-> >  	/* Get dma-ranges property */
-> > @@ -167,13 +168,13 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
-> >  	 */
-> >  	if (size < total_memory) {
-> >  		printk(KERN_ERR "%s: dma-ranges too small "
-> > -		       "(size=%llx total_memory=%lx)\n",
-> > -		       hose->dn->full_name, size, total_memory);
-> > +		       "(size=%llx total_memory=%llx)\n",
-> > +		       hose->dn->full_name, size, (u64)total_memory);
-> >  		return -ENXIO;
-> >  	}
-> > 
-> >  	/* Check we are a power of 2 size and that base is a multiple of size*/
-> > -	if (!is_power_of_2(size) ||
-> > +	if ((size & (size - 1)) != 0  ||
-> >  	    (res->start & (size - 1)) != 0) {
-> >  		printk(KERN_ERR "%s: dma-ranges unaligned\n",
-> >  		       hose->dn->full_name);
+Index: linux-2.6/arch/powerpc/include/asm/systbl.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/systbl.h	2008-08-22 12:47:08.000000000 -0300
++++ linux-2.6/arch/powerpc/include/asm/systbl.h	2008-08-22 12:47:35.000000000 -0300
+@@ -32,7 +32,7 @@ COMPAT_SYS_SPU(stime)
+ COMPAT_SYS(ptrace)
+ SYSCALL_SPU(alarm)
+ OLDSYS(fstat)
+-COMPAT_SYS(pause)
++SYSCALL(pause)
+ COMPAT_SYS(utime)
+ SYSCALL(ni_syscall)
+ SYSCALL(ni_syscall)
+Index: linux-2.6/arch/powerpc/kernel/sys_ppc32.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/sys_ppc32.c	2008-08-22 12:47:41.000000000 -0300
++++ linux-2.6/arch/powerpc/kernel/sys_ppc32.c	2008-08-22 12:47:51.000000000 -0300
+@@ -107,14 +107,6 @@ asmlinkage long compat_sys_sysfs(u32 opt
+ 	return sys_sysfs((int)option, arg1, arg2);
+ }
+ 
+-asmlinkage long compat_sys_pause(void)
+-{
+-	current->state = TASK_INTERRUPTIBLE;
+-	schedule();
+-	
+-	return -ERESTARTNOHAND;
+-}
+-
+ static inline long get_ts32(struct timespec *o, struct compat_timeval __user *i)
+ {
+ 	long usec;
