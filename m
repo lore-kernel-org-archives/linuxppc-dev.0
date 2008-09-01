@@ -1,18 +1,20 @@
-Return-Path: <yanok@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 41024DE10F
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 17:53:50 +1000 (EST)
-From: Ilya Yanok <yanok@emcraft.com>
-To: linuxppc-dev@ozlabs.org,
-	benh@kernel.crashing.org
-Subject: [PATCH] ppc4xx_pci: necessary fixes for 4GB RAM size (updated)
-Date: Mon,  1 Sep 2008 11:53:22 +0400
-Message-Id: <1220255602-4944-1-git-send-email-yanok@emcraft.com>
-In-Reply-To: <48BB9A6E.2000502@emcraft.com>
-References: <48BB9A6E.2000502@emcraft.com>
-Cc: sr@denx.de, wd@denx.de, Ilya Yanok <yanok@emcraft.com>
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 5D538DDE08
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 18:30:10 +1000 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: munroesj@us.ibm.com
+Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
+Date: Mon, 1 Sep 2008 10:29:22 +0200
+References: <200808251131.02071.david.jander@protonic.nl>
+	<200808291348.27652.david.jander@protonic.nl>
+	<1220042061.28869.184.camel@spokane1.rchland.ibm.com>
+In-Reply-To: <1220042061.28869.184.camel@spokane1.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200809011029.23413.david.jander@protonic.nl>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,64 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-1. declaration of total_memory removed. Now including <mm/mmu_decl.h>
-instead.
-2. is_power_of_2() works with u32 so I just inlined (size & (size-1)) != 0
-instead.
-Also this patch fixes default initialization: res->end should be 0x7fffffff
-not 0x80000000.
+On Friday 29 August 2008 22:34:21 Steven Munroe wrote:
+> > I am not complaining. I was only wondering if it is just me or there
+> > really is very little that has been done (for either uClibc, glibc, or
+> > whatever for powerpc) to improve performance of (linux-) applications on
+> > "lower"-power platforms (G2 core), AFAICS there is a LOT that can be
+> > gained by simple tweaks.
+>
+> This is a self help group (free as in freedom) We help each other. And
+> you can help yourself. There is no free lunch.
 
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
----
- arch/powerpc/sysdev/ppc4xx_pci.c |   13 ++++++-------
- 1 files changed, 6 insertions(+), 7 deletions(-)
+I never expected to be served a free dish of any kind on a mailing-list ;-)
+I was just asking around, to avoid reinventing wheels, since I intend to dig 
+into this problem, that's all. My intention never was to pick up work from 
+others and then run.
 
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-index e1c7df9..e899716 100644
---- a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@ -30,14 +30,12 @@
- #include <asm/machdep.h>
- #include <asm/dcr.h>
- #include <asm/dcr-regs.h>
-+#include <mm/mmu_decl.h>
- 
- #include "ppc4xx_pci.h"
- 
- static int dma_offset_set;
- 
--/* Move that to a useable header */
--extern unsigned long total_memory;
--
- #define U64_TO_U32_LOW(val)	((u32)((val) & 0x00000000ffffffffULL))
- #define U64_TO_U32_HIGH(val)	((u32)((val) >> 32))
- 
-@@ -105,7 +103,8 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
- 
- 	/* Default */
- 	res->start = 0;
--	res->end = size = 0x80000000;
-+	size = 0x80000000;
-+	res->end = size - 1;
- 	res->flags = IORESOURCE_MEM | IORESOURCE_PREFETCH;
- 
- 	/* Get dma-ranges property */
-@@ -167,13 +166,13 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
- 	 */
- 	if (size < total_memory) {
- 		printk(KERN_ERR "%s: dma-ranges too small "
--		       "(size=%llx total_memory=%lx)\n",
--		       hose->dn->full_name, size, total_memory);
-+		       "(size=%llx total_memory=%llx)\n",
-+		       hose->dn->full_name, size, (u64)total_memory);
- 		return -ENXIO;
- 	}
- 
- 	/* Check we are a power of 2 size and that base is a multiple of size*/
--	if (!is_power_of_2(size) ||
-+	if ((size & (size - 1)) != 0  ||
- 	    (res->start & (size - 1)) != 0) {
- 		printk(KERN_ERR "%s: dma-ranges unaligned\n",
- 		       hose->dn->full_name);
+> > The problem is: I have very little experience with powerpc assembly and
+> > only very limited time to dedicate to this and I am looking for others
+> > who have
+>
+> Well this will be a good learning experience for you. We will try to
+> answer questions.
+
+Excellent. I love learning new stuff ;-)
+
+Thanks a lot for the guidance so far...
+
+Regards,
+
 -- 
-1.5.6.1
+David Jander
