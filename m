@@ -1,23 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Evolves!] Why does one "stw" fail with address translation
-	disabled in PPC405EP?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zhou Rui <vancasperz@yahoo.com.cn>
-In-Reply-To: <1220253721.6764.9.camel@zr.gii.upv.es>
-References: <1219429635.8882.22.camel@zr.gii.upv.es>
-	<20080822184213.GA24526@yoda.jdub.homelinux.org>
-	<1219479992.7565.17.camel@localhost>
-	<20080824185547.94A0724899@gemini.denx.de>
-	<1219691805.6735.63.camel@zr.gii.upv.es>
-	<1220183410.6750.56.camel@zr.gii.upv.es>
-	<1220247721.13010.33.camel@pasglop>
-	<1220253721.6764.9.camel@zr.gii.upv.es>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 01 Sep 2008 17:17:43 +1000
-Message-Id: <1220253463.13010.40.camel@pasglop>
-Mime-Version: 1.0
-Cc: Linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id DA662DDF00
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 17:24:08 +1000 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: joakim.tjernlund@transmode.se
+Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
+Date: Mon, 1 Sep 2008 09:23:28 +0200
+References: <200808251131.02071.david.jander@protonic.nl>
+	<200808291348.27652.david.jander@protonic.nl>
+	<1220012433.5234.162.camel@gentoo-jocke.transmode.se>
+In-Reply-To: <1220012433.5234.162.camel@gentoo-jocke.transmode.se>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200809010923.28616.david.jander@protonic.nl>
+Cc: munroesj@us.ibm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-09-01 at 09:22 +0200, Zhou Rui wrote:
-> 在 2008-09-01一的 15:42 +1000，Benjamin Herrenschmidt写道：
-> > On Sun, 2008-08-31 at 13:50 +0200, Zhou Rui wrote:
-> > > Hi, all:
-> > >     My problem seems basically solved.
-> > >     We we used to call vmalloc() in the memory management part of our
-> > > source, but it seems to be the key unreliable point resulting in the
-> > > problem. vmalloc() always assigns some virtual addresses whose
-> > > corresponding physical addresses are out of memory size (there is only
-> > > 32MB DRAM in our 405 board). Once instructions try to access these
-> > > illegal physical address, machine check happens
-> > 
-> > That should -never- happen.
-> > 
-> > Have you verified, as I asked you a while ago, that you are actually
-> > passing the right amount of memory to your kernel from the device-tree
-> > or the bootloader ?
-> > 
-> > Ben.
-> 
-> I added "mem=32M" to linux command line of the bootloader, and got the
-> same machine check.
+On Friday 29 August 2008 14:20:33 Joakim Tjernlund wrote:
+>[...]
+> > The problem is: I have very little experience with powerpc assembly and
+> > only very limited time to dedicate to this and I am looking for others
+> > who have
+>
+> I improved the PowerPC memcpy and friends in uClibc a while ago. It does
+> basically the same a the kernel memcpy but without any cache
+> instructions. It is written in C, but in such a way that
+> optimal assembly is generated.
 
-Paul spotted today that you are actually trying to use __pa() on
-addresses returned from vmalloc, that will not work. Those are virtual
-addresses in a non-linear mapping, _pa() only works on the linear
-mapping.
+Hmm, isn't that going to break on a different version of gcc?
+I just copied the latest version of trunk/uClibc/libc/string/powerpc/memcpy.c 
+from subversion as uclibc-memcpy.c, removed the last line and did this:
 
-Ben.
+$ gcc -shared -O2 -Wall -o libucmemcpy.so uclibc-memcpy.c
+
+(should I use other compiler options?)
+
+Then I started my test program with LD_PRELOAD=...
+
+My test program only copies big chunks of aligned memory, so it will only test 
+for maximum throughput (such as copying video frames). I will make a better 
+one, to measure throughput on different sized blocks of aligned and unaligned 
+memory, but first I want to find out why I can't seem to get even close to 
+the expected RAM bandwidth (bursts occur at 1.6 Gbyte/s, sustained transfers 
+might be able to reach 400 Mbyte/s in theory, taking into account the video 
+controller eating almost half of it, I'd like to get somewhere close to 200).
+
+The result is quite a bit better than that of glibc-2.7 (13.2 Mbyte/s --> 22 
+Mbyte/s), but still far from the 71.5 Mbyte/s achieved when using bigger 
+strides of 16 registers load/store at a time.
+Note, that this is copy performance, one-way througput should be double these 
+figures.
+
+I'll try to learn how cache manipulating instructions work, to see if I can 
+gain some more bandwith using them.
+
+Regards,
+
+-- 
+David Jander
