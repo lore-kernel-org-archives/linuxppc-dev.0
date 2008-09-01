@@ -1,24 +1,34 @@
-Return-Path: <hch@lst.de>
-Received: from verein.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2CAA1DDE1D
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 11:23:33 +1000 (EST)
-Received: from verein.lst.de (localhost [127.0.0.1])
-	by verein.lst.de (8.12.3/8.12.3/Debian-7.1) with ESMTP id
-	m811NVIF007593
-	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 Sep 2008 03:23:31 +0200
-Received: (from hch@localhost)
-	by verein.lst.de (8.12.3/8.12.3/Debian-6.6) id m811NUih007591
-	for linuxppc-dev@ozlabs.org; Mon, 1 Sep 2008 03:23:30 +0200
-Date: Mon, 1 Sep 2008 03:23:30 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: use sys_pause for 32bit pause entry point
-Message-ID: <20080901012330.GA7544@lst.de>
-Mime-Version: 1.0
+Return-Path: <paulmck@paulmck-laptop.linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 86416DDE19
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 12:06:45 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m811xT3i027437
+	for <linuxppc-dev@ozlabs.org>; Sun, 31 Aug 2008 21:59:29 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m8126eoT201266
+	for <linuxppc-dev@ozlabs.org>; Sun, 31 Aug 2008 20:06:40 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m8126dOw028755
+	for <linuxppc-dev@ozlabs.org>; Sun, 31 Aug 2008 20:06:40 -0600
+Date: Sun, 31 Aug 2008 19:06:40 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] prevent powerpc from invoking irq handlers on offline CPUs
+Message-ID: <20080901020640.GM7015@linux.vnet.ibm.com>
+References: <20080831173127.GA15296@linux.vnet.ibm.com>
+	<1220229284.13162.411.camel@pasglop>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1220229284.13162.411.camel@pasglop>
+Cc: tnt@246tNt.com, manfred@colorfullife.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, akpm@linux-foundation.org
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,40 +38,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-sys32_pause is a useless copy of the generic sys_pause.
+On Mon, Sep 01, 2008 at 10:34:44AM +1000, Benjamin Herrenschmidt wrote:
+> On Sun, 2008-08-31 at 10:31 -0700, Paul E. McKenney wrote:
+> > Make powerpc refrain from clearing a given to-be-offlined CPU's bit in the
+> > cpu_online_mask until it has processed pending irqs.  This change
+> > prevents other CPUs from being blindsided by an apparently offline CPU
+> > nevertheless changing globally visible state.
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
+> 
+> Sounds reasonable... the only possible worry here is if somebody tries
+> an IPI ... The IPI code will and the target CPU mask with the online
+> map, so it may try to send to the to-be-offlined CPU and timeout, no ?
 
+OK.  Do we need separate IPI and online masks?
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+							Thanx, Paul
 
-Index: linux-2.6/arch/powerpc/include/asm/systbl.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/systbl.h	2008-08-22 12:47:08.000000000 -0300
-+++ linux-2.6/arch/powerpc/include/asm/systbl.h	2008-08-22 12:47:35.000000000 -0300
-@@ -32,7 +32,7 @@ COMPAT_SYS_SPU(stime)
- COMPAT_SYS(ptrace)
- SYSCALL_SPU(alarm)
- OLDSYS(fstat)
--COMPAT_SYS(pause)
-+SYSCALL(pause)
- COMPAT_SYS(utime)
- SYSCALL(ni_syscall)
- SYSCALL(ni_syscall)
-Index: linux-2.6/arch/powerpc/kernel/sys_ppc32.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/sys_ppc32.c	2008-08-22 12:47:41.000000000 -0300
-+++ linux-2.6/arch/powerpc/kernel/sys_ppc32.c	2008-08-22 12:47:51.000000000 -0300
-@@ -107,14 +107,6 @@ asmlinkage long compat_sys_sysfs(u32 opt
- 	return sys_sysfs((int)option, arg1, arg2);
- }
- 
--asmlinkage long compat_sys_pause(void)
--{
--	current->state = TASK_INTERRUPTIBLE;
--	schedule();
--	
--	return -ERESTARTNOHAND;
--}
--
- static inline long get_ts32(struct timespec *o, struct compat_timeval __user *i)
- {
- 	long usec;
+> Cheers,
+> Ben.
+> 
+> >  smp.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> > index 5337ca7..1fedd7d 100644
+> > --- a/arch/powerpc/kernel/smp.c
+> > +++ b/arch/powerpc/kernel/smp.c
+> > @@ -250,11 +250,11 @@ int generic_cpu_disable(void)
+> >  	if (cpu == boot_cpuid)
+> >  		return -EBUSY;
+> >  
+> > -	cpu_clear(cpu, cpu_online_map);
+> >  #ifdef CONFIG_PPC64
+> >  	vdso_data->processorCount--;
+> >  	fixup_irqs(cpu_online_map);
+> >  #endif
+> > +	cpu_clear(cpu, cpu_online_map);
+> >  	return 0;
+> >  }
+> >  
+> 
