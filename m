@@ -1,19 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C0AA6DDE21
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 12:55:16 +1000 (EST)
-Date: Mon, 1 Sep 2008 12:55:01 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] powerpc: use sys_pause for 32bit pause entry point
-Message-Id: <20080901125501.5b4c5e72.sfr@canb.auug.org.au>
-In-Reply-To: <20080901012330.GA7544@lst.de>
-References: <20080901012330.GA7544@lst.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E728EDDDE0
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 13:21:22 +1000 (EST)
+Subject: Re: [PATCH] prevent powerpc from invoking irq handlers on offline CPUs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: paulmck@linux.vnet.ibm.com
+In-Reply-To: <20080901020640.GM7015@linux.vnet.ibm.com>
+References: <20080831173127.GA15296@linux.vnet.ibm.com>
+	<1220229284.13162.411.camel@pasglop>
+	<20080901020640.GM7015@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Mon, 01 Sep 2008 13:14:40 +1000
+Message-Id: <1220238880.13010.4.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__1_Sep_2008_12_55_01_+1000_QBEkn2=UQ2vK1Ptt"
-Cc: linuxppc-dev@ozlabs.org
+Cc: tnt@246tNt.com, manfred@colorfullife.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, akpm@linux-foundation.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__1_Sep_2008_12_55_01_+1000_QBEkn2=UQ2vK1Ptt
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, 2008-08-31 at 19:06 -0700, Paul E. McKenney wrote:
+> On Mon, Sep 01, 2008 at 10:34:44AM +1000, Benjamin Herrenschmidt wrote:
+> > On Sun, 2008-08-31 at 10:31 -0700, Paul E. McKenney wrote:
+> > > Make powerpc refrain from clearing a given to-be-offlined CPU's bit in the
+> > > cpu_online_mask until it has processed pending irqs.  This change
+> > > prevents other CPUs from being blindsided by an apparently offline CPU
+> > > nevertheless changing globally visible state.
+> > > 
+> > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > ---
+> > 
+> > Sounds reasonable... the only possible worry here is if somebody tries
+> > an IPI ... The IPI code will and the target CPU mask with the online
+> > map, so it may try to send to the to-be-offlined CPU and timeout, no ?
+> 
+> OK.  Do we need separate IPI and online masks?
 
-On Mon, 1 Sep 2008 03:23:30 +0200 Christoph Hellwig <hch@lst.de> wrote:
->
-> sys32_pause is a useless copy of the generic sys_pause.
->=20
->=20
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+Shouldn't we already have routed all interrupts to other CPUs anyway ?
 
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+IE. The affinity of all interrupts should have been updated. So the
+only thing we're going to get here are possibly IPIs and decrementer, 
+I don't see it being a big deal making sure we test we are online when
+receiving it.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__1_Sep_2008_12_55_01_+1000_QBEkn2=UQ2vK1Ptt
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAki7WYUACgkQjjKRsyhoI8wTYACfeX+gpIDCUiZU+M/J9OSvxAfM
-1mkAmgLG3dswJps7Z8RWROnmG3GRVdxh
-=BlQD
------END PGP SIGNATURE-----
-
---Signature=_Mon__1_Sep_2008_12_55_01_+1000_QBEkn2=UQ2vK1Ptt--
+Ben.
