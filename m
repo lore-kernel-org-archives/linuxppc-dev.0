@@ -1,22 +1,22 @@
 Return-Path: <Clive.Jenkins@xerox.com>
-Received: from wbmler2.mail.xerox.com (wbmler2.mail.xerox.com [13.13.138.217])
+Received: from wbmler3.mail.xerox.com (wbmler3.mail.xerox.com [13.13.138.218])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wbmler2.mail.xerox.com",
-	Issuer "wbmler2.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 866A8DE0B0
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 23:54:27 +1000 (EST)
+	(Client CN "wbmler3.mail.xerox.com",
+	Issuer "wbmler3.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 79A96DDE1B
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 23:58:47 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Subject: RE: Trace
-Date: Mon, 1 Sep 2008 14:54:07 +0100
-Message-ID: <929D3CED81F34E43887A393170D66FB926B40F@GBRSUN01MS002.eu.xerox.net>
-In-Reply-To: <319b0ac50809010525w7451ef92m5aaf6fd5f5a8958e@mail.gmail.com>
-References: <319b0ac50809010216jac3ae30r9260699abde6535@mail.gmail.com>
-	<929D3CED81F34E43887A393170D66FB926B259@GBRSUN01MS002.eu.xerox.net>
-	<319b0ac50809010525w7451ef92m5aaf6fd5f5a8958e@mail.gmail.com>
+Date: Mon, 1 Sep 2008 14:58:09 +0100
+Message-ID: <929D3CED81F34E43887A393170D66FB926B41A@GBRSUN01MS002.eu.xerox.net>
+In-Reply-To: <929D3CED81F34E43887A393170D66FB926B40F@GBRSUN01MS002.eu.xerox.net>
+References: <319b0ac50809010216jac3ae30r9260699abde6535@mail.gmail.com><929D3CED81F34E43887A393170D66FB926B259@GBRSUN01MS002.eu.xerox.net><319b0ac50809010525w7451ef92m5aaf6fd5f5a8958e@mail.gmail.com>
+	<929D3CED81F34E43887A393170D66FB926B40F@GBRSUN01MS002.eu.xerox.net>
 From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: =?iso-8859-1?Q?S=E9bastien_Chr=E9tien?=
+To: "Jenkins, Clive" <Clive.Jenkins@xerox.com>,
+	=?iso-8859-1?Q?S=E9bastien_Chr=E9tien?=
 	<sebastien.chretien.enseirb@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,6 +27,18 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+
+>  Why can't tty have value 0x57555541 ?
+To answer my own question, because it ends in 1 and is not word-aligned!
+
+-----Original Message-----
+From: linuxppc-dev-bounces+clive.jenkins=3Dxerox.com@ozlabs.org =
+[mailto:linuxppc-dev-bounces+clive.jenkins=3Dxerox.com@ozlabs.org] On =
+Behalf Of Jenkins, Clive
+Sent: 01 September 2008 14:54
+To: S=E9bastien Chr=E9tien
+Cc: linuxppc-dev@ozlabs.org
+Subject: RE: Trace
 
 I'm not sure that is a failure. Why can't tty have value 0x57555541 ?
 
@@ -140,3 +152,9 @@ c01d0000
 increase size.
 =09
 =09
+
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
