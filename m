@@ -1,19 +1,32 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 5D538DDE08
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 18:30:10 +1000 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: munroesj@us.ibm.com
-Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
-Date: Mon, 1 Sep 2008 10:29:22 +0200
-References: <200808251131.02071.david.jander@protonic.nl>
-	<200808291348.27652.david.jander@protonic.nl>
-	<1220042061.28869.184.camel@spokane1.rchland.ibm.com>
-In-Reply-To: <1220042061.28869.184.camel@spokane1.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200809011029.23413.david.jander@protonic.nl>
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-cn0ut-8.online-age.net (Ext-cn0ut-8.online-age.net
+	[63.210.253.238])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ext-cn0ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id C5492DDF38
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 18:35:44 +1000 (EST)
+Received: from int-cn0ut-6.online-age.net (int-cn0ut-6.online-age.net
+	[3.159.252.75])
+	by ext-cn0ut-8.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id m818Ze5D008533
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Sep 2008 04:35:40 -0400
+Received: from alpmlip01.e2k.ad.ge.com (int-cn0ut-6.online-age.net
+	[3.159.252.75])
+	by int-cn0ut-6.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m818ZemQ017283
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Sep 2008 04:35:40 -0400
+Date: Mon, 1 Sep 2008 09:35:29 +0100
+From: Martyn Welch <martyn.welch@gefanuc.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3 1/2] powerpc: Board support for GE Fanuc SBC610
+Message-Id: <20080901093529.3a4371f7.martyn.welch@gefanuc.com>
+In-Reply-To: <7E18A542-EA62-4F5B-992C-8AC3D9562F72@kernel.crashing.org>
+References: <20080826131339.12883.61796.stgit@ubuntu8041.localdomain>
+	<20080826131344.12883.60435.stgit@ubuntu8041.localdomain>
+	<7E18A542-EA62-4F5B-992C-8AC3D9562F72@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,33 +37,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 29 August 2008 22:34:21 Steven Munroe wrote:
-> > I am not complaining. I was only wondering if it is just me or there
-> > really is very little that has been done (for either uClibc, glibc, or
-> > whatever for powerpc) to improve performance of (linux-) applications on
-> > "lower"-power platforms (G2 core), AFAICS there is a LOT that can be
-> > gained by simple tweaks.
->
-> This is a self help group (free as in freedom) We help each other. And
-> you can help yourself. There is no free lunch.
+On Fri, 29 Aug 2008 07:04:18 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-I never expected to be served a free dish of any kind on a mailing-list ;-)
-I was just asking around, to avoid reinventing wheels, since I intend to dig 
-into this problem, that's all. My intention never was to pick up work from 
-others and then run.
+> 
+> On Aug 26, 2008, at 8:13 AM, Martyn Welch wrote:
+> 
+> > +
+> > +		PowerPC,8641@0 {
+> > +			device_type = "cpu";
+> > +			reg = <0x00000000>;
+> > +			d-cache-line-size = <32>;	// 32 bytes
+> > +			i-cache-line-size = <32>;	// 32 bytes
+> > +			d-cache-size = <32768>;		// L1, 32K
+> > +			i-cache-size = <32768>;		// L1, 32K
+> 
+> >
+> > +			timebase-frequency = <0>;	// From uboot
+> > +			bus-frequency = <0>;		// From uboot
+> > +			clock-frequency = <0>;		// From uboot
+> 
+> you can remove these since u-boot will set them.
+> 
 
-> > The problem is: I have very little experience with powerpc assembly and
-> > only very limited time to dedicate to this and I am looking for others
-> > who have
->
-> Well this will be a good learning experience for you. We will try to
-> answer questions.
+Ok.
 
-Excellent. I love learning new stuff ;-)
+> >
+> > +		};
+> > +		PowerPC,8641@1 {
+> > +			device_type = "cpu";
+> > +			reg = <0x00000001>;
+> > +			d-cache-line-size = <32>;	// 32 bytes
+> > +			i-cache-line-size = <32>;	// 32 bytes
+> > +			d-cache-size = <32768>;		// L1, 32K
+> > +			i-cache-size = <32768>;		// L1, 32K
+> 
+> >
+> > +			timebase-frequency = <0>;	// From uboot
+> > +			bus-frequency = <0>;		// From uboot
+> > +			clock-frequency = <0>;		// From uboot
+> 
+> you can remove these since u-boot will set them.
+> 
 
-Thanks a lot for the guidance so far...
+Will do.
 
-Regards,
+> >
+> > +		};
+> > +	};
+> > +
+> > +	memory {
+> > +		device_type = "memory";
+> > +		reg = <0x00000000 0x40000000>;	// set by u-boot
+> 
+> if the comment is zero just set it to <0 0>;
+> 
+
+So "reg = <0x0 0x40000000>;" ?
+
+> >
+> > +	};
+> > +
+> 
+> what u-boot version are you using/shipping with these boards?
+
+U-boot 1.2.0
+
+> Wondering if other props (like cache info, is set by u-boot for you).
+> 
+> - k
+
+Martyn
 
 -- 
-David Jander
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
