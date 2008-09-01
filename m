@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0402BDE1A7
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 19:24:00 +1000 (EST)
-Subject: Re: Trace
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
-	<sebastien.chretien.enseirb@gmail.com>
-In-Reply-To: <319b0ac50809010216jac3ae30r9260699abde6535@mail.gmail.com>
-References: <319b0ac50809010216jac3ae30r9260699abde6535@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 01 Sep 2008 19:23:53 +1000
-Message-Id: <1220261033.13010.48.camel@pasglop>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id A928DDDE41
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Sep 2008 19:45:18 +1000 (EST)
+Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: David Jander <david.jander@protonic.nl>
+In-Reply-To: <200809010923.28616.david.jander@protonic.nl>
+References: <200808251131.02071.david.jander@protonic.nl>
+	<200808291348.27652.david.jander@protonic.nl>
+	<1220012433.5234.162.camel@gentoo-jocke.transmode.se>
+	<200809010923.28616.david.jander@protonic.nl>
+Content-Type: text/plain
+Date: Mon, 01 Sep 2008 11:36:15 +0200
+Message-Id: <1220261775.5234.217.camel@gentoo-jocke.transmode.se>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Cc: munroesj@us.ibm.com, linuxppc-dev@ozlabs.org
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,64 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-09-01 at 11:16 +0200, Sébastien Chrétien wrote:
-> Hello,
+On Mon, 2008-09-01 at 09:23 +0200, David Jander wrote:
+> On Friday 29 August 2008 14:20:33 Joakim Tjernlund wrote:
+> >[...]
+> > > The problem is: I have very little experience with powerpc assembly and
+> > > only very limited time to dedicate to this and I am looking for others
+> > > who have
+> >
+> > I improved the PowerPC memcpy and friends in uClibc a while ago. It does
+> > basically the same a the kernel memcpy but without any cache
+> > instructions. It is written in C, but in such a way that
+> > optimal assembly is generated.
 > 
-> I am triying to write a tty_driver under ppc. And I get a kernel
-> panic.
-> Can somebody explain me how finding the source of the error with a
-> kernel panic trace : 
-> thanks
+> Hmm, isn't that going to break on a different version of gcc?
 
-What kind of device are you writing a tty driver for ?
+Not break, but gcc might generate non optimal code. However, the code
+is laid out to make it easy for gcc to do the right thing.
 
-I don't see anything much relevant in your backtrace, you went through a
-crap pointer in init_dev, could be anything at this stage...
+> I just copied the latest version of trunk/uClibc/libc/string/powerpc/memcpy.c 
+> from subversion as uclibc-memcpy.c, removed the last line and did this:
+> 
+> $ gcc -shared -O2 -Wall -o libucmemcpy.so uclibc-memcpy.c
+> 
+> (should I use other compiler options?)
 
-Can you post your driver to the list ?
+These are fine.
 
-Ben.
+> 
+> Then I started my test program with LD_PRELOAD=...
+> 
+> My test program only copies big chunks of aligned memory, so it will only test 
+> for maximum throughput (such as copying video frames). I will make a better 
+> one, to measure throughput on different sized blocks of aligned and unaligned 
+> memory, but first I want to find out why I can't seem to get even close to 
+> the expected RAM bandwidth (bursts occur at 1.6 Gbyte/s, sustained transfers 
+> might be able to reach 400 Mbyte/s in theory, taking into account the video 
+> controller eating almost half of it, I'd like to get somewhere close to 200).
+> 
+> The result is quite a bit better than that of glibc-2.7 (13.2 Mbyte/s --> 22 
+> Mbyte/s), but still far from the 71.5 Mbyte/s achieved when using bigger 
+> strides of 16 registers load/store at a time.
+> Note, that this is copy performance, one-way througput should be double these 
+> figures.
 
-> Unable to handle kernel paging request for data at address 0x575555f9
-> Faulting instruction address: 0xc0110ddc
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> Modules linked in:
-> NIP: c0110ddc LR: c011118c CTR: 00000000
-> REGS: cf01bcb0 TRAP: 0300   Not tainted  (2.6.26)
-> MSR: 00009032 <EE,ME,IR,DR>  CR: 44002022  XER: 20000000
-> DAR: 575555f9, DSISR: 40000000
-> TASK = cf01c000[1] 'swapper' THREAD: cf01a000
-> GPR00: 0000000c cf01bd60 cf01c000 cf04c300 ffffffff cf01bdbc 00000000
-> c01d0000 
-> GPR08: 00001249 fffffffc 00000000 cf000420 84002022 00000000 10000b00
-> 007fff00 
-> GPR16: 0fffa1d0 00000000 00000004 cf01bdbc 007ffec0 00000000 00000000
-> 00800000 
-> GPR24: 00000000 c01b7650 00000002 c01d0000 ffffffff ce4a6700 cf04c300
-> 57555541 
-> NIP [c0110ddc] init_dev+0x2bc/0x584
-> LR [c011118c] tty_open+0xe8/0x3e0
-> Call Trace:
-> [cf01bd60] [cf01bd78] 0xcf01bd78 (unreliable)
-> [cf01bdb0] [c011118c] tty_open+0xe8/0x3e0
-> [cf01bde0] [c00742c8] chrdev_open+0x114/0x1b0
-> [cf01be10] [c006fb5c] __dentry_open+0x190/0x2e8
-> [cf01be40] [c006fdac] nameidata_to_filp+0x38/0x70
-> [cf01be60] [c007bc60] do_filp_open+0x200/0x7d0
-> [cf01bf10] [c00700b4] do_sys_open+0x74/0x114
-> [cf01bf40] [c0003c94] init_post+0x34/0x258
-> [cf01bf60] [c019ca64] kernel_init+0x258/0x270
-> [cf01bff0] [c0011b3c] kernel_thread+0x44/0x60
-> Instruction dump:
-> 7d808120 4e800020 7c832378 4bfa9ea9 7c7f1b79 418201f0 a81e0062
-> 2f800001 
-> 409efd98 83ff00d0 2c1f0000 4182fd90 <801f00b8> 70090080 408201b0
-> 801e0060 
-> ---[ end trace b7795a387aeb7786 ]---
-> Kernel panic - not syncing: Attempted to kill init!
-> allocation failed: out of vmalloc space - use vmalloc=<size> to
-> increase size.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Yeah, the code is trying to do a reasonable job without knowing what
+micro arch it is running on. These could probably go to glibc
+as new general purpose memxxx() routines. You will probably see
+a big increase once dcbz is added to the copy/memset functions.
+
+Fire away :)
+
+ Jocke
