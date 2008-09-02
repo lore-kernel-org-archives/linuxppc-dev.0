@@ -1,14 +1,22 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id ABE2EDDDF0
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Sep 2008 16:50:40 +1000 (EST)
-To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <26128d31856e93dc769ca1fc1bfda34c2fdad6d7.1220338208.git.tony@bakeyournoodle.com>
-In-Reply-To: <1219617472.21386.226.camel@pasglop>
-From: Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH 1/1] Work around the fomit-frame-pointer bug
-Date: Tue,  2 Sep 2008 16:50:38 +1000 (EST)
+Return-Path: <pku.leo@gmail.com>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.250])
+	by ozlabs.org (Postfix) with ESMTP id F1D6FDDDEF
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Sep 2008 17:08:09 +1000 (EST)
+Received: by ag-out-0708.google.com with SMTP id 8so5072293agc.0
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Sep 2008 00:08:07 -0700 (PDT)
+Message-ID: <2a27d3730809020008i6427954ex2c09c6fa67971a75@mail.gmail.com>
+Date: Tue, 2 Sep 2008 15:08:06 +0800
+From: "Li Yang" <leoli@freescale.com>
+Sender: pku.leo@gmail.com
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
+In-Reply-To: <20080901135235.GA677@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+References: <1219916613-28827-1-git-send-email-leoli@freescale.com>
+	<20080901135235.GA677@oksana.dev.rtsoft.ru>
+Cc: greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+	dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,102 +26,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This bug is causing random crashes
-(http://bugzilla.kernel.org/show_bug.cgi?id=11414).  -fomit-frame-pointer is
-only needed on powerpc when -pg is also supplied.  This patch ensures that
-CONFIG_FRAME_POINTER is only selected by ftrace.  When CONFIG_FTRACE is enabled
-we also pass -mno-sched-epilog to work around the codegen bug
+On Mon, Sep 1, 2008 at 9:52 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Thu, Aug 28, 2008 at 05:43:33PM +0800, Li Yang wrote:
+>> Some of Freescale SoC chips have a QE or CPM co-processor which
+>> supports full speed USB.  The driver adds device mode support
+>> of both QE and CPM USB controller to Linux USB gadget.  The
+>> driver is tested with MPC8360 and MPC8272, and should work with
+>> other models having QE/CPM given minor tweaks.
+>>
+>> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
+>> Signed-off-by: Li Yang <leoli@freescale.com>
+>> ---
+>> This is the second submission of the driver.  This version addressed:
+>> Comments from Anton Vorontsov.
+>> A lot of cosmetic problem.
+>> Sparse and various kernel DEBUG warnings.
+>
+> You might want to consider some of the following changes (they're
+> tested with
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-September/062360.html).
+>
+> - remove qe_muram -> cpm_muram defines
 
-Patch based on work by:
-	Andreas Schwab <schwab@suse.de>
-	Segher Boessenkool <segher@kernel.crashing.org>
+Already done to address comment from Arnd.
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
- arch/powerpc/Makefile                    |    5 +++++
- arch/powerpc/kernel/Makefile             |    7 ++++---
- arch/powerpc/platforms/powermac/Makefile |    2 +-
- lib/Kconfig.debug                        |    6 +++---
- 4 files changed, 13 insertions(+), 7 deletions(-)
+> - configure clocks per device tree via qe_usb_clock_set(). To use this
+>  function we should select QE_USB.
+>
+>  NOTE: currently this means that CPM build will break. :-( We should
+>  probably implement generic cpm_clock_source() and cpm_usb_clock_set().
+>
+>  Or.. we can move this to the board file (Do we ever need to change the
+>  clocks in this driver? For the Host driver we need this, since it
+>  can switch between low and full speed).
+>
+>  What do you think?
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 9155c93..c6be19e 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -116,6 +116,11 @@ ifeq ($(CONFIG_6xx),y)
- KBUILD_CFLAGS		+= -mcpu=powerpc
- endif
- 
-+# Work around a gcc code-gen bug with -fno-omit-frame-pointer.
-+ifeq ($(CONFIG_FTRACE),y)
-+KBUILD_CFLAGS		+= -mno-sched-epilog
-+endif
-+
- cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
- cpu-as-$(CONFIG_6xx)		+= -Wa,-maltivec
- cpu-as-$(CONFIG_POWER4)		+= -Wa,-maltivec
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 64f5948..946daea 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -14,12 +14,13 @@ endif
- 
- ifdef CONFIG_FTRACE
- # Do not trace early boot code
--CFLAGS_REMOVE_cputable.o = -pg
--CFLAGS_REMOVE_prom_init.o = -pg
-+CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog
- 
- ifdef CONFIG_DYNAMIC_FTRACE
- # dynamic ftrace setup.
--CFLAGS_REMOVE_ftrace.o = -pg
-+CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog
- endif
- 
- endif
-diff --git a/arch/powerpc/platforms/powermac/Makefile b/arch/powerpc/platforms/powermac/Makefile
-index 58ecdd7..be60d64 100644
---- a/arch/powerpc/platforms/powermac/Makefile
-+++ b/arch/powerpc/platforms/powermac/Makefile
-@@ -2,7 +2,7 @@ CFLAGS_bootx_init.o  		+= -fPIC
- 
- ifdef CONFIG_FTRACE
- # Do not trace early boot code
--CFLAGS_REMOVE_bootx_init.o = -pg
-+CFLAGS_REMOVE_bootx_init.o = -pg -mno-sched-epilog
- endif
- 
- obj-y				+= pic.o setup.o time.o feature.o pci.o \
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 800ac84..413eaca 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -394,7 +394,7 @@ config LOCKDEP
- 	bool
- 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
- 	select STACKTRACE
--	select FRAME_POINTER if !X86 && !MIPS
-+	select FRAME_POINTER if !X86 && !MIPS && !PPC
- 	select KALLSYMS
- 	select KALLSYMS_ALL
- 
-@@ -676,13 +676,13 @@ config FAULT_INJECTION_STACKTRACE_FILTER
- 	depends on FAULT_INJECTION_DEBUG_FS && STACKTRACE_SUPPORT
- 	depends on !X86_64
- 	select STACKTRACE
--	select FRAME_POINTER
-+	select FRAME_POINTER if !PPC
- 	help
- 	  Provide stacktrace filter for fault-injection capabilities
- 
- config LATENCYTOP
- 	bool "Latency measuring infrastructure"
--	select FRAME_POINTER if !MIPS
-+	select FRAME_POINTER if !MIPS && !PPC
- 	select KALLSYMS
- 	select KALLSYMS_ALL
- 	select STACKTRACE
--- 
-1.5.6.5
+I'd prefer to leave the clock setting for USB gadget mode in platform
+code.  There is no need to change the clock in the udc driver.  There
+is no point to make the speed of a USB device changable.
+
+>
+> - change 8360 compatible to 8323 (8323 is the first chip with QE USB,
+>  device trees for 8360 boards should specify fsl,mpc8323-qe-usb
+>  as a compatible).
+
+Well. IIRC, 8360 came out earlier than 8323.  Whatsoever, 8360 is a
+better representative for the PowerQUICC 2 pro family with a QE as it
+has the full functionality.
+
+>
+> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+> index 4dbf622..e57c298 100644
+> --- a/drivers/usb/gadget/Kconfig
+> +++ b/drivers/usb/gadget/Kconfig
+> @@ -153,6 +153,7 @@ config USB_FSL_USB2
+>  config USB_GADGET_FSL_QE
+>        boolean "Freescale QE/CPM USB Device Controller"
+>        depends on FSL_SOC && (QUICC_ENGINE || CPM)
+> +       select QE_USB
+>        help
+>           Some of Freescale PowerPC processors have a Full Speed
+>           QE/CPM2 USB controller, which support device mode with 4
+> diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
+> index e448610..c1a0beb 100644
+> --- a/drivers/usb/gadget/fsl_qe_udc.c
+> +++ b/drivers/usb/gadget/fsl_qe_udc.c
+> @@ -36,20 +36,12 @@
+>  #include <linux/usb/ch9.h>
+>  #include <linux/usb/gadget.h>
+>  #include <linux/usb/otg.h>
+> +#include <asm/cpm.h>
+>  #include <asm/qe.h>
+>  #include <asm/dma.h>
+>  #include <asm/reg.h>
+>  #include "fsl_qe_udc.h"
+>
+> -#ifdef CONFIG_CPM2
+> -#include <asm/cpm.h>
+> -
+> -#define qe_muram_addr cpm_muram_addr
+> -#define qe_muram_offset cpm_muram_offset
+> -#define qe_muram_alloc cpm_muram_alloc
+> -#define qe_muram_free cpm_muram_free
+> -#endif
+> -
+>  #define DRIVER_DESC     "Freescale QE/CPM USB Device Controller driver"
+>  #define DRIVER_AUTHOR   "Xie XiaoBo"
+>  #define DRIVER_VERSION  "1.0"
+> @@ -2490,6 +2482,7 @@ static int __devinit qe_udc_probe(struct of_device *ofdev,
+>                        const struct of_device_id *match)
+>  {
+>        struct device_node *np = ofdev->node;
+> +       enum qe_clock clk;
+>        struct qe_ep *ep;
+>        unsigned int ret = 0;
+>        unsigned int i;
+> @@ -2499,6 +2492,16 @@ static int __devinit qe_udc_probe(struct of_device *ofdev,
+>        if (!prop || strcmp(prop, "peripheral"))
+>                return -ENODEV;
+>
+> +       prop = of_get_property(np, "fsl,fullspeed-clock", NULL);
+> +       if (!prop)
+> +               return -EINVAL;
+> +
+> +       clk = qe_clock_source(prop);
+> +       if (clk == QE_CLK_NONE || clk == QE_CLK_DUMMY)
+> +               return -EINVAL;
+> +
+> +       qe_usb_clock_set(clk, USB_CLOCK);
+> +
+>        /* Initialize the udc structure including QH member and other member */
+>        udc_controller = qe_udc_config(ofdev);
+>        if (!udc_controller) {
+> @@ -2689,7 +2692,7 @@ static int __devexit qe_udc_remove(struct of_device *ofdev)
+>  /*-------------------------------------------------------------------------*/
+>  static struct of_device_id qe_udc_match[] = {
+>        {
+> -               .compatible = "fsl,mpc8360-qe-usb",
+> +               .compatible = "fsl,mpc8323-qe-usb",
+>        },
+>        {
+>                .compatible = "fsl,mpc8272-cpm-usb",
+> diff --git a/drivers/usb/gadget/fsl_qe_udc.h b/drivers/usb/gadget/fsl_qe_udc.h
+> index e2e9639..0ff9c00 100644
+> --- a/drivers/usb/gadget/fsl_qe_udc.h
+> +++ b/drivers/usb/gadget/fsl_qe_udc.h
+> @@ -17,6 +17,8 @@
+>  #ifndef __FSL_QE_UDC_H
+>  #define __FSL_QE_UDC_H
+>
+> +#define USB_CLOCK                      48000000
+> +
+>  #define USB_MAX_ENDPOINTS               4
+>  #define USB_MAX_PIPES                   USB_MAX_ENDPOINTS
+>  #define USB_EP0_MAX_SIZE               64
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
