@@ -1,20 +1,23 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 3B02CDDE06
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Sep 2008 23:12:47 +1000 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
-Date: Tue, 2 Sep 2008 15:12:09 +0200
-References: <200808251131.02071.david.jander@protonic.nl>
-	<200809010923.28616.david.jander@protonic.nl>
-	<1220261775.5234.217.camel@gentoo-jocke.transmode.se>
-In-Reply-To: <1220261775.5234.217.camel@gentoo-jocke.transmode.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200809021512.10132.david.jander@protonic.nl>
-Cc: munroesj@us.ibm.com, John Rigby <jrigby@freescale.com>
+Return-Path: <becky.bruce@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4C90ADDE22
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Sep 2008 02:19:59 +1000 (EST)
+Message-Id: <44677536-2308-40AF-8844-7192489664B9@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+To: benh@kernel.crashing.org
+In-Reply-To: <1220246399.13010.25.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH v2] POWERPC: Allow 32-bit pgtable code to support 36-bit
+	physical
+Date: Tue, 2 Sep 2008 11:19:49 -0500
+References: <1219876690-21163-1-git-send-email-becky.bruce@freescale.com>
+	<1220246399.13010.25.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,81 +27,164 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 01 September 2008 11:36:15 Joakim Tjernlund wrote:
->[...]
-> > Then I started my test program with LD_PRELOAD=...
-> >
-> > My test program only copies big chunks of aligned memory, so it will only
-> > test for maximum throughput (such as copying video frames). I will make a
-> > better one, to measure throughput on different sized blocks of aligned
-> > and unaligned memory, but first I want to find out why I can't seem to
-> > get even close to the expected RAM bandwidth (bursts occur at 1.6
-> > Gbyte/s, sustained transfers might be able to reach 400 Mbyte/s in
-> > theory, taking into account the video controller eating almost half of
-> > it, I'd like to get somewhere close to 200).
-> >
-> > The result is quite a bit better than that of glibc-2.7 (13.2 Mbyte/s -->
-> > 22 Mbyte/s), but still far from the 71.5 Mbyte/s achieved when using
-> > bigger strides of 16 registers load/store at a time.
-> > Note, that this is copy performance, one-way througput should be double
-> > these figures.
+
+On Sep 1, 2008, at 12:19 AM, Benjamin Herrenschmidt wrote:
+
+Thanks for taking the time to dig through this :)
+
 >
-> Yeah, the code is trying to do a reasonable job without knowing what
-> micro arch it is running on. These could probably go to glibc
-> as new general purpose memxxx() routines. You will probably see
-> a big increase once dcbz is added to the copy/memset functions.
+>> +#ifdef CONFIG_PTE_64BIT
+>> +#define PTE_FLAGS_OFFSET	4	/* offset of PTE flags, in bytes */
+>> +#define LNX_PTE_SIZE		8	/* size of a linux PTE, in bytes */
+>> +#else
+>> +#define PTE_FLAGS_OFFSET	0
+>> +#define LNX_PTE_SIZE		4
+>> +#endif
 >
-> Fire away :)
+> s/LNX_PTE_SIZE/PTE_BYTES or PTE_SIZE, no need for that horrible LNX
+> prefix. In fact, if it's only used by the asm, then ditch it and
+> have asm-offsets.c create something based on sizeof(pte_t).
 
-Ok here I go:
+The reason I did that was to distinguish between the size of a  
+software PTE entry, and the actual size of the hardware entry.  In the  
+case of 36b physical, the hardware PTE size is the same as it always  
+is; but we've grown the Linux PTE.  We can call it something else, or  
+I can change as you suggest; I was worried that the next person to  
+come along might get confused.  I suppose there aren't too many of us  
+that are crazy enough to muck around in this code, so maybe it's not  
+that big of a deal.
 
-I have made some astonishing discoveries, and I'd like to post the used 
-source-code somewhere in the meantime, any suggestions? To this list?
+>
+>
+>> #define pte_none(pte)		((pte_val(pte) & ~_PTE_NONE_MASK) == 0)
+>> #define pte_present(pte)	(pte_val(pte) & _PAGE_PRESENT)
+>> -#define pte_clear(mm,addr,ptep)	do { pte_update(ptep, ~0, 0); }  
+>> while (0)
+>> +#define pte_clear(mm, addr, ptep) \
+>> +	do { pte_update(ptep, ~_PAGE_HASHPTE, 0); } while (0)
+>
+> Where does this previous definition of pte_clear comes from ? It's  
+> bogus
+> (and it's not like that upstream). Your "updated" ones looks ok  
+> though.
+>
+> But whatever tree has the "previous" one would break hash based ppc32
+> if merged or is there some other related changes in Kumar tree that
+> make the above safe ?
 
-There seem to be some substantial differences between the e300 core used in 
-the MPC5200B and in the MPC5121e (besides the MPC5121 having double the 
-amount of cache). Memcpy()-performance wise, these differences amount to the 
-following. The tests done are with vanilla glibc (version 2.6.1 and 2.7 
-without any powerpc specific memcpy() optimizations), Gunnar von Boehns 
-memcpy_e300 and my tweaked version, memcpy_e300_dj which basically uses 
-16-register strides instead of 4-register strides in Gunnar's example.
+That's from Kumar's tree of changes for BookE.... he'll need to answer  
+that.  I think he put out a patchset with that work; not sure if it  
+was correct in this particular or not.
 
-memcpy() peak-performance (RAM memory throughput) on:
+>
+>
+>> #define pmd_none(pmd)		(!pmd_val(pmd))
+>> #define	pmd_bad(pmd)		(pmd_val(pmd) & _PMD_BAD)
+>> @@ -664,8 +670,30 @@ static inline void set_pte_at(struct mm_struct  
+>> *mm, unsigned long addr,
+>> 			      pte_t *ptep, pte_t pte)
+>> {
+>> #if _PAGE_HASHPTE != 0
+>> +#ifndef CONFIG_PTE_64BIT
+>> 	pte_update(ptep, ~_PAGE_HASHPTE, pte_val(pte) & ~_PAGE_HASHPTE);
+>> #else
+>> +	/*
+>> +	 * We have to do the write of the 64b pte as 2 stores.  This
+>> +	 * code assumes that the entry we're storing to is currently
+>> +	 * not valid and that all callers have the page table lock.
+>> +	 * Having the entry be not valid protects readers who might read
+>> +	 * between the first and second stores.
+>> +	 */
+>> +	unsigned int tmp;
+>
+> Do you know for sure the entry isn't valid ? On ppc64, we explicitely
+> test for that and if it was valid, we clear and flush it. The generic
+> code has been going on and off about calling set_pte_at() on an  
+> already
+> valid PTE, I wouldn't rely too much on it guaranteeing it will not
+> happen. The 32b PTE code is safe because it preserves _PAGE_HASHPTE .
 
-MPC5200B, glibc-2.6, no optimizations: 136 Mbyte/s
-MPC5121e, glibc-2.7, no optimizations:  30 Mbyte/s
+IIRC, we discussed this at some point, months ago, and decided this  
+was the case. If it *can* be valid, and it's possible to have a reader  
+on another cpu, I think we end up having to go through a very gross  
+sequence where we have to mark it invalid before we start mucking  
+around with it; otherwise a reader can get half-and-half.  Perhaps I'm  
+missing a key restriction here?
 
-MPC5200B, memcpy_e300: 225 Mbyte/s
-MPC5121e, memcpy_e300: 130 Mbyte/s
+>
+>
+> Note also that once you have (which you don't now) the guarantee
+> that your previous PTE is invalid, then you can safely do two normal
+> stores instead of a lwarx/stwcx. loop. In any case, having the stw in
+> the middle of the loop doesn't sound very useful.
 
-MPC5200B, memcpy_e300_dj: 200 Mbyte/s
-MPC5121e, memcpy_e300_dj: 202 Mbyte/s
+If the pte is invalid, and we're SMP, we need the store to the high  
+word to occur before the stwcx that sets the valid bit, unless you're  
+certain we can't have a reader on another cpu.  If we're not SMP, then  
+I agree, let's move that store.
 
-For the MPC5121e, 16-register strides seem to be most optimal, whereas for the 
-MPC5200B, 4-register stides give best performance. Also, plain C memcpy() 
-performance on MPC5121e is terribly poor! Does enyone know why? I don't quite 
-seem to understand those results.
+I thought we discussed at some point the possibility that there might  
+be an updater on another CPU?  Is this not possible?  If not, I'll  
+change it.  The existing code is also lwarx/stwcxing via pte_update();  
+is there no reason for that?  We should probably change that as well,  
+if that's the case.
 
-Some information on the test hardware:
+>
+>
+>> +	__asm__ __volatile__("\
+>> +1:	lwarx	%0,0,%4\n\
+>> +	rlwimi	%L2,%0,0,30,30\n\
+>> +	stw	%2,0(%3)\n\
+>> +	eieio\n\
+>> +	stwcx.  %L2,0,%4\n\
+>> +	bne-	1b"
+>> +	: "=&r" (tmp), "=m" (*ptep)
+>> +	: "r" (pte), "r" (ptep), "r" ((unsigned long)(ptep) + 4),  
+>> "m" (*ptep)
+>> +	: "cc");
+>> +#endif	/* CONFIG_PTE_64BIT */
+>> +#else /* _PAGE_HASHPTE == 0 */
+>> #if defined(CONFIG_PTE_64BIT) && defined(CONFIG_SMP)
+>> 	__asm__ __volatile__("\
+>> 		stw%U0%X0 %2,%0\n\
+>> diff --git a/arch/powerpc/mm/hash_low_32.S b/arch/powerpc/mm/ 
+>> hash_low_32.S
+>> index b9ba7d9..d63e20a 100644
+>> --- a/arch/powerpc/mm/hash_low_32.S
+>> +++ b/arch/powerpc/mm/hash_low_32.S
+>> @@ -75,7 +75,7 @@ _GLOBAL(hash_page_sync)
+>>  * Returns to the caller if the access is illegal or there is no
+>>  * mapping for the address.  Otherwise it places an appropriate PTE
+>>  * in the hash table and returns from the exception.
+>> - * Uses r0, r3 - r8, ctr, lr.
+>> + * Uses r0, r3 - r8, r10, ctr, lr.
+>>  */
+>> 	.text
+>> _GLOBAL(hash_page)
+>> @@ -106,9 +106,15 @@ _GLOBAL(hash_page)
+>> 	addi	r5,r5,swapper_pg_dir@l	/* kernel page table */
+>> 	rlwimi	r3,r9,32-12,29,29	/* MSR_PR -> _PAGE_USER */
+>> 112:	add	r5,r5,r7		/* convert to phys addr */
+>> +#ifndef CONFIG_PTE_64BIT
+>> 	rlwimi	r5,r4,12,20,29		/* insert top 10 bits of address */
+>> 	lwz	r8,0(r5)		/* get pmd entry */
+>> 	rlwinm.	r8,r8,0,0,19		/* extract address of pte page */
+>> +#else
+>> +	rlwinm	r8,r4,13,19,29		/* Compute pgdir/pmd offset */
+>> +	lwzx	r8,r8,r5		/* Get L1 entry */
+>> +	rlwinm. r8,r8,0,0,20		/* extract pt base address */
+>> +#endif
+>
+> Any reason you wrote the above using a different technique ? If you
+> believe that rlwinm/lwzx is going to be more efficient than rlwimi/ 
+> lwz,
+> maybe we should fix the old one ... or am I missing something totally
+> obvious ? :-)
 
-MPC5200B-based board has 64 Mbyte DDR-SDRAM, 32-bit wide (two x16 chips), 
-running ubuntu 7.10 with kernel 2.6.19.2.
+Nothing so exciting there - I borrowed this code from the BookE  
+version.  I'm happy to change it.
 
-MPC5121e-based board has 256 Mbyte DDR2-SDRAM, 32-bit wide (two x16 chips), 
-running ubuntu 8.04.1 with kernel 2.6.24.5 from Freescale LTIB with the DIU 
-turned OFF. When the DIU is turned on, maximum throughput drops from 202 to 
-196 Mbyte/s.
+Thanks, Ben!
 
-memcpy_e300 variants basically use 4 or 16-register load/store strides, cache 
-alignment and dcbz/bcbt cache-manipulation instructions to tweak performance.
-
-I have not tried interleaving integer and fpu instructions.
-
-Does anybody have any suggestion about where to start searching for an 
-explaination of these results? I have the impression that there is something 
-wrong with my setup, or with the e300c4-core, or both, but what????
-
-Greetings,
-
--- 
-David Jander
+Cheers,
+Becky
