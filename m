@@ -1,29 +1,9 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CFD08DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Sep 2008 15:45:26 +1000 (EST)
-Subject: Re: Trace
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?S=E9bastien?= CHRETIEN
-	<sebastien.chretien@fr.thalesgroup.com>
-In-Reply-To: <48BCCB6D.5040209@fr.thalesgroup.com>
-References: <319b0ac50809010216jac3ae30r9260699abde6535@mail.gmail.com>
-	<929D3CED81F34E43887A393170D66FB926B259@GBRSUN01MS002.eu.xerox.net>
-	<319b0ac50809010525w7451ef92m5aaf6fd5f5a8958e@mail.gmail.com>
-	<929D3CED81F34E43887A393170D66FB926B40F@GBRSUN01MS002.eu.xerox.net>
-	<929D3CED81F34E43887A393170D66FB926B41A@GBRSUN01MS002.eu.xerox.net>
-	<48BC195F.4070505@gmail.com> <1220314383.13010.62.camel@pasglop>
-	<48BCCB6D.5040209@fr.thalesgroup.com>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 02 Sep 2008 15:45:14 +1000
-Message-Id: <1220334314.13010.89.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
-	<sebastien.chretien.enseirb@gmail.com>, "Jenkins,
-	Clive" <Clive.Jenkins@xerox.com>
-Reply-To: benh@kernel.crashing.org
+Date: Tue, 02 Sep 2008 15:48:45 +1000
+Subject: [PATCH] powerpc: Reserve syscall number 319
+Message-Id: <20080902054941.77DA3DDDF0@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,16 +13,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-09-02 at 07:13 +0200, Sébastien CHRETIEN wrote:
-> My board has only a uart device on a FPGA. I don't use the serial layer 
-> because it isn't documented in Linux Device Driver 3rd. Only the tty 
-> layer is documented
+Some stuff I'm working on that isn't released yet needs
+a syscall number but I can't say what it's for until I
+get permission to release it :-)
 
-You won't go very far in linux kernel dev. with using books like
-that :-)
+In the meantime, it would be nice if a number could be set
+aside so the tools being developped to use that stuff don't
+all need to be updated when things are eventually released.
 
-Look at other drivers in drivers/serial that should give you all the
-information you need :-0
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Cheers,
-Ben.
+I wonder if I'll get hanged for that one :-)
+
+ arch/powerpc/include/asm/systbl.h |    1 +
+ arch/powerpc/include/asm/unistd.h |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+--- linux-work.orig/arch/powerpc/include/asm/systbl.h	2008-09-02 15:14:53.000000000 +1000
++++ linux-work/arch/powerpc/include/asm/systbl.h	2008-09-02 15:14:54.000000000 +1000
+@@ -322,3 +322,4 @@ SYSCALL_SPU(epoll_create1)
+ SYSCALL_SPU(dup3)
+ SYSCALL_SPU(pipe2)
+ SYSCALL(inotify_init1)
++SYSCALL(ni_syscall)
+Index: linux-work/arch/powerpc/include/asm/unistd.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/unistd.h	2008-09-02 15:11:55.000000000 +1000
++++ linux-work/arch/powerpc/include/asm/unistd.h	2008-09-02 15:14:42.000000000 +1000
+@@ -341,10 +341,11 @@
+ #define __NR_dup3		316
+ #define __NR_pipe2		317
+ #define __NR_inotify_init1	318
++/* 319 is reserved */
+ 
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		319
++#define __NR_syscalls		320
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
