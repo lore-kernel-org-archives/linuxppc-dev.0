@@ -1,22 +1,30 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.250])
-	by ozlabs.org (Postfix) with ESMTP id F1D6FDDDEF
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Sep 2008 17:08:09 +1000 (EST)
-Received: by ag-out-0708.google.com with SMTP id 8so5072293agc.0
-	for <linuxppc-dev@ozlabs.org>; Tue, 02 Sep 2008 00:08:07 -0700 (PDT)
-Message-ID: <2a27d3730809020008i6427954ex2c09c6fa67971a75@mail.gmail.com>
-Date: Tue, 2 Sep 2008 15:08:06 +0800
-From: "Li Yang" <leoli@freescale.com>
-Sender: pku.leo@gmail.com
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
-In-Reply-To: <20080901135235.GA677@oksana.dev.rtsoft.ru>
+Return-Path: <sebastien.chretien.enseirb@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.229])
+	by ozlabs.org (Postfix) with ESMTP id 33E5ADDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Sep 2008 17:34:41 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so2360210rvb.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Sep 2008 00:34:39 -0700 (PDT)
+Message-ID: <319b0ac50809020034m12b4d57cj1fdf31f3282935e6@mail.gmail.com>
+Date: Tue, 2 Sep 2008 09:34:39 +0200
+From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
+	<sebastien.chretien.enseirb@gmail.com>
+To: benh@kernel.crashing.org
+Subject: Re: Trace
+In-Reply-To: <1220334314.13010.89.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <1219916613-28827-1-git-send-email-leoli@freescale.com>
-	<20080901135235.GA677@oksana.dev.rtsoft.ru>
-Cc: greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_2049_22361501.1220340879409"
+References: <319b0ac50809010216jac3ae30r9260699abde6535@mail.gmail.com>
+	<929D3CED81F34E43887A393170D66FB926B259@GBRSUN01MS002.eu.xerox.net>
+	<319b0ac50809010525w7451ef92m5aaf6fd5f5a8958e@mail.gmail.com>
+	<929D3CED81F34E43887A393170D66FB926B40F@GBRSUN01MS002.eu.xerox.net>
+	<929D3CED81F34E43887A393170D66FB926B41A@GBRSUN01MS002.eu.xerox.net>
+	<48BC195F.4070505@gmail.com> <1220314383.13010.62.camel@pasglop>
+	<48BCCB6D.5040209@fr.thalesgroup.com>
+	<1220334314.13010.89.camel@pasglop>
+Cc: =?ISO-8859-1?Q?S=E9bastien_CHRETIEN?=
+	<sebastien.chretien@fr.thalesgroup.com>, linuxppc-dev@ozlabs.org,
+	"Jenkins, Clive" <Clive.Jenkins@xerox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,144 +34,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 1, 2008 at 9:52 PM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> On Thu, Aug 28, 2008 at 05:43:33PM +0800, Li Yang wrote:
->> Some of Freescale SoC chips have a QE or CPM co-processor which
->> supports full speed USB.  The driver adds device mode support
->> of both QE and CPM USB controller to Linux USB gadget.  The
->> driver is tested with MPC8360 and MPC8272, and should work with
->> other models having QE/CPM given minor tweaks.
->>
->> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
->> Signed-off-by: Li Yang <leoli@freescale.com>
->> ---
->> This is the second submission of the driver.  This version addressed:
->> Comments from Anton Vorontsov.
->> A lot of cosmetic problem.
->> Sparse and various kernel DEBUG warnings.
->
-> You might want to consider some of the following changes (they're
-> tested with
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-September/062360.html).
->
-> - remove qe_muram -> cpm_muram defines
+------=_Part_2049_22361501.1220340879409
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Already done to address comment from Arnd.
+ok is it a bad way to write a tty driver ? why ?
 
-> - configure clocks per device tree via qe_usb_clock_set(). To use this
->  function we should select QE_USB.
+2008/9/2, Benjamin Herrenschmidt <benh@kernel.crashing.org>:
 >
->  NOTE: currently this means that CPM build will break. :-( We should
->  probably implement generic cpm_clock_source() and cpm_usb_clock_set().
+> On Tue, 2008-09-02 at 07:13 +0200, S=E9bastien CHRETIEN wrote:
+> > My board has only a uart device on a FPGA. I don't use the serial layer
+> > because it isn't documented in Linux Device Driver 3rd. Only the tty
+> > layer is documented
 >
->  Or.. we can move this to the board file (Do we ever need to change the
->  clocks in this driver? For the Host driver we need this, since it
->  can switch between low and full speed).
 >
->  What do you think?
+> You won't go very far in linux kernel dev. with using books like
+> that :-)
+>
+> Look at other drivers in drivers/serial that should give you all the
+> information you need :-0
+>
+> Cheers,
+> Ben.
+>
+>
+>
 
-I'd prefer to leave the clock setting for USB gadget mode in platform
-code.  There is no need to change the clock in the udc driver.  There
-is no point to make the speed of a USB device changable.
+------=_Part_2049_22361501.1220340879409
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
->
-> - change 8360 compatible to 8323 (8323 is the first chip with QE USB,
->  device trees for 8360 boards should specify fsl,mpc8323-qe-usb
->  as a compatible).
+ok is it a bad way to write a tty driver ? why ?<br><br><div><span class=3D=
+"gmail_quote">2008/9/2, Benjamin Herrenschmidt &lt;<a href=3D"mailto:benh@k=
+ernel.crashing.org">benh@kernel.crashing.org</a>&gt;:</span><blockquote cla=
+ss=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 204, 204); marg=
+in: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+On Tue, 2008-09-02 at 07:13 +0200, S=E9bastien CHRETIEN wrote:<br> &gt; My =
+board has only a uart device on a FPGA. I don&#39;t use the serial layer<br=
+> &gt; because it isn&#39;t documented in Linux Device Driver 3rd. Only the=
+ tty<br>
+ &gt; layer is documented<br> <br> <br>You won&#39;t go very far in linux k=
+ernel dev. with using books like<br> that :-)<br> <br> Look at other driver=
+s in drivers/serial that should give you all the<br> information you need :=
+-0<br>
+ <br> Cheers,<br> Ben.<br> <br> <br> </blockquote></div><br>
 
-Well. IIRC, 8360 came out earlier than 8323.  Whatsoever, 8360 is a
-better representative for the PowerQUICC 2 pro family with a QE as it
-has the full functionality.
-
->
-> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
-> index 4dbf622..e57c298 100644
-> --- a/drivers/usb/gadget/Kconfig
-> +++ b/drivers/usb/gadget/Kconfig
-> @@ -153,6 +153,7 @@ config USB_FSL_USB2
->  config USB_GADGET_FSL_QE
->        boolean "Freescale QE/CPM USB Device Controller"
->        depends on FSL_SOC && (QUICC_ENGINE || CPM)
-> +       select QE_USB
->        help
->           Some of Freescale PowerPC processors have a Full Speed
->           QE/CPM2 USB controller, which support device mode with 4
-> diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
-> index e448610..c1a0beb 100644
-> --- a/drivers/usb/gadget/fsl_qe_udc.c
-> +++ b/drivers/usb/gadget/fsl_qe_udc.c
-> @@ -36,20 +36,12 @@
->  #include <linux/usb/ch9.h>
->  #include <linux/usb/gadget.h>
->  #include <linux/usb/otg.h>
-> +#include <asm/cpm.h>
->  #include <asm/qe.h>
->  #include <asm/dma.h>
->  #include <asm/reg.h>
->  #include "fsl_qe_udc.h"
->
-> -#ifdef CONFIG_CPM2
-> -#include <asm/cpm.h>
-> -
-> -#define qe_muram_addr cpm_muram_addr
-> -#define qe_muram_offset cpm_muram_offset
-> -#define qe_muram_alloc cpm_muram_alloc
-> -#define qe_muram_free cpm_muram_free
-> -#endif
-> -
->  #define DRIVER_DESC     "Freescale QE/CPM USB Device Controller driver"
->  #define DRIVER_AUTHOR   "Xie XiaoBo"
->  #define DRIVER_VERSION  "1.0"
-> @@ -2490,6 +2482,7 @@ static int __devinit qe_udc_probe(struct of_device *ofdev,
->                        const struct of_device_id *match)
->  {
->        struct device_node *np = ofdev->node;
-> +       enum qe_clock clk;
->        struct qe_ep *ep;
->        unsigned int ret = 0;
->        unsigned int i;
-> @@ -2499,6 +2492,16 @@ static int __devinit qe_udc_probe(struct of_device *ofdev,
->        if (!prop || strcmp(prop, "peripheral"))
->                return -ENODEV;
->
-> +       prop = of_get_property(np, "fsl,fullspeed-clock", NULL);
-> +       if (!prop)
-> +               return -EINVAL;
-> +
-> +       clk = qe_clock_source(prop);
-> +       if (clk == QE_CLK_NONE || clk == QE_CLK_DUMMY)
-> +               return -EINVAL;
-> +
-> +       qe_usb_clock_set(clk, USB_CLOCK);
-> +
->        /* Initialize the udc structure including QH member and other member */
->        udc_controller = qe_udc_config(ofdev);
->        if (!udc_controller) {
-> @@ -2689,7 +2692,7 @@ static int __devexit qe_udc_remove(struct of_device *ofdev)
->  /*-------------------------------------------------------------------------*/
->  static struct of_device_id qe_udc_match[] = {
->        {
-> -               .compatible = "fsl,mpc8360-qe-usb",
-> +               .compatible = "fsl,mpc8323-qe-usb",
->        },
->        {
->                .compatible = "fsl,mpc8272-cpm-usb",
-> diff --git a/drivers/usb/gadget/fsl_qe_udc.h b/drivers/usb/gadget/fsl_qe_udc.h
-> index e2e9639..0ff9c00 100644
-> --- a/drivers/usb/gadget/fsl_qe_udc.h
-> +++ b/drivers/usb/gadget/fsl_qe_udc.h
-> @@ -17,6 +17,8 @@
->  #ifndef __FSL_QE_UDC_H
->  #define __FSL_QE_UDC_H
->
-> +#define USB_CLOCK                      48000000
-> +
->  #define USB_MAX_ENDPOINTS               4
->  #define USB_MAX_PIPES                   USB_MAX_ENDPOINTS
->  #define USB_EP0_MAX_SIZE               64
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+------=_Part_2049_22361501.1220340879409--
