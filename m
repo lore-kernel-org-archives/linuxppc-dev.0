@@ -1,12 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-Subject: Re: gdb woes 
-In-reply-to: <02d301c90c34$e7c1f2d0$ad289e86@LPSC0173W> 
-References: <02d301c90c34$e7c1f2d0$ad289e86@LPSC0173W>
-Date: Tue, 02 Sep 2008 11:03:29 +1000
-Message-ID: <28414.1220317409@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 8C00BDDDDB
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Sep 2008 15:04:17 +1000 (EST)
+Date: Tue, 2 Sep 2008 15:04:09 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: make sure all kernel text is before _etext
+Message-Id: <20080902150409.5aca2198.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+	LKML <linux-kernel@vger.kernel.org>, Miller <miltonm@bga.com>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	ppc-dev <linuxppc-dev@ozlabs.org>,
+	David Woodhouse <dwmw2@infradead.org>, Milton
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,24 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <02d301c90c34$e7c1f2d0$ad289e86@LPSC0173W> you wrote:
-> Hello all,
-> I have some trouble when trying to use gdb to debug a custom app.
-> That app crashes for no reason but always on the same spots (probably 
-> hardware related, it runs on homebrew ppc-based card).
-> I've used gdb in the past, but always as part of 'bigger' IDEs.
-> 
-> So I run "gdb myapp" locally on the card and I get the prompt. Then I "run" 
-> it and I get dumped back to bash, but a "ps" shows that the app is still 
-> running... Anybody has a clue to what I can do about this ? Is there 
-> something wrong with my gdb (it's compiled as part of buildroot, like the 
-> rest of the OS) ?
+This makes core_kernel_text() (and therefore kernel_text_address())
+return the correct result.  Currently all the __devinit routines (at
+least) will not be considered to be kernel text.
 
-If you can reduce your problem to a simple test case that others can
-reproduce, it will be easier for others to look at your issue.  
+This is just a quick fix for 2.6.27 - hopefully we will be able to fix
+this better in 2.6.28.
 
-If you think it's a problem with GDB, you might want to send this
-message to an appropriate GDB list here:
-  http://sourceware.org/gdb/mailing-lists/
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/vmlinux.lds.S |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-Mikey
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 4a8ce62..9f6c1ca 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -66,11 +66,12 @@ SECTIONS
+ 		__got2_end = .;
+ #endif /* CONFIG_PPC32 */
+ 
+-		. = ALIGN(PAGE_SIZE);
+-		_etext = .;
+-		PROVIDE32 (etext = .);
+ 	} :kernel
+ 
++	. = ALIGN(PAGE_SIZE);
++	_etext = .;
++	PROVIDE32 (etext = .);
++
+ 	/* Read-only data */
+ 	RODATA
+ 
+-- 
+1.5.6.5
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
