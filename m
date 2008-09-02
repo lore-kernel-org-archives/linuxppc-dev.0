@@ -1,22 +1,11 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3CBBCDDF26
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Sep 2008 07:49:16 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Reserve syscall number 319
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20080902213044.GA11416@lixom.net>
-References: <20080902054941.77DA3DDDF0@ozlabs.org>
-	<20080902180605.GA8240@lixom.net> <1220389575.13010.149.camel@pasglop>
-	<20080902213044.GA11416@lixom.net>
-Content-Type: text/plain
-Date: Wed, 03 Sep 2008 07:49:10 +1000
-Message-Id: <1220392150.13010.178.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <gary@mlbassoc.com>
+Message-ID: <48BDB68E.8040806@mlbassoc.com>
+Date: Tue, 02 Sep 2008 15:56:30 -0600
+From: Gary Thomas <gary@mlbassoc.com>
+MIME-Version: 1.0
+To: Linuxppc-dev@ozlabs.org
+Subject: DTS question
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +15,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-09-02 at 16:30 -0500, Olof Johansson wrote:
-> On Wed, Sep 03, 2008 at 07:06:15AM +1000, Benjamin Herrenschmidt wrote:
-> > On Tue, 2008-09-02 at 13:06 -0500, Olof Johansson wrote:
-> > > On Tue, Sep 02, 2008 at 03:48:45PM +1000, Benjamin Herrenschmidt wrote:
-> > > > Some stuff I'm working on that isn't released yet needs
-> > > > a syscall number but I can't say what it's for until I
-> > > > get permission to release it :-)
-> > > > 
-> > > > In the meantime, it would be nice if a number could be set
-> > > > aside so the tools being developped to use that stuff don't
-> > > > all need to be updated when things are eventually released.
-> > > > 
-> > > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > > ---
-> > > > 
-> > > > I wonder if I'll get hanged for that one :-)
-> > > 
-> > > Yes. Merge your code or live with the pain of things changing
-> > > underneath. Period.
-> > 
-> > Pain isn't for me :-) It's for those writing userspace stuff based on
-> > my kernel changing all the time :-)
-> 
-> Lame excuse. Merge the code.
+Following on with my RTC problem, I cut&pasted this from
+the TQM5200 dts file:
+                 i2c@3d40 {
+                         #address-cells = <1>;
+                         #size-cells = <0>;
+                         compatible = "fsl,mpc5200-i2c","fsl-i2c";
+                         reg = <0x3d40 0x40>;
+                         interrupts = <2 16 0>;
+                         interrupt-parent = <&mpc5200_pic>;
+                         fsl5200-clocking;
 
-man, you know as well as I do I can't do that before the lawyers let
-me :-)
+                          rtc@68 {
+                                 device_type = "rtc";
+                                 compatible = "dallas,ds1307";
+                                 reg = <0x68>;
+                         };
+                 };
 
-Ben.
+However, the dts file I started with had this (*mine*):
+		i2c@3d40 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "fsl,mpc5200-i2c","fsl-i2c";
+			cell-index = <1>;
+			reg = <3d40 40>;
+			interrupts = <2 10 0>;
+			interrupt-parent = <&mpc5200_pic>;
+			fsl5200-clocking;
+		};
+
+Notice the different mix of hex (0xNNN) and implied hex values.
+This is really confusing to me.  Even more so when I added the
+RTC snippet cut directly from the TQM5200 file:
+
+                          rtc@68 {
+                                 device_type = "rtc";
+                                 compatible = "dallas,ds1307";
+                                 reg = <0x68>;
+                         };
+
+This yielded a syntax error when merged with my platform dts.
+When I changed the 'reg=<0x68>' to 'reg=<68>', the syntax error
+went away & it worked perfectly.
+
+What gives?  Why is explicit hex sometimes an error and sometimes not?
+Is the format of this file documented anywhere (I've not found it)?
+
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
