@@ -1,18 +1,18 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 76E26DE000
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 63159DDE41
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  2 Sep 2008 20:11:01 +1000 (EST)
-Message-ID: <48BD112C.6080902@denx.de>
-Date: Tue, 02 Sep 2008 12:10:52 +0200
-From: Anatolij Gustschin <agust@denx.de>
+	Tue,  2 Sep 2008 20:51:45 +1000 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: mpc5121e port status
+Date: Tue, 2 Sep 2008 12:50:52 +0200
+References: <6e36f2f00808271507w5b58d646w66c73c5af5931e50@mail.gmail.com>
+In-Reply-To: <6e36f2f00808271507w5b58d646w66c73c5af5931e50@mail.gmail.com>
 MIME-Version: 1.0
-To: SETTE AGOSTINO - technolabs <Agostino.Sette@technolabs.it>
-Subject: Re: MPC8568MDS RAMDISK Problem
-References: <F1F6EC0C8B75034F9E3A79FC85122E8E01000FD1@aquib01a>
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E01000FD1@aquib01a>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200809021250.52802.david.jander@protonic.nl>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,70 +23,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Agostino,
+On Thursday 28 August 2008 00:07:11 Andr=E9s Calder=F3n wrote:
+> Is the mpc5121e kernel port mature enough to be used in commercial
+> appliance?
 
-SETTE AGOSTINO - technolabs wrote:
+That depends. For any use of the linux kernel in a "commercial appliance", =
+the=20
+manufacturer of the appliance has the sole responsibility of testing for=20
+stability and fitness.
 
-> First of all thanks for your help. I modified the mpc8568mds_defconfig
-> 
->>> cat kernel/linux/arch/powerpc/configs/mpc8568mds_defconfig
-> #
+That said, the status of MPC5121e support in the linux kernel is as follows:
 
-<snip>
+Latest mainline (git) kernel: Only basic CPU support, almost no drivers for=
+=20
+anything.
 
-> 
-> But now I face this problem
-> 
-> ## Checking Image at 02000100 ...
->    Image Name:   Linux-2.6.25.5
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    1354578 Bytes =  1.3 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
-> ## Booting image at 02000100 ...
->    Image Name:   Linux-2.6.25.5
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    1354578 Bytes =  1.3 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
-> ## Loading RAMDisk Image at 02200100 ...
->    Image Name:   initrd
->    Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
->    Data Size:    3658110 Bytes =  3.5 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Booting using the fdt at 0x21f0100
->    Loading Ramdisk to 00482000, end 007ff17e ... OK
->    Loading Device Tree to 007fa000, end 007fcfff ... OK
+LTIB distribution from Freescale (downloadable on Freescale web-page of the=
+=20
+MPC5121e), latest version: kernel 2.6.24.5 with a lot of drivers for (among=
+=20
+other things): DIU, NAND-flash, PSC-I2C, PSC-Uarts, CAN, DMA, Ethernet, USB=
+=20
+(ehci host works well), etc....
+Notably missing from this version is support for MBX, SATA and SDHC.
+One thing that you shouldn't count on quite yet is the MBX (3D-acceleration=
+),=20
+because it will not have open-source drivers in any forseeable time AFAIK=20
+(probably never)... only some promise of a commercial driver and OpenGL-ES=
+=20
+library which probably will be more of a hassle than useful to anyone.
 
-Ramdisk image is partially overwritten while loading the
-Device Tree: Ramdisk ends at 0x007ff17e, Device Tree starts
-at 0x007fa000. You probably need to update U-Boot to recent
-version to solve this issue.
+We have a custom board running the LTIB version of the kernel, and the=20
+existing drivers work surprisingly well, but are IMHO not useable for=20
+production right out of the box. The NAND-flash driver for instance is brok=
+en=20
+for most uses, and the DIU driver has some cache-related issues (glitches i=
+n=20
+the image). Those problems are more or less easily fixed however. Ethernet=
+=20
+and USB (host) seem pretty stable however (I am running on NFS-root all the=
+=20
+time).
 
-> Using MPC85xx MDS machine description
-> Memory CAM mapping: CAM0=16Mb, CAM1=16Mb, CAM2=16Mb residual: 15Mb
-> Linux version 2.6.25.5 (ity10223@aqlbl05x) (gcc version 4.2.2) #1 Mon Sep 1 10:44:44 CEST 2008
-> Found initrd at 0xc0482000:0xc07ff17e
-
-<snip>
-
-> RAMDISK: Compressed image found at block 0
-> invalid compressed format (err=1)
-
-Ramdisk decompression failed, it's expected as ramdisk was
-overwritten by DTB while booting.
-
-Try to update U-Boot to v1.3.4.
+There are effords underway to get the drivers ported and fixed for mainline=
+=20
+linux, but the process is quite slow at the moment. That has us for instanc=
+e=20
+locked in the ancient 2.6.24.5 version of the kernel.
 
 Best regards,
-Anatolij
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=2D-=20
+David Jander
