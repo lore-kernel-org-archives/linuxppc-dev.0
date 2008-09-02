@@ -1,20 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id B7775DDF75
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Sep 2008 22:04:22 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH v3] usb: add Freescale QE/CPM USB peripheral controller
-	driver
-Date: Tue, 2 Sep 2008 14:01:24 +0200
-References: <1220356690-8028-1-git-send-email-leoli@freescale.com>
-In-Reply-To: <1220356690-8028-1-git-send-email-leoli@freescale.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.234])
+	by ozlabs.org (Postfix) with ESMTP id E5609DDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Sep 2008 22:09:30 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so1814717wra.1
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Sep 2008 05:09:28 -0700 (PDT)
+Date: Tue, 2 Sep 2008 08:08:49 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Reserve syscall number 319
+Message-ID: <20080902120824.GB2218@yoda.jdub.homelinux.org>
+References: <20080902054941.77DA3DDDF0@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200809021401.25506.arnd@arndb.de>
-Cc: dbrownell@users.sourceforge.net, greg@kroah.com, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080902054941.77DA3DDDF0@ozlabs.org>
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 02 September 2008, Li Yang wrote:
-> Some of Freescale SoC chips have a QE or CPM co-processor which
-> supports full speed USB.  The driver adds device mode support
-> of both QE and CPM USB controller to Linux USB gadget.  The
-> driver is tested with MPC8360 and MPC8272, and should work with
-> other models having QE/CPM given minor tweaks.
-> 
-> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
+On Tue, Sep 02, 2008 at 03:48:45PM +1000, Benjamin Herrenschmidt wrote:
+>Some stuff I'm working on that isn't released yet needs
+>a syscall number but I can't say what it's for until I
+>get permission to release it :-)
+>
+>In the meantime, it would be nice if a number could be set
+>aside so the tools being developped to use that stuff don't
+>all need to be updated when things are eventually released.
+>
+>Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>---
+>
+>I wonder if I'll get hanged for that one :-)
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+Is it a powerpc-specific syscall?  If so... ew?
 
-All my previous review comments have been addressed.
-
-> +	udc_controller->soc_type = (unsigned long)np->data;
-
-I'm not sure about this line, shouldn't that be
-	udc_controller->soc_type = (unsigned long)match->data; ?
-
-	Arnd <><
+josh
