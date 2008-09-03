@@ -1,18 +1,18 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id AEC83DDE1A
+Return-Path: <Agostino.Sette@technolabs.it>
+Received: from smtp.technolabs.it
+	(host20-155-static.82-213-b.business.telecomitalia.it
+	[213.82.155.20]) by ozlabs.org (Postfix) with ESMTP id 56417DDDE1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 Sep 2008 16:36:05 +1000 (EST)
-Message-ID: <48BE30BC.1030307@coritel.it>
-Date: Wed, 03 Sep 2008 08:37:48 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
+	Wed,  3 Sep 2008 19:31:02 +1000 (EST)
 MIME-Version: 1.0
-To: Laxmikant Rashinkar <lk.atwork@yahoo.com>
-Subject: Re: need help with GPIO
-References: <520295.39660.qm@web46316.mail.sp1.yahoo.com>
-In-Reply-To: <520295.39660.qm@web46316.mail.sp1.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: MPC8568MDS RAMDISK Problem
+Date: Wed, 3 Sep 2008 11:30:59 +0200
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E0107378D@aquib01a>
+In-Reply-To: <48BDAFD7.6060002@denx.de>
+From: "SETTE AGOSTINO - technolabs" <Agostino.Sette@technolabs.it>
+To: "Anatolij Gustschin" <agust@denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,556 +24,267 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+=20
 
-try to understand why the driver doesn't find the device reading the 
-gpio.c and of_get_gpio(). Maybe the device has been registered as a 
-platform device and, instead, the driver calls some function for a 
-specific device.
-
-Regards.
-
-Laxmikant Rashinkar ha scritto:
-> Hi Marco,
->
-> thanks for your feedback.
->
-> I tried out your suggestion of  using an offset address instead of an absolute address in the dts, but that did not help.
-> I am still getting the error:
->
-> LK_DEBUG: gpio.c : of_get_gpio : /localbus/upm@1,0: gpio controller /soc8349@e0000000/gpio-controller@c00: is not registered
->
-> thanks
-> LK
->
->
->
->
-> ----- Original Message ----
-> From: Marco Stornelli <marco.stornelli@coritel.it>
-> To: Laxmikant Rashinkar <lk.atwork@yahoo.com>
+> -----Original Message-----
+> From: Anatolij Gustschin [mailto:agust@denx.de]=20
+> Sent: marted=EC 2 settembre 2008 23.28
+> To: SETTE AGOSTINO - technolabs
 > Cc: linuxppc-embedded@ozlabs.org
-> Sent: Monday, September 1, 2008 11:39:05 PM
-> Subject: Re: need help with GPIO
->
-> Laxmikant Rashinkar ha scritto:
->   
->> Hi,
->>
->> I have a MPC8347 based embedded PC running Linux 2.6.27.
->> I am trying to access a NAND device connected to the LBC and UPM.
->> The Ready/Busy* pin of the NAND device is connected to the built in GPIO-1 on pin 4 (input).
->>
->> When I try to access the NAND device, the function of_get_gpio() from drivers/of/gpio.c gets called, and
->> it reports that my GPIO is not registered. Here are the actual debug messages:
->>
->> LK_DEBUG: gpio.c : of_get_gpio : name=upm type=<NULL> index=0
->> LK_DEBUG: gpio.c : of_get_gpio : got property
->> LK_DEBUG: gpio.c : of_get_gpio : nr_cell=3
->> LK_DEBUG: gpio.c : of_get_gpio : gc.name=gpio-controller gc.type=<NULL> gc->Data=0x0
->> LK_DEBUG: gpio.c : of_get_gpio : /localbus/upm@1,0: gpio controller /soc8349@e0000000/gpio-controller@e0000c00: is not registered
->>
->> When I check in /proc/device-tree/soc8349@e0000000/, I find that entries are present for both GPIOs are present.
->>
->> Here are debug registration messages, indicating that gpio registered successfully:
->>
->> ##### LK_DEBUG: of_plat_dev_create : NAME=soc8349
->> ##### LK_DEBUG: of_plat_dev_create : NAME=wdt
->> ##### LK_DEBUG: of_plat_dev_create : NAME=i2c
->> ##### LK_DEBUG: of_plat_dev_create : NAME=i2c
->> ##### LK_DEBUG: of_plat_dev_create : NAME=spi
->> ##### LK_DEBUG: of_plat_dev_create : NAME=dma
->> ##### LK_DEBUG: of_plat_dev_create : NAME=usb
->> ##### LK_DEBUG: of_plat_dev_create : NAME=usb
->> ##### LK_DEBUG: of_plat_dev_create : NAME=mdio
->> ##### LK_DEBUG: of_plat_dev_create : NAME=ethernet
->> ##### LK_DEBUG: of_plat_dev_create : NAME=ethernet
->> ##### LK_DEBUG: of_plat_dev_create : NAME=serial
->> ##### LK_DEBUG: of_plat_dev_create : NAME=serial
->> ##### LK_DEBUG: of_plat_dev_create : NAME=crypto
->> ##### LK_DEBUG: of_plat_dev_create : NAME=pic
->> ##### LK_DEBUG: of_plat_dev_create : NAME=gpio-controller
->> ##### LK_DEBUG: of_plat_dev_create : NAME=gpio-controller
->> ##### LK_DEBUG: of_plat_dev_create : NAME=localbus
->> ##### LK_DEBUG: of_plat_dev_create : NAME=upm
->>
->> Most probably something is wrong in my device tree (listed below). Can someone please point me in the right direction?
->>
->> thanks a lot for your help.
->> LK
->>
->> -------------------------------------------------------------
->>
->> /*
->>  * MPC8349E MDS Device Tree Source
->>  *
->>  * Copyright 2005, 2006 Freescale Semiconductor Inc.
->>  *
->>  * This program is free software; you can redistribute  it and/or modify it
->>  * under  the terms of  the GNU General  Public License as published by the
->>  * Free Software Foundation;  either version 2 of the  License, or (at your
->>  * option) any later version.
->>  */
->>
->> /dts-v1/;
->>
->> / {
->>         model = "MPC8349EMDS";
->>         compatible = "MPC8349EMDS", "MPC834xMDS", "MPC83xxMDS";
->>         #address-cells = <1>;
->>         #size-cells = <1>;
->>
->>         aliases {
->>                 ethernet0 = &enet0;
->>                 ethernet1 = &enet1;
->>                 serial0 = &serial0;
->>                 serial1 = &serial1;
->>                 pci0 = &pci0;
->>                 pci1 = &pci1;
->>         };
->>
->>         cpus {
->>                 #address-cells = <1>;
->>                 #size-cells = <0>;
->>
->>                 PowerPC,8349@0 {
->>                         device_type = "cpu";
->>                         reg = <0x0>;
->>                         d-cache-line-size = <32>;
->>                         i-cache-line-size = <32>;
->>                         d-cache-size = <32768>;
->>                         i-cache-size = <32768>;
->>                         timebase-frequency = <0>;       // from bootloader
->>                         bus-frequency = <0>;            // from bootloader
->>                         clock-frequency = <0>;          // from bootloader
->>                 };
->>         };
->>
->>         memory {
->>                 device_type = "memory";
->>                 reg = <0x00000000 0x10000000>;  // 256MB at 0
->>         };
->>
->>         bcsr@e2400000 {
->>                 device_type = "board-control";
->>                 reg = <0xe2400000 0x8000>;
->>         };
->>
->>         soc8349@e0000000 {
->>                 #address-cells = <1>;
->>                 #size-cells = <1>;
->>                 device_type = "soc";
->>                 compatible = "simple-bus";
->>                 ranges = <0x0 0xe0000000 0x00100000>;
->>                 reg = <0xe0000000 0x00000200>;
->>                 bus-frequency = <0>;
->>
->>                 wdt@200 {
->>                         device_type = "watchdog";
->>                         compatible = "mpc83xx_wdt";
->>                         reg = <0x200 0x100>;
->>                 };
->>
->>                 i2c@3000 {
->>                         #address-cells = <1>;
->>                         #size-cells = <0>;
->>                         cell-index = <0>;
->>                         compatible = "fsl-i2c";
->>                         reg = <0x3000 0x100>;
->>                         interrupts = <14 0x8>;
->>                         interrupt-parent = <&ipic>;
->>                         dfsrr;
->>
->>                         rtc@68 {
->>                                 compatible = "dallas,ds1374";
->>                                 reg = <0x68>;
->>                         };
->>                 };
->>
->>                 i2c@3100 {
->>                         #address-cells = <1>;
->>                         #size-cells = <0>;
->>                         cell-index = <1>;
->>                         compatible = "fsl-i2c";
->>                         reg = <0x3100 0x100>;
->>                         interrupts = <15 0x8>;
->>                         interrupt-parent = <&ipic>;
->>                         dfsrr;
->>                 };
->>
->>                 spi@7000 {
->>                         cell-index = <0>;
->>                         compatible = "fsl,spi";
->>                         reg = <0x7000 0x1000>;
->>                         interrupts = <16 0x8>;
->>                         interrupt-parent = <&ipic>;
->>                         mode = "cpu";
->>                 };
->>
->>                 dma@82a8 {
->>                         #address-cells = <1>;
->>                         #size-cells = <1>;
->>                         compatible = "fsl,mpc8349-dma", "fsl,elo-dma";
->>                         reg = <0x82a8 4>;
->>                         ranges = <0 0x8100 0x1a8>;
->>                         interrupt-parent = <&ipic>;
->>                         interrupts = <71 8>;
->>                         cell-index = <0>;
->>                         dma-channel@0 {
->>                                 compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
->>                                 reg = <0 0x80>;
->>                                 interrupt-parent = <&ipic>;
->>                                 interrupts = <71 8>;
->>                         };
->>                         dma-channel@80 {
->>                                 compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
->>                                 reg = <0x80 0x80>;
->>                                 interrupt-parent = <&ipic>;
->>                                 interrupts = <71 8>;
->>                         };
->>                         dma-channel@100 {
->>                                 compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
->>                                 reg = <0x100 0x80>;
->>                                 interrupt-parent = <&ipic>;
->>                                 interrupts = <71 8>;
->>                         };
->>                         dma-channel@180 {
->>                                 compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
->>                                 reg = <0x180 0x28>;
->>                                 interrupt-parent = <&ipic>;
->>                                 interrupts = <71 8>;
->>                         };
->>                 };
->>
->>                 /* phy type (ULPI or SERIAL) are only types supported for MPH */
->>                 /* port = 0 or 1 */
->>                 usb@22000 {
->>                         compatible = "fsl-usb2-mph";
->>                         reg = <0x22000 0x1000>;
->>                         #address-cells = <1>;
->>                         #size-cells = <0>;
->>                         interrupt-parent = <&ipic>;
->>                         interrupts = <39 0x8>;
->>                         phy_type = "ulpi";
->>                         port1;
->>                 };
->>                 /* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
->>                 usb@23000 {
->>                         compatible = "fsl-usb2-dr";
->>                         reg = <0x23000 0x1000>;
->>                         #address-cells = <1>;
->>                         #size-cells = <0>;
->>                         interrupt-parent = <&ipic>;
->>                         interrupts = <38 0x8>;
->>                         dr_mode = "otg";
->>                         phy_type = "ulpi";
->>                 };
->>
->>                 mdio@24520 {
->>                         #address-cells = <1>;
->>                         #size-cells = <0>;
->>                         compatible = "fsl,gianfar-mdio";
->>                         reg = <0x24520 0x20>;
->>
->>                         phy0: ethernet-phy@0 {
->>                                 interrupt-parent = <&ipic>;
->>                                 interrupts = <17 0x8>;
->>                                 reg = <0x1>;
->>                                 device_type = "ethernet-phy";
->>                         };
->>                         phy1: ethernet-phy@1 {
->>                                 interrupt-parent = <&ipic>;
->>                                 interrupts = <18 0x8>;
->>                                 reg = <0x2>;
->>                                 device_type = "ethernet-phy";
->>                         };
->>                 };
->>
->>                 enet0: ethernet@24000 {
->>                         cell-index = <0>;
->>                         device_type = "network";
->>                         model = "TSEC";
->>                         compatible = "gianfar";
->>                         reg = <0x24000 0x1000>;
->>                         local-mac-address = [ 00 00 00 00 00 00 ];
->>                         interrupts = <32 0x8 33 0x8 34 0x8>;
->>                         interrupt-parent = <&ipic>;
->>                         phy-handle = <&phy0>;
->>                         linux,network-index = <0>;
->>                 };
->>
->>                 enet1: ethernet@25000 {
->>                         cell-index = <1>;
->>                         device_type = "network";
->>                         model = "TSEC";
->>                         compatible = "gianfar";
->>                         reg = <0x25000 0x1000>;
->>                         local-mac-address = [ 00 00 00 00 00 00 ];
->>                         interrupts = <35 0x8 36 0x8 37 0x8>;
->>                         interrupt-parent = <&ipic>;
->>                         phy-handle = <&phy1>;
->>                         linux,network-index = <1>;
->>                 };
->>
->>                 serial0: serial@4500 {
->>                         cell-index = <0>;
->>                         device_type = "serial";
->>                         compatible = "ns16550";
->>                         reg = <0x4500 0x100>;
->>                         clock-frequency = <0>;
->>                         interrupts = <9 0x8>;
->>                         interrupt-parent = <&ipic>;
->>                 };
->>
->>                 serial1: serial@4600 {
->>                         cell-index = <1>;
->>                         device_type = "serial";
->>                         compatible = "ns16550";
->>                         reg = <0x4600 0x100>;
->>                         clock-frequency = <0>;
->>                         interrupts = <10 0x8>;
->>                         interrupt-parent = <&ipic>;
->>                 };
->>
->>                 crypto@30000 {
->>                         compatible = "fsl,sec2.0";
->>                         reg = <0x30000 0x10000>;
->>                         interrupts = <11 0x8>;
->>                         interrupt-parent = <&ipic>;
->>                         fsl,num-channels = <4>;
->>                         fsl,channel-fifo-len = <24>;
->>                         fsl,exec-units-mask = <0x7e>;
->>                         fsl,descriptor-types-mask = <0x01010ebf>;
->>                 };
->>
->>                 /* IPIC
->>                  * interrupts cell = <intr #, sense>
->>                  * sense values match linux IORESOURCE_IRQ_* defines:
->>                  * sense == 8: Level, low assertion
->>                  * sense == 2: Edge, high-to-low change
->>                  */
->>                 ipic: pic@700 {
->>                         interrupt-controller;
->>                         #address-cells = <0>;
->>                         #interrupt-cells = <2>;
->>                         reg = <0x700 0x100>;
->>                         device_type = "ipic";
->>                 };
->>
->>     
->
-> Here you are using absolute addresses but you should use an offset from 
-> a base reg address, in your case e0000000.
->
->   
->>                 gpio1: gpio-controller@e0000c00 {
->>     
->                    gpio1: gpio-controller@c00 {
->   
->>                         #gpio-cells = <2>;
->>                         compatible = "fsl,mpc8349-gpio-bank";
->>     
->                            reg = <0xc00 0x100>;
->   
->>                         reg = <0xe0000c00 0x100>;
->>                         gpio-controller;
->>                 };
->>
->>     
->                    gpio2: gpio-controller@d00 {
->   
->>                 gpio2: gpio-controller@e0000d00 {
->>                         #gpio-cells = <2>;
->>                         compatible = "fsl,mpc8349-gpio-bank";
->>     
->                            reg = <0xd00 0x100>;
->   
->>                         reg = <0xe0000d00 0x100>;
->>                         gpio-controller;
->>                 };
->>         };
->>
->>         localbus {
->>                 compatible = "fsl,pq3-localbus", "simple-bus";
->>                 #address-cells = <2>;
->>                 #size-cells = <1>;
->>                 reg = <0xe0005000 0x100000>;       // BRx, ORx, etc.
->>
->>                 upm@1,0 {
->>                         #address-cells = <1>;
->>                         #size-cells = <1>;
->>                         compatible = "fsl,upm-nand";
->>                         reg = <3 0xa0000000 0x800>;
->>                         fsl,upm-addr-offset = <0x10>;
->>                         fsl,upm-cmd-offset = <0x08>;
->>                         gpios = <&gpio1 4 0>;
->>
->>                         nand@0 {
->>                                 #address-cells = <1>;
->>                                 #size-cells = <1>;
->>                                 compatible = "fsl,lbc-nand";
->>
->>                                 partition@0 {
->>                                         label = "EVERYTHING";
->>                                         reg = <0x00000000 0x01000000>;
->>                                 };
->>                         };
->>                 };
->>         };
->>
->>         pci0: pci@e0008500 {
->>                 cell-index = <1>;
->>                 interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
->>                 interrupt-map = <
->>
->>                                 /* IDSEL 0x11 */
->>                                  0x8800 0x0 0x0 0x1 &ipic 20 0x8
->>                                  0x8800 0x0 0x0 0x2 &ipic 21 0x8
->>                                  0x8800 0x0 0x0 0x3 &ipic 22 0x8
->>                                  0x8800 0x0 0x0 0x4 &ipic 23 0x8
->>
->>                                 /* IDSEL 0x12 */
->>                                  0x9000 0x0 0x0 0x1 &ipic 22 0x8
->>                                  0x9000 0x0 0x0 0x2 &ipic 23 0x8
->>                                  0x9000 0x0 0x0 0x3 &ipic 20 0x8
->>                                  0x9000 0x0 0x0 0x4 &ipic 21 0x8
->>
->>                                 /* IDSEL 0x13 */
->>                                  0x9800 0x0 0x0 0x1 &ipic 23 0x8
->>                                  0x9800 0x0 0x0 0x2 &ipic 20 0x8
->>                                  0x9800 0x0 0x0 0x3 &ipic 21 0x8
->>                                  0x9800 0x0 0x0 0x4 &ipic 22 0x8
->>
->>                                 /* IDSEL 0x15 */
->>                                  0xa800 0x0 0x0 0x1 &ipic 20 0x8
->>                                  0xa800 0x0 0x0 0x2 &ipic 21 0x8
->>                                  0xa800 0x0 0x0 0x3 &ipic 22 0x8
->>                                  0xa800 0x0 0x0 0x4 &ipic 23 0x8
->>
->>                                 /* IDSEL 0x16 */
->>                                  0xb000 0x0 0x0 0x1 &ipic 23 0x8
->>                                  0xb000 0x0 0x0 0x2 &ipic 20 0x8
->>                                  0xb000 0x0 0x0 0x3 &ipic 21 0x8
->>                                  0xb000 0x0 0x0 0x4 &ipic 22 0x8
->>
->>                                 /* IDSEL 0x17 */
->>                                  0xb800 0x0 0x0 0x1 &ipic 22 0x8
->>                                  0xb800 0x0 0x0 0x2 &ipic 23 0x8
->>                                  0xb800 0x0 0x0 0x3 &ipic 20 0x8
->>                                  0xb800 0x0 0x0 0x4 &ipic 21 0x8
->>
->>                                 /* IDSEL 0x18 */
->>                                  0xc000 0x0 0x0 0x1 &ipic 21 0x8
->>                                  0xc000 0x0 0x0 0x2 &ipic 22 0x8
->>                                  0xc000 0x0 0x0 0x3 &ipic 23 0x8
->>                                  0xc000 0x0 0x0 0x4 &ipic 20 0x8>;
->>                 interrupt-parent = <&ipic>;
->>                 interrupts = <66 0x8>;
->>                 bus-range = <0 0>;
->>                 ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
->>                           0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
->>                           0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
->>                 clock-frequency = <66666666>;
->>                 #interrupt-cells = <1>;
->>                 #size-cells = <2>;
->>                 #address-cells = <3>;
->>                 reg = <0xe0008500 0x100>;
->>                 compatible = "fsl,mpc8349-pci";
->>                 device_type = "pci";
->>         };
->>
->>         pci1: pci@e0008600 {
->>                 cell-index = <2>;
->>                 interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
->>                 interrupt-map = <
->>
->>                                 /* IDSEL 0x11 */
->>                                  0x8800 0x0 0x0 0x1 &ipic 20 0x8
->>                                  0x8800 0x0 0x0 0x2 &ipic 21 0x8
->>                                  0x8800 0x0 0x0 0x3 &ipic 22 0x8
->>                                  0x8800 0x0 0x0 0x4 &ipic 23 0x8
->>
->>                                 /* IDSEL 0x12 */
->>                                  0x9000 0x0 0x0 0x1 &ipic 22 0x8
->>                                  0x9000 0x0 0x0 0x2 &ipic 23 0x8
->>                                  0x9000 0x0 0x0 0x3 &ipic 20 0x8
->>                                  0x9000 0x0 0x0 0x4 &ipic 21 0x8
->>
->>                                 /* IDSEL 0x13 */
->>                                  0x9800 0x0 0x0 0x1 &ipic 23 0x8
->>                                  0x9800 0x0 0x0 0x2 &ipic 20 0x8
->>                                  0x9800 0x0 0x0 0x3 &ipic 21 0x8
->>                                  0x9800 0x0 0x0 0x4 &ipic 22 0x8
->>
->>                                 /* IDSEL 0x15 */
->>                                  0xa800 0x0 0x0 0x1 &ipic 20 0x8
->>                                  0xa800 0x0 0x0 0x2 &ipic 21 0x8
->>                                  0xa800 0x0 0x0 0x3 &ipic 22 0x8
->>                                  0xa800 0x0 0x0 0x4 &ipic 23 0x8
->>
->>                                 /* IDSEL 0x16 */
->>                                  0xb000 0x0 0x0 0x1 &ipic 23 0x8
->>                                  0xb000 0x0 0x0 0x2 &ipic 20 0x8
->>                                  0xb000 0x0 0x0 0x3 &ipic 21 0x8
->>                                  0xb000 0x0 0x0 0x4 &ipic 22 0x8
->>
->>                                 /* IDSEL 0x17 */
->>                                  0xb800 0x0 0x0 0x1 &ipic 22 0x8
->>                                  0xb800 0x0 0x0 0x2 &ipic 23 0x8
->>                                  0xb800 0x0 0x0 0x3 &ipic 20 0x8
->>                                  0xb800 0x0 0x0 0x4 &ipic 21 0x8
->>
->>                                 /* IDSEL 0x18 */
->>                                  0xc000 0x0 0x0 0x1 &ipic 21 0x8
->>                                  0xc000 0x0 0x0 0x2 &ipic 22 0x8
->>                                  0xc000 0x0 0x0 0x3 &ipic 23 0x8
->>                                  0xc000 0x0 0x0 0x4 &ipic 20 0x8>;
->>                 interrupt-parent = <&ipic>;
->>                 interrupts = <67 0x8>;
->>                 bus-range = <0 0>;
->>                 ranges = <0x02000000 0x0 0xb0000000 0xb0000000 0x0 0x10000000
->>                           0x42000000 0x0 0xa0000000 0xa0000000 0x0 0x10000000
->>                           0x01000000 0x0 0x00000000 0xe2100000 0x0 0x00100000>;
->>                 clock-frequency = <66666666>;
->>                 #interrupt-cells = <1>;
->>                 #size-cells = <2>;
->>                 #address-cells = <3>;
->>                 reg = <0xe0008600 0x100>;
->>                 compatible = "fsl,mpc8349-pci";
->>                 device_type = "pci";
->>         };
->>
->>         chosen {
->>                 linux,stdout-path = &serial0;
->>         };
->> };
->>
->>
->>      
->>
->>
->> ------------------------------------------------------------------------
->>
->> _______________________________________________
->> Linuxppc-embedded mailing list
->> Linuxppc-embedded@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>     
->
->
->   
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> Subject: Re: MPC8568MDS RAMDISK Problem
+>=20
+> Hi Agostino,
+>=20
+> SETTE AGOSTINO - technolabs wrote:
+>=20
+> > I updated my u-boot
+> >=20
+> > U-Boot 1.3.4-00253-g33aa4ea (Sep  2 2008 - 13:04:22)
+> >=20
+> > CPU:   8568E, Version: 1.1, (0x807d0011)
+> > Core:  E500, Version: 2.2, (0x80210022)
+> > Clock Configuration:
+> >        CPU:1320 MHz, CCB: 528 MHz,
+> >        DDR: 264 MHz (528 MT/s data rate), LBC: 132 MHz
+> > L1:    D-cache 32 kB enabled
+> >        I-cache 32 kB enabled
+> > Board: 8568 MDS
+> > I2C:   ready
+> > DRAM:  Initializing
+> >     SDRAM: 64 MB
+> >     DDR: 512 MB
+> > FLASH: 32 MB
+> > L2:    512 KB enabled
+> >     PCI: 32 bit, 66 MHz, async, host, arbiter
+> >                Scanning PCI bus 00
+> > PCI on bus 00 - 00
+> >=20
+> >     PCIE connected to slot as Root Complex (base address e000a000)
+> > PCIE on bus 01 - 01
+> > In:    serial
+> > Out:   serial
+> > Err:   serial
+> > Net:   eTSEC0, eTSEC1, FSL UEC0, FSL UEC1
+> >=20
+> > But now I have the following problem:
+> >=20
+> > ## Checking Image at 02000100 ...
+> >    Legacy image found
+> >    Image Name:   Linux-2.6.25.5
+> >    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+> >    Data Size:    1354587 Bytes =3D  1.3 MB
+> >    Load Address: 00000000
+> >    Entry Point:  00000000
+> >    Verifying Checksum ... OK
+> > ## Booting kernel from Legacy Image at 02000100 ...
+> >    Image Name:   Linux-2.6.25.5
+> >    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+> >    Data Size:    1354587 Bytes =3D  1.3 MB
+> >    Load Address: 00000000
+> >    Entry Point:  00000000
+> >    Verifying Checksum ... OK
+> > ## Loading init Ramdisk from Legacy Image at 02200100 ...
+> >    Image Name:   initrd
+> >    Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+> >    Data Size:    3658157 Bytes =3D  3.5 MB
+> >    Load Address: 00000000
+> >    Entry Point:  00000000
+> >    Verifying Checksum ... OK
+> > ## Flattened Device Tree blob at 021f0100
+> >    Booting using the fdt blob at 0x21f0100
+> >    Uncompressing Kernel Image ... OK
+> >    Loading Device Tree to 007fa000, end 007fffff ... OK
+> > WARNING: could not set linux,stdout-path FDT_ERR_NOTFOUND.
+> > ERROR: /chosen node create failed - must RESET the board to recover.
+>=20
+> Does your "arch/powerpc/boot/dts/mpc8568mds.dts" file contain
+> aliases node with "serial0 =3D &serial0;" in it?
+Yes, it does:
 
--- 
-Marco Stornelli
-Embedded Software Engineer
-CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-http://www.coritel.it
+        aliases {
+                ethernet0 =3D &enet0;
+                ethernet1 =3D &enet1;
+                ethernet2 =3D &enet2;
+                ethernet3 =3D &enet3;
+                serial0 =3D &serial0;
+                serial1 =3D &serial1;
+                pci0 =3D &pci0;
+                pci1 =3D &pci1;
+        };
+                serial0: serial@4500 {
+                        cell-index =3D <0>;
+                        device_type =3D "serial";
+                        compatible =3D "ns16550";
+                        reg =3D <4500 100>;
+                        clock-frequency =3D <0>;
+                        interrupts =3D <2a 2>;
+                        interrupt-parent =3D <&mpic>;
+                };
 
-marco.stornelli@coritel.it
-+39 06 72582838
+                serial1: serial@4600 {
+                        cell-index =3D <1>;
+                        device_type =3D "serial";
+                        compatible =3D "ns16550";
+                        reg =3D <4600 100>;
+                        clock-frequency =3D <0>;
+                        interrupts =3D <2a 2>;
+                        interrupt-parent =3D <&mpic>;
+                };
+> How do you compile your mpc8568mds.dtb DTB and which dtc version
+> are you using to compile it?
+
+./dtc -o results/mpc8568mds.dtb -O dtb =
+linux/arch/powerpc/boot/dts/mpc8568mds.dts -S 0x2000 -R 4
+Version: DTC 1.0.0-gd6f9b62f
+> =20
+> > Do I need to add some environment variables or set some fdt=20
+> commands before booting the board?
+>=20
+> The mpc8568mds.dts from 2.6.25.5 kernel seems to be Ok. Booting
+> should work if you use this mpc8568mds.dts file. The problem
+> could also be somewhere in U-Boot environment setup.
+>=20
+> > Here are the env variables
+> >=20
+> > =3D> printenv
+> > ramboot=3Drun ramargs;tftp $ramdiskaddr $ramdiskfile;tftp=20
+> $loadaddr $bootfile;bootm $loadaddr $ramdiskaddr
+> > nfsboot=3Drun nfsargs;tftp $loadaddr $bootfile;tftp $fdtaddr=20
+> $fdtfile;bootm $loadaddr - $fdtaddr
+> > bootdelay=3D10
+> > baudrate=3D115200
+> > loads_echo=3D1
+> > ethaddr=3D00:E0:0C:00:00:FD
+> > eth1addr=3D00:E0:0C:00:01:FD
+> > eth2addr=3D00:E0:0C:00:02:FD
+> > eth3addr=3D00:E0:0C:00:03:FD
+> > rootpath=3D/nfsroot
+> > gatewayip=3D192.168.1.1
+> > netmask=3D255.255.255.0
+> > bootfile=3Dyour.uImage
+> > netdev=3Deth0
+> > consoledev=3DttyS0
+> > ramdiskaddr=3D600000
+> > ramdiskfile=3Dyour.ramdisk.u-boot
+> > fdtaddr=3D400000
+> > fdtfile=3Dyour.fdt.dtb
+> > nfsargs=3Dsetenv bootargs root=3D/dev/nfs rw=20
+> nfsroot=3D$serverip:$rootpath=20
+> ip=3D$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:off
+>  console=3D$consoledev,$bau
+> > drate $othbootargs
+> > ramargs=3Dsetenv bootargs root=3D/dev/ram rw=20
+> console=3D$consoledev,$baudrate $othbootargs
+> > ethact=3DeTSEC0
+> > serverip=3D192.168.0.33
+> > ipaddr=3D192.168.0.126
+> > bootcmdFREE=3Drun ramargs;cp.b fff00000 400000 3500;bootm=20
+> ff800000 ffa00000 400000
+> > myaps=3DMPC8568MDS/aps
+> >=20
+> =
+mtdargs=3Dmtdparts=3Dphysmap-flash.0:1M(boot),7M(aps0),7M(aps1),1M(optusr=
+)
+> > pram=3D0x100000
+> > mem=3D0x3f00000
+> > pram_start=3D0x3f00000
+> > loadaddr=3D0x2000000
+> > aps0_fl_start=3D0xfe100000
+> > aps0_fl_size=3D0x00700000
+> > aps1_fl_start=3D0xfe800000
+> > aps1_fl_end=3D0xfeefffff
+> > aps1_fl_size=3D0x00700000
+> > aps_ram_start=3D0x2000000
+> > aps_ram_kernel_start=3D0x2000100
+> > aps_ram_dtb_start=3D0x21f0100
+> > aps_ram_rootfs_start=3D0x2200100
+> > aps=3D0
+> > dl_boot=3Dtftp ${aps_ram_start} "u-boot.bin" && protect off=20
+> 0xfe000000 0xfe07ffff && cp.b ${aps_ram_start} 0xfe000000=20
+> ${filesize} && protect on 0xfe000000 0xf
+> > e07ffff && saveenv
+> > bootcmd=3Dif itest ${aps} =3D=3D 0; then run dl_ram0; else run =
+dl_ram1;fi
+> > altbootcmd=3Dmw.b ${pram_start} 0 ${pram} && if itest ${aps}=20
+> =3D=3D 0; then setenv aps 1; else setenv aps 0; fi; saveenv; run =
+bootcmd
+> > dl_ram0=3Dcp.b ${aps0_fl_start} ${aps_ram_start}=20
+> ${aps0_fl_size};if imi ${aps_ram_kernel_start}; then run=20
+> bargs;bootm ${aps_ram_kernel_start} ${aps_ram_rootfs
+> > _start} ${aps_ram_dtb_start}; else reset; fi
+> > dl_ram1=3Dcp.b ${aps1_fl_start} ${aps_ram_start}=20
+> ${aps1_fl_size};if imi ${aps_ram_kernel_start}; then run=20
+> bargs;bootm ${aps_ram_kernel_start} ${aps_ram_rootfs
+> > _start} ${aps_ram_dtb_start}; else reset; fi
+> > bootlimit=3D5
+> > initrd_high=3Dno
+> > hostname=3DMPC8568MDS
+> > aps0_fl_end=3D0xfe7fffff
+> > dl_aps0=3Dtftp ${aps_ram_start} ${myaps};erase=20
+> ${aps0_fl_start} ${aps0_fl_end};cp.b ${aps_ram_start}=20
+> ${aps0_fl_start} ${filesize};boot
+> > dl_aps1=3Dtftp ${aps_ram_start} ${myaps};erase=20
+> ${aps1_fl_start} ${aps1_fl_end};cp.b ${aps_ram_start}=20
+> ${aps1_fl_start} ${filesize};boot
+> > bargs=3Dsetenv bootargs ${mtdargs} console=3DttyS0,$baudrate=20
+> root=3D/dev/ram ramdisk_size=3D500000 rw=20
+> ip=3D${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:e
+> > th0:off panic=3D1 mem=3D${mem} aps=3D${aps} ${misc} ${slram}
+> > dl_mykernel=3Dtftp 1000000 MPC8568MDS/uImage; erase ff800000=20
+> ff9fffff; cp.b 1000000 ff800000 ${filesize}
+> > dl_myrootfs=3Dtftp 2000000 MPC8568MDS/RamDisk.ext2; erase=20
+> ffa00000 ffefffff; cp.b 2000000 ffa00000 ${filesize}
+> > dl_mydtb=3Dtftp 400000 MPC8568MDS/mpc8568mds.dtb; erase=20
+> fff00000 fff7ffff; cp.b 400000 fff00000 ${filesize}
+> > fdt_file=3DMPC8568MDS/mpc8568mds.dtb
+> > fdt_addr_r=3D0x21f0100
+> > stdin=3Dserial
+> > stdout=3Dserial
+> > stderr=3Dserial
+> >=20
+> > With previous u-boot I was able to load the images=20
+> separately, with this u-boot I have the error.
+>=20
+> What commands do you use to load kernel, ramdisk and dtb files?=20
+run dl_aps0
+
+But to load the images separately I do the following
+
+run dl_mykernel
+run dl_myrootfs
+run dl_mydtb
+run ramargs
+bootm ff800000 ffa00000 400000
+
+> It is not obvious from the environment above.
+>=20
+> Best regargs,
+> Anatolij
+
+I am taking a look at the U-Boot files and I made the following =
+modification (at the moment I am using U-Boot received by Freescale =
+U-Boot 1.3.0-rc3, quite old) on the file common/cmd.bootm.c
+diff Mycmd_bootm.c u-boot-1.3.0-rc3/common/cmd_bootm.c
+955c955
+< 		of_start  =3D (ulong)kbd - of_len;
+---
+> 		of_start  =3D (ulong)kbd - of_len - len;
+1017c1017
+< 		of_start  =3D (ulong)kbd - of_len - 8192;
+---
+> 		of_start  =3D (ulong)kbd - of_len - len - 8192;
+
+I added len to avoid that Ramdisk area is overwritten when loading the =
+Device Tree. With this modification I am now able to load kernel, rootfs =
+and dtb correctly and all as one image file
+
+
+Best Regards
+Agostino
+
+>=20
+> --=20
+> DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+> HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+> Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+>=20
