@@ -1,23 +1,27 @@
-Return-Path: <prodyuth@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
-	by ozlabs.org (Postfix) with ESMTP id 07D3BDE4E8
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 06:33:09 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id u2so1952119uge.14
-	for <linuxppc-dev@ozlabs.org>; Wed, 03 Sep 2008 13:33:07 -0700 (PDT)
-Message-ID: <49c0ff980809031333g1b63694bkffbacb0ae8112120@mail.gmail.com>
-Date: Wed, 3 Sep 2008 13:33:07 -0700
-From: "prodyut hazarika" <prodyuth@gmail.com>
-To: "David Jander" <david.jander@protonic.nl>
-Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
-In-Reply-To: <200809021512.10132.david.jander@protonic.nl>
+Return-Path: <sebastien.chretien.enseirb@gmail.com>
+Received: from plan.enseirb.fr (plan.enseirb.fr [147.210.18.60])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F37F0DDE22
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 07:03:16 +1000 (EST)
+Message-ID: <48BEFB5D.3040903@gmail.com>
+Date: Wed, 03 Sep 2008 23:02:21 +0200
+From: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
+	<sebastien.chretien.enseirb@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <200808251131.02071.david.jander@protonic.nl>
-	<200809010923.28616.david.jander@protonic.nl>
-	<1220261775.5234.217.camel@gentoo-jocke.transmode.se>
-	<200809021512.10132.david.jander@protonic.nl>
-Cc: linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>,
-	munroesj@us.ibm.com
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: irq
+References: <319b0ac50809030715h1a03a606jacddd400019f4483@mail.gmail.com>
+	<48BEA106.9090307@selcomgroup.com>
+	<319b0ac50809030803p6d659468wd7d2425224653374@mail.gmail.com>
+	<6a6049b80809030905u561043ecr1438d20aebf5598d@mail.gmail.com>
+	<48BEBD17.1030705@gmail.com>
+	<20080903170815.GA10979@loki.buserror.net>
+In-Reply-To: <20080903170815.GA10979@loki.buserror.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: M B <super.firetwister@googlemail.com>,
+	=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
+	<sebastien.chretien.enseirb@gmail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +31,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+irq_of_parse_and_map is equivalent to ioremap in the MMU case ?
 
->  These could probably go to glibc
-> as new general purpose memxxx() routines. You will probably see
-> a big increase once dcbz is added to the copy/memset functions.
-
-glibc memxxx for powerpc are horribly inefficient. For optimal performance,
-we should should dcbt instruction to establish the source address in cache, and
-dcbz to establish the destination address in cache. We should do
-dcbt and dcbz such that the touches happen a line ahead of the actual copy.
-
-The problem which is see is that dcbt and dcbz instructions don't work on
-non-cacheable memory (obviously!). But memxxx function are used for both
-cached and non-cached memory. Thus this optimized memcpy should be smart enough
-to figure out that both source and destination address fall in
-cacheable space, and only then
-used the optimized dcbt/dcbz instructions.
-
-You can expect to see a significant jump in memxxx function after
-using dcbt/dcbz.
-
-Thanks,
-Prodyut Hazarika
+Scott Wood a écrit :
+> On Wed, Sep 03, 2008 at 06:36:39PM +0200, Sébastien Chrétien wrote:
+>   
+>> Ok I will try irq_create_mapping tomorrow.
+>> When have I to use this function ?
+>>     
+>
+> You always need to create a mapping (though doing it with
+> irq_of_parse_and_map is preferred).  request_irq() takes virtual IRQ
+> numbers, not hardware IRQ numbers.
+>
+> -Scott
+>
+>   
