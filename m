@@ -1,24 +1,20 @@
-Return-Path: <sebastien.dugue@bull.net>
-Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id D5839DDE17
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Sep 2008 23:41:15 +1000 (EST)
-Date: Wed, 3 Sep 2008 15:41:05 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 2/2] powerpc - Make the irq reverse mapping radix tree
-	lockless
-Message-ID: <20080903154105.7dff49db@bull.net>
-In-Reply-To: <1219209781.21386.25.camel@pasglop>
-References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
-	<1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
-	<1219209781.21386.25.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: dwalker@mvista.com, tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
-	linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-	jean-pierre.dion@bull.net, michael@ellerman.id.au,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	gilles.carry@ext.bull.net, tglx@linutronix.de
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E428DDDE45
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Sep 2008 23:51:03 +1000 (EST)
+Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m83DowkG018914
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Sep 2008 15:50:58 +0200
+Message-ID: <155401c90dcc$18026770$ad289e86@LPSC0173W>
+From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Xilinx GPIO API and kernel GPIO API differences
+Date: Wed, 3 Sep 2008 15:50:51 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,28 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 20 Aug 2008 15:23:01 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Hello all,
+I can't fully understand the differences in what should be simple I/O 
+read/writes.
 
-> BTW. It would be good to try to turn the GFP_ATOMIC into GFP_KERNEL,
+If I write a standalone program using the Xilinx API calls, I have access to 
+the following functions to control the direction of GPIO bits. For instance:
 
-  That would be nice indeed
+XGpio Input, Output;
+XGpio_Initialize(&Input, InputDev);
+XGpio_Initialize(&Output, OutputDev));
+XGpio_SetDataDirection(&Input,  1, 0xFFFFFFFF);
+XGpio_SetDataDirection(&Output, 1, 0);
+Data = XGpio_DiscreteRead(&Input, 1);
+XGpio_DiscreteWrite(&Output, 1, 0x12345678);
 
-> maybe using a semaphore instead of a lock to protect insertion vs.
-> initialisation.
+Now the equivalent using usermode linux calls _seems_ to be the following:
 
-  a semaphore? are you meaning a mutex? If not, I fail to understand what you're
-implying.
+struct xgpio_ioctl_data Input, Output;
+Input = open(GPIO_IN, O_RDWR);
+Output = open(GPIO_OUT, O_RDWR);
+gpio_info.chan = 1;
+gpio_info.mask = 0xFFFFFFFF;
+ioctl(Input, XGPIO_IN, &gpio_info);
+Data=gpio_info.data;
+gpio_info.data=0x12345678;
+ioctl(Output, XGPIO_OUT, &gpio_info);
 
-> The old scheme was fine because if the atomic allocation
-> failed, it could fallback to the linear search and try again on the next
-> interrupt. Not anymore.
+But where it all breaks down is if I have input and output bits mixed on the 
+same GPIO, particularly if reading the outputs makes no sense like in my 
+case (always return 0).
+Using those ioctl calls, how do I specify which bits are input and which 
+ones are output ?
+In other words, the equivalent to this:
 
-  Right, that's the problem with this new scheme and I'm still trying
-to find a way to handle memory allocation failures be it for GFP_ATOMIC or
-GFP_KERNEL.
+XGpio IO;
+XGpio_Initialize(&IO, Dev);
+XGpio_SetDataDirection(&Input,  1, 0x00FFFF00);
+Data = XGpio_DiscreteRead(&Input, 1);
+XGpio_DiscreteWrite(&Output, 1, 0x12000078);
 
-  I could not think of anything simple so far and I'm open for suggestions.
-
-  Thanks,
-
-  Sebastien.
+Is there anything available from usermode besides those ioctl calls ?
+This makes me regret assembly...
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
