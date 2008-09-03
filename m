@@ -1,21 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <becky.bruce@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 016B3DE0CE
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 03:16:27 +1000 (EST)
-Date: Wed, 3 Sep 2008 12:15:19 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Janaka Subhawickrama <JanakaS@optiscan.com>
-Subject: Re: Kernel crash while initialising PCI
-Message-ID: <20080903171519.GC10979@loki.buserror.net>
-References: <DE0CCFFBFF707949BEABD4537A14ACBA073580F459@mailsvr.optiscan.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DE0CCFFBFF707949BEABD4537A14ACBA073580F459@mailsvr.optiscan.com>
-Cc: "'linuxppc-dev@ozlabs.org'" <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id 3CB6ADDDDE
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 03:54:37 +1000 (EST)
+Message-Id: <65A7E7F2-8106-44EC-BBF5-0CFBDA93462A@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1220018213-12959-2-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH v2 2/4] powerpc: Fixes for CONFIG_PTE_64BIT for SMP support
+Date: Wed, 3 Sep 2008 12:54:29 -0500
+References: <1220018213-12959-1-git-send-email-galak@kernel.crashing.org>
+	<1220018213-12959-2-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,51 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 03, 2008 at 05:50:10PM +1000, Janaka Subhawickrama wrote:
-> My DTS file entries for PCI are as follows:
-> 
-> pci@8500 {
->                         interrupt-map-mask = <  // Mask the child UnitIrqSpec
->                                                 //ff00 0 0 7
->                                                 ffff ff ff f
->                                                 >;
->                         interrupt-map = <
->                                         // Child UnitIrqSpec, Parent PIC handle, Parent UnitIrqSpec
->                                         // PCI unit address (0000 0 0), Interrupt specifier IDSEL 0x0D (CRX board hard wired to IDSEL 13),
->                                         //      parent Phandle, IRQ7=0x17 (jumper based) level sensitive(8)
->                                         //0d00 0 0 1 &ipic 17 8
->                                         00006800 0 0 1 &ipic 17 8
->                                         >;
->                         interrupt-parent = < &ipic >;
->                         interrupts = <42 8>;            //PCI1 interrupt, level sensitive
->                         bus-range = <0 0>;              //Bus number and largest bus under this
->                         /*
->                                 struct ranges_pci {
->                                         unsigned int pci_space; //Prefechable/relocatable .... IEEE1275
->                                         u64 pci_addr;
->                                         phys_addr_t phys_addr;
->                                         u64 size;
->                                 };
->                         */
->                         ranges = < 02000000 0 A0000000 A0000000 0 20000000
->                                    01000000 0 D8000000 D8000000 0 01000000 >;
->                         clock-frequency = <1FCA055>;    //33333333Hz
->                         #interrupt-cells = <1>;         //PCI aparently uses 1
->                         #size-cells = <2>;              //Max of 2 ints
->                         #address-cells = <3>;           //int size
->                         reg = <8500 100>; //??
->                         compatible = "fsl,mpc8349-pci";
->                         device_type = "pci";
->                 };
-> 
-> 
-> What am I doing wrong ?
 
-The PCI node needs to go under the root node, rather than under the soc
-node.  Otherwise, the kernel will try to translate ranges through the IMMR
-window.  In older kernels, there was a bug in the PCI code that let you get
-away with this.
+On Aug 29, 2008, at 8:56 AM, Kumar Gala wrote:
 
-See current in-kernel device trees for examples.
+> There are some minor issues with support 64-bit PTEs on a 32-bit  
+> processor
+> when dealing with SMP.
+>
+> * We need to order the stores in set_pte_at to make sure the flag word
+>  is set second.
+> * Change pte_clear to use pte_update so only the flag word is cleared
+>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> arch/powerpc/include/asm/pgtable-ppc32.h |   14 ++++++++++----
+> 1 files changed, 10 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/ 
+> include/asm/pgtable-ppc32.h
+> index 6fe39e3..db2e7bd 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+> @@ -517,7 +517,7 @@ extern unsigned long  
+> bad_call_to_PMD_PAGE_SIZE(void);
+>
+> #define pte_none(pte)		((pte_val(pte) & ~_PTE_NONE_MASK) == 0)
+> #define pte_present(pte)	(pte_val(pte) & _PAGE_PRESENT)
+> -#define pte_clear(mm,addr,ptep)	do { set_pte_at((mm), (addr),  
+> (ptep), __pte(0)); } while (0)
+> +#define pte_clear(mm,addr,ptep)	do { pte_update(ptep, ~0, 0); }  
+> while (0)
 
--Scott
+This breaks classic... Need to avoid changing PAGE_HASHPTE.
+
+Cheers,
+-Becky
