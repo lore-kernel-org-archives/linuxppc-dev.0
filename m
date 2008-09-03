@@ -1,24 +1,11 @@
-Return-Path: <sebastien.dugue@bull.net>
-Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id 92313DDE25
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Sep 2008 23:35:01 +1000 (EST)
-Date: Wed, 3 Sep 2008 15:34:46 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 2/2] powerpc - Make the irq reverse mapping radix tree
-	lockless
-Message-ID: <20080903153446.44f2cb64@bull.net>
-In-Reply-To: <1219209726.21386.23.camel@pasglop>
-References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
-	<1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
-	<1219209726.21386.23.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: dwalker@mvista.com, tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
-	linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-	jean-pierre.dion@bull.net, michael@ellerman.id.au,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	gilles.carry@ext.bull.net, tglx@linutronix.de
+Return-Path: <gary@mlbassoc.com>
+Message-ID: <48BE92C0.2020205@mlbassoc.com>
+Date: Wed, 03 Sep 2008 07:36:00 -0600
+From: Gary Thomas <gary@mlbassoc.com>
+MIME-Version: 1.0
+To: Linuxppc-dev@ozlabs.org
+Subject: More DTS questions
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,199 +15,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 20 Aug 2008 15:22:06 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Thanks for the pointer to the DTC/DTS documents.  These
+help, but I still have many questions and am unsure how
+to solve some problems.
 
-> On Wed, 2008-08-06 at 15:30 +0200, Sebastien Dugue wrote:
-> > The radix trees used by interrupt controllers for their irq reverse mapping
-> > (currently only the XICS found on pSeries) have a complex locking scheme
-> > dating back to before the advent of the lockless radix tree.
-> > 
-> >   Take advantage of this and of the fact that the items of the tree are
-> > pointers to a static array (irq_map) elements which can never go under us
-> > to simplify the locking.
-> > 
-> >   Concurrency between readers and writers is handled by the intrinsic
-> > properties of the lockless radix tree. Concurrency between writers is handled
-> > with a spinlock added to the irq_host structure.
-> 
-> No need for a spinlock in the irq_host. Make it one global lock, it's
-> not like scalability of irq_create_mapping() was a big deal and there's
-> usually only one of those type of hosts anyway.
+Most particularly, I have a number of platforms with
+"extended" interrupts.  In these cases, I have an FPGA
+which is used as an interrupt controller, multiplexing
+a number of external interrupt sources into one [or more]
+processor interrupts.
 
-  Right, done.
+In the past (arch/ppc world), I simple expanded the number
+of interrupts on the platform (NUM_IRQ) such that interrupts
+0..N were the standard platform interrupts and N+1..M were
+provided by my FPGA.  The FPGA support had its own interrupt
+tables, etc.  Simply installing a single IRQ handler for the
+composite got me to the FPGA handler which then de-multiplexed
+and passed on the interrupt to the handler for the external
+device.
 
-  Thanks,
+I'm a bit lost as to how to describe this in the DTS.  For
+example, I have a platform with PCI.  I can see how to setup
+the rest of the PCI stuff (slots, addresses, etc), but I need
+to tell it that the interrupt [in this case list corresponding
+to INTA..INTD] is handled by this FPGA based interrupt controller.
 
-  Sebastien.
+Looking at some examples in the sources only bring more questions.
+Perhaps someone can guide me through this (from the TQM5200):
 
-> 
-> > 
-> > Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Cc: Michael Ellerman <michael@ellerman.id.au>
-> > ---
-> >  arch/powerpc/include/asm/irq.h |    1 +
-> >  arch/powerpc/kernel/irq.c      |   74 ++++++----------------------------------
-> >  2 files changed, 12 insertions(+), 63 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-> > index 0a51376..72fd036 100644
-> > --- a/arch/powerpc/include/asm/irq.h
-> > +++ b/arch/powerpc/include/asm/irq.h
-> > @@ -119,6 +119,7 @@ struct irq_host {
-> >  		} linear;
-> >  		struct radix_tree_root tree;
-> >  	} revmap_data;
-> > +	spinlock_t		tree_lock;
-> >  	struct irq_host_ops	*ops;
-> >  	void			*host_data;
-> >  	irq_hw_number_t		inval_irq;
-> > diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> > index dc8663a..7a19103 100644
-> > --- a/arch/powerpc/kernel/irq.c
-> > +++ b/arch/powerpc/kernel/irq.c
-> > @@ -439,8 +439,6 @@ void do_softirq(void)
-> >  
-> >  static LIST_HEAD(irq_hosts);
-> >  static DEFINE_SPINLOCK(irq_big_lock);
-> > -static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
-> > -static unsigned int irq_radix_writer;
-> >  static atomic_t revmap_trees_allocated = ATOMIC_INIT(0);
-> >  struct irq_map_entry irq_map[NR_IRQS];
-> >  static unsigned int irq_virq_count = NR_IRQS;
-> > @@ -584,57 +582,6 @@ void irq_set_virq_count(unsigned int count)
-> >  		irq_virq_count = count;
-> >  }
-> >  
-> > -/* radix tree not lockless safe ! we use a brlock-type mecanism
-> > - * for now, until we can use a lockless radix tree
-> > - */
-> > -static void irq_radix_wrlock(unsigned long *flags)
-> > -{
-> > -	unsigned int cpu, ok;
-> > -
-> > -	spin_lock_irqsave(&irq_big_lock, *flags);
-> > -	irq_radix_writer = 1;
-> > -	smp_mb();
-> > -	do {
-> > -		barrier();
-> > -		ok = 1;
-> > -		for_each_possible_cpu(cpu) {
-> > -			if (per_cpu(irq_radix_reader, cpu)) {
-> > -				ok = 0;
-> > -				break;
-> > -			}
-> > -		}
-> > -		if (!ok)
-> > -			cpu_relax();
-> > -	} while(!ok);
-> > -}
-> > -
-> > -static void irq_radix_wrunlock(unsigned long flags)
-> > -{
-> > -	smp_wmb();
-> > -	irq_radix_writer = 0;
-> > -	spin_unlock_irqrestore(&irq_big_lock, flags);
-> > -}
-> > -
-> > -static void irq_radix_rdlock(unsigned long *flags)
-> > -{
-> > -	local_irq_save(*flags);
-> > -	__get_cpu_var(irq_radix_reader) = 1;
-> > -	smp_mb();
-> > -	if (likely(irq_radix_writer == 0))
-> > -		return;
-> > -	__get_cpu_var(irq_radix_reader) = 0;
-> > -	smp_wmb();
-> > -	spin_lock(&irq_big_lock);
-> > -	__get_cpu_var(irq_radix_reader) = 1;
-> > -	spin_unlock(&irq_big_lock);
-> > -}
-> > -
-> > -static void irq_radix_rdunlock(unsigned long flags)
-> > -{
-> > -	__get_cpu_var(irq_radix_reader) = 0;
-> > -	local_irq_restore(flags);
-> > -}
-> > -
-> >  static int irq_setup_virq(struct irq_host *host, unsigned int virq,
-> >  			    irq_hw_number_t hwirq)
-> >  {
-> > @@ -789,7 +736,6 @@ void irq_dispose_mapping(unsigned int virq)
-> >  {
-> >  	struct irq_host *host;
-> >  	irq_hw_number_t hwirq;
-> > -	unsigned long flags;
-> >  
-> >  	if (virq == NO_IRQ)
-> >  		return;
-> > @@ -825,9 +771,9 @@ void irq_dispose_mapping(unsigned int virq)
-> >  		/* Check if radix tree allocated yet */
-> >  		if (atomic_read(&revmap_trees_allocated) == 0)
-> >  			break;
-> > -		irq_radix_wrlock(&flags);
-> > +		spin_lock(&host->tree_lock);
-> >  		radix_tree_delete(&host->revmap_data.tree, hwirq);
-> > -		irq_radix_wrunlock(flags);
-> > +		spin_unlock(&host->tree_lock);
-> >  		break;
-> >  	}
-> >  
-> > @@ -881,7 +827,6 @@ unsigned int irq_radix_revmap_lookup(struct irq_host *host,
-> >  {
-> >  	struct irq_map_entry *ptr;
-> >  	unsigned int virq = NO_IRQ;
-> > -	unsigned long flags;
-> >  
-> >  	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
-> >  
-> > @@ -893,9 +838,11 @@ unsigned int irq_radix_revmap_lookup(struct irq_host *host,
-> >  		return irq_find_mapping(host, hwirq);
-> >  
-> >  	/* Now try to resolve */
-> > -	irq_radix_rdlock(&flags);
-> > +	/*
-> > +	 * No rcu_read_lock(ing) needed, the ptr returned can't go under us
-> > +	 * as it's referencing an entry in the static irq_map table.
-> > +	 */
-> >  	ptr = radix_tree_lookup(&host->revmap_data.tree, hwirq);
-> > -	irq_radix_rdunlock(flags);
-> >  
-> >  	/* Found it, return */
-> >  	if (ptr)
-> > @@ -907,7 +854,6 @@ unsigned int irq_radix_revmap_lookup(struct irq_host *host,
-> >  void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
-> >  			     irq_hw_number_t hwirq)
-> >  {
-> > -	unsigned long flags;
-> >  
-> >  	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
-> >  
-> > @@ -920,10 +866,10 @@ void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
-> >  		return;
-> >  
-> >  	if (virq != NO_IRQ) {
-> > -		irq_radix_wrlock(&flags);
-> > +		spin_lock(&host->tree_lock);
-> >  		radix_tree_insert(&host->revmap_data.tree, hwirq,
-> >  				  &irq_map[virq]);
-> > -		irq_radix_wrunlock(flags);
-> > +		spin_unlock(&host->tree_lock);
-> >  	}
-> >  }
-> >  
-> > @@ -1041,8 +987,10 @@ static int irq_late_init(void)
-> >  	 * revmap_trees_allocated.
-> >  	 */
-> >  	list_for_each_entry(h, &irq_hosts, link) {
-> > -		if (h->revmap_type == IRQ_HOST_MAP_TREE)
-> > +		if (h->revmap_type == IRQ_HOST_MAP_TREE) {
-> >  			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
-> > +			spin_lock_init(&h->tree_lock);
-> > +		}
-> >  	}
-> >  
-> >  	/*
-> 
-> 
+         pci@f0000d00 {
+                 #interrupt-cells = <1>;
+                 #size-cells = <2>;
+                 #address-cells = <3>;
+                 device_type = "pci";
+                 compatible = "fsl,mpc5200-pci";
+                 reg = <0xf0000d00 0x100>;
+                 interrupt-map-mask = <0xf800 0 0 7>;
+                 interrupt-map = <0xc000 0 0 1 &mpc5200_pic 0 0 3
+                                  0xc000 0 0 2 &mpc5200_pic 0 0 3
+                                  0xc000 0 0 3 &mpc5200_pic 0 0 3
+                                  0xc000 0 0 4 &mpc5200_pic 0 0 3>;
+                 clock-frequency = <0>; // From boot loader
+                 interrupts = <2 8 0 2 9 0 2 10 0>;
+                 interrupt-parent = <&mpc5200_pic>;
+                 bus-range = <0 0>;
+                 ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
+                           0x02000000 0 0x90000000 0x90000000 0 0x10000000
+                           0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
+         };
+
+The things that truly aren't clear are the various lists.
+For example, how does "interrupt-map" and "interrupts" describe
+how the interrupts are handled?  I don't see any reference in
+the code to these names (how does a driver get access to such
+properties?)  I've read the MPC5200 PCI code (where I'd expect
+to find some of these answers) without much elucidation.
+
+Forgive such _newbie_ questions, but I'm just a happy arch/ppc
+user trying to catch up to an arch/powerpc world :-)
+
+Thanks
+
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
