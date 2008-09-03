@@ -1,16 +1,23 @@
-Return-Path: <James.Bottomley@HansenPartnership.com>
-Received: from accolon.hansenpartnership.com (accolon.hansenpartnership.com
-	[76.243.235.52]) by ozlabs.org (Postfix) with ESMTP id D44FCDDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 06:24:57 +1000 (EST)
-Subject: [PATCH] Correct printk %pF to work on all architectures
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 03 Sep 2008 15:18:57 -0500
-Message-Id: <1220473137.3254.29.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-ia64@vger.kernel.org, Parisc List <linux-parisc@vger.kernel.org>
+Return-Path: <prodyuth@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id 07D3BDE4E8
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 06:33:09 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id u2so1952119uge.14
+	for <linuxppc-dev@ozlabs.org>; Wed, 03 Sep 2008 13:33:07 -0700 (PDT)
+Message-ID: <49c0ff980809031333g1b63694bkffbacb0ae8112120@mail.gmail.com>
+Date: Wed, 3 Sep 2008 13:33:07 -0700
+From: "prodyut hazarika" <prodyuth@gmail.com>
+To: "David Jander" <david.jander@protonic.nl>
+Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
+In-Reply-To: <200809021512.10132.david.jander@protonic.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+References: <200808251131.02071.david.jander@protonic.nl>
+	<200809010923.28616.david.jander@protonic.nl>
+	<1220261775.5234.217.camel@gentoo-jocke.transmode.se>
+	<200809021512.10132.david.jander@protonic.nl>
+Cc: linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>,
+	munroesj@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,146 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It was introduced by 
+Hi all,
 
-commit 0fe1ef24f7bd0020f29ffe287dfdb9ead33ca0b2
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Sun Jul 6 16:43:12 2008 -0700
+>  These could probably go to glibc
+> as new general purpose memxxx() routines. You will probably see
+> a big increase once dcbz is added to the copy/memset functions.
 
-    vsprintf: add support for '%pS' and '%pF' pointer formats
+glibc memxxx for powerpc are horribly inefficient. For optimal performance,
+we should should dcbt instruction to establish the source address in cache, and
+dcbz to establish the destination address in cache. We should do
+dcbt and dcbz such that the touches happen a line ahead of the actual copy.
 
+The problem which is see is that dcbt and dcbz instructions don't work on
+non-cacheable memory (obviously!). But memxxx function are used for both
+cached and non-cached memory. Thus this optimized memcpy should be smart enough
+to figure out that both source and destination address fall in
+cacheable space, and only then
+used the optimized dcbt/dcbz instructions.
 
-However, the current way its coded doesn't work on parisc64.  For two
-reasons:  1) parisc isn't in the #ifdef and 2) parisc has a different
-format for function descriptors
+You can expect to see a significant jump in memxxx function after
+using dcbt/dcbz.
 
-Make dereference_function_descriptor() more accommodating by allowing
-architecture overrides.  I put the three overrides (for parisc64, ppc64
-and ia64) in arch/kernel/module.c because that's where the kernel
-internal linker which knows how to deal with function descriptors sits.
-
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
----
- arch/ia64/kernel/module.c       |    9 +++++++++
- arch/parisc/kernel/module.c     |   13 +++++++++++++
- arch/powerpc/kernel/module_64.c |    9 +++++++++
- include/linux/kernel.h          |    3 +++
- lib/vsprintf.c                  |   12 ++++++------
- 5 files changed, 40 insertions(+), 6 deletions(-)
-
-diff --git a/arch/ia64/kernel/module.c b/arch/ia64/kernel/module.c
-index 29aad34..596a862 100644
---- a/arch/ia64/kernel/module.c
-+++ b/arch/ia64/kernel/module.c
-@@ -31,6 +31,7 @@
- #include <linux/elf.h>
- #include <linux/moduleloader.h>
- #include <linux/string.h>
-+#include <linux/uaccess.h>
- #include <linux/vmalloc.h>
- 
- #include <asm/patch.h>
-@@ -941,3 +942,11 @@ module_arch_cleanup (struct module *mod)
- 	if (mod->arch.core_unw_table)
- 		unw_remove_unwind_table(mod->arch.core_unw_table);
- }
-+
-+void *dereference_function_descriptor(void *ptr)
-+{
-+	void *p = NULL;
-+	if (!probe_kernel_address(ptr, p))
-+		ptr = p;
-+	return p;
-+}
-diff --git a/arch/parisc/kernel/module.c b/arch/parisc/kernel/module.c
-index fdacdd4..4ad80a5 100644
---- a/arch/parisc/kernel/module.c
-+++ b/arch/parisc/kernel/module.c
-@@ -47,6 +47,7 @@
- #include <linux/string.h>
- #include <linux/kernel.h>
- #include <linux/bug.h>
-+#include <linux/uaccess.h>
- 
- #include <asm/unwind.h>
- 
-@@ -860,3 +861,15 @@ void module_arch_cleanup(struct module *mod)
- 	deregister_unwind_table(mod);
- 	module_bug_cleanup(mod);
- }
-+
-+#ifdef CONFIG_64BIT
-+void *dereference_function_descriptor(void *ptr)
-+{
-+	Elf64_Fdesc *desc = ptr;
-+	void *p = NULL;
-+
-+	if (!probe_kernel_address(&desc->addr, p))
-+		ptr = p;
-+	return p;
-+}
-+#endif
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index ee6a298..60e9749 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -21,6 +21,7 @@
- #include <linux/err.h>
- #include <linux/vmalloc.h>
- #include <linux/bug.h>
-+#include <linux/uaccess.h>
- #include <asm/module.h>
- #include <asm/uaccess.h>
- #include <asm/firmware.h>
-@@ -451,3 +452,11 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
- 
- 	return 0;
- }
-+
-+void *dereference_function_descriptor(void *ptr)
-+{
-+	void *p = NULL;
-+	if (!probe_kernel_address(ptr, p))
-+		ptr = p;
-+	return p;
-+}
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 2651f80..8ff19b3 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -189,6 +189,9 @@ extern int __kernel_text_address(unsigned long addr);
- extern int kernel_text_address(unsigned long addr);
- struct pid;
- extern struct pid *session_of_pgrp(struct pid *pgrp);
-+/* function descriptor handling (if any) */
-+extern void *dereference_function_descriptor(void *ptr);
-+
- 
- #ifdef CONFIG_PRINTK
- asmlinkage int vprintk(const char *fmt, va_list args)
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index d8d1d11..cffcd95 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -513,13 +513,13 @@ static char *string(char *buf, char *end, char *s, int field_width, int precisio
- 	return buf;
- }
- 
--static inline void *dereference_function_descriptor(void *ptr)
-+/*
-+ * Some architectures need special handling for pointers
-+ * to functions, which are done via function descriptors
-+ * Do a non weak override of this function for them
-+ */
-+void __weak *dereference_function_descriptor(void *ptr)
- {
--#if defined(CONFIG_IA64) || defined(CONFIG_PPC64)
--	void *p;
--	if (!probe_kernel_address(ptr, p))
--		ptr = p;
--#endif
- 	return ptr;
- }
- 
--- 
-1.5.6.5
+Thanks,
+Prodyut Hazarika
