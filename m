@@ -1,26 +1,14 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 41EB9DE43C
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 03:09:23 +1000 (EST)
-Date: Wed, 3 Sep 2008 12:08:15 -0500
+Date: Wed, 3 Sep 2008 12:12:25 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: =?iso-8859-1?Q?S=E9bastien_Chr=E9tien?=
-	<sebastien.chretien.enseirb@gmail.com>
-Subject: Re: irq
-Message-ID: <20080903170815.GA10979@loki.buserror.net>
-References: <319b0ac50809030715h1a03a606jacddd400019f4483@mail.gmail.com>
-	<48BEA106.9090307@selcomgroup.com>
-	<319b0ac50809030803p6d659468wd7d2425224653374@mail.gmail.com>
-	<6a6049b80809030905u561043ecr1438d20aebf5598d@mail.gmail.com>
-	<48BEBD17.1030705@gmail.com>
+To: Gary Thomas <gary@mlbassoc.com>
+Subject: Re: More DTS questions
+Message-ID: <20080903171225.GB10979@loki.buserror.net>
+References: <48BE92C0.2020205@mlbassoc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <48BEBD17.1030705@gmail.com>
-Cc: M B <super.firetwister@googlemail.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48BE92C0.2020205@mlbassoc.com>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,12 +18,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 03, 2008 at 06:36:39PM +0200, Sébastien Chrétien wrote:
-> Ok I will try irq_create_mapping tomorrow.
-> When have I to use this function ?
+On Wed, Sep 03, 2008 at 07:36:00AM -0600, Gary Thomas wrote:
+>         pci@f0000d00 {
+>                 #interrupt-cells = <1>;
+>                 #size-cells = <2>;
+>                 #address-cells = <3>;
+>                 device_type = "pci";
+>                 compatible = "fsl,mpc5200-pci";
+>                 reg = <0xf0000d00 0x100>;
+>                 interrupt-map-mask = <0xf800 0 0 7>;
+>                 interrupt-map = <0xc000 0 0 1 &mpc5200_pic 0 0 3
+>                                  0xc000 0 0 2 &mpc5200_pic 0 0 3
+>                                  0xc000 0 0 3 &mpc5200_pic 0 0 3
+>                                  0xc000 0 0 4 &mpc5200_pic 0 0 3>;
+>                 clock-frequency = <0>; // From boot loader
+>                 interrupts = <2 8 0 2 9 0 2 10 0>;
+>                 interrupt-parent = <&mpc5200_pic>;
+>                 bus-range = <0 0>;
+>                 ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
+>                           0x02000000 0 0x90000000 0x90000000 0 0x10000000
+>                           0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
+>         };
+>
+> The things that truly aren't clear are the various lists.
+> For example, how does "interrupt-map" and "interrupts" describe
+> how the interrupts are handled? 
 
-You always need to create a mapping (though doing it with
-irq_of_parse_and_map is preferred).  request_irq() takes virtual IRQ
-numbers, not hardware IRQ numbers.
+It is described in this document:
+http://www.power.org/resources/downloads/Power_ePAPR_APPROVED_v1.0.pdf
+
+> I don't see any reference in the code to these names (how does a driver
+> get access to such properties?)
+
+Look in arch/powerpc/kernel/prom_parse.c.
+
+You'll want to change &mpc5200_pic in your interrupt-map to point to your
+FPGA interrupt controller, and change the interrupt specifiers accordingly.
 
 -Scott
