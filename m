@@ -1,11 +1,24 @@
-Return-Path: <gary@mlbassoc.com>
-Message-ID: <48BE92C0.2020205@mlbassoc.com>
-Date: Wed, 03 Sep 2008 07:36:00 -0600
-From: Gary Thomas <gary@mlbassoc.com>
-MIME-Version: 1.0
-To: Linuxppc-dev@ozlabs.org
-Subject: More DTS questions
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <sebastien.dugue@bull.net>
+Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
+	by ozlabs.org (Postfix) with ESMTP id D5839DDE17
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Sep 2008 23:41:15 +1000 (EST)
+Date: Wed, 3 Sep 2008 15:41:05 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 2/2] powerpc - Make the irq reverse mapping radix tree
+	lockless
+Message-ID: <20080903154105.7dff49db@bull.net>
+In-Reply-To: <1219209781.21386.25.camel@pasglop>
+References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
+	<1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
+	<1219209781.21386.25.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: dwalker@mvista.com, tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
+	linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+	jean-pierre.dion@bull.net, michael@ellerman.id.au,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	gilles.carry@ext.bull.net, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,69 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks for the pointer to the DTC/DTS documents.  These
-help, but I still have many questions and am unsure how
-to solve some problems.
+On Wed, 20 Aug 2008 15:23:01 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Most particularly, I have a number of platforms with
-"extended" interrupts.  In these cases, I have an FPGA
-which is used as an interrupt controller, multiplexing
-a number of external interrupt sources into one [or more]
-processor interrupts.
+> BTW. It would be good to try to turn the GFP_ATOMIC into GFP_KERNEL,
 
-In the past (arch/ppc world), I simple expanded the number
-of interrupts on the platform (NUM_IRQ) such that interrupts
-0..N were the standard platform interrupts and N+1..M were
-provided by my FPGA.  The FPGA support had its own interrupt
-tables, etc.  Simply installing a single IRQ handler for the
-composite got me to the FPGA handler which then de-multiplexed
-and passed on the interrupt to the handler for the external
-device.
+  That would be nice indeed
 
-I'm a bit lost as to how to describe this in the DTS.  For
-example, I have a platform with PCI.  I can see how to setup
-the rest of the PCI stuff (slots, addresses, etc), but I need
-to tell it that the interrupt [in this case list corresponding
-to INTA..INTD] is handled by this FPGA based interrupt controller.
+> maybe using a semaphore instead of a lock to protect insertion vs.
+> initialisation.
 
-Looking at some examples in the sources only bring more questions.
-Perhaps someone can guide me through this (from the TQM5200):
+  a semaphore? are you meaning a mutex? If not, I fail to understand what you're
+implying.
 
-         pci@f0000d00 {
-                 #interrupt-cells = <1>;
-                 #size-cells = <2>;
-                 #address-cells = <3>;
-                 device_type = "pci";
-                 compatible = "fsl,mpc5200-pci";
-                 reg = <0xf0000d00 0x100>;
-                 interrupt-map-mask = <0xf800 0 0 7>;
-                 interrupt-map = <0xc000 0 0 1 &mpc5200_pic 0 0 3
-                                  0xc000 0 0 2 &mpc5200_pic 0 0 3
-                                  0xc000 0 0 3 &mpc5200_pic 0 0 3
-                                  0xc000 0 0 4 &mpc5200_pic 0 0 3>;
-                 clock-frequency = <0>; // From boot loader
-                 interrupts = <2 8 0 2 9 0 2 10 0>;
-                 interrupt-parent = <&mpc5200_pic>;
-                 bus-range = <0 0>;
-                 ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
-                           0x02000000 0 0x90000000 0x90000000 0 0x10000000
-                           0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
-         };
+> The old scheme was fine because if the atomic allocation
+> failed, it could fallback to the linear search and try again on the next
+> interrupt. Not anymore.
 
-The things that truly aren't clear are the various lists.
-For example, how does "interrupt-map" and "interrupts" describe
-how the interrupts are handled?  I don't see any reference in
-the code to these names (how does a driver get access to such
-properties?)  I've read the MPC5200 PCI code (where I'd expect
-to find some of these answers) without much elucidation.
+  Right, that's the problem with this new scheme and I'm still trying
+to find a way to handle memory allocation failures be it for GFP_ATOMIC or
+GFP_KERNEL.
 
-Forgive such _newbie_ questions, but I'm just a happy arch/ppc
-user trying to catch up to an arch/powerpc world :-)
+  I could not think of anything simple so far and I'm open for suggestions.
 
-Thanks
+  Thanks,
 
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+  Sebastien.
