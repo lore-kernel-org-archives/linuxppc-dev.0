@@ -1,32 +1,19 @@
-Return-Path: <kniht@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0CC98DDEDA
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 08:19:14 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m83MJC2N028960
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Sep 2008 18:19:12 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m83MJCb0226526
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Sep 2008 18:19:12 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m83MJAYP025623
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Sep 2008 18:19:11 -0400
-Message-ID: <48BF0D6F.2010602@linux.vnet.ibm.com>
-Date: Wed, 03 Sep 2008 17:19:27 -0500
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: libhugetlbfs-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Libhugetlbfs-devel] Buglet in 16G page handling
-References: <20080902050510.GB12965@yookeroo.seuss>
-	<48BD73FB.1050601@linux.vnet.ibm.com>
-	<20080903002029.GC9681@yookeroo.seuss>
-In-Reply-To: <20080903002029.GC9681@yookeroo.seuss>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <James.Bottomley@HansenPartnership.com>
+Received: from accolon.hansenpartnership.com (accolon.hansenpartnership.com
+	[76.243.235.52]) by ozlabs.org (Postfix) with ESMTP id 87B70DE08A
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 08:42:37 +1000 (EST)
+Subject: Re: [PATCH] Correct printk %pF to work on all architectures
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0809031419560.3515@nehalem.linux-foundation.org>
+References: <1220473137.3254.29.camel@localhost.localdomain>
+	<alpine.LFD.1.10.0809031419560.3515@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 03 Sep 2008 17:42:34 -0500
+Message-Id: <1220481754.3254.42.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-ia64@vger.kernel.org, Parisc List <linux-parisc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,172 +23,223 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Tue, Sep 02, 2008 at 12:12:27PM -0500, Jon Tollefson wrote:
->   
->> David Gibson wrote:
->>     
->>> When BenH and I were looking at the new code for handling 16G pages,
->>> we noticed a small bug.  It doesn't actually break anything user
->>> visible, but it's certainly not the way things are supposed to be.
->>> The 16G patches didn't update the huge_pte_offset() and
->>> huge_pte_alloc() functions, which means that the hugepte tables for
->>> 16G pages will be allocated much further down the page table tree than
->>> they should be - allocating several levels of page table with a single
->>> entry in them along the way.
->>>
->>> The patch below is supposed to fix this, cleaning up the existing
->>> handling of 64k vs 16M pages while its at it.  However, it needs some
->>> testing.
->>>
->>> I've checked that it doesn't break existing 16M support, either with
->>> 4k or 64k base pages.  I haven't figured out how to test with 64k
->>> pages yet, at least until the multisize support goes into
->>> libhugetlbfs.  For 16G pages, I just don't have access to a machine
->>> with enough memory to test.  Jon, presumably you must have found such
->>> a machine when you did the 16G page support in the first place.  Do
->>> you still have access, and can you test this patch?
->>>   
->>>       
->> I do have access to a machine to test it.  I applied the patch to -rc4
->> and used a pseries_defconfig.  I boot with
->> default_hugepagesz=16G... in order to test huge page sizes other then
->> 16M at this point.
->>
->> Running the libhugetlbfs test suite it gets as far as   Readback (64):  
->> PASS
->> before it hits the following program check.
->>     
->
-> Ah, yes, oops, forgot to fix up the pagetable freeing path in line
-> with the other changes.  Try the revised version below.
->   
-I have run through the tests twice now with this new patch using a 4k
-base page size(and 16G huge page size) and there are no program checks
-or spin lock issues.  So looking good.
+On Wed, 2008-09-03 at 14:22 -0700, Linus Torvalds wrote:
+> 
+> On Wed, 3 Sep 2008, James Bottomley wrote:
+> > 
+> > Make dereference_function_descriptor() more accommodating by allowing
+> > architecture overrides.
+> 
+> Don't do it like this.
+> 
+> We don't want some stupid useless weak function that is empty on all sane 
+> platforms.
+> 
+> Just do
+> 
+> 	.. declare or create an inline 'parisc_function_descriptor()' ..
+> 
+> 	#define dereference_function_descriptor(p) parisc_function_descriptor(p)
+> 
+> in some arch header file. And then use
+> 
+> 	#ifndef dereference_function_descriptor
+> 	#define dereference_function_descriptor(p) (p)
+> 	#endif
+> 
+> in the generic code, so that sane architectures don't need to do anything 
+> at all.
 
-I will run it next a couple of times with 64K base pages.
+Is that finally final?  because the last time I tried to do the above
+for a voyager override I was told weak functions were the preferred
+method ...
 
-Jon
+Anyway, it's easy to do (if a slightly larger diff) ... I have to move
+the prototype from include/kernel.h to include/module.h because I need
+an assured asm/xxx include before it to get the override.
 
+It was also pointed out that I should be returning the passed in ptr,
+not NULL on failure and that the return should be ptr not p.
 
+James
 
+---
 
-> Index: working-2.6/arch/powerpc/mm/hugetlbpage.c
-> ===================================================================
-> --- working-2.6.orig/arch/powerpc/mm/hugetlbpage.c	2008-09-02 11:50:12.000000000 +1000
-> +++ working-2.6/arch/powerpc/mm/hugetlbpage.c	2008-09-03 10:10:54.000000000 +1000
-> @@ -128,29 +128,37 @@ static int __hugepte_alloc(struct mm_str
->  	return 0;
->  }
->
-> -/* Base page size affects how we walk hugetlb page tables */
-> -#ifdef CONFIG_PPC_64K_PAGES
-> -#define hpmd_offset(pud, addr, h)	pmd_offset(pud, addr)
-> -#define hpmd_alloc(mm, pud, addr, h)	pmd_alloc(mm, pud, addr)
-> -#else
-> -static inline
-> -pmd_t *hpmd_offset(pud_t *pud, unsigned long addr, struct hstate *hstate)
-> +
-> +static pud_t *hpud_offset(pgd_t *pgd, unsigned long addr, struct hstate *hstate)
-> +{
-> +	if (huge_page_shift(hstate) < PUD_SHIFT)
-> +		return pud_offset(pgd, addr);
-> +	else
-> +		return (pud_t *) pgd;
-> +}
-> +static pud_t *hpud_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long addr,
-> +			 struct hstate *hstate)
->  {
-> -	if (huge_page_shift(hstate) == PAGE_SHIFT_64K)
-> +	if (huge_page_shift(hstate) < PUD_SHIFT)
-> +		return pud_alloc(mm, pgd, addr);
-> +	else
-> +		return (pud_t *) pgd;
-> +}
-> +static pmd_t *hpmd_offset(pud_t *pud, unsigned long addr, struct hstate *hstate)
-> +{
-> +	if (huge_page_shift(hstate) < PMD_SHIFT)
->  		return pmd_offset(pud, addr);
->  	else
->  		return (pmd_t *) pud;
->  }
-> -static inline
-> -pmd_t *hpmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long addr,
-> -		  struct hstate *hstate)
-> +static pmd_t *hpmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long addr,
-> +			 struct hstate *hstate)
->  {
-> -	if (huge_page_shift(hstate) == PAGE_SHIFT_64K)
-> +	if (huge_page_shift(hstate) < PMD_SHIFT)
->  		return pmd_alloc(mm, pud, addr);
->  	else
->  		return (pmd_t *) pud;
->  }
-> -#endif
->
->  /* Build list of addresses of gigantic pages.  This function is used in early
->   * boot before the buddy or bootmem allocator is setup.
-> @@ -204,7 +212,7 @@ pte_t *huge_pte_offset(struct mm_struct 
->
->  	pg = pgd_offset(mm, addr);
->  	if (!pgd_none(*pg)) {
-> -		pu = pud_offset(pg, addr);
-> +		pu = hpud_offset(pg, addr, hstate);
->  		if (!pud_none(*pu)) {
->  			pm = hpmd_offset(pu, addr, hstate);
->  			if (!pmd_none(*pm))
-> @@ -233,7 +241,7 @@ pte_t *huge_pte_alloc(struct mm_struct *
->  	addr &= hstate->mask;
->
->  	pg = pgd_offset(mm, addr);
-> -	pu = pud_alloc(mm, pg, addr);
-> +	pu = hpud_alloc(mm, pg, addr, hstate);
->
->  	if (pu) {
->  		pm = hpmd_alloc(mm, pu, addr, hstate);
-> @@ -316,13 +324,7 @@ static void hugetlb_free_pud_range(struc
->  	pud = pud_offset(pgd, addr);
->  	do {
->  		next = pud_addr_end(addr, end);
-> -#ifdef CONFIG_PPC_64K_PAGES
-> -		if (pud_none_or_clear_bad(pud))
-> -			continue;
-> -		hugetlb_free_pmd_range(tlb, pud, addr, next, floor, ceiling,
-> -				       psize);
-> -#else
-> -		if (shift == PAGE_SHIFT_64K) {
-> +		if (shift < PMD_SHIFT) {
->  			if (pud_none_or_clear_bad(pud))
->  				continue;
->  			hugetlb_free_pmd_range(tlb, pud, addr, next, floor,
-> @@ -332,7 +334,6 @@ static void hugetlb_free_pud_range(struc
->  				continue;
->  			free_hugepte_range(tlb, (hugepd_t *)pud, psize);
->  		}
-> -#endif
->  	} while (pud++, addr = next, addr != end);
->
->  	start &= PGDIR_MASK;
-> @@ -422,9 +423,15 @@ void hugetlb_free_pgd_range(struct mmu_g
->  		psize = get_slice_psize(tlb->mm, addr);
->  		BUG_ON(!mmu_huge_psizes[psize]);
->  		next = pgd_addr_end(addr, end);
-> -		if (pgd_none_or_clear_bad(pgd))
-> -			continue;
-> -		hugetlb_free_pud_range(tlb, pgd, addr, next, floor, ceiling);
-> +		if (mmu_psize_to_shift(psize) < PUD_SHIFT) {
-> +			if (pgd_none_or_clear_bad(pgd))
-> +				continue;
-> +			hugetlb_free_pud_range(tlb, pgd, addr, next, floor, ceiling);
-> +		} else {
-> +			if (pgd_none(*pgd))
-> +				continue;
-> +			free_hugepte_range(tlb, (hugepd_t *)pgd, psize);
-> +		}
->  	} while (pgd++, addr = next, addr != end);
->  }
->
->
->
->   
+The current way its coded doesn't work on parisc64.  For two
+reasons:  1) parisc isn't in the #ifdef and 2) parisc has a different
+format for function descriptors
+
+Make dereference_function_descriptor() more accommodating by allowing
+architecture overrides.
+
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ arch/ia64/include/asm/module.h    |    4 ++++
+ arch/ia64/kernel/module.c         |    9 +++++++++
+ arch/parisc/kernel/module.c       |   13 +++++++++++++
+ arch/powerpc/include/asm/module.h |    6 ++++++
+ arch/powerpc/kernel/module_64.c   |    9 +++++++++
+ include/asm-parisc/module.h       |    6 ++++++
+ include/linux/module.h            |    5 +++++
+ lib/vsprintf.c                    |   10 ----------
+ 8 files changed, 52 insertions(+), 10 deletions(-)
+
+diff --git a/arch/ia64/include/asm/module.h b/arch/ia64/include/asm/module.h
+index d2da61e..d0328be 100644
+--- a/arch/ia64/include/asm/module.h
++++ b/arch/ia64/include/asm/module.h
+@@ -33,4 +33,8 @@ struct mod_arch_specific {
+ 
+ #define ARCH_SHF_SMALL	SHF_IA_64_SHORT
+ 
++void *ia64_dereference_function_descriptor(void *);
++#define dereference_function_descriptor(p) \
++	ia64_dereference_function_descriptor(p)
++
+ #endif /* _ASM_IA64_MODULE_H */
+diff --git a/arch/ia64/kernel/module.c b/arch/ia64/kernel/module.c
+index 29aad34..4aca326 100644
+--- a/arch/ia64/kernel/module.c
++++ b/arch/ia64/kernel/module.c
+@@ -31,6 +31,7 @@
+ #include <linux/elf.h>
+ #include <linux/moduleloader.h>
+ #include <linux/string.h>
++#include <linux/uaccess.h>
+ #include <linux/vmalloc.h>
+ 
+ #include <asm/patch.h>
+@@ -941,3 +942,11 @@ module_arch_cleanup (struct module *mod)
+ 	if (mod->arch.core_unw_table)
+ 		unw_remove_unwind_table(mod->arch.core_unw_table);
+ }
++
++void *ia64_dereference_function_descriptor(void *ptr)
++{
++	void *p;
++	if (!probe_kernel_address(ptr, p))
++		ptr = p;
++	return ptr;
++}
+diff --git a/arch/parisc/kernel/module.c b/arch/parisc/kernel/module.c
+index fdacdd4..6ec3b07 100644
+--- a/arch/parisc/kernel/module.c
++++ b/arch/parisc/kernel/module.c
+@@ -47,6 +47,7 @@
+ #include <linux/string.h>
+ #include <linux/kernel.h>
+ #include <linux/bug.h>
++#include <linux/uaccess.h>
+ 
+ #include <asm/unwind.h>
+ 
+@@ -860,3 +861,15 @@ void module_arch_cleanup(struct module *mod)
+ 	deregister_unwind_table(mod);
+ 	module_bug_cleanup(mod);
+ }
++
++#ifdef CONFIG_64BIT
++void *parisc_dereference_function_descriptor(void *ptr)
++{
++	Elf64_Fdesc *desc = ptr;
++	void *p;
++
++	if (!probe_kernel_address(&desc->addr, p))
++		ptr = p;
++	return ptr;
++}
++#endif
+diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+index e5f14b1..a861b2c 100644
+--- a/arch/powerpc/include/asm/module.h
++++ b/arch/powerpc/include/asm/module.h
+@@ -73,5 +73,11 @@ struct exception_table_entry;
+ void sort_ex_table(struct exception_table_entry *start,
+ 		   struct exception_table_entry *finish);
+ 
++#ifdef __powerpc64__
++void *powerpc64_dereference_function_descriptor(void *);
++#define dereference_function_descriptor(p) \
++	powerpc64_dereference_function_descriptor(p)
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_MODULE_H */
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index ee6a298..e814c2a 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -21,6 +21,7 @@
+ #include <linux/err.h>
+ #include <linux/vmalloc.h>
+ #include <linux/bug.h>
++#include <linux/uaccess.h>
+ #include <asm/module.h>
+ #include <asm/uaccess.h>
+ #include <asm/firmware.h>
+@@ -451,3 +452,11 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 
+ 	return 0;
+ }
++
++void *powerpc64_dereference_function_descriptor(void *ptr)
++{
++	void *p;
++	if (!probe_kernel_address(ptr, p))
++		ptr = p;
++	return ptr;
++}
+diff --git a/include/asm-parisc/module.h b/include/asm-parisc/module.h
+index c2cb49e..f5f971b 100644
+--- a/include/asm-parisc/module.h
++++ b/include/asm-parisc/module.h
+@@ -29,4 +29,10 @@ struct mod_arch_specific
+ 	struct unwind_table *unwind;
+ };
+ 
++#ifdef CONFIG_64BIT
++void *parisc_dereference_function_descriptor(void *);
++#define dereference_function_descriptor(p) \
++	parisc_dereference_function_descriptor(p)
++#endif
++
+ #endif /* _ASM_PARISC_MODULE_H */
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 68e0955..a549f89 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -76,6 +76,11 @@ void sort_extable(struct exception_table_entry *start,
+ 		  struct exception_table_entry *finish);
+ void sort_main_extable(void);
+ 
++/* function descriptor handling (if any) */
++#ifndef dereference_function_descriptor
++#define dereference_function_descriptor(p) (p)
++#endif
++
+ #ifdef MODULE
+ #define MODULE_GENERIC_TABLE(gtype,name)			\
+ extern const struct gtype##_id __mod_##gtype##_table		\
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index d8d1d11..0c47629 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -513,16 +513,6 @@ static char *string(char *buf, char *end, char *s, int field_width, int precisio
+ 	return buf;
+ }
+ 
+-static inline void *dereference_function_descriptor(void *ptr)
+-{
+-#if defined(CONFIG_IA64) || defined(CONFIG_PPC64)
+-	void *p;
+-	if (!probe_kernel_address(ptr, p))
+-		ptr = p;
+-#endif
+-	return ptr;
+-}
+-
+ static char *symbol_string(char *buf, char *end, void *ptr, int field_width, int precision, int flags)
+ {
+ 	unsigned long value = (unsigned long) ptr;
+-- 
+1.5.6.5
