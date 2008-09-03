@@ -1,28 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A0F97DE007
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 07:04:36 +1000 (EST)
-Message-ID: <48BEFBA2.3020009@freescale.com>
-Date: Wed, 03 Sep 2008 16:03:30 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DBD50DDE2A
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 07:23:15 +1000 (EST)
+Date: Wed, 3 Sep 2008 14:22:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH] Correct printk %pF to work on all architectures
+In-Reply-To: <1220473137.3254.29.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.1.10.0809031419560.3515@nehalem.linux-foundation.org>
+References: <1220473137.3254.29.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: =?UTF-8?B?U8OpYmFzdGllbiBDaHLDqXRpZW4=?=
-	<sebastien.chretien.enseirb@gmail.com>
-Subject: Re: irq
-References: <319b0ac50809030715h1a03a606jacddd400019f4483@mail.gmail.com>
-	<48BEA106.9090307@selcomgroup.com>
-	<319b0ac50809030803p6d659468wd7d2425224653374@mail.gmail.com>
-	<6a6049b80809030905u561043ecr1438d20aebf5598d@mail.gmail.com>
-	<48BEBD17.1030705@gmail.com>
-	<20080903170815.GA10979@loki.buserror.net>
-	<48BEFB5D.3040903@gmail.com>
-In-Reply-To: <48BEFB5D.3040903@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: M B <super.firetwister@googlemail.com>, linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-ia64@vger.kernel.org, Parisc List <linux-parisc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,9 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sébastien Chrétien wrote:
-> irq_of_parse_and_map is equivalent to ioremap in the MMU case ?
 
-It's more analogous to of_iomap().
 
--Scott
+On Wed, 3 Sep 2008, James Bottomley wrote:
+> 
+> Make dereference_function_descriptor() more accommodating by allowing
+> architecture overrides.
+
+Don't do it like this.
+
+We don't want some stupid useless weak function that is empty on all sane 
+platforms.
+
+Just do
+
+	.. declare or create an inline 'parisc_function_descriptor()' ..
+
+	#define dereference_function_descriptor(p) parisc_function_descriptor(p)
+
+in some arch header file. And then use
+
+	#ifndef dereference_function_descriptor
+	#define dereference_function_descriptor(p) (p)
+	#endif
+
+in the generic code, so that sane architectures don't need to do anything 
+at all.
+
+		Linus
