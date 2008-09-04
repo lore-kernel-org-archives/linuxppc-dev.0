@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 62EB1DDF2C
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 23:36:44 +1000 (EST)
-Date: Thu, 4 Sep 2008 17:36:40 +0400
+	by ozlabs.org (Postfix) with ESMTP id B5D6BDE228
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 23:37:17 +1000 (EST)
+Date: Thu, 4 Sep 2008 17:37:16 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 1/2] powerpc: add driver for simple GPIO banks
-Message-ID: <20080904133640.GA10256@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/2] powerpc/83xx: mpc836x_mds: add support for USB Host/Gadget
+Message-ID: <20080904133716.GB10256@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
 Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
@@ -19,216 +19,193 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The driver supports very simple GPIO controllers, that is, when a
-controller provides just a 'data' register. Such controllers may
-be found in various BCSRs (Board's FPGAs used to control board's
-switches, LEDs, chip-selects, Ethernet/USB PHY power, etc).
+Various changes to support QE USB Host and Gadget on MPC8360E-MDS
+boards:
 
-So far we support only 1-byte GPIO banks. Support for other widths
-may be implemented when/if needed.
+- Update the device tree per QE USB bindings;
+- Configure QE Par IO;
+- Set up BCSR for both USB Host and Peripheral modes;
+- Add timer (GTM) node;
+- Add gpio-controller node for BCSR13 bank;
+- Select FSL_GTM and QE_USB.
 
+The work is loosely based on Li Yang's patch[1], which is used
+to support peripheral mode only.
+
+[1] http://ozlabs.org/pipermail/linuxppc-dev/2008-August/061357.html
+
+The s-o-b line of the original patch preserved here.
+
+Signed-off-by: Li Yang <leoli@freescale.com>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
 
-The driver is user-selectable now.
+Added qe_usb_clock_set() for peripheral case, since the udc driver
+does not manage the clocks.
 
- arch/powerpc/sysdev/Kconfig          |   11 +++
- arch/powerpc/sysdev/Makefile         |    2 +
- arch/powerpc/sysdev/of_simple_gpio.c |  154 ++++++++++++++++++++++++++++++++++
- 3 files changed, 167 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/sysdev/of_simple_gpio.c
+Also, simple of gpio driver is user-selectable now, so we don't
+need to select it explicitly.
 
-diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
-index 72fb35b..30d6e4d 100644
---- a/arch/powerpc/sysdev/Kconfig
-+++ b/arch/powerpc/sysdev/Kconfig
-@@ -6,3 +6,14 @@ config PPC4xx_PCI_EXPRESS
- 	bool
- 	depends on PCI && 4xx
- 	default n
-+
-+config OF_SIMPLE_GPIO
-+	bool "Support for simple, memory-mapped GPIO controllers"
-+	depends on PPC
-+	select GENERIC_GPIO
-+	select ARCH_REQUIRE_GPIOLIB
-+	help
-+	  Say Y here to support simple, memory-mapped GPIO controllers.
-+	  These are usually BCSRs used to control board's switches, LEDs,
-+	  chip-selects, Ethernet/USB PHY's power and various other small
-+	  on-board peripherals.
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index a90054b..239d7e8 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -36,6 +36,8 @@ ifeq ($(CONFIG_PCI),y)
- obj-$(CONFIG_4xx)		+= ppc4xx_pci.o
- endif
+ arch/powerpc/boot/dts/mpc836x_mds.dts     |   44 +++++++++++++++++++++++++++-
+ arch/powerpc/platforms/83xx/Kconfig       |    2 +
+ arch/powerpc/platforms/83xx/mpc836x_mds.c |   45 ++++++++++++++++++++++++++++-
+ 3 files changed, 88 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
+index ada8446..0be98f3 100644
+--- a/arch/powerpc/boot/dts/mpc836x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
+@@ -69,8 +69,19 @@
+ 		};
  
-+obj-$(CONFIG_OF_SIMPLE_GPIO)	+= of_simple_gpio.o
+ 		bcsr@1,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			device_type = "board-control";
+ 			reg = <1 0 0x8000>;
++			ranges = <0 1 0 0x8000>;
 +
- # Temporary hack until we have migrated to asm-powerpc
- ifeq ($(ARCH),powerpc)
- obj-$(CONFIG_CPM)		+= cpm_common.o
-diff --git a/arch/powerpc/sysdev/of_simple_gpio.c b/arch/powerpc/sysdev/of_simple_gpio.c
-new file mode 100644
-index 0000000..536c0c2
---- /dev/null
-+++ b/arch/powerpc/sysdev/of_simple_gpio.c
-@@ -0,0 +1,154 @@
-+/*
-+ * Simple Memory-Mapped GPIOs
-+ *
-+ * Copyright (c) MontaVista Software, Inc. 2008.
-+ *
-+ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
++			bcsr13: gpio-controller@d {
++				#gpio-cells = <2>;
++				compatible = "fsl,mpc8360mds-bcsr-gpio",
++					     "simple-gpio-bank";
++				reg = <0xd 1>;
++				gpio-controller;
++			};
+ 		};
+ 	};
+ 
+@@ -191,10 +202,21 @@
+ 		};
+ 
+ 		par_io@1400 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			reg = <0x1400 0x100>;
++			ranges = <0 0x1400 0x100>;
+ 			device_type = "par_io";
+ 			num-ports = <7>;
+ 
++			qe_pio_b: gpio-controller@18 {
++				#gpio-cells = <2>;
++				compatible = "fsl,mpc8360-qe-pario-bank",
++					     "fsl,mpc8323-qe-pario-bank";
++				reg = <0x18 0x18>;
++				gpio-controller;
++			};
 +
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/spinlock.h>
-+#include <linux/types.h>
-+#include <linux/ioport.h>
-+#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/of_gpio.h>
-+#include <linux/gpio.h>
+ 			pio1: ucc_pin@01 {
+ 				pio-map = <
+ 			/* port  pin  dir  open_drain  assignment  has_irq */
+@@ -278,6 +300,15 @@
+ 			};
+ 		};
+ 
++		timer@440 {
++			compatible = "fsl,mpc8360-qe-gtm",
++				     "fsl,qe-gtm", "fsl,gtm";
++			reg = <0x440 0x40>;
++			clock-frequency = <132000000>;
++			interrupts = <12 13 14 15>;
++			interrupt-parent = <&qeic>;
++		};
 +
-+struct u8_gpio_chip {
-+	struct of_mm_gpio_chip mm_gc;
-+	spinlock_t lock;
+ 		spi@4c0 {
+ 			cell-index = <0>;
+ 			compatible = "fsl,spi";
+@@ -297,11 +328,20 @@
+ 		};
+ 
+ 		usb@6c0 {
+-			compatible = "qe_udc";
++			compatible = "fsl,mpc8360-qe-usb",
++				     "fsl,mpc8323-qe-usb";
+ 			reg = <0x6c0 0x40 0x8b00 0x100>;
+ 			interrupts = <11>;
+ 			interrupt-parent = <&qeic>;
+-			mode = "slave";
++			fsl,fullspeed-clock = "clk21";
++			fsl,lowspeed-clock = "brg9";
++			gpios = <&qe_pio_b  2 0   /* USBOE */
++				 &qe_pio_b  3 0   /* USBTP */
++				 &qe_pio_b  8 0   /* USBTN */
++				 &qe_pio_b  9 0   /* USBRP */
++				 &qe_pio_b 11 0   /* USBRN */
++				 &bcsr13    5 0   /* SPEED */
++				 &bcsr13    4 1>; /* POWER */
+ 		};
+ 
+ 		enet0: ucc@2000 {
+diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
+index 6159c5d..b4ee8f1 100644
+--- a/arch/powerpc/platforms/83xx/Kconfig
++++ b/arch/powerpc/platforms/83xx/Kconfig
+@@ -58,6 +58,8 @@ config MPC836x_MDS
+ 	bool "Freescale MPC836x MDS"
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
++	select QE_USB
++	select FSL_GTM
+ 	help
+ 	  This option enables support for the MPC836x MDS Processor Board.
+ 
+diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+index 9d46e5b..55fa717 100644
+--- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+@@ -127,9 +127,52 @@ static void __init mpc836x_mds_setup_arch(void)
+ 			iounmap(immap);
+ 		}
+ 
+-		iounmap(bcsr_regs);
+ 		of_node_put(np);
+ 	}
 +
-+	/* shadowed data register to clear/set bits safely */
-+	u8 data;
-+};
++	np = of_find_compatible_node(NULL, NULL, "fsl,mpc8323-qe-usb");
++	if (np) {
++		const char *mode = of_get_property(np, "mode", NULL);
 +
-+static struct u8_gpio_chip *to_u8_gpio_chip(struct of_mm_gpio_chip *mm_gc)
-+{
-+	return container_of(mm_gc, struct u8_gpio_chip, mm_gc);
-+}
++		par_io_config_pin(1,  2, 1, 0, 3, 0); /* USBOE  */
++		par_io_config_pin(1,  3, 1, 0, 3, 0); /* USBTP  */
++		par_io_config_pin(1,  8, 1, 0, 1, 0); /* USBTN  */
++		par_io_config_pin(1, 10, 2, 0, 3, 0); /* USBRXD */
++		par_io_config_pin(1,  9, 2, 1, 3, 0); /* USBRP  */
++		par_io_config_pin(1, 11, 2, 1, 3, 0); /* USBRN  */
++		par_io_config_pin(2, 20, 2, 0, 1, 0); /* CLK21  */
 +
-+static u8 u8_pin2mask(unsigned int pin)
-+{
-+	return 1 << (8 - 1 - pin);
-+}
++#define BCSR8_TSEC1M_MASK	(0x3 << 6)
++#define BCSR8_TSEC1M_RGMII	(0x0 << 6)
++#define BCSR8_TSEC2M_MASK	(0x3 << 4)
++#define BCSR8_TSEC2M_RGMII	(0x0 << 4)
++		/*
++		 * Default is GMII (2), but we should set it to RGMII (0) if
++		 * we use USB (Eth PHY is in RGMII mode anyway).
++		 */
++		clrsetbits_8(&bcsr_regs[8],
++			     BCSR8_TSEC1M_MASK | BCSR8_TSEC2M_MASK,
++			     BCSR8_TSEC1M_RGMII | BCSR8_TSEC2M_RGMII);
 +
-+static int u8_gpio_get(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++#define BCSR13_USBMASK	0x0f
++#define BCSR13_nUSBEN	0x08 /* 1 - Disable, 0 - Enable			*/
++#define BCSR13_USBSPEED 0x04 /* 1 - Full, 0 - Low			*/
++#define BCSR13_USBMODE	0x02 /* 1 - Host, 0 - Function			*/
++#define BCSR13_nUSBVCC	0x01 /* 1 - gets VBUS, 0 - supplies VBUS 	*/
 +
-+	return in_8(mm_gc->regs) & u8_pin2mask(gpio);
-+}
++		clrsetbits_8(&bcsr_regs[13], BCSR13_USBMASK, BCSR13_USBSPEED);
 +
-+static void u8_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct u8_gpio_chip *u8_gc = to_u8_gpio_chip(mm_gc);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&u8_gc->lock, flags);
-+
-+	if (val)
-+		u8_gc->data |= u8_pin2mask(gpio);
-+	else
-+		u8_gc->data &= ~u8_pin2mask(gpio);
-+
-+	out_8(mm_gc->regs, u8_gc->data);
-+
-+	spin_unlock_irqrestore(&u8_gc->lock, flags);
-+}
-+
-+static int u8_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	return 0;
-+}
-+
-+static int u8_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	u8_gpio_set(gc, gpio, val);
-+	return 0;
-+}
-+
-+static void u8_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
-+{
-+	struct u8_gpio_chip *u8_gc = to_u8_gpio_chip(mm_gc);
-+
-+	u8_gc->data = in_8(mm_gc->regs);
-+}
-+
-+static int __init u8_simple_gpiochip_add(struct device_node *np)
-+{
-+	int ret;
-+	struct u8_gpio_chip *u8_gc;
-+	struct of_mm_gpio_chip *mm_gc;
-+	struct of_gpio_chip *of_gc;
-+	struct gpio_chip *gc;
-+
-+	u8_gc = kzalloc(sizeof(*u8_gc), GFP_KERNEL);
-+	if (!u8_gc)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&u8_gc->lock);
-+
-+	mm_gc = &u8_gc->mm_gc;
-+	of_gc = &mm_gc->of_gc;
-+	gc = &of_gc->gc;
-+
-+	mm_gc->save_regs = u8_gpio_save_regs;
-+	of_gc->gpio_cells = 2;
-+	gc->ngpio = 8;
-+	gc->direction_input = u8_gpio_dir_in;
-+	gc->direction_output = u8_gpio_dir_out;
-+	gc->get = u8_gpio_get;
-+	gc->set = u8_gpio_set;
-+
-+	ret = of_mm_gpiochip_add(np, mm_gc);
-+	if (ret)
-+		goto err;
-+	return 0;
-+err:
-+	kfree(u8_gc);
-+	return ret;
-+}
-+
-+static int __init simple_gpiochip_init(void)
-+{
-+	struct device_node *np;
-+
-+	for_each_compatible_node(np, NULL, "simple-gpio-bank") {
-+		int ret;
-+		struct resource r;
-+
-+		ret = of_address_to_resource(np, 0, &r);
-+		if (ret)
-+			goto err;
-+
-+		switch (resource_size(&r)) {
-+		case 1:
-+			ret = u8_simple_gpiochip_add(np);
-+			if (ret)
-+				goto err;
-+			break;
-+		default:
-+			/*
-+			 * Whenever you need support for GPIO bank width > 1,
-+			 * please just turn u8_ code into huge macros, and
-+			 * construct needed uX_ code with it.
-+			 */
-+			ret = -ENOSYS;
-+			goto err;
++		if (mode && !strcmp(mode, "peripheral")) {
++			setbits8(&bcsr_regs[13], BCSR13_nUSBVCC);
++			qe_usb_clock_set(QE_CLK21, 48000000);
++		} else {
++			setbits8(&bcsr_regs[13], BCSR13_USBMODE);
 +		}
-+		continue;
-+err:
-+		pr_err("%s: registration failed, status %d\n",
-+		       np->full_name, ret);
++
++		of_node_put(np);
 +	}
-+	return 0;
-+}
-+arch_initcall(simple_gpiochip_init);
++
++	iounmap(bcsr_regs);
+ #endif				/* CONFIG_QUICC_ENGINE */
+ }
+ 
 -- 
 1.5.6.3
