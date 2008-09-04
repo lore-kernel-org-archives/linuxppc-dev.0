@@ -1,20 +1,33 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 56108475DF
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 00:48:35 +1000 (EST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/44x: Add hwmon support to Sequoia device tree
-Date: Thu, 4 Sep 2008 16:41:57 +0200
-References: <200809041155.02927.matthias.fuchs@esd-electronics.com>
-	<20080904122507.GB12867@yoda.jdub.homelinux.org>
-	<200809041628.29460.matthias.fuchs@esd-electronics.com>
-In-Reply-To: <200809041628.29460.matthias.fuchs@esd-electronics.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200809041641.57614.matthias.fuchs@esd-electronics.com>
-Cc: sr@denx.de
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-cn0ut-2.online-age.net (ext-cn0ut-2.online-age.net
+	[63.210.253.231])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ext-cn0ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 9B2B44764B
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 00:52:11 +1000 (EST)
+Received: from int-cn0ut-7.online-age.net (int-cn0ut-7.online-age.net
+	[3.159.252.76])
+	by ext-cn0ut-2.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id m84Eq7Vp031129
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 10:52:07 -0400
+Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-7.online-age.net
+	[3.159.252.76])
+	by int-cn0ut-7.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m84Eq7Lj009056
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 10:52:07 -0400
+Date: Thu, 4 Sep 2008 15:51:27 +0100
+From: Martyn Welch <martyn.welch@gefanuc.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v4 1/2] powerpc: Board support for GE Fanuc SBC610
+Message-Id: <20080904155127.5ca8fca3.martyn.welch@gefanuc.com>
+In-Reply-To: <20080902182709.GB16741@ld0162-tx32.am.freescale.net>
+References: <20080901102753.8068.36706.stgit@ubuntu8041.localdomain>
+	<20080901102758.8068.77414.stgit@ubuntu8041.localdomain>
+	<20080902182709.GB16741@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,40 +37,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds support for the AD7414 temperature sensor
-on Sequoia PPC440EPx board.
+On Tue, 2 Sep 2008 13:27:09 -0500
+Scott Wood <scottwood@freescale.com> wrote:
 
-Signed-off-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
----
- arch/powerpc/boot/dts/sequoia.dts |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+> On Mon, Sep 01, 2008 at 11:27:59AM +0100, Martyn Welch wrote:
+> > +static __initdata struct of_device_id of_bus_ids[] = {
+> > +	{ .compatible = "simple-bus", },
+> > +	{ .type = "serial", },
+> > +	{ .type = "soc", },
+> > +	{ .type = "i2c", },
+> 
+> i2c and serial don't belong here, and soc is redundant with simple-bus.
+> 
 
-diff --git a/arch/powerpc/boot/dts/sequoia.dts b/arch/powerpc/boot/dts/sequoia.dts
-index 72d15f0..9ba5def 100644
---- a/arch/powerpc/boot/dts/sequoia.dts
-+++ b/arch/powerpc/boot/dts/sequoia.dts
-@@ -246,13 +246,22 @@
- 	   		};
- 
- 			IIC0: i2c@ef600700 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
- 				compatible = "ibm,iic-440epx", "ibm,iic";
- 				reg = <0xef600700 0x00000014>;
- 				interrupt-parent = <&UIC0>;
- 				interrupts = <0x2 0x4>;
-+
-+				hwmon@48 {
-+					compatible = "analog,ad7414";
-+					reg = <0x48>;
-+				};
- 			};
- 
- 			IIC1: i2c@ef600800 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
- 				compatible = "ibm,iic-440epx", "ibm,iic";
- 				reg = <0xef600800 0x00000014>;
- 				interrupt-parent = <&UIC0>;
+I agree about the i2c and serial, although I need the soc entry for the i2c devices to be found during the platform scan.
+
+Martyn
+
+> -Scott
+
+
 -- 
-1.5.3
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
