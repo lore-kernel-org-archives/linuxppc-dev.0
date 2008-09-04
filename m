@@ -1,16 +1,38 @@
-Return-Path: <jacmet@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.155])
-	by ozlabs.org (Postfix) with ESMTP id D426D474E2
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 23:49:03 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so432088fga.36
-	for <linuxppc-dev@ozlabs.org>; Thu, 04 Sep 2008 06:49:01 -0700 (PDT)
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: spi-devel-general@lists.sourceforge.net, dbrownell@users.sourceforge.net,
-	g.chen@freescale.com, linuxppc-dev@ozlabs.org
-Subject: [PATCH] spi_mpc83xx: fix clockrate calculation for low speed
-Date: Thu,  4 Sep 2008 15:49:00 +0200
-Message-Id: <1220536140-18289-1-git-send-email-jacmet@sunsite.dk>
-Sender: Peter Korsgaard <jacmet@gmail.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7FDDDDDF87
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 00:18:17 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m84EIAAU009331
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 07:18:11 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m84EI9Ls015236
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 09:18:09 -0500 (CDT)
+Date: Thu, 4 Sep 2008 09:18:08 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: =?iso-8859-1?Q?S=E9bastien_Chr=E9tien?=
+	<sebastien.chretien.enseirb@gmail.com>
+Subject: Re: irq
+Message-ID: <20080904141808.GA2377@ld0162-tx32.am.freescale.net>
+References: <319b0ac50809030715h1a03a606jacddd400019f4483@mail.gmail.com>
+	<48BEA106.9090307@selcomgroup.com>
+	<319b0ac50809030803p6d659468wd7d2425224653374@mail.gmail.com>
+	<6a6049b80809030905u561043ecr1438d20aebf5598d@mail.gmail.com>
+	<48BEBD17.1030705@gmail.com>
+	<20080903170815.GA10979@loki.buserror.net>
+	<48BEFB5D.3040903@gmail.com> <1220497366.4879.27.camel@pasglop>
+	<319b0ac50809040127l2c506007vd6400a5edf912b71@mail.gmail.com>
+	<319b0ac50809040623q1c32049ake8a5ea21fd5972cd@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <319b0ac50809040623q1c32049ake8a5ea21fd5972cd@mail.gmail.com>
+Cc: M B <super.firetwister@googlemail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,43 +42,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit a61f5345 (spi_mpc83xx clockrate fixes) broke clockrate
-calculation for low speeds. SPMODE_DIV16 should be set if the
-divider is higher than 64, not only if the divider gets clipped
-to 1024.
+On Thu, Sep 04, 2008 at 03:23:21PM +0200, Sébastien Chrétien wrote:
+> I try to write a device tree about irq :
+> 
+> IT_controller: irq_controller@20006000 {
+>                clock-frequency = <0>;
+>                interrupt-controller;
+>             #address-cells = <0>;
+>                reg = <0x20006000 0x100>;
+>                compatible = "it";
+>                device_type = "it";
+>                big-endian;
+>            };
+> 
+>            uart@200b1000{
+>                device_type="uart";
+>                compatible="uart";
+>                interrupts = <0x18 0>;
+>                interrupt-parent=<&IT_controller>;
+>            };
+> 
+> 
+> uart_irq=of_find_node_by_type(NULL, "uart");
+>     if(uart_irq==NULL)
+>          printk("%s: No uart node found !\n", __func__);
+> 
+>     virt=irq_of_parse_and_map(uart_irq, 0);
+>     printk("Virtual irq : %d \n",virt);
+> 
+> 
+> When I boot linux, virt=0;
+> 
+> What is wrong ?
 
-Furthermore, the clipping check was off by a factor 16 as well.
+You're missing #interrupt-cells, for one.  Also, you need your interrupt
+controller driver to register with the IRQ subsystem properly (see other
+chained IRQ drivers in the tree).
 
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
----
- drivers/spi/spi_mpc83xx.c |   13 +++++--------
- 1 files changed, 5 insertions(+), 8 deletions(-)
+You should also get rid of device_type, big-endian, and clock-frequency,
+and use better compatible names.
 
-diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
-index 070c621..ab7ee44 100644
---- a/drivers/spi/spi_mpc83xx.c
-+++ b/drivers/spi/spi_mpc83xx.c
-@@ -267,16 +267,13 @@ int mpc83xx_spi_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
- 	cs->hw_mode |= SPMODE_LEN(bits_per_word);
- 
- 	if ((mpc83xx_spi->spibrg / hz) > 64) {
-+		cs->hw_mode |= SPMODE_DIV16;
- 		pm = mpc83xx_spi->spibrg / (hz * 64);
- 		if (pm > 16) {
--			cs->hw_mode |= SPMODE_DIV16;
--			pm /= 16;
--			if (pm > 16) {
--				dev_err(&spi->dev, "Requested speed is too "
--					"low: %d Hz. Will use %d Hz instead.\n",
--					hz, mpc83xx_spi->spibrg / 1024);
--				pm = 16;
--			}
-+			dev_err(&spi->dev, "Requested speed is too "
-+				"low: %d Hz. Will use %d Hz instead.\n",
-+				hz, mpc83xx_spi->spibrg / 1024);
-+			pm = 16;
- 		}
- 	} else
- 		pm = mpc83xx_spi->spibrg / (hz * 4);
--- 
-1.5.6.3
+-Scott
