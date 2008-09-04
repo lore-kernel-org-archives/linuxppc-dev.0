@@ -1,16 +1,15 @@
 Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id 9F803DDDFF
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Sep 2008 23:04:35 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so928307pyi.27
-	for <linuxppc-dev@ozlabs.org>; Mon, 08 Sep 2008 06:04:34 -0700 (PDT)
-Message-Id: <62e3d970a3bcb8158308bb645f99c75a41d177ff.1220877899.git.jwboyer@linux.vnet.ibm.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
+	by ozlabs.org (Postfix) with ESMTP id C314ADDED8
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Sep 2008 23:04:38 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so928314pyi.27
+	for <linuxppc-dev@ozlabs.org>; Mon, 08 Sep 2008 06:04:37 -0700 (PDT)
+Message-Id: <e22122be022eb8d93b4eead4d9967769a4a139a6.1220877899.git.jwboyer@linux.vnet.ibm.com>
 In-Reply-To: <cover.1220877899.git.jwboyer@linux.vnet.ibm.com>
 References: <cover.1220877899.git.jwboyer@linux.vnet.ibm.com>
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date: Thu, 4 Sep 2008 08:57:57 -0400
-Subject: [PATCH 1/3] ibm_newemac: Allow the "no flow control" EMAC feature
-	to work
+Date: Thu, 4 Sep 2008 10:03:45 -0400
+Subject: [PATCH 2/3 v2] ibm_newemac: Introduce mal_has_feature
 To: benh@kernel.crashing.org, netdev@vger.kernel.org
 Mime-Version: 1.0
 Sender: Josh Boyer <jwboyer@gmail.com>
@@ -24,59 +23,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some PowerPC 40x chips have errata that force us not to use the integrated
-flow control.  We have the feature defined, but it currently can't be used
-because it is never added to EMAC_FTRS_POSSIBLE.
+There are some PowerPC SoCs that do odd things with the MAL handling.  In
+order to accommodate them, we need to introduce a feature mechanism that is
+similar to the existing emac_has_feature function.
 
-This adds a Kconfig option for affected platforms to select and puts the
-feature in the EMAC_FTRS_POSSIBLE list.  This is set for PowerPC 405EZ
-platforms as well.
+This adds a feature variable to the mal_instance structure, and adds a
+mal_has_feature function.  Two features are defined and are guarded
+by Kconfig options that are selected by the affected platforms.
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+MAL_FTR_CLEAR_ICINSTAT is used for platforms that need to clear the
+interrupt bits in the ICINTSTAT SDR for txeob/rxeob.  This is common
+on MAL implementations that have interrupt coalescing.
+
+MAL_FTR_COMMON_ERR_INT is used for platforms that have SERR, TXDE,
+and RXDE OR'd into a single interrupt bit.
+
+Signed-of-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 ---
- drivers/net/ibm_newemac/Kconfig |    4 ++++
- drivers/net/ibm_newemac/core.c  |    2 ++
- drivers/net/ibm_newemac/core.h  |    3 +++
- 3 files changed, 9 insertions(+), 0 deletions(-)
+ drivers/net/ibm_newemac/Kconfig |    8 ++++++++
+ drivers/net/ibm_newemac/mal.h   |   34 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/net/ibm_newemac/Kconfig b/drivers/net/ibm_newemac/Kconfig
-index 70a3272..dfb6547 100644
+index dfb6547..44e5a0e 100644
 --- a/drivers/net/ibm_newemac/Kconfig
 +++ b/drivers/net/ibm_newemac/Kconfig
-@@ -62,3 +62,7 @@ config IBM_NEW_EMAC_TAH
- config IBM_NEW_EMAC_EMAC4
+@@ -66,3 +66,11 @@ config IBM_NEW_EMAC_EMAC4
+ config IBM_NEW_EMAC_NO_FLOW_CTRL
  	bool
  	default n
 +
-+config IBM_NEW_EMAC_NO_FLOW_CTRL
++config IBM_NEW_EMAC_MAL_CLR_ICINTSTAT
 +	bool
 +	default n
-diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
-index 2e720f2..2442361 100644
---- a/drivers/net/ibm_newemac/core.c
-+++ b/drivers/net/ibm_newemac/core.c
-@@ -2567,6 +2567,8 @@ static int __devinit emac_init_config(struct emac_instance *dev)
- 		if (of_device_is_compatible(np, "ibm,emac-440ep") ||
- 		    of_device_is_compatible(np, "ibm,emac-440gr"))
- 			dev->features |= EMAC_FTR_440EP_PHY_CLK_FIX;
-+		if (of_device_is_compatible(np, "ibm,emac-405ez"))
-+			dev->features |= EMAC_FTR_NO_FLOW_CONTROL_40x;
- 	}
- 
- 	/* Fixup some feature bits based on the device tree */
-diff --git a/drivers/net/ibm_newemac/core.h b/drivers/net/ibm_newemac/core.h
-index 6545e69..59e5a5d 100644
---- a/drivers/net/ibm_newemac/core.h
-+++ b/drivers/net/ibm_newemac/core.h
-@@ -341,6 +341,9 @@ enum {
- #ifdef CONFIG_IBM_NEW_EMAC_RGMII
- 	    EMAC_FTR_HAS_RGMII	|
- #endif
-+#ifdef CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL
-+	    EMAC_FTR_NO_FLOW_CONTROL_40x |
-+#endif
- 	EMAC_FTR_440EP_PHY_CLK_FIX,
++
++config IBM_NEW_EMAC_MAL_COMMON_ERR
++	bool
++	default n
+diff --git a/drivers/net/ibm_newemac/mal.h b/drivers/net/ibm_newemac/mal.h
+index eaa7262..0b24138 100644
+--- a/drivers/net/ibm_newemac/mal.h
++++ b/drivers/net/ibm_newemac/mal.h
+@@ -213,6 +213,8 @@ struct mal_instance {
+ 	struct of_device	*ofdev;
+ 	int			index;
+ 	spinlock_t		lock;
++
++	unsigned int features;
  };
  
+ static inline u32 get_mal_dcrn(struct mal_instance *mal, int reg)
+@@ -225,6 +227,38 @@ static inline void set_mal_dcrn(struct mal_instance *mal, int reg, u32 val)
+ 	dcr_write(mal->dcr_host, reg, val);
+ }
+ 
++/* Features of various MAL implementations */
++
++/* Set if you have interrupt coalescing and you have to clear the SDR
++ * register for TXEOB and RXEOB interrupts to work
++ */
++#define MAL_FTR_CLEAR_ICINTSTAT	0x00000001
++
++/* Set if your MAL has SERR, TXDE, and RXDE OR'd into a single UIC
++ * interrupt
++ */
++#define MAL_FTR_COMMON_ERR_INT	0x00000002
++
++enum {
++	MAL_FTRS_ALWAYS = 0,
++
++	MAL_FTRS_POSSIBLE =
++#ifdef CONFIG_IBM_NEW_EMAC_MAL_CLR_ICINTSTAT
++		MAL_FTR_CLEAR_ICINTSTAT |
++#endif
++#ifdef CONFIG_IBM_NEW_EMAC_MAL_COMMON_ERR
++		MAL_FTR_COMMON_ERR_INT |
++#endif
++		0,
++};
++
++static inline int mal_has_feature(struct mal_instance *dev,
++		unsigned long feature)
++{
++	return (MAL_FTRS_ALWAYS & feature) ||
++		(MAL_FTRS_POSSIBLE & dev->features & feature);
++}
++
+ /* Register MAL devices */
+ int mal_init(void);
+ void mal_exit(void);
 -- 
 1.5.5.1
