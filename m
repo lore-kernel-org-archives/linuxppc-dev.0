@@ -1,33 +1,18 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-cn0ut-2.online-age.net (ext-cn0ut-2.online-age.net
-	[63.210.253.231])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-cn0ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 9B2B44764B
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 00:52:11 +1000 (EST)
-Received: from int-cn0ut-7.online-age.net (int-cn0ut-7.online-age.net
-	[3.159.252.76])
-	by ext-cn0ut-2.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id m84Eq7Vp031129
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 10:52:07 -0400
-Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-7.online-age.net
-	[3.159.252.76])
-	by int-cn0ut-7.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id m84Eq7Lj009056
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 10:52:07 -0400
-Date: Thu, 4 Sep 2008 15:51:27 +0100
-From: Martyn Welch <martyn.welch@gefanuc.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v4 1/2] powerpc: Board support for GE Fanuc SBC610
-Message-Id: <20080904155127.5ca8fca3.martyn.welch@gefanuc.com>
-In-Reply-To: <20080902182709.GB16741@ld0162-tx32.am.freescale.net>
-References: <20080901102753.8068.36706.stgit@ubuntu8041.localdomain>
-	<20080901102758.8068.77414.stgit@ubuntu8041.localdomain>
-	<20080902182709.GB16741@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <jwboyer@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 9E670475F8
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:02:21 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so1746641yxg.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 04 Sep 2008 08:02:19 -0700 (PDT)
+Date: Thu, 4 Sep 2008 11:01:25 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, netdev@vger.kernel.org
+Subject: [PATCH 0/3] Various fixes and additions for PowerPC 405EZ
+Message-ID: <20080904150125.GA2479@yoda.jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,28 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2 Sep 2008 13:27:09 -0500
-Scott Wood <scottwood@freescale.com> wrote:
+The following patch series adds things needed to support the
+PowerPC 405EZ SoC.  I'm mostly sending these out now for review
+and feedback, since I'll need to get these fixed up before I can
+send out the Acadia board port patches.
 
-> On Mon, Sep 01, 2008 at 11:27:59AM +0100, Martyn Welch wrote:
-> > +static __initdata struct of_device_id of_bus_ids[] = {
-> > +	{ .compatible = "simple-bus", },
-> > +	{ .type = "serial", },
-> > +	{ .type = "soc", },
-> > +	{ .type = "i2c", },
-> 
-> i2c and serial don't belong here, and soc is redundant with simple-bus.
-> 
+The first patch should be good as-is.  The second two might need a
+bit of rework, depending on various things.
 
-I agree about the i2c and serial, although I need the soc entry for the i2c devices to be found during the platform scan.
+josh
 
-Martyn
+Josh Boyer (3):
+  ibm_newemac: Allow the "no flow control" EMAC feature to work
+  ibm_newemac: Introduce mal_has_feature
+  ibm_newemac: MAL support for PowerPC 405EZ
 
-> -Scott
-
-
--- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
+ drivers/net/ibm_newemac/Kconfig |   12 +++++
+ drivers/net/ibm_newemac/core.c  |    2 +
+ drivers/net/ibm_newemac/core.h  |    3 +
+ drivers/net/ibm_newemac/mal.c   |   98 +++++++++++++++++++++++++++++++--------
+ drivers/net/ibm_newemac/mal.h   |   37 +++++++++++++++
+ 5 files changed, 132 insertions(+), 20 deletions(-)
