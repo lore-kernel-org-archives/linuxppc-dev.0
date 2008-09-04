@@ -1,14 +1,14 @@
 Return-Path: <jwboyer@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
-	by ozlabs.org (Postfix) with ESMTP id 8592947908
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:45:39 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so1060qwb.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 04 Sep 2008 08:45:37 -0700 (PDT)
-Date: Thu, 4 Sep 2008 11:44:57 -0400
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
+	by ozlabs.org (Postfix) with ESMTP id 3D2BD479BB
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:46:03 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so4392pyi.27
+	for <linuxppc-dev@ozlabs.org>; Thu, 04 Sep 2008 08:46:01 -0700 (PDT)
+Date: Thu, 4 Sep 2008 11:45:09 -0400
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/4] powerpc/40x: AMCC PowerPC 405EZ Acadia DTS
-Message-ID: <20080904154457.GB2579@yoda.jdub.homelinux.org>
+Subject: [PATCH 2/4] powerpc/40x: Add support for PowerPC 405EZ Acadia board
+Message-ID: <20080904154509.GC2579@yoda.jdub.homelinux.org>
 References: <cover.1220541399.git.jwboyer@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -23,243 +23,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add the DTS for the AMCC PowerPC 405EZ Acadia evaluation board
+Add base support for the AMCC PowerPC 405EZ Acadia evalution board.  In addition
+to some of the normal PPC 40x peripherals, the Acadia board has:
+ - 64 MiB PSRAM
+ - NOR and NAND flash
+ - Two USB 1.1 host ports
+ - Two CAN 2.0 ports
+ - ADC and DAC connectors
+ - LCD display
+
+This adds the basic platform support to build from.
 
 Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 ---
- arch/powerpc/boot/dts/acadia.dts |  224 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 224 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/acadia.dts
+ arch/powerpc/platforms/40x/Kconfig  |   14 +++++++++
+ arch/powerpc/platforms/40x/Makefile |    1 +
+ arch/powerpc/platforms/40x/acadia.c |   56 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 71 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/40x/acadia.c
 
-diff --git a/arch/powerpc/boot/dts/acadia.dts b/arch/powerpc/boot/dts/acadia.dts
+diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+index a9260e2..fe59060 100644
+--- a/arch/powerpc/platforms/40x/Kconfig
++++ b/arch/powerpc/platforms/40x/Kconfig
+@@ -14,6 +14,14 @@
+ #	help
+ #	  This option enables support for the CPCI405 board.
+ 
++config ACADIA
++	bool "Acadia"
++	depends on 40x
++	default n
++	select 405EZ
++	help
++	  This option enables support for the AMCC 405EZ Acadia evaluation board.
++
+ config EP405
+ 	bool "EP405/EP405PC"
+ 	depends on 40x
+@@ -118,6 +126,12 @@ config 405EX
+ 	select IBM_NEW_EMAC_EMAC4
+ 	select IBM_NEW_EMAC_RGMII
+ 
++config 405EZ
++	bool
++	select IBM_NEW_EMAC_NO_FLOW_CTRL
++	select IBM_NEW_EMAC_MAL_CLR_ICINTSTAT
++	select IBM_NEW_EMAC_MAL_COMMON_ERR
++
+ config 405GPR
+ 	bool
+ 
+diff --git a/arch/powerpc/platforms/40x/Makefile b/arch/powerpc/platforms/40x/Makefile
+index 5533a5c..ff483c0 100644
+--- a/arch/powerpc/platforms/40x/Makefile
++++ b/arch/powerpc/platforms/40x/Makefile
+@@ -3,3 +3,4 @@ obj-$(CONFIG_MAKALU)				+= makalu.o
+ obj-$(CONFIG_WALNUT)				+= walnut.o
+ obj-$(CONFIG_XILINX_VIRTEX_GENERIC_BOARD)	+= virtex.o
+ obj-$(CONFIG_EP405)				+= ep405.o
++obj-$(CONFIG_ACADIA)			+= acadia.o
+diff --git a/arch/powerpc/platforms/40x/acadia.c b/arch/powerpc/platforms/40x/acadia.c
 new file mode 100644
-index 0000000..57291f6
+index 0000000..9a4419b
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/acadia.dts
-@@ -0,0 +1,224 @@
++++ b/arch/powerpc/platforms/40x/acadia.c
+@@ -0,0 +1,56 @@
 +/*
-+ * Device Tree Source for AMCC Acadia (405EZ)
++ * Acadia board support
 + *
-+ * Copyright IBM Corp. 2008
++ * Copyright 2008 IBM Corporation
++ * Based on the Walnut code
++ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
 + *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2.  This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
++#include <linux/init.h>
++#include <linux/of_platform.h>
 +
-+/dts-v1/;
++#include <asm/machdep.h>
++#include <asm/prom.h>
++#include <asm/udbg.h>
++#include <asm/time.h>
++#include <asm/uic.h>
++#include <asm/ppc4xx.h>
 +
-+/ {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	model = "amcc,acadia";
-+	compatible = "amcc,acadia";
-+	dcr-parent = <&{/cpus/cpu@0}>;
++static __initdata struct of_device_id acadia_of_bus[] = {
++	{ .compatible = "ibm,plb3", },
++	{ .compatible = "ibm,opb", },
++	{ .compatible = "ibm,ebc", },
++	{},
++};
 +
-+	aliases {
-+		ethernet0 = &EMAC0;
-+		serial0 = &UART0;
-+		serial1 = &UART1;
-+	};
++static int __init acadia_device_probe(void)
++{
++	of_platform_bus_probe(NULL, acadia_of_bus, NULL);
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++	return 0;
++}
++machine_device_initcall(acadia, acadia_device_probe);
 +
-+		cpu@0 {
-+			device_type = "cpu";
-+			model = "PowerPC,405EZ";
-+			reg = <0x0>;
-+			clock-frequency = <0>; /* Filled in by wrapper */
-+			timebase-frequency = <0>; /* Filled in by wrapper */
-+			i-cache-line-size = <32>;
-+			d-cache-line-size = <32>;
-+			i-cache-size = <16384>;
-+			d-cache-size = <16384>;
-+			dcr-controller;
-+			dcr-access-method = "native";
-+		};
-+	};
++static int __init acadia_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
 +
-+	memory {
-+		device_type = "memory";
-+		reg = <0x0 0x0>; /* Filled in by wrapper */
-+	};
++	if (!of_flat_dt_is_compatible(root, "amcc,acadia"))
++		return 0;
 +
-+	UIC0: interrupt-controller {
-+		compatible = "ibm,uic-405ez", "ibm,uic";
-+		interrupt-controller;
-+		dcr-reg = <0x0c0 0x009>;
-+		cell-index = <0>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+	};
++	return 1;
++}
 +
-+	plb {
-+		compatible = "ibm,plb-405ez", "ibm,plb3";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+		clock-frequency = <0>; /* Filled in by wrapper */
-+
-+		MAL0: mcmal {
-+			compatible = "ibm,mcmal-405ez", "ibm,mcmal";
-+			dcr-reg = <0x380 0x62>;
-+			num-tx-chans = <1>;
-+			num-rx-chans = <1>;
-+			interrupt-parent = <&UIC0>;
-+			/* 405EZ has only 3 interrupts to the UIC, as
-+			 * SERR, TXDE, and RXDE are or'd together into
-+			 * one UIC bit
-+			 */
-+			interrupts = <
-+				0x13 0x4 /* TXEOB */
-+				0x15 0x4 /* RXEOB */
-+				0x12 0x4 /* SERR, TXDE, RXDE */>;
-+		};
-+
-+		POB0: opb {
-+			compatible = "ibm,opb-405ez", "ibm,opb";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges;
-+			dcr-reg = <0x0a 0x05>;
-+			clock-frequency = <0>; /* Filled in by wrapper */
-+
-+			UART0: serial@ef600300 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <0xef600300 0x8>;
-+				virtual-reg = <0xef600300>;
-+				clock-frequency = <0>; /* Filled in by wrapper */
-+				current-speed = <115200>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x5 0x4>;
-+			};
-+
-+			UART1: serial@ef600400 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <0xef600400 0x8>;
-+				clock-frequency = <0>; /* Filled in by wrapper */
-+				current-speed = <115200>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x6 0x4>;
-+			};
-+
-+			IIC: i2c@ef600500 {
-+				compatible = "ibm,iic-405ez", "ibm,iic";
-+				reg = <0xef600500 0x11>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0xa 0x4>;
-+			};
-+
-+			GPIO0: gpio@ef600700 {
-+				compatible = "ibm,gpio-405ez";
-+				reg = <0xef600700 0x20>;
-+			};
-+
-+			GPIO1: gpio@ef600800 {
-+				compatible = "ibm,gpio-405ez";
-+				reg = <0xef600800 0x20>;
-+			};
-+
-+			EMAC0: ethernet@ef600900 {
-+				device_type = "network";
-+				compatible = "ibm,emac-405ez", "ibm,emac";
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <
-+					0x10 0x4 /* Ethernet */
-+					0x11 0x4 /* Ethernet Wake up */>;
-+				local-mac-address = [000000000000]; /* Filled in by wrapper */
-+				reg = <0xef600900 0x70>;
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <0>;
-+				mal-rx-channel = <0>;
-+				cell-index = <0>;
-+				max-frame-size = <1500>;
-+				rx-fifo-size = <4096>;
-+				tx-fifo-size = <2048>;
-+				phy-mode = "mii";
-+				phy-map = <0x0>;
-+			};
-+
-+			CAN0: can@ef601000 {
-+				compatible = "amcc,can-405ez";
-+				reg = <0xef601000 0x620>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x7 0x4>;
-+			};
-+
-+			CAN1: can@ef601800 {
-+				compatible = "amcc,can-405ez";
-+				reg = <0xef601800 0x620>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x8 0x4>;
-+			};
-+
-+			cameleon@ef602000 {
-+				compatible = "amcc,cameleon-405ez";
-+				reg = <0xef602000 0x800>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0xb 0x4 0xc 0x4>;
-+			};
-+
-+			ieee1588@ef602800 {
-+				compatible = "amcc,ieee1588-405ez";
-+				reg = <0xef602800 0x60>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x4 0x4>;
-+				/* This thing is a bit weird.  It has it's own UIC
-+				 * that it uses to generate snapshot triggers.  We
-+				 * don't really support this device yet, and it needs
-+				 * work to figure this out.
-+				 */
-+				dcr-reg = <0xe0 0x9>;
-+			};
-+
-+			usb@ef603000 {
-+				compatible = "ohci-be";
-+				reg = <0xef603000 0x80>;
-+				interrupts-parent = <&UIC0>;
-+				interrupts = <0xd 0x4 0xe 0x4>;
-+			};
-+
-+			dac@ef603300 {
-+				compatible = "amcc,dac-405ez";
-+				reg = <0xef603300 0x40>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x18 0x4>;
-+			};
-+
-+			adc@ef603400 {
-+				compatible = "amcc,adc-405ez";
-+				reg = <0xef603400 0x40>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x17 0x4>;
-+			};
-+
-+			spi@ef603500 {
-+				compatible = "amcc,spi-405ez";
-+				reg = <0xef603500 0x100>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x9 0x4>;
-+			};
-+		};
-+
-+		EBC0: ebc {
-+			compatible = "ibm,ebc-405ez", "ibm,ebc";
-+			dcr-reg = <0x12 0x2>;
-+			#address-cells = <2>;
-+			#size-cells = <1>;
-+			clock-frequency = <0>; /* Filled in by wrapper */
-+		};
-+	};
-+
-+	chosen {
-+		linux,stdout-path = "/plb/opb/serial@ef600300";
-+	};
++define_machine(acadia) {
++	.name 				= "Acadia",
++	.probe 				= acadia_probe,
++	.progress 			= udbg_progress,
++	.init_IRQ 			= uic_init_tree,
++	.get_irq 			= uic_get_irq,
++	.restart			= ppc4xx_reset_system,
++	.calibrate_decr			= generic_calibrate_decr,
 +};
 -- 
 1.5.5.1
