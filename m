@@ -1,35 +1,35 @@
 Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-cn0ut-4.online-age.net (ext-cn0ut-4.online-age.net
-	[63.210.253.233])
+Received: from ext-nj2ut-7.online-age.net (ext-nj2ut-7.online-age.net
+	[64.14.54.237])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-cn0ut.online-age.net",
+	(Client CN "ext-nj2ut.online-age.net",
 	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 4C1414762A
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:35:06 +1000 (EST)
-Received: from int-cn0ut-7.online-age.net (int-cn0ut-7.online-age.net
-	[3.159.252.76])
-	by ext-cn0ut-4.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id m84FZ3jp027267
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 11:35:03 -0400
-Received: from alpmlip01.e2k.ad.ge.com (int-cn0ut-7.online-age.net
-	[3.159.252.76])
-	by int-cn0ut-7.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id m84FZ3Z0005701
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 11:35:03 -0400
-Date: Thu, 4 Sep 2008 16:34:20 +0100
+	by ozlabs.org (Postfix) with ESMTPS id 01D6C4762A
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:41:57 +1000 (EST)
+Received: from int-nj2ut-3.online-age.net (int-nj2ut-3.online-age.net
+	[3.159.237.72])
+	by ext-nj2ut-7.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id m84Ffqrk030043
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 11:41:52 -0400
+Received: from alpmlip01.e2k.ad.ge.com (int-nj2ut-3.online-age.net
+	[3.159.237.72])
+	by int-nj2ut-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m84Ffq22017742
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 11:41:52 -0400
+Date: Thu, 4 Sep 2008 16:41:08 +0100
 From: Martyn Welch <martyn.welch@gefanuc.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v4 1/2] powerpc: Board support for GE Fanuc SBC610
-Message-Id: <20080904163420.fa63088b.martyn.welch@gefanuc.com>
-In-Reply-To: <48BFF8E4.9070400@freescale.com>
-References: <20080901102753.8068.36706.stgit@ubuntu8041.localdomain>
-	<20080901102758.8068.77414.stgit@ubuntu8041.localdomain>
-	<20080902182709.GB16741@ld0162-tx32.am.freescale.net>
-	<20080904155127.5ca8fca3.martyn.welch@gefanuc.com>
-	<48BFF8E4.9070400@freescale.com>
+To: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
+Subject: Re: [PATCH v3 1/2] powerpc: Board support for GE Fanuc SBC610
+Message-Id: <20080904164108.098f7a0e.martyn.welch@gefanuc.com>
+In-Reply-To: <48BF1D2B.7000408@gmail.com>
+References: <20080826131339.12883.61796.stgit@ubuntu8041.localdomain>
+	<20080826131344.12883.60435.stgit@ubuntu8041.localdomain>
+	<7E18A542-EA62-4F5B-992C-8AC3D9562F72@kernel.crashing.org>
+	<20080901093529.3a4371f7.martyn.welch@gefanuc.com>
+	<48BF1D2B.7000408@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,29 +39,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 04 Sep 2008 10:04:04 -0500
-Scott Wood <scottwood@freescale.com> wrote:
+On Wed, 03 Sep 2008 19:26:35 -0400
+Jerry Van Baren <gvb.linuxppc.dev@gmail.com> wrote:
 
 > Martyn Welch wrote:
-> > On Tue, 2 Sep 2008 13:27:09 -0500
-> > Scott Wood <scottwood@freescale.com> wrote:
+> > On Fri, 29 Aug 2008 07:04:18 -0500
+> > Kumar Gala <galak@kernel.crashing.org> wrote:
+> >> what u-boot version are you using/shipping with these boards?
 > > 
-> >> On Mon, Sep 01, 2008 at 11:27:59AM +0100, Martyn Welch wrote:
-> >>> +static __initdata struct of_device_id of_bus_ids[] = {
-> >>> +	{ .compatible = "simple-bus", },
-> >>> +	{ .type = "serial", },
-> >>> +	{ .type = "soc", },
-> >>> +	{ .type = "i2c", },
-> >> i2c and serial don't belong here, and soc is redundant with simple-bus.
-> >>
-> > 
-> > I agree about the i2c and serial, although I need the soc entry for the i2c devices to be found during the platform scan.
+> > U-boot 1.2.0
 > 
-> Not if the soc node has simple-bus in its compatible, which I thought I 
-> remembered yours did.
+> 1.2.0 predates the libfdt support.  You probably don't have any fdt 
+> support in your u-boot (if you do, it is old and crude and probably 
+> doesn't any of the fixups that Kumar refers to).
+> 
+> I would strongly recommend you upgrade to the tip o' the tree or at 
+> least the latest release (1.3.4).  FDT support will be *much* better - 
+> we now has generic utility routines that fix up lots of stuff for you 
+> rather than the crufty by-hand fixups (if any) from the 1.2.0 timeframe.
 > 
 
-Um, it will have in the next revision of the patch set ;-)
+Unfortunately that's not something I have the power to do. I'm stuck with 1.2.0.
 
 Martyn
 
