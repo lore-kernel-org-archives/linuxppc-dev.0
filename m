@@ -1,30 +1,33 @@
-Return-Path: <sebastien.dugue@bull.net>
-Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id 7EAF2DE007
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 18:05:09 +1000 (EST)
-Date: Thu, 4 Sep 2008 10:04:55 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 2/2] powerpc - Make the irq reverse mapping radix tree
-	lockless
-Message-ID: <20080904100455.5b96cc29@bull.net>
-In-Reply-To: <1220515136.4879.70.camel@pasglop>
-References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
-	<1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
-	<1219209781.21386.25.camel@pasglop>
-	<20080903154105.7dff49db@bull.net>
-	<1220496739.4879.20.camel@pasglop>
-	<20080904092252.12b3df4a@bull.net>
-	<1220513643.4879.68.camel@pasglop>
-	<20080904095507.207d1091@bull.net>
-	<1220515136.4879.70.camel@pasglop>
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-cn0ut-1.online-age.net (ext-cn0ut-1.online-age.net
+	[63.210.253.230])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ext-cn0ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id A6D50DDF83
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 18:18:00 +1000 (EST)
+Received: from int-cn0ut-2.online-age.net (int-cn0ut-2.online-age.net
+	[3.159.252.71])
+	by ext-cn0ut-1.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id m848Hu7d001291
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 04:17:57 -0400
+Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-2.online-age.net
+	[3.159.252.71])
+	by int-cn0ut-2.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m848HuPo020978
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 04:17:56 -0400
+Date: Thu, 4 Sep 2008 09:17:42 +0100
+From: Martyn Welch <martyn.welch@gefanuc.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v4 1/2] powerpc: Board support for GE Fanuc SBC610
+Message-Id: <20080904091742.52104869.martyn.welch@gefanuc.com>
+In-Reply-To: <20080902182709.GB16741@ld0162-tx32.am.freescale.net>
+References: <20080901102753.8068.36706.stgit@ubuntu8041.localdomain>
+	<20080901102758.8068.77414.stgit@ubuntu8041.localdomain>
+	<20080902182709.GB16741@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: dwalker@mvista.com, tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
-	jean-pierre.dion@bull.net, rostedt@goodmis.org,
-	linux-kernel@vger.kernel.org, michael@ellerman.id.au,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	gilles.carry@ext.bull.net, tglx@linutronix.de
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,24 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 04 Sep 2008 17:58:56 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Tue, 2 Sep 2008 13:27:09 -0500
+Scott Wood <scottwood@freescale.com> wrote:
 
+> On Mon, Sep 01, 2008 at 11:27:59AM +0100, Martyn Welch wrote:
+> > +static __initdata struct of_device_id of_bus_ids[] = {
+> > +	{ .compatible = "simple-bus", },
+> > +	{ .type = "serial", },
+> > +	{ .type = "soc", },
+> > +	{ .type = "i2c", },
 > 
-> >   There's nothing to 'de-initialize' here, or am I missing something?
-> > radix_tree_insert() will return ENOMEM and won't insert anything.
+> i2c and serial don't belong here, and soc is redundant with simple-bus.
 > 
-> Forget my comment, just fallback.
-> 
-> > > Or you can fallback if you don't find, as easy, probably
-> > > easier since it shouldn't happen in practice.
-> > 
-> >   That's what I had in mind.
-> 
-> Thanks for doing that work !
->
 
-  Will do that way.
+Hmm, I had to put those in to get the relevant parts to work - somethings obviously changed. I'll remove them and see what happens. 
 
-  Thanks,
+Thanks again for the feedback,
 
-  Sebastien.
+Martyn
+
+> -Scott
+
+
+-- 
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
