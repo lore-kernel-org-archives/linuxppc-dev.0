@@ -1,22 +1,17 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 65C92474D6
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 02:32:55 +1000 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: "Gunnar Von Boehn" <gunnar@genesi-usa.com>
-Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
-Date: Thu, 4 Sep 2008 18:32:29 +0200
-References: <200808251131.02071.david.jander@protonic.nl>
-	<200809041459.27606.david.jander@protonic.nl>
-	<b989d750809040801x50019cf9j9741219348c9b5f7@mail.gmail.com>
-In-Reply-To: <b989d750809040801x50019cf9j9741219348c9b5f7@mail.gmail.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 00C78DDFCC
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 03:29:05 +1000 (EST)
+Date: Thu, 4 Sep 2008 12:37:13 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: Re: Maple D info
+Message-ID: <20080904173713.GA14397@lixom.net>
+References: <20080904142829.GA2072@doriath.ww600.siemens.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200809041832.29931.david.jander@protonic.nl>
-Cc: munroesj@us.ibm.com, John Rigby <jrigby@freescale.com>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	prodyut hazarika <prodyuth@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080904142829.GA2072@doriath.ww600.siemens.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 04 September 2008 17:01:21 Gunnar Von Boehn wrote:
->[...]
-> Regarding the 5121.
-> David, you did create a very special memcopy for the 5121e CPU.
-> Your test showed us that the normal glibc memcopy is about 10 times
-> slower than expected on the 5121.
->
-> I really wonder why this is the case.
-> I would have expected the 5121 to perform just like the 5200B.
-> What we saw is that switching from READ to WRITE and back is very
-> costly on 5121.
->
-> There seems to be a huge difference between the 5200 and its successor the
-> 5121. Is this performance difference caused by the CPU or by the board
-> /memory?
+On Thu, Sep 04, 2008 at 06:28:29PM +0400, Dmitry Baryshkov wrote:
+> Hi,
+> 
+> Sorry to bother you. I'm searching for the information/guides related to
+> the Maple D board (XSC-100). I've downloaded all the info I could get
+> from the IBM, but I'm still missing the docs about board
+> jumpers/settings/etc. All official sources for info are dead since long
+> ago. So, if one has any technical docs regarding XSC-100 board, could
+> you please contact me.
 
-I have some new insight now, and I will look more closely at the working of  
-the DRAM controller... there has to be something wrong somewhere, an I am 
-going to find it... whether it is some strange bug in my u-boot code 
-(initializing the DRAM controller and prio-manager for example) or a 
-silicon-errata (John?)
+Mercury was the manufacturer of Maple. While they no longer sell them,
+you might try to contact them about it. You can find them at www.mc.com.
 
-Thanks a lot for your help so far.
 
--- 
-David Jander
+-Olof
