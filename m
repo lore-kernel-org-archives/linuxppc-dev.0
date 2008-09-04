@@ -1,13 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18623.11411.543366.29200@cargo.ozlabs.ibm.com>
-Date: Thu, 4 Sep 2008 10:32:19 +1000
-From: Paul Mackerras <paulus@samba.org>
+Return-Path: <James.Bottomley@HansenPartnership.com>
+Received: from accolon.hansenpartnership.com (accolon.hansenpartnership.com
+	[76.243.235.52]) by ozlabs.org (Postfix) with ESMTP id 8CF5ADDE3A
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 11:43:39 +1000 (EST)
+Subject: Re: [PATCH] Correct printk %pF to work on all architectures
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.10.0809031636320.3515@nehalem.linux-foundation.org>
+References: <1220473137.3254.29.camel@localhost.localdomain>
+	<alpine.LFD.1.10.0809031419560.3515@nehalem.linux-foundation.org>
+	<1220481754.3254.42.camel@localhost.localdomain>
+	<alpine.LFD.1.10.0809031546310.3515@nehalem.linux-foundation.org>
+	<1220482853.3254.47.camel@localhost.localdomain>
+	<alpine.LFD.1.10.0809031602270.3515@nehalem.linux-foundation.org>
+	<1220484812.3254.59.camel@localhost.localdomain>
+	<alpine.LFD.1.10.0809031636320.3515@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 03 Sep 2008 20:43:36 -0500
+Message-Id: <1220492616.3254.64.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-ia64@vger.kernel.org, Parisc List <linux-parisc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,144 +29,272 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Wed, 2008-09-03 at 17:01 -0700, Linus Torvalds wrote:
+> 
+> On Wed, 3 Sep 2008, James Bottomley wrote:
+> > 
+> > Oh ... because Arjan has a patch to export
+> > dereference_function_descriptor.  I suppose I could make him do the
+> > heavy lifting, but it seemed sensible to make it easy for him (and me)
+> > by putting it in a header.
+> > 
+> > http://marc.info/?l=linux-kernel&m=121976793429869
+> 
+> Ahh.
+> 
+> NOW it all starts to make sense.
+> 
+> Or perhaps not sense, but I at least understand why people want to move it 
+> around. The kernel.h location kind of goes together with that 
+> core_kernel_text() thing, although it seems to be more of a "random 
+> collection of routines" thing than anything else (but hey, that's the very 
+> definition of "kernel.h" for you).
+> 
+> The module.h location still seems to be more of a "oh, both 
+> kernel/extable.c and lib/vsprintf.c already included <linux/module.h>" and 
+> it's a bit sad, since it really has nothing at all to do with modules.
+> 
+> Grr. It does seem like we don't have any kind of "abi" header file. 
+> <linux/kernel.h> and <asm/processor.h> has various random things.
+> 
+> So yea, there doesn't seem to be any _obvious_ place that makes sense.
+> 
+> 		Linus
+> 
+> Not-very-strong-opinion: How about <asm/sections.h>? That does seem to be 
+> where we already hide things like "in_kernel_text()" at least on powerpc. 
+> In fact, since we already always have a generic version, the patch would 
+> actually be something like
+> 
+>  - in <asm-generic/sections.h>, just do
+> 
+> 	#define dereference_function_descriptor(p) (p)
+> 
+>  - in architectures that want to override it
+> 
+> 	#undef dereference_function_descriptor
+> 
+>    followed by 
+> 
+> 	static inline void *dereference_function_descriptor(..) ..
+> 	or
+> 	#define dereference_function_descriptor my_fn_dereference
+> 
+>    since they all include the generic one as a base
+> 
+> Hmm? I do admit that "<asm/sections.h>" doesn't really strike me as a very 
+> natural name for this, but kernel/extable.c does already include it for 
+> other reasons, and it's at least no worse than module.h.
 
-Please pull from the 'merge' branch of
+Well, good as any other I suppose.  So this is what you want?
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+James
 
-to get 6 commits that fix various regressions, build problems and
-serious bugs on powerpc.  I have included the full commit messages
-below.
+---
 
-Thanks,
-Paul.
+It was introduced by 
 
- arch/powerpc/Makefile                    |    5 +++++
- arch/powerpc/include/asm/pgtable-ppc64.h |    6 ++----
- arch/powerpc/kernel/Makefile             |    7 ++++---
- arch/powerpc/kernel/align.c              |    2 +-
- arch/powerpc/kernel/idle_6xx.S           |    2 +-
- arch/powerpc/kernel/idle_e500.S          |    3 ++-
- arch/powerpc/kernel/vmlinux.lds.S        |    7 ++++---
- arch/powerpc/mm/hash_utils_64.c          |   18 +++++++++++-------
- arch/powerpc/platforms/powermac/Makefile |    2 +-
- lib/Kconfig.debug                        |    6 +++---
- 10 files changed, 34 insertions(+), 24 deletions(-)
+commit 0fe1ef24f7bd0020f29ffe287dfdb9ead33ca0b2
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Sun Jul 6 16:43:12 2008 -0700
 
-commit 7888bc2b4778fda267a6e6422c4497dba865a47a
-Author: Kumar Gala <galak@kernel.crashing.org>
-Date:   Tue Aug 26 12:08:56 2008 +1000
+    vsprintf: add support for '%pS' and '%pF' pointer formats
 
-    powerpc: Fix for getting CPU number in power_save_ppc32_restore()
-    
-    The calculation to get TI_CPU based off of SPRG3 was just plain wrong,
-    meaning that we were getting garbage for the CPU number on 6xx/G3/G4
-    based SMP boxes in this code.
-    
-    Just offset off the stack pointer (to get to thread_info) like all the
-    other references to TI_CPU do.
-    
-    This was pointed out by Chen Gong <G.Chen@freescale.com>
-    
-    [paulus@samba.org - use rlwinm r12,r11,... instead of
-     rlwinm r12,r1,...; tophys()]
-    
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-    Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-commit 94ee815c05c9387931e549d83312d30009ed86e9
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Wed Sep 3 13:12:05 2008 +1000
+However, the current way its coded doesn't work on parisc64.  For two
+reasons:  1) parisc isn't in the #ifdef and 2) parisc has a different
+format for function descriptors
 
-    powerpc: Fix build error with 64K pages and !hugetlbfs
-    
-    HAVE_ARCH_UNMAPPED_AREA and HAVE_ARCH_UNMAPPED_AREA_TOPDOWN must
-    be defined whenever CONFIG_PPC_MM_SLICES is enabled, not just when
-    CONFIG_HUGETLB_PAGE is.  They used to be always defined together but
-    this is no longer the case since 3a8247cc2c856930f34eafce33f6a039227ee175
-    ("powerpc: Only demote individual slices rather than whole process").
-    
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+Make dereference_function_descriptor() more accommodating by allowing
+architecture overrides.  I put the three overrides (for parisc64, ppc64
+and ia64) in arch/kernel/module.c because that's where the kernel
+internal linker which knows how to deal with function descriptors sits.
 
-commit 7563dc64585324f443f5ac107eb6d89ee813a2d2
-Author: Tony Breeds <tony@bakeyournoodle.com>
-Date:   Tue Sep 2 16:50:38 2008 +1000
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ arch/ia64/include/asm/sections.h    |    3 +++
+ arch/ia64/kernel/module.c           |   12 ++++++++++++
+ arch/parisc/kernel/module.c         |   14 ++++++++++++++
+ arch/powerpc/include/asm/sections.h |    3 +++
+ arch/powerpc/kernel/module_64.c     |   13 ++++++++++++-
+ include/asm-generic/sections.h      |    6 ++++++
+ include/asm-parisc/sections.h       |    5 +++++
+ lib/vsprintf.c                      |   11 +----------
+ 8 files changed, 56 insertions(+), 11 deletions(-)
 
-    powerpc: Work around gcc's -fno-omit-frame-pointer bug
-    
-    This bug is causing random crashes
-    (http://bugzilla.kernel.org/show_bug.cgi?id=11414).
-    
-    -fno-omit-frame-pointer is only needed on powerpc when -pg is also
-    supplied, and there is a gcc bug that causes incorrect code generation
-    on 32-bit powerpc when -fno-omit-frame-pointer is used---it uses stack
-    locations below the stack pointer, which is not allowed by the ABI
-    because those locations can and sometimes do get corrupted by an
-    interrupt.
-    
-    This ensures that CONFIG_FRAME_POINTER is only selected by ftrace.
-    When CONFIG_FTRACE is enabled we also pass -mno-sched-epilog to work
-    around the gcc codegen bug.
-    
-    Patch based on work by:
-    	Andreas Schwab <schwab@suse.de>
-    	Segher Boessenkool <segher@kernel.crashing.org>
-    
-    Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit 303996dace16894710a5291327eeb79afdb8ed12
-Author: Stephen Rothwell <sfr@canb.auug.org.au>
-Date:   Tue Sep 2 15:04:09 2008 +1000
-
-    powerpc: Make sure _etext is after all kernel text
-    
-    This makes core_kernel_text() (and therefore kernel_text_address())
-    return the correct result.  Currently all the __devinit routines (at
-    least) will not be considered to be kernel text.
-    
-    This is just a quick fix for 2.6.27 - hopefully we will be able to fix
-    this better in 2.6.28.
-    
-    Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit 9e88ba4e45ecad2425c4cc4e0861a26f4e36c6da
-Author: Paul Mackerras <paulus@samba.org>
-Date:   Sat Aug 30 11:26:27 2008 +1000
-
-    powerpc: Only make kernel text pages of linear mapping executable
-    
-    Commit bc033b63bbfeb6c4b4eb0a1d083c650e4a0d2af8 ("powerpc/mm: Fix
-    attribute confusion with htab_bolt_mapping()") moved the check for
-    whether we should make pages of the linear mapping executable from
-    htab_bolt_mapping into its callers, including htab_initialize.
-    A side-effect of this is that the decision is now made once for
-    each contiguous section in the LMB array rather than for each page
-    individually.  This can often mean that the whole of the linear
-    mapping ends up being executable.
-    
-    This reverts to the previous behaviour, where individual pages are
-    checked for being part of the kernel text or not, by moving the check
-    back down into htab_bolt_mapping.
-    
-    Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit 78fbc824ed8225edd80cdc57771d5ca4f7aae95e
-Author: Michael Neuling <mikey@neuling.org>
-Date:   Thu Aug 28 14:57:39 2008 +1000
-
-    powerpc: Fix uninitialised variable in VSX alignment code
-    
-    This fixes an uninitialised variable in the VSX alignment code.  It can
-    cause warnings from GCC (noticed with gcc-4.1.1).  Gcc is actually
-    correct in this instance, and this bug could cause the alignment
-    interrupt handler to send a SIGSEGV to the process on a legitimate
-    access.
-    
-    Signed-off-by: Michael Neuling <mikey@neuling.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
+index 7286e4a..a7acad2 100644
+--- a/arch/ia64/include/asm/sections.h
++++ b/arch/ia64/include/asm/sections.h
+@@ -21,5 +21,8 @@ extern char __start_gate_brl_fsys_bubble_down_patchlist[], __end_gate_brl_fsys_b
+ extern char __start_unwind[], __end_unwind[];
+ extern char __start_ivt_text[], __end_ivt_text[];
+ 
++#undef dereference_function_descriptor
++void *dereference_function_descriptor(void *);
++
+ #endif /* _ASM_IA64_SECTIONS_H */
+ 
+diff --git a/arch/ia64/kernel/module.c b/arch/ia64/kernel/module.c
+index 29aad34..545626f 100644
+--- a/arch/ia64/kernel/module.c
++++ b/arch/ia64/kernel/module.c
+@@ -31,9 +31,11 @@
+ #include <linux/elf.h>
+ #include <linux/moduleloader.h>
+ #include <linux/string.h>
++#include <linux/uaccess.h>
+ #include <linux/vmalloc.h>
+ 
+ #include <asm/patch.h>
++#include <asm/sections.h>
+ #include <asm/unaligned.h>
+ 
+ #define ARCH_MODULE_DEBUG 0
+@@ -941,3 +943,13 @@ module_arch_cleanup (struct module *mod)
+ 	if (mod->arch.core_unw_table)
+ 		unw_remove_unwind_table(mod->arch.core_unw_table);
+ }
++
++void *dereference_function_descriptor(void *ptr)
++{
++	struct fdesc *desc = ptr;
++	void *p;
++
++	if (!probe_kernel_address(&desc->ip, p))
++		ptr = p;
++	return ptr;
++}
+diff --git a/arch/parisc/kernel/module.c b/arch/parisc/kernel/module.c
+index fdacdd4..44138c3 100644
+--- a/arch/parisc/kernel/module.c
++++ b/arch/parisc/kernel/module.c
+@@ -47,7 +47,9 @@
+ #include <linux/string.h>
+ #include <linux/kernel.h>
+ #include <linux/bug.h>
++#include <linux/uaccess.h>
+ 
++#include <asm/sections.h>
+ #include <asm/unwind.h>
+ 
+ #if 0
+@@ -860,3 +862,15 @@ void module_arch_cleanup(struct module *mod)
+ 	deregister_unwind_table(mod);
+ 	module_bug_cleanup(mod);
+ }
++
++#ifdef CONFIG_64BIT
++void *dereference_function_descriptor(void *ptr)
++{
++	Elf64_Fdesc *desc = ptr;
++	void *p;
++
++	if (!probe_kernel_address(&desc->addr, p))
++		ptr = p;
++	return ptr;
++}
++#endif
+diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+index 916018e..7710e9e 100644
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -16,6 +16,9 @@ static inline int in_kernel_text(unsigned long addr)
+ 	return 0;
+ }
+ 
++#undef dereference_function_descriptor
++void *dereference_function_descriptor(void *);
++
+ #endif
+ 
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index ee6a298..ad79de2 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -21,8 +21,9 @@
+ #include <linux/err.h>
+ #include <linux/vmalloc.h>
+ #include <linux/bug.h>
++#include <linux/uaccess.h>
+ #include <asm/module.h>
+-#include <asm/uaccess.h>
++#include <asm/sections.h>
+ #include <asm/firmware.h>
+ #include <asm/code-patching.h>
+ #include <linux/sort.h>
+@@ -451,3 +452,13 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 
+ 	return 0;
+ }
++
++void *dereference_function_descriptor(void *ptr)
++{
++	struct ppc64_opd_entry *desc = ptr;
++	void *p;
++
++	if (!probe_kernel_address(&desc->funcaddr, p))
++		ptr = p;
++	return ptr;
++}
+diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+index 8feeae1..79a7ff9 100644
+--- a/include/asm-generic/sections.h
++++ b/include/asm-generic/sections.h
+@@ -14,4 +14,10 @@ extern char __kprobes_text_start[], __kprobes_text_end[];
+ extern char __initdata_begin[], __initdata_end[];
+ extern char __start_rodata[], __end_rodata[];
+ 
++/* function descriptor handling (if any).  Override
++ * in asm/sections.h */
++#ifndef dereference_function_descriptor
++#define dereference_function_descriptor(p) (p)
++#endif
++
+ #endif /* _ASM_GENERIC_SECTIONS_H_ */
+diff --git a/include/asm-parisc/sections.h b/include/asm-parisc/sections.h
+index fdd43ec..9d13c35 100644
+--- a/include/asm-parisc/sections.h
++++ b/include/asm-parisc/sections.h
+@@ -4,4 +4,9 @@
+ /* nothing to see, move along */
+ #include <asm-generic/sections.h>
+ 
++#ifdef CONFIG_64BIT
++#undef dereference_function_descriptor
++void *dereference_function_descriptor(void *);
++#endif
++
+ #endif
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index d8d1d11..c399bc1 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -27,6 +27,7 @@
+ 
+ #include <asm/page.h>		/* for PAGE_SIZE */
+ #include <asm/div64.h>
++#include <asm/sections.h>	/* for dereference_function_descriptor() */
+ 
+ /* Works only for digits and letters, but small and fast */
+ #define TOLOWER(x) ((x) | 0x20)
+@@ -513,16 +514,6 @@ static char *string(char *buf, char *end, char *s, int field_width, int precisio
+ 	return buf;
+ }
+ 
+-static inline void *dereference_function_descriptor(void *ptr)
+-{
+-#if defined(CONFIG_IA64) || defined(CONFIG_PPC64)
+-	void *p;
+-	if (!probe_kernel_address(ptr, p))
+-		ptr = p;
+-#endif
+-	return ptr;
+-}
+-
+ static char *symbol_string(char *buf, char *end, void *ptr, int field_width, int precision, int flags)
+ {
+ 	unsigned long value = (unsigned long) ptr;
+-- 
+1.5.6.5
