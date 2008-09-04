@@ -1,22 +1,34 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kniht@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B5227DDE02
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 06:48:52 +1000 (EST)
-Date: Fri, 5 Sep 2008 00:48:07 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][USB] powerpc: Workaround for the PPC440EPX USBH_23 errata
-Message-ID: <20080905004807.1c1d5513@vitb-lp>
-In-Reply-To: <Pine.LNX.4.44L0.0808291722590.13185-100000@netrider.rowland.org>
-References: <20080829222044.53c56bca@vitb-lp>
-	<Pine.LNX.4.44L0.0808291722590.13185-100000@netrider.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=KOI8-R
-Cc: USB list <linux-usb@vger.kernel.org>, Mark,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Miesfeld <mmiesfeld@amcc.com>, Stefan Roese <sr@denx.de>
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 87453DE111
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 07:08:37 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m84L8XQ3032624
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 17:08:33 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m84L8Hhr203030
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 15:08:17 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m84L8Cpe011791
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 15:08:13 -0600
+Message-ID: <48C04E4E.6090408@linux.vnet.ibm.com>
+Date: Thu, 04 Sep 2008 16:08:30 -0500
+From: Jon Tollefson <kniht@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: libhugetlbfs-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Libhugetlbfs-devel] Buglet in 16G page handling
+References: <20080902050510.GB12965@yookeroo.seuss>
+	<48BD73FB.1050601@linux.vnet.ibm.com>
+	<20080903002029.GC9681@yookeroo.seuss>
+	<48BF0D6F.2010602@linux.vnet.ibm.com>
+In-Reply-To: <48BF0D6F.2010602@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,105 +38,183 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-В Fri, 29 Aug 2008 17:30:57 -0400 (EDT)
-Alan Stern <stern@rowland.harvard.edu> пишет:
+Jon Tollefson wrote:
+> David Gibson wrote:
+>   
+>> On Tue, Sep 02, 2008 at 12:12:27PM -0500, Jon Tollefson wrote:
+>>   
+>>     
+>>> David Gibson wrote:
+>>>     
+>>>       
+>>>> When BenH and I were looking at the new code for handling 16G pages,
+>>>> we noticed a small bug.  It doesn't actually break anything user
+>>>> visible, but it's certainly not the way things are supposed to be.
+>>>> The 16G patches didn't update the huge_pte_offset() and
+>>>> huge_pte_alloc() functions, which means that the hugepte tables for
+>>>> 16G pages will be allocated much further down the page table tree than
+>>>> they should be - allocating several levels of page table with a single
+>>>> entry in them along the way.
+>>>>
+>>>> The patch below is supposed to fix this, cleaning up the existing
+>>>> handling of 64k vs 16M pages while its at it.  However, it needs some
+>>>> testing.
+>>>>
+>>>> I've checked that it doesn't break existing 16M support, either with
+>>>> 4k or 64k base pages.  I haven't figured out how to test with 64k
+>>>> pages yet, at least until the multisize support goes into
+>>>> libhugetlbfs.  For 16G pages, I just don't have access to a machine
+>>>> with enough memory to test.  Jon, presumably you must have found such
+>>>> a machine when you did the 16G page support in the first place.  Do
+>>>> you still have access, and can you test this patch?
+>>>>   
+>>>>       
+>>>>         
+>>> I do have access to a machine to test it.  I applied the patch to -rc4
+>>> and used a pseries_defconfig.  I boot with
+>>> default_hugepagesz=16G... in order to test huge page sizes other then
+>>> 16M at this point.
+>>>
+>>> Running the libhugetlbfs test suite it gets as far as   Readback (64):  
+>>> PASS
+>>> before it hits the following program check.
+>>>     
+>>>       
+>> Ah, yes, oops, forgot to fix up the pagetable freeing path in line
+>> with the other changes.  Try the revised version below.
+>>   
+>>     
+> I have run through the tests twice now with this new patch using a 4k
+> base page size(and 16G huge page size) and there are no program checks
+> or spin lock issues.  So looking good.
+>
+> I will run it next a couple of times with 64K base pages.
+>   
+I have run through the libhugetest suite 3 times each now with both
+combinations(4k and 64K base page) and have not seen the spin lock
+problem or any other problems.
 
-> On Fri, 29 Aug 2008, Vitaly Bordug wrote:
-> 
-> > But even assuming PM set, common use-case of
-> > embedded systems to have stuff on USB bus that is never plugged off;
-> > and in case of compiled-in ehci and ohci there is just 
-> > 
-> > Initializing USB Mass Storage driver...
-> > usb 1-1: new high speed USB device using ppc-of-ehci and address 2
-> > usb 1-1: device descriptor read/all, error -110
-> > hub 1-0:1.0: unable to enumerate USB device on port 1
-> > 
-> > (not touching PM here to be clear)
-> > 
-> > even 1-second delay would be enough for root hub to be hosed... So,
-> > is the patch (with all the issues addressed) acceptable for
-> > mainline?
-> 
-> Try doing this instead.  First, make sure CONFIG_PM is set!  :-)
-> Then replace your patch with something that adds a 2-second delay to 
-> the end of ehci_start() when running on a 440EPx system.  That should 
-> give the OHCI controller time to suspend before the EHCI root hub is 
-> registered.
-> 
-I've started looking this way. Sorry, but this approach is a little bit
-fragile, and unreliable.
-
-First, it just did not work out in case of usb2 hub with memory stick
-and keybord plugged - OHCI did not suspend, ehci is hosed and we're
-happily using hi-speed device on full-speed:
-
-ppc-of-ehci e0000300.ehci: OF EHCI
-ppc-of-ehci e0000300.ehci: new USB bus registered, assigned bus number 1
-ppc-of-ehci e0000300.ehci: irq 32, io mem 0xe0000300
-ppc-of-ehci e0000300.ehci: USB 2.0 started, EHCI 1.00, driver 10 Dec
-2004 usb usb1: configuration #1 chosen from 1 choice
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 1 port detected
-usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
-usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb1: Product: OF EHCI
-usb usb1: Manufacturer: Linux 2.6.26-00016-g8914f6a-dirty ehci_hcd
-usb usb1: SerialNumber: PPC-OF USB
-ppc-of-ohci e0000400.usb: OF OHCI
-ppc-of-ohci e0000400.usb: new USB bus registered, assigned bus number 2
-ppc-of-ohci e0000400.usb: irq 33, io mem 0xe0000400
-usb usb2: configuration #1 chosen from 1 choice
-hub 2-0:1.0: USB hub found
-hub 2-0:1.0: 1 port detected
-usb usb2: New USB device found, idVendor=1d6b, idProduct=0001
-usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb2: Product: OF OHCI
-usb usb2: Manufacturer: Linux 2.6.26-00016-g8914f6a-dirty ohci_hcd
-usb usb2: SerialNumber: PPC-OF USB
-Initializing USB Mass Storage driver...
-usb 1-1: new high speed USB device using ppc-of-ehci and address 2
-usb 1-1: device not accepting address 2, error -110
-usb 1-1: new high speed USB device using ppc-of-ehci and address 3
-usb 1-1: device not accepting address 3, error -110
-usb 1-1: new high speed USB device using ppc-of-ehci and address 4
-usb 1-1: device not accepting address 4, error -110
-usb 1-1: new high speed USB device using ppc-of-ehci and address 5
-usb 1-1: device not accepting address 5, error -110
-hub 1-0:1.0: unable to enumerate USB device on port 1
-usb 2-1: new full speed USB device using ppc-of-ohci and address 2
-
-Secondly, we may *not* rely on the fact, that OHCI will always have the
-same suspend policy. Even kicking the code up to the shape when it will
-automagically suspend in proper timing to get the HW issue around, we
-cannot be sure that it will persist along kernel lifecycle, and won't
-require concerned people to kick suspend timings back to the working
-state subsequently each rc release.
-
-Thirdly, PM is disabled by Kconfig explicitly in case of 44x. Reasoning
-is not clear at the moment, but I believe that isn't there just in case.
+Acked-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
 
 
-> A little more tweaking will be needed to handle system sleeps.  But 
-> this should be a good start.
-
-Getting 44x into proper PM land is good direction, but right now there
-is a situation for certain platform when USB trimmed down to full-speed
-mode in evaluation design and many inheritances. The only way to have
-all the benefits, was maintaining internally some version of AMCC
-workaorund
-> 
-> What to do when CONFIG_PM is off is a separate matter.  Let's not
-> worry about it for now -- especially since, as Matthias suggested,
-> you can use a USB 2.0 hub.
-
-Not every hub will work (none of available did so far), and it is often
-not an option for embedded device without rewiring.
-
-As this touches powerpc stuff only, are there any objections to let
-powerpc peolple consider if approach suggested earlier is applicable or
-not?
-
-Thanks,
-
--Vitaly
+> Jon
+>
+>
+>
+>
+>   
+>> Index: working-2.6/arch/powerpc/mm/hugetlbpage.c
+>> ===================================================================
+>> --- working-2.6.orig/arch/powerpc/mm/hugetlbpage.c	2008-09-02 11:50:12.000000000 +1000
+>> +++ working-2.6/arch/powerpc/mm/hugetlbpage.c	2008-09-03 10:10:54.000000000 +1000
+>> @@ -128,29 +128,37 @@ static int __hugepte_alloc(struct mm_str
+>>  	return 0;
+>>  }
+>>
+>> -/* Base page size affects how we walk hugetlb page tables */
+>> -#ifdef CONFIG_PPC_64K_PAGES
+>> -#define hpmd_offset(pud, addr, h)	pmd_offset(pud, addr)
+>> -#define hpmd_alloc(mm, pud, addr, h)	pmd_alloc(mm, pud, addr)
+>> -#else
+>> -static inline
+>> -pmd_t *hpmd_offset(pud_t *pud, unsigned long addr, struct hstate *hstate)
+>> +
+>> +static pud_t *hpud_offset(pgd_t *pgd, unsigned long addr, struct hstate *hstate)
+>> +{
+>> +	if (huge_page_shift(hstate) < PUD_SHIFT)
+>> +		return pud_offset(pgd, addr);
+>> +	else
+>> +		return (pud_t *) pgd;
+>> +}
+>> +static pud_t *hpud_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long addr,
+>> +			 struct hstate *hstate)
+>>  {
+>> -	if (huge_page_shift(hstate) == PAGE_SHIFT_64K)
+>> +	if (huge_page_shift(hstate) < PUD_SHIFT)
+>> +		return pud_alloc(mm, pgd, addr);
+>> +	else
+>> +		return (pud_t *) pgd;
+>> +}
+>> +static pmd_t *hpmd_offset(pud_t *pud, unsigned long addr, struct hstate *hstate)
+>> +{
+>> +	if (huge_page_shift(hstate) < PMD_SHIFT)
+>>  		return pmd_offset(pud, addr);
+>>  	else
+>>  		return (pmd_t *) pud;
+>>  }
+>> -static inline
+>> -pmd_t *hpmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long addr,
+>> -		  struct hstate *hstate)
+>> +static pmd_t *hpmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long addr,
+>> +			 struct hstate *hstate)
+>>  {
+>> -	if (huge_page_shift(hstate) == PAGE_SHIFT_64K)
+>> +	if (huge_page_shift(hstate) < PMD_SHIFT)
+>>  		return pmd_alloc(mm, pud, addr);
+>>  	else
+>>  		return (pmd_t *) pud;
+>>  }
+>> -#endif
+>>
+>>  /* Build list of addresses of gigantic pages.  This function is used in early
+>>   * boot before the buddy or bootmem allocator is setup.
+>> @@ -204,7 +212,7 @@ pte_t *huge_pte_offset(struct mm_struct 
+>>
+>>  	pg = pgd_offset(mm, addr);
+>>  	if (!pgd_none(*pg)) {
+>> -		pu = pud_offset(pg, addr);
+>> +		pu = hpud_offset(pg, addr, hstate);
+>>  		if (!pud_none(*pu)) {
+>>  			pm = hpmd_offset(pu, addr, hstate);
+>>  			if (!pmd_none(*pm))
+>> @@ -233,7 +241,7 @@ pte_t *huge_pte_alloc(struct mm_struct *
+>>  	addr &= hstate->mask;
+>>
+>>  	pg = pgd_offset(mm, addr);
+>> -	pu = pud_alloc(mm, pg, addr);
+>> +	pu = hpud_alloc(mm, pg, addr, hstate);
+>>
+>>  	if (pu) {
+>>  		pm = hpmd_alloc(mm, pu, addr, hstate);
+>> @@ -316,13 +324,7 @@ static void hugetlb_free_pud_range(struc
+>>  	pud = pud_offset(pgd, addr);
+>>  	do {
+>>  		next = pud_addr_end(addr, end);
+>> -#ifdef CONFIG_PPC_64K_PAGES
+>> -		if (pud_none_or_clear_bad(pud))
+>> -			continue;
+>> -		hugetlb_free_pmd_range(tlb, pud, addr, next, floor, ceiling,
+>> -				       psize);
+>> -#else
+>> -		if (shift == PAGE_SHIFT_64K) {
+>> +		if (shift < PMD_SHIFT) {
+>>  			if (pud_none_or_clear_bad(pud))
+>>  				continue;
+>>  			hugetlb_free_pmd_range(tlb, pud, addr, next, floor,
+>> @@ -332,7 +334,6 @@ static void hugetlb_free_pud_range(struc
+>>  				continue;
+>>  			free_hugepte_range(tlb, (hugepd_t *)pud, psize);
+>>  		}
+>> -#endif
+>>  	} while (pud++, addr = next, addr != end);
+>>
+>>  	start &= PGDIR_MASK;
+>> @@ -422,9 +423,15 @@ void hugetlb_free_pgd_range(struct mmu_g
+>>  		psize = get_slice_psize(tlb->mm, addr);
+>>  		BUG_ON(!mmu_huge_psizes[psize]);
+>>  		next = pgd_addr_end(addr, end);
+>> -		if (pgd_none_or_clear_bad(pgd))
+>> -			continue;
+>> -		hugetlb_free_pud_range(tlb, pgd, addr, next, floor, ceiling);
+>> +		if (mmu_psize_to_shift(psize) < PUD_SHIFT) {
+>> +			if (pgd_none_or_clear_bad(pgd))
+>> +				continue;
+>> +			hugetlb_free_pud_range(tlb, pgd, addr, next, floor, ceiling);
+>> +		} else {
+>> +			if (pgd_none(*pgd))
+>> +				continue;
+>> +			free_hugepte_range(tlb, (hugepd_t *)pgd, psize);
+>> +		}
+>>  	} while (pgd++, addr = next, addr != end);
+>>  }
+>>     
