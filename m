@@ -1,20 +1,22 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
-	by ozlabs.org (Postfix) with ESMTP id B932E47B6E
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:02:57 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so1954092pyi.27
-	for <linuxppc-dev@ozlabs.org>; Thu, 04 Sep 2008 08:02:57 -0700 (PDT)
-Date: Thu, 4 Sep 2008 11:02:16 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, netdev@vger.kernel.org
-Subject: [PATCH 3/3] ibm_newemac: MAL support for PowerPC 405EZ
-Message-ID: <20080904150216.GD2479@yoda.jdub.homelinux.org>
-References: <cover.1220540078.git.jwboyer@linux.vnet.ibm.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6066DDE4C9
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:04:13 +1000 (EST)
+Message-ID: <48BFF8E4.9070400@freescale.com>
+Date: Thu, 04 Sep 2008 10:04:04 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1220540078.git.jwboyer@linux.vnet.ibm.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: Re: [PATCH v4 1/2] powerpc: Board support for GE Fanuc SBC610
+References: <20080901102753.8068.36706.stgit@ubuntu8041.localdomain>	<20080901102758.8068.77414.stgit@ubuntu8041.localdomain>	<20080902182709.GB16741@ld0162-tx32.am.freescale.net>
+	<20080904155127.5ca8fca3.martyn.welch@gefanuc.com>
+In-Reply-To: <20080904155127.5ca8fca3.martyn.welch@gefanuc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,164 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PowerPC 405EZ SoC has some differences in the interrupt layout and
-handling for the MAL.  The SERR, TXDE, and RXDE interrupts are OR'd into
-a single interrupt.  Also, due to the possibility for interrupt coalescing,
-the TXEOB and RXEOB interrupts require an interrupt bit to be cleared in
-the ICINTSTAT SDR.
+Martyn Welch wrote:
+> On Tue, 2 Sep 2008 13:27:09 -0500
+> Scott Wood <scottwood@freescale.com> wrote:
+> 
+>> On Mon, Sep 01, 2008 at 11:27:59AM +0100, Martyn Welch wrote:
+>>> +static __initdata struct of_device_id of_bus_ids[] = {
+>>> +	{ .compatible = "simple-bus", },
+>>> +	{ .type = "serial", },
+>>> +	{ .type = "soc", },
+>>> +	{ .type = "i2c", },
+>> i2c and serial don't belong here, and soc is redundant with simple-bus.
+>>
+> 
+> I agree about the i2c and serial, although I need the soc entry for the i2c devices to be found during the platform scan.
 
-This sets the proper MAL feature bits for 405EZ boards, and adds a common
-shared handler for SERR, TXDE, and RXDE.  This has been adapted from code
-originally written by Stefan Roese.
+Not if the soc node has simple-bus in its compatible, which I thought I 
+remembered yours did.
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
----
- drivers/net/ibm_newemac/mal.c |   98 ++++++++++++++++++++++++++++++++--------
- 1 files changed, 78 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/net/ibm_newemac/mal.c b/drivers/net/ibm_newemac/mal.c
-index 10c267b..3cef534 100644
---- a/drivers/net/ibm_newemac/mal.c
-+++ b/drivers/net/ibm_newemac/mal.c
-@@ -28,6 +28,7 @@
- #include <linux/delay.h>
- 
- #include "core.h"
-+#include <asm/dcr-regs.h>
- 
- static int mal_count;
- 
-@@ -279,6 +280,9 @@ static irqreturn_t mal_txeob(int irq, void *dev_instance)
- 	mal_schedule_poll(mal);
- 	set_mal_dcrn(mal, MAL_TXEOBISR, r);
- 
-+	if (mal_has_feature(mal, MAL_FTR_CLEAR_ICINTSTAT))
-+		mtdcri(SDR0, 0x4510, (mfdcri(SDR0, 0x4510) | 0x60000000));
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -293,6 +297,9 @@ static irqreturn_t mal_rxeob(int irq, void *dev_instance)
- 	mal_schedule_poll(mal);
- 	set_mal_dcrn(mal, MAL_RXEOBISR, r);
- 
-+	if (mal_has_feature(mal, MAL_FTR_CLEAR_ICINTSTAT))
-+		mtdcri(SDR0, 0x4510, (mfdcri(SDR0, 0x4510) | 0x80000000));
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -336,6 +343,25 @@ static irqreturn_t mal_rxde(int irq, void *dev_instance)
- 	return IRQ_HANDLED;
- }
- 
-+static irqreturn_t mal_int(int irq, void *dev_instance)
-+{
-+	struct mal_instance *mal = dev_instance;
-+	u32 esr = get_mal_dcrn(mal, MAL_ESR);
-+
-+	if (esr & MAL_ESR_EVB) {
-+		/* descriptor error */
-+		if (esr & MAL_ESR_DE) {
-+			if (esr & MAL_ESR_CIDT)
-+				return (mal_rxde(irq, dev_instance));
-+			else
-+				return (mal_txde(irq, dev_instance));
-+		} else { /* SERR */
-+			return (mal_serr(irq, dev_instance));
-+		}
-+	}
-+	return IRQ_HANDLED;
-+}
-+
- void mal_poll_disable(struct mal_instance *mal, struct mal_commac *commac)
- {
- 	/* Spinlock-type semantics: only one caller disable poll at a time */
-@@ -542,11 +568,22 @@ static int __devinit mal_probe(struct of_device *ofdev,
- 		goto fail;
- 	}
- 
--	mal->txeob_irq = irq_of_parse_and_map(ofdev->node, 0);
--	mal->rxeob_irq = irq_of_parse_and_map(ofdev->node, 1);
--	mal->serr_irq = irq_of_parse_and_map(ofdev->node, 2);
--	mal->txde_irq = irq_of_parse_and_map(ofdev->node, 3);
--	mal->rxde_irq = irq_of_parse_and_map(ofdev->node, 4);
-+	if (of_device_is_compatible(ofdev->node, "ibm,mcmal-405ez"))
-+		mal->features |= (MAL_FTR_CLEAR_ICINTSTAT | MAL_FTR_COMMON_ERR_INT);
-+
-+	if (mal_has_feature(mal, MAL_FTR_COMMON_ERR_INT)) {
-+		mal->txeob_irq = irq_of_parse_and_map(ofdev->node, 0);
-+		mal->rxeob_irq = irq_of_parse_and_map(ofdev->node, 1);
-+		mal->serr_irq = irq_of_parse_and_map(ofdev->node, 2);
-+		mal->txde_irq = mal->rxde_irq = mal->serr_irq;
-+	} else {
-+		mal->txeob_irq = irq_of_parse_and_map(ofdev->node, 0);
-+		mal->rxeob_irq = irq_of_parse_and_map(ofdev->node, 1);
-+		mal->serr_irq = irq_of_parse_and_map(ofdev->node, 2);
-+		mal->txde_irq = irq_of_parse_and_map(ofdev->node, 3);
-+		mal->rxde_irq = irq_of_parse_and_map(ofdev->node, 4);
-+	}
-+
- 	if (mal->txeob_irq == NO_IRQ || mal->rxeob_irq == NO_IRQ ||
- 	    mal->serr_irq == NO_IRQ || mal->txde_irq == NO_IRQ ||
- 	    mal->rxde_irq == NO_IRQ) {
-@@ -608,21 +645,42 @@ static int __devinit mal_probe(struct of_device *ofdev,
- 			     sizeof(struct mal_descriptor) *
- 			     mal_rx_bd_offset(mal, i));
- 
--	err = request_irq(mal->serr_irq, mal_serr, 0, "MAL SERR", mal);
--	if (err)
--		goto fail2;
--	err = request_irq(mal->txde_irq, mal_txde, 0, "MAL TX DE", mal);
--	if (err)
--		goto fail3;
--	err = request_irq(mal->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
--	if (err)
--		goto fail4;
--	err = request_irq(mal->rxde_irq, mal_rxde, 0, "MAL RX DE", mal);
--	if (err)
--		goto fail5;
--	err = request_irq(mal->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
--	if (err)
--		goto fail6;
-+	if (mal_has_feature(mal, MAL_FTR_COMMON_ERR_INT)) {
-+		err = request_irq(mal->serr_irq, mal_int, IRQF_SHARED,
-+				"MAL SERR", mal);
-+		if (err)
-+			goto fail2;
-+		err = request_irq(mal->txde_irq, mal_int, IRQF_SHARED,
-+				"MAL TX DE", mal);
-+		if (err)
-+			goto fail3;
-+		err = request_irq(mal->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
-+		if (err)
-+			goto fail4;
-+		err = request_irq(mal->rxde_irq, mal_int, IRQF_SHARED,
-+				"MAL RX DE", mal);
-+		if (err)
-+			goto fail5;
-+		err = request_irq(mal->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
-+		if (err)
-+			goto fail6;
-+	} else {
-+		err = request_irq(mal->serr_irq, mal_serr, 0, "MAL SERR", mal);
-+		if (err)
-+			goto fail2;
-+		err = request_irq(mal->txde_irq, mal_txde, 0, "MAL TX DE", mal);
-+		if (err)
-+			goto fail3;
-+		err = request_irq(mal->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
-+		if (err)
-+			goto fail4;
-+		err = request_irq(mal->rxde_irq, mal_rxde, 0, "MAL RX DE", mal);
-+		if (err)
-+			goto fail5;
-+		err = request_irq(mal->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
-+		if (err)
-+			goto fail6;
-+	}
- 
- 	/* Enable all MAL SERR interrupt sources */
- 	if (mal->version == 2)
--- 
-1.5.5.1
+-Scott
