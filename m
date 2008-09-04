@@ -1,20 +1,20 @@
-Return-Path: <raj@semihalf.com>
-Received: from semihalf.com (semihalf.com [206.130.101.55])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8EA9DDE26B
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 05:30:10 +1000 (EST)
-Message-ID: <48C03439.1000301@semihalf.com>
-Date: Thu, 04 Sep 2008 21:17:13 +0200
-From: Rafal Jaworowski <raj@semihalf.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.233])
+	by ozlabs.org (Postfix) with ESMTP id 2D716DDF95
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 06:09:34 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so127638wra.1
+	for <linuxppc-dev@ozlabs.org>; Thu, 04 Sep 2008 13:09:33 -0700 (PDT)
+Message-ID: <ed82fe3e0809041309h29d0c1faw77083e95040bbfbc@mail.gmail.com>
+Date: Thu, 4 Sep 2008 15:09:33 -0500
+From: "Timur Tabi" <timur@freescale.com>
+Sender: timur.tabi@gmail.com
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: add SSI-to-DMA properties to Freescale MPC8610
+	HPCD device tree
+In-Reply-To: <1218041305-5298-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3 1/4] powerpc: Introduce local (non-broadcast) forms
-	of tlb	invalidates
-References: <1220465344-16753-1-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1220465344-16753-1-git-send-email-galak@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+References: <1218041305-5298-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-[...]
-> The intent of this change is to handle SMP based invalidates via IPIs instead
-> of broadcasts as the mechanism scales better for larger number of cores.
+On Wed, Aug 6, 2008 at 11:48 AM, Timur Tabi <timur@freescale.com> wrote:
+> Add the fsl,playback-dma and fsl,capture-dma properties to the Freescale
+> MPC8610 HPCD device tree.  These properties connect the SSI nodes to the
+> DMA nodes for the DMA channels that the SSI should use.  Also update the
+> ssi.txt documentation.
+>
+> These properties will be needed when the ASoC V2 version of the Freescale
+> MPC8610 device drivers are merged into the mainline.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
 
-Hi Kumar,
+Kumar, any thoughts on this patch?
 
-How is the inter-IPI deadlock avoidance designed in this new approach? I don't
-know the close details of low-level Book-E VM design in Linux, but am thinking
-about a scenario when we have two TLB misses hitting almost immediately on two
-different cores and they both want to send a TLB invalidate IPI to each other.
-How do you manage this?
-
-The reason I ask is we had similar considerations (and problems) when bringing
-SMP to the dual core e500 on FreeBSD and ended up not using IPIs, at least for
-now, because of such concerns (and actual problems of this kind).
-
-Rafal
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
