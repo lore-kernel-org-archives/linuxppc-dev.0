@@ -1,18 +1,18 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 43067DDF6E
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 04:40:35 +1000 (EST)
-Date: Thu, 4 Sep 2008 22:40:18 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: hs@denx.de
-Subject: Re: [FIX] fs_enet: Using mii-bitbang as module
-Message-ID: <20080904224018.500188d1@vitb-lp>
-In-Reply-To: <48BF79C2.6050902@denx.de>
-References: <48BF79C2.6050902@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=KOI8-R
+Return-Path: <oscar@silvustechnologies.com>
+Received: from smtpout07.prod.mesa1.secureserver.net
+	(smtpout07-04.prod.mesa1.secureserver.net [64.202.165.233])
+	by ozlabs.org (Postfix) with SMTP id 57CAEDE061
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 04:45:20 +1000 (EST)
+Message-ID: <48C02CA8.1030604@silvustechnologies.com>
+Date: Thu, 04 Sep 2008 11:44:56 -0700
+From: Oscar Takeshita <oscar@silvustechnologies.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Hooking an IRQ on a modified mpc8349emitx board
+References: <48BF15ED.4050707@silvustechnologies.com>
+	<20080904144457.GA2522@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20080904144457.GA2522@ld0162-tx32.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,48 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-В Thu, 04 Sep 2008 08:01:38 +0200
-Heiko Schocher <hs@denx.de> пишет:
+Thanks Scott,
 
-> Hello Vitaly,
-> 
-> I tried to use the mii-bitbang driver
-> (drivers/net/fs_enet/mii-bitbang.c) as a module and got the following
-> error, when inserting it with insmod:
-> 
-> ~ # insmod fs_enet
-> eth0: fs_enet: a6:07:11:7f:de:26
-> ~ # insmod mii-bitbang
-> mii_bitbang: module license 'unspecified' taints kernel.
-> mii_bitbang: Unknown symbol of_address_to_resource
-> mii_bitbang: Unknown symbol of_irq_to_resource
-> insmod: cannot insert
-> '/lib/modules/2.6.27-rc5-01144-g967b424-dirty/kernel/drivers/net/fs_enet/mii-bitbang.ko':
-> Unknown symbol in module (-1): No such file or directory ~ #
-> 
-> Following patch solves this. Maybe you add the other MODULE_ macros
-> too?
-Maybe _DESCRIPTION()... I'll combine my part with yours and will send it
-to netdev.
+It is hooked and alive! Your couple of lines guided me through. Here's 
+the outline of what I did after looking
+at other powerpc drivers and the ePAPR document from Power.org:
+
+1. Assumed that MPC83xx_IRQ_EXT1 (0x11 without offset) corresponds to IRQ1.
+2. Created a node in my dts that looks like:
+
+mydevice@40000 {
+     device_type = "network";
+     interrupts = <11 8>;
+     interrupt-parent = < &ipic >;
+}
+
+3. On my kernel device driver I have the following outline:
+
+struct device_node *np;
+int irq;
+if ((np = of_find_node_by_name(NULL, "mydevice")) == NULL) {
+        printk(KERN_ERR "Can't find my device node\n");
+        irq = -1;
+}
+else
+        irq = irq_of_parse_and_map(np,0);
+
+
+4. Ready to use request_irq() on irq!
 
 Thanks,
--Vitaly
-> 
-> Signed-off-by: Heiko Schocher <hs@denx.de>
-> ---
->  drivers/net/fs_enet/mii-bitbang.c                  |    2 +
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/net/fs_enet/mii-bitbang.c
-> b/drivers/net/fs_enet/mii-bitbang.c index be4b72f..863ceed 100644
-> --- a/drivers/net/fs_enet/mii-bitbang.c
-> +++ b/drivers/net/fs_enet/mii-bitbang.c
-> @@ -26,6 +26,8 @@
-> 
->  #include "fs_enet.h"
-> 
-> +MODULE_LICENSE("GPL");
-> +
->  struct bb_info {
->  	struct mdiobb_ctrl ctrl;
->  	__be32 __iomem *dir;
+
+Oscar
+
+Scott Wood wrote:
+> On Wed, Sep 03, 2008 at 03:55:41PM -0700, Oscar Takeshita wrote:
+>   
+>> I've been trying to hook an IRQ on a modified mpc8349emitx board without 
+>> success.
+>>
+>> The IRQ is hooked physically to IRQ1/GPIO2[13] on the mpc8349e. No other 
+>> devices are
+>> tied to this pin.
+>>
+>> I'm using uboot 1.2.0 and kernel 2.6.22.19.
+>>
+>> Do I need to have a dts entry for this interrupt in order to make
+>> request_irq() succeed?
+>>
+>> How can I find the IRQ number? I tried probe_irq_on/off unfortunately it 
+>> did not work.
+>> Would it be MPC83xx_IRQ_EXT1 in arch/powerpc/include/asm/mpc83xx.h ?
+>>
+>> I'm new doing kernel work. Any hints appreciated.
+>>     
+>
+> You need to describe the IRQ in a device tree node and use
+> irq_of_parse_and_map().  request_irq() takes virtual IRQ numbers.
+>
+> Maybe we should put together an arch/powerpc FAQ...
+>
+> -Scott
+>
+>
+>   
