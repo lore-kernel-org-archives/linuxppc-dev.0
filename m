@@ -1,15 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B5D6BDE228
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 23:37:17 +1000 (EST)
-Date: Thu, 4 Sep 2008 17:37:16 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 2/2] powerpc/83xx: mpc836x_mds: add support for USB Host/Gadget
-Message-ID: <20080904133716.GB10256@oksana.dev.rtsoft.ru>
+Return-Path: <neko@genesi-usa.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.156])
+	by ozlabs.org (Postfix) with ESMTP id 79223474CA
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 23:44:42 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so430900fga.36
+	for <linuxppc-dev@ozlabs.org>; Thu, 04 Sep 2008 06:44:39 -0700 (PDT)
+Message-ID: <48BFE63F.70700@genesi-usa.com>
+Date: Thu, 04 Sep 2008 08:44:31 -0500
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+Subject: Re: [PATCH, RFC] mv643xx_eth: move sram window setting code into
+	the driver
+References: <20080903140048.GC19602@xi.wantstofly.org>
+In-Reply-To: <20080903140048.GC19602@xi.wantstofly.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,193 +25,326 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Various changes to support QE USB Host and Gadget on MPC8360E-MDS
-boards:
+I was thinking about this actually, similar to the Efika Device Tree Supplement
+for MPC5200B board (which adds a lot of device tree nodes not present on the
+production model and fixes some things), we have a Pegasos one too which changes
+some very minor stuff.
 
-- Update the device tree per QE USB bindings;
-- Configure QE Par IO;
-- Set up BCSR for both USB Host and Peripheral modes;
-- Add timer (GTM) node;
-- Add gpio-controller node for BCSR13 bank;
-- Select FSL_GTM and QE_USB.
+This could be in the kernel (chrp fixups) or in a pre-boot Forth script, but
+in either case, wouldn't a real sram node in the device tree be the proper
+solution here? Hardcoding addresses for devices is rather arch/ppc behaviour
+and the driver is one of the few cases that never got reworked to fit.
 
-The work is loosely based on Li Yang's patch[1], which is used
-to support peripheral mode only.
+I don't have a Pegasos running right now to test but I will, as soon as possible,
+make sure this works first.
 
-[1] http://ozlabs.org/pipermail/linuxppc-dev/2008-August/061357.html
-
-The s-o-b line of the original patch preserved here.
-
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-
-Added qe_usb_clock_set() for peripheral case, since the udc driver
-does not manage the clocks.
-
-Also, simple of gpio driver is user-selectable now, so we don't
-need to select it explicitly.
-
- arch/powerpc/boot/dts/mpc836x_mds.dts     |   44 +++++++++++++++++++++++++++-
- arch/powerpc/platforms/83xx/Kconfig       |    2 +
- arch/powerpc/platforms/83xx/mpc836x_mds.c |   45 ++++++++++++++++++++++++++++-
- 3 files changed, 88 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
-index ada8446..0be98f3 100644
---- a/arch/powerpc/boot/dts/mpc836x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
-@@ -69,8 +69,19 @@
- 		};
- 
- 		bcsr@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
- 			device_type = "board-control";
- 			reg = <1 0 0x8000>;
-+			ranges = <0 1 0 0x8000>;
-+
-+			bcsr13: gpio-controller@d {
-+				#gpio-cells = <2>;
-+				compatible = "fsl,mpc8360mds-bcsr-gpio",
-+					     "simple-gpio-bank";
-+				reg = <0xd 1>;
-+				gpio-controller;
-+			};
- 		};
- 	};
- 
-@@ -191,10 +202,21 @@
- 		};
- 
- 		par_io@1400 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
- 			reg = <0x1400 0x100>;
-+			ranges = <0 0x1400 0x100>;
- 			device_type = "par_io";
- 			num-ports = <7>;
- 
-+			qe_pio_b: gpio-controller@18 {
-+				#gpio-cells = <2>;
-+				compatible = "fsl,mpc8360-qe-pario-bank",
-+					     "fsl,mpc8323-qe-pario-bank";
-+				reg = <0x18 0x18>;
-+				gpio-controller;
-+			};
-+
- 			pio1: ucc_pin@01 {
- 				pio-map = <
- 			/* port  pin  dir  open_drain  assignment  has_irq */
-@@ -278,6 +300,15 @@
- 			};
- 		};
- 
-+		timer@440 {
-+			compatible = "fsl,mpc8360-qe-gtm",
-+				     "fsl,qe-gtm", "fsl,gtm";
-+			reg = <0x440 0x40>;
-+			clock-frequency = <132000000>;
-+			interrupts = <12 13 14 15>;
-+			interrupt-parent = <&qeic>;
-+		};
-+
- 		spi@4c0 {
- 			cell-index = <0>;
- 			compatible = "fsl,spi";
-@@ -297,11 +328,20 @@
- 		};
- 
- 		usb@6c0 {
--			compatible = "qe_udc";
-+			compatible = "fsl,mpc8360-qe-usb",
-+				     "fsl,mpc8323-qe-usb";
- 			reg = <0x6c0 0x40 0x8b00 0x100>;
- 			interrupts = <11>;
- 			interrupt-parent = <&qeic>;
--			mode = "slave";
-+			fsl,fullspeed-clock = "clk21";
-+			fsl,lowspeed-clock = "brg9";
-+			gpios = <&qe_pio_b  2 0   /* USBOE */
-+				 &qe_pio_b  3 0   /* USBTP */
-+				 &qe_pio_b  8 0   /* USBTN */
-+				 &qe_pio_b  9 0   /* USBRP */
-+				 &qe_pio_b 11 0   /* USBRN */
-+				 &bcsr13    5 0   /* SPEED */
-+				 &bcsr13    4 1>; /* POWER */
- 		};
- 
- 		enet0: ucc@2000 {
-diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index 6159c5d..b4ee8f1 100644
---- a/arch/powerpc/platforms/83xx/Kconfig
-+++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -58,6 +58,8 @@ config MPC836x_MDS
- 	bool "Freescale MPC836x MDS"
- 	select DEFAULT_UIMAGE
- 	select QUICC_ENGINE
-+	select QE_USB
-+	select FSL_GTM
- 	help
- 	  This option enables support for the MPC836x MDS Processor Board.
- 
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-index 9d46e5b..55fa717 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-@@ -127,9 +127,52 @@ static void __init mpc836x_mds_setup_arch(void)
- 			iounmap(immap);
- 		}
- 
--		iounmap(bcsr_regs);
- 		of_node_put(np);
- 	}
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc8323-qe-usb");
-+	if (np) {
-+		const char *mode = of_get_property(np, "mode", NULL);
-+
-+		par_io_config_pin(1,  2, 1, 0, 3, 0); /* USBOE  */
-+		par_io_config_pin(1,  3, 1, 0, 3, 0); /* USBTP  */
-+		par_io_config_pin(1,  8, 1, 0, 1, 0); /* USBTN  */
-+		par_io_config_pin(1, 10, 2, 0, 3, 0); /* USBRXD */
-+		par_io_config_pin(1,  9, 2, 1, 3, 0); /* USBRP  */
-+		par_io_config_pin(1, 11, 2, 1, 3, 0); /* USBRN  */
-+		par_io_config_pin(2, 20, 2, 0, 1, 0); /* CLK21  */
-+
-+#define BCSR8_TSEC1M_MASK	(0x3 << 6)
-+#define BCSR8_TSEC1M_RGMII	(0x0 << 6)
-+#define BCSR8_TSEC2M_MASK	(0x3 << 4)
-+#define BCSR8_TSEC2M_RGMII	(0x0 << 4)
-+		/*
-+		 * Default is GMII (2), but we should set it to RGMII (0) if
-+		 * we use USB (Eth PHY is in RGMII mode anyway).
-+		 */
-+		clrsetbits_8(&bcsr_regs[8],
-+			     BCSR8_TSEC1M_MASK | BCSR8_TSEC2M_MASK,
-+			     BCSR8_TSEC1M_RGMII | BCSR8_TSEC2M_RGMII);
-+
-+#define BCSR13_USBMASK	0x0f
-+#define BCSR13_nUSBEN	0x08 /* 1 - Disable, 0 - Enable			*/
-+#define BCSR13_USBSPEED 0x04 /* 1 - Full, 0 - Low			*/
-+#define BCSR13_USBMODE	0x02 /* 1 - Host, 0 - Function			*/
-+#define BCSR13_nUSBVCC	0x01 /* 1 - gets VBUS, 0 - supplies VBUS 	*/
-+
-+		clrsetbits_8(&bcsr_regs[13], BCSR13_USBMASK, BCSR13_USBSPEED);
-+
-+		if (mode && !strcmp(mode, "peripheral")) {
-+			setbits8(&bcsr_regs[13], BCSR13_nUSBVCC);
-+			qe_usb_clock_set(QE_CLK21, 48000000);
-+		} else {
-+			setbits8(&bcsr_regs[13], BCSR13_USBMODE);
-+		}
-+
-+		of_node_put(np);
-+	}
-+
-+	iounmap(bcsr_regs);
- #endif				/* CONFIG_QUICC_ENGINE */
- }
- 
 -- 
-1.5.6.3
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
+
+Lennert Buytenhek wrote:
+> This gets rid of a big mv643xx_eth annoyance of mine where the driver
+> exports the offsets of some of its internal registers via a header
+> file, and the Pegasos platform code ioremaps the peripheral directly
+> and pokes into peripheral registers directly without involving the
+> driver at all.
+> 
+> I don't have the hardware, though, so I'd appreciate it if someone
+> with a Pegasos board could test this (and possibly try some followup
+> patches if it doesn't work).  (You might need to apply some of the
+> other mv643xx_eth patches that I just sent to netdev@ -- I'll happily
+> provide a rolled-up patch on request.)
+> 
+> Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
+> ---
+>  arch/powerpc/platforms/chrp/pegasos_eth.c |   48 +++++++++++--------------
+>  drivers/net/mv643xx_eth.c                 |   56 +++++++++++++++++++++++------
+>  include/linux/mv643xx_eth.h               |   21 +++++++----
+>  3 files changed, 80 insertions(+), 45 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/powerpc/platforms/chrp/pegasos_eth.c
+> index 130ff72..1adec8e 100644
+> --- a/arch/powerpc/platforms/chrp/pegasos_eth.c
+> +++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
+> @@ -21,8 +21,8 @@
+>  #define PEGASOS2_SRAM_BASE 			(0xf2000000)
+>  #define PEGASOS2_SRAM_SIZE			(256*1024)
+>  
+> -#define PEGASOS2_SRAM_BASE_ETH0			(PEGASOS2_SRAM_BASE)
+> -#define PEGASOS2_SRAM_BASE_ETH1			(PEGASOS2_SRAM_BASE_ETH0 + (PEGASOS2_SRAM_SIZE / 2) )
+> +#define PEGASOS2_SRAM_OFF_ETH0			(0)
+> +#define PEGASOS2_SRAM_OFF_ETH1			(PEGASOS2_SRAM_SIZE / 2)
+>  
+>  
+>  #define PEGASOS2_SRAM_RXRING_SIZE		(PEGASOS2_SRAM_SIZE/4)
+> @@ -40,6 +40,14 @@ static struct resource mv643xx_eth_shared_resources[] = {
+>  	},
+>  };
+>  
+> +static struct mv643xx_eth_shared_platform_data mv643xx_eth_shared_pd = {
+> +	.sram_mbus_target_id	= 0x02,
+> +	.sram_mbus_target_attr	= 0x00,
+> +	.sram_mbus_addr		= PEGASOS2_SRAM_BASE,
+> +	.sram_size		= PEGASOS2_SRAM_SIZE,
+> +	.sram_cpu_phys_addr	= PEGASOS2_SRAM_BASE,
+> +};
+> +
+>  static struct platform_device mv643xx_eth_shared_device = {
+>  	.name		= MV643XX_ETH_SHARED_NAME,
+>  	.id		= 0,
+> @@ -61,12 +69,12 @@ static struct mv643xx_eth_platform_data eth0_pd = {
+>  	.shared		= &mv643xx_eth_shared_device,
+>  	.port_number	= 0,
+>  
+> -	.tx_sram_addr = PEGASOS2_SRAM_BASE_ETH0,
+> -	.tx_sram_size = PEGASOS2_SRAM_TXRING_SIZE,
+> +	.sram_tx_offset = PEGASOS2_SRAM_OFF_ETH0,
+> +	.sram_tx_size = PEGASOS2_SRAM_TXRING_SIZE,
+>  	.tx_queue_size = PEGASOS2_SRAM_TXRING_SIZE/16,
+>  
+> -	.rx_sram_addr = PEGASOS2_SRAM_BASE_ETH0 + PEGASOS2_SRAM_TXRING_SIZE,
+> -	.rx_sram_size = PEGASOS2_SRAM_RXRING_SIZE,
+> +	.sram_rx_offset = PEGASOS2_SRAM_OFF_ETH0 + PEGASOS2_SRAM_TXRING_SIZE,
+> +	.sram_tx_size = PEGASOS2_SRAM_RXRING_SIZE,
+>  	.rx_queue_size = PEGASOS2_SRAM_RXRING_SIZE/16,
+>  };
+>  
+> @@ -93,12 +101,12 @@ static struct mv643xx_eth_platform_data eth1_pd = {
+>  	.shared		= &mv643xx_eth_shared_device,
+>  	.port_number	= 1,
+>  
+> -	.tx_sram_addr = PEGASOS2_SRAM_BASE_ETH1,
+> -	.tx_sram_size = PEGASOS2_SRAM_TXRING_SIZE,
+> +	.sram_tx_offset = PEGASOS2_SRAM_OFF_ETH1,
+> +	.sram_tx_size = PEGASOS2_SRAM_TXRING_SIZE,
+>  	.tx_queue_size = PEGASOS2_SRAM_TXRING_SIZE/16,
+>  
+> -	.rx_sram_addr = PEGASOS2_SRAM_BASE_ETH1 + PEGASOS2_SRAM_TXRING_SIZE,
+> -	.rx_sram_size = PEGASOS2_SRAM_RXRING_SIZE,
+> +	.sram_rx_offset = PEGASOS2_SRAM_OFF_ETH1 + PEGASOS2_SRAM_TXRING_SIZE,
+> +	.sram_rx_size = PEGASOS2_SRAM_RXRING_SIZE,
+>  	.rx_queue_size = PEGASOS2_SRAM_RXRING_SIZE/16,
+>  };
+>  
+> @@ -123,16 +131,13 @@ static struct platform_device *mv643xx_eth_pd_devs[] __initdata = {
+>  #define MV_READ(offset,val) 	{ val = readl(mv643xx_reg_base + offset); }
+>  #define MV_WRITE(offset,data) writel(data, mv643xx_reg_base + offset)
+>  
+> -static void __iomem *mv643xx_reg_base;
+> -
+>  static int Enable_SRAM(void)
+>  {
+> +	void __iomem *mv643xx_reg_base;
+>  	u32 ALong;
+>  
+> -	if (mv643xx_reg_base == NULL)
+> -		mv643xx_reg_base = ioremap(PEGASOS2_MARVELL_REGBASE,
+> -					PEGASOS2_MARVELL_REGSIZE);
+> -
+> +	mv643xx_reg_base = ioremap(PEGASOS2_MARVELL_REGBASE,
+> +				PEGASOS2_MARVELL_REGSIZE);
+>  	if (mv643xx_reg_base == NULL)
+>  		return -ENOMEM;
+>  
+> @@ -149,23 +154,12 @@ static int Enable_SRAM(void)
+>  	ALong &= ~(1 << 19);
+>  	MV_WRITE(MV64340_BASE_ADDR_ENABLE, ALong);
+>  
+> -	ALong = 0x02;
+> -	ALong |= PEGASOS2_SRAM_BASE & 0xffff0000;
+> -	MV_WRITE(MV643XX_ETH_BAR_4, ALong);
+> -
+> -	MV_WRITE(MV643XX_ETH_SIZE_REG_4, (PEGASOS2_SRAM_SIZE-1) & 0xffff0000);
+> -
+> -	MV_READ(MV643XX_ETH_BASE_ADDR_ENABLE_REG, ALong);
+> -	ALong &= ~(1 << 4);
+> -	MV_WRITE(MV643XX_ETH_BASE_ADDR_ENABLE_REG, ALong);
+> -
+>  #ifdef BE_VERBOSE
+>  	printk("Pegasos II/Marvell MV64361: register unmapped\n");
+>  	printk("Pegasos II/Marvell MV64361: SRAM at %p, size=%x\n", (void*) PEGASOS2_SRAM_BASE, PEGASOS2_SRAM_SIZE);
+>  #endif
+>  
+>  	iounmap(mv643xx_reg_base);
+> -	mv643xx_reg_base = NULL;
+>  
+>  	return 1;
+>  }
+> diff --git a/drivers/net/mv643xx_eth.c b/drivers/net/mv643xx_eth.c
+> index d513a04..a3ffd1c 100644
+> --- a/drivers/net/mv643xx_eth.c
+> +++ b/drivers/net/mv643xx_eth.c
+> @@ -262,8 +262,10 @@ struct mv643xx_eth_shared_private {
+>  	wait_queue_head_t smi_busy_wait;
+>  
+>  	/*
+> -	 * Per-port MBUS window access register value.
+> +	 * MBUS-related data.
+>  	 */
+> +	u32 sram_mbus_addr;
+> +	unsigned long sram_cpu_phys_addr;
+>  	u32 win_protect;
+>  
+>  	/*
+> @@ -369,8 +371,9 @@ struct mv643xx_eth_private {
+>  	 * RX state.
+>  	 */
+>  	int default_rx_ring_size;
+> -	unsigned long rx_desc_sram_addr;
+> +	u32 rx_desc_sram_mbus;
+>  	int rx_desc_sram_size;
+> +	unsigned long rx_desc_sram_phys;
+>  	int rxq_count;
+>  	struct timer_list rx_oom;
+>  	struct rx_queue rxq[8];
+> @@ -379,8 +382,9 @@ struct mv643xx_eth_private {
+>  	 * TX state.
+>  	 */
+>  	int default_tx_ring_size;
+> -	unsigned long tx_desc_sram_addr;
+> +	u32 tx_desc_sram_mbus;
+>  	int tx_desc_sram_size;
+> +	unsigned long tx_desc_sram_phys;
+>  	int txq_count;
+>  	struct tx_queue txq[8];
+>  };
+> @@ -1573,9 +1577,9 @@ static int rxq_init(struct mv643xx_eth_private *mp, int index)
+>  	size = rxq->rx_ring_size * sizeof(struct rx_desc);
+>  
+>  	if (index == 0 && size <= mp->rx_desc_sram_size) {
+> -		rxq->rx_desc_area = ioremap(mp->rx_desc_sram_addr,
+> +		rxq->rx_desc_area = ioremap(mp->rx_desc_sram_phys,
+>  						mp->rx_desc_sram_size);
+> -		rxq->rx_desc_dma = mp->rx_desc_sram_addr;
+> +		rxq->rx_desc_dma = mp->rx_desc_sram_mbus;
+>  	} else {
+>  		rxq->rx_desc_area = dma_alloc_coherent(NULL, size,
+>  							&rxq->rx_desc_dma,
+> @@ -1673,9 +1677,9 @@ static int txq_init(struct mv643xx_eth_private *mp, int index)
+>  	size = txq->tx_ring_size * sizeof(struct tx_desc);
+>  
+>  	if (index == 0 && size <= mp->tx_desc_sram_size) {
+> -		txq->tx_desc_area = ioremap(mp->tx_desc_sram_addr,
+> +		txq->tx_desc_area = ioremap(mp->tx_desc_sram_phys,
+>  						mp->tx_desc_sram_size);
+> -		txq->tx_desc_dma = mp->tx_desc_sram_addr;
+> +		txq->tx_desc_dma = mp->tx_desc_sram_mbus;
+>  	} else {
+>  		txq->tx_desc_area = dma_alloc_coherent(NULL, size,
+>  							&txq->tx_desc_dma,
+> @@ -2299,6 +2303,26 @@ mv643xx_eth_conf_mbus_windows(struct mv643xx_eth_shared_private *msp,
+>  	msp->win_protect = win_protect;
+>  }
+>  
+> +static void
+> +mv643xx_eth_conf_sram_mbus_windows(struct mv643xx_eth_shared_private *msp,
+> +				   u8 sram_mbus_target_id, u8 sram_mbus_attr,
+> +				   u32 sram_mbus_addr, u32 sram_size)
+> +{
+> +	void __iomem *base = msp->base;
+> +	u32 win_enable;
+> +
+> +	writel((sram_mbus_addr & 0xffff0000) |
+> +		(sram_mbus_attr << 8) |
+> +		sram_mbus_target_id, base + WINDOW_BASE(4));
+> +	writel((sram_size - 1) & 0xffff0000, base + WINDOW_SIZE(4));
+> +
+> +	win_enable = readl(base + WINDOW_BAR_ENABLE);
+> +	win_enable &= ~(1 << 4);
+> +	writel(win_enable, base + WINDOW_BAR_ENABLE);
+> +
+> +	msp->win_protect |= 3 << (2 * 4);
+> +}
+> +
+>  static void infer_hw_params(struct mv643xx_eth_shared_private *msp)
+>  {
+>  	/*
+> @@ -2391,6 +2415,13 @@ static int mv643xx_eth_shared_probe(struct platform_device *pdev)
+>  	 */
+>  	if (pd != NULL && pd->dram != NULL)
+>  		mv643xx_eth_conf_mbus_windows(msp, pd->dram);
+> +	if (pd != NULL && pd->sram_mbus_addr) {
+> +		msp->sram_mbus_addr = pd->sram_mbus_addr;
+> +		msp->sram_cpu_phys_addr = pd->sram_cpu_phys_addr;
+> +		mv643xx_eth_conf_sram_mbus_windows(msp,
+> +			pd->sram_mbus_target_id, pd->sram_mbus_attr,
+> +			pd->sram_mbus_addr, pd->sram_size);
+> +	}
+>  
+>  	/*
+>  	 * Detect hardware parameters.
+> @@ -2457,6 +2488,7 @@ static int phy_addr_get(struct mv643xx_eth_private *mp)
+>  static void set_params(struct mv643xx_eth_private *mp,
+>  		       struct mv643xx_eth_platform_data *pd)
+>  {
+> +	struct mv643xx_eth_shared_private *msp = mp->shared;
+>  	struct net_device *dev = mp->dev;
+>  
+>  	if (is_valid_ether_addr(pd->mac_addr))
+> @@ -2467,16 +2499,18 @@ static void set_params(struct mv643xx_eth_private *mp,
+>  	mp->default_rx_ring_size = DEFAULT_RX_QUEUE_SIZE;
+>  	if (pd->rx_queue_size)
+>  		mp->default_rx_ring_size = pd->rx_queue_size;
+> -	mp->rx_desc_sram_addr = pd->rx_sram_addr;
+> -	mp->rx_desc_sram_size = pd->rx_sram_size;
+> +	mp->rx_desc_sram_phys = msp->sram_cpu_phys_addr + pd->sram_rx_offset;
+> +	mp->rx_desc_sram_mbus = msp->sram_mbus_addr + pd->sram_rx_offset;
+> +	mp->rx_desc_sram_size = pd->sram_rx_size;
+>  
+>  	mp->rxq_count = pd->rx_queue_count ? : 1;
+>  
+>  	mp->default_tx_ring_size = DEFAULT_TX_QUEUE_SIZE;
+>  	if (pd->tx_queue_size)
+>  		mp->default_tx_ring_size = pd->tx_queue_size;
+> -	mp->tx_desc_sram_addr = pd->tx_sram_addr;
+> -	mp->tx_desc_sram_size = pd->tx_sram_size;
+> +	mp->tx_desc_sram_phys = msp->sram_cpu_phys_addr + pd->sram_tx_offset;
+> +	mp->tx_desc_sram_mbus = msp->sram_mbus_addr + pd->sram_tx_offset;
+> +	mp->tx_desc_sram_size = pd->sram_rx_size;
+>  
+>  	mp->txq_count = pd->tx_queue_count ? : 1;
+>  }
+> diff --git a/include/linux/mv643xx_eth.h b/include/linux/mv643xx_eth.h
+> index cbbbe9b..9daa4db 100644
+> --- a/include/linux/mv643xx_eth.h
+> +++ b/include/linux/mv643xx_eth.h
+> @@ -11,14 +11,21 @@
+>  #define MV643XX_ETH_NAME		"mv643xx_eth_port"
+>  #define MV643XX_ETH_SHARED_REGS		0x2000
+>  #define MV643XX_ETH_SHARED_REGS_SIZE	0x2000
+> -#define MV643XX_ETH_BAR_4		0x2220
+> -#define MV643XX_ETH_SIZE_REG_4		0x2224
+> -#define MV643XX_ETH_BASE_ADDR_ENABLE_REG	0x2290
+>  
+>  struct mv643xx_eth_shared_platform_data {
+>  	struct mbus_dram_target_info	*dram;
+>  	struct platform_device	*shared_smi;
+>  	unsigned int		t_clk;
+> +
+> +	/*
+> +	 * MBUS target data for controller on-chip SRAM (if there
+> +	 * is any).
+> +	 */
+> +	u8			sram_mbus_target_id;
+> +	u8			sram_mbus_attr;
+> +	u32			sram_mbus_addr;
+> +	u32			sram_size;
+> +	unsigned long		sram_cpu_phys_addr;
+>  };
+>  
+>  #define MV643XX_ETH_PHY_ADDR_DEFAULT	0
+> @@ -68,10 +75,10 @@ struct mv643xx_eth_platform_data {
+>  	 * and sufficient to contain all descriptors for the requested
+>  	 * ring sizes.
+>  	 */
+> -	unsigned long		rx_sram_addr;
+> -	int			rx_sram_size;
+> -	unsigned long		tx_sram_addr;
+> -	int			tx_sram_size;
+> +	int			sram_rx_offset;
+> +	int			sram_rx_size;
+> +	int			sram_tx_offset;
+> +	int			sram_tx_size;
+>  };
+>  
+>  
