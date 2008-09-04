@@ -1,25 +1,19 @@
-Return-Path: <gunnar@genesi-usa.com>
-Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
-	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 2576FDE1B1
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:14:12 +1000 (EST)
-Received: by gxk14 with SMTP id 14so6342711gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 04 Sep 2008 08:14:11 -0700 (PDT)
-Message-ID: <b989d750809040814q2594c054i7dece706c49668f1@mail.gmail.com>
-Date: Thu, 4 Sep 2008 17:14:11 +0200
-From: "Gunnar Von Boehn" <gunnar@genesi-usa.com>
-To: munroesj@us.ibm.com
-Subject: Re: Efficient memcpy()/memmove() for G2/G3 cores...
-In-Reply-To: <1220538673.28869.261.camel@spokane1.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200808251131.02071.david.jander@protonic.nl>
-	<200809041405.16489.david.jander@protonic.nl>
-	<20080904121926.GA12867@yoda.jdub.homelinux.org>
-	<200809041459.27606.david.jander@protonic.nl>
-	<1220538673.28869.261.camel@spokane1.rchland.ibm.com>
-Cc: David Jander <david.jander@protonic.nl>, John Rigby <jrigby@freescale.com>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	prodyut hazarika <prodyuth@gmail.com>
+Return-Path: <buytenh@wantstofly.org>
+Received: from xi.wantstofly.org (xi.wantstofly.org [83.160.184.112])
+	by ozlabs.org (Postfix) with ESMTP id 2956C47A27
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:20:36 +1000 (EST)
+Date: Thu, 4 Sep 2008 17:20:33 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: [PATCH,
+	RFC] mv643xx_eth: move sram window setting code into the driver
+Message-ID: <20080904152032.GB27272@xi.wantstofly.org>
+References: <20080903140048.GC19602@xi.wantstofly.org>
+	<48BFE63F.70700@genesi-usa.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48BFE63F.70700@genesi-usa.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,30 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Steve,
+On Thu, Sep 04, 2008 at 08:44:31AM -0500, Matt Sealey wrote:
 
-> I have personally optimized memcpy for power4/5/6 and they are all
-> different. There are dozens of different PPC implementations from
-> different manufacturers and design, every one is different! With painful
-> negotiation I was able to get the --with-cpu= framework added to glibc
-> but not all distro use it. You can thank me later
+> I was thinking about this actually, similar to the Efika Device Tree 
+> Supplement for MPC5200B board (which adds a lot of device tree nodes
+> not present on the production model and fixes some things), we have
+> a Pegasos one too which changes some very minor stuff.
+> 
+> This could be in the kernel (chrp fixups) or in a pre-boot Forth
+> script, but in either case, wouldn't a real sram node in the device
+> tree be the proper solution here? Hardcoding addresses for devices
+> is rather arch/ppc behaviour and the driver is one of the few cases
+> that never got reworked to fit.
 
-Steve, you make it sound like very many different PowerPC chips:
+Probably.
 
-You said you did the Power 4, Power 5 , Power 6 and now Power 7 routines.
-And there are the 970 and the Cell.
+I guess you don't want to pass that info _directly_ to the mv643xx_eth
+driver, though -- since the on-chip SRAM can be used for many things,
+and you're not necessarily sure that the user wants to use it for
+descriptors.  (Or how much of it they want to use for descriptors.)
+(Or for the descriptors of which of the 8 possible transmit and receive
+queues, considering the 2.6.27 driver supports multiple queues.)
 
-While this sounds like 7 different PPC chips.
-But aren't this actually only 2 main families?
-
-
-Wouldn't it be possible to create two main routine to cover all?
-One type that performs good on the family of Power4/5 and 7.
-And one that performs good on the family of P6 and Cell?
-
-How are the Linux hackers handling this?
-Maybe there is room for consolidating?
+Well, I'm not sure what the best solution is. :-)
 
 
-Cheers
-Gunnar
+> I don't have a Pegasos running right now to test but I will, as soon
+> as possible, make sure this works first.
+
+Cool, thanks.  It would be nice if you could give the driver in
+2.6.27-rc5 a spin, it has seen a _lot_ of changes since 2.6.25 and
+I'd really like to make sure it still works on Pegasos.
