@@ -1,19 +1,18 @@
-Return-Path: <buytenh@wantstofly.org>
-Received: from xi.wantstofly.org (xi.wantstofly.org [83.160.184.112])
-	by ozlabs.org (Postfix) with ESMTP id 2956C47A27
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:20:36 +1000 (EST)
-Date: Thu, 4 Sep 2008 17:20:33 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: [PATCH,
-	RFC] mv643xx_eth: move sram window setting code into the driver
-Message-ID: <20080904152032.GB27272@xi.wantstofly.org>
-References: <20080903140048.GC19602@xi.wantstofly.org>
-	<48BFE63F.70700@genesi-usa.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48BFE63F.70700@genesi-usa.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [204.133.123.27])
+	by ozlabs.org (Postfix) with ESMTP id E94224778C
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:21:40 +1000 (EST)
+Message-ID: <48BFFCFD.8010608@mlbassoc.com>
+Date: Thu, 04 Sep 2008 09:21:33 -0600
+From: Gary Thomas <gary@mlbassoc.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Hooking an IRQ on a modified mpc8349emitx board
+References: <48BF15ED.4050707@silvustechnologies.com>
+	<20080904144457.GA2522@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20080904144457.GA2522@ld0162-tx32.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 04, 2008 at 08:44:31AM -0500, Matt Sealey wrote:
-
-> I was thinking about this actually, similar to the Efika Device Tree 
-> Supplement for MPC5200B board (which adds a lot of device tree nodes
-> not present on the production model and fixes some things), we have
-> a Pegasos one too which changes some very minor stuff.
+Scott Wood wrote:
+> On Wed, Sep 03, 2008 at 03:55:41PM -0700, Oscar Takeshita wrote:
+>> I've been trying to hook an IRQ on a modified mpc8349emitx board without 
+>> success.
+>>
+>> The IRQ is hooked physically to IRQ1/GPIO2[13] on the mpc8349e. No other 
+>> devices are
+>> tied to this pin.
+>>
+>> I'm using uboot 1.2.0 and kernel 2.6.22.19.
+>>
+>> Do I need to have a dts entry for this interrupt in order to make
+>> request_irq() succeed?
+>>
+>> How can I find the IRQ number? I tried probe_irq_on/off unfortunately it 
+>> did not work.
+>> Would it be MPC83xx_IRQ_EXT1 in arch/powerpc/include/asm/mpc83xx.h ?
+>>
+>> I'm new doing kernel work. Any hints appreciated.
 > 
-> This could be in the kernel (chrp fixups) or in a pre-boot Forth
-> script, but in either case, wouldn't a real sram node in the device
-> tree be the proper solution here? Hardcoding addresses for devices
-> is rather arch/ppc behaviour and the driver is one of the few cases
-> that never got reworked to fit.
+> You need to describe the IRQ in a device tree node and use
+> irq_of_parse_and_map().  request_irq() takes virtual IRQ numbers.
+> 
+> Maybe we should put together an arch/powerpc FAQ...
 
-Probably.
+That would be wonderful :-)  This could help many [of us] over these
+initial speed-bumps.
 
-I guess you don't want to pass that info _directly_ to the mv643xx_eth
-driver, though -- since the on-chip SRAM can be used for many things,
-and you're not necessarily sure that the user wants to use it for
-descriptors.  (Or how much of it they want to use for descriptors.)
-(Or for the descriptors of which of the 8 possible transmit and receive
-queues, considering the 2.6.27 driver supports multiple queues.)
-
-Well, I'm not sure what the best solution is. :-)
-
-
-> I don't have a Pegasos running right now to test but I will, as soon
-> as possible, make sure this works first.
-
-Cool, thanks.  It would be nice if you could give the driver in
-2.6.27-rc5 a spin, it has seen a _lot_ of changes since 2.6.25 and
-I'd really like to make sure it still works on Pegasos.
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
