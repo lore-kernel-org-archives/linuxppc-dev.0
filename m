@@ -1,24 +1,15 @@
-Return-Path: <m.fortini@selcomgroup.com>
-Received: from xseries02.selcomgroup.com (mail.selcomgroup.com [85.18.34.51])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 60E78DDE25
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Sep 2008 23:58:43 +1000 (EST)
-Received: from [172.26.6.73] ([172.26.6.73]) (authenticated bits=0)
-	by xseries02.selcomgroup.com (8.13.4/8.13.4) with ESMTP id
-	m84Dbf5D006092
-	for <linuxppc-embedded@ozlabs.org>; Thu, 4 Sep 2008 15:37:42 +0200
-Message-ID: <48BFE4A5.4000200@selcomgroup.com>
-Date: Thu, 04 Sep 2008 15:37:41 +0200
-From: Matteo Fortini <m.fortini@selcomgroup.com>
+Return-Path: <dzu@denx.de>
+From: Detlev Zundel <dzu@denx.de>
+To: s104259@yahoo.it
+Subject: Re: Boot 2.6.26 (or similar) on mpc5200 using powerpc
+References: <90069.85628.qm@web23105.mail.ird.yahoo.com>
+Date: Thu, 04 Sep 2008 16:47:40 +0200
+In-Reply-To: <90069.85628.qm@web23105.mail.ird.yahoo.com> (Angelo's message of
+	"Thu, 4 Sep 2008 13:08:06 +0000 (GMT)")
+Message-ID: <m2tzcwdl2r.fsf@ohwell.denx.de>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: mpc5121e port status
-References: <6e36f2f00808271507w5b58d646w66c73c5af5931e50@mail.gmail.com>
-	<200809021250.52802.david.jander@protonic.nl>
-In-Reply-To: <200809021250.52802.david.jander@protonic.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -29,61 +20,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-we are using freescale's distro, but we're having some issues with the 
-socketcan driver provided in the kernel.
+Hi Angelo,
 
-Basically, sometimes while we're transmitting a high bandwidth, we get a 
-"BUG! Tx Ring full when queue awake!" and if we open it more than once, 
-then sometimes the bandwidth setting IOCTL fails with "no such device"
+>> > 2 - make cuImage.lite5200b ARCH=powerpc
+>> CROSS_COMPILE=powerpc-linux-gnu-
+>> 
+>> Well, this is debatable.  Here you explicitely request a
+>> backward
+>> compatability wrapped uImage (for firmwares being FDT
+>> ignorant):
+>> 
+>
+> Can i use also $ make uImage ... ?! Or only cuImage!?
 
-Unfortunately, the MPC5121 mscan driver patch which is included in 
-freescale, was not made against either the kernel root or the socketcan 
-project, so it's not easy to port it anywhere.
+Maybe I was unclear - "make uImage" generates a regular kernel image for
+an FDT aware U-Boot, whereas "make cuImage" wraps the FDT blob _into_
+the cuImage so that even old non-FDT aware U-Boots can boot the kernel.
 
-Has anyone got that working, in a way or the other?
+But this option of course uses a wrapper for the kernel which sometimes
+exhibits behaviour different from what one sees when booting a regular
+uImage + dtb.  Of course these are bugs and should be fixed.
 
-Thanks,
-Matteo
+>> So in 2.6.26 I'd advise you to do a "make
+>> uImage" + "make lite5200b.dtb"
+>> and use the results in a recent U-Boot.
+>
+> But lite5200b.dtb doesn't exist. So i'm looking for it and i known
+> that i had to generate it using this command:
+>
+> $ arch/powerpc/boot/dtc -b0 -Idts -Odtb -V16 arch/powerpc/boot/dts/lite5200b.dts > lite5200b.dtb
 
-David Jander ha scritto:
-> On Thursday 28 August 2008 00:07:11 Andrés Calderón wrote:
->   
->> Is the mpc5121e kernel port mature enough to be used in commercial
->> appliance?
->>     
+> I'm wrong?!
+
+Not really, but you could also simply follow my advise - use a current
+kernel, trust me, type "make lite5200b.dtb" and rejoice.
+
+> So at this point i've got dtb, but somwhere i saw that it's necessary
+> to download lite5200.dtb to the system...
 >
-> That depends. For any use of the linux kernel in a "commercial appliance", the 
-> manufacturer of the appliance has the sole responsibility of testing for 
-> stability and fitness.
+> And at this point I try to boot the board:
 >
-> That said, the status of MPC5121e support in the linux kernel is as follows:
+> 1. usb start
+> 2. usb scan
+> 3. fatload usb 0 0xfc000000 cuImage.lite5200b
+> (3. fatload usb 0 0xfc000000 uImage - if i use make uImage)
+> 4. fatload usb 0 0xfd000000 rootfs.uimage
+> 5. fatload usb 0 0x???????? lite5200b.dtb
+> 6. bootm 0xfc000000 0x????????
 >
-> Latest mainline (git) kernel: Only basic CPU support, almost no drivers for 
-> anything.
->
-> LTIB distribution from Freescale (downloadable on Freescale web-page of the 
-> MPC5121e), latest version: kernel 2.6.24.5 with a lot of drivers for (among 
-> other things): DIU, NAND-flash, PSC-I2C, PSC-Uarts, CAN, DMA, Ethernet, USB 
-> (ehci host works well), etc....
-> Notably missing from this version is support for MBX, SATA and SDHC.
-> One thing that you shouldn't count on quite yet is the MBX (3D-acceleration), 
-> because it will not have open-source drivers in any forseeable time AFAIK 
-> (probably never)... only some promise of a commercial driver and OpenGL-ES 
-> library which probably will be more of a hassle than useful to anyone.
->
-> We have a custom board running the LTIB version of the kernel, and the 
-> existing drivers work surprisingly well, but are IMHO not useable for 
-> production right out of the box. The NAND-flash driver for instance is broken 
-> for most uses, and the DIU driver has some cache-related issues (glitches in 
-> the image). Those problems are more or less easily fixed however. Ethernet 
-> and USB (host) seem pretty stable however (I am running on NFS-root all the 
-> time).
->
-> There are effords underway to get the drivers ported and fixed for mainline 
-> linux, but the process is quite slow at the moment. That has us for instance 
-> locked in the ancient 2.6.24.5 version of the kernel.
->
-> Best regards,
->
->   
+> However my uboot version is 1.2.0. 
+
+Uh right, U-Boot for lite5200 has fdt support since 1.1.6, but I still
+advise to use a more recent U-Boot as a lot changed in this area.  If
+you have a recent U-Boot, you'll need to use the three parameter version
+of bootm - i.e. <kernel addr> <ramdisk addr> <fdt addr>.  A "-" for the
+ramdisk is ok if you do not intend to use a ramdisk.
+
+Cheers
+  Detlev
+
+-- 
+Every generation laughs at the old fashions, but follows religiously
+the new.
+                                        -- Henry David Thoreau
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
