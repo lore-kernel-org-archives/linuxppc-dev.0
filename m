@@ -1,18 +1,33 @@
-Return-Path: <JanakaS@optiscan.com>
-Received: from mail.optiscan.com (mail.optiscan.com [203.26.112.1])
-	by ozlabs.org (Postfix) with ESMTP id 40487DDF7C
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 10:31:57 +1000 (EST)
-From: Janaka Subhawickrama <JanakaS@optiscan.com>
-To: 'Scott Wood' <scottwood@freescale.com>
-Date: Fri, 5 Sep 2008 10:31:55 +1000
-Subject: RE: Kernel crash while initialising PCI
-Message-ID: <DE0CCFFBFF707949BEABD4537A14ACBA07A5FBD38D@mailsvr.optiscan.com>
-References: <DE0CCFFBFF707949BEABD4537A14ACBA073580F459@mailsvr.optiscan.com>
-	<20080903171519.GC10979@loki.buserror.net>
-In-Reply-To: <20080903171519.GC10979@loki.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9240CDDE31
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 10:48:45 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id m850mEI1010187
+	for <linuxppc-dev@ozlabs.org>; Fri, 5 Sep 2008 10:48:14 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m850mhSH235776
+	for <linuxppc-dev@ozlabs.org>; Fri, 5 Sep 2008 10:48:43 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m850mh7O015898
+	for <linuxppc-dev@ozlabs.org>; Fri, 5 Sep 2008 10:48:43 +1000
+Date: Thu, 4 Sep 2008 16:22:50 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Subject: Re: [Libhugetlbfs-devel] Buglet in 16G page handling
+Message-ID: <20080904062250.GF14704@yookeroo.seuss>
+References: <20080902050510.GB12965@yookeroo.seuss>
+	<48BD73FB.1050601@linux.vnet.ibm.com>
+	<20080903002029.GC9681@yookeroo.seuss>
+	<48BF0D6F.2010602@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "'linuxppc-dev@ozlabs.org'" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48BF0D6F.2010602@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, libhugetlbfs-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,79 +37,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Scott Wood [mailto:scottwood@freescale.com]
-> Sent: Thursday, 4 September 2008 3:15 AM
-> To: Janaka Subhawickrama
-> Cc: 'linuxppc-dev@ozlabs.org'
-> Subject: Re: Kernel crash while initialising PCI
->
-> On Wed, Sep 03, 2008 at 05:50:10PM +1000, Janaka Subhawickrama wrote:
-> > My DTS file entries for PCI are as follows:
+On Wed, Sep 03, 2008 at 05:19:27PM -0500, Jon Tollefson wrote:
+> David Gibson wrote:
+> > On Tue, Sep 02, 2008 at 12:12:27PM -0500, Jon Tollefson wrote:
+> >   
+> >> David Gibson wrote:
+> >>     
+> >>> When BenH and I were looking at the new code for handling 16G pages,
+> >>> we noticed a small bug.  It doesn't actually break anything user
+> >>> visible, but it's certainly not the way things are supposed to be.
+> >>> The 16G patches didn't update the huge_pte_offset() and
+> >>> huge_pte_alloc() functions, which means that the hugepte tables for
+> >>> 16G pages will be allocated much further down the page table tree than
+> >>> they should be - allocating several levels of page table with a single
+> >>> entry in them along the way.
+> >>>
+> >>> The patch below is supposed to fix this, cleaning up the existing
+> >>> handling of 64k vs 16M pages while its at it.  However, it needs some
+> >>> testing.
+> >>>
+> >>> I've checked that it doesn't break existing 16M support, either with
+> >>> 4k or 64k base pages.  I haven't figured out how to test with 64k
+> >>> pages yet, at least until the multisize support goes into
+> >>> libhugetlbfs.  For 16G pages, I just don't have access to a machine
+> >>> with enough memory to test.  Jon, presumably you must have found such
+> >>> a machine when you did the 16G page support in the first place.  Do
+> >>> you still have access, and can you test this patch?
+> >>>   
+> >>>       
+> >> I do have access to a machine to test it.  I applied the patch to -rc4
+> >> and used a pseries_defconfig.  I boot with
+> >> default_hugepagesz=16G... in order to test huge page sizes other then
+> >> 16M at this point.
+> >>
+> >> Running the libhugetlbfs test suite it gets as far as   Readback (64):  
+> >> PASS
+> >> before it hits the following program check.
+> >>     
 > >
-> > pci@8500 {
-> >                         interrupt-map-mask =3D <  // Mask the child
-> UnitIrqSpec
-> >                                                 //ff00 0 0 7
-> >                                                 ffff ff ff f
-> >                                                 >;
-> >                         interrupt-map =3D <
-> >                                         // Child UnitIrqSpec, Parent
-> PIC handle, Parent UnitIrqSpec
-> >                                         // PCI unit address (0000 0
-> 0), Interrupt specifier IDSEL 0x0D (CRX board hard wired to IDSEL 13),
-> >                                         //      parent Phandle,
-> IRQ7=3D0x17 (jumper based) level sensitive(8)
-> >                                         //0d00 0 0 1 &ipic 17 8
-> >                                         00006800 0 0 1 &ipic 17 8
-> >                                         >;
-> >                         interrupt-parent =3D < &ipic >;
-> >                         interrupts =3D <42 8>;            //PCI1
-> interrupt, level sensitive
-> >                         bus-range =3D <0 0>;              //Bus number
-> and largest bus under this
-> >                         /*
-> >                                 struct ranges_pci {
-> >                                         unsigned int pci_space;
-> //Prefechable/relocatable .... IEEE1275
-> >                                         u64 pci_addr;
-> >                                         phys_addr_t phys_addr;
-> >                                         u64 size;
-> >                                 };
-> >                         */
-> >                         ranges =3D < 02000000 0 A0000000 A0000000 0
-> 20000000
-> >                                    01000000 0 D8000000 D8000000 0
-> 01000000 >;
-> >                         clock-frequency =3D <1FCA055>;    //33333333Hz
-> >                         #interrupt-cells =3D <1>;         //PCI
-> aparently uses 1
-> >                         #size-cells =3D <2>;              //Max of 2
-> ints
-> >                         #address-cells =3D <3>;           //int size
-> >                         reg =3D <8500 100>; //??
-> >                         compatible =3D "fsl,mpc8349-pci";
-> >                         device_type =3D "pci";
-> >                 };
-> >
-> >
-> > What am I doing wrong ?
->
-> The PCI node needs to go under the root node, rather than under the soc
-> node.  Otherwise, the kernel will try to translate ranges through the
-> IMMR
-> window.  In older kernels, there was a bug in the PCI code that let you
-> get
-> away with this.
->
-> See current in-kernel device trees for examples.
->
-> -Scott
+> > Ah, yes, oops, forgot to fix up the pagetable freeing path in line
+> > with the other changes.  Try the revised version below.
+> >   
+> I have run through the tests twice now with this new patch using a 4k
+> base page size(and 16G huge page size) and there are no program checks
+> or spin lock issues.  So looking good.
+> 
+> I will run it next a couple of times with 64K base pages.
 
-Yep.  That fixed my immediate problem. Thank you very much.
-Kernel boots now and I can do lspci and see the basic information of the gr=
-aphics card.
-Now I have to trace through why I get "PCI: Calling quirk c01a9db8 for 0000=
-:00:0d.0".  Any pointers are greatly appreciated.
-Cheers
-   Janaka
+Ok, and I've now run it with 64k hugepage size, so assuming this last
+test of yours goes ok, I'll push the patch out.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
