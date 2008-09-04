@@ -1,28 +1,13 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EDD24DDEF1
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Sep 2008 10:02:29 +1000 (EST)
-Date: Wed, 3 Sep 2008 17:01:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [PATCH] Correct printk %pF to work on all architectures
-In-Reply-To: <1220484812.3254.59.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.1.10.0809031636320.3515@nehalem.linux-foundation.org>
-References: <1220473137.3254.29.camel@localhost.localdomain>
-	<alpine.LFD.1.10.0809031419560.3515@nehalem.linux-foundation.org>
-	<1220481754.3254.42.camel@localhost.localdomain>
-	<alpine.LFD.1.10.0809031546310.3515@nehalem.linux-foundation.org>
-	<1220482853.3254.47.camel@localhost.localdomain>
-	<alpine.LFD.1.10.0809031602270.3515@nehalem.linux-foundation.org>
-	<1220484812.3254.59.camel@localhost.localdomain>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-ia64@vger.kernel.org, Parisc List <linux-parisc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18623.11411.543366.29200@cargo.ozlabs.ibm.com>
+Date: Thu, 4 Sep 2008 10:32:19 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,59 +17,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
+Please pull from the 'merge' branch of
 
-On Wed, 3 Sep 2008, James Bottomley wrote:
-> 
-> Oh ... because Arjan has a patch to export
-> dereference_function_descriptor.  I suppose I could make him do the
-> heavy lifting, but it seemed sensible to make it easy for him (and me)
-> by putting it in a header.
-> 
-> http://marc.info/?l=linux-kernel&m=121976793429869
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-Ahh.
+to get 6 commits that fix various regressions, build problems and
+serious bugs on powerpc.  I have included the full commit messages
+below.
 
-NOW it all starts to make sense.
+Thanks,
+Paul.
 
-Or perhaps not sense, but I at least understand why people want to move it 
-around. The kernel.h location kind of goes together with that 
-core_kernel_text() thing, although it seems to be more of a "random 
-collection of routines" thing than anything else (but hey, that's the very 
-definition of "kernel.h" for you).
+ arch/powerpc/Makefile                    |    5 +++++
+ arch/powerpc/include/asm/pgtable-ppc64.h |    6 ++----
+ arch/powerpc/kernel/Makefile             |    7 ++++---
+ arch/powerpc/kernel/align.c              |    2 +-
+ arch/powerpc/kernel/idle_6xx.S           |    2 +-
+ arch/powerpc/kernel/idle_e500.S          |    3 ++-
+ arch/powerpc/kernel/vmlinux.lds.S        |    7 ++++---
+ arch/powerpc/mm/hash_utils_64.c          |   18 +++++++++++-------
+ arch/powerpc/platforms/powermac/Makefile |    2 +-
+ lib/Kconfig.debug                        |    6 +++---
+ 10 files changed, 34 insertions(+), 24 deletions(-)
 
-The module.h location still seems to be more of a "oh, both 
-kernel/extable.c and lib/vsprintf.c already included <linux/module.h>" and 
-it's a bit sad, since it really has nothing at all to do with modules.
+commit 7888bc2b4778fda267a6e6422c4497dba865a47a
+Author: Kumar Gala <galak@kernel.crashing.org>
+Date:   Tue Aug 26 12:08:56 2008 +1000
 
-Grr. It does seem like we don't have any kind of "abi" header file. 
-<linux/kernel.h> and <asm/processor.h> has various random things.
+    powerpc: Fix for getting CPU number in power_save_ppc32_restore()
+    
+    The calculation to get TI_CPU based off of SPRG3 was just plain wrong,
+    meaning that we were getting garbage for the CPU number on 6xx/G3/G4
+    based SMP boxes in this code.
+    
+    Just offset off the stack pointer (to get to thread_info) like all the
+    other references to TI_CPU do.
+    
+    This was pointed out by Chen Gong <G.Chen@freescale.com>
+    
+    [paulus@samba.org - use rlwinm r12,r11,... instead of
+     rlwinm r12,r1,...; tophys()]
+    
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+    Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-So yea, there doesn't seem to be any _obvious_ place that makes sense.
+commit 94ee815c05c9387931e549d83312d30009ed86e9
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date:   Wed Sep 3 13:12:05 2008 +1000
 
-		Linus
+    powerpc: Fix build error with 64K pages and !hugetlbfs
+    
+    HAVE_ARCH_UNMAPPED_AREA and HAVE_ARCH_UNMAPPED_AREA_TOPDOWN must
+    be defined whenever CONFIG_PPC_MM_SLICES is enabled, not just when
+    CONFIG_HUGETLB_PAGE is.  They used to be always defined together but
+    this is no longer the case since 3a8247cc2c856930f34eafce33f6a039227ee175
+    ("powerpc: Only demote individual slices rather than whole process").
+    
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-Not-very-strong-opinion: How about <asm/sections.h>? That does seem to be 
-where we already hide things like "in_kernel_text()" at least on powerpc. 
-In fact, since we already always have a generic version, the patch would 
-actually be something like
+commit 7563dc64585324f443f5ac107eb6d89ee813a2d2
+Author: Tony Breeds <tony@bakeyournoodle.com>
+Date:   Tue Sep 2 16:50:38 2008 +1000
 
- - in <asm-generic/sections.h>, just do
+    powerpc: Work around gcc's -fno-omit-frame-pointer bug
+    
+    This bug is causing random crashes
+    (http://bugzilla.kernel.org/show_bug.cgi?id=11414).
+    
+    -fno-omit-frame-pointer is only needed on powerpc when -pg is also
+    supplied, and there is a gcc bug that causes incorrect code generation
+    on 32-bit powerpc when -fno-omit-frame-pointer is used---it uses stack
+    locations below the stack pointer, which is not allowed by the ABI
+    because those locations can and sometimes do get corrupted by an
+    interrupt.
+    
+    This ensures that CONFIG_FRAME_POINTER is only selected by ftrace.
+    When CONFIG_FTRACE is enabled we also pass -mno-sched-epilog to work
+    around the gcc codegen bug.
+    
+    Patch based on work by:
+    	Andreas Schwab <schwab@suse.de>
+    	Segher Boessenkool <segher@kernel.crashing.org>
+    
+    Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-	#define dereference_function_descriptor(p) (p)
+commit 303996dace16894710a5291327eeb79afdb8ed12
+Author: Stephen Rothwell <sfr@canb.auug.org.au>
+Date:   Tue Sep 2 15:04:09 2008 +1000
 
- - in architectures that want to override it
+    powerpc: Make sure _etext is after all kernel text
+    
+    This makes core_kernel_text() (and therefore kernel_text_address())
+    return the correct result.  Currently all the __devinit routines (at
+    least) will not be considered to be kernel text.
+    
+    This is just a quick fix for 2.6.27 - hopefully we will be able to fix
+    this better in 2.6.28.
+    
+    Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-	#undef dereference_function_descriptor
+commit 9e88ba4e45ecad2425c4cc4e0861a26f4e36c6da
+Author: Paul Mackerras <paulus@samba.org>
+Date:   Sat Aug 30 11:26:27 2008 +1000
 
-   followed by 
+    powerpc: Only make kernel text pages of linear mapping executable
+    
+    Commit bc033b63bbfeb6c4b4eb0a1d083c650e4a0d2af8 ("powerpc/mm: Fix
+    attribute confusion with htab_bolt_mapping()") moved the check for
+    whether we should make pages of the linear mapping executable from
+    htab_bolt_mapping into its callers, including htab_initialize.
+    A side-effect of this is that the decision is now made once for
+    each contiguous section in the LMB array rather than for each page
+    individually.  This can often mean that the whole of the linear
+    mapping ends up being executable.
+    
+    This reverts to the previous behaviour, where individual pages are
+    checked for being part of the kernel text or not, by moving the check
+    back down into htab_bolt_mapping.
+    
+    Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-	static inline void *dereference_function_descriptor(..) ..
-	or
-	#define dereference_function_descriptor my_fn_dereference
+commit 78fbc824ed8225edd80cdc57771d5ca4f7aae95e
+Author: Michael Neuling <mikey@neuling.org>
+Date:   Thu Aug 28 14:57:39 2008 +1000
 
-   since they all include the generic one as a base
-
-Hmm? I do admit that "<asm/sections.h>" doesn't really strike me as a very 
-natural name for this, but kernel/extable.c does already include it for 
-other reasons, and it's at least no worse than module.h.
+    powerpc: Fix uninitialised variable in VSX alignment code
+    
+    This fixes an uninitialised variable in the VSX alignment code.  It can
+    cause warnings from GCC (noticed with gcc-4.1.1).  Gcc is actually
+    correct in this instance, and this bug could cause the alignment
+    interrupt handler to send a SIGSEGV to the process on a legitimate
+    access.
+    
+    Signed-off-by: Michael Neuling <mikey@neuling.org>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
