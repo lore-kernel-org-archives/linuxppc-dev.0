@@ -1,18 +1,35 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [204.133.123.27])
-	by ozlabs.org (Postfix) with ESMTP id E94224778C
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:21:40 +1000 (EST)
-Message-ID: <48BFFCFD.8010608@mlbassoc.com>
-Date: Thu, 04 Sep 2008 09:21:33 -0600
-From: Gary Thomas <gary@mlbassoc.com>
-MIME-Version: 1.0
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-cn0ut-4.online-age.net (ext-cn0ut-4.online-age.net
+	[63.210.253.233])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ext-cn0ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 4C1414762A
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 01:35:06 +1000 (EST)
+Received: from int-cn0ut-7.online-age.net (int-cn0ut-7.online-age.net
+	[3.159.252.76])
+	by ext-cn0ut-4.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id m84FZ3jp027267
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 11:35:03 -0400
+Received: from alpmlip01.e2k.ad.ge.com (int-cn0ut-7.online-age.net
+	[3.159.252.76])
+	by int-cn0ut-7.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m84FZ3Z0005701
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 11:35:03 -0400
+Date: Thu, 4 Sep 2008 16:34:20 +0100
+From: Martyn Welch <martyn.welch@gefanuc.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Hooking an IRQ on a modified mpc8349emitx board
-References: <48BF15ED.4050707@silvustechnologies.com>
-	<20080904144457.GA2522@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20080904144457.GA2522@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v4 1/2] powerpc: Board support for GE Fanuc SBC610
+Message-Id: <20080904163420.fa63088b.martyn.welch@gefanuc.com>
+In-Reply-To: <48BFF8E4.9070400@freescale.com>
+References: <20080901102753.8068.36706.stgit@ubuntu8041.localdomain>
+	<20080901102758.8068.77414.stgit@ubuntu8041.localdomain>
+	<20080902182709.GB16741@ld0162-tx32.am.freescale.net>
+	<20080904155127.5ca8fca3.martyn.welch@gefanuc.com>
+	<48BFF8E4.9070400@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +39,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> On Wed, Sep 03, 2008 at 03:55:41PM -0700, Oscar Takeshita wrote:
->> I've been trying to hook an IRQ on a modified mpc8349emitx board without 
->> success.
->>
->> The IRQ is hooked physically to IRQ1/GPIO2[13] on the mpc8349e. No other 
->> devices are
->> tied to this pin.
->>
->> I'm using uboot 1.2.0 and kernel 2.6.22.19.
->>
->> Do I need to have a dts entry for this interrupt in order to make
->> request_irq() succeed?
->>
->> How can I find the IRQ number? I tried probe_irq_on/off unfortunately it 
->> did not work.
->> Would it be MPC83xx_IRQ_EXT1 in arch/powerpc/include/asm/mpc83xx.h ?
->>
->> I'm new doing kernel work. Any hints appreciated.
-> 
-> You need to describe the IRQ in a device tree node and use
-> irq_of_parse_and_map().  request_irq() takes virtual IRQ numbers.
-> 
-> Maybe we should put together an arch/powerpc FAQ...
+On Thu, 04 Sep 2008 10:04:04 -0500
+Scott Wood <scottwood@freescale.com> wrote:
 
-That would be wonderful :-)  This could help many [of us] over these
-initial speed-bumps.
+> Martyn Welch wrote:
+> > On Tue, 2 Sep 2008 13:27:09 -0500
+> > Scott Wood <scottwood@freescale.com> wrote:
+> > 
+> >> On Mon, Sep 01, 2008 at 11:27:59AM +0100, Martyn Welch wrote:
+> >>> +static __initdata struct of_device_id of_bus_ids[] = {
+> >>> +	{ .compatible = "simple-bus", },
+> >>> +	{ .type = "serial", },
+> >>> +	{ .type = "soc", },
+> >>> +	{ .type = "i2c", },
+> >> i2c and serial don't belong here, and soc is redundant with simple-bus.
+> >>
+> > 
+> > I agree about the i2c and serial, although I need the soc entry for the i2c devices to be found during the platform scan.
+> 
+> Not if the soc node has simple-bus in its compatible, which I thought I 
+> remembered yours did.
+> 
+
+Um, it will have in the next revision of the patch set ;-)
+
+Martyn
 
 -- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
