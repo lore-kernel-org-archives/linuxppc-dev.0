@@ -1,21 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E881BDE087
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 07:53:30 +1000 (EST)
-Date: Sat, 6 Sep 2008 01:53:27 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH] powerpc: gpio driver for mpc831x/834x/837x with OF
-	bindings
-Message-ID: <20080905215327.GA8061@oksana.dev.rtsoft.ru>
-References: <1220627327-28852-1-git-send-email-jacmet@sunsite.dk>
-	<20080905161607.GA10826@oksana.dev.rtsoft.ru>
-	<87tzcuctyq.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <87tzcuctyq.fsf@macbook.be.48ers.dk>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 77D25DDEF7
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 08:38:08 +1000 (EST)
+Subject: Re: [PATCH v3 2/4] powerpc: Fixes for CONFIG_PTE_64BIT for SMP support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <828A65C6-A5DD-41C6-BA38-25BE04D76AA2@kernel.crashing.org>
+References: <1220465344-16753-1-git-send-email-galak@kernel.crashing.org>
+	<1220465344-16753-2-git-send-email-galak@kernel.crashing.org>
+	<1220497970.4879.36.camel@pasglop>
+	<828A65C6-A5DD-41C6-BA38-25BE04D76AA2@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sat, 06 Sep 2008 08:38:00 +1000
+Message-Id: <1220654280.4879.202.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 05, 2008 at 08:45:33PM +0200, Peter Korsgaard wrote:
-> >>>>> "Anton" == Anton Vorontsov <avorontsov@ru.mvista.com> writes:
+On Fri, 2008-09-05 at 14:44 -0500, Kumar Gala wrote:
+> > I also wonder if you should first ensure that the PTE is invalid and
+> > if not, clear it and flush the TLB page ... Or at least add a
+> > WARN_ON(pte_valid()) in case we get that wrong ...
 > 
->  Anton> On Fri, Sep 05, 2008 at 05:08:47PM +0200, Peter Korsgaard wrote:
->  >> Structured similar to the existing QE GPIO support.
->  >> 
->  >> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
->  >> ---
-> 
->  Anton> I posted identical driver in June. ;-)
-> 
->  Anton> http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057395.html
-> 
-> Ahh, I must have missed it back then. Seems like you never got any
-> feedback on it - Now, as we both independently got to ~same result, it
-> must be a good approach ;) Kumar, what do you say?
-> 
-> >From a quick look, your driver seems to set the data / direction
-> registers in the wrong order in fsl_gpio_dir_out causing a glitch with
-> high level outputs:
-> 
-> http://peter.korsgaard.com/patches/uboot/mpc83xx-gpio-level-before-direction.patch
-> 
-> (Never seems to have made it to the U-Boot list archive, but it's in
-> git now).
+> I believe that's an issue since kmap_atomic() will call set_pte_at and  
+> have the valid bit set.
 
-Yeah, I saw similar patch in the u-boot-users mailing list.
-Will incorporate that change, thanks!
+Hrm... on the other hand, it's safe because kmap_atomic() is per-CPU and
+thus won't race with anything...
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+On the other hand, if others (mprotect, mremap, whoever...) does it,
+it's not safe.
+
+I'm keen on letting set_pte_at() to the job and maybe if we can remove
+the explicit flush kmap_atomic does... Though it's not totally trivial
+to "know" it's a flush that doesn't need global invalidations...
+
+May be worth moving your current stuff into a __set_pte_at() that you
+use from kmap atomic, and have set_pte_at() wrap that along with a
+present warn. That would do for the time being.
+
+Ben.
