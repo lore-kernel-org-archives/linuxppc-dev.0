@@ -1,29 +1,18 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp01.au.ibm.com (E23SMTP01.au.ibm.com [202.81.18.162])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CA1D1DDED4
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 11:50:01 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id m851oHkq014130
-	for <linuxppc-dev@ozlabs.org>; Fri, 5 Sep 2008 11:50:17 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m851o0qv4407376
-	for <linuxppc-dev@ozlabs.org>; Fri, 5 Sep 2008 11:50:00 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m851o0Af031102
-	for <linuxppc-dev@ozlabs.org>; Fri, 5 Sep 2008 11:50:00 +1000
-Date: Fri, 5 Sep 2008 11:49:54 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Cleanup hugepage pagetable allocation for powerpc with 16G pages
-Message-ID: <20080905014954.GC7845@yookeroo.seuss>
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+	by ozlabs.org (Postfix) with ESMTP id 04DF1DDDD8
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 12:38:25 +1000 (EST)
+Date: Fri, 5 Sep 2008 12:10:37 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/3] ibm_newemac: MAL support for PowerPC 405EZ
+Message-ID: <20080905021037.GG14128@verge.net.au>
+References: <cover.1220540078.git.jwboyer@linux.vnet.ibm.com>
+	<20080904150216.GD2479@yoda.jdub.homelinux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>,
-	libhugetlbfs-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+In-Reply-To: <20080904150216.GD2479@yoda.jdub.homelinux.org>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,144 +22,220 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There is a small bug in the handling of 16G hugepages recently added
-to the kernel.  This doesn't cause a crash or other user-visible
-problems, but it does mean that more levels of pagetable are allocated
-than makes sense for 16G pages.  The hugepage pagetables for the 16G
-pages are allocated much lower in the pagetable tree than they should
-be, with the intervening levels allocated with full pmd and pud pages
-which will only ever have one entry filled in.
+On Thu, Sep 04, 2008 at 11:02:16AM -0400, Josh Boyer wrote:
+> The PowerPC 405EZ SoC has some differences in the interrupt layout and
+> handling for the MAL.  The SERR, TXDE, and RXDE interrupts are OR'd into
+> a single interrupt.  Also, due to the possibility for interrupt coalescing,
+> the TXEOB and RXEOB interrupts require an interrupt bit to be cleared in
+> the ICINTSTAT SDR.
+> 
+> This sets the proper MAL feature bits for 405EZ boards, and adds a common
+> shared handler for SERR, TXDE, and RXDE.  This has been adapted from code
+> originally written by Stefan Roese.
+> 
+> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> ---
+>  drivers/net/ibm_newemac/mal.c |   98 ++++++++++++++++++++++++++++++++--------
+>  1 files changed, 78 insertions(+), 20 deletions(-)
+> 
+> diff --git a/drivers/net/ibm_newemac/mal.c b/drivers/net/ibm_newemac/mal.c
+> index 10c267b..3cef534 100644
+> --- a/drivers/net/ibm_newemac/mal.c
+> +++ b/drivers/net/ibm_newemac/mal.c
+> @@ -28,6 +28,7 @@
+>  #include <linux/delay.h>
+>  
+>  #include "core.h"
+> +#include <asm/dcr-regs.h>
+>  
+>  static int mal_count;
+>  
+> @@ -279,6 +280,9 @@ static irqreturn_t mal_txeob(int irq, void *dev_instance)
+>  	mal_schedule_poll(mal);
+>  	set_mal_dcrn(mal, MAL_TXEOBISR, r);
+>  
+> +	if (mal_has_feature(mal, MAL_FTR_CLEAR_ICINTSTAT))
+> +		mtdcri(SDR0, 0x4510, (mfdcri(SDR0, 0x4510) | 0x60000000));
+> +
+>  	return IRQ_HANDLED;
+>  }
+>  
+> @@ -293,6 +297,9 @@ static irqreturn_t mal_rxeob(int irq, void *dev_instance)
+>  	mal_schedule_poll(mal);
+>  	set_mal_dcrn(mal, MAL_RXEOBISR, r);
+>  
+> +	if (mal_has_feature(mal, MAL_FTR_CLEAR_ICINTSTAT))
+> +		mtdcri(SDR0, 0x4510, (mfdcri(SDR0, 0x4510) | 0x80000000));
+> +
+>  	return IRQ_HANDLED;
+>  }
+>  
+> @@ -336,6 +343,25 @@ static irqreturn_t mal_rxde(int irq, void *dev_instance)
+>  	return IRQ_HANDLED;
+>  }
+>  
+> +static irqreturn_t mal_int(int irq, void *dev_instance)
+> +{
+> +	struct mal_instance *mal = dev_instance;
+> +	u32 esr = get_mal_dcrn(mal, MAL_ESR);
+> +
+> +	if (esr & MAL_ESR_EVB) {
+> +		/* descriptor error */
+> +		if (esr & MAL_ESR_DE) {
+> +			if (esr & MAL_ESR_CIDT)
+> +				return (mal_rxde(irq, dev_instance));
 
-This patch corrects this problem, at the same time cleaning up the
-handling of which level 64k versus 16M hugepage pagetables are
-allocated at.  The new way of formatting the tests should be more
-robust against changes in pagetable structure, or any newly added
-hugepage sizes.
+	Return statements shouldn't be enlosed in brackets according to
+	checkpatch.pl. Also in a few other places.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
---- 
+> +			else
+> +				return (mal_txde(irq, dev_instance));
+> +		} else { /* SERR */
+> +			return (mal_serr(irq, dev_instance));
+> +		}
+> +	}
+> +	return IRQ_HANDLED;
+> +}
+> +
+>  void mal_poll_disable(struct mal_instance *mal, struct mal_commac *commac)
+>  {
+>  	/* Spinlock-type semantics: only one caller disable poll at a time */
+> @@ -542,11 +568,22 @@ static int __devinit mal_probe(struct of_device *ofdev,
+>  		goto fail;
+>  	}
+>  
+> -	mal->txeob_irq = irq_of_parse_and_map(ofdev->node, 0);
+> -	mal->rxeob_irq = irq_of_parse_and_map(ofdev->node, 1);
+> -	mal->serr_irq = irq_of_parse_and_map(ofdev->node, 2);
+> -	mal->txde_irq = irq_of_parse_and_map(ofdev->node, 3);
+> -	mal->rxde_irq = irq_of_parse_and_map(ofdev->node, 4);
+> +	if (of_device_is_compatible(ofdev->node, "ibm,mcmal-405ez"))
+> +		mal->features |= (MAL_FTR_CLEAR_ICINTSTAT | MAL_FTR_COMMON_ERR_INT);
 
-Paul, please apply for 2.6.28
+The above like is >80 characters wide.
+But I'm not sure that anyone cares.
 
-Index: working-2.6/arch/powerpc/mm/hugetlbpage.c
-===================================================================
---- working-2.6.orig/arch/powerpc/mm/hugetlbpage.c	2008-09-02 11:50:12.000000000 +1000
-+++ working-2.6/arch/powerpc/mm/hugetlbpage.c	2008-09-04 15:36:01.000000000 +1000
-@@ -128,29 +128,37 @@ static int __hugepte_alloc(struct mm_str
- 	return 0;
- }
- 
--/* Base page size affects how we walk hugetlb page tables */
--#ifdef CONFIG_PPC_64K_PAGES
--#define hpmd_offset(pud, addr, h)	pmd_offset(pud, addr)
--#define hpmd_alloc(mm, pud, addr, h)	pmd_alloc(mm, pud, addr)
--#else
--static inline
--pmd_t *hpmd_offset(pud_t *pud, unsigned long addr, struct hstate *hstate)
-+
-+static pud_t *hpud_offset(pgd_t *pgd, unsigned long addr, struct hstate *hstate)
-+{
-+	if (huge_page_shift(hstate) < PUD_SHIFT)
-+		return pud_offset(pgd, addr);
-+	else
-+		return (pud_t *) pgd;
-+}
-+static pud_t *hpud_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long addr,
-+			 struct hstate *hstate)
- {
--	if (huge_page_shift(hstate) == PAGE_SHIFT_64K)
-+	if (huge_page_shift(hstate) < PUD_SHIFT)
-+		return pud_alloc(mm, pgd, addr);
-+	else
-+		return (pud_t *) pgd;
-+}
-+static pmd_t *hpmd_offset(pud_t *pud, unsigned long addr, struct hstate *hstate)
-+{
-+	if (huge_page_shift(hstate) < PMD_SHIFT)
- 		return pmd_offset(pud, addr);
- 	else
- 		return (pmd_t *) pud;
- }
--static inline
--pmd_t *hpmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long addr,
--		  struct hstate *hstate)
-+static pmd_t *hpmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long addr,
-+			 struct hstate *hstate)
- {
--	if (huge_page_shift(hstate) == PAGE_SHIFT_64K)
-+	if (huge_page_shift(hstate) < PMD_SHIFT)
- 		return pmd_alloc(mm, pud, addr);
- 	else
- 		return (pmd_t *) pud;
- }
--#endif
- 
- /* Build list of addresses of gigantic pages.  This function is used in early
-  * boot before the buddy or bootmem allocator is setup.
-@@ -204,7 +212,7 @@ pte_t *huge_pte_offset(struct mm_struct 
- 
- 	pg = pgd_offset(mm, addr);
- 	if (!pgd_none(*pg)) {
--		pu = pud_offset(pg, addr);
-+		pu = hpud_offset(pg, addr, hstate);
- 		if (!pud_none(*pu)) {
- 			pm = hpmd_offset(pu, addr, hstate);
- 			if (!pmd_none(*pm))
-@@ -233,7 +241,7 @@ pte_t *huge_pte_alloc(struct mm_struct *
- 	addr &= hstate->mask;
- 
- 	pg = pgd_offset(mm, addr);
--	pu = pud_alloc(mm, pg, addr);
-+	pu = hpud_alloc(mm, pg, addr, hstate);
- 
- 	if (pu) {
- 		pm = hpmd_alloc(mm, pu, addr, hstate);
-@@ -316,13 +324,7 @@ static void hugetlb_free_pud_range(struc
- 	pud = pud_offset(pgd, addr);
- 	do {
- 		next = pud_addr_end(addr, end);
--#ifdef CONFIG_PPC_64K_PAGES
--		if (pud_none_or_clear_bad(pud))
--			continue;
--		hugetlb_free_pmd_range(tlb, pud, addr, next, floor, ceiling,
--				       psize);
--#else
--		if (shift == PAGE_SHIFT_64K) {
-+		if (shift < PMD_SHIFT) {
- 			if (pud_none_or_clear_bad(pud))
- 				continue;
- 			hugetlb_free_pmd_range(tlb, pud, addr, next, floor,
-@@ -332,7 +334,6 @@ static void hugetlb_free_pud_range(struc
- 				continue;
- 			free_hugepte_range(tlb, (hugepd_t *)pud, psize);
- 		}
--#endif
- 	} while (pud++, addr = next, addr != end);
- 
- 	start &= PGDIR_MASK;
-@@ -422,9 +423,15 @@ void hugetlb_free_pgd_range(struct mmu_g
- 		psize = get_slice_psize(tlb->mm, addr);
- 		BUG_ON(!mmu_huge_psizes[psize]);
- 		next = pgd_addr_end(addr, end);
--		if (pgd_none_or_clear_bad(pgd))
--			continue;
--		hugetlb_free_pud_range(tlb, pgd, addr, next, floor, ceiling);
-+		if (mmu_psize_to_shift(psize) < PUD_SHIFT) {
-+			if (pgd_none_or_clear_bad(pgd))
-+				continue;
-+			hugetlb_free_pud_range(tlb, pgd, addr, next, floor, ceiling);
-+		} else {
-+			if (pgd_none(*pgd))
-+				continue;
-+			free_hugepte_range(tlb, (hugepd_t *)pgd, psize);
-+		}
- 	} while (pgd++, addr = next, addr != end);
- }
- 
+> +
+> +	if (mal_has_feature(mal, MAL_FTR_COMMON_ERR_INT)) {
+> +		mal->txeob_irq = irq_of_parse_and_map(ofdev->node, 0);
+> +		mal->rxeob_irq = irq_of_parse_and_map(ofdev->node, 1);
+> +		mal->serr_irq = irq_of_parse_and_map(ofdev->node, 2);
+> +		mal->txde_irq = mal->rxde_irq = mal->serr_irq;
+> +	} else {
+> +		mal->txeob_irq = irq_of_parse_and_map(ofdev->node, 0);
+> +		mal->rxeob_irq = irq_of_parse_and_map(ofdev->node, 1);
+> +		mal->serr_irq = irq_of_parse_and_map(ofdev->node, 2);
+> +		mal->txde_irq = irq_of_parse_and_map(ofdev->node, 3);
+> +		mal->rxde_irq = irq_of_parse_and_map(ofdev->node, 4);
+> +	}
 
+It seems that that first three calls to irq_of_parse_and_map() could
+be moved outside of the if/else clause.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+	mal->txeob_irq = irq_of_parse_and_map(ofdev->node, 0);
+	mal->rxeob_irq = irq_of_parse_and_map(ofdev->node, 1);
+	mal->serr_irq = irq_of_parse_and_map(ofdev->node, 2);
+	if (mal_has_feature(mal, MAL_FTR_COMMON_ERR_INT)) {
+		mal->txde_irq = mal->rxde_irq = mal->serr_irq;
+	} else {
+		mal->txde_irq = irq_of_parse_and_map(ofdev->node, 3);
+		mal->rxde_irq = irq_of_parse_and_map(ofdev->node, 4);
+	}
+
+> +
+>  	if (mal->txeob_irq == NO_IRQ || mal->rxeob_irq == NO_IRQ ||
+>  	    mal->serr_irq == NO_IRQ || mal->txde_irq == NO_IRQ ||
+>  	    mal->rxde_irq == NO_IRQ) {
+> @@ -608,21 +645,42 @@ static int __devinit mal_probe(struct of_device *ofdev,
+>  			     sizeof(struct mal_descriptor) *
+>  			     mal_rx_bd_offset(mal, i));
+>  
+> -	err = request_irq(mal->serr_irq, mal_serr, 0, "MAL SERR", mal);
+> -	if (err)
+> -		goto fail2;
+> -	err = request_irq(mal->txde_irq, mal_txde, 0, "MAL TX DE", mal);
+> -	if (err)
+> -		goto fail3;
+> -	err = request_irq(mal->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
+> -	if (err)
+> -		goto fail4;
+> -	err = request_irq(mal->rxde_irq, mal_rxde, 0, "MAL RX DE", mal);
+> -	if (err)
+> -		goto fail5;
+> -	err = request_irq(mal->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
+> -	if (err)
+> -		goto fail6;
+> +	if (mal_has_feature(mal, MAL_FTR_COMMON_ERR_INT)) {
+> +		err = request_irq(mal->serr_irq, mal_int, IRQF_SHARED,
+> +				"MAL SERR", mal);
+> +		if (err)
+> +			goto fail2;
+> +		err = request_irq(mal->txde_irq, mal_int, IRQF_SHARED,
+> +				"MAL TX DE", mal);
+> +		if (err)
+> +			goto fail3;
+> +		err = request_irq(mal->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
+> +		if (err)
+> +			goto fail4;
+> +		err = request_irq(mal->rxde_irq, mal_int, IRQF_SHARED,
+> +				"MAL RX DE", mal);
+> +		if (err)
+> +			goto fail5;
+> +		err = request_irq(mal->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
+> +		if (err)
+> +			goto fail6;
+> +	} else {
+> +		err = request_irq(mal->serr_irq, mal_serr, 0, "MAL SERR", mal);
+> +		if (err)
+> +			goto fail2;
+> +		err = request_irq(mal->txde_irq, mal_txde, 0, "MAL TX DE", mal);
+> +		if (err)
+> +			goto fail3;
+> +		err = request_irq(mal->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
+> +		if (err)
+> +			goto fail4;
+> +		err = request_irq(mal->rxde_irq, mal_rxde, 0, "MAL RX DE", mal);
+> +		if (err)
+> +			goto fail5;
+> +		err = request_irq(mal->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
+> +		if (err)
+> +			goto fail6;
+> +	}
+
+There seems to be a lot of repention in the above if/else clauses.
+I wonder if something like this might be nicer.
+
+	if (mal_has_feature(mal, MAL_FTR_COMMON_ERR_INT)) {
+		irqflags = IRQF_SHARED;
+		hdlr_serr = hdlr_txde = hdlr_rxde = mal_int;
+	} else {
+		irqflags = 0;
+		hdlr_serr = mal_serr;
+		hdlr_txde = mal_txde;
+		hdlr_rxde = mal_rxde;
+	}
+	err = request_irq(mal->serr_irq, hdlr_serr, irqflags, "MAL SERR", mal);
+	if (err)
+		goto fail2;
+	err = request_irq(mal->txde_irq, hdlr_txde, irqflags, "MAL TX DE", mal);
+	if (err)
+		goto fail3;
+	err = request_irq(mal->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
+	if (err)
+		goto fail4;
+	err = request_irq(mal->rxde_irq, hdlr_rxde, irqflags, "MAL RX DE", mal);
+	if (err)
+		goto fail5;
+	err = request_irq(mal->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
+	if (err)
+		goto fail6;
+
+>  
+>  	/* Enable all MAL SERR interrupt sources */
+>  	if (mal->version == 2)
+> -- 
+> 1.5.5.1
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
