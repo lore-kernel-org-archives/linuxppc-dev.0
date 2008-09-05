@@ -1,20 +1,22 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 42E0ADDDF5
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id ADE3DDDF63
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Sep 2008 21:29:28 +1000 (EST)
-Message-ID: <48C1187E.5040001@coritel.it>
-Date: Fri, 05 Sep 2008 13:31:10 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
+	Sat,  6 Sep 2008 00:45:48 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KbcZA-0002Wv-8K
+	for linuxppc-embedded@ozlabs.org; Fri, 05 Sep 2008 07:45:40 -0700
+Message-ID: <19332811.post@talk.nabble.com>
+Date: Fri, 5 Sep 2008 07:45:40 -0700 (PDT)
+From: vneethv <vneethv@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: Porting linux on PPC405
+In-Reply-To: <20080904152652.B13FD122806B@mail132-dub.bigfish.com>
 MIME-Version: 1.0
-To: VenkataKrishna <venkatakrishnap@vrindatech.com>
-Subject: Re: ELDK 4.0
-References: <20080905111304.2DC0ADDDF3@ozlabs.org>
-In-Reply-To: <20080905111304.2DC0ADDDF3@ozlabs.org>
-Content-Type: multipart/alternative;
-	boundary="------------010205090902050703020700"
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+References: <6540565.120101220510377593.JavaMail.nabble@isper.nabble.com>
+	<20080904152652.B13FD122806B@mail132-dub.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,120 +27,152 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010205090902050703020700
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
 
-It's obvious. You mustn't edit <your_board_name> but the name of your 
-board. If the name of your board is "foo" then you can edit make 
-foo_defconfig (however the config file has to be in the ELDK :-) ).
+Hi John,
 
-Regards.
+Thanks for the reply.
+I've checked all the comments from you and it seems to be OK in our case.Bu=
+t
+still we face the same issue of hanging just after the execution of the
+bootwrapper.
+when i debugged, stepped using xmd i found the following..
 
-VenkataKrishna ha scritto:
->  
->
-> Hi ;
->
->   I am saying thanks for your suggest me. But make
-> <your_board_name>_defconfig I can't understand this. Can u send me any 
->
->  
->
-> source code and makefile regarding this. When I uses this I getting " make
-> *** no rule to make target files."
->
->  
->
->  
->
-> Thanks
->
-> Venkatakrishna.
->
->  
->
->
->   
-> ------------------------------------------------------------------------
->
+=E2=80=A2=09Downloaded zImage using xmd
+=E2=80=A2=09Started executing after =E2=80=98run=E2=80=99 command
+=E2=80=A2=09Executed the "bootwrapper" part of zImage and unzipped the vmli=
+nux and put
+into location 0x0
+=E2=80=A2=09Started executing vmlinux from 0x0
+=E2=80=A2=09Executed the following functions (as per the symbols in the ass=
+embly code)
+=EF=82=A7=09initial_mmu
+=EF=82=A7=09start_here=20
+In start_here function @ location 0x0000223c the execution is branching to
+=E2=80=9Cearly_init=E2=80=9D  which is located at 0x019d1b4. But when we ra=
+n the step at
+this location it goes to 0x00000700 (which is the exception vector for
+illegal operation)=20
+Please refer the attached =E2=80=9Cxmd_stp.jpg=E2=80=9D file and
+=E2=80=9Cstart_here_from_vmlinux.dump=E2=80=9D file.
+
+Is it because any configuration mistakes ??
+
+Thanks & Regards
+Vineeth
+
+http://www.nabble.com/file/p19332811/xmd_stp.JPG xmd_stp.JPG=20
+http://www.nabble.com/file/p19332811/start_here_from_vmlinux.dump
+start_here_from_vmlinux.dump=20
+
+
+John Linn wrote:
+>=20
+> Hi Vineeth,
+>=20
+> I don't directly support that board, but it's similar to the ML405 in
+> that it uses a 405 processor.  Since I don't test on that board or any
+> V2Pro board, I'm going to tell you my experience on the ML405, a V4
+> board.
+>=20
+> See below.
+>=20
+>> -----Original Message-----
+>> From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
+> [mailto:linuxppc-embedded-
+>> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of
+> vneethv@gmail.com
+>> Sent: Thursday, September 04, 2008 12:40 AM
+>> To: Linuxppc-embedded@ozlabs.org
+>> Subject: Porting linux on PPC405
+>>=20
+>> Hi all,
+>>=20
+>> I am trying to port Linux 2.6 on PPC405 processor.I have
+>> EDK 10.1,
+>> Xilinx University program board (with Virtex II Pro device)
+>> linux kernel from Xilinx git. (git.xilinx.com)
+>> Cross Compiler (Croostool)
+>> fdt.dts file generated by EDK using with help of Xilinx fdt patch.
+>>=20
+>=20
+>=20
+> This is typical of a dts file problem. You should compare the dts file
+> to the ml405.dts file that is in the xilinx git tree.
+>=20
+> I just looked at a dts generator issue and see that the following
+> property on the processor is wrong as it can be 0 in the generated file.
+> This number below is for a system at 300 Mhz.
+>=20
+> timebase-frequency =3D <300000000>;
+>=20
+>> I could compile the kernel and could generate the zImage.
+>> I've downloaded the hardware bit file and then the zImage to the DDR
+> SDRAM on the board using
+>> Parallel 4 cable.
+>>=20
+>> when i give the RUN command, this is what i get..
+>>=20
+>>=20
+>> booting virtex
+>> memstart=3D0x0
+>> memsize=3D0x10000000
+>> zImage starting: loaded at 0x00400000 (sp: 0x00578f1c)
+>> Allocating 0x326564 bytes for kernel ...
+>> gunzipping (0x00000000 <- 0x0040c000:0x005772bb)...done 0x3015c8 bytes
+>> Linux/PowerPC load: console=3DttyS0 ip=3Don root=3D/dev/ram
+>> Finalizing device tree... flat tree at 0x40ad68
+>>=20
+>=20
+> Please also verify that you have specified the right amount of RAM for
+> the board in the dts file as that can cause a problem.  The memsize
+> shows 256 Mbyte, is that really correct?
+>=20
+> The kernel could also be booting, but the console is at the wrong baud
+> rate as the UART in the device tree can be set to a baud rate that does
+> not agree with the boot args to the kernel.  No baud in the boot arg =3D
+> 9600 baud.
+>=20
+> I have some debug information on the wiki page at
+> http://xilinx.wikidot.com/debugging-kernel-boot-problems.
+>=20
+>=20
+>> The booting process seems to be stopped after this. I the
+> bootarguments i've given are,
+>>=20
+>> In dts file,
+>>=20
+>> bootargs =3D "console=3DttyS0 ip=3Doff root=3D/dev/ram";
+>> linux,stdout-path=3D"/plb@0/serial@83e00000";
+>>=20
+>> Please let me know if've missed smthing here..!
+>> n any clue on the reason why the boor process seems to be hanged here
+> !
+>>=20
+>> Thanks in advance,
+>> Vineeth
+>>=20
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
+>=20
+> This email and any attachments are intended for the sole use of the named
+> recipient(s) and contain(s) confidential information that may be
+> proprietary, privileged or copyrighted under applicable law. If you are
+> not the intended recipient, do not read, copy, or forward this email
+> message or any attachments. Delete this email message and any attachments
+> immediately.
+>=20
+>=20
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
+>=20
 
--- 
-Marco Stornelli
-Embedded Software Engineer
-CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-http://www.coritel.it
-
-marco.stornelli@coritel.it
-+39 06 72582838
-
-
---------------010205090902050703020700
-Content-Type: text/html; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-15"
- http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-It's obvious. You mustn't edit &lt;your_board_name&gt;
-but the name of your board. If the name of your board is "foo" then you
-can edit make foo_defconfig (however the config file has to be in the
-ELDK <span class="moz-smiley-s1"><span> :-) </span></span>). <br>
-<br>
-Regards.<br>
-<br>
-VenkataKrishna ha scritto:
-<blockquote cite="mid:20080905111304.2DC0ADDDF3@ozlabs.org" type="cite">
-  <pre wrap=""> 
-
-Hi ;
-
-  I am saying thanks for your suggest me. But make
-&lt;your_board_name&gt;_defconfig I can't understand this. Can u send me any 
-
- 
-
-source code and makefile regarding this. When I uses this I getting " make
-*** no rule to make target files."
-
- 
-
- 
-
-Thanks
-
-Venkatakrishna.
-
- 
-
-
-  </pre>
-  <pre wrap="">
-<hr size="4" width="90%">
-_______________________________________________
-Linuxppc-embedded mailing list
-<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
-<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a></pre>
-</blockquote>
-<br>
-<pre class="moz-signature" cols="72">-- 
-Marco Stornelli
-Embedded Software Engineer
-CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-<a class="moz-txt-link-freetext" href="http://www.coritel.it">http://www.coritel.it</a>
-
-<a class="moz-txt-link-abbreviated" href="mailto:marco.stornelli@coritel.it">marco.stornelli@coritel.it</a>
-+39 06 72582838</pre>
-</body>
-</html>
-
---------------010205090902050703020700--
+--=20
+View this message in context: http://www.nabble.com/Porting-linux-on-PPC405=
+-tp19304412p19332811.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
