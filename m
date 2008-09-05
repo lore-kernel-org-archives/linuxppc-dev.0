@@ -1,24 +1,23 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3C5CDDDF73
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 14:41:22 +1000 (EST)
-Date: Thu, 4 Sep 2008 21:41:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: benh@kernel.crashing.org
-Subject: Re: 2.6.27-rc5-mm1 mystery trace
-Message-Id: <20080904214115.2b4ab5fd.akpm@linux-foundation.org>
-In-Reply-To: <1220589401.4879.125.camel@pasglop>
-References: <20080904202032.2299c2c8.akpm@linux-foundation.org>
-	<1220586164.4879.116.camel@pasglop>
-	<20080904204957.04a420ac.akpm@linux-foundation.org>
-	<1220589401.4879.125.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <super.firetwister@googlemail.com>
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.189])
+	by ozlabs.org (Postfix) with ESMTP id AF529DDF66
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 16:09:14 +1000 (EST)
+Received: by mu-out-0910.google.com with SMTP id w1so233427mue.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 04 Sep 2008 23:09:11 -0700 (PDT)
+To: Ben Nizette <bn@niasdigital.com>
+Subject: Re: UIO not working on ppc405 onchip registers
+Date: Fri, 5 Sep 2008 08:18:58 +0200
+References: <200807212152.16080.super.firetwister@gmail.com>
+	<200807220948.51053.super.firetwister@gmail.com>
+	<1216713170.4004.243.camel@moss.renham>
+In-Reply-To: <1216713170.4004.243.camel@moss.renham>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200809050818.59425.super.firetwister@gmail.com>
+From: Markus Brunner <super.firetwister@googlemail.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 05 Sep 2008 14:36:41 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Tuesday 22 July 2008, Ben Nizette wrote:
 
-> On Thu, 2008-09-04 at 20:49 -0700, Andrew Morton wrote:
-> > On Fri, 05 Sep 2008 13:42:44 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > 
-> > > 
-> > > > This is stupid:
-> > > > 
-> > > > g5:/usr/src/25> gdb vmlinux
-> > > > GNU gdb Red Hat Linux (6.3.0.0-1.21rh)
-> > > > Copyright 2004 Free Software Foundation, Inc.
-> > > > GDB is free software, covered by the GNU General Public License, and you are
-> > > > welcome to change it and/or distribute copies of it under certain conditions.
-> > > > Type "show copying" to see the conditions.
-> > > > There is absolutely no warranty for GDB.  Type "show warranty" for details.
-> > > > This GDB was configured as "ppc-yellowdog-linux-gnu"..."/usr/src/25/vmlinux": not in executable format: File format not recognized
-> > > > 
-> > > > probably there's some command line magic to make it work, but there
-> > > > shouldn't be.
-> > > 
-> > > Is this a 64 bits gdb ?
-> > > 
-> > 
-> > I don't think so - it's whatever ydl4.1 gave me.
-> > 
-> > A 64-bit binary on a 64-bit machine Should Just Work.  Maybe that's
-> > me being simplistic.
-> 
-> But is it a 64 bits binary ? 
-> 
+> But I'll let you get back to solving the UIO problem at hand :-D
 
-vmlinux?  Yup.  According to file(1).
+I already surrendered and created (hacked) a read/write driver, which let me 
+use the old userspace drivers I'm trying to port (with some changes of 
+course). This was way faster than understanding all the involved APIs and 
+creating glue code between them. And the amount of time it needs was easy to 
+estimate.
+
+However accidently I ran over the "old school" userland mmap code 
+with /dev/mem. I already knew mapping with /dev/mem is possible but I haven't 
+thought this could make a difference.
+
+http://ozlabs.org/pipermail/linuxppc-embedded/2006-August/023811.html
+
+Also I was wrong with my assumption that uio worked well on the peripherals. 
+It worked (very) well on the leds, just to fool me!!! But it returned crap on 
+some version registers.
+
+With a working and a non working version of mmap it should be rather easy to 
+trace this bug. Unfortunately I was already short of time before running into 
+this (and other) problems and it didn't get any better. 
+So I would need some help from someone with more experience to fix this. 
+Any instructions?
+
+Markus
