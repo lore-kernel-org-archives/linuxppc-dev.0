@@ -1,19 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id B5F9BDE12C
+Return-Path: <rmcguire@videopresence.com>
+Received: from smtpauth16.prod.mesa1.secureserver.net
+	(smtpauth16.prod.mesa1.secureserver.net [64.202.165.22])
+	by ozlabs.org (Postfix) with SMTP id 06C11DDEF7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  6 Sep 2008 01:58:45 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: direct access to Flash from userland
-Date: Fri, 5 Sep 2008 17:50:12 +0200
-References: <0B45E93C5FF65740AEAE690BF3848B7AD38369@rennsmail04.eu.thmulti.com>
-In-Reply-To: <0B45E93C5FF65740AEAE690BF3848B7AD38369@rennsmail04.eu.thmulti.com>
+	Sat,  6 Sep 2008 07:11:43 +1000 (EST)
+From: "Russell McGuire" <rmcguire@videopresence.com>
+To: <linuxppc-embedded@ozlabs.org>
+References: <mailman.1.1220580004.22796.linuxppc-embedded@ozlabs.org>
+Subject: 1MB alignment dma_alloc question
+Date: Fri, 5 Sep 2008 14:11:31 -0700
+Message-ID: <CBF4EB06A92A4901B32659109487513E@absolutdaddy>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200809051750.13421.arnd@arndb.de>
-Cc: Dave Littell <littelld@verizon.net>
+	charset="us-ascii"
+In-Reply-To: <mailman.1.1220580004.22796.linuxppc-embedded@ozlabs.org>
+Reply-To: rmcguire@videopresence.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,21 +25,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 04 September 2008, Fillod Stephane wrote:
-> >Is there a way for a userland application to issue non-CFI commands
-> >directly to a Flash device? =A0(This is a 2.6.18-based kernel on a AMCC
-> >PPC440EPx platform.)
->=20
-> I don't know whether there's specific ioctl for such purpose.
-> Have you tried to read the mtd source? You may also hack the mtd
-> layer to add your command. Definitely a question for=20
-> http://www.linux-mtd.infradead.org/mail.html
->=20
+Anyone,
 
-There is no ioctl command for sending arbitrary requests to the
-flash, but it sounds like something that should be implemented
-in the kernel, in mtdchar, depending on what the command does.
+Putting together a driver, IMA for ATM in a MPC83xx. Anyway the manual
+states that one of the data structures for the QE needs to be allocated on a
+1MB boundary in external memory.
 
-What are you actually trying to do with those commands?
+Normally these come in 128/64/32byte boundaries and are easy to self align,
+with some bit logic. However, after reading up on dma_alloc_coherent I see
+that a limitation is that dma cannot span 64K page boundaries.
 
-	Arnd <><
+So this begs a question is their a better way to get a 1MB aligned table?
+Other than allocating almost 2MB of memory and then trying to mask off the
+LSBs? Seems like an awful waste of memory. I guess the real question is
+there a better kernel call that returns already aligned DMA memory?
+
+Thanks,
+
+-Russ
