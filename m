@@ -3,14 +3,14 @@ Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
 	(using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "Messaging Gateway Appliance Demo Cert",
 	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 40A69DDDE3
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 09:52:18 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 4EEFFDDDDB
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 09:55:40 +1000 (EST)
 From: Victor Gallardo <vgallardo@amcc.com>
-To: linuxppc-dev@ozlabs.org;netdev@vger.kernel.org;
+To: linuxppc-dev@ozlabs.org
 Subject: [PATCH] ibm_newemac: Add support for GPCS, SGMII and M88E1112 PHY
-Date: Fri,  5 Sep 2008 16:52:14 -0700
-Message-Id: <1220658734-13944-1-git-send-email-vgallardo@amcc.com>
-Cc: Victor Gallardo <vgallardo@amcc.com>, Feng Kan <fkan@amcc.com>
+Date: Fri,  5 Sep 2008 16:55:26 -0700
+Message-Id: <1220658926-14014-1-git-send-email-vgallardo@amcc.com>
+Cc: netdev@vger.kernel.org, Victor Gallardo <vgallardo@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,8 +19,6 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-
-From: Victor Gallardo <vgallardo@amcc.com>
 
 This patch adds GPCS, SGMII and M88E1112 PHY support
 for the AMCC PPC460GT/EX processors.
