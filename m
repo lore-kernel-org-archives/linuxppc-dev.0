@@ -1,31 +1,18 @@
-Return-Path: <tony.luck@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-	by ozlabs.org (Postfix) with ESMTP id A7C9FDE1E3
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 09:08:00 +1000 (EST)
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "benh@kernel.crashing.org" <benh@kernel.crashing.org>, James Bottomley
-	<James.Bottomley@HansenPartnership.com>
-Date: Thu, 4 Sep 2008 16:07:45 -0700
-Subject: RE: [PATCH] Correct printk %pF to work on all architectures
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA30A0DC383@orsmsx505.amr.corp.intel.com>
-References: <1220473137.3254.29.camel@localhost.localdomain>
-	<alpine.LFD.1.10.0809031419560.3515@nehalem.linux-foundation.org>
-	<1220481754.3254.42.camel@localhost.localdomain>
-	<alpine.LFD.1.10.0809031546310.3515@nehalem.linux-foundation.org>
-	<1220482853.3254.47.camel@localhost.localdomain>
-	<alpine.LFD.1.10.0809031602270.3515@nehalem.linux-foundation.org>
-	<1220484812.3254.59.camel@localhost.localdomain>
-	<alpine.LFD.1.10.0809031636320.3515@nehalem.linux-foundation.org>
-	<1220492616.3254.64.camel@localhost.localdomain>
-	<1220567811.4879.85.camel@pasglop>
-In-Reply-To: <1220567811.4879.85.camel@pasglop>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <JanakaS@optiscan.com>
+Received: from mail.optiscan.com (mail.optiscan.com [203.26.112.1])
+	by ozlabs.org (Postfix) with ESMTP id 40487DDF7C
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 10:31:57 +1000 (EST)
+From: Janaka Subhawickrama <JanakaS@optiscan.com>
+To: 'Scott Wood' <scottwood@freescale.com>
+Date: Fri, 5 Sep 2008 10:31:55 +1000
+Subject: RE: Kernel crash while initialising PCI
+Message-ID: <DE0CCFFBFF707949BEABD4537A14ACBA07A5FBD38D@mailsvr.optiscan.com>
+References: <DE0CCFFBFF707949BEABD4537A14ACBA073580F459@mailsvr.optiscan.com>
+	<20080903171519.GC10979@loki.buserror.net>
+In-Reply-To: <20080903171519.GC10979@loki.buserror.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Parisc List <linux-parisc@vger.kernel.org>
+Cc: "'linuxppc-dev@ozlabs.org'" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,17 +22,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Make dereference_function_descriptor() more accommodating by allowing
->> architecture overrides.  I put the three overrides (for parisc64, ppc64
->> and ia64) in arch/kernel/module.c because that's where the kernel
->> internal linker which knows how to deal with function descriptors sits.
->>
->> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> -----Original Message-----
+> From: Scott Wood [mailto:scottwood@freescale.com]
+> Sent: Thursday, 4 September 2008 3:15 AM
+> To: Janaka Subhawickrama
+> Cc: 'linuxppc-dev@ozlabs.org'
+> Subject: Re: Kernel crash while initialising PCI
 >
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> On Wed, Sep 03, 2008 at 05:50:10PM +1000, Janaka Subhawickrama wrote:
+> > My DTS file entries for PCI are as follows:
+> >
+> > pci@8500 {
+> >                         interrupt-map-mask =3D <  // Mask the child
+> UnitIrqSpec
+> >                                                 //ff00 0 0 7
+> >                                                 ffff ff ff f
+> >                                                 >;
+> >                         interrupt-map =3D <
+> >                                         // Child UnitIrqSpec, Parent
+> PIC handle, Parent UnitIrqSpec
+> >                                         // PCI unit address (0000 0
+> 0), Interrupt specifier IDSEL 0x0D (CRX board hard wired to IDSEL 13),
+> >                                         //      parent Phandle,
+> IRQ7=3D0x17 (jumper based) level sensitive(8)
+> >                                         //0d00 0 0 1 &ipic 17 8
+> >                                         00006800 0 0 1 &ipic 17 8
+> >                                         >;
+> >                         interrupt-parent =3D < &ipic >;
+> >                         interrupts =3D <42 8>;            //PCI1
+> interrupt, level sensitive
+> >                         bus-range =3D <0 0>;              //Bus number
+> and largest bus under this
+> >                         /*
+> >                                 struct ranges_pci {
+> >                                         unsigned int pci_space;
+> //Prefechable/relocatable .... IEEE1275
+> >                                         u64 pci_addr;
+> >                                         phys_addr_t phys_addr;
+> >                                         u64 size;
+> >                                 };
+> >                         */
+> >                         ranges =3D < 02000000 0 A0000000 A0000000 0
+> 20000000
+> >                                    01000000 0 D8000000 D8000000 0
+> 01000000 >;
+> >                         clock-frequency =3D <1FCA055>;    //33333333Hz
+> >                         #interrupt-cells =3D <1>;         //PCI
+> aparently uses 1
+> >                         #size-cells =3D <2>;              //Max of 2
+> ints
+> >                         #address-cells =3D <3>;           //int size
+> >                         reg =3D <8500 100>; //??
+> >                         compatible =3D "fsl,mpc8349-pci";
+> >                         device_type =3D "pci";
+> >                 };
+> >
+> >
+> > What am I doing wrong ?
+>
+> The PCI node needs to go under the root node, rather than under the soc
+> node.  Otherwise, the kernel will try to translate ranges through the
+> IMMR
+> window.  In older kernels, there was a bug in the PCI code that let you
+> get
+> away with this.
+>
+> See current in-kernel device trees for examples.
+>
+> -Scott
 
-ia64 bits still build, boot and work too.
-
-Acked-by: Tony Luck <tony.luck@intel.com>
-
--Tony
+Yep.  That fixed my immediate problem. Thank you very much.
+Kernel boots now and I can do lspci and see the basic information of the gr=
+aphics card.
+Now I have to trace through why I get "PCI: Calling quirk c01a9db8 for 0000=
+:00:0d.0".  Any pointers are greatly appreciated.
+Cheers
+   Janaka
