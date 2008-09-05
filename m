@@ -1,19 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 757D3DE0B6
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 02:16:10 +1000 (EST)
-Date: Fri, 5 Sep 2008 20:16:07 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH] powerpc: gpio driver for mpc831x/834x/837x with OF
-	bindings
-Message-ID: <20080905161607.GA10826@oksana.dev.rtsoft.ru>
-References: <1220627327-28852-1-git-send-email-jacmet@sunsite.dk>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 86DB2DDDE1
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 04:29:11 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1Kbg3Q-00036c-F1
+	for linuxppc-dev@ozlabs.org; Fri, 05 Sep 2008 11:29:08 -0700
+Message-ID: <19336474.post@talk.nabble.com>
+Date: Fri, 5 Sep 2008 11:29:08 -0700 (PDT)
+From: WITTROCK <jwittrock@maginst.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH]: [MPC5200] Add ATA DMA support
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <1220627327-28852-1-git-send-email-jacmet@sunsite.dk>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,244 +22,164 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 05, 2008 at 05:08:47PM +0200, Peter Korsgaard wrote:
-> Structured similar to the existing QE GPIO support.
+
+
+Tim Yamin-2 wrote:
 > 
-> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
-> ---
-
-I posted identical driver in June. ;-)
-
-http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057395.html
-
->  .../powerpc/dts-bindings/fsl/83xx_gpio.txt         |   33 +++++
->  arch/powerpc/sysdev/Kconfig                        |    9 ++
->  arch/powerpc/sysdev/Makefile                       |    1 +
->  arch/powerpc/sysdev/mpc83xx_gpio.c                 |  141 ++++++++++++++++++++
->  4 files changed, 184 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/powerpc/dts-bindings/fsl/83xx_gpio.txt
->  create mode 100644 arch/powerpc/sysdev/mpc83xx_gpio.c
+> On Wed, Aug 13, 2008 at 7:11 AM, Grant Likely <grant.likely@secretlab.ca>
+> wrote:
+>> Sounds good to me.  You will get more testers that way.  I can pick it
+>> up for -next if everything else looks good.
 > 
-> diff --git a/Documentation/powerpc/dts-bindings/fsl/83xx_gpio.txt b/Documentation/powerpc/dts-bindings/fsl/83xx_gpio.txt
-> new file mode 100644
-> index 0000000..f43f048
-> --- /dev/null
-> +++ b/Documentation/powerpc/dts-bindings/fsl/83xx_gpio.txt
-> @@ -0,0 +1,33 @@
-> +GPIO controllers on MPC831x/834x/837x SoCs
-> +
-> +Every GPIO controller node must have #gpio-cells property defined,
-> +this information will be used to translate gpio-specifiers.
-> +
-> +Required properties:
-> +- compatible : "fsl,mpc8349-gpio"
-> +- #gpio-cells : Should be two. The first cell is the pin number and the
-> +  second cell is used to specify optional parameters (currently unused).
-> + - interrupts : Interrupt mapping for GPIO IRQ (currently unused).
-> + - interrupt-parent : Phandle for the interrupt controller that
-> +   services interrupts for this device.
-> +- gpio-controller : Marks the port as GPIO controller.
-> +
-> +Example of gpio-controller nodes for a MPC8349 SoC:
-> +
-> +	gpio1: gpio-controller@c00 {
-> +		#gpio-cells = <2>;
-> +		compatible = "fsl,mpc8349-gpio";
-> +		reg = <0xc00 0x100>;
-> +		interrupts = <74 0x8>;
-> +		interrupt-parent = <&ipic>;
-> +		gpio-controller;
-> +	};
-> +
-> +	gpio2: gpio-controller@d00 {
-> +		#gpio-cells = <2>;
-> +		compatible = "fsl,mpc8349-gpio";
-> +		reg = <0xd00 0x100>;
-> +		interrupts = <75 0x8>;
-> +		interrupt-parent = <&ipic>;
-> +		gpio-controller;
-> +	};
-> diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
-> index 72fb35b..d28c3c5 100644
-> --- a/arch/powerpc/sysdev/Kconfig
-> +++ b/arch/powerpc/sysdev/Kconfig
-> @@ -6,3 +6,12 @@ config PPC4xx_PCI_EXPRESS
->  	bool
->  	depends on PCI && 4xx
->  	default n
-> +
-> +config MPC83xx_GPIO
-> +	bool "MPC83xx GPIO support"
-> +	depends on PPC_MPC831x || PPC_MPC834x || PPC_MPC837x
-> +	select GENERIC_GPIO
-> +	select ARCH_REQUIRE_GPIOLIB
-> +	help
-> +	  Say Y here if you're going to use hardware that connects to the
-> +	  MPC831x/834x/837x GPIOs.
-> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-> index a90054b..ced5793 100644
-> --- a/arch/powerpc/sysdev/Makefile
-> +++ b/arch/powerpc/sysdev/Makefile
-> @@ -15,6 +15,7 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
->  obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
->  obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
->  obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
-> +obj-$(CONFIG_MPC83xx_GPIO)	+= mpc83xx_gpio.o
->  obj-$(CONFIG_RAPIDIO)		+= fsl_rio.o
->  obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
->  obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
-> diff --git a/arch/powerpc/sysdev/mpc83xx_gpio.c b/arch/powerpc/sysdev/mpc83xx_gpio.c
-> new file mode 100644
-> index 0000000..a8a132d
-> --- /dev/null
-> +++ b/arch/powerpc/sysdev/mpc83xx_gpio.c
-> @@ -0,0 +1,141 @@
-> +/*
-> + * GPIOs on MPC831x/834x/837x
-> + *
-> + * Copyright (C) 2008 Peter Korsgaard <jacmet@sunsite.dk>
-> + *
-> + * This file is licensed under the terms of the GNU General Public License
-> + * version 2.  This program is licensed "as is" without any warranty of any
-> + * kind, whether express or implied.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/io.h>
-> +#include <linux/of.h>
-> +#include <linux/of_gpio.h>
-> +#include <linux/gpio.h>
-> +
-> +#define GPIO_DIR	0x00
-> +#define GPIO_ODR	0x04
-> +#define GPIO_DAT	0x08
-> +#define GPIO_IER	0x0c
-> +#define GPIO_IMR	0x10
-> +#define GPIO_ICR	0x14
-> +
-> +struct mpc83xx_gpio_chip {
-> +	struct of_mm_gpio_chip mm_gc;
-> +	spinlock_t lock;
-> +};
-> +
-> +static inline struct mpc83xx_gpio_chip *
-> +to_mpc83xx_gpio_chip(struct of_mm_gpio_chip *mm)
-> +{
-> +	return container_of(mm, struct mpc83xx_gpio_chip, mm_gc);
-> +}
-> +
-> +static int mpc83xx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
-> +{
-> +	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
-> +	u32 bit = 1u << (31-gpio);
-> +
-> +	return !!(in_be32(mm->regs + GPIO_DAT) & bit);
-> +}
-> +
-> +static void mpc83xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
-> +{
-> +	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
-> +	struct mpc83xx_gpio_chip *mpc83xx_gc = to_mpc83xx_gpio_chip(mm);
-> +	unsigned long flags;
-> +	u32 data, bit = 1u << (31-gpio);
-> +
-> +	spin_lock_irqsave(&mpc83xx_gc->lock, flags);
-> +
-> +	data = in_be32(mm->regs + GPIO_DAT);
-> +	if (val)
-> +		data |= bit;
-> +	else
-> +		data &= ~bit;
-> +	out_be32(mm->regs + GPIO_DAT, data);
-> +
-> +	spin_unlock_irqrestore(&mpc83xx_gc->lock, flags);
-> +}
-> +
-> +static int mpc83xx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
-> +{
-> +	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
-> +	struct mpc83xx_gpio_chip *mpc83xx_gc = to_mpc83xx_gpio_chip(mm);
-> +	unsigned long flags;
-> +	u32 bit = 1u << (31-gpio);
-> +
-> +	spin_lock_irqsave(&mpc83xx_gc->lock, flags);
-> +
-> +	out_be32(mm->regs + GPIO_DIR,
-> +		 in_be32(mm->regs + GPIO_DIR) & ~bit);
-> +
-> +	spin_unlock_irqrestore(&mpc83xx_gc->lock, flags);
-> +
-> +	return 0;
-> +}
-> +
-> +static int mpc83xx_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
-> +{
-> +	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
-> +	struct mpc83xx_gpio_chip *mpc83xx_gc = to_mpc83xx_gpio_chip(mm);
-> +	unsigned long flags;
-> +	u32 bit = 1u << (31-gpio);
-> +
-> +	mpc83xx_gpio_set(gc, gpio, val);
-> +
-> +	spin_lock_irqsave(&mpc83xx_gc->lock, flags);
-> +	out_be32(mm->regs + GPIO_DIR,
-> +		 in_be32(mm->regs + GPIO_DIR) | bit);
-> +
-> +	spin_unlock_irqrestore(&mpc83xx_gc->lock, flags);
-> +
-> +	return 0;
-> +}
-> +
-> +static int __init mpc83xx_add_gpiochips(void)
-> +{
-> +	struct device_node *np;
-> +
-> +	for_each_compatible_node(np, NULL, "fsl,mpc8349-gpio") {
-> +		int ret;
-> +		struct mpc83xx_gpio_chip *mpc83xx_gc;
-> +		struct of_mm_gpio_chip *mm_gc;
-> +		struct of_gpio_chip *of_gc;
-> +		struct gpio_chip *gc;
-> +
-> +		mpc83xx_gc = kzalloc(sizeof(*mpc83xx_gc), GFP_KERNEL);
-> +		if (!mpc83xx_gc) {
-> +			ret = -ENOMEM;
-> +			goto err;
-> +		}
-> +
-> +		spin_lock_init(&mpc83xx_gc->lock);
-> +
-> +		mm_gc = &mpc83xx_gc->mm_gc;
-> +		of_gc = &mm_gc->of_gc;
-> +		gc = &of_gc->gc;
-> +
-> +		of_gc->gpio_cells = 2;
-> +		gc->ngpio = 32;
-> +		gc->direction_input = mpc83xx_gpio_dir_in;
-> +		gc->direction_output = mpc83xx_gpio_dir_out;
-> +		gc->get = mpc83xx_gpio_get;
-> +		gc->set = mpc83xx_gpio_set;
-> +
-> +		ret = of_mm_gpiochip_add(np, mm_gc);
-> +		if (ret)
-> +			goto err;
-> +		continue;
-> +err:
-> +		pr_err("%s: registration failed with status %d\n",
-> +		       np->full_name, ret);
-> +		kfree(mpc83xx_gc);
-> +		/* try others anyway */
-> +	}
-> +	return 0;
-> +}
-> +arch_initcall(mpc83xx_add_gpiochips);
-> -- 
-> 1.5.6.3
+> Here are the new patches; tested against 2.6.27-rc3.
+> 
+> Thanks,
+> 
+> Tim
 > 
 
+
+
+I have been trying this patch against 2.6.26.3 on our own MPC5200B based
+board.  I am using a seagate  ST980815A.  The drive mounts O.K, and I can
+transfer small files, but during large transfers there is the following
+problem.
+
+.....
+
+## Booting kernel from Legacy Image at 00500000 ...
+   Image Name:   Linux-2.6.26.3
+   Created:      2008-09-05  17:01:31 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1409558 Bytes =  1.3 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Flattened Device Tree blob at 00400000
+   Booting using the fdt blob at 0x400000
+[    0.000000] Using m9000 machine description
+[    0.000000] Linux version 2.6.26.3 (developer@usi-dev-linux) (gcc version
+4.1.2) #2 Fri Sep 5 13:01:26 EDT 2008
+[    0.000000] Zone PFN ranges:
+[    0.000000]   DMA             0 ->    32767
+[    0.000000]   Normal      32767 ->    32767
+
+........
+
+[    0.796907] Driver 'sd' needs updating - please use bus_type methods
+[    0.803944] ata: MPC52xx IDE/ATA libata driver
+[    0.809300] scsi0 : mpc52xx_ata
+[    0.813246] ata1: PATA max UDMA/33 ata_regs 0xf0003a00 irq 135
+[    0.980196] ata1.00: ATA-6: ST980815A, 3.ALC, max UDMA/100
+[    0.985864] ata1.00: 156301488 sectors, multi 0: LBA48 
+[    1.004074] ata1.00: configured for UDMA/33
+[    1.009047] scsi 0:0:0:0: Direct-Access     ATA      ST980815A       
+3.AL PQ: 0 ANSI: 5
+[    1.018652] sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors (80026
+MB)
+[    1.026104] sd 0:0:0:0: [sda] Write Protect is off
+[    1.031419] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled,
+doesn't support DPO or FUA
+[    1.041235] sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors (80026
+MB)
+[    1.048681] sd 0:0:0:0: [sda] Write Protect is off
+[    1.053994] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled,
+doesn't support DPO or FUA
+[    1.063308]  sda: unknown partition table
+[    1.077092] sd 0:0:0:0: [sda] Attached SCSI disk
+
+.......
+
+-sh-2.05b# 
+-sh-2.05b# cp test.txt > /mnt/hd/writetest
+-sh-2.05b# cp test2.txt > /mnt/hd/writetest
+-sh-2.05b# cp -R  /test /mnt/hd/writetest
+[  170.239726] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+frozen
+[  170.247020] ata1.00: cmd ca/00:18:30:00:00/00:00:00:00:00/e0 tag 0 dma
+12288 out
+[  170.247033]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4
+(timeout)
+[  170.262180] ata1.00: status: { DRDY }
+[  170.265995] ata1: soft resetting link
+[  170.423867] ata1.00: revalidation failed (errno=-2)
+[  170.428902] ata1: failed to recover some devices, retrying in 5 secs
+[  175.435694] ata1: soft resetting link
+[  175.591873] ata1.00: revalidation failed (errno=-2)
+[  175.596909] ata1: failed to recover some devices, retrying in 5 secs
+[  180.603697] ata1: soft resetting link
+[  180.759873] ata1.00: revalidation failed (errno=-2)
+[  180.764907] ata1.00: disabled
+[  181.271725] ata1: soft resetting link
+[  181.427741] ata1: EH complete
+[  181.430856] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  181.437358] end_request: I/O error, dev sda, sector 48
+[  181.442652] Buffer I/O error on device sda, logical block 6
+[  181.448386] lost page write due to I/O error on sda
+[  181.453429] Buffer I/O error on device sda, logical block 7
+[  181.459165] lost page write due to I/O error on sda
+[  181.464205] Buffer I/O error on device sda, logical block 8
+[  181.469939] lost page write due to I/O error on sda
+[  181.475076] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  181.481580] end_request: I/O error, dev sda, sector 8
+[  181.486782] Buffer I/O error on device sda, logical block 1
+[  181.492515] lost page write due to I/O error on sda
+[  181.497653] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  181.504158] end_request: I/O error, dev sda, sector 0
+[  181.509361] Buffer I/O error on device sda, logical block 0
+[  181.515091] lost page write due to I/O error on sda
+[  181.520252] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  181.526762] end_request: I/O error, dev sda, sector 180232
+[  181.532441] Buffer I/O error on device sda, logical block 22540
+[  181.538534] lost page write due to I/O error on sda
+[  181.543784] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  181.550259] end_request: I/O error, dev sda, sector 180328
+[  181.556223] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  181.562707] end_request: I/O error, dev sda, sector 181352
+[  181.568659] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  181.575144] end_request: I/O error, dev sda, sector 182376
+[  181.581094] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  181.587579] end_request: I/O error, dev sda, sector 183400
+[  181.593483] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  181.599997] end_request: I/O error, dev sda, sector 184424
+[  185.268091] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  185.274573] end_request: I/O error, dev sda, sector 180224
+[  185.280329] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  185.286803] end_request: I/O error, dev sda, sector 64
+[  185.292100] Buffer I/O error on device sda, logical block 8
+[  185.297830] lost page write due to I/O error on sda
+[  185.302957] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  185.309462] end_request: I/O error, dev sda, sector 48
+[  185.314756] Buffer I/O error on device sda, logical block 6
+[  185.320493] lost page write due to I/O error on sda
+[  185.325593] sd 0:0:0:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
+[  185.332095] end_request: I/O error, dev sda, sector 0
+[  185.337299] Buffer I/O error on device sda, logical block 0
+[  185.343028] lost page write due to I/O error on sda
+[  185.348067] Buffer I/O error on device sda, logical block 1
+[  185.353805] lost page write due to I/O error on sda
+
+With PATA_MPC52xx_DMA not set, it works fine.  To help eliminate our
+hardware, I also tried this on a lite5200b development board, and had the
+same results.  I also tried this with a compact flash card, and then the
+problem occurs, but it happens during bootup.  I can't be certain my cf card
+works with DMA though, as I don't have anything else handy to test it with.
+
+I do have a driver which communicates with an FPGA using the LocalPlus bus,
+but for the purpose of testing I don't have it installed, and the FPGA I/O
+is tristated.
+
+I recall reading somewhere that the lite5200B board had some problem with
+IDE signal integrity when using a regular IDE cable, so I used an ultra-IDE
+cable with the same results.  On our own hardware, there is no cable as the
+drive mounts directly to a connector on our board within ~3" of the
+processor.
+
+Any thoughts.....
+
+Thanks,
+-Jeff
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+View this message in context: http://www.nabble.com/-PATCH-%3A--MPC5200--Add-ATA-DMA-support-tp17880454p19336474.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
