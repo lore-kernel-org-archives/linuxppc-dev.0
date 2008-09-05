@@ -1,33 +1,19 @@
-Return-Path: <hannes.hering@gmx.de>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D0A04DDFD5
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 00:39:53 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id m85EcQeX570220
-	for <linuxppc-dev@ozlabs.org>; Fri, 5 Sep 2008 14:38:26 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.0) with
-	ESMTP id m85EcQuE2027720
-	for <linuxppc-dev@ozlabs.org>; Fri, 5 Sep 2008 16:38:26 +0200
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m85EcMj0010276
-	for <linuxppc-dev@ozlabs.org>; Fri, 5 Sep 2008 16:38:22 +0200
-From: Hannes Hering <hannes.hering@gmx.de>
-Subject: [PATCH 2/2] ehea: Enable DLPAR memory remove
-Date: Fri, 5 Sep 2008 16:38:22 +0200
+Return-Path: <sean.maclennan@pikatech.com>
+Received: from mail.pikatech.com (dns.pikatech.com [207.107.229.10])
+	by ozlabs.org (Postfix) with ESMTP id A5515DDF13
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 00:49:47 +1000 (EST)
 MIME-Version: 1.0
-To: jeff@garzik.org
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200809051638.22160.hannes.hering@gmx.de>
-Cc: themann@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	raisch@de.ibm.com, ossrosch@linux.vnet.ibm.com,
-	linuxppc-dev@ozlabs.org, ossthema@de.ibm.com, osstklei@de.ibm.com
+	charset="Windows-1252"
+Subject: RE: [RFC] adding hwmon support to sequoia device tree
+Date: Fri, 5 Sep 2008 10:27:14 -0400
+Message-ID: <67BFAF42E016FC40ADE4EE73E07B706001B4B646@pks00005.kanatek.com>
+References: <200809041155.02927.matthias.fuchs@esd-electronics.com><20080904122507.GB12867@yoda.jdub.homelinux.org>
+	<200809041628.29460.matthias.fuchs@esd-electronics.com>
+From: "Sean MacLennan" <sean.maclennan@pikatech.com>
+To: "Matthias Fuchs" <matthias.fuchs@esd-electronics.com>,
+	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,28 +23,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds the capability flag to the capability list for dynamic LPAR
-memory remove to enable this feature.
+Yes, the ad7414 driver was finally accepted into the kernel. The ad7414 =
+is a generic temperature chip.
 
-Signed-off-by: Hannes Hering <hering2@de.ibm.com>
----
+FWIW, the warp.dts uses ad7414@4c, not hwmon.
 
-diff -Nurp -X dontdiff linux-2.6.27-rc5/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
---- linux-2.6.27-rc5/drivers/net/ehea/ehea.h	2008-08-29 00:52:02.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea.h	2008-09-05 15:33:12.000000000 +0200
-@@ -40,13 +40,13 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0092"
-+#define DRV_VERSION	"EHEA_0093"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
- #define DLPAR_MEM_ADD      2
- #define DLPAR_MEM_REM      4
--#define EHEA_CAPABILITIES  (DLPAR_PORT_ADD_REM | DLPAR_MEM_ADD)
-+#define EHEA_CAPABILITIES  (DLPAR_PORT_ADD_REM | DLPAR_MEM_ADD | DLPAR_MEM_REM)
- 
- #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
- 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
+Cheers,
+   Sean
+
+-----Original Message-----
+From:	linuxppc-dev-bounces+smaclennan=3Dpikatech.com@ozlabs.org on =
+behalf of Matthias Fuchs
+Sent:	Thu 9/4/2008 10:28 AM
+To:	Josh Boyer
+Cc:	linuxppc-dev@ozlabs.org
+Subject:	Re: [RFC] adding hwmon support to sequoia device tree
+
+Hi,=20
+
+On Thursday 04 September 2008 14:25, Josh Boyer wrote:
+> On Thu, Sep 04, 2008 at 11:55:02AM +0200, Matthias Fuchs wrote:
+> >Hi,
+> >
+> >I added support for the Sequoia on-board I2C temperature sensor to =
+the device.
+> >I am not sure if there is any node naming convention for such =
+devices.
+> >The needed I2C driver can be found under drivers/hwmon in the kernel =
+sources,
+> >so I found "hwmon" suitable for the node.
+> >
+> >Do we want to add this to the sequoia dts file? If this is how it =
+should be done,
+> >I will commit a proper patch.
+>=20
+> See comments below.  Out of curiosity, do you have a working driver =
+and
+> setup with this?
+Of course.=20
+
+You need
+	CONFIG_HWMON=3Dy
+	CONFIG_SENSORS_AD7414=3Dy
+
+Via sysfs you get:
+sequoia:~# cat /sys/bus/i2c/devices/0-0048/temp1_input
+34750
+sequoia:~# cat /sys/class/hwmon/hwmon0/device/temp1_input
+34750
+sequoia:~#=20
+
+34750 =3D 34.75=B0C
+
+>=20
+> >diff --git a/arch/powerpc/boot/dts/sequoia.dts =
+b/arch/powerpc/boot/dts/sequoia.dts
+> >index 72d15f0..82fdfdf 100644
+> >--- a/arch/powerpc/boot/dts/sequoia.dts
+> >+++ b/arch/powerpc/boot/dts/sequoia.dts
+> >@@ -246,13 +246,23 @@
+> >                        };
+> >
+> >                        IIC0: i2c@ef600700 {
+> >+                               #address-cells =3D <1>;
+> >+                               #size-cells =3D <0>;
+> >                                compatible =3D "ibm,iic-440epx", =
+"ibm,iic";
+> >                                reg =3D <0xef600700 0x00000014>;
+> >                                interrupt-parent =3D <&UIC0>;
+> >                                interrupts =3D <0x2 0x4>;
+> >+
+> >+                               hwmon@48 {
+> >+                                       device_type =3D "hwmon";
+>=20
+> We don't need device_type.  Particularly not a new one like this.
+I will remove that.
+>=20
+> >+                                       compatible =3D =
+"analog,ad7414";
+>=20
+> Perhaps 'compatible =3D "analog,ad7417", "amcc,hwmon-440epx";'
+It has nothing to do with either AMCC or 440EPx.
+
+Patch is on the way.
+
+Matthias
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
