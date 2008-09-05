@@ -1,18 +1,29 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
-	by ozlabs.org (Postfix) with ESMTP id 04DF1DDDD8
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 12:38:25 +1000 (EST)
-Date: Fri, 5 Sep 2008 12:10:37 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] ibm_newemac: MAL support for PowerPC 405EZ
-Message-ID: <20080905021037.GG14128@verge.net.au>
-References: <cover.1220540078.git.jwboyer@linux.vnet.ibm.com>
-	<20080904150216.GD2479@yoda.jdub.homelinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080904150216.GD2479@yoda.jdub.homelinux.org>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DBAFBDDF48
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 13:20:38 +1000 (EST)
+Received: from imap1.linux-foundation.org (imap1.linux-foundation.org
+	[140.211.169.55])
+	by smtp1.linux-foundation.org (8.14.2/8.13.5/Debian-3ubuntu1.1) with
+	ESMTP id m853KXwS023936
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 20:20:34 -0700
+Received: from y.localdomain (localhost [127.0.0.1])
+	by imap1.linux-foundation.org
+	(8.13.5.20060308/8.13.5/Debian-3ubuntu1.1) with SMTP id
+	m853KW64012642
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Sep 2008 20:20:32 -0700
+Date: Thu, 4 Sep 2008 20:20:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: linuxppc-dev@ozlabs.org
+Subject: 2.6.27-rc5-mm1 mystery trace
+Message-Id: <20080904202032.2299c2c8.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,220 +33,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 04, 2008 at 11:02:16AM -0400, Josh Boyer wrote:
-> The PowerPC 405EZ SoC has some differences in the interrupt layout and
-> handling for the MAL.  The SERR, TXDE, and RXDE interrupts are OR'd into
-> a single interrupt.  Also, due to the possibility for interrupt coalescing,
-> the TXEOB and RXEOB interrupts require an interrupt bit to be cleared in
-> the ICINTSTAT SDR.
-> 
-> This sets the proper MAL feature bits for 405EZ boards, and adds a common
-> shared handler for SERR, TXDE, and RXDE.  This has been adapted from code
-> originally written by Stefan Roese.
-> 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> ---
->  drivers/net/ibm_newemac/mal.c |   98 ++++++++++++++++++++++++++++++++--------
->  1 files changed, 78 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/net/ibm_newemac/mal.c b/drivers/net/ibm_newemac/mal.c
-> index 10c267b..3cef534 100644
-> --- a/drivers/net/ibm_newemac/mal.c
-> +++ b/drivers/net/ibm_newemac/mal.c
-> @@ -28,6 +28,7 @@
->  #include <linux/delay.h>
->  
->  #include "core.h"
-> +#include <asm/dcr-regs.h>
->  
->  static int mal_count;
->  
-> @@ -279,6 +280,9 @@ static irqreturn_t mal_txeob(int irq, void *dev_instance)
->  	mal_schedule_poll(mal);
->  	set_mal_dcrn(mal, MAL_TXEOBISR, r);
->  
-> +	if (mal_has_feature(mal, MAL_FTR_CLEAR_ICINTSTAT))
-> +		mtdcri(SDR0, 0x4510, (mfdcri(SDR0, 0x4510) | 0x60000000));
-> +
->  	return IRQ_HANDLED;
->  }
->  
-> @@ -293,6 +297,9 @@ static irqreturn_t mal_rxeob(int irq, void *dev_instance)
->  	mal_schedule_poll(mal);
->  	set_mal_dcrn(mal, MAL_RXEOBISR, r);
->  
-> +	if (mal_has_feature(mal, MAL_FTR_CLEAR_ICINTSTAT))
-> +		mtdcri(SDR0, 0x4510, (mfdcri(SDR0, 0x4510) | 0x80000000));
-> +
->  	return IRQ_HANDLED;
->  }
->  
-> @@ -336,6 +343,25 @@ static irqreturn_t mal_rxde(int irq, void *dev_instance)
->  	return IRQ_HANDLED;
->  }
->  
-> +static irqreturn_t mal_int(int irq, void *dev_instance)
-> +{
-> +	struct mal_instance *mal = dev_instance;
-> +	u32 esr = get_mal_dcrn(mal, MAL_ESR);
-> +
-> +	if (esr & MAL_ESR_EVB) {
-> +		/* descriptor error */
-> +		if (esr & MAL_ESR_DE) {
-> +			if (esr & MAL_ESR_CIDT)
-> +				return (mal_rxde(irq, dev_instance));
 
-	Return statements shouldn't be enlosed in brackets according to
-	checkpatch.pl. Also in a few other places.
+Booting the putative 2.6.27-rc5-mm1 lineup on the g5 I see:
 
-> +			else
-> +				return (mal_txde(irq, dev_instance));
-> +		} else { /* SERR */
-> +			return (mal_serr(irq, dev_instance));
-> +		}
-> +	}
-> +	return IRQ_HANDLED;
-> +}
-> +
->  void mal_poll_disable(struct mal_instance *mal, struct mal_commac *commac)
->  {
->  	/* Spinlock-type semantics: only one caller disable poll at a time */
-> @@ -542,11 +568,22 @@ static int __devinit mal_probe(struct of_device *ofdev,
->  		goto fail;
->  	}
->  
-> -	mal->txeob_irq = irq_of_parse_and_map(ofdev->node, 0);
-> -	mal->rxeob_irq = irq_of_parse_and_map(ofdev->node, 1);
-> -	mal->serr_irq = irq_of_parse_and_map(ofdev->node, 2);
-> -	mal->txde_irq = irq_of_parse_and_map(ofdev->node, 3);
-> -	mal->rxde_irq = irq_of_parse_and_map(ofdev->node, 4);
-> +	if (of_device_is_compatible(ofdev->node, "ibm,mcmal-405ez"))
-> +		mal->features |= (MAL_FTR_CLEAR_ICINTSTAT | MAL_FTR_COMMON_ERR_INT);
+io scheduler cfq registered
+proc_dir_entry '00' already registered
+Call Trace:
+[c00000017a0fbae0] [c000000000012540] unrecov_restore+0x98d8/0x1220c (unreliable)
+[c00000017a0fbb90] [c000000000149798] dst_error+0x117d3c/0x42ba04
+[c00000017a0fbc40] [c000000000149c14] dst_error+0x1181b8/0x42ba04
+[c00000017a0fbcc0] [c0000000001f9260] dst_error+0x1c7804/0x42ba04
+[c00000017a0fbd60] [c0000000005ccc8c] _sinittext+0x25c8c/0x371d4
+[c00000017a0fbde0] [c000000000009230] unrecov_restore+0x5c8/0x1220c
+[c00000017a0fbee0] [c0000000005a7d90] _sinittext+0xd90/0x371d4
+[c00000017a0fbf90] [c000000000026db4] fpdisable+0xa6f4/0xa884
+nvidiafb: Device ID: 10de0141 
+nvidiafb: CRTC0 analog not found
+nvidiafb: CRTC1 analog found
 
-The above like is >80 characters wide.
-But I'm not sure that anyone cares.
+from which I conclude
 
-> +
-> +	if (mal_has_feature(mal, MAL_FTR_COMMON_ERR_INT)) {
-> +		mal->txeob_irq = irq_of_parse_and_map(ofdev->node, 0);
-> +		mal->rxeob_irq = irq_of_parse_and_map(ofdev->node, 1);
-> +		mal->serr_irq = irq_of_parse_and_map(ofdev->node, 2);
-> +		mal->txde_irq = mal->rxde_irq = mal->serr_irq;
-> +	} else {
-> +		mal->txeob_irq = irq_of_parse_and_map(ofdev->node, 0);
-> +		mal->rxeob_irq = irq_of_parse_and_map(ofdev->node, 1);
-> +		mal->serr_irq = irq_of_parse_and_map(ofdev->node, 2);
-> +		mal->txde_irq = irq_of_parse_and_map(ofdev->node, 3);
-> +		mal->rxde_irq = irq_of_parse_and_map(ofdev->node, 4);
-> +	}
+a) someone broke powerpc's kallsyms processing and
 
-It seems that that first three calls to irq_of_parse_and_map() could
-be moved outside of the if/else clause.
+b) someone screwed up their procfs handling.
 
-	mal->txeob_irq = irq_of_parse_and_map(ofdev->node, 0);
-	mal->rxeob_irq = irq_of_parse_and_map(ofdev->node, 1);
-	mal->serr_irq = irq_of_parse_and_map(ofdev->node, 2);
-	if (mal_has_feature(mal, MAL_FTR_COMMON_ERR_INT)) {
-		mal->txde_irq = mal->rxde_irq = mal->serr_irq;
-	} else {
-		mal->txde_irq = irq_of_parse_and_map(ofdev->node, 3);
-		mal->rxde_irq = irq_of_parse_and_map(ofdev->node, 4);
-	}
+The output of `nm -n vmlinux' is at
+http://userweb.kernel.org/~akpm/nm-n.txt.  You'll see that
+c000000000012540 is actually somewhere inside proc_register().
 
-> +
->  	if (mal->txeob_irq == NO_IRQ || mal->rxeob_irq == NO_IRQ ||
->  	    mal->serr_irq == NO_IRQ || mal->txde_irq == NO_IRQ ||
->  	    mal->rxde_irq == NO_IRQ) {
-> @@ -608,21 +645,42 @@ static int __devinit mal_probe(struct of_device *ofdev,
->  			     sizeof(struct mal_descriptor) *
->  			     mal_rx_bd_offset(mal, i));
->  
-> -	err = request_irq(mal->serr_irq, mal_serr, 0, "MAL SERR", mal);
-> -	if (err)
-> -		goto fail2;
-> -	err = request_irq(mal->txde_irq, mal_txde, 0, "MAL TX DE", mal);
-> -	if (err)
-> -		goto fail3;
-> -	err = request_irq(mal->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
-> -	if (err)
-> -		goto fail4;
-> -	err = request_irq(mal->rxde_irq, mal_rxde, 0, "MAL RX DE", mal);
-> -	if (err)
-> -		goto fail5;
-> -	err = request_irq(mal->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
-> -	if (err)
-> -		goto fail6;
-> +	if (mal_has_feature(mal, MAL_FTR_COMMON_ERR_INT)) {
-> +		err = request_irq(mal->serr_irq, mal_int, IRQF_SHARED,
-> +				"MAL SERR", mal);
-> +		if (err)
-> +			goto fail2;
-> +		err = request_irq(mal->txde_irq, mal_int, IRQF_SHARED,
-> +				"MAL TX DE", mal);
-> +		if (err)
-> +			goto fail3;
-> +		err = request_irq(mal->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
-> +		if (err)
-> +			goto fail4;
-> +		err = request_irq(mal->rxde_irq, mal_int, IRQF_SHARED,
-> +				"MAL RX DE", mal);
-> +		if (err)
-> +			goto fail5;
-> +		err = request_irq(mal->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
-> +		if (err)
-> +			goto fail6;
-> +	} else {
-> +		err = request_irq(mal->serr_irq, mal_serr, 0, "MAL SERR", mal);
-> +		if (err)
-> +			goto fail2;
-> +		err = request_irq(mal->txde_irq, mal_txde, 0, "MAL TX DE", mal);
-> +		if (err)
-> +			goto fail3;
-> +		err = request_irq(mal->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
-> +		if (err)
-> +			goto fail4;
-> +		err = request_irq(mal->rxde_irq, mal_rxde, 0, "MAL RX DE", mal);
-> +		if (err)
-> +			goto fail5;
-> +		err = request_irq(mal->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
-> +		if (err)
-> +			goto fail6;
-> +	}
 
-There seems to be a lot of repention in the above if/else clauses.
-I wonder if something like this might be nicer.
 
-	if (mal_has_feature(mal, MAL_FTR_COMMON_ERR_INT)) {
-		irqflags = IRQF_SHARED;
-		hdlr_serr = hdlr_txde = hdlr_rxde = mal_int;
-	} else {
-		irqflags = 0;
-		hdlr_serr = mal_serr;
-		hdlr_txde = mal_txde;
-		hdlr_rxde = mal_rxde;
-	}
-	err = request_irq(mal->serr_irq, hdlr_serr, irqflags, "MAL SERR", mal);
-	if (err)
-		goto fail2;
-	err = request_irq(mal->txde_irq, hdlr_txde, irqflags, "MAL TX DE", mal);
-	if (err)
-		goto fail3;
-	err = request_irq(mal->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
-	if (err)
-		goto fail4;
-	err = request_irq(mal->rxde_irq, hdlr_rxde, irqflags, "MAL RX DE", mal);
-	if (err)
-		goto fail5;
-	err = request_irq(mal->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
-	if (err)
-		goto fail6;
+This is stupid:
 
->  
->  	/* Enable all MAL SERR interrupt sources */
->  	if (mal->version == 2)
-> -- 
-> 1.5.5.1
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+g5:/usr/src/25> gdb vmlinux
+GNU gdb Red Hat Linux (6.3.0.0-1.21rh)
+Copyright 2004 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you are
+welcome to change it and/or distribute copies of it under certain conditions.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for details.
+This GDB was configured as "ppc-yellowdog-linux-gnu"..."/usr/src/25/vmlinux": not in executable format: File format not recognized
+
+probably there's some command line magic to make it work, but there
+shouldn't be.
