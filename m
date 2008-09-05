@@ -1,15 +1,24 @@
-Return-Path: <IVanDessel@LIO.AACISD.com>
-Received: from mail.aacisd.com (mail.aacisd.com [63.144.132.67])
-	by ozlabs.org (Postfix) with SMTP id 08B69474DF
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-2.cisco.com (sj-iport-2.cisco.com [171.71.176.71])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-2.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 1A874DDF59
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Sep 2008 07:10:50 +1000 (EST)
+	Fri,  5 Sep 2008 10:29:11 +1000 (EST)
+Received: from sj-core-1.cisco.com (sj-core-1.cisco.com [171.71.177.237])
+	by sj-dkim-2.cisco.com (8.12.11/8.12.11) with ESMTP id m850IjOm003788
+	for <linuxppc-embedded@ozlabs.org>; Thu, 4 Sep 2008 17:18:45 -0700
+Received: from xbh-sjc-221.amer.cisco.com (xbh-sjc-221.cisco.com
+	[128.107.191.63])
+	by sj-core-1.cisco.com (8.13.8/8.13.8) with ESMTP id m850IjiB006173
+	for <linuxppc-embedded@ozlabs.org>; Fri, 5 Sep 2008 00:18:45 GMT
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C90ED1.02965700"
-Subject: loading/booting secondary filesystem
-Date: Thu, 4 Sep 2008 16:58:41 -0400
-Message-ID: <BE8B3EECA608414FB163FBA4576FCEBD01D5FAB6@EXNY.us.corp.aacisd.com>
-From: "Van Dessel Ivan" <IVanDessel@LIO.AACISD.com>
+	boundary="----_=_NextPart_001_01C90EEC.F5CA89A3"
+Subject: One image for two different core
+Date: Thu, 4 Sep 2008 17:18:45 -0700
+Message-ID: <F795765B112E7344AF36AA9112796415069F1682@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,68 +32,59 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C90ED1.02965700
+------_=_NextPart_001_01C90EEC.F5CA89A3
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-I currently have a MPC8313erdb rev4 board which has NAND and NOR flash =
-for bootable filesystem, freescale says that you can boot also from SD =
-or MMC, but currently they have no one working on development and uboot =
-does handle this yet either I was told by freescale so I was looking =
-into booting a secondary filesystem off of SD card that is on the board, =
-freescale told me look into this. Just wondering if anyone has done this =
-and how?=20
-Thanks
+Hi All,
+
+I am doing a feasibility study whether I can have one image for two
+different  platform with e300 ad e500 core. The idea is uboot will
+detect which type of the processor is running and pass the information
+to the early Linux startup, then the code will configure itself based on
+what type of core it is.
+
+One of the issue I see is the tool chain,.
+
+I would like to get your opinion on this please.
+
+Many thanks in advance,
+
+Bizhan
 
 
-Ivan Van Dessel
-Systems Engineer
-Advanced Acoustic Concepts
-900 Technology Blvd., Suite C
-Bozeman, MT  59718
-(Phone) 406.582.8133
-(Fax) 406.582.0151=20
-
-
-------_=_NextPart_001_01C90ED1.02965700
+------_=_NextPart_001_01C90EEC.F5CA89A3
 Content-Type: text/html;
-	charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7652.24">
-<TITLE>loading/booting secondary filesystem</TITLE>
-</HEAD>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.3354" name=3DGENERATOR></HEAD>
 <BODY>
-<!-- Converted from text/plain format -->
+<DIV>
+<P><FONT face=3DArial size=3D2>Hi All,</FONT></P>
+<P><FONT face=3DArial size=3D2>I am doing a feasibility study whether I =
+can have one=20
+image for two&nbsp;<SPAN =
+class=3D265451800-05092008>different</SPAN>&nbsp;=20
+platform with e300 ad e500 core. The idea is uboot will detect which =
+type of the=20
+processor is running and pass the information to the early Linux =
+startup, then=20
+the code will configure itself based on what&nbsp;<SPAN=20
+class=3D265451800-05092008>type of </SPAN>core it is.</FONT></P>
+<P><FONT face=3DArial size=3D2></FONT></P>
+<P><FONT face=3DArial size=3D2>One of the issue I see is the tool =
+chain,.</FONT></P>
+<P><FONT face=3DArial size=3D2>I would like to get your opinion on this=20
+please.</FONT></P>
+<P><FONT face=3DArial size=3D2></FONT></P>
+<P><FONT face=3DArial size=3D2></FONT></P>
+<P><FONT face=3DArial size=3D2>Many thanks in advance,</FONT></P>
+<P><FONT face=3DArial size=3D2>Bizhan</FONT></P></DIV></BODY></HTML>
 
-<P><FONT SIZE=3D2>I currently have a MPC8313erdb rev4 board which has =
-NAND and NOR flash for bootable filesystem, freescale says that you can =
-boot also from SD or MMC, but currently they have no one working on =
-development and uboot does handle this yet either I was told by =
-freescale so I was looking into booting a secondary filesystem off of SD =
-card that is on the board, freescale told me look into this. Just =
-wondering if anyone has done this and how?<BR>
-Thanks<BR>
-<BR>
-<BR>
-Ivan Van Dessel<BR>
-Systems Engineer<BR>
-Advanced Acoustic Concepts<BR>
-900 Technology Blvd., Suite C<BR>
-Bozeman, MT&nbsp; 59718<BR>
-(Phone) 406.582.8133<BR>
-(Fax) 406.582.0151<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C90ED1.02965700--
+------_=_NextPart_001_01C90EEC.F5CA89A3--
