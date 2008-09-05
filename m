@@ -1,25 +1,15 @@
-Return-Path: <bgholikh@cisco.com>
-Received: from sj-iport-2.cisco.com (sj-iport-2.cisco.com [171.71.176.71])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-2.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 1A874DDF59
+Return-Path: <lk.atwork@yahoo.com>
+Received: from n56.bullet.mail.sp1.yahoo.com (n56.bullet.mail.sp1.yahoo.com
+	[98.136.44.52]) by ozlabs.org (Postfix) with SMTP id 33A0EDE05A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Sep 2008 10:29:11 +1000 (EST)
-Received: from sj-core-1.cisco.com (sj-core-1.cisco.com [171.71.177.237])
-	by sj-dkim-2.cisco.com (8.12.11/8.12.11) with ESMTP id m850IjOm003788
-	for <linuxppc-embedded@ozlabs.org>; Thu, 4 Sep 2008 17:18:45 -0700
-Received: from xbh-sjc-221.amer.cisco.com (xbh-sjc-221.cisco.com
-	[128.107.191.63])
-	by sj-core-1.cisco.com (8.13.8/8.13.8) with ESMTP id m850IjiB006173
-	for <linuxppc-embedded@ozlabs.org>; Fri, 5 Sep 2008 00:18:45 GMT
+	Fri,  5 Sep 2008 11:36:22 +1000 (EST)
+Date: Thu, 4 Sep 2008 18:36:20 -0700 (PDT)
+From: Laxmikant Rashinkar <lk.atwork@yahoo.com>
+Subject: UPM setup
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C90EEC.F5CA89A3"
-Subject: One image for two different core
-Date: Thu, 4 Sep 2008 17:18:45 -0700
-Message-ID: <F795765B112E7344AF36AA9112796415069F1682@xmb-sjc-212.amer.cisco.com>
-From: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/alternative; boundary="0-1538437340-1220578580=:11205"
+Message-ID: <151111.11205.qm@web46307.mail.sp1.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -30,61 +20,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+--0-1538437340-1220578580=:11205
+Content-Type: text/plain; charset=us-ascii
 
-------_=_NextPart_001_01C90EEC.F5CA89A3
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hi All,
+I'm trying to set up the UPM RAM table for NAND access.
+Here is how I do it:
 
-I am doing a feasibility study whether I can have one image for two
-different  platform with e300 ad e500 core. The idea is uboot will
-detect which type of the processor is running and pass the information
-to the early Linux startup, then the code will configure itself based on
-what type of core it is.
+        char __iomem *lbc_addr;
+        int i;
 
-One of the issue I see is the tool chain,.
+        lbc_addr = ioremap(0xa0000000, 0x10);
 
-I would like to get your opinion on this please.
+        /* NAND chip (256MB) will be driven by UPM-A at LBC address 0xa0000000 */
+        out_be32(&fsl_lbc_regs->bank[4].br, 0xa0000881);
+        out_be32(&fsl_lbc_regs->bank[4].or, 0xf0000001);
 
-Many thanks in advance,
+        /* setup MAMR for sequential write to UPM-A RAM */
+        out_be32(&fsl_lbc_regs->mamr, 0x10000000);
 
-Bizhan
+        for (i = 0; i < 64; i++) {
+                out_be32(&fsl_lbc_regs->mdr, UPMATable[i]);
+                out_8(lbc_addr, 0);   /* dummy write, byte wide */
+        }
+
+        /* restore MAMR */
+        out_be32(&fsl_lbc_regs->mamr, 0x00000000);
+
+But this does not seem to be working. I have verified this in two ways
+
+a) for each write to mdr in the for loop above, I read back mamr and print it. This should have an incrementing
+MAD value, but it does not
+
+b) I read back the data that I had stored in UPM-A RAM and that logic does not work either.
+
+My take is that out_8(lbc_addr, 0) is not working because I'm not mapping lbc_addr correctly.
+Can someone tell me what I'm doing wrong?
+
+thanks for your help
+LK
 
 
-------_=_NextPart_001_01C90EEC.F5CA89A3
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+      
+--0-1538437340-1220578580=:11205
+Content-Type: text/html; charset=us-ascii
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.3354" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV>
-<P><FONT face=3DArial size=3D2>Hi All,</FONT></P>
-<P><FONT face=3DArial size=3D2>I am doing a feasibility study whether I =
-can have one=20
-image for two&nbsp;<SPAN =
-class=3D265451800-05092008>different</SPAN>&nbsp;=20
-platform with e300 ad e500 core. The idea is uboot will detect which =
-type of the=20
-processor is running and pass the information to the early Linux =
-startup, then=20
-the code will configure itself based on what&nbsp;<SPAN=20
-class=3D265451800-05092008>type of </SPAN>core it is.</FONT></P>
-<P><FONT face=3DArial size=3D2></FONT></P>
-<P><FONT face=3DArial size=3D2>One of the issue I see is the tool =
-chain,.</FONT></P>
-<P><FONT face=3DArial size=3D2>I would like to get your opinion on this=20
-please.</FONT></P>
-<P><FONT face=3DArial size=3D2></FONT></P>
-<P><FONT face=3DArial size=3D2></FONT></P>
-<P><FONT face=3DArial size=3D2>Many thanks in advance,</FONT></P>
-<P><FONT face=3DArial size=3D2>Bizhan</FONT></P></DIV></BODY></HTML>
+<html><head><style type="text/css"><!-- DIV {margin:0px;} --></style></head><body><div style="font-family:times new roman, new york, times, serif;font-size:12pt"><div>Hi,<br><br>I'm trying to set up the UPM RAM table for NAND access.<br>Here is how I do it:<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; char __iomem *lbc_addr;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int i;<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lbc_addr = ioremap(0xa0000000, 0x10);<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* NAND chip (256MB) will be driven by UPM-A at LBC address 0xa0000000 */<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; out_be32(&amp;fsl_lbc_regs-&gt;bank[4].br, 0xa0000881);<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; out_be32(&amp;fsl_lbc_regs-&gt;bank[4].or, 0xf0000001);<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* setup MAMR for sequential write to UPM-A RAM */<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ out_be32(&amp;fsl_lbc_regs-&gt;mamr, 0x10000000);<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for (i = 0; i &lt; 64; i++) {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; out_be32(&amp;fsl_lbc_regs-&gt;mdr, UPMATable[i]);<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; out_8(lbc_addr, 0);&nbsp;&nbsp; /* dummy write, byte wide */<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* restore MAMR */<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; out_be32(&amp;fsl_lbc_regs-&gt;mamr, 0x00000000);<br><br>But this does not seem to be working. I have verified this in two ways<br><br>a) for each write to mdr in the for loop above, I read back mamr and print it. This should have an incrementing<br>MAD value, but it does not<br><br>b) I read back the data that I had stored in UPM-A RAM and that logic does not work
+ either.<br><br>My take is that out_8(lbc_addr, 0) is not working because I'm not mapping lbc_addr correctly.<br>Can someone tell me what I'm doing wrong?<br><br>thanks for your help<br>LK<br><br></div></div><br>
 
-------_=_NextPart_001_01C90EEC.F5CA89A3--
+
+
+      </body></html>
+--0-1538437340-1220578580=:11205--
