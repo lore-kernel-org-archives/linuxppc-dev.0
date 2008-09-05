@@ -1,22 +1,20 @@
-Return-Path: <venkatakrishnap@vrindatech.com>
-Received: from server.indiadomain.com (server.indiadomain.com [69.50.220.104])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2DC0ADDDF3
+Return-Path: <marco.stornelli@coritel.it>
+Received: from nausicaa2.coritel.it
+	(host254-130-static.190-82-b.business.telecomitalia.it
+	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 42E0ADDDF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Sep 2008 21:13:04 +1000 (EST)
-Received: from [122.169.145.102] (helo=venkatakrishna)
-	by server.indiadomain.com with esmtpa (Exim 4.69)
-	(envelope-from <venkatakrishnap@vrindatech.com>) id 1KbZFK-0005Xg-PL
-	for linuxppc-embedded@ozlabs.org; Fri, 05 Sep 2008 04:12:59 -0700
-From: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: ELDK 4.0
-Date: Fri, 5 Sep 2008 16:46:22 +0530
+	Fri,  5 Sep 2008 21:29:28 +1000 (EST)
+Message-ID: <48C1187E.5040001@coritel.it>
+Date: Fri, 05 Sep 2008 13:31:10 +0200
+From: Marco Stornelli <marco.stornelli@coritel.it>
 MIME-Version: 1.0
+To: VenkataKrishna <venkatakrishnap@vrindatech.com>
+Subject: Re: ELDK 4.0
+References: <20080905111304.2DC0ADDDF3@ozlabs.org>
+In-Reply-To: <20080905111304.2DC0ADDDF3@ozlabs.org>
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0000_01C90F76.F03061F0"
-Message-Id: <20080905111304.2DC0ADDDF3@ozlabs.org>
+	boundary="------------010205090902050703020700"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,18 +26,84 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
-
-------=_NextPart_000_0000_01C90F76.F03061F0
-Content-Type: text/plain;
-	charset="us-ascii"
+--------------010205090902050703020700
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 
- 
+It's obvious. You mustn't edit <your_board_name> but the name of your 
+board. If the name of your board is "foo" then you can edit make 
+foo_defconfig (however the config file has to be in the ELDK :-) ).
+
+Regards.
+
+VenkataKrishna ha scritto:
+>  
+>
+> Hi ;
+>
+>   I am saying thanks for your suggest me. But make
+> <your_board_name>_defconfig I can't understand this. Can u send me any 
+>
+>  
+>
+> source code and makefile regarding this. When I uses this I getting " make
+> *** no rule to make target files."
+>
+>  
+>
+>  
+>
+> Thanks
+>
+> Venkatakrishna.
+>
+>  
+>
+>
+>   
+> ------------------------------------------------------------------------
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+-- 
+Marco Stornelli
+Embedded Software Engineer
+CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
+http://www.coritel.it
+
+marco.stornelli@coritel.it
++39 06 72582838
+
+
+--------------010205090902050703020700
+Content-Type: text/html; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-15"
+ http-equiv="Content-Type">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+It's obvious. You mustn't edit &lt;your_board_name&gt;
+but the name of your board. If the name of your board is "foo" then you
+can edit make foo_defconfig (however the config file has to be in the
+ELDK <span class="moz-smiley-s1"><span> :-) </span></span>). <br>
+<br>
+Regards.<br>
+<br>
+VenkataKrishna ha scritto:
+<blockquote cite="mid:20080905111304.2DC0ADDDF3@ozlabs.org" type="cite">
+  <pre wrap=""> 
 
 Hi ;
 
   I am saying thanks for your suggest me. But make
-<your_board_name>_defconfig I can't understand this. Can u send me any 
+&lt;your_board_name&gt;_defconfig I can't understand this. Can u send me any 
 
  
 
@@ -57,108 +121,24 @@ Venkatakrishna.
  
 
 
-------=_NextPart_000_0000_01C90F76.F03061F0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+  </pre>
+  <pre wrap="">
+<hr size="4" width="90%">
+_______________________________________________
+Linuxppc-embedded mailing list
+<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
+<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a></pre>
+</blockquote>
+<br>
+<pre class="moz-signature" cols="72">-- 
+Marco Stornelli
+Embedded Software Engineer
+CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
+<a class="moz-txt-link-freetext" href="http://www.coritel.it">http://www.coritel.it</a>
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:"MS Mincho";
-	panose-1:2 2 6 9 4 2 5 8 3 4;}
-@font-face
-	{font-family:"\@MS Mincho";
-	panose-1:0 0 0 0 0 0 0 0 0 0;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi ;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp; I am saying thanks for your suggest me. But =
-make
-&lt;your_board_name&gt;_defconfig I can't understand this. Can u send me =
-any <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>source code and makefile regarding this. When I uses =
-this I
-getting &quot; make *** no rule to make target =
-files.&quot;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Venkatakrishna.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
+<a class="moz-txt-link-abbreviated" href="mailto:marco.stornelli@coritel.it">marco.stornelli@coritel.it</a>
++39 06 72582838</pre>
 </body>
-
 </html>
 
-------=_NextPart_000_0000_01C90F76.F03061F0--
+--------------010205090902050703020700--
