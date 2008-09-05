@@ -2,22 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3ECABDDEEF
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 19:32:14 +1000 (EST)
-Subject: Re: 2.6.27-rc5-mm1 mystery trace
+	by ozlabs.org (Postfix) with ESMTPS id 7A232DDF1A
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 19:35:59 +1000 (EST)
+Subject: Re: [PATCH 3/3] ibm_newemac: MAL support for PowerPC 405EZ
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080904214115.2b4ab5fd.akpm@linux-foundation.org>
-References: <20080904202032.2299c2c8.akpm@linux-foundation.org>
-	<1220586164.4879.116.camel@pasglop>
-	<20080904204957.04a420ac.akpm@linux-foundation.org>
-	<1220589401.4879.125.camel@pasglop>
-	<20080904214115.2b4ab5fd.akpm@linux-foundation.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20080904234145.17f55cc2@zod.rchland.ibm.com>
+References: <cover.1220540078.git.jwboyer@linux.vnet.ibm.com>
+	<20080904150216.GD2479@yoda.jdub.homelinux.org>
+	<20080905021037.GG14128@verge.net.au>
+	<20080904234145.17f55cc2@zod.rchland.ibm.com>
 Content-Type: text/plain
-Date: Fri, 05 Sep 2008 19:31:36 +1000
-Message-Id: <1220607096.4879.163.camel@pasglop>
+Date: Fri, 05 Sep 2008 19:34:38 +1000
+Message-Id: <1220607278.4879.165.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: netdev@vger.kernel.org, Simon Horman <horms@verge.net.au>,
+	linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,20 +29,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> > > A 64-bit binary on a 64-bit machine Should Just Work.  Maybe that's
-> > > me being simplistic.
+> > > +	if (of_device_is_compatible(ofdev->node, "ibm,mcmal-405ez"))
+> > > +		mal->features |= (MAL_FTR_CLEAR_ICINTSTAT | MAL_FTR_COMMON_ERR_INT);
 > > 
-> > But is it a 64 bits binary ? 
-> > 
+> > The above like is >80 characters wide.
+> > But I'm not sure that anyone cares.
 > 
-> vmlinux?  Yup.  According to file(1).
+> I don't.  If Ben complains I'll change it.
 
-No, I'm talking about gdb :-0
-
-IE. If it's a 32 bits gdb variant that cannot do 64 bits.. then it's
-stuffed.
-
-Is there a gdb64 binary somewhere ? Some distro have that.
+I wouldn't do a tatrum over it but if you're going to respin the
+patch you may as well put the second constant on the next line.
 
 Cheers,
 Ben.
