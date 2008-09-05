@@ -1,24 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7A232DDF1A
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 19:35:59 +1000 (EST)
-Subject: Re: [PATCH 3/3] ibm_newemac: MAL support for PowerPC 405EZ
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20080904234145.17f55cc2@zod.rchland.ibm.com>
-References: <cover.1220540078.git.jwboyer@linux.vnet.ibm.com>
-	<20080904150216.GD2479@yoda.jdub.homelinux.org>
-	<20080905021037.GG14128@verge.net.au>
-	<20080904234145.17f55cc2@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Fri, 05 Sep 2008 19:34:38 +1000
-Message-Id: <1220607278.4879.165.camel@pasglop>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, Simon Horman <horms@verge.net.au>,
-	linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 992C6DDF2B
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Sep 2008 20:20:19 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Subject: Re: [PATCH] powerpc/44x: Add hwmon support to Sequoia device tree
+Date: Fri, 5 Sep 2008 12:19:43 +0200
+References: <200809041155.02927.matthias.fuchs@esd-electronics.com>
+	<200809041628.29460.matthias.fuchs@esd-electronics.com>
+	<200809041641.57614.matthias.fuchs@esd-electronics.com>
+In-Reply-To: <200809041641.57614.matthias.fuchs@esd-electronics.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200809051219.43906.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 04 September 2008, Matthias Fuchs wrote:
+> This patch adds support for the AD7414 temperature sensor
+> on Sequoia PPC440EPx board.
+>
+> Signed-off-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+> ---
+>  arch/powerpc/boot/dts/sequoia.dts |    9 +++++++++
+>  1 files changed, 9 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/boot/dts/sequoia.dts
+> b/arch/powerpc/boot/dts/sequoia.dts index 72d15f0..9ba5def 100644
+> --- a/arch/powerpc/boot/dts/sequoia.dts
+> +++ b/arch/powerpc/boot/dts/sequoia.dts
+> @@ -246,13 +246,22 @@
+>  	   		};
+>
+>  			IIC0: i2c@ef600700 {
+> +				#address-cells = <1>;
+> +				#size-cells = <0>;
+>  				compatible = "ibm,iic-440epx", "ibm,iic";
+>  				reg = <0xef600700 0x00000014>;
+>  				interrupt-parent = <&UIC0>;
+>  				interrupts = <0x2 0x4>;
+> +
+> +				hwmon@48 {
 
-> > > +	if (of_device_is_compatible(ofdev->node, "ibm,mcmal-405ez"))
-> > > +		mal->features |= (MAL_FTR_CLEAR_ICINTSTAT | MAL_FTR_COMMON_ERR_INT);
-> > 
-> > The above like is >80 characters wide.
-> > But I'm not sure that anyone cares.
-> 
-> I don't.  If Ben complains I'll change it.
+Not sure if we shouldn't use
 
-I wouldn't do a tatrum over it but if you're going to respin the
-patch you may as well put the second constant on the next line.
+                                ad7414@48 {
 
-Cheers,
-Ben.
+here. This is the way it is already done in warp.dts.
+
+Other than this:
+
+Acked-by: Stefan Roese <sr@denx.de>
+
+Best regards,
+Stefan
