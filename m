@@ -1,20 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 56EC7DE0F0
+Return-Path: <littelld@verizon.net>
+Received: from vms173001pub.verizon.net (vms173001pub.verizon.net
+	[206.46.173.1]) by ozlabs.org (Postfix) with ESMTP id 10C16DDDEC
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  6 Sep 2008 07:31:43 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org,
- rmcguire@videopresence.com
-Subject: Re: 1MB alignment dma_alloc question
-Date: Fri, 5 Sep 2008 23:31:36 +0200
-References: <mailman.1.1220580004.22796.linuxppc-embedded@ozlabs.org>
-	<CBF4EB06A92A4901B32659109487513E@absolutdaddy>
-In-Reply-To: <CBF4EB06A92A4901B32659109487513E@absolutdaddy>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200809052331.36463.arnd@arndb.de>
+	Sat,  6 Sep 2008 13:32:53 +1000 (EST)
+Received: from [192.168.1.106] ([96.226.142.190]) by vms173001.mailsrvcs.net
+	(Sun Java System Messaging Server 6.2-6.01 (built Apr  3 2006))
+	with ESMTPA id <0K6R00EM78IQ6R32@vms173001.mailsrvcs.net> for
+	linuxppc-embedded@ozlabs.org; Fri, 05 Sep 2008 22:32:51 -0500 (CDT)
+Date: Fri, 05 Sep 2008 22:32:50 -0500
+From: Dave Littell <littelld@verizon.net>
+Subject: Re: direct access to Flash from userland
+In-reply-to: <200809051750.13421.arnd@arndb.de>
+To: linuxppc-embedded@ozlabs.org
+Message-id: <48C1F9E2.2030502@verizon.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+References: <0B45E93C5FF65740AEAE690BF3848B7AD38369@rennsmail04.eu.thmulti.com>
+	<200809051750.13421.arnd@arndb.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,20 +27,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 05 September 2008, Russell McGuire wrote:
+Arnd Bergmann wrote:
+> On Thursday 04 September 2008, Fillod Stephane wrote:
+>>> Is there a way for a userland application to issue non-CFI commands
+>>> directly to a Flash device?  (This is a 2.6.18-based kernel on a AMCC
+>>> PPC440EPx platform.)
+>> I don't know whether there's specific ioctl for such purpose.
+>> Have you tried to read the mtd source? You may also hack the mtd
+>> layer to add your command. Definitely a question for 
+>> http://www.linux-mtd.infradead.org/mail.html
+>>
+> 
+> There is no ioctl command for sending arbitrary requests to the
+> flash, but it sounds like something that should be implemented
+> in the kernel, in mtdchar, depending on what the command does.
+> 
+> What are you actually trying to do with those commands?
+> 
 
-> So this begs a question is their a better way to get a 1MB aligned table?
-> Other than allocating almost 2MB of memory and then trying to mask off the
-> LSBs? Seems like an awful waste of memory. I guess the real question is
-> there a better kernel call that returns already aligned DMA memory?
+Hi Arnd,
 
-__get_free_pages() will allocate naturally aligned pages from the buddy
-allocator, so that should do just what you need. If you don't do it at
-boot time though,  you might not be able to get a full unfragmented
-megabyte any more.
+There are some sector protection options and a user-writable
+one-time-programmable section that's larger than the presently
+implemented 8-byte area that I need to support.
 
-Another option would be to call alloc_bootmem() first, align the buffer
-and call free_bootmem() on the areas that you do not need. This has to
-be done *very* early in the boot process.
 
-	Arnd <><
+Thanks,
+Dave
