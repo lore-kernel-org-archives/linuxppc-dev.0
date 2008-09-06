@@ -1,14 +1,13 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 5D262DDDDF
+	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 6E59ADDDE1
 	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 15:09:08 +1000 (EST)
-Message-Id: <20080906050905.931087594@goodmis.org>
+Message-Id: <20080906050906.111265558@goodmis.org>
 References: <20080906050602.409299112@goodmis.org>
-Date: Sat, 06 Sep 2008 01:06:03 -0400
+Date: Sat, 06 Sep 2008 01:06:04 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] ftrace: use ftrace_release for all dynamic ftrace
-	functions
+Subject: [PATCH 2/2] ftrace: fix unlocking of hash
 Cc: Andrew Morton <akpm@linux-foundation.org>,
 	Peter Zijlstra <peterz@infradead.org>,
 	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
@@ -23,51 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ftrace_release is necessary for all uses of dynamic ftrace and not just
-the archs that have CONFIG_FTRACE_MCOUNT_RECORD defined.
+This must be brown paper bag week for Steven Rostedt!
+
+While working on ftrace for PPC, I discovered that the hash locking done
+when CONFIG_FTRACE_MCOUNT_RECORD is not set, is totally incorrect.
+
+With a cut and paste error, I had the hash lock macro to lock for both
+hash_lock _and_ hash_unlock!
+
+This bug did not affect x86 since this bug was introduced when
+CONFIG_FTRACE_MCOUNT_RECORD was added to x86.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/linux/ftrace.h |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ kernel/trace/ftrace.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: linux-tip.git/include/linux/ftrace.h
+Index: linux-tip.git/kernel/trace/ftrace.c
 ===================================================================
---- linux-tip.git.orig/include/linux/ftrace.h	2008-09-05 16:04:34.000000000 -0700
-+++ linux-tip.git/include/linux/ftrace.h	2008-09-05 20:10:47.000000000 -0700
-@@ -77,8 +77,10 @@ extern void mcount_call(void);
- 
- extern int skip_trace(unsigned long ip);
- 
--void ftrace_disable_daemon(void);
--void ftrace_enable_daemon(void);
-+extern void ftrace_release(void *start, unsigned long size);
-+
-+extern void ftrace_disable_daemon(void);
-+extern void ftrace_enable_daemon(void);
- 
+--- linux-tip.git.orig/kernel/trace/ftrace.c	2008-09-05 21:53:46.000000000 -0700
++++ linux-tip.git/kernel/trace/ftrace.c	2008-09-05 21:57:57.000000000 -0700
+@@ -170,7 +170,8 @@ static int __unregister_ftrace_function(
+  */
+ static DEFINE_SPINLOCK(ftrace_hash_lock);
+ #define ftrace_hash_lock(flags)	  spin_lock_irqsave(&ftrace_hash_lock, flags)
+-#define ftrace_hash_unlock(flags) spin_lock_irqsave(&ftrace_hash_lock, flags)
++#define ftrace_hash_unlock(flags) \
++			spin_unlock_irqrestore(&ftrace_hash_lock, flags)
  #else
- # define skip_trace(ip)				({ 0; })
-@@ -86,6 +88,7 @@ void ftrace_enable_daemon(void);
- # define ftrace_set_filter(buf, len, reset)	do { } while (0)
- # define ftrace_disable_daemon()		do { } while (0)
- # define ftrace_enable_daemon()			do { } while (0)
-+static inline void ftrace_release(void *start, unsigned long size) { }
- #endif /* CONFIG_DYNAMIC_FTRACE */
- 
- /* totally disable ftrace - can not re-enable after this */
-@@ -199,12 +202,10 @@ static inline void ftrace_dump(void) { }
- #ifdef CONFIG_FTRACE_MCOUNT_RECORD
- extern void ftrace_init(void);
- extern void ftrace_init_module(unsigned long *start, unsigned long *end);
--extern void ftrace_release(void *start, unsigned long size);
- #else
- static inline void ftrace_init(void) { }
- static inline void
- ftrace_init_module(unsigned long *start, unsigned long *end) { }
--static inline void ftrace_release(void *start, unsigned long size) { }
- #endif
- 
- 
+ /* This is protected via the ftrace_lock with MCOUNT_RECORD. */
+ #define ftrace_hash_lock(flags)   do { (void)(flags); } while (0)
 
 -- 
