@@ -1,22 +1,12 @@
-Return-Path: <littelld@verizon.net>
-Received: from vms173001pub.verizon.net (vms173001pub.verizon.net
-	[206.46.173.1]) by ozlabs.org (Postfix) with ESMTP id 10C16DDDEC
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  6 Sep 2008 13:32:53 +1000 (EST)
-Received: from [192.168.1.106] ([96.226.142.190]) by vms173001.mailsrvcs.net
-	(Sun Java System Messaging Server 6.2-6.01 (built Apr  3 2006))
-	with ESMTPA id <0K6R00EM78IQ6R32@vms173001.mailsrvcs.net> for
-	linuxppc-embedded@ozlabs.org; Fri, 05 Sep 2008 22:32:51 -0500 (CDT)
-Date: Fri, 05 Sep 2008 22:32:50 -0500
-From: Dave Littell <littelld@verizon.net>
-Subject: Re: direct access to Flash from userland
-In-reply-to: <200809051750.13421.arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Message-id: <48C1F9E2.2030502@verizon.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-References: <0B45E93C5FF65740AEAE690BF3848B7AD38369@rennsmail04.eu.thmulti.com>
-	<200809051750.13421.arnd@arndb.de>
+Return-Path: <venkatakrishnap@vrindatech.com>
+From: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
+To: <Linuxppc-embedded@ozlabs.org>
+Subject: ELDK
+Date: Sat, 6 Sep 2008 09:32:54 +0530
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_000F_01C91003.8E594090"
+Message-Id: <20080906035936.85972DDDD0@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,30 +17,122 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Thursday 04 September 2008, Fillod Stephane wrote:
->>> Is there a way for a userland application to issue non-CFI commands
->>> directly to a Flash device?  (This is a 2.6.18-based kernel on a AMCC
->>> PPC440EPx platform.)
->> I don't know whether there's specific ioctl for such purpose.
->> Have you tried to read the mtd source? You may also hack the mtd
->> layer to add your command. Definitely a question for 
->> http://www.linux-mtd.infradead.org/mail.html
->>
-> 
-> There is no ioctl command for sending arbitrary requests to the
-> flash, but it sounds like something that should be implemented
-> in the kernel, in mtdchar, depending on what the command does.
-> 
-> What are you actually trying to do with those commands?
-> 
+This is a multi-part message in MIME format.
 
-Hi Arnd,
+------=_NextPart_000_000F_01C91003.8E594090
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-There are some sector protection options and a user-writable
-one-time-programmable section that's larger than the presently
-implemented 8-byte area that I need to support.
+Dear "Wolfgang Denk"
+
+ 
+
+Where can I add my BSP file in linux kernel tree and what sequence can I
+follow.
+
+ 
+
+Thanks and Regards
+
+Venkatakrishna Pari
+
+ 
 
 
-Thanks,
-Dave
+------=_NextPart_000_000F_01C91003.8E594090
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:"MS Mincho";
+	panose-1:2 2 6 9 4 2 5 8 3 4;}
+@font-face
+	{font-family:"\@MS Mincho";
+	panose-1:0 0 0 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>Dear =
+&#8220;Wolfgang
+Denk&quot;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>Where can I add my =
+BSP file
+in linux kernel tree and what sequence can I =
+follow.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>Thanks and =
+Regards<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>Venkatakrishna =
+Pari<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_000F_01C91003.8E594090--
