@@ -1,18 +1,22 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 6E59ADDDE1
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 15:09:08 +1000 (EST)
-Message-Id: <20080906050906.111265558@goodmis.org>
-References: <20080906050602.409299112@goodmis.org>
-Date: Sat, 06 Sep 2008 01:06:04 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] ftrace: fix unlocking of hash
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2E6F8DDDDE
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 19:05:44 +1000 (EST)
+Date: Sat, 6 Sep 2008 13:02:54 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][USB] powerpc: Workaround for the PPC440EPX USBH_23 errata
+Message-ID: <20080906130254.43848a08@vitb-lp>
+In-Reply-To: <Pine.LNX.4.44L0.0809051111220.2493-100000@iolanthe.rowland.org>
+References: <20080905170135.07ccbc46@vitb-lp>
+	<Pine.LNX.4.44L0.0809051111220.2493-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=KOI8-R
+Cc: USB list <linux-usb@vger.kernel.org>, Mark,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Miesfeld <mmiesfeld@amcc.com>, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,35 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This must be brown paper bag week for Steven Rostedt!
+В Fri, 5 Sep 2008 11:17:03 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> пишет:
 
-While working on ftrace for PPC, I discovered that the hash locking done
-when CONFIG_FTRACE_MCOUNT_RECORD is not set, is totally incorrect.
+> On Fri, 5 Sep 2008, Vitaly Bordug wrote:
+> 
+> > > > Not every hub will work (none of available did so far), and it
+> > > > is often not an option for embedded device without rewiring.
+> > > 
+> > > It's odd that your hubs don't work.  What's wrong with them?
+> > > 
+> > 
+> > well, they do not have transaction translators then. Nothing really
+> > wrong
+> 
+> No.  If the hubs run at high speed then they must have transaction 
+> translators; it's required by the USB 2.0 specification.
+> 
+> Did you try using them with ohci-hcd not loaded?
 
-With a cut and paste error, I had the hash lock macro to lock for both
-hash_lock _and_ hash_unlock!
+yes, not with every unit though. That seems to be usb hub issue then.
 
-This bug did not affect x86 since this bug was introduced when
-CONFIG_FTRACE_MCOUNT_RECORD was added to x86.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/ftrace.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Anyway, the patch is targeted more to
+the embedded platforms, that cannot afford work the issue around with
+extra devices.
 
-Index: linux-tip.git/kernel/trace/ftrace.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/ftrace.c	2008-09-05 21:53:46.000000000 -0700
-+++ linux-tip.git/kernel/trace/ftrace.c	2008-09-05 21:57:57.000000000 -0700
-@@ -170,7 +170,8 @@ static int __unregister_ftrace_function(
-  */
- static DEFINE_SPINLOCK(ftrace_hash_lock);
- #define ftrace_hash_lock(flags)	  spin_lock_irqsave(&ftrace_hash_lock, flags)
--#define ftrace_hash_unlock(flags) spin_lock_irqsave(&ftrace_hash_lock, flags)
-+#define ftrace_hash_unlock(flags) \
-+			spin_unlock_irqrestore(&ftrace_hash_lock, flags)
- #else
- /* This is protected via the ftrace_lock with MCOUNT_RECORD. */
- #define ftrace_hash_lock(flags)   do { (void)(flags); } while (0)
-
--- 
+> 
+> Alan Stern
