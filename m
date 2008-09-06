@@ -1,22 +1,22 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mingo@elte.hu>
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2E6F8DDDDE
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 19:05:44 +1000 (EST)
-Date: Sat, 6 Sep 2008 13:02:54 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][USB] powerpc: Workaround for the PPC440EPX USBH_23 errata
-Message-ID: <20080906130254.43848a08@vitb-lp>
-In-Reply-To: <Pine.LNX.4.44L0.0809051111220.2493-100000@iolanthe.rowland.org>
-References: <20080905170135.07ccbc46@vitb-lp>
-	<Pine.LNX.4.44L0.0809051111220.2493-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=KOI8-R
-Cc: USB list <linux-usb@vger.kernel.org>, Mark,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Miesfeld <mmiesfeld@amcc.com>, Stefan Roese <sr@denx.de>
+	by ozlabs.org (Postfix) with ESMTPS id 44328DDDE1
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 22:04:11 +1000 (EST)
+Date: Sat, 6 Sep 2008 14:03:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
+Message-ID: <20080906120346.GA30964@elte.hu>
+References: <20080906050602.409299112@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080906050602.409299112@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-В Fri, 5 Sep 2008 11:17:03 -0400 (EDT)
-Alan Stern <stern@rowland.harvard.edu> пишет:
 
-> On Fri, 5 Sep 2008, Vitaly Bordug wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> I spent the day chasing a bug that would hang PPC on boot up when 
+> ftrace is configured in. I found that it was simply a stupid bug I did 
+> to handle the non MCOUNT_RECORD case. Since I was testing only on x86, 
+> and the MCOUNT_RECORD is automatically set for dynamic ftrace if it is 
+> available, I did not test the case where MCOUNT_RECORD was not set.
 > 
-> > > > Not every hub will work (none of available did so far), and it
-> > > > is often not an option for embedded device without rewiring.
-> > > 
-> > > It's odd that your hubs don't work.  What's wrong with them?
-> > > 
-> > 
-> > well, they do not have transaction translators then. Nothing really
-> > wrong
+> I have not finished porting MCOUNT_RECORD to PPC, but have found that 
+> it has caused some issues for archs that do not support it yet.
 > 
-> No.  If the hubs run at high speed then they must have transaction 
-> translators; it's required by the USB 2.0 specification.
-> 
-> Did you try using them with ohci-hcd not loaded?
+> This patch series handles these cases.
 
-yes, not with every unit though. That seems to be usb hub issue then.
+applied to tip/tracing/ftrace, thanks Steve.
 
-
-Anyway, the patch is targeted more to
-the embedded platforms, that cannot afford work the issue around with
-extra devices.
-
-> 
-> Alan Stern
+	Ingo
