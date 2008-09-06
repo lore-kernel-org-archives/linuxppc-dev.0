@@ -1,22 +1,25 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 44328DDDE1
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 22:04:11 +1000 (EST)
-Date: Sat, 6 Sep 2008 14:03:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
-Message-ID: <20080906120346.GA30964@elte.hu>
-References: <20080906050602.409299112@goodmis.org>
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
+	by ozlabs.org (Postfix) with ESMTP id 56194DDE17
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 22:07:58 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so501557pyi.27
+	for <linuxppc-dev@ozlabs.org>; Sat, 06 Sep 2008 05:07:55 -0700 (PDT)
+Date: Sat, 6 Sep 2008 08:07:47 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] powerpc/44x: Add hwmon support to Sequoia device tree
+Message-ID: <20080906120747.GA21519@vader.jdub.homelinux.org>
+References: <200809041155.02927.matthias.fuchs@esd-electronics.com>
+	<200809041628.29460.matthias.fuchs@esd-electronics.com>
+	<200809041641.57614.matthias.fuchs@esd-electronics.com>
+	<200809051219.43906.sr@denx.de>
+	<20080905160017.GA22310@ld0162-tx32.am.freescale.net>
+	<20080905201703.0586e131@lappy.seanm.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080906050602.409299112@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080905201703.0586e131@lappy.seanm.ca>
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Sep 05, 2008 at 08:17:03PM -0400, Sean MacLennan wrote:
+>On Fri, 5 Sep 2008 11:00:18 -0500
+>"Scott Wood" <scottwood@freescale.com> wrote:
+>
+>> On Fri, Sep 05, 2008 at 12:19:43PM +0200, Stefan Roese wrote:
+>> > > +
+>> > > +				hwmon@48 {
+>> > 
+>> > Not sure if we shouldn't use
+>> > 
+>> >                                 ad7414@48 {
+>> > 
+>> > here. This is the way it is already done in warp.dts.
+>> 
+>> We shouldn't.  Node names are supposed to be generic:
+>> http://playground.sun.com/1275/practice/gnames/gnamv14a.html
+>
+>Damn. Where were you a year ago when I first introduced this? ;)
+>
+>And if it is really supposed to be generic, would temp@48 be a
+>better name since this is basically a generic temperature chip?
+>
+>Now that the i2c driver is a full of platform driver, I think I
+>can change the name with no repercussions. So I can live with whatever
+>decision is made. Can't do anything about the systems that are out in
+>the field though....
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+It's just the unit-name that should be generic, not the compatible.  The
+only thing unit-name is used for is path lookup and distinguishing between
+similar hardware units.  I don't think either is a problem in this case.
 
-> I spent the day chasing a bug that would hang PPC on boot up when 
-> ftrace is configured in. I found that it was simply a stupid bug I did 
-> to handle the non MCOUNT_RECORD case. Since I was testing only on x86, 
-> and the MCOUNT_RECORD is automatically set for dynamic ftrace if it is 
-> available, I did not test the case where MCOUNT_RECORD was not set.
-> 
-> I have not finished porting MCOUNT_RECORD to PPC, but have found that 
-> it has caused some issues for archs that do not support it yet.
-> 
-> This patch series handles these cases.
-
-applied to tip/tracing/ftrace, thanks Steve.
-
-	Ingo
+josh
