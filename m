@@ -1,20 +1,16 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 6D3DCDDDDC
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 13:17:05 +1000 (EST)
-Date: Fri, 5 Sep 2008 20:17:03 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/44x: Add hwmon support to Sequoia device tree
-Message-ID: <20080905201703.0586e131@lappy.seanm.ca>
-In-Reply-To: <20080905160017.GA22310@ld0162-tx32.am.freescale.net>
-References: <200809041155.02927.matthias.fuchs@esd-electronics.com>
-	<200809041628.29460.matthias.fuchs@esd-electronics.com>
-	<200809041641.57614.matthias.fuchs@esd-electronics.com>
-	<200809051219.43906.sr@denx.de>
-	<20080905160017.GA22310@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 6AE50DDDE0
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Sep 2008 15:09:08 +1000 (EST)
+Message-Id: <20080906050602.409299112@goodmis.org>
+Date: Sat, 06 Sep 2008 01:06:02 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] ftrace: fixes for PPC
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 5 Sep 2008 11:00:18 -0500
-"Scott Wood" <scottwood@freescale.com> wrote:
+I spent the day chasing a bug that would hang PPC on boot up when ftrace
+is configured in. I found that it was simply a stupid bug I did to
+handle the non MCOUNT_RECORD case. Since I was testing only on x86,
+and the MCOUNT_RECORD is automatically set for dynamic ftrace if
+it is available, I did not test the case where MCOUNT_RECORD was not
+set.
 
-> On Fri, Sep 05, 2008 at 12:19:43PM +0200, Stefan Roese wrote:
-> > > +
-> > > +				hwmon@48 {
-> > 
-> > Not sure if we shouldn't use
-> > 
-> >                                 ad7414@48 {
-> > 
-> > here. This is the way it is already done in warp.dts.
-> 
-> We shouldn't.  Node names are supposed to be generic:
-> http://playground.sun.com/1275/practice/gnames/gnamv14a.html
+I have not finished porting MCOUNT_RECORD to PPC, but have found
+that it has caused some issues for archs that do not support it yet.
 
-Damn. Where were you a year ago when I first introduced this? ;)
+This patch series handles these cases.
 
-And if it is really supposed to be generic, would temp@48 be a
-better name since this is basically a generic temperature chip?
-
-Now that the i2c driver is a full of platform driver, I think I
-can change the name with no repercussions. So I can live with whatever
-decision is made. Can't do anything about the systems that are out in
-the field though....
-
-Cheers,
-   Sean
+-- Steve
