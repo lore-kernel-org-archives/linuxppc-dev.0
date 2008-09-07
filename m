@@ -1,13 +1,14 @@
 Return-Path: <jk@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: New Patchwork setup on ozlabs.org
 From: Jeremy Kerr <jk@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [GIT PULL] Please pull spufs merge branch
-Date: Mon, 8 Sep 2008 09:49:50 +1000
+Date: Mon, 8 Sep 2008 09:58:12 +1000
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200809080949.50867.jk@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+  charset="iso-8859-1"
+Message-Id: <200809080958.13325.jk@ozlabs.org>
+Cc: linux-mtd@lists.infradead.org, bazaar-ng@lists.canonical.com,
+	cbe-oss-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,35 +18,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+Hi all,
 
-Please do a:
+As requested, the new version of patchwork is up:
 
-git pull \
-  git://git.kernel.org/pub/scm/linux/kernel/git/jk/spufs.git merge
+ http://patchwork.ozlabs.org/
 
-For a set of spufs fixes for .27. The first fixes a regression 
-since .26, the second fixes a problem with unkillable processes, and 
-the third a WARN_ON.
+ - and is receiving patches from the relevant lists (ie, those that this 
+email is addressed to).
 
-Cheers,
+The new patchwork has a 'clean slate' of patches, but the user accounts 
+from the beta setup remain.
+
+The old patchwork will still be up for a while:
+
+ http://oldpatchwork.ozlabs.org/
+
+However, (provided that there are no problems with the new patchwork) I 
+intend to turn this off later this month.
+
+As always, suggestions, questions and comments are welcome.
+
+Happy patchworking,
 
 
 Jeremy
-
----
-diffstat:
-
- arch/powerpc/platforms/cell/spufs/sched.c          |   29 +++++++---
- 1 file changed, 23 insertions(+), 6 deletions(-)
-
-3 commits:
-
-  powerpc/spufs: Fix multiple get_spu_context()
-    Jeremy Kerr <jk@ozlabs.org>
-
-  powerpc/spufs: Fix race for a free SPU
-    Jeremy Kerr <jk@ozlabs.org>
-
-  powerpc/spufs: Fix possible scheduling of a context to multiple SPEs
-    Andre Detsch <adetsch@br.ibm.com>
