@@ -1,15 +1,13 @@
 Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id 30726DDF01
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Sep 2008 23:04:41 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so928307pyi.27
-	for <linuxppc-dev@ozlabs.org>; Mon, 08 Sep 2008 06:04:41 -0700 (PDT)
-Message-Id: <6c8102b136b709af32d5f5ceeb113b1943af29d3.1220877899.git.jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <cover.1220877899.git.jwboyer@linux.vnet.ibm.com>
-References: <cover.1220877899.git.jwboyer@linux.vnet.ibm.com>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 5C247DE0D4
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Sep 2008 23:04:56 +1000 (EST)
+Received: by gxk14 with SMTP id 14so7559190gxk.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 08 Sep 2008 06:04:54 -0700 (PDT)
+Message-Id: <cover.1220877899.git.jwboyer@linux.vnet.ibm.com>
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date: Thu, 4 Sep 2008 10:08:20 -0400
-Subject: [PATCH 3/3 v2] ibm_newemac: MAL support for PowerPC 405EZ
+Date: Mon, 8 Sep 2008 08:44:59 -0400
+Subject: [PATCH 0/3 v2] ibm_newemac: Various fixes and additions for PPC405EZ
 To: benh@kernel.crashing.org, netdev@vger.kernel.org
 Mime-Version: 1.0
 Sender: Josh Boyer <jwboyer@gmail.com>
@@ -23,164 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PowerPC 405EZ SoC has some differences in the interrupt layout and
-handling for the MAL.  The SERR, TXDE, and RXDE interrupts are OR'd into
-a single interrupt.  Also, due to the possibility for interrupt coalescing,
-the TXEOB and RXEOB interrupts require an interrupt bit to be cleared in
-the ICINTSTAT SDR.
+The following patch series adds things needed to support the PowerPC 405EZ
+SoC.  I've incorporated the suggestions and fixes from the previous round
+of patches and barring any further comments these should be ready to go.
 
-This sets the proper MAL feature bits for 405EZ boards, and adds a common
-shared handler for SERR, TXDE, and RXDE.  The defines for the ICINTSTAT DCR
-are added to the proper header file as well.
+josh
 
-This has been adapted from code originally written by Stefan Roese.
+Josh Boyer (3):
+  ibm_newemac: Allow the "no flow control" EMAC feature to work
+  ibm_newemac: Introduce mal_has_feature
+  ibm_newemac: MAL support for PowerPC 405EZ
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
----
  arch/powerpc/include/asm/dcr-regs.h |    7 ++++
+ drivers/net/ibm_newemac/Kconfig     |   12 +++++++
+ drivers/net/ibm_newemac/core.c      |    2 +
+ drivers/net/ibm_newemac/core.h      |    3 ++
  drivers/net/ibm_newemac/mal.c       |   60 ++++++++++++++++++++++++++++++++---
- 2 files changed, 62 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/dcr-regs.h b/arch/powerpc/include/asm/dcr-regs.h
-index 29b0ece..7b833ff 100644
---- a/arch/powerpc/include/asm/dcr-regs.h
-+++ b/arch/powerpc/include/asm/dcr-regs.h
-@@ -68,6 +68,13 @@
- #define SDR0_UART3		0x0123
- #define SDR0_CUST0		0x4000
- 
-+/* SDR for 405EZ */
-+#define DCRN_SDR_ICINTSTAT	0x4510
-+#define ICINTSTAT_ICRX	0x80000000
-+#define ICINTSTAT_ICTX0	0x40000000
-+#define ICINTSTAT_ICTX1 0x20000000
-+#define ICINTSTAT_ICTX	0x60000000
-+
- /*
-  * All those DCR register addresses are offsets from the base address
-  * for the SRAM0 controller (e.g. 0x20 on 440GX). The base address is
-diff --git a/drivers/net/ibm_newemac/mal.c b/drivers/net/ibm_newemac/mal.c
-index 10c267b..1839d3f 100644
---- a/drivers/net/ibm_newemac/mal.c
-+++ b/drivers/net/ibm_newemac/mal.c
-@@ -28,6 +28,7 @@
- #include <linux/delay.h>
- 
- #include "core.h"
-+#include <asm/dcr-regs.h>
- 
- static int mal_count;
- 
-@@ -279,6 +280,10 @@ static irqreturn_t mal_txeob(int irq, void *dev_instance)
- 	mal_schedule_poll(mal);
- 	set_mal_dcrn(mal, MAL_TXEOBISR, r);
- 
-+	if (mal_has_feature(mal, MAL_FTR_CLEAR_ICINTSTAT))
-+		mtdcri(SDR0, DCRN_SDR_ICINTSTAT,
-+				(mfdcri(SDR0, DCRN_SDR_ICINTSTAT) | ICINTSTAT_ICTX));
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -293,6 +298,10 @@ static irqreturn_t mal_rxeob(int irq, void *dev_instance)
- 	mal_schedule_poll(mal);
- 	set_mal_dcrn(mal, MAL_RXEOBISR, r);
- 
-+	if (mal_has_feature(mal, MAL_FTR_CLEAR_ICINTSTAT))
-+		mtdcri(SDR0, DCRN_SDR_ICINTSTAT,
-+				(mfdcri(SDR0, DCRN_SDR_ICINTSTAT) | ICINTSTAT_ICRX));
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -336,6 +345,25 @@ static irqreturn_t mal_rxde(int irq, void *dev_instance)
- 	return IRQ_HANDLED;
- }
- 
-+static irqreturn_t mal_int(int irq, void *dev_instance)
-+{
-+	struct mal_instance *mal = dev_instance;
-+	u32 esr = get_mal_dcrn(mal, MAL_ESR);
-+
-+	if (esr & MAL_ESR_EVB) {
-+		/* descriptor error */
-+		if (esr & MAL_ESR_DE) {
-+			if (esr & MAL_ESR_CIDT)
-+				return mal_rxde(irq, dev_instance);
-+			else
-+				return mal_txde(irq, dev_instance);
-+		} else { /* SERR */
-+			return mal_serr(irq, dev_instance);
-+		}
-+	}
-+	return IRQ_HANDLED;
-+}
-+
- void mal_poll_disable(struct mal_instance *mal, struct mal_commac *commac)
- {
- 	/* Spinlock-type semantics: only one caller disable poll at a time */
-@@ -493,6 +521,8 @@ static int __devinit mal_probe(struct of_device *ofdev,
- 	unsigned int dcr_base;
- 	const u32 *prop;
- 	u32 cfg;
-+	unsigned long irqflags;
-+	irq_handler_t hdlr_serr, hdlr_txde, hdlr_rxde;
- 
- 	mal = kzalloc(sizeof(struct mal_instance), GFP_KERNEL);
- 	if (!mal) {
-@@ -542,11 +572,21 @@ static int __devinit mal_probe(struct of_device *ofdev,
- 		goto fail;
- 	}
- 
-+	if (of_device_is_compatible(ofdev->node, "ibm,mcmal-405ez"))
-+		mal->features |= (MAL_FTR_CLEAR_ICINTSTAT |
-+				MAL_FTR_COMMON_ERR_INT);
-+
- 	mal->txeob_irq = irq_of_parse_and_map(ofdev->node, 0);
- 	mal->rxeob_irq = irq_of_parse_and_map(ofdev->node, 1);
- 	mal->serr_irq = irq_of_parse_and_map(ofdev->node, 2);
--	mal->txde_irq = irq_of_parse_and_map(ofdev->node, 3);
--	mal->rxde_irq = irq_of_parse_and_map(ofdev->node, 4);
-+
-+	if (mal_has_feature(mal, MAL_FTR_COMMON_ERR_INT)) {
-+		mal->txde_irq = mal->rxde_irq = mal->serr_irq;
-+	} else {
-+		mal->txde_irq = irq_of_parse_and_map(ofdev->node, 3);
-+		mal->rxde_irq = irq_of_parse_and_map(ofdev->node, 4);
-+	}
-+
- 	if (mal->txeob_irq == NO_IRQ || mal->rxeob_irq == NO_IRQ ||
- 	    mal->serr_irq == NO_IRQ || mal->txde_irq == NO_IRQ ||
- 	    mal->rxde_irq == NO_IRQ) {
-@@ -608,16 +648,26 @@ static int __devinit mal_probe(struct of_device *ofdev,
- 			     sizeof(struct mal_descriptor) *
- 			     mal_rx_bd_offset(mal, i));
- 
--	err = request_irq(mal->serr_irq, mal_serr, 0, "MAL SERR", mal);
-+	if (mal_has_feature(mal, MAL_FTR_COMMON_ERR_INT)) {
-+		irqflags = IRQF_SHARED;
-+		hdlr_serr = hdlr_txde = hdlr_rxde = mal_int;
-+	} else {
-+		irqflags = 0;
-+		hdlr_serr = mal_serr;
-+		hdlr_txde = mal_txde;
-+		hdlr_rxde = mal_rxde;
-+	}
-+
-+	err = request_irq(mal->serr_irq, hdlr_serr, irqflags, "MAL SERR", mal);
- 	if (err)
- 		goto fail2;
--	err = request_irq(mal->txde_irq, mal_txde, 0, "MAL TX DE", mal);
-+	err = request_irq(mal->txde_irq, hdlr_txde, irqflags, "MAL TX DE", mal);
- 	if (err)
- 		goto fail3;
- 	err = request_irq(mal->txeob_irq, mal_txeob, 0, "MAL TX EOB", mal);
- 	if (err)
- 		goto fail4;
--	err = request_irq(mal->rxde_irq, mal_rxde, 0, "MAL RX DE", mal);
-+	err = request_irq(mal->rxde_irq, hdlr_rxde, irqflags, "MAL RX DE", mal);
- 	if (err)
- 		goto fail5;
- 	err = request_irq(mal->rxeob_irq, mal_rxeob, 0, "MAL RX EOB", mal);
--- 
-1.5.5.1
+ drivers/net/ibm_newemac/mal.h       |   34 ++++++++++++++++++++
+ 6 files changed, 113 insertions(+), 5 deletions(-)
