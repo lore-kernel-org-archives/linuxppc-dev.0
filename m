@@ -1,25 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 31299DDED1
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 05:57:26 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m88JvMbb015992
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Sep 2008 12:57:22 -0700 (MST)
-Message-ID: <48C58359.5060208@freescale.com>
-Date: Mon, 08 Sep 2008 14:56:09 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id C80C2DDFC0
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 07:27:20 +1000 (EST)
+Date: Tue, 9 Sep 2008 01:27:17 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: git apply vs. renamed files index mismatch (was: Re: [PATCH 1/4]
+	POWERPC: Rename dma_64.c to dma.c)
+Message-ID: <20080908212717.GA21338@oksana.dev.rtsoft.ru>
+References: <1220900995-11928-1-git-send-email-becky.bruce@freescale.com>
+	<1220900995-11928-2-git-send-email-becky.bruce@freescale.com>
+	<48C57A92.6060608@freescale.com>
 MIME-Version: 1.0
-To: Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: [PATCH] Pass actual dev ptr to dma_* in ucc and cpm_uart serial
-References: <1220901653-12812-1-git-send-email-becky.bruce@freescale.com>
-In-Reply-To: <1220901653-12812-1-git-send-email-becky.bruce@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <48C57A92.6060608@freescale.com>
+Cc: git@vger.kernel.org, linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,18 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Becky Bruce wrote:
-> We're currently passing NULL, and really shouldn't be.
+On Mon, Sep 08, 2008 at 02:18:42PM -0500, Scott Wood wrote:
+> Becky Bruce wrote:
+>> This is in preparation for the merge of the 32 and 64-bit
+>> dma code in arch/powerpc.
+>>
+>> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+>> ---
+>>  arch/powerpc/kernel/Makefile |    2 +-
+>>  arch/powerpc/kernel/dma.c    |  200 ++++++++++++++++++++++++++++++++++++++++++
+>>  arch/powerpc/kernel/dma_64.c |  200 ------------------------------------------
+>>  3 files changed, 201 insertions(+), 201 deletions(-)
+>>  create mode 100644 arch/powerpc/kernel/dma.c
+>>  delete mode 100644 arch/powerpc/kernel/dma_64.c
+>
+> Passing -M to git format-patch makes it much easier
 
-This patch doesn't change that for cpm2, since port.dev is never 
-initialized. :-P
+I always thought that posting "-M" patches to the public lists is
+discouraged since it is quite difficult to apply them via patch(1).
+Also think of non-git users...
 
-> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
-> ---
->  drivers/serial/cpm_uart/cpm_uart_cpm2.c |    6 +++---
->  drivers/serial/ucc_uart.c               |    4 ++--
->  2 files changed, 5 insertions(+), 5 deletions(-)
+> to see whether  
+> anything changed between the old file and the new file.
 
-cpm_uart_cpm1.c has the same problem.
+This is still possible by comparing the hashes:
 
--Scott
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+new file mode 100644
+index 0000000..ae5708e
+[...]
+diff --git a/arch/powerpc/kernel/dma_64.c b/arch/powerpc/kernel/dma_64.c
+deleted file mode 100644
+index ae5708e..0000000
+
+That is, if hashes match then it was pure rename.
+
+Though, too bad git {apply,am} does not produce any warnings if there
+are any hidden changes...
+
+Cc'ing git mailing list.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
