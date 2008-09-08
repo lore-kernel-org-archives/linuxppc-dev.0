@@ -1,19 +1,16 @@
-Return-Path: <ankur_maheshwari@procsys.com>
-Received: from mailsvr.procsys.com (unknown [61.95.206.49])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 84A98DDE21
+Return-Path: <dbeamonte@telnet-ri.es>
+Received: from smtp242.efor.es (leela.efor.es [195.55.174.242])
+	by ozlabs.org (Postfix) with ESMTP id AF9C8DDF96
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  8 Sep 2008 16:06:56 +1000 (EST)
-Message-ID: <48C4BF6E.9020109@procsys.com>
-Date: Mon, 08 Sep 2008 11:30:14 +0530
-From: Ankur Maheshwari <ankur_maheshwari@procsys.com>
+	Tue,  9 Sep 2008 00:27:30 +1000 (EST)
+Message-ID: <48C535B0.7090200@telnet-ri.es>
+Date: Mon, 08 Sep 2008 16:24:48 +0200
+From: David Beamonte <dbeamonte@telnet-ri.es>
 MIME-Version: 1.0
-To: Dave Littell <littelld@verizon.net>
-Subject: Re: direct access to Flash from userland
-References: <0B45E93C5FF65740AEAE690BF3848B7AD38369@rennsmail04.eu.thmulti.com>	<200809051750.13421.arnd@arndb.de>
-	<48C1F9E2.2030502@verizon.net>
-In-Reply-To: <48C1F9E2.2030502@verizon.net>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Host USB issue on MPC8272
+References: <48C0DD6F.8070205@telnet-ri.es> <48C14D77.4040001@freescale.com>
+In-Reply-To: <48C14D77.4040001@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,50 +23,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dave Littell wrote:
-> Arnd Bergmann wrote:
->   
->> On Thursday 04 September 2008, Fillod Stephane wrote:
->>     
->>>> Is there a way for a userland application to issue non-CFI commands
->>>> directly to a Flash device?  (This is a 2.6.18-based kernel on a AMCC
->>>> PPC440EPx platform.)
->>>>         
->>> I don't know whether there's specific ioctl for such purpose.
->>> Have you tried to read the mtd source? You may also hack the mtd
->>> layer to add your command. Definitely a question for 
->>> http://www.linux-mtd.infradead.org/mail.html
->>>
->>>       
->> There is no ioctl command for sending arbitrary requests to the
->> flash, but it sounds like something that should be implemented
->> in the kernel, in mtdchar, depending on what the command does.
->>
->> What are you actually trying to do with those commands?
->>
->>     
->
-> Hi Arnd,
->
-> There are some sector protection options and a user-writable
-> one-time-programmable section that's larger than the presently
-> implemented 8-byte area that I need to support.
->
->
-> Thanks,
-> Dave
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->   
-Hi Arnd,
+I have checked that bit and it is not set. In fact, that register has 
+the same value as the one in our ADS8272 (0x100c0000), which works.
 
-You can consider "fw_env" utility (used for changing [read/write] U-boot 
-environment variables from Linux) provided with u-boot source. You still 
-need to enable mtd-char support.
-Please check u-boot-source/tools/env directory for details.
+Anyway, it must be an issue of this kind, from the beginning I have 
+thought that we have a problem of arbitration of the bus that makes the 
+processor hang when the CPMs try to access external memory. Can it be a 
+problem of SDRAM configuration, wait-states or refresh times?
 
-thanks,
-Ankur
+Thanks Scott,
+
+David
+
+
+Scott Wood escribió:
+> David Beamonte wrote:
+>> This issue seems to be related to one problem that we have always 
+>> had. We can't configure buffers of SMCs, SCCs, etc, to be in SDRAM, 
+>> because the processor hangs. We always have to configure buffers in 
+>> DPRAM. In other drivers this has not been a problem, because the 
+>> buffer size is not very large, so we can allocate it in DPRAM, but 
+>> for this one, the buffer size is 0x8000 (32Kb) which exceeds DPRAM size.
+>>
+>> Has anybody had the same problem? Can it be an USB specific problem 
+>> or a general one?
+>
+> Make sure that BCR[PLDP] is not set, as per erratum SIU18.
+>
+> -Scott
+>
