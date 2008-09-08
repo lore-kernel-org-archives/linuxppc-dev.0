@@ -1,21 +1,30 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C80C2DDFC0
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 07:27:20 +1000 (EST)
-Date: Tue, 9 Sep 2008 01:27:17 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: git apply vs. renamed files index mismatch (was: Re: [PATCH 1/4]
-	POWERPC: Rename dma_64.c to dma.c)
-Message-ID: <20080908212717.GA21338@oksana.dev.rtsoft.ru>
-References: <1220900995-11928-1-git-send-email-becky.bruce@freescale.com>
-	<1220900995-11928-2-git-send-email-becky.bruce@freescale.com>
-	<48C57A92.6060608@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <48C57A92.6060608@freescale.com>
-Cc: git@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CE52CDDECF
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 07:35:42 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m88Lc7ZX012653
+	for <linuxppc-dev@ozlabs.org>; Mon, 8 Sep 2008 17:38:07 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m88LZJIC187772
+	for <linuxppc-dev@ozlabs.org>; Mon, 8 Sep 2008 17:35:19 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m88LZIEl003945
+	for <linuxppc-dev@ozlabs.org>; Mon, 8 Sep 2008 17:35:19 -0400
+Date: Mon, 8 Sep 2008 17:35:09 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Prodyut Hazarika" <phazarika@amcc.com>
+Subject: Re: Question on 4xx GIT tree
+Message-ID: <20080908173509.7cccdbc7@zod.rchland.ibm.com>
+In-Reply-To: <0CA0A16855646F4FA96D25A158E299D604F7F1A4@SDCEXCHANGE01.ad.amcc.com>
+References: <0CA0A16855646F4FA96D25A158E299D604F7F1A4@SDCEXCHANGE01.ad.amcc.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,47 +34,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 08, 2008 at 02:18:42PM -0500, Scott Wood wrote:
-> Becky Bruce wrote:
->> This is in preparation for the merge of the 32 and 64-bit
->> dma code in arch/powerpc.
->>
->> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
->> ---
->>  arch/powerpc/kernel/Makefile |    2 +-
->>  arch/powerpc/kernel/dma.c    |  200 ++++++++++++++++++++++++++++++++++++++++++
->>  arch/powerpc/kernel/dma_64.c |  200 ------------------------------------------
->>  3 files changed, 201 insertions(+), 201 deletions(-)
->>  create mode 100644 arch/powerpc/kernel/dma.c
->>  delete mode 100644 arch/powerpc/kernel/dma_64.c
->
-> Passing -M to git format-patch makes it much easier
+On Mon, 8 Sep 2008 13:55:26 -0700
+"Prodyut Hazarika" <phazarika@amcc.com> wrote:
 
-I always thought that posting "-M" patches to the public lists is
-discouraged since it is quite difficult to apply them via patch(1).
-Also think of non-git users...
+> Hi Josh,
+> I am planning to submit a patch to support 4K/16K and 64K page size for 4xx processors.
+> I see that your git tree still has the include/asm-powerpc/* header files, while in Linus's git tree, the powerpc specific header file has been moved to arch/powerpc/include/asm.
 
-> to see whether  
-> anything changed between the old file and the new file.
+I assume you're looking at my master branch.  That was a bit old and
+I've updated it now to match the overall powerpc.git tree master
+branch.  Sorry about that, I'll be a bit more diligent in keeping it
+updated from now on.
 
-This is still possible by comparing the hashes:
+> Should I base my patch from your git tree or Linus's git tree? Please advice how to proceed since I want your efforts in merging as painless as possible.
 
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-new file mode 100644
-index 0000000..ae5708e
-[...]
-diff --git a/arch/powerpc/kernel/dma_64.c b/arch/powerpc/kernel/dma_64.c
-deleted file mode 100644
-index ae5708e..0000000
+Generally, if you track my 'next' branch that is what will be most
+current for 4xx.  It contains patches that aren't anywhere else at the
+moment.
 
-That is, if hashes match then it was pure rename.
-
-Though, too bad git {apply,am} does not produce any warnings if there
-are any hidden changes...
-
-Cc'ing git mailing list.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+josh
