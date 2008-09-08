@@ -1,18 +1,18 @@
-Return-Path: <MCarey@nearfield.com>
-Received: from webmail.nearfield.com (webmail.nearfield.com [63.200.6.70])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "webmail.nearfield.com", Issuer "NSI" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id F195EDDF9D
+Return-Path: <John.Linn@xilinx.com>
+Received: from VA3EHSOBE005.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 22010DDF64
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Sep 2008 07:56:17 +1000 (EST)
-Message-Id: <48C53825.9124.0071.0@nearfield.com>
-Date: Mon, 08 Sep 2008 14:35:17 -0700
-From: "Michael Carey" <MCarey@nearfield.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Re: Help getting USB keyboard active on
-	MPC5200B&In-Reply-To=<GPECLCIGPLHEOMGPMCPAGENCFKAA.edjubenville@adelphia.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue,  9 Sep 2008 08:25:43 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: EDK10.1 and emaclite
+Date: Mon, 8 Sep 2008 16:25:36 -0600
+In-Reply-To: <48C55301.4070208@team-ctech.de>
+References: <48C55301.4070208@team-ctech.de>
+From: John Linn <John.Linn@xilinx.com>
+To: "Georg Schardt" <schardt@team-ctech.de>,
+	<linuxppc-embedded@ozlabs.org>
+Message-ID: <20080908222538.E4A138B0057@mail13-va3.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,55 +23,74 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Ed,
+Hi Georg,
 
-I have duplicated your problem with the Dell keyboard. =20
-I then connected a Logitech keyboard and that worked.
-I added a bunch of debug messages to track what was going on and I ended =
-up in the function usb_find_interface_driver(...) in usb.c.
+I don't really know much about the state of the emac lite driver in the
+Git tree. I inherited the Git tree with some stuff already in it.
 
-As far as I can tell, both keyboards are recognized by usb_match_id(...) =
-in usb.c.
+I test the LL TEMAC driver, but haven't had the bandwidth and priority
+to do any emac lite testing.
 
-In the inner loop of that function;
+Thanks,
+John
 
-728   id =3D usb_match_id(dev, interface, id);
-729   if (id) {
-730      down(&driver->serialize);
-731      private =3D driver->probe(dev,ifnum,id);
-732      up(&driver->serialize);
-733      if (private !=3D NULL)
-734         Break;
-735   }
-736 =20
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-
+> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Georg Schardt
+> Sent: Monday, September 08, 2008 10:30 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: EDK10.1 and emaclite
+> =
 
-For the Logitec keyboard, the usb_match_id(...) eventually finds a match =
-and then calls driver->probe
+> Hi all,
+> =
 
-- Result of Logitec probe -
-keybdev_connect in drivers/usb/keybdev.c
-keybdev.c: Adding keyboard: input1
-input: USB HID v10.01 Keyboard [Logitech Logitech USB Keyboard] on =
-usb1:4.0
-usb:   usb_find_interface_driver in drivers/usb/usb.c
+> im trying to use the emaclite core which comes with the EDK10.1 with
+the
+> 2.6.26 kernel from git.xilinx.com on virtex4fx12 minimodul. the emac
+is
+> detect by the kernel:
+> =
 
-... and then claims the interface in usb_driver_claim_interface(...)
+> xilinx_emaclite xilinx_emaclite.0: MAC address is now  2: 0: 0: 0: 0:
+0
+> xilinx_emaclite xilinx_emaclite.0: using fifo mode.
+> xilinx_emaclite xilinx_emaclite.0: Xilinx EMACLite at 0x81000000
+mapped
+> to 0xC5060000, irq=3D0
+> =
+
+> i can change the mac-address with ifconfig and i can give an
+ip-address
+> to the device,
+> but a ping is not possible and arp is not working. i think that the
+phy
+> is not working right.
+> =
+
+> has someone others the same problem ? what can i changed ? i have
+tried
+> out all possible phy driver in the linux  kernel
+> =
+
+> a setup with the lltemac is working fine, but i want to use the
+emaclite
+> =
+
+> thanks
+> regards
+> georg
+> =
+
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
 
-For the Dell keyboard,  the usb_match_id(...) eventually finds a match and =
-then calls driver->probe.
-But in this case, the probe function returns a null and the driver never =
-claims an interface.
-
-I got a little bit stuck after that.  I have not figured out how the probe =
-function works so I was not able to dig deeper.
-
-I do believe that in both cases, the driver name is 'hid' and the id is =
-0xC02315BC.
-
-I was wondering if anyone else knows how to connect a Dell keyboard to =
-this driver or why it is not accepted by this driver.
-Until then, I'm off to 'Keyboards Etc.' to get a Logitech keyboard.
-
-Regards,
-Michael Carey
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
