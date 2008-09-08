@@ -1,22 +1,20 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 57C14DDE08
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Sep 2008 16:54:42 +1000 (EST)
-Date: Sun, 7 Sep 2008 23:54:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: 2.6.27-rc5-mm1 mystery trace
-Message-Id: <20080907235409.b01eaa32.akpm@linux-foundation.org>
-In-Reply-To: <18628.49658.493975.832802@cargo.ozlabs.ibm.com>
-References: <20080904202032.2299c2c8.akpm@linux-foundation.org>
-	<18628.49658.493975.832802@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <matthias.fuchs@esd-electronics.com>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 1847BDDE03
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Sep 2008 18:00:21 +1000 (EST)
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH V2] powerpc/44x: Add hwmon support to Sequoia device tree
+Date: Mon, 8 Sep 2008 09:57:21 +0200
+References: <200809041155.02927.matthias.fuchs@esd-electronics.com>
+	<20080905201703.0586e131@lappy.seanm.ca>
+	<20080906120747.GA21519@vader.jdub.homelinux.org>
+In-Reply-To: <20080906120747.GA21519@vader.jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200809080957.21716.matthias.fuchs@esd-electronics.com>
+Cc: Stefan Roese <sr@denx.de>, Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 8 Sep 2008 16:11:06 +1000 Paul Mackerras <paulus@samba.org> wrote:
+This patch adds support for the AD7414 temperature sensor
+on Sequoia PPC440EPx board.
 
-> Andrew Morton writes:
-> 
-> > a) someone broke powerpc's kallsyms processing and
-> 
-> That would be h8300-kallsyms-exclude-local-symbols.patch, which
-> excludes symbols starting with '.' on all architectures, despite the
-> name of the patch.
-> 
+Signed-off-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Acked-by: Stefan Roese <sr@denx.de>
+---
+ arch/powerpc/boot/dts/sequoia.dts |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-Ah, thanks.
+diff --git a/arch/powerpc/boot/dts/sequoia.dts b/arch/powerpc/boot/dts/sequoia.dts
+index 72d15f0..3b295e8 100644
+--- a/arch/powerpc/boot/dts/sequoia.dts
++++ b/arch/powerpc/boot/dts/sequoia.dts
+@@ -246,13 +246,22 @@
+ 	   		};
+ 
+ 			IIC0: i2c@ef600700 {
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				compatible = "ibm,iic-440epx", "ibm,iic";
+ 				reg = <0xef600700 0x00000014>;
+ 				interrupt-parent = <&UIC0>;
+ 				interrupts = <0x2 0x4>;
++
++				hwmon@48 {
++					compatible = "adi,ad7414";
++					reg = <0x48>;
++				};
+ 			};
+ 
+ 			IIC1: i2c@ef600800 {
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				compatible = "ibm,iic-440epx", "ibm,iic";
+ 				reg = <0xef600800 0x00000014>;
+ 				interrupt-parent = <&UIC0>;
+-- 
+1.5.3
