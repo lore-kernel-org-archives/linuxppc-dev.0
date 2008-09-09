@@ -1,27 +1,36 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7264ADE081
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 07:04:53 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m89L4lkH019445
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Sep 2008 14:04:47 -0700 (MST)
-Message-ID: <48C6E4EC.3010004@freescale.com>
-Date: Tue, 09 Sep 2008 16:04:44 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] Pass actual dev ptr to dma_* in ucc and cpm_uart serial
-References: <1220901653-12812-1-git-send-email-becky.bruce@freescale.com>	
-	<48C58359.5060208@freescale.com>
-	<ed82fe3e0809091125y77973b83vce52e044f329030e@mail.gmail.com>
-In-Reply-To: <ed82fe3e0809091125y77973b83vce52e044f329030e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 16493DDF38
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 08:06:07 +1000 (EST)
+Subject: Re: [PATCH] Correct printk %pF to work on all architectures
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kyle McMartin <kyle@mcmartin.ca>
+In-Reply-To: <20080909180840.GA1940@phobos.i.cabal.ca>
+References: <1220481754.3254.42.camel@localhost.localdomain>
+	<alpine.LFD.1.10.0809031546310.3515@nehalem.linux-foundation.org>
+	<1220482853.3254.47.camel@localhost.localdomain>
+	<alpine.LFD.1.10.0809031602270.3515@nehalem.linux-foundation.org>
+	<1220484812.3254.59.camel@localhost.localdomain>
+	<alpine.LFD.1.10.0809031636320.3515@nehalem.linux-foundation.org>
+	<1220492616.3254.64.camel@localhost.localdomain>
+	<1220567811.4879.85.camel@pasglop>
+	<57C9024A16AD2D4C97DC78E552063EA30A0DC383@orsmsx505.amr.corp.intel.com>
+	<1220969561.3334.7.camel@localhost.localdomain>
+	<20080909180840.GA1940@phobos.i.cabal.ca>
+Content-Type: text/plain
+Date: Wed, 10 Sep 2008 08:05:18 +1000
+Message-Id: <1220997918.4879.392.camel@pasglop>
+Mime-Version: 1.0
+Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "Luck,
+	Tony" <tony.luck@intel.com>,
+	"linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+	Parisc List <linux-parisc@vger.kernel.org>,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,14 +40,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> On Mon, Sep 8, 2008 at 2:56 PM, Scott Wood <scottwood@freescale.com> wrote:
+On Tue, 2008-09-09 at 14:08 -0400, Kyle McMartin wrote:
+> On Tue, Sep 09, 2008 at 09:12:41AM -0500, James Bottomley wrote:
+> > OK, so could we get this in to -rc5 please?  It's a bug fix for parisc
+> > since we're currently printing rubbish.
+> > 
 > 
->> This patch doesn't change that for cpm2, since port.dev is never
->> initialized. :-P
+> While I suppose it's a "parisc" patch, I'm not going to try to push it
+> unless either Linus just applies it, or we get an ack from the ppc/ia64
+> folks too.
 > 
-> I don't initialize port->dev in the UCC UART driver, 
+> ... That said, please apply it, Linus. :)
+> 
+> Acked-by: Kyle McMartin <kyle@mcmartin.ca>
 
-Yes you do -- check line 1403.
+Got one from us already but here it is again
 
--Scott
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Cheers,
+Ben.
