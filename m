@@ -1,29 +1,18 @@
-Return-Path: <becky.bruce@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7C2D0DDEFB
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 08:17:18 +1000 (EST)
-Message-Id: <0B7DC24A-2797-42A6-AE94-91C96B336DBA@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20080909221321.GA1833@lst.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 4/4] POWERPC: Merge 32 and 64-bit dma code
-Date: Tue, 9 Sep 2008 17:17:05 -0500
-References: <1220900995-11928-1-git-send-email-becky.bruce@freescale.com>
-	<1220900995-11928-2-git-send-email-becky.bruce@freescale.com>
-	<1220900995-11928-3-git-send-email-becky.bruce@freescale.com>
-	<1220900995-11928-4-git-send-email-becky.bruce@freescale.com>
-	<1220900995-11928-5-git-send-email-becky.bruce@freescale.com>
-	<20080908220349.GD1175@lst.de>
-	<10D78C52-1FF1-4944-8689-4404ABE98CA1@freescale.com>
-	<20080909204534.GA30975@lst.de> <1220998231.14835.1.camel@pasglop>
-	<20080909221321.GA1833@lst.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <hch@lst.de>
+Received: from verein.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CB08CDDEF7
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 09:56:43 +1000 (EST)
+Date: Wed, 10 Sep 2008 01:56:26 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: linuxppc-dev@ozlabs.org, tony@bakeyournoodle.com
+Subject: Re: build failure with current linus tree
+Message-ID: <20080909235626.GA5254@lst.de>
+References: <20080905010618.GA30278@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080905010618.GA30278@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,31 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Sep 05, 2008 at 03:06:18AM +0200, Christoph Hellwig wrote:
+> Current linus tree fail to build for me for a 64bit powerpc config with:
 
-On Sep 9, 2008, at 5:13 PM, Christoph Hellwig wrote:
+This is cause by
 
-> On Wed, Sep 10, 2008 at 08:10:31AM +1000, Benjamin Herrenschmidt  
-> wrote:
->>
->>> Yeah, the statement this time should be why do you keep _single :)
->>> It don't really mind which one we keep, but having both and both
->>> optional seems rather odd.
->>
->> It would be more logic to implement _single on top of _page.. as  
->> long as
->> we can still do sub-page mappings (needed on ppc64) which I think  
->> we can
->> using the offset / size args of _page...
->>
->> But that means more work changing the existing ppc64 backends :-) So
->> probably a worthwhile long term goal but what Becky did is ok for the
->> transition. I can look at fixing up the ppc64 ones to implement page
->> (and see if that causes any problem) some time after Plumbers conf.
->
-> Ok.  But it would be good if we could add comments in the code for the
-> to be done later issues we noted so it's harder to forget it.
+commit 7563dc64585324f443f5ac107eb6d89ee813a2d2
+Author: Tony Breeds <tony@bakeyournoodle.com>
+Date:   Tue Sep 2 16:50:38 2008 +1000
 
-Will do as I respin.
-
-Thanks!
--Becky
+    powerpc: Work around gcc's -fno-omit-frame-pointer bug
