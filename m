@@ -1,21 +1,26 @@
-Return-Path: <neerajg@cdac.in>
-Received: from mx2.cdac.in (mx2.cdac.in [203.199.132.25])
-	by ozlabs.org (Postfix) with ESMTP id 8D8C4DDE01
+Return-Path: <dbeamonte@telnet-ri.es>
+Received: from smtp242.efor.es (leela.efor.es [195.55.174.242])
+	by ozlabs.org (Postfix) with ESMTP id 8B994DDE24
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Sep 2008 16:14:06 +1000 (EST)
-Received: from mailhub.cdac.in (mailhub [196.1.109.254])by mailhub.cdac.in
-	(8.13.4/8.13.4) with ESMTP id m8949JY7019721for
-	<linuxppc-embedded@ozlabs.org>; Tue, 9 Sep 2008 09:39:19 +0530
-Message-ID: <48C5F6ED.4000804@cdac.in>
-Date: Tue, 09 Sep 2008 09:39:17 +0530
-From: Neeraj Garg <neerajg@cdac.in>
+	Tue,  9 Sep 2008 16:20:59 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by leela.efor.es (Postfix) with ESMTP id C7C8515F694
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  9 Sep 2008 08:20:56 +0200 (CEST)
+Received: from [192.168.200.117] (unknown [213.0.25.185])
+	by leela.efor.es (Postfix) with ESMTP id DEAF815F6B0
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  9 Sep 2008 08:20:52 +0200 (CEST)
+Message-ID: <48C61522.6010109@telnet-ri.es>
+Date: Tue, 09 Sep 2008 08:18:10 +0200
+From: David Beamonte <dbeamonte@telnet-ri.es>
 MIME-Version: 1.0
-To: schardt@team-ctech.de
-Subject: RE: EDK10.1 and emaclite
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Host USB issue on MPC8272
+References: <48C0DD6F.8070205@telnet-ri.es> <48C14D77.4040001@freescale.com>
+	<48C535B0.7090200@telnet-ri.es>
+In-Reply-To: <48C535B0.7090200@telnet-ri.es>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,49 +31,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Georg,
+Has anybody had a similar problem accessing external memory from CPMs?
 
-Can you post linux bootup message where its says PHY is detected at 
-paticular address, and check with your hardware what is actual address 
-of PHY. Also I would like to know the configuration of your hardware 
-whether its configured of 10MBPS OR 100MBPS.
+Any idea on something I can try?
 
+What is more critical? Accessing slow or quick external devices?
 
-------------------------------------------------------------------------------------------
---
-Neeraj Garg
+David
 
 
-
-Message: 3
-Date: Mon, 08 Sep 2008 18:29:53 +0200
-From: Georg Schardt <schardt@team-ctech.de>
-Subject: EDK10.1 and emaclite
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <48C55301.4070208@team-ctech.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-
-Hi all,
-
-im trying to use the emaclite core which comes with the EDK10.1 with the 
-2.6.26 kernel from git.xilinx.com on virtex4fx12 minimodul. the emac is 
-detect by the kernel:
-
-xilinx_emaclite xilinx_emaclite.0: MAC address is now  2: 0: 0: 0: 0: 0
-xilinx_emaclite xilinx_emaclite.0: using fifo mode.
-xilinx_emaclite xilinx_emaclite.0: Xilinx EMACLite at 0x81000000 mapped 
-to 0xC5060000, irq=0
-
-i can change the mac-address with ifconfig and i can give an ip-address 
-to the device,
-but a ping is not possible and arp is not working. i think that the phy 
-is not working right.
-
-has someone others the same problem ? what can i changed ? i have tried 
-out all possible phy driver in the linux  kernel
-
-a setup with the lltemac is working fine, but i want to use the emaclite
-
-thanks
-regards
-georg
+David Beamonte escribió:
+> I have checked that bit and it is not set. In fact, that register has 
+> the same value as the one in our ADS8272 (0x100c0000), which works.
+>
+> Anyway, it must be an issue of this kind, from the beginning I have 
+> thought that we have a problem of arbitration of the bus that makes 
+> the processor hang when the CPMs try to access external memory. Can it 
+> be a problem of SDRAM configuration, wait-states or refresh times?
+>
+> Thanks Scott,
+>
+> David
+>
+>
+> Scott Wood escribió:
+>> David Beamonte wrote:
+>>> This issue seems to be related to one problem that we have always 
+>>> had. We can't configure buffers of SMCs, SCCs, etc, to be in SDRAM, 
+>>> because the processor hangs. We always have to configure buffers in 
+>>> DPRAM. In other drivers this has not been a problem, because the 
+>>> buffer size is not very large, so we can allocate it in DPRAM, but 
+>>> for this one, the buffer size is 0x8000 (32Kb) which exceeds DPRAM 
+>>> size.
+>>>
+>>> Has anybody had the same problem? Can it be an USB specific problem 
+>>> or a general one?
+>>
+>> Make sure that BCR[PLDP] is not set, as per erratum SIU18.
+>>
+>> -Scott
+>>
+>
+>
