@@ -1,32 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A3B07DDF6D
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 20:30:34 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m89AULHM027430
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Sep 2008 06:30:21 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m89AUKVW234270
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Sep 2008 06:30:20 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m89AUKxe011283
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Sep 2008 06:30:20 -0400
-Date: Tue, 9 Sep 2008 06:30:08 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 0/3 v2] ibm_newemac: Various fixes and additions for
-	PPC405EZ
-Message-ID: <20080909063008.15dfa6d0@zod.rchland.ibm.com>
-In-Reply-To: <1220944283.4879.323.camel@pasglop>
-References: <cover.1220877899.git.jwboyer@linux.vnet.ibm.com>
-	<1220944283.4879.323.camel@pasglop>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8F089DDE04
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 20:55:08 +1000 (EST)
+Subject: Re: [PATCH 4/4] POWERPC: Merge 32 and 64-bit dma code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20080908220349.GD1175@lst.de>
+References: <1220900995-11928-1-git-send-email-becky.bruce@freescale.com>
+	<1220900995-11928-2-git-send-email-becky.bruce@freescale.com>
+	<1220900995-11928-3-git-send-email-becky.bruce@freescale.com>
+	<1220900995-11928-4-git-send-email-becky.bruce@freescale.com>
+	<1220900995-11928-5-git-send-email-becky.bruce@freescale.com>
+	<20080908220349.GD1175@lst.de>
+Content-Type: text/plain
+Date: Tue, 09 Sep 2008 20:54:42 +1000
+Message-Id: <1220957682.4879.372.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,23 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 09 Sep 2008 17:11:23 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Mon, 2008-09-08 at 08:44 -0400, Josh Boyer wrote:
-> > The following patch series adds things needed to support the PowerPC 405EZ
-> > SoC.  I've incorporated the suggestions and fixes from the previous round
-> > of patches and barring any further comments these should be ready to go.
+On Tue, 2008-09-09 at 00:03 +0200, Christoph Hellwig wrote:
+> > -	if (unlikely(dev == NULL || dev->archdata.dma_ops == NULL))
+> > +
+> > +	if (unlikely(dev == NULL) || dev->archdata.dma_ops == NULL) {
+> > +#ifdef CONFIG_PPC64
+> >  		return NULL;
+> > +#else
+> > +		/* Use default on 32-bit if dma_ops is not set up */
+> > +		return &dma_direct_ops;
+> > +#endif
+> > +	}
+> > +
 > 
-> For some reason, I got this email but not the 3 following patch ones...
+> This is okay for the transition, but I think long-term it should
+> be setup for all busses.
 
-Erm.. odd.
+Agreed.
 
-http://patchwork.ozlabs.org/patch/208/
-http://patchwork.ozlabs.org/patch/209/
-http://patchwork.ozlabs.org/patch/210/
-
-All of them were addressed to you and netdev, with linuxppc-dev on CC.
-You should have gotten them..
-
-josh
+Ben.
