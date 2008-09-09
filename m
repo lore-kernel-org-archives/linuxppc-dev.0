@@ -1,19 +1,29 @@
-Return-Path: <mazsi@imrek.org>
-Received: from mail.imrek.org (mail.imrek.org [67.207.130.102])
-	by ozlabs.org (Postfix) with ESMTP id 676F0DDF83
+Return-Path: <jbrower@signalogic.com>
+Received: from nuntius.signalogic.com
+	(adsl-64-219-188-225.dsl.rcsntx.swbell.net [64.219.188.225])
+	by ozlabs.org (Postfix) with ESMTP id 0AA82DDF95
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Sep 2008 04:58:47 +1000 (EST)
-Date: Tue, 9 Sep 2008 20:58:44 +0200 (CEST)
-From: jozsef imrek <mazsi@imrek.org>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: EDK10.1 and emaclite
-In-Reply-To: <48C63578.8030106@team-ctech.de>
-Message-ID: <Pine.LNX.4.64.0809092041350.10180@mail.imrek.org>
-References: <48C5F6ED.4000804@cdac.in> <48C62603.7080606@team-ctech.de>
-	<48C63317.7080709@cdac.in> <48C63578.8030106@team-ctech.de>
+	Wed, 10 Sep 2008 08:19:49 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by nuntius.signalogic.com (Postfix) with ESMTP id 6C6FB12880F9
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  9 Sep 2008 17:06:58 -0500 (CDT)
+Received: from nuntius.signalogic.com ([127.0.0.1])
+	by localhost (/bin/uname -n [127.0.0.1]) (amavisd-new,
+	port 10024) with ESMTP
+	id 21382-08 for <linuxppc-embedded@ozlabs.org>;
+	Tue,  9 Sep 2008 17:06:48 -0500 (CDT)
+Received: from signalogic.com (unknown [10.0.0.83])
+	by nuntius.signalogic.com (Postfix) with ESMTP id 13BD112880F1
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  9 Sep 2008 17:06:47 -0500 (CDT)
+Message-ID: <48C6F217.406CFDC0@signalogic.com>
+Date: Tue, 09 Sep 2008 17:00:56 -0500
+From: Jeff Brower <jbrower@signalogic.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: Georg Schardt <schardt@team-ctech.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: driver replacements for kmalloc and __pa()
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,44 +34,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello,
 
-dear georg,
+We have inherited an older driver that uses kmalloc() and vtophys (which resolves to
+the __pa() macro) to create memory accessible by an external PCI device doing bus
+master read/writes.  The driver works Ok on several x86 machines, but is failing on a
+PPC board (MPC7447/8) running Gentoo Linux 2.6.9.  After looking at PCI bus analyzer
+captures, it seems the physical address the driver is giving to the PCI device is
+invalid, so the device ends up reading/writing incorrect memory areas.
 
+What are the up-to-date APIs we should be using for DMA memory allocation and
+virtual-to-physical address translation?  We have another driver for another device
+that's working fine on this board and it uses pci_alloc_consistent().  What about
+bus_space_vaddr()?  I'm hoping to get a recommendation for what's currently
+appropriate and most future-proof for drivers that depend on external PCI DMA.
 
-On Tue, 9 Sep 2008, Georg Schardt wrote:
+Any suggestions welcome.  Thanks.
 
-> Yes, i will try this. i use this board with the edk 8.2 a year ago. with this 
-> edk version the emaclite was working fine. but in this project there was an 
-> ip core "Hard Temac" this is missing now. i think i have an error in my edk 
-> project.
-
-for the EMAC lite you don't need the hard temac. the work done by
-the "hard temac" core and the plb_temac (or ll_temac) core together
-in your old project will be done by the EMAC lite core alone.
-
-so the signals to/from the broadcom PHY on your minimodule should be
-connected directly to the EMAC lite core:
-
- 	BEGIN opb_ethernetlite
- 	 PARAMETER INSTANCE = etherlite
- 	 PARAMETER HW_VER = 1.01.b
- 	 PARAMETER C_RX_PING_PONG = 1
- 	 PARAMETER C_TX_PING_PONG = 1
- 	 ...
- 	 BUS_INTERFACE sopb = opb
- 	 PORT IP2INTC_Irpt = emac_interrupt
- 	 PORT phy_rx_data = phy_rxd
- 	 PORT phy_tx_data = phy_txd
- 	 PORT phy_dv = phy_rxdv
- 	 ...
- 	END
-
-(but this is probably getting off topic for this list.)
-
-
--- 
-mazsi
-
-----------------------------------------------------------------
-strawberry fields forever!                       mazsi@imrek.org
-----------------------------------------------------------------
+-Jeff
