@@ -1,29 +1,22 @@
-Return-Path: <jbrower@signalogic.com>
-Received: from nuntius.signalogic.com
-	(adsl-64-219-188-225.dsl.rcsntx.swbell.net [64.219.188.225])
-	by ozlabs.org (Postfix) with ESMTP id 0AA82DDF95
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E6501DDF96
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Sep 2008 08:19:49 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by nuntius.signalogic.com (Postfix) with ESMTP id 6C6FB12880F9
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Sep 2008 17:06:58 -0500 (CDT)
-Received: from nuntius.signalogic.com ([127.0.0.1])
-	by localhost (/bin/uname -n [127.0.0.1]) (amavisd-new,
-	port 10024) with ESMTP
-	id 21382-08 for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Sep 2008 17:06:48 -0500 (CDT)
-Received: from signalogic.com (unknown [10.0.0.83])
-	by nuntius.signalogic.com (Postfix) with ESMTP id 13BD112880F1
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Sep 2008 17:06:47 -0500 (CDT)
-Message-ID: <48C6F217.406CFDC0@signalogic.com>
-Date: Tue, 09 Sep 2008 17:00:56 -0500
-From: Jeff Brower <jbrower@signalogic.com>
+	Wed, 10 Sep 2008 08:24:47 +1000 (EST)
+Message-ID: <48C6F7AA.2000608@freescale.com>
+Date: Tue, 09 Sep 2008 17:24:42 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: driver replacements for kmalloc and __pa()
-Content-Type: text/plain; charset=us-ascii
+To: Jeff Brower <jbrower@signalogic.com>
+Subject: Re: driver replacements for kmalloc and __pa()
+References: <48C6F217.406CFDC0@signalogic.com>
+In-Reply-To: <48C6F217.406CFDC0@signalogic.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -34,21 +27,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Jeff Brower wrote:
+> What are the up-to-date APIs we should be using for DMA memory allocation and
+> virtual-to-physical address translation?  We have another driver for another device
+> that's working fine on this board and it uses pci_alloc_consistent().  What about
+> bus_space_vaddr()?  I'm hoping to get a recommendation for what's currently
+> appropriate and most future-proof for drivers that depend on external PCI DMA.
 
-We have inherited an older driver that uses kmalloc() and vtophys (which resolves to
-the __pa() macro) to create memory accessible by an external PCI device doing bus
-master read/writes.  The driver works Ok on several x86 machines, but is failing on a
-PPC board (MPC7447/8) running Gentoo Linux 2.6.9.  After looking at PCI bus analyzer
-captures, it seems the physical address the driver is giving to the PCI device is
-invalid, so the device ends up reading/writing incorrect memory areas.
+Documentation/DMA-API.txt.
 
-What are the up-to-date APIs we should be using for DMA memory allocation and
-virtual-to-physical address translation?  We have another driver for another device
-that's working fine on this board and it uses pci_alloc_consistent().  What about
-bus_space_vaddr()?  I'm hoping to get a recommendation for what's currently
-appropriate and most future-proof for drivers that depend on external PCI DMA.
-
-Any suggestions welcome.  Thanks.
-
--Jeff
+-Scott
