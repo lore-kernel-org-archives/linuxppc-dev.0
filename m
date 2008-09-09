@@ -1,25 +1,23 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id C9F8ADDEFC
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 19:07:03 +1000 (EST)
-Date: Tue, 9 Sep 2008 11:06:55 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 7237ADDF4A
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 20:06:31 +1000 (EST)
+Date: Tue, 9 Sep 2008 14:06:28 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Junio C Hamano <gitster@pobox.com>
 Subject: Re: git apply vs. renamed files index mismatch
-In-Reply-To: <20080908215441.GA924@oksana.dev.rtsoft.ru>
-Message-ID: <Pine.LNX.4.64.0809091105010.27142@vixen.sonytel.be>
+Message-ID: <20080909100628.GA15298@oksana.dev.rtsoft.ru>
 References: <1220900995-11928-1-git-send-email-becky.bruce@freescale.com>
 	<1220900995-11928-2-git-send-email-becky.bruce@freescale.com>
 	<48C57A92.6060608@freescale.com>
 	<20080908212717.GA21338@oksana.dev.rtsoft.ru>
-	<48C59B71.3040902@freescale.com>
-	<20080908215441.GA924@oksana.dev.rtsoft.ru>
+	<7vej3ucf6y.fsf@gitster.siamese.dyndns.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-517155090-1220951215=:27142"
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	git@vger.kernel.org
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <7vej3ucf6y.fsf@gitster.siamese.dyndns.org>
+Cc: Scott Wood <scottwood@freescale.com>, git@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,65 +27,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584349381-517155090-1220951215=:27142
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Tue, 9 Sep 2008, Anton Vorontsov wrote:
-> On Mon, Sep 08, 2008 at 04:38:57PM -0500, Scott Wood wrote:
-> > Anton Vorontsov wrote:
-> >> I always thought that posting "-M" patches to the public lists is
-> >> discouraged since it is quite difficult to apply them via patch(1).
-> >> Also think of non-git users...
-> >
-> > I think the substantially enhanced reviewability trumps non-git-users  
-> > who can follow the rename instructions manually (or fix up their patch  
-> > utility) if they insist on shunning tools that would make their life 
-> > easier.
+On Mon, Sep 08, 2008 at 05:53:41PM -0700, Junio C Hamano wrote:
+> Anton Vorontsov <avorontsov@ru.mvista.com> writes:
 > 
-> Can't disagree, I myself use git. ;-) But I'm also using standard
-> patch(1) to test occasional patches... And sometimes linux-X tree
-> isn't tracked by git (e.g. -mm otm snapshots).
-> 
-> >> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-> >> new file mode 100644
-> >> index 0000000..ae5708e
-> >> [...]
-> >> diff --git a/arch/powerpc/kernel/dma_64.c b/arch/powerpc/kernel/dma_64.c
-> >> deleted file mode 100644
-> >> index ae5708e..0000000
+> >>>  3 files changed, 201 insertions(+), 201 deletions(-)
+> >>>  create mode 100644 arch/powerpc/kernel/dma.c
+> >>>  delete mode 100644 arch/powerpc/kernel/dma_64.c
 > >>
-> >> That is, if hashes match then it was pure rename.
+> >> Passing -M to git format-patch makes it much easier
 > >
-> > I suppose, though it's not as easy to spot, and won't help in showing  
-> > what the differences are if there are any.
+> > I always thought that posting "-M" patches to the public lists is
+> > discouraged since it is quite difficult to apply them via patch(1).
+> > Also think of non-git users...
 > 
-> ..rename and changes ideally go in separate patches.
+> My understanding has been that it is encouraged on the kernel mailing
+> list, because the rename format is far easier to review by showing the
+> differences that matter to reviewers, than showing a big chunk of text
+> deleted and another big chunk of text that is similar added elsewhere.
+> 
+> I won't comment on this any further; the use of it is strictly a list and
+> community policy issue.
+> 
+> > This is still possible by comparing the hashes:
+> > ...
+> > That is, if hashes match then it was pure rename.
+> >
+> > Though, too bad git {apply,am} does not produce any warnings if there
+> > are any hidden changes...
+> 
+> But I _do_ want to know what you mean by this comment.  Your statement
+> makes it sounds as if apply/am happily and silently accept "hidden
+> changes" and it is a bad thing.
+> 
+> Now what do you exactly mean by "any hidden changes"?  Do you mean "the
+> sender did not use renaming format, the patch you fed was a one that
+> removes a huge chunk of text from one file, and adds a similarly huge
+> chunk of text to another file.  The changes to these files looked similar
+> but was not quite the same"?  It is all there for you to review, and
+> especially if you prefer non-renaming format, then that is what you get.
 
-Except if the rename also requires some small changes (cfr. the move of
-include/asm-*). But if no changes are required to fix breakage caused by the
-rename, then make the changes separate.
+As I said, "index .." lines that git puts into patches are useful to see
+if there any changes has been made to a renamed file. So usually I don't
+have to look through the whole patch to see if there are any changes,
+I can just look into the patch and conclude: "this is git patch, and the
+overhead information says that it is rename-only patch. It should
+be safe."
 
-> IIRC this also helps git to track renames (it can easily compare
-> hashes instead of guessing).
+Now consider the following patch (modified by hand: it should say
++foo, but I changed it to +bar).
 
-With kind regards,
+diff --git a/file b/file
+deleted file mode 100644
+index 257cc56..0000000
+--- a/file
++++ /dev/null
+@@ -1 +0,0 @@
+-foo
+diff --git a/file_renamed b/file_renamed
+new file mode 100644
+index 0000000..257cc56
+--- /dev/null
++++ b/file_renamed
+@@ -0,0 +1 @@
++bar
 
-Geert Uytterhoeven
-Software Architect
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+The "index ..." stuff says that there are no changes and it is
+pure rename, but obviously there is a change.
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+What would be great is to have is some warning (or error), that
+is: "git-am: patch claims that it would only rename the file %s,
+but it also changes things in that file. Somebody tried to make
+a fool of you."
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-517155090-1220951215=:27142--
+Makes sense?
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
