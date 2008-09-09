@@ -1,15 +1,16 @@
-Return-Path: <wd@denx.de>
-To: Oliver Rutsch <orutsch@sympatec.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: TQM8349 and ARCH = powerpc
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <48C68763.6030606@sympatec.com>
-References: <48C68763.6030606@sympatec.com>
-Date: Tue, 09 Sep 2008 20:31:15 +0200
-Sender: wd@denx.de
-Message-Id: <20080909183115.7CA852491D@gemini.denx.de>
-Cc: Linuxppc-dev@ozlabs.org, Michel Pecchia <Michel.Pecchia@tqs.de>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B88F4DE029
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 04:41:12 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: fix interrupt values for DMA2 in MPC8610 HPCD device
+	tree
+Date: Tue,  9 Sep 2008 13:41:03 -0500
+Message-Id: <1220985663-17990-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,25 +20,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Oliver,
+The interrupt values in a device tree must be 16 greater than the actual
+interrupt number for a given device.  The interrupt property for the DMA
+channels for DMA2 in the MPC8610 HPCD device tree was using the raw values,
+not the adjusted ones.
 
-In message <48C68763.6030606@sympatec.com> you wrote:
-> 
-> currently I'm evaluating a TQM8349 (MPC8349E-based) module on a STK85xx. 
-> I wonder if anybody has already managed to get this module running under 
-> ARCH=powerpc.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-No such attempts were made by us. So far, TQ did not voice any  inte-
-rest  in keeping Linux support for this board alive, even though they
-are aware that it died completely with the removal  of  the  arch/ppc
-tree.  Nor did anybody else.
+Kumar, I have no idea how this was missed for so long, but this patch is a
+must-fix for 2.6.27.
 
-Best regards,
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Wolfgang Denk
-
+diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+index 3b3a106..584a4f1 100644
+--- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
++++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+@@ -281,7 +281,7 @@
+ 				cell-index = <0>;
+ 				reg = <0x0 0x80>;
+ 				interrupt-parent = <&mpic>;
+-				interrupts = <60 2>;
++				interrupts = <76 2>;
+ 			};
+ 			dma-channel@1 {
+ 				compatible = "fsl,mpc8610-dma-channel",
+@@ -289,7 +289,7 @@
+ 				cell-index = <1>;
+ 				reg = <0x80 0x80>;
+ 				interrupt-parent = <&mpic>;
+-				interrupts = <61 2>;
++				interrupts = <77 2>;
+ 			};
+ 			dma-channel@2 {
+ 				compatible = "fsl,mpc8610-dma-channel",
+@@ -297,7 +297,7 @@
+ 				cell-index = <2>;
+ 				reg = <0x100 0x80>;
+ 				interrupt-parent = <&mpic>;
+-				interrupts = <62 2>;
++				interrupts = <78 2>;
+ 			};
+ 			dma-channel@3 {
+ 				compatible = "fsl,mpc8610-dma-channel",
+@@ -305,7 +305,7 @@
+ 				cell-index = <3>;
+ 				reg = <0x180 0x80>;
+ 				interrupt-parent = <&mpic>;
+-				interrupts = <63 2>;
++				interrupts = <79 2>;
+ 			};
+ 		};
+ 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Quantum particles: The dreams that stuff is made of.
+1.5.5
