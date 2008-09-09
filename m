@@ -1,19 +1,26 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 614F0DDF15
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	by ozlabs.org (Postfix) with ESMTP id B7717DDF4E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Sep 2008 19:37:29 +1000 (EST)
-To: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: ELDK
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <20080909064333.56D4BDDF07@ozlabs.org>
-References: <20080909064333.56D4BDDF07@ozlabs.org>
-Date: Tue, 09 Sep 2008 11:37:26 +0200
-Sender: wd@denx.de
-Message-Id: <20080909093726.A7B532489D@gemini.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue,  9 Sep 2008 21:50:10 +1000 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1Kd1jP-0000Xl-5Y
+	for linuxppc-embedded@ozlabs.org; Tue, 09 Sep 2008 11:50:03 +0000
+Received: from 85.220.137.251 ([85.220.137.251])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Tue, 09 Sep 2008 11:50:03 +0000
+Received: from marwisbo by 85.220.137.251 with local (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Tue, 09 Sep 2008 11:50:03 +0000
+To: linuxppc-embedded@ozlabs.org
+From: Martin Kuhnert <marwisbo@gmail.com>
+Subject: How to make a simpleImage equivalent in 2.6.24?
+Date: Tue, 9 Sep 2008 11:46:42 +0000 (UTC)
+Message-ID: <loom.20080909T111617-678@post.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,28 +31,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear "VenkataKrishna",
+Hi,
 
-In message <20080909064333.56D4BDDF07@ozlabs.org> you wrote:
-> 
-> I followed your sequence which is I show below. But I got problem shown
-> below. Plz Suggest me. How can I solve this one.
+while developing for a Virtex platform I'm used to do
 
-You might want to post ELDK related question to the ELDK mailing
-list. They are off topic here.
+  make simpleImage.virtex405-<myboard>
 
-> make: ppc_6xx-gcc: Command not found
+on recent kernels to get a bootwrapped kernel including the dtb as described
+in http://ols.fedoraproject.org/OLS/Reprints-2008/likely2-reprint.pdf.
 
-Obviously you have forgottem to add the ELDK directories to your PATH.
-Please make sure to read the manual (DULG).
+How to compile a 2.6.24.x kernel to get an equivalent elf file which runs
+out of the ram and includes the kernel, the bootwrapper _AND_ the dtb?
+
+As I studied the Makefile in arch/powerpc/boot it looks like
+
+  make zImage.<myboard>
+
+should work. I tried it this in many ways but Make doesn't find the target.
+
+Currently, I'm using "make zImage" and arch/powerpc/boot/wrapper
+for this purpose:
+
+  "arch/powerpc/boot/wrapper -o zImage.virtex -p of " \
+  "-s arch/powerpc/boot/dts/virtex405-<myboard>.dts " \
+  "-C ppc405-402- vmlinux"
 
 
-Best regards,
+Thanks for suggestions!
 
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-I used to be indecisive, now I'm not sure.
+--
+Martin
