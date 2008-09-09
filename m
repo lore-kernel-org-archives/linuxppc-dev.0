@@ -1,21 +1,19 @@
-Return-Path: <mail4mz@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.185])
-	by ozlabs.org (Postfix) with ESMTP id E26A7DDE1D
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id E64DEDE2EC
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Sep 2008 03:54:27 +1000 (EST)
-Received: by fk-out-0910.google.com with SMTP id e30so1632988fke.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 09 Sep 2008 10:54:23 -0700 (PDT)
-Message-ID: <5c9cd53b0809091054h119cb0d9ifd338877731ee08e@mail.gmail.com>
-Date: Tue, 9 Sep 2008 13:54:19 -0400
-From: "mike zheng" <mail4mz@gmail.com>
+	Wed, 10 Sep 2008 04:03:23 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1Kd7Yd-000341-3h
+	for linuxppc-embedded@ozlabs.org; Tue, 09 Sep 2008 11:03:19 -0700
+Message-ID: <19397898.post@talk.nabble.com>
+Date: Tue, 9 Sep 2008 11:03:19 -0700 (PDT)
+From: Stuart Bershtein <sbershtein@quantum3d.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: BDI2000 configuration file for MPC8323e-RDB board
-In-Reply-To: <5c9cd53b0809091050m774cb793k6ebd476260d50dfb@mail.gmail.com>
+Subject: LL_TEMAC+LL_DMA configuration on Xilinx ML507
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <5c9cd53b0809091048v4278f53cwaf9e3670f51f8f3b@mail.gmail.com>
-	<5c9cd53b0809091050m774cb793k6ebd476260d50dfb@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,11 +24,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- Hello,
 
- Anyone has the BDI2000 board configuration file for Freescale's
- MPC8323e-RDB board?
+I am hoping someone can give me some general suggestions for generating a
+proper bitstream that is compatible with linux 2.6 on the ml507 board.  We
+are using Xilinx XPS, 10.1.2.  We haven't had much luck so far.  If someone
+has the MHS file that was generated with ml507_rtos_dma_v2.bit that would be
+very helpful!  Thanks in advance for your help.
 
- Thanks for your help,
-
- Mike
+Stu
+-- 
+View this message in context: http://www.nabble.com/LL_TEMAC%2BLL_DMA-configuration-on-Xilinx-ML507-tp19397898p19397898.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
