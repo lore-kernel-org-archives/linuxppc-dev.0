@@ -1,21 +1,22 @@
-Return-Path: <schardt@team-ctech.de>
-Received: from www2.team-ctech.de (www2.team-ctech.de [62.146.20.117])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0F751DE006
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id D2D0EDE09D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Sep 2008 01:43:20 +1000 (EST)
-Received: from static-87-79-236-23.netcologne.de ([87.79.236.23]
-	helo=[192.168.6.21]) by www2.team-ctech.de with esmtpa (Exim 4.69)
-	(envelope-from <schardt@team-ctech.de>) id 1Kd5N1-0001qy-C6
-	for linuxppc-embedded@ozlabs.org; Tue, 09 Sep 2008 17:43:11 +0200
-Message-ID: <48C69990.9040604@team-ctech.de>
-Date: Tue, 09 Sep 2008 17:43:12 +0200
-From: Georg Schardt <schardt@team-ctech.de>
+	Wed, 10 Sep 2008 03:34:42 +1000 (EST)
+Received: by gxk14 with SMTP id 14so10977366gxk.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 09 Sep 2008 10:34:42 -0700 (PDT)
+Date: Tue, 9 Sep 2008 13:33:54 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Georg Schardt <schardt@team-ctech.de>
+Subject: Re: Device Tree
+Message-ID: <20080909173336.GA16093@yoda.jdub.homelinux.org>
+References: <48C69990.9040604@team-ctech.de>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Device Tree
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48C69990.9040604@team-ctech.de>
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,21 +27,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, Sep 09, 2008 at 05:43:12PM +0200, Georg Schardt wrote:
+> Hi,
+>
+> im searching for informations about the flatten device trees. the only  
+> thing i know is, that the device tree is a kind of data-structure which  
+> the bios or bootloader gives to the operation system.
+>
+> until now, i boot linux with uboot without a device tree, but newer  
+> kernel wants a devicetree, i think ??
+> i use a virtex4 board with an integrated powerpc
+>
+> how can i create the device tree file ?
+> how must the linux kernel be configured ?
+> is there a good internet page with informations ?
 
-im searching for informations about the flatten device trees. the only 
-thing i know is, that the device tree is a kind of data-structure which 
-the bios or bootloader gives to the operation system.
+In the kernel, look at Documentation/powerpc/booting-without-of.txt
 
-until now, i boot linux with uboot without a device tree, but newer 
-kernel wants a devicetree, i think ??
-i use a virtex4 board with an integrated powerpc
+You could also read the "A Symphony of Flavours: Using the device tree to
+describe embedded hardware" paper on page 27 of:
 
-how can i create the device tree file ?
-how must the linux kernel be configured ?
-is there a good internet page with informations ?
+http://www.linuxsymposium.org/2008/ols-2008-Proceedings-V2.pdf
 
-
-thanks
-regards
-georg
+josh
