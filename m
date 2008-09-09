@@ -1,21 +1,36 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <hannes.hering@linux.vnet.ibm.com>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.17.161])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9EB91DDF12
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 17:19:41 +1000 (EST)
-Subject: Re: [PATCH 0/3 v2] ibm_newemac: Various fixes and additions for
-	PPC405EZ
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <cover.1220877899.git.jwboyer@linux.vnet.ibm.com>
-References: <cover.1220877899.git.jwboyer@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 09 Sep 2008 17:11:23 +1000
-Message-Id: <1220944283.4879.323.camel@pasglop>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7E0BBDDE11
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 17:59:11 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate1.de.ibm.com (8.13.1/8.13.1) with ESMTP id m897wug0013601
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Sep 2008 07:58:56 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
+	ESMTP id m897wuJ43444740
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Sep 2008 09:58:56 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m897wqZr021483
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Sep 2008 09:58:53 +0200
+From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org
+Subject: Re: + ehea-fix-dlpar-memory-handling.patch added to -mm tree
+Date: Tue, 9 Sep 2008 09:58:47 +0200
+References: <200809082225.m88MPu89013383@imap1.linux-foundation.org>
+In-Reply-To: <200809082225.m88MPu89013383@imap1.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200809090958.47358.hannes.hering@linux.vnet.ibm.com>
+Cc: jeff@garzik.org, themann@de.ibm.com, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, raisch@de.ibm.com,
+	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	ossthema@de.ibm.com, osstklei@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +40,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-09-08 at 08:44 -0400, Josh Boyer wrote:
-> The following patch series adds things needed to support the PowerPC 405EZ
-> SoC.  I've incorporated the suggestions and fixes from the previous round
-> of patches and barring any further comments these should be ready to go.
+Hello,
 
-For some reason, I got this email but not the 3 following patch ones...
+please consider the ehea-fix-dlpar-memory-handling.patch as critical bug fix,
+as it fixes a potential firmware error causing the driver to get inoperable
+when system memory is sparse. Therefore please include this fix into 2.6.27.
 
-Cheers,
-Ben.
+Regards
 
-> josh
+Hannes
+
+On Tuesday 09 September 2008 00:25:56 you wrote:
 > 
-> Josh Boyer (3):
->   ibm_newemac: Allow the "no flow control" EMAC feature to work
->   ibm_newemac: Introduce mal_has_feature
->   ibm_newemac: MAL support for PowerPC 405EZ
+> The patch titled
+>      ehea: fix DLPAR memory handling
+> has been added to the -mm tree.  Its filename is
+>      ehea-fix-dlpar-memory-handling.patch
 > 
->  arch/powerpc/include/asm/dcr-regs.h |    7 ++++
->  drivers/net/ibm_newemac/Kconfig     |   12 +++++++
->  drivers/net/ibm_newemac/core.c      |    2 +
->  drivers/net/ibm_newemac/core.h      |    3 ++
->  drivers/net/ibm_newemac/mal.c       |   60 ++++++++++++++++++++++++++++++++---
->  drivers/net/ibm_newemac/mal.h       |   34 ++++++++++++++++++++
->  6 files changed, 113 insertions(+), 5 deletions(-)
+> Before you just go and hit "reply", please:
+>    a) Consider who else should be cc'ed
+>    b) Prefer to cc a suitable mailing list as well
+>    c) Ideally: find the original patch on the mailing list and do a
+>       reply-to-all to that, adding suitable additional cc's
+> 
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+> 
+> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+> out what to do about this
+> 
+> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+> 
+> ------------------------------------------------------
+> Subject: ehea: fix DLPAR memory handling
+> From: Hannes Hering <hannes.hering@gmx.de>
+> 
+> The ehea busmap must be allocated only once in the first of many calls of the
+> ehea_create_busmap_callback.
+> 
+> Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  drivers/net/ehea/ehea_qmr.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff -puN drivers/net/ehea/ehea_qmr.c~ehea-fix-dlpar-memory-handling drivers/net/ehea/ehea_qmr.c
+> --- a/drivers/net/ehea/ehea_qmr.c~ehea-fix-dlpar-memory-handling
+> +++ a/drivers/net/ehea/ehea_qmr.c
+> @@ -595,7 +595,8 @@ static int ehea_create_busmap_callback(u
+>  	end_section = start_section + ((nr_pages * PAGE_SIZE) / EHEA_SECTSIZE);
+>  	mr_len = *(unsigned long *)arg;
+>  
+> -	ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
+> +	if (!ehea_bmap)
+> +		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
+>  	if (!ehea_bmap)
+>  		return -ENOMEM;
+>  
+> _
+> 
+> Patches currently in -mm which might be from hannes.hering@gmx.de are
+> 
+> ehea-fix-dlpar-memory-handling.patch
+> ehea-enable-dlpar-memory-remove.patch
+>
