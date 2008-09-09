@@ -1,16 +1,16 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B88F4DE029
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 04:41:12 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: fix interrupt values for DMA2 in MPC8610 HPCD device
-	tree
-Date: Tue,  9 Sep 2008 13:41:03 -0500
-Message-Id: <1220985663-17990-1-git-send-email-timur@freescale.com>
+Return-Path: <mail4mz@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id 197BCDDF16
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 05:10:57 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so325340ywh.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 09 Sep 2008 12:10:55 -0700 (PDT)
+Message-ID: <5c9cd53b0809091048v4278f53cwaf9e3670f51f8f3b@mail.gmail.com>
+Date: Tue, 9 Sep 2008 13:48:01 -0400
+From: "mike zheng" <mail4mz@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: BDI2000 configuration file for MPC8323e-RDB board
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,59 +20,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The interrupt values in a device tree must be 16 greater than the actual
-interrupt number for a given device.  The interrupt property for the DMA
-channels for DMA2 in the MPC8610 HPCD device tree was using the raw values,
-not the adjusted ones.
+Hello,
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+Anyone has the BDI2000 board configuration file for Freescale's
+MPC8323e-RDB board?
 
-Kumar, I have no idea how this was missed for so long, but this patch is a
-must-fix for 2.6.27.
+Thanks for your help,
 
- arch/powerpc/boot/dts/mpc8610_hpcd.dts |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-index 3b3a106..584a4f1 100644
---- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-+++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-@@ -281,7 +281,7 @@
- 				cell-index = <0>;
- 				reg = <0x0 0x80>;
- 				interrupt-parent = <&mpic>;
--				interrupts = <60 2>;
-+				interrupts = <76 2>;
- 			};
- 			dma-channel@1 {
- 				compatible = "fsl,mpc8610-dma-channel",
-@@ -289,7 +289,7 @@
- 				cell-index = <1>;
- 				reg = <0x80 0x80>;
- 				interrupt-parent = <&mpic>;
--				interrupts = <61 2>;
-+				interrupts = <77 2>;
- 			};
- 			dma-channel@2 {
- 				compatible = "fsl,mpc8610-dma-channel",
-@@ -297,7 +297,7 @@
- 				cell-index = <2>;
- 				reg = <0x100 0x80>;
- 				interrupt-parent = <&mpic>;
--				interrupts = <62 2>;
-+				interrupts = <78 2>;
- 			};
- 			dma-channel@3 {
- 				compatible = "fsl,mpc8610-dma-channel",
-@@ -305,7 +305,7 @@
- 				cell-index = <3>;
- 				reg = <0x180 0x80>;
- 				interrupt-parent = <&mpic>;
--				interrupts = <63 2>;
-+				interrupts = <79 2>;
- 			};
- 		};
- 
--- 
-1.5.5
+Mike
