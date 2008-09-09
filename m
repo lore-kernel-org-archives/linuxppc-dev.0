@@ -1,21 +1,15 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.225])
-	by ozlabs.org (Postfix) with ESMTP id 3120DDE070
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 04:25:55 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id c48so2149404wra.1
-	for <linuxppc-dev@ozlabs.org>; Tue, 09 Sep 2008 11:25:54 -0700 (PDT)
-Message-ID: <ed82fe3e0809091125y77973b83vce52e044f329030e@mail.gmail.com>
-Date: Tue, 9 Sep 2008 13:25:54 -0500
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: [PATCH] Pass actual dev ptr to dma_* in ucc and cpm_uart serial
-In-Reply-To: <48C58359.5060208@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1220901653-12812-1-git-send-email-becky.bruce@freescale.com>
-	<48C58359.5060208@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <wd@denx.de>
+To: Oliver Rutsch <orutsch@sympatec.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: TQM8349 and ARCH = powerpc
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <48C68763.6030606@sympatec.com>
+References: <48C68763.6030606@sympatec.com>
+Date: Tue, 09 Sep 2008 20:31:15 +0200
+Sender: wd@denx.de
+Message-Id: <20080909183115.7CA852491D@gemini.denx.de>
+Cc: Linuxppc-dev@ozlabs.org, Michel Pecchia <Michel.Pecchia@tqs.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 8, 2008 at 2:56 PM, Scott Wood <scottwood@freescale.com> wrote:
+Dear Oliver,
 
-> This patch doesn't change that for cpm2, since port.dev is never
-> initialized. :-P
+In message <48C68763.6030606@sympatec.com> you wrote:
+> 
+> currently I'm evaluating a TQM8349 (MPC8349E-based) module on a STK85xx. 
+> I wonder if anybody has already managed to get this module running under 
+> ARCH=powerpc.
 
-I don't initialize port->dev in the UCC UART driver, but it's still
-non-zero, so why isn't it initialized in the CPM UART driver?
+No such attempts were made by us. So far, TQ did not voice any  inte-
+rest  in keeping Linux support for this board alive, even though they
+are aware that it died completely with the removal  of  the  arch/ppc
+tree.  Nor did anybody else.
 
-(P.S. Becky - please CC: me on any UCC UART or QE LIB patches)
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Quantum particles: The dreams that stuff is made of.
