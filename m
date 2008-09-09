@@ -1,22 +1,19 @@
-Return-Path: <schardt@team-ctech.de>
-Received: from www2.team-ctech.de (www2.team-ctech.de [62.146.20.117])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8C870DDE31
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 614F0DDF15
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Sep 2008 19:00:04 +1000 (EST)
-Message-ID: <48C63B0C.8000602@team-ctech.de>
-Date: Tue, 09 Sep 2008 10:59:56 +0200
-From: Georg Schardt <schardt@team-ctech.de>
-MIME-Version: 1.0
-To: Georg Schardt <schardt@team-ctech.de>
-Subject: Re: EDK10.1 and emaclite
-References: <48C5F6ED.4000804@cdac.in>
-	<48C62603.7080606@team-ctech.de>	<48C63317.7080709@cdac.in>
-	<48C63578.8030106@team-ctech.de>
-In-Reply-To: <48C63578.8030106@team-ctech.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Neeraj Garg <neerajg@cdac.in>, linuxppc-embedded@ozlabs.org
+	Tue,  9 Sep 2008 19:37:29 +1000 (EST)
+To: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: ELDK
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <20080909064333.56D4BDDF07@ozlabs.org>
+References: <20080909064333.56D4BDDF07@ozlabs.org>
+Date: Tue, 09 Sep 2008 11:37:26 +0200
+Sender: wd@denx.de
+Message-Id: <20080909093726.A7B532489D@gemini.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,117 +24,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-sorry for the self-reply, but pinging from the minimodul increases the 
-interrupts :-)
-can you tell me the changes in the driver file ?
+Dear "VenkataKrishna",
 
-thanks
-georg
+In message <20080909064333.56D4BDDF07@ozlabs.org> you wrote:
+> 
+> I followed your sequence which is I show below. But I got problem shown
+> below. Plz Suggest me. How can I solve this one.
 
-Georg Schardt wrote:
-> Hi Neeraj Garg,
->> First look at ethernet interface RJ45 connector that power is coming, 
->> LED should blink.
-> Yes, LEDs are blinking, an if a cable is connected the link leds are 
-> on. while pinging from the host pc the traffic led in front of the 
-> jack is blinking also
->>
->> 1) check whether IRQ is right, its zero in your case. If it is right 
->> then issue ping and read interrupts arriving on your ethernet 
->> interface (cat /proc/interrupts), If number of interrupts are 
->> increasing then its sure that your PHY is ok , the problem is with 
->> mode selection (10 MBPS, or 100 MBPS) if that is the issue let me 
->> know , I'll tell you where to make changes in driver files.
-> no interrupts on eth0:
->  0:          0  Xilinx Interrupt Controller Edge      eth0
->  1:        889  Xilinx Interrupt Controller Level     serial
->
->>
->> 2) If nothing of the above works then there is problem with PHY 
->> address detection. You have to look in hardware specification (your 
->> hardware board ) to find out PHY address.
-> Yes, i will try this. i use this board with the edk 8.2 a year ago. 
-> with this edk version the emaclite was working fine. but in this 
-> project there was an ip core "Hard Temac" this is missing now. i think 
-> i have an error in my edk project.
->
-> regards
-> georg
->>
->>
->> -------------------------------------------------------------------
->> Neeraj Garg
->>
->>
->>   Georg Schardt wrote:
->>> Hi again,
->>>
->>> mmh, there is no kernel message with PHY detection, but all PHY 
->>> drivers are compiled in.
->>> i looked at my xps project and there is only one ip-core 
->>> "Ethernet_MAC" with type "xps_ethernetlite".
->>> is it possible that the phy connection is missing ? i use the base 
->>> system builder with the board support files supported from avnet.
->>>
->>> where can i look for the ethernet speed ? the ethernetlite ip has no 
->>> speed options
->>>
->>> thanks for your help
->>> georg
->>>
->>> Neeraj Garg wrote:
->>>> Hi Georg,
->>>>
->>>> Can you post linux bootup message where its says PHY is detected at 
->>>> paticular address, and check with your hardware what is actual 
->>>> address of PHY. Also I would like to know the configuration of your 
->>>> hardware whether its configured of 10MBPS OR 100MBPS.
->>>>
->>>>
->>>> ------------------------------------------------------------------------------------------ 
->>>>
->>>> -- 
->>>> Neeraj Garg
->>>>
->>>>
->>>>
->>>> Message: 3
->>>> Date: Mon, 08 Sep 2008 18:29:53 +0200
->>>> From: Georg Schardt <schardt@team-ctech.de>
->>>> Subject: EDK10.1 and emaclite
->>>> To: linuxppc-embedded@ozlabs.org
->>>> Message-ID: <48C55301.4070208@team-ctech.de>
->>>> Content-Type: text/plain; charset=ISO-8859-1; format=flowed
->>>>
->>>> Hi all,
->>>>
->>>> im trying to use the emaclite core which comes with the EDK10.1 
->>>> with the 2.6.26 kernel from git.xilinx.com on virtex4fx12 
->>>> minimodul. the emac is detect by the kernel:
->>>>
->>>> xilinx_emaclite xilinx_emaclite.0: MAC address is now  2: 0: 0: 0: 
->>>> 0: 0
->>>> xilinx_emaclite xilinx_emaclite.0: using fifo mode.
->>>> xilinx_emaclite xilinx_emaclite.0: Xilinx EMACLite at 0x81000000 
->>>> mapped to 0xC5060000, irq=0
->>>>
->>>> i can change the mac-address with ifconfig and i can give an 
->>>> ip-address to the device,
->>>> but a ping is not possible and arp is not working. i think that the 
->>>> phy is not working right.
->>>>
->>>> has someone others the same problem ? what can i changed ? i have 
->>>> tried out all possible phy driver in the linux  kernel
->>>>
->>>> a setup with the lltemac is working fine, but i want to use the 
->>>> emaclite
->>>>
->>>> thanks
->>>> regards
->>>> georg
->>>>
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+You might want to post ELDK related question to the ELDK mailing
+list. They are off topic here.
+
+> make: ppc_6xx-gcc: Command not found
+
+Obviously you have forgottem to add the ELDK directories to your PATH.
+Please make sure to read the manual (DULG).
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I used to be indecisive, now I'm not sure.
