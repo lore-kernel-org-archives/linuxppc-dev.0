@@ -1,22 +1,20 @@
-Return-Path: <venkatakrishnap@vrindatech.com>
-Received: from server.indiadomain.com (server.indiadomain.com [69.50.220.104])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <schardt@team-ctech.de>
+Received: from www2.team-ctech.de (www2.team-ctech.de [62.146.20.117])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 56D4BDDF07
+	by ozlabs.org (Postfix) with ESMTPS id 76836DDE1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Sep 2008 16:43:33 +1000 (EST)
-Received: from [122.169.160.98] (helo=venkatakrishna)
-	by server.indiadomain.com with esmtpa (Exim 4.69)
-	(envelope-from <venkatakrishnap@vrindatech.com>) id 1Kcwwf-0003lq-RY
-	for linuxppc-embedded@ozlabs.org; Mon, 08 Sep 2008 23:43:26 -0700
-From: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: ELDK
-Date: Tue, 9 Sep 2008 12:03:50 +0530
+	Tue,  9 Sep 2008 17:30:20 +1000 (EST)
+Message-ID: <48C62603.7080606@team-ctech.de>
+Date: Tue, 09 Sep 2008 09:30:11 +0200
+From: Georg Schardt <schardt@team-ctech.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0000_01C91274.229A3E90"
-Message-Id: <20080909064333.56D4BDDF07@ozlabs.org>
+To: Neeraj Garg <neerajg@cdac.in>
+Subject: Re: EDK10.1 and emaclite
+References: <48C5F6ED.4000804@cdac.in>
+In-Reply-To: <48C5F6ED.4000804@cdac.in>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,359 +25,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_0000_01C91274.229A3E90
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-I followed your sequence which is I show below. But I got problem shown
-below. Plz Suggest me. How can I solve this one.
-
- 
-
- 
-
-make mrproper
-
-  CLEAN   scripts/basic
-
-  CLEAN   scripts/kconfig
-
-  CLEAN   include/config
-
-  CLEAN   .config .config.old include/linux/autoconf.h
-
-[root@VenkaKrisha linux-2.6-denx]# make ARCH=powerpc CROSS_COMPILE=ppc_6xx-
-ppc6xx_defconfig
-
-  HOSTCC  scripts/basic/fixdep
-
-  HOSTCC  scripts/basic/docproc
-
-  HOSTCC  scripts/kconfig/conf.o
-
-  HOSTCC  scripts/kconfig/kxgettext.o
-
-  SHIPPED scripts/kconfig/zconf.tab.c
-
-  SHIPPED scripts/kconfig/lex.zconf.c
-
-  SHIPPED scripts/kconfig/zconf.hash.c
-
-  HOSTCC  scripts/kconfig/zconf.tab.o
-
-  HOSTLD  scripts/kconfig/conf
-
-#
-
-# configuration written to .config
-
-#
-
-[root@VenkaKrisha linux-2.6-denx]# make ARCH=powerpc CROSS_COMPILE=ppc_6xx-
-uImage
-
-make: ppc_6xx-gcc: Command not found
-
-?B?Bo lo?scripts/kconfig/conf -s arch/powerpc/Kconfig
-
-#
-
-# configuration written to .config
-
-#
-
-make: ppc_6xx-gcc: Command not found
-
-?B?Bree directly.  Replace <dt> with the'
-
- 
-
-  @ech??B/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line 1:
-ppc_6xx-gcc: command not found
-
-/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line 1:
-ppc_6xx-gcc: command not found
-
-/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line 1:
-ppc_6xx-gcc: command not found
-
-/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line 1:
-ppc_6xx-gcc: command not found
-
-/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line 1:
-ppc_6xx-gcc: command not found
-
-*** 2.6 kernels no longer build correctly with old versions of binutils.
-
-*** Please upgrade your binately to 2.12.1 or newer
-
-make: *** [checkbin] Error 1
-
-[root@VenkaKrisha linux-2.6-denx]#
-
- 
-
- 
-
-
-------=_NextPart_000_0000_01C91274.229A3E90
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:"MS Mincho";
-	panose-1:2 2 6 9 4 2 5 8 3 4;}
-@font-face
-	{font-family:"\@MS Mincho";
-	panose-1:0 0 0 0 0 0 0 0 0 0;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:10.0pt;
-	font-family:"Courier New";}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>I followed your sequence which is I show below. But I got =
-problem shown
-below. Plz Suggest me. How can I solve this =
-one.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>make mrproper<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; CLEAN&nbsp;&nbsp; =
-scripts/basic<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; CLEAN&nbsp;&nbsp; =
-scripts/kconfig<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; CLEAN&nbsp;&nbsp; =
-include/config<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; CLEAN&nbsp;&nbsp; .config .config.old =
-include/linux/autoconf.h<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>[root@VenkaKrisha linux-2.6-denx]# make ARCH=3Dpowerpc
-CROSS_COMPILE=3Dppc_6xx- ppc6xx_defconfig<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; HOSTCC&nbsp; =
-scripts/basic/fixdep<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; HOSTCC&nbsp; =
-scripts/basic/docproc<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; HOSTCC&nbsp; =
-scripts/kconfig/conf.o<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; HOSTCC&nbsp; =
-scripts/kconfig/kxgettext.o<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; SHIPPED =
-scripts/kconfig/zconf.tab.c<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; SHIPPED =
-scripts/kconfig/lex.zconf.c<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; SHIPPED =
-scripts/kconfig/zconf.hash.c<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; HOSTCC&nbsp; =
-scripts/kconfig/zconf.tab.o<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; HOSTLD&nbsp; =
-scripts/kconfig/conf<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>#<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'># configuration written to .config<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>#<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>[root@VenkaKrisha linux-2.6-denx]# make ARCH=3Dpowerpc
-CROSS_COMPILE=3Dppc_6xx- uImage<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>make: ppc_6xx-gcc: Command not =
-found<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>?B?Bo lo?scripts/kconfig/conf -s =
-arch/powerpc/Kconfig<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>#<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'># configuration written to .config<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>#<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>make: ppc_6xx-gcc: Command not =
-found<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>?B?Bree directly.&nbsp; Replace &lt;dt&gt; with =
-the'<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; =
-@ech??B/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line
-1: ppc_6xx-gcc: command not found<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line 1:
-ppc_6xx-gcc: command not found<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line 1:
-ppc_6xx-gcc: command not found<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line 1:
-ppc_6xx-gcc: command not found<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line 1:
-ppc_6xx-gcc: command not found<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>*** 2.6 kernels no longer build correctly with old versions of
-binutils.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>*** Please upgrade your binately to 2.12.1 or =
-newer<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>make: *** [checkbin] Error 1<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>[root@VenkaKrisha linux-2.6-denx]#<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0000_01C91274.229A3E90--
+Hi again,
+
+mmh, there is no kernel message with PHY detection, but all PHY drivers 
+are compiled in.
+i looked at my xps project and there is only one ip-core "Ethernet_MAC" 
+with type "xps_ethernetlite".
+is it possible that the phy connection is missing ? i use the base 
+system builder with the board support files supported from avnet.
+
+where can i look for the ethernet speed ? the ethernetlite ip has no 
+speed options
+
+thanks for your help
+georg
+
+Neeraj Garg wrote:
+> Hi Georg,
+>
+> Can you post linux bootup message where its says PHY is detected at 
+> paticular address, and check with your hardware what is actual address 
+> of PHY. Also I would like to know the configuration of your hardware 
+> whether its configured of 10MBPS OR 100MBPS.
+>
+>
+> ------------------------------------------------------------------------------------------ 
+>
+> -- 
+> Neeraj Garg
+>
+>
+>
+> Message: 3
+> Date: Mon, 08 Sep 2008 18:29:53 +0200
+> From: Georg Schardt <schardt@team-ctech.de>
+> Subject: EDK10.1 and emaclite
+> To: linuxppc-embedded@ozlabs.org
+> Message-ID: <48C55301.4070208@team-ctech.de>
+> Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+>
+> Hi all,
+>
+> im trying to use the emaclite core which comes with the EDK10.1 with 
+> the 2.6.26 kernel from git.xilinx.com on virtex4fx12 minimodul. the 
+> emac is detect by the kernel:
+>
+> xilinx_emaclite xilinx_emaclite.0: MAC address is now  2: 0: 0: 0: 0: 0
+> xilinx_emaclite xilinx_emaclite.0: using fifo mode.
+> xilinx_emaclite xilinx_emaclite.0: Xilinx EMACLite at 0x81000000 
+> mapped to 0xC5060000, irq=0
+>
+> i can change the mac-address with ifconfig and i can give an 
+> ip-address to the device,
+> but a ping is not possible and arp is not working. i think that the 
+> phy is not working right.
+>
+> has someone others the same problem ? what can i changed ? i have 
+> tried out all possible phy driver in the linux  kernel
+>
+> a setup with the lltemac is working fine, but i want to use the emaclite
+>
+> thanks
+> regards
+> georg
+>
