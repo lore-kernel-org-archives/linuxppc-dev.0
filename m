@@ -1,25 +1,14 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 6E5BBDE00F
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 01:14:49 +1000 (EST)
-Date: Tue, 9 Sep 2008 19:14:46 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Junio C Hamano <gitster@pobox.com>
-Subject: Re: git apply vs. renamed files index mismatch
-Message-ID: <20080909151446.GA10395@oksana.dev.rtsoft.ru>
-References: <1220900995-11928-1-git-send-email-becky.bruce@freescale.com>
-	<1220900995-11928-2-git-send-email-becky.bruce@freescale.com>
-	<48C57A92.6060608@freescale.com>
-	<20080908212717.GA21338@oksana.dev.rtsoft.ru>
-	<7vej3ucf6y.fsf@gitster.siamese.dyndns.org>
-	<20080909100628.GA15298@oksana.dev.rtsoft.ru>
-	<7vtzcp8jk0.fsf@gitster.siamese.dyndns.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <7vtzcp8jk0.fsf@gitster.siamese.dyndns.org>
-Cc: Scott Wood <scottwood@freescale.com>, git@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <kim.phillips@freescale.com>
+Date: Tue, 9 Sep 2008 11:22:53 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Oliver Rutsch <orutsch@sympatec.com>
+Subject: Re: TQM8349 and ARCH = powerpc
+Message-Id: <20080909112253.c9c9617f.kim.phillips@freescale.com>
+In-Reply-To: <48C68763.6030606@sympatec.com>
+References: <48C68763.6030606@sympatec.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,43 +18,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 09, 2008 at 07:45:19AM -0700, Junio C Hamano wrote:
-> Anton Vorontsov <avorontsov@ru.mvista.com> writes:
+On Tue, 09 Sep 2008 16:25:39 +0200
+Oliver Rutsch <orutsch@sympatec.com> wrote:
+
+> U-Boot (1.3.4):
+> Appended the file include/configs/TQM834x.h to support fdt:
 > 
-> > Now consider the following patch (modified by hand: it should say
-> > +foo, but I changed it to +bar).
-> > ...
-> > The "index ..." stuff says that there are no changes and it is
-> > pure rename, but obviously there is a change.
+> #define CONFIG_OF_LIBFDT	1
+> #define CONFIG_OF_BOARD_SETUP	1
+> #define CONFIG_OF_STDOUT_VIA_ALIAS	1
 > 
-> Ah, I see what you mean.  But in general, it is not obvious at all.
+> Appended the file board/tqc/tqm834x/tqm834x.c:
+> #if defined(CONFIG_OF_BOARD_SETUP)
+> void ft_board_setup(void *blob, bd_t *bd)
+> {
+> 	ft_cpu_setup(blob, bd);
+> #ifdef CONFIG_PCI
+> 	ft_pci_setup(blob, bd);
+> #endif
+> }
 > 
-> If you have the identical preimage (recorded on the LHS of the index line)
-> or the patch reproduces the postimage in full (i.e. "create a new file"),
-> you *could* notice.  It's an interesting idea from git person's point of
-> view (i.e. "would be fun to implement"), but I doubt it would be useful in
-> practice, because:
+> U-Boot compiled fine and it looks good after flashing. In U-Boot 
+> everything seems to work.
 > 
->  (1) You often do not have the identically matching preimage;
-> 
->  (2) More importantly, it is not unusual for people to *edit* the patch in
->      their MUA (think of typofixes), after getting it out of git.
+> Kernel (Linux-2.6.27-rc5):
+> I took arch/powerpc/boot/dts/mpc8349emitx.dts as a template
+> for a tqm8349.dts and stripped the IDE interface from it.
+> So for me the dts does not look board specific anymore and
+> the network/console should work.
 
-Not for rename patches...
+u-boot assigns the IMMR to 0xff400000 in TQM834x.h, whereas the device
+tree you picked has it at 0xe0000000 (it's defined in the soc node).
+Don't forget to match up the PCI addresses too.  patches welcome, of
+course (we don't have tqm boards).
 
->  (3) Even more importantly, even if you notice there is some difference,
-
-Just noticing that there is a difference is enough.
-
-As for implementing, isn't this as simple as this pseudo code:
-
-if (index_deleted_file == index_new_file)
-	if (deleted_file != new_file)
-		printk("warning\n");
-
-In the git-apply?
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Kim
