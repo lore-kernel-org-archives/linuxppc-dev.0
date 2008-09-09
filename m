@@ -1,20 +1,19 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from SG2EHSOBE002.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 3B61EDDFC1
+Return-Path: <mazsi@imrek.org>
+Received: from mail.imrek.org (mail.imrek.org [67.207.130.102])
+	by ozlabs.org (Postfix) with ESMTP id 1BF7BDDE01
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Sep 2008 04:24:27 +1000 (EST)
+	Wed, 10 Sep 2008 04:40:21 +1000 (EST)
+Date: Tue, 9 Sep 2008 20:40:12 +0200 (CEST)
+From: jozsef imrek <mazsi@imrek.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: EDK10.1 and emaclite
+In-Reply-To: <20080909152313.1CE1C17B8057@mail25-va3.bigfish.com>
+Message-ID: <Pine.LNX.4.64.0809092004200.10180@mail.imrek.org>
+References: <48C5F6ED.4000804@cdac.in> <48C62603.7080606@team-ctech.de>
+	<20080909152313.1CE1C17B8057@mail25-va3.bigfish.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: Device Tree
-Date: Tue, 9 Sep 2008 12:24:18 -0600
-In-Reply-To: <48C6BE14.9030305@team-ctech.de>
-References: <48C69990.9040604@team-ctech.de>
-	<20080909181107.E1575A28068@mail71-va3.bigfish.com>
-	<48C6BE14.9030305@team-ctech.de>
-From: John Linn <John.Linn@xilinx.com>
-To: "Georg Schardt" <schardt@team-ctech.de>
-Message-ID: <20080909182420.EF19B380067@mail31-sin.bigfish.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: Georg Schardt <schardt@team-ctech.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,132 +24,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-It is not integrated into the EDK, you need to pull it from our git tree
-and use it from the EDK.
 
--- John
-
-Here's part of the wiki page.
-
-Generating a Device Tree
-
-The Linux kernel from the git tree has device tree files, ml507.dts and
-ml405.dts, in the arch/powerpc/boot/dts directory which are designed to
-work with the hardware reference designs available from this site. Users
-who have a Xilinx board, ML405 or ML507, should build the Linux kernel
-using the provided dts file to get a solid baseline before generating a
-new device tree file. After a baseline is established, the new dts files
-can be compared to the existing to verify any differences.
-
-The page, Generating A Device Tree, has details on how to generate a
-device tree for the arch/powerpc Linux kernel.
+dear george,
 
 
+On Tue, 9 Sep 2008, John Linn wrote:
+
+> There is no way to configure the PHY using the EMAC lite as that's part
+> of what makes it "lite".
+>
+> So the PHY on the board has to be configured correctly by strapping it
+> on the board.
+
+as john pointed out you can not access the PHY using only the EMAC
+lite core. connect the MDIO and MDC lines of the PHY to a GPIO core.
+
+then and use the bit banging driver of u-boot (start with #define CONFIG_MII
+and #define CONFIG_BITBANGMII) or linux (search for CONFIG_MDIO_BITBANG,
+i've not used it before).
+
+fyi, on our minimodule boards the PHY is located at address #4, u-boot's
+"mii info" command says:
+
+ 	PHY 0x04: OUI = 0x0818, Model = 0x0C, Rev = 0x01, 100baseT, FDX
 
 
-> -----Original Message-----
-> From: Georg Schardt [mailto:schardt@team-ctech.de]
-> Sent: Tuesday, September 09, 2008 12:19 PM
-> To: John Linn
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: Device Tree
-> =
+for the inital setup you might want to connect the RJ45 of your
+minimodule directly to your host pc, probably that's the easiest way
+for you to see exactly what packets are travelling on the wire.
 
-> Hi John,
-> =
-
-> yes, i found the wiki link in another post of you. nice , thank you.
-> can you tell me how to generate the dts file in the EDK 10.2 ?  i have
-> read that the gen_mhs_devtree script is now integrated ? i see no
-> menu-item or config option ?
-> =
-
-> regards
-> georg
-> =
-
-> =
-
-> =
-
-> John Linn wrote:
-> > Hi Georg,
-> >
-> > Our git tree, git://git.xilinx.com, has support for the ML405 board
-> > which is a V4 board. The following wiki page,
-http://xilinx.wikidot.com,
-> > shows how to generate a device tree for the kernel and other details
-> > you'll need.
-> >
-> > The kernel from our git tree is configured for the device tree using
-the
-> > default kernel configuration.
-> >
-> > The mainline kernel is now more up to date also as we got many of
-the
-> > changes into the mainline, but we are still working on some of the
-> > device drivers.
-> >
-> > Thanks,
-> > John
-> >
-> >
-> >> -----Original Message-----
-> >> From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
-> >>
-> > [mailto:linuxppc-embedded-
-> >
-> >> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Georg Schardt
-> >> Sent: Tuesday, September 09, 2008 9:43 AM
-> >> To: linuxppc-embedded@ozlabs.org
-> >> Subject: Device Tree
-> >>
-> >> Hi,
-> >>
-> >> im searching for informations about the flatten device trees. the
-only
-> >> thing i know is, that the device tree is a kind of data-structure
-> >>
-> > which
-> >
-> >> the bios or bootloader gives to the operation system.
-> >>
-> >> until now, i boot linux with uboot without a device tree, but newer
-> >> kernel wants a devicetree, i think ??
-> >> i use a virtex4 board with an integrated powerpc
-> >>
-> >> how can i create the device tree file ?
-> >> how must the linux kernel be configured ?
-> >> is there a good internet page with informations ?
-> >>
-> >>
-> >> thanks
-> >> regards
-> >> georg
-> >> _______________________________________________
-> >> Linuxppc-embedded mailing list
-> >> Linuxppc-embedded@ozlabs.org
-> >> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >>
-> >
-> >
-> > This email and any attachments are intended for the sole use of the
-named recipient(s) and
-> contain(s) confidential information that may be proprietary,
-privileged or copyrighted under
-> applicable law. If you are not the intended recipient, do not read,
-copy, or forward this email
-> message or any attachments. Delete this email message and any
-attachments immediately.
-> >
-> >
-> >
-> =
+make sure that the negotiated speed is not 1000baseT, as the EMAC
+lite can not handle that.
 
 
 
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+-- 
+mazsi
+
+----------------------------------------------------------------
+strawberry fields forever!                       mazsi@imrek.org
+----------------------------------------------------------------
