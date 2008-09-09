@@ -1,22 +1,22 @@
-Return-Path: <phazarika@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7E94CDDEF1
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 07:42:36 +1000 (EST)
+Return-Path: <gitster@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id 12DE7DDEE0
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 10:59:07 +1000 (EST)
+From: Junio C Hamano <gitster@pobox.com>
+To: avorontsov@ru.mvista.com
+Subject: Re: git apply vs. renamed files index mismatch
+References: <1220900995-11928-1-git-send-email-becky.bruce@freescale.com>
+	<1220900995-11928-2-git-send-email-becky.bruce@freescale.com>
+	<48C57A92.6060608@freescale.com>
+	<20080908212717.GA21338@oksana.dev.rtsoft.ru>
+Date: Mon, 08 Sep 2008 17:53:41 -0700
+In-Reply-To: <20080908212717.GA21338@oksana.dev.rtsoft.ru> (Anton Vorontsov's
+	message of "Tue, 9 Sep 2008 01:27:17 +0400")
+Message-ID: <7vej3ucf6y.fsf@gitster.siamese.dyndns.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Question on 4xx GIT tree
-Date: Mon, 8 Sep 2008 14:42:33 -0700
-Message-ID: <0CA0A16855646F4FA96D25A158E299D604F7F1E1@SDCEXCHANGE01.ad.amcc.com>
-In-Reply-To: <20080908173509.7cccdbc7@zod.rchland.ibm.com>
-References: <0CA0A16855646F4FA96D25A158E299D604F7F1A4@SDCEXCHANGE01.ad.amcc.com>
-	<20080908173509.7cccdbc7@zod.rchland.ibm.com>
-From: "Prodyut Hazarika" <phazarika@amcc.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Scott Wood <scottwood@freescale.com>, git@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Josh,
-Thanks for your reply.
+Anton Vorontsov <avorontsov@ru.mvista.com> writes:
 
-> That was a bit old and I've updated it now to match the =
-overallpowerpc.git tree master branch
-Thanks. I can see the changes now.
+>>>  3 files changed, 201 insertions(+), 201 deletions(-)
+>>>  create mode 100644 arch/powerpc/kernel/dma.c
+>>>  delete mode 100644 arch/powerpc/kernel/dma_64.c
+>>
+>> Passing -M to git format-patch makes it much easier
+>
+> I always thought that posting "-M" patches to the public lists is
+> discouraged since it is quite difficult to apply them via patch(1).
+> Also think of non-git users...
 
-> Generally, if you track my 'next' branch that is what will be most =
-current for 4xxjosh
-Should I base my patch from your master branch or your 'next' branch?
+My understanding has been that it is encouraged on the kernel mailing
+list, because the rename format is far easier to review by showing the
+differences that matter to reviewers, than showing a big chunk of text
+deleted and another big chunk of text that is similar added elsewhere.
 
-Regards,
-Prodyut Hazarika
+I won't comment on this any further; the use of it is strictly a list and
+community policy issue.
+
+> This is still possible by comparing the hashes:
+> ...
+> That is, if hashes match then it was pure rename.
+>
+> Though, too bad git {apply,am} does not produce any warnings if there
+> are any hidden changes...
+
+But I _do_ want to know what you mean by this comment.  Your statement
+makes it sounds as if apply/am happily and silently accept "hidden
+changes" and it is a bad thing.
+
+Now what do you exactly mean by "any hidden changes"?  Do you mean "the
+sender did not use renaming format, the patch you fed was a one that
+removes a huge chunk of text from one file, and adds a similarly huge
+chunk of text to another file.  The changes to these files looked similar
+but was not quite the same"?  It is all there for you to review, and
+especially if you prefer non-renaming format, then that is what you get.
+So I do not think that is what you are complaining about.  It must be
+something else --- what is it?
