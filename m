@@ -1,36 +1,25 @@
-Return-Path: <hannes.hering@linux.vnet.ibm.com>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.17.161])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7E0BBDDE11
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 17:59:11 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.1/8.13.1) with ESMTP id m897wug0013601
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Sep 2008 07:58:56 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id m897wuJ43444740
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Sep 2008 09:58:56 +0200
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m897wqZr021483
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Sep 2008 09:58:53 +0200
-From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org
-Subject: Re: + ehea-fix-dlpar-memory-handling.patch added to -mm tree
-Date: Tue, 9 Sep 2008 09:58:47 +0200
-References: <200809082225.m88MPu89013383@imap1.linux-foundation.org>
-In-Reply-To: <200809082225.m88MPu89013383@imap1.linux-foundation.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id C9F8ADDEFC
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Sep 2008 19:07:03 +1000 (EST)
+Date: Tue, 9 Sep 2008 11:06:55 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: git apply vs. renamed files index mismatch
+In-Reply-To: <20080908215441.GA924@oksana.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.64.0809091105010.27142@vixen.sonytel.be>
+References: <1220900995-11928-1-git-send-email-becky.bruce@freescale.com>
+	<1220900995-11928-2-git-send-email-becky.bruce@freescale.com>
+	<48C57A92.6060608@freescale.com>
+	<20080908212717.GA21338@oksana.dev.rtsoft.ru>
+	<48C59B71.3040902@freescale.com>
+	<20080908215441.GA924@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200809090958.47358.hannes.hering@linux.vnet.ibm.com>
-Cc: jeff@garzik.org, themann@de.ibm.com, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, raisch@de.ibm.com,
-	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	ossthema@de.ibm.com, osstklei@de.ibm.com
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-517155090-1220951215=:27142"
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	git@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,67 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-please consider the ehea-fix-dlpar-memory-handling.patch as critical bug fix,
-as it fixes a potential firmware error causing the driver to get inoperable
-when system memory is sparse. Therefore please include this fix into 2.6.27.
+---584349381-517155090-1220951215=:27142
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Regards
+On Tue, 9 Sep 2008, Anton Vorontsov wrote:
+> On Mon, Sep 08, 2008 at 04:38:57PM -0500, Scott Wood wrote:
+> > Anton Vorontsov wrote:
+> >> I always thought that posting "-M" patches to the public lists is
+> >> discouraged since it is quite difficult to apply them via patch(1).
+> >> Also think of non-git users...
+> >
+> > I think the substantially enhanced reviewability trumps non-git-users  
+> > who can follow the rename instructions manually (or fix up their patch  
+> > utility) if they insist on shunning tools that would make their life 
+> > easier.
+> 
+> Can't disagree, I myself use git. ;-) But I'm also using standard
+> patch(1) to test occasional patches... And sometimes linux-X tree
+> isn't tracked by git (e.g. -mm otm snapshots).
+> 
+> >> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+> >> new file mode 100644
+> >> index 0000000..ae5708e
+> >> [...]
+> >> diff --git a/arch/powerpc/kernel/dma_64.c b/arch/powerpc/kernel/dma_64.c
+> >> deleted file mode 100644
+> >> index ae5708e..0000000
+> >>
+> >> That is, if hashes match then it was pure rename.
+> >
+> > I suppose, though it's not as easy to spot, and won't help in showing  
+> > what the differences are if there are any.
+> 
+> ..rename and changes ideally go in separate patches.
 
-Hannes
+Except if the rename also requires some small changes (cfr. the move of
+include/asm-*). But if no changes are required to fix breakage caused by the
+rename, then make the changes separate.
 
-On Tuesday 09 September 2008 00:25:56 you wrote:
-> 
-> The patch titled
->      ehea: fix DLPAR memory handling
-> has been added to the -mm tree.  Its filename is
->      ehea-fix-dlpar-memory-handling.patch
-> 
-> Before you just go and hit "reply", please:
->    a) Consider who else should be cc'ed
->    b) Prefer to cc a suitable mailing list as well
->    c) Ideally: find the original patch on the mailing list and do a
->       reply-to-all to that, adding suitable additional cc's
-> 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> 
-> ------------------------------------------------------
-> Subject: ehea: fix DLPAR memory handling
-> From: Hannes Hering <hannes.hering@gmx.de>
-> 
-> The ehea busmap must be allocated only once in the first of many calls of the
-> ehea_create_busmap_callback.
-> 
-> Signed-off-by: Hannes Hering <hering2@de.ibm.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  drivers/net/ehea/ehea_qmr.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff -puN drivers/net/ehea/ehea_qmr.c~ehea-fix-dlpar-memory-handling drivers/net/ehea/ehea_qmr.c
-> --- a/drivers/net/ehea/ehea_qmr.c~ehea-fix-dlpar-memory-handling
-> +++ a/drivers/net/ehea/ehea_qmr.c
-> @@ -595,7 +595,8 @@ static int ehea_create_busmap_callback(u
->  	end_section = start_section + ((nr_pages * PAGE_SIZE) / EHEA_SECTSIZE);
->  	mr_len = *(unsigned long *)arg;
->  
-> -	ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
-> +	if (!ehea_bmap)
-> +		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
->  	if (!ehea_bmap)
->  		return -ENOMEM;
->  
-> _
-> 
-> Patches currently in -mm which might be from hannes.hering@gmx.de are
-> 
-> ehea-fix-dlpar-memory-handling.patch
-> ehea-enable-dlpar-memory-remove.patch
->
+> IIRC this also helps git to track renames (it can easily compare
+> hashes instead of guessing).
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-517155090-1220951215=:27142--
