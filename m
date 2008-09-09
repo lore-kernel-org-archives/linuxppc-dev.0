@@ -1,31 +1,21 @@
-Return-Path: <kyle@phobos.cabal.ca>
-Received: from phobos.cabal.ca (206-248-169-182.dsl.ncf.ca [206.248.169.182])
-	by ozlabs.org (Postfix) with ESMTP id B8BF9DE0C3
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 04:18:49 +1000 (EST)
-Date: Tue, 9 Sep 2008 14:08:40 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [PATCH] Correct printk %pF to work on all architectures
-Message-ID: <20080909180840.GA1940@phobos.i.cabal.ca>
-References: <1220481754.3254.42.camel@localhost.localdomain>
-	<alpine.LFD.1.10.0809031546310.3515@nehalem.linux-foundation.org>
-	<1220482853.3254.47.camel@localhost.localdomain>
-	<alpine.LFD.1.10.0809031602270.3515@nehalem.linux-foundation.org>
-	<1220484812.3254.59.camel@localhost.localdomain>
-	<alpine.LFD.1.10.0809031636320.3515@nehalem.linux-foundation.org>
-	<1220492616.3254.64.camel@localhost.localdomain>
-	<1220567811.4879.85.camel@pasglop>
-	<57C9024A16AD2D4C97DC78E552063EA30A0DC383@orsmsx505.amr.corp.intel.com>
-	<1220969561.3334.7.camel@localhost.localdomain>
+Return-Path: <timur.tabi@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.225])
+	by ozlabs.org (Postfix) with ESMTP id 3120DDE070
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 04:25:55 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so2149404wra.1
+	for <linuxppc-dev@ozlabs.org>; Tue, 09 Sep 2008 11:25:54 -0700 (PDT)
+Message-ID: <ed82fe3e0809091125y77973b83vce52e044f329030e@mail.gmail.com>
+Date: Tue, 9 Sep 2008 13:25:54 -0500
+From: "Timur Tabi" <timur@freescale.com>
+Sender: timur.tabi@gmail.com
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: [PATCH] Pass actual dev ptr to dma_* in ucc and cpm_uart serial
+In-Reply-To: <48C58359.5060208@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1220969561.3334.7.camel@localhost.localdomain>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "Luck,
-	Tony" <tony.luck@intel.com>,
-	"linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-	Parisc List <linux-parisc@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1220901653-12812-1-git-send-email-becky.bruce@freescale.com>
+	<48C58359.5060208@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,17 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 09, 2008 at 09:12:41AM -0500, James Bottomley wrote:
-> OK, so could we get this in to -rc5 please?  It's a bug fix for parisc
-> since we're currently printing rubbish.
-> 
+On Mon, Sep 8, 2008 at 2:56 PM, Scott Wood <scottwood@freescale.com> wrote:
 
-While I suppose it's a "parisc" patch, I'm not going to try to push it
-unless either Linus just applies it, or we get an ack from the ppc/ia64
-folks too.
+> This patch doesn't change that for cpm2, since port.dev is never
+> initialized. :-P
 
-... That said, please apply it, Linus. :)
+I don't initialize port->dev in the UCC UART driver, but it's still
+non-zero, so why isn't it initialized in the CPM UART driver?
 
-Acked-by: Kyle McMartin <kyle@mcmartin.ca>
+(P.S. Becky - please CC: me on any UCC UART or QE LIB patches)
 
-regards, Kyle
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
