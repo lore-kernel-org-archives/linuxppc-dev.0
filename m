@@ -1,14 +1,34 @@
-Return-Path: <orutsch@sympatec.com>
-Message-ID: <48C7D5C6.1070507@sympatec.com>
-Date: Wed, 10 Sep 2008 16:12:22 +0200
-From: Oliver Rutsch <orutsch@sympatec.com>
-MIME-Version: 1.0
-To: Linuxppc-dev@ozlabs.org
-Subject: Re: TQM8349 and ARCH = powerpc
-References: <48C68763.6030606@sympatec.com>
-	<20080909112253.c9c9617f.kim.phillips@freescale.com>
-In-Reply-To: <20080909112253.c9c9617f.kim.phillips@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <alexs@linux.vnet.ibm.com>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.17.161])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EDA70DDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 00:23:54 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate1.de.ibm.com (8.13.1/8.13.1) with ESMTP id m8AENmZx000374
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 14:23:48 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
+	ESMTP id m8AENm493252478
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 16:23:48 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m8AENiAW021150
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 16:23:45 +0200
+Date: Wed, 10 Sep 2008 16:23:56 +0200
+From: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+To: Roland Dreier <rolandd@cisco.com>, of-ewg <ewg@lists.openfabrics.org>,
+	of-general <general@lists.openfabrics.org>, lkml
+	<linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>, Hoang-Nam Nguyen
+	<HNGUYEN@linux.vnet.ibm.com>, Joachim Fenkes <fenkes@de.ibm.com>, Christoph
+	Raisch <raisch@de.ibm.com>
+Subject: [PATCH] ib/ehca: add flush CQE generation
+Message-ID: <20080910162356.7294fe87@BL3D1974.boeblingen.de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,289 +38,750 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi again,
+When a QP goes into error state, it is required that flush CQEs are
+delivered to the application for any outstanding work requests. eHCA does not
+do this in hardware, so this patch adds software flush CQE generation to the
+ehca driver.
 
-> 
-> u-boot assigns the IMMR to 0xff400000 in TQM834x.h, whereas the device
-> tree you picked has it at 0xe0000000 (it's defined in the soc node).
-> Don't forget to match up the PCI addresses too.  patches welcome, of
-> course (we don't have tqm boards).
-> 
-So I modified the dts to match the IMMRMBAR and the pci section at 
-0xff400000. In U-Boot I disabled the PCI_CONFIG because I don't need the 
-PCI bus. But the result is always the same. It looks like the kernel 
-stops booting at an earlier stage.
+Whenever a QP gets into error state, it is added to the QP error list of its
+respective CQ. If the error QP list of a CQ is not empty, poll_cq()
+generates flush CQEs before polling the actual CQ.
 
-I hope it's OK to post my current tqm8349.dts here:
-Any suggestions are welcome.
+Signed-off-by: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+---
+Applies on top of 2.6.27-rc3, please consider this for 2.6.28.
 
-Thanks and bye,
+ drivers/infiniband/hw/ehca/ehca_classes.h |   14 +
+ drivers/infiniband/hw/ehca/ehca_cq.c      |    3 
+ drivers/infiniband/hw/ehca/ehca_iverbs.h  |    2 
+ drivers/infiniband/hw/ehca/ehca_qp.c      |  225 ++++++++++++++++++++++++++++--
+ drivers/infiniband/hw/ehca/ehca_reqs.c    |  211 ++++++++++++++++++++++++----
+ 5 files changed, 412 insertions(+), 43 deletions(-)
 
-/dts-v1/;
-
-/ {
-   model = "tqc,tqm834x";
-   compatible = "tqc,tqm834x";
-   #address-cells = <1>;
-   #size-cells = <1>;
-
-   aliases {
-     ethernet0 = &enet0;
-     ethernet1 = &enet1;
-     serial0 = &serial0;
-     serial1 = &serial1;
-     pci0 = &pci0;
-     /*pci1 = &pci1;*/
-   };
-
-   cpus {
-     #address-cells = <1>;
-     #size-cells = <0>;
-
-     PowerPC,8349@0 {
-       device_type = "cpu";
-       reg = <0x0>;
-       d-cache-line-size = <32>;
-       i-cache-line-size = <32>;
-       d-cache-size = <32768>;
-       i-cache-size = <32768>;
-       timebase-frequency = <0>; // from bootloader
-       bus-frequency = <0>;      // from bootloader
-       clock-frequency = <0>;    // from bootloader
-     };
-   };
-
-   memory {
-     device_type = "memory";
-     reg = <0x00000000 0x10000000>;
-   };
-
-   soc8349@ff40000000 {
-     #address-cells = <1>;
-     #size-cells = <1>;
-     device_type = "soc";
-     compatible = "simple-bus";
-     ranges = <0x0 0xff400000 0x00100000>;
-     reg = <0xff400000 0x00000200>;
-     bus-frequency = <0>;                    // from bootloader
-
-     wdt@200 {
-       device_type = "watchdog";
-       compatible = "mpc83xx_wdt";
-       reg = <0x200 0x100>;
-     };
-
-     i2c@3000 {
-       #address-cells = <1>;
-       #size-cells = <0>;
-       cell-index = <0>;
-       compatible = "fsl-i2c";
-       reg = <0x3000 0x100>;
-       interrupts = <14 0x8>;
-       interrupt-parent = <&ipic>;
-       dfsrr;
-     };
-
-     i2c@3100 {
-       #address-cells = <1>;
-       #size-cells = <0>;
-       cell-index = <1>;
-       compatible = "fsl-i2c";
-       reg = <0x3100 0x100>;
-       interrupts = <15 0x8>;
-       interrupt-parent = <&ipic>;
-       dfsrr;
-     };
-
-     spi@7000 {
-       cell-index = <0>;
-       compatible = "fsl,spi";
-       reg = <0x7000 0x1000>;
-       interrupts = <16 0x8>;
-       interrupt-parent = <&ipic>;
-       mode = "cpu";
-     };
-
-     dma@82a8 {
-       #address-cells = <1>;
-       #size-cells = <1>;
-       compatible = "fsl,mpc8349-dma", "fsl,elo-dma";
-       reg = <0x82a8 4>;
-       ranges = <0 0x8100 0x1a8>;
-       interrupt-parent = <&ipic>;
-       interrupts = <71 8>;
-       cell-index = <0>;
-       dma-channel@0 {
-         compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
-         reg = <0 0x80>;
-         interrupt-parent = <&ipic>;
-         interrupts = <71 8>;
-       };
-       dma-channel@80 {
-         compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
-         reg = <0x80 0x80>;
-         interrupt-parent = <&ipic>;
-         interrupts = <71 8>;
-       };
-       dma-channel@100 {
-         compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
-         reg = <0x100 0x80>;
-         interrupt-parent = <&ipic>;
-         interrupts = <71 8>;
-       };
-       dma-channel@180 {
-         compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
-         reg = <0x180 0x28>;
-         interrupt-parent = <&ipic>;
-         interrupts = <71 8>;
-       };
-     };
-
-     usb@22000 {
-       compatible = "fsl-usb2-mph";
-       reg = <0x22000 0x1000>;
-       #address-cells = <1>;
-       #size-cells = <0>;
-       interrupt-parent = <&ipic>;
-       interrupts = <39 0x8>;
-       phy_type = "ulpi";
-       port1;
-     };
-
-     usb@23000 {
-       compatible = "fsl-usb2-dr";
-       reg = <0x23000 0x1000>;
-       #address-cells = <1>;
-       #size-cells = <0>;
-       interrupt-parent = <&ipic>;
-       interrupts = <38 0x8>;
-       dr_mode = "peripheral";
-       phy_type = "ulpi";
-     };
-
-     mdio@24520 {
-       #address-cells = <1>;
-       #size-cells = <0>;
-       compatible = "fsl,gianfar-mdio";
-       reg = <0x24520 0x20>;
-
-       phy0: ethernet-phy@0 {
-         interrupt-parent = <&ipic>;
-         interrupts = <17 0x8>;
-         reg = <0x0>;
-         device_type = "ethernet-phy";
-       };
-       phy1: ethernet-phy@1 {
-         interrupt-parent = <&ipic>;
-         interrupts = <18 0x8>;
-         reg = <0x1>;
-         device_type = "ethernet-phy";
-       };
-     };
-
-     enet0: ethernet@24000 {
-       cell-index = <0>;
-       device_type = "network";
-       model = "TSEC";
-       compatible = "gianfar";
-       reg = <0x24000 0x1000>;
-       local-mac-address = [ 00 00 00 00 00 00 ];
-       interrupts = <32 0x8 33 0x8 34 0x8>;
-       interrupt-parent = <&ipic>;
-       phy-handle = <&phy0>;
-       linux,network-index = <0>;
-     };
-
-     enet1: ethernet@25000 {
-       cell-index = <1>;
-       device_type = "network";
-       model = "TSEC";
-       compatible = "gianfar";
-       reg = <0x25000 0x1000>;
-       local-mac-address = [ 00 00 00 00 00 00 ];
-       interrupts = <35 0x8 36 0x8 37 0x8>;
-       interrupt-parent = <&ipic>;
-       phy-handle = <&phy1>;
-       linux,network-index = <1>;
-     };
-
-     serial0: serial@4500 {
-       cell-index = <0>;
-       device_type = "serial";
-       compatible = "ns16550";
-       reg = <0x4500 0x100>;
-       clock-frequency = <0>;    // from bootloader
-       interrupts = <9 0x8>;
-       interrupt-parent = <&ipic>;
-     };
-
-     serial1: serial@4600 {
-       cell-index = <1>;
-       device_type = "serial";
-       compatible = "ns16550";
-       reg = <0x4600 0x100>;
-       clock-frequency = <0>;    // from bootloader
-       interrupts = <10 0x8>;
-       interrupt-parent = <&ipic>;
-     };
-
-     crypto@30000 {
-       compatible = "fsl,sec2.0";
-       reg = <0x30000 0x10000>;
-       interrupts = <11 0x8>;
-       interrupt-parent = <&ipic>;
-       fsl,num-channels = <4>;
-       fsl,channel-fifo-len = <24>;
-       fsl,exec-units-mask = <0x7e>;
-       fsl,descriptor-types-mask = <0x01010ebf>;
-     };
-
-     ipic: pic@700 {
-       interrupt-controller;
-       #address-cells = <0>;
-       #interrupt-cells = <2>;
-       reg = <0x700 0x100>;
-       device_type = "ipic";
-     };
-   };
-
-   pci0: pci@ff408500 {
-     cell-index = <1>;
-     interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-     interrupt-map = <
-         /* IDSEL 0x10 - SATA */
-         0x8000 0x0 0x0 0x1 &ipic 22 0x8 /* SATA_INTA */
-         >;
-     interrupt-parent = <&ipic>;
-     interrupts = <66 0x8>;
-     bus-range = <0x0 0x0>;
-     ranges = <0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
-         0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
-         0x01000000 0x0 0x00000000 0xe2000000 0x0 0x01000000>;
-     clock-frequency = <66666666>;
-     #interrupt-cells = <1>;
-     #size-cells = <2>;
-     #address-cells = <3>;
-     reg = <0xff408500 0x100>;
-     compatible = "fsl,mpc8349-pci";
-     device_type = "pci";
-   };
-
-   localbus@ff405000 {
-     #address-cells = <2>;
-     #size-cells = <1>;
-     compatible = "fsl,mpc8349e-localbus",
-            "fsl,pq2pro-localbus";
-     reg = <0xff405000 0xd8>;
-     ranges = <0x3 0x0 0xf0000000 0x210>;
-
-
-   };
-};
-
--- 
-Dipl. Ing. Oliver Rutsch
-EMail: orutsch@sympatec.com � Tel.:+49 5323 717514
-Sympatec GmbH � Am Pulverhaus 1 � D-38678 Clausthal-Zellerfeld � Germany
-Geschaeftsfuehrer: Dr.-Ing. E.h. Stephan Roethele � Handelsregister: 
-Amtsgericht Braunschweig, HRB 110809
+--- infiniband.git.orig/drivers/infiniband/hw/ehca/ehca_classes.h
++++ infiniband.git/drivers/infiniband/hw/ehca/ehca_classes.h
+@@ -164,6 +164,13 @@ struct ehca_qmap_entry {
+ 	u16 reported;
+ };
+ 
++struct ehca_queue_map {
++	struct ehca_qmap_entry *map;
++	unsigned int entries;
++	unsigned int tail;
++	unsigned int left_to_poll;
++};
++
+ struct ehca_qp {
+ 	union {
+ 		struct ib_qp ib_qp;
+@@ -173,8 +180,9 @@ struct ehca_qp {
+ 	enum ehca_ext_qp_type ext_type;
+ 	enum ib_qp_state state;
+ 	struct ipz_queue ipz_squeue;
+-	struct ehca_qmap_entry *sq_map;
++	struct ehca_queue_map sq_map;
+ 	struct ipz_queue ipz_rqueue;
++	struct ehca_queue_map rq_map;
+ 	struct h_galpas galpas;
+ 	u32 qkey;
+ 	u32 real_qp_num;
+@@ -204,6 +212,8 @@ struct ehca_qp {
+ 	atomic_t nr_events; /* events seen */
+ 	wait_queue_head_t wait_completion;
+ 	int mig_armed;
++	struct list_head sq_err_node;
++	struct list_head rq_err_node;
+ };
+ 
+ #define IS_SRQ(qp) (qp->ext_type == EQPT_SRQ)
+@@ -233,6 +243,8 @@ struct ehca_cq {
+ 	/* mmap counter for resources mapped into user space */
+ 	u32 mm_count_queue;
+ 	u32 mm_count_galpa;
++	struct list_head sqp_err_list;
++	struct list_head rqp_err_list;
+ };
+ 
+ enum ehca_mr_flag {
+--- infiniband.git.orig/drivers/infiniband/hw/ehca/ehca_reqs.c
++++ infiniband.git/drivers/infiniband/hw/ehca/ehca_reqs.c
+@@ -53,9 +53,25 @@
+ /* in RC traffic, insert an empty RDMA READ every this many packets */
+ #define ACK_CIRC_THRESHOLD 2000000
+ 
++static u64 replace_wr_id(u64 wr_id, u16 idx)
++{
++	u64 ret;
++
++	ret = wr_id & ~QMAP_IDX_MASK;
++	ret |= idx & QMAP_IDX_MASK;
++
++	return ret;
++}
++
++static u16 get_app_wr_id(u64 wr_id)
++{
++	return wr_id & QMAP_IDX_MASK;
++}
++
+ static inline int ehca_write_rwqe(struct ipz_queue *ipz_rqueue,
+ 				  struct ehca_wqe *wqe_p,
+-				  struct ib_recv_wr *recv_wr)
++				  struct ib_recv_wr *recv_wr,
++				  u32 rq_map_idx)
+ {
+ 	u8 cnt_ds;
+ 	if (unlikely((recv_wr->num_sge < 0) ||
+@@ -69,7 +85,7 @@ static inline int ehca_write_rwqe(struct
+ 	/* clear wqe header until sglist */
+ 	memset(wqe_p, 0, offsetof(struct ehca_wqe, u.ud_av.sg_list));
+ 
+-	wqe_p->work_request_id = recv_wr->wr_id;
++	wqe_p->work_request_id = replace_wr_id(recv_wr->wr_id, rq_map_idx);
+ 	wqe_p->nr_of_data_seg = recv_wr->num_sge;
+ 
+ 	for (cnt_ds = 0; cnt_ds < recv_wr->num_sge; cnt_ds++) {
+@@ -146,6 +162,7 @@ static inline int ehca_write_swqe(struct
+ 	u64 dma_length;
+ 	struct ehca_av *my_av;
+ 	u32 remote_qkey = send_wr->wr.ud.remote_qkey;
++	struct ehca_qmap_entry *qmap_entry = &qp->sq_map.map[sq_map_idx];
+ 
+ 	if (unlikely((send_wr->num_sge < 0) ||
+ 		     (send_wr->num_sge > qp->ipz_squeue.act_nr_of_sg))) {
+@@ -158,11 +175,10 @@ static inline int ehca_write_swqe(struct
+ 	/* clear wqe header until sglist */
+ 	memset(wqe_p, 0, offsetof(struct ehca_wqe, u.ud_av.sg_list));
+ 
+-	wqe_p->work_request_id = send_wr->wr_id & ~QMAP_IDX_MASK;
+-	wqe_p->work_request_id |= sq_map_idx & QMAP_IDX_MASK;
++	wqe_p->work_request_id = replace_wr_id(send_wr->wr_id, sq_map_idx);
+ 
+-	qp->sq_map[sq_map_idx].app_wr_id = send_wr->wr_id & QMAP_IDX_MASK;
+-	qp->sq_map[sq_map_idx].reported = 0;
++	qmap_entry->app_wr_id = get_app_wr_id(send_wr->wr_id);
++	qmap_entry->reported = 0;
+ 
+ 	switch (send_wr->opcode) {
+ 	case IB_WR_SEND:
+@@ -496,7 +512,9 @@ static int internal_post_recv(struct ehc
+ 	struct ehca_wqe *wqe_p;
+ 	int wqe_cnt = 0;
+ 	int ret = 0;
++	u32 rq_map_idx;
+ 	unsigned long flags;
++	struct ehca_qmap_entry *qmap_entry;
+ 
+ 	if (unlikely(!HAS_RQ(my_qp))) {
+ 		ehca_err(dev, "QP has no RQ  ehca_qp=%p qp_num=%x ext_type=%d",
+@@ -524,8 +542,15 @@ static int internal_post_recv(struct ehc
+ 			}
+ 			goto post_recv_exit0;
+ 		}
++		/*
++		 * Get the index of the WQE in the recv queue. The same index
++		 * is used for writing into the rq_map.
++		 */
++		rq_map_idx = start_offset / my_qp->ipz_rqueue.qe_size;
++
+ 		/* write a RECV WQE into the QUEUE */
+-		ret = ehca_write_rwqe(&my_qp->ipz_rqueue, wqe_p, cur_recv_wr);
++		ret = ehca_write_rwqe(&my_qp->ipz_rqueue, wqe_p, cur_recv_wr,
++				rq_map_idx);
+ 		/*
+ 		 * if something failed,
+ 		 * reset the free entry pointer to the start value
+@@ -540,6 +565,11 @@ static int internal_post_recv(struct ehc
+ 			}
+ 			goto post_recv_exit0;
+ 		}
++
++		qmap_entry = &my_qp->rq_map.map[rq_map_idx];
++		qmap_entry->app_wr_id = get_app_wr_id(cur_recv_wr->wr_id);
++		qmap_entry->reported = 0;
++
+ 		wqe_cnt++;
+ 	} /* eof for cur_recv_wr */
+ 
+@@ -596,10 +626,12 @@ static const u8 ib_wc_opcode[255] = {
+ /* internal function to poll one entry of cq */
+ static inline int ehca_poll_cq_one(struct ib_cq *cq, struct ib_wc *wc)
+ {
+-	int ret = 0;
++	int ret = 0, qmap_tail_idx;
+ 	struct ehca_cq *my_cq = container_of(cq, struct ehca_cq, ib_cq);
+ 	struct ehca_cqe *cqe;
+ 	struct ehca_qp *my_qp;
++	struct ehca_qmap_entry *qmap_entry;
++	struct ehca_queue_map *qmap;
+ 	int cqe_count = 0, is_error;
+ 
+ repoll:
+@@ -674,27 +706,52 @@ repoll:
+ 		goto repoll;
+ 	wc->qp = &my_qp->ib_qp;
+ 
+-	if (!(cqe->w_completion_flags & WC_SEND_RECEIVE_BIT)) {
+-		struct ehca_qmap_entry *qmap_entry;
++	if (is_error) {
+ 		/*
+-		 * We got a send completion and need to restore the original
+-		 * wr_id.
++		 * set left_to_poll to 0 because in error state, we will not
++		 * get any additional CQEs
+ 		 */
+-		qmap_entry = &my_qp->sq_map[cqe->work_request_id &
+-					    QMAP_IDX_MASK];
++		ehca_add_to_err_list(my_qp, 1);
++		my_qp->sq_map.left_to_poll = 0;
+ 
+-		if (qmap_entry->reported) {
+-			ehca_warn(cq->device, "Double cqe on qp_num=%#x",
+-				  my_qp->real_qp_num);
+-			/* found a double cqe, discard it and read next one */
+-			goto repoll;
+-		}
+-		wc->wr_id = cqe->work_request_id & ~QMAP_IDX_MASK;
+-		wc->wr_id |= qmap_entry->app_wr_id;
+-		qmap_entry->reported = 1;
+-	} else
++		if (HAS_RQ(my_qp))
++			ehca_add_to_err_list(my_qp, 0);
++		my_qp->rq_map.left_to_poll = 0;
++	}
++
++	qmap_tail_idx = get_app_wr_id(cqe->work_request_id);
++	if (!(cqe->w_completion_flags & WC_SEND_RECEIVE_BIT))
++		/* We got a send completion. */
++		qmap = &my_qp->sq_map;
++	else
+ 		/* We got a receive completion. */
+-		wc->wr_id = cqe->work_request_id;
++		qmap = &my_qp->rq_map;
++
++	qmap_entry = &qmap->map[qmap_tail_idx];
++	if (qmap_entry->reported) {
++		ehca_warn(cq->device, "Double cqe on qp_num=%#x",
++				my_qp->real_qp_num);
++		/* found a double cqe, discard it and read next one */
++		goto repoll;
++	}
++
++	wc->wr_id = replace_wr_id(cqe->work_request_id, qmap_entry->app_wr_id);
++	qmap_entry->reported = 1;
++
++	/* this is a proper completion, we need to advance the tail pointer */
++	if (++qmap->tail == qmap->entries)
++		qmap->tail = 0;
++
++	/* if left_to_poll is decremented to 0, add the QP to the error list */
++	if (qmap->left_to_poll > 0) {
++		qmap->left_to_poll--;
++		if ((my_qp->sq_map.left_to_poll == 0) &&
++				(my_qp->rq_map.left_to_poll == 0)) {
++			ehca_add_to_err_list(my_qp, 1);
++			if (HAS_RQ(my_qp))
++				ehca_add_to_err_list(my_qp, 0);
++		}
++	}
+ 
+ 	/* eval ib_wc_opcode */
+ 	wc->opcode = ib_wc_opcode[cqe->optype]-1;
+@@ -733,13 +790,88 @@ poll_cq_one_exit0:
+ 	return ret;
+ }
+ 
++static int generate_flush_cqes(struct ehca_qp *my_qp, struct ib_cq *cq,
++			       struct ib_wc *wc, int num_entries,
++			       struct ipz_queue *ipz_queue, int on_sq)
++{
++	int nr = 0;
++	struct ehca_wqe *wqe;
++	u64 offset;
++	struct ehca_queue_map *qmap;
++	struct ehca_qmap_entry *qmap_entry;
++
++	if (on_sq)
++		qmap = &my_qp->sq_map;
++	else
++		qmap = &my_qp->rq_map;
++
++	qmap_entry = &qmap->map[qmap->tail];
++
++	while ((nr < num_entries) && (qmap_entry->reported == 0)) {
++		/* generate flush CQE */
++		memset(wc, 0, sizeof(*wc));
++
++		offset = qmap->tail * ipz_queue->qe_size;
++		wqe = (struct ehca_wqe *)ipz_qeit_calc(ipz_queue, offset);
++		if (!wqe) {
++			ehca_err(cq->device, "Invalid wqe offset=%#lx on "
++				 "qp_num=%#x", offset, my_qp->real_qp_num);
++			return nr;
++		}
++
++		wc->wr_id = replace_wr_id(wqe->work_request_id,
++					  qmap_entry->app_wr_id);
++
++		if (on_sq) {
++			switch (wqe->optype) {
++			case WQE_OPTYPE_SEND:
++				wc->opcode = IB_WC_SEND;
++				break;
++			case WQE_OPTYPE_RDMAWRITE:
++				wc->opcode = IB_WC_RDMA_WRITE;
++				break;
++			case WQE_OPTYPE_RDMAREAD:
++				wc->opcode = IB_WC_RDMA_READ;
++				break;
++			default:
++				ehca_err(cq->device, "Invalid optype=%x",
++						wqe->optype);
++				return nr;
++			}
++		} else
++			wc->opcode = IB_WC_RECV;
++
++		if (wqe->wr_flag & WQE_WRFLAG_IMM_DATA_PRESENT) {
++			wc->ex.imm_data = wqe->immediate_data;
++			wc->wc_flags |= IB_WC_WITH_IMM;
++		}
++
++		wc->status = IB_WC_WR_FLUSH_ERR;
++
++		wc->qp = &my_qp->ib_qp;
++
++		/* mark as reported and advance tail pointer */
++		qmap_entry->reported = 1;
++		if (++qmap->tail == qmap->entries)
++			qmap->tail = 0;
++		qmap_entry = &qmap->map[qmap->tail];
++
++		wc++; nr++;
++	}
++
++	return nr;
++
++}
++
+ int ehca_poll_cq(struct ib_cq *cq, int num_entries, struct ib_wc *wc)
+ {
+ 	struct ehca_cq *my_cq = container_of(cq, struct ehca_cq, ib_cq);
+ 	int nr;
++	struct ehca_qp *err_qp;
+ 	struct ib_wc *current_wc = wc;
+ 	int ret = 0;
+ 	unsigned long flags;
++	int entries_left = num_entries;
+ 
+ 	if (num_entries < 1) {
+ 		ehca_err(cq->device, "Invalid num_entries=%d ehca_cq=%p "
+@@ -749,15 +881,40 @@ int ehca_poll_cq(struct ib_cq *cq, int n
+ 	}
+ 
+ 	spin_lock_irqsave(&my_cq->spinlock, flags);
+-	for (nr = 0; nr < num_entries; nr++) {
++
++	/* generate flush cqes for send queues */
++	list_for_each_entry(err_qp, &my_cq->sqp_err_list, sq_err_node) {
++		nr = generate_flush_cqes(err_qp, cq, current_wc, entries_left,
++				&err_qp->ipz_squeue, 1);
++		entries_left -= nr;
++		current_wc += nr;
++
++		if (entries_left == 0)
++			break;
++	}
++
++	/* generate flush cqes for receive queues */
++	list_for_each_entry(err_qp, &my_cq->rqp_err_list, rq_err_node) {
++		nr = generate_flush_cqes(err_qp, cq, current_wc, entries_left,
++				&err_qp->ipz_rqueue, 0);
++		entries_left -= nr;
++		current_wc += nr;
++
++		if (entries_left == 0)
++			break;
++	}
++
++	for (nr = 0; nr < entries_left; nr++) {
+ 		ret = ehca_poll_cq_one(cq, current_wc);
+ 		if (ret)
+ 			break;
+ 		current_wc++;
+ 	} /* eof for nr */
++	entries_left -= nr;
++
+ 	spin_unlock_irqrestore(&my_cq->spinlock, flags);
+ 	if (ret == -EAGAIN  || !ret)
+-		ret = nr;
++		ret = num_entries - entries_left;
+ 
+ poll_cq_exit0:
+ 	return ret;
+--- infiniband.git.orig/drivers/infiniband/hw/ehca/ehca_cq.c
++++ infiniband.git/drivers/infiniband/hw/ehca/ehca_cq.c
+@@ -276,6 +276,9 @@ struct ib_cq *ehca_create_cq(struct ib_d
+ 	for (i = 0; i < QP_HASHTAB_LEN; i++)
+ 		INIT_HLIST_HEAD(&my_cq->qp_hashtab[i]);
+ 
++	INIT_LIST_HEAD(&my_cq->sqp_err_list);
++	INIT_LIST_HEAD(&my_cq->rqp_err_list);
++
+ 	if (context) {
+ 		struct ipz_queue *ipz_queue = &my_cq->ipz_queue;
+ 		struct ehca_create_cq_resp resp;
+--- infiniband.git.orig/drivers/infiniband/hw/ehca/ehca_qp.c
++++ infiniband.git/drivers/infiniband/hw/ehca/ehca_qp.c
+@@ -396,6 +396,50 @@ static void ehca_determine_small_queue(s
+ 	queue->is_small = (queue->page_size != 0);
+ }
+ 
++/* needs to be called with cq->spinlock held */
++void ehca_add_to_err_list(struct ehca_qp *qp, int on_sq)
++{
++	struct list_head *list, *node;
++
++	/* TODO: support low latency QPs */
++	if (qp->ext_type == EQPT_LLQP)
++		return;
++
++	if (on_sq) {
++		list = &qp->send_cq->sqp_err_list;
++		node = &qp->sq_err_node;
++	} else {
++		list = &qp->recv_cq->rqp_err_list;
++		node = &qp->rq_err_node;
++	}
++
++	if (list_empty(node))
++		list_add_tail(node, list);
++
++	return;
++}
++
++static void del_from_err_list(struct ehca_cq *cq, struct list_head *node)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&cq->spinlock, flags);
++
++	if (!list_empty(node))
++		list_del_init(node);
++
++	spin_unlock_irqrestore(&cq->spinlock, flags);
++}
++
++static void reset_queue_map(struct ehca_queue_map *qmap)
++{
++	int i;
++
++	qmap->tail = 0;
++	for (i = 0; i < qmap->entries; i++)
++		qmap->map[i].reported = 1;
++}
++
+ /*
+  * Create an ib_qp struct that is either a QP or an SRQ, depending on
+  * the value of the is_srq parameter. If init_attr and srq_init_attr share
+@@ -407,12 +451,11 @@ static struct ehca_qp *internal_create_q
+ 	struct ib_srq_init_attr *srq_init_attr,
+ 	struct ib_udata *udata, int is_srq)
+ {
+-	struct ehca_qp *my_qp;
++	struct ehca_qp *my_qp, *my_srq = NULL;
+ 	struct ehca_pd *my_pd = container_of(pd, struct ehca_pd, ib_pd);
+ 	struct ehca_shca *shca = container_of(pd->device, struct ehca_shca,
+ 					      ib_device);
+ 	struct ib_ucontext *context = NULL;
+-	u32 nr_qes;
+ 	u64 h_ret;
+ 	int is_llqp = 0, has_srq = 0;
+ 	int qp_type, max_send_sge, max_recv_sge, ret;
+@@ -457,8 +500,7 @@ static struct ehca_qp *internal_create_q
+ 
+ 	/* handle SRQ base QPs */
+ 	if (init_attr->srq) {
+-		struct ehca_qp *my_srq =
+-			container_of(init_attr->srq, struct ehca_qp, ib_srq);
++		my_srq = container_of(init_attr->srq, struct ehca_qp, ib_srq);
+ 
+ 		has_srq = 1;
+ 		parms.ext_type = EQPT_SRQBASE;
+@@ -716,15 +758,19 @@ static struct ehca_qp *internal_create_q
+ 				 "and pages ret=%i", ret);
+ 			goto create_qp_exit2;
+ 		}
+-		nr_qes = my_qp->ipz_squeue.queue_length /
++
++		my_qp->sq_map.entries = my_qp->ipz_squeue.queue_length /
+ 			 my_qp->ipz_squeue.qe_size;
+-		my_qp->sq_map = vmalloc(nr_qes *
++		my_qp->sq_map.map = vmalloc(my_qp->sq_map.entries *
+ 					sizeof(struct ehca_qmap_entry));
+-		if (!my_qp->sq_map) {
++		if (!my_qp->sq_map.map) {
+ 			ehca_err(pd->device, "Couldn't allocate squeue "
+ 				 "map ret=%i", ret);
+ 			goto create_qp_exit3;
+ 		}
++		INIT_LIST_HEAD(&my_qp->sq_err_node);
++		/* to avoid the generation of bogus flush CQEs */
++		reset_queue_map(&my_qp->sq_map);
+ 	}
+ 
+ 	if (HAS_RQ(my_qp)) {
+@@ -736,6 +782,25 @@ static struct ehca_qp *internal_create_q
+ 				 "and pages ret=%i", ret);
+ 			goto create_qp_exit4;
+ 		}
++
++		my_qp->rq_map.entries = my_qp->ipz_rqueue.queue_length /
++			my_qp->ipz_rqueue.qe_size;
++		my_qp->rq_map.map = vmalloc(my_qp->rq_map.entries *
++				sizeof(struct ehca_qmap_entry));
++		if (!my_qp->rq_map.map) {
++			ehca_err(pd->device, "Couldn't allocate squeue "
++					"map ret=%i", ret);
++			goto create_qp_exit5;
++		}
++		INIT_LIST_HEAD(&my_qp->rq_err_node);
++		/* to avoid the generation of bogus flush CQEs */
++		reset_queue_map(&my_qp->rq_map);
++	} else if (init_attr->srq) {
++		/* this is a base QP, use the queue map of the SRQ */
++		my_qp->rq_map = my_srq->rq_map;
++		INIT_LIST_HEAD(&my_qp->rq_err_node);
++
++		my_qp->ipz_rqueue = my_srq->ipz_rqueue;
+ 	}
+ 
+ 	if (is_srq) {
+@@ -799,7 +864,7 @@ static struct ehca_qp *internal_create_q
+ 		if (ret) {
+ 			ehca_err(pd->device,
+ 				 "Couldn't assign qp to send_cq ret=%i", ret);
+-			goto create_qp_exit6;
++			goto create_qp_exit7;
+ 		}
+ 	}
+ 
+@@ -825,25 +890,29 @@ static struct ehca_qp *internal_create_q
+ 		if (ib_copy_to_udata(udata, &resp, sizeof resp)) {
+ 			ehca_err(pd->device, "Copy to udata failed");
+ 			ret = -EINVAL;
+-			goto create_qp_exit7;
++			goto create_qp_exit8;
+ 		}
+ 	}
+ 
+ 	return my_qp;
+ 
+-create_qp_exit7:
++create_qp_exit8:
+ 	ehca_cq_unassign_qp(my_qp->send_cq, my_qp->real_qp_num);
+ 
+-create_qp_exit6:
++create_qp_exit7:
+ 	kfree(my_qp->mod_qp_parm);
+ 
++create_qp_exit6:
++	if (HAS_RQ(my_qp))
++		vfree(my_qp->rq_map.map);
++
+ create_qp_exit5:
+ 	if (HAS_RQ(my_qp))
+ 		ipz_queue_dtor(my_pd, &my_qp->ipz_rqueue);
+ 
+ create_qp_exit4:
+ 	if (HAS_SQ(my_qp))
+-		vfree(my_qp->sq_map);
++		vfree(my_qp->sq_map.map);
+ 
+ create_qp_exit3:
+ 	if (HAS_SQ(my_qp))
+@@ -1035,6 +1104,101 @@ static int prepare_sqe_rts(struct ehca_q
+ 	return 0;
+ }
+ 
++static int calc_left_cqes(u64 wqe_p, struct ipz_queue *ipz_queue,
++			  struct ehca_queue_map *qmap)
++{
++	void *wqe_v;
++	u64 q_ofs;
++	u32 wqe_idx;
++
++	/* convert real to abs address */
++	wqe_p = wqe_p & (~(1UL << 63));
++
++	wqe_v = abs_to_virt(wqe_p);
++
++	if (ipz_queue_abs_to_offset(ipz_queue, wqe_p, &q_ofs)) {
++		ehca_gen_err("Invalid offset for calculating left cqes "
++				"wqe_p=%#lx wqe_v=%p\n", wqe_p, wqe_v);
++		return -EFAULT;
++	}
++
++	wqe_idx = q_ofs / ipz_queue->qe_size;
++	if (wqe_idx < qmap->tail)
++		qmap->left_to_poll = (qmap->entries - qmap->tail) + wqe_idx;
++	else
++		qmap->left_to_poll = wqe_idx - qmap->tail;
++
++	return 0;
++}
++
++static int check_for_left_cqes(struct ehca_qp *my_qp, struct ehca_shca *shca)
++{
++	u64 h_ret;
++	void *send_wqe_p, *recv_wqe_p;
++	int ret;
++	unsigned long flags;
++	int qp_num = my_qp->ib_qp.qp_num;
++
++	/* this hcall is not supported on base QPs */
++	if (my_qp->ext_type != EQPT_SRQBASE) {
++		/* get send and receive wqe pointer */
++		h_ret = hipz_h_disable_and_get_wqe(shca->ipz_hca_handle,
++				my_qp->ipz_qp_handle, &my_qp->pf,
++				&send_wqe_p, &recv_wqe_p, 4);
++		if (h_ret != H_SUCCESS) {
++			ehca_err(&shca->ib_device, "disable_and_get_wqe() "
++				 "failed ehca_qp=%p qp_num=%x h_ret=%li",
++				 my_qp, qp_num, h_ret);
++			return ehca2ib_return_code(h_ret);
++		}
++
++		/*
++		 * acquire lock to ensure that nobody is polling the cq which
++		 * could mean that the qmap->tail pointer is in an
++		 * inconsistent state.
++		 */
++		spin_lock_irqsave(&my_qp->send_cq->spinlock, flags);
++		ret = calc_left_cqes((u64)send_wqe_p, &my_qp->ipz_squeue,
++				&my_qp->sq_map);
++		spin_unlock_irqrestore(&my_qp->send_cq->spinlock, flags);
++		if (ret)
++			return ret;
++
++
++		spin_lock_irqsave(&my_qp->recv_cq->spinlock, flags);
++		ret = calc_left_cqes((u64)recv_wqe_p, &my_qp->ipz_rqueue,
++				&my_qp->rq_map);
++		spin_unlock_irqrestore(&my_qp->recv_cq->spinlock, flags);
++		if (ret)
++			return ret;
++	} else {
++		spin_lock_irqsave(&my_qp->send_cq->spinlock, flags);
++		my_qp->sq_map.left_to_poll = 0;
++		spin_unlock_irqrestore(&my_qp->send_cq->spinlock, flags);
++
++		spin_lock_irqsave(&my_qp->recv_cq->spinlock, flags);
++		my_qp->rq_map.left_to_poll = 0;
++		spin_unlock_irqrestore(&my_qp->recv_cq->spinlock, flags);
++	}
++
++	/* this assures flush cqes being generated only for pending wqes */
++	if ((my_qp->sq_map.left_to_poll == 0) &&
++				(my_qp->rq_map.left_to_poll == 0)) {
++		spin_lock_irqsave(&my_qp->send_cq->spinlock, flags);
++		ehca_add_to_err_list(my_qp, 1);
++		spin_unlock_irqrestore(&my_qp->send_cq->spinlock, flags);
++
++		if (HAS_RQ(my_qp)) {
++			spin_lock_irqsave(&my_qp->recv_cq->spinlock, flags);
++			ehca_add_to_err_list(my_qp, 0);
++			spin_unlock_irqrestore(&my_qp->recv_cq->spinlock,
++					flags);
++		}
++	}
++
++	return 0;
++}
++
+ /*
+  * internal_modify_qp with circumvention to handle aqp0 properly
+  * smi_reset2init indicates if this is an internal reset-to-init-call for
+@@ -1539,10 +1703,27 @@ static int internal_modify_qp(struct ib_
+ 			goto modify_qp_exit2;
+ 		}
+ 	}
++	if ((qp_new_state == IB_QPS_ERR) && (qp_cur_state != IB_QPS_ERR)) {
++		ret = check_for_left_cqes(my_qp, shca);
++		if (ret)
++			goto modify_qp_exit2;
++	}
+ 
+ 	if (statetrans == IB_QPST_ANY2RESET) {
+ 		ipz_qeit_reset(&my_qp->ipz_rqueue);
+ 		ipz_qeit_reset(&my_qp->ipz_squeue);
++
++		if (qp_cur_state == IB_QPS_ERR) {
++			del_from_err_list(my_qp->send_cq, &my_qp->sq_err_node);
++
++			if (HAS_RQ(my_qp))
++				del_from_err_list(my_qp->recv_cq,
++						  &my_qp->rq_err_node);
++		}
++		reset_queue_map(&my_qp->sq_map);
++
++		if (HAS_RQ(my_qp))
++			reset_queue_map(&my_qp->rq_map);
+ 	}
+ 
+ 	if (attr_mask & IB_QP_QKEY)
+@@ -1958,6 +2139,16 @@ static int internal_destroy_qp(struct ib
+ 	idr_remove(&ehca_qp_idr, my_qp->token);
+ 	write_unlock_irqrestore(&ehca_qp_idr_lock, flags);
+ 
++	/*
++	 * SRQs will never get into an error list and do not have a recv_cq,
++	 * so we need to skip them here.
++	 */
++	if (HAS_RQ(my_qp) && !IS_SRQ(my_qp))
++		del_from_err_list(my_qp->recv_cq, &my_qp->rq_err_node);
++
++	if (HAS_SQ(my_qp))
++		del_from_err_list(my_qp->send_cq, &my_qp->sq_err_node);
++
+ 	/* now wait until all pending events have completed */
+ 	wait_event(my_qp->wait_completion, !atomic_read(&my_qp->nr_events));
+ 
+@@ -1983,7 +2174,7 @@ static int internal_destroy_qp(struct ib
+ 	if (qp_type == IB_QPT_GSI) {
+ 		struct ib_event event;
+ 		ehca_info(dev, "device %s: port %x is inactive.",
+-			  shca->ib_device.name, port_num);
++				shca->ib_device.name, port_num);
+ 		event.device = &shca->ib_device;
+ 		event.event = IB_EVENT_PORT_ERR;
+ 		event.element.port_num = port_num;
+@@ -1991,11 +2182,15 @@ static int internal_destroy_qp(struct ib
+ 		ib_dispatch_event(&event);
+ 	}
+ 
+-	if (HAS_RQ(my_qp))
++	if (HAS_RQ(my_qp)) {
+ 		ipz_queue_dtor(my_pd, &my_qp->ipz_rqueue);
++
++		vfree(my_qp->rq_map.map);
++	}
+ 	if (HAS_SQ(my_qp)) {
+ 		ipz_queue_dtor(my_pd, &my_qp->ipz_squeue);
+-		vfree(my_qp->sq_map);
++
++		vfree(my_qp->sq_map.map);
+ 	}
+ 	kmem_cache_free(qp_cache, my_qp);
+ 	atomic_dec(&shca->num_qps);
+--- infiniband.git.orig/drivers/infiniband/hw/ehca/ehca_iverbs.h
++++ infiniband.git/drivers/infiniband/hw/ehca/ehca_iverbs.h
+@@ -197,6 +197,8 @@ void ehca_poll_eqs(unsigned long data);
+ int ehca_calc_ipd(struct ehca_shca *shca, int port,
+ 		  enum ib_rate path_rate, u32 *ipd);
+ 
++void ehca_add_to_err_list(struct ehca_qp *qp, int on_sq);
++
+ #ifdef CONFIG_PPC_64K_PAGES
+ void *ehca_alloc_fw_ctrlblock(gfp_t flags);
+ void ehca_free_fw_ctrlblock(void *ptr);
