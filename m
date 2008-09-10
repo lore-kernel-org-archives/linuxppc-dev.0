@@ -1,21 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 471ABDDF38
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 22:51:16 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: "=?iso-8859-15?q?S=E9bastien?= =?iso-8859-15?q?_Chr=E9tien?="
-	<sebastien.chretien.enseirb@gmail.com>
-Subject: Re: IDE
-Date: Wed, 10 Sep 2008 14:51:07 +0200
-References: <319b0ac50809100224w2073359aod42c843cd5696599@mail.gmail.com>
-	<200809101304.51990.arnd@arndb.de>
-	<319b0ac50809100523t17da1035l95c67808bd75088@mail.gmail.com>
-In-Reply-To: <319b0ac50809100523t17da1035l95c67808bd75088@mail.gmail.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id CFDBADDF21
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 23:30:16 +1000 (EST)
+Message-ID: <48C7CC0F.9020003@ru.mvista.com>
+Date: Wed, 10 Sep 2008 17:30:55 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200809101451.07418.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: IDE
+References: <319b0ac50809100224w2073359aod42c843cd5696599@mail.gmail.com>
+	<319b0ac50809100233n4a4f50e8y77b408aa9955058b@mail.gmail.com>
+	<48C79BDE.6030905@ru.mvista.com> <200809101304.51990.arnd@arndb.de>
+In-Reply-To: <200809101304.51990.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
+	<sebastien.chretien.enseirb@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 10 September 2008, S=E9bastien Chr=E9tien wrote:
-> I looked falconide.c, it uses     hw_regs_t hw; and ide_hwif_t *hwif.
-> Is it a good way ?
->=20
+Arnd Bergmann wrote:
 
-No, that uses the legacy IDE drivers, not the current ATA drivers,
-and it is not based on the device tree information.
+>>   Most probably you can use the existing platform drivers: 
+>>drivers/ide/egacy/ide_platform.c or drivers/ata/pata_platform.c.
+>>Create/register a platform device named "pata_platform" with 2 memory 
+>>and 1 IRQ resource, and enable one of those drivers.
 
-Just use drivers/ata/pata_of_platform.c, you probably don't even
-need to change the code, just your device tree.
+> For new boards using a flattened device tree, it should be enough
+> to add a device node for the pata_of_platform driver.
 
-	Arnd <><
+    Oops, forgot about this one. No wonder, after being knee deep in ARM for 
+several months. :-)
+
+MBR, Sergei
