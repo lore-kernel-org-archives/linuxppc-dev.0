@@ -1,25 +1,11 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id F1161DE1F2
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 02:00:02 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by comm-neu.esd (Postfix) with ESMTP id 5393D108046
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 17:56:01 +0200 (CEST)
-Received: from comm-neu.esd ([127.0.0.1])
-	by localhost (comm [127.0.0.1]) (amavisd-new, port 10024) with LMTP
-	id 30612-03-2 for <linuxppc-dev@ozlabs.org>;
-	Wed, 10 Sep 2008 17:55:52 +0200 (CEST)
-Received: from debby.esd (debby.esd [10.0.0.190])
-	by comm-neu.esd (Postfix) with ESMTP id 21A8110801C
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 17:55:52 +0200 (CEST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] ppc4xx: Allow 4xx PCI bridge to be disabled via device tree
-Date: Wed, 10 Sep 2008 17:55:46 +0200
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910809100940g400bab3ck6f68ee24ae8d4573@mail.gmail.com>
+Date: Wed, 10 Sep 2008 12:40:57 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: interrupt cells on mpc5200
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200809101755.46883.matthias.fuchs@esd-electronics.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,37 +15,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch allows the 4xx (conventional) PCI bridge to be disabled
-via the device tree. This is needed for 4xx PCI adapter hardware.
+mpc5200 interrupts have three cells in the device tree. How are these
+interpreted?
+Middle one is the interrupt number. Last one seems to always be zero.
+What does the first one do, edge/level?
 
-Use the PCI node's status property to disable the PCI bridge.
+I searched through /Documentation and could find anything about three
+cells for interrupts.
 
-Signed-off-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
----
- arch/powerpc/sysdev/ppc4xx_pci.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+I understand the first one for gpio_wkup on interrupt 8. How does a
+gpio_wkup generate an interrupt on interrupt 3?
 
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-index fb368df..8c13d4f 100644
---- a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@ -277,9 +277,16 @@ static void __init ppc4xx_probe_pci_bridge(struct device_node *np)
- 	const int *bus_range;
- 	int primary = 0;
- 
-+	/* Check if device is enabled */
-+	if (!of_device_is_available(np)) {
-+		printk(KERN_INFO "%s: Port disabled via device-tree\n",
-+		       np->full_name);
-+		return;
-+	}
-+
- 	/* Fetch config space registers address */
- 	if (of_address_to_resource(np, 0, &rsrc_cfg)) {
--		printk(KERN_ERR "%s:Can't get PCI config register base !",
-+		printk(KERN_ERR "%s: Can't get PCI config register base !",
- 		       np->full_name);
- 		return;
- 	}
+		gpio_wkup: gpio-wkup@c00 {
+			compatible = "fsl,mpc5200b-gpio-wkup","fsl,mpc5200-gpio-wkup";
+			reg = <0xc00 0x40>;
+			interrupts = <0x1 0x8 0x0 0x0 0x3 0x0>;
+			interrupt-parent = <&mpc5200_pic>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
 -- 
-1.5.3
+Jon Smirl
+jonsmirl@gmail.com
