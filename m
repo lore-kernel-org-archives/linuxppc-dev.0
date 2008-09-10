@@ -1,17 +1,26 @@
-Return-Path: <yanok@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+Return-Path: <randy.dunlap@oracle.com>
+Received: from rgminet02.oracle.com (rgminet02.oracle.com [148.87.113.119])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F139DDE258
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 07:54:08 +1000 (EST)
-From: Ilya Yanok <yanok@emcraft.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] mm: fix ENTRIES_PER_PAGEPAGE overflow with 256KB pages
-Date: Thu, 11 Sep 2008 01:53:07 +0400
-Message-Id: <1221083587-8091-3-git-send-email-yanok@emcraft.com>
-In-Reply-To: <1221083587-8091-1-git-send-email-yanok@emcraft.com>
-References: <1221083587-8091-1-git-send-email-yanok@emcraft.com>
-Cc: Ilya Yanok <yanok@emcraft.com>, dzu@denx.de, wd@denx.de
+	by ozlabs.org (Postfix) with ESMTPS id E275EDDF37
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 08:43:25 +1000 (EST)
+Received: from rgminet01.oracle.com (rgminet01.oracle.com [148.87.113.118])
+	by rgminet02.oracle.com (Switch-3.2.4/Switch-3.1.7) with ESMTP id
+	m8ALnOs9016976
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 15:49:24 -0600
+Message-ID: <48C840CB.6050007@oracle.com>
+Date: Wed, 10 Sep 2008 14:48:59 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: arch/powerpc/boot/.gitignore questions
+References: <48C81ED5.1030701@oracle.com>	<20080910164046.4813753b@wally.pikatech.com>
+	<48C83E29.4070508@oracle.com> <48C83FA7.70501@freescale.com>
+In-Reply-To: <48C83FA7.70501@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,44 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ENTRIES_PER_PAGEPAGE define in mm/shmem.c becomes zero if page size is
-256KB. This patch fixes this.
+Scott Wood wrote:
+> Randy Dunlap wrote:
+>>>> I was looking at the arch/powerpc/boot/.gitignore file.
+>>>> Why are all of those non-local-directory files listed there?
+>>>> E.g., empty.c, inf*.c, inf*.h, zconf.h, zlib.h, zutil.h, etc.
+>>
+>> Why would these files be listed in arch/powerpc/boot/.gitignore ??
+> 
+> Because they're created when building a bootwrapper?
+> 
+>>>> And what is "dtc"?  I see a dtc-src directory, but "dtc" is MIA.
+>>> ./arch/powerpc/boot/dtc
+>>
+>> Where do you see that?  That's not in 2.6.27-rc6 nor in the current
+>> powerpc.git tree.  They both have:
+> 
+> Of course not -- it wouldn't be in gitignore if it weren't a generated
+> file.
+> 
+>>> pwd
+>> /var/linsrc/lin2627-rc6/arch/powerpc/boot
+>>> ls -ld dt*
+>> drwxr-xr-x 2 rdunlap users 4096 Jul 13 14:51 dtc-src/
+>> drwxr-xr-x 2 rdunlap users 4096 Sep  9 19:33 dts/
+>>
+>>
+>> which leads me to believe that the .gitignore entry should be either
+>> dts or dtc-src or both, but not "dtc".
+> 
+> Why would we want to ignore source directories?  dtc is the binary that
+> is built from dtc-src.
 
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
----
- mm/shmem.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+Thanks.  Got it.
 
-diff --git a/mm/shmem.c b/mm/shmem.c
-index 04fb4f1..c603427 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -59,7 +59,7 @@
- #define TMPFS_MAGIC	0x01021994
- 
- #define ENTRIES_PER_PAGE (PAGE_CACHE_SIZE/sizeof(unsigned long))
--#define ENTRIES_PER_PAGEPAGE (ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
-+#define ENTRIES_PER_PAGEPAGE ((unsigned long long)ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
- #define BLOCKS_PER_PAGE  (PAGE_CACHE_SIZE/512)
- 
- #define SHMEM_MAX_INDEX  (SHMEM_NR_DIRECT + (ENTRIES_PER_PAGEPAGE/2) * (ENTRIES_PER_PAGE+1))
-@@ -519,7 +519,7 @@ static void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end)
- 	struct shmem_inode_info *info = SHMEM_I(inode);
- 	unsigned long idx;
- 	unsigned long size;
--	unsigned long limit;
-+	unsigned long long limit;
- 	unsigned long stage;
- 	unsigned long diroff;
- 	struct page **dir;
-@@ -535,7 +535,7 @@ static void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end)
- 	int punch_hole;
- 	spinlock_t *needs_lock;
- 	spinlock_t *punch_lock;
--	unsigned long upper_limit;
-+	unsigned long long upper_limit;
- 
- 	inode->i_ctime = inode->i_mtime = CURRENT_TIME;
- 	idx = (start + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
--- 
-1.5.6.1
+~Randy
