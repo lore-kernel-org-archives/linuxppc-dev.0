@@ -1,17 +1,20 @@
-Return-Path: <sean.maclennan@pikatech.com>
-Received: from mail.pikatech.com (mail.pikatech.com [207.107.229.10])
-	by ozlabs.org (Postfix) with ESMTP id F10F0DDEDA
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 06:41:25 +1000 (EST)
-Date: Wed, 10 Sep 2008 16:40:46 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id BD44CDDF3D
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 06:49:26 +1000 (EST)
+To: Sean MacLennan <smaclennan@pikatech.com>
+From: Wolfgang Denk <wd@denx.de>
 Subject: Re: arch/powerpc/boot/.gitignore questions
-Message-ID: <20080910164046.4813753b@wally.pikatech.com>
-In-Reply-To: <48C81ED5.1030701@oracle.com>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <20080910164046.4813753b@wally.pikatech.com>
 References: <48C81ED5.1030701@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	<20080910164046.4813753b@wally.pikatech.com>
+Date: Wed, 10 Sep 2008 22:49:23 +0200
+Sender: wd@denx.de
+Message-Id: <20080910204923.D06D7248A6@gemini.denx.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 10 Sep 2008 12:24:05 -0700
-"Randy Dunlap" <randy.dunlap@oracle.com> wrote:
+Dear Sean MacLennan,
 
-> Hi,
+In message <20080910164046.4813753b@wally.pikatech.com> you wrote:
 > 
-> I was looking at the arch/powerpc/boot/.gitignore file.
-> Why are all of those non-local-directory files listed there?
-> E.g., empty.c, inf*.c, inf*.h, zconf.h, zlib.h, zutil.h, etc.
-> 
-> And what is "dtc"?  I see a dtc-src directory, but "dtc" is MIA.
+> I believe if the dts is built into u-boot, the dtc is not built.
 
-./arch/powerpc/boot/dtc
+This is never the case. The device tree is considered to be  part  of
+and provided to the boot loader by the kernel.
 
-I believe if the dts is built into u-boot, the dtc is not built.
 
-> Same for kernel-vmlinux.strip.*
+Best regards,
 
-I don't see a vmlinux.strip.* rule. I ignore vmlinux.strip.
+Wolfgang Denk
 
-Cheers,
-   Sean
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Mr. Cole's Axiom:
+        The sum of the intelligence on the planet is a constant;
+        the population is growing.
