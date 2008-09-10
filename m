@@ -1,23 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id F3BDEDDF48
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 00:50:20 +1000 (EST)
-Date: Thu, 11 Sep 2008 00:50:05 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] fix compile failure with non modular builds
-Message-Id: <20080911005005.80a12d5d.sfr@canb.auug.org.au>
-In-Reply-To: <1221007599.14835.16.camel@pasglop>
-References: <1221005058.23271.16.camel@localhost.localdomain>
-	<1221005387.14835.14.camel@pasglop>
-	<1221005505.23271.18.camel@localhost.localdomain>
-	<1221007599.14835.16.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__11_Sep_2008_00_50_05_+1000_e33nS5mgn4eLEnnG"
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <sebastien.chretien.enseirb@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
+	by ozlabs.org (Postfix) with ESMTP id D42D4DE314
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 01:05:34 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so2538917wfg.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 08:05:33 -0700 (PDT)
+Message-ID: <319b0ac50809100805i5db8b9b7rb8cbc8d017ea58c5@mail.gmail.com>
+Date: Wed, 10 Sep 2008 17:05:32 +0200
+From: "=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?="
+	<sebastien.chretien.enseirb@gmail.com>
+To: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>
+Subject: Re: IDE
+In-Reply-To: <48C7CC0F.9020003@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_8429_5324105.1221059133022"
+References: <319b0ac50809100224w2073359aod42c843cd5696599@mail.gmail.com>
+	<319b0ac50809100233n4a4f50e8y77b408aa9955058b@mail.gmail.com>
+	<48C79BDE.6030905@ru.mvista.com> <200809101304.51990.arnd@arndb.de>
+	<48C7CC0F.9020003@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +28,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__11_Sep_2008_00_50_05_+1000_e33nS5mgn4eLEnnG
-Content-Type: text/plain; charset=US-ASCII
+------=_Part_8429_5324105.1221059133022
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, 10 Sep 2008 10:46:39 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
+ok I will use the flat device tree.
+Do you utils in order to use ata and check ata link ?
+For example, to read some information of my compact flash
+
+2008/9/10, Sergei Shtylyov <sshtylyov@ru.mvista.com>:
 >
-> I must admit that none of my test configs I think has module support
-> turned off (even if I tend to have all the stuff I need built-in).
+> Arnd Bergmann wrote:
+>
+>   Most probably you can use the existing platform drivers:
+>>> drivers/ide/egacy/ide_platform.c or drivers/ata/pata_platform.c.
+>>> Create/register a platform device named "pata_platform" with 2 memory and
+>>> 1 IRQ resource, and enable one of those drivers.
+>>>
+>>
+>  For new boards using a flattened device tree, it should be enough
+>> to add a device node for the pata_of_platform driver.
+>>
+>
+>   Oops, forgot about this one. No wonder, after being knee deep in ARM for
+> several months. :-)
+>
+> MBR, Sergei
+>
 
-And our allnoconfig turns off CONFIG_64BIT, so we didn't see it in any of
-our automated builds.  :-(
+------=_Part_8429_5324105.1221059133022
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ok I will use the flat device tree.<br>
+Do you utils in order to use ata and check ata link ?<br>
+For example, to read some information of my compact flash<br>
+<br><div><span class="gmail_quote">2008/9/10, Sergei Shtylyov &lt;<a href="mailto:sshtylyov@ru.mvista.com">sshtylyov@ru.mvista.com</a>&gt;:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+<span class="q">Arnd Bergmann wrote:<br>
+<br>
+<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
 
---Signature=_Thu__11_Sep_2008_00_50_05_+1000_e33nS5mgn4eLEnnG
-Content-Type: application/pgp-signature
+ &nbsp;Most probably you can use the existing platform drivers: drivers/ide/egacy/ide_platform.c or drivers/ata/pata_platform.c.<br>
+Create/register a platform device named &quot;pata_platform&quot; with 2 memory and 1 IRQ resource, and enable one of those drivers.<br>
+</blockquote></blockquote>
+<br>
+<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+For new boards using a flattened device tree, it should be enough<br>
+to add a device node for the pata_of_platform driver.<br>
+</blockquote>
+<br></span>
+ &nbsp; Oops, forgot about this one. No wonder, after being knee deep in ARM for several months. :-)<br>
+<br>
+MBR, Sergei<br>
+</blockquote></div><br>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjH3p0ACgkQjjKRsyhoI8y7bQCfVaalknSSIrgXHW3VTJUByUlc
-yZUAoLx1m4aO8wU1FXPQ1TdqUhaY494y
-=SCUK
------END PGP SIGNATURE-----
-
---Signature=_Thu__11_Sep_2008_00_50_05_+1000_e33nS5mgn4eLEnnG--
+------=_Part_8429_5324105.1221059133022--
