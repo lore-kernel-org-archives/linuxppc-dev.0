@@ -1,19 +1,22 @@
-Return-Path: <littelld@verizon.net>
-Received: from vms173001pub.verizon.net (vms173001pub.verizon.net
-	[206.46.173.1]) by ozlabs.org (Postfix) with ESMTP id 48647DDEFE
+Return-Path: <jwboyer@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 26365DDEEC
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Sep 2008 10:50:22 +1000 (EST)
-Received: from [192.168.1.106] ([96.226.142.190]) by vms173001.mailsrvcs.net
-	(Sun Java System Messaging Server 6.2-6.01 (built Apr  3 2006))
-	with ESMTPA id <0K6Y0025AFNGH261@vms173001.mailsrvcs.net> for
-	linuxppc-embedded@ozlabs.org; Tue, 09 Sep 2008 19:50:04 -0500 (CDT)
-Date: Tue, 09 Sep 2008 19:50:03 -0500
-From: Dave Littell <littelld@verizon.net>
-Subject: initramfs too large?
-To: linuxppc-embedded@ozlabs.org
-Message-id: <48C719BB.1050807@verizon.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
+	Wed, 10 Sep 2008 11:30:40 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so1371794yxg.39
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 09 Sep 2008 18:30:38 -0700 (PDT)
+Date: Tue, 9 Sep 2008 21:29:53 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: Henry Bausley <hbausley@deltatau.com>
+Subject: Re: PPC460EX - Machine check in kernel mode - when accessing I/O
+	in user space
+Message-ID: <20080910012953.GB21620@yoda.jdub.homelinux.org>
+References: <1221003247.5414.20.camel@lt-linuxhenry>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1221003247.5414.20.camel@lt-linuxhenry>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,63 +27,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+On Tue, Sep 09, 2008 at 04:34:07PM -0700, Henry Bausley wrote:
+>I am trying to give user space application access to I/O.   Previously I
+>used 2.6.14 with RT Linux and made a kernel device driver with a mmap
+>routine on a 440EP.
+>
+>I am converting to a PPC460Ex with 2.6.26-2 with Xenomai the same code
+>results in a Machine Check in Kernel mode when I attempt to use the code
+>in user space.
+>
+>
+>The io memory is in the device tree and with ioremap and I can read and
+>write to it in kernel mode with
+>
+>of_address_to_resource(np,0,&res)
+>piom = (unsigned *) ioremap( res.start, RTL_SHIOM_SIZE);
+> 
+>
+>
+>In addition I tried  
+>
+>	void *map_base, * virtAddr;
+>	off_t target = ((unsigned int)addr) & ~MAP_MASK;
+>	int fd;
+>
+>	if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) {
+>		printf("/dev/mem could not be opened.\n");
+>		exit(1);
+>	}
+>
+>	/* Map one page */
+>	map_base = mmap((void *)target, length, PROT_READ | PROT_WRITE,
+>			MAP_SHARED, fd, target);
 
-I believe my initramfs has grown beyond some limit, but I'm at a loss to
-know how to correct it.  We recognized that we would have to allow a
-larger initramfs than the defaults provided, so I modified the following
-(on a 2.6.18 kernel):
+You want mmap2 here.  The I/O on 440EPx is above 4GiB.
 
-1. .../arch/powerpc/boot/wrapper: A "-Ttext=0x1000000" was added to the
-ld args.
-
-2. .../arch/powerpc/boot/zImage.lds.S: The ALIGN() directive was changed
- to use 16 instead of 4.
-
-I thought I was finished and everything seemed to be working well with
-an initramfs CPIO archive size of approx. 9 MB.  However, we just had
-another size increase (to a CPIO archive size of approx. 12 MB) and now
-I'm rewarded with this at boot:
-
-## Booting image at 08000000 ...
-   Image Name:   Linux-2.6.18_pro500-440epx_eval
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    7113720 Bytes =  6.8 MB
-   Load Address: 01000000
-   Entry Point:  01000410
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-CPU clock-frequency <- 0x27bc86ae (667MHz)
-CPU timebase-frequency <- 0x27bc86ae (667MHz)
-/plb: clock-frequency <- 9ef21ab (167MHz)
-/plb/opb: clock-frequency <- 4f790d5 (83MHz)
-/plb/opb/ebc: clock-frequency <- 34fb5e3 (56MHz)
-/plb/opb/serial@ef600300: clock-frequency <- a8c000 (11MHz)
-/plb/opb/serial@ef600400: clock-frequency <- a8c000 (11MHz)
-/plb/opb/serial@ef600500: clock-frequency <- a8c000 (11MHz)
-/plb/opb/serial@ef600600: clock-frequency <- a8c000 (11MHz)
-Memory <- <0x0 0x0 0x10000000> (256MB)
-ENET0: local-mac-address <- 00:80:3f:0d:80:0d
-ENET1: local-mac-address <- 79:60:04:ea:d9:a1
-
-zImage starting: loaded at 0x01000000 (sp: 0x0ff182e8)
-Allocating 0x904dc0 bytes for kernel ...
-gunzipping (0x00000000 <- 0x0100d000:0x01912c90)...done 0x8de100 bytes
-
-Linux/PowerPC load: console=ttyS0,115200 console=ttyMTD3
-Finalizing device tree... flat tree at 0x191f3a0
-
-Here it sits, forever.  I poked around a bit with the JTAG and found (in
-one instance) that probe_machine() (from setup_common.c) was taking a
-DataTLBError exception because it appears the machine descriptors are
-scrubbed to 0.  I added some debug code to setup_common.c, but on the
-next attempted boot the JTAG showed that DataTLBError exceptions in
-identify_cpu() (cputable.c).
-
-If I reduce the size of initramfs back to it's original size the system
-runs just fine.  So, I'm guessing the larger initramfs is somehow
-stomping on something, but have no idea how to proceed to resolve this.
-
-
-Thanks very much,
-Dave
+josh
