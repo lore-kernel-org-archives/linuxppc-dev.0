@@ -1,11 +1,11 @@
 Return-Path: <prodyuth@gmail.com>
-Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
-	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 8A27CDDF23
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Sep 2008 04:39:40 +1000 (EST)
-Received: by gxk14 with SMTP id 14so16777390gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 11:38:53 -0700 (PDT)
-Message-ID: <49c0ff980809111138xc2b8fadj79f1a1340a3dad0c@mail.gmail.com>
-Date: Thu, 11 Sep 2008 11:38:52 -0700
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.236])
+	by ozlabs.org (Postfix) with ESMTP id 82C25DE0E2
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Sep 2008 04:53:52 +1000 (EST)
+Received: by qb-out-0506.google.com with SMTP id a16so746663qbd.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 11:53:50 -0700 (PDT)
+Message-ID: <49c0ff980809111153m508f8c90x8db61f2bd287c07@mail.gmail.com>
+Date: Thu, 11 Sep 2008 11:53:49 -0700
 From: "prodyut hazarika" <prodyuth@gmail.com>
 To: "Ilya Yanok" <yanok@emcraft.com>
 Subject: Re: [PATCH] powerpc: add support for PAGE_SIZEs greater than 4KB for
@@ -27,60 +27,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 >
-> I think you missed first '-' on the first line.
+> Any comments on the issues mentioned in introductory message?
 >
-I was not too careful :-)
 
+I am reviewing the changes more thoroughly. I will give additional
+comments within the next 2-3 days.
+I am working on putting similar support for 405EX (Kilauea board), but
+having some issues.
+I will post the patch after I am done with it.
 
->> I think these 44x specific defines should go to asm/mmu-44x.h since I
->>
->
-> Agreed.
->
-It would be great to have user-friendly names.
-Also moving to the mmu-4xx specific header files hides the changes to 4xx files.
+Also, it would be great if you could point me what changes are
+necessary to recompile the binutils.
+I would like to test the 256KB changes on my Canyonlands board. I have
+got 16KB/64KB working.
 
-
->> For 256KB page size, I cannot understand why PTE_SHIFT is 11. Since
->> each PTE entry is 8 byte, PTE_SHIFT should have been 15. But then
->> there would be no bits in the Effective address for the 1st level
->> PGDIR offset. On what basis PTE_SHIFT of 11 is chosen? This overflow
->> problem happens only for 256KB page size.
->>
->
-> I think Yuri has commented on this already.
->
-Thanks.
-
-In file arch/powerpc/mm/pgtable_32.c, we have:
-
-#ifdef CONFIG_PTE_64BIT
-/* 44x uses an 8kB pgdir because it has 8-byte Linux PTEs. */
-#define PGDIR_ORDER     1
-#else
-#define PGDIR_ORDER     0
-#endif
-pgd_t *pgd_alloc(struct mm_struct *mm)
-{
-        pgd_t *ret;
-
-        ret = (pgd_t *)__get_free_pages(GFP_KERNEL|__GFP_ZERO, PGDIR_ORDER);
-        return ret;
-}
-
-Thus, we allocate 2 pages for 44x processors for PGD. This is needed
-only for 4K page.
-We are anyway not using the whole 64K or 256K page for the PGD. So
-there is no point to waste an additional 64K or 256KB page
-
-Change this to:
-#ifdef CONFIG_PTE_64BIT
-#if (PAGE_SHIFT == 12)
-/* 44x uses an 8kB pgdir because it has 8-byte Linux PTEs. */
-#define PGDIR_ORDER     1
-#else
-#define PGDIR_ORDER     0
-#endif
-#else
-#define PGDIR_ORDER     0
-#endif
+Regards,
+Prodyut Hazarika
