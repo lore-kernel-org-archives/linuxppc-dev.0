@@ -1,25 +1,18 @@
-Return-Path: <sebastien.chretien.enseirb@gmail.com>
-Received: from plan.enseirb.fr (plan.enseirb.fr [147.210.18.60])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8B231DDF29
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 16:10:21 +1000 (EST)
-Message-ID: <48C8B5F3.7050409@gmail.com>
-Date: Thu, 11 Sep 2008 08:08:51 +0200
-From: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
-	<sebastien.chretien.enseirb@gmail.com>
+Return-Path: <rbrito@ime.usp.br>
+Received: from hope.ime.usp.br (hope.ime.usp.br [143.107.45.8])
+	by ozlabs.org (Postfix) with SMTP id 1691CDDF53
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 16:38:40 +1000 (EST)
+Date: Thu, 11 Sep 2008 02:34:27 -0300
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+To: Marc Zyngier <maz@misterjones.org>
+Subject: Re: Call Trace and scary messages on kernel 2.6.27-rc5
+Message-ID: <20080911053427.GC5476@ime.usp.br>
+References: <20080909004727.GA6239@ime.usp.br> <20080909220855.658b967c@why>
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: IDE
-References: <319b0ac50809100224w2073359aod42c843cd5696599@mail.gmail.com>
-	<319b0ac50809100233n4a4f50e8y77b408aa9955058b@mail.gmail.com>
-	<48C79BDE.6030905@ru.mvista.com> <200809101304.51990.arnd@arndb.de>
-	<48C7CC0F.9020003@ru.mvista.com>
-In-Reply-To: <48C7CC0F.9020003@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-	=?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
-	<sebastien.chretien.enseirb@gmail.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20080909220855.658b967c@why>
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,21 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Where can I find a pata_of_platform node example ?
+Thanks to both Mark and Heiko.
 
-Sergei Shtylyov a écrit :
-> Arnd Bergmann wrote:
->
->>>   Most probably you can use the existing platform drivers: 
->>> drivers/ide/egacy/ide_platform.c or drivers/ata/pata_platform.c.
->>> Create/register a platform device named "pata_platform" with 2 
->>> memory and 1 IRQ resource, and enable one of those drivers.
->
->> For new boards using a flattened device tree, it should be enough
->> to add a device node for the pata_of_platform driver.
->
->    Oops, forgot about this one. No wonder, after being knee deep in 
-> ARM for several months. :-)
->
-> MBR, Sergei
->
+On Sep 09 2008, Marc Zyngier wrote:
+> On Mon, 8 Sep 2008 21:47:29 -0300 Rogério Brito <rbrito@ime.usp.br> wrote:
+> > I just compiled a new 2.6.27-rc5 kernel for my standard Kurobox (an
+> > embedded NAS that has an MPC8241 CPU, if I'm not mistaken) and upon
+> > booting, I get these scary messages and Call Traces:
+> 
+> This is a known problem.
+> 
+> Check patch bb23b431db7405f6d79f989ad0236bf6428ba1cb in Linus' tree, it
+> should correct the traces you see.
+
+I just downloaded the 2.6.27-rc6 kernel that was updated today and I
+recompiled things and everything went fine regarding the MTD device.
+
+Thank you very much for the informative messages.
+
+
+Regards, Rogério Brito.
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
