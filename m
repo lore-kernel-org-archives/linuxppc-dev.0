@@ -1,23 +1,24 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 1DAA7DDF7D
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 21:46:38 +1000 (EST)
-Message-ID: <48C90516.8040504@ru.mvista.com>
-Date: Thu, 11 Sep 2008 15:46:30 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id 926A9DDF87
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 21:50:59 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so32123anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 04:50:57 -0700 (PDT)
+Date: Thu, 11 Sep 2008 07:50:06 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: =?us-ascii?B?PT9JU08tODg1OS0xP1E/Um9nPUU5cmlvX0JyaXRvXw==?=
+	<rbrito@ime.usp.br>
+Subject: Re: Getting Debian to release the PowerPC port
+Message-ID: <20080911115006.GA26684@yoda.jdub.homelinux.org>
+References: <20080911035514.GE8077@ime.usp.br>
+	<20080911074223.365e763a@zod.rchland.ibm.com>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
-	<sebastien.chretien.enseirb@gmail.com>
-Subject: Re: IDE
-References: <319b0ac50809100224w2073359aod42c843cd5696599@mail.gmail.com>	
-	<319b0ac50809100233n4a4f50e8y77b408aa9955058b@mail.gmail.com>	
-	<48C79BDE.6030905@ru.mvista.com>
-	<200809101304.51990.arnd@arndb.de>	
-	<48C7CC0F.9020003@ru.mvista.com> <48C8B5F3.7050409@gmail.com>
-	<319b0ac50809110130m71c5c640g15cc836a9e81f491@mail.gmail.com>
-In-Reply-To: <319b0ac50809110130m71c5c640g15cc836a9e81f491@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20080911074223.365e763a@zod.rchland.ibm.com>
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, 497605@bugs.debian.org,
+	Paul Mackerras <paulus@samba.org>,
+	debian-powerpc@lists.debian.org, debian-release@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,13 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Thu, Sep 11, 2008 at 07:42:23AM -0400, Josh Boyer wrote:
+>On Thu, 11 Sep 2008 00:55:14 -0300
+>Rogério Brito <rbrito@ime.usp.br> wrote:
+>
+>> Dear Paul,
+>> 
+>> I would like to ask you a few things:
+>> 
+>> * which is the official dtc git repository?
+>>   I ask it here because dtc.ozlabs.org doesn't seem to work, but this is
+>>   what is linked to from the page <http://ozlabs.org/> and the
+>>   device-tree-compiler package on Debian has an outdated page (it
+>>   seems). I already filed a bugreport to that package
+>>   (http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=497605).
+>
+>git://www.jld.com/software/dtc.git
 
-Sébastien Chrétien wrote:
+Oops, that should be: git://www.jdl.com/software/dtc.git
 
-> I saw pata_of_platform source. And when is called pata_of_platform_probe ?
-
-   Look at the very end of arch/powerpc/boot/dts/mpc8349emitx.dts; 
-probably there are more examples in that directory...
-
-MBR, Sergei
+josh
