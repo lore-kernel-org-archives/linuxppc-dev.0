@@ -1,31 +1,29 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <rbrito@ime.usp.br>
+Received: from smtp.gru.flash.tv.br (smtp.flash.net.br [201.46.240.48])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 68DCCDDF6E
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 13:21:10 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m8B3L7k0019903
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 23:21:07 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m8B3L78K223804
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 23:21:07 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m8B3L7iE021953
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Sep 2008 23:21:07 -0400
-Date: Wed, 10 Sep 2008 23:21:03 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 0/3 v2] ibm_newemac: Various fixes and additions for
-	PPC405EZ
-Message-ID: <20080910232103.15a9b87e@zod.rchland.ibm.com>
-In-Reply-To: <cover.1220877899.git.jwboyer@linux.vnet.ibm.com>
-References: <cover.1220877899.git.jwboyer@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: netdev@vger.kernel.org, jeff@garzik.org, linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 26896DDF2A
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 13:55:27 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by smtp.gru.flash.tv.br (Postfix) with ESMTP id 816311C7E83
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 00:55:19 -0300 (BRT)
+Received: from smtp.gru.flash.tv.br ([127.0.0.1])
+	by localhost (smtp.gru.flash.tv.br [127.0.0.1]) (amavisd-new,
+	port 10024) with ESMTP id apa9ImqsrGDp for <linuxppc-dev@ozlabs.org>;
+	Thu, 11 Sep 2008 00:55:13 -0300 (BRT)
+Received: from chagas.nectar.ath.cx (189-39-150-199.gru.flash.tv.br
+	[189.39.150.199])
+	by smtp.gru.flash.tv.br (Postfix) with ESMTPA id 927991C7327
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 00:55:13 -0300 (BRT)
+Date: Thu, 11 Sep 2008 00:55:14 -0300
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Getting Debian to release the PowerPC port
+Message-ID: <20080911035514.GE8077@ime.usp.br>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, 497605@bugs.debian.org,
+	debian-powerpc@lists.debian.org, debian-release@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,22 +33,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 8 Sep 2008 08:44:59 -0400
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+Dear Paul,
 
-> The following patch series adds things needed to support the PowerPC 405EZ
-> SoC.  I've incorporated the suggestions and fixes from the previous round
-> of patches and barring any further comments these should be ready to go.
-> 
-> josh
-> 
-> Josh Boyer (3):
->   ibm_newemac: Allow the "no flow control" EMAC feature to work
->   ibm_newemac: Introduce mal_has_feature
->   ibm_newemac: MAL support for PowerPC 405EZ
+I would like to ask you a few things:
 
-I should mention that I have a platform support patch series that
-depends on these for working ethernet.  I can bring this set in through
-my tree at the same time if the patches look fine and Jeff acks that.
+* which is the official dtc git repository?
+  I ask it here because dtc.ozlabs.org doesn't seem to work, but this is
+  what is linked to from the page <http://ozlabs.org/> and the
+  device-tree-compiler package on Debian has an outdated page (it
+  seems). I already filed a bugreport to that package
+  (http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=497605).
 
-josh
+* where can I find the people responsible for glibc and gcc/g++ so that
+  I can fill in the empty fields at
+  <http://wiki.debian.org/powerpcLennyReleaseRecertification>, so that
+  powerpc does not become "at risk" of not being released? Is the
+  powerpc port cared by some team in special or is it just a "unified"
+  upstream?
+
+
+Thanks in advance, Rogério Brito.
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
