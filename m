@@ -1,18 +1,20 @@
 Return-Path: <sr@denx.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 1AA07DDF05
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 14:36:04 +1000 (EST)
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 28324DDF82
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 14:48:37 +1000 (EST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc4xx: Allow 4xx PCI bridge to be disabled via device
-	tree
-Date: Thu, 11 Sep 2008 06:30:56 +0200
-References: <200809101755.46883.matthias.fuchs@esd-electronics.com>
-In-Reply-To: <200809101755.46883.matthias.fuchs@esd-electronics.com>
+Subject: Re: Question on 4xx GIT tree
+Date: Thu, 11 Sep 2008 06:48:31 +0200
+References: <0CA0A16855646F4FA96D25A158E299D604F7F1A4@SDCEXCHANGE01.ad.amcc.com>
+	<20080910203100.6c0bf2d5@zod.rchland.ibm.com>
+	<0CA0A16855646F4FA96D25A158E299D605014C40@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <0CA0A16855646F4FA96D25A158E299D605014C40@SDCEXCHANGE01.ad.amcc.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200809110630.56392.sr@denx.de>
+Message-Id: <200809110648.31267.sr@denx.de>
+Cc: Prodyut Hazarika <phazarika@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 10 September 2008, Matthias Fuchs wrote:
-> This patch allows the 4xx (conventional) PCI bridge to be disabled
-> via the device tree. This is needed for 4xx PCI adapter hardware.
+On Thursday 11 September 2008, Prodyut Hazarika wrote:
+> > > Do you know the reason why these drivers were removed? Also, are there
+> > > plans to get these drivers back? Please let me know.
+> >
+> > Perhaps they are in the DENX kernel?  If so, someone would need to submit
+> > them for inclusion.
 >
-> Use the PCI node's status property to disable the PCI bridge.
->
-> Signed-off-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+> Yes those drivers were in the Denx kernel.
 
-Acked-by: Stefan Roese <sr@denx.de>
+Correct.
+
+> I was in the impression that 
+> they were in the mainline Linux tree too. I will try to get those drivers 
+> submitted to the main Linux tree.
+
+Great. But prepare for a lot of work to get the USB OTG driver into shape for 
+upstream acceptance.
 
 Best regards,
 Stefan
