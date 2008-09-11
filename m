@@ -1,29 +1,18 @@
-Return-Path: <rbrito@ime.usp.br>
-Received: from smtp.gru.flash.tv.br (smtp.flash.net.br [201.46.240.48])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 26896DDF2A
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 13:55:27 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by smtp.gru.flash.tv.br (Postfix) with ESMTP id 816311C7E83
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 00:55:19 -0300 (BRT)
-Received: from smtp.gru.flash.tv.br ([127.0.0.1])
-	by localhost (smtp.gru.flash.tv.br [127.0.0.1]) (amavisd-new,
-	port 10024) with ESMTP id apa9ImqsrGDp for <linuxppc-dev@ozlabs.org>;
-	Thu, 11 Sep 2008 00:55:13 -0300 (BRT)
-Received: from chagas.nectar.ath.cx (189-39-150-199.gru.flash.tv.br
-	[189.39.150.199])
-	by smtp.gru.flash.tv.br (Postfix) with ESMTPA id 927991C7327
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 00:55:13 -0300 (BRT)
-Date: Thu, 11 Sep 2008 00:55:14 -0300
-From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Getting Debian to release the PowerPC port
-Message-ID: <20080911035514.GE8077@ime.usp.br>
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 1AA07DDF05
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 14:36:04 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ppc4xx: Allow 4xx PCI bridge to be disabled via device
+	tree
+Date: Thu, 11 Sep 2008 06:30:56 +0200
+References: <200809101755.46883.matthias.fuchs@esd-electronics.com>
+In-Reply-To: <200809101755.46883.matthias.fuchs@esd-electronics.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, 497605@bugs.debian.org,
-	debian-powerpc@lists.debian.org, debian-release@lists.debian.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200809110630.56392.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,28 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Paul,
+On Wednesday 10 September 2008, Matthias Fuchs wrote:
+> This patch allows the 4xx (conventional) PCI bridge to be disabled
+> via the device tree. This is needed for 4xx PCI adapter hardware.
+>
+> Use the PCI node's status property to disable the PCI bridge.
+>
+> Signed-off-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
 
-I would like to ask you a few things:
+Acked-by: Stefan Roese <sr@denx.de>
 
-* which is the official dtc git repository?
-  I ask it here because dtc.ozlabs.org doesn't seem to work, but this is
-  what is linked to from the page <http://ozlabs.org/> and the
-  device-tree-compiler package on Debian has an outdated page (it
-  seems). I already filed a bugreport to that package
-  (http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=497605).
-
-* where can I find the people responsible for glibc and gcc/g++ so that
-  I can fill in the empty fields at
-  <http://wiki.debian.org/powerpcLennyReleaseRecertification>, so that
-  powerpc does not become "at risk" of not being released? Is the
-  powerpc port cared by some team in special or is it just a "unified"
-  upstream?
-
-
-Thanks in advance, Rogério Brito.
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+Best regards,
+Stefan
