@@ -1,23 +1,15 @@
-Return-Path: <littelld@verizon.net>
-Received: from vms044pub.verizon.net (vms044pub.verizon.net [206.46.252.44])
-	by ozlabs.org (Postfix) with ESMTP id 6F377DE052
+Return-Path: <mrp_crl@yahoo.co.in>
+Received: from web8908.mail.in.yahoo.com (web8908.mail.in.yahoo.com
+	[203.84.221.140]) by ozlabs.org (Postfix) with SMTP id 94938DDF60
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Sep 2008 11:49:35 +1000 (EST)
-Received: from [192.168.1.106] ([96.226.142.190])
-	by vms044.mailsrvcs.net (Sun Java System Messaging Server 6.2-6.01
-	(built Apr
-	3 2006)) with ESMTPA id <0K7000A0FD1W0571@vms044.mailsrvcs.net> for
-	linuxppc-embedded@ozlabs.org; Wed, 10 Sep 2008 20:49:08 -0500 (CDT)
-Date: Wed, 10 Sep 2008 20:49:08 -0500
-From: Dave Littell <littelld@verizon.net>
-Subject: Re: initramfs too large?
-In-reply-to: <48C7CD29.7040906@coritel.it>
+	Thu, 11 Sep 2008 21:36:30 +1000 (EST)
+Date: Thu, 11 Sep 2008 16:59:48 +0530 (IST)
+From: M Ravi Prakash Reddy <mrp_crl@yahoo.co.in>
+Subject: Intefacing SD Card through SPI for MPC85xx
 To: linuxppc-embedded@ozlabs.org
-Message-id: <48C87914.4000005@verizon.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-References: <48C719BB.1050807@verizon.net> <48C76AFF.6090205@coritel.it>
-	<48C7BB99.1070902@verizon.net> <48C7CD29.7040906@coritel.it>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-1214146935-1221132588=:14185"
+Message-ID: <683858.14185.qm@web8908.mail.in.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,37 +20,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Marco Stornelli wrote:
-> Hi Dave,
-> 
-> no if well remeber for 2.6.18 it's "ramdisk_size" (before this option
-> had a name slightly different) but you can check it out in the kernel
-> documentation (in the documentation folder of your kernel). Another
-> thing: you should check out that the kernel, the initram disk and the
-> dtb are loaded in ram from your bootloader without overlapping, maybe
-> you've changed the dimensions and something is overlapped.
-> 
+--0-1214146935-1221132588=:14185
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Everything is included in one zImage, so where things are placed in
-memory is all a function of the linker, wrapper, and gunzip, right?  I
-did try a "ramdisk_size" command-line argument and saw no change in
-behavior.
+Hi ALL,=0A=0Awe have a MPC8541(Freescale PowerPC, PowerQUICC3)  based custo=
+m board, we ported linux kernel 2.6.19 on it, and it is working fine.=0AWe =
+used mpc8555_cds_defconfig as our configuration file for compiling the kern=
+el.=0ANow we want to connect SD card through SPI interface to our board. Dr=
+ivers for both SPI and MMC/SD card are present in the kernel.=0ABut none of=
+ the evaluation boards for MPC85XX has interfaced SD card through SPI, so w=
+e are facing problems in configuring the SD card=0Athrough SPI. Let us know=
+ the steps to configure the SD card.=0A=0AThanks in advance=0A=0A=0A      U=
+nlimited freedom, unlimited storage. Get it now, on http://help.yahoo.com/l=
+/in/yahoo/mail/yahoomail/tools/tools-08.html/
+--0-1214146935-1221132588=:14185
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-I noticed today that with the smaller initramfs the kernel is smaller
-than 8 MB (_end < 0xc0800000), but with the larger initramfs all the
-symbols following the end marker for initramfs are beyond 8 MB.  Is this
-a clue?
-
-Using the JTAG I stopped at early_init() and looked at the
-__machine_desc_start area.  I noticed that when booting with the smaller
-initramfs there's (apparently) good information in there but with the
-larger initramfs the area is mostly filled with 0xff's.  I'm now
-wondering if there's some relationship between this 8 MB boundary and
-possibly some problem in the zImage wrapper, the wrapper's gunzip, or
-something in that area.
-
-So, is 8 MB some magic number for the PowerPC kernel?
-
-
-Thanks,
-Dave
+<html><head><style type=3D"text/css"><!-- DIV {margin:0px;} --></style></he=
+ad><body><div style=3D"font-family:verdana,helvetica,sans-serif;font-size:1=
+2pt"><div>Hi ALL,<br><br>we have a MPC8541(Freescale PowerPC, PowerQUICC3)&=
+nbsp; based custom board, we ported linux kernel 2.6.19 on it, and it is wo=
+rking fine.<br>We used mpc8555_cds_defconfig as our configuration file for =
+compiling the kernel.<br>Now we want to connect SD card through SPI interfa=
+ce to our board. Drivers for both SPI and MMC/SD card are present in the ke=
+rnel.<br>But none of the evaluation boards for MPC85XX has interfaced SD ca=
+rd through SPI, so we are facing problems in configuring the SD card<br>thr=
+ough SPI. Let us know the steps to configure the SD card.<br><br>Thanks in =
+advance<br><br></div></div><br>=0A=0A=0A      <!--6--><hr size=3D1></hr> Ad=
+d more friends to your messenger and enjoy! <a href=3D"http://in.rd.yahoo.c=
+om/tagline_messenger_6/*http://in.messenger.yahoo.com/invite/"> Invite them=
+ now.</a></body></html>
+--0-1214146935-1221132588=:14185--
