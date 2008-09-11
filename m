@@ -1,22 +1,15 @@
-Return-Path: <phazarika@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 079F0DDF15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Sep 2008 10:34:53 +1000 (EST)
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 11 Sep 2008 10:27:12 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: Get USE_STRICT_MM_TYPECHECKS working again
+Message-ID: <20080911002712.GC4713@yookeroo.seuss>
+References: <20080909050447.GC30127@yookeroo.seuss>
+	<20080909120956.GA2576@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Question on 4xx GIT tree
-Date: Wed, 10 Sep 2008 17:34:33 -0700
-Message-ID: <0CA0A16855646F4FA96D25A158E299D605014C40@SDCEXCHANGE01.ad.amcc.com>
-In-Reply-To: <20080910203100.6c0bf2d5@zod.rchland.ibm.com>
-References: <0CA0A16855646F4FA96D25A158E299D604F7F1A4@SDCEXCHANGE01.ad.amcc.com><20080908173509.7cccdbc7@zod.rchland.ibm.com><0CA0A16855646F4FA96D25A158E299D604F7F1E1@SDCEXCHANGE01.ad.amcc.com><20080908193856.0cfd1c86@zod.rchland.ibm.com><0CA0A16855646F4FA96D25A158E299D605014C18@SDCEXCHANGE01.ad.amcc.com>
-	<20080910203100.6c0bf2d5@zod.rchland.ibm.com>
-From: "Prodyut Hazarika" <phazarika@amcc.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080909120956.GA2576@lst.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +19,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Josh,
+On Tue, Sep 09, 2008 at 02:09:56PM +0200, Christoph Hellwig wrote:
+> On Tue, Sep 09, 2008 at 03:04:47PM +1000, David Gibson wrote:
+> > The typesafe version of the powerpc pagetable handling (with
+> > USE_STRICT_MM_TYPECHECKS defined) has bitrotted again.  This patch
+> > makes a bunch of small fixes to get it building again.
+> 
+> It might be a better idea to mark these types __bitwise and use sparse
+> to do the stricter checking..
 
-> > Do you know the reason why these drivers were removed? Also, are =
-there plans to get these drivers back?
-> > Please let me know.
+Uh.. I don't think that would do quite the same thing.  In particular
+it wouldn't catch assignments between (say) pmd_t and pte_t.
 
-> Perhaps they are in the DENX kernel?  If so, someone would need to =
-submit them for inclusion.
-
-Yes those drivers were in the Denx kernel. I was in the impression that =
-they were in the mainline Linux tree too. I will try to get those =
-drivers submitted to the main Linux tree.
-
-Thanks for your clarifications.
-
-Regards,
-Prodyut Hazarika
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
