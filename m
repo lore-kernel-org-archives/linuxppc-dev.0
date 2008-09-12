@@ -1,21 +1,17 @@
-Return-Path: <skepper@chara.vm.bytemark.co.uk>
-Received: from chara.vm.bytemark.co.uk (chara.vm.bytemark.co.uk [80.68.89.253])
-	by ozlabs.org (Postfix) with ESMTP id EF228DDEE2
+Return-Path: <MCarey@nearfield.com>
+Received: from webmail.nearfield.com (webmail.nearfield.com [63.200.6.70])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "webmail.nearfield.com", Issuer "NSI" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id C0342DDED7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 Sep 2008 00:46:31 +1000 (EST)
-Date: Fri, 12 Sep 2008 15:46:20 +0100 (BST)
-From: Chris Skepper <skepper@ukf.net>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Not probing devices on PowerPC MPC8247 and kernel 2.6.26
-In-Reply-To: <48C7EE10.40500@freescale.com>
-Message-ID: <Pine.LNX.4.62.0809121105460.14412@chara.vm.bytemark.co.uk>
-References: <Pine.LNX.4.62.0809101058580.24139@chara.vm.bytemark.co.uk>
-	<48C7EE10.40500@freescale.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Sender: Chris Skepper <skepper@chara.vm.bytemark.co.uk>
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: skepper@ukf.net
+	Sat, 13 Sep 2008 08:18:43 +1000 (EST)
+Message-Id: <48CA8840.9124.0071.0@nearfield.com>
+Date: Fri, 12 Sep 2008 15:18:24 -0700
+From: "Michael Carey" <MCarey@nearfield.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Support for multiple consoles
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,34 +22,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->> I have an MPC8247 based board.  I can get the SMC1 console working, but the 
->> other SCCx serial ports and the FCC1 ethernet doesn't work.
->> 
->> It appears that a part of the problem is that the probe methods are not 
->> called.  The "match" table stuff all looks fine and the serial ports and 
->> ethernet are defined in the .dts file. The module init function is called, 
->> but the probe methods are not reached. It seems driver_register gets 
->> called, so why doesn't something call probe?
->> 
->> Is there likely to be some problem with the bus setup?
->
-> Are you calling of_platform_bus_probe() from your platform code, and do the 
-> soc and cpm nodes match the bus list (I recommend using compatible = 
-> "simple-bus")?
->
-> -Scott
+Hi All,
+
+I am using ELDK 3.1.1 on a mpc5200 platform with a CoralP pci card.  I =
+also connecting a keyboard and mouse.  When I compile the code without a =
+virtual console, then my terminal session rules.  I can type with my =
+terminal keyboard and everything seems fine.
+
+When I compile with a virtual console, then my embedded lcd displays text =
+and my usb keyboard works.  Everything is great.
+
+Is there a way to switch back and forth between my embedded console to my =
+terminal console?  I have tried console=3DttyS0, but that does not seem to =
+do anything.
+When I list my devices: 'ls /dev' I only get tty, ttyS0, ttyS1, and ttyS2. =
+ I do not see a tty0.
+
+Is there a way to run multiple consoles on this configuration? If not, =
+does to ELDK 4.x support this?
 
 
-Hi Scott,
+Thanks in advance for any information or guidance.
 
-I added the simple-bus to the soc and cpm nodes and it started working 
-just before your email arrived, but it's good to know I did the right 
-thing.
-
-Thanks for all your help, I've now got my board working very happily with 
-Linux 2.6.26 and arch=powerpc.  In the end it was pretty much all in the 
-dts file, but I don't think I'd have got there without your hints.
-
-Cheers,
-
-Chris.
+Michael Carey
