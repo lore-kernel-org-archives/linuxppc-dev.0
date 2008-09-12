@@ -1,21 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5A4E1DDFC5
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Sep 2008 07:08:16 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m8CL8B90024762
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Sep 2008 16:08:11 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4 3/4] powerpc/fsl-booke: Fixup 64-bit PTE reading for SMP
-	support
-Date: Fri, 12 Sep 2008 16:08:07 -0500
-Message-Id: <1221253688-25864-3-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1221253688-25864-2-git-send-email-galak@kernel.crashing.org>
-References: <1221253688-25864-1-git-send-email-galak@kernel.crashing.org>
-	<1221253688-25864-2-git-send-email-galak@kernel.crashing.org>
+Return-Path: <surendranath.moilla@cmcltd.com>
+Received: from omr.securemx.in (omr.securemx.in [121.241.247.18])
+	by ozlabs.org (Postfix) with ESMTP id B1BC5DDED7
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Sep 2008 08:13:08 +1000 (EST)
+Message-ID: <45009.129.188.69.145.1221257496.squirrel@webmail.cmcltd.com>
+In-Reply-To: <22f834b10809121110n440a67d3y428fb4f9a1360a0@mail.gmail.com>
+References: <26813.129.188.69.161.1221165116.squirrel@webmail.cmcltd.com>
+	<22f834b10809121110n440a67d3y428fb4f9a1360a0@mail.gmail.com>
+Date: Sat, 13 Sep 2008 03:41:36 +0530 (IST)
+Subject: Re: TDM driver
+From: surendranath.moilla@cmcltd.com
+To: "Srivatsan S" <vatsan007@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, surendranath.moilla@cmcltd.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,71 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We need to create a false data dependency to ensure the loads of
-the pte are done in the right order.
+Hi Srivatsan,
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/kernel/head_fsl_booke.S |   26 +++++++++++++++++++++-----
- 1 files changed, 21 insertions(+), 5 deletions(-)
+     I have got these patches in google.
+i have not yet used these for MPV8360. If you have already workded on TDM
+drivers for MPC8360.
+Can you please send me the driver code .
 
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 3cb52fa..377e0c1 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -579,13 +579,19 @@ interrupt_base:
- 
- 	FIND_PTE
- 	andc.	r13,r13,r11		/* Check permission */
--	bne	2f			/* Bail if permission mismach */
- 
- #ifdef CONFIG_PTE_64BIT
--	lwz	r13, 0(r12)
-+#ifdef CONFIG_SMP
-+	subf	r10,r11,r12		/* create false data dep */
-+	lwzx	r13,r11,r10		/* Get upper pte bits */
-+#else
-+	lwz	r13,0(r12)		/* Get upper pte bits */
-+#endif
- #endif
- 
--	 /* Jump to common tlb load */
-+	bne	2f			/* Bail if permission/valid mismach */
-+
-+	/* Jump to common tlb load */
- 	b	finish_tlb_load
- 2:
- 	/* The bailout.  Restore registers to pre-exception conditions
-@@ -640,10 +646,20 @@ interrupt_base:
- 
- 	FIND_PTE
- 	andc.	r13,r13,r11		/* Check permission */
-+
-+#ifdef CONFIG_PTE_64BIT
-+#ifdef CONFIG_SMP
-+	subf	r10,r11,r12		/* create false data dep */
-+	lwzx	r13,r11,r10		/* Get upper pte bits */
-+#else
-+	lwz	r13,0(r12)		/* Get upper pte bits */
-+#endif
-+#endif
-+
- 	bne	2f			/* Bail if permission mismach */
- 
- #ifdef CONFIG_PTE_64BIT
--	lwz	r13, 0(r12)
-+	lwz	r13,0(r12)
- #endif
- 
- 	/* Jump to common TLB load point */
-@@ -702,7 +718,7 @@ interrupt_base:
- /*
-  * Both the instruction and data TLB miss get to this
-  * point to load the TLB.
-- *	r10 - EA of fault
-+ *	r10 - available to use
-  *	r11 - TLB (info from Linux PTE)
-  *	r12 - available to use
-  *	r13 - upper bits of PTE (if PTE_64BIT) or available to use
--- 
-1.5.5.1
+Regards
+Surendra
+
+
+
+> Surendra,
+>
+> I've worked on TDM drivers on MPC8360 for a custom board. You could send
+> the
+> patches for verification.
+>
+> - Srivatsan
+>
+> 2008/9/11 <surendranath.moilla@cmcltd.com>
+>
+>> Hi,
+>>
+>>  I am working on Custom MPC8360 Target board.
+>> I have four devices connected through the TDM interface.
+>> Does any one has written TDM driver for this Processor.
+>> I have seen some patches for MPC8323. Is this TDM driver is included in
+>> any latest versions of kernel.
+>>
+>> Regards
+>> Surendra
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>>
+>
+>
+>
+> --
+> - Srivatsan
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
