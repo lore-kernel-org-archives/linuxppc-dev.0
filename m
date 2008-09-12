@@ -1,15 +1,21 @@
-Return-Path: <mrp_crl@yahoo.co.in>
-Received: from web8908.mail.in.yahoo.com (web8908.mail.in.yahoo.com
-	[203.84.221.140]) by ozlabs.org (Postfix) with SMTP id 94938DDF60
+Return-Path: <skepper@chara.vm.bytemark.co.uk>
+Received: from chara.vm.bytemark.co.uk (chara.vm.bytemark.co.uk [80.68.89.253])
+	by ozlabs.org (Postfix) with ESMTP id EF228DDEE2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Sep 2008 21:36:30 +1000 (EST)
-Date: Thu, 11 Sep 2008 16:59:48 +0530 (IST)
-From: M Ravi Prakash Reddy <mrp_crl@yahoo.co.in>
-Subject: Intefacing SD Card through SPI for MPC85xx
-To: linuxppc-embedded@ozlabs.org
+	Sat, 13 Sep 2008 00:46:31 +1000 (EST)
+Date: Fri, 12 Sep 2008 15:46:20 +0100 (BST)
+From: Chris Skepper <skepper@ukf.net>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Not probing devices on PowerPC MPC8247 and kernel 2.6.26
+In-Reply-To: <48C7EE10.40500@freescale.com>
+Message-ID: <Pine.LNX.4.62.0809121105460.14412@chara.vm.bytemark.co.uk>
+References: <Pine.LNX.4.62.0809101058580.24139@chara.vm.bytemark.co.uk>
+	<48C7EE10.40500@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1214146935-1221132588=:14185"
-Message-ID: <683858.14185.qm@web8908.mail.in.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Sender: Chris Skepper <skepper@chara.vm.bytemark.co.uk>
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: skepper@ukf.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -20,36 +26,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1214146935-1221132588=:14185
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+>> I have an MPC8247 based board.  I can get the SMC1 console working, but the 
+>> other SCCx serial ports and the FCC1 ethernet doesn't work.
+>> 
+>> It appears that a part of the problem is that the probe methods are not 
+>> called.  The "match" table stuff all looks fine and the serial ports and 
+>> ethernet are defined in the .dts file. The module init function is called, 
+>> but the probe methods are not reached. It seems driver_register gets 
+>> called, so why doesn't something call probe?
+>> 
+>> Is there likely to be some problem with the bus setup?
+>
+> Are you calling of_platform_bus_probe() from your platform code, and do the 
+> soc and cpm nodes match the bus list (I recommend using compatible = 
+> "simple-bus")?
+>
+> -Scott
 
-Hi ALL,=0A=0Awe have a MPC8541(Freescale PowerPC, PowerQUICC3)  based custo=
-m board, we ported linux kernel 2.6.19 on it, and it is working fine.=0AWe =
-used mpc8555_cds_defconfig as our configuration file for compiling the kern=
-el.=0ANow we want to connect SD card through SPI interface to our board. Dr=
-ivers for both SPI and MMC/SD card are present in the kernel.=0ABut none of=
- the evaluation boards for MPC85XX has interfaced SD card through SPI, so w=
-e are facing problems in configuring the SD card=0Athrough SPI. Let us know=
- the steps to configure the SD card.=0A=0AThanks in advance=0A=0A=0A      U=
-nlimited freedom, unlimited storage. Get it now, on http://help.yahoo.com/l=
-/in/yahoo/mail/yahoomail/tools/tools-08.html/
---0-1214146935-1221132588=:14185
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
 
-<html><head><style type=3D"text/css"><!-- DIV {margin:0px;} --></style></he=
-ad><body><div style=3D"font-family:verdana,helvetica,sans-serif;font-size:1=
-2pt"><div>Hi ALL,<br><br>we have a MPC8541(Freescale PowerPC, PowerQUICC3)&=
-nbsp; based custom board, we ported linux kernel 2.6.19 on it, and it is wo=
-rking fine.<br>We used mpc8555_cds_defconfig as our configuration file for =
-compiling the kernel.<br>Now we want to connect SD card through SPI interfa=
-ce to our board. Drivers for both SPI and MMC/SD card are present in the ke=
-rnel.<br>But none of the evaluation boards for MPC85XX has interfaced SD ca=
-rd through SPI, so we are facing problems in configuring the SD card<br>thr=
-ough SPI. Let us know the steps to configure the SD card.<br><br>Thanks in =
-advance<br><br></div></div><br>=0A=0A=0A      <!--6--><hr size=3D1></hr> Ad=
-d more friends to your messenger and enjoy! <a href=3D"http://in.rd.yahoo.c=
-om/tagline_messenger_6/*http://in.messenger.yahoo.com/invite/"> Invite them=
- now.</a></body></html>
---0-1214146935-1221132588=:14185--
+Hi Scott,
+
+I added the simple-bus to the soc and cpm nodes and it started working 
+just before your email arrived, but it's good to know I did the right 
+thing.
+
+Thanks for all your help, I've now got my board working very happily with 
+Linux 2.6.26 and arch=powerpc.  In the end it was pretty much all in the 
+dts file, but I don't think I'd have got there without your hints.
+
+Cheers,
+
+Chris.
