@@ -1,26 +1,16 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7E37FDE02F
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Sep 2008 09:52:50 +1000 (EST)
-Date: Fri, 12 Sep 2008 03:52:38 +0400
-From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <929314322.20080912035238@emcraft.com>
-To: Ilya Yanok <yanok@emcraft.com>
-Subject: Re[2]: [PATCH] powerpc: add support for PAGE_SIZEs greater than 4KB
-	for
-In-Reply-To: <48C99F42.80909@emcraft.com>
-References: <1221083587-8091-1-git-send-email-yanok@emcraft.com>
-	<1221083587-8091-2-git-send-email-yanok@emcraft.com>
-	<49c0ff980809110957h4b7b85d4ie39dbb27d1edbe39@mail.gmail.com>
-	<48C96349.1040903@emcraft.com>
-	<49c0ff980809111138xc2b8fadj79f1a1340a3dad0c@mail.gmail.com>
-	<48C99F42.80909@emcraft.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 12 Sep 2008 10:36:40 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Oliver Rutsch <orutsch@sympatec.com>
+Subject: Re: TQM8349 and ARCH = powerpc
+Message-ID: <20080912003640.GA22288@yookeroo.seuss>
+References: <48C68763.6030606@sympatec.com>
+	<20080909112253.c9c9617f.kim.phillips@freescale.com>
+	<48C7D5C6.1070507@sympatec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, prodyut hazarika <prodyuth@gmail.com>, wd@denx.de,
-	dzu@denx.de
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48C7D5C6.1070507@sympatec.com>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,67 +20,116 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=0D=0AHi Ilya,
-
-On Friday, September 12, 2008 you wrote:
-
-> Hi,
-
-> prodyut hazarika wrote:
->> In file arch/powerpc/mm/pgtable_32.c, we have:
+On Wed, Sep 10, 2008 at 04:12:22PM +0200, Oliver Rutsch wrote:
+> Hi again,
+>
 >>
->> #ifdef CONFIG_PTE_64BIT
->> /* 44x uses an 8kB pgdir because it has 8-byte Linux PTEs. */
->> #define PGDIR_ORDER     1
->> #else
->> #define PGDIR_ORDER     0
->> #endif
->> pgd_t *pgd_alloc(struct mm_struct *mm)
->> {
->>         pgd_t *ret;
+>> u-boot assigns the IMMR to 0xff400000 in TQM834x.h, whereas the device
+>> tree you picked has it at 0xe0000000 (it's defined in the soc node).
+>> Don't forget to match up the PCI addresses too.  patches welcome, of
+>> course (we don't have tqm boards).
 >>
->>         ret =3D (pgd_t *)__get_free_pages(GFP_KERNEL|__GFP_ZERO, PGDIR_O=
-RDER);
->>         return ret;
->> }
->>
->> Thus, we allocate 2 pages for 44x processors for PGD. This is needed
->> only for 4K page.
->> We are anyway not using the whole 64K or 256K page for the PGD. So
->> there is no point to waste an additional 64K or 256KB page
->>  =20
+> So I modified the dts to match the IMMRMBAR and the pci section at  
+> 0xff400000. In U-Boot I disabled the PCI_CONFIG because I don't need the  
+> PCI bus. But the result is always the same. It looks like the kernel  
+> stops booting at an earlier stage.
+>
+> I hope it's OK to post my current tqm8349.dts here:
+> Any suggestions are welcome.
+>
+> Thanks and bye,
+>
+> /dts-v1/;
 
-> Ok. Not sure I'm right but I think 16K case doesn't need second page=20
-> too. (PGDIR_SHIFT=3D25, so sizeof(pgd_t)<<(32-PGDIR_SHIFT) < 16KB)
+[snip]
+>     wdt@200 {
+>       device_type = "watchdog";
 
- ACK, no need need in a second page when working with 16K pages.
-Prodyut's approach addresses this too, but ...
+Drop this device_type.
 
->> Change this to:
->> #ifdef CONFIG_PTE_64BIT
->> #if (PAGE_SHIFT =3D=3D 12)
->>  =20
+>       compatible = "mpc83xx_wdt";
+>       reg = <0x200 0x100>;
+>     };
 
-> I think #ifdef CONFIG_PTE_64BIT is a little bit confusing here... =20
-> Actually PGDIR_ORDER  should be something like max(32 + 2 - PGDIR_SHIFT
-> - PAGE_SHIFT, 0)
+[snip]
+>     usb@22000 {
+>       compatible = "fsl-usb2-mph";
+>       reg = <0x22000 0x1000>;
+>       #address-cells = <1>;
+>       #size-cells = <0>;
+>       interrupt-parent = <&ipic>;
+>       interrupts = <39 0x8>;
+>       phy_type = "ulpi";
+>       port1;
 
->> /* 44x uses an 8kB pgdir because it has 8-byte Linux PTEs. */
->> #define PGDIR_ORDER     1
->> #else
->> #define PGDIR_ORDER     0
->> #endif
->> #else
->> #define PGDIR_ORDER     0
->> #endif
->>  =20
+Yuck.. is this 'port1' thing in the binding?  It's a terrible property
+name...
 
-> Yuri, any comments?
+>     };
 
- ... as for me, I like your approach more.
+[snip]
+>     enet0: ethernet@24000 {
+>       cell-index = <0>;
+>       device_type = "network";
+>       model = "TSEC";
+>       compatible = "gianfar";
 
- Regards, Yuri
+Didn't someone finally get around to rewriting the gianfar binding
+with a better compatible string?
 
- --
- Yuri Tikhonov, Senior Software Engineer
- Emcraft Systems, www.emcraft.com
+>       reg = <0x24000 0x1000>;
+>       local-mac-address = [ 00 00 00 00 00 00 ];
+>       interrupts = <32 0x8 33 0x8 34 0x8>;
+>       interrupt-parent = <&ipic>;
+>       phy-handle = <&phy0>;
+>       linux,network-index = <0>;
+
+linux,network-index shouldn't be necessary any more.
+
+>     };
+
+[snip]
+>   pci0: pci@ff408500 {
+>     cell-index = <1>;
+
+I don't think cell-index belongs here.
+
+>     interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+>     interrupt-map = <
+>         /* IDSEL 0x10 - SATA */
+>         0x8000 0x0 0x0 0x1 &ipic 22 0x8 /* SATA_INTA */
+>         >;
+>     interrupt-parent = <&ipic>;
+>     interrupts = <66 0x8>;
+>     bus-range = <0x0 0x0>;
+>     ranges = <0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
+>         0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
+>         0x01000000 0x0 0x00000000 0xe2000000 0x0 0x01000000>;
+>     clock-frequency = <66666666>;
+>     #interrupt-cells = <1>;
+>     #size-cells = <2>;
+>     #address-cells = <3>;
+>     reg = <0xff408500 0x100>;
+>     compatible = "fsl,mpc8349-pci";
+>     device_type = "pci";
+>   };
+>
+>   localbus@ff405000 {
+>     #address-cells = <2>;
+>     #size-cells = <1>;
+>     compatible = "fsl,mpc8349e-localbus",
+>            "fsl,pq2pro-localbus";
+>     reg = <0xff405000 0xd8>;
+>     ranges = <0x3 0x0 0xf0000000 0x210>;
+>
+>
+>   };
+> };
+>
+>
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
