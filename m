@@ -1,15 +1,21 @@
-Return-Path: <vatsan007@gmail.com>
-Message-ID: <22f834b10809121110n440a67d3y428fb4f9a1360a0@mail.gmail.com>
-Date: Fri, 12 Sep 2008 13:10:33 -0500
-From: "Srivatsan S" <vatsan007@gmail.com>
-To: surendranath.moilla@cmcltd.com
-Subject: Re: TDM driver
-In-Reply-To: <26813.129.188.69.161.1221165116.squirrel@webmail.cmcltd.com>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_53598_1070133.1221243033517"
-References: <26813.129.188.69.161.1221165116.squirrel@webmail.cmcltd.com>
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <randy.dunlap@oracle.com>
+Received: from rgminet01.oracle.com (rgminet01.oracle.com [148.87.113.118])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E84E6DDF7B
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Sep 2008 04:45:37 +1000 (EST)
+Date: Fri, 12 Sep 2008 11:44:41 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 4/4] Add kernel doc for the completion, fix
+	kernel-doc-nano-HOWTO.txt
+Message-Id: <20080912114441.ce25096f.randy.dunlap@oracle.com>
+In-Reply-To: <20080826083202.GA24733@elte.hu>
+References: <48B29696.3070808@hypersurf.com> <20080826083202.GA24733@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Kevin Diggs <kevdig@hypersurf.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,56 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_53598_1070133.1221243033517
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, 26 Aug 2008 10:32:02 +0200 Ingo Molnar wrote:
 
-Surendra,
+> 
+> * Kevin Diggs <kevdig@hypersurf.com> wrote:
+> 
+> > This patch adds kernel doc for the completion feature. It is in 
+> > kernel/sched.c and include/linux/completion.h.
+> >
+> > An error in the split-man.pl PERL snippet in kernel-doc-nano-HOWTO.txt 
+> > is also fixed.
+> 
+> applied to tip/sched/devel - thanks Kevin!
 
-I've worked on TDM drivers on MPC8360 for a custom board. You could send the
-patches for verification.
+Ack and thanks, but next time, please describe the error that is being
+fixed.
 
-- Srivatsan
-
-2008/9/11 <surendranath.moilla@cmcltd.com>
-
-> Hi,
->
->  I am working on Custom MPC8360 Target board.
-> I have four devices connected through the TDM interface.
-> Does any one has written TDM driver for this Processor.
-> I have seen some patches for MPC8323. Is this TDM driver is included in
-> any latest versions of kernel.
->
-> Regards
-> Surendra
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
-
--- 
-- Srivatsan
-
-------=_Part_53598_1070133.1221243033517
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div dir="ltr"><div>Surendra,</div>
-<div>&nbsp;</div>
-<div>I&#39;ve worked on TDM drivers on MPC8360 for a custom board. You could send the patches for verification.</div>
-<div>&nbsp;</div>
-<div>- Srivatsan<br><br></div>
-<div class="gmail_quote">2008/9/11 <span dir="ltr">&lt;<a href="mailto:surendranath.moilla@cmcltd.com">surendranath.moilla@cmcltd.com</a>&gt;</span><br>
-<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">Hi,<br><br>&nbsp;I am working on Custom MPC8360 Target board.<br>I have four devices connected through the TDM interface.<br>
-Does any one has written TDM driver for this Processor.<br>I have seen some patches for MPC8323. Is this TDM driver is included in<br>any latest versions of kernel.<br><br>Regards<br>Surendra<br><br>_______________________________________________<br>
-Linuxppc-dev mailing list<br><a href="mailto:Linuxppc-dev@ozlabs.org">Linuxppc-dev@ozlabs.org</a><br><a href="https://ozlabs.org/mailman/listinfo/linuxppc-dev" target="_blank">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a><br>
-</blockquote></div><br><br clear="all"><br>-- <br>- Srivatsan<br></div>
-
-------=_Part_53598_1070133.1221243033517--
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
