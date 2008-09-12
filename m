@@ -1,11 +1,20 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910809121343q641f4204pccf6ae110fbd6a04@mail.gmail.com>
-Date: Fri, 12 Sep 2008 16:43:22 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: Device treee syntax for expanding mpc5200 gpios
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B068FDDDFD
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Sep 2008 06:45:35 +1000 (EST)
+Message-Id: <5AB78B49-1033-424C-958D-58E72264AF24@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <1220989419-26861-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH v2] powerpc: fix interrupt values for DMA2 in MPC8610 HPCD
+	device tree
+Date: Fri, 12 Sep 2008 15:45:27 -0500
+References: <1220989419-26861-1-git-send-email-timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,23 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I need to implement some more of the mpc5200's gpio capabilities.
 
-Right now we have:
-gpios = <&gpio_wkup 0 0>;
-first cell is index into the bank, and second is unused.
+On Sep 9, 2008, at 2:43 PM, Timur Tabi wrote:
 
-What do we need to fully describe a mpc5200 gpio?
+> For Freescale 8xxx devices that use an MPIC, the interrupt numbers  
+> in the
+> device tree must be 16 greater than the values documented in the  
+> reference
+> manual.  In these chips, the MPIC is wired to use the first 16  
+> numbers for
+> external interrupts, but the documentation numbers internal  
+> interrupts from 0.
+>
+> In the MPC8610 HPCD device tree, the interrupt properties for the  
+> DMA channels
+> for DMA2 were not the adjusted values.  This patch fixes that.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>
+> I have no idea how this was missed for so long, but this patch is a
+> must-fix for 2.6.27.
+>
+> (changes for v2: improve changelog text)
+>
+> arch/powerpc/boot/dts/mpc8610_hpcd.dts |    8 ++++----
+> 1 files changed, 4 insertions(+), 4 deletions(-)
 
-1) open drain: 1 enable
-2) interrupt: 0 no int, 1 simple, 2 wakeup, 3 both
-3) interrupt type: 0 any transition, 1 rising, 2 falling, 3 pulse
+applied.
 
-A gpio pin would then have four cells?
-
-Or should all of this be encoded into a single cell so that the
-existing two cell syntax can be preserved?
-
---
-Jon Smirl
-jonsmirl@gmail.com
+- k
