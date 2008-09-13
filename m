@@ -2,18 +2,16 @@ Return-Path: <jeff@garzik.org>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DCB2ADDFC9
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Sep 2008 05:41:03 +1000 (EST)
-Message-ID: <48CC1747.40408@garzik.org>
-Date: Sat, 13 Sep 2008 15:40:55 -0400
+	by ozlabs.org (Postfix) with ESMTPS id E8EF2DDFD3
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Sep 2008 05:41:28 +1000 (EST)
+Message-ID: <48CC1763.2050108@garzik.org>
+Date: Sat, 13 Sep 2008 15:41:23 -0400
 From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] ibm_newemac: Allow the "no flow control" EMAC feature
-	to work
-References: <cover.1220877899.git.jwboyer@linux.vnet.ibm.com>
-	<62e3d970a3bcb8158308bb645f99c75a41d177ff.1220877899.git.jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <62e3d970a3bcb8158308bb645f99c75a41d177ff.1220877899.git.jwboyer@linux.vnet.ibm.com>
+To: Victor Gallardo <vgallardo@amcc.com>
+Subject: Re: [PATCH] ibm_newemac: Add support for GPCS, SGMII and M88E1112 PHY
+References: <1220658926-14014-1-git-send-email-vgallardo@amcc.com>
+In-Reply-To: <1220658926-14014-1-git-send-email-vgallardo@amcc.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,20 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> Some PowerPC 40x chips have errata that force us not to use the integrated
-> flow control.  We have the feature defined, but it currently can't be used
-> because it is never added to EMAC_FTRS_POSSIBLE.
+Victor Gallardo wrote:
+> This patch adds GPCS, SGMII and M88E1112 PHY support
+> for the AMCC PPC460GT/EX processors.
 > 
-> This adds a Kconfig option for affected platforms to select and puts the
-> feature in the EMAC_FTRS_POSSIBLE list.  This is set for PowerPC 405EZ
-> platforms as well.
-> 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> Signed-off-by: Victor Gallardo <vgallardo@amcc.com>
 > ---
->  drivers/net/ibm_newemac/Kconfig |    4 ++++
->  drivers/net/ibm_newemac/core.c  |    2 ++
->  drivers/net/ibm_newemac/core.h  |    3 +++
->  3 files changed, 9 insertions(+), 0 deletions(-)
+>  drivers/net/ibm_newemac/core.c |   40 +++++++++++++++----
+>  drivers/net/ibm_newemac/core.h |    3 +
+>  drivers/net/ibm_newemac/phy.c  |   84 ++++++++++++++++++++++++++++++++++++++++
+>  drivers/net/ibm_newemac/phy.h  |    2 +
+>  4 files changed, 120 insertions(+), 9 deletions(-)
 
-ACK patches 1-3
+ACK, please coordinate with the driver maintainer to get this merged
