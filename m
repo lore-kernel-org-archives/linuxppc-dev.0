@@ -1,18 +1,18 @@
-Return-Path: <surendranath.moilla@cmcltd.com>
-Received: from omr.securemx.in (omr.securemx.in [121.241.247.18])
-	by ozlabs.org (Postfix) with ESMTP id B1BC5DDED7
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Sep 2008 08:13:08 +1000 (EST)
-Message-ID: <45009.129.188.69.145.1221257496.squirrel@webmail.cmcltd.com>
-In-Reply-To: <22f834b10809121110n440a67d3y428fb4f9a1360a0@mail.gmail.com>
-References: <26813.129.188.69.161.1221165116.squirrel@webmail.cmcltd.com>
-	<22f834b10809121110n440a67d3y428fb4f9a1360a0@mail.gmail.com>
-Date: Sat, 13 Sep 2008 03:41:36 +0530 (IST)
-Subject: Re: TDM driver
-From: surendranath.moilla@cmcltd.com
-To: "Srivatsan S" <vatsan007@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, surendranath.moilla@cmcltd.com
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: add support for PAGE_SIZEs greater than 4KB for
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20080912034814.GE22288@yookeroo.seuss>
+References: <1221083587-8091-1-git-send-email-yanok@emcraft.com>
+	<1221083587-8091-2-git-send-email-yanok@emcraft.com>
+	<20080912034814.GE22288@yookeroo.seuss>
+Content-Type: text/plain
+Date: Sat, 13 Sep 2008 10:46:50 -0700
+Message-Id: <1221328010.7675.21.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, dzu@denx.de, wd@denx.de,
+	Ilya Yanok <yanok@emcraft.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,50 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Srivatsan,
 
-     I have got these patches in google.
-i have not yet used these for MPV8360. If you have already workded on TDM
-drivers for MPC8360.
-Can you please send me the driver code .
+> [snip]
+> > diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+> > index fce2df9..4f802df 100644
+> > --- a/arch/powerpc/kernel/head_booke.h
+> > +++ b/arch/powerpc/kernel/head_booke.h
+> > @@ -20,7 +20,9 @@
+> >  	beq	1f;							     \
+> >  	mfspr	r1,SPRN_SPRG3;		/* if from user, start at top of   */\
+> >  	lwz	r1,THREAD_INFO-THREAD(r1); /* this thread's kernel stack   */\
+> > -	addi	r1,r1,THREAD_SIZE;					     \
+> > +	lis	r11,THREAD_SIZE@h;					     \
+> > +	ori	r11,r11,THREAD_SIZE@l;					     \
+> > +	add	r1,r1,r11;
+> > \
+> 
+> It would be nice if we could avoid the extra instruction here when the
+> page sizes isn't big enough to require it.
 
-Regards
-Surendra
+As a matter of fact, I don't see why THREAD_SIZE should ever need that,
+there is no reason to change the kernel stack size.
 
+> >  1:	subi	r1,r1,INT_FRAME_SIZE;	/* Allocate an exception frame     */\
+> >  	mr	r11,r1;							     \
+> >  	stw	r10,_CCR(r11);          /* save various registers	   */\
+> > @@ -112,7 +114,8 @@
+> >  	andi.	r10,r10,MSR_PR;						     \
+> >  	mfspr	r11,SPRN_SPRG3;		/* if from user, start at top of   */\
+> >  	lwz	r11,THREAD_INFO-THREAD(r11); /* this thread's kernel stack */\
+> > -	addi	r11,r11,EXC_LVL_FRAME_OVERHEAD;	/* allocate stack frame    */\
+> > +	addis	r11,r11,EXC_LVL_FRAME_OVERHEAD@ha; /* allocate stack frame */\
+> > +	addi	r11,r11,EXC_LVL_FRAME_OVERHEAD@l;  /* allocate stack frame */\
+> 
+> And here.
 
+Same comment. That size doesn't need to change and can remain safely
+below 32k
 
-> Surendra,
->
-> I've worked on TDM drivers on MPC8360 for a custom board. You could send
-> the
-> patches for verification.
->
-> - Srivatsan
->
-> 2008/9/11 <surendranath.moilla@cmcltd.com>
->
->> Hi,
->>
->>  I am working on Custom MPC8360 Target board.
->> I have four devices connected through the TDM interface.
->> Does any one has written TDM driver for this Processor.
->> I have seen some patches for MPC8323. Is this TDM driver is included in
->> any latest versions of kernel.
->>
->> Regards
->> Surendra
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>
->
->
->
-> --
-> - Srivatsan
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Ben.
