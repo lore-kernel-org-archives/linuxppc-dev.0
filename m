@@ -1,21 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.229])
-	by ozlabs.org (Postfix) with ESMTP id 21B92DDE1F
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 887B2DDFBD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 Sep 2008 08:44:00 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id s6so555799wxc.15
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Sep 2008 15:43:58 -0700 (PDT)
-Message-ID: <9e4733910809121543qe1325c6ya6b9218e87e39b7@mail.gmail.com>
-Date: Fri, 12 Sep 2008 18:43:58 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Michael Carey" <MCarey@nearfield.com>
-Subject: Re: Support for multiple consoles
-In-Reply-To: <48CA8840.9124.0071.0@nearfield.com>
+	Sun, 14 Sep 2008 10:13:07 +1000 (EST)
+Message-ID: <48CC570D.4080802@garzik.org>
+Date: Sat, 13 Sep 2008 20:13:01 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <48CA8840.9124.0071.0@nearfield.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: dhlii@dlasys.net
+Subject: Re: [PATCH] Linux Device Driver for Xilinx LL TEMAC 10/100/1000
+	Ethernet NIC
+References: <48AA938C.4060309@dlasys.net>
+In-Reply-To: <48AA938C.4060309@dlasys.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: netdev@vger.kernel.org, linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,38 +26,5 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 12, 2008 at 6:18 PM, Michael Carey <MCarey@nearfield.com> wrote:
-> Hi All,
->
-> I am using ELDK 3.1.1 on a mpc5200 platform with a CoralP pci card.  I also connecting a keyboard and mouse.  When I compile the code without a virtual console, then my terminal session rules.  I can type with my terminal keyboard and everything seems fine.
->
-> When I compile with a virtual console, then my embedded lcd displays text and my usb keyboard works.  Everything is great.
->
-> Is there a way to switch back and forth between my embedded console to my terminal console?  I have tried console=ttyS0, but that does not seem to do anything.
-> When I list my devices: 'ls /dev' I only get tty, ttyS0, ttyS1, and ttyS2.  I do not see a tty0.
->
-> Is there a way to run multiple consoles on this configuration? If not, does to ELDK 4.x support this?
-
-You should be able to get both consoles working. You probably aren't
-running a login process on the second console. I haven't done this
-recently, but reading about getty should give you some clues. This
-used to be controled through inittab but inittab is gone on my desktop
-so I don't know what controls it anymore.
-
->
->
-> Thanks in advance for any information or guidance.
->
-> Michael Carey
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Patch looks good -- ACK -- but I cannot apply since I do not have 
+include/linux/xilinx_devices.h
