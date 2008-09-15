@@ -1,15 +1,14 @@
-Return-Path: <parabelboi@bopserverein.de>
-Date: Mon, 15 Sep 2008 12:56:27 +0200
-From: Christian Krafft <parabelboi@bopserverein.de>
-To: ayoub_zaki@yahoo.fr
+Return-Path: <ayoub_zaki@yahoo.fr>
+Date: Mon, 15 Sep 2008 11:26:19 +0000 (GMT)
+From: ayoub zaki <ayoub_zaki@yahoo.fr>
 Subject: Re: PCI Post Boot scan
-Message-ID: <20080915125627.5b3465ae@schleppi>
-In-Reply-To: <428769.16820.qm@web26608.mail.ukl.yahoo.com>
-References: <428769.16820.qm@web26608.mail.ukl.yahoo.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/=_uKHiSdkqXjCu6E7EPLuxp";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
+To: Christian Krafft <parabelboi@bopserverein.de>
+In-Reply-To: <20080915125627.5b3465ae@schleppi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <550493.22907.qm@web26605.mail.ukl.yahoo.com>
 Cc: Linuxppc-dev@ozlabs.org
+Reply-To: ayoub_zaki@yahoo.fr
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,61 +18,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_/=_uKHiSdkqXjCu6E7EPLuxp
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi Christian,
 
-Hi Ayoub,
 
-On Mon, 15 Sep 2008 09:13:23 +0000 (GMT)
-ayoub zaki <ayoub_zaki@yahoo.fr> wrote:
+Unfortunately lspci -M is not showing my device.
 
->=20
-> Hi all,
->=20
-> I'm working on a mpc8572ds based board from freescale.
->=20
-> I have an onboard FPGA (PCI express) that I want to configure from the us=
-erspace application with the corresponding "firmware".=20
->=20
-> Only after a configuration that the FPGA shows its PCI nature.
->=20
-> the problem is that linux has no way to detect the PCI device unless I re=
-boot my board.
->=20
-> fakephp wouldn't help scince my device is not configured at the boot time.
->=20
-> Is there any way to do it so ?
->=20
-> Is it possible to re-initialize the whole pci stack again ?
 
-Does "lspci -M" do the trick ?
+Best regards,
 
+Ayoub Zaki
+
+
+--- En date de : Lun 15.9.08, Christian Krafft <parabelboi@bopserverein.de>=
+ a =E9crit :
+
+> De: Christian Krafft <parabelboi@bopserverein.de>
+> Objet: Re: PCI Post Boot scan
+> =C0: ayoub_zaki@yahoo.fr
+> Cc: Linuxppc-dev@ozlabs.org
+> Date: Lundi 15 Septembre 2008, 12h56
+> Hi Ayoub,
 >=20
-> Thanks for any kind help
+> On Mon, 15 Sep 2008 09:13:23 +0000 (GMT)
+> ayoub zaki <ayoub_zaki@yahoo.fr> wrote:
 >=20
-> Ayoub Zaki
+> >=20
+> > Hi all,
+> >=20
+> > I'm working on a mpc8572ds based board from
+> freescale.
+> >=20
+> > I have an onboard FPGA (PCI express) that I want to
+> configure from the userspace application with the
+> corresponding "firmware".=20
+> >=20
+> > Only after a configuration that the FPGA shows its PCI
+> nature.
+> >=20
+> > the problem is that linux has no way to detect the PCI
+> device unless I reboot my board.
+> >=20
+> > fakephp wouldn't help scince my device is not
+> configured at the boot time.
+> >=20
+> > Is there any way to do it so ?
+> >=20
+> > Is it possible to re-initialize the whole pci stack
+> again ?
 >=20
+> Does "lspci -M" do the trick ?
+>=20
+> >=20
+> > Thanks for any kind help
+> >=20
+> > Ayoub Zaki
+> >=20
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>=20
+>=20
+> --=20
+> Cheers,
+> ck
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-
---=20
-Cheers,
-ck
-
---Sig_/=_uKHiSdkqXjCu6E7EPLuxp
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkjOP3sACgkQKGsoWZeX2LGW6QCbB4AL8FsqlplKmvEdL0NBAN3i
-n7QAnjPq0xoyaD6rpxb7HKImNTc9+64K
-=TrQm
------END PGP SIGNATURE-----
-
---Sig_/=_uKHiSdkqXjCu6E7EPLuxp--
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev=0A=0A=0A      
