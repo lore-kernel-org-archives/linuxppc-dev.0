@@ -1,26 +1,23 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1.cisco.com [171.71.176.70])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-1.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 47AF5DDEFC
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 02:45:53 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Alexander Schmidt <alexs@linux.vnet.ibm.com>
-Subject: Re: [PATCH] ib/ehca: add flush CQE generation
-References: <20080910162356.7294fe87@BL3D1974.boeblingen.de.ibm.com>
-Date: Tue, 16 Sep 2008 09:45:38 -0700
-In-Reply-To: <20080910162356.7294fe87@BL3D1974.boeblingen.de.ibm.com>
-	(Alexander Schmidt's message of "Wed, 10 Sep 2008 16:23:56 +0200")
-Message-ID: <adak5dcdop9.fsf@cisco.com>
-MIME-Version: 1.0
+Return-Path: <scottwood@freescale.com>
+Date: Tue, 16 Sep 2008 12:49:35 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: demuxing irqs
+Message-ID: <20080916174935.GA13142@ld0162-tx32.am.freescale.net>
+References: <9e4733910809131623pe990495l96b31bd546d9fa6b@mail.gmail.com>
+	<9e4733910809140706i599d70b2q12d3582c7a95498c@mail.gmail.com>
+	<9e4733910809141625u3cd94e7jf05584031be7c1d9@mail.gmail.com>
+	<9e4733910809142006x350e96abs6af304d8807ccd67@mail.gmail.com>
+	<20080916121740.GA9970@oksana.dev.rtsoft.ru>
+	<9e4733910809160537s67812bf5x3d4d46a384f8237f@mail.gmail.com>
+	<20080916131203.GA21641@oksana.dev.rtsoft.ru>
+	<9e4733910809160636heaa545eld0da835b2d163811@mail.gmail.com>
+	<20080916141422.GA29888@oksana.dev.rtsoft.ru>
+	<9e4733910809160724x693c5af9y8df2f609e79f5005@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Joachim Fenkes <fenkes@de.ibm.com>, of-ewg <ewg@lists.openfabrics.org>,
-	lkml <linux-kernel@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	of-general <general@lists.openfabrics.org>,
-	Hoang-Nam Nguyen <HNGUYEN@linux.vnet.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+In-Reply-To: <9e4733910809160724x693c5af9y8df2f609e79f5005@mail.gmail.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Roland Dreier <rdreier@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,4 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, queued for 2.6.28.
+On Tue, Sep 16, 2008 at 10:24:35AM -0400, Jon Smirl wrote:
+> On Tue, Sep 16, 2008 at 10:14 AM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > Assume that GPIO 8 does not translate to any IRQ, but IRQ 8 is still
+> > valid virq b/c it is mapped for another IRQ controller (particularly
+> > lots of kernel code assumes that IRQ 8 is 8259 PIC's CMOS interrupt,
+> > the PIC and IRQ8 is widely used on PowerPC).
+> 
+> Set the base in the GPIO struct such that this won't happen.  You can
+> set the base greater than MAX_IRQ.
+
+And then you'll conflict with some other subsystem that decides to engage
+in the same shenanigans.
+
+Just allocate a chunk of virq space like any other cascaded IRQ
+controller.
+
+-Scott
