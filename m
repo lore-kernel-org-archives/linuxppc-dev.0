@@ -1,19 +1,19 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 1555CDE09E
+Return-Path: <adams.ppc@gmail.com>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id BB771DDF2B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Sep 2008 22:07:22 +1000 (EST)
-Message-ID: <48CFA1DC.9030400@coritel.it>
-Date: Tue, 16 Sep 2008 14:09:00 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
+	Wed, 17 Sep 2008 07:37:44 +1000 (EST)
+Received: by gxk14 with SMTP id 14so26427876gxk.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 16 Sep 2008 14:37:43 -0700 (PDT)
+Message-ID: <4a21eaea0809161437y2d3ba52et3803831828a62e4d@mail.gmail.com>
+Date: Tue, 16 Sep 2008 15:37:43 -0600
+From: "bhanu jampala" <adams.ppc@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: dma_to_virt() on PPC?
 MIME-Version: 1.0
-To: VenkataKrishna <venkatakrishnap@vrindatech.com>
-Subject: Re: module compilation linux
-References: <20080916114538.00E65DDDEC@ozlabs.org>
-In-Reply-To: <20080916114538.00E65DDDEC@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_95433_4516433.1221601063150"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,71 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Try ARCH=powerpc (lowercase).
+------=_Part_95433_4516433.1221601063150
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Regards.
+Hi All,
 
-VenkataKrishna ha scritto:
->  
-> 
-> I compiled modules in ELDK 4.0 installed in Linux. I got the  configure
-> error in show in the below. How to solve that. What are configure values
-> should need compile MPC8260 freescale device driver in linux.
-> 
->  
-> 
-> [root@VenkaKrisha linux-2.6-denx]# make ARCH=PowerPC CROSS_COMPILE=ppc_82xx-
-> modules
-> 
-> :0: error: -m64 not supported in this configuration
-> 
-> :0: error: -m64 not supported in this configuration
-> 
-> /opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line 31: printf: #:
-> invalid number/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line
-> 31: printf: #: invalid number/bin/sh: line 1: [: too many arguments
-> 
-> scripts/kconfig/conf -s arch/powerpc/Kconfig
-> 
-> *
-> 
-> * Restart config...
-> 
-> *
-> 
-> *
-> 
-> * Linux Kernel Configuration
-> 
-> *
-> 
-> 64-bit kernel (PPC64) [N/y/?] (NEW)
-> 
->  
-> 
->  
-> 
-> With Regards
-> 
->  
-> 
-> Venkatakrishna Pari
-> 
-> 
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+How do I convert a DMA buffer to virtual address on Linux PPC?
 
--- 
-Marco Stornelli
-Embedded Software Engineer
-CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-http://www.coritel.it
+I know there is some thing like dma_to_virt(), but I don't think if there is
+one for PPC.
+In this scenario where I have submitted some dma buffer form a chunk of
+memory to Device.
+Now at the end of successful receive, how do I convert it back to Virtual
+address?
+Any pointers?
 
-marco.stornelli@coritel.it
-+39 06 72582838
+Regards,
+Mukund Jampala
+
+------=_Part_95433_4516433.1221601063150
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div dir="ltr">Hi All,<br><br>How do I convert a DMA buffer to virtual address on Linux PPC?<br><br>I know there is some thing like dma_to_virt(), but I don&#39;t think if there is one for PPC.<br>In this scenario where I have submitted some dma buffer form a chunk of memory to Device.<br>
+Now at the end of successful receive, how do I convert it back to Virtual address?<br>Any pointers?<br>
+<br>Regards,<br>Mukund Jampala<br><br><br><br></div>
+
+------=_Part_95433_4516433.1221601063150--
