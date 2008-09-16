@@ -1,30 +1,22 @@
-Return-Path: <ehrhardt@linux.vnet.ibm.com>
-Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E0956DE086
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 16:29:09 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id m8G6RwE3076902
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 06:27:58 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id m8G6RweE4321416
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 08:27:58 +0200
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m8G6RtRJ025229
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 08:27:55 +0200
-From: ehrhardt@linux.vnet.ibm.com
-To: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 3/3] kvmppc: magic page paravirtualization - guest part
-Date: Tue, 16 Sep 2008 08:27:30 +0200
-Message-Id: <1221546450-15761-4-git-send-email-ehrhardt@linux.vnet.ibm.com>
-In-Reply-To: <1221546450-15761-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
-References: <1221546450-15761-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
-Cc: hollisb@us.ibm.com
+Return-Path: <sebastien.dugue@bull.net>
+Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
+	by ozlabs.org (Postfix) with ESMTP id 74052DDEE1
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 16:57:57 +1000 (EST)
+Date: Tue, 16 Sep 2008 08:57:46 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: Thomas Klein <osstklei@de.ibm.com>
+Subject: Re: [PATCH 2/2] ehea: fix mutex and spinlock use
+Message-ID: <20080916085746.194c1510@bull.net>
+In-Reply-To: <48CE7CC3.8040902@de.ibm.com>
+References: <1221140080-9853-1-git-send-email-sebastien.dugue@bull.net>
+	<1221140080-9853-3-git-send-email-sebastien.dugue@bull.net>
+	<48CE7CC3.8040902@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: tklein@de.ibm.com, tinytim@us.ibm.com, jeff@garzik.org, hering2@de.ibm.com,
+	netdev@vger.kernel.org, themann@de.ibm.com,
+	linux-kernel@vger.kernel.org, jean-pierre.dion@bull.net,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com, gilles.carry@ext.bull.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,165 +26,206 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+On Mon, 15 Sep 2008 17:18:27 +0200 Thomas Klein <osstklei@de.ibm.com> wrote:
 
-This patch adds the guest handling for the magic page mechanism. A Hypervisor
-can modify the device tree passed to the guest. Using that already existing
-interface a guest can simply detect available hypervisor features and agree
-on the supported ones using hypercalls.
-In this example it is checked for the feature switch "feature,pv-magicpage"
-in the hypervisor node and additional data which represents the size the
-hypervisor requests in "data,pv-magicpage-size".
-When the guest reads that data and wants to support it the memory is allocated
-and passed to the hypervisor using the KVM_HCALL_RESERVE_MAGICPAGE hypercall.
+> NACK!
+> 
+> I regret but this patch is wrong. It is not sufficient to only lock
+> the replacement of an old list with a new list. Building up those
+> lists is a 3-step process:
+> 
+> 1. Count the number of entries a list will contain and allocate mem
+> 2. Fill the list
+> 3. Replace old list with updated list
+> 
+> It's obvious that the contents of the list may not change during this
+> procedure. That means that not only the list build-up procedure must
+> be locked. It must be assured that no function that modifies the list's
+> content can be called while another list update is in progress.
+> 
+> Jeff, please revert this patch.
 
-Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
----
+  OK, your call, you know the code better than I do.
 
-[diffstat]
- arch/powerpc/kernel/kvm.c      |   53 +++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/fixmap.h   |   10 ++++++-
- include/asm-powerpc/kvm_para.h |   26 ++++++++++++++++++++
- 3 files changed, 88 insertions(+), 1 deletion(-)
-[diff]
+  But the locking could at least be pushed into ehea_update_firmware_handles()
+and ehea_update_bcmc_registrations() instead of being at each call site.
 
-diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
---- a/arch/powerpc/kernel/kvm.c
-+++ b/arch/powerpc/kernel/kvm.c
-@@ -22,9 +22,62 @@
- #include <linux/percpu.h>
- #include <linux/mm.h>
- #include <linux/kvm_para.h>
-+#include <linux/bootmem.h>
-+#include <asm/fixmap.h>
-+#include <asm/epapr_hcalls.h>
-+
-+/*
-+ * this is guest memory granted to the hypervisor;
-+ * the hypervisor can place data in this area and rewrite
-+ * privileged instructions to read from this area without
-+ * trapping.
-+ * Only the Hypervisor needs to be aware of the structure layout
-+ * which makes the guest more felxible - the guest only guarantees
-+ * the size which is requested by the hypervisor and read from a
-+ * device tree entry.
-+ */
-+static void *kvm_magicpage;
-+
-+static void __init kvmppc_register_magic_page(void)
-+{
-+	unsigned long gvaddr;
-+	unsigned long gpaddr;
-+	int size;
-+	long err;
-+
-+	size = kvmppc_pv_read_data(KVM_PVDATA_MAGICPAGE_SIZE);
-+	if (size < 0) {
-+		printk(KERN_ERR "%s: couldn't read size for kvmppc style "
-+			"paravirtualization support (got %d)\n",
-+			__func__, size);
-+		return;
-+	}
-+
-+	/* FIXME Guest SMP needs that percpu which */
-+	kvm_magicpage = alloc_bootmem(size);
-+	if (!kvm_magicpage) {
-+		printk(KERN_ERR "%s - failed to allocate %d bytes\n",
-+			 __func__, size);
-+		return;
-+	}
-+	gpaddr = (unsigned long)__pa(kvm_magicpage);
-+	gvaddr = fix_to_virt(FIX_KVM_PV);
-+
-+	err = epapr_hypercall_2in_1out(KVM_HCALL_RESERVE_MAGICPAGE,
-+					gvaddr, gpaddr);
-+	if (err)
-+		printk(KERN_ERR "%s: couldn't register pv mem\n", __func__);
-+	else
-+		printk(KERN_NOTICE "%s: registered %d bytes for pv mem support"
-+			" (gvaddr 0x%08lx gpaddr 0x%08lx)\n",
-+			 __func__, size, gvaddr, gpaddr);
-+}
- 
- void __init kvm_guest_init(void)
- {
- 	if (!kvm_para_available())
- 		return;
-+
-+	if (kvm_para_has_feature(KVM_FEATURE_PPCPV_MAGICPAGE))
-+		kvmppc_register_magic_page();
- }
-diff --git a/include/asm-powerpc/fixmap.h b/include/asm-powerpc/fixmap.h
---- a/include/asm-powerpc/fixmap.h
-+++ b/include/asm-powerpc/fixmap.h
-@@ -36,7 +36,7 @@
-  *
-  * these 'compile-time allocated' memory buffers are
-  * fixed-size 4k pages. (or larger if used with an increment
-- * highger than 1) use fixmap_set(idx,phys) to associate
-+ * higher than 1) use fixmap_set(idx,phys) to associate
-  * physical memory with fixmap indices.
-  *
-  * TLB entries of such buffers will not be flushed across
-@@ -44,6 +44,14 @@
-  */
- enum fixed_addresses {
- 	FIX_HOLE,
-+#ifdef CONFIG_KVM_GUEST
-+	/*
-+	 * reserved virtual address space for paravirtualization - needs to be
-+	 *  <=32k away from base address 0 to be able to reach it with
-+	 * immediate addressing using base 0 instead of needing a register.
-+	 */
-+	FIX_KVM_PV,
-+#endif
- #ifdef CONFIG_HIGHMEM
- 	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
- 	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
-diff --git a/include/asm-powerpc/kvm_para.h b/include/asm-powerpc/kvm_para.h
---- a/include/asm-powerpc/kvm_para.h
-+++ b/include/asm-powerpc/kvm_para.h
-@@ -26,10 +26,18 @@
- 
- #include <linux/of.h>
- 
-+#define KVM_HCALL_RESERVE_MAGICPAGE	0
-+
-+#define KVM_PVDATA_MAGICPAGE_SIZE	"data,pv-magicpage-size"
-+
-+/* List of PV features supported, returned as a bitfield */
-+#define KVM_FEATURE_PPCPV_MAGICPAGE	0
-+
- static struct kvmppc_para_features {
- 	char *dtcell;
- 	int feature;
- } para_features[] = {
-+	{ "feature,pv-magicpage", KVM_FEATURE_PPCPV_MAGICPAGE }
- };
- 
- static inline int kvm_para_available(void)
-@@ -67,6 +75,24 @@
- 	return features;
- }
- 
-+/* reads the specified data field out of the hypervisor node */
-+static inline int kvmppc_pv_read_data(char *dtcell)
-+{
-+	struct device_node *dn;
-+	const int *dtval;
-+
-+	dn = of_find_node_by_path("/hypervisor");
-+	if (!dn)
-+		return -EINVAL;
-+
-+	dtval = of_get_property(dn, dtcell, NULL);
-+	of_node_put(dn);
-+	if (dtval)
-+		return *dtval;
-+	else
-+		return -EINVAL;
-+}
-+
- void kvm_guest_init(void);
- 
- #endif /* __KERNEL__ */
+  Thanks,
+
+  Sebastien.
+
+> 
+> Thanks
+> Thomas
+> 
+> 
+> 
+> Sebastien Dugue wrote:
+> >   Looks like to me that the ehea_fw_handles.lock mutex and the
+> > ehea_bcmc_regs.lock spinlock are taken much longer than necessary and could
+> > as well be pushed inside the functions that need them
+> > (ehea_update_firmware_handles() and ehea_update_bcmc_registrations())
+> > rather than at each callsite.
+> > 
+> > Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+> > ---
+> >  drivers/net/ehea/ehea_main.c |   26 ++++----------------------
+> >  1 files changed, 4 insertions(+), 22 deletions(-)
+> > 
+> > diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+> > index b70c531..c765ec6 100644
+> > --- a/drivers/net/ehea/ehea_main.c
+> > +++ b/drivers/net/ehea/ehea_main.c
+> > @@ -219,9 +219,11 @@ static void ehea_update_firmware_handles(void)
+> >  	}
+> >  
+> >  out_update:
+> > +	mutex_lock(&ehea_fw_handles.lock);
+> >  	kfree(ehea_fw_handles.arr);
+> >  	ehea_fw_handles.arr = arr;
+> >  	ehea_fw_handles.num_entries = i;
+> > +	mutex_unlock(&ehea_fw_handles.lock);
+> >  }
+> >  
+> >  static void ehea_update_bcmc_registrations(void)
+> > @@ -293,9 +295,11 @@ static void ehea_update_bcmc_registrations(void)
+> >  	}
+> >  
+> >  out_update:
+> > +	spin_lock(&ehea_bcmc_regs.lock);
+> >  	kfree(ehea_bcmc_regs.arr);
+> >  	ehea_bcmc_regs.arr = arr;
+> >  	ehea_bcmc_regs.num_entries = i;
+> > +	spin_unlock(&ehea_bcmc_regs.lock);
+> >  }
+> >  
+> >  static struct net_device_stats *ehea_get_stats(struct net_device *dev)
+> > @@ -1770,8 +1774,6 @@ static int ehea_set_mac_addr(struct net_device *dev, void *sa)
+> >  
+> >  	memcpy(dev->dev_addr, mac_addr->sa_data, dev->addr_len);
+> >  
+> > -	spin_lock(&ehea_bcmc_regs.lock);
+> > -
+> >  	/* Deregister old MAC in pHYP */
+> >  	if (port->state == EHEA_PORT_UP) {
+> >  		ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+> > @@ -1792,7 +1794,6 @@ static int ehea_set_mac_addr(struct net_device *dev, void *sa)
+> >  
+> >  out_upregs:
+> >  	ehea_update_bcmc_registrations();
+> > -	spin_unlock(&ehea_bcmc_regs.lock);
+> >  out_free:
+> >  	kfree(cb0);
+> >  out:
+> > @@ -1954,8 +1955,6 @@ static void ehea_set_multicast_list(struct net_device *dev)
+> >  	}
+> >  	ehea_promiscuous(dev, 0);
+> >  
+> > -	spin_lock(&ehea_bcmc_regs.lock);
+> > -
+> >  	if (dev->flags & IFF_ALLMULTI) {
+> >  		ehea_allmulti(dev, 1);
+> >  		goto out;
+> > @@ -1985,7 +1984,6 @@ static void ehea_set_multicast_list(struct net_device *dev)
+> >  	}
+> >  out:
+> >  	ehea_update_bcmc_registrations();
+> > -	spin_unlock(&ehea_bcmc_regs.lock);
+> >  	return;
+> >  }
+> >  
+> > @@ -2466,8 +2464,6 @@ static int ehea_up(struct net_device *dev)
+> >  	if (port->state == EHEA_PORT_UP)
+> >  		return 0;
+> >  
+> > -	mutex_lock(&ehea_fw_handles.lock);
+> > -
+> >  	ret = ehea_port_res_setup(port, port->num_def_qps,
+> >  				  port->num_add_tx_qps);
+> >  	if (ret) {
+> > @@ -2504,8 +2500,6 @@ static int ehea_up(struct net_device *dev)
+> >  		}
+> >  	}
+> >  
+> > -	spin_lock(&ehea_bcmc_regs.lock);
+> > -
+> >  	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
+> >  	if (ret) {
+> >  		ret = -EIO;
+> > @@ -2527,10 +2521,8 @@ out:
+> >  		ehea_info("Failed starting %s. ret=%i", dev->name, ret);
+> >  
+> >  	ehea_update_bcmc_registrations();
+> > -	spin_unlock(&ehea_bcmc_regs.lock);
+> >  
+> >  	ehea_update_firmware_handles();
+> > -	mutex_unlock(&ehea_fw_handles.lock);
+> >  
+> >  	return ret;
+> >  }
+> > @@ -2580,9 +2572,6 @@ static int ehea_down(struct net_device *dev)
+> >  	if (port->state == EHEA_PORT_DOWN)
+> >  		return 0;
+> >  
+> > -	mutex_lock(&ehea_fw_handles.lock);
+> > -
+> > -	spin_lock(&ehea_bcmc_regs.lock);
+> >  	ehea_drop_multicast_list(dev);
+> >  	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+> >  
+> > @@ -2591,7 +2580,6 @@ static int ehea_down(struct net_device *dev)
+> >  	port->state = EHEA_PORT_DOWN;
+> >  
+> >  	ehea_update_bcmc_registrations();
+> > -	spin_unlock(&ehea_bcmc_regs.lock);
+> >  
+> >  	ret = ehea_clean_all_portres(port);
+> >  	if (ret)
+> > @@ -2599,7 +2587,6 @@ static int ehea_down(struct net_device *dev)
+> >  			  dev->name, ret);
+> >  
+> >  	ehea_update_firmware_handles();
+> > -	mutex_unlock(&ehea_fw_handles.lock);
+> >  
+> >  	return ret;
+> >  }
+> > @@ -3378,7 +3365,6 @@ static int __devinit ehea_probe_adapter(struct of_device *dev,
+> >  		ehea_error("Invalid ibmebus device probed");
+> >  		return -EINVAL;
+> >  	}
+> > -	mutex_lock(&ehea_fw_handles.lock);
+> >  
+> >  	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
+> >  	if (!adapter) {
+> > @@ -3462,7 +3448,6 @@ out_free_ad:
+> >  
+> >  out:
+> >  	ehea_update_firmware_handles();
+> > -	mutex_unlock(&ehea_fw_handles.lock);
+> >  	return ret;
+> >  }
+> >  
+> > @@ -3481,8 +3466,6 @@ static int __devexit ehea_remove(struct of_device *dev)
+> >  
+> >  	flush_scheduled_work();
+> >  
+> > -	mutex_lock(&ehea_fw_handles.lock);
+> > -
+> >  	ibmebus_free_irq(adapter->neq->attr.ist1, adapter);
+> >  	tasklet_kill(&adapter->neq_tasklet);
+> >  
+> > @@ -3492,7 +3475,6 @@ static int __devexit ehea_remove(struct of_device *dev)
+> >  	kfree(adapter);
+> >  
+> >  	ehea_update_firmware_handles();
+> > -	mutex_unlock(&ehea_fw_handles.lock);
+> >  
+> >  	return 0;
+> >  }
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
