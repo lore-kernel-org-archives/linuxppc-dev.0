@@ -1,36 +1,21 @@
-Return-Path: <osstklei@de.ibm.com>
-Received: from mtagate4.uk.ibm.com (mtagate4.uk.ibm.com [195.212.29.137])
+Return-Path: <john.traill@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A50BBDDF4E
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 19:13:30 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate4.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m8G9DGqP245886
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 09:13:16 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
-	[9.149.37.213])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id m8G9DFAc4460748
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 10:13:15 +0100
-Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m8G9DE5I007028
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 10:13:15 +0100
-Message-ID: <48CF78A9.9080907@de.ibm.com>
-Date: Tue, 16 Sep 2008 11:13:13 +0200
-From: Thomas Klein <osstklei@de.ibm.com>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 74E2ADDF09
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 19:44:19 +1000 (EST)
+Message-ID: <48CF7FEB.2050506@freescale.com>
+Date: Tue, 16 Sep 2008 10:44:11 +0100
+From: John Traill <john.traill@freescale.com>
 MIME-Version: 1.0
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [PATCH 2/2] ehea: fix mutex and spinlock use
-References: <1221140080-9853-1-git-send-email-sebastien.dugue@bull.net>	<1221140080-9853-3-git-send-email-sebastien.dugue@bull.net>	<48CE7CC3.8040902@de.ibm.com>
-	<20080916085746.194c1510@bull.net>
-In-Reply-To: <20080916085746.194c1510@bull.net>
+To: rpoornar@yahoo.com
+Subject: Re: dts file for ep8548A board
+References: <462940.11077.qm@web57006.mail.re3.yahoo.com>
+In-Reply-To: <462940.11077.qm@web57006.mail.re3.yahoo.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: tklein@de.ibm.com, tinytim@us.ibm.com, jeff@garzik.org, hering2@de.ibm.com,
-	netdev@vger.kernel.org, themann@de.ibm.com,
-	linux-kernel@vger.kernel.org, jean-pierre.dion@bull.net,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com, gilles.carry@ext.bull.net
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,215 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sebastien Dugue wrote:
-> On Mon, 15 Sep 2008 17:18:27 +0200 Thomas Klein <osstklei@de.ibm.com> wrote:
-> 
->> NACK!
->>
->> I regret but this patch is wrong. It is not sufficient to only lock
->> the replacement of an old list with a new list. Building up those
->> lists is a 3-step process:
->>
->> 1. Count the number of entries a list will contain and allocate mem
->> 2. Fill the list
->> 3. Replace old list with updated list
->>
->> It's obvious that the contents of the list may not change during this
->> procedure. That means that not only the list build-up procedure must
->> be locked. It must be assured that no function that modifies the list's
->> content can be called while another list update is in progress.
->>
->> Jeff, please revert this patch.
-> 
->   OK, your call, you know the code better than I do.
-> 
->   But the locking could at least be pushed into ehea_update_firmware_handles()
-> and ehea_update_bcmc_registrations() instead of being at each call site.
-> 
->   Thanks,
-> 
->   Sebastien.
-> 
+Don't know if this helps but ..
 
-It unfortunately can't. As I already mentioned "it must be assured that no
-function that modifies the list's content can be called while another list
-update is in progress". This means that for example ehea_broadcast_reg_helper()
-may not run during a list update. That's why the locks surround these function
-calls as well.
+The EP boards I've used have an old version of u-boot which don't support passing the device tree address so I've had to build a cuImage.
 
-Thomas
+Cheers.
 
+poornima r wrote:
+> Hi all,
+> 
+> I am working on ep8548A embedded planet board.
+> I am using mpc8548cds dtb file (mpc8548cds.dts file in 
+> arch/powerpc/boot/dts directory of the kernel source) as my device tree 
+> file.
+> I am tracing the kernel initilization path through BDI.
+> The BDI tracing is hanging in early_init_devtree ( in machine_init 
+> function) if the r3 register (physical pointer to device tree block) is 
+> not set to dtb file loaded location in RAM.
+> Once I set the r3 register manually in BDI (rm r3 <dtb file location>) 
+> the kernel is passing machine_init function (passing early_init_devtree( 
+> ) ).
+> I tried  to statically set r3 register in head_fsl_booke.S  file by 
+> using ori instruction but I was not able to set the r3 value to dtb file 
+> RAM location.
+> Are any changes necessary in mps8548cds.dts for ep8548A board?
+> How do we and where should we set the r3 register value in 
+> head_fsl_booke.S file for device tree initilization?
+> 
+> Thanks,
+> Poornima
+>  
+>  
+> 
+>  
+> 
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
->> Thanks
->> Thomas
->>
->>
->>
->> Sebastien Dugue wrote:
->>>   Looks like to me that the ehea_fw_handles.lock mutex and the
->>> ehea_bcmc_regs.lock spinlock are taken much longer than necessary and could
->>> as well be pushed inside the functions that need them
->>> (ehea_update_firmware_handles() and ehea_update_bcmc_registrations())
->>> rather than at each callsite.
->>>
->>> Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
->>> ---
->>>  drivers/net/ehea/ehea_main.c |   26 ++++----------------------
->>>  1 files changed, 4 insertions(+), 22 deletions(-)
->>>
->>> diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
->>> index b70c531..c765ec6 100644
->>> --- a/drivers/net/ehea/ehea_main.c
->>> +++ b/drivers/net/ehea/ehea_main.c
->>> @@ -219,9 +219,11 @@ static void ehea_update_firmware_handles(void)
->>>  	}
->>>  
->>>  out_update:
->>> +	mutex_lock(&ehea_fw_handles.lock);
->>>  	kfree(ehea_fw_handles.arr);
->>>  	ehea_fw_handles.arr = arr;
->>>  	ehea_fw_handles.num_entries = i;
->>> +	mutex_unlock(&ehea_fw_handles.lock);
->>>  }
->>>  
->>>  static void ehea_update_bcmc_registrations(void)
->>> @@ -293,9 +295,11 @@ static void ehea_update_bcmc_registrations(void)
->>>  	}
->>>  
->>>  out_update:
->>> +	spin_lock(&ehea_bcmc_regs.lock);
->>>  	kfree(ehea_bcmc_regs.arr);
->>>  	ehea_bcmc_regs.arr = arr;
->>>  	ehea_bcmc_regs.num_entries = i;
->>> +	spin_unlock(&ehea_bcmc_regs.lock);
->>>  }
->>>  
->>>  static struct net_device_stats *ehea_get_stats(struct net_device *dev)
->>> @@ -1770,8 +1774,6 @@ static int ehea_set_mac_addr(struct net_device *dev, void *sa)
->>>  
->>>  	memcpy(dev->dev_addr, mac_addr->sa_data, dev->addr_len);
->>>  
->>> -	spin_lock(&ehea_bcmc_regs.lock);
->>> -
->>>  	/* Deregister old MAC in pHYP */
->>>  	if (port->state == EHEA_PORT_UP) {
->>>  		ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
->>> @@ -1792,7 +1794,6 @@ static int ehea_set_mac_addr(struct net_device *dev, void *sa)
->>>  
->>>  out_upregs:
->>>  	ehea_update_bcmc_registrations();
->>> -	spin_unlock(&ehea_bcmc_regs.lock);
->>>  out_free:
->>>  	kfree(cb0);
->>>  out:
->>> @@ -1954,8 +1955,6 @@ static void ehea_set_multicast_list(struct net_device *dev)
->>>  	}
->>>  	ehea_promiscuous(dev, 0);
->>>  
->>> -	spin_lock(&ehea_bcmc_regs.lock);
->>> -
->>>  	if (dev->flags & IFF_ALLMULTI) {
->>>  		ehea_allmulti(dev, 1);
->>>  		goto out;
->>> @@ -1985,7 +1984,6 @@ static void ehea_set_multicast_list(struct net_device *dev)
->>>  	}
->>>  out:
->>>  	ehea_update_bcmc_registrations();
->>> -	spin_unlock(&ehea_bcmc_regs.lock);
->>>  	return;
->>>  }
->>>  
->>> @@ -2466,8 +2464,6 @@ static int ehea_up(struct net_device *dev)
->>>  	if (port->state == EHEA_PORT_UP)
->>>  		return 0;
->>>  
->>> -	mutex_lock(&ehea_fw_handles.lock);
->>> -
->>>  	ret = ehea_port_res_setup(port, port->num_def_qps,
->>>  				  port->num_add_tx_qps);
->>>  	if (ret) {
->>> @@ -2504,8 +2500,6 @@ static int ehea_up(struct net_device *dev)
->>>  		}
->>>  	}
->>>  
->>> -	spin_lock(&ehea_bcmc_regs.lock);
->>> -
->>>  	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
->>>  	if (ret) {
->>>  		ret = -EIO;
->>> @@ -2527,10 +2521,8 @@ out:
->>>  		ehea_info("Failed starting %s. ret=%i", dev->name, ret);
->>>  
->>>  	ehea_update_bcmc_registrations();
->>> -	spin_unlock(&ehea_bcmc_regs.lock);
->>>  
->>>  	ehea_update_firmware_handles();
->>> -	mutex_unlock(&ehea_fw_handles.lock);
->>>  
->>>  	return ret;
->>>  }
->>> @@ -2580,9 +2572,6 @@ static int ehea_down(struct net_device *dev)
->>>  	if (port->state == EHEA_PORT_DOWN)
->>>  		return 0;
->>>  
->>> -	mutex_lock(&ehea_fw_handles.lock);
->>> -
->>> -	spin_lock(&ehea_bcmc_regs.lock);
->>>  	ehea_drop_multicast_list(dev);
->>>  	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
->>>  
->>> @@ -2591,7 +2580,6 @@ static int ehea_down(struct net_device *dev)
->>>  	port->state = EHEA_PORT_DOWN;
->>>  
->>>  	ehea_update_bcmc_registrations();
->>> -	spin_unlock(&ehea_bcmc_regs.lock);
->>>  
->>>  	ret = ehea_clean_all_portres(port);
->>>  	if (ret)
->>> @@ -2599,7 +2587,6 @@ static int ehea_down(struct net_device *dev)
->>>  			  dev->name, ret);
->>>  
->>>  	ehea_update_firmware_handles();
->>> -	mutex_unlock(&ehea_fw_handles.lock);
->>>  
->>>  	return ret;
->>>  }
->>> @@ -3378,7 +3365,6 @@ static int __devinit ehea_probe_adapter(struct of_device *dev,
->>>  		ehea_error("Invalid ibmebus device probed");
->>>  		return -EINVAL;
->>>  	}
->>> -	mutex_lock(&ehea_fw_handles.lock);
->>>  
->>>  	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
->>>  	if (!adapter) {
->>> @@ -3462,7 +3448,6 @@ out_free_ad:
->>>  
->>>  out:
->>>  	ehea_update_firmware_handles();
->>> -	mutex_unlock(&ehea_fw_handles.lock);
->>>  	return ret;
->>>  }
->>>  
->>> @@ -3481,8 +3466,6 @@ static int __devexit ehea_remove(struct of_device *dev)
->>>  
->>>  	flush_scheduled_work();
->>>  
->>> -	mutex_lock(&ehea_fw_handles.lock);
->>> -
->>>  	ibmebus_free_irq(adapter->neq->attr.ist1, adapter);
->>>  	tasklet_kill(&adapter->neq_tasklet);
->>>  
->>> @@ -3492,7 +3475,6 @@ static int __devexit ehea_remove(struct of_device *dev)
->>>  	kfree(adapter);
->>>  
->>>  	ehea_update_firmware_handles();
->>> -	mutex_unlock(&ehea_fw_handles.lock);
->>>  
->>>  	return 0;
->>>  }
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>
+-- 
+John Traill
+Systems Engineer
+Network and Computing Systems Group
+
+Freescale Semiconductor UK LTD
+Colvilles Road
+East Kilbride
+Glasgow G75 0TG, Scotland
+
+Tel: +44 (0) 1355 355494
+Fax: +44 (0) 1355 261790
+
+E-mail: john.traill@freescale.com
+
+Registration Number: SC262720
+VAT Number: GB831329053
+
+[ ] General Business Use
+[ ] Freescale Internal Use Only
+[ ] Freescale Confidential Proprietary
