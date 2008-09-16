@@ -1,23 +1,19 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910809160729p546dada4gd6788b28ea9246b8@mail.gmail.com>
-Date: Tue, 16 Sep 2008 10:29:55 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: avorontsov@ru.mvista.com
-Subject: Re: demuxing irqs
-In-Reply-To: <20080916141422.GA29888@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910809131554mb0c6660r3bcc993bb2ca082d@mail.gmail.com>
-	<9e4733910809131623pe990495l96b31bd546d9fa6b@mail.gmail.com>
-	<9e4733910809140706i599d70b2q12d3582c7a95498c@mail.gmail.com>
-	<9e4733910809141625u3cd94e7jf05584031be7c1d9@mail.gmail.com>
-	<9e4733910809142006x350e96abs6af304d8807ccd67@mail.gmail.com>
-	<20080916121740.GA9970@oksana.dev.rtsoft.ru>
-	<9e4733910809160537s67812bf5x3d4d46a384f8237f@mail.gmail.com>
-	<20080916131203.GA21641@oksana.dev.rtsoft.ru>
-	<9e4733910809160636heaa545eld0da835b2d163811@mail.gmail.com>
-	<20080916141422.GA29888@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Roland Dreier <rdreier@cisco.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 139E0DDF12
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 00:54:00 +1000 (EST)
+Message-Id: <18BF734B-F71B-4FDD-B3C9-62AA5EB54283@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <Pine.LNX.4.64.0809121546530.6192@blarg.am.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: Please pull from 'for-2.6.27'
+Date: Tue, 16 Sep 2008 09:53:52 -0500
+References: <Pine.LNX.4.64.0809121546530.6192@blarg.am.freescale.net>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,78 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 16, 2008 at 10:14 AM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> On Tue, Sep 16, 2008 at 09:36:22AM -0400, Jon Smirl wrote:
-> [...]
->> >> >> -/*
->> >> >> - * Not implemented, yet.
->> >> >> - */
->> >> >> -static inline int gpio_to_irq(unsigned int gpio)
->> >> >> +static inline unsigned int gpio_to_irq(unsigned int gpio)
->> >> >>  {
->> >> >> -       return -ENOSYS;
->> >> >> +       return gpio;
->> >> >
->> >> > "GPIO 0" is valid gpio, but "IRQ 0" isn't valid virq. So you
->> >> > can't do 1:1 mapping. :-(
->> >>
->> >> I changed the GPIO numbers inside of Linux to match the virqs.
->> >>
->> >>       ofchip->gc.base             = IRQ_GPIO_WKUP(0);
->> >
->> > Well, I didn't say that it will not work, what I'm trying to say
->> > is that I don't quite like the idea of 1:1 mapping for all gpio
->> > chips.
->> >
->> > It is error prone, i.e. gpio_to_irq() can't fail, so you can't
->> > tell if gpio to irq translation really happened or not. Plus
->> > we might decide to not do 1:1 mapping for other gpio chips.
->>
->> From reading the ARM code my understanding is that gpio_to_irq() and
->> irq_to_gpio() are meant to be fast paths without error checking.
->
-> Nope. gpio_to_irq and irq_to_gpio don't have to be fast.
 
-You need to do gpio_to_irq in the interrupt handler doing the
-demuxing. I hadn't written that piece yet.
+On Sep 12, 2008, at 3:47 PM, Kumar Gala wrote:
 
+> Please pull from 'for-2.6.27' branch of
+>
+> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git  
+> for-2.6.27
+>
+> to receive the following updates:
+>
+> arch/powerpc/boot/dts/mpc8610_hpcd.dts |    8 +--
+> arch/powerpc/sysdev/cpm1.c             |   74 ++++++++++++++++++++++ 
+> +----------
+> 2 files changed, 56 insertions(+), 26 deletions(-)
+>
+> Jochen Friedrich (1):
+>      powerpc/cpm1: Fix race condition in CPM1 GPIO library.
+>
+> Timur Tabi (1):
+>      powerpc: fix interrupt values for DMA2 in MPC8610 HPCD device  
+> tree
 
->
->> In
->> the gpiolib doc it says these functions should only take a couple of
->> instructions.
->
-> This is for gpio_get/set_value and gpio_set_direction*.
->
->> You'll detect errors if you take an invalid IRQ from the function and
->> feed it into any of the rest of the IRQ API.
->
-> Assume that GPIO 8 does not translate to any IRQ, but IRQ 8 is still
-> valid virq b/c it is mapped for another IRQ controller (particularly
-> lots of kernel code assumes that IRQ 8 is 8259 PIC's CMOS interrupt,
-> the PIC and IRQ8 is widely used on PowerPC).
->
-> So gpio_to_irq will succeed, and request_irq will succeed too. Though
-> this would be not correct.
->
->> The idea for setting the GPIO number equal to the VIRQ number came out
->> of the ARM code. Making GPIO==VIRQ greatly simplified the code.
->
-> Adding .to_irq callback won't complicate code either, but will let
-> you do the things right.
->
-> As for the ARM code... ARM has been using GPIO API long before
-> GPIOLIB, and back then you didn't have many options.
->
-> --
-> Anton Vorontsov
-> email: cbouatmailru@gmail.com
-> irc://irc.freenode.net/bd2
->
+Paul, I know you are hiding out at ks, but what's going on with this  
+fix? :)
 
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+- k
