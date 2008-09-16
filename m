@@ -1,21 +1,31 @@
-Return-Path: <john.traill@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-nj2ut-8.online-age.net (ext-nj2ut-8.online-age.net
+	[64.14.54.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 74E2ADDF09
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 19:44:19 +1000 (EST)
-Message-ID: <48CF7FEB.2050506@freescale.com>
-Date: Tue, 16 Sep 2008 10:44:11 +0100
-From: John Traill <john.traill@freescale.com>
+	(Client CN "ext-nj2ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 88AE0DE035
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 19:57:32 +1000 (EST)
+Received: from int-nj2ut-3.online-age.net (int-nj2ut-3.online-age.net
+	[3.159.237.72])
+	by ext-nj2ut-8.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id m8G9vRav025204
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 05:57:27 -0400
+Received: from alpmlip01.e2k.ad.ge.com (int-nj2ut-3.online-age.net
+	[3.159.237.72])
+	by int-nj2ut-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m8G9vQgt000639
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 05:57:26 -0400
+From: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [PATCH v5 0/2] powerpc: Board support for GE Fanuc SBC610
+To: linuxppc-dev@ozlabs.org
+Date: Tue, 16 Sep 2008 10:57:42 +0100
+Message-ID: <20080916095741.9992.96106.stgit@ubuntu8041.localdomain>
+In-Reply-To: <18638.50702.962371.862911@cargo.ozlabs.ibm.com>
+References: <18638.50702.962371.862911@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: rpoornar@yahoo.com
-Subject: Re: dts file for ep8548A board
-References: <462940.11077.qm@web57006.mail.re3.yahoo.com>
-In-Reply-To: <462940.11077.qm@web57006.mail.re3.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: scottwood@freescale.com, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,67 +35,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Don't know if this helps but ..
+The following series implements basic board support for GE Fanuc's SBC610, a 
+6U single board computer, based on Freescale's MPC8641D.
 
-The EP boards I've used have an old version of u-boot which don't support passing the device tree address so I've had to build a cuImage.
+This series provides basic functionality:
+- The board can boot with a serial console.
+- Ethernet works, though the phys are polled.
+- The PCI bus is scanned and sata functions.
 
-Cheers.
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+---
 
-poornima r wrote:
-> Hi all,
-> 
-> I am working on ep8548A embedded planet board.
-> I am using mpc8548cds dtb file (mpc8548cds.dts file in 
-> arch/powerpc/boot/dts directory of the kernel source) as my device tree 
-> file.
-> I am tracing the kernel initilization path through BDI.
-> The BDI tracing is hanging in early_init_devtree ( in machine_init 
-> function) if the r3 register (physical pointer to device tree block) is 
-> not set to dtb file loaded location in RAM.
-> Once I set the r3 register manually in BDI (rm r3 <dtb file location>) 
-> the kernel is passing machine_init function (passing early_init_devtree( 
-> ) ).
-> I tried  to statically set r3 register in head_fsl_booke.S  file by 
-> using ori instruction but I was not able to set the r3 value to dtb file 
-> RAM location.
-> Are any changes necessary in mps8548cds.dts for ep8548A board?
-> How do we and where should we set the r3 register value in 
-> head_fsl_booke.S file for device tree initilization?
-> 
-> Thanks,
-> Poornima
->  
->  
-> 
->  
-> 
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
--- 
-John Traill
-Systems Engineer
-Network and Computing Systems Group
-
-Freescale Semiconductor UK LTD
-Colvilles Road
-East Kilbride
-Glasgow G75 0TG, Scotland
-
-Tel: +44 (0) 1355 355494
-Fax: +44 (0) 1355 261790
-
-E-mail: john.traill@freescale.com
-
-Registration Number: SC262720
-VAT Number: GB831329053
-
-[ ] General Business Use
-[ ] Freescale Internal Use Only
-[ ] Freescale Confidential Proprietary
+ arch/powerpc/boot/dts/gef_sbc610.dts     |  260 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/86xx/Kconfig      |    9 +
+ arch/powerpc/platforms/86xx/Makefile     |    1 
+ arch/powerpc/platforms/86xx/gef_sbc610.c |  149 +++++++++++++++++
+ 4 files changed, 418 insertions(+), 1 deletions(-)
