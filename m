@@ -1,29 +1,27 @@
 Return-Path: <ehrhardt@linux.vnet.ibm.com>
-Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.17.162])
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.17.161])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 03567DDDFA
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 16:28:10 +1000 (EST)
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 955ADDDDFA
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 16:28:13 +1000 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate2.de.ibm.com (8.13.1/8.13.1) with ESMTP id m8G6Rwch030557
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 06:28:01 GMT
+	by mtagate1.de.ibm.com (8.13.1/8.13.1) with ESMTP id m8G6S16P002795
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 06:28:05 GMT
 Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
 	[9.149.165.212])
 	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id m8G6Rwma2207950
+	ESMTP id m8G6RwCD1409064
 	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 08:27:58 +0200
 Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
 	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m8G6Rs2t025222
+	id m8G6RsZV025219
 	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 08:27:55 +0200
 From: ehrhardt@linux.vnet.ibm.com
 To: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 1/3] kvmppc: read device tree hypervisor node infrastructure
-Date: Tue, 16 Sep 2008 08:27:28 +0200
-Message-Id: <1221546450-15761-2-git-send-email-ehrhardt@linux.vnet.ibm.com>
-In-Reply-To: <1221546450-15761-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
-References: <1221546450-15761-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
+Subject: [PATCH 0/3][RFC] kvmppc: paravirtualization interface - guest part v3
+Date: Tue, 16 Sep 2008 08:27:27 +0200
+Message-Id: <1221546450-15761-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
 Cc: hollisb@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -36,167 +34,48 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 
-This patch adds the guest portion of the device tree based host->guest
-communication. Using the device tree infrastructure this patch implements
-kvm_para_available and kvm_arch_para_features (in this patch just the
-infrastructure, no specific feature registered).
+Version 3 updates:
+- guest hypercall infrastructure is now generic (in epapr_hcalls.h)
+  while the kvm specific functions stay in kvm_para.h
+- the hypercalls now use beat style ABI
+- dropped the guest coop patch changing wrteei to wrtee (now mfmsr is
+  rewritten avoiding side effects and a lot of corner cases. Additionally this
+  does not need any guest cooperation to be effective)
 
-Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+This patch series implements a paravirtualization interface using:
+- the device tree mechanism to pass hypervisor informations to the guest
+- hypercalls for guest->host calls
+- an example exploiter of that interface (magic page)
+
+The device tree format used here (=base for the discussions on
+embedded-hypervisor) is the following.
+- A node "hypervisor" to show the general availability of some hypervisor data
+- flags for features like the example "feature,pv-magicpage"
+  setting 1 = available, everything else = unavailable
+- Some features might need to pass more data and can use an entry in the
+  device tree like the example of "data,pv-magicpage-size"
+
+The host side of these patches can be found on kvm-ppc@vger.kernel.org
+
+I hope that eventually this guest patch series (that is modifying the ppc boot
+process and adding e.g. new ppc fixmaps could go upstream (when discussed
+and agreed somewhen) via linuxppc-dev, while the kvm host part will go via
+kvm (Avi Kivity).
+
+[patches in series]
+[PATCH 1/3] kvmppc: read device tree hypervisor node infrastructure
+[PATCH 2/3] kvmppc: add hypercall infrastructure - guest part
+[PATCH 3/3] kvmppc: magic page paravirtualization - guest part
+
 ---
-
 [diffstat]
- arch/powerpc/kernel/Makefile       |    2 +
- arch/powerpc/kernel/kvm.c          |   30 +++++++++++++++++++++++++
- arch/powerpc/kernel/setup_32.c     |    3 ++
- arch/powerpc/platforms/44x/Kconfig |    7 ++++++
- include/asm-powerpc/kvm_para.h     |   43 ++++++++++++++++++++++++++++++++++---
- 5 files changed, 82 insertions(+), 3 deletions(-)
-[diff]
-
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -80,6 +80,8 @@
- 
- obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
- 
-+obj-$(CONFIG_KVM_GUEST)		+= kvm.o
-+
- ifneq ($(CONFIG_PPC_INDIRECT_IO),y)
- obj-y				+= iomap.o
- endif
-diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-new file mode 100644
---- /dev/null
-+++ b/arch/powerpc/kernel/kvm.c
-@@ -0,0 +1,30 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright IBM Corp. 2008
-+ *
-+ * Authors:
-+ * 	Hollis Blanchard <hollisb@us.ibm.com>
-+ * 	Christian Ehrhardt <ehrhardt@de.ibm.com>
-+ */
-+
-+#include <linux/percpu.h>
-+#include <linux/mm.h>
-+#include <linux/kvm_para.h>
-+
-+void __init kvm_guest_init(void)
-+{
-+	if (!kvm_para_available())
-+		return;
-+}
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -17,6 +17,7 @@
- #include <linux/cpu.h>
- #include <linux/console.h>
- #include <linux/lmb.h>
-+#include <linux/kvm_para.h>
- 
- #include <asm/io.h>
- #include <asm/prom.h>
-@@ -319,5 +320,7 @@
- 		ppc_md.setup_arch();
- 	if ( ppc_md.progress ) ppc_md.progress("arch: exit", 0x3eab);
- 
-+	kvm_guest_init();
-+
- 	paging_init();
- }
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -152,3 +152,10 @@
- # 44x errata/workaround config symbols, selected by the CPU models above
- config IBM440EP_ERR42
- 	bool
-+
-+config KVM_GUEST
-+	bool "KVM Guest support"
-+	depends on EXPERIMENTAL
-+	help
-+	This option enables various optimizations for running under the KVM
-+	hypervisor.
-diff --git a/include/asm-powerpc/kvm_para.h b/include/asm-powerpc/kvm_para.h
---- a/include/asm-powerpc/kvm_para.h
-+++ b/include/asm-powerpc/kvm_para.h
-@@ -14,7 +14,9 @@
-  *
-  * Copyright IBM Corp. 2008
-  *
-- * Authors: Hollis Blanchard <hollisb@us.ibm.com>
-+ * Authors:
-+ * 	Hollis Blanchard <hollisb@us.ibm.com>
-+ * 	Christian Ehrhardt <ehrhardt@de.ibm.com>
-  */
- 
- #ifndef __POWERPC_KVM_PARA_H__
-@@ -22,15 +24,50 @@
- 
- #ifdef __KERNEL__
- 
-+#include <linux/of.h>
-+
-+static struct kvmppc_para_features {
-+	char *dtcell;
-+	int feature;
-+} para_features[] = {
-+};
-+
- static inline int kvm_para_available(void)
- {
--	return 0;
-+	struct device_node *dn;
-+	int ret;
-+
-+	dn = of_find_node_by_path("/hypervisor");
-+	ret = !!dn;
-+
-+	of_node_put(dn);
-+
-+	return ret;
- }
- 
- static inline unsigned int kvm_arch_para_features(void)
- {
--	return 0;
-+	struct device_node *dn;
-+	const int *dtval;
-+	unsigned int features = 0;
-+	int i;
-+
-+	dn = of_find_node_by_path("/hypervisor");
-+	if (!dn)
-+		return 0;
-+
-+	for (i = 0; i < ARRAY_SIZE(para_features); i++) {
-+		dtval = of_get_property(dn, para_features[i].dtcell, NULL);
-+		if (dtval && *dtval == 1)
-+			features |= (1 << para_features[i].feature);
-+	}
-+
-+	of_node_put(dn);
-+
-+	return features;
- }
-+
-+void kvm_guest_init(void);
- 
- #endif /* __KERNEL__ */
- 
+ arch/powerpc/kernel/kvm.c            |   53 +++++++++++++++++++++++++++++++
+ b/arch/powerpc/kernel/Makefile       |    2 +
+ b/arch/powerpc/kernel/kvm.c          |   30 +++++++++++++++++
+ b/arch/powerpc/kernel/setup_32.c     |    3 +
+ b/arch/powerpc/platforms/44x/Kconfig |    7 ++++
+ b/include/asm-powerpc/epapr_hcalls.h |   59 +++++++++++++++++++++++++++++++++++
+ b/include/asm-powerpc/fixmap.h       |   10 +++++
+ b/include/asm-powerpc/kvm_para.h     |   43 +++++++++++++++++++++++--
+ include/asm-powerpc/kvm_para.h       |   26 +++++++++++++++
+ 9 files changed, 229 insertions(+), 4 deletions(-)
