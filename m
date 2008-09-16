@@ -1,23 +1,15 @@
-Return-Path: <scottwood@freescale.com>
-Date: Tue, 16 Sep 2008 12:49:35 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: demuxing irqs
-Message-ID: <20080916174935.GA13142@ld0162-tx32.am.freescale.net>
-References: <9e4733910809131623pe990495l96b31bd546d9fa6b@mail.gmail.com>
-	<9e4733910809140706i599d70b2q12d3582c7a95498c@mail.gmail.com>
-	<9e4733910809141625u3cd94e7jf05584031be7c1d9@mail.gmail.com>
-	<9e4733910809142006x350e96abs6af304d8807ccd67@mail.gmail.com>
-	<20080916121740.GA9970@oksana.dev.rtsoft.ru>
-	<9e4733910809160537s67812bf5x3d4d46a384f8237f@mail.gmail.com>
-	<20080916131203.GA21641@oksana.dev.rtsoft.ru>
-	<9e4733910809160636heaa545eld0da835b2d163811@mail.gmail.com>
-	<20080916141422.GA29888@oksana.dev.rtsoft.ru>
-	<9e4733910809160724x693c5af9y8df2f609e79f5005@mail.gmail.com>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910809160724x693c5af9y8df2f609e79f5005@mail.gmail.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Roland Dreier <rdreier@cisco.com>
+Message-ID: <18639.61790.750450.103022@cargo.ozlabs.ibm.com>
+Date: Tue, 16 Sep 2008 10:48:14 -0700
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Please pull from 'for-2.6.27'
+In-Reply-To: <18BF734B-F71B-4FDD-B3C9-62AA5EB54283@kernel.crashing.org>
+References: <Pine.LNX.4.64.0809121546530.6192@blarg.am.freescale.net>
+	<18BF734B-F71B-4FDD-B3C9-62AA5EB54283@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +19,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 16, 2008 at 10:24:35AM -0400, Jon Smirl wrote:
-> On Tue, Sep 16, 2008 at 10:14 AM, Anton Vorontsov
-> <avorontsov@ru.mvista.com> wrote:
-> > Assume that GPIO 8 does not translate to any IRQ, but IRQ 8 is still
-> > valid virq b/c it is mapped for another IRQ controller (particularly
-> > lots of kernel code assumes that IRQ 8 is 8259 PIC's CMOS interrupt,
-> > the PIC and IRQ8 is widely used on PowerPC).
-> 
-> Set the base in the GPIO struct such that this won't happen.  You can
-> set the base greater than MAX_IRQ.
+Kumar Gala writes:
 
-And then you'll conflict with some other subsystem that decides to engage
-in the same shenanigans.
+> > Jochen Friedrich (1):
+> >      powerpc/cpm1: Fix race condition in CPM1 GPIO library.
 
-Just allocate a chunk of virq space like any other cascaded IRQ
-controller.
+This looks like a biggish change for after -rc6, and the commit
+message doesn't tell me what dire things will happen if the patch
+doesn't go in, or what systems see this breakage, or whether this is a
+regression since 2.6.26 (I assume it isn't).  It doesn't even tell me
+why not being thread-safe is a problem on a UP machine.
 
--Scott
+So... why does this fix need to go in at this stage?
+
+Paul.
