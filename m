@@ -1,23 +1,22 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910809161132j3b0ff194hd60fcdf489fb19e4@mail.gmail.com>
-Date: Tue, 16 Sep 2008 14:32:45 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: demuxing irqs
-In-Reply-To: <20080916174935.GA13142@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910809131623pe990495l96b31bd546d9fa6b@mail.gmail.com>
-	<9e4733910809141625u3cd94e7jf05584031be7c1d9@mail.gmail.com>
-	<9e4733910809142006x350e96abs6af304d8807ccd67@mail.gmail.com>
-	<20080916121740.GA9970@oksana.dev.rtsoft.ru>
-	<9e4733910809160537s67812bf5x3d4d46a384f8237f@mail.gmail.com>
-	<20080916131203.GA21641@oksana.dev.rtsoft.ru>
-	<9e4733910809160636heaa545eld0da835b2d163811@mail.gmail.com>
-	<20080916141422.GA29888@oksana.dev.rtsoft.ru>
-	<9e4733910809160724x693c5af9y8df2f609e79f5005@mail.gmail.com>
-	<20080916174935.GA13142@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Roland Dreier <rdreier@cisco.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CDE06DE506
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 04:37:50 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m8GIbkkg006368
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 13:37:47 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v6 4/4] powerpc/mm: Implement _PAGE_SPECIAL & pte_special()
+	for 32-bit
+Date: Tue, 16 Sep 2008 13:37:44 -0500
+Message-Id: <1221590264-3368-4-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1221590264-3368-3-git-send-email-galak@kernel.crashing.org>
+References: <1221590264-3368-1-git-send-email-galak@kernel.crashing.org>
+	<1221590264-3368-2-git-send-email-galak@kernel.crashing.org>
+	<1221590264-3368-3-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,36 +26,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 16, 2008 at 1:49 PM, Scott Wood <scottwood@freescale.com> wrote:
-> On Tue, Sep 16, 2008 at 10:24:35AM -0400, Jon Smirl wrote:
->> On Tue, Sep 16, 2008 at 10:14 AM, Anton Vorontsov
->> <avorontsov@ru.mvista.com> wrote:
->> > Assume that GPIO 8 does not translate to any IRQ, but IRQ 8 is still
->> > valid virq b/c it is mapped for another IRQ controller (particularly
->> > lots of kernel code assumes that IRQ 8 is 8259 PIC's CMOS interrupt,
->> > the PIC and IRQ8 is widely used on PowerPC).
->>
->> Set the base in the GPIO struct such that this won't happen.  You can
->> set the base greater than MAX_IRQ.
->
-> And then you'll conflict with some other subsystem that decides to engage
-> in the same shenanigans.
+Implement _PAGE_SPECIAL and pte_special() for 32-bit powerpc. This bit will
+be used by the fast get_user_pages() to differenciate PTEs that correspond
+to a valid struct page from special mappings that don't such as IO mappings
+obtained via io_remap_pfn_ranges().
 
-That comment was target at GPIO's that don't support interrupts. Give
-those GPIO numbers greater than MAX_IRQ in case someone tries to use
-them with the IRQ subsystem. Then they'll get errors.
+We currently only implement this on sub-arch that support SMP or will so
+in the future (6xx, 44x, FSL-BookE) and not (8xx, 40x).
 
-> Just allocate a chunk of virq space like any other cascaded IRQ
-> controller.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/pgtable-ppc32.h |   15 +++++++++++++--
+ 1 files changed, 13 insertions(+), 2 deletions(-)
 
-That is what I did.
-
->
-> -Scott
->
-
-
-
+diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
+index 1b11955..c2e58b4 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc32.h
++++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+@@ -261,6 +261,7 @@ extern int icache_44x_need_flush;
+ #define _PAGE_HWEXEC	0x00000004		/* H: Execute permission */
+ #define _PAGE_ACCESSED	0x00000008		/* S: Page referenced */
+ #define _PAGE_DIRTY	0x00000010		/* S: Page dirty */
++#define _PAGE_SPECIAL	0x00000020		/* S: Special page */
+ #define _PAGE_USER	0x00000040		/* S: User page */
+ #define _PAGE_ENDIAN	0x00000080		/* H: E bit */
+ #define _PAGE_GUARDED	0x00000100		/* H: G bit */
+@@ -276,6 +277,7 @@ extern int icache_44x_need_flush;
+ /* ERPN in a PTE never gets cleared, ignore it */
+ #define _PTE_NONE_MASK	0xffffffff00000000ULL
+ 
++#define __HAVE_ARCH_PTE_SPECIAL
+ 
+ #elif defined(CONFIG_FSL_BOOKE)
+ /*
+@@ -305,6 +307,7 @@ extern int icache_44x_need_flush;
+ #define _PAGE_COHERENT	0x00100	/* H: M bit */
+ #define _PAGE_NO_CACHE	0x00200	/* H: I bit */
+ #define _PAGE_WRITETHRU	0x00400	/* H: W bit */
++#define _PAGE_SPECIAL	0x00800 /* S: Special page */
+ 
+ #ifdef CONFIG_PTE_64BIT
+ /* ERPN in a PTE never gets cleared, ignore it */
+@@ -315,6 +318,8 @@ extern int icache_44x_need_flush;
+ #define _PMD_PRESENT_MASK (PAGE_MASK)
+ #define _PMD_BAD	(~PAGE_MASK)
+ 
++#define __HAVE_ARCH_PTE_SPECIAL
++
+ #elif defined(CONFIG_8xx)
+ /* Definitions for 8xx embedded chips. */
+ #define _PAGE_PRESENT	0x0001	/* Page is valid */
+@@ -362,6 +367,7 @@ extern int icache_44x_need_flush;
+ #define _PAGE_ACCESSED	0x100	/* R: page referenced */
+ #define _PAGE_EXEC	0x200	/* software: i-cache coherency required */
+ #define _PAGE_RW	0x400	/* software: user write access allowed */
++#define _PAGE_SPECIAL	0x800	/* software: Special page */
+ 
+ #define _PTE_NONE_MASK	_PAGE_HASHPTE
+ 
+@@ -372,6 +378,8 @@ extern int icache_44x_need_flush;
+ /* Hash table based platforms need atomic updates of the linux PTE */
+ #define PTE_ATOMIC_UPDATES	1
+ 
++#define __HAVE_ARCH_PTE_SPECIAL
++
+ #endif
+ 
+ /*
+@@ -404,6 +412,9 @@ extern int icache_44x_need_flush;
+ #ifndef _PAGE_WRITETHRU
+ #define _PAGE_WRITETHRU	0
+ #endif
++#ifndef _PAGE_SPECIAL
++#define _PAGE_SPECIAL	0
++#endif
+ #ifndef _PMD_PRESENT_MASK
+ #define _PMD_PRESENT_MASK	_PMD_PRESENT
+ #endif
+@@ -534,7 +545,7 @@ static inline int pte_write(pte_t pte)		{ return pte_val(pte) & _PAGE_RW; }
+ static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
+ static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
+ static inline int pte_file(pte_t pte)		{ return pte_val(pte) & _PAGE_FILE; }
+-static inline int pte_special(pte_t pte)	{ return 0; }
++static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
+ 
+ static inline void pte_uncache(pte_t pte)       { pte_val(pte) |= _PAGE_NO_CACHE; }
+ static inline void pte_cache(pte_t pte)         { pte_val(pte) &= ~_PAGE_NO_CACHE; }
+@@ -553,7 +564,7 @@ static inline pte_t pte_mkdirty(pte_t pte) {
+ static inline pte_t pte_mkyoung(pte_t pte) {
+ 	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
+ static inline pte_t pte_mkspecial(pte_t pte) {
+-	return pte; }
++	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
+ static inline unsigned long pte_pgprot(pte_t pte)
+ {
+ 	return __pgprot(pte_val(pte)) & PAGE_PROT_BITS;
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+1.5.5.1
