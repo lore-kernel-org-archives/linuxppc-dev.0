@@ -1,15 +1,22 @@
-Return-Path: <marco.stornelli@coritel.it>
-Message-ID: <48CF59F5.10700@coritel.it>
-Date: Tue, 16 Sep 2008 09:02:13 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
+Return-Path: <venkatakrishnap@vrindatech.com>
+Received: from server.indiadomain.com (server.indiadomain.com [69.50.220.104])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 00E65DDDEC
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 16 Sep 2008 21:45:37 +1000 (EST)
+Received: from [122.169.152.62] (helo=venkatakrishna)
+	by server.indiadomain.com with esmtpa (Exim 4.69)
+	(envelope-from <venkatakrishnap@vrindatech.com>) id 1KfYzo-00040A-2B
+	for linuxppc-embedded@ozlabs.org; Tue, 16 Sep 2008 04:45:32 -0700
+From: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: module compilation linux
+Date: Tue, 16 Sep 2008 17:13:12 +0530
 MIME-Version: 1.0
-To: Kevin Dockan <Kevin.Dockan@plexus.com>
-Subject: Re: U-Boot 1.3.0 with Linux 2.6.25-11 on MPC8641D - Machine
-	checkexception
-References: <C23D99018D2D774E8BF7B052C0009F1F0297BAA6@CO-MAIL-001.ms1.plexus.com>
-In-Reply-To: <C23D99018D2D774E8BF7B052C0009F1F0297BAA6@CO-MAIL-001.ms1.plexus.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: Linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0000_01C9181F.863B8430"
+Message-Id: <20080916114538.00E65DDDEC@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -20,134 +27,209 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Try to check out the configuration of the outbound and inbound windows.
+This is a multi-part message in MIME format.
 
-Regards.
+------=_NextPart_000_0000_01C9181F.863B8430
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Kevin Dockan ha scritto:
-> Hello everybody, 
->
-> I am trying to put into operation a proprietary board using a freescale MPC8641D. I use U-boot 1.3.0 and Linux kernel 2.6.25-11. 
-> On one PCIe-bus I have a PEX8518 followed by a PEX8114. A USB-controller is connected to the 8114. 
->
->
->     +--------------------------+ 
->     |                          | 
->     |       MPC 8641 D         | 
->     |                          | 
->     +--------------------------+ 
->                   | 
->                PEX8518 <----------------- PCIe switch 
->                   | 
->                PEX8114 <----------------- PCIe to PCI bridge 
->                   | 
->                ISP1562 <----------------- USB controller 
->
-> The PCIe-components are scanned correctly, resources (mem and IO) are assigned (correctly as far as I understand), 
-> but on the first read access to a control register of the usb-device the kernel generates "Oops: Machine check, sig: 7 [#1]". 
-> Writing to the same register does not produce an "Oops". 
->
-> The PCIe bus is defined in dts file as follows (dump from U-boot): 
->
->     pcie@d4008000 { 
->         cell-index = <0>; 
->         compatible = "fsl,mpc8641-pcie"; 
->         device_type = "pci"; 
->         #interrupt-cells = <1>; 
->         #size-cells = <2>; 
->         #address-cells = <3>; 
->         reg = <1000>; 
->         bus-range = <4>; 
->         ranges = [02 00 00 00 00 00 00 00 40 00 00 00 40 00 00 00 00 00 00 00 40 00 00 00 01 00 00 00 00 00 00 00 c0 00 00 00 c0 00 00 00 00 00 00 00 00 10 00 00]; 
->         clock-frequency = <1fca055>; 
->         interrupt-parent = <40000>; 
->         interrupts = <2>; 
->         interrupt-map-mask = [00 00 ff 00 00 00 00 00 00 00 00 00 00 00 00 07]; 
->         interrupt-map = [00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 04 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 04 00 00 00 00 00 01 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 00 04 00 00 00 00 00 02 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 04 00 04 00 00 00 00 00 03 00 00 00 01]; 
->         pcie@0 { 
->             reg = [00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00]; 
->             #size-cells = <2>; 
->             #address-cells = <3>; 
->             device_type = "pci"; 
->             ranges = [02 00 00 00 00 00 00 00 40 00 00 00 02 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00 40 00 00 00 01 00 00 00 00 00 00 00 c0 00 00 00 01 00 00 00 00 00 00 00 c0 00 00 00 00 00 00 00 00 10 00 00]; 
->         }; 
->     }; 
->     pcie@d4009000 { 
->         cell-index = <1>; 
->         compatible = "fsl,mpc8641-pcie"; 
->         device_type = "pci"; 
->         #interrupt-cells = <1>; 
->         #size-cells = <2>; 
->         #address-cells = <3>; 
->         reg = <1000>; 
->         bus-range = <6>; 
->         ranges = [02 00 00 00 00 00 00 00 80 00 00 00 80 00 00 00 00 00 00 00 40 00 00 00 01 00 00 00 00 00 00 00 c0 10 00 00 c0 10 00 00 00 00 00 00 00 10 00 00]; 
->         clock-frequency = <1fca055>; 
->         interrupt-parent = <40000>; 
->         interrupts = <2>; 
->         interrupt-map-mask = [00 00 f8 00 00 00 00 00 00 00 00 00 00 00 00 07]; 
->         interrupt-map = [00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 04 00 00 00 00 00 04 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 04 00 00 00 00 00 05 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 00 04 00 00 00 00 00 06 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 04 00 04 00 00 00 00 00 07 00 00 00 01]; 
->         pcie@0 { 
->             reg = [00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00]; 
->             #size-cells = <2>; 
->             #address-cells = <3>; 
->             device_type = "pci"; 
->             ranges = [02 00 00 00 00 00 00 00 80 00 00 00 02 00 00 00 00 00 00 00 80 00 00 00 00 00 00 00 40 00 00 00 01 00 00 00 00 00 00 00 c0 10 00 00 01 00 00 00 00 00 00 00 c0 10 00 00 00 00 00 00 00 10 00 00]; 
->         }; 
->     }; 
->
-> and here the output from kernel: 
->
-> quirk_usb_handoff_ohci: resource start = 0x80000000, len = 0x00001000 
-> quirk_usb_handoff_ohci: base = 0xe1056000, offset = 0x00000004 
-> Machine check in kernel mode. 
-> Caused by (from SRR1=149030): Transfer error ack signal 
-> Oops: Machine check, sig: 7 [#1] 
-> TAURUS 
-> NIP: c0297f4c LR: c0297f44 CTR: c00115d0 
-> REGS: df821e60 TRAP: 0200   Not tainted  (2.6.25.11) 
-> MSR: 00149030 <EE,ME,IR,DR>  CR: 24000022  XER: 00000000 
-> TASK = df805410[1] 'swapper' THREAD: df820000 
-> GPR00: c0297f44 df821f10 df805410 00000042 00000001 00000001 00000000 00020000 
-> GPR08: 00000036 c0333fe4 00006b61 c0360000 44000028 f7fbfffc 0fffac00 ffffffff 
-> GPR16: 00800000 007fff00 df821f78 c02d0000 c0330000 c0330000 00000000 0fff5464 
-> GPR24: c0330000 c02d0000 00000000 00000000 e1056000 df841218 df841218 e1056004 
-> NIP [c0297f4c] 0xc0297f4c 
-> LR [c0297f44] 0xc0297f44 
-> Call Trace: 
-> [df821f10] [c0297f44] 0xc0297f44 (unreliable) 
-> [df821f40] [c01617dc] pci_fixup_device+0xec/0x140 
-> [df821f60] [c0295ae0] 0xc0295ae0 
-> [df821f70] [c030c198] kernel_init+0x9c/0x290 
-> [df821ff0] [c0010a6c] kernel_thread+0x44/0x60 
-> Instruction dump: 
-> XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 
-> XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 
-> ---[ end trace 97996e90be8a1237 ]--- 
-> Kernel panic - not syncing: Attempted to kill init! 
-> Rebooting in 180 seconds.. 
->
-> where resource start = 0x80000000 is the physical address of the USB controller, base = 0xe1056000 is the virtual address. 
->
-> Does anyone know this kind of problem and can give me a hint. 
->
-> Kind Regards, 
-> Joachim 
->
->
->   
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+ 
 
--- 
-Marco Stornelli
-Embedded Software Engineer
-CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-http://www.coritel.it
+I compiled modules in ELDK 4.0 installed in Linux. I got the  configure
+error in show in the below. How to solve that. What are configure values
+should need compile MPC8260 freescale device driver in linux.
 
-marco.stornelli@coritel.it
-+39 06 72582838
+ 
+
+[root@VenkaKrisha linux-2.6-denx]# make ARCH=PowerPC CROSS_COMPILE=ppc_82xx-
+modules
+
+:0: error: -m64 not supported in this configuration
+
+:0: error: -m64 not supported in this configuration
+
+/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line 31: printf: #:
+invalid number/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line
+31: printf: #: invalid number/bin/sh: line 1: [: too many arguments
+
+scripts/kconfig/conf -s arch/powerpc/Kconfig
+
+*
+
+* Restart config...
+
+*
+
+*
+
+* Linux Kernel Configuration
+
+*
+
+64-bit kernel (PPC64) [N/y/?] (NEW)
+
+ 
+
+ 
+
+With Regards
+
+ 
+
+Venkatakrishna Pari
+
+
+------=_NextPart_000_0000_01C9181F.863B8430
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:"MS Mincho";
+	panose-1:2 2 6 9 4 2 5 8 3 4;}
+@font-face
+	{font-family:"\@MS Mincho";
+	panose-1:0 0 0 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I compiled modules in ELDK 4.0 installed in Linux. I =
+got the
+&nbsp;configure error in show in the below. How to solve that. What are =
+configure
+values should need compile MPC8260 freescale device driver in =
+linux.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>[root@VenkaKrisha linux-2.6-denx]# make ARCH=3DPowerPC
+CROSS_COMPILE=3Dppc_82xx- modules<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>:0: error: -m64 not supported in this =
+configuration<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>:0: error: -m64 not supported in this =
+configuration<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line =
+31: printf:
+#: invalid =
+number/opt/eldk/usr/src/linux-2.6-denx/scripts/gcc-version.sh: line
+31: printf: #: invalid number/bin/sh: line 1: [: too many =
+arguments<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>scripts/kconfig/conf -s =
+arch/powerpc/Kconfig<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>*<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>* Restart config...<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>*<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>*<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>* Linux Kernel Configuration<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>*<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>64-bit kernel (PPC64) [N/y/?] (NEW)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>With Regards<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Venkatakrishna Pari<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0000_01C9181F.863B8430--
