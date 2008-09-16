@@ -1,25 +1,21 @@
 Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id D5B60DDE22
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 21:59:49 +1000 (EST)
-Date: Tue, 16 Sep 2008 15:59:47 +0400
+Date: Tue, 16 Sep 2008 16:17:40 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
-	hardirq preemption
-Message-ID: <20080916115947.GA6995@oksana.dev.rtsoft.ru>
-References: <20080915100406.342e027a@bull.net> <48CE5684.4000506@de.ibm.com>
-	<20080915151332.6a3a7c80@bull.net>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: demuxing irqs
+Message-ID: <20080916121740.GA9970@oksana.dev.rtsoft.ru>
+References: <9e4733910809131206j125e7e25of07c19028ac07339@mail.gmail.com>
+	<adaprn7is80.fsf@cisco.com>
+	<9e4733910809131554mb0c6660r3bcc993bb2ca082d@mail.gmail.com>
+	<adaljxvir57.fsf@cisco.com>
+	<9e4733910809131623pe990495l96b31bd546d9fa6b@mail.gmail.com>
+	<9e4733910809140706i599d70b2q12d3582c7a95498c@mail.gmail.com>
+	<9e4733910809141625u3cd94e7jf05584031be7c1d9@mail.gmail.com>
+	<9e4733910809142006x350e96abs6af304d8807ccd67@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20080915151332.6a3a7c80@bull.net>
-Cc: tklein@de.ibm.com, tinytim@us.ibm.com,
-	Linux-rt <linux-rt-users@vger.kernel.org>,
-	jean-pierre.dion@bull.net, themann@de.ibm.com, netdev@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
-	gilles.carry@ext.bull.net
+In-Reply-To: <9e4733910809142006x350e96abs6af304d8807ccd67@mail.gmail.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Roland Dreier <rdreier@cisco.com>
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -30,42 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 15, 2008 at 03:13:32PM +0200, Sebastien Dugue wrote:
-[...]
-> > we are a bit worried about putting this into the mainstream part of non real
-> > time linux.
-> 
->   Heck, I sure do not want this to be applied mainstream nor into any tree.
-> The sole purpose of this patch was to trigger some reaction from the people who
-> know the hardware and try to understand where the problem lies.
-> 
-> > There interrupts work perfectly fine, and it was a bit of a
-> > challenge to get there for all cases / configurations / machines.
-> 
->   Agreed, but the fact that it fails with hardirq preemption leads me to
-> believe (without any more knowledge about the harware) that there might be
-> something amiss with this driver (or the code concerning the XICS)
-> nevertheless.
-> 
-> > 
-> > Could you try to enable these changes only for RT-Linux via a real-time
-> > kconfig switch?
-> 
->   Nope, this is just a quick hack that allows me to have a functional eHEA under
-> the rt kernel. I want to understand what the problem is:
-> 
->   - Is the eHEA really delivering level interrupts to the XICS?
-> 
->   - Is the XICS loosing interrupts when they are masked?
+Hi Jon,
 
-There is a known bug in the -rt kernels, the bug causes handlers
-to lose edge interrupts.
+On Sun, Sep 14, 2008 at 11:06:23PM -0400, Jon Smirl wrote:
+> I have demultiplexing the GPIO interrupts working well enough to make
+> my hardware work. But now I've discovered that these interrupts can't
+> do what I need.
+> 
+> Anton, Grant - are either of you interested in this code? It's not
+> finished but the main ideas are in place.
 
-See this patch:
+I think there is a small issue that ruins the whole approach.. :-/
 
-http://lkml.org/lkml/2008/6/30/372
+> --- a/arch/powerpc/include/asm/gpio.h
+> +++ b/arch/powerpc/include/asm/gpio.h
+> @@ -38,17 +38,14 @@ static inline int gpio_cansleep(unsigned int gpio)
+>         return __gpio_cansleep(gpio);
+> }
+> 
+> -/*
+> - * Not implemented, yet.
+> - */
+> -static inline int gpio_to_irq(unsigned int gpio)
+> +static inline unsigned int gpio_to_irq(unsigned int gpio)
+>  {
+> -       return -ENOSYS;
+> +       return gpio;
 
->   - ...?
+"GPIO 0" is valid gpio, but "IRQ 0" isn't valid virq. So you
+can't do 1:1 mapping. :-(
 
 -- 
 Anton Vorontsov
