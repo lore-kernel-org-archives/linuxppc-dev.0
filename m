@@ -1,6 +1,6 @@
 Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910809160724x693c5af9y8df2f609e79f5005@mail.gmail.com>
-Date: Tue, 16 Sep 2008 10:24:35 -0400
+Message-ID: <9e4733910809160729p546dada4gd6788b28ea9246b8@mail.gmail.com>
+Date: Tue, 16 Sep 2008 10:29:55 -0400
 From: "Jon Smirl" <jonsmirl@gmail.com>
 To: avorontsov@ru.mvista.com
 Subject: Re: demuxing irqs
@@ -59,6 +59,11 @@ On Tue, Sep 16, 2008 at 10:14 AM, Anton Vorontsov
 >> irq_to_gpio() are meant to be fast paths without error checking.
 >
 > Nope. gpio_to_irq and irq_to_gpio don't have to be fast.
+
+You need to do gpio_to_irq in the interrupt handler doing the
+demuxing. I hadn't written that piece yet.
+
+
 >
 >> In
 >> the gpiolib doc it says these functions should only take a couple of
@@ -73,43 +78,6 @@ On Tue, Sep 16, 2008 at 10:14 AM, Anton Vorontsov
 > valid virq b/c it is mapped for another IRQ controller (particularly
 > lots of kernel code assumes that IRQ 8 is 8259 PIC's CMOS interrupt,
 > the PIC and IRQ8 is widely used on PowerPC).
-
-Set the base in the GPIO struct such that this won't happen.  You can
-set the base greater than MAX_IRQ.
-
-Just because a CPU has a GPIO 8 in the manual does not mean that is
-has to be assigned GPIO 8 in the kernel. The GPIO numbers in the
-kernel are just handles, they can be any number. VIRQs don't use the
-physical IRQ number.
-
-In the code I posted all of the internal GPIO numbers were in the
-150-180 range.
-
-Assign GPIO numbers above the maximum VIRQ on the CPU...
-
-#define IRQ_GPIO(x)  (MPC52xx_IRQ_HIGHTESTHWIRQ + x)
-#define IRQ_GPIO_WKUP(x)  (IRQ_GPIO(32) + x)
-
-Use the base of the GPIO struct to translate to the internal pin number.
-	ofchip->gc.base             = IRQ_GPIO_WKUP(0);
-
-
-static int mpc52xx_wkup_gpio_get(struct gpio_chip *gc, unsigned int gpio)
-{
-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-	struct mpc52xx_gpio_wkup __iomem *regs = mm_gc->regs;
-	unsigned int ret;
-
-Adjust for the offset .,..
-	ret = (in_8(&regs->wkup_ival) >> (7 - gpio - gc.base)) & 1;
-
-	pr_debug("%s: gpio: %d ret: %d\n", __func__, gpio, ret);
-
-	return ret;
-}
-
-
-
 >
 > So gpio_to_irq will succeed, and request_irq will succeed too. Though
 > this would be not correct.
