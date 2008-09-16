@@ -2,17 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6E928DE113
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 01:15:49 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 4B5A8DE113
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 01:15:51 +1000 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m8GFFjAN024474
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 10:15:46 -0500
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m8GFFlqA024485
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Sep 2008 10:15:48 -0500
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v5 1/4] powerpc: Introduce local (non-broadcast) forms of tlb
-	invalidates
-Date: Tue, 16 Sep 2008 10:15:42 -0500
-Message-Id: <1221578145-29102-1-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH v5 3/4] powerpc/fsl-booke: Fixup 64-bit PTE reading for SMP
+	support
+Date: Tue, 16 Sep 2008 10:15:44 -0500
+Message-Id: <1221578145-29102-3-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1221578145-29102-2-git-send-email-galak@kernel.crashing.org>
+References: <1221578145-29102-1-git-send-email-galak@kernel.crashing.org>
+	<1221578145-29102-2-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,202 +25,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Introduced a new set of low level tlb invalidate functions that do not
-broadcast invalidates on the bus:
-
-_tlbil_all - invalidate all
-_tlbil_pid - invalidate based on process id (or mm context)
-_tlbil_va  - invalidate based on virtual address (ea + pid)
-
-On non-SMP configs _tlbil_all should be functionally equivalent to _tlbia and
-_tlbil_va should be functionally equivalent to _tlbie.
-
-The intent of this change is to handle SMP based invalidates via IPIs instead
-of broadcasts as the mechanism scales better for larger number of cores.
-
-On e500 (fsl-booke mmu) based cores move to using MMUCSR for invalidate alls
-and tlbsx/tlbwe for invalidate virtual address.
+We need to create a false data dependency to ensure the loads of
+the pte are done in the right order.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
-Changed flush_tlb_range to use pid form of invalidate and added a comment about
-the fact that _tlbil_pid for fsl-booke is really an invalidate all.
+ arch/powerpc/kernel/head_fsl_booke.S |   26 +++++++++++++++++++++-----
+ 1 files changed, 21 insertions(+), 5 deletions(-)
 
-- k
-
- arch/powerpc/include/asm/reg_booke.h |    7 ++++
- arch/powerpc/include/asm/tlbflush.h  |   13 +++++---
- arch/powerpc/kernel/misc_32.S        |   53 ++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/ppc_ksyms.c      |    3 ++
- 4 files changed, 71 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index be980f4..6745376 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -109,6 +109,7 @@
- #define SPRN_EVPR	0x3D6	/* Exception Vector Prefix Register */
- #define SPRN_L1CSR0	0x3F2	/* L1 Cache Control and Status Register 0 */
- #define SPRN_L1CSR1	0x3F3	/* L1 Cache Control and Status Register 1 */
-+#define SPRN_MMUCSR0	0x3F4	/* MMU Control and Status Register 0 */
- #define SPRN_PIT	0x3DB	/* Programmable Interval Timer */
- #define SPRN_BUCSR	0x3F5	/* Branch Unit Control and Status */
- #define SPRN_L2CSR0	0x3F9	/* L2 Data Cache Control and Status Register 0 */
-@@ -410,6 +411,12 @@
- #define L2CSR0_L2LOA	0x00000080	/* L2 Cache Lock Overflow Allocate */
- #define L2CSR0_L2LO	0x00000020	/* L2 Cache Lock Overflow */
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 3cb52fa..377e0c1 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -579,13 +579,19 @@ interrupt_base:
  
-+/* Bit definitions for MMUCSR0 */
-+#define MMUCSR0_TLB1FI	0x00000002	/* TLB1 Flash invalidate */
-+#define MMUCSR0_TLB0FI	0x00000004	/* TLB0 Flash invalidate */
-+#define MMUCSR0_TLB2FI	0x00000040	/* TLB2 Flash invalidate */
-+#define MMUCSR0_TLB3FI	0x00000020	/* TLB3 Flash invalidate */
-+
- /* Bit definitions for SGR. */
- #define SGR_NORMAL	0		/* Speculative fetching allowed. */
- #define SGR_GUARDED	1		/* Speculative fetching disallowed. */
-diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
-index 361cd5c..9f0f710 100644
---- a/arch/powerpc/include/asm/tlbflush.h
-+++ b/arch/powerpc/include/asm/tlbflush.h
-@@ -29,6 +29,9 @@
- #include <linux/mm.h>
+ 	FIND_PTE
+ 	andc.	r13,r13,r11		/* Check permission */
+-	bne	2f			/* Bail if permission mismach */
  
- extern void _tlbie(unsigned long address, unsigned int pid);
-+extern void _tlbil_all(void);
-+extern void _tlbil_pid(unsigned int pid);
-+extern void _tlbil_va(unsigned long address, unsigned int pid);
- 
- #if defined(CONFIG_40x) || defined(CONFIG_8xx)
- #define _tlbia()	asm volatile ("tlbia; sync" : : : "memory")
-@@ -38,31 +41,31 @@ extern void _tlbia(void);
- 
- static inline void flush_tlb_mm(struct mm_struct *mm)
- {
--	_tlbia();
-+	_tlbil_pid(mm->context.id);
- }
- 
- static inline void flush_tlb_page(struct vm_area_struct *vma,
- 				  unsigned long vmaddr)
- {
--	_tlbie(vmaddr, vma ? vma->vm_mm->context.id : 0);
-+	_tlbil_va(vmaddr, vma ? vma->vm_mm->context.id : 0);
- }
- 
- static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
- 					 unsigned long vmaddr)
- {
--	_tlbie(vmaddr, vma ? vma->vm_mm->context.id : 0);
-+	flush_tlb_page(vma, vmaddr);
- }
- 
- static inline void flush_tlb_range(struct vm_area_struct *vma,
- 				   unsigned long start, unsigned long end)
- {
--	_tlbia();
-+	_tlbil_pid(vma->vm_mm->context.id);
- }
- 
- static inline void flush_tlb_kernel_range(unsigned long start,
- 					  unsigned long end)
- {
--	_tlbia();
-+	_tlbil_all();
- }
- 
- #elif defined(CONFIG_PPC32)
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 7a6dfbc..98f9a2d 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -274,6 +274,9 @@ _GLOBAL(real_writeb)
- /*
-  * Flush MMU TLB
-  */
-+#ifndef CONFIG_FSL_BOOKE
-+_GLOBAL(_tlbil_all)
-+#endif
- _GLOBAL(_tlbia)
- #if defined(CONFIG_40x)
- 	sync			/* Flush to memory before changing mapping */
-@@ -344,6 +347,9 @@ _GLOBAL(_tlbia)
- /*
-  * Flush MMU TLB for a particular address
-  */
-+#ifndef CONFIG_FSL_BOOKE
-+_GLOBAL(_tlbil_va)
-+#endif
- _GLOBAL(_tlbie)
- #if defined(CONFIG_40x)
- 	/* We run the search with interrupts disabled because we have to change
-@@ -436,6 +442,53 @@ _GLOBAL(_tlbie)
- #endif /* ! CONFIG_40x */
- 	blr
- 
-+#if defined(CONFIG_FSL_BOOKE)
-+/*
-+ * Flush MMU TLB, but only on the local processor (no broadcast)
-+ */
-+_GLOBAL(_tlbil_all)
-+#define MMUCSR0_TLBFI	(MMUCSR0_TLB0FI | MMUCSR0_TLB1FI | \
-+			 MMUCSR0_TLB2FI | MMUCSR0_TLB3FI)
-+	li	r3,(MMUCSR0_TLBFI)@l
-+	mtspr	SPRN_MMUCSR0, r3
-+1:
-+	mfspr	r3,SPRN_MMUCSR0
-+	andi.	r3,r3,MMUCSR0_TLBFI@l
-+	bne	1b
-+	blr
-+
-+/*
-+ * Flush MMU TLB for a particular process id, but only on the local processor
-+ * (no broadcast)
-+ */
-+_GLOBAL(_tlbil_pid)
-+/* we currently do an invalidate all since we don't have per pid invalidate */
-+	li	r3,(MMUCSR0_TLBFI)@l
-+	mtspr	SPRN_MMUCSR0, r3
-+1:
-+	mfspr	r3,SPRN_MMUCSR0
-+	andi.	r3,r3,MMUCSR0_TLBFI@l
-+	bne	1b
-+	blr
-+
-+/*
-+ * Flush MMU TLB for a particular address, but only on the local processor
-+ * (no broadcast)
-+ */
-+_GLOBAL(_tlbil_va)
-+	slwi	r4,r4,16
-+	mtspr	SPRN_MAS6,r4		/* assume AS=0 for now */
-+	tlbsx	0,r3
-+	mfspr	r4,SPRN_MAS1		/* check valid */
-+	andis.	r3,r4,MAS1_VALID@h
-+	beqlr
-+	rlwinm	r4,r4,0,1,31
-+	mtspr	SPRN_MAS1,r4
-+	tlbwe
-+	blr
-+#endif /* CONFIG_FSL_BOOKE */
-+
-+
- /*
-  * Flush instruction cache.
-  * This is a no-op on the 601.
-diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-index e1ea4fe..8edc235 100644
---- a/arch/powerpc/kernel/ppc_ksyms.c
-+++ b/arch/powerpc/kernel/ppc_ksyms.c
-@@ -119,6 +119,9 @@ EXPORT_SYMBOL(flush_instruction_cache);
- EXPORT_SYMBOL(flush_tlb_kernel_range);
- EXPORT_SYMBOL(flush_tlb_page);
- EXPORT_SYMBOL(_tlbie);
-+#if defined(CONFIG_4xx) || defined(CONFIG_8xx) || defined(CONFIG_FSL_BOOKE)
-+EXPORT_SYMBOL(_tlbil_va);
+ #ifdef CONFIG_PTE_64BIT
+-	lwz	r13, 0(r12)
++#ifdef CONFIG_SMP
++	subf	r10,r11,r12		/* create false data dep */
++	lwzx	r13,r11,r10		/* Get upper pte bits */
++#else
++	lwz	r13,0(r12)		/* Get upper pte bits */
 +#endif
  #endif
- EXPORT_SYMBOL(__flush_icache_range);
- EXPORT_SYMBOL(flush_dcache_range);
+ 
+-	 /* Jump to common tlb load */
++	bne	2f			/* Bail if permission/valid mismach */
++
++	/* Jump to common tlb load */
+ 	b	finish_tlb_load
+ 2:
+ 	/* The bailout.  Restore registers to pre-exception conditions
+@@ -640,10 +646,20 @@ interrupt_base:
+ 
+ 	FIND_PTE
+ 	andc.	r13,r13,r11		/* Check permission */
++
++#ifdef CONFIG_PTE_64BIT
++#ifdef CONFIG_SMP
++	subf	r10,r11,r12		/* create false data dep */
++	lwzx	r13,r11,r10		/* Get upper pte bits */
++#else
++	lwz	r13,0(r12)		/* Get upper pte bits */
++#endif
++#endif
++
+ 	bne	2f			/* Bail if permission mismach */
+ 
+ #ifdef CONFIG_PTE_64BIT
+-	lwz	r13, 0(r12)
++	lwz	r13,0(r12)
+ #endif
+ 
+ 	/* Jump to common TLB load point */
+@@ -702,7 +718,7 @@ interrupt_base:
+ /*
+  * Both the instruction and data TLB miss get to this
+  * point to load the TLB.
+- *	r10 - EA of fault
++ *	r10 - available to use
+  *	r11 - TLB (info from Linux PTE)
+  *	r12 - available to use
+  *	r13 - upper bits of PTE (if PTE_64BIT) or available to use
 -- 
 1.5.5.1
