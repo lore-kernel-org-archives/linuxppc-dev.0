@@ -1,20 +1,20 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from IE1EHSOBE001.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id 03C9DDDF3F
+Return-Path: <adams.ppc@gmail.com>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 191E0DE171
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Sep 2008 04:04:04 +1000 (EST)
+	Thu, 18 Sep 2008 05:13:17 +1000 (EST)
+Received: by gxk14 with SMTP id 14so28054163gxk.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 17 Sep 2008 12:13:10 -0700 (PDT)
+Message-ID: <4a21eaea0809171213o2218c4aau222f36e1c5575f78@mail.gmail.com>
+Date: Wed, 17 Sep 2008 13:13:09 -0600
+From: "bhanu jampala" <adams.ppc@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Covert DMA address to Virtual address on Linux PPC
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: Back port Virtex5 FPU to Virtex4?
-Date: Wed, 17 Sep 2008 11:03:56 -0700
-In-Reply-To: <20080917173555.GA7913@secretlab.ca>
-References: <3C87E4F8-3DA2-41E8-BE33-979A7869FD2D@gmail.com>
-	<20080917173555.GA7913@secretlab.ca>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-	"Shanyuan Gao" <sygao.research@gmail.com>
-Message-ID: <20080917180357.2C91B7F8080@mail38-dub.bigfish.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_11371_17280650.1221678789945"
+Cc: rmcguire@videopresence.com, "M. Warner Losh" <imp@bsdimp.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,54 +25,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_11371_17280650.1221678789945
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Sorry, I missed your original question:
+Hi All,
 
-There's a very complex tradeoff with these cores, in terms of clock
-speed of the processor, clock speed of the FPU, errata workarounds, etc.
-Generally, In V4, DP floating point code ends up about the same speed
-whether you use the DP core and accept the system limitations or just
-use a well tuned DP floating point emulation library with the core
-frequency as fast as possible: hence we usually recommend for most
-purposes, people use the floating point emulation libraries in V4 for
-double precision.   My understanding is that the IBM libraries are
-significantly better than the gcc libraries in this respect...
+How do I convert a DMA buffer address to its respective virtual address in
+Linux PPC world?
 
-Steve
+I am not finding appropriate functions to do that?
+How are people doing it on PPC platforms?
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
-[mailto:linuxppc-embedded-
-> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of Grant
-Likely
-> Sent: Wednesday, September 17, 2008 10:36 AM
-> To: Shanyuan Gao
-> Cc: linuxppc-embedded
-> Subject: Re: Back port Virtex5 FPU to Virtex4?
-> =
+What I trying to do:
+This is for MCC i.e. Buffer Desc and buffer are in main memory (DMA memory)
+I have submitted some DMA buffer from a chunk of memory to Device.
+Now at the end of successful receive, where I know the DMA address by
+reading from the buffer Descriptors.
+Now from this DMA address, how do I find out the Virtual address so that I
+can perform a read on that buffer?
 
-> On Tue, Aug 26, 2008 at 04:00:42PM -0400, Shanyuan Gao wrote:
-> > I am working with ML410 and have FPU (single precision) working.
-> > However, the FPU for V5 looks more attractive because it's double
-> > precision.  So is it possible to back port the double precision FPU
-to
-> > V4?
-> =
+Regards,
+Mukund Jampala
 
-> As far as I understand there are limitations in the V4 APU interface
-> that makes the full double precision FPU unfeasible.  The Xilinx folks
-> can correct me if I'm wrong.
-> =
+------=_Part_11371_17280650.1221678789945
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> g.
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+<div dir="ltr">Hi All,<br><br>How do I convert a DMA buffer address to its respective virtual address in Linux PPC world?<br><br>I am not finding appropriate functions to do that?<br>How are people doing it on PPC platforms?<br>
 
+<br>What I trying to do:<br>This is for MCC i.e. Buffer Desc and buffer are in main memory (DMA memory)<br>
+I have submitted some DMA buffer from a chunk of memory to Device.<br>
+Now at the end of successful receive, where I know the DMA address by reading from the buffer Descriptors.<br>Now from this DMA address, how do I find out the Virtual address so that I can perform a read on that buffer?<br>
 
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+<br>Regards,<br>Mukund Jampala</div>
+
+------=_Part_11371_17280650.1221678789945--
