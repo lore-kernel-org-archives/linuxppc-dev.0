@@ -1,24 +1,33 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910809170709i30977945mc236ed844a26b62e@mail.gmail.com>
-Date: Wed, 17 Sep 2008 10:09:07 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: avorontsov@ru.mvista.com
-Subject: Re: demuxing irqs
-In-Reply-To: <20080917125600.GA20931@oksana.dev.rtsoft.ru>
+Return-Path: <hannes.hering@linux.vnet.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 98840DDF04
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 00:21:27 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id m8HEKLER303890
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 14:20:21 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
+	ESMTP id m8HEKLMS3584112
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 16:20:21 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m8HEKHC3000721
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 16:20:17 +0200
+From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+To: jeff@garzik.org
+Subject: [PATCH] [2.6.27] ehea: Fix memory hotplug support
+Date: Wed, 17 Sep 2008 16:19:46 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080916121740.GA9970@oksana.dev.rtsoft.ru>
-	<20080916131203.GA21641@oksana.dev.rtsoft.ru>
-	<9e4733910809160636heaa545eld0da835b2d163811@mail.gmail.com>
-	<20080916141422.GA29888@oksana.dev.rtsoft.ru>
-	<9e4733910809160724x693c5af9y8df2f609e79f5005@mail.gmail.com>
-	<20080916174935.GA13142@ld0162-tx32.am.freescale.net>
-	<9e4733910809161132j3b0ff194hd60fcdf489fb19e4@mail.gmail.com>
-	<20080916214210.GA15987@oksana.dev.rtsoft.ru>
-	<9e4733910809161508m3a94baf1g818be7247439848e@mail.gmail.com>
-	<20080917125600.GA20931@oksana.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev <Linuxppc-dev@ozlabs.org>, Roland Dreier <rdreier@cisco.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200809171619.46741.hannes.hering@linux.vnet.ibm.com>
+Cc: themann@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	raisch@de.ibm.com, ossrosch@linux.vnet.ibm.com,
+	linuxppc-dev@ozlabs.org, ossthema@de.ibm.com, osstklei@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,14 +37,202 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Both solutions can be implemented. This is really a question of style.
-Since this impacts all of the PowerPC implementations we should get
-feedback from more people  I'll go along with whatever the group
-wants.
+This patch implements the memory notifier to update the busmap instantly
+instead of rebuilding the whole map. This is necessary because
+walk_memory_resource provides different information than required during memory
+hotplug.
 
-The basic question is: Should GPIOs and VIRQs each have their own
-namespace, or should there be a single unified namespace?
+Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+---
+This patch is based on upstream-fixes in the netdev-2.6.git.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+diff -Nurp -X dontdiff linux-netdev-2.6/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
+--- linux-netdev-2.6/drivers/net/ehea/ehea.h	2008-09-17 16:09:25.729017931 +0200
++++ patched_kernel/drivers/net/ehea/ehea.h	2008-09-17 16:11:26.481026217 +0200
+@@ -40,13 +40,13 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0092"
++#define DRV_VERSION	"EHEA_0094"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+ #define DLPAR_MEM_ADD      2
+ #define DLPAR_MEM_REM      4
+-#define EHEA_CAPABILITIES  (DLPAR_PORT_ADD_REM | DLPAR_MEM_ADD)
++#define EHEA_CAPABILITIES  (DLPAR_PORT_ADD_REM | DLPAR_MEM_ADD | DLPAR_MEM_REM)
+ 
+ #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
+ 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
+diff -Nurp -X dontdiff linux-netdev-2.6/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
+--- linux-netdev-2.6/drivers/net/ehea/ehea_main.c	2008-09-17 16:09:25.729017931 +0200
++++ patched_kernel/drivers/net/ehea/ehea_main.c	2008-09-17 16:11:26.481026217 +0200
+@@ -2863,7 +2863,7 @@ static void ehea_rereg_mrs(struct work_s
+ 	struct ehea_adapter *adapter;
+ 
+ 	mutex_lock(&dlpar_mem_lock);
+-	ehea_info("LPAR memory enlarged - re-initializing driver");
++	ehea_info("LPAR memory changed - re-initializing driver");
+ 
+ 	list_for_each_entry(adapter, &adapter_list, list)
+ 		if (adapter->active_ports) {
+@@ -2900,13 +2900,6 @@ static void ehea_rereg_mrs(struct work_s
+ 			}
+ 		}
+ 
+-	ehea_destroy_busmap();
+-	ret = ehea_create_busmap();
+-	if (ret) {
+-		ehea_error("creating ehea busmap failed");
+-		goto out;
+-	}
+-
+ 	clear_bit(__EHEA_STOP_XFER, &ehea_driver_flags);
+ 
+ 	list_for_each_entry(adapter, &adapter_list, list)
+@@ -3519,9 +3512,20 @@ void ehea_crash_handler(void)
+ static int ehea_mem_notifier(struct notifier_block *nb,
+                              unsigned long action, void *data)
+ {
++	struct memory_notify *arg = data;
+ 	switch (action) {
+-	case MEM_OFFLINE:
+-		ehea_info("memory has been removed");
++	case MEM_CANCEL_OFFLINE:
++		ehea_info("memory offlining canceled");
++	case MEM_ONLINE:
++		ehea_info("memory is going online");
++		if (ehea_add_sect_bmap(arg->start_pfn, arg->nr_pages))
++			return NOTIFY_BAD;
++		ehea_rereg_mrs(NULL);
++		break;
++	case MEM_GOING_OFFLINE:
++		ehea_info("memory is going offline");
++		if (ehea_rem_sect_bmap(arg->start_pfn, arg->nr_pages))
++			return NOTIFY_BAD;
+ 		ehea_rereg_mrs(NULL);
+ 		break;
+ 	default:
+diff -Nurp -X dontdiff linux-netdev-2.6/drivers/net/ehea/ehea_qmr.c patched_kernel/drivers/net/ehea/ehea_qmr.c
+--- linux-netdev-2.6/drivers/net/ehea/ehea_qmr.c	2008-09-17 16:09:25.729017931 +0200
++++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-09-17 16:11:26.481026217 +0200
+@@ -587,53 +587,81 @@ static inline int ehea_init_bmap(struct 
+ 	return ehea_init_top_bmap(ehea_bmap->top[top], dir);
+ }
+ 
+-static int ehea_create_busmap_callback(unsigned long pfn,
+-				       unsigned long nr_pages, void *arg)
++static DEFINE_MUTEX(ehea_busmap_mutex);
++static unsigned long ehea_mr_len;
++
++#define EHEA_BUSMAP_ADD_SECT 1
++#define EHEA_BUSMAP_REM_SECT 0
++
++static int ehea_update_busmap(unsigned long pfn, unsigned long pgnum, int add)
+ {
+-	unsigned long i, mr_len, start_section, end_section;
+-	start_section = (pfn * PAGE_SIZE) / EHEA_SECTSIZE;
+-	end_section = start_section + ((nr_pages * PAGE_SIZE) / EHEA_SECTSIZE);
+-	mr_len = *(unsigned long *)arg;
++	unsigned long i, start_section, end_section;
+ 
+ 	if (!ehea_bmap)
+ 		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
+ 	if (!ehea_bmap)
+ 		return -ENOMEM;
+ 
++	start_section = (pfn * PAGE_SIZE) / EHEA_SECTSIZE;
++	end_section = start_section + ((pgnum * PAGE_SIZE) / EHEA_SECTSIZE);
++
+ 	for (i = start_section; i < end_section; i++) {
+-		int ret;
+-		int top, dir, idx;
+ 		u64 vaddr;
++		int top = ehea_calc_index(i, EHEA_TOP_INDEX_SHIFT);
++		int dir = ehea_calc_index(i, EHEA_DIR_INDEX_SHIFT);
++		int idx = i & EHEA_INDEX_MASK;
++
++		int ret = ehea_init_bmap(ehea_bmap, top, dir);
++		if (ret) {
++			if(add) {
++				return ret;
++			} else {
++				continue;
++			}
++		}
+ 
+-		top = ehea_calc_index(i, EHEA_TOP_INDEX_SHIFT);
+-		dir = ehea_calc_index(i, EHEA_DIR_INDEX_SHIFT);
+-
+-		ret = ehea_init_bmap(ehea_bmap, top, dir);
+-		if(ret)
+-			return ret;
+-
+-		idx = i & EHEA_INDEX_MASK;
+-		vaddr = EHEA_BUSMAP_START + mr_len + i * EHEA_SECTSIZE;
+-
++		if (add) {
++			vaddr = EHEA_BUSMAP_START + ehea_mr_len;
++			ehea_mr_len += EHEA_SECTSIZE;
++		} else { /* remove */
++			vaddr = 0;
++			ehea_mr_len -= EHEA_SECTSIZE;
++		}
+ 		ehea_bmap->top[top]->dir[dir]->ent[idx] = vaddr;
+ 	}
+-
+-	mr_len += nr_pages * PAGE_SIZE;
+-	*(unsigned long *)arg = mr_len;
+-
+ 	return 0;
+ }
+ 
+-static unsigned long ehea_mr_len;
++int ehea_add_sect_bmap(unsigned long pfn, unsigned long nr_pages)
++{
++	int ret;
++	mutex_lock(&ehea_busmap_mutex);
++	ret = ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
++	mutex_unlock(&ehea_busmap_mutex);
++	return ret;
++}
+ 
+-static DEFINE_MUTEX(ehea_busmap_mutex);
++int ehea_rem_sect_bmap(unsigned long pfn, unsigned long nr_pages)
++{
++	int ret;
++	mutex_lock(&ehea_busmap_mutex);
++	ret = ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_REM_SECT);
++	mutex_unlock(&ehea_busmap_mutex);
++	return ret;
++}
++
++static int ehea_create_busmap_callback(unsigned long pfn,
++				       unsigned long nr_pages, void *arg)
++{
++	return ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
++}
+ 
+ int ehea_create_busmap(void)
+ {
+ 	int ret;
+ 	mutex_lock(&ehea_busmap_mutex);
+ 	ehea_mr_len = 0;
+-	ret = walk_memory_resource(0, 1ULL << MAX_PHYSMEM_BITS, &ehea_mr_len,
++	ret = walk_memory_resource(0, 1ULL << MAX_PHYSMEM_BITS, NULL,
+ 				   ehea_create_busmap_callback);
+ 	mutex_unlock(&ehea_busmap_mutex);
+ 	return ret;
+diff -Nurp -X dontdiff linux-netdev-2.6/drivers/net/ehea/ehea_qmr.h patched_kernel/drivers/net/ehea/ehea_qmr.h
+--- linux-netdev-2.6/drivers/net/ehea/ehea_qmr.h	2008-09-17 16:09:25.729017931 +0200
++++ patched_kernel/drivers/net/ehea/ehea_qmr.h	2008-09-17 16:11:26.481026217 +0200
+@@ -378,6 +378,8 @@ int ehea_rem_mr(struct ehea_mr *mr);
+ 
+ void ehea_error_data(struct ehea_adapter *adapter, u64 res_handle);
+ 
++int ehea_add_sect_bmap(unsigned long pfn, unsigned long nr_pages);
++int ehea_rem_sect_bmap(unsigned long pfn, unsigned long nr_pages);
+ int ehea_create_busmap(void);
+ void ehea_destroy_busmap(void);
+ u64 ehea_map_vaddr(void *caddr);
