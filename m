@@ -1,15 +1,21 @@
-Return-Path: <LeoLi@freescale.com>
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.scram.de",
+	Issuer "StartCom Class 1 Primary Intermediate Server CA" (not
+	verified)) by ozlabs.org (Postfix) with ESMTPS id 6F99EDDDEE
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 20:28:39 +1000 (EST)
+Message-ID: <48D0DC23.9070902@scram.de>
+Date: Wed, 17 Sep 2008 12:29:55 +0200
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: UCC GETH does not work on my MPC8360EA 
-Date: Wed, 17 Sep 2008 17:38:39 +0800
-Message-ID: <113760FDF39C3E40AAB8DE6E6C64D0A7110901@zch01exm26.fsl.freescale.net>
-In-Reply-To: <48D0CB3C.7050708@grandegger.com>
-References: <48D0CB3C.7050708@grandegger.com>
-From: "Li Yang-R58472" <LeoLi@freescale.com>
-To: "Wolfgang Grandegger" <wg@grandegger.com>,
-	"linuxppc-dev" <Linuxppc-dev@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please pull from 'for-2.6.27'
+References: <Pine.LNX.4.64.0809121546530.6192@blarg.am.freescale.net>	<18BF734B-F71B-4FDD-B3C9-62AA5EB54283@kernel.crashing.org>
+	<18639.61790.750450.103022@cargo.ozlabs.ibm.com>
+In-Reply-To: <18639.61790.750450.103022@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,30 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org]=20
-> On Behalf Of Wolfgang Grandegger
-> Sent: Wednesday, September 17, 2008 5:18 PM
-> To: linuxppc-dev
-> Subject: UCC GETH does not work on my MPC8360EA=20
->=20
-> Hello,
->=20
-> I have a wired problems with my MPC8360EA using Linux=20
-> 2.6.27-rc6. The UCC GEHT controller works fine with 100/Full=20
-> but fails with 1000/Full.
-> What I see is that the TX done interrupts come (ifconfig's TX=20
-> packet counter goes up), but the messages does not show up on=20
-> the wire. RX seems to work properly, though.
->=20
-> Any idea what's going wrong? Does someone got it working with=20
-> 1000/Full?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-This looks like an old problem that RGMII Tx shouldn't use internal
-delay while Rx should use.  So try to use 'rgmii-rxid' as
-phy-connection-type in device tree.  Also there should have been a fixup
-in u-boot for this.  So update to use latest u-boot might fix your
-problem.
+Hi Paul,
 
-- Leo
+> This looks like a biggish change for after -rc6, and the commit
+> message doesn't tell me what dire things will happen if the patch
+> doesn't go in, or what systems see this breakage, or whether this is a
+> regression since 2.6.26 (I assume it isn't).  It doesn't even tell me
+> why not being thread-safe is a problem on a UP machine.
+
+This isn't a regression since the stuff is new in 2.6.27. IMHO this can
+wait until 2.6.28.
+
+Thanks,
+Jochen
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iQEVAwUBSNDcHcP9a9GOLSE6AQLqmgf+JwnbVciHzA3idXiTabS2x/k7vkBj+rUp
+SIw/OHk+G3jjr/wsZaJoZbtPsChoQ5vAqKJYXFKDSadWzo90zfRgKG29PIcjm3ME
+gCX3U/u31T6TdtUVSlhIxDeQuOHCpSSbDuW+++rAomAQkLmderyk997KBVUIALtY
+ExsxL5YUBj0NsmQoi0wtguTR1O38/uyiB3t+74hz0E5VoDxzNQFtDCHb/MFJdt6N
+OtavyY+ceCYNRmul4R1rmnRazu8Lf05p8inWsf87c7Y6dBPODlxqCIv/qOVa6AdY
+8wUCzinTdCA3s1mnWjpfyHvFhFZ+QFolqZdYkYtikCEM+GOsVbKHuA==
+=taK6
+-----END PGP SIGNATURE-----
