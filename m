@@ -1,19 +1,15 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zcars04e.nortel.com (zcars04e.nortel.com [47.129.242.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id B00E5DDF26
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 04:22:17 +1000 (EST)
-Message-ID: <48D146C4.4010108@nortel.com>
-Date: Wed, 17 Sep 2008 12:04:52 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18641.20490.57726.608342@cargo.ozlabs.ibm.com>
+Date: Wed, 17 Sep 2008 11:44:26 -0700
+From: Paul Mackerras <paulus@samba.org>
+To: "Chris Friesen" <cfriesen@nortel.com>
 Subject: Re: build failure with current linus tree
+In-Reply-To: <48D146C4.4010108@nortel.com>
 References: <20080905010618.GA30278@lst.de> <20080909235626.GA5254@lst.de>
-In-Reply-To: <20080909235626.GA5254@lst.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	<48D146C4.4010108@nortel.com>
+Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +19,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph Hellwig wrote:
-> On Fri, Sep 05, 2008 at 03:06:18AM +0200, Christoph Hellwig wrote:
-> 
->>Current linus tree fail to build for me for a 64bit powerpc config with:
-> 
-> 
-> This is cause by
-> 
-> commit 7563dc64585324f443f5ac107eb6d89ee813a2d2
-> Author: Tony Breeds <tony@bakeyournoodle.com>
-> Date:   Tue Sep 2 16:50:38 2008 +1000
-> 
->     powerpc: Work around gcc's -fno-omit-frame-pointer bug
+Chris Friesen writes:
 
+> Is there a proper fix other than simply reverting that commit?
 
-Is there a proper fix other than simply reverting that commit?
+It appears that we have a choice between having CONFIG_FTRACE work
+with gcc 4 and not gcc 3 (the current situation), and having
+CONFIG_FTRACE work with gcc 3 and not gcc 4 (which is what we would
+have if that commit was reverted).
 
-Chris
+I think more people use gcc 4 than gcc 3 these days, which is why I
+haven't reverted that commit.
+
+Paul.
