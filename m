@@ -1,22 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.232])
-	by ozlabs.org (Postfix) with ESMTP id 36DB0DDDED
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.224])
+	by ozlabs.org (Postfix) with ESMTP id D5B93DDE0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Sep 2008 03:36:02 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so3248785rvb.9
+	Thu, 18 Sep 2008 03:49:28 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so3253520rvb.9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Sep 2008 10:36:01 -0700 (PDT)
-Date: Wed, 17 Sep 2008 10:35:55 -0700
+	Wed, 17 Sep 2008 10:49:26 -0700 (PDT)
+Date: Wed, 17 Sep 2008 10:49:24 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Shanyuan Gao <sygao.research@gmail.com>
-Subject: Re: Back port Virtex5 FPU to Virtex4?
-Message-ID: <20080917173555.GA7913@secretlab.ca>
-References: <3C87E4F8-3DA2-41E8-BE33-979A7869FD2D@gmail.com>
+To: Martin Kuhnert <marwisbo@gmail.com>
+Subject: Re: How to make a simpleImage equivalent in 2.6.24?
+Message-ID: <20080917174924.GB7913@secretlab.ca>
+References: <loom.20080909T111617-678@post.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3C87E4F8-3DA2-41E8-BE33-979A7869FD2D@gmail.com>
+In-Reply-To: <loom.20080909T111617-678@post.gmane.org>
 Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,14 +27,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 26, 2008 at 04:00:42PM -0400, Shanyuan Gao wrote:
-> I am working with ML410 and have FPU (single precision) working.   
-> However, the FPU for V5 looks more attractive because it's double  
-> precision.  So is it possible to back port the double precision FPU to 
-> V4?
+On Tue, Sep 09, 2008 at 11:46:42AM +0000, Martin Kuhnert wrote:
+> How to compile a 2.6.24.x kernel to get an equivalent elf file which runs
+> out of the ram and includes the kernel, the bootwrapper _AND_ the dtb?
+> 
+> As I studied the Makefile in arch/powerpc/boot it looks like
+> 
+>   make zImage.<myboard>
+> 
+> should work. I tried it this in many ways but Make doesn't find the target.
 
-As far as I understand there are limitations in the V4 APU interface
-that makes the full double precision FPU unfeasible.  The Xilinx folks
-can correct me if I'm wrong.
+Yes, you can make this work, but it doesn't work "out of the box".
+You'll need to do some poking around the wrapper script to generate the
+right stuff in your image.
+
+> Currently, I'm using "make zImage" and arch/powerpc/boot/wrapper
+> for this purpose:
+
+BTW, the 'zImage' target isn't a real image target in the Makefile.
+Instead, 'zImage' builds the list of targets stored in the image-y
+makefile variable.  It might help for you to look at
+Documentation/powerpc/bootwrapper.txt.
 
 g.
