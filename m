@@ -1,35 +1,18 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
-	[151.189.21.52])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8665BDDEEC
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 06:59:14 +1000 (EST)
-Received: from mail-in-10-z2.arcor-online.net (mail-in-10-z2.arcor-online.net
-	[151.189.8.27])
-	by mail-in-12.arcor-online.net (Postfix) with ESMTP id 896574C308
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 22:59:07 +0200 (CEST)
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
-	by mail-in-10-z2.arcor-online.net (Postfix) with ESMTP id 7149C23D2CD
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 22:59:07 +0200 (CEST)
-Received: from bunny.home (dslb-088-070-073-178.pools.arcor-ip.net
-	[88.70.73.178])
-	by mail-in-13.arcor-online.net (Postfix) with ESMTP id 30FD125D2E8
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 22:59:07 +0200 (CEST)
-Received: from fox.home (fox.home [192.168.2.13])
-	by bunny.home (Postfix) with ESMTPS id C8C69251058E
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 22:59:06 +0200 (CEST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4A972DDDEC
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 09:00:09 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m8HN050N005650
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 18:00:06 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: device tree interrupt-map/interrupt-map-mask properties for a 405EP
-	board
-Date: Wed, 17 Sep 2008 22:59:05 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200809172259.05743.matthias.fuchs@esd-electronics.com>
+Subject: [PATCH v7 1/4] powerpc: Introduce local (non-broadcast) forms of tlb
+	invalidates
+Date: Wed, 17 Sep 2008 18:00:02 -0500
+Message-Id: <1221692405-19880-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,33 +22,203 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Introduced a new set of low level tlb invalidate functions that do not
+broadcast invalidates on the bus:
 
-I am trying to setup a device tree for a 405EP based board.
-I did not fully understand how to setup the interrupt-map-mask and 
-interrupt-map properties for the PCI node:
+_tlbil_all - invalidate all
+_tlbil_pid - invalidate based on process id (or mm context)
+_tlbil_va  - invalidate based on virtual address (ea + pid)
 
-		...
-		PCI0: pci@ec000000 {
-			...
-			interrupt-map-mask = <0x???? 0x0 0x0 0x0>;
-			interrupt-map = <
-				/* slot1: IDSEL AD12 - ext. Irq 4 */
-				0x???? 0x0 0x0 0x0 &UIC0 29 0x8
+On non-SMP configs _tlbil_all should be functionally equivalent to _tlbia and
+_tlbil_va should be functionally equivalent to _tlbie.
 
-				/* slot2: IDSEL AD13 - ext. Irq 5  */
-				0x???? 0x0 0x0 0x0 &UIC0 30 0x8
+The intent of this change is to handle SMP based invalidates via IPIs instead
+of broadcasts as the mechanism scales better for larger number of cores.
 
-				/* slot3: IDSEL AD14 - ext. Irq 6  */
-				0x???? 0x0 0x0 0x0 &UIC0 31 0x8
-			>;
-		};
+On e500 (fsl-booke mmu) based cores move to using MMUCSR for invalidate alls
+and tlbsx/tlbwe for invalidate virtual address.
 
-I have three PCI slots on the board. How do I have to fill out the ???? fields 
-above? ADxx <-> IDSEL connection can be taken from the comments. Each slot 
-has its  interrupt lines INTA..D connected to a single 405 external interrupt 
-input.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-Where can I find any docs about this?
+Fixed build issue with non-fsl-book-e not having a version of _tlbil_pid().
 
-Matthias
+- k
+
+ arch/powerpc/include/asm/reg_booke.h |    7 ++++
+ arch/powerpc/include/asm/tlbflush.h  |   13 +++++---
+ arch/powerpc/kernel/misc_32.S        |   54 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/ppc_ksyms.c      |    3 ++
+ 4 files changed, 72 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index be980f4..6745376 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -109,6 +109,7 @@
+ #define SPRN_EVPR	0x3D6	/* Exception Vector Prefix Register */
+ #define SPRN_L1CSR0	0x3F2	/* L1 Cache Control and Status Register 0 */
+ #define SPRN_L1CSR1	0x3F3	/* L1 Cache Control and Status Register 1 */
++#define SPRN_MMUCSR0	0x3F4	/* MMU Control and Status Register 0 */
+ #define SPRN_PIT	0x3DB	/* Programmable Interval Timer */
+ #define SPRN_BUCSR	0x3F5	/* Branch Unit Control and Status */
+ #define SPRN_L2CSR0	0x3F9	/* L2 Data Cache Control and Status Register 0 */
+@@ -410,6 +411,12 @@
+ #define L2CSR0_L2LOA	0x00000080	/* L2 Cache Lock Overflow Allocate */
+ #define L2CSR0_L2LO	0x00000020	/* L2 Cache Lock Overflow */
+ 
++/* Bit definitions for MMUCSR0 */
++#define MMUCSR0_TLB1FI	0x00000002	/* TLB1 Flash invalidate */
++#define MMUCSR0_TLB0FI	0x00000004	/* TLB0 Flash invalidate */
++#define MMUCSR0_TLB2FI	0x00000040	/* TLB2 Flash invalidate */
++#define MMUCSR0_TLB3FI	0x00000020	/* TLB3 Flash invalidate */
++
+ /* Bit definitions for SGR. */
+ #define SGR_NORMAL	0		/* Speculative fetching allowed. */
+ #define SGR_GUARDED	1		/* Speculative fetching disallowed. */
+diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
+index 361cd5c..a2c6bfd 100644
+--- a/arch/powerpc/include/asm/tlbflush.h
++++ b/arch/powerpc/include/asm/tlbflush.h
+@@ -29,6 +29,9 @@
+ #include <linux/mm.h>
+ 
+ extern void _tlbie(unsigned long address, unsigned int pid);
++extern void _tlbil_all(void);
++extern void _tlbil_pid(unsigned int pid);
++extern void _tlbil_va(unsigned long address, unsigned int pid);
+ 
+ #if defined(CONFIG_40x) || defined(CONFIG_8xx)
+ #define _tlbia()	asm volatile ("tlbia; sync" : : : "memory")
+@@ -38,31 +41,31 @@ extern void _tlbia(void);
+ 
+ static inline void flush_tlb_mm(struct mm_struct *mm)
+ {
+-	_tlbia();
++	_tlbil_pid(mm->context.id);
+ }
+ 
+ static inline void flush_tlb_page(struct vm_area_struct *vma,
+ 				  unsigned long vmaddr)
+ {
+-	_tlbie(vmaddr, vma ? vma->vm_mm->context.id : 0);
++	_tlbil_va(vmaddr, vma ? vma->vm_mm->context.id : 0);
+ }
+ 
+ static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
+ 					 unsigned long vmaddr)
+ {
+-	_tlbie(vmaddr, vma ? vma->vm_mm->context.id : 0);
++	flush_tlb_page(vma, vmaddr);
+ }
+ 
+ static inline void flush_tlb_range(struct vm_area_struct *vma,
+ 				   unsigned long start, unsigned long end)
+ {
+-	_tlbia();
++	_tlbil_pid(vma->vm_mm->context.id);
+ }
+ 
+ static inline void flush_tlb_kernel_range(unsigned long start,
+ 					  unsigned long end)
+ {
+-	_tlbia();
++	_tlbil_pid(0);
+ }
+ 
+ #elif defined(CONFIG_PPC32)
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 7a6dfbc..e9c8ab6 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -274,6 +274,10 @@ _GLOBAL(real_writeb)
+ /*
+  * Flush MMU TLB
+  */
++#ifndef CONFIG_FSL_BOOKE
++_GLOBAL(_tlbil_all)
++_GLOBAL(_tlbil_pid)
++#endif
+ _GLOBAL(_tlbia)
+ #if defined(CONFIG_40x)
+ 	sync			/* Flush to memory before changing mapping */
+@@ -344,6 +348,9 @@ _GLOBAL(_tlbia)
+ /*
+  * Flush MMU TLB for a particular address
+  */
++#ifndef CONFIG_FSL_BOOKE
++_GLOBAL(_tlbil_va)
++#endif
+ _GLOBAL(_tlbie)
+ #if defined(CONFIG_40x)
+ 	/* We run the search with interrupts disabled because we have to change
+@@ -436,6 +443,53 @@ _GLOBAL(_tlbie)
+ #endif /* ! CONFIG_40x */
+ 	blr
+ 
++#if defined(CONFIG_FSL_BOOKE)
++/*
++ * Flush MMU TLB, but only on the local processor (no broadcast)
++ */
++_GLOBAL(_tlbil_all)
++#define MMUCSR0_TLBFI	(MMUCSR0_TLB0FI | MMUCSR0_TLB1FI | \
++			 MMUCSR0_TLB2FI | MMUCSR0_TLB3FI)
++	li	r3,(MMUCSR0_TLBFI)@l
++	mtspr	SPRN_MMUCSR0, r3
++1:
++	mfspr	r3,SPRN_MMUCSR0
++	andi.	r3,r3,MMUCSR0_TLBFI@l
++	bne	1b
++	blr
++
++/*
++ * Flush MMU TLB for a particular process id, but only on the local processor
++ * (no broadcast)
++ */
++_GLOBAL(_tlbil_pid)
++/* we currently do an invalidate all since we don't have per pid invalidate */
++	li	r3,(MMUCSR0_TLBFI)@l
++	mtspr	SPRN_MMUCSR0, r3
++1:
++	mfspr	r3,SPRN_MMUCSR0
++	andi.	r3,r3,MMUCSR0_TLBFI@l
++	bne	1b
++	blr
++
++/*
++ * Flush MMU TLB for a particular address, but only on the local processor
++ * (no broadcast)
++ */
++_GLOBAL(_tlbil_va)
++	slwi	r4,r4,16
++	mtspr	SPRN_MAS6,r4		/* assume AS=0 for now */
++	tlbsx	0,r3
++	mfspr	r4,SPRN_MAS1		/* check valid */
++	andis.	r3,r4,MAS1_VALID@h
++	beqlr
++	rlwinm	r4,r4,0,1,31
++	mtspr	SPRN_MAS1,r4
++	tlbwe
++	blr
++#endif /* CONFIG_FSL_BOOKE */
++
++
+ /*
+  * Flush instruction cache.
+  * This is a no-op on the 601.
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index e1ea4fe..8edc235 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -119,6 +119,9 @@ EXPORT_SYMBOL(flush_instruction_cache);
+ EXPORT_SYMBOL(flush_tlb_kernel_range);
+ EXPORT_SYMBOL(flush_tlb_page);
+ EXPORT_SYMBOL(_tlbie);
++#if defined(CONFIG_4xx) || defined(CONFIG_8xx) || defined(CONFIG_FSL_BOOKE)
++EXPORT_SYMBOL(_tlbil_va);
++#endif
+ #endif
+ EXPORT_SYMBOL(__flush_icache_range);
+ EXPORT_SYMBOL(flush_dcache_range);
+-- 
+1.5.5.1
