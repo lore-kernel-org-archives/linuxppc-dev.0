@@ -1,20 +1,35 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <matthias.fuchs@esd-electronics.com>
+Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
+	[151.189.21.52])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EF6EADE1FA
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 06:06:12 +1000 (EST)
-Message-Id: <955412E7-C218-42F6-9101-49A7F23FF39B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <1218041305-5298-1-git-send-email-timur@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH] powerpc: add SSI-to-DMA properties to Freescale MPC8610
-	HPCD device tree
-Date: Wed, 17 Sep 2008 15:06:02 -0500
-References: <1218041305-5298-1-git-send-email-timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8665BDDEEC
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 06:59:14 +1000 (EST)
+Received: from mail-in-10-z2.arcor-online.net (mail-in-10-z2.arcor-online.net
+	[151.189.8.27])
+	by mail-in-12.arcor-online.net (Postfix) with ESMTP id 896574C308
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 22:59:07 +0200 (CEST)
+Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
+	[151.189.21.53])
+	by mail-in-10-z2.arcor-online.net (Postfix) with ESMTP id 7149C23D2CD
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 22:59:07 +0200 (CEST)
+Received: from bunny.home (dslb-088-070-073-178.pools.arcor-ip.net
+	[88.70.73.178])
+	by mail-in-13.arcor-online.net (Postfix) with ESMTP id 30FD125D2E8
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 22:59:07 +0200 (CEST)
+Received: from fox.home (fox.home [192.168.2.13])
+	by bunny.home (Postfix) with ESMTPS id C8C69251058E
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Sep 2008 22:59:06 +0200 (CEST)
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+To: linuxppc-dev@ozlabs.org
+Subject: device tree interrupt-map/interrupt-map-mask properties for a 405EP
+	board
+Date: Wed, 17 Sep 2008 22:59:05 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200809172259.05743.matthias.fuchs@esd-electronics.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +39,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Aug 6, 2008, at 11:48 AM, Timur Tabi wrote:
+I am trying to setup a device tree for a 405EP based board.
+I did not fully understand how to setup the interrupt-map-mask and 
+interrupt-map properties for the PCI node:
 
-> Add the fsl,playback-dma and fsl,capture-dma properties to the  
-> Freescale
-> MPC8610 HPCD device tree.  These properties connect the SSI nodes to  
-> the
-> DMA nodes for the DMA channels that the SSI should use.  Also update  
-> the
-> ssi.txt documentation.
->
-> These properties will be needed when the ASoC V2 version of the  
-> Freescale
-> MPC8610 device drivers are merged into the mainline.
->
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
-> Documentation/powerpc/dts-bindings/fsl/ssi.txt |   15 +++++++++++++++
-> arch/powerpc/boot/dts/mpc8610_hpcd.dts         |    8 +++++---
-> 2 files changed, 20 insertions(+), 3 deletions(-)
+		...
+		PCI0: pci@ec000000 {
+			...
+			interrupt-map-mask = <0x???? 0x0 0x0 0x0>;
+			interrupt-map = <
+				/* slot1: IDSEL AD12 - ext. Irq 4 */
+				0x???? 0x0 0x0 0x0 &UIC0 29 0x8
 
-applied.
+				/* slot2: IDSEL AD13 - ext. Irq 5  */
+				0x???? 0x0 0x0 0x0 &UIC0 30 0x8
 
-- k
+				/* slot3: IDSEL AD14 - ext. Irq 6  */
+				0x???? 0x0 0x0 0x0 &UIC0 31 0x8
+			>;
+		};
+
+I have three PCI slots on the board. How do I have to fill out the ???? fields 
+above? ADxx <-> IDSEL connection can be taken from the comments. Each slot 
+has its  interrupt lines INTA..D connected to a single 405 external interrupt 
+input.
+
+Where can I find any docs about this?
+
+Matthias
