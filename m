@@ -1,18 +1,18 @@
 Return-Path: <robbat2@gentoo.org>
 Received: from mail.isohunt.com (b01.ext.isohunt.com [208.71.112.51])
-	by ozlabs.org (Postfix) with ESMTP id 6EE3CDDFF7
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 05:42:13 +1000 (EST)
-Date: Wed, 17 Sep 2008 12:27:02 -0700
+	by ozlabs.org (Postfix) with ESMTP id 677B9DDFF7
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 05:42:15 +1000 (EST)
+Date: Wed, 17 Sep 2008 12:27:05 -0700
 From: "Robin H. Johnson" <robbat2@gentoo.org>
-To: linuxppc-dev-confirm+4d2fbd77393f49a8596d0a0a1787e12b5e8b3a5c@ozlabs.org,
+To: linuxppc-dev-confirm+556bf931c2e9e1baf6ec2ed2c5650056b8b2678d@ozlabs.org,
 	linuxppc-dev@ozlabs.org
 Subject: Re: Your confirmation is required to leave the Linuxppc-dev
 	mailing list
-Message-ID: <20080917192702.GJ18654@curie-int.orbis-terrarum.net>
-References: <mailman.80.1221679514.3125.linuxppc-dev@ozlabs.org>
+Message-ID: <20080917192705.GK18654@curie-int.orbis-terrarum.net>
+References: <mailman.81.1221679514.3125.linuxppc-dev@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <mailman.80.1221679514.3125.linuxppc-dev@ozlabs.org>
+In-Reply-To: <mailman.81.1221679514.3125.linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,7 +22,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 18, 2008 at 05:25:14AM +1000, linuxppc-dev-confirm+4d2fbd77393f49a8596d0a0a1787e12b5e8b3a5c@ozlabs.org wrote:
+On Thu, Sep 18, 2008 at 05:25:14AM +1000, linuxppc-dev-confirm+556bf931c2e9e1baf6ec2ed2c5650056b8b2678d@ozlabs.org wrote:
 > Mailing list removal confirmation notice for mailing list Linuxppc-dev
 > 
 > We have received a request for the removal of your email address,
@@ -31,13 +31,13 @@ On Thu, Sep 18, 2008 at 05:25:14AM +1000, linuxppc-dev-confirm+4d2fbd77393f49a85
 > reply to this message, keeping the Subject: header intact.  Or visit
 > this web page:
 > 
->     https://ozlabs.org/mailman/confirm/linuxppc-dev/4d2fbd77393f49a8596d0a0a1787e12b5e8b3a5c
+>     https://ozlabs.org/mailman/confirm/linuxppc-dev/556bf931c2e9e1baf6ec2ed2c5650056b8b2678d
 > 
 > 
 > Or include the following line -- and only the following line -- in a
 > message to linuxppc-dev-request@ozlabs.org:
 > 
->     confirm 4d2fbd77393f49a8596d0a0a1787e12b5e8b3a5c
+>     confirm 556bf931c2e9e1baf6ec2ed2c5650056b8b2678d
 > 
 > Note that simply sending a `reply' to this message should work from
 > most mail readers, since that usually leaves the Subject: line in the
