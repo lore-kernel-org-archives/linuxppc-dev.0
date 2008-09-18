@@ -1,19 +1,20 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id ADBA4DDFAD
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 01:17:01 +1000 (EST)
-Date: Thu, 18 Sep 2008 19:16:59 +0400
+	by ozlabs.org (Postfix) with ESMTP id 77D42DDFC5
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 01:17:31 +1000 (EST)
+Date: Thu, 18 Sep 2008 19:17:29 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 0/3] Patches to support QE USB Host Controller
-Message-ID: <20080918151659.GA20140@oksana.dev.rtsoft.ru>
+Subject: [PATCH 1/3] gpiolib: make gpio_to_chip() public
+Message-ID: <20080918151729.GA31187@oksana.dev.rtsoft.ru>
+References: <20080918151659.GA20140@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <20080918151659.GA20140@oksana.dev.rtsoft.ru>
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
 	Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +24,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+We'll need this function to write platform-specific hooks to deal
+with pin's dedicated functions. Quite obviously this will work only
+for the platforms with 1-to-1 GPIO to PIN mapping.
 
-More than a month has passed since the first post. Unfortunately
-David didn't comment on the "1/3" patch, and Greg said that he
-have to wait for it...
+This is stopgap solution till we think out and implement a proper
+api (pinlib?).
 
-(Laurent Pinchart also said that he is interested in the first
-patch, so here are at least two users for that call.)
+p.s. This patch actually exports gpio_desc and places gpio_to_chip
+into the asm-generic/gpio.h as `static inline'. This is needed
+to not cause function calls for this trivial translation.
 
-So I'm reposting this again. The first patch has changed in a way
-that now it exports gpio_desc instead of just a function, this keeps
-the gpiolib code optimized.
+Also, the patch does not export FLAG_*s... the names are too
+generic, and nobody is using them outside of gpiolib.c.
 
-Previous patchset and discussion can be found here:
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/gpio/gpiolib.c     |   16 ++--------------
+ include/asm-generic/gpio.h |   17 +++++++++++++++++
+ 2 files changed, 19 insertions(+), 14 deletions(-)
 
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-08/msg03687.html
-
-
-Thanks,
-
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 8d29405..fb36a90 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -40,9 +40,6 @@
+  */
+ static DEFINE_SPINLOCK(gpio_lock);
+ 
+-struct gpio_desc {
+-	struct gpio_chip	*chip;
+-	unsigned long		flags;
+ /* flag symbols are bit numbers */
+ #define FLAG_REQUESTED	0
+ #define FLAG_IS_OUT	1
+@@ -50,11 +47,8 @@ struct gpio_desc {
+ #define FLAG_EXPORT	3	/* protected by sysfs_lock */
+ #define FLAG_SYSFS	4	/* exported via /sys/class/gpio/control */
+ 
+-#ifdef CONFIG_DEBUG_FS
+-	const char		*label;
+-#endif
+-};
+-static struct gpio_desc gpio_desc[ARCH_NR_GPIOS];
++struct gpio_desc gpio_desc[ARCH_NR_GPIOS];
++EXPORT_SYMBOL_GPL(gpio_desc);
+ 
+ static inline void desc_set_label(struct gpio_desc *d, const char *label)
+ {
+@@ -80,12 +74,6 @@ static void gpio_ensure_requested(struct gpio_desc *desc)
+ 	}
+ }
+ 
+-/* caller holds gpio_lock *OR* gpio is marked as requested */
+-static inline struct gpio_chip *gpio_to_chip(unsigned gpio)
+-{
+-	return gpio_desc[gpio].chip;
+-}
+-
+ /* dynamic allocation of GPIOs, e.g. on a hotplugged device */
+ static int gpiochip_find_base(int ngpio)
+ {
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index 0f99ad3..88962f0 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -81,6 +81,23 @@ struct gpio_chip {
+ 	unsigned		exported:1;
+ };
+ 
++struct gpio_desc {
++	struct gpio_chip	*chip;
++	unsigned long		flags;
++
++#ifdef CONFIG_DEBUG_FS
++	const char		*label;
++#endif
++};
++
++extern struct gpio_desc gpio_desc[ARCH_NR_GPIOS];
++
++/* caller holds gpio_lock *OR* gpio is marked as requested */
++static inline struct gpio_chip *gpio_to_chip(unsigned gpio)
++{
++	return gpio_desc[gpio].chip;
++}
++
+ extern const char *gpiochip_is_requested(struct gpio_chip *chip,
+ 			unsigned offset);
+ extern int __must_check gpiochip_reserve(int start, int ngpio);
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.6.3
