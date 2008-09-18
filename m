@@ -1,19 +1,17 @@
-Return-Path: <blackfin.kang@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.190])
-	by ozlabs.org (Postfix) with ESMTP id C07E1DDF9C
+Return-Path: <rs@carriercomm.com>
+Received: from ccomm-ex1.ccomm.com (unknown [207.158.3.3])
+	by ozlabs.org (Postfix) with ESMTP id C6273DDF1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Sep 2008 23:49:35 +1000 (EST)
-Received: by ti-out-0910.google.com with SMTP id w7so2229191tib.13
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Sep 2008 06:49:34 -0700 (PDT)
-Message-ID: <a7f827420809180649j1f0c6005iea4b9bc82aff3dad@mail.gmail.com>
-Date: Thu, 18 Sep 2008 21:49:34 +0800
-From: Michael.Kang <blackfin.kang@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: confusions of boot sequence in MPC8572?
+	Fri, 19 Sep 2008 02:49:53 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Yu Chen <chyyuu@gmail.com>, Xin-Xin.Yang@freescale.com
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: gdbserver not working with pthreads
+Date: Thu, 18 Sep 2008 09:37:45 -0700
+Message-ID: <EE63F03D9E04774997AEBCD21FC77F25317D3B@ccomm-ex1.ccomm.com>
+From: "Sugathan, Rupesh" <rs@carriercomm.com>
+To: "Matteo Fortini" <m.fortini@selcomgroup.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,44 +22,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am reading the boot code in arch/powerpc/kernel/head_fsl_booke.S for
-MPC8572( dual e500 core). The second core will encounter the following
-code:
 
- 319 #ifdef CONFIG_SMP
- 320         /* Check to see if we're the second processor, and jump
- 321          * to the secondary_start code if so
- 322          */
- 323         mfspr   r24,SPRN_PIR
- 324         cmpwi   r24,0
- 325         bne     __secondary_start
- 326 #endif
+> When debugging with gdbserver/gdb the debugger loses control=20
+> of the threads. I did set the sysroot variable right, and I=20
+> don't get the ld not found error message.
+>  Basically, I cannot step into pthread_create, without losing=20
+> control, with the software not running and gdb going timeout.=20
+> Sometimes the gdbserver shell prints out "ptrace(): pid not=20
+> found", or I get E01 reply on the gdb-cross. Putting=20
+> breakpoints into threads works sometimes.
+> My ultimate goal would be to make it work with Eclipse, but=20
+> it's a long way from having it working with such a system.
 
-And jump to __secondary_start -> call_setup_cpu,  source code in
-call_setup_cpu as the following:
-112 _GLOBAL(call_setup_cpu)
-113         addis   r4,r3,cur_cpu_spec@ha
-114         addi    r4,r4,cur_cpu_spec@l
-115         lwz     r4,0(r4)
-116         add     r4,r4,r3
-117         lwz     r5,CPU_SPEC_SETUP(r4)
-118         cmpwi   0,r5,0
-119         add     r5,r5,r3
-120         beqlr
-121         mtctr   r5
-122         bctr
-
-here it seems cur_cpu_spec here is not a valid value since
-cur_cpu_spec will only be set in identify_cpu() [
-arch/powerpc/kernel/cputable.c: 1301] later.
-
-So what is my mistake? Who responsible for initialize cur_cpu_spec
-variable for second core??
-
-Thanks
-MK
-
-
-
--- 
-www.skyeye.org
+Try to change the way GDB handle some of the signals, I don't recall
+which signal in this respect though. You can do this using the 'handle'
+command.
