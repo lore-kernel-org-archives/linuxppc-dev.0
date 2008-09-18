@@ -1,20 +1,27 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 75E40DDE0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 21:20:23 +1000 (EST)
-Date: Thu, 18 Sep 2008 15:20:20 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH v2] powerpc: implement support for MPC8349-compatible
-	SOC GPIOs
-Message-ID: <20080918112020.GA11584@oksana.dev.rtsoft.ru>
-References: <20080917175820.GA22539@oksana.dev.rtsoft.ru>
-	<871vziwoxj.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <871vziwoxj.fsf@macbook.be.48ers.dk>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <sebastien.dugue@bull.net>
+Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
+	by ozlabs.org (Postfix) with ESMTP id 23397DDF53
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 22:31:59 +1000 (EST)
+Date: Thu, 18 Sep 2008 14:31:46 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: Christoph Raisch <RAISCH@de.ibm.com>
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
+	hardirq preemption, eHCA is close
+Message-ID: <20080918143146.77db81d5@bull.net>
+In-Reply-To: <OFD7842B7A.ADC47EED-ONC12574C8.003A2CB3-C12574C8.003AC948@de.ibm.com>
+References: <20080915100406.342e027a@bull.net>
+	<OF39C3BF0F.17B60FAA-ONC12574C8.002AE138-C12574C8.002B6422@de.ibm.com>
+	<20080918112713.75872c95@bull.net>
+	<OFD7842B7A.ADC47EED-ONC12574C8.003A2CB3-C12574C8.003AC948@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, tinytim@us.ibm.com,
+	Linux-rt <linux-rt-users@vger.kernel.org>,
+	Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
+	jean-pierre.dion@bull.net, linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>,
+	Benjamin Herrenschmidt <bherren@au1.ibm.com>,
+	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, gilles.carry@ext.bull.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,52 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 17, 2008 at 09:30:16PM +0200, Peter Korsgaard wrote:
-> >>>>> "Anton" == Anton Vorontsov <avorontsov@ru.mvista.com> writes:
+On Thu, 18 Sep 2008 12:42:05 +0200 Christoph Raisch <RAISCH@de.ibm.com> wrote:
+
 > 
-> Hi,
+> Sebastien Dugue <sebastien.dugue@bull.net> wrote on 18.09.2008 11:27:13:
 > 
->  Anton> This patch implements GPIOLIB support for MPC8349-compatible SOC GPIOs.
->  Anton> MPC8610 adopted this GPIO unit, so let's place it into sysdev.
+> >
+> >   It would be really interresting to know if the eHCA exhibits the same
+> > problem under -rt as it's the only other user of the ibmebus.
+> > Unfortunately I don't have the hardware to test.
+> >
 > 
->  Anton> We'll need these gpios to support IrDA transceiver on MPC8610HPCD.
+> eHCA is very close from the interrupt generation and handling perspective,
+> so yes, could be an issue there as well.
+
+  That's what I was speculating.
+
+  Thanks,
+
+  Sebastien.
+
 > 
-> It seems basically the same as my patch (gpio driver for
-> mpc831x/mpc834x/mpc837x with OF bindings) from September 5th except
-> you don't have any documentation
-
-Well, do we really need documentation for every trivial gpio controller?
-The bindings are the same, only different compatible entries...
-
-If we do need the documentation for this, I can readily include it.
-
-> and the Kconfig doesn't depend on
-> 831x/834x/837x.
-
-This is purposely. We also need support for 8610, and maybe
-later we'll find another chip with the same unit. So, to not touch
-the Kconfig for every new chip I just made it PPC32-wide. Other
-option is to depend on FSL_SOC, but the driver really does not
-depend on any fsl_soc stuff...
-
-> Galak, did you have time to look at these patches yet?
 > 
->  Anton> +struct fsl_gpio_chip {
->  Anton> +	struct of_mm_gpio_chip mm_gc;
->  Anton> +	spinlock_t lock;
->  Anton> +
->  Anton> +	/* shadowed data register to clear/set bits safely */
->  Anton> +	u32 gpdat;
+> Gruss / Regards
+> Christoph Raisch
 > 
-> Why do you need this when you have the lock?
-
-See this discussion:
-
-http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg12299.html
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> 
+> 
