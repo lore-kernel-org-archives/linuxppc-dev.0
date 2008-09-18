@@ -1,21 +1,19 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id 80820DDF20
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 02:52:27 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so1128755yxg.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 09:52:25 -0700 (PDT)
-Date: Thu, 18 Sep 2008 12:51:30 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Message-ID: <20080918165130.GB15953@yoda.jdub.homelinux.org>
-References: <18642.33679.149733.537374@cargo.ozlabs.ibm.com>
-	<ed82fe3e0809180943k3f68fdd4sc75bc9acaa5b9a00@mail.gmail.com>
+Return-Path: <vgallardo@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id B224DDDDE1
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 04:39:35 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ed82fe3e0809180943k3f68fdd4sc75bc9acaa5b9a00@mail.gmail.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: [PATCH] ibm_newemac: Add support for GPCS, SGMII andM88E1112PHY
+Date: Thu, 18 Sep 2008 11:39:30 -0700
+Message-ID: <0CA0A16855646F4FA96D25A158E299D6050D1492@SDCEXCHANGE01.ad.amcc.com>
+From: "Victor Gallardo" <vgallardo@amcc.com>
+To: <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Feng Kan <fkan@amcc.com>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 18, 2008 at 11:43:24AM -0500, Timur Tabi wrote:
->On Thu, Sep 18, 2008 at 11:36 AM, Paul Mackerras <paulus@samba.org> wrote:
->>    powerpc: Fix interrupt values for DMA2 in MPC8610 HPCD device tree
->>
->>    For Freescale 8xxx devices that use an MPIC, the interrupt numbers in
->>    the device tree must be 16 greater than the values documented in the
->>    reference manual.  In these chips, the MPIC is wired to use the first
->>    16 numbers for external interrupts, but the documentation numbers
->>    internal interrupts from 0.
->>
->>    In the MPC8610 HPCD device tree, the interrupt properties for the DMA
->>    channels for DMA2 were not the adjusted values.  This fixes that.
+Hi Ben,
+
+Any update on this patch? I need this patch to support our upcoming AMCC =
+Arches evaluation board.
+
+>Hi Ben,
 >
->Did you edit this patch when you pulled it from Kumar's repo?  The
->commit in Kumar's repo says "This patch fixes that.", which is what I
->wrote.  However, in your tree, the word "patch" is missing.
+>>Ok. Thanks. I need to review your patch a bit better, hopefully later=20
+>>this week. I'll let you know. Ping me if you get no news by next =
+monday.
+>>
+>>Cheers,
+>Ben.
+>
+>Have you had a change to look at this patch?
+>
 
-Yes.  He edits them often for various reasons.  In this case, the word
-"patch" is arguably incorrect, as it's now a commit.  So my assumption is
-that he left off the noun for the "fix" entirely to avoid stuff like that.
+Regards,
 
-josh
+Victor Gallardo
