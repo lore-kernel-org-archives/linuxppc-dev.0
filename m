@@ -1,14 +1,15 @@
-Return-Path: <linuxppc-embedded@ml.breakpoint.cc>
-Date: Fri, 19 Sep 2008 00:13:35 +0200
-From: Sebastian Siewior <linuxppc-embedded@ml.breakpoint.cc>
-To: Ayman El-Khashab <AymanE@tanisys.com>
-Subject: Re: Device tree configuration for I2C eeprom
-Message-ID: <20080918221335.GA6420@Chamillionaire.breakpoint.cc>
-References: <16691A8B34B5D9458EA3A1C37A11555A0137F7B6@tanisys-ex2.Tanisys.Local>
+Return-Path: <abg.mur22@yahoo.com>
+Received: from n28.bullet.mail.mud.yahoo.com (n28.bullet.mail.mud.yahoo.com
+	[68.142.206.223]) by ozlabs.org (Postfix) with SMTP id 043A2DDE20
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 19 Sep 2008 08:15:01 +1000 (EST)
+Date: Thu, 18 Sep 2008 15:08:45 -0700 (PDT)
+From: Abg Abg <abg.mur22@yahoo.com>
+Subject: Network driver on ppc 405EX
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <16691A8B34B5D9458EA3A1C37A11555A0137F7B6@tanisys-ex2.Tanisys.Local>
-Cc: Linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-946499256-1221775725=:22518"
+Message-ID: <371343.22518.qm@web59716.mail.ac4.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -19,56 +20,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-* Ayman El-Khashab | 2008-09-18 14:44:44 [-0500]:
+--0-946499256-1221775725=:22518
+Content-Type: text/plain; charset=us-ascii
 
->Here is a snippet from the dts file, and I assume I need something like
->what I've added:
-> 
->                        IIC0: i2c@ef600700 {
->                                compatible = "ibm,iic-460ex", "ibm,iic";
->                                reg = <ef600700 14>;
->                                interrupt-parent = <&UIC0>;
->                                interrupts = <2 4>;
->                                #address-cells = <1>;
->                                #size-cells = <0>;
->                                rtc@68 {
->                                        compatible = "stm,m41t80";
->                                        reg = <68>;
->                                };
->                                eeprom@50 {
->                                        compatible = "?????";
-> 						    something
->                                        something;
->                                };
+Hi, 
+  Hope this is the correct list for driver related queries for ppc boards
 
-This should look like:
-|                        IIC0: i2c@ef600700 {
-|                                compatible = "ibm,iic-460ex", "ibm,iic";
-|                                reg = <ef600700 14>;
-|                                interrupt-parent = <&UIC0>;
-|                                interrupts = <2 4>;
-|                                #address-cells = <1>;
-|                                #size-cells = <0>;
-|                                rtc@68 {
-|                                        compatible = "m41t80";
-|                                        reg = <68>;
-|                                };
-|                                eeprom@50 {
-|                                        compatible = "eeprom";
-|                                        reg = <50>;
-|                                };
+I was porting a network driver for a ppc 405EX based embedded system (kilauea config).
+The module builds fine and loads and I see the probe routine get called correctly.
+However when I try remapping the BAR0 address from the PCI config space, the ioremap fails.
+A little debugging showed that the address passed to ioremap was zero.
+I pass the address to the ioremap via pci_resource_start(pdev, 0) where pdev is a type struct pci_dev *.
 
-Compatible is the ID of the driver. You can find it in the driver
-itself: if you look in ./drivers/rtc/rtc-m41t80.c you will find a struct
-m41t80_id which contains the ids. The same applies to the eeprom driver.
-You might want to update your dts from current kernel tree which
-contains the "/dts-v1/" tag at the beginning and then your field must
-contain an 0x prefix.
+I dumped the contents of the pdev and saw that the vendor-id, device id etc were correct, however the BAR0 address seemed to be all zeroes.
 
->Once I do all that, how does one use the eeprom driver to read and write
->this part?
-The eeprom driver should create an eeprom file somewhere in /sys I am
-not sure where exactly. The help entry in Kconfig says that is module
-provides only RO access to the eeprom.
+The question that I had was
+1. Is there any kernel config that needs to be done for PCI devices to be able to remap the BAR0 addresses.
+2. Any other kernel parameter that needs to be tweaked?
 
-Sebastian
+Thanks,
+Abg
+
+
+      
+--0-946499256-1221775725=:22518
+Content-Type: text/html; charset=us-ascii
+
+<html><head><style type="text/css"><!-- DIV {margin:0px;} --></style></head><body><div style="font-family:times new roman, new york, times, serif;font-size:12pt"><div>Hi, <br>&nbsp; Hope this is the correct list for driver related queries for ppc boards<br><br>I was porting a network driver for a ppc 405EX based embedded system (kilauea config).<br>The module builds fine and loads and I see the probe routine get called correctly.<br>However when I try remapping the BAR0 address from the PCI config space, the ioremap fails.<br>A little debugging showed that the address passed to ioremap was zero.<br>I pass the address to the ioremap via pci_resource_start(pdev, 0) where pdev is a type struct pci_dev *.<br><br>I dumped the contents of the pdev and saw that the vendor-id, device id etc were correct, however the BAR0 address seemed to be all zeroes.<br><br>The question that I had was<br>1. Is there any kernel config that needs to be done for PCI devices to
+ be able to remap the BAR0 addresses.<br>2. Any other kernel parameter that needs to be tweaked?<br><br>Thanks,<br>Abg<br><br><br><br></div></div><br>
+
+
+
+      </body></html>
+--0-946499256-1221775725=:22518--
