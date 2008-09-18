@@ -1,18 +1,19 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
-	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 8888EDDFA1
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 23:27:10 +1000 (EST)
-Received: by gxk14 with SMTP id 14so29012481gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 06:27:08 -0700 (PDT)
-Date: Thu, 18 Sep 2008 09:26:09 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: paulus@samba.org
-Subject: Please pull 'next' branch of 4xx tree
-Message-ID: <20080918132609.GA22217@yoda.jdub.homelinux.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id ADBA4DDFAD
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 01:17:01 +1000 (EST)
+Date: Thu, 18 Sep 2008 19:16:59 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/3] Patches to support QE USB Host Controller
+Message-ID: <20080918151659.GA20140@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=windows-1251
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,61 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+Hi all,
 
-Please pull the 'next' branch from my tree to pick up the first round of
-commits for 2.6.28.  I have a few other changes to go, but these have been
-out there for a while and I'd like to get them merged now.
+More than a month has passed since the first post. Unfortunately
+David didn't comment on the "1/3" patch, and Greg said that he
+have to wait for it...
+
+(Laurent Pinchart also said that he is interested in the first
+patch, so here are at least two users for that call.)
+
+So I'm reposting this again. The first patch has changed in a way
+that now it exports gpio_desc instead of just a function, this keeps
+the gpiolib code optimized.
+
+Previous patchset and discussion can be found here:
+
+http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-08/msg03687.html
+
 
 Thanks,
-josh
 
-The following changes since commit 7713fef06517d216f96ee7c8ad750e72bc08d38f:
-  Stephen Rothwell (1):
-        powerpc: Remove include of linux/of_device.h from asm/of_device.h
-
-are available in the git repository at:
-
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
-
-Ilya Yanok (1):
-      powerpc/4xx: Necessary fixes to PCI for 4GB RAM size
-
-Josh Boyer (9):
-      powerpc/44x: Add PowerPC 44x simple platform support
-      powerpc/44x: Migrate Bamboo support to ppc44x_simple
-      powerpc/44x: Migrate Canyonlands support to ppc44x_simple
-      powerpc/44x: Migrate Katmai support to ppc44x_simple
-      powerpc/44x: Migrate Rainier support to ppc44x_simple
-      powerpc/44x: Migrate Sequoia support to ppc44x_simple
-      powerpc/44x: Migrate Taishan support to ppc44x_simple
-      powerpc/44x: Add explicit support for AMCC Glacier
-      powerpc/44x: Add explicit Yosemite support
-
-Matthias Fuchs (1):
-      powerpc/44x: Add hwmon support to Sequoia device tree
-
-Tirumala R Marri (1):
-      powerpc/44x: AMCC PPC460GT/EX PCI-E de-emphasis adjustment fix
-
- arch/powerpc/boot/dts/glacier.dts          |    2 +-
- arch/powerpc/boot/dts/sequoia.dts          |    9 +++
- arch/powerpc/boot/dts/yosemite.dts         |    2 +-
- arch/powerpc/platforms/44x/Kconfig         |   25 ++++++++
- arch/powerpc/platforms/44x/Makefile        |    8 +--
- arch/powerpc/platforms/44x/bamboo.c        |   62 --------------------
- arch/powerpc/platforms/44x/canyonlands.c   |   63 --------------------
- arch/powerpc/platforms/44x/katmai.c        |   62 --------------------
- arch/powerpc/platforms/44x/ppc44x_simple.c |   87 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/44x/rainier.c       |   62 --------------------
- arch/powerpc/platforms/44x/sequoia.c       |   63 --------------------
- arch/powerpc/platforms/44x/taishan.c       |   72 -----------------------
- arch/powerpc/sysdev/ppc4xx_pci.c           |   23 ++++----
- 13 files changed, 135 insertions(+), 405 deletions(-)
- delete mode 100644 arch/powerpc/platforms/44x/bamboo.c
- delete mode 100644 arch/powerpc/platforms/44x/canyonlands.c
- delete mode 100644 arch/powerpc/platforms/44x/katmai.c
- create mode 100644 arch/powerpc/platforms/44x/ppc44x_simple.c
- delete mode 100644 arch/powerpc/platforms/44x/rainier.c
- delete mode 100644 arch/powerpc/platforms/44x/sequoia.c
- delete mode 100644 arch/powerpc/platforms/44x/taishan.c
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
