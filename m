@@ -1,20 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F2754DDF85
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 04:45:48 +1000 (EST)
-Subject: RE: [PATCH] ibm_newemac: Add support for GPCS, SGMII andM88E1112PHY
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Victor Gallardo <vgallardo@amcc.com>
-In-Reply-To: <0CA0A16855646F4FA96D25A158E299D6050D1492@SDCEXCHANGE01.ad.amcc.com>
-References: <0CA0A16855646F4FA96D25A158E299D6050D1492@SDCEXCHANGE01.ad.amcc.com>
-Content-Type: text/plain
-Date: Thu, 18 Sep 2008 11:42:14 -0700
-Message-Id: <1221763334.7892.34.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Feng Kan <fkan@amcc.com>, netdev@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <vgallardo@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id ADBDDDDECF
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 08:41:36 +1000 (EST)
+From: Victor Gallardo <vgallardo@amcc.com>
+To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Subject: [PATCH] ibm_newemac: Fix EMAC soft reset on 460EX/GT
+Date: Thu, 18 Sep 2008 15:41:26 -0700
+Message-Id: <1221777686-6181-1-git-send-email-vgallardo@amcc.com>
+Cc: fkan@amcc.com, Victor Gallardo <vgallardo@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +20,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-09-18 at 11:39 -0700, Victor Gallardo wrote:
-> Hi Ben,
-> 
-> Any update on this patch? I need this patch to support our upcoming AMCC Arches evaluation board.
+This patch fixes EMAC soft reset on 460EX/GT when no external clock is
+available.
 
-I'm currently travelling & attending the Linux Plumbers conference in
-Portland. I'll look at the patch again next week. It's definitely on my
-queue of things that should be merged in .28 after I verify it doesn't
-break anything.
+Signed-off-by: Victor Gallardo <vgallardo@amcc.com>
+---
+ arch/powerpc/include/asm/dcr-regs.h |    4 ++++
+ drivers/net/ibm_newemac/core.c      |   18 ++++++++++++++++++
+ drivers/net/ibm_newemac/core.h      |    5 +++++
+ 3 files changed, 27 insertions(+), 0 deletions(-)
 
-Cheers,
-Ben.
-
-> >Hi Ben,
-> >
-> >>Ok. Thanks. I need to review your patch a bit better, hopefully later 
-> >>this week. I'll let you know. Ping me if you get no news by next monday.
-> >>
-> >>Cheers,
-> >Ben.
-> >
-> >Have you had a change to look at this patch?
-> >
-> 
-> Regards,
-> 
-> Victor Gallardo
+diff --git a/arch/powerpc/include/asm/dcr-regs.h b/arch/powerpc/include/asm/dcr-regs.h
+index 29b0ece..f15296c 100644
+--- a/arch/powerpc/include/asm/dcr-regs.h
++++ b/arch/powerpc/include/asm/dcr-regs.h
+@@ -68,6 +68,10 @@
+ #define SDR0_UART3		0x0123
+ #define SDR0_CUST0		0x4000
+ 
++/* SDRs (460EX/460GT) */
++#define SDR0_ETH_CFG		0x4103
++#define SDR0_ETH_CFG_ECS	0x00000100	/* EMAC int clk source */
++
+ /*
+  * All those DCR register addresses are offsets from the base address
+  * for the SRAM0 controller (e.g. 0x20 on 440GX). The base address is
+diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+index 2e720f2..f6871ba 100644
+--- a/drivers/net/ibm_newemac/core.c
++++ b/drivers/net/ibm_newemac/core.c
+@@ -130,6 +130,7 @@ static inline void emac_report_timeout_error(struct emac_instance *dev,
+ 					     const char *error)
+ {
+ 	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX |
++				  EMAC_FTR_460EX_PHY_CLK_FIX |
+ 				  EMAC_FTR_440EP_PHY_CLK_FIX))
+ 		DBG(dev, "%s" NL, error);
+ 	else if (net_ratelimit())
+@@ -351,10 +352,24 @@ static int emac_reset(struct emac_instance *dev)
+ 		emac_tx_disable(dev);
+ 	}
+ 
++#ifdef CONFIG_PPC_DCR_NATIVE
++	/* Enable internal clock source */
++	if (emac_has_feature(dev, EMAC_FTR_460EX_PHY_CLK_FIX))
++		dcri_clrset(SDR0, SDR0_ETH_CFG,
++			    0, SDR0_ETH_CFG_ECS << dev->cell_index);
++#endif
++
+ 	out_be32(&p->mr0, EMAC_MR0_SRST);
+ 	while ((in_be32(&p->mr0) & EMAC_MR0_SRST) && n)
+ 		--n;
+ 
++#ifdef CONFIG_PPC_DCR_NATIVE
++	 /* Enable external clock source */
++	if (emac_has_feature(dev, EMAC_FTR_460EX_PHY_CLK_FIX))
++		dcri_clrset(SDR0, SDR0_ETH_CFG,
++			    SDR0_ETH_CFG_ECS << dev->cell_index, 0);
++#endif
++
+ 	if (n) {
+ 		dev->reset_failed = 0;
+ 		return 0;
+@@ -2559,6 +2574,9 @@ static int __devinit emac_init_config(struct emac_instance *dev)
+ 	/* Check EMAC version */
+ 	if (of_device_is_compatible(np, "ibm,emac4sync")) {
+ 		dev->features |= (EMAC_FTR_EMAC4 | EMAC_FTR_EMAC4SYNC);
++		if (of_device_is_compatible(np, "ibm,emac-460ex") ||
++		    of_device_is_compatible(np, "ibm,emac-460gt"))
++			dev->features |= EMAC_FTR_460EX_PHY_CLK_FIX;
+ 	} else if (of_device_is_compatible(np, "ibm,emac4")) {
+ 		dev->features |= EMAC_FTR_EMAC4;
+ 		if (of_device_is_compatible(np, "ibm,emac-440gx"))
+diff --git a/drivers/net/ibm_newemac/core.h b/drivers/net/ibm_newemac/core.h
+index 6545e69..5ca70e5 100644
+--- a/drivers/net/ibm_newemac/core.h
++++ b/drivers/net/ibm_newemac/core.h
+@@ -317,6 +317,10 @@ struct emac_instance {
+  * The 405EX and 460EX contain the EMAC4SYNC core
+  */
+ #define EMAC_FTR_EMAC4SYNC		0x00000200
++/*
++ * Set if we need phy clock workaround for 460ex or 460gt
++ */
++#define EMAC_FTR_460EX_PHY_CLK_FIX	0x00000400
+ 
+ 
+ /* Right now, we don't quite handle the always/possible masks on the
+@@ -341,6 +345,7 @@ enum {
+ #ifdef CONFIG_IBM_NEW_EMAC_RGMII
+ 	    EMAC_FTR_HAS_RGMII	|
+ #endif
++	EMAC_FTR_460EX_PHY_CLK_FIX |
+ 	EMAC_FTR_440EP_PHY_CLK_FIX,
+ };
+ 
+-- 
+1.5.5
