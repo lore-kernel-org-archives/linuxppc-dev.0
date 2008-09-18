@@ -1,21 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.236])
-	by ozlabs.org (Postfix) with ESMTP id 39119DDE3A
+Return-Path: <matthias.fuchs@esd-electronics.com>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 5A07EDDDF0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Sep 2008 16:12:56 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so3503356rvb.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Sep 2008 23:12:54 -0700 (PDT)
-Message-ID: <fa686aa40809172312r6f527e1ahbae83b17f8062c62@mail.gmail.com>
-Date: Wed, 17 Sep 2008 23:12:54 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Misbah khan" <misbah_khan@engineer.com>
-Subject: Re: Ioremap related concern ...
-In-Reply-To: <19545826.post@talk.nabble.com>
+	Thu, 18 Sep 2008 17:30:03 +1000 (EST)
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+To: nathael.pajani@ed3l.fr
+Subject: Re: SM722 (Lynx3DM+) framebuffer driver
+Date: Thu, 18 Sep 2008 09:28:18 +0200
+References: <200609271226.06115.matthias.fuchs@esd-electronics.com>
+	<48C7B602.9040404@ed3l.fr>
+In-Reply-To: <48C7B602.9040404@ed3l.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <19545826.post@talk.nabble.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200809180928.18689.matthias.fuchs@esd-electronics.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,28 +25,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 17, 2008 at 9:43 PM, Misbah khan <misbah_khan@engineer.com> wrote:
->
-> Hi all,
->
-> i am facing a problem regarding the usage of ioremap function which is
-> described as:-
->
-> 1) I am remaping the SDRAM memory into three continews buffer as
->        ptr1 = (unsigned int *)ioremap(0x0001000,0x1000);
->        ptr2 = (unsigned int *)ioremap(0x0002000,0x1000);
->        ptr3 = (unsigned int *)ioremap(0x0003000,0x1000);
+Hi Nathael,
 
-Ah, this doesn't work.  You can't just choose a region of ram and
-ioremap it.  Besides, the base of RAM is already used by the interrupt
-vectors.
+your driver seems to be the most complete framebufferdriver for this chip
+I heard about :-)
 
-If you need to allocate a region for DMA buffers, then take a look at
-dma_alloc_coherent().  If you just need to allocate some buffers, then
-just use kzalloc().
+Our driver is currently based on some register dumps by SMI. The chip is completely
+setup by U-Boot. Because of it's missing generic'ness I did not dare to post it
+as a patch to the U-Boot list :-) Finally we are using a stupid framebuffer driver
+that does absolutely no 722 setup. It just represents the framebuffer driver interface.
 
-g.
+I will give your driver a try.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+On Wednesday 10 September 2008 13:56, Nathael Pajani wrote:
+> Hi !
+> I know your mail is quite old, but this might still prove useful....
+> and did you find a solution ?
+> Do you finally have a driver ? I'm interested in whatever information you have, 
+> even the links to 2.4 kernel code, or code for SM712 chips. Anything at all in 
+> fact, so I may try to improve my driver.
+> 
+> I have this device (Silicon Motion SM722 Lynx3DM+) on a powerPC board from ACTIS 
+> Computers.
+> 
+> You'll find attached a patch with the SMI driver I made.
+> It's not as good as it should be, be I have a usable display, being able to use 
+> xorg, and it's as much as I managed without a vgabios (which they provide for 
+> x86 arch only).
+> Note also that uboot on the board does some chip init, so this driver alone may 
+> not be useful if you don't already have something.
+I assume that you enable access to the memory mapped register in U-Boot, right?
+> 
+> Note also that for my brain's sake I removed parts handling LynxEM chips from 
+> the original code (which was mainly for mips VR5701-SG2 with LynxEM+).
+> 
+> Have fun, and thank you if you can send in some useful stuff.
+> ++++
+> 
+
+Matthias
