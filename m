@@ -1,26 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 88528DE015
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 04:46:56 +1000 (EST)
-Message-Id: <ABD97D30-4503-4A5E-A04B-2D644BF31124@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080919181258.GA14093@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH v2] powerpc: implement support for MPC8349-compatible SOC
-	GPIOs
-Date: Fri, 19 Sep 2008 13:46:49 -0500
-References: <20080917175820.GA22539@oksana.dev.rtsoft.ru>
-	<871vziwoxj.fsf@macbook.be.48ers.dk>
-	<20080918112020.GA11584@oksana.dev.rtsoft.ru>
-	<87ej3gyxv0.fsf@macbook.be.48ers.dk>
-	<20080919153325.GA548@oksana.dev.rtsoft.ru>
-	<1BA571BA-BA43-4C18-9CBF-0F1461E6734E@kernel.crashing.org>
-	<20080919181258.GA14093@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 48362DDEF9
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 06:33:16 +1000 (EST)
+Date: Fri, 19 Sep 2008 22:03:08 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/2] i2c: expand I2C's id.name to 23 characters
+Message-ID: <20080919220308.3173320e@hyperion.delvare>
+In-Reply-To: <20080919180339.GA13899@oksana.dev.rtsoft.ru>
+References: <20080919180339.GA13899@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+	Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,76 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 19 Sep 2008 22:03:39 +0400, Anton Vorontsov wrote:
+> It was discussed[1] that we should match on the first (most specific)
+> entry in the device tree.
+> 
+> The most lengthy I2C compatible entry for the MPC8349E-mITX MCU
+> devices is "mc9s08qg8-mpc8349emitx" (w/o vendor name). This means
+> that we have to allow longer IDs to be used in the I2C subsystem.
+> 
+> [1] http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg21196.html
 
-On Sep 19, 2008, at 1:12 PM, Anton Vorontsov wrote:
+Nack. Just come up with shorter names. "mc9s08qg8-mpc8349emitx" is
+simply too long to start with. Looking at the mcu_mpc8349emitx driver
+you just submitted, you are clearly abusing the i2c client name to pass
+platform-specific information, and that's bad. I'm not even sure why
+you do that, given that all the names are then handled the same as far
+as I can see.
 
-> On Fri, Sep 19, 2008 at 01:02:11PM -0500, Kumar Gala wrote:
-> [...]
->>>> Anton> This is purposely. We also need support for 8610, and maybe
->>>> Anton> later we'll find another chip with the same unit. So, to not
->>>> touch
->>>> Anton> the Kconfig for every new chip I just made it PPC32-wide.
->>>> Other
->>>> Anton> option is to depend on FSL_SOC, but the driver really does  
->>>> not
->>>> Anton> depend on any fsl_soc stuff...
->>>>
->>>> Adding another symbol to the Kconfig once it is verified that a new
->>>> SoC is compatible doesn't seem like a big deal - Figuring out all  
->>>> the
->>>> knobs we already have is, without having options for stuff that is
->>>> known to be irrelevant for the SoC.
->>>>
->>>> The other 83xx specific drivers also depend on PPC_83xx.
->>>
->>> Lets wait for Kumar's comments. We've already had a PPC_* mess
->>> for the USB_EHCI_FSL symbol. What I've learned from it, is that
->>> huge PPC_* list isn't perfect either.
->>
->> I've alone glanced over this, but some initial comments are.. lets
->> rename the thing to not be 83xx specific since 8610 uses it and I'm  
->> sure
->> we'll have other parts that do similar things.
->
-> Ok, mpc8xxx_gpio.c would be fine? (Note that I'm agree with 8xxx, for
-> the file name).
->
->> With regards to the binding, lets make it generic like 'fsl,mpc8xxx-
->> gpio", "fsl,CHIP-gpio" and than we can use cpm1/cpm2/pq1/pq2 as  
->> prefixes
->> to distinguish and major differences.
->
-> But for compatible entry, shouldn't we use the last compatiblle entry
-> as a generic one? Then fsl,mpc8349-gpio is perfectly valid. I.e.,
-> for MPC8610 chips we will have:
->
-> "fsl,mpc8610-gpio", "fsl,mpc8349-gpio"
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>  include/linux/mod_devicetable.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+> index c4db582..9d9d1f5 100644
+> --- a/include/linux/mod_devicetable.h
+> +++ b/include/linux/mod_devicetable.h
+> @@ -379,7 +379,7 @@ struct virtio_device_id {
+>  
+>  /* i2c */
+>  
+> -#define I2C_NAME_SIZE	20
+> +#define I2C_NAME_SIZE	23
+>  #define I2C_MODULE_PREFIX "i2c:"
+>  
+>  struct i2c_device_id {
 
-Yeah the order is correct.. should be:
 
-"fsl,CHIP-gpio", "fsl,mpc8xxx-gpio"
-
-The last entry is most generic, and 8610 is registers-compatible with
->
-> the earlier (8349) chips. I thought that we tend to not do "made up"
-> 8xxx things in the device tree... Am I wrong?
-
-You are correct we try to avoid this, but than I suggest we do it by  
-family.  I think its confusing to show 8610 and 8349 in the same dev  
-tree.
-
-What we do in PCI is use the first in family.  So lets take 8379 as an  
-example it would look like:
-
-"fsl,mpc8379-gpio", "fsl-mpc8349-gpio"
-
-and 8610 would look like:
-
-"fsl,mpc8610-gpio"
-
-This way the compatiable binding in the code just lists something like  
-"fsl,mpc8349-gpio", "fsl,mpc8610-gpio", "fsl,mpc8572-gpio".
-
-Does that make sense?
-
-- k
+-- 
+Jean Delvare
