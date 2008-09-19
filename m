@@ -1,22 +1,17 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5B0BADDDE0
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 07:28:43 +1000 (EST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Fix Book-E watchdog timer interval setting
-Date: Fri, 19 Sep 2008 23:28:35 +0200
-References: <200808071448.06183.matthias.fuchs@esd-electronics.com>
-	<A4CCB071-0FCE-490A-B563-399FCA74C71E@kernel.crashing.org>
-In-Reply-To: <A4CCB071-0FCE-490A-B563-399FCA74C71E@kernel.crashing.org>
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 7C8EADDF65
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 07:41:16 +1000 (EST)
+Message-ID: <48D41823.4040106@mvista.com>
+Date: Fri, 19 Sep 2008 14:22:43 -0700
+From: Dave Jiang <djiang@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200809192328.36159.matthias.fuchs@esd-electronics.com>
+To: Nate Case <ncase@xes-inc.com>
+Subject: Re: [PATCH] edac: mpc85xx: Add support for MPC8572
+References: <1221858771-14928-1-git-send-email-ncase@xes-inc.com>
+In-Reply-To: <1221858771-14928-1-git-send-email-ncase@xes-inc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Andrew Kilkenny <akilkenny@xes-inc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +21,139 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar,
+Acked-by: Dave Jiang <djiang@mvista.com>
 
-should I resend this my patch? Is there chance to get it applied.
-It really fixes a bug!
+Nate Case wrote:
+> From: Andrew Kilkenny <akilkenny@xes-inc.com>
+> 
+> This adds support for the dual-core MPC8572 processor.  We have
+> to support making SPR changes on each core.  Also, since we can
+> have multiple memory controllers sharing an interrupt, flag the
+> interrupts with IRQF_SHARED.
+> 
+> Signed-off-by: Andrew Kilkenny <akilkenny@xes-inc.com>
+> Signed-off-by: Nate Case <ncase@xes-inc.com>
+> ---
+>  drivers/edac/mpc85xx_edac.c |   34 +++++++++++++++++++++++++++-------
+>  1 files changed, 27 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+> index 2265d9c..0668492 100644
+> --- a/drivers/edac/mpc85xx_edac.c
+> +++ b/drivers/edac/mpc85xx_edac.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/io.h>
+>  #include <linux/mod_devicetable.h>
+>  #include <linux/edac.h>
+> +#include <linux/smp.h>
+>  
+>  #include <linux/of_platform.h>
+>  #include <linux/of_device.h>
+> @@ -40,7 +41,7 @@ static u32 orig_pci_err_en;
+>  #endif
+>  
+>  static u32 orig_l2_err_disable;
+> -static u32 orig_hid1;
+> +static u32 orig_hid1[2];
+>  
+>  /************************ MC SYSFS parts ***********************************/
+>  
+> @@ -272,7 +273,8 @@ static int __devinit mpc85xx_pci_err_probe(struct of_device *op,
+>  	if (edac_op_state == EDAC_OPSTATE_INT) {
+>  		pdata->irq = irq_of_parse_and_map(op->node, 0);
+>  		res = devm_request_irq(&op->dev, pdata->irq,
+> -				       mpc85xx_pci_isr, IRQF_DISABLED,
+> +				       mpc85xx_pci_isr,
+> +				       IRQF_DISABLED | IRQF_SHARED,
+>  				       "[EDAC] PCI err", pci);
+>  		if (res < 0) {
+>  			printk(KERN_ERR
+> @@ -576,7 +578,8 @@ static int __devinit mpc85xx_l2_err_probe(struct of_device *op,
+>  	if (edac_op_state == EDAC_OPSTATE_INT) {
+>  		pdata->irq = irq_of_parse_and_map(op->node, 0);
+>  		res = devm_request_irq(&op->dev, pdata->irq,
+> -				       mpc85xx_l2_isr, IRQF_DISABLED,
+> +				       mpc85xx_l2_isr,
+> +				       IRQF_DISABLED | IRQF_SHARED,
+>  				       "[EDAC] L2 err", edac_dev);
+>  		if (res < 0) {
+>  			printk(KERN_ERR
+> @@ -647,6 +650,9 @@ static struct of_device_id mpc85xx_l2_err_of_match[] = {
+>  	{
+>  	 .compatible = "fsl,8568-l2-cache-controller",
+>  	 },
+> +	{
+> +	 .compatible = "fsl,8572-l2-cache-controller",
+> +	 },
+>  	{},
+>  };
+>  
+> @@ -912,7 +918,8 @@ static int __devinit mpc85xx_mc_err_probe(struct of_device *op,
+>  		/* register interrupts */
+>  		pdata->irq = irq_of_parse_and_map(op->node, 0);
+>  		res = devm_request_irq(&op->dev, pdata->irq,
+> -				       mpc85xx_mc_isr, IRQF_DISABLED,
+> +				       mpc85xx_mc_isr,
+> +				       IRQF_DISABLED | IRQF_SHARED,
+>  				       "[EDAC] MC err", mci);
+>  		if (res < 0) {
+>  			printk(KERN_ERR "%s: Unable to request irq %d for "
+> @@ -980,6 +987,9 @@ static struct of_device_id mpc85xx_mc_err_of_match[] = {
+>  	{
+>  	 .compatible = "fsl,8568-memory-controller",
+>  	 },
+> +	{
+> +	 .compatible = "fsl,8572-memory-controller",
+> +	 },
+>  	{},
+>  };
+>  
+> @@ -995,6 +1005,12 @@ static struct of_platform_driver mpc85xx_mc_err_driver = {
+>  		   },
+>  };
+>  
+> +static void __init mpc85xx_mc_clear_rfxe(void *data)
+> +{
+> +	orig_hid1[smp_processor_id()] = mfspr(SPRN_HID1);
+> +	mtspr(SPRN_HID1, (orig_hid1[smp_processor_id()] & ~0x20000));
+> +}
+> +
+>  static int __init mpc85xx_mc_init(void)
+>  {
+>  	int res = 0;
+> @@ -1031,8 +1047,7 @@ static int __init mpc85xx_mc_init(void)
+>  	 * so we can catch it
+>  	 */
+>  	if (edac_op_state == EDAC_OPSTATE_INT) {
+> -		orig_hid1 = mfspr(SPRN_HID1);
+> -		mtspr(SPRN_HID1, (orig_hid1 & ~0x20000));
+> +		on_each_cpu(mpc85xx_mc_clear_rfxe, NULL, 0);
+>  	}
+>  
+>  	return 0;
+> @@ -1040,9 +1055,14 @@ static int __init mpc85xx_mc_init(void)
+>  
+>  module_init(mpc85xx_mc_init);
+>  
+> +static void __exit mpc85xx_mc_restore_hid1(void *data)
+> +{
+> +	mtspr(SPRN_HID1, orig_hid1[smp_processor_id()]);
+> +}
+> +
+>  static void __exit mpc85xx_mc_exit(void)
+>  {
+> -	mtspr(SPRN_HID1, orig_hid1);
+> +	on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
+>  #ifdef CONFIG_PCI
+>  	of_unregister_platform_driver(&mpc85xx_pci_err_driver);
+>  #endif
 
-Matthias
 
-On Thursday 07 August 2008 15:19:10 Kumar Gala wrote:
-> On Aug 7, 2008, at 7:48 AM, Matthias Fuchs wrote:
-> > This patch fixes the setting of the Book-E watchdog timer interval
-> > setup
-> > on initialization and by ioctl().
-> >
-> > Tested on PPC440EPx sequoia evaluation board.
-> >
-> > Signed-off-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-> > ---
-> > drivers/watchdog/booke_wdt.c |    6 +++++-
-> > 1 files changed, 5 insertions(+), 1 deletions(-)
->
-> can you be more explicit about what the bug was.
->
-> - k
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-- 
+
+------------------------------------------------------
+Dave Jiang
+Software Engineer
+MontaVista Software, Inc.
+http://www.mvista.com
+------------------------------------------------------
