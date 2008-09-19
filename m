@@ -1,20 +1,31 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.233])
-	by ozlabs.org (Postfix) with ESMTP id EC7DADDFF2
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 23:51:09 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so405875rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 06:51:08 -0700 (PDT)
-Date: Fri, 19 Sep 2008 07:51:04 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH v2] bootwrapper: support u-boot multi component images
-Message-ID: <20080919135104.GB7849@secretlab.ca>
-References: <1221814210-4738-1-git-send-email-jacmet@sunsite.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1221814210-4738-1-git-send-email-jacmet@sunsite.dk>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4AA4EDDF21
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 00:00:40 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m8JE0bdn019946
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 10:00:37 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m8JE0baU106636
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 10:00:37 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m8JE0bIq002949
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 10:00:37 -0400
+Date: Fri, 19 Sep 2008 10:00:35 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] powerpc: Remove obsolete junk in Documentation/powerpc
+Message-ID: <20080919100035.734b6e7a@zod.rchland.ibm.com>
+In-Reply-To: <1221590682.12463.46.camel@pasglop>
+References: <1221590682.12463.46.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,113 +35,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 19, 2008 at 10:50:10AM +0200, Peter Korsgaard wrote:
-> From: peter Korsgaard <jacmet@sunsite.dk>
-> 
-> Support uImage.<platform>, which are U-Boot multi component images
-> containing a kernel, dtb and possibly an initrd.
-> 
-> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+On Tue, 16 Sep 2008 11:44:42 -0700
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> ---
-> v2: Incorporated Grant Likely's feedback.
+> We have all sort of totally rotten pieces of documentation
+> in there, let's get rid of them
 > 
->  Documentation/powerpc/bootwrapper.txt |    4 ++++
->  arch/powerpc/boot/Makefile            |   11 +++++++++--
->  arch/powerpc/boot/wrapper             |   20 +++++++++++++++++++-
->  3 files changed, 32 insertions(+), 3 deletions(-)
-> 
-> diff --git a/Documentation/powerpc/bootwrapper.txt b/Documentation/powerpc/bootwrapper.txt
-> index d60fced..fa2e014 100644
-> --- a/Documentation/powerpc/bootwrapper.txt
-> +++ b/Documentation/powerpc/bootwrapper.txt
-> @@ -91,6 +91,10 @@ Currently, the following image format targets exist:
->  			a device tree to the kernel at boot.  If using an older
->  			version of U-Boot, then you need to use a cuImage
->  			instead.
-> +   uImage.%:		U-Boot multi component image. Similar to uImage,
-> +			except device tree blob is embedded inside the
-> +			image together with the kernel (and potentially
-> +			an initrd).
->     zImage.%:		Image format which does not embed a device tree.
->  			Used by OpenFirmware and other firmware interfaces
->  			which are able to supply a device tree.  This image
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 717a3bc..8d2e789 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -282,8 +282,9 @@ image-y	+= $(subst ",,$(CONFIG_EXTRA_TARGETS))
->  initrd-  := $(patsubst zImage%, zImage.initrd%, $(image-n) $(image-))
->  initrd-y := $(patsubst zImage%, zImage.initrd%, \
->  		$(patsubst dtbImage%, dtbImage.initrd%, \
-> +		$(patsubst uImage.%, uImage.initrd.%, \
->  		$(patsubst simpleImage%, simpleImage.initrd%, \
-> -		$(patsubst treeImage%, treeImage.initrd%, $(image-y)))))
-> +		$(patsubst treeImage%, treeImage.initrd%, $(image-y))))))
->  initrd-y := $(filter-out $(image-y), $(initrd-y))
->  targets	+= $(image-y) $(initrd-y)
->  
-> @@ -316,6 +317,12 @@ $(obj)/zImage.iseries: vmlinux
->  $(obj)/uImage: vmlinux $(wrapperbits)
->  	$(call if_changed,wrap,uboot)
->  
-> +$(obj)/uImage.initrd.%: vmlinux $(wrapperbits) $(obj)/%.dtb
-> +	$(call if_changed,wrap,uboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
-> +
-> +$(obj)/uImage.%: vmlinux $(wrapperbits) $(obj)/%.dtb
-> +	$(call if_changed,wrap,uboot-$*,,$(obj)/$*.dtb)
-> +
->  $(obj)/cuImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
->  	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb)
->  
-> @@ -352,7 +359,7 @@ install: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
->  clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
->  	zImage zImage.initrd zImage.chrp zImage.coff zImage.holly \
->  	zImage.iseries zImage.miboot zImage.pmac zImage.pseries \
-> -	otheros.bld *.dtb
-> +	otheros.bld uImage* *.dtb
->  
->  # clean up files cached by wrapper
->  clean-kernel := vmlinux.strip vmlinux.bin
-> diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-> index 965c237..548b087 100755
-> --- a/arch/powerpc/boot/wrapper
-> +++ b/arch/powerpc/boot/wrapper
-> @@ -153,7 +153,7 @@ coff)
->      lds=$object/zImage.coff.lds
->      link_address='0x500000'
->      ;;
-> -miboot|uboot)
-> +miboot|uboot*)
->      # miboot and U-boot want just the bare bits, not an ELF binary
->      ext=bin
->      objflags="-O binary"
-> @@ -262,6 +262,24 @@ uboot)
->      fi
->      exit 0
->      ;;
-> +uboot-*)
-> +    rm -f "$ofile"
-> +    # we always need an initrd - create a dummy initrd if none provided
-> +    if [ ! -f "initrd" ]; then
-> +	initrd="$tmpdir/dummy.initrd"
-> +	echo -n fill >$initrd
-> +    fi
-> +    mkimage -A ppc -O linux -T multi -C gzip -a $membase -e $membase \
-> +	$uboot_version -d "$vmz:$initrd:$dtb" "$ofile"
-> +    if [ "$initrd" == "$tmpdir/dummy.initrd" ]; then
-> +	rm $initrd;
-> +    fi
-> +    if [ -z "$cacheit" ]; then
-> +	rm -f "$vmz"
-> +    fi
-> +    exit 0
-> +    ;;
-> +
->  esac
->  
->  addsec() {
-> -- 
-> 1.5.6.3
-> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Geert's two patches for ppc_htab.txt and smp.txt are more complete as
+they remove the references in 00-INDEX as well.
+
+josh
