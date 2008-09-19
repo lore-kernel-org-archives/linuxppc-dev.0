@@ -2,20 +2,33 @@ Return-Path: <chretien@enseirb.fr>
 Received: from plan.enseirb.fr (plan.enseirb.fr [147.210.18.60])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D8B43DE349
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 03:49:22 +1000 (EST)
-Message-ID: <48D3E5BF.6000809@enseirb.fr>
-Date: Fri, 19 Sep 2008 19:47:43 +0200
+	by ozlabs.org (Postfix) with ESMTPS id C035ADE078
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 03:54:23 +1000 (EST)
+Received: from localhost (mx [147.210.18.15])
+	by plan.enseirb.fr (8.13.8/8.13.4) with ESMTP id m8JHqSKc028445
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 19:52:28 +0200 (MEST)
+Received: from plan.enseirb.fr ([147.210.18.60])
+	by localhost (tan.enseirb.fr [147.210.18.15]) (amavisd-new, port 10041)
+	with LMTP id c--rVSq8bvlK for <linuxppc-dev@ozlabs.org>;
+	Fri, 19 Sep 2008 19:53:14 +0200 (MEST)
+Received: from [172.16.8.65] (seb@chretien.mds [172.16.8.65])
+	(authenticated bits=0)
+	by plan.enseirb.fr (8.13.8/8.13.4) with ESMTP id m8JHqQSO028443
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 19:52:26 +0200 (MEST)
+Message-ID: <48D3E6F0.7040504@enseirb.fr>
+Date: Fri, 19 Sep 2008 19:52:48 +0200
 From: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?= <chretien@enseirb.fr>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
+To: linuxppc-dev@ozlabs.org
 Subject: Re: ioremap and vmalloc
-References: <319b0ac50809190415g6d132058l9bb8521046502eab@mail.gmail.com>	<20080919134933.GA7849@secretlab.ca>
-	<48D3D47E.5050200@gmail.com>	<20080919163819.GB4492@yoda.jdub.homelinux.org>	<48D3D70D.3060404@enseirb.fr>	<20080919165833.GD4492@yoda.jdub.homelinux.org>
-	<fa686aa40809191012q76d1c450ye12094ac63bc68a7@mail.gmail.com>
-In-Reply-To: <fa686aa40809191012q76d1c450ye12094ac63bc68a7@mail.gmail.com>
+References: <319b0ac50809190415g6d132058l9bb8521046502eab@mail.gmail.com>
+	<20080919134933.GA7849@secretlab.ca> <48D3D47E.5050200@gmail.com>
+	<20080919163819.GB4492@yoda.jdub.homelinux.org>
+	<48D3D70D.3060404@enseirb.fr>
+	<20080919165833.GD4492@yoda.jdub.homelinux.org>
+In-Reply-To: <20080919165833.GD4492@yoda.jdub.homelinux.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +38,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I made a mistake. The right code is :
+The chip that I am using is a MPC7448.
+The Kernel version is 2.6.26.
+I am developping my own driver.
+I am making some tests
 
-ioremap(0x20000000,0x40000) and ioremap(0x80000000,0x50000)
-
-
-
-Grant Likely a écrit :
-> On Fri, Sep 19, 2008 at 10:58 AM, Josh Boyer <jwboyer@gmail.com> wrote:
+Josh Boyer a écrit :
+> On Fri, Sep 19, 2008 at 06:45:01PM +0200, =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien_ wrote:
 >   
->> On Fri, Sep 19, 2008 at 06:45:01PM +0200, =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien_ wrote:
->>     
->>> if I write :
->>> ioremap(0x20000000,0x40000) and ioremap(0x20000000,0x50000)
->>>
->>> Will it crash ?
->>>       
->> I have no idea.  You haven't given us enough information to really answer
->> that.
+>> if I write :
+>> ioremap(0x20000000,0x40000) and ioremap(0x20000000,0x50000)
+>>
+>> Will it crash ?
 >>     
 >
-> But I can say that the second ioremap() call makes the first ioremap()
-> both redundant and inefficient.  You're using exactly the same base
-> address so the same region is getting mapped twice.  Since the second
-> call uses a bigger region than the first then the kernel will probably
-> need to allocate another chunk of virtual address space to map it
-> instead of reusing the first mapping.
+> I have no idea.  You haven't given us enough information to really answer
+> that.
 >
-> g.
+> Basic information needed would be: 
 >
+> 1) What board/chip
+> 2) What kernel version
+> 3) What are you actually trying to do
+> 4) What driver are you using
+> 5) If you are writing your own, where is the code for it
+>
+> etc.
+>
+> josh
 >
 >   
