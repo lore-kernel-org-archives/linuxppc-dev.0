@@ -1,16 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: patchwork states and workflow
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18644.11988.483526.64749@cargo.ozlabs.ibm.com>
-References: <DF68B2B7-AFFF-4C86-AC27-55FFE5025C43@kernel.crashing.org>
-	<18644.11988.483526.64749@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Fri, 19 Sep 2008 16:30:57 -0700
-Message-Id: <1221867057.12085.7.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Jeremy Kerr <jk@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <chretien@enseirb.fr>
+Received: from plan.enseirb.fr (plan.enseirb.fr [147.210.18.60])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 34977DDF5F
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 03:02:12 +1000 (EST)
+Message-ID: <48D3D70D.3060404@enseirb.fr>
+Date: Fri, 19 Sep 2008 18:45:01 +0200
+From: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?= <chretien@enseirb.fr>
+MIME-Version: 1.0
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: ioremap and vmalloc
+References: <319b0ac50809190415g6d132058l9bb8521046502eab@mail.gmail.com>	<20080919134933.GA7849@secretlab.ca>
+	<48D3D47E.5050200@gmail.com>
+	<20080919163819.GB4492@yoda.jdub.homelinux.org>
+In-Reply-To: <20080919163819.GB4492@yoda.jdub.homelinux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,37 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-09-19 at 15:59 -0700, Paul Mackerras wrote:
-> Kumar Gala writes:
-> 
-> > I've always been a bit confused about some of the states we can put a  
-> > patch in.  For example, what does 'archiving' a patch mean?
-> 
-> Archiving puts the patch away somewhere where it doesn't appear in the
-> normal pages and needs extra effort to get to, as I understand it.
-> 
-> > What's the difference between 'deferred' and 'rejected'?  Is 'Under  
-> > Review' useful?
-> 
-> Deferred usually means the patch depends on something else that isn't
-> upstream, such as patches that only apply against the RT tree.
-> Rejected means we just don't want to do what the patch does.
-> 
-> > My biggest question is how to manage the transition of 'Accepted' and  
-> > 'Awaiting Upstream' and having clear definitions of what we think  
-> > these mean.
-> 
-> I put patches into "awaiting upstream" when I put them in a bundle, so
-> it means that they have entered my QA process.  When they're in my
-> public tree, I put them into "accepted" state.
+if I write :
+ioremap(0x20000000,0x40000) and ioremap(0x20000000,0x50000)
 
-Note, Kumar, that I have a git hook that will generate a file that
-lists the sha1 and corresponding patchwork IDs when you use git-am.
+Will it crash ?
 
-I can send that to you when I'm back.
-
-You can then use a little tool that automatically update patchwork based
-on that file, filing the SHA1 reference in the database and switching
-the patches to "accepted" state.
-
-Ben.
+Josh Boyer a écrit :
+> On Fri, Sep 19, 2008 at 06:34:06PM +0200, =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien_ wrote:
+>   
+>> The first is ioremap(0x20000000,0x10000000);
+>> The second is ioremap(0x80000000,0x10000000);
+>> Is it too long
+>>     
+>
+> The error message you are getting should have been a very strong hint that
+> the answer is "yes."
+>
+> josh
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+>   
