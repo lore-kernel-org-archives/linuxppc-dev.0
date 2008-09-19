@@ -1,22 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CCC02DDDF9
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 10:09:50 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m8J09jg7024029
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 19:09:46 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v9 4/4] powerpc/mm: Implement _PAGE_SPECIAL & pte_special()
-	for 32-bit
-Date: Thu, 18 Sep 2008 19:09:41 -0500
-Message-Id: <1221782981-4996-4-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1221782981-4996-3-git-send-email-galak@kernel.crashing.org>
-References: <1221782981-4996-1-git-send-email-galak@kernel.crashing.org>
-	<1221782981-4996-2-git-send-email-galak@kernel.crashing.org>
-	<1221782981-4996-3-git-send-email-galak@kernel.crashing.org>
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4A21CDDECA
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 10:24:15 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m8J0OBeW031502
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 20:24:11 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m8J0OBfb269542
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 20:24:11 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m8J0OBaZ005691
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 20:24:11 -0400
+Date: Thu, 18 Sep 2008 20:01:39 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Victor Gallardo <vgallardo@amcc.com>
+Subject: Re: [PATCH v2] Add AMCC Arches eval board support to platforms/44x
+Message-ID: <20080918200139.493850fc@zod.rchland.ibm.com>
+In-Reply-To: <1221778072-6336-1-git-send-email-vgallardo@amcc.com>
+References: <1221778072-6336-1-git-send-email-vgallardo@amcc.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallardo@amcc.com>,
+	fkan@amcc.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,101 +35,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Implement _PAGE_SPECIAL and pte_special() for 32-bit powerpc. This bit will
-be used by the fast get_user_pages() to differenciate PTEs that correspond
-to a valid struct page from special mappings that don't such as IO mappings
-obtained via io_remap_pfn_ranges().
+On Thu, 18 Sep 2008 15:47:52 -0700
+Victor Gallardo <vgallardo@amcc.com> wrote:
 
-We currently only implement this on sub-arch that support SMP or will so
-in the future (6xx, 44x, FSL-BookE) and not (8xx, 40x).
+> 
+> Signed-off-by: Victor Gallardo <vgallardo@amcc.com>
+> ---
+>  v2:
+>  - remove arches.c and instead use canyonlands.c
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/include/asm/pgtable-ppc32.h |   15 +++++++++++++--
- 1 files changed, 13 insertions(+), 2 deletions(-)
+That file doesn't exist anymore in my 'next' branch.  That is part of
+the reason for the original delay.  See below.
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-index 1b11955..c2e58b4 100644
---- a/arch/powerpc/include/asm/pgtable-ppc32.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-@@ -261,6 +261,7 @@ extern int icache_44x_need_flush;
- #define _PAGE_HWEXEC	0x00000004		/* H: Execute permission */
- #define _PAGE_ACCESSED	0x00000008		/* S: Page referenced */
- #define _PAGE_DIRTY	0x00000010		/* S: Page dirty */
-+#define _PAGE_SPECIAL	0x00000020		/* S: Special page */
- #define _PAGE_USER	0x00000040		/* S: User page */
- #define _PAGE_ENDIAN	0x00000080		/* H: E bit */
- #define _PAGE_GUARDED	0x00000100		/* H: G bit */
-@@ -276,6 +277,7 @@ extern int icache_44x_need_flush;
- /* ERPN in a PTE never gets cleared, ignore it */
- #define _PTE_NONE_MASK	0xffffffff00000000ULL
- 
-+#define __HAVE_ARCH_PTE_SPECIAL
- 
- #elif defined(CONFIG_FSL_BOOKE)
- /*
-@@ -305,6 +307,7 @@ extern int icache_44x_need_flush;
- #define _PAGE_COHERENT	0x00100	/* H: M bit */
- #define _PAGE_NO_CACHE	0x00200	/* H: I bit */
- #define _PAGE_WRITETHRU	0x00400	/* H: W bit */
-+#define _PAGE_SPECIAL	0x00800 /* S: Special page */
- 
- #ifdef CONFIG_PTE_64BIT
- /* ERPN in a PTE never gets cleared, ignore it */
-@@ -315,6 +318,8 @@ extern int icache_44x_need_flush;
- #define _PMD_PRESENT_MASK (PAGE_MASK)
- #define _PMD_BAD	(~PAGE_MASK)
- 
-+#define __HAVE_ARCH_PTE_SPECIAL
-+
- #elif defined(CONFIG_8xx)
- /* Definitions for 8xx embedded chips. */
- #define _PAGE_PRESENT	0x0001	/* Page is valid */
-@@ -362,6 +367,7 @@ extern int icache_44x_need_flush;
- #define _PAGE_ACCESSED	0x100	/* R: page referenced */
- #define _PAGE_EXEC	0x200	/* software: i-cache coherency required */
- #define _PAGE_RW	0x400	/* software: user write access allowed */
-+#define _PAGE_SPECIAL	0x800	/* software: Special page */
- 
- #define _PTE_NONE_MASK	_PAGE_HASHPTE
- 
-@@ -372,6 +378,8 @@ extern int icache_44x_need_flush;
- /* Hash table based platforms need atomic updates of the linux PTE */
- #define PTE_ATOMIC_UPDATES	1
- 
-+#define __HAVE_ARCH_PTE_SPECIAL
-+
- #endif
- 
- /*
-@@ -404,6 +412,9 @@ extern int icache_44x_need_flush;
- #ifndef _PAGE_WRITETHRU
- #define _PAGE_WRITETHRU	0
- #endif
-+#ifndef _PAGE_SPECIAL
-+#define _PAGE_SPECIAL	0
-+#endif
- #ifndef _PMD_PRESENT_MASK
- #define _PMD_PRESENT_MASK	_PMD_PRESENT
- #endif
-@@ -534,7 +545,7 @@ static inline int pte_write(pte_t pte)		{ return pte_val(pte) & _PAGE_RW; }
- static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
- static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
- static inline int pte_file(pte_t pte)		{ return pte_val(pte) & _PAGE_FILE; }
--static inline int pte_special(pte_t pte)	{ return 0; }
-+static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
- 
- static inline void pte_uncache(pte_t pte)       { pte_val(pte) |= _PAGE_NO_CACHE; }
- static inline void pte_cache(pte_t pte)         { pte_val(pte) &= ~_PAGE_NO_CACHE; }
-@@ -553,7 +564,7 @@ static inline pte_t pte_mkdirty(pte_t pte) {
- static inline pte_t pte_mkyoung(pte_t pte) {
- 	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
- static inline pte_t pte_mkspecial(pte_t pte) {
--	return pte; }
-+	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
- static inline unsigned long pte_pgprot(pte_t pte)
- {
- 	return __pgprot(pte_val(pte)) & PAGE_PROT_BITS;
--- 
-1.5.5.1
+>  - remove reference to IBM_NEW_EMAC_RGMII for ARCHES config
+>  - remove reference to IBM_NEW_EMAC_ZMII for ARCHES config
+>  - moved reference to IBM_NEW_EMAC_RGMII under CANYONLANDS config
+>  - moved reference to IBM_NEW_EMAC_ZMII under CANYONLANDS config
+> 
+>  arch/powerpc/platforms/44x/Kconfig  |   18 ++++++++++++++----
+>  arch/powerpc/platforms/44x/Makefile |    1 +
+>  2 files changed, 15 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+> index 249ba01..be1bce7 100644
+> --- a/arch/powerpc/platforms/44x/Kconfig
+> +++ b/arch/powerpc/platforms/44x/Kconfig
+> @@ -83,9 +83,23 @@ config CANYONLANDS
+>  	select 460EX
+>  	select PCI
+>  	select PPC4xx_PCI_EXPRESS
+> +	select IBM_NEW_EMAC_EMAC4
+> +	select IBM_NEW_EMAC_RGMII
+> +	select IBM_NEW_EMAC_ZMII
+> +	select IBM_NEW_EMAC_TAH
+>  	help
+>  	  This option enables support for the AMCC PPC460EX evaluation board.
+> 
+> +config ARCHES
+> +	bool "Arches"
+> +	depends on 44x
+> +	default n
+> +	select 460EX
+> +	select IBM_NEW_EMAC_EMAC4
+> +	select IBM_NEW_EMAC_TAH
+> +	help
+> +	  This option enables support for the AMCC PPC460GT evaluation board.
+
+This seems fine.
+
+> +
+>  config YOSEMITE
+>  	bool "Yosemite"
+>  	depends on 44x
+> @@ -169,10 +183,6 @@ config 440SPe
+>  config 460EX
+>  	bool
+>  	select PPC_FPU
+> -	select IBM_NEW_EMAC_EMAC4
+> -	select IBM_NEW_EMAC_RGMII
+> -	select IBM_NEW_EMAC_ZMII
+> -	select IBM_NEW_EMAC_TAH
+> 
+>  # 44x errata/workaround config symbols, selected by the CPU models above
+>  config IBM440EP_ERR42
+> diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
+> index 8d0b1a1..3f83f73 100644
+> --- a/arch/powerpc/platforms/44x/Makefile
+> +++ b/arch/powerpc/platforms/44x/Makefile
+> @@ -9,5 +9,6 @@ obj-$(CONFIG_KATMAI)	+= katmai.o
+>  obj-$(CONFIG_RAINIER)	+= rainier.o
+>  obj-$(CONFIG_WARP)	+= warp.o
+>  obj-$(CONFIG_WARP)	+= warp-nand.o
+> +obj-$(CONFIG_ARCHES)	+= canyonlands.o
+>  obj-$(CONFIG_CANYONLANDS) += canyonlands.o
+>  obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
+
+Instead of modifying the Makefile, you should only have to add the
+"amcc,arches" string to the "board" array in ppc44x_simple.c.
+
+We switched to doing this as opposed to having a somewhat bogus "board
+compatible" statement with other boards.  That is what was discussed at
+OLS, and this is the result.
+
+I can probably fix this patch up myself in a short amount of time, but
+I have no way to test it.
+
+josh
