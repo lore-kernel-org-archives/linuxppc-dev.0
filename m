@@ -1,32 +1,12 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 60DE7DDDE1
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Sep 2008 22:10:41 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m8JCD6gm013327
-	for <linuxppc-embedded@ozlabs.org>; Fri, 19 Sep 2008 08:13:06 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m8JCAMdA254458
-	for <linuxppc-embedded@ozlabs.org>; Fri, 19 Sep 2008 08:10:22 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m8JCALPv014966
-	for <linuxppc-embedded@ozlabs.org>; Fri, 19 Sep 2008 08:10:21 -0400
-Date: Fri, 19 Sep 2008 08:10:19 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: ______ <nagne_hsi@naver.com>
-Subject: Re: Is there any linux version to support clock and power
-	management(CPM) of PPC405
-Message-ID: <20080919081019.1d133641@zod.rchland.ibm.com>
-In-Reply-To: <004801c91a29$444f0360$cced0a20$@com>
-References: <004801c91a29$444f0360$cced0a20$@com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-embedded@ozlabs.org
+Return-Path: <venkatakrishnap@vrindatech.com>
+From: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
+To: <Linuxppc-embedded@ozlabs.org>
+Subject: 
+Date: Fri, 19 Sep 2008 17:42:12 +0530
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0015_01C91A7F.0EE07690"
+Message-Id: <20080919121704.7AF08DDF63@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -37,29 +17,127 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 19 Sep 2008 16:28:09 +0900
-______ <nagne_hsi@naver.com> wrote:
+This is a multi-part message in MIME format.
 
-> I am searching the linux version to support clock and power management(CP=
-M)
-> of PPC405.
->=20
-> Linux kernel use the cpu_idle() function when the cpu don=C2=A1=C2=AFt ha=
-ve any task
-> to do..
->=20
-> And, the implementation of cpu_idle() is different between each
-> architecture.
->=20
-> I cannot find whether latest ppc tree of linux support CPM or not=C2=A1=
-=C2=A6.
+------=_NextPart_000_0015_01C91A7F.0EE07690
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-It does not.
+ 
 
-> If the official linux support CPM of PPC405, Do Mvista, Red hat, fedora,
-> gentoo support CPM of PPC405?=20
+Hi,
 
-You would have to ask Monta Vista or Wind River if they do.  Red Hat,
-Fedora, and Gentoo don't support PPC405 at all.
+ 
 
-josh
+I am working ELDK Kit 4.0 versions in Linux. My target Board is MPC8260
+processor. I generated linux uImage with linux-2.6-denx and is it need hard
+reset configuration words in linux. I don't find HRCW (Hard reset
+configuration word) anywhere in linux. In My target Board we are using Five
+memory device (SRAM, SRAM, Flash) and where can I instalization these memory
+in linux.
+
+ 
+
+Thanks
+
+venkatakrishna  
+
+
+------=_NextPart_000_0015_01C91A7F.0EE07690
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:"MS Mincho";
+	panose-1:2 2 6 9 4 2 5 8 3 4;}
+@font-face
+	{font-family:"\@MS Mincho";
+	panose-1:0 0 0 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I am working ELDK Kit 4.0 versions in Linux. My =
+target Board
+is MPC8260 processor. I generated linux uImage with linux-2.6-denx and =
+is it
+need hard reset configuration words in linux. I don&#8217;t find HRCW =
+(Hard reset
+configuration word) anywhere in linux. In My target Board we are using =
+Five
+memory device (SRAM, SRAM, Flash) and where can I instalization these =
+memory in
+linux.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanks<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>venkatakrishna &nbsp;<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0015_01C91A7F.0EE07690--
