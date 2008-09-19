@@ -1,31 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B4549DDDF5
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 10:03:04 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m8J030RK020073
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 20:03:00 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m8J030Ha142592
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 20:03:00 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m8J030Da006230
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 20:03:00 -0400
-Date: Thu, 18 Sep 2008 20:01:43 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Victor Gallardo <vgallardo@amcc.com>
-Subject: Re: [PATCH v2] Add AMCC Arches eval board support to platforms/44x
-Message-ID: <20080918200143.0367482f@zod.rchland.ibm.com>
-In-Reply-To: <1221778072-6336-1-git-send-email-vgallardo@amcc.com>
-References: <1221778072-6336-1-git-send-email-vgallardo@amcc.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallardo@amcc.com>,
-	fkan@amcc.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E1654DDDF9
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 10:09:45 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m8J09gHL024020
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 19:09:42 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v9 1/4] powerpc: Introduce local (non-broadcast) forms of tlb
+	invalidates
+Date: Thu, 18 Sep 2008 19:09:38 -0500
+Message-Id: <1221782981-4996-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,89 +22,198 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 18 Sep 2008 15:47:52 -0700
-Victor Gallardo <vgallardo@amcc.com> wrote:
+Introduced a new set of low level tlb invalidate functions that do not
+broadcast invalidates on the bus:
 
-> 
-> Signed-off-by: Victor Gallardo <vgallardo@amcc.com>
-> ---
->  v2:
->  - remove arches.c and instead use canyonlands.c
+_tlbil_all - invalidate all
+_tlbil_pid - invalidate based on process id (or mm context)
+_tlbil_va  - invalidate based on virtual address (ea + pid)
 
-That file doesn't exist anymore in my 'next' branch.  That is part of
-the reason for the original delay.  See below.
+On non-SMP configs _tlbil_all should be functionally equivalent to _tlbia and
+_tlbil_va should be functionally equivalent to _tlbie.
 
->  - remove reference to IBM_NEW_EMAC_RGMII for ARCHES config
->  - remove reference to IBM_NEW_EMAC_ZMII for ARCHES config
->  - moved reference to IBM_NEW_EMAC_RGMII under CANYONLANDS config
->  - moved reference to IBM_NEW_EMAC_ZMII under CANYONLANDS config
-> 
->  arch/powerpc/platforms/44x/Kconfig  |   18 ++++++++++++++----
->  arch/powerpc/platforms/44x/Makefile |    1 +
->  2 files changed, 15 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-> index 249ba01..be1bce7 100644
-> --- a/arch/powerpc/platforms/44x/Kconfig
-> +++ b/arch/powerpc/platforms/44x/Kconfig
-> @@ -83,9 +83,23 @@ config CANYONLANDS
->  	select 460EX
->  	select PCI
->  	select PPC4xx_PCI_EXPRESS
-> +	select IBM_NEW_EMAC_EMAC4
-> +	select IBM_NEW_EMAC_RGMII
-> +	select IBM_NEW_EMAC_ZMII
-> +	select IBM_NEW_EMAC_TAH
->  	help
->  	  This option enables support for the AMCC PPC460EX evaluation board.
-> 
-> +config ARCHES
-> +	bool "Arches"
-> +	depends on 44x
-> +	default n
-> +	select 460EX
-> +	select IBM_NEW_EMAC_EMAC4
-> +	select IBM_NEW_EMAC_TAH
-> +	help
-> +	  This option enables support for the AMCC PPC460GT evaluation board.
+The intent of this change is to handle SMP based invalidates via IPIs instead
+of broadcasts as the mechanism scales better for larger number of cores.
 
-This seems fine.
+On e500 (fsl-booke mmu) based cores move to using MMUCSR for invalidate alls
+and tlbsx/tlbwe for invalidate virtual address.
 
-> +
->  config YOSEMITE
->  	bool "Yosemite"
->  	depends on 44x
-> @@ -169,10 +183,6 @@ config 440SPe
->  config 460EX
->  	bool
->  	select PPC_FPU
-> -	select IBM_NEW_EMAC_EMAC4
-> -	select IBM_NEW_EMAC_RGMII
-> -	select IBM_NEW_EMAC_ZMII
-> -	select IBM_NEW_EMAC_TAH
-> 
->  # 44x errata/workaround config symbols, selected by the CPU models above
->  config IBM440EP_ERR42
-> diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-> index 8d0b1a1..3f83f73 100644
-> --- a/arch/powerpc/platforms/44x/Makefile
-> +++ b/arch/powerpc/platforms/44x/Makefile
-> @@ -9,5 +9,6 @@ obj-$(CONFIG_KATMAI)	+= katmai.o
->  obj-$(CONFIG_RAINIER)	+= rainier.o
->  obj-$(CONFIG_WARP)	+= warp.o
->  obj-$(CONFIG_WARP)	+= warp-nand.o
-> +obj-$(CONFIG_ARCHES)	+= canyonlands.o
->  obj-$(CONFIG_CANYONLANDS) += canyonlands.o
->  obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/reg_booke.h |    7 ++++
+ arch/powerpc/include/asm/tlbflush.h  |   13 +++++---
+ arch/powerpc/kernel/misc_32.S        |   54 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/ppc_ksyms.c      |    3 ++
+ 4 files changed, 72 insertions(+), 5 deletions(-)
 
-Instead of modifying the Makefile, you should only have to add the
-"amcc,arches" string to the "board" array in ppc44x_simple.c.
-
-We switched to doing this as opposed to having a somewhat bogus "board
-compatible" statement with other boards.  That is what was discussed at
-OLS, and this is the result.
-
-I can probably fix this patch up myself in a short amount of time, but
-I have no way to test it.
-
-josh
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index be980f4..6745376 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -109,6 +109,7 @@
+ #define SPRN_EVPR	0x3D6	/* Exception Vector Prefix Register */
+ #define SPRN_L1CSR0	0x3F2	/* L1 Cache Control and Status Register 0 */
+ #define SPRN_L1CSR1	0x3F3	/* L1 Cache Control and Status Register 1 */
++#define SPRN_MMUCSR0	0x3F4	/* MMU Control and Status Register 0 */
+ #define SPRN_PIT	0x3DB	/* Programmable Interval Timer */
+ #define SPRN_BUCSR	0x3F5	/* Branch Unit Control and Status */
+ #define SPRN_L2CSR0	0x3F9	/* L2 Data Cache Control and Status Register 0 */
+@@ -410,6 +411,12 @@
+ #define L2CSR0_L2LOA	0x00000080	/* L2 Cache Lock Overflow Allocate */
+ #define L2CSR0_L2LO	0x00000020	/* L2 Cache Lock Overflow */
+ 
++/* Bit definitions for MMUCSR0 */
++#define MMUCSR0_TLB1FI	0x00000002	/* TLB1 Flash invalidate */
++#define MMUCSR0_TLB0FI	0x00000004	/* TLB0 Flash invalidate */
++#define MMUCSR0_TLB2FI	0x00000040	/* TLB2 Flash invalidate */
++#define MMUCSR0_TLB3FI	0x00000020	/* TLB3 Flash invalidate */
++
+ /* Bit definitions for SGR. */
+ #define SGR_NORMAL	0		/* Speculative fetching allowed. */
+ #define SGR_GUARDED	1		/* Speculative fetching disallowed. */
+diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
+index 361cd5c..a2c6bfd 100644
+--- a/arch/powerpc/include/asm/tlbflush.h
++++ b/arch/powerpc/include/asm/tlbflush.h
+@@ -29,6 +29,9 @@
+ #include <linux/mm.h>
+ 
+ extern void _tlbie(unsigned long address, unsigned int pid);
++extern void _tlbil_all(void);
++extern void _tlbil_pid(unsigned int pid);
++extern void _tlbil_va(unsigned long address, unsigned int pid);
+ 
+ #if defined(CONFIG_40x) || defined(CONFIG_8xx)
+ #define _tlbia()	asm volatile ("tlbia; sync" : : : "memory")
+@@ -38,31 +41,31 @@ extern void _tlbia(void);
+ 
+ static inline void flush_tlb_mm(struct mm_struct *mm)
+ {
+-	_tlbia();
++	_tlbil_pid(mm->context.id);
+ }
+ 
+ static inline void flush_tlb_page(struct vm_area_struct *vma,
+ 				  unsigned long vmaddr)
+ {
+-	_tlbie(vmaddr, vma ? vma->vm_mm->context.id : 0);
++	_tlbil_va(vmaddr, vma ? vma->vm_mm->context.id : 0);
+ }
+ 
+ static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
+ 					 unsigned long vmaddr)
+ {
+-	_tlbie(vmaddr, vma ? vma->vm_mm->context.id : 0);
++	flush_tlb_page(vma, vmaddr);
+ }
+ 
+ static inline void flush_tlb_range(struct vm_area_struct *vma,
+ 				   unsigned long start, unsigned long end)
+ {
+-	_tlbia();
++	_tlbil_pid(vma->vm_mm->context.id);
+ }
+ 
+ static inline void flush_tlb_kernel_range(unsigned long start,
+ 					  unsigned long end)
+ {
+-	_tlbia();
++	_tlbil_pid(0);
+ }
+ 
+ #elif defined(CONFIG_PPC32)
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 7a6dfbc..e9c8ab6 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -274,6 +274,10 @@ _GLOBAL(real_writeb)
+ /*
+  * Flush MMU TLB
+  */
++#ifndef CONFIG_FSL_BOOKE
++_GLOBAL(_tlbil_all)
++_GLOBAL(_tlbil_pid)
++#endif
+ _GLOBAL(_tlbia)
+ #if defined(CONFIG_40x)
+ 	sync			/* Flush to memory before changing mapping */
+@@ -344,6 +348,9 @@ _GLOBAL(_tlbia)
+ /*
+  * Flush MMU TLB for a particular address
+  */
++#ifndef CONFIG_FSL_BOOKE
++_GLOBAL(_tlbil_va)
++#endif
+ _GLOBAL(_tlbie)
+ #if defined(CONFIG_40x)
+ 	/* We run the search with interrupts disabled because we have to change
+@@ -436,6 +443,53 @@ _GLOBAL(_tlbie)
+ #endif /* ! CONFIG_40x */
+ 	blr
+ 
++#if defined(CONFIG_FSL_BOOKE)
++/*
++ * Flush MMU TLB, but only on the local processor (no broadcast)
++ */
++_GLOBAL(_tlbil_all)
++#define MMUCSR0_TLBFI	(MMUCSR0_TLB0FI | MMUCSR0_TLB1FI | \
++			 MMUCSR0_TLB2FI | MMUCSR0_TLB3FI)
++	li	r3,(MMUCSR0_TLBFI)@l
++	mtspr	SPRN_MMUCSR0, r3
++1:
++	mfspr	r3,SPRN_MMUCSR0
++	andi.	r3,r3,MMUCSR0_TLBFI@l
++	bne	1b
++	blr
++
++/*
++ * Flush MMU TLB for a particular process id, but only on the local processor
++ * (no broadcast)
++ */
++_GLOBAL(_tlbil_pid)
++/* we currently do an invalidate all since we don't have per pid invalidate */
++	li	r3,(MMUCSR0_TLBFI)@l
++	mtspr	SPRN_MMUCSR0, r3
++1:
++	mfspr	r3,SPRN_MMUCSR0
++	andi.	r3,r3,MMUCSR0_TLBFI@l
++	bne	1b
++	blr
++
++/*
++ * Flush MMU TLB for a particular address, but only on the local processor
++ * (no broadcast)
++ */
++_GLOBAL(_tlbil_va)
++	slwi	r4,r4,16
++	mtspr	SPRN_MAS6,r4		/* assume AS=0 for now */
++	tlbsx	0,r3
++	mfspr	r4,SPRN_MAS1		/* check valid */
++	andis.	r3,r4,MAS1_VALID@h
++	beqlr
++	rlwinm	r4,r4,0,1,31
++	mtspr	SPRN_MAS1,r4
++	tlbwe
++	blr
++#endif /* CONFIG_FSL_BOOKE */
++
++
+ /*
+  * Flush instruction cache.
+  * This is a no-op on the 601.
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index e1ea4fe..8edc235 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -119,6 +119,9 @@ EXPORT_SYMBOL(flush_instruction_cache);
+ EXPORT_SYMBOL(flush_tlb_kernel_range);
+ EXPORT_SYMBOL(flush_tlb_page);
+ EXPORT_SYMBOL(_tlbie);
++#if defined(CONFIG_4xx) || defined(CONFIG_8xx) || defined(CONFIG_FSL_BOOKE)
++EXPORT_SYMBOL(_tlbil_va);
++#endif
+ #endif
+ EXPORT_SYMBOL(__flush_icache_range);
+ EXPORT_SYMBOL(flush_dcache_range);
+-- 
+1.5.5.1
