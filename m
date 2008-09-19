@@ -1,31 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BC730DDFCC
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 03:39:47 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m8JHdion032362
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 13:39:44 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m8JHdiaZ235746
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 13:39:44 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m8JHdiff018345
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 13:39:44 -0400
-Date: Fri, 19 Sep 2008 13:39:36 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Victor Gallardo" <vgallardo@amcc.com>
-Subject: Re: [PATCH v2] Add AMCC Arches eval board support to platforms/44x
-Message-ID: <20080919133936.27d2a09f@zod.rchland.ibm.com>
-In-Reply-To: <0CA0A16855646F4FA96D25A158E299D6050D1768@SDCEXCHANGE01.ad.amcc.com>
-References: <20080918200143.0367482f@zod.rchland.ibm.com>
-	<0CA0A16855646F4FA96D25A158E299D6050D1768@SDCEXCHANGE01.ad.amcc.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Feng Kan <fkan@amcc.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7165ADDFDB
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 04:02:18 +1000 (EST)
+Message-Id: <1BA571BA-BA43-4C18-9CBF-0F1461E6734E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20080919153325.GA548@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH v2] powerpc: implement support for MPC8349-compatible SOC
+	GPIOs
+Date: Fri, 19 Sep 2008 13:02:11 -0500
+References: <20080917175820.GA22539@oksana.dev.rtsoft.ru>
+	<871vziwoxj.fsf@macbook.be.48ers.dk>
+	<20080918112020.GA11584@oksana.dev.rtsoft.ru>
+	<87ej3gyxv0.fsf@macbook.be.48ers.dk>
+	<20080919153325.GA548@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,60 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 19 Sep 2008 10:31:34 -0700
-"Victor Gallardo" <vgallardo@amcc.com> wrote:
 
->  
-> Hi Josh,
-> 
-> See below...
-> 
-> >> ...
-> >> @@ -83,9 +83,23 @@ config CANYONLANDS
-> >>  	select 460EX
-> >>  	select PCI
-> >>  	select PPC4xx_PCI_EXPRESS
-> >> +	select IBM_NEW_EMAC_EMAC4
-> >> +	select IBM_NEW_EMAC_RGMII
-> >> +	select IBM_NEW_EMAC_ZMII
-> >> +	select IBM_NEW_EMAC_TAH
-> >>  	help
-> >>  	  This option enables support for the AMCC PPC460EX evaluation board.
-> >> 
-> >> +config ARCHES
-> >> +	bool "Arches"
-> >> +	depends on 44x
-> >> +	default n
-> >> +	select 460EX
-> >> +	select IBM_NEW_EMAC_EMAC4
-> >> +	select IBM_NEW_EMAC_TAH
-> >> +	help
-> >> +	  This option enables support for the AMCC PPC460GT evaluation board.
-> >
-> >This seems fine.
-> >
-> > ...
-> >
-> >> +obj-$(CONFIG_ARCHES)	+= canyonlands.o
-> >>  obj-$(CONFIG_CANYONLANDS) += canyonlands.o
-> >>  obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
-> >
-> >Instead of modifying the Makefile, you should only have to add the "amcc,arches"
-> > string to the >"board" array in ppc44x_simple.c.
-> >
-> > We switched to doing this as opposed to having a somewhat bogus 
-> > "board compatible" statement with >other boards.  That is what was discussed at
-> > OLS, and this is the result.
-> 
-> The reason for two different board types is to remove RGMII and ZMII from the build. Arches does not use it.
+On Sep 19, 2008, at 10:33 AM, Anton Vorontsov wrote:
 
-Right, and that part is fine.
+> On Fri, Sep 19, 2008 at 05:11:15PM +0200, Peter Korsgaard wrote:
+>>>>>>> "Anton" == Anton Vorontsov <avorontsov@ru.mvista.com> writes:
+>>
+>> Hi,
+>>
+>>>> It seems basically the same as my patch (gpio driver for
+>>>> mpc831x/mpc834x/mpc837x with OF bindings) from September 5th except
+>>>> you don't have any documentation
+>>
+>> Anton> Well, do we really need documentation for every trivial gpio
+>> Anton> controller? The bindings are the same, only different  
+>> compatible
+>> Anton> entries...
+>>
+>> Well, we need some way of knowing that atleast. Having people  
+>> grepping
+>> through arch/powerpc/boot/dts/ (and knowing that they should look for
+>> 8349 even though they might use 8313 or 8610) doesn't seem optimal to
+>> me - I take it that's why we created
+>> Documentation/powerpc/dts-bindings in the first place?
+>
+> Ok.
+>
+>> Anton> If we do need the documentation for this, I can readily  
+>> include it.
+>>
+>>>> and the Kconfig doesn't depend on
+>>>> 831x/834x/837x.
+>>
+>> Anton> This is purposely. We also need support for 8610, and maybe
+>> Anton> later we'll find another chip with the same unit. So, to not  
+>> touch
+>> Anton> the Kconfig for every new chip I just made it PPC32-wide.  
+>> Other
+>> Anton> option is to depend on FSL_SOC, but the driver really does not
+>> Anton> depend on any fsl_soc stuff...
+>>
+>> Adding another symbol to the Kconfig once it is verified that a new
+>> SoC is compatible doesn't seem like a big deal - Figuring out all the
+>> knobs we already have is, without having options for stuff that is
+>> known to be irrelevant for the SoC.
+>>
+>> The other 83xx specific drivers also depend on PPC_83xx.
+>
+> Lets wait for Kumar's comments. We've already had a PPC_* mess
+> for the USB_EHCI_FSL symbol. What I've learned from it, is that
+> huge PPC_* list isn't perfect either.
 
-> 
-> Where is ppc4xx_simple.c? I just pulled your git tree and did not find this file.
+I've alone glanced over this, but some initial comments are.. lets  
+rename the thing to not be 83xx specific since 8610 uses it and I'm  
+sure we'll have other parts that do similar things.
 
-You need to look in the 'next' branch.
+With regards to the binding, lets make it generic like 'fsl,mpc8xxx- 
+gpio", "fsl,CHIP-gpio" and than we can use cpm1/cpm2/pq1/pq2 as  
+prefixes to distinguish and major differences.
 
-http://git.kernel.org/?p=linux/kernel/git/jwboyer/powerpc-4xx.git;a=tree;f=arch/powerpc/platforms/44x;h=c5cae8d37f170193ed45b7b76e3cb2cbb8be927a;hb=next
-
-josh
+- k
