@@ -1,18 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5B019DE42D
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 04:31:45 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m8JIVdrP019643
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 13:31:40 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fix build warnings introduced by PMC support on
-	32-bit
-Date: Fri, 19 Sep 2008 13:31:39 -0500
-Message-Id: <1221849099-27015-1-git-send-email-galak@kernel.crashing.org>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C77D6DE0E9
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 04:35:01 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m8JIYuFk007449
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 11:34:56 -0700 (MST)
+Message-Id: <C87AB112-43B6-4D0A-B03F-6AEDA4652AD0@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: Becky Bruce <becky.bruce@freescale.com>
+In-Reply-To: <1221234176-14937-1-git-send-email-becky.bruce@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH V2] Pass actual dev ptr to dma_* in ucc and cpm_uart serial
+Date: Fri, 19 Sep 2008 13:34:53 -0500
+References: <1221234176-14937-1-git-send-email-becky.bruce@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,47 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-arch/powerpc/kernel/sysfs.c:197:7: warning: "CONFIG_6xx" is not defined
-arch/powerpc/kernel/sysfs.c:141: warning: 'run_on_cpu' defined but not used
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/kernel/sysfs.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+On Sep 12, 2008, at 10:42 AM, Becky Bruce wrote:
 
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index ef2ad92..86a2ffc 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -134,6 +134,7 @@ void ppc_enable_pmcs(void)
- }
- EXPORT_SYMBOL(ppc_enable_pmcs);
- 
-+#if defined(CONFIG_6xx) || defined(CONFIG_PPC64)
- /* XXX convert to rusty's on_one_cpu */
- static unsigned long run_on_cpu(unsigned long cpu,
- 			        unsigned long (*func)(unsigned long),
-@@ -152,6 +153,7 @@ static unsigned long run_on_cpu(unsigned long cpu,
- 
- 	return ret;
- }
-+#endif
- 
- #define SYSFS_PMCSETUP(NAME, ADDRESS) \
- static unsigned long read_##NAME(unsigned long junk) \
-@@ -190,11 +192,11 @@ static ssize_t __used \
-  * that are implemented on the current processor
-  */
- 
--#ifdef CONFIG_PPC64
-+#if defined(CONFIG_PPC64)
- #define HAS_PPC_PMC_CLASSIC	1
- #define HAS_PPC_PMC_IBM		1
- #define HAS_PPC_PMC_PA6T	1
--#elif CONFIG_6xx
-+#elif defined(CONFIG_6xx)
- #define HAS_PPC_PMC_CLASSIC	1
- #define HAS_PPC_PMC_IBM		1
- #define HAS_PPC_PMC_G4		1
--- 
-1.5.5.1
+> We're currently passing NULL, and really shouldn't be.
+>
+> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+> ---
+> drivers/serial/cpm_uart/cpm_uart_core.c |    3 +++
+> drivers/serial/cpm_uart/cpm_uart_cpm1.c |    6 +++---
+> drivers/serial/cpm_uart/cpm_uart_cpm2.c |    6 +++---
+> drivers/serial/ucc_uart.c               |    4 ++--
+> 4 files changed, 11 insertions(+), 8 deletions(-)
+
+applied.
+
+- k
