@@ -1,16 +1,16 @@
-Return-Path: <ncase@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9E08ADDF20
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 09:25:41 +1000 (EST)
-From: Nate Case <ncase@xes-inc.com>
-To: Dave Jiang <djiang@mvista.com>
-Subject: [PATCH v2] edac: mpc85xx: Add support for MPC8572
-Date: Fri, 19 Sep 2008 18:20:28 -0500
-Message-Id: <1221866428-20621-1-git-send-email-ncase@xes-inc.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Kilkenny <akilkenny@xes-inc.com>,
-	Nate Case <ncase@xes-inc.com>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: patchwork states and workflow
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18644.11988.483526.64749@cargo.ozlabs.ibm.com>
+References: <DF68B2B7-AFFF-4C86-AC27-55FFE5025C43@kernel.crashing.org>
+	<18644.11988.483526.64749@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Fri, 19 Sep 2008 16:30:57 -0700
+Message-Id: <1221867057.12085.7.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Jeremy Kerr <jk@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,108 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Andrew Kilkenny <akilkenny@xes-inc.com>
+On Fri, 2008-09-19 at 15:59 -0700, Paul Mackerras wrote:
+> Kumar Gala writes:
+> 
+> > I've always been a bit confused about some of the states we can put a  
+> > patch in.  For example, what does 'archiving' a patch mean?
+> 
+> Archiving puts the patch away somewhere where it doesn't appear in the
+> normal pages and needs extra effort to get to, as I understand it.
+> 
+> > What's the difference between 'deferred' and 'rejected'?  Is 'Under  
+> > Review' useful?
+> 
+> Deferred usually means the patch depends on something else that isn't
+> upstream, such as patches that only apply against the RT tree.
+> Rejected means we just don't want to do what the patch does.
+> 
+> > My biggest question is how to manage the transition of 'Accepted' and  
+> > 'Awaiting Upstream' and having clear definitions of what we think  
+> > these mean.
+> 
+> I put patches into "awaiting upstream" when I put them in a bundle, so
+> it means that they have entered my QA process.  When they're in my
+> public tree, I put them into "accepted" state.
 
-This adds support for the dual-core MPC8572 processor.  We have
-to support making SPR changes on each core.  Also, since we can
-have multiple memory controllers sharing an interrupt, flag the
-interrupts with IRQF_SHARED.
+Note, Kumar, that I have a git hook that will generate a file that
+lists the sha1 and corresponding patchwork IDs when you use git-am.
 
-Signed-off-by: Andrew Kilkenny <akilkenny@xes-inc.com>
-Signed-off-by: Nate Case <ncase@xes-inc.com>
----
- drivers/edac/mpc85xx_edac.c |   28 +++++++++++++++++++++++-----
- 1 files changed, 23 insertions(+), 5 deletions(-)
+I can send that to you when I'm back.
 
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 2265d9c..63bdc47 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -17,6 +17,7 @@
- #include <linux/io.h>
- #include <linux/mod_devicetable.h>
- #include <linux/edac.h>
-+#include <linux/smp.h>
- 
- #include <linux/of_platform.h>
- #include <linux/of_device.h>
-@@ -40,7 +41,7 @@ static u32 orig_pci_err_en;
- #endif
- 
- static u32 orig_l2_err_disable;
--static u32 orig_hid1;
-+static u32 orig_hid1[2];
- 
- /************************ MC SYSFS parts ***********************************/
- 
-@@ -647,6 +648,9 @@ static struct of_device_id mpc85xx_l2_err_of_match[] = {
- 	{
- 	 .compatible = "fsl,8568-l2-cache-controller",
- 	 },
-+	{
-+	 .compatible = "fsl,mpc8572-l2-cache-controller",
-+	 },
- 	{},
- };
- 
-@@ -912,7 +916,8 @@ static int __devinit mpc85xx_mc_err_probe(struct of_device *op,
- 		/* register interrupts */
- 		pdata->irq = irq_of_parse_and_map(op->node, 0);
- 		res = devm_request_irq(&op->dev, pdata->irq,
--				       mpc85xx_mc_isr, IRQF_DISABLED,
-+				       mpc85xx_mc_isr,
-+				       IRQF_DISABLED | IRQF_SHARED,
- 				       "[EDAC] MC err", mci);
- 		if (res < 0) {
- 			printk(KERN_ERR "%s: Unable to request irq %d for "
-@@ -980,6 +985,9 @@ static struct of_device_id mpc85xx_mc_err_of_match[] = {
- 	{
- 	 .compatible = "fsl,8568-memory-controller",
- 	 },
-+	{
-+	 .compatible = "fsl,mpc8572-memory-controller",
-+	 },
- 	{},
- };
- 
-@@ -995,6 +1003,12 @@ static struct of_platform_driver mpc85xx_mc_err_driver = {
- 		   },
- };
- 
-+static void __init mpc85xx_mc_clear_rfxe(void *data)
-+{
-+	orig_hid1[smp_processor_id()] = mfspr(SPRN_HID1);
-+	mtspr(SPRN_HID1, (orig_hid1[smp_processor_id()] & ~0x20000));
-+}
-+
- static int __init mpc85xx_mc_init(void)
- {
- 	int res = 0;
-@@ -1031,8 +1045,7 @@ static int __init mpc85xx_mc_init(void)
- 	 * so we can catch it
- 	 */
- 	if (edac_op_state == EDAC_OPSTATE_INT) {
--		orig_hid1 = mfspr(SPRN_HID1);
--		mtspr(SPRN_HID1, (orig_hid1 & ~0x20000));
-+		on_each_cpu(mpc85xx_mc_clear_rfxe, NULL, 0);
- 	}
- 
- 	return 0;
-@@ -1040,9 +1053,14 @@ static int __init mpc85xx_mc_init(void)
- 
- module_init(mpc85xx_mc_init);
- 
-+static void __exit mpc85xx_mc_restore_hid1(void *data)
-+{
-+	mtspr(SPRN_HID1, orig_hid1[smp_processor_id()]);
-+}
-+
- static void __exit mpc85xx_mc_exit(void)
- {
--	mtspr(SPRN_HID1, orig_hid1);
-+	on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
- #ifdef CONFIG_PCI
- 	of_unregister_platform_driver(&mpc85xx_pci_err_driver);
- #endif
--- 
-1.6.0.2
+You can then use a little tool that automatically update patchwork based
+on that file, filing the SHA1 reference in the database and switching
+the patches to "accepted" state.
+
+Ben.
