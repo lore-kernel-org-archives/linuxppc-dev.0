@@ -1,23 +1,33 @@
-Return-Path: <m.fortini@selcomgroup.com>
-Received: from xseries02.selcomgroup.com (mail.selcomgroup.com [85.18.34.51])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EF1A0DDE20
+Return-Path: <halesh.sadashiv@ap.sony.com>
+Received: from IE1EHSOBE002.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id 628C4DDF70
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Sep 2008 22:26:49 +1000 (EST)
-Received: from [172.26.6.73] ([172.26.6.73]) (authenticated bits=0)
-	by xseries02.selcomgroup.com (8.13.4/8.13.4) with ESMTP id
-	m8JCQdnC023929
-	for <linuxppc-embedded@ozlabs.org>; Fri, 19 Sep 2008 14:26:39 +0200
-Message-ID: <48D39A7F.9090301@selcomgroup.com>
-Date: Fri, 19 Sep 2008 14:26:39 +0200
-From: Matteo Fortini <m.fortini@selcomgroup.com>
+	Fri, 19 Sep 2008 21:50:54 +1000 (EST)
+Received: from mail25-dub (localhost.localdomain [127.0.0.1])	by
+	mail25-dub-R.bigfish.com (Postfix) with ESMTP id EDDE9167815F	for
+	<linuxppc-embedded@ozlabs.org>; Fri, 19 Sep 2008 11:50:47 +0000 (UTC)
+Received: from sggdcex1ns01.sony.com.sg (sggdcex1ns01.sony.com.sg
+	[121.100.32.134])	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA
+	(168/168
+	bits))	(No client certificate requested)	by mail25-dub.bigfish.com
+	(Postfix)
+	with ESMTP id F23B9A20055	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 19 Sep 2008 11:50:46 +0000 (UTC)
+Received: from sggdcwn1vs01.sony.com.sg (sggdcwn1vs01 [43.68.8.23])	by
+	sggdcex1ns01.sony.com.sg (8.13.7+Sun/8.13.7) with SMTP id
+	m8JBoc24001102	for
+	<linuxppc-embedded@ozlabs.org>; Fri, 19 Sep 2008 19:50:41 +0800 (SGT)
+Received: from sgapxbh04.ap.sony.com ([43.68.15.49])	by
+	sgsesgdcid01.sony.com.sg (8.13.7+Sun/8.13.7) with ESMTP id
+	m8JBocvj018895	for
+	<linuxppc-embedded@ozlabs.org>; Fri, 19 Sep 2008 19:50:38 +0800 (SGT)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: gdbserver not working with pthreads
-References: <48D20FCC.6070602@selcomgroup.com>
-In-Reply-To: <48D20FCC.6070602@selcomgroup.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
+Subject: Regarding select() on PPC
+Date: Fri, 19 Sep 2008 17:20:31 +0530
+Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D56DCA7@insardxms01.ap.sony.com>
+From: "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,38 +38,76 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I answer to myself: the cvs version of gdbserver works properly, so I 
-guess the issue was solved very recently.
 
-M
+Hi all,
 
-Matteo Fortini ha scritto:
-> I'm using gdbserver & gdb-cross built on OpenEmbedded, both versions 
-> 6.6 and 6.8 on FSL kernel 2.6.24.6 with an MPC5121 cpu, glibc 2.6.1
->
-> Gdb on the target is working properly, and can debug threads the usual 
-> way.
->
-> When debugging with gdbserver/gdb the debugger loses control of the 
-> threads. I did set the sysroot variable right, and I don't get the ld 
-> not found error message.
-> Basically, I cannot step into pthread_create, without losing control, 
-> with the software not running and gdb going timeout. Sometimes the 
-> gdbserver shell prints out "ptrace(): pid not found", or I get E01 
-> reply on the gdb-cross. Putting breakpoints into threads works sometimes.
-> My ultimate goal would be to make it work with Eclipse, but it's a 
-> long way from having it working with such a system.
->
-> I attach the simple software I'm using to test it.
->
-> I also tried setting the target architecture to values other than 
-> powerpc:common, but it didn't help.
->
-> Thank you for any clue,
-> Matteo
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Please find the below testcase.
+
+#include <stdio.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+#include <time.h>
+#include <errno.h>
+#include <stdlib.h>
+
+int main()
+{
+
+ int fd;
+ fd_set rfds;
+ struct timeval tv;
+ int ret_val;
+
+ if ((fd =3D open("test_file", O_RDWR|O_CREAT, 0664)) < 0)
+  {
+    printf("Open failed\n");
+  }
+
+  FD_ZERO(&rfds);
+  FD_SET(fd, &rfds);
+
+  /* Wait up to five seconds. */
+  tv.tv_sec =3D 1;
+  tv.tv_usec =3D 0;
+
+  if ( (ret_val =3D select(-1, &rfds, NULL, NULL, &tv)) < 0)
+  {
+    if ( ret_val =3D=3D EINVAL)
+      printf("OK\n");
+    else
+      printf("Not OK, Got errno %d\n", errno);
+  }
+  exit(0);
+}
+
+
+For negetive value of n (first argument to select) select fails with
+EINVAL error,
+
+But for the same when I tested for PowerPC it was giving EFAULT,=20
+Its on 2.6.16 kernel.
+
+Please let me know, If this is fixed or it's a issue in PPC.
+For other archs its working fine.
+
+
+Thanks,
+Halesh
+
+
+
+
+
+
+-------------------------------------------------------------------
+This email is confidential and intended only for the use of the =
+individual or entity named above and may contain information that is =
+privileged. If you are not the intended recipient, you are notified that =
+any dissemination, distribution or copying of this email is strictly =
+prohibited. If you have received this email in error, please notify us =
+immediately by return email or telephone and destroy the original =
+message. - This mail is sent via Sony Asia Pacific Mail Gateway.
+-------------------------------------------------------------------
