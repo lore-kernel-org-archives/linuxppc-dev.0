@@ -1,33 +1,16 @@
-Return-Path: <halesh.sadashiv@ap.sony.com>
-Received: from IE1EHSOBE002.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id 628C4DDF70
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 8BD3BDDFCE
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Sep 2008 21:50:54 +1000 (EST)
-Received: from mail25-dub (localhost.localdomain [127.0.0.1])	by
-	mail25-dub-R.bigfish.com (Postfix) with ESMTP id EDDE9167815F	for
-	<linuxppc-embedded@ozlabs.org>; Fri, 19 Sep 2008 11:50:47 +0000 (UTC)
-Received: from sggdcex1ns01.sony.com.sg (sggdcex1ns01.sony.com.sg
-	[121.100.32.134])	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA
-	(168/168
-	bits))	(No client certificate requested)	by mail25-dub.bigfish.com
-	(Postfix)
-	with ESMTP id F23B9A20055	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Sep 2008 11:50:46 +0000 (UTC)
-Received: from sggdcwn1vs01.sony.com.sg (sggdcwn1vs01 [43.68.8.23])	by
-	sggdcex1ns01.sony.com.sg (8.13.7+Sun/8.13.7) with SMTP id
-	m8JBoc24001102	for
-	<linuxppc-embedded@ozlabs.org>; Fri, 19 Sep 2008 19:50:41 +0800 (SGT)
-Received: from sgapxbh04.ap.sony.com ([43.68.15.49])	by
-	sgsesgdcid01.sony.com.sg (8.13.7+Sun/8.13.7) with ESMTP id
-	m8JBocvj018895	for
-	<linuxppc-embedded@ozlabs.org>; Fri, 19 Sep 2008 19:50:38 +0800 (SGT)
+	Fri, 19 Sep 2008 23:24:44 +1000 (EST)
+Date: Fri, 19 Sep 2008 15:24:36 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] [MPC52XX] Trivial: printk-fixes in mpc52xx_common
+Message-ID: <20080919132436.GF4307@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: Regarding select() on PPC
-Date: Fri, 19 Sep 2008 17:20:31 +0530
-Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D56DCA7@insardxms01.ap.sony.com>
-From: "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="yRA+Bmk8aPhU85Qt"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -39,75 +22,60 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi all,
-
-Please find the below testcase.
-
-#include <stdio.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <time.h>
-#include <errno.h>
-#include <stdlib.h>
-
-int main()
-{
-
- int fd;
- fd_set rfds;
- struct timeval tv;
- int ret_val;
-
- if ((fd =3D open("test_file", O_RDWR|O_CREAT, 0664)) < 0)
-  {
-    printf("Open failed\n");
-  }
-
-  FD_ZERO(&rfds);
-  FD_SET(fd, &rfds);
-
-  /* Wait up to five seconds. */
-  tv.tv_sec =3D 1;
-  tv.tv_usec =3D 0;
-
-  if ( (ret_val =3D select(-1, &rfds, NULL, NULL, &tv)) < 0)
-  {
-    if ( ret_val =3D=3D EINVAL)
-      printf("OK\n");
-    else
-      printf("Not OK, Got errno %d\n", errno);
-  }
-  exit(0);
-}
+--yRA+Bmk8aPhU85Qt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 
-For negetive value of n (first argument to select) select fails with
-EINVAL error,
+ - one printk was missing a loglevel
+ - remove double space while we are here
 
-But for the same when I tested for PowerPC it was giving EFAULT,=20
-Its on 2.6.16 kernel.
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+---
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Please let me know, If this is fixed or it's a issue in PPC.
-For other archs its working fine.
+Index: arch/powerpc/platforms/52xx/mpc52xx_common.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- arch/powerpc/platforms/52xx/mpc52xx_common.c.orig
++++ arch/powerpc/platforms/52xx/mpc52xx_common.c
+@@ -90,7 +90,7 @@
+ 	of_node_put(np);
+ 	if (!xlb) {
+ 		printk(KERN_ERR __FILE__ ": "
+-			"Error mapping XLB in mpc52xx_setup_cpu().  "
++			"Error mapping XLB in mpc52xx_setup_cpu(). "
+ 			"Expect some abnormal behavior\n");
+ 		return;
+ 	}
+@@ -216,7 +216,8 @@
+ 		out_be32(&mpc52xx_wdt->count, 0x000000ff);
+ 		out_be32(&mpc52xx_wdt->mode, 0x00009004);
+ 	} else
+-		printk("mpc52xx_restart: Can't access wdt. "
++		printk(KERN_ERR __FILE__ ": "
++			"mpc52xx_restart: Can't access wdt. "
+ 			"Restart impossible, system halted.\n");
+=20
+ 	while (1);
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
 
+--yRA+Bmk8aPhU85Qt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Thanks,
-Halesh
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFI06gUD27XaX1/VRsRAk05AJ48EeHJ/n40hhm1Py48ZzXquBECpgCgvS4m
+JJ1ykQ2k1/8G587nqR/A/UU=
+=LwXV
+-----END PGP SIGNATURE-----
 
-
-
-
-
--------------------------------------------------------------------
-This email is confidential and intended only for the use of the =
-individual or entity named above and may contain information that is =
-privileged. If you are not the intended recipient, you are notified that =
-any dissemination, distribution or copying of this email is strictly =
-prohibited. If you have received this email in error, please notify us =
-immediately by return email or telephone and destroy the original =
-message. - This mail is sent via Sony Asia Pacific Mail Gateway.
--------------------------------------------------------------------
+--yRA+Bmk8aPhU85Qt--
