@@ -1,14 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Date: Fri, 19 Sep 2008 15:17:15 -0700 (PDT)
-Message-Id: <20080919.151715.147810124.davem@davemloft.net>
-To: galak@kernel.crashing.org
-Subject: Re: patchwork states and workflow
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <DF68B2B7-AFFF-4C86-AC27-55FFE5025C43@kernel.crashing.org>
-References: <DF68B2B7-AFFF-4C86-AC27-55FFE5025C43@kernel.crashing.org>
+Return-Path: <ncase@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 145B7DDEFF
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 08:34:39 +1000 (EST)
+Subject: Re: [PATCH] edac: mpc85xx: Add support for MPC8572
+From: Nate Case <ncase@xes-inc.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4DA3AC98-4FDC-441C-AFC4-F2E3558420A6@kernel.crashing.org>
+References: <1221858771-14928-1-git-send-email-ncase@xes-inc.com>
+	<4DA3AC98-4FDC-441C-AFC4-F2E3558420A6@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 19 Sep 2008 17:28:40 -0500
+Message-Id: <1221863320.19971.156.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: paulus@samba.org, jk@ozlabs.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Andrew Kilkenny <akilkenny@xes-inc.com>,
+	Dave Jiang <djiang@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,11 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2008-09-19 at 16:43 -0500, Kumar Gala wrote:
+> I don't have any issue with this, but why are you marking the PCI  
+> error interrupt as shared?
+[snip]
+> this I'm a bit more skeptical about.
 
-I'm not really interested in this dicussion, the states make sense
-to me and I know how I will use them.
+The only one we really need to make shared is the memory controller
+interrupt.  I'll drop it for the PCI and L2 interrupts in the next rev
+of the patch.
 
-I'm also extremely backlogged as-is, and this will only compound
-things.
+> its fsl,mpc8572..  (we need to fix the others to match that convention  
+> as its pretty standard for other device tree nodes)
 
-Therefore, please drop me from the CC: list, thanks.
+I actually started out with "fsl,mpc8572-*" but then somehow convinced
+myself I was wrong when I saw fsl,85xx in so many other places :)
+
+Thanks for the feedback.  I'll correct these and re-submit.
+
+-- 
+Nate Case <ncase@xes-inc.com>
