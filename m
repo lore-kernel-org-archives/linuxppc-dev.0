@@ -1,22 +1,32 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 7EC91DE0B2
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 01:33:28 +1000 (EST)
-Date: Fri, 19 Sep 2008 19:33:25 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH v2] powerpc: implement support for MPC8349-compatible
-	SOC GPIOs
-Message-ID: <20080919153325.GA548@oksana.dev.rtsoft.ru>
-References: <20080917175820.GA22539@oksana.dev.rtsoft.ru>
-	<871vziwoxj.fsf@macbook.be.48ers.dk>
-	<20080918112020.GA11584@oksana.dev.rtsoft.ru>
-	<87ej3gyxv0.fsf@macbook.be.48ers.dk>
+Return-Path: <sebastien.chretien.enseirb@gmail.com>
+Received: from plan.enseirb.fr (plan.enseirb.fr [147.210.18.60])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 18311DE059
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 02:35:53 +1000 (EST)
+Received: from localhost (mx [147.210.18.15])
+	by plan.enseirb.fr (8.13.8/8.13.4) with ESMTP id m8JGXsea017563
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 18:33:54 +0200 (MEST)
+Received: from plan.enseirb.fr ([147.210.18.60])
+	by localhost (tan.enseirb.fr [147.210.18.15]) (amavisd-new, port 10041)
+	with LMTP id w1IXnl-VuV8S for <linuxppc-dev@ozlabs.org>;
+	Fri, 19 Sep 2008 18:34:40 +0200 (MEST)
+Received: from [172.16.8.65] (seb@chretien.mds [172.16.8.65])
+	(authenticated bits=0)
+	by plan.enseirb.fr (8.13.8/8.13.4) with ESMTP id m8JGXo8a017555
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 18:33:50 +0200 (MEST)
+Message-ID: <48D3D47E.5050200@gmail.com>
+Date: Fri, 19 Sep 2008 18:34:06 +0200
+From: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
+	<sebastien.chretien.enseirb@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <87ej3gyxv0.fsf@macbook.be.48ers.dk>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+To: linuxppc-dev@ozlabs.org
+Subject: Re: ioremap and vmalloc
+References: <319b0ac50809190415g6d132058l9bb8521046502eab@mail.gmail.com>
+	<20080919134933.GA7849@secretlab.ca>
+In-Reply-To: <20080919134933.GA7849@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,71 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 19, 2008 at 05:11:15PM +0200, Peter Korsgaard wrote:
-> >>>>> "Anton" == Anton Vorontsov <avorontsov@ru.mvista.com> writes:
-> 
-> Hi,
-> 
->  >> It seems basically the same as my patch (gpio driver for
->  >> mpc831x/mpc834x/mpc837x with OF bindings) from September 5th except
->  >> you don't have any documentation
-> 
->  Anton> Well, do we really need documentation for every trivial gpio
->  Anton> controller? The bindings are the same, only different compatible
->  Anton> entries...
-> 
-> Well, we need some way of knowing that atleast. Having people grepping
-> through arch/powerpc/boot/dts/ (and knowing that they should look for
-> 8349 even though they might use 8313 or 8610) doesn't seem optimal to
-> me - I take it that's why we created
-> Documentation/powerpc/dts-bindings in the first place?
+The first is ioremap(0x20000000,0x10000000);
+The second is ioremap(0x80000000,0x10000000);
+Is it too long
 
-Ok.
-
->  Anton> If we do need the documentation for this, I can readily include it.
-> 
->  >> and the Kconfig doesn't depend on
->  >> 831x/834x/837x.
-> 
->  Anton> This is purposely. We also need support for 8610, and maybe
->  Anton> later we'll find another chip with the same unit. So, to not touch
->  Anton> the Kconfig for every new chip I just made it PPC32-wide. Other
->  Anton> option is to depend on FSL_SOC, but the driver really does not
->  Anton> depend on any fsl_soc stuff...
-> 
-> Adding another symbol to the Kconfig once it is verified that a new
-> SoC is compatible doesn't seem like a big deal - Figuring out all the
-> knobs we already have is, without having options for stuff that is
-> known to be irrelevant for the SoC.
-> 
-> The other 83xx specific drivers also depend on PPC_83xx.
-
-Lets wait for Kumar's comments. We've already had a PPC_* mess
-for the USB_EHCI_FSL symbol. What I've learned from it, is that
-huge PPC_* list isn't perfect either.
-
-See this discussion:
-
-http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01926.html
-
-And this one:
-
-http://fixunix.com/kernel/397972-patch-1-4-spi-powerpc-spi_mpc83xx-handles-freescale-mpc8610-well.html
-
->  >> Why do you need this when you have the lock?
-> 
->  Anton> See this discussion:
-> 
->  Anton> http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg12299.html
-> 
-> Ahh, for open drain outputs. gpiolib doesn't actually provide an
-> interface to put the gpios in that mode, but it could ofcause have
-> been set up in the bootloader. I'll fix that and send an updated
-> patch.
-
-Pardon? Who will send an updated patch, and what patch exactly? ;-)
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Grant Likely a écrit :
+> On Fri, Sep 19, 2008 at 01:15:20PM +0200, =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien_ wrote:
+>   
+>> Hello,
+>>
+>> When I use ioremap, the second time, I obtain this message :
+>>
+>> allocation failed: out of vmalloc space - use vmalloc=<size> to increase
+>> size.
+>> What can I do in order to fix this problem ?
+>>     
+>
+> How large are the regions that you are ioremapping?  The kernel sets
+> aside a fixed amount of the virtual address space for ioremaps, and if
+> you exhaust that then more ioremaps will stop working.
+>
+> g.
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+>   
