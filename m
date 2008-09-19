@@ -1,25 +1,16 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <ncase@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3F6BADDDD4
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 09:23:43 +1000 (EST)
-Date: Fri, 19 Sep 2008 16:23:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 3/3] USB: driver for Freescale QUICC Engine USB Host
-	Controller
-Message-Id: <20080919162324.e354ed2f.akpm@linux-foundation.org>
-In-Reply-To: <20080918151746.GC31187@oksana.dev.rtsoft.ru>
-References: <20080918151659.GA20140@oksana.dev.rtsoft.ru>
-	<20080918151746.GC31187@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: dbrownell@users.sourceforge.net, greg@kroah.com, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	leoli@freescale.com, timur@freescale.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9E08ADDF20
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 09:25:41 +1000 (EST)
+From: Nate Case <ncase@xes-inc.com>
+To: Dave Jiang <djiang@mvista.com>
+Subject: [PATCH v2] edac: mpc85xx: Add support for MPC8572
+Date: Fri, 19 Sep 2008 18:20:28 -0500
+Message-Id: <1221866428-20621-1-git-send-email-ncase@xes-inc.com>
+Cc: linuxppc-dev@ozlabs.org, Andrew Kilkenny <akilkenny@xes-inc.com>,
+	Nate Case <ncase@xes-inc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,140 +20,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 18 Sep 2008 19:17:46 +0400
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+From: Andrew Kilkenny <akilkenny@xes-inc.com>
 
-> This patch adds support for the FHCI USB controller, as found
-> in the Freescale MPC836x and MPC832x processors. It can support
-> Full or Low speed modes.
-> 
-> Quite a lot the hardware is doing by itself (SOF generation, CRC
-> generation and checking), though scheduling and retransmission is on
-> software's shoulders.
-> 
-> This controller does not integrate the root hub, so this driver also
-> fakes one-port hub. External hub is required to support more than
-> one device.
->
-> ...
->
+This adds support for the dual-core MPC8572 processor.  We have
+to support making SPR changes on each core.  Also, since we can
+have multiple memory controllers sharing an interrupt, flag the
+interrupts with IRQF_SHARED.
 
-Please, no.
+Signed-off-by: Andrew Kilkenny <akilkenny@xes-inc.com>
+Signed-off-by: Nate Case <ncase@xes-inc.com>
+---
+ drivers/edac/mpc85xx_edac.c |   28 +++++++++++++++++++++++-----
+ 1 files changed, 23 insertions(+), 5 deletions(-)
 
-> new file mode 100644
-> index 0000000..23716fa
-> --- /dev/null
-> +++ b/drivers/usb/host/fhci-cq.c
-> @@ -0,0 +1,105 @@
-> +/*
-> + * Freescale QUICC Engine USB Host Controller Driver
-> + *
-> + * Copyright (c) Freescale Semicondutor, Inc. 2006.
-> + *               Shlomi Gridish <gridish@freescale.com>
-> + *               Jerry Huang <Chang-Ming.Huang@freescale.com>
-> + * Copyright (c) Logic Product Development, Inc. 2007
-> + *               Peter Barada <peterb@logicpd.com>
-> + * Copyright (c) MontaVista Software, Inc. 2008.
-> + *               Anton Vorontsov <avorontsov@ru.mvista.com>
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +
-> +/* circular queue structure */
-
-Yet another private ringbuffer implementation.  Sigh.
-
-> +struct cir_q {
-> +       int max;		/* size of queue */
-> +       int max_in;	/* max items in queue */
-> +       int first;	/* index of first in queue */
-> +       int last;	/* index after last in queue */
-> +       int read;	/* current reading position */
-> +       void *table[1];	/* fake size */
-> +};
-> +
-> +/* circular queue handle */
-> +static int cq_howmany(struct cir_q *cq)
-> +{
-> +	int l = cq->last;
-> +	int f = cq->first;
-> +
-> +	return l >= f ? l - f : l + cq->max - f;
-> +}
-> +
-> +static struct cir_q *cq_new(int size)
-> +{
-> +	struct cir_q *cq;
-> +
-> +	cq = kzalloc((sizeof(*cq) + size * sizeof(void *)), GFP_KERNEL);
-> +	if (cq) {
-> +		cq->max = size;
-> +		cq->first = 0;
-> +		cq->last = 0;
-> +		cq->read = 0;
-> +		cq->max_in = 0;
-
-The above four statements are unneeded.
-
-> +	}
-> +
-> +	return cq;
-> +}
->
-> ...
->
-> +++ b/drivers/usb/host/fhci-hcd.c
-> @@ -0,0 +1,798 @@
-> +/*
-> + * Freescale QUICC Engine USB Host Controller Driver
-> + *
-> + * Copyright (c) Freescale Semicondutor, Inc. 2006.
-> + *               Shlomi Gridish <gridish@freescale.com>
-> + *               Jerry Huang <Chang-Ming.Huang@freescale.com>
-> + * Copyright (c) Logic Product Development, Inc. 2007
-> + *               Peter Barada <peterb@logicpd.com>
-> + * Copyright (c) MontaVista Software, Inc. 2008.
-> + *               Anton Vorontsov <avorontsov@ru.mvista.com>
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +
-> +#if defined(CONFIG_FHCI_DEBUG) && !defined(DEBUG)
-> +#define DEBUG
-> +#endif
-> +
-> +#include <linux/module.h>
-> +#include <linux/kernel.h>
-> +#include <linux/delay.h>
-> +#include <linux/errno.h>
-> +#include <linux/list.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/io.h>
-> +#include <linux/usb.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/of_gpio.h>
-> +#include <asm/qe.h>
-> +#include <asm/fsl_gtm.h>
-> +#include "../core/hcd.h"
-> +#include "fhci.h"
-> +#include "fhci-hub.c"
-> +#include "fhci-q.c"
-> +#include "fhci-dbg.c"
-> +#include "fhci-mem.c"
-> +#include "fhci-cq.c"
-> +#include "fhci-tds.c"
-> +#include "fhci-sched.c"
-
-hack, gack, nack.
-
-We know that USB likes to prevertedly #include C files all over the
-place, but this doesn't mean that it's a sane, tasteful or desirable
-thing to do.
-
-I stopped looking there.  Guys - get a grip :(
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index 2265d9c..63bdc47 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -17,6 +17,7 @@
+ #include <linux/io.h>
+ #include <linux/mod_devicetable.h>
+ #include <linux/edac.h>
++#include <linux/smp.h>
+ 
+ #include <linux/of_platform.h>
+ #include <linux/of_device.h>
+@@ -40,7 +41,7 @@ static u32 orig_pci_err_en;
+ #endif
+ 
+ static u32 orig_l2_err_disable;
+-static u32 orig_hid1;
++static u32 orig_hid1[2];
+ 
+ /************************ MC SYSFS parts ***********************************/
+ 
+@@ -647,6 +648,9 @@ static struct of_device_id mpc85xx_l2_err_of_match[] = {
+ 	{
+ 	 .compatible = "fsl,8568-l2-cache-controller",
+ 	 },
++	{
++	 .compatible = "fsl,mpc8572-l2-cache-controller",
++	 },
+ 	{},
+ };
+ 
+@@ -912,7 +916,8 @@ static int __devinit mpc85xx_mc_err_probe(struct of_device *op,
+ 		/* register interrupts */
+ 		pdata->irq = irq_of_parse_and_map(op->node, 0);
+ 		res = devm_request_irq(&op->dev, pdata->irq,
+-				       mpc85xx_mc_isr, IRQF_DISABLED,
++				       mpc85xx_mc_isr,
++				       IRQF_DISABLED | IRQF_SHARED,
+ 				       "[EDAC] MC err", mci);
+ 		if (res < 0) {
+ 			printk(KERN_ERR "%s: Unable to request irq %d for "
+@@ -980,6 +985,9 @@ static struct of_device_id mpc85xx_mc_err_of_match[] = {
+ 	{
+ 	 .compatible = "fsl,8568-memory-controller",
+ 	 },
++	{
++	 .compatible = "fsl,mpc8572-memory-controller",
++	 },
+ 	{},
+ };
+ 
+@@ -995,6 +1003,12 @@ static struct of_platform_driver mpc85xx_mc_err_driver = {
+ 		   },
+ };
+ 
++static void __init mpc85xx_mc_clear_rfxe(void *data)
++{
++	orig_hid1[smp_processor_id()] = mfspr(SPRN_HID1);
++	mtspr(SPRN_HID1, (orig_hid1[smp_processor_id()] & ~0x20000));
++}
++
+ static int __init mpc85xx_mc_init(void)
+ {
+ 	int res = 0;
+@@ -1031,8 +1045,7 @@ static int __init mpc85xx_mc_init(void)
+ 	 * so we can catch it
+ 	 */
+ 	if (edac_op_state == EDAC_OPSTATE_INT) {
+-		orig_hid1 = mfspr(SPRN_HID1);
+-		mtspr(SPRN_HID1, (orig_hid1 & ~0x20000));
++		on_each_cpu(mpc85xx_mc_clear_rfxe, NULL, 0);
+ 	}
+ 
+ 	return 0;
+@@ -1040,9 +1053,14 @@ static int __init mpc85xx_mc_init(void)
+ 
+ module_init(mpc85xx_mc_init);
+ 
++static void __exit mpc85xx_mc_restore_hid1(void *data)
++{
++	mtspr(SPRN_HID1, orig_hid1[smp_processor_id()]);
++}
++
+ static void __exit mpc85xx_mc_exit(void)
+ {
+-	mtspr(SPRN_HID1, orig_hid1);
++	on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
+ #ifdef CONFIG_PCI
+ 	of_unregister_platform_driver(&mpc85xx_pci_err_driver);
+ #endif
+-- 
+1.6.0.2
