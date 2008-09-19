@@ -1,22 +1,16 @@
 Return-Path: <jacmet@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.153])
-	by ozlabs.org (Postfix) with ESMTP id A5163DDE3A
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 18:10:39 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so517925fga.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 01:10:37 -0700 (PDT)
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] bootwrapper: support u-boot multi component images
-References: <1221504833-5096-1-git-send-email-jacmet@sunsite.dk>
-	<20080919075653.GA10241@secretlab.ca>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.159])
+	by ozlabs.org (Postfix) with ESMTP id 22D42DDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 18:50:16 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so528346fga.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 01:50:14 -0700 (PDT)
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Fri, 19 Sep 2008 10:10:34 +0200
-In-Reply-To: <20080919075653.GA10241@secretlab.ca> (Grant Likely's message of
-	"Fri\, 19 Sep 2008 00\:56\:53 -0700")
-Message-ID: <87myi4k139.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-dev@ozlabs.org,
+	grant.likely@secretlab.ca
+Subject: [PATCH v2] bootwrapper: support u-boot multi component images
+Date: Fri, 19 Sep 2008 10:50:10 +0200
+Message-Id: <1221814210-4738-1-git-send-email-jacmet@sunsite.dk>
 Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +20,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
+From: peter Korsgaard <jacmet@sunsite.dk>
 
-Hi,
+Support uImage.<platform>, which are U-Boot multi component images
+containing a kernel, dtb and possibly an initrd.
 
- Grant> On Mon, Sep 15, 2008 at 08:53:53PM +0200, Peter Korsgaard wrote:
- >> +   uImage.thinx:	U-Boot multi component image. Similar to uImage,
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+---
+v2: Incorporated Grant Likely's feedback.
 
- Grant> Change this to "uImage.%:" to match the rest of this document.
+ Documentation/powerpc/bootwrapper.txt |    4 ++++
+ arch/powerpc/boot/Makefile            |   11 +++++++++--
+ arch/powerpc/boot/wrapper             |   20 +++++++++++++++++++-
+ 3 files changed, 32 insertions(+), 3 deletions(-)
 
-Argh, guess what my platform is called ;)
-
- >> -	otheros.bld *.dtb
- >> +	otheros.bld uImage.* *.dtb
-
- Grant> Actually, you can probably make this "uImage*" instead because plain
- Grant> 'uImage' targets are missing from this list.
-
-Ok, will do.
-
- >> -miboot|uboot)
- >> +miboot|uboot|uboot-*)
-
- Grant> Similarly, uboot and uboot-* can probably be collapsed to 'uboot*'
-
-Yeah, I kept it like this to keep it clear that it doesn't impact the
-normal uImage support - Will fix.
-
-I'll send an updated patch.
-
+diff --git a/Documentation/powerpc/bootwrapper.txt b/Documentation/powerpc/bootwrapper.txt
+index d60fced..fa2e014 100644
+--- a/Documentation/powerpc/bootwrapper.txt
++++ b/Documentation/powerpc/bootwrapper.txt
+@@ -91,6 +91,10 @@ Currently, the following image format targets exist:
+ 			a device tree to the kernel at boot.  If using an older
+ 			version of U-Boot, then you need to use a cuImage
+ 			instead.
++   uImage.%:		U-Boot multi component image. Similar to uImage,
++			except device tree blob is embedded inside the
++			image together with the kernel (and potentially
++			an initrd).
+    zImage.%:		Image format which does not embed a device tree.
+ 			Used by OpenFirmware and other firmware interfaces
+ 			which are able to supply a device tree.  This image
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 717a3bc..8d2e789 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -282,8 +282,9 @@ image-y	+= $(subst ",,$(CONFIG_EXTRA_TARGETS))
+ initrd-  := $(patsubst zImage%, zImage.initrd%, $(image-n) $(image-))
+ initrd-y := $(patsubst zImage%, zImage.initrd%, \
+ 		$(patsubst dtbImage%, dtbImage.initrd%, \
++		$(patsubst uImage.%, uImage.initrd.%, \
+ 		$(patsubst simpleImage%, simpleImage.initrd%, \
+-		$(patsubst treeImage%, treeImage.initrd%, $(image-y)))))
++		$(patsubst treeImage%, treeImage.initrd%, $(image-y))))))
+ initrd-y := $(filter-out $(image-y), $(initrd-y))
+ targets	+= $(image-y) $(initrd-y)
+ 
+@@ -316,6 +317,12 @@ $(obj)/zImage.iseries: vmlinux
+ $(obj)/uImage: vmlinux $(wrapperbits)
+ 	$(call if_changed,wrap,uboot)
+ 
++$(obj)/uImage.initrd.%: vmlinux $(wrapperbits) $(obj)/%.dtb
++	$(call if_changed,wrap,uboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
++
++$(obj)/uImage.%: vmlinux $(wrapperbits) $(obj)/%.dtb
++	$(call if_changed,wrap,uboot-$*,,$(obj)/$*.dtb)
++
+ $(obj)/cuImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+ 	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb)
+ 
+@@ -352,7 +359,7 @@ install: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
+ clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
+ 	zImage zImage.initrd zImage.chrp zImage.coff zImage.holly \
+ 	zImage.iseries zImage.miboot zImage.pmac zImage.pseries \
+-	otheros.bld *.dtb
++	otheros.bld uImage* *.dtb
+ 
+ # clean up files cached by wrapper
+ clean-kernel := vmlinux.strip vmlinux.bin
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 965c237..548b087 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -153,7 +153,7 @@ coff)
+     lds=$object/zImage.coff.lds
+     link_address='0x500000'
+     ;;
+-miboot|uboot)
++miboot|uboot*)
+     # miboot and U-boot want just the bare bits, not an ELF binary
+     ext=bin
+     objflags="-O binary"
+@@ -262,6 +262,24 @@ uboot)
+     fi
+     exit 0
+     ;;
++uboot-*)
++    rm -f "$ofile"
++    # we always need an initrd - create a dummy initrd if none provided
++    if [ ! -f "initrd" ]; then
++	initrd="$tmpdir/dummy.initrd"
++	echo -n fill >$initrd
++    fi
++    mkimage -A ppc -O linux -T multi -C gzip -a $membase -e $membase \
++	$uboot_version -d "$vmz:$initrd:$dtb" "$ofile"
++    if [ "$initrd" == "$tmpdir/dummy.initrd" ]; then
++	rm $initrd;
++    fi
++    if [ -z "$cacheit" ]; then
++	rm -f "$vmz"
++    fi
++    exit 0
++    ;;
++
+ esac
+ 
+ addsec() {
 -- 
-Bye, Peter Korsgaard
+1.5.6.3
