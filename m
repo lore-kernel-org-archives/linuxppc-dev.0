@@ -1,24 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.239])
-	by ozlabs.org (Postfix) with ESMTP id 9F944DE176
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 03:12:23 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so479296rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 10:12:22 -0700 (PDT)
-Message-ID: <fa686aa40809191012q76d1c450ye12094ac63bc68a7@mail.gmail.com>
-Date: Fri, 19 Sep 2008 11:12:22 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Josh Boyer" <jwboyer@gmail.com>
-Subject: Re: ioremap and vmalloc
-In-Reply-To: <20080919165833.GD4492@yoda.jdub.homelinux.org>
+Return-Path: <vgallardo@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 43419DDF34
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 03:31:40 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <319b0ac50809190415g6d132058l9bb8521046502eab@mail.gmail.com>
-	<20080919134933.GA7849@secretlab.ca> <48D3D47E.5050200@gmail.com>
-	<20080919163819.GB4492@yoda.jdub.homelinux.org>
-	<48D3D70D.3060404@enseirb.fr>
-	<20080919165833.GD4492@yoda.jdub.homelinux.org>
-Cc: chretien@enseirb.fr, linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: [PATCH v2] Add AMCC Arches eval board support to platforms/44x
+Date: Fri, 19 Sep 2008 10:31:34 -0700
+Message-ID: <0CA0A16855646F4FA96D25A158E299D6050D1768@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <20080918200143.0367482f@zod.rchland.ibm.com>
+From: "Victor Gallardo" <vgallardo@amcc.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Feng Kan <fkan@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 19, 2008 at 10:58 AM, Josh Boyer <jwboyer@gmail.com> wrote:
-> On Fri, Sep 19, 2008 at 06:45:01PM +0200, =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien_ wrote:
->> if I write :
->> ioremap(0x20000000,0x40000) and ioremap(0x20000000,0x50000)
->>
->> Will it crash ?
+=20
+Hi Josh,
+
+See below...
+
+>> ...
+>> @@ -83,9 +83,23 @@ config CANYONLANDS
+>>  	select 460EX
+>>  	select PCI
+>>  	select PPC4xx_PCI_EXPRESS
+>> +	select IBM_NEW_EMAC_EMAC4
+>> +	select IBM_NEW_EMAC_RGMII
+>> +	select IBM_NEW_EMAC_ZMII
+>> +	select IBM_NEW_EMAC_TAH
+>>  	help
+>>  	  This option enables support for the AMCC PPC460EX evaluation =
+board.
+>>=20
+>> +config ARCHES
+>> +	bool "Arches"
+>> +	depends on 44x
+>> +	default n
+>> +	select 460EX
+>> +	select IBM_NEW_EMAC_EMAC4
+>> +	select IBM_NEW_EMAC_TAH
+>> +	help
+>> +	  This option enables support for the AMCC PPC460GT evaluation =
+board.
 >
-> I have no idea.  You haven't given us enough information to really answer
-> that.
+>This seems fine.
+>
+> ...
+>
+>> +obj-$(CONFIG_ARCHES)	+=3D canyonlands.o
+>>  obj-$(CONFIG_CANYONLANDS) +=3D canyonlands.o
+>>  obj-$(CONFIG_XILINX_VIRTEX_5_FXT) +=3D virtex.o
+>
+>Instead of modifying the Makefile, you should only have to add the =
+"amcc,arches"
+> string to the >"board" array in ppc44x_simple.c.
+>
+> We switched to doing this as opposed to having a somewhat bogus=20
+> "board compatible" statement with >other boards.  That is what was =
+discussed at
+> OLS, and this is the result.
 
-But I can say that the second ioremap() call makes the first ioremap()
-both redundant and inefficient.  You're using exactly the same base
-address so the same region is getting mapped twice.  Since the second
-call uses a bigger region than the first then the kernel will probably
-need to allocate another chunk of virtual address space to map it
-instead of reusing the first mapping.
+The reason for two different board types is to remove RGMII and ZMII =
+from the build. Arches does not use it.
 
-g.
+Where is ppc4xx_simple.c? I just pulled your git tree and did not find =
+this file.
 
+Thanks,
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Victor Gallardo
