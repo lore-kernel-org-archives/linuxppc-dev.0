@@ -1,16 +1,31 @@
-Return-Path: <vgallardo@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D6AAADE2D5
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 09:10:58 +1000 (EST)
-From: Victor Gallardo <vgallardo@amcc.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3] Add AMCC Arches DTS
-Date: Thu, 18 Sep 2008 16:10:54 -0700
-Message-Id: <1221779454-23175-1-git-send-email-vgallardo@amcc.com>
-Cc: fkan@amcc.com, Victor Gallardo <vgallardo@amcc.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B4549DDDF5
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 10:03:04 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m8J030RK020073
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 20:03:00 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m8J030Ha142592
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 20:03:00 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m8J030Da006230
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Sep 2008 20:03:00 -0400
+Date: Thu, 18 Sep 2008 20:01:43 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Victor Gallardo <vgallardo@amcc.com>
+Subject: Re: [PATCH v2] Add AMCC Arches eval board support to platforms/44x
+Message-ID: <20080918200143.0367482f@zod.rchland.ibm.com>
+In-Reply-To: <1221778072-6336-1-git-send-email-vgallardo@amcc.com>
+References: <1221778072-6336-1-git-send-email-vgallardo@amcc.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallardo@amcc.com>,
+	fkan@amcc.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,317 +35,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Basic functionality for the AMCC Arches eval Board.
+On Thu, 18 Sep 2008 15:47:52 -0700
+Victor Gallardo <vgallardo@amcc.com> wrote:
 
-Signed-off-by: Victor Gallardo <vgallardo@amcc.com>
----
- v2:
- - only include basic functionality
- v3:
- - update description header
+> 
+> Signed-off-by: Victor Gallardo <vgallardo@amcc.com>
+> ---
+>  v2:
+>  - remove arches.c and instead use canyonlands.c
 
- arch/powerpc/boot/dts/arches.dts |  293 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 293 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/arches.dts
+That file doesn't exist anymore in my 'next' branch.  That is part of
+the reason for the original delay.  See below.
 
-diff --git a/arch/powerpc/boot/dts/arches.dts b/arch/powerpc/boot/dts/arches.dts
-new file mode 100644
-index 0000000..6ee38b8
---- /dev/null
-+++ b/arch/powerpc/boot/dts/arches.dts
-@@ -0,0 +1,293 @@
-+/*
-+ * Device Tree Source for AMCC Arches (dual 460GT board)
-+ *
-+ * (C) Copyright 2008
-+ * Victor Gallardo, Applied Micro Circuits Corp., <vgallardo@amcc.com>
-+ * Adam Graham, Applied Micro Circuits Corp., <agraham@amcc.com>
-+ *
-+ * Based on the glacier.dts file
-+ * Stefan Roese <sr@denx.de>
-+ * Copyright 2008 DENX Software Engineering
-+ *
-+ * See file CREDITS for list of people who contributed to this
-+ * project.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+ * MA 02111-1307 USA
-+ */
-+
-+/dts-v1/;
-+
-+/ {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	model = "amcc,arches";
-+	compatible = "amcc,arches", "amcc,canyonlands";
-+	dcr-parent = <&{/cpus/cpu@0}>;
-+
-+	aliases {
-+		ethernet0 = &EMAC0;
-+		ethernet1 = &EMAC1;
-+		ethernet2 = &EMAC2;
-+		serial0 = &UART0;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			device_type = "cpu";
-+			model = "PowerPC,460GT";
-+			reg = <0x00000000>;
-+			clock-frequency = <0>; /* Filled in by U-Boot */
-+			timebase-frequency = <0>; /* Filled in by U-Boot */
-+			i-cache-line-size = <32>;
-+			d-cache-line-size = <32>;
-+			i-cache-size = <32768>;
-+			d-cache-size = <32768>;
-+			dcr-controller;
-+			dcr-access-method = "native";
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x00000000 0x00000000>; /* Filled in by U-Boot */
-+	};
-+
-+	UIC0: interrupt-controller0 {
-+		compatible = "ibm,uic-460gt","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <0>;
-+		dcr-reg = <0x0c0 0x009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+	};
-+
-+	UIC1: interrupt-controller1 {
-+		compatible = "ibm,uic-460gt","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <1>;
-+		dcr-reg = <0x0d0 0x009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <0x1e 0x4 0x1f 0x4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	UIC2: interrupt-controller2 {
-+		compatible = "ibm,uic-460gt","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <2>;
-+		dcr-reg = <0x0e0 0x009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <0xa 0x4 0xb 0x4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	UIC3: interrupt-controller3 {
-+		compatible = "ibm,uic-460gt","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <3>;
-+		dcr-reg = <0x0f0 0x009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <0x10 0x4 0x11 0x4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	SDR0: sdr {
-+		compatible = "ibm,sdr-460gt";
-+		dcr-reg = <0x00e 0x002>;
-+	};
-+
-+	CPR0: cpr {
-+		compatible = "ibm,cpr-460gt";
-+		dcr-reg = <0x00c 0x002>;
-+	};
-+
-+	plb {
-+		compatible = "ibm,plb-460gt", "ibm,plb4";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges;
-+		clock-frequency = <0>; /* Filled in by U-Boot */
-+
-+		SDRAM0: sdram {
-+			compatible = "ibm,sdram-460gt", "ibm,sdram-405gp";
-+			dcr-reg = <0x010 0x002>;
-+		};
-+
-+		MAL0: mcmal {
-+			compatible = "ibm,mcmal-460gt", "ibm,mcmal2";
-+			dcr-reg = <0x180 0x062>;
-+			num-tx-chans = <3>;
-+			num-rx-chans = <24>;
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			interrupt-parent = <&UIC2>;
-+			interrupts = <	/*TXEOB*/ 0x6 0x4
-+					/*RXEOB*/ 0x7 0x4
-+					/*SERR*/  0x3 0x4
-+					/*TXDE*/  0x4 0x4
-+					/*RXDE*/  0x5 0x4>;
-+			desc-base-addr-high = <0x8>;
-+		};
-+
-+		POB0: opb {
-+			compatible = "ibm,opb-460gt", "ibm,opb";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges = <0xb0000000 0x00000004 0xb0000000 0x50000000>;
-+			clock-frequency = <0>; /* Filled in by U-Boot */
-+
-+			EBC0: ebc {
-+				compatible = "ibm,ebc-460gt", "ibm,ebc";
-+				dcr-reg = <0x012 0x002>;
-+				#address-cells = <2>;
-+				#size-cells = <1>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				/* ranges property is supplied by U-Boot */
-+				interrupts = <0x6 0x4>;
-+				interrupt-parent = <&UIC1>;
-+			};
-+
-+			UART0: serial@ef600300 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <0xef600300 0x00000008>;
-+				virtual-reg = <0xef600300>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				current-speed = <0>; /* Filled in by U-Boot */
-+				interrupt-parent = <&UIC1>;
-+				interrupts = <0x1 0x4>;
-+			};
-+
-+			IIC0: i2c@ef600700 {
-+				compatible = "ibm,iic-460gt", "ibm,iic";
-+				reg = <0xef600700 0x00000014>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x2 0x4>;
-+			};
-+
-+			IIC1: i2c@ef600800 {
-+				compatible = "ibm,iic-460gt", "ibm,iic";
-+				reg = <0xef600800 0x00000014>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x3 0x4>;
-+			};
-+
-+			TAH0: emac-tah@ef601350 {
-+				compatible = "ibm,tah-460gt", "ibm,tah";
-+				reg = <0xef601350 0x00000030>;
-+			};
-+
-+			TAH1: emac-tah@ef601450 {
-+				compatible = "ibm,tah-460gt", "ibm,tah";
-+				reg = <0xef601450 0x00000030>;
-+			};
-+
-+			EMAC0: ethernet@ef600e00 {
-+				device_type = "network";
-+				compatible = "ibm,emac-460gt", "ibm,emac4sync";
-+				interrupt-parent = <&EMAC0>;
-+				interrupts = <0x0 0x1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0x0 &UIC2 0x10 0x4
-+						 /*Wake*/   0x1 &UIC2 0x14 0x4>;
-+				reg = <0xef600e00 0x000000c4>;
-+				local-mac-address = [000000000000]; /* Filled in by U-Boot */
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <0>;
-+				mal-rx-channel = <0>;
-+				cell-index = <0>;
-+				max-frame-size = <9000>;
-+				rx-fifo-size = <4096>;
-+				tx-fifo-size = <2048>;
-+				phy-mode = "sgmii";
-+				phy-map = <0xffffffff>;
-+				gpcs-address = <0x0000000a>;
-+				tah-device = <&TAH0>;
-+				tah-channel = <0>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+			};
-+
-+			EMAC1: ethernet@ef600f00 {
-+				device_type = "network";
-+				compatible = "ibm,emac-460gt", "ibm,emac4sync";
-+				interrupt-parent = <&EMAC1>;
-+				interrupts = <0x0 0x1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0x0 &UIC2 0x11 0x4
-+						 /*Wake*/   0x1 &UIC2 0x15 0x4>;
-+				reg = <0xef600f00 0x000000c4>;
-+				local-mac-address = [000000000000]; /* Filled in by U-Boot */
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <1>;
-+				mal-rx-channel = <8>;
-+				cell-index = <1>;
-+				max-frame-size = <9000>;
-+				rx-fifo-size = <4096>;
-+				tx-fifo-size = <2048>;
-+				phy-mode = "sgmii";
-+				phy-map = <0x00000000>;
-+				gpcs-address = <0x0000000b>;
-+				tah-device = <&TAH1>;
-+				tah-channel = <1>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+				mdio-device = <&EMAC0>;
-+			};
-+
-+			EMAC2: ethernet@ef601100 {
-+				device_type = "network";
-+				compatible = "ibm,emac-460gt", "ibm,emac4sync";
-+				interrupt-parent = <&EMAC2>;
-+				interrupts = <0x0 0x1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0x0 &UIC2 0x12 0x4
-+						 /*Wake*/   0x1 &UIC2 0x16 0x4>;
-+				reg = <0xef601100 0x000000c4>;
-+				local-mac-address = [000000000000]; /* Filled in by U-Boot */
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <2>;
-+				mal-rx-channel = <16>;
-+				cell-index = <2>;
-+				max-frame-size = <9000>;
-+				rx-fifo-size = <4096>;
-+				tx-fifo-size = <2048>;
-+				phy-mode = "sgmii";
-+				phy-map = <0x00000001>;
-+				gpcs-address = <0x0000000C>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+				mdio-device = <&EMAC0>;
-+			};
-+		};
-+	};
-+};
--- 
-1.5.5
+>  - remove reference to IBM_NEW_EMAC_RGMII for ARCHES config
+>  - remove reference to IBM_NEW_EMAC_ZMII for ARCHES config
+>  - moved reference to IBM_NEW_EMAC_RGMII under CANYONLANDS config
+>  - moved reference to IBM_NEW_EMAC_ZMII under CANYONLANDS config
+> 
+>  arch/powerpc/platforms/44x/Kconfig  |   18 ++++++++++++++----
+>  arch/powerpc/platforms/44x/Makefile |    1 +
+>  2 files changed, 15 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+> index 249ba01..be1bce7 100644
+> --- a/arch/powerpc/platforms/44x/Kconfig
+> +++ b/arch/powerpc/platforms/44x/Kconfig
+> @@ -83,9 +83,23 @@ config CANYONLANDS
+>  	select 460EX
+>  	select PCI
+>  	select PPC4xx_PCI_EXPRESS
+> +	select IBM_NEW_EMAC_EMAC4
+> +	select IBM_NEW_EMAC_RGMII
+> +	select IBM_NEW_EMAC_ZMII
+> +	select IBM_NEW_EMAC_TAH
+>  	help
+>  	  This option enables support for the AMCC PPC460EX evaluation board.
+> 
+> +config ARCHES
+> +	bool "Arches"
+> +	depends on 44x
+> +	default n
+> +	select 460EX
+> +	select IBM_NEW_EMAC_EMAC4
+> +	select IBM_NEW_EMAC_TAH
+> +	help
+> +	  This option enables support for the AMCC PPC460GT evaluation board.
+
+This seems fine.
+
+> +
+>  config YOSEMITE
+>  	bool "Yosemite"
+>  	depends on 44x
+> @@ -169,10 +183,6 @@ config 440SPe
+>  config 460EX
+>  	bool
+>  	select PPC_FPU
+> -	select IBM_NEW_EMAC_EMAC4
+> -	select IBM_NEW_EMAC_RGMII
+> -	select IBM_NEW_EMAC_ZMII
+> -	select IBM_NEW_EMAC_TAH
+> 
+>  # 44x errata/workaround config symbols, selected by the CPU models above
+>  config IBM440EP_ERR42
+> diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
+> index 8d0b1a1..3f83f73 100644
+> --- a/arch/powerpc/platforms/44x/Makefile
+> +++ b/arch/powerpc/platforms/44x/Makefile
+> @@ -9,5 +9,6 @@ obj-$(CONFIG_KATMAI)	+= katmai.o
+>  obj-$(CONFIG_RAINIER)	+= rainier.o
+>  obj-$(CONFIG_WARP)	+= warp.o
+>  obj-$(CONFIG_WARP)	+= warp-nand.o
+> +obj-$(CONFIG_ARCHES)	+= canyonlands.o
+>  obj-$(CONFIG_CANYONLANDS) += canyonlands.o
+>  obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
+
+Instead of modifying the Makefile, you should only have to add the
+"amcc,arches" string to the "board" array in ppc44x_simple.c.
+
+We switched to doing this as opposed to having a somewhat bogus "board
+compatible" statement with other boards.  That is what was discussed at
+OLS, and this is the result.
+
+I can probably fix this patch up myself in a short amount of time, but
+I have no way to test it.
+
+josh
