@@ -1,34 +1,19 @@
-Return-Path: <chretien@enseirb.fr>
-Received: from plan.enseirb.fr (plan.enseirb.fr [147.210.18.60])
+Return-Path: <lark@linux.net.cn>
+Received: from mx.linux.net.cn (unknown [210.82.31.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C035ADE078
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 03:54:23 +1000 (EST)
-Received: from localhost (mx [147.210.18.15])
-	by plan.enseirb.fr (8.13.8/8.13.4) with ESMTP id m8JHqSKc028445
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 19:52:28 +0200 (MEST)
-Received: from plan.enseirb.fr ([147.210.18.60])
-	by localhost (tan.enseirb.fr [147.210.18.15]) (amavisd-new, port 10041)
-	with LMTP id c--rVSq8bvlK for <linuxppc-dev@ozlabs.org>;
-	Fri, 19 Sep 2008 19:53:14 +0200 (MEST)
-Received: from [172.16.8.65] (seb@chretien.mds [172.16.8.65])
-	(authenticated bits=0)
-	by plan.enseirb.fr (8.13.8/8.13.4) with ESMTP id m8JHqQSO028443
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Sep 2008 19:52:26 +0200 (MEST)
-Message-ID: <48D3E6F0.7040504@enseirb.fr>
-Date: Fri, 19 Sep 2008 19:52:48 +0200
-From: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?= <chretien@enseirb.fr>
+	by ozlabs.org (Postfix) with ESMTPS id 2CDBEDDE1C
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 21:37:49 +1000 (EST)
+Received: from [192.168.0.123] (unknown [123.118.1.117])
+	by mx.linux.net.cn (Postfix) with ESMTP id 646133EC0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Sep 2008 19:28:52 +0800 (CST)
+Message-ID: <48D4DB89.3040607@linux.net.cn>
+Date: Sat, 20 Sep 2008 19:16:25 +0800
+From: Wang Jian <lark@linux.net.cn>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: Re: ioremap and vmalloc
-References: <319b0ac50809190415g6d132058l9bb8521046502eab@mail.gmail.com>
-	<20080919134933.GA7849@secretlab.ca> <48D3D47E.5050200@gmail.com>
-	<20080919163819.GB4492@yoda.jdub.homelinux.org>
-	<48D3D70D.3060404@enseirb.fr>
-	<20080919165833.GD4492@yoda.jdub.homelinux.org>
-In-Reply-To: <20080919165833.GD4492@yoda.jdub.homelinux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: mpc8541 pci1 ioport allocation address space problem
+Content-Type: multipart/mixed; boundary="------------000209090200080603020102"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,33 +23,205 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The chip that I am using is a MPC7448.
-The Kernel version is 2.6.26.
-I am developping my own driver.
-I am making some tests
+This is a multi-part message in MIME format.
+--------------000209090200080603020102
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 
-Josh Boyer a écrit :
-> On Fri, Sep 19, 2008 at 06:45:01PM +0200, =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien_ wrote:
->   
->> if I write :
->> ioremap(0x20000000,0x40000) and ioremap(0x20000000,0x50000)
->>
->> Will it crash ?
->>     
->
-> I have no idea.  You haven't given us enough information to really answer
-> that.
->
-> Basic information needed would be: 
->
-> 1) What board/chip
-> 2) What kernel version
-> 3) What are you actually trying to do
-> 4) What driver are you using
-> 5) If you are writing your own, where is the code for it
->
-> etc.
->
-> josh
->
->   
+Hi,
+
+Here I have a 8541 dev board, with 2 e1000 attached to pci0 and a
+homebrewed addon board inserted into pci1. I am trying to make it work
+under 2.6.26-rc8 (2.6.26 broken so I am working at rc8).
+
+The ioports allocation reads
+
+$ cat /proc/ioports
+00000000-000fffff : /pci@e0008000
+  00001000-0000103f : 0000:00:0a.0
+  00001040-0000107f : 0000:00:0b.0
+ffefe000-ffffdfff : /pci@e0009000
+  ffeff000-ffeff00f : 0001:01:0a.0
+  ffeff010-ffeff01f : 0001:01:0b.0
+  ffeff020-ffeff02f : 0001:01:0c.0
+  ffeff030-ffeff03f : 0001:01:0d.0
+
+The port allocation for pci1 looks ridiculous. The addon board doesn't work.
+
+After poking around, I find pci_process_bridge_OF_ranges() in
+arch/powerpc/kernel/pci-common.c
+
+--snip--
+if (primary)
+        isa_io_base = (unsigned long)hose->io_base_virt;
+--snip--
+
+then fixup_resource(), _IO_BASE = isa_io_base. fix_resource will use
+isa_io_base as base address to assign io port address space.
+
+This is reasonable, but on my board, pci1's hose->io_base_virt is
+smaller than pci0's. This lead to
+
+[    0.064214] PCI:0000:00:0a.0 Resource 4
+0000000000001000-000000000000103f [20101] fixup...
+[    0.064224] fixup_resource() offset=00000000, io_base_virt=fdeb4000,
+_IO_BASE=fdeb4000, io_base_phys=e2000000
+[    0.064232] PCI:0000:00:0a.0            0000000000001000-000000000000103f
+
+[    0.065129] PCI:0001:01:0a.0 Resource 2
+0000000000001000-000000000000100f [20101] fixup...
+[    0.065139] fixup_resource() offset=ffefe000, io_base_virt=fddb2000,
+_IO_BASE=fdeb4000, io_base_phys=e3000000
+[    0.065147] PCI:0001:01:0a.0            00000000ffeff000-00000000ffeff00f
+
+offset = fddb2000 - fdeb4000 = ffefe000
+
+So far, I think the workaround is to replace the code above with
+
+--snip--
+if (!isa_io_base)
+        isa_io_base = (unsigned long)hose->io_base_virt;
+else if ((unsigned long)hose->io_base_virt < isa_io_base)
+        isa_io_base = (unsigned long)hose->io_base_virt;
+--snip--
+
+Then ioport allocation reads (But I haven't test if it works)
+
+$ cat /proc/ioports
+00000000-000fffff : /pci@e0009000
+  00001000-0000100f : 0001:01:0a.0
+  00001010-0000101f : 0001:01:0b.0
+  00001020-0000102f : 0001:01:0c.0
+  00001030-0000103f : 0001:01:0d.0
+00102000-00201fff : /pci@e0008000
+  00103000-0010303f : 0000:00:0a.0
+  00103040-0010307f : 0000:00:0b.0
+
+Can someone gives a better generic fix for this?
+
+PS: I attach the kernel log (without workaround) for reference. I added
+some printk code.
+
+
+--------------000209090200080603020102
+Content-Type: text/plain;
+ name="ppc_pci.txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="ppc_pci.txt"
+
+WyAgICAwLjA2NDE0MF0gUENJOiBGb3VuZCAwMDAwOjAwOjBhLjAgWzgwODYvMTA3Nl0gMDAw
+MjAwIDAwDQpbICAgIDAuMDY0MTU3XSBwY2lfcmVhZF9iYXNlcygpOiBJTzogKDAwMDA6MDA6
+MGEuMCkgbD0wMDAwMTAwMSxzdGFydD0wMDAwMTAwMCxmbGFnPTAwMDAwMDAwDQpbICAgIDAu
+MDY0MTcyXSBwY2kgMDAwMDowMDowYS4wOiBjYWxsaW5nIDB4YzAxZTlmOTgNClsgICAgMC4w
+NjQxODJdIFBDSTowMDAwOjAwOjBhLjAgUmVzb3VyY2UgMCAwMDAwMDAwMDgwMDAwMDAwLTAw
+MDAwMDAwODAwMWZmZmYgWzIwMjA0XSBmaXh1cC4uLg0KWyAgICAwLjA2NDE5MF0gUENJOjAw
+MDA6MDA6MGEuMCAgICAgICAgICAgIDAwMDAwMDAwODAwMDAwMDAtMDAwMDAwMDA4MDAxZmZm
+Zg0KWyAgICAwLjA2NDE5OF0gUENJOjAwMDA6MDA6MGEuMCBSZXNvdXJjZSAyIDAwMDAwMDAw
+ODAwMjAwMDAtMDAwMDAwMDA4MDAyZmZmZiBbMjAyMDRdIGZpeHVwLi4uDQpbICAgIDAuMDY0
+MjA2XSBQQ0k6MDAwMDowMDowYS4wICAgICAgICAgICAgMDAwMDAwMDA4MDAyMDAwMC0wMDAw
+MDAwMDgwMDJmZmZmDQpbICAgIDAuMDY0MjE0XSBQQ0k6MDAwMDowMDowYS4wIFJlc291cmNl
+IDQgMDAwMDAwMDAwMDAwMTAwMC0wMDAwMDAwMDAwMDAxMDNmIFsyMDEwMV0gZml4dXAuLi4N
+ClsgICAgMC4wNjQyMjRdIGZpeHVwX3Jlc291cmNlKCkgb2Zmc2V0PTAwMDAwMDAwLCBpb19i
+YXNlX3ZpcnQ9ZmRlYjQwMDAsIF9JT19CQVNFPWZkZWI0MDAwLCBpb19iYXNlX3BoeXM9ZTIw
+MDAwMDANClsgICAgMC4wNjQyMzJdIFBDSTowMDAwOjAwOjBhLjAgICAgICAgICAgICAwMDAw
+MDAwMDAwMDAxMDAwLTAwMDAwMDAwMDAwMDEwM2YNClsgICAgMC4wNjQyNDFdIFBDSTowMDAw
+OjAwOjBhLjAgUmVzb3VyY2UgNiAwMDAwMDAwMDAwMDAwMDAwLTAwMDAwMDAwMDAwMGZmZmYg
+WzI3MjAwXSBpcyB1bmFzc2lnbmVkDQpbICAgIDAuMDY0MjY4XSBQQ0k6IEZvdW5kIDAwMDA6
+MDA6MGIuMCBbODA4Ni8xMDc2XSAwMDAyMDAgMDANClsgICAgMC4wNjQyODRdIHBjaV9yZWFk
+X2Jhc2VzKCk6IElPOiAoMDAwMDowMDowYi4wKSBsPTAwMDAxMDQxLHN0YXJ0PTAwMDAxMDQw
+LGZsYWc9MDAwMDAwMDANClsgICAgMC4wNjQzMDBdIHBjaSAwMDAwOjAwOjBiLjA6IGNhbGxp
+bmcgMHhjMDFlOWY5OA0KWyAgICAwLjA2NDMwOV0gUENJOjAwMDA6MDA6MGIuMCBSZXNvdXJj
+ZSAwIDAwMDAwMDAwODAwNDAwMDAtMDAwMDAwMDA4MDA1ZmZmZiBbMjAyMDRdIGZpeHVwLi4u
+DQpbICAgIDAuMDY0MzE2XSBQQ0k6MDAwMDowMDowYi4wICAgICAgICAgICAgMDAwMDAwMDA4
+MDA0MDAwMC0wMDAwMDAwMDgwMDVmZmZmDQpbICAgIDAuMDY0MzI1XSBQQ0k6MDAwMDowMDow
+Yi4wIFJlc291cmNlIDIgMDAwMDAwMDA4MDA2MDAwMC0wMDAwMDAwMDgwMDZmZmZmIFsyMDIw
+NF0gZml4dXAuLi4NClsgICAgMC4wNjQzNTNdIFBDSTowMDAwOjAwOjBiLjAgICAgICAgICAg
+ICAwMDAwMDAwMDgwMDYwMDAwLTAwMDAwMDAwODAwNmZmZmYNClsgICAgMC4wNjQzNjJdIFBD
+STowMDAwOjAwOjBiLjAgUmVzb3VyY2UgNCAwMDAwMDAwMDAwMDAxMDQwLTAwMDAwMDAwMDAw
+MDEwN2YgWzIwMTAxXSBmaXh1cC4uLg0KWyAgICAwLjA2NDM3MV0gZml4dXBfcmVzb3VyY2Uo
+KSBvZmZzZXQ9MDAwMDAwMDAsIGlvX2Jhc2VfdmlydD1mZGViNDAwMCwgX0lPX0JBU0U9ZmRl
+YjQwMDAsIGlvX2Jhc2VfcGh5cz1lMjAwMDAwMA0KWyAgICAwLjA2NDM3OV0gUENJOjAwMDA6
+MDA6MGIuMCAgICAgICAgICAgIDAwMDAwMDAwMDAwMDEwNDAtMDAwMDAwMDAwMDAwMTA3Zg0K
+WyAgICAwLjA2NDM4OF0gUENJOjAwMDA6MDA6MGIuMCBSZXNvdXJjZSA2IDAwMDAwMDAwMDAw
+MDAwMDAtMDAwMDAwMDAwMDAwZmZmZiBbMjcyMDBdIGlzIHVuYXNzaWduZWQNClsgICAgMC4w
+NjQ0MDhdIFBDSTogRml4dXBzIGZvciBidXMgMDAwMDowMA0KWyAgICAwLjA2NDQxM10gUENJ
+OiBGaXh1cCBidXMgMCAoUEhCKQ0KWyAgICAwLjA2NDQyMF0gVHJ5IHRvIG1hcCBpcnEgZm9y
+IDAwMDA6MDA6MDAuMC4uLg0KWyAgICAwLjA2NDQ0N10gVHJ5IHRvIG1hcCBpcnEgZm9yIDAw
+MDA6MDA6MGEuMC4uLg0KWyAgICAwLjA2NDQ1OV0gIC0+IGdvdCBvbmUsIHNwZWMgMiBjZWxs
+cyAoMHgwMDAwMDAwMCAweDAwMDAwMDAxLi4uKSBvbiAvc29jODU0MUBlMDAwMDAwMC9waWNA
+NDAwMDANClsgICAgMC4wNjQ0NzhdICAtPiBtYXBwZWQgdG8gbGludXggaXJxIDE2DQpbICAg
+IDAuMDY0NDgyXSBUcnkgdG8gbWFwIGlycSBmb3IgMDAwMDowMDowYi4wLi4uDQpbICAgIDAu
+MDY0NDk4XSAgLT4gZ290IG9uZSwgc3BlYyAyIGNlbGxzICgweDAwMDAwMDAxIDB4MDAwMDAw
+MDEuLi4pIG9uIC9zb2M4NTQxQGUwMDAwMDAwL3BpY0A0MDAwMA0KWyAgICAwLjA2NDUxMF0g
+IC0+IG1hcHBlZCB0byBsaW51eCBpcnEgMTcNClsgICAgMC4wNjQ1MTddIFBDSTogQnVzIHNj
+YW4gZm9yIDAwMDA6MDAgcmV0dXJuaW5nIHdpdGggbWF4PTAwDQpbICAgIDAuMDY0OTczXSBQ
+Q0k6IFNjYW5uaW5nIGJ1cyAwMDAxOjAxDQpbICAgIDAuMDY0OTg5XSBQQ0k6IEZvdW5kIDAw
+MDE6MDE6MDAuMCBbMTA1Ny8wMDBjXSAwMDBiMjAgMDANClsgICAgMC4wNjUwMTFdIHBjaSAw
+MDAxOjAxOjAwLjA6IGNhbGxpbmcgZml4dXBfaGlkZV9ob3N0X3Jlc291cmNlX2ZzbCsweDAv
+MHg1MA0KWyAgICAwLjA2NTAyNF0gcGNpIDAwMDE6MDE6MDAuMDogY2FsbGluZyAweGMwMWU5
+Zjk4DQpbICAgIDAuMDY1MDU1XSBQQ0k6IEZvdW5kIDAwMDE6MDE6MGEuMCBbMTA0Yy9hMTA2
+XSAwMDAwMDAgMDANClsgICAgMC4wNjUwNjldIHBjaV9yZWFkX2Jhc2VzKCk6IElPOiAoMDAw
+MTowMTowYS4wKSBsPTAwMDAxMDAxLHN0YXJ0PTAwMDAxMDAwLGZsYWc9MDAwMDAwMDANClsg
+ICAgMC4wNjUwODddIHBjaSAwMDAxOjAxOjBhLjA6IGNhbGxpbmcgMHhjMDFlOWY5OA0KWyAg
+ICAwLjA2NTA5N10gUENJOjAwMDE6MDE6MGEuMCBSZXNvdXJjZSAwIDAwMDAwMDAwYTA0MDAw
+MDAtMDAwMDAwMDBhMDdmZmZmZiBbMjEyMDhdIGZpeHVwLi4uDQpbICAgIDAuMDY1MTA1XSBQ
+Q0k6MDAwMTowMTowYS4wICAgICAgICAgICAgMDAwMDAwMDBhMDQwMDAwMC0wMDAwMDAwMGEw
+N2ZmZmZmDQpbICAgIDAuMDY1MTEzXSBQQ0k6MDAwMTowMTowYS4wIFJlc291cmNlIDEgMDAw
+MDAwMDBhMDgwMDAwMC0wMDAwMDAwMGEwZmZmZmZmIFsyMDIwMF0gZml4dXAuLi4NClsgICAg
+MC4wNjUxMjFdIFBDSTowMDAxOjAxOjBhLjAgICAgICAgICAgICAwMDAwMDAwMGEwODAwMDAw
+LTAwMDAwMDAwYTBmZmZmZmYNClsgICAgMC4wNjUxMjldIFBDSTowMDAxOjAxOjBhLjAgUmVz
+b3VyY2UgMiAwMDAwMDAwMDAwMDAxMDAwLTAwMDAwMDAwMDAwMDEwMGYgWzIwMTAxXSBmaXh1
+cC4uLg0KWyAgICAwLjA2NTEzOV0gZml4dXBfcmVzb3VyY2UoKSBvZmZzZXQ9ZmZlZmUwMDAs
+IGlvX2Jhc2VfdmlydD1mZGRiMjAwMCwgX0lPX0JBU0U9ZmRlYjQwMDAsIGlvX2Jhc2VfcGh5
+cz1lMzAwMDAwMA0KWyAgICAwLjA2NTE0N10gUENJOjAwMDE6MDE6MGEuMCAgICAgICAgICAg
+IDAwMDAwMDAwZmZlZmYwMDAtMDAwMDAwMDBmZmVmZjAwZg0KWyAgICAwLjA2NTE2OV0gUENJ
+OiBGb3VuZCAwMDAxOjAxOjBiLjAgWzEwNGMvYTEwNl0gMDAwMDAwIDAwDQpbICAgIDAuMDY1
+MTg0XSBwY2lfcmVhZF9iYXNlcygpOiBJTzogKDAwMDE6MDE6MGIuMCkgbD0wMDAwMTAxMSxz
+dGFydD0wMDAwMTAxMCxmbGFnPTAwMDAwMDAwDQpbICAgIDAuMDY1MjAyXSBwY2kgMDAwMTow
+MTowYi4wOiBjYWxsaW5nIDB4YzAxZTlmOTgNClsgICAgMC4wNjUyMTFdIFBDSTowMDAxOjAx
+OjBiLjAgUmVzb3VyY2UgMCAwMDAwMDAwMGExMDAwMDAwLTAwMDAwMDAwYTEzZmZmZmYgWzIx
+MjA4XSBmaXh1cC4uLg0KWyAgICAwLjA2NTIxOV0gUENJOjAwMDE6MDE6MGIuMCAgICAgICAg
+ICAgIDAwMDAwMDAwYTEwMDAwMDAtMDAwMDAwMDBhMTNmZmZmZg0KWyAgICAwLjA2NTIyN10g
+UENJOjAwMDE6MDE6MGIuMCBSZXNvdXJjZSAxIDAwMDAwMDAwYTE4MDAwMDAtMDAwMDAwMDBh
+MWZmZmZmZiBbMjAyMDBdIGZpeHVwLi4uDQpbICAgIDAuMDY1MjM1XSBQQ0k6MDAwMTowMTow
+Yi4wICAgICAgICAgICAgMDAwMDAwMDBhMTgwMDAwMC0wMDAwMDAwMGExZmZmZmZmDQpbICAg
+IDAuMDY1MjQzXSBQQ0k6MDAwMTowMTowYi4wIFJlc291cmNlIDIgMDAwMDAwMDAwMDAwMTAx
+MC0wMDAwMDAwMDAwMDAxMDFmIFsyMDEwMV0gZml4dXAuLi4NClsgICAgMC4wNjUyNTNdIGZp
+eHVwX3Jlc291cmNlKCkgb2Zmc2V0PWZmZWZlMDAwLCBpb19iYXNlX3ZpcnQ9ZmRkYjIwMDAs
+IF9JT19CQVNFPWZkZWI0MDAwLCBpb19iYXNlX3BoeXM9ZTMwMDAwMDANClsgICAgMC4wNjUy
+NjFdIFBDSTowMDAxOjAxOjBiLjAgICAgICAgICAgICAwMDAwMDAwMGZmZWZmMDEwLTAwMDAw
+MDAwZmZlZmYwMWYNClsgICAgMC4wNjUyODRdIFBDSTogRm91bmQgMDAwMTowMTowYy4wIFsx
+MDRjL2ExMDZdIDAwMDAwMCAwMA0KWyAgICAwLjA2NTI5OF0gcGNpX3JlYWRfYmFzZXMoKTog
+SU86ICgwMDAxOjAxOjBjLjApIGw9MDAwMDEwMjEsc3RhcnQ9MDAwMDEwMjAsZmxhZz0wMDAw
+MDAwMA0KWyAgICAwLjA2NTMxNl0gcGNpIDAwMDE6MDE6MGMuMDogY2FsbGluZyAweGMwMWU5
+Zjk4DQpbICAgIDAuMDY1MzI1XSBQQ0k6MDAwMTowMTowYy4wIFJlc291cmNlIDAgMDAwMDAw
+MDBhMjAwMDAwMC0wMDAwMDAwMGEyM2ZmZmZmIFsyMTIwOF0gZml4dXAuLi4NClsgICAgMC4w
+NjUzMzNdIFBDSTowMDAxOjAxOjBjLjAgICAgICAgICAgICAwMDAwMDAwMGEyMDAwMDAwLTAw
+MDAwMDAwYTIzZmZmZmYNClsgICAgMC4wNjUzNDFdIFBDSTowMDAxOjAxOjBjLjAgUmVzb3Vy
+Y2UgMSAwMDAwMDAwMGEyODAwMDAwLTAwMDAwMDAwYTJmZmZmZmYgWzIwMjAwXSBmaXh1cC4u
+Lg0KWyAgICAwLjA2NTM2MF0gUENJOjAwMDE6MDE6MGMuMCAgICAgICAgICAgIDAwMDAwMDAw
+YTI4MDAwMDAtMDAwMDAwMDBhMmZmZmZmZg0KWyAgICAwLjA2NTM2OV0gUENJOjAwMDE6MDE6
+MGMuMCBSZXNvdXJjZSAyIDAwMDAwMDAwMDAwMDEwMjAtMDAwMDAwMDAwMDAwMTAyZiBbMjAx
+MDFdIGZpeHVwLi4uDQpbICAgIDAuMDY1Mzc4XSBmaXh1cF9yZXNvdXJjZSgpIG9mZnNldD1m
+ZmVmZTAwMCwgaW9fYmFzZV92aXJ0PWZkZGIyMDAwLCBfSU9fQkFTRT1mZGViNDAwMCwgaW9f
+YmFzZV9waHlzPWUzMDAwMDAwDQpbICAgIDAuMDY1Mzg3XSBQQ0k6MDAwMTowMTowYy4wICAg
+ICAgICAgICAgMDAwMDAwMDBmZmVmZjAyMC0wMDAwMDAwMGZmZWZmMDJmDQpbICAgIDAuMDY1
+NDEzXSBQQ0k6IEZvdW5kIDAwMDE6MDE6MGQuMCBbMTA0Yy9hMTA2XSAwMDAwMDAgMDANClsg
+ICAgMC4wNjU0MjhdIHBjaV9yZWFkX2Jhc2VzKCk6IElPOiAoMDAwMTowMTowZC4wKSBsPTAw
+MDAxMDMxLHN0YXJ0PTAwMDAxMDMwLGZsYWc9MDAwMDAwMDANClsgICAgMC4wNjU0NDddIHBj
+aSAwMDAxOjAxOjBkLjA6IGNhbGxpbmcgMHhjMDFlOWY5OA0KWyAgICAwLjA2NTQ1Nl0gUENJ
+OjAwMDE6MDE6MGQuMCBSZXNvdXJjZSAwIDAwMDAwMDAwYTMwMDAwMDAtMDAwMDAwMDBhMzNm
+ZmZmZiBbMjEyMDhdIGZpeHVwLi4uDQpbICAgIDAuMDY1NDY0XSBQQ0k6MDAwMTowMTowZC4w
+ICAgICAgICAgICAgMDAwMDAwMDBhMzAwMDAwMC0wMDAwMDAwMGEzM2ZmZmZmDQpbICAgIDAu
+MDY1NDcyXSBQQ0k6MDAwMTowMTowZC4wIFJlc291cmNlIDEgMDAwMDAwMDBhMzgwMDAwMC0w
+MDAwMDAwMGEzZmZmZmZmIFsyMDIwMF0gZml4dXAuLi4NClsgICAgMC4wNjU0ODBdIFBDSTow
+MDAxOjAxOjBkLjAgICAgICAgICAgICAwMDAwMDAwMGEzODAwMDAwLTAwMDAwMDAwYTNmZmZm
+ZmYNClsgICAgMC4wNjU0ODhdIFBDSTowMDAxOjAxOjBkLjAgUmVzb3VyY2UgMiAwMDAwMDAw
+MDAwMDAxMDMwLTAwMDAwMDAwMDAwMDEwM2YgWzIwMTAxXSBmaXh1cC4uLg0KWyAgICAwLjA2
+NTQ5OF0gZml4dXBfcmVzb3VyY2UoKSBvZmZzZXQ9ZmZlZmUwMDAsIGlvX2Jhc2VfdmlydD1m
+ZGRiMjAwMCwgX0lPX0JBU0U9ZmRlYjQwMDAsIGlvX2Jhc2VfcGh5cz1lMzAwMDAwMA0KWyAg
+ICAwLjA2NTUwNl0gUENJOjAwMDE6MDE6MGQuMCAgICAgICAgICAgIDAwMDAwMDAwZmZlZmYw
+MzAtMDAwMDAwMDBmZmVmZjAzZg0KWyAgICAwLjA2NTUyN10gUENJOiBGaXh1cHMgZm9yIGJ1
+cyAwMDAxOjAxDQo=
+--------------000209090200080603020102--
