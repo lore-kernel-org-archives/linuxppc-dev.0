@@ -1,22 +1,18 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-6.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 08C1CDDED8
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id CC7E0DDE3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Sep 2008 08:09:45 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: vb <vb@vsbe.com>
-Subject: Re: Allocating uncached memory in 2.6.25(powerpc/440)
-References: <f608b67d0809191447q2bd5c05bof4610a3df17f8512@mail.gmail.com>
-	<f608b67d0809191456p7193a0bfh3529d9241a304301@mail.gmail.com>
-Date: Fri, 19 Sep 2008 15:09:35 -0700
-In-Reply-To: <f608b67d0809191456p7193a0bfh3529d9241a304301@mail.gmail.com>
-	(vb@vsbe.com's message of "Fri, 19 Sep 2008 14:56:11 -0700")
-Message-ID: <ada1vzfaiu8.fsf@cisco.com>
+	Sat, 20 Sep 2008 16:28:01 +1000 (EST)
+Date: Sat, 20 Sep 2008 08:27:53 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] [MPC52XX] Trivial: printk-fixes in mpc52xx_common
+Message-ID: <20080920062753.GA12497@pengutronix.de>
+References: <20080919132436.GF4307@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="a8Wt8u1KmwUX3Y2C"
+In-Reply-To: <20080919132436.GF4307@pengutronix.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,11 +23,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- > basically, a block of contiguous memory is allocated. This block is
- > needed to set up some DMA descriptors, so it needs to be uncached, and
- > I thought this is what GFP_DMA flag is for.
 
-No, GFP_DMA doesn't have that meaning.  To allocate uncached memory, use
-dma_alloc_coherent().
+--a8Wt8u1KmwUX3Y2C
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
- - R.
+ - one printk was missing a loglevel
+ - remove double space while we are here
+
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+---
+
+I'm sorry, accidently sent a -p0-patch before :(
+
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+Index: playground/arch/powerpc/platforms/52xx/mpc52xx_common.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- playground.orig/arch/powerpc/platforms/52xx/mpc52xx_common.c
++++ playground/arch/powerpc/platforms/52xx/mpc52xx_common.c
+@@ -90,7 +90,7 @@
+ 	of_node_put(np);
+ 	if (!xlb) {
+ 		printk(KERN_ERR __FILE__ ": "
+-			"Error mapping XLB in mpc52xx_setup_cpu().  "
++			"Error mapping XLB in mpc52xx_setup_cpu(). "
+ 			"Expect some abnormal behavior\n");
+ 		return;
+ 	}
+@@ -216,7 +216,8 @@
+ 		out_be32(&mpc52xx_wdt->count, 0x000000ff);
+ 		out_be32(&mpc52xx_wdt->mode, 0x00009004);
+ 	} else
+-		printk("mpc52xx_restart: Can't access wdt. "
++		printk(KERN_ERR __FILE__ ": "
++			"mpc52xx_restart: Can't access wdt. "
+ 			"Restart impossible, system halted.\n");
+=20
+ 	while (1);
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+
+--a8Wt8u1KmwUX3Y2C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkjUl+kACgkQD27XaX1/VRskKwCgj5q/pcmxG8S+gph9FX+nvQTo
+ZYoAnRk1AAuySNoBbi0ne1oHq8bitK9X
+=lV0I
+-----END PGP SIGNATURE-----
+
+--a8Wt8u1KmwUX3Y2C--
