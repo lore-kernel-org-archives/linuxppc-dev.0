@@ -1,19 +1,25 @@
 Return-Path: <jacmet@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
-	by ozlabs.org (Postfix) with ESMTP id 2B600DDE31
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 04:43:26 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id e27so498329nfd.9
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Sep 2008 11:43:23 -0700 (PDT)
+Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.25])
+	by ozlabs.org (Postfix) with ESMTP id 7673EDDEE1
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 05:30:10 +1000 (EST)
+Received: by ey-out-2122.google.com with SMTP id 6so325044eyi.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Sep 2008 12:30:08 -0700 (PDT)
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: gpio driver for mpc831x/834x/837x with OF
-	bindings
-References: <1220627327-28852-1-git-send-email-jacmet@sunsite.dk>
-	<8B2A3D71-C756-4281-8FF1-ADEC7861C630@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc: implement support for MPC8349-compatible SOC
+	GPIOs
+References: <20080917175820.GA22539@oksana.dev.rtsoft.ru>
+	<871vziwoxj.fsf@macbook.be.48ers.dk>
+	<20080918112020.GA11584@oksana.dev.rtsoft.ru>
+	<87ej3gyxv0.fsf@macbook.be.48ers.dk>
+	<20080919153325.GA548@oksana.dev.rtsoft.ru>
+	<1BA571BA-BA43-4C18-9CBF-0F1461E6734E@kernel.crashing.org>
+	<20080919181258.GA14093@oksana.dev.rtsoft.ru>
+	<ABD97D30-4503-4A5E-A04B-2D644BF31124@kernel.crashing.org>
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Sun, 21 Sep 2008 20:43:16 +0200
-In-Reply-To: <8B2A3D71-C756-4281-8FF1-ADEC7861C630@kernel.crashing.org> (Kumar
-	Gala's message of "Fri\, 19 Sep 2008 13\:10\:26 -0500")
-Message-ID: <8763opz6ez.fsf@macbook.be.48ers.dk>
+Date: Sun, 21 Sep 2008 21:30:05 +0200
+In-Reply-To: <ABD97D30-4503-4A5E-A04B-2D644BF31124@kernel.crashing.org> (Kumar
+	Gala's message of "Fri\, 19 Sep 2008 13\:46\:49 -0500")
+Message-ID: <871vzdz48y.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: Peter Korsgaard <jacmet@gmail.com>
@@ -31,26 +37,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi,
 
- >> create mode 100644 arch/powerpc/sysdev/mpc83xx_gpio.c
+ Kumar> This way the compatiable binding in the code just lists something like
+ Kumar> "fsl,mpc8349-gpio", "fsl,mpc8610-gpio", "fsl,mpc8572-gpio".
 
- Kumar> So we need to make this mpc8xxx_gpio.c 83xx, 8610, 85xx all have the
- Kumar> same GPIO hw.
+ Kumar> Does that make sense?
 
-Ok.
-
-I'm not really familiar with the other 8xxx SoCs, but from looking at
-the reference manuals it seems like the following are compatible:
-
-831x, 834x and 837x
-8572 (but not the other 85xx)
-8610 (but not the other 86xx)
-
-Worth noting is also that mpc5121 seems to use a newer version of the
-core which is basically backwards compatible (It has more IRQ trigger
-possibilities).
-
-I'll respind the patch with 83xx->8xxx - Do you still want to keep the OF
-bindings like they are? (compatible = "fsl,mpc8349-gpio")
+Yes, sounds fine - I'll adapt the patch and resend.
 
 -- 
 Bye, Peter Korsgaard
