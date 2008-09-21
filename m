@@ -1,18 +1,20 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id CC7E0DDE3A
+Return-Path: <dhlii@dlasys.net>
+Received: from outbound-mail-01.bluehost.com (outbound-mail-01.bluehost.com
+	[69.89.21.11]) by ozlabs.org (Postfix) with SMTP id 350B1DDE41
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Sep 2008 16:28:01 +1000 (EST)
-Date: Sat, 20 Sep 2008 08:27:53 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] [MPC52XX] Trivial: printk-fixes in mpc52xx_common
-Message-ID: <20080920062753.GA12497@pengutronix.de>
-References: <20080919132436.GF4307@pengutronix.de>
+	Sun, 21 Sep 2008 16:32:26 +1000 (EST)
+Received: from [72.25.39.148] (helo=hp-dhlii.dlasys.lcl)
+	by host200.hostmonster.com with esmtpa (Exim 4.69)
+	(envelope-from <dhlii@dlasys.net>) id 1KhI4n-0007qn-4a
+	for linuxppc-embedded@ozlabs.org; Sun, 21 Sep 2008 00:05:45 -0600
+Message-ID: <48D5E437.6060708@dlasys.net>
+Date: Sun, 21 Sep 2008 02:05:43 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="a8Wt8u1KmwUX3Y2C"
-In-Reply-To: <20080919132436.GF4307@pengutronix.de>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: C67x00 USB problems
+Content-Type: text/plain; charset=ISO-8859-1
+Reply-To: dhlii@dlasys.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,62 +26,52 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---a8Wt8u1KmwUX3Y2C
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+    Good news - works.
+    Bad news - sort of.
 
- - one printk was missing a loglevel
- - remove double space while we are here
+    I am using the C67x00_HCD driver from 2.6.24 mainline.
+   
+    If I kill off installing the interrupt handler and just poll it.
+    I can get the first port working - fairly slowly.
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
----
+    If I enable the interrupt handler I get lots of messages from the
+Kernel about unhandled IRQ's and then the Kernel disables
+    the IRQ. Although sometimes I just get a kernel panic when loading
+the driver.
 
-I'm sorry, accidently sent a -p0-patch before :(
+    The only way out of the irq handler without handling the IRQ is
 
- arch/powerpc/platforms/52xx/mpc52xx_common.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+     // printk(KERN_ERR "c67x00_irq()00\n");
+    int_status = c67x00_ll_hpi_status(c67x00);
+    if (!int_status)
+        return IRQ_NONE;
 
-Index: playground/arch/powerpc/platforms/52xx/mpc52xx_common.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- playground.orig/arch/powerpc/platforms/52xx/mpc52xx_common.c
-+++ playground/arch/powerpc/platforms/52xx/mpc52xx_common.c
-@@ -90,7 +90,7 @@
- 	of_node_put(np);
- 	if (!xlb) {
- 		printk(KERN_ERR __FILE__ ": "
--			"Error mapping XLB in mpc52xx_setup_cpu().  "
-+			"Error mapping XLB in mpc52xx_setup_cpu(). "
- 			"Expect some abnormal behavior\n");
- 		return;
- 	}
-@@ -216,7 +216,8 @@
- 		out_be32(&mpc52xx_wdt->count, 0x000000ff);
- 		out_be32(&mpc52xx_wdt->mode, 0x00009004);
- 	} else
--		printk("mpc52xx_restart: Can't access wdt. "
-+		printk(KERN_ERR __FILE__ ": "
-+			"mpc52xx_restart: Can't access wdt. "
- 			"Restart impossible, system halted.\n");
-=20
- 	while (1);
---=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
+    But if that is failing then why are things working when polled ?
 
---a8Wt8u1KmwUX3Y2C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+    Clues would be greatly appreciated ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+    Is there any interest in a patch to support polling the USB driver ?
 
-iEYEARECAAYFAkjUl+kACgkQD27XaX1/VRskKwCgj5q/pcmxG8S+gph9FX+nvQTo
-ZYoAnRk1AAuySNoBbi0ne1oHq8bitK9X
-=lV0I
------END PGP SIGNATURE-----
 
---a8Wt8u1KmwUX3Y2C--
+
+
+
+
+
+
+   
+
+
+
+
+
+
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
