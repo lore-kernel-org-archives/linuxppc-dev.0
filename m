@@ -1,20 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 64E90DDE28
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 11:39:46 +1000 (EST)
-Message-Id: <47FDBC52-C9C7-4948-8265-35B424BD910D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-In-Reply-To: <1222026361-28133-1-git-send-email-jacmet@sunsite.dk>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v2] powerpc: gpio driver for mpc8349/8572/8610 and
-	compatible
-Date: Sun, 21 Sep 2008 20:39:42 -0500
-References: <1222026361-28133-1-git-send-email-jacmet@sunsite.dk>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <johfel@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 0039ADDE28
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 05:02:41 +1000 (EST)
+Subject: [PATCH] powerpc: iSeries: remove unused variable in viodasd.c
+From: Johann Felix Soden <johfel@gmx.de>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Sun, 21 Sep 2008 21:02:36 +0200
+Message-Id: <1222023756.7114.5.camel@localhost>
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+Reply-To: Johann Felix Soden <johfel@users.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Johann Felix Soden <johfel@users.sourceforge.net>
 
-On Sep 21, 2008, at 2:46 PM, Peter Korsgaard wrote:
+The variable statindex in send_request is never read, so remove it.
 
-> Structured similar to the existing QE GPIO support.
->
-> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
-> ---
+Signed-off-by: Johann Felix Soden <johfel@users.sourceforge.net>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/block/viodasd.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-Also, any plans to follow this up with .dts updates to add the GPIO  
-block into the various files we have?
-
-- k
+diff --git a/drivers/block/viodasd.c b/drivers/block/viodasd.c
+index f1c8feb..1730d29 100644
+--- a/drivers/block/viodasd.c
++++ b/drivers/block/viodasd.c
+@@ -249,7 +249,6 @@ static int send_request(struct request *req)
+ 	struct HvLpEvent *hev;
+ 	struct scatterlist sg[VIOMAXBLOCKDMA];
+ 	int sgindex;
+-	int statindex;
+ 	struct viodasd_device *d;
+ 	unsigned long flags;
+ 
+@@ -258,11 +257,9 @@ static int send_request(struct request *req)
+ 	if (rq_data_dir(req) == READ) {
+ 		direction = DMA_FROM_DEVICE;
+ 		viocmd = viomajorsubtype_blockio | vioblockread;
+-		statindex = 0;
+ 	} else {
+ 		direction = DMA_TO_DEVICE;
+ 		viocmd = viomajorsubtype_blockio | vioblockwrite;
+-		statindex = 1;
+ 	}
+ 
+         d = req->rq_disk->private_data;
+-- 
+1.5.6.5
