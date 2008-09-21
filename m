@@ -1,19 +1,23 @@
-Return-Path: <julia@diku.dk>
-Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw2.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 9C6D3DDE04
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Sep 2008 21:20:35 +1000 (EST)
-Date: Sun, 21 Sep 2008 13:01:31 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: paulus@samba.org, benh@kernel.crashing.org,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org
-Subject: [PATCH] arch/powerpc/platforms/powermac/pic.c: move of_node_put
-Message-ID: <Pine.LNX.4.64.0809211301030.7450@ask.diku.dk>
+Return-Path: <jacmet@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
+	by ozlabs.org (Postfix) with ESMTP id 2B600DDE31
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 04:43:26 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id e27so498329nfd.9
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Sep 2008 11:43:23 -0700 (PDT)
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: gpio driver for mpc831x/834x/837x with OF
+	bindings
+References: <1220627327-28852-1-git-send-email-jacmet@sunsite.dk>
+	<8B2A3D71-C756-4281-8FF1-ADEC7861C630@kernel.crashing.org>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Sun, 21 Sep 2008 20:43:16 +0200
+In-Reply-To: <8B2A3D71-C756-4281-8FF1-ADEC7861C630@kernel.crashing.org> (Kumar
+	Gala's message of "Fri\, 19 Sep 2008 13\:10\:26 -0500")
+Message-ID: <8763opz6ez.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,48 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
+>>>>> "Kumar" == Kumar Gala <galak@kernel.crashing.org> writes:
 
-It seems better to dereference master before decrementing the reference
-count rather than afterwards.
+Hi,
 
-The problem was found using the following semantic match:
-(http://www.emn.fr/x-info/coccinelle/)
+ >> create mode 100644 arch/powerpc/sysdev/mpc83xx_gpio.c
 
-// <smpl>
-@r exists@
-expression n,E;
-identifier fld;
-iterator I;
-statement S;
-@@
+ Kumar> So we need to make this mpc8xxx_gpio.c 83xx, 8610, 85xx all have the
+ Kumar> same GPIO hw.
 
-* of_node_put(n)
-... when != n = E
-    when != I(n,...) S
-* n->fld
-// </smpl>
+Ok.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+I'm not really familiar with the other 8xxx SoCs, but from looking at
+the reference manuals it seems like the following are compatible:
 
----
+831x, 834x and 837x
+8572 (but not the other 85xx)
+8610 (but not the other 86xx)
 
- arch/powerpc/platforms/powermac/pic.c          |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Worth noting is also that mpc5121 seems to use a newer version of the
+core which is basically backwards compatible (It has more IRQ trigger
+possibilities).
 
-diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
-index 6d149ae..d17aa2b 100644
---- a/arch/powerpc/platforms/powermac/pic.c
-+++ b/arch/powerpc/platforms/powermac/pic.c
-@@ -395,10 +395,10 @@ static void __init pmac_pic_probe_oldstyle(void)
- 	if (max_real_irqs > 32)
- 		pmac_irq_hw[i++] = (volatile struct pmac_irq_hw __iomem *)
- 			(addr + 0x10);
--	of_node_put(master);
- 
- 	printk(KERN_INFO "irq: Found primary Apple PIC %s for %d irqs\n",
- 	       master->full_name, max_real_irqs);
-+	of_node_put(master);
- 
- 	/* Map interrupts of cascaded controller */
- 	if (slave && !of_address_to_resource(slave, 0, &r)) {
+I'll respind the patch with 83xx->8xxx - Do you still want to keep the OF
+bindings like they are? (compatible = "fsl,mpc8349-gpio")
+
+-- 
+Bye, Peter Korsgaard
