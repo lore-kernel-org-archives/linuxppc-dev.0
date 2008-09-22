@@ -1,15 +1,20 @@
-Return-Path: <halesh.sadashiv@ap.sony.com>
-Received: from WA4EHSOBE004.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id 5CBC6DE4C5
+Return-Path: <jwboyer@gmail.com>
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.187])
+	by ozlabs.org (Postfix) with ESMTP id 12380DE530
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Sep 2008 01:16:14 +1000 (EST)
+	Tue, 23 Sep 2008 01:25:48 +1000 (EST)
+Received: by rn-out-0910.google.com with SMTP id j40so575647rnf.16
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 22 Sep 2008 08:25:47 -0700 (PDT)
+Date: Mon, 22 Sep 2008 11:24:44 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>
+Subject: Re: Regarding select() on PPC
+Message-ID: <20080922152444.GA9716@yoda.jdub.homelinux.org>
+References: <7B7EF7F090B9804A830ACC82F2CDE95D56E0DA@insardxms01.ap.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: Regarding select() on PPC
-Date: Mon, 22 Sep 2008 20:45:52 +0530
-Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D56E0DA@insardxms01.ap.sony.com>
-From: "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>
-To: "Josh Boyer" <jwboyer@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7B7EF7F090B9804A830ACC82F2CDE95D56E0DA@insardxms01.ap.sony.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -21,59 +26,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-
-The issue is found only in PPC32.
-
-Please let me if the patch is applicable.
-
-+++ arch/powerpc/kernel/syscalls.c      2008-09-22 20:47:23.885126056
-+0530
-@@ -211,6 +211,9 @@
- int
- ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set
-__user *exp, struct timeval __user *tvp)
- {
-+   if ( n < 0 )
-+       return -EINVAL;
-+
-    if ( (unsigned long)n >=3D 4096 )
-    {
-        unsigned long __user *buffer =3D (unsigned long __user *)n;
-
-Thanks,
-Halesh
-
-
->-----Original Message-----
->From: Josh Boyer [mailto:jwboyer@gmail.com]
->Sent: Friday, September 19, 2008 7:49 PM
->To: Sadashiiv, Halesh
->Cc: linuxppc-embedded@ozlabs.org
->Subject: Re: Regarding select() on PPC
+On Mon, Sep 22, 2008 at 08:45:52PM +0530, Sadashiiv, Halesh wrote:
 >
->On Fri, Sep 19, 2008 at 07:00:07PM +0530, Sadashiiv, Halesh wrote:
->>>For negetive value of n (first argument to select) select fails with
->>EINVAL
->>>error,
->>>
->>>But for the same when I tested for PowerPC it was giving EFAULT,
->>>Its on 2.6.16 kernel.
 >
->2.6.16 is really old.  I tested your testcase on a 2.6.25 based kernel
-on
->a ppc64 machine and it seemed to work fine.
+>The issue is found only in PPC32.
 >
->josh
+>Please let me if the patch is applicable.
 
+Well, no not really.  Mostly because of procedural issues than anything
+else.  Read Documentation/SubmittingPatches in the kernel directory.
 
+Also, there is a comment above this function that eludes to some issues
+with select on ppc32.  You might want to ask the overall PowerPC maintainer
+if that issue still exits.
 
--------------------------------------------------------------------
-This email is confidential and intended only for the use of the =
-individual or entity named above and may contain information that is =
-privileged. If you are not the intended recipient, you are notified that =
-any dissemination, distribution or copying of this email is strictly =
-prohibited. If you have received this email in error, please notify us =
-immediately by return email or telephone and destroy the original =
-message. - This mail is sent via Sony Asia Pacific Mail Gateway.
--------------------------------------------------------------------
+josh
