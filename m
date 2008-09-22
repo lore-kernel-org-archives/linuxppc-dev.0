@@ -1,20 +1,22 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from outbound-mail-01.bluehost.com (outbound-mail-01.bluehost.com
-	[69.89.21.11]) by ozlabs.org (Postfix) with SMTP id CF139DDE2A
+Return-Path: <venkatakrishnap@vrindatech.com>
+Received: from server.indiadomain.com (server.indiadomain.com [69.50.220.104])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 82B33DDEDD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 21 Sep 2008 16:36:54 +1000 (EST)
-Received: from [72.25.39.148] (helo=hp-dhlii.dlasys.lcl)
-	by host200.hostmonster.com with esmtpa (Exim 4.69)
-	(envelope-from <dhlii@dlasys.net>) id 1KhI97-0000wK-Gd
-	for linuxppc-embedded@ozlabs.org; Sun, 21 Sep 2008 00:10:13 -0600
-Message-ID: <48D5E544.6070505@dlasys.net>
-Date: Sun, 21 Sep 2008 02:10:12 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Mon, 22 Sep 2008 22:19:05 +1000 (EST)
+Received: from [122.169.178.91] (helo=venkatakrishna)
+	by server.indiadomain.com with esmtpa (Exim 4.69)
+	(envelope-from <venkatakrishnap@vrindatech.com>) id 1KhkNY-00018B-DD
+	for linuxppc-embedded@ozlabs.org; Mon, 22 Sep 2008 05:19:01 -0700
+From: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Linux problem in mpc8260
+Date: Mon, 22 Sep 2008 17:37:24 +0530
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: C67x00 USB problems II
-Content-Type: text/plain; charset=ISO-8859-1
-Reply-To: dhlii@dlasys.net
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0003_01C91CD9.E2B985E0"
+Message-Id: <20080922121905.82B33DDEDD@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,39 +27,130 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Issue # 2
+This is a multi-part message in MIME format.
 
-how do I get the 2nd port working ?
+------=_NextPart_000_0003_01C91CD9.E2B985E0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-I have the platform data altered as follows:
+ 
 
-  .dev.platform_data = &(struct c67x00_platform_data) {
-	        .sie_config         = C67X00_SIE1_HOST | C67X00_SIE2_HOST,
-        	.hpi_regstep        = 0x04,
-    /* A0 not connected on 16bit bus */
-	    },
+Hi,
 
-For two hosts rather than a host and a peripheral.
+ 
 
-I have been pretending I can get this working without getting too
-intimate with USB or this driver. Apparently that has been a self-delusion.
+ In our target board have two banks of flash device. Which is connected two
+Chip select 0(CS0) and Chip select 1 (CS1). In Hardware our target board has
+specialty   jumper setting change CS0 VsCS1. Booting device always connected
+CS0. What is our problem is I want download my Linux uImage in one of flash
+device in my board when change jumper setting in hardware the board should
+be boot .Board  is Powerpc based processor (MPC8260). Any one suggest me
+what can I do. Where can I initialization memory device. 
+
+ 
+
+Thanks and Regards
+
+Venkatakrishna Pari
 
 
-Again clues greatly appreciated.
+------=_NextPart_000_0003_01C91CD9.E2B985E0
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:"MS Mincho";
+	panose-1:2 2 6 9 4 2 5 8 3 4;}
+@font-face
+	{font-family:"\@MS Mincho";
+	panose-1:0 0 0 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
 
+</head>
 
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
 
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too
-numerous to list.
+<div class=3DSection1>
 
-"Any intelligent fool can make things bigger and more complex... It
-takes a touch of genius - and a lot of courage to move in the opposite
-direction."
-Albert Einstein
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;In our target board have two banks of flash =
+device. Which
+is connected two Chip select 0(CS0) and Chip select 1 (CS1). In Hardware =
+our
+target board has specialty&nbsp;&nbsp; jumper setting change CS0 VsCS1. =
+Booting
+device always connected CS0. What is our problem is I want download my =
+Linux
+uImage in one of flash device in my board when change jumper setting in
+hardware the board should be boot .Board &nbsp;is Powerpc based =
+processor (MPC8260).
+Any one suggest me what can I do. Where can I initialization memory =
+device. <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanks and Regards<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Venkatakrishna Pari<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0003_01C91CD9.E2B985E0--
