@@ -1,35 +1,19 @@
-Return-Path: <srinivasa@in.ibm.com>
-Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 31282DDF11
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 23:11:17 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id m8MDAQsH025626
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 23:10:26 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m8MDAbFn211470
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 23:10:59 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m8MDAbxo001866
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 23:10:37 +1000
-From: Srinivasa Ds <srinivasa@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH] Demultiplexing SIGTRAP signal
-Date: Mon, 22 Sep 2008 18:41:27 +0530
-References: <200809221602.32616.srinivasa@in.ibm.com>
-	<20080922104202.GE30137@elte.hu>
-In-Reply-To: <20080922104202.GE30137@elte.hu>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B767ADDF1A
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 23:32:57 +1000 (EST)
+Date: Mon, 22 Sep 2008 17:32:54 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: [PATCH v3] powerpc: gpio driver for mpc8349/8572/8610 and
+	compatible with OF bindings
+Message-ID: <20080922133254.GA25776@oksana.dev.rtsoft.ru>
+References: <1222065154-19310-1-git-send-email-jacmet@sunsite.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200809221841.27993.srinivasa@in.ibm.com>
-Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	"H. Peter Anvin" <hpa@zytor.com>, akpm@linux-foundation.org,
-	Thomas Gleixner <tglx@linutronix.de>, Roland McGrath <roland@redhat.com>
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <1222065154-19310-1-git-send-email-jacmet@sunsite.dk>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,204 +23,332 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 22 September 2008 16:12:02 Ingo Molnar wrote:
-> no fundamental objections - assuming existing x86 apps have not grown an
-> ABI dependency on the existing send_sigtrap() semantics. (Debuggers and
-> JITs would be a candidate for such dependencies.)
->
+On Mon, Sep 22, 2008 at 08:32:34AM +0200, Peter Korsgaard wrote:
+> Structured similar to the existing QE GPIO support.
+> 
+> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
 
-Assuming that no ABI dependency exist between x86 apps and send_sigtrap(),
-And implementing some of the Ingo's suggestions, Iam resending the patch.
-
-Still waiting for Roland's reply.
+Looks good to me, thanks.
 
 
-Currently a SIGTRAP can denote any one of below reasons.
-	- Breakpoint hit
-	- H/W debug register hit
-	- Single step
-	- Signal sent through kill() or rasie()
+Few comments below, might want to consider some of them if you want to.
 
-Architectures like powerpc/parisc provides infrastructure to demultiplex
-SIGTRAP signal by passing down the information for receiving SIGTRAP through
-si_code of siginfot_t strucutre. Here is an attempt is generalise this 
-infrasturcutre by extending it to x86 and x86_64 archs. 
+> ---
+>  Changes since v2:
+>  - Clarified documentation as requested by Kumar.
+> 
+>  Changes since v1:
+>  Incorporated feedback from Anton and Kumar:
+>  - Core is also used on 8572/8610 so s/83xx/8xxx/
+>  - Use fsl,mpc8572-gpio / fsl,mpc8610-gpio for 85xx/86xx as compatible
+>  - Use shadowed data register to handle open drain outputs
+>  - Expandend dts binding doc, use 8347 as example instead of 8349
+>  - Misc small cleanups
+> 
+>  .../powerpc/dts-bindings/fsl/8xxx_gpio.txt         |   40 +++++
+>  arch/powerpc/sysdev/Kconfig                        |    9 +
+>  arch/powerpc/sysdev/Makefile                       |    1 +
+>  arch/powerpc/sysdev/mpc8xxx_gpio.c                 |  170 ++++++++++++++++++++
+>  4 files changed, 220 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/powerpc/dts-bindings/fsl/8xxx_gpio.txt
+>  create mode 100644 arch/powerpc/sysdev/mpc8xxx_gpio.c
+> 
+> diff --git a/Documentation/powerpc/dts-bindings/fsl/8xxx_gpio.txt b/Documentation/powerpc/dts-bindings/fsl/8xxx_gpio.txt
+> new file mode 100644
+> index 0000000..26c29c4
+> --- /dev/null
+> +++ b/Documentation/powerpc/dts-bindings/fsl/8xxx_gpio.txt
+> @@ -0,0 +1,40 @@
+> +GPIO controllers on MPC8xxx SoCs
+> +
+> +This is for the non-QE/CPM/GUTs GPIO controllers as found on
+> +8349, 8572, 8610 and compatible.
+> +
+> +Every GPIO controller node must have #gpio-cells property defined,
+> +this information will be used to translate gpio-specifiers.
+> +
+> +Required properties:
+> +- compatible : "fsl,<CHIP>-gpio" followed by "fsl,mpc8349-gpio" for
+> +  83xx, "fsl,mpc8572-gpio" for 85xx and "fsl,mpc8610-gpio" for 86xx.
+> +- #gpio-cells : Should be two. The first cell is the pin number and the
+> +  second cell is used to specify optional parameters (currently unused).
+> + - interrupts : Interrupt mapping for GPIO IRQ (currently unused).
+> + - interrupt-parent : Phandle for the interrupt controller that
+> +   services interrupts for this device.
+> +- gpio-controller : Marks the port as GPIO controller.
+> +
+> +Example of gpio-controller nodes for a MPC8347 SoC:
+> +
+> +	gpio1: gpio-controller@c00 {
+> +		#gpio-cells = <2>;
+> +		compatible = "fsl,mpc8347-gpio, fsl,mpc8349-gpio";
 
-Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
+Some quotes are missing. Should be "fsl,mpc8347-gpio",
+"fsl,mpc8349-gpio";
 
----
- arch/ia64/include/asm/siginfo.h    |    5 -----
- arch/powerpc/include/asm/siginfo.h |    5 -----
- arch/x86/kernel/ptrace.c           |    7 ++++---
- arch/x86/kernel/traps_32.c         |    4 +++-
- arch/x86/kernel/traps_64.c         |    2 +-
- include/asm-generic/siginfo.h      |    2 ++
- include/asm-parisc/siginfo.h       |    5 -----
- include/asm-x86/ptrace.h           |    2 +-
- include/asm-x86/traps.h            |   10 ++++++++++
- 9 files changed, 21 insertions(+), 21 deletions(-)
+> +		reg = <0xc00 0x100>;
+> +		interrupts = <74 0x8>;
+> +		interrupt-parent = <&ipic>;
+> +		gpio-controller;
+> +	};
+> +
+> +	gpio2: gpio-controller@d00 {
+> +		#gpio-cells = <2>;
+> +		compatible = "fsl,mpc8347-gpio, fsl,mpc8349-gpio";
 
-Index: linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
-===================================================================
---- linux-2.6.27-rc7.orig/arch/ia64/include/asm/siginfo.h
-+++ linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
-@@ -113,11 +113,6 @@ typedef struct siginfo {
- #undef NSIGSEGV
- #define NSIGSEGV	3
- 
--/*
-- * SIGTRAP si_codes
-- */
--#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
--#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
- #undef NSIGTRAP
- #define NSIGTRAP	4
- 
-Index: linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
-===================================================================
---- linux-2.6.27-rc7.orig/arch/powerpc/include/asm/siginfo.h
-+++ linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
-@@ -15,11 +15,6 @@
- 
- #include <asm-generic/siginfo.h>
- 
--/*
-- * SIGTRAP si_codes
-- */
--#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
--#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
- #undef NSIGTRAP
- #define NSIGTRAP	4
- 
-Index: linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
-===================================================================
---- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_32.c
-+++ linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
-@@ -891,6 +891,7 @@ void __kprobes do_debug(struct pt_regs *
- {
- 	struct task_struct *tsk = current;
- 	unsigned int condition;
-+	int si_code;
- 
- 	trace_hardirqs_fixup();
- 
-@@ -935,8 +936,9 @@ void __kprobes do_debug(struct pt_regs *
- 			goto clear_TF_reenable;
- 	}
- 
-+	si_code = get_si_code((unsigned long*)&condition);
- 	/* Ok, finally something we can handle */
--	send_sigtrap(tsk, regs, error_code);
-+	send_sigtrap(tsk, regs, error_code, si_code);
- 
- 	/*
- 	 * Disable additional traps. They'll be re-enabled when
-Index: linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
-===================================================================
---- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_64.c
-+++ linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
-@@ -936,7 +936,7 @@ asmlinkage void __kprobes do_debug(struc
- 	tsk->thread.error_code = error_code;
- 	info.si_signo = SIGTRAP;
- 	info.si_errno = 0;
--	info.si_code = TRAP_BRKPT;
-+	info.si_code = get_si_code(&condition);
- 	info.si_addr = user_mode(regs) ? (void __user *)regs->ip : NULL;
- 	force_sig_info(SIGTRAP, &info, tsk);
- 
-Index: linux-2.6.27-rc7/include/asm-generic/siginfo.h
-===================================================================
---- linux-2.6.27-rc7.orig/include/asm-generic/siginfo.h
-+++ linux-2.6.27-rc7/include/asm-generic/siginfo.h
-@@ -199,6 +199,8 @@ typedef struct siginfo {
-  */
- #define TRAP_BRKPT	(__SI_FAULT|1)	/* process breakpoint */
- #define TRAP_TRACE	(__SI_FAULT|2)	/* process trace trap */
-+#define TRAP_BRANCH     (__SI_FAULT|3)  /* process taken branch trap */
-+#define TRAP_HWBKPT     (__SI_FAULT|4)  /* hardware breakpoint or watchpoint 
-*/
- #define NSIGTRAP	2
- 
- /*
-Index: linux-2.6.27-rc7/include/asm-parisc/siginfo.h
-===================================================================
---- linux-2.6.27-rc7.orig/include/asm-parisc/siginfo.h
-+++ linux-2.6.27-rc7/include/asm-parisc/siginfo.h
-@@ -3,11 +3,6 @@
- 
- #include <asm-generic/siginfo.h>
- 
--/*
-- * SIGTRAP si_codes
-- */
--#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
--#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
- #undef NSIGTRAP
- #define NSIGTRAP	4
- 
-Index: linux-2.6.27-rc7/arch/x86/kernel/ptrace.c
-===================================================================
---- linux-2.6.27-rc7.orig/arch/x86/kernel/ptrace.c
-+++ linux-2.6.27-rc7/arch/x86/kernel/ptrace.c
-@@ -1357,7 +1357,8 @@ const struct user_regset_view *task_user
- #endif
- }
- 
--void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int 
-error_code)
-+void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int 
-error_code,
-+							          int si_code)
- {
- 	struct siginfo info;
- 
-@@ -1366,7 +1367,7 @@ void send_sigtrap(struct task_struct *ts
- 
- 	memset(&info, 0, sizeof(info));
- 	info.si_signo = SIGTRAP;
--	info.si_code = TRAP_BRKPT;
-+	info.si_code = si_code;
- 
- 	/* User-mode ip? */
- 	info.si_addr = user_mode_vm(regs) ? (void __user *) regs->ip : NULL;
-@@ -1476,5 +1477,5 @@ asmregparm void syscall_trace_leave(stru
- 	 */
- 	if (test_thread_flag(TIF_SINGLESTEP) &&
- 	    (current->ptrace & PT_PTRACED))
--		send_sigtrap(current, regs, 0);
-+		send_sigtrap(current, regs, 0, TRAP_BRKPT);
- }
-Index: linux-2.6.27-rc7/include/asm-x86/traps.h
-===================================================================
---- linux-2.6.27-rc7.orig/include/asm-x86/traps.h
-+++ linux-2.6.27-rc7/include/asm-x86/traps.h
-@@ -36,6 +36,16 @@ void do_invalid_op(struct pt_regs *, lon
- void do_general_protection(struct pt_regs *, long);
- void do_nmi(struct pt_regs *, long);
- 
-+int get_si_code(unsigned long *condition)
-+{
-+	if (*condition & DR_STEP)
-+		return TRAP_TRACE;
-+	else if (*condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
-+		return TRAP_HWBKPT;
-+	else
-+		return TRAP_BRKPT;
-+}
-+
- extern int panic_on_unrecovered_nmi;
- extern int kstack_depth_to_print;
- 
-Index: linux-2.6.27-rc7/include/asm-x86/ptrace.h
-===================================================================
---- linux-2.6.27-rc7.orig/include/asm-x86/ptrace.h
-+++ linux-2.6.27-rc7/include/asm-x86/ptrace.h
-@@ -143,7 +143,7 @@ convert_ip_to_linear(struct task_struct 
- 
- #ifdef CONFIG_X86_32
- extern void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
--			 int error_code);
-+			 int error_code, int si_code);
- #else
- void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
- #endif
+Ditto.
+
+> +		reg = <0xd00 0x100>;
+> +		interrupts = <75 0x8>;
+> +		interrupt-parent = <&ipic>;
+> +		gpio-controller;
+> +	};
+> +
+> +See booting-without-of.txt for details of how to specify GPIO
+> +information for devices.
+> diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
+> index 72fb35b..a11cc8f 100644
+> --- a/arch/powerpc/sysdev/Kconfig
+> +++ b/arch/powerpc/sysdev/Kconfig
+> @@ -6,3 +6,12 @@ config PPC4xx_PCI_EXPRESS
+>  	bool
+>  	depends on PCI && 4xx
+>  	default n
+> +
+> +config MPC8xxx_GPIO
+> +	bool "MPC8xxx GPIO support"
+> +	depends on PPC_MPC831x || PPC_MPC834x || PPC_MPC837x || PPC_85xx || PPC_86xx
+> +	select GENERIC_GPIO
+> +	select ARCH_REQUIRE_GPIOLIB
+> +	help
+> +	  Say Y here if you're going to use hardware that connects to the
+> +	  MPC831x/834x/837x/8572/8610 GPIOs.
+> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+> index a90054b..e410764 100644
+> --- a/arch/powerpc/sysdev/Makefile
+> +++ b/arch/powerpc/sysdev/Makefile
+> @@ -15,6 +15,7 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+>  obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
+>  obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
+>  obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
+> +obj-$(CONFIG_MPC8xxx_GPIO)	+= mpc8xxx_gpio.o
+>  obj-$(CONFIG_RAPIDIO)		+= fsl_rio.o
+>  obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+>  obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+> diff --git a/arch/powerpc/sysdev/mpc8xxx_gpio.c b/arch/powerpc/sysdev/mpc8xxx_gpio.c
+> new file mode 100644
+> index 0000000..3c1f608
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/mpc8xxx_gpio.c
+> @@ -0,0 +1,170 @@
+> +/*
+> + * GPIOs on MPC8349/8572/8610 and compatible
+> + *
+> + * Copyright (C) 2008 Peter Korsgaard <jacmet@sunsite.dk>
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2.  This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/io.h>
+> +#include <linux/of.h>
+> +#include <linux/of_gpio.h>
+> +#include <linux/gpio.h>
+> +
+> +#define MPC8XXX_GPIO_PINS	32
+> +
+> +#define GPIO_DIR		0x00
+> +#define GPIO_ODR		0x04
+> +#define GPIO_DAT		0x08
+> +#define GPIO_IER		0x0c
+> +#define GPIO_IMR		0x10
+> +#define GPIO_ICR		0x14
+
+This is better described in a struct. Will save few characters,
+and just looks nicer. That is,
+
+mm->regs + GPIO_DAT
+
+vs.
+
+&mm->regs->dat
+
+> +struct mpc8xxx_gpio_chip {
+> +	struct of_mm_gpio_chip mm_gc;
+> +	spinlock_t lock;
+> +
+> +	/* shadowed data register to be able to clear/set output pins in
+> +	   open drain mode safely */
+
+Why not a canonical comment?
+
+/*
+ * Multi-line
+ * comment.
+ */
+
+> +	u32 data;
+> +};
+> +
+> +static inline u32 mpc8xxx_gpio2mask(unsigned int gpio)
+> +{
+> +	return 1u << (MPC8XXX_GPIO_PINS - 1 - gpio);
+
+`u` isn't necessary.
+
+> +}
+> +
+> +static inline struct mpc8xxx_gpio_chip *
+> +to_mpc8xxx_gpio_chip(struct of_mm_gpio_chip *mm)
+> +{
+> +	return container_of(mm, struct mpc8xxx_gpio_chip, mm_gc);
+> +}
+> +
+> +static void mpc8xxx_gpio_save_regs(struct of_mm_gpio_chip *mm)
+> +{
+> +	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
+> +
+> +	mpc8xxx_gc->data = in_be32(mm->regs + GPIO_DAT);
+> +}
+> +
+> +static int mpc8xxx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+> +{
+> +	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
+> +
+> +	return !!(in_be32(mm->regs + GPIO_DAT) & mpc8xxx_gpio2mask(gpio));
+
+No need for !!. gpio api spec says that you may return any
+value != 0 for the logical 1. Negative values are ok.
+
+> +}
+> +
+> +static void mpc8xxx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+> +{
+> +	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
+> +	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
+> +
+> +	if (val)
+> +		mpc8xxx_gc->data |= mpc8xxx_gpio2mask(gpio);
+> +	else
+> +		mpc8xxx_gc->data &= ~mpc8xxx_gpio2mask(gpio);
+> +
+> +	out_be32(mm->regs + GPIO_DAT, mpc8xxx_gc->data);
+> +
+> +	spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
+> +}
+> +
+> +static int mpc8xxx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+> +{
+> +	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
+> +	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
+> +
+> +	out_be32(mm->regs + GPIO_DIR,
+> +		 in_be32(mm->regs + GPIO_DIR) & ~mpc8xxx_gpio2mask(gpio));
+
+Would look better if you'd use clrbits32().
+
+> +
+> +	spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +static int mpc8xxx_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+> +{
+> +	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
+> +	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
+> +	unsigned long flags;
+> +
+> +	mpc8xxx_gpio_set(gc, gpio, val);
+> +
+> +	spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
+> +	out_be32(mm->regs + GPIO_DIR,
+> +		 in_be32(mm->regs + GPIO_DIR) | mpc8xxx_gpio2mask(gpio));
+
+setbits32().
+
+> +
+> +	spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +static int __init mpc8xxx_add_controller(struct device_node *np)
+> +{
+
+You don't check return value for this function. `void' return type
+would work.
+
+> +	struct mpc8xxx_gpio_chip *mpc8xxx_gc;
+> +	struct of_mm_gpio_chip *mm_gc;
+> +	struct of_gpio_chip *of_gc;
+> +	struct gpio_chip *gc;
+> +	int ret;
+> +
+> +	mpc8xxx_gc = kzalloc(sizeof(*mpc8xxx_gc), GFP_KERNEL);
+> +	if (!mpc8xxx_gc) {
+> +		ret = -ENOMEM;
+> +		goto err;
+> +	}
+> +
+> +	spin_lock_init(&mpc8xxx_gc->lock);
+> +
+> +	mm_gc = &mpc8xxx_gc->mm_gc;
+> +	of_gc = &mm_gc->of_gc;
+> +	gc = &of_gc->gc;
+> +
+> +	mm_gc->save_regs = mpc8xxx_gpio_save_regs;
+> +	of_gc->gpio_cells = 2;
+> +	gc->ngpio = MPC8XXX_GPIO_PINS;
+> +	gc->direction_input = mpc8xxx_gpio_dir_in;
+> +	gc->direction_output = mpc8xxx_gpio_dir_out;
+> +	gc->get = mpc8xxx_gpio_get;
+> +	gc->set = mpc8xxx_gpio_set;
+> +
+> +	ret = of_mm_gpiochip_add(np, mm_gc);
+> +	if (ret)
+> +		goto err;
+> +
+> +	return 0;
+> +
+> +err:
+> +	pr_err("%s: registration failed with status %d\n",
+> +	       np->full_name, ret);
+> +	kfree(mpc8xxx_gc);
+> +
+> +	return ret;
+> +}
+> +
+> +static int __init mpc8xxx_add_gpiochips(void)
+> +{
+> +	struct device_node *np;
+> +
+> +	for_each_compatible_node(np, NULL, "fsl,mpc8349-gpio")
+> +		mpc8xxx_add_controller(np);
+> +
+> +	for_each_compatible_node(np, NULL, "fsl,mpc8572-gpio")
+> +		mpc8xxx_add_controller(np);
+> +
+> +	for_each_compatible_node(np, NULL, "fsl,mpc8610-gpio")
+> +		mpc8xxx_add_controller(np);
+> +
+> +	return 0;
+> +}
+> +arch_initcall(mpc8xxx_add_gpiochips);
+> -- 
+> 1.5.6.3
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
