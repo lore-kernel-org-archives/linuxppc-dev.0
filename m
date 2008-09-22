@@ -1,16 +1,18 @@
-Return-Path: <johfel@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 0039ADDE28
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 05:02:41 +1000 (EST)
-Subject: [PATCH] powerpc: iSeries: remove unused variable in viodasd.c
-From: Johann Felix Soden <johfel@gmx.de>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: solution to printk() blocking interrupts?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+In-Reply-To: <9e4733910809211634u5b37e297pe8503f08de4f19a8@mail.gmail.com>
+References: <9e4733910809211353k1f06fb5bi219c124d0c44b47a@mail.gmail.com>
+	<9e4733910809211443l5638887aw856377d39fcca85c@mail.gmail.com>
+	<48D6C8F0.4060808@ru.mvista.com>
+	<9e4733910809211634u5b37e297pe8503f08de4f19a8@mail.gmail.com>
 Content-Type: text/plain
-Date: Sun, 21 Sep 2008 21:02:36 +0200
-Message-Id: <1222023756.7114.5.camel@localhost>
+Date: Mon, 22 Sep 2008 15:17:15 +1000
+Message-Id: <1222060635.12085.11.camel@pasglop>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
-Reply-To: Johann Felix Soden <johfel@users.sourceforge.net>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,39 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Johann Felix Soden <johfel@users.sourceforge.net>
+On Sun, 2008-09-21 at 19:34 -0400, Jon Smirl wrote:
+> On Sun, Sep 21, 2008 at 6:21 PM, Sergei Shtylyov
+> <sshtylyov@ru.mvista.com> wrote:
+> >  Implementing the poll_controller() method in the network driver is usually
+> > staightforward.
+> 
+> Good tip, the simple implementation worked.
+> 
+> What controls this? "carrier detect appears untrustworthy, waiting 4 seconds"
+> Get that fixed and this patch could be useful,
 
-The variable statindex in send_request is never read, so remove it.
+Does the driver properly uses netif_carrier_on/off to signal the
+system when the link is up/down ?
 
-Signed-off-by: Johann Felix Soden <johfel@users.sourceforge.net>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/block/viodasd.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/block/viodasd.c b/drivers/block/viodasd.c
-index f1c8feb..1730d29 100644
---- a/drivers/block/viodasd.c
-+++ b/drivers/block/viodasd.c
-@@ -249,7 +249,6 @@ static int send_request(struct request *req)
- 	struct HvLpEvent *hev;
- 	struct scatterlist sg[VIOMAXBLOCKDMA];
- 	int sgindex;
--	int statindex;
- 	struct viodasd_device *d;
- 	unsigned long flags;
- 
-@@ -258,11 +257,9 @@ static int send_request(struct request *req)
- 	if (rq_data_dir(req) == READ) {
- 		direction = DMA_FROM_DEVICE;
- 		viocmd = viomajorsubtype_blockio | vioblockread;
--		statindex = 0;
- 	} else {
- 		direction = DMA_TO_DEVICE;
- 		viocmd = viomajorsubtype_blockio | vioblockwrite;
--		statindex = 1;
- 	}
- 
-         d = req->rq_disk->private_data;
--- 
-1.5.6.5
+Cheers,
+Ben.
