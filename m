@@ -2,21 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 73947DDEDE
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 15:29:12 +1000 (EST)
-Subject: Re: ioremap and vmalloc
+	by ozlabs.org (Postfix) with ESMTPS id B514EDDE98
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 15:47:57 +1000 (EST)
+Subject: Re: mpc8541 pci1 ioport allocation address space problem
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?= <chretien@enseirb.fr>
-In-Reply-To: <48D3D70D.3060404@enseirb.fr>
-References: <319b0ac50809190415g6d132058l9bb8521046502eab@mail.gmail.com>
-	<20080919134933.GA7849@secretlab.ca> <48D3D47E.5050200@gmail.com>
-	<20080919163819.GB4492@yoda.jdub.homelinux.org>
-	<48D3D70D.3060404@enseirb.fr>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 22 Sep 2008 15:28:50 +1000
-Message-Id: <1222061330.12085.18.camel@pasglop>
+To: Wang Jian <lark@linux.net.cn>
+In-Reply-To: <48D4DB89.3040607@linux.net.cn>
+References: <48D4DB89.3040607@linux.net.cn>
+Content-Type: text/plain
+Date: Mon, 22 Sep 2008 15:47:44 +1000
+Message-Id: <1222062464.12085.25.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <galak@gate.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,27 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-09-19 at 18:45 +0200, Sébastien Chrétien wrote:
-> if I write :
-> ioremap(0x20000000,0x40000) and ioremap(0x20000000,0x50000)
+On Sat, 2008-09-20 at 19:16 +0800, Wang Jian wrote:
+> Hi,
 > 
-> Will it crash ?
+> Here I have a 8541 dev board, with 2 e1000 attached to pci0 and a
+> homebrewed addon board inserted into pci1. I am trying to make it work
+> under 2.6.26-rc8 (2.6.26 broken so I am working at rc8).
+> 
+> The ioports allocation reads
+> 
+> $ cat /proc/ioports
+> 00000000-000fffff : /pci@e0008000
+>   00001000-0000103f : 0000:00:0a.0
+>   00001040-0000107f : 0000:00:0b.0
+> ffefe000-ffffdfff : /pci@e0009000
+>   ffeff000-ffeff00f : 0001:01:0a.0
+>   ffeff010-ffeff01f : 0001:01:0b.0
+>   ffeff020-ffeff02f : 0001:01:0c.0
+>   ffeff030-ffeff03f : 0001:01:0d.0
+> 
+> The port allocation for pci1 looks ridiculous. The addon board doesn't work.
+> 
+> After poking around, I find pci_process_bridge_OF_ranges() in
+> arch/powerpc/kernel/pci-common.c
 
-To give you a rough idea, unless you tweak things like TASK_SIZE,
-KERNELBASE, CONFIG_LOWMEM_SIZE, etc... and depending on what CPU you
-use, you can generally count on approx. 200M of virtual space for
-vmalloc/ioremap, or a bit less. I would additionally recommend against
-mapping a significant portion of that for your devices as the kernel
-will need space for its own use by vmalloc.
+ .../...
 
-You can increase the amount available here by lowering TASK_SIZE to 2G
-and KERNELBASE as well, and keeping CONFIG_LOWMEM_SIZE clamped to
-something like 256M. That will give you a good GB of virtual space if I
-can still count correctly.
+This is expected and should work. Depending on the relative
+physical addresses of IO space and the order in which the bridges are
+discovered, the bridge IO ports will look at either positive or negative
+values. This should be fine, as port numbers are supposed to be 32 bits
+and in-kernel arithmetic should do the right thing... I suppose unless a
+driver stores those in a 64 bits integer and doesn't sign extend.
 
-(Note, having just looked at the MMU init code for 32 bits, I almost had
-to puke, Kumar, Josh, we really need to clean that shit up one of these
-days).
+I would like to change that whole thing to something more similar to
+64 bits where I reserve a portion of the address space for IO ports,
+though address space on 32 bits platforms is scarce, but nothing I have
+time to toy with right now.
 
 Cheers,
-Ben.
+Ben. 
