@@ -1,20 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id B58BDDDF86
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 20:49:45 +1000 (EST)
-To: Peter Korsgaard <jacmet@sunsite.dk>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH v2] bootwrapper: support u-boot multi component images
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <874p48y5qb.fsf@macbook.be.48ers.dk>
-References: <1221814210-4738-1-git-send-email-jacmet@sunsite.dk>
-	<20080922074128.A66F22487F@gemini.denx.de>
-	<874p48y5qb.fsf@macbook.be.48ers.dk>
-Date: Mon, 22 Sep 2008 12:49:43 +0200
-Sender: wd@denx.de
-Message-Id: <20080922104943.24395248EE@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sshtylyov@ru.mvista.com>
+Message-ID: <48D77B00.2050606@ru.mvista.com>
+Date: Mon, 22 Sep 2008 15:01:20 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: solution to printk() blocking interrupts?
+References: <9e4733910809211353k1f06fb5bi219c124d0c44b47a@mail.gmail.com>	
+	<9e4733910809211443l5638887aw856377d39fcca85c@mail.gmail.com>	
+	<48D6C8F0.4060808@ru.mvista.com>
+	<9e4733910809211634u5b37e297pe8503f08de4f19a8@mail.gmail.com>
+	<48D76D6E.2020002@ru.mvista.com>
+In-Reply-To: <48D76D6E.2020002@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Peter,
+Hello, I wrote:
 
-In message <874p48y5qb.fsf@macbook.be.48ers.dk> you wrote:
-> 
->  Wolfgang> NAK.
-> 
->  Wolfgang> Please do not add such a patch to mainline.
-> 
-> I agree that FIT images probably are the way to go for the future, but
-> I do think there's room for uImage.% just like we have cuImage.% for
-> really old uboots.
+>> diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+>> index 4e4f683..72541b5 100644
+>> --- a/drivers/net/fec_mpc52xx.c
+>> +++ b/drivers/net/fec_mpc52xx.c
+>> @@ -401,6 +401,16 @@ static int mpc52xx_fec_hard_start_xmit(struct
+>> sk_buff *skb, struct net_device *d
+>>         return 0;
+>>  }
+>>
+>> +#ifdef CONFIG_NET_POLL_CONTROLLER
+>> +static void mpc52xx_fec_poll_controller(struct net_device *dev)
+>> +{
+>> +        disable_irq(dev->irq);
+>> +        mpc52xx_fec_tx_interrupt(dev->irq, dev);
+>>   
+>
+>   The interrupt nu,ber seems wrong, although the handler doesn't care 
+> anyway...
+>
+>> +        enable_irq(dev->irq);
 
-I disagree. Adding such support now just encourages people  to  start
-using a deprecated feature.
+   Ah, you're also dis/enabling the wrong IRQ -- it should be 
+priv->t_irq. No, this patch won't do.
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Parkinson's Law:  Work expands to fill the time alloted it.
+WBR, Sergei
