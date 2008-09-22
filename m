@@ -1,23 +1,20 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
-	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id A7D02DE074
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 02:31:58 +1000 (EST)
-Received: by gxk14 with SMTP id 14so4428686gxk.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 09:31:56 -0700 (PDT)
-Message-ID: <ed82fe3e0809230931h10101b3csdc0187c19bac1529@mail.gmail.com>
-Date: Tue, 23 Sep 2008 11:31:55 -0500
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
-To: "Matthias Fuchs" <matthias.fuchs@esd-electronics.com>
-Subject: Re: [PATCH V2] powerpc: Fix Book-E watchdog timer interval setting
-In-Reply-To: <200809231704.56449.matthias.fuchs@esd-electronics.com>
+Return-Path: <Charles.A.Wright@snapon.com>
+Received: from ken48.snapon.com (dns1.snapon.com [12.20.116.2])
+	by ozlabs.org (Postfix) with ESMTP id AB25FDDDF4
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 06:16:00 +1000 (EST)
+Received: from lisl-xfnt-02-pp.snaponglobal.com (lisl-xfnt-02-pp.snapon.com
+	[10.245.128.49])
+	by ken48.snapon.com (8.11.7p1+Sun/8.11.7) with ESMTP id m8MK7td13337
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 15:07:55 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200808071448.06183.matthias.fuchs@esd-electronics.com>
-	<200809192328.36159.matthias.fuchs@esd-electronics.com>
-	<7CA29A12-6DC4-4939-9541-6270FE5D910A@kernel.crashing.org>
-	<200809231704.56449.matthias.fuchs@esd-electronics.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: Memcpy() on MPC5200B
+Date: Mon, 22 Sep 2008 15:07:51 -0500
+Message-ID: <C0DD8F5AD4467E45B3D82B7D7A57885B16E2559E@LISL-XBCK-C1-V2.snaponglobal.com>
+In-Reply-To: <mailman.1567.1222082514.3127.linuxppc-dev@ozlabs.org>
+From: "Wright, Chuck" <Charles.A.Wright@snapon.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,15 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 23, 2008 at 10:04 AM, Matthias Fuchs
-<matthias.fuchs@esd-electronics.com> wrote:
->  #ifdef CONFIG_FSL_BOOKE
->  #define WDTP(x)                ((((63-x)&0x3)<<30)|(((63-x)&0x3c)<<15))
-> +#define WDTP_MASK      (WDTP(63))
+I've found a case where memcpy() is failing on copies longer that 4
+bytes.=20
 
-WDTP(63) is "((((63-63)&0x3)<<30)|(((63-63)&0x3c)<<15))", which is
-equal to 0.  Shouldn't WDTP_MASK be equal to "(3 << 30) | (15 << 15)"?
+Closer investigation found that the destination pointer is not pointing
+to a word aligned address.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+The problem comes from the JFFS2 driver where there is a struct that is
+being used to create the destination pointer for the memcpy() function.
+
+If I insert my own padding into the struct, my memcpy() problems go
+away!
+I'm concerned that this problem may be lurking in other areas of code.
+(I get no warnings during compile)
+
+On the MPC5200B processor, is that the assumed behavior for an unaligned
+memcpy()??
+Is there a gcc option to force word alignment??
+
+I'm using a MontaVista supplied kernel and compiler. (not my choice!)=20
+Unfortunately, six weeks later, MontaVista is still confused.
+
+Thanks for any help you can offer,
+
+Chuck Wright
