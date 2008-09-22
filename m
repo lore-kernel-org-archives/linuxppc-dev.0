@@ -1,24 +1,22 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E93BADE27F
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 00:54:29 +1000 (EST)
-Date: Mon, 22 Sep 2008 16:54:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Srinivasa Ds <srinivasa@in.ibm.com>
-Subject: Re: [RFC][PATCH] Demultiplexing SIGTRAP signal
-Message-ID: <20080922145404.GC27956@elte.hu>
-References: <200809221602.32616.srinivasa@in.ibm.com>
-	<20080922104202.GE30137@elte.hu>
-	<200809221841.27993.srinivasa@in.ibm.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Message-ID: <48D7B2B4.6020900@ru.mvista.com>
+Date: Mon, 22 Sep 2008 18:59:00 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200809221841.27993.srinivasa@in.ibm.com>
-Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	"H. Peter Anvin" <hpa@zytor.com>, akpm@linux-foundation.org,
-	Thomas Gleixner <tglx@linutronix.de>, Roland McGrath <roland@redhat.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: solution to printk() blocking interrupts?
+References: <9e4733910809211353k1f06fb5bi219c124d0c44b47a@mail.gmail.com>	
+	<9e4733910809211443l5638887aw856377d39fcca85c@mail.gmail.com>	
+	<48D6C8F0.4060808@ru.mvista.com>	
+	<9e4733910809211634u5b37e297pe8503f08de4f19a8@mail.gmail.com>	
+	<1222060635.12085.11.camel@pasglop>
+	<48D77BB1.3090103@ru.mvista.com>	
+	<48D77D44.80304@ru.mvista.com> <48D7AE19.1020309@ru.mvista.com>
+	<9e4733910809220745i59a10185rffe1fdcda1916eb0@mail.gmail.com>
+In-Reply-To: <9e4733910809220745i59a10185rffe1fdcda1916eb0@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: mpm@selenic.com, shemminger@linux-foundation.org,
+	linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,56 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Jon Smirl wrote:
 
-* Srinivasa Ds <srinivasa@in.ibm.com> wrote:
+>> Not sure if Stephen was the right person to CC, including Matt now...
 
-> --- linux-2.6.27-rc7.orig/arch/ia64/include/asm/siginfo.h
-> +++ linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
+>>>>>>What controls this? "carrier detect appears untrustworthy, waiting 4
+>>>>>>seconds"
+>>>>>>Get that fixed and this patch could be useful,
 
-please do not send patches that modify include/asm/ files, the 
-include/asm-x86/ file should be modified instead.
+>>>>>Does the driver properly uses netif_carrier_on/off to signal the
+>>>>>system when the link is up/down ?
 
-(this problem will go away in v2.6.28 when we'll move include/asm-x86/ 
-to arch/x86/include/)
+>>>> Implementing the poll_controller() method in the network driver is
+>>>>usually
 
-> +	si_code = get_si_code((unsigned long*)&condition);
+>>>> Looks like the answer is "no"...
 
-coding style problem: please run checkpatch.
+>>> Hm... it uses phylib, so probably it does that. That message and a 4 s
+>>>pause appears if the carrier is seen in <10 ms after opening the device.
 
->  	/* Ok, finally something we can handle */
-> -	send_sigtrap(tsk, regs, error_code);
-> +	send_sigtrap(tsk, regs, error_code, si_code);
+>>  Oops, not 10 -- 100 ms (HZ / 10).
 
-ok, that looks much nicer.
+>>>Maybe this threshold needs to be changed?
 
-> -	info.si_code = TRAP_BRKPT;
-> +	info.si_code = get_si_code(&condition);
+>>  Seems like too much indeed.
 
-no need to pass in the condition by reference.
+> The link is coming up, but it appears that netconsole has already
+> decided to wait 4s.
+> mpc52xx MII bus: probed
+> net eth0: Using PHY at MDIO address 0
+> netconsole: local port 6666
+> netconsole: local IP 192.168.1.11
+> netconsole: interface eth0
+> netconsole: remote port 514
+> netconsole: remote IP 192.168.1.4
+> netconsole: remote ethernet address 00:19:d1:e4:0f:8d
+> netconsole: device eth0 not up yet, forcing it
+> net eth0: attached phy 0 to driver Generic PHY
+> netconsole: carrier detect appears untrustworthy, waiting 4 seconds
 
-> +#define TRAP_BRANCH     (__SI_FAULT|3)  /* process taken branch trap */
-> +#define TRAP_HWBKPT     (__SI_FAULT|4)  /* hardware breakpoint or watchpoint 
-> */
+    Netpoll code decides to wait 4 secs after seeing that carrier is OK before 
+100 ms passed...
 
-stray linewrapped patch line - see Documentation/email-clients.txt.
+> PHY: f0003000:00 - Link is Up - 100/Full
 
-> -void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int 
-> error_code)
-> +void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int 
-> error_code,
+    ...but it's only reported to be OK later. So indeed, the carrier reported 
+by the driver appears untrustworthy. ;-)
 
-linewrap.
-
-> +++ linux-2.6.27-rc7/include/asm-x86/traps.h
-> @@ -36,6 +36,16 @@ void do_invalid_op(struct pt_regs *, lon
->  void do_general_protection(struct pt_regs *, long);
->  void do_nmi(struct pt_regs *, long);
->  
-> +int get_si_code(unsigned long *condition)
-> +{
-> +	if (*condition & DR_STEP)
-> +		return TRAP_TRACE;
-
-please declare inline functions explicitly as 'static inline'.
-
-	Ingo
+WBR, Sergei
