@@ -1,23 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.231])
-	by ozlabs.org (Postfix) with ESMTP id 701ADDDEF8
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 08:20:35 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so1643161rvb.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 15:20:33 -0700 (PDT)
-Message-ID: <fa686aa40809221520n65c254b7ie7bb72e4ad4f96ac@mail.gmail.com>
-Date: Mon, 22 Sep 2008 16:20:33 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: Merge linuxppc-embedded with linuxppc-dev
-In-Reply-To: <8bd0f97a0809221511v1aba47eemb1630f7e64412e4@mail.gmail.com>
+Return-Path: <tjernlund@tjernlund.se>
+Received: from csmtp2.b-one.net (csmtp2.b-one.net [195.47.247.206])
+	by ozlabs.org (Postfix) with ESMTP id C8CD0DDECF
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 08:42:16 +1000 (EST)
+Received: from jockexp (84-217-5-146.tn.glocalnet.net [84.217.5.146])
+	by csmtp2.b-one.net (Postfix) with ESMTP id DEA4616000B32
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 00:32:27 +0200 (CEST)
+From: "Tjernlund" <tjernlund@tjernlund.se>
+To: <linuxppc-dev@ozlabs.org>
+Subject: IRQ2-4 number to use on mpc83xx?
+Date: Tue, 23 Sep 2008 00:32:07 +0200
+Message-ID: <062501c91d03$0c46be40$24d43ac0$@se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa40809221508q22e23e53s2140b17de83bcb1a@mail.gmail.com>
-	<8bd0f97a0809221511v1aba47eemb1630f7e64412e4@mail.gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Jeremy Kerr <jk@ozlabs.org>, linux-embedded@vger.kernel.org,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +22,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 22, 2008 at 4:11 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Mon, Sep 22, 2008 at 18:08, Grant Likely <grant.likely@secretlab.ca> wrote:
->> Jeremy,
->>
->> Can we eliminate the linuxppc-embedded mailing list and merge it with
->> linuxppc-dev?  I don't think we need two separate lists anymore and
->> patches to linuxppc-embedded don't always get dealt with.
->>
->> Anyone have any objections to eliminating linuxppc-embedded?
->
-> you sent this e-mail to "linux-embedded" instead of "linuxppc-embedded"
-> -mike
+I am trying to figure out what IRQ number I should use for 
+external IRQ pins IRQ2-4. Can somebody please drop me a note
+on how the IRQ numbering works?
 
-See!  My point proven!  That list just causes confusion.  :-)
-
-Oops.  I've cc'd the linuxppc-embedded list now.  Sorry to all the
-non-powerpc linux-embedded folks for the noise.
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+    Jocke 
