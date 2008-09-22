@@ -1,17 +1,22 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: solution to printk() blocking interrupts?
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 73947DDEDE
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 15:29:12 +1000 (EST)
+Subject: Re: ioremap and vmalloc
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jon Smirl <jonsmirl@gmail.com>
-In-Reply-To: <9e4733910809211634u5b37e297pe8503f08de4f19a8@mail.gmail.com>
-References: <9e4733910809211353k1f06fb5bi219c124d0c44b47a@mail.gmail.com>
-	<9e4733910809211443l5638887aw856377d39fcca85c@mail.gmail.com>
-	<48D6C8F0.4060808@ru.mvista.com>
-	<9e4733910809211634u5b37e297pe8503f08de4f19a8@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 22 Sep 2008 15:17:15 +1000
-Message-Id: <1222060635.12085.11.camel@pasglop>
+To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?= <chretien@enseirb.fr>
+In-Reply-To: <48D3D70D.3060404@enseirb.fr>
+References: <319b0ac50809190415g6d132058l9bb8521046502eab@mail.gmail.com>
+	<20080919134933.GA7849@secretlab.ca> <48D3D47E.5050200@gmail.com>
+	<20080919163819.GB4492@yoda.jdub.homelinux.org>
+	<48D3D70D.3060404@enseirb.fr>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 22 Sep 2008 15:28:50 +1000
+Message-Id: <1222061330.12085.18.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <galak@gate.crashing.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,19 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2008-09-21 at 19:34 -0400, Jon Smirl wrote:
-> On Sun, Sep 21, 2008 at 6:21 PM, Sergei Shtylyov
-> <sshtylyov@ru.mvista.com> wrote:
-> >  Implementing the poll_controller() method in the network driver is usually
-> > staightforward.
+On Fri, 2008-09-19 at 18:45 +0200, Sébastien Chrétien wrote:
+> if I write :
+> ioremap(0x20000000,0x40000) and ioremap(0x20000000,0x50000)
 > 
-> Good tip, the simple implementation worked.
-> 
-> What controls this? "carrier detect appears untrustworthy, waiting 4 seconds"
-> Get that fixed and this patch could be useful,
+> Will it crash ?
 
-Does the driver properly uses netif_carrier_on/off to signal the
-system when the link is up/down ?
+To give you a rough idea, unless you tweak things like TASK_SIZE,
+KERNELBASE, CONFIG_LOWMEM_SIZE, etc... and depending on what CPU you
+use, you can generally count on approx. 200M of virtual space for
+vmalloc/ioremap, or a bit less. I would additionally recommend against
+mapping a significant portion of that for your devices as the kernel
+will need space for its own use by vmalloc.
+
+You can increase the amount available here by lowering TASK_SIZE to 2G
+and KERNELBASE as well, and keeping CONFIG_LOWMEM_SIZE clamped to
+something like 256M. That will give you a good GB of virtual space if I
+can still count correctly.
+
+(Note, having just looked at the MMU init code for 32 bits, I almost had
+to puke, Kumar, Josh, we really need to clean that shit up one of these
+days).
 
 Cheers,
 Ben.
