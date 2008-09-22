@@ -1,20 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B514EDDE98
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 15:47:57 +1000 (EST)
-Subject: Re: mpc8541 pci1 ioport allocation address space problem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wang Jian <lark@linux.net.cn>
-In-Reply-To: <48D4DB89.3040607@linux.net.cn>
-References: <48D4DB89.3040607@linux.net.cn>
-Content-Type: text/plain
-Date: Mon, 22 Sep 2008 15:47:44 +1000
-Message-Id: <1222062464.12085.25.camel@pasglop>
-Mime-Version: 1.0
+Return-Path: <jacmet@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.153])
+	by ozlabs.org (Postfix) with ESMTP id CEC42DDE1B
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 16:24:23 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so1389429fga.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Sep 2008 23:24:21 -0700 (PDT)
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc: gpio driver for mpc8349/8572/8610 and
+	compatible
+References: <1222026361-28133-1-git-send-email-jacmet@sunsite.dk>
+	<47FDBC52-C9C7-4948-8265-35B424BD910D@kernel.crashing.org>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Mon, 22 Sep 2008 08:24:18 +0200
+In-Reply-To: <47FDBC52-C9C7-4948-8265-35B424BD910D@kernel.crashing.org> (Kumar
+	Gala's message of "Sun\, 21 Sep 2008 20\:39\:42 -0500")
+Message-ID: <87ej3cy9yl.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2008-09-20 at 19:16 +0800, Wang Jian wrote:
-> Hi,
-> 
-> Here I have a 8541 dev board, with 2 e1000 attached to pci0 and a
-> homebrewed addon board inserted into pci1. I am trying to make it work
-> under 2.6.26-rc8 (2.6.26 broken so I am working at rc8).
-> 
-> The ioports allocation reads
-> 
-> $ cat /proc/ioports
-> 00000000-000fffff : /pci@e0008000
->   00001000-0000103f : 0000:00:0a.0
->   00001040-0000107f : 0000:00:0b.0
-> ffefe000-ffffdfff : /pci@e0009000
->   ffeff000-ffeff00f : 0001:01:0a.0
->   ffeff010-ffeff01f : 0001:01:0b.0
->   ffeff020-ffeff02f : 0001:01:0c.0
->   ffeff030-ffeff03f : 0001:01:0d.0
-> 
-> The port allocation for pci1 looks ridiculous. The addon board doesn't work.
-> 
-> After poking around, I find pci_process_bridge_OF_ranges() in
-> arch/powerpc/kernel/pci-common.c
+>>>>> "Kumar" == Kumar Gala <galak@kernel.crashing.org> writes:
 
- .../...
+Hi,
 
-This is expected and should work. Depending on the relative
-physical addresses of IO space and the order in which the bridges are
-discovered, the bridge IO ports will look at either positive or negative
-values. This should be fine, as port numbers are supposed to be 32 bits
-and in-kernel arithmetic should do the right thing... I suppose unless a
-driver stores those in a 64 bits integer and doesn't sign extend.
+ Kumar> Also, any plans to follow this up with .dts updates to add the
+ Kumar> GPIO block into the various files we have?
 
-I would like to change that whole thing to something more similar to
-64 bits where I reserve a portion of the address space for IO ports,
-though address space on 32 bits platforms is scarce, but nothing I have
-time to toy with right now.
+Yes, but I wanted to get the driver/dts bindings in the tree first.
 
-Cheers,
-Ben. 
+-- 
+Bye, Peter Korsgaard
