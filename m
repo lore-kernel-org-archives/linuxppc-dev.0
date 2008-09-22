@@ -1,16 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910809211634u5b37e297pe8503f08de4f19a8@mail.gmail.com>
-Date: Sun, 21 Sep 2008 19:34:37 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>
-Subject: Re: solution to printk() blocking interrupts?
-In-Reply-To: <48D6C8F0.4060808@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910809211353k1f06fb5bi219c124d0c44b47a@mail.gmail.com>
-	<9e4733910809211443l5638887aw856377d39fcca85c@mail.gmail.com>
-	<48D6C8F0.4060808@ru.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F0BB8DDE19
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 11:12:42 +1000 (EST)
+Subject: Re: [PATCH] arch/powerpc/platforms/powermac/pic.c: move of_node_put
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Julia Lawall <julia@diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0809211301030.7450@ask.diku.dk>
+References: <Pine.LNX.4.64.0809211301030.7450@ask.diku.dk>
+Content-Type: text/plain
+Date: Sun, 21 Sep 2008 18:12:28 -0700
+Message-Id: <1222045948.12085.9.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, kernel-janitors@vger.kernel.org, paulus@samba.org,
+	linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,70 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Sep 21, 2008 at 6:21 PM, Sergei Shtylyov
-<sshtylyov@ru.mvista.com> wrote:
->  Implementing the poll_controller() method in the network driver is usually
-> staightforward.
+On Sun, 2008-09-21 at 13:01 +0200, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> It seems better to dereference master before decrementing the reference
+> count rather than afterwards.
+> 
+> The problem was found using the following semantic match:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @r exists@
+> expression n,E;
+> identifier fld;
+> iterator I;
+> statement S;
+> @@
+> 
+> * of_node_put(n)
+> ... when != n = E
+>     when != I(n,...) S
+> * n->fld
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Good tip, the simple implementation worked.
+Ack.
 
-What controls this? "carrier detect appears untrustworthy, waiting 4 seconds"
-Get that fixed and this patch could be useful,
+No big deal, tho, those nodes are never going to go away :-)
 
-root@phyCORE-MPC5200B-tiny:~ dmesg | grep netconsole
-Kernel command line: console=ttyPSC0,115200 rw debug root=/dev/nfs
-ip=dhcp nfsroot=192.168.1.4:/home/OSELAS.BSP-Phytec-phyCORE-MPC5200B-tiny-6/root,v3,tcp
-netconsole=6666@192.168.1.11/eth0,514@192.168.1.4/00:19:d1:e4:0f:8d
-netconsole: local port 6666
-netconsole: local IP 192.168.1.11
-netconsole: interface eth0
-netconsole: remote port 514
-netconsole: remote IP 192.168.1.4
-netconsole: remote ethernet address 00:19:d1:e4:0f:8d
-netconsole: device eth0 not up yet, forcing it
-netconsole: carrier detect appears untrustworthy, waiting 4 seconds
-netconsole: network logging started
-root@phyCORE-MPC5200B-tiny:~
+Cheers,
+Ben.
 
-
-
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index 4e4f683..72541b5 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -401,6 +401,16 @@ static int mpc52xx_fec_hard_start_xmit(struct
-sk_buff *skb, struct net_device *d
-        return 0;
- }
-
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+static void mpc52xx_fec_poll_controller(struct net_device *dev)
-+{
-+        disable_irq(dev->irq);
-+        mpc52xx_fec_tx_interrupt(dev->irq, dev);
-+        enable_irq(dev->irq);
-+}
-+#endif
-+
-+
- /* This handles BestComm transmit task interrupts
-  */
- static irqreturn_t mpc52xx_fec_tx_interrupt(int irq, void *dev_id)
-@@ -926,6 +936,9 @@ mpc52xx_fec_probe(struct of_device *op, const
-struct of_device_id *match)
-        ndev->tx_timeout        = mpc52xx_fec_tx_timeout;
-        ndev->watchdog_timeo    = FEC_WATCHDOG_TIMEOUT;
-        ndev->base_addr         = mem.start;
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+       ndev->poll_controller = mpc52xx_fec_poll_controller;
-+#endif
-
-        priv->t_irq = priv->r_irq = ndev->irq = NO_IRQ; /* IRQ are
-free for now */
-
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+> ---
+> 
+>  arch/powerpc/platforms/powermac/pic.c          |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
+> index 6d149ae..d17aa2b 100644
+> --- a/arch/powerpc/platforms/powermac/pic.c
+> +++ b/arch/powerpc/platforms/powermac/pic.c
+> @@ -395,10 +395,10 @@ static void __init pmac_pic_probe_oldstyle(void)
+>  	if (max_real_irqs > 32)
+>  		pmac_irq_hw[i++] = (volatile struct pmac_irq_hw __iomem *)
+>  			(addr + 0x10);
+> -	of_node_put(master);
+>  
+>  	printk(KERN_INFO "irq: Found primary Apple PIC %s for %d irqs\n",
+>  	       master->full_name, max_real_irqs);
+> +	of_node_put(master);
+>  
+>  	/* Map interrupts of cascaded controller */
+>  	if (slave && !of_address_to_resource(slave, 0, &r)) {
