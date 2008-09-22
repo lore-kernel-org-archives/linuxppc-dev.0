@@ -1,17 +1,29 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Message-ID: <48D76D6E.2020002@ru.mvista.com>
-Date: Mon, 22 Sep 2008 14:03:26 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <srinivasa@in.ibm.com>
+Received: from e28esmtp06.in.ibm.com (e28smtp06.in.ibm.com [59.145.155.6])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E97D1DDF17
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 20:32:13 +1000 (EST)
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+	by e28esmtp06.in.ibm.com (8.13.1/8.13.1) with ESMTP id m8MAVwQm004126
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 16:01:58 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m8MAVwbf1695862
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 16:01:58 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id m8MAVvGm010622
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 16:01:58 +0530
+From: Srinivasa Ds <srinivasa@in.ibm.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, paulus@samba.org,
+	roland@redhat.com, linuxppc-dev@ozlabs.org, mingo@elte.hu,
+	linux-parisc@vger.kernel.org
+Subject: [RFC][PATCH] Demultiplexing SIGTRAP signal
+Date: Mon, 22 Sep 2008 16:02:32 +0530
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: solution to printk() blocking interrupts?
-References: <9e4733910809211353k1f06fb5bi219c124d0c44b47a@mail.gmail.com>	
-	<9e4733910809211443l5638887aw856377d39fcca85c@mail.gmail.com>	
-	<48D6C8F0.4060808@ru.mvista.com>
-	<9e4733910809211634u5b37e297pe8503f08de4f19a8@mail.gmail.com>
-In-Reply-To: <9e4733910809211634u5b37e297pe8503f08de4f19a8@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200809221602.32616.srinivasa@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,72 +33,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Currently a SIGTRAP signal can denote any one of below reasons.
+	- Breakpoint hit
+	- H/W debug register hit
+	- Single step
+	- SIGTRAP signal sent through kill() or rasie()
 
-Jon Smirl wrote:
+Architectures like powerpc/parisc provides infrastructure to demultiplex
+SIGTRAP signal by passing down the information for receiving SIGTRAP through
+si_code of siginfot_t structure. Here is an attempt is generalise this 
+infrastructure by extending it to x86 and x86_64 archs. 
 
->>  Implementing the poll_controller() method in the network driver is usually
->> staightforward.
->>     
->
-> Good tip, the simple implementation worked.
->
-> What controls this? "carrier detect appears untrustworthy, waiting 4 seconds"
->   
+Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
 
-   IIRC, it happens if netpoll code sees the carrier OK right ast the 
-first time it checks it. Look for this message in net/core/netpoll.c...
 
-> Get that fixed and this patch could be useful,
->   
 
-    How that hinders using netconsole?
+---
+ arch/ia64/include/asm/siginfo.h    |    5 -----
+ arch/powerpc/include/asm/siginfo.h |    5 -----
+ arch/x86/kernel/traps_32.c         |   19 +++++++++++++++++--
+ arch/x86/kernel/traps_64.c         |    7 ++++++-
+ include/asm-generic/siginfo.h      |    2 ++
+ include/asm-parisc/siginfo.h       |    5 -----
+ 6 files changed, 25 insertions(+), 18 deletions(-)
 
-> root@phyCORE-MPC5200B-tiny:~ dmesg | grep netconsole
-> Kernel command line: console=ttyPSC0,115200 rw debug root=/dev/nfs
-> ip=dhcp nfsroot=192.168.1.4:/home/OSELAS.BSP-Phytec-phyCORE-MPC5200B-tiny-6/root,v3,tcp
-> netconsole=6666@192.168.1.11/eth0,514@192.168.1.4/00:19:d1:e4:0f:8d
-> netconsole: local port 6666
-> netconsole: local IP 192.168.1.11
-> netconsole: interface eth0
-> netconsole: remote port 514
-> netconsole: remote IP 192.168.1.4
-> netconsole: remote ethernet address 00:19:d1:e4:0f:8d
-> netconsole: device eth0 not up yet, forcing it
-> netconsole: carrier detect appears untrustworthy, waiting 4 seconds
-> netconsole: network logging started
-> root@phyCORE-MPC5200B-tiny:~
->
->
->
-> diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-> index 4e4f683..72541b5 100644
-> --- a/drivers/net/fec_mpc52xx.c
-> +++ b/drivers/net/fec_mpc52xx.c
-> @@ -401,6 +401,16 @@ static int mpc52xx_fec_hard_start_xmit(struct
-> sk_buff *skb, struct net_device *d
->         return 0;
->  }
->
-> +#ifdef CONFIG_NET_POLL_CONTROLLER
-> +static void mpc52xx_fec_poll_controller(struct net_device *dev)
-> +{
-> +        disable_irq(dev->irq);
-> +        mpc52xx_fec_tx_interrupt(dev->irq, dev);
->   
-
-   The interrupt nu,ber seems wrong, although the handler doesn't care 
-anyway...
-
-> +        enable_irq(dev->irq);
-> +}
-> +#endif
->   
-
-   Hey, how about the Rx interrupt? And I'm seeing 
-mcp52xx_fec_interrupt() on separate IRQ too -- looks like for for this 
-driver this is not as straightforward as it usually is.
-You need to call all the handlers -- netconsole is not the only user of 
-the netpoll API, so not only Tx should be handled.
-
-WBR, Sergei
+Index: linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/ia64/include/asm/siginfo.h
++++ linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
+@@ -113,11 +113,6 @@ typedef struct siginfo {
+ #undef NSIGSEGV
+ #define NSIGSEGV	3
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/powerpc/include/asm/siginfo.h
++++ linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
+@@ -15,11 +15,6 @@
+ 
+ #include <asm-generic/siginfo.h>
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_32.c
++++ linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
+@@ -890,6 +890,7 @@ void __kprobes do_int3(struct pt_regs *r
+ void __kprobes do_debug(struct pt_regs *regs, long error_code)
+ {
+ 	struct task_struct *tsk = current;
++	struct siginfo info;
+ 	unsigned int condition;
+ 
+ 	trace_hardirqs_fixup();
+@@ -935,8 +936,22 @@ void __kprobes do_debug(struct pt_regs *
+ 			goto clear_TF_reenable;
+ 	}
+ 
+-	/* Ok, finally something we can handle */
+-	send_sigtrap(tsk, regs, error_code);
++	tsk->thread.trap_no = 1;
++	tsk->thread.error_code = error_code;
++
++	memset(&info, 0, sizeof(info));
++	info.si_signo = SIGTRAP;
++	if (condition & DR_STEP)
++		info.si_code = TRAP_TRACE;
++	else if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
++		info.si_code = TRAP_HWBKPT;
++	else
++		info.si_code = TRAP_BRKPT;
++	/* User-mode ip? */
++	info.si_addr = user_mode_vm(regs) ? (void __user *) regs->ip : NULL;
++
++	/* Send us the fake SIGTRAP */
++	force_sig_info(SIGTRAP, &info, tsk);
+ 
+ 	/*
+ 	 * Disable additional traps. They'll be re-enabled when
+Index: linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_64.c
++++ linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
+@@ -936,7 +936,12 @@ asmlinkage void __kprobes do_debug(struc
+ 	tsk->thread.error_code = error_code;
+ 	info.si_signo = SIGTRAP;
+ 	info.si_errno = 0;
+-	info.si_code = TRAP_BRKPT;
++	if (condition & DR_STEP)
++		info.si_code = TRAP_TRACE;
++	else if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
++		info.si_code = TRAP_HWBKPT;
++	else
++		info.si_code = TRAP_BRKPT;
+ 	info.si_addr = user_mode(regs) ? (void __user *)regs->ip : NULL;
+ 	force_sig_info(SIGTRAP, &info, tsk);
+ 
+Index: linux-2.6.27-rc7/include/asm-generic/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-generic/siginfo.h
++++ linux-2.6.27-rc7/include/asm-generic/siginfo.h
+@@ -199,6 +199,8 @@ typedef struct siginfo {
+  */
+ #define TRAP_BRKPT	(__SI_FAULT|1)	/* process breakpoint */
+ #define TRAP_TRACE	(__SI_FAULT|2)	/* process trace trap */
++#define TRAP_BRANCH     (__SI_FAULT|3)  /* process taken branch trap */
++#define TRAP_HWBKPT     (__SI_FAULT|4)  /* hardware breakpoint or watchpoint 
+*/
+ #define NSIGTRAP	2
+ 
+ /*
+Index: linux-2.6.27-rc7/include/asm-parisc/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-parisc/siginfo.h
++++ linux-2.6.27-rc7/include/asm-parisc/siginfo.h
+@@ -3,11 +3,6 @@
+ 
+ #include <asm-generic/siginfo.h>
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
