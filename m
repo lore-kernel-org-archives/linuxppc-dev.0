@@ -1,20 +1,23 @@
-Return-Path: <jbe@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id DD0E3DDF59
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 23:56:45 +1000 (EST)
-Received: from themisto.extern.pengutronix.de ([83.236.181.29]
-	helo=jupiter.intranet.kreuzholzen.de)
-	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
-	(envelope-from <jbe@pengutronix.de>) id 1Khltz-0004Jk-W6
-	for linuxppc-dev@ozlabs.org; Mon, 22 Sep 2008 15:56:40 +0200
-From: Juergen Beisert <jbe@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Date: Mon, 22 Sep 2008 15:56:33 +0200
+Return-Path: <jacmet@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 2A186DE1D7
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 00:19:45 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id m2so1463896uge.14
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Sep 2008 07:19:43 -0700 (PDT)
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH v3] powerpc: gpio driver for mpc8349/8572/8610 and
+	compatible with OF bindings
+References: <1222065154-19310-1-git-send-email-jacmet@sunsite.dk>
+	<20080922133254.GA25776@oksana.dev.rtsoft.ru>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Mon, 22 Sep 2008 16:19:21 +0200
+In-Reply-To: <20080922133254.GA25776@oksana.dev.rtsoft.ru> (Anton Vorontsov's
+	message of "Mon\, 22 Sep 2008 17\:32\:54 +0400")
+Message-ID: <87ej3ctg9i.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200809221556.34353.jbe@pengutronix.de>
-Subject: MPC5200 PCI interrupt routing
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,102 +27,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+>>>>> "Anton" == Anton Vorontsov <avorontsov@ru.mvista.com> writes:
 
-my MPC5200 based platform has one PCI slot, with the following interrupt
-routing:
+ Anton> On Mon, Sep 22, 2008 at 08:32:34AM +0200, Peter Korsgaard wrote:
+ >> Structured similar to the existing QE GPIO support.
+ >> 
+ >> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
 
-PCI slot  MPC5200
- INT A     IRQ0
- INT B     IRQ1
- INT C     IRQ2
- INT D     IRQ3
+ Anton> Looks good to me, thanks.
 
-In my oftree I'm using these lines to describe this routing (slot's IDSEL is
-0x18)
+ Anton> Few comments below, might want to consider some of them if you want to.
 
-[...]
-       pci@f0000d00 {
-               #interrupt-cells =3D <1>;
-               #size-cells =3D <2>;
-               #address-cells =3D <3>;
-               device_type =3D "pci";
-               compatible =3D "fsl,mpc5200b-pci","fsl,mpc5200-pci";
-               reg =3D <0xf0000d00 0x100>;
-               interrupt-map-mask =3D <0xf800 0x0 0x0 0x7>;
-               interrupt-map =3D <0xc000 0x0 0x0 0x1 &mpc5200_pic 0x0 0x0 0=
-x3
-                                0xc000 0x0 0x0 0x2 &mpc5200_pic 0x1 0x1 0x3
-                                0xc000 0x0 0x0 0x3 &mpc5200_pic 0x1 0x2 0x3
-                                0xc000 0x0 0x0 0x4 &mpc5200_pic 0x1 0x3 0x3
-                               >;
-               clock-frequency =3D <0>; // From boot loader
-               interrupts =3D <0x2 0x8 0x0 0x2 0x9 0x0 0x2 0xa 0x0>;
-               interrupt-parent =3D <&mpc5200_pic>;
-               bus-range =3D <0 0>;
-               ranges =3D <0x42000000 0x0 0x80000000 0x80000000 0x0 0x20000=
-000
-                         0x02000000 0x0 0xa0000000 0xa0000000 0x0 0x10000000
-                         0x01000000 0x0 0x00000000 0xb0000000 0x0 0x0100000=
-0>;
-       };
-[...]
+ >> +	gpio1: gpio-controller@c00 {
+ >> +		#gpio-cells = <2>;
+ >> +		compatible = "fsl,mpc8347-gpio, fsl,mpc8349-gpio";
 
-=46irst: But /proc/interrupts states "Edge" type. From the documentation "0=
-x3"
-(the last number per interrupt-map-line) should be "low level", not "edge".
+ Anton> Some quotes are missing. Should be "fsl,mpc8347-gpio",
+ Anton> "fsl,mpc8349-gpio";
 
-$ cat /proc/interrupts
-           CPU0
- 16:          0   MPC52xx IRQ[0-3]  Edge      uhci_hcd:usb3
- 65:          0   MPC52xx IRQ[0-3]  Edge      uhci_hcd:usb4
- 66:          5   MPC52xx IRQ[0-3]  Edge      ehci_hcd:usb2
-131:      58585  MPC52xx Peripherals Edge      mpc52xx_psc_uart
-133:          0  MPC52xx Peripherals Edge      mpc52xx-fec_ctrl
-134:         34  MPC52xx Peripherals Edge      ohci_hcd:usb1
-135:          0  MPC52xx Peripherals Edge      mpc52xx_ata
-143:          0  MPC52xx Peripherals Edge      i2c-mpc
-144:         36  MPC52xx Peripherals Edge      i2c-mpc
-192:       5815  MPC52xx SDMA Edge      mpc52xx-fec_rx
-193:       4512  MPC52xx SDMA Edge      mpc52xx-fec_tx
-BAD:          0
+Argh, sorry about that.
 
-Second: When I load the drivers for the uhci/ehci PCI card I get:
+ >> +#define GPIO_DIR		0x00
+ >> +#define GPIO_ODR		0x04
+ >> +#define GPIO_DAT		0x08
+ >> +#define GPIO_IER		0x0c
+ >> +#define GPIO_IMR		0x10
+ >> +#define GPIO_ICR		0x14
 
-[...]
-usb 1-1: new high speed USB device using ehci_hcd and address 2
-usb 1-1: device not accepting address 2, error -110
-usb 1-1: new high speed USB device using ehci_hcd and address 3
-usb 1-1: device descriptor read/64, error -110
-usb 1-1: device descriptor read/64, error -110
-usb 1-1: new high speed USB device using ehci_hcd and address 4
-usb 1-1: device not accepting address 4, error -110
-usb 1-1: new high speed USB device using ehci_hcd and address 5
-usb 1-1: device not accepting address 5, error -110
-hub 1-0:1.0: unable to enumerate USB device on port 1
-usb 1-2: new high speed USB device using ehci_hcd and address 6
-usb 1-2: device descriptor read/64, error -110
-[...]
-uhci_hcd 0000:00:18.0: Unlink after no-IRQ?  Controller is probably using t=
-he wrong IRQ.
-[...]
+ Anton> This is better described in a struct. Will save few characters,
+ Anton> and just looks nicer. That is,
 
-$ lspci
-00:18.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Contr=
-oller (rev 61)
-00:18.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Contr=
-oller (rev 61)
-00:18.2 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 63)
+I think that's basically a question about taste. Some people like
+structs, some don't - I prefer the defines as it's very easy to see
+exactly what addresses gets used.
 
-USB driver (endianess???) or oftee or hardware problem?
+ >> +struct mpc8xxx_gpio_chip {
+ >> +	struct of_mm_gpio_chip mm_gc;
+ >> +	spinlock_t lock;
+ >> +
+ >> +	/* shadowed data register to be able to clear/set output pins in
+ >> +	   open drain mode safely */
 
-Anyone experience with VIA USB hardware on PowerPc?
+ Anton> Why not a canonical comment?
 
-Juergen
+ Anton> /*
+ Anton>  * Multi-line
+ Anton>  * comment.
+ Anton>  */
 
-=2D-=20
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
-=A0Pengutronix - Linux Solutions for Science and Industry
-=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
-=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+Fine with me. It started as a single line comment that I later
+expanded on.
+
+ >> +static int mpc8xxx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+ >> +{
+ >> +	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
+ >> +
+ >> +	return !!(in_be32(mm->regs + GPIO_DAT) & mpc8xxx_gpio2mask(gpio));
+
+ Anton> No need for !!. gpio api spec says that you may return any
+ Anton> value != 0 for the logical 1. Negative values are ok.
+
+True.
+
+ >> +static int mpc8xxx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+ >> +{
+ >> +	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
+ >> +	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
+ >> +	unsigned long flags;
+ >> +
+ >> +	spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
+ >> +
+ >> +	out_be32(mm->regs + GPIO_DIR,
+ >> +		 in_be32(mm->regs + GPIO_DIR) & ~mpc8xxx_gpio2mask(gpio));
+
+ Anton> Would look better if you'd use clrbits32().
+
+Ok.
+
+ >> +static int __init mpc8xxx_add_controller(struct device_node *np)
+ >> +{
+
+ Anton> You don't check return value for this function. `void' return type
+ Anton> would work.
+
+Yes, I kept it as we already keep track of the return value within the
+function (for error reporting) - I'll get rid of it.
+
+I'll send an updated patch shortly.
+
+-- 
+Bye, Peter Korsgaard
