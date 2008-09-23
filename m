@@ -1,17 +1,35 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id 3C78DDDE04
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 19:31:11 +1000 (EST)
-Message-ID: <48D8B225.4000709@matrix-vision.de>
-Date: Tue, 23 Sep 2008 11:08:53 +0200
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <srinivasa@in.ibm.com>
+Received: from e28esmtp07.in.ibm.com (e28smtp07.in.ibm.com [59.145.155.7])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EBB15DDDED
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 19:54:22 +1000 (EST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by e28esmtp07.in.ibm.com (8.13.1/8.13.1) with ESMTP id m8N9rcph029920
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 15:23:38 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m8N9rGjP1106056
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 15:23:38 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+	by d28av03.in.ibm.com (8.13.1/8.13.3) with ESMTP id m8N9rFr0022015
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 19:53:16 +1000
+From: Srinivasa Ds <srinivasa@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH] Demultiplexing SIGTRAP signal
+Date: Tue, 23 Sep 2008 15:23:52 +0530
+References: <200809221602.32616.srinivasa@in.ibm.com>
+	<200809221841.27993.srinivasa@in.ibm.com>
+	<20080922145404.GC27956@elte.hu>
+In-Reply-To: <20080922145404.GC27956@elte.hu>
 MIME-Version: 1.0
-To: Tjernlund <tjernlund@tjernlund.se>
-Subject: Re: IRQ2-4 number to use on mpc83xx?
-References: <062501c91d03$0c46be40$24d43ac0$@se>
-In-Reply-To: <062501c91d03$0c46be40$24d43ac0$@se>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200809231523.52802.srinivasa@in.ibm.com>
+Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	"H. Peter Anvin" <hpa@zytor.com>, akpm@linux-foundation.org,
+	Thomas Gleixner <tglx@linutronix.de>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,46 +39,206 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I can only tell how I do on MPC834x :
-
-Table 8-6. IVEC/CVEC/MVEC Field Definition
-
-Interrupt ID Number         Interrupt Meaning
-17                                           IRQ1
-18                                           IRQ2
-19                                           IRQ3
-20                                           IRQ4
-21                                           IRQ5
-22                                           IRQ6
-23                                           IRQ7
-48                                           IRQ0
-
-
-Given this I can use this dts section for PCI devices connected @ IRQ0
-and IRQ1
-
-interrupt-map = <0x5800 0 0 1 &ipic 0x30 0x8
-                                 0x6000 0 0 1 &ipic 0x11 0x8
-                                 0x6000 0 0 2 &ipic 0x11 0x8>;
-
-You should be able to use IRQ-Nr 18-20 for IRQ2-4.
-
-regards,
-Andre
-
-Tjernlund schrieb:
-> I am trying to figure out what IRQ number I should use for 
-> external IRQ pins IRQ2-4. Can somebody please drop me a note
-> on how the IRQ numbering works?
+On Monday 22 September 2008 20:24:04 Ingo Molnar wrote:
+> * Srinivasa Ds <srinivasa@in.ibm.com> wrote:
+> > --- linux-2.6.27-rc7.orig/arch/ia64/include/asm/siginfo.h
+> > +++ linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
 >
->     Jocke 
+> please do not send patches that modify include/asm/ files, the
+> include/asm-x86/ file should be modified instead.
 >
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->   
+> (this problem will go away in v2.6.28 when we'll move include/asm-x86/
+> to arch/x86/include/)
+>
+
+Ingo, Sorry if I have confused you. Arch specific header files of ia64 and powerpc are 
+already moved to arch/ia64/include and arch/powerpc/include dirs.
+So I have developed patch against these files. So Resending patch again. 
+
+Currently a SIGTRAP can denote any one of below reasons.
+	- Breakpoint hit
+	- H/W debug register hit
+	- Single step
+	- Signal sent through kill() or rasie()
+
+Architectures like powerpc/parisc provides infrastructure to demultiplex
+SIGTRAP signal by passing down the information for receiving SIGTRAP through
+si_code of siginfot_t structure. Here is an attempt is generalise this 
+infrastructure by extending it to x86 and x86_64 archs. 
+
+Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
 
 
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+---
+ arch/ia64/include/asm/siginfo.h    |    5 -----
+ arch/powerpc/include/asm/siginfo.h |    5 -----
+ arch/x86/kernel/ptrace.c           |    7 ++++---
+ arch/x86/kernel/traps_32.c         |    4 +++-
+ arch/x86/kernel/traps_64.c         |    2 +-
+ include/asm-generic/siginfo.h      |    2 ++
+ include/asm-parisc/siginfo.h       |    5 -----
+ include/asm-x86/ptrace.h           |    2 +-
+ include/asm-x86/traps.h            |   10 ++++++++++
+ 9 files changed, 21 insertions(+), 21 deletions(-)
+
+Index: linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/ia64/include/asm/siginfo.h
++++ linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
+@@ -113,11 +113,6 @@ typedef struct siginfo {
+ #undef NSIGSEGV
+ #define NSIGSEGV	3
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/powerpc/include/asm/siginfo.h
++++ linux-2.6.27-rc7/arch/powerpc/include/asm/siginfo.h
+@@ -15,11 +15,6 @@
+ 
+ #include <asm-generic/siginfo.h>
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_32.c
++++ linux-2.6.27-rc7/arch/x86/kernel/traps_32.c
+@@ -891,6 +891,7 @@ void __kprobes do_debug(struct pt_regs *
+ {
+ 	struct task_struct *tsk = current;
+ 	unsigned int condition;
++	int si_code;
+ 
+ 	trace_hardirqs_fixup();
+ 
+@@ -935,8 +936,9 @@ void __kprobes do_debug(struct pt_regs *
+ 			goto clear_TF_reenable;
+ 	}
+ 
++	si_code = get_si_code((unsigned long)condition);
+ 	/* Ok, finally something we can handle */
+-	send_sigtrap(tsk, regs, error_code);
++	send_sigtrap(tsk, regs, error_code, si_code);
+ 
+ 	/*
+ 	 * Disable additional traps. They'll be re-enabled when
+Index: linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/traps_64.c
++++ linux-2.6.27-rc7/arch/x86/kernel/traps_64.c
+@@ -936,7 +936,7 @@ asmlinkage void __kprobes do_debug(struc
+ 	tsk->thread.error_code = error_code;
+ 	info.si_signo = SIGTRAP;
+ 	info.si_errno = 0;
+-	info.si_code = TRAP_BRKPT;
++	info.si_code = get_si_code(condition);
+ 	info.si_addr = user_mode(regs) ? (void __user *)regs->ip : NULL;
+ 	force_sig_info(SIGTRAP, &info, tsk);
+ 
+Index: linux-2.6.27-rc7/include/asm-generic/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-generic/siginfo.h
++++ linux-2.6.27-rc7/include/asm-generic/siginfo.h
+@@ -199,6 +199,8 @@ typedef struct siginfo {
+  */
+ #define TRAP_BRKPT	(__SI_FAULT|1)	/* process breakpoint */
+ #define TRAP_TRACE	(__SI_FAULT|2)	/* process trace trap */
++#define TRAP_BRANCH     (__SI_FAULT|3)  /* process taken branch trap */
++#define TRAP_HWBKPT     (__SI_FAULT|4)  /* hardware breakpoint/watchpoint */
+ #define NSIGTRAP	2
+ 
+ /*
+Index: linux-2.6.27-rc7/include/asm-parisc/siginfo.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-parisc/siginfo.h
++++ linux-2.6.27-rc7/include/asm-parisc/siginfo.h
+@@ -3,11 +3,6 @@
+ 
+ #include <asm-generic/siginfo.h>
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+Index: linux-2.6.27-rc7/arch/x86/kernel/ptrace.c
+===================================================================
+--- linux-2.6.27-rc7.orig/arch/x86/kernel/ptrace.c
++++ linux-2.6.27-rc7/arch/x86/kernel/ptrace.c
+@@ -1357,7 +1357,8 @@ const struct user_regset_view *task_user
+ #endif
+ }
+ 
+-void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int error_code)
++void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
++					 int error_code, int si_code)
+ {
+ 	struct siginfo info;
+ 
+@@ -1366,7 +1367,7 @@ void send_sigtrap(struct task_struct *ts
+ 
+ 	memset(&info, 0, sizeof(info));
+ 	info.si_signo = SIGTRAP;
+-	info.si_code = TRAP_BRKPT;
++	info.si_code = si_code;
+ 
+ 	/* User-mode ip? */
+ 	info.si_addr = user_mode_vm(regs) ? (void __user *) regs->ip : NULL;
+@@ -1476,5 +1477,5 @@ asmregparm void syscall_trace_leave(stru
+ 	 */
+ 	if (test_thread_flag(TIF_SINGLESTEP) &&
+ 	    (current->ptrace & PT_PTRACED))
+-		send_sigtrap(current, regs, 0);
++		send_sigtrap(current, regs, 0, TRAP_BRKPT);
+ }
+Index: linux-2.6.27-rc7/include/asm-x86/traps.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-x86/traps.h
++++ linux-2.6.27-rc7/include/asm-x86/traps.h
+@@ -36,6 +36,16 @@ void do_invalid_op(struct pt_regs *, lon
+ void do_general_protection(struct pt_regs *, long);
+ void do_nmi(struct pt_regs *, long);
+ 
++static inline int get_si_code(unsigned long condition)
++{
++	if (condition & DR_STEP)
++		return TRAP_TRACE;
++	else if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
++		return TRAP_HWBKPT;
++	else
++		return TRAP_BRKPT;
++}
++
+ extern int panic_on_unrecovered_nmi;
+ extern int kstack_depth_to_print;
+ 
+Index: linux-2.6.27-rc7/include/asm-x86/ptrace.h
+===================================================================
+--- linux-2.6.27-rc7.orig/include/asm-x86/ptrace.h
++++ linux-2.6.27-rc7/include/asm-x86/ptrace.h
+@@ -143,7 +143,7 @@ convert_ip_to_linear(struct task_struct 
+ 
+ #ifdef CONFIG_X86_32
+ extern void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
+-			 int error_code);
++			 int error_code, int si_code);
+ #else
+ void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
+ #endif
