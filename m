@@ -1,23 +1,23 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id CE001DE048
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 02:22:57 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Tue, 23 Sep 2008 17:53:58 +0200
-To: Srinivasa Ds <srinivasa@in.ibm.com>
-Subject: Re: [RFC][PATCH] Demultiplexing SIGTRAP signal -v2
-Message-ID: <20080923155358.GA15776@iram.es>
-References: <200809221602.32616.srinivasa@in.ibm.com>
-	<20080923112812.GL29021@elte.hu> <20080923113001.GA12531@elte.hu>
-	<200809231955.01564.srinivasa@in.ibm.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id A7D02DE074
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 02:31:58 +1000 (EST)
+Received: by gxk14 with SMTP id 14so4428686gxk.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 09:31:56 -0700 (PDT)
+Message-ID: <ed82fe3e0809230931h10101b3csdc0187c19bac1529@mail.gmail.com>
+Date: Tue, 23 Sep 2008 11:31:55 -0500
+From: "Timur Tabi" <timur@freescale.com>
+Sender: timur.tabi@gmail.com
+To: "Matthias Fuchs" <matthias.fuchs@esd-electronics.com>
+Subject: Re: [PATCH V2] powerpc: Fix Book-E watchdog timer interval setting
+In-Reply-To: <200809231704.56449.matthias.fuchs@esd-electronics.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200809231955.01564.srinivasa@in.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-parisc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, "H. Peter Anvin" <hpa@zytor.com>,
-	Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-	Roland McGrath <roland@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200808071448.06183.matthias.fuchs@esd-electronics.com>
+	<200809192328.36159.matthias.fuchs@esd-electronics.com>
+	<7CA29A12-6DC4-4939-9541-6270FE5D910A@kernel.crashing.org>
+	<200809231704.56449.matthias.fuchs@esd-electronics.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 23, 2008 at 07:55:01PM +0530, Srinivasa Ds wrote:
-> On Tuesday 23 September 2008 17:00:01 Ingo Molnar wrote:
-> 
-> > > applied to [the new topic] tip/core/signal, thanks Srinivasa! There
-> > > are some other pending x86 signal changes already, so i based
-> > > tip/core/signal on tip/x86/signal.
-> >
-> > -tip testing found the following build error with the attached config:
-> >
-> 
-> Ingo, Reproduced build break issue with your config on tip tree. It was a costly overlook 
-> to miss one header file. I included it in this patch and tested it out.
-> 
-> 
-> Currently a SIGTRAP can denote any one of below reasons.
-> 	- Breakpoint hit
-> 	- H/W debug register hit
-> 	- Single step
-> 	- Signal sent through kill() or rasie()
+On Tue, Sep 23, 2008 at 10:04 AM, Matthias Fuchs
+<matthias.fuchs@esd-electronics.com> wrote:
+>  #ifdef CONFIG_FSL_BOOKE
+>  #define WDTP(x)                ((((63-x)&0x3)<<30)|(((63-x)&0x3c)<<15))
+> +#define WDTP_MASK      (WDTP(63))
 
-Typo: s/rasie/raise/
+WDTP(63) is "((((63-63)&0x3)<<30)|(((63-63)&0x3c)<<15))", which is
+equal to 0.  Shouldn't WDTP_MASK be equal to "(3 << 30) | (15 << 15)"?
 
-No strong opinion about the patch, but more info is usually better.
-
-	Regards,
-	Gabriel
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
