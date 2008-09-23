@@ -1,20 +1,18 @@
-Return-Path: <vgallardo@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 75F9FDDEEA
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 09:54:50 +1000 (EST)
+Return-Path: <wsa@pengutronix.de>
+Date: Tue, 23 Sep 2008 06:53:44 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Merge linuxppc-embedded with linuxppc-dev
+Message-ID: <20080923045344.GA14897@pengutronix.de>
+References: <fa686aa40809221508q22e23e53s2140b17de83bcb1a@mail.gmail.com>
+	<200809230909.12785.jk@ozlabs.org>
+	<4078F175-8422-42CC-8145-333D1362CEFE@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: [PATCH v2] Add AMCC Arches eval board support to platforms/44x
-Date: Mon, 22 Sep 2008 16:54:46 -0700
-Message-ID: <0CA0A16855646F4FA96D25A158E299D6050D1CEF@SDCEXCHANGE01.ad.amcc.com>
-In-Reply-To: <20080919133936.27d2a09f@zod.rchland.ibm.com>
-From: "Victor Gallardo" <vgallardo@amcc.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Feng Kan <fkan@amcc.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
+In-Reply-To: <4078F175-8422-42CC-8145-333D1362CEFE@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Jeremy Kerr <jk@ozlabs.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Josh,=20
 
+--yrj/dFKFPuw6o+aM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Sep 22, 2008 at 06:34:37PM -0500, Kumar Gala wrote:
+
+>>> Can we eliminate the linuxppc-embedded mailing list and merge it with
+>>> linuxppc-dev?
+>>
+>> That's not really up to me - more of a community question I think. I
+>> imagine Paul would have the final decision though.
 >
->You need to look in the 'next' branch.
+> I'm pretty sure I saw paul gripe about this on irc just the other day.
 >
-> =
-http://git.kernel.org/?p=3Dlinux/kernel/git/jwboyer/powerpc-4xx.git;a=3Dt=
-ree;f=3Darch/powerpc/platforms/44x;h=3Dc5cae8d37f170193ed45b7b76e3cb2cbb8=
-be927a;hb=3Dnext
->
->josh
+> My vote is to kill linuxppc-embedded.
 
-I am not sure how to get your next branch.
+I also think one list will suffice nowadays.
 
-I usually just use the following command.
+   Wolfram
 
-git clone =
-git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git =
-linux-ppc4xx
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
 
-How do I get the next branch?
+--yrj/dFKFPuw6o+aM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Thank You,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Victor Gallardo
+iEYEARECAAYFAkjYdlgACgkQD27XaX1/VRu3OACfWzyckAO0YR/IM0TbUll1AJ8G
+zngAoJ+f5dT/nAF1VrF9GbTv0J50WwDU
+=7SSs
+-----END PGP SIGNATURE-----
+
+--yrj/dFKFPuw6o+aM--
