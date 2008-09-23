@@ -1,15 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: irq_disable() not working
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wolfgang Grandegger <wg@grandegger.com>
-In-Reply-To: <48D8B214.2050706@grandegger.com>
-References: <48D8B214.2050706@grandegger.com>
-Content-Type: text/plain
-Date: Tue, 23 Sep 2008 19:20:34 +1000
-Message-Id: <1222161634.12085.138.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id 3C78DDDE04
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 19:31:11 +1000 (EST)
+Message-ID: <48D8B225.4000709@matrix-vision.de>
+Date: Tue, 23 Sep 2008 11:08:53 +0200
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+MIME-Version: 1.0
+To: Tjernlund <tjernlund@tjernlund.se>
+Subject: Re: IRQ2-4 number to use on mpc83xx?
+References: <062501c91d03$0c46be40$24d43ac0$@se>
+In-Reply-To: <062501c91d03$0c46be40$24d43ac0$@se>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,22 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-09-23 at 11:08 +0200, Wolfgang Grandegger wrote:
-> I'm trying to understand how irq_disable() is supposed to work on
-> PowerPC systems. Most PowerPC PIC do *not* implement the enable and
-> disable, but just the unmask and mask methods, e.g:
-> 
->   http://lxr.linux.no/linux+v2.6.26.5/arch/powerpc/sysdev/mpic.c#L867
-> 
-> The irq_disable() function will then call the default function
-> default_disable():
-> 
->   http://lxr.linux.no/linux+v2.6.26.5/kernel/irq/chip.c#L234
-> 
-> which does not *nothing*. I do not see how the interrupt gets disabled
-> on the hardware level. Obviously I have missed something. TIA for
-> clarification.
+I can only tell how I do on MPC834x :
 
-Lazy masking ? ie, look what happens if the irq happens while disabled.
+Table 8-6. IVEC/CVEC/MVEC Field Definition
 
-Ben.
+Interrupt ID Number         Interrupt Meaning
+17                                           IRQ1
+18                                           IRQ2
+19                                           IRQ3
+20                                           IRQ4
+21                                           IRQ5
+22                                           IRQ6
+23                                           IRQ7
+48                                           IRQ0
+
+
+Given this I can use this dts section for PCI devices connected @ IRQ0
+and IRQ1
+
+interrupt-map = <0x5800 0 0 1 &ipic 0x30 0x8
+                                 0x6000 0 0 1 &ipic 0x11 0x8
+                                 0x6000 0 0 2 &ipic 0x11 0x8>;
+
+You should be able to use IRQ-Nr 18-20 for IRQ2-4.
+
+regards,
+Andre
+
+Tjernlund schrieb:
+> I am trying to figure out what IRQ number I should use for 
+> external IRQ pins IRQ2-4. Can somebody please drop me a note
+> on how the IRQ numbering works?
+>
+>     Jocke 
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>   
+
+
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
