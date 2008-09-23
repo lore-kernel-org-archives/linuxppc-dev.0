@@ -1,18 +1,19 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
-	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 79E58DDDE1
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 22:36:23 +1000 (EST)
-Received: by gxk14 with SMTP id 14so4099259gxk.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 05:36:21 -0700 (PDT)
-Date: Tue, 23 Sep 2008 08:35:20 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: EMAC patches
-Message-ID: <20080923123520.GB10837@yoda.jdub.homelinux.org>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 5BFEADDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 22:37:36 +1000 (EST)
+Date: Tue, 23 Sep 2008 16:37:16 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: [PATCH v4] powerpc: gpio driver for mpc8349/8572/8610 and
+	compatible
+Message-ID: <20080923123716.GA30625@oksana.dev.rtsoft.ru>
+References: <1222095582-19918-1-git-send-email-jacmet@sunsite.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Josh Boyer <jwboyer@gmail.com>
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <1222095582-19918-1-git-send-email-jacmet@sunsite.dk>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Ben,
+On Mon, Sep 22, 2008 at 04:59:42PM +0200, Peter Korsgaard wrote:
+> Structured similar to the existing QE GPIO support.
+> 
+> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
 
-What's your plan for the existing set of EMAC patches?  I'm just curious if
-you plan to send them through my tree (Jeff acked my set), or if you are
-going to ask Jeff to pull them into his.
+Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-I could keep an emac branch in my git tree based on whatever you think is
-best without much effort if that would help you at all.  If not, I just
-need to sort out how to land all the pieces for various board ports at one
-time.
 
-josh
+Thanks!
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
