@@ -1,19 +1,25 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from mail.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id E71F1DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 21:08:57 +1000 (EST)
-Subject: Re: IRQ2-4 number to use on mpc83xx?
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>
-In-Reply-To: <48D8B225.4000709@matrix-vision.de>
-References: <062501c91d03$0c46be40$24d43ac0$@se>
-	<48D8B225.4000709@matrix-vision.de>
-Content-Type: text/plain
-Date: Tue, 23 Sep 2008 13:08:48 +0200
-Message-Id: <1222168128.12624.125.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C8FE7DDDF6
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 21:28:43 +1000 (EST)
+Date: Tue, 23 Sep 2008 13:28:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srinivasa Ds <srinivasa@in.ibm.com>
+Subject: Re: [RFC][PATCH] Demultiplexing SIGTRAP signal
+Message-ID: <20080923112812.GL29021@elte.hu>
+References: <200809221602.32616.srinivasa@in.ibm.com>
+	<200809221841.27993.srinivasa@in.ibm.com>
+	<20080922145404.GC27956@elte.hu>
+	<200809231523.52802.srinivasa@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200809231523.52802.srinivasa@in.ibm.com>
+Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	"H. Peter Anvin" <hpa@zytor.com>, akpm@linux-foundation.org,
+	Thomas Gleixner <tglx@linutronix.de>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +29,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-09-23 at 11:08 +0200, Andre Schwarz wrote:
-> I can only tell how I do on MPC834x :
-> 
-> Table 8-6. IVEC/CVEC/MVEC Field Definition
-> 
-> Interrupt ID Number         Interrupt Meaning
-> 17                                           IRQ1
-> 18                                           IRQ2
-> 19                                           IRQ3
-> 20                                           IRQ4
-> 21                                           IRQ5
-> 22                                           IRQ6
-> 23                                           IRQ7
-> 48                                           IRQ0
-> 
-> 
-> Given this I can use this dts section for PCI devices connected @ IRQ0
-> and IRQ1
-> 
-> interrupt-map = <0x5800 0 0 1 &ipic 0x30 0x8
->                                  0x6000 0 0 1 &ipic 0x11 0x8
->                                  0x6000 0 0 2 &ipic 0x11 0x8>;
-> 
-> You should be able to use IRQ-Nr 18-20 for IRQ2-4.
 
-Yes, that makes sense. Thanks.
+* Srinivasa Ds <srinivasa@in.ibm.com> wrote:
 
- Jocke
+> On Monday 22 September 2008 20:24:04 Ingo Molnar wrote:
+> > * Srinivasa Ds <srinivasa@in.ibm.com> wrote:
+> > > --- linux-2.6.27-rc7.orig/arch/ia64/include/asm/siginfo.h
+> > > +++ linux-2.6.27-rc7/arch/ia64/include/asm/siginfo.h
+> >
+> > please do not send patches that modify include/asm/ files, the
+> > include/asm-x86/ file should be modified instead.
+> >
+> > (this problem will go away in v2.6.28 when we'll move include/asm-x86/
+> > to arch/x86/include/)
+> >
+> 
+> Ingo, Sorry if I have confused you. [...]
+
+hah, indeed - i mis-read them as include/asm/.
+
+> Currently a SIGTRAP can denote any one of below reasons.
+> 	- Breakpoint hit
+> 	- H/W debug register hit
+> 	- Single step
+> 	- Signal sent through kill() or rasie()
+> 
+> Architectures like powerpc/parisc provides infrastructure to 
+> demultiplex SIGTRAP signal by passing down the information for 
+> receiving SIGTRAP through si_code of siginfot_t structure. Here is an 
+> attempt is generalise this infrastructure by extending it to x86 and 
+> x86_64 archs.
+
+applied to [the new topic] tip/core/signal, thanks Srinivasa! There are 
+some other pending x86 signal changes already, so i based 
+tip/core/signal on tip/x86/signal.
+
+Roland, any opinion on this change?
+
+	Ingo
