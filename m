@@ -1,24 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.175])
-	by ozlabs.org (Postfix) with ESMTP id 9E664DDEDA
+Return-Path: <rlefevre@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
+	by ozlabs.org (Postfix) with ESMTP id 8664BDE374
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Sep 2008 00:53:03 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so2377539wfg.15
+	Wed, 24 Sep 2008 01:32:36 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id n7so1400960wag.13
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Sep 2008 07:53:02 -0700 (PDT)
-Date: Tue, 23 Sep 2008 08:53:00 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Jani.Sarkijarvi@elektrobit.com
-Subject: Re: TQM5200 I2C Second bus
-Message-ID: <20080923145300.GB13593@secretlab.ca>
-References: <3E32F84CD6CB95498A35B353CA3B930C01A179F3@fioues08.ebgroup.elektrobit.com>
-	<200809191557.59072.jbe@pengutronix.de>
-	<3E32F84CD6CB95498A35B353CA3B930C01C2C6B8@fioues08.ebgroup.elektrobit.com>
+	Tue, 23 Sep 2008 08:32:35 -0700 (PDT)
+Message-ID: <4e0b9cb00809230832r47904417xc4eb5b3159f4f21f@mail.gmail.com>
+Date: Tue, 23 Sep 2008 17:32:35 +0200
+From: "Remi Lefevre" <rlefevre@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Problem with flush_icache_range, linux-2.6.27-rc7-denx & mpc8270
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <3E32F84CD6CB95498A35B353CA3B930C01C2C6B8@fioues08.ebgroup.elektrobit.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -29,62 +23,113 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 23, 2008 at 05:39:05PM +0300, Jani.Sarkijarvi@elektrobit.com wrote:
->  
-> It is very possible that, setting are not right. I found from mpc5200 manual this register: (MBAR + 0x0B00, GPS, GPIO Standard registers). Where should be right place to modify those register?
+Hello,
 
-Ideally, your U-Boot port should set the correct value for port config.
-If you are unable to modify U-Boot, then you can clone
-arch/powerpc/platform/52xx/mpc5200_simple.c for the tqm5200 board and
-put the port_config fixup in there.
+I'm new to PowerPC and encounter some problems booting Linux on a custom
+MPC8270 board.
 
-arch/powerpc/platform/52xx/lite5200.c exists for the exact same reason.
-Look at the lite5200_fix_port_config() function.
+The boot sequence goes wrong at the begining of the MMU init, in MMU_init_h=
+w().
 
-g.
+[arch/powerpc/mm/ppc_mmu_32.c]
+...
+    if (!cpu_has_feature(CPU_FTR_HPTE_TABLE)) {
+        /*
+         * Put a blr (procedure return) instruction at the
+         * start of hash_page, since we can still get DSI
+         * exceptions on a 603.
+         */
+        hash_page[0] =3D 0x4e800020;
+        flush_icache_range((unsigned long) &hash_page[0],      <- Never ret=
+urns
+                   (unsigned long) &hash_page[1]);
+        return;
+    }
+...
 
-> 
-> BR,
-> 
-> Jani Särkijärvi
-> 
-> -----Original Message-----
-> From: Juergen Beisert [mailto:jbe@pengutronix.de] 
-> Sent: 19 September 2008 16:58
-> To: linuxppc-embedded@ozlabs.org
-> Cc: Särkijärvi, Jani
-> Subject: Re: TQM5200 I2C Second bus
-> 
-> On Freitag, 19. September 2008, Jani.Sarkijarvi@elektrobit.com wrote:
-> > Hi,
-> >
-> > I'm using TQM5200 (MPC5200) chip with linux-2.6-denx. Problem is to 
-> > get second I2c bus to work (/dev/i2c-0) . /dev/i2c-1 seems to be 
-> > internal bus and I can read ex. lm75 temperature sensor, also I can 
-> > see traffic in oscilloscope (only error is "I2C: No RXAK", but it 
-> > seems to be working). My .dts setup is:
-> 
-> Is your "GPS Port Configuration Register" setting correct?
-> 
-> jbe
-> 
-> --
-> Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
->  Pengutronix - Linux Solutions for Science and Industry
->     Handelsregister: Amtsgericht Hildesheim, HRA 2686
->          Vertretung Sued/Muenchen, Germany
->    Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
-> 
-> 
-> ----------------------------------------------------------------
-> Please note: This e-mail may contain confidential information
-> intended solely for the addressee. If you have received this
-> e-mail in error, please do not disclose it to anyone, notify
-> the sender promptly, and delete the message from your system.
-> Thank you.
-> 
+the problem in flush_icache_range occurs when the first cache block is copi=
+ed
+to memory, at dcbst instruction:
 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+[arch/powerpc/kernel/misc_32.S]
+...
+_KPROBE(__flush_icache_range)
+BEGIN_FTR_SECTION
+    blr             /* for 601, do nothing */
+END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+    li  r5,L1_CACHE_BYTES-1
+    andc    r3,r3,r5
+    subf    r4,r3,r4
+    add r4,r4,r5
+    srwi.   r4,r4,L1_CACHE_SHIFT
+    beqlr
+    mtctr   r4
+    mr  r6,r3
+1:  dcbst   0,r3                                  <- Control is lost here
+    addi    r3,r3,L1_CACHE_BYTES
+    bdnz    1b
+    sync
+...
+
+By stepping, I lose debugger control at this point. No exception seems to
+occur.  No more log is stored in the log buffer. The instruction seems to
+never end.
+
+L1_CACHE_BYTES has the value (1 << 5), corresponding the CONFIG_PPC32
+config.
+
+R0    00030040
+R1    C0311FC0
+R2    C02F7578
+R3    C0014B20
+R4           1
+R5          1F
+R6    C031B456
+R7    C0320000
+
+
+Any idea on possible causes or ways to improve my investigations would be
+greatly appreciated.
+
+Best regards,
+R=E9mi Lefevre
+
+---
+
+Versions:
+
+(U-Boot 1.3.4)
+linux-2.6-denx.git from today
+(linux-2.6-denx-63646fc60b177cfc511d8d35a9134902f41f9898)
+
+Kernel configuration is identical to pq2fads:
+
+CONFIG_6xx=3Dy
+CONFIG_PPC_FPU=3Dy
+CONFIG_PPC_STD_MMU=3Dy
+CONFIG_PPC_STD_MMU_32=3Dy
+CONFIG_PPC32=3Dy
+CONFIG_WORD_SIZE=3D32
+CONFIG_PPC_MERGE=3Dy
+CONFIG_MMU=3Dy
+CONFIG_GENERIC_CMOS_UPDATE=3Dy
+CONFIG_GENERIC_TIME=3Dy
+CONFIG_GENERIC_TIME_VSYSCALL=3Dy
+CONFIG_GENERIC_CLOCKEVENTS=3Dy
+CONFIG_GENERIC_HARDIRQS=3Dy
+CONFIG_IRQ_PER_CPU=3Dy
+CONFIG_RWSEM_XCHGADD_ALGORITHM=3Dy
+CONFIG_ARCH_HAS_ILOG2_U32=3Dy
+CONFIG_GENERIC_HWEIGHT=3Dy
+CONFIG_GENERIC_CALIBRATE_DELAY=3Dy
+CONFIG_GENERIC_FIND_NEXT_BIT=3Dy
+CONFIG_PPC=3Dy
+CONFIG_EARLY_PRINTK=3Dy
+CONFIG_GENERIC_NVRAM=3Dy
+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=3Dy
+CONFIG_ARCH_MAY_HAVE_PC_FDC=3Dy
+CONFIG_PPC_OF=3Dy
+CONFIG_OF=3Dy
+CONFIG_AUDIT_ARCH=3Dy
+CONFIG_GENERIC_BUG=3Dy
+CONFIG_DEFAULT_UIMAGE=3Dy
