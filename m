@@ -1,20 +1,43 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7D170DE3A3
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 01:42:36 +1000 (EST)
-Message-Id: <FBA9C9D8-03C8-4297-9641-9C733D342F9D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-In-Reply-To: <1222184138-6151-1-git-send-email-jacmet@sunsite.dk>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v5] powerpc: gpio driver for mpc8349/8572/8610 and
-	compatible
-Date: Tue, 23 Sep 2008 10:42:32 -0500
-References: <1222184138-6151-1-git-send-email-jacmet@sunsite.dk>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E37D6DE6B6
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 01:44:50 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id m8NFhjXO111748
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 15:43:45 GMT
+Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
+	[9.149.165.212])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
+	ESMTP id m8NFhj6w3252362
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 17:43:45 +0200
+Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m8NFhfoS016737
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 17:43:41 +0200
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
+	hardirq preemption, eHCA is close
+Date: Tue, 23 Sep 2008 17:43:23 +0200
+References: <20080915100406.342e027a@bull.net>
+	<OFD7842B7A.ADC47EED-ONC12574C8.003A2CB3-C12574C8.003AC948@de.ibm.com>
+	<20080918143146.77db81d5@bull.net>
+In-Reply-To: <20080918143146.77db81d5@bull.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200809231743.23828.ossthema@de.ibm.com>
+Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, tinytim@us.ibm.com,
+	Linux-rt <linux-rt-users@vger.kernel.org>,
+	Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	jean-pierre.dion@bull.net, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Benjamin Herrenschmidt <bherren@au1.ibm.com>,
+	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
+	Christoph Raisch <RAISCH@de.ibm.com>, gilles.carry@ext.bull.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +47,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Sep 23, 2008, at 10:35 AM, Peter Korsgaard wrote:
+I think these are the "functional" changes that need to be included in
+the ibmebus driver. We'll add a RT flag in the final version to enable
+these changes only for RT-Linux for now. 
+Ben, can you / your team look into the implementation
+of the set_irq_type functionality needed for XICS?
 
-> Structured similar to the existing QE GPIO support.
->
-> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
-> Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> Changes since v4:
-> - Respun against powerpc-next, no functional changes
-> - Added Anton's ack
->
-> Changes since v3:
-> - Incorporated feedback from Anton
->
-> Changes since v2:
-> - Clarified documentation as requested by Kumar.
->
-> Changes since v1:
-> Incorporated feedback from Anton and Kumar:
-> - Core is also used on 8572/8610 so s/83xx/8xxx/
-> - Use fsl,mpc8572-gpio / fsl,mpc8610-gpio for 85xx/86xx as compatible
-> - Use shadowed data register to handle open drain outputs
-> - Expandend dts binding doc, use 8347 as example instead of 8349
-> - Misc small cleanups
+Regards,
+Jan-Bernd & Christoph
 
-applied.
-
-- k
+diff -Nurp b/arch/powerpc/kernel/ibmebus.c a/arch/powerpc/kernel/ibmebus.c
+--- b/arch/powerpc/kernel/ibmebus.c	2008-09-22 00:29:55.000000000 +0200
++++ a/arch/powerpc/kernel/ibmebus.c	2008-09-23 12:04:53.000000000 +0200
+@@ -216,12 +216,16 @@ int ibmebus_request_irq(u32 ist, irq_han
+ 			unsigned long irq_flags, const char *devname,
+ 			void *dev_id)
+ {
++	int ret;
+ 	unsigned int irq = irq_create_mapping(NULL, ist);
+ 
+ 	if (irq == NO_IRQ)
+ 		return -EINVAL;
+ 
+-	return request_irq(irq, handler, irq_flags, devname, dev_id);
++	ret = request_irq(irq, handler, irq_flags, devname, dev_id);
++	set_irq_type(irq, IRQ_TYPE_EDGE_RISING);
++
++	return ret;
+ }
+ EXPORT_SYMBOL(ibmebus_request_irq);
+ 
