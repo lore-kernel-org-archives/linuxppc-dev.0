@@ -1,19 +1,18 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	by ozlabs.org (Postfix) with ESMTP id 8D9D7DDDDB
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 22:27:41 +1000 (EST)
-Date: Tue, 23 Sep 2008 13:07:15 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [i2c] [PATCH 2/2] i2c: MPC8349E-mITX Power Management and
-	GPIO	expander driver
-Message-ID: <20080923120713.GC32245@sirena.org.uk>
-References: <20080919180354.GB13899@oksana.dev.rtsoft.ru>
-	<20080922224540.GM2716@fluff.org.uk>
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 79E58DDDE1
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 22:36:23 +1000 (EST)
+Received: by gxk14 with SMTP id 14so4099259gxk.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 05:36:21 -0700 (PDT)
+Date: Tue, 23 Sep 2008 08:35:20 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: EMAC patches
+Message-ID: <20080923123520.GB10837@yoda.jdub.homelinux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080922224540.GM2716@fluff.org.uk>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 22, 2008 at 11:45:40PM +0100, Ben Dooks wrote:
+Hi Ben,
 
-> I've also a driver for a similar PMU fitted to a number
-> of our boards that provides basic gpio (wakeup sources) and some
-> minimalist power management (so isn't really fit for regulator
-> framwork) and isn't really a gpio chip (so drivers/gpio isn't
-> really the place for it either.)
+What's your plan for the existing set of EMAC patches?  I'm just curious if
+you plan to send them through my tree (Jeff acked my set), or if you are
+going to ask Jeff to pull them into his.
 
-FWIW the regulator framework does have support for representing things
-as limited as completely non-controllable regulators so it may still be
-worth considering that.  It at least provides a degree of abstraction
-for the clients in case they are used with more complex regulators and
-would allow integration of your PMU with more complex secondary
-regulators.  May not be worth the bother, though.
+I could keep an emac branch in my git tree based on whatever you think is
+best without much effort if that would help you at all.  If not, I just
+need to sort out how to land all the pieces for various board ports at one
+time.
+
+josh
