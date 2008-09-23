@@ -1,14 +1,20 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id C9A9FDE3B1
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 01:38:09 +1000 (EST)
-Message-ID: <48D90D5D.5000105@harris.com>
-Date: Tue, 23 Sep 2008 11:38:05 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
-MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: AMCC 440 SPI question
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7D170DE3A3
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 01:42:36 +1000 (EST)
+Message-Id: <FBA9C9D8-03C8-4297-9641-9C733D342F9D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+In-Reply-To: <1222184138-6151-1-git-send-email-jacmet@sunsite.dk>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH v5] powerpc: gpio driver for mpc8349/8572/8610 and
+	compatible
+Date: Tue, 23 Sep 2008 10:42:32 -0500
+References: <1222184138-6151-1-git-send-email-jacmet@sunsite.dk>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,30 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The yosemite.dts has the following entry, which leads me to believe
-that there is SPI support.  I'd like to do something similar for a
-Sequoia board, but looking in Josh's "next" branch, I don't see any
-driver that would recognize the spi-440ep string.  So my question is,
-is there a SPI driver for the PPC440, that is .dts aware?
 
-			spi@ef600900 {
-				compatible = "amcc,spi-440ep";
-				reg = <ef600900 6>;
-				interrupts = <8 4>;
-				interrupt-parent = <&UIC0>;
-			};
+On Sep 23, 2008, at 10:35 AM, Peter Korsgaard wrote:
 
-Also, googling for a driver, I find the patch that introduced this
-.dts file:
+> Structured similar to the existing QE GPIO support.
+>
+> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+> Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> Changes since v4:
+> - Respun against powerpc-next, no functional changes
+> - Added Anton's ack
+>
+> Changes since v3:
+> - Incorporated feedback from Anton
+>
+> Changes since v2:
+> - Clarified documentation as requested by Kumar.
+>
+> Changes since v1:
+> Incorporated feedback from Anton and Kumar:
+> - Core is also used on 8572/8610 so s/83xx/8xxx/
+> - Use fsl,mpc8572-gpio / fsl,mpc8610-gpio for 85xx/86xx as compatible
+> - Use shadowed data register to handle open drain outputs
+> - Expandend dts binding doc, use 8347 as example instead of 8349
+> - Misc small cleanups
 
-Patch: [PATCH 1/3][POWERPC] 4xx: Add AMCC 440EP Yosemite DTS
-patchwork.ozlabs.org/linuxppc/patch?id=16992
+applied.
 
-However, when I click on the patchwork link, I get a 404 error.
-Perhaps this just means the patch is old and has been removed
-from patchwork.  But since it is a "1 of 3", I was hoping one of
-the other parts would contain the actual spi-440ep driver code.
-
-Hints greatly appreciated!
-
-	Steve
+- k
