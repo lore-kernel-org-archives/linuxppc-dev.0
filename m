@@ -1,21 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mingo@elte.hu>
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3E8E2DDEE2
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 00:28:26 +1000 (EST)
-Message-Id: <394A6D0B-6A34-4973-BF14-66961724FC48@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-In-Reply-To: <20080923123716.GA30625@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v4] powerpc: gpio driver for mpc8349/8572/8610 and
-	compatible
-Date: Tue, 23 Sep 2008 09:28:22 -0500
-References: <1222095582-19918-1-git-send-email-jacmet@sunsite.dk>
-	<20080923123716.GA30625@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id 7F07BDDF35
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 00:31:46 +1000 (EST)
+Date: Tue, 23 Sep 2008 16:31:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srinivasa Ds <srinivasa@in.ibm.com>
+Subject: Re: [RFC][PATCH] Demultiplexing SIGTRAP signal -v2
+Message-ID: <20080923143120.GD14041@elte.hu>
+References: <200809221602.32616.srinivasa@in.ibm.com>
+	<20080923112812.GL29021@elte.hu> <20080923113001.GA12531@elte.hu>
+	<200809231955.01564.srinivasa@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200809231955.01564.srinivasa@in.ibm.com>
+Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	"H. Peter Anvin" <hpa@zytor.com>, akpm@linux-foundation.org,
+	Thomas Gleixner <tglx@linutronix.de>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +29,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 23, 2008, at 7:37 AM, Anton Vorontsov wrote:
+* Srinivasa Ds <srinivasa@in.ibm.com> wrote:
 
-> On Mon, Sep 22, 2008 at 04:59:42PM +0200, Peter Korsgaard wrote:
->> Structured similar to the existing QE GPIO support.
->>
->> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
->
-> Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > -tip testing found the following build error with the attached 
+> > config:
+> 
+> Ingo, Reproduced build break issue with your config on tip tree. It 
+> was a costly overlook to miss one header file. I included it in this 
+> patch and tested it out.
 
-Peter, can you respin.  Doesn't seem to apply cleanly to latest  
-powerpc-next since paulus merged in things.
+thanks - applied the delta fix below to tip/core/signal.
 
-- k
+	Ingo
+
+--------------->
+>From e8d3f455de4f42d4bab2f6f1aeb2cf3bd18eb508 Mon Sep 17 00:00:00 2001
+From: Srinivasa Ds <srinivasa@in.ibm.com>
+Date: Tue, 23 Sep 2008 15:23:52 +0530
+Subject: [PATCH] signals: demultiplexing SIGTRAP signal, fix
+
+fix build breakage, missing header file.
+
+Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/asm-x86/traps.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/include/asm-x86/traps.h b/include/asm-x86/traps.h
+index 4b1e904..7a692ba 100644
+--- a/include/asm-x86/traps.h
++++ b/include/asm-x86/traps.h
+@@ -1,6 +1,8 @@
+ #ifndef ASM_X86__TRAPS_H
+ #define ASM_X86__TRAPS_H
+ 
++#include <asm/debugreg.h>
++
+ /* Common in X86_32 and X86_64 */
+ asmlinkage void divide_error(void);
+ asmlinkage void debug(void);
