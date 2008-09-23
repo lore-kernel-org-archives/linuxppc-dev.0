@@ -1,18 +1,24 @@
-Return-Path: <mike.koss@ngc.com>
+Return-Path: <jacmet@gmail.com>
+Received: from gv-out-0910.google.com (gv-out-0910.google.com [216.239.58.190])
+	by ozlabs.org (Postfix) with ESMTP id 4CEC5DDDF3
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 01:34:39 +1000 (EST)
+Received: by gv-out-0910.google.com with SMTP id y18so150151gvf.14
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 08:34:37 -0700 (PDT)
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v4] powerpc: gpio driver for mpc8349/8572/8610 and
+	compatible
+References: <1222095582-19918-1-git-send-email-jacmet@sunsite.dk>
+	<20080923123716.GA30625@oksana.dev.rtsoft.ru>
+	<394A6D0B-6A34-4973-BF14-66961724FC48@kernel.crashing.org>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Tue, 23 Sep 2008 17:34:34 +0200
+In-Reply-To: <394A6D0B-6A34-4973-BF14-66961724FC48@kernel.crashing.org> (Kumar
+	Gala's message of "Tue\, 23 Sep 2008 09\:28\:22 -0500")
+Message-ID: <87fxnqswol.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Merge linuxppc-embedded with linuxppc-dev
-Date: Tue, 23 Sep 2008 09:55:54 -0500
-Message-ID: <EDAE140DF1B2FC42B5867C22CA0B333FFA5E11@XMBIL132.northgrum.com>
-In-Reply-To: <20080923045344.GA14897@pengutronix.de>
-References: <fa686aa40809221508q22e23e53s2140b17de83bcb1a@mail.gmail.com><200809230909.12785.jk@ozlabs.org><4078F175-8422-42CC-8145-333D1362CEFE@kernel.crashing.org>
-	<20080923045344.GA14897@pengutronix.de>
-From: "Koss, Mike (Mission Systems)" <mike.koss@ngc.com>
-To: "Wolfram Sang" <w.sang@pengutronix.de>,
-	"Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Jeremy Kerr <jk@ozlabs.org>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> Can we eliminate the linuxppc-embedded mailing list and merge it=20
->>>> with linuxppc-dev?
->>>
->>> That's not really up to me - more of a community question I think. I
+>>>>> "Kumar" == Kumar Gala <galak@kernel.crashing.org> writes:
 
->>> imagine Paul would have the final decision though.
->>
->> I'm pretty sure I saw paul gripe about this on irc just the other
-day.
->>
->> My vote is to kill linuxppc-embedded.
->
-> I also think one list will suffice nowadays.
->
->    Wolfram
+Hi,
 
-I liked not having to deal w/ all of the desktop/Cell traffic, but I
-have to be signed up for both lists to watch all of it anyways since
-some embedded never made it to the -embedded list.=20
+ Kumar> Peter, can you respin.  Doesn't seem to apply cleanly to latest
+ Kumar> powerpc-next since paulus merged in things.
 
-So my vote is "Yes" as well.
+Sure, it's on it's way.
 
-<goodbye embedded ::sniff::>
-
-- Mike
+-- 
+Bye, Peter Korsgaard
