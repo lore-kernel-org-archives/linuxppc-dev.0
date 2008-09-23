@@ -1,20 +1,22 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 006AEDDF2D
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 01:51:29 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so338439ywh.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 08:51:28 -0700 (PDT)
-Date: Tue, 23 Sep 2008 11:50:26 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Steven A. Falco" <sfalco@harris.com>
-Subject: Re: AMCC 440 SPI question
-Message-ID: <20080923155026.GA14099@yoda.jdub.homelinux.org>
-References: <48D90D5D.5000105@harris.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48D90D5D.5000105@harris.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <becky.bruce@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 23DFCDE3B4
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 02:13:47 +1000 (EST)
+Message-Id: <61BBBF2F-3DD0-47B0-B5FC-F6067C290B4D@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1221782981-4996-2-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH v9 2/4] powerpc: Fixes for CONFIG_PTE_64BIT for SMP support
+Date: Tue, 23 Sep 2008 11:13:32 -0500
+References: <1221782981-4996-1-git-send-email-galak@kernel.crashing.org>
+	<1221782981-4996-2-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 23, 2008 at 11:38:05AM -0400, Steven A. Falco wrote:
->The yosemite.dts has the following entry, which leads me to believe
->that there is SPI support.  I'd like to do something similar for a
->Sequoia board, but looking in Josh's "next" branch, I don't see any
->driver that would recognize the spi-440ep string.  So my question is,
->is there a SPI driver for the PPC440, that is .dts aware?
 
-There is no mainline driver, no.  There might be one in the DENX kernel
-tree.
+On Sep 18, 2008, at 7:09 PM, Kumar Gala wrote:
 
+> There are some minor issues with support 64-bit PTEs on a 32-bit  
+> processor
+> when dealing with SMP.
 >
->			spi@ef600900 {
->				compatible = "amcc,spi-440ep";
->				reg = <ef600900 6>;
->				interrupts = <8 4>;
->				interrupt-parent = <&UIC0>;
->			};
+> * We need to order the stores in set_pte_at to make sure the flag word
+>  is set second.
+> * Change pte_clear to use pte_update so only the flag word is cleared
+> * Added a WARN_ON to set_pte_at to ensure the pte isn't present for
+>  the 64-bit pte/SMP case (to ensure our assumption of this fact).
 >
->Also, googling for a driver, I find the patch that introduced this
->.dts file:
->
->Patch: [PATCH 1/3][POWERPC] 4xx: Add AMCC 440EP Yosemite DTS
->patchwork.ozlabs.org/linuxppc/patch?id=16992
->
->However, when I click on the patchwork link, I get a 404 error.
->Perhaps this just means the patch is old and has been removed
->from patchwork.  But since it is a "1 of 3", I was hoping one of
->the other parts would contain the actual spi-440ep driver code.
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-Patchwork was updated to a new version recently and the old one was either
-taken offline or moved elsewhere.  The set of patches that added Yosemite
-didn't include an SPI driver (I know, I wrote them).  I just enumerated
-the device in the DTS because it's on the board.
+This looks like what we discussed; and I've rebased my 8641 work on
+top of it and am building and booting and LTP-ing like a champ. So....
 
-josh
+Acked-by: Becky Bruce <becky.bruce!freescale.com>
+
+Cheers,
+B
