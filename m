@@ -1,23 +1,19 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ADA39DDDD4
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 07:51:39 +1000 (EST)
-Subject: Re: [Bugme-new] [Bug 11629] New: quad G5 fails to shut down
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080923143057.e3e54536.akpm@linux-foundation.org>
-References: <bug-11629-10286@http.bugzilla.kernel.org/>
-	<20080923143057.e3e54536.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-bZT6mzu6UiNw7XlROlBP"
-Date: Tue, 23 Sep 2008 23:50:42 +0200
-Message-Id: <1222206642.18015.47.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@elte.hu>, bugme-daemon@bugzilla.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id 5CF28DDF10
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 08:28:39 +1000 (EST)
+Message-Id: <F7E012CB-5062-496D-BECC-4B9EAFBD4D75@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Sebastian Siewior <bigeasy@linutronix.de>
+In-Reply-To: <20080923195404.GA10935@www.tglx.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [RFC] powerpc/boot: add kernel,end node to the cuboot target
+Date: Tue, 23 Sep 2008 17:28:25 -0500
+References: <20080923195404.GA10935@www.tglx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,63 +24,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-bZT6mzu6UiNw7XlROlBP
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Sep 23, 2008, at 2:54 PM, Sebastian Siewior wrote:
 
-On Tue, 2008-09-23 at 14:30 -0700, Andrew Morton wrote:
+> this could be used by the kexec userland code.
+>
+> Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
+> ---
+> This is done by the 64bit kexec code allready. The 32bit doesn't use  
+> the
+> device tree at all. I'm not sure whether the node has to be a 32bit or
+> 64bit value.
+>
+> arch/powerpc/boot/main.c |    6 +++---
+> 1 files changed, 3 insertions(+), 3 deletions(-)
 
-> > http://johannes.sipsolutions.net/files/dsc_2274.jpg
-> >=20
->=20
-> That went splat in the clockevents code.
+I missing why you are doing this?  Do you plan on using it w/32-bit  
+kexec?
 
-Yup.
-
-> I saw a pull request with several fixes float past this morning:
->=20
-> From: Ingo Molnar <mingo@elte.hu>
-> To: Linus Torvalds <torvalds@linux-foundation.org>
-> Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "=
-H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>
-> Subject: [git pull] timer fixes
-> Date: Tue, 23 Sep 2008 21:41:00 +0200
->=20
-> Fingers crossed..
-
-Ah, cool, I'll pull it in once I've verified this other problem I have
-with ftrace on the same box.
-
-> I'll mark this as a post-2.6.26 regression, although you seem a bit
-> wobbly on that.
-
-I was fairly sure it was ok with 2.6.26 but after checking it appears
-that the crash is a post-2.6.26 regression, but the failure to shutdown
-is not. Sorry, I've been following wireless-testing.git on this box for
-so long it slipped my mind.
-
-johannes
-
---=-bZT6mzu6UiNw7XlROlBP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJI2WSsAAoJEKVg1VMiehFYg3wP/RHMwWPcPyYn2jIk9v9JTmqP
-xvv2mijZFKXAffQXecpJTZ1YLUVRE6F22QmvOOo8uMFBEvtOp6MpvKUuPd24Ko4N
-n149cV2JFU08ikbnD+w5Xl3aoz8NWZEHRvyht+qAJcfPvHxuqiFBDcdUd3EjpM7C
-mVaCTKt5ZjW7bM1jm99ucCmBQCdvHxIEL9FseZIzOV2+Gk6mT2HFo5BgJAzJSD5/
-5N49YgbQYTP8fMBerz48BS+JRNkiwCqlqnlEXZW9Xi/l2GrdaPtGMniO3imCSo7M
-aRlh0EhBQLVjWVupjHie8wXOU4H1aO+VAeYsYOxngwCT7Ng5vsTs2hW3yPVsC6GA
-PeRasYyQa3GeIfN8VW45B1+91htwKe4bzDoX/O48TrkfbBnrqndtsCHf07KisdLM
-i1yJ7VFayIKms7ARwXt8+VnvcPQCL6XaJ1zzP+0TL//saARYip5Wo+l8WRI0mbLo
-VjoV4Gg6SQrxpDA0vLazHaX23xdCFBc8oB41tBNQVAm1XGokgyxljVdAWOj7egyH
-t+1AhCo3H2aX7EgKymACDVA1BcJWQCx80NdDfqtzFcSMwv0wTpN0UFisKd5LJmtj
-lYl8YRWUXc3ABv9Qd0TjI3G04DyN7ViEiEKHdTTi2OsnUKvmKg7mvQGBfMOcNMVu
-ga+EUr2Ah9i2/sf6G6Ec
-=vYpz
------END PGP SIGNATURE-----
-
---=-bZT6mzu6UiNw7XlROlBP--
+- k
