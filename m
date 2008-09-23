@@ -1,16 +1,19 @@
-Return-Path: <halesh.sadashiv@ap.sony.com>
-Received: from WA4EHSOBE002.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id 0E710DDD01
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id F105BDDECF
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Sep 2008 15:28:17 +1000 (EST)
+	Tue, 23 Sep 2008 15:46:22 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Regarding select() on PPC
+Date: Tue, 23 Sep 2008 07:46:02 +0200
+References: <7B7EF7F090B9804A830ACC82F2CDE95D56E14C@insardxms01.ap.sony.com>
+In-Reply-To: <7B7EF7F090B9804A830ACC82F2CDE95D56E14C@insardxms01.ap.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: Regarding select() on PPC
-Date: Tue, 23 Sep 2008 10:57:36 +0530
-Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D56E178@insardxms01.ap.sony.com>
-From: "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>
-To: <benh@kernel.crashing.org>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200809230746.03234.arnd@arndb.de>
+Cc: "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,41 +24,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Tuesday 23 September 2008, Sadashiiv, Halesh wrote:
+> 
+> >I'm trying to sort out how obsolete it actually is and see if we can
+> >remove the whole thing.
+> >
+> 
+> Ok...once you verified please let me know.
+> 
 
+I just did some more research. The bug was introduced with Linux-2.1.48,
+the same version in which Pauls name first appeared as the PPC guy
+in the MAINTAINERS file, over 11 years ago.
 
->-----Original Message-----
->From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
->Sent: Tuesday, September 23, 2008 10:41 AM
->To: Sadashiiv, Halesh
->Cc: Josh Boyer; linuxppc-embedded@ozlabs.org
->Subject: RE: Regarding select() on PPC
->
->
->> >Your patch should be submitted to the linuxppc-dev mailing list btw.
->> >
->>
->> Will do that.
->
->Don't bother for now. The right approach would be to just
->get rid of the wrappers I believe. I'm sorting that out.
->
+Before that, ppc used to have distinct implementations for oldselect
+(__NR_select) and select (__NR__newselect), because initially it shared
+the syscall numbers with i386 and that had replaced its oldselect
+with newselect in 1.3.0.
 
-Ok.Will wait, thanks a lot
+In essence, oldselect was already obsolete before it was introduced
+in the powerpc architecture, but for obscure reasons, some code
+must have confused the two calling conventions, so Cort introduced
+the wrapper that could handle either one, and used it for both
+syscalls. This of course made it theoretically impossible to ever
+fix the implementation without potentially breaking user space one
+way or another.
 
->Ben.
->
->
+The 32 bit emulation code never implemented a call behind __NR_select
+or the oldselect calling conventions, so anything relying on
+the legacy behaviour is broken there already.
 
+I would definitely switch over the ppc32 __NR_newselect implementation
+to sys_select. For __NR_select, there is no correct solution, the three
+options are the current ppc_select, the real sys_select or sys_ni_syscall.
+Each of these is broken in different ways, but in practice it will never
+be called anyway.
 
-Halesh
+I love archeology.
 
-
--------------------------------------------------------------------
-This email is confidential and intended only for the use of the =
-individual or entity named above and may contain information that is =
-privileged. If you are not the intended recipient, you are notified that =
-any dissemination, distribution or copying of this email is strictly =
-prohibited. If you have received this email in error, please notify us =
-immediately by return email or telephone and destroy the original =
-message. - This mail is sent via Sony Asia Pacific Mail Gateway.
--------------------------------------------------------------------
+	Arnd <><
