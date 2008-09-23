@@ -1,43 +1,20 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E37D6DE6B6
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 01:44:50 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id m8NFhjXO111748
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 15:43:45 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id m8NFhj6w3252362
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 17:43:45 +0200
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m8NFhfoS016737
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 17:43:41 +0200
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
-	hardirq preemption, eHCA is close
-Date: Tue, 23 Sep 2008 17:43:23 +0200
-References: <20080915100406.342e027a@bull.net>
-	<OFD7842B7A.ADC47EED-ONC12574C8.003A2CB3-C12574C8.003AC948@de.ibm.com>
-	<20080918143146.77db81d5@bull.net>
-In-Reply-To: <20080918143146.77db81d5@bull.net>
+Return-Path: <jwboyer@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id 006AEDDF2D
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 01:51:29 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so338439ywh.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 08:51:28 -0700 (PDT)
+Date: Tue, 23 Sep 2008 11:50:26 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: AMCC 440 SPI question
+Message-ID: <20080923155026.GA14099@yoda.jdub.homelinux.org>
+References: <48D90D5D.5000105@harris.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200809231743.23828.ossthema@de.ibm.com>
-Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, tinytim@us.ibm.com,
-	Linux-rt <linux-rt-users@vger.kernel.org>,
-	Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	jean-pierre.dion@bull.net, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Benjamin Herrenschmidt <bherren@au1.ibm.com>,
-	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
-	Christoph Raisch <RAISCH@de.ibm.com>, gilles.carry@ext.bull.net
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48D90D5D.5000105@harris.com>
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -47,35 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, Sep 23, 2008 at 11:38:05AM -0400, Steven A. Falco wrote:
+>The yosemite.dts has the following entry, which leads me to believe
+>that there is SPI support.  I'd like to do something similar for a
+>Sequoia board, but looking in Josh's "next" branch, I don't see any
+>driver that would recognize the spi-440ep string.  So my question is,
+>is there a SPI driver for the PPC440, that is .dts aware?
 
-I think these are the "functional" changes that need to be included in
-the ibmebus driver. We'll add a RT flag in the final version to enable
-these changes only for RT-Linux for now. 
-Ben, can you / your team look into the implementation
-of the set_irq_type functionality needed for XICS?
+There is no mainline driver, no.  There might be one in the DENX kernel
+tree.
 
-Regards,
-Jan-Bernd & Christoph
+>
+>			spi@ef600900 {
+>				compatible = "amcc,spi-440ep";
+>				reg = <ef600900 6>;
+>				interrupts = <8 4>;
+>				interrupt-parent = <&UIC0>;
+>			};
+>
+>Also, googling for a driver, I find the patch that introduced this
+>.dts file:
+>
+>Patch: [PATCH 1/3][POWERPC] 4xx: Add AMCC 440EP Yosemite DTS
+>patchwork.ozlabs.org/linuxppc/patch?id=16992
+>
+>However, when I click on the patchwork link, I get a 404 error.
+>Perhaps this just means the patch is old and has been removed
+>from patchwork.  But since it is a "1 of 3", I was hoping one of
+>the other parts would contain the actual spi-440ep driver code.
 
-diff -Nurp b/arch/powerpc/kernel/ibmebus.c a/arch/powerpc/kernel/ibmebus.c
---- b/arch/powerpc/kernel/ibmebus.c	2008-09-22 00:29:55.000000000 +0200
-+++ a/arch/powerpc/kernel/ibmebus.c	2008-09-23 12:04:53.000000000 +0200
-@@ -216,12 +216,16 @@ int ibmebus_request_irq(u32 ist, irq_han
- 			unsigned long irq_flags, const char *devname,
- 			void *dev_id)
- {
-+	int ret;
- 	unsigned int irq = irq_create_mapping(NULL, ist);
- 
- 	if (irq == NO_IRQ)
- 		return -EINVAL;
- 
--	return request_irq(irq, handler, irq_flags, devname, dev_id);
-+	ret = request_irq(irq, handler, irq_flags, devname, dev_id);
-+	set_irq_type(irq, IRQ_TYPE_EDGE_RISING);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(ibmebus_request_irq);
- 
+Patchwork was updated to a new version recently and the old one was either
+taken offline or moved elsewhere.  The set of patches that added Yosemite
+didn't include an SPI driver (I know, I wrote them).  I just enumerated
+the device in the DTS because it's on the board.
+
+josh
