@@ -1,18 +1,25 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <bigeasy@www.tglx.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0E845DE273
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 06:29:31 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	dan.j.williams@intel.com, scottwood@freescale.com,
-	galak@kernel.crashing.org, leoli@freescale.com
-Subject: [PATCH] fsldma: remove internal self-test from Freescale Elo DMA
-	driver
-Date: Tue, 23 Sep 2008 15:29:16 -0500
-Message-Id: <1222201756-21374-1-git-send-email-timur@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 0FA87DE578
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 06:39:06 +1000 (EST)
+Received: from www.tglx.de (www.tglx.de [127.0.0.1])
+	by www.tglx.de (8.13.8/8.13.8/TGLX-2007100201) with ESMTP id
+	m8NKcvdE020936
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 22:38:57 +0200
+Received: (from bigeasy@localhost)
+	by www.tglx.de (8.13.8/8.13.8/Submit) id m8NKcvaq020935
+	for linuxppc-dev@ozlabs.org; Tue, 23 Sep 2008 22:38:57 +0200
+Date: Tue, 23 Sep 2008 22:38:57 +0200
+From: Sebastian Siewior <bigeasy@linutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC] powerpc/boot: compare _start against ei.loadsize instead
+	ei.memsize
+Message-ID: <20080923203857.GB10935@www.tglx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,186 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The Freescale Elo DMA driver runs an internal self-test before registering
-the channels with the DMA engine.  This self-test has a fundemental flaw in
-that it calls the DMA engine's callback functions directly before the
-registration.  However, the registration initializes some variables that the
-callback functions uses, namely the device struct.
+My mylinux binary incl. bss is ~5 MiB without bss less than 4 MiB.
+Therefore I though that I could replace ei.memsize with ei.loadsize. It
+didn't work. I'm not sure why it did not work but I guess that the
+memset() of bss in the initial kernel code overwrote the cuimage code
+which is required for some reason. Maybe some device-tree callbacks.
 
-The code works today because there are two device structs: the one created
-by the DMA engine, and one created by the Open Firmware (OF) subsystem.  The
-self-test currently uses the device struct created by OF.  However, in the
-future, some of the device structs created by OF will be eliminated.
-This means that the self-test will only have access to the device struct
-created by the DMA engine.  But this device struct isn't initialized when
-the self-test runs, and this causes a kernel panic.
+My current (working) solution is to move cuImage from 4 MiB to 8 MiB.
+Something similar has been done for pSeries in 9b09c6d "powerpc: Change
+the default link address for pSeries zImage kernels". Would it be
+appropriate to move initial address to 64 MiB as the default loading
+address or do we have here some boards which have only 64 MiB of memory?
+Does someone have another idea?
 
-Since there is already a DMA test module (dmatest), the internal self-test
-code is not useful anyway.  It is extremely unlikely that the test will fail
-in normal usage.  It may have been helpful during development, but not any more.
-
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
-
-This patch is for 2.6.28.
-
- drivers/dma/fsldma.c |  132 --------------------------------------------------
- 1 files changed, 0 insertions(+), 132 deletions(-)
-
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index c0059ca..e9b2638 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -786,132 +786,6 @@ static void dma_do_tasklet(unsigned long data)
- 	fsl_chan_ld_cleanup(fsl_chan);
- }
- 
--static void fsl_dma_callback_test(void *param)
--{
--	struct fsl_dma_chan *fsl_chan = param;
--	if (fsl_chan)
--		dev_dbg(fsl_chan->dev, "selftest: callback is ok!\n");
--}
--
--static int fsl_dma_self_test(struct fsl_dma_chan *fsl_chan)
--{
--	struct dma_chan *chan;
--	int err = 0;
--	dma_addr_t dma_dest, dma_src;
--	dma_cookie_t cookie;
--	u8 *src, *dest;
--	int i;
--	size_t test_size;
--	struct dma_async_tx_descriptor *tx1, *tx2, *tx3;
--
--	test_size = 4096;
--
--	src = kmalloc(test_size * 2, GFP_KERNEL);
--	if (!src) {
--		dev_err(fsl_chan->dev,
--				"selftest: Cannot alloc memory for test!\n");
--		return -ENOMEM;
--	}
--
--	dest = src + test_size;
--
--	for (i = 0; i < test_size; i++)
--		src[i] = (u8) i;
--
--	chan = &fsl_chan->common;
--
--	if (fsl_dma_alloc_chan_resources(chan, NULL) < 1) {
--		dev_err(fsl_chan->dev,
--				"selftest: Cannot alloc resources for DMA\n");
--		err = -ENODEV;
--		goto out;
--	}
--
--	/* TX 1 */
--	dma_src = dma_map_single(fsl_chan->dev, src, test_size / 2,
--				 DMA_TO_DEVICE);
--	dma_dest = dma_map_single(fsl_chan->dev, dest, test_size / 2,
--				  DMA_FROM_DEVICE);
--	tx1 = fsl_dma_prep_memcpy(chan, dma_dest, dma_src, test_size / 2, 0);
--	async_tx_ack(tx1);
--
--	cookie = fsl_dma_tx_submit(tx1);
--	fsl_dma_memcpy_issue_pending(chan);
--	msleep(2);
--
--	if (fsl_dma_is_complete(chan, cookie, NULL, NULL) != DMA_SUCCESS) {
--		dev_err(fsl_chan->dev, "selftest: Time out!\n");
--		err = -ENODEV;
--		goto free_resources;
--	}
--
--	/* Test free and re-alloc channel resources */
--	fsl_dma_free_chan_resources(chan);
--
--	if (fsl_dma_alloc_chan_resources(chan, NULL) < 1) {
--		dev_err(fsl_chan->dev,
--				"selftest: Cannot alloc resources for DMA\n");
--		err = -ENODEV;
--		goto free_resources;
--	}
--
--	/* Continue to test
--	 * TX 2
--	 */
--	dma_src = dma_map_single(fsl_chan->dev, src + test_size / 2,
--					test_size / 4, DMA_TO_DEVICE);
--	dma_dest = dma_map_single(fsl_chan->dev, dest + test_size / 2,
--					test_size / 4, DMA_FROM_DEVICE);
--	tx2 = fsl_dma_prep_memcpy(chan, dma_dest, dma_src, test_size / 4, 0);
--	async_tx_ack(tx2);
--
--	/* TX 3 */
--	dma_src = dma_map_single(fsl_chan->dev, src + test_size * 3 / 4,
--					test_size / 4, DMA_TO_DEVICE);
--	dma_dest = dma_map_single(fsl_chan->dev, dest + test_size * 3 / 4,
--					test_size / 4, DMA_FROM_DEVICE);
--	tx3 = fsl_dma_prep_memcpy(chan, dma_dest, dma_src, test_size / 4, 0);
--	async_tx_ack(tx3);
--
--	/* Interrupt tx test */
--	tx1 = fsl_dma_prep_interrupt(chan, 0);
--	async_tx_ack(tx1);
--	cookie = fsl_dma_tx_submit(tx1);
--
--	/* Test exchanging the prepared tx sort */
--	cookie = fsl_dma_tx_submit(tx3);
--	cookie = fsl_dma_tx_submit(tx2);
--
--	if (dma_has_cap(DMA_INTERRUPT, ((struct fsl_dma_device *)
--	    dev_get_drvdata(fsl_chan->dev->parent))->common.cap_mask)) {
--		tx3->callback = fsl_dma_callback_test;
--		tx3->callback_param = fsl_chan;
--	}
--	fsl_dma_memcpy_issue_pending(chan);
--	msleep(2);
--
--	if (fsl_dma_is_complete(chan, cookie, NULL, NULL) != DMA_SUCCESS) {
--		dev_err(fsl_chan->dev, "selftest: Time out!\n");
--		err = -ENODEV;
--		goto free_resources;
--	}
--
--	err = memcmp(src, dest, test_size);
--	if (err) {
--		for (i = 0; (*(src + i) == *(dest + i)) && (i < test_size);
--				i++);
--		dev_err(fsl_chan->dev, "selftest: Test failed, data %d/%ld is "
--				"error! src 0x%x, dest 0x%x\n",
--				i, (long)test_size, *(src + i), *(dest + i));
--	}
--
--free_resources:
--	fsl_dma_free_chan_resources(chan);
--out:
--	kfree(src);
--	return err;
--}
--
- static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
- 			const struct of_device_id *match)
- {
-@@ -1000,17 +874,11 @@ static int __devinit of_fsl_dma_chan_probe(struct of_device *dev,
- 		}
+--- a/arch/powerpc/boot/main.c
++++ b/arch/powerpc/boot/main.c
+@@ -56,7 +56,7 @@ static struct addr_range prep_kernel(void)
+ 	if (platform_ops.vmlinux_alloc) {
+ 		addr = platform_ops.vmlinux_alloc(ei.memsize);
+ 	} else {
+-		if ((unsigned long)_start < ei.memsize)
++		if ((unsigned long)_start < ei.loadsize)
+ 			fatal("Insufficient memory for kernel at address 0!"
+ 			       " (_start=%p)\n\r", _start);
  	}
- 
--	err = fsl_dma_self_test(new_fsl_chan);
--	if (err)
--		goto err_self_test;
--
- 	dev_info(&dev->dev, "#%d (%s), irq %d\n", new_fsl_chan->id,
- 				match->compatible, new_fsl_chan->irq);
- 
- 	return 0;
- 
--err_self_test:
--	free_irq(new_fsl_chan->irq, new_fsl_chan);
- err_no_irq:
- 	list_del(&new_fsl_chan->common.device_node);
- err_no_chan:
 -- 
-1.5.5
+
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -138,7 +138,7 @@ objflags=-S
+ tmp=$tmpdir/zImage.$$.o
+ ksection=.kernel:vmlinux.strip
+ isection=.kernel:initrd
+-link_address='0x400000'
++link_address='0x800000'
+ 
+ case "$platform" in
+ pseries)
+-- 
+1.5.6.5
