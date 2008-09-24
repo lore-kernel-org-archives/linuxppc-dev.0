@@ -1,25 +1,20 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
-	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id B2857DDF44
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 02:08:46 +1000 (EST)
-Received: by gxk14 with SMTP id 14so5657224gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 09:08:44 -0700 (PDT)
-Message-ID: <ed82fe3e0809240908k4e60982ue1fdeb9f2b3bfc6@mail.gmail.com>
-Date: Wed, 24 Sep 2008 11:08:44 -0500
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
-To: "Johannes Berg" <johannes@sipsolutions.net>
-Subject: Re: [PATCH v2] powerpc: enforce sane MAX_ORDER
-In-Reply-To: <1222266548.4257.26.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1222262654.4257.4.camel@johannes.berg>
-	<B38CBE3A-B9DA-44BA-8646-AEE81FB82437@kernel.crashing.org>
-	<1222265583.4257.21.camel@johannes.berg>
-	<61059ECE-2B42-46B3-B5B3-E5CFA3A5EFC9@kernel.crashing.org>
-	<1222266548.4257.26.camel@johannes.berg>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B3150DDE19
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 02:20:50 +1000 (EST)
+Message-Id: <E65E6703-BF63-4C1A-AB40-D0BB3012A6DA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Becky Bruce <becky.bruce@freescale.com>
+In-Reply-To: <1222272084-13012-1-git-send-email-becky.bruce@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH v6] POWERPC: Allow 32-bit hashed pgtable code to support
+	36-bit physical
+Date: Wed, 24 Sep 2008 11:20:41 -0500
+References: <1222272084-13012-1-git-send-email-becky.bruce@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,19 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 24, 2008 at 9:29 AM, Johannes Berg
-<johannes@sipsolutions.net> wrote:
 
-> Indeed, it makes little sense to allow you to set more than the address
-> space, so here's a version with max 64.
+On Sep 24, 2008, at 11:01 AM, Becky Bruce wrote:
 
-Acked-by: Timur Tabi <timur@freescale.com>
+> This rearranges a bit of code, and adds support for
+> 36-bit physical addressing for configs that use a
+> hashed page table.  The 36b physical support is not
+> enabled by default on any config - it must be
+> explicitly enabled via the config system.
+>
+> This patch *only* expands the page table code to accomodate
+> large physical addresses on 32-bit systems and enables the
+> PHYS_64BIT config option for 86xx.  It does *not*
+> allow you to boot a board with more than about 3.5GB of
+> RAM - for that, SWIOTLB support is also required (and
+> coming soon).
+>
+> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+> ---
+> This patch depends on Kumar's recent patch
+> [PATCH v9 2/4] powerpc: Fixes for CONFIG_PTE_64BIT for SMP support -
+> we've both made modifications to set_pte_at.
 
-However, the max is actually less than 64.  Assuming a 64-bit address
-space, the maximum number of pages in one allocation can be
-2^(64-PAGE_SHIFT).  For 4KB pages, the max value for
-FORCE_MAX_ZONEORDER is 53.  For 64KB pages, the max is 49.
+applied to git.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git  
+mmu
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+- k
