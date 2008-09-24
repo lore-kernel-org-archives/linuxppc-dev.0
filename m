@@ -1,11 +1,24 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
-Date: Wed, 24 Sep 2008 17:51:04 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: USB support on mpc5200 broken
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <bgill@blarg.am.freescale.net>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 66698DDE22
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 07:53:41 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m8OLraei019440
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 14:53:36 -0700 (MST)
+Received: from blarg.am.freescale.net (blarg.am.freescale.net [10.82.19.176])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	m8OLrZel023046
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 16:53:35 -0500 (CDT)
+From: Becky Bruce <becky.bruce@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] Drop redundant machine type print in show_cpuinfo
+Date: Wed, 24 Sep 2008 16:53:34 -0500
+Message-Id: <1222293214-22698-1-git-send-email-becky.bruce@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,70 +28,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-USB is not working my hardware, so I booted my Efika and it's not
-working there either.  This is with linus' current git.
+For many of the embedded boards, "model" and "Machine" are printing
+the same thing; remove the redundant code and allow the generic
+show_cpuinfo to print the model information.
 
-Can anyone verify this? Or know what happened to USB?
-USB is loading but it is not finding anything plugged in.
-lsusb doesn't show anything.
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c         |    1 -
+ arch/powerpc/platforms/85xx/sbc8560.c             |    1 -
+ arch/powerpc/platforms/86xx/gef_sbc610.c          |    8 --------
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c        |    8 --------
+ arch/powerpc/platforms/86xx/sbc8641d.c            |    8 --------
+ arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |    1 -
+ 6 files changed, 0 insertions(+), 27 deletions(-)
 
-Last time I noticed it was working was about ten days ago. I don't use
-it everyday.
-
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-ASoC version 0.31
-NET: Registered protocol family 2
-IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
-TCP established hash table entries: 4096 (order: 3, 32768 bytes)
-TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
-TCP: Hash tables configured (established 4096 bind 4096)
-TCP reno registered
-NET: Registered protocol family 1
-audit: initializing netlink socket (disabled)
-type=2000 audit(1222292382.243:1): initialized
-msgmni has been set to 247 for ipc namespace c0316b94
-io scheduler noop registered
-io scheduler deadline registered (default)
-Macintosh non-volatile memory driver v1.1
-Serial: MPC52xx PSC UART driver
-f0002000.serial: ttyPSC0 at MMIO 0xf0002000 (irq = 129) is a MPC52xx PSC
-brd: module loaded
-loop: module loaded
-mpc52xx MII bus: probed
-net eth0: Using PHY at MDIO address 16
-Driver 'sd' needs updating - please use bus_type methods
-Initializing USB Mass Storage driver...
-usbcore: registered new interface driver usb-storage
-USB Mass Storage support registered.
-i2c /dev entries driver
-usbcore: registered new interface driver usbhid
-usbhid: v2.6:USB HID core driver
-Advanced Linux Sound Architecture Driver Version 1.0.16.
-tas5504_driver_init
-mpc52xx_i2s_driver_init
-digispeaker_driver_init
-ALSA device list:
-  No soundcards found.
-TCP cubic registered
-NET: Registered protocol family 17
-RPC: Registered udp transport module.
-RPC: Registered tcp transport module.
-drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
-net eth0: attached phy 16 to driver Generic PHY
-Sending DHCP requests .<6>PHY: f0003000:10 - Link is Up - 100/Full
-., OK
-IP-Config: Got DHCP answer from 192.168.1.1, my address is 192.168.1.109
-IP-Config: Complete:
-     device=eth0, addr=192.168.1.109, mask=255.255.255.0, gw=192.168.1.1,
-     host=192.168.1.109, domain=, nis-domain=(none),
-     bootserver=192.168.1.1, rootserver=192.168.1.4, rootpath=
-Looking up port of RPC 100003/3 on 192.168.1.4
-Looking up port of RPC 100005/3 on 192.168.1.4
-
-
-
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+index d17807a..0293e3d 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -213,7 +213,6 @@ static void mpc85xx_ads_show_cpuinfo(struct seq_file *m)
+ 	svid = mfspr(SPRN_SVR);
+ 
+ 	seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
+-	seq_printf(m, "Machine\t\t: mpc85xx\n");
+ 	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
+ 	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
+ 
+diff --git a/arch/powerpc/platforms/85xx/sbc8560.c b/arch/powerpc/platforms/85xx/sbc8560.c
+index e0cf060..0c9a856 100644
+--- a/arch/powerpc/platforms/85xx/sbc8560.c
++++ b/arch/powerpc/platforms/85xx/sbc8560.c
+@@ -200,7 +200,6 @@ static void sbc8560_show_cpuinfo(struct seq_file *m)
+ 	svid = mfspr(SPRN_SVR);
+ 
+ 	seq_printf(m, "Vendor\t\t: Wind River\n");
+-	seq_printf(m, "Machine\t\t: SBC8560\n");
+ 	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
+ 	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
+ 
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
+index 3543a9e..8a9dee2 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc610.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
+@@ -66,19 +66,11 @@ static void __init gef_sbc610_setup_arch(void)
+ 
+ static void gef_sbc610_show_cpuinfo(struct seq_file *m)
+ {
+-	struct device_node *root;
+ 	uint memsize = total_memory;
+-	const char *model = "";
+ 	uint svid = mfspr(SPRN_SVR);
+ 
+ 	seq_printf(m, "Vendor\t\t: GE Fanuc Intelligent Platforms\n");
+ 
+-	root = of_find_node_by_path("/");
+-	if (root)
+-		model = of_get_property(root, "model", NULL);
+-	seq_printf(m, "Machine\t\t: %s\n", model);
+-	of_node_put(root);
+-
+ 	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
+ 	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index f712d9c..2672829 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -101,19 +101,11 @@ mpc86xx_hpcn_setup_arch(void)
+ static void
+ mpc86xx_hpcn_show_cpuinfo(struct seq_file *m)
+ {
+-	struct device_node *root;
+ 	uint memsize = total_memory;
+-	const char *model = "";
+ 	uint svid = mfspr(SPRN_SVR);
+ 
+ 	seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
+ 
+-	root = of_find_node_by_path("/");
+-	if (root)
+-		model = of_get_property(root, "model", NULL);
+-	seq_printf(m, "Machine\t\t: %s\n", model);
+-	of_node_put(root);
+-
+ 	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
+ 	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+diff --git a/arch/powerpc/platforms/86xx/sbc8641d.c b/arch/powerpc/platforms/86xx/sbc8641d.c
+index 00e6fad..da677a7 100644
+--- a/arch/powerpc/platforms/86xx/sbc8641d.c
++++ b/arch/powerpc/platforms/86xx/sbc8641d.c
+@@ -63,19 +63,11 @@ sbc8641_setup_arch(void)
+ static void
+ sbc8641_show_cpuinfo(struct seq_file *m)
+ {
+-	struct device_node *root;
+ 	uint memsize = total_memory;
+-	const char *model = "";
+ 	uint svid = mfspr(SPRN_SVR);
+ 
+ 	seq_printf(m, "Vendor\t\t: Wind River Systems\n");
+ 
+-	root = of_find_node_by_path("/");
+-	if (root)
+-		model = of_get_property(root, "model", NULL);
+-	seq_printf(m, "Machine\t\t: %s\n", model);
+-	of_node_put(root);
+-
+ 	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
+ 	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+diff --git a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
+index 84e2d78..7a2ba39 100644
+--- a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
++++ b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
+@@ -164,7 +164,6 @@ static void __init mpc7448_hpc2_init_IRQ(void)
+ void mpc7448_hpc2_show_cpuinfo(struct seq_file *m)
+ {
+ 	seq_printf(m, "vendor\t\t: Freescale Semiconductor\n");
+-	seq_printf(m, "machine\t\t: MPC7448hpc2\n");
+ }
+ 
+ void mpc7448_hpc2_restart(char *cmd)
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+1.5.5.1
