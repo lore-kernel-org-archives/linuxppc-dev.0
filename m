@@ -1,21 +1,20 @@
 Return-Path: <david-b@pacbell.net>
 Received: from smtp124.sbc.mail.sp1.yahoo.com (smtp124.sbc.mail.sp1.yahoo.com
-	[69.147.64.97]) by ozlabs.org (Postfix) with SMTP id D5352DE013
+	[69.147.64.97]) by ozlabs.org (Postfix) with SMTP id D507ADDFDD
 	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 06:47:58 +1000 (EST)
 From: David Brownell <david-b@pacbell.net>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH 0/3] Patches to support QE USB Host Controller
-Date: Wed, 24 Sep 2008 13:04:24 -0700
-References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
-	<200808141415.42109.laurentp@cse-semaphore.com>
-In-Reply-To: <200808141415.42109.laurentp@cse-semaphore.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
+Date: Wed, 24 Sep 2008 13:10:02 -0700
+References: <1219916613-28827-1-git-send-email-leoli@freescale.com>
+	<200808281704.20999.arnd@arndb.de>
+In-Reply-To: <200808281704.20999.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200809241304.24878.david-b@pacbell.net>
-Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
+  charset="iso-8859-1"
+Message-Id: <200809241310.03171.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
+	linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, greg@kroah.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 14 August 2008, Laurent Pinchart wrote:
+On Thursday 28 August 2008, Arnd Bergmann wrote:
+> > +/*-------------------------------------------------------------------------
+> > +     Gadget driver register and unregister.
+> > + --------------------------------------------------------------------------*/
+> > +int usb_gadget_register_driver(struct usb_gadget_driver *driver)
+> > +EXPORT_SYMBOL(usb_gadget_register_driver);
+> > +
+> > +int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
+> > +EXPORT_SYMBOL(usb_gadget_unregister_driver);
 > 
-> > David, could you bear with gpio_to_chip() exported function, just as
-> > a stopgap for a proper api?
-> 
-> I need gpio_to_chip() (or another 'proper API') as well for RTS/CTS
-> based flow control in the CPM/CPM2 UART driver. 
+> Not addressing this driver in particular, but the USB gadget layer in
+> general: This is a horrible interface, since every gadget driver exports
+> the same symbols, 
 
-I'l still say "proper".  This should be straightforward; along
-the lines of
+Bad terminology.  Gadget drivers are what sit on TOP of peripheral
+controller drivers ... only peripheral controller drivers touch the
+actual hardware registers.  They export an abstract "gadget" interface.
 
-	struct qe_pin {
-		struct ... *qe_ports;	/* includes gpio_chip */
-		unsigned offset;
-	};
+Gadget drivers are what talk *to* that abstract interface.
 
-And instead of having the driver look up a "gpio" for such
-non-GPIO usage, have it call something that sets up a qe_pin.
-All that infrastructure exists already...
 
-Then drivers can use calls which mux the pin into its "normal"
-mode (QE function of some kind), or into its "gpio" mode.
+> you can never build a kernel that includes more than 
+> one gadget driver. Even if the drivers are all built as modules, simply
+> loading one of them prevents loading another one.
 
-The gpio number would be gpio_chip->base + offset, and the
-gpio_chip is visible -- in a fully typesafe manner! -- from
-the qe_ports structure.
+That's never been a particular requirement.  Systems won't get
+USB branding if they have more than one USB peripheral (upstream)
+port.  Supporting more than one type of controller hardware is
+at best a pretty esoteric configuration.
 
-No type-unsafe interfaces.  No confusion between roles of a
-given pin.  No hidden assumption there's only one kind of GPIO
-(backed by QE ports).  And ... no need to change any core
-structural assumptions of the GPIO framework.
+If you really want to see such stuff ... -ENOPATCH.  :)
 
 - Dave
