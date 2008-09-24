@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B3150DDE19
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 02:20:50 +1000 (EST)
-Message-Id: <E65E6703-BF63-4C1A-AB40-D0BB3012A6DA@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Becky Bruce <becky.bruce@freescale.com>
-In-Reply-To: <1222272084-13012-1-git-send-email-becky.bruce@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v6] POWERPC: Allow 32-bit hashed pgtable code to support
-	36-bit physical
-Date: Wed, 24 Sep 2008 11:20:41 -0500
-References: <1222272084-13012-1-git-send-email-becky.bruce@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18650.27350.410563.484089@cargo.ozlabs.ibm.com>
+Date: Wed, 24 Sep 2008 11:29:10 -0500
+From: Paul Mackerras <paulus@samba.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] remove bogus ppc_select syscall
+In-Reply-To: <200809240839.14902.arnd@arndb.de>
+References: <7B7EF7F090B9804A830ACC82F2CDE95D56E206@insardxms01.ap.sony.com>
+	<1222160853.12085.136.camel@pasglop>
+	<200809240823.12484.arnd@arndb.de>
+	<200809240839.14902.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Arnd Bergmann writes:
 
-On Sep 24, 2008, at 11:01 AM, Becky Bruce wrote:
+> diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+> index f6cc7a4..5a69b32 100644
+> --- a/arch/powerpc/include/asm/systbl.h
+> +++ b/arch/powerpc/include/asm/systbl.h
+> @@ -85,7 +85,7 @@ COMPAT_SYS_SPU(gettimeofday)
+>  COMPAT_SYS_SPU(settimeofday)
+>  COMPAT_SYS_SPU(getgroups)
+>  COMPAT_SYS_SPU(setgroups)
+> -SYSX(sys_ni_syscall,sys_ni_syscall,ppc_select)
+> +SYSCALL(sys_ni_syscall)
 
-> This rearranges a bit of code, and adds support for
-> 36-bit physical addressing for configs that use a
-> hashed page table.  The 36b physical support is not
-> enabled by default on any config - it must be
-> explicitly enabled via the config system.
->
-> This patch *only* expands the page table code to accomodate
-> large physical addresses on 32-bit systems and enables the
-> PHYS_64BIT config option for 86xx.  It does *not*
-> allow you to boot a board with more than about 3.5GB of
-> RAM - for that, SWIOTLB support is also required (and
-> coming soon).
->
-> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
-> ---
-> This patch depends on Kumar's recent patch
-> [PATCH v9 2/4] powerpc: Fixes for CONFIG_PTE_64BIT for SMP support -
-> we've both made modifications to set_pte_at.
+I don't see any reason to remove the old select syscall on 32-bit
+kernels.  I think this hunk below is the only part of the patch that
+we actually need:
 
-applied to git.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git  
-mmu
+> @@ -145,7 +145,7 @@ SYSCALL_SPU(setfsuid)
+>  SYSCALL_SPU(setfsgid)
+>  SYSCALL_SPU(llseek)
+>  COMPAT_SYS_SPU(getdents)
+> -SYSX_SPU(sys_select,ppc32_select,ppc_select)
+> +SYSX_SPU(sys_select,ppc32_select,sys_select)
 
-- k
+Paul.
