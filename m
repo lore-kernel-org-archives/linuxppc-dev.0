@@ -1,25 +1,24 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C427DDE2C7
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 04:32:10 +1000 (EST)
-Message-ID: <48DA8796.5020304@freescale.com>
-Date: Wed, 24 Sep 2008 13:31:50 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp116.sbc.mail.sp1.yahoo.com (smtp116.sbc.mail.sp1.yahoo.com
+	[69.147.64.89]) by ozlabs.org (Postfix) with SMTP id 746A4DE480
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 04:55:05 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 2/4] powerpc/qe: new call to revert a gpio to a dedicated
+	function
+Date: Wed, 24 Sep 2008 11:54:59 -0700
+References: <20080924000255.GA28054@oksana.dev.rtsoft.ru>
+	<B8BAAB1F-10B5-419D-84A7-F724A7E77F41@kernel.crashing.org>
+	<20080924114231.GA8469@oksana.dev.rtsoft.ru>
+In-Reply-To: <20080924114231.GA8469@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] fsl-dma: allow Freescale Elo DMA driver to be compiled
-	as a module
-References: <1221837088-19539-1-git-send-email-timur@freescale.com>
-	<47B7FAA6-434C-440A-B55D-03C9882809CE@kernel.crashing.org>
-In-Reply-To: <47B7FAA6-434C-440A-B55D-03C9882809CE@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: zw@zh-kernel.org, Dan Williams <dan.j.williams@intel.com>,
-	Li Yang <leoli@freescale.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200809241155.00814.david-b@pacbell.net>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,13 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+On Wednesday 24 September 2008, Anton Vorontsov wrote:
+> > what do you mean by dedicated function.. be a bit clearer in the commit 
+> > log.
+> 
+> This term is from the QE spec, I didn't invent anything. ;-)
+> 
+> "Each pin in the I/O ports can be configured as a general-purpose
+> I/O signal or as a dedicated peripheral interface signal. ...many
+> dedicated peripheral functions are multiplexed onto the ports."
 
-> Dan, any update on this patch?
+Which, to me, highlights the point I've made previously:  the
+right abstraction for you to work with is "pin", not GPIO.
 
-I'm going to post a new version.  This whole thing is more complicated than I
-thought.
+You need to switch a QE "pin" from one of its roles to the other.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Evil things, like oopsing, will happen if you try to use this call
+on a GPIO that's not backed by a QE pin.
