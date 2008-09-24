@@ -1,23 +1,21 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 41BEDDDEEA
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 05:17:00 +1000 (EST)
-Message-ID: <48DA9263.5060103@ru.mvista.com>
-Date: Wed, 24 Sep 2008 23:17:55 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp124.sbc.mail.sp1.yahoo.com (smtp124.sbc.mail.sp1.yahoo.com
+	[69.147.64.97]) by ozlabs.org (Postfix) with SMTP id D5352DE013
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 06:47:58 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCH 0/3] Patches to support QE USB Host Controller
+Date: Wed, 24 Sep 2008 13:04:24 -0700
+References: <20080808161717.GA19095@polina.dev.rtsoft.ru>
+	<200808141415.42109.laurentp@cse-semaphore.com>
+In-Reply-To: <200808141415.42109.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 3/3] USB: driver for Freescale QUICC Engine USB Host
-	Controller
-References: <20080918151659.GA20140@oksana.dev.rtsoft.ru>
-	<20080923225730.GB13617@oksana.dev.rtsoft.ru>
-	<48DA1544.5010307@ru.mvista.com>
-	<200809241159.04427.david-b@pacbell.net>
-In-Reply-To: <200809241159.04427.david-b@pacbell.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: leoli@freescale.com, greg@kroah.com, linux-usb@vger.kernel.org,
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200809241304.24878.david-b@pacbell.net>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>, timur@freescale.com
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,36 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Thursday 14 August 2008, Laurent Pinchart wrote:
+> 
+> > David, could you bear with gpio_to_chip() exported function, just as
+> > a stopgap for a proper api?
+> 
+> I need gpio_to_chip() (or another 'proper API') as well for RTS/CTS
+> based flow control in the CPM/CPM2 UART driver. 
 
-David Brownell wrote:
+I'l still say "proper".  This should be straightforward; along
+the lines of
 
->>>>  ... then the root hub emulation is completely pointless.
+	struct qe_pin {
+		struct ... *qe_ports;	/* includes gpio_chip */
+		unsigned offset;
+	};
 
->>>It isn't. We always should emulate the root hub. The root hub
->>>is part and parcel of any USB Host. Even the one-port one.
+And instead of having the driver look up a "gpio" for such
+non-GPIO usage, have it call something that sets up a qe_pin.
+All that infrastructure exists already...
 
->>   Hm, maybe that's what USB core thinks (because UHCI/OHCI/EHCI all 
->>have it) but e.g. MUSB doesn't have the root hub registers...
+Then drivers can use calls which mux the pin into its "normal"
+mode (QE function of some kind), or into its "gpio" mode.
 
-> Only the OHCI registers have bit positions matching what the USB
-> spec says for hub status bits.
+The gpio number would be gpio_chip->base + offset, and the
+gpio_chip is visible -- in a fully typesafe manner! -- from
+the qe_ports structure.
 
-    Oh, didn't know that.
+No type-unsafe interfaces.  No confusion between roles of a
+given pin.  No hidden assumption there's only one kind of GPIO
+(backed by QE ports).  And ... no need to change any core
+structural assumptions of the GPIO framework.
 
-> Everything else, including musb_hdrc, has the relevant status encoded in other bits.
-
-    Yes, but I thought that if there are no multiple ports, having the hub is 
-just pointless.
-
->>I looked at the core and figured that USB core seems to use the root hub 
->>interface for port PM, etc. and expects it to bee present, so it seems 
->>unavoidable indeed... :-/
-
-> Or more fundamentally:  for enumeration.  "Unavoidable" is correct.  ;)
-
-    Not sure what you mean here but I guess having a root hub alows an uniform 
-model of controlling the ports... anyway, USB specifies that it must be 
-present in the host.
-
-WBR, Sergei
+- Dave
