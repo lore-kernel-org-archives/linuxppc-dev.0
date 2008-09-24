@@ -1,23 +1,17 @@
-Return-Path: <sebastien.dugue@bull.net>
-Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id 2FA07DDF1A
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 22:37:35 +1000 (EST)
-Date: Wed, 24 Sep 2008 14:35:52 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
-	hardirq preemption
-Message-ID: <20080924143552.29a14f10@bull.net>
-In-Reply-To: <1222251467.8277.73.camel@pasglop>
-References: <200809231743.23828.ossthema@de.ibm.com>
-	<20080915100406.342e027a@bull.net>
-	<200809240958.m8O9wM7k010996@sullivan.realtime.net>
-	<1222251467.8277.73.camel@pasglop>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6A2ADDDF37
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 23:25:19 +1000 (EST)
+Subject: [PATCH] powerpc: enforce sane MAX_ORDER
+From: Johannes Berg <johannes@sipsolutions.net>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Wed, 24 Sep 2008 15:24:14 +0200
+Message-Id: <1222262654.4257.4.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+powerpc uses CONFIG_FORCE_MAX_ZONEORDER, and some things depend on it
+being at least 10 when 64k pages are not configured (notably the dart
+iommu code with CONFIG_PM). The defaults are fine, but when going from a
+64K pages config to one without 64K pages, MAX_ORDER stays at 9 which is
+too low for 4K pages.
 
-  Hi Ben,
+This patch makes the Kconfig enforce at least the defaults, I used 999
+as the upper bound for no particular reason other than that it's plenty.
 
-On Wed, 24 Sep 2008 20:17:47 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+---
 
-> On Wed, 2008-09-24 at 04:58 -0500, Milton Miller wrote:
-> > The per-interrupt mask and unmask calls have to go through RTAS, a
-> > single-threaded global context, which in addition to increasing
-> > path length will really limit scalability.  The interrupt controller
-> > poll and reject facilities are accessed through hypervisor calls
-> > which are comparable to a fast syscall, and parallel to all cpus.
-> 
-> Note also that the XICS code thus assumes, iirc, as does the cell IIC
-> code, that eoi is called on the -same- cpu that fetched the interrupt
-> initially. That assumption can be broken with IRQ threads no ?
-
-  No, the fetch and the eoi are both done in interrupt context before
-the hardirq thread is woken up.
-
-  On the other hand, the mask+eoi and the unmask may well happen
-on different cpus as there's only one hardirq thread per irq on
-the system. Don't know if this is a problem with the XICS though.
-
-  Thanks,
-
-  Sebastien.
-
-> 
-> Ben.
-> 
-> 
-> 
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -415,8 +415,11 @@ config PPC_64K_PAGES
+ 
+ config FORCE_MAX_ZONEORDER
+ 	int "Maximum zone order"
++	range 9 999 if PPC_64K_PAGES
+ 	default "9" if PPC_64K_PAGES
++	range 13 999 if PPC64 && !PPC_64K_PAGES
+ 	default "13" if PPC64 && !PPC_64K_PAGES
++	range 11 999
+ 	default "11"
+ 	help
+ 	  The kernel memory allocator divides physically contiguous memory
