@@ -1,22 +1,18 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
-	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id C530FDDE1F
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 02:58:03 +1000 (EST)
-Received: by gxk14 with SMTP id 14so5732986gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 09:58:02 -0700 (PDT)
-Message-ID: <e9c3a7c20809240958i3ed4b7fbv3c13b6bbc31ac6ee@mail.gmail.com>
-Date: Wed, 24 Sep 2008 09:58:02 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-Sender: dan.j.williams@gmail.com
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: [PATCH] fsldma: remove internal self-test from Freescale Elo DMA
-	driver
-In-Reply-To: <1222201756-21374-1-git-send-email-timur@freescale.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] remove bogus ppc_select syscall
+Date: Wed, 24 Sep 2008 19:03:38 +0200
+References: <7B7EF7F090B9804A830ACC82F2CDE95D56E206@insardxms01.ap.sony.com>
+	<200809240839.14902.arnd@arndb.de>
+	<18650.27350.410563.484089@cargo.ozlabs.ibm.com>
+In-Reply-To: <18650.27350.410563.484089@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1222201756-21374-1-git-send-email-timur@freescale.com>
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, leoli@freescale.com,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200809241903.39443.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 23, 2008 at 1:29 PM, Timur Tabi <timur@freescale.com> wrote:
-> The Freescale Elo DMA driver runs an internal self-test before registering
-> the channels with the DMA engine.  This self-test has a fundemental flaw in
-> that it calls the DMA engine's callback functions directly before the
-> registration.  However, the registration initializes some variables that the
-> callback functions uses, namely the device struct.
->
-> The code works today because there are two device structs: the one created
-> by the DMA engine, and one created by the Open Firmware (OF) subsystem.  The
-> self-test currently uses the device struct created by OF.  However, in the
-> future, some of the device structs created by OF will be eliminated.
-> This means that the self-test will only have access to the device struct
-> created by the DMA engine.  But this device struct isn't initialized when
-> the self-test runs, and this causes a kernel panic.
->
-> Since there is already a DMA test module (dmatest), the internal self-test
-> code is not useful anyway.  It is extremely unlikely that the test will fail
-> in normal usage.  It may have been helpful during development, but not any more.
->
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
->
-> This patch is for 2.6.28.
+On Wednesday 24 September 2008, Paul Mackerras wrote:
+> > diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/a=
+sm/systbl.h
+> > index f6cc7a4..5a69b32 100644
+> > --- a/arch/powerpc/include/asm/systbl.h
+> > +++ b/arch/powerpc/include/asm/systbl.h
+> > @@ -85,7 +85,7 @@ COMPAT_SYS_SPU(gettimeofday)
+> > =A0COMPAT_SYS_SPU(settimeofday)
+> > =A0COMPAT_SYS_SPU(getgroups)
+> > =A0COMPAT_SYS_SPU(setgroups)
+> > -SYSX(sys_ni_syscall,sys_ni_syscall,ppc_select)
+> > +SYSCALL(sys_ni_syscall)
+>=20
+> I don't see any reason to remove the old select syscall on 32-bit
+> kernels. =A0
 
-Applied to the 'next' [1] branch.
+Well, the point I made earlier ist that the native ppc32 path should
+behave the same way as the compat ppc32 path. If we keep ppc_select
+in one way or another, we should also have a compat wrapper for that,
+right?
 
-Thanks,
-Dan
-
-[1] http://git.kernel.org/?p=linux/kernel/git/djbw/async_tx.git;a=shortlog;h=next
+	Arnd <><
