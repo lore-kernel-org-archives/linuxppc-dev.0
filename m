@@ -1,21 +1,23 @@
-Return-Path: <jacmet@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.189])
-	by ozlabs.org (Postfix) with ESMTP id 8272DDDEEF
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 20:34:16 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id e27so1080224nfd.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 03:34:13 -0700 (PDT)
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Move 8xxx GPIO Kconfig under the platform menu
-References: <1222231125-24632-1-git-send-email-galak@kernel.crashing.org>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 24 Sep 2008 12:34:09 +0200
-In-Reply-To: <1222231125-24632-1-git-send-email-galak@kernel.crashing.org>
-	(Kumar Gala's message of "Tue\, 23 Sep 2008 23\:38\:45 -0500")
-Message-ID: <87fxnp3k9q.fsf@macbook.be.48ers.dk>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 6E2B7DDDFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 20:49:08 +1000 (EST)
+Message-ID: <48DA1B1A.8050507@ru.mvista.com>
+Date: Wed, 24 Sep 2008 14:48:58 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 3/3] USB: driver for Freescale QUICC Engine
+	USB	Host	Controller
+References: <20080918151659.GA20140@oksana.dev.rtsoft.ru>	<20080918151746.GC31187@oksana.dev.rtsoft.ru>	<20080919162324.e354ed2f.akpm@linux-foundation.org>	<20080923183129.GA19024@oksana.dev.rtsoft.ru>	<48D96052.6090005@ru.mvista.com>
+	<48D9612D.7060601@ru.mvista.com>	<20080923225730.GB13617@oksana.dev.rtsoft.ru>
+	<48DA1544.5010307@ru.mvista.com>
+In-Reply-To: <48DA1544.5010307@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: dbrownell@users.sourceforge.net, greg@kroah.com, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>, leoli@freescale.com,
+	timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,14 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Kumar" == Kumar Gala <galak@kernel.crashing.org> writes:
+Hello, I wrote:
 
- Kumar> The initial patch had the option at the top level which wasn't
- Kumar> quite right.  Moving under the platform options is a bit better.
+>>>>>>> This controller does not integrate the root hub, so this driver 
+>>>>>>> also
+>>>>>>> fakes one-port hub. External hub is required to support more than
+>>>>>>> one device.
+>>>>>>>
+>>>>>>> ...
+>>>>>>>
+>>>>>>>                   
+>>>>>> Please, no.
+>>>>>>               
+>>>>> What exactly 'no'? ;-)
+>>>>>           
+>>>>   No one-port hubs I guess -- they are pointless. Though e.g. MUSB  
+>>>> driver creates one -- I guess to impersonate a transaction 
+>>>> translating  high-speed hub...
+>>>>
+>>>>       
+>>>   ... then the root hub emulation is completely pointless.
+>>>     
+>>
+>> It isn't. We always should emulate the root hub. The root hub
+>> is part and parcel of any USB Host. Even the one-port one.
+>
+>   Hm, maybe that's what USB core thinks (because UHCI/OHCI/EHCI all 
+> have it) but e.g. MUSB doesn't have the root hub registers...
 
- Kumar> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+   Oops, I stand corrected. Even USB 1.1 specifies that it must be a 
+part the host...
 
-Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
-
--- 
-Bye, Peter Korsgaard
+WBR, Sergei
