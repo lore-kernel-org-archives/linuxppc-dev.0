@@ -1,27 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E202DDDE09
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 00:11:06 +1000 (EST)
-Date: Wed, 24 Sep 2008 18:11:04 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 381B0DDF72
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 00:13:53 +1000 (EST)
+Subject: Re: [PATCH] powerpc: enforce sane MAX_ORDER
+From: Johannes Berg <johannes@sipsolutions.net>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] powerpc/qe: new call to revert a gpio to a
-	dedicated function
-Message-ID: <20080924141104.GA7873@oksana.dev.rtsoft.ru>
-References: <20080924000255.GA28054@oksana.dev.rtsoft.ru>
-	<20080924000336.GB29733@oksana.dev.rtsoft.ru>
-	<B8BAAB1F-10B5-419D-84A7-F724A7E77F41@kernel.crashing.org>
-	<20080924114231.GA8469@oksana.dev.rtsoft.ru>
-	<E8A37756-794A-4829-ABEC-AACA9DB54620@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <E8A37756-794A-4829-ABEC-AACA9DB54620@kernel.crashing.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+In-Reply-To: <B38CBE3A-B9DA-44BA-8646-AEE81FB82437@kernel.crashing.org>
+References: <1222262654.4257.4.camel@johannes.berg>
+	<B38CBE3A-B9DA-44BA-8646-AEE81FB82437@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-nPNJ12/DsIqLO/9fRBNv"
+Date: Wed, 24 Sep 2008 16:13:03 +0200
+Message-Id: <1222265583.4257.21.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,64 +27,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 24, 2008 at 09:00:03AM -0500, Kumar Gala wrote:
->
-> On Sep 24, 2008, at 6:42 AM, Anton Vorontsov wrote:
->
->> On Tue, Sep 23, 2008 at 11:07:00PM -0500, Kumar Gala wrote:
->>>
->>> On Sep 23, 2008, at 7:03 PM, Anton Vorontsov wrote:
->>>
->>>> qe_gpio_set_dedicated() is a platform specific function, which is  
->>>> used
->>>> to revert a pin to a dedicated function. Caller should have already
->>>> obtained the gpio via gpio_request().
->>>>
->>>> This is needed to support Freescale USB Host Controller.
->>>>
->>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->>>> ---
->>>> arch/powerpc/include/asm/qe.h     |    1 +
->>>> arch/powerpc/sysdev/qe_lib/gpio.c |   46 ++++++++++++++++++++++++++ 
->>>> ++
->>>> +++++++++
->>>> 2 files changed, 47 insertions(+), 0 deletions(-)
->>>
->>> what do you mean by dedicated function.. be a bit clearer in the  
->>> commit
->>> log.
->>
->> This term is from the QE spec, I didn't invent anything. ;-)
->>
->> "Each pin in the I/O ports can be configured as a general-purpose
->> I/O signal or as a dedicated peripheral interface signal. ...many
->> dedicated peripheral functions are multiplexed onto the ports."
->
-> I understand but I think 'dedicated' could be interpreted in another way 
-> (like the GPIO pin is dedicated, not that the pin is used for a  
-> dedicated SoC block).
->
-> If it the commit message had said 'to a dedicated on chip peripheral' it 
-> would be clearer.
 
-Ah, ok, I'll fix that.
+--=-nPNJ12/DsIqLO/9fRBNv
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->>> Also, does this depend on gpio_to_chip() patch?
->>
->> Yeah, the point of exported gpio_to_chip is to let us write
->> this function.
->
-> I meant can I take this patch w/o the gpio_to_chip() patch? (not clear  
-> from your response)
+On Wed, 2008-09-24 at 09:05 -0500, Kumar Gala wrote:
 
-No, unfortunately you can't. It would be great if we could pass the
-whole patchset via single tree (USB? Or -mm to Linus directly?),
-so Acks are more than appreciated.
+> > --- a/arch/powerpc/Kconfig
+> > +++ b/arch/powerpc/Kconfig
+> > @@ -415,8 +415,11 @@ config PPC_64K_PAGES
+> >
+> > config FORCE_MAX_ZONEORDER
+> > 	int "Maximum zone order"
+> > +	range 9 999 if PPC_64K_PAGES
+> > 	default "9" if PPC_64K_PAGES
+> > +	range 13 999 if PPC64 && !PPC_64K_PAGES
+> > 	default "13" if PPC64 && !PPC_64K_PAGES
+> > +	range 11 999
+> > 	default "11"
+> > 	help
+> > 	  The kernel memory allocator divides physically contiguous memory
+>=20
+> Hope about setting the upper bound to 32 or 64. =20
 
+Works for me, I'm interested in the lower bound because if you set
+CONFIG_PM on a machine with dart iommu and set this to 9 then the thing
+will BUG_ON during boot.
 
-Thanks again,
+> Since I believe this =20
+> in effect 2^FORCE_MAX_ZONEORDER, so 999 is just insane. =20
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Indeed it is, and no argument that it's insane. But it's not limited at
+all right now, so you can in theory set it to 10000, write a kernel
+module that calls alloc_pages(1000) and have it fail because not enough
+memory is available, rather than failing because of the MAX_ORDER check.
+
+> I'd almost =20
+> prefer something like 16 since that might still be in the realm of =20
+> reasonable and able to work.
+
+with 4k pages that would be 256M memory, that seems well possible to
+allocate. Even 20 might still be possible (4G memory) if you allocate it
+early enough at boot and have a lot of memory (on a 64-bit system).
+
+On the other hand, why bother limiting it? If people set it too large in
+their config all that will happen is that it takes a bit longer to fail
+to allocate such a ridiculous amount of memory.
+
+johannes
+
+--=-nPNJ12/DsIqLO/9fRBNv
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJI2krqAAoJEKVg1VMiehFYfMQP/1/+cEV9j1KpRH7ZTwWT3NnQ
+QfxU3YsHlXGeKm4EbfnCAZbkSlGNwcb2/JXvR+lzMawGw/n3sYnJFhR40/XL4DnU
+g2srq2heyY7jQZNSTGrO8/KTWkNrPi9tcFS4a+8vCswCrb4lRn0STNwzdC0OH6+A
+yAm7AfLg0PDGvE4OgwqrK3wvM3+kwdq2xySdw/iljUuEfRv7hYGJesToSmgSsxJH
+suMOzxJljApUtFZAcgyT8bA6muRWI/52itEahuBe2nw4in+FF2RYykFmK1HKA3d3
+B7xc1RLxvBDP6uC9LL47ZoHWqS9Zx8PIWUhpzaVZgo2pBa40QHkJjCl2M0UTU1Gn
+tr2fKDhrF74XeW3GEE2FesDqYhBQLikoKbuO6aPlNGwMkUdnnINGkuU8g1uYygTQ
+dE1fwPgJxzrOniCBj3hV2Gg9MqOJt8YtpJOJRz+VUfZk2ue/cQR4YWloYeh415VR
+B7ZcTPGjtGO6PMuFx9k9dNtZuh2WkBS8q/5DBzDM1w7ir3Fte2UG0Jcs3lWBYkcW
+QU/Spq78dZtKNknhX60xkw0coZgUrr7CTqTsMoj+vgUHKzj9+yhAGq9xumzpsm2t
+R4ZNdf1JQ5W9kvRYe+W/oSEeBwOfXEXdKeIQl8UPpqAsyi9a17vRFG89p2DJdSwE
+qptInfARndWOHi398a/S
+=AeD/
+-----END PGP SIGNATURE-----
+
+--=-nPNJ12/DsIqLO/9fRBNv--
