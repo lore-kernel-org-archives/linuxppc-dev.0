@@ -1,18 +1,23 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] remove bogus ppc_select syscall
-Date: Wed, 24 Sep 2008 19:03:38 +0200
-References: <7B7EF7F090B9804A830ACC82F2CDE95D56E206@insardxms01.ap.sony.com>
-	<200809240839.14902.arnd@arndb.de>
-	<18650.27350.410563.484089@cargo.ozlabs.ibm.com>
-In-Reply-To: <18650.27350.410563.484089@cargo.ozlabs.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.229])
+	by ozlabs.org (Postfix) with ESMTP id C7E33DDEED
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 04:15:45 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so33949rvb.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 11:15:43 -0700 (PDT)
+Date: Wed, 24 Sep 2008 12:15:42 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Juergen Beisert <jbe@pengutronix.de>
+Subject: Re: MPC5200 PCI interrupt routing
+Message-ID: <20080924181542.GA9690@secretlab.ca>
+References: <200809221556.34353.jbe@pengutronix.de>
+	<48D807C5.4070002@genesi-usa.com>
+	<200809231334.19175.jbe@pengutronix.de>
+	<200809241716.35285.jbe@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200809241903.39443.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200809241716.35285.jbe@pengutronix.de>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 24 September 2008, Paul Mackerras wrote:
-> > diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/a=
-sm/systbl.h
-> > index f6cc7a4..5a69b32 100644
-> > --- a/arch/powerpc/include/asm/systbl.h
-> > +++ b/arch/powerpc/include/asm/systbl.h
-> > @@ -85,7 +85,7 @@ COMPAT_SYS_SPU(gettimeofday)
-> > =A0COMPAT_SYS_SPU(settimeofday)
-> > =A0COMPAT_SYS_SPU(getgroups)
-> > =A0COMPAT_SYS_SPU(setgroups)
-> > -SYSX(sys_ni_syscall,sys_ni_syscall,ppc_select)
-> > +SYSCALL(sys_ni_syscall)
->=20
-> I don't see any reason to remove the old select syscall on 32-bit
-> kernels. =A0
+On Wed, Sep 24, 2008 at 05:16:34PM +0200, Juergen Beisert wrote:
+> On Dienstag, 23. September 2008, Juergen Beisert wrote:
+> > What Kernel do you run on your target? On my hardware a 2.6.23 still work
+> > as expected, but a 2.6.26 fails all the time.
+> 
+> One should enable the internal USB clock. If done, it works... In 2.6.23 is 
+> was done in mpc52xx_common.c. It was removed in 2.6.24.
 
-Well, the point I made earlier ist that the native ppc32 path should
-behave the same way as the compat ppc32 path. If we keep ppc_select
-in one way or another, we should also have a compat wrapper for that,
-right?
+It was removed because some 5200 platform do not use USB and should not
+enable the internal clock.  In general, it is not the kernel's job to configure
+clocking and pin usage on the chip.  Instead, it should be set correctly
+at power up by U-Boot.
 
-	Arnd <><
+However, if firmware *cannot* be changed, there is a workaround.
+You can create a new platform specific board support file in
+arch/powerpc/platforms/52xx/ that matches against your specific board
+and performs the needed fixups.  An example of this is lite5200.c.  Many
+lite5200 boards have older versions of U-Boot installed which does not
+correctly configure clocks or port-config.  So, lite5200.c matches to
+the board instead of mpc5200_simple.c so that the board specific fixups
+can be performed easily.  You should do the same for your board.
+
+g.
