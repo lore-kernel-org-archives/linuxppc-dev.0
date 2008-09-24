@@ -1,18 +1,18 @@
-Return-Path: <miltonm@sullivan.realtime.net>
-Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7DBD8DDDEC
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 11:46:39 +1000 (EST)
-Date: Tue, 23 Sep 2008 20:46:18 -0500 (CDT)
-Message-Id: <200809240146.m8O1kIpZ077447@sullivan.realtime.net>
-To: Sebastian Siewior <bigeasy@linutronix.de>
-Sender: Milton Miller <miltonm@realtime.net>
-From: Milton Miller <miltonm@bga.com>
-Subject: [RFC] powerpc/boot: compare _start against ei.loadsize instead
-	ei.memsize
-In-Reply-To: <20080923203857.GB10935@www.tglx.de>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+	by ozlabs.org (Postfix) with ESMTPS id B4A21DDDD4
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 13:06:16 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m8O36B3U024103
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 22:06:12 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/83xx: Add missing cell-index to dma-channel device
+	nodes
+Date: Tue, 23 Sep 2008 22:06:11 -0500
+Message-Id: <1222225571-3104-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +22,587 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed Sep 24 at about 06:38:57 EST in 2008, Sebastian Siewior wrote:
-> My mylinux binary incl. bss is ~5 MiB without bss less than 4 MiB.
-> Therefore I though that I could replace ei.memsize with ei.loadsize. It
-> didn't work. I'm not sure why it did not work but I guess that the
-> memset() of bss in the initial kernel code overwrote the cuimage code
-> which is required for some reason. Maybe some device-tree callbacks.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/boot/dts/asp834x-redboot.dts |    4 ++++
+ arch/powerpc/boot/dts/mpc8313erdb.dts     |    4 ++++
+ arch/powerpc/boot/dts/mpc8315erdb.dts     |    4 ++++
+ arch/powerpc/boot/dts/mpc832x_mds.dts     |    4 ++++
+ arch/powerpc/boot/dts/mpc832x_rdb.dts     |    4 ++++
+ arch/powerpc/boot/dts/mpc8349emitx.dts    |    4 ++++
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts  |    4 ++++
+ arch/powerpc/boot/dts/mpc834x_mds.dts     |    4 ++++
+ arch/powerpc/boot/dts/mpc836x_mds.dts     |    4 ++++
+ arch/powerpc/boot/dts/mpc836x_rdk.dts     |    4 ++++
+ arch/powerpc/boot/dts/mpc8377_mds.dts     |    4 ++++
+ arch/powerpc/boot/dts/mpc8377_rdb.dts     |    4 ++++
+ arch/powerpc/boot/dts/mpc8378_mds.dts     |    4 ++++
+ arch/powerpc/boot/dts/mpc8378_rdb.dts     |    4 ++++
+ arch/powerpc/boot/dts/mpc8379_mds.dts     |    4 ++++
+ arch/powerpc/boot/dts/mpc8379_rdb.dts     |    4 ++++
+ arch/powerpc/boot/dts/sbc8349.dts         |    4 ++++
+ 17 files changed, 68 insertions(+), 0 deletions(-)
 
-probably because the bss extended beyond the cuboot _end to include
-where your device tree was copied (just a malloc and we start
-simple_malloc at the boot _end on most platforms).
-
-> 
-> My current (working) solution is to move cuImage from 4 MiB to 8 MiB.
-> Something similar has been done for pSeries in 9b09c6d "powerpc: Change
-> the default link address for pSeries zImage kernels". Would it be
-> appropriate to move initial address to 64 MiB as the default loading
-> address or do we have here some boards which have only 64 MiB of memory?
-
-I think there are some boards that have even less (8xx?).  Is the
-link address a wrapper option yet?
-
-> Does someone have another idea?
-> 
-> --- a/arch/powerpc/boot/main.c
-> +++ b/arch/powerpc/boot/main.c
-> @@ -56,7 +56,7 @@ static struct addr_range prep_kernel(void)
->  	if (platform_ops.vmlinux_alloc) {
->  		addr = platform_ops.vmlinux_alloc(ei.memsize);
->  	} else {
-> -		if ((unsigned long)_start < ei.memsize)
-> +		if ((unsigned long)_start < ei.loadsize)
-
-
-I think this needs to be a two part test (add approprate casts):  
-	_start < ei.loadsize || _end < ei.memsize
-
-.. and a comment explaining why.
-
-We could do better if we kept allocating more memory until we got
-above it, but the current code has no such provision.  (prpmc2800, or
-one of those, actually decompresses the header to peek at memsize
-before starting the simple_alloc code).
-
->  			fatal("Insufficient memory for kernel at address 0!"
->  			       " (_start=%p)\n\r", _start);
->  	}
-> -- 
-> 
-> --- a/arch/powerpc/boot/wrapper
-> +++ b/arch/powerpc/boot/wrapper
-> @@ -138,7 +138,7 @@ objflags=-S
->  tmp=$tmpdir/zImage.$$.o
->  ksection=.kernel:vmlinux.strip
->  isection=.kernel:initrd
-> -link_address='0x400000'
-> +link_address='0x800000'
->  
->  case "$platform" in
->  pseries)
-> -- 
+diff --git a/arch/powerpc/boot/dts/asp834x-redboot.dts b/arch/powerpc/boot/dts/asp834x-redboot.dts
+index 8b1bb0e..6235fca 100644
+--- a/arch/powerpc/boot/dts/asp834x-redboot.dts
++++ b/arch/powerpc/boot/dts/asp834x-redboot.dts
+@@ -130,24 +130,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8347-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8347-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8347-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8347-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+index 2a94ae0..5390855 100644
+--- a/arch/powerpc/boot/dts/mpc8313erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+@@ -176,24 +176,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8313-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8313-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8313-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8313-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
+index f704513..94c9b41 100644
+--- a/arch/powerpc/boot/dts/mpc8315erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
+@@ -144,24 +144,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8315-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8315-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8315-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8315-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
+index fbc9304..015808a 100644
+--- a/arch/powerpc/boot/dts/mpc832x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
+@@ -127,24 +127,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8323-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8323-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8323-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8323-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+index b157d18..b5b0ec2 100644
+--- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+@@ -105,24 +105,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8323-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8323-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8323-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8323-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+index 700e076..1327a61 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+@@ -106,24 +106,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+index cdd3063..f70d3a0 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+@@ -104,24 +104,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
+index 783241c..e29739e 100644
+--- a/arch/powerpc/boot/dts/mpc834x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
+@@ -116,24 +116,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
+index ada8446..49aec71 100644
+--- a/arch/powerpc/boot/dts/mpc836x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
+@@ -148,24 +148,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8360-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8360-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8360-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8360-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
+index 89c9202..69c9bd2 100644
+--- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
++++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
+@@ -125,24 +125,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8360-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8360-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8360-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8360-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
+index 432782b..78f0f11 100644
+--- a/arch/powerpc/boot/dts/mpc8377_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
+@@ -246,24 +246,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8377-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <0x47 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8377-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <0x47 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8377-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <0x47 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8377-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <0x47 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index ed137aa..d46327e 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -155,24 +155,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8377-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8377-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8377-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8377-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
+index ed32c8d..c44f30f 100644
+--- a/arch/powerpc/boot/dts/mpc8378_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
+@@ -170,24 +170,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8378-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8378-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8378-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8378-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index 34a7f2f..b3e3bd7 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -155,24 +155,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8378-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8378-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8378-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8378-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dts/mpc8379_mds.dts
+index f4db9ed..653ed47 100644
+--- a/arch/powerpc/boot/dts/mpc8379_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
+@@ -170,24 +170,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8379-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8379-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8379-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8379-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index e4d7030..123c8df 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -155,24 +155,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8379-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8379-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8379-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8379-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/sbc8349.dts b/arch/powerpc/boot/dts/sbc8349.dts
+index 45f789b..c7f411f 100644
+--- a/arch/powerpc/boot/dts/sbc8349.dts
++++ b/arch/powerpc/boot/dts/sbc8349.dts
+@@ -107,24 +107,28 @@
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0 0x80>;
++				cell-index = <0>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x80 0x80>;
++				cell-index = <1>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x100 0x80>;
++				cell-index = <2>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+ 				reg = <0x180 0x28>;
++				cell-index = <3>;
+ 				interrupt-parent = <&ipic>;
+ 				interrupts = <71 8>;
+ 			};
+-- 
+1.5.5.1
