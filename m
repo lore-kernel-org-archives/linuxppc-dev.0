@@ -1,26 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 33E56DDE9E
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 20:19:56 +1000 (EST)
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
-	hardirq preemption
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <200809240958.m8O9wM7k010996@sullivan.realtime.net>
-References: <200809231743.23828.ossthema@de.ibm.com>
-	, <20080915100406.342e027a@bull.net>
-	<200809240958.m8O9wM7k010996@sullivan.realtime.net>
-Content-Type: text/plain
-Date: Wed, 24 Sep 2008 20:17:47 +1000
-Message-Id: <1222251467.8277.73.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Sebastien Dugue <sebastien.dugue@bull.net>,
-	Christoph Raisch <RAISCH@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	Jan-Bernd Themann <ossthema@de.ibm.com>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 7B547DDEE3
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 20:24:16 +1000 (EST)
+Message-ID: <48DA1544.5010307@ru.mvista.com>
+Date: Wed, 24 Sep 2008 14:24:04 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 3/3] USB: driver for Freescale QUICC Engine USB
+	Host	Controller
+References: <20080918151659.GA20140@oksana.dev.rtsoft.ru>
+	<20080918151746.GC31187@oksana.dev.rtsoft.ru>
+	<20080919162324.e354ed2f.akpm@linux-foundation.org>
+	<20080923183129.GA19024@oksana.dev.rtsoft.ru>
+	<48D96052.6090005@ru.mvista.com> <48D9612D.7060601@ru.mvista.com>
+	<20080923225730.GB13617@oksana.dev.rtsoft.ru>
+In-Reply-To: <20080923225730.GB13617@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=windows-1251; format=flowed
+Cc: dbrownell@users.sourceforge.net, greg@kroah.com, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>, leoli@freescale.com,
+	timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,15 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-09-24 at 04:58 -0500, Milton Miller wrote:
-> The per-interrupt mask and unmask calls have to go through RTAS, a
-> single-threaded global context, which in addition to increasing
-> path length will really limit scalability.  The interrupt controller
-> poll and reject facilities are accessed through hypervisor calls
-> which are comparable to a fast syscall, and parallel to all cpus.
+Hello.
 
-Note also that the XICS code thus assumes, iirc, as does the cell IIC
-code, that eoi is called on the -same- cpu that fetched the interrupt
-initially. That assumption can be broken with IRQ threads no ?
+Anton Vorontsov wrote:
+>>>>>> This controller does not integrate the root hub, so this driver also
+>>>>>> fakes one-port hub. External hub is required to support more than
+>>>>>> one device.
+>>>>>>
+>>>>>> ...
+>>>>>>
+>>>>>>       
+>>>>>>             
+>>>>> Please, no.
+>>>>>     
+>>>>>           
+>>>> What exactly 'no'? ;-)
+>>>>   
+>>>>         
+>>>   No one-port hubs I guess -- they are pointless. Though e.g. MUSB  
+>>> driver creates one -- I guess to impersonate a transaction translating  
+>>> high-speed hub...
+>>>
+>>>       
+>>   ... then the root hub emulation is completely pointless.
+>>     
+>
+> It isn't. We always should emulate the root hub. The root hub
+> is part and parcel of any USB Host. Even the one-port one.
 
-Ben.
+   Hm, maybe that's what USB core thinks (because UHCI/OHCI/EHCI all 
+have it) but e.g. MUSB doesn't have the root hub registers...
+I looked at the core and figured that USB core seems to use the root hub 
+interface for port PM, etc. and expects it to bee present, so it seems 
+unavoidable indeed... :-/
+
+WBR, Sergei
