@@ -1,18 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18650.27350.410563.484089@cargo.ozlabs.ibm.com>
-Date: Wed, 24 Sep 2008 11:29:10 -0500
-From: Paul Mackerras <paulus@samba.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] remove bogus ppc_select syscall
-In-Reply-To: <200809240839.14902.arnd@arndb.de>
-References: <7B7EF7F090B9804A830ACC82F2CDE95D56E206@insardxms01.ap.sony.com>
-	<1222160853.12085.136.camel@pasglop>
-	<200809240823.12484.arnd@arndb.de>
-	<200809240839.14902.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>,
-	linuxppc-embedded@ozlabs.org
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 92D3ADE016
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 02:42:11 +1000 (EST)
+In-Reply-To: <20080924143055.6102f317@bull.net>
+References: <200809231743.23828.ossthema@de.ibm.com>
+	<20080915100406.342e027a@bull.net>
+	<200809240958.m8O9wM7k010996@sullivan.realtime.net>
+	<20080924143055.6102f317@bull.net>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <0fa2693104ff3250114d82837911b9e8@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
+	hardirq preemption
+Date: Wed, 24 Sep 2008 11:42:15 -0500
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Jan-Bernd Themann <ossthema@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Christoph Raisch <RAISCH@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +27,207 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann writes:
+On Sep 24, 2008, at 7:30 AM, Sebastien Dugue wrote:
+>   Hi Milton,
+> On Wed, 24 Sep 2008 04:58:22 -0500 (CDT) Milton Miller 
+> <miltonm@bga.com> wrote:
+>> On Mon Sep 15 at 18:04:06 EST in 2008, Sebastien Dugue wrote:
+>>> When entering the low level handler, level sensitive interrupts are
+>>> masked, then eio'd in interrupt context and then unmasked at the
+>>> end of hardirq processing.  That's fine as any interrupt comming
+>>> in-between will still be processed since the kernel replays those
+>>> pending interrupts.
+>>
+>> Is this to generate some kind of software managed nesting and priority
+>> of the hardware level interrupts?
+>
+>   No, not really. This is only to be sure to not miss interrupts coming
+> from the same source that were received during threaded hardirq 
+> processing.
+> Some instrumentation showed that it never seems to happen in the eHEA
+> interrupt case, so I think we can forget this aspect.
 
-> diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-> index f6cc7a4..5a69b32 100644
-> --- a/arch/powerpc/include/asm/systbl.h
-> +++ b/arch/powerpc/include/asm/systbl.h
-> @@ -85,7 +85,7 @@ COMPAT_SYS_SPU(gettimeofday)
->  COMPAT_SYS_SPU(settimeofday)
->  COMPAT_SYS_SPU(getgroups)
->  COMPAT_SYS_SPU(setgroups)
-> -SYSX(sys_ni_syscall,sys_ni_syscall,ppc_select)
-> +SYSCALL(sys_ni_syscall)
+I don't trust "the interrupt can never happen during hea hardirq", 
+because I think there will be a race between their rearming the next 
+interrupt and the unmask being called.
 
-I don't see any reason to remove the old select syscall on 32-bit
-kernels.  I think this hunk below is the only part of the patch that
-we actually need:
+I was trying to understand why the mask and early eoi, but I guess its 
+to handle other more limited interrupt controllers where the interrupts 
+stack in hardware instead of software.
 
-> @@ -145,7 +145,7 @@ SYSCALL_SPU(setfsuid)
->  SYSCALL_SPU(setfsgid)
->  SYSCALL_SPU(llseek)
->  COMPAT_SYS_SPU(getdents)
-> -SYSX_SPU(sys_select,ppc32_select,ppc_select)
-> +SYSX_SPU(sys_select,ppc32_select,sys_select)
+>   Also, the problem only manifests with the eHEA RX interrupt. For 
+> example,
+> the IBM Power Raid (ipr) SCSI exhibits absolutely no problem under an 
+> RT
+> kernel. From this I conclude that:
+>
+>   IPR - PCI - XICS is OK
+>   eHEA - IBMEBUS - XICS is broken with hardirq preemption.
+>
+>   I also checked that forcing the eHEA interrupt to take the non 
+> threaded
+> path does work.
 
-Paul.
+For a long period of time, XICS dealt only with level interrupts.   
+First Micro Channel, and later PCI buses.  The IPI is made level by 
+software conventions.  Recently, EHCA, EHEA, and MSI interrupts were 
+added which by their nature are edge based.  The logic that converts 
+those interrupts to the XICS layer is responsible for the resend when 
+no cpu can accept them, but not to retrigger after an EOI.
+
+>   Here is a side by side comparison of the fasteoi flow with and 
+> without hardirq
+> threading (sorry it's a bit wide)
+(removed)
+>   the non-threaded flow does (in interrupt context):
+>
+>     mask
+>     handle interrupt
+>     unmask
+>     eoi
+>
+>   the threaded flow does:
+>
+>     mask
+>     eoi
+> 		handle interrupt
+> 		unmask
+>
+>   If I remove the mask() call, then the eHEA is no longer hanging.
+
+Hmm, I guess I'm confused.  You are saying the irq does not appear if 
+it occurs while it is masked?  Well, in that case, I would guess that 
+the hypervisor is checking if the irq is previously pending while it 
+was masked and resetting it as part of the unmask.   It can't do it on 
+level, but can on the true edge sources.  I would further say the 
+justification for this might be the hardware might make it pending from 
+some previous stale event that might result in the false interrupt on 
+startup were it not to do this clear.
+
+>> The reason I ask is the xics controller can do unlimited nesting
+>> of hardware interrupts.  In fact, the hardware has 255 levels of
+>> priority, of which 16 or so are reserved by the hypervisor, leaving
+>> over 200 for the os to manage.  Higher numbers are lower in priority,
+>> and the hardware will only dispatch an interrupt to a given cpu if
+>> it is currenty at a lower priority.  If it is at a higher priority
+>> and the interrupt is not bound to a specific cpu it will look for
+>> another cpu to dispatch it.  The hardware will not re-present an
+>> irq until the it is EOId (managed by a small state machine per
+>> interrupt at the source, which also handles no cpu available try
+>> again later), but software can return its cpu priority to the
+>> previous level to recieve other interrupt sources at the same level.
+>> The hardware also supports lazy update of the cpu priority register
+>> when an interrupt is presented; as long as the cpu is hard-irq
+>> enabled it can take the irq then write is real priority and let the
+>> hw decide if the irq is still pending or it must defer or try another
+>> cpu in the rejection scenerio.  The only restriction is that the
+>> EOI can not cause an interrupt reject by raising the priority while
+>> sending the EOI command.
+>>
+>> The per-interrupt mask and unmask calls have to go through RTAS, a
+>> single-threaded global context, which in addition to increasing
+>> path length will really limit scalability.  The interrupt controller
+>> poll and reject facilities are accessed through hypervisor calls
+>> which are comparable to a fast syscall, and parallel to all cpus.
+>>
+>> We used to lower the priority to allow other interrupts in, but we
+>> realized that in addition to the questionable latency in doing so,
+>> it only caused unlimited stack nesting and overflow without per-irq
+>> stacks.  We currently set IPIs above other irqs so we typically
+>> only process them during a hard irq (but we return to base level
+>> after IPI and could take another base irq, a bug).
+>>
+>>
+>> So, Sebastien, with this information, is does the RT kernel have
+>> a strategy that better matches this hardware?
+>
+>   Don't think so. I think that the problem may be elsewhere as
+> everything is fine with PCI devices (well at least SCSI).
+
+Those are true level sources, and not edge.
+
+>   As I said earlier in another mail, it seems that the eHEA
+> is behaving as if it was generating edge interrupts which do not
+> support masking. Don't know.
+
+(I wrote this next paragraph before parsing the "remove mask and it 
+works" / I'm confused paragraph above, so it may not be a problem).
+
+These sources are truly edge.  Once you do an EOI you are taking 
+responsibility to do the replay yourself.  In your threaded case, you 
+EOI and therefore the hardware will arm for the next event.  When you 
+add the mask, the delivery is deferred until it is unmasked at the end 
+of your EOI loop.  When you do not, the new interrupt may come in but 
+you just EOI it but do not tell the running thread that it happened, 
+then you are dropping the irq event.   Since the source is truly edge, 
+there is no hardware replay and the interrupt is lost.
+
+(I think the pci express gigabit is one of the few msi interrupt 
+adapters that both IBM and Linux support).
+
+>   Thanks a lot for the explanation, looks like the xics + hypervisor
+> combo is way more complex than I thought.
+
+While the hypervisor adds a bit of path length (an hcall vs a single 
+mmio access for get_irq/eoi with multiple priority irq nesting), the 
+model is no more or less complicated than native xics.
+
+The path lengh for mask and unmask is always VERY slow and single 
+threaded global lock and single context in xics.  It is designed and 
+tuned to run at driver startup and shutdown (and adapter reset and 
+reinitalize during pci error processing), not during normal irq 
+processing.
+
+The XICS hardware implicitly masks the specific source as part of 
+interrupt ack (get_irq), and implicitly undoes this mask at eoi.   In 
+addition, it helps to manage the cpu priority by supplying the previous 
+priority as part of the get_irq process and providing for the priority 
+to be restored (lowered only) as part of the eoi.  The hardware does 
+support setting the cpu priority independently.
+
+We should only be using this implicit masking for xics, and not the 
+explicit masking for any normal interrupt processing.  I don't know if 
+this means making the mask/unmask setting a bit in software, and the 
+enable/disable to actually call what we do now on mask/unmask, or if it 
+means we need a new flow type on real time.
+
+While call to mask and unmask might work on level interrupts, its 
+really slow and will limit performance if done on every interrupt.
+
+>   the non-threaded flow does (in interrupt context):
+>
+>     mask
+>     handle interrupt
+>     unmask
+>     eoi
+>
+>   the threaded flow does:
+>
+>     mask
+>     eoi
+> 		handle interrupt
+> 		unmask
+
+I think the flows we want on xics are:
+
+(non-threaded)
+	getirq (implicit source specific mask until eoi)
+	handle interrupt
+	eoi (implicit cpu priority restore)
+
+(threaded)
+	getirq (implicit source specific mask until eoi)
+	explicit cpu priority restore
+	handle interrupt
+	eoi (implicit cpu priority restore to same as explicit level)
+
+Where the cpu priority restore allows receiving other interrupts of the 
+same priority from the hardware.
+
+So I guess the question is can the rt kernel interrupt processing take 
+advantage of xics auto mask, or does someone need to write state 
+tracking in the xics code to work around this, changing mask under 
+interrupt to "defer eoi to unmask" (which I can not see as clean, and 
+having shutdown problems).
+
+milton
