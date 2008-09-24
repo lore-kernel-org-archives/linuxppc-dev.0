@@ -1,21 +1,11 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp115.sbc.mail.sp1.yahoo.com (smtp115.sbc.mail.sp1.yahoo.com
-	[69.147.64.88]) by ozlabs.org (Postfix) with SMTP id AD99ADDF20
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 07:42:52 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: "Joakim Tjernlund" <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controllerdriver
-Date: Wed, 24 Sep 2008 14:42:48 -0700
-References: <1219916613-28827-1-git-send-email-leoli@freescale.com>
-	<200809241328.35008.david-b@pacbell.net>
-	<07ab01c91e8c$b56f6140$204e23c0$@Tjernlund@transmode.se>
-In-Reply-To: <07ab01c91e8c$b56f6140$204e23c0$@Tjernlund@transmode.se>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
+Date: Wed, 24 Sep 2008 17:51:04 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: USB support on mpc5200 broken
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200809241442.49240.david-b@pacbell.net>
-Cc: greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +15,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 24 September 2008, Joakim Tjernlund wrote:
-> > > I see. If one wants to connect with CDC to Windows, what drivers are
-> > > there for Windows that works well with Linux?
-> > 
-> > I believe MCCI has some.  It also has drivers for a CDC subset,
-> > pretty much the same one Linux has used forever except wrapped
-> > with a few extra descriptors to make it practical to identify
-> > that "SAFE" (!) subset without needing vendor and product IDs.
-> 
-> Thanks, had a look and it seems like I have to buy these drives. I was
-> hoping to find some free ones, do you know of such free drivers?
+USB is not working my hardware, so I booted my Efika and it's not
+working there either.  This is with linus' current git.
 
-No, sorry.  Remember MSFT is somewhat rabidly anti-Free...
+Can anyone verify this? Or know what happened to USB?
+USB is loading but it is not finding anything plugged in.
+lsusb doesn't show anything.
 
-However, we'd be quite happy to have someone more attuned
-to MS-Windows sort out the remaining issues in the Linux
-support for RNDIS.  ;)
+Last time I noticed it was working was about ten days ago. I don't use
+it everyday.
 
-- Dave
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+ASoC version 0.31
+NET: Registered protocol family 2
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+TCP established hash table entries: 4096 (order: 3, 32768 bytes)
+TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
+TCP: Hash tables configured (established 4096 bind 4096)
+TCP reno registered
+NET: Registered protocol family 1
+audit: initializing netlink socket (disabled)
+type=2000 audit(1222292382.243:1): initialized
+msgmni has been set to 247 for ipc namespace c0316b94
+io scheduler noop registered
+io scheduler deadline registered (default)
+Macintosh non-volatile memory driver v1.1
+Serial: MPC52xx PSC UART driver
+f0002000.serial: ttyPSC0 at MMIO 0xf0002000 (irq = 129) is a MPC52xx PSC
+brd: module loaded
+loop: module loaded
+mpc52xx MII bus: probed
+net eth0: Using PHY at MDIO address 16
+Driver 'sd' needs updating - please use bus_type methods
+Initializing USB Mass Storage driver...
+usbcore: registered new interface driver usb-storage
+USB Mass Storage support registered.
+i2c /dev entries driver
+usbcore: registered new interface driver usbhid
+usbhid: v2.6:USB HID core driver
+Advanced Linux Sound Architecture Driver Version 1.0.16.
+tas5504_driver_init
+mpc52xx_i2s_driver_init
+digispeaker_driver_init
+ALSA device list:
+  No soundcards found.
+TCP cubic registered
+NET: Registered protocol family 17
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module.
+drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
+net eth0: attached phy 16 to driver Generic PHY
+Sending DHCP requests .<6>PHY: f0003000:10 - Link is Up - 100/Full
+., OK
+IP-Config: Got DHCP answer from 192.168.1.1, my address is 192.168.1.109
+IP-Config: Complete:
+     device=eth0, addr=192.168.1.109, mask=255.255.255.0, gw=192.168.1.1,
+     host=192.168.1.109, domain=, nis-domain=(none),
+     bootserver=192.168.1.1, rootserver=192.168.1.4, rootpath=
+Looking up port of RPC 100003/3 on 192.168.1.4
+Looking up port of RPC 100005/3 on 192.168.1.4
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
