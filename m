@@ -1,16 +1,20 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7FEEDDDF3A
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 00:02:06 +1000 (EST)
-Subject: [PATCH] powerpc: fix 64-bit hibernation with 64k pages
-From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Wed, 24 Sep 2008 16:01:09 +0200
-Message-Id: <1222264869.4257.13.camel@johannes.berg>
-Mime-Version: 1.0
+	by ozlabs.org (Postfix) with ESMTPS id 5A2E3DDF6F
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 00:05:08 +1000 (EST)
+Message-Id: <B38CBE3A-B9DA-44BA-8646-AEE81FB82437@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1222262654.4257.4.camel@johannes.berg>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: enforce sane MAX_ORDER
+Date: Wed, 24 Sep 2008 09:05:01 -0500
+References: <1222262654.4257.4.camel@johannes.berg>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,38 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Brown paper bag patch, the fact that it didn't work is entirely my fault
-for hardcoding 512 in the original patch.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
----
-Contains the revert for the earlier patch just in case; probably better
-to not apply the earlier patch and only the first hunk of this.
+On Sep 24, 2008, at 8:24 AM, Johannes Berg wrote:
 
----
- arch/powerpc/Kconfig               |    2 +-
- arch/powerpc/kernel/swsusp_asm64.S |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> powerpc uses CONFIG_FORCE_MAX_ZONEORDER, and some things depend on it
+> being at least 10 when 64k pages are not configured (notably the dart
+> iommu code with CONFIG_PM). The defaults are fine, but when going  
+> from a
+> 64K pages config to one without 64K pages, MAX_ORDER stays at 9  
+> which is
+> too low for 4K pages.
+>
+> This patch makes the Kconfig enforce at least the defaults, I used 999
+> as the upper bound for no particular reason other than that it's  
+> plenty.
+>
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> ---
+>
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -415,8 +415,11 @@ config PPC_64K_PAGES
+>
+> config FORCE_MAX_ZONEORDER
+> 	int "Maximum zone order"
+> +	range 9 999 if PPC_64K_PAGES
+> 	default "9" if PPC_64K_PAGES
+> +	range 13 999 if PPC64 && !PPC_64K_PAGES
+> 	default "13" if PPC64 && !PPC_64K_PAGES
+> +	range 11 999
+> 	default "11"
+> 	help
+> 	  The kernel memory allocator divides physically contiguous memory
 
---- wireless-testing.orig/arch/powerpc/kernel/swsusp_asm64.S	2008-09-24 15:32:07.119071976 +0200
-+++ wireless-testing/arch/powerpc/kernel/swsusp_asm64.S	2008-09-24 15:32:15.723824535 +0200
-@@ -133,7 +133,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 
- 	cmpdi	r12,0
- 	beq-	nothing_to_copy
--	li	r15,512
-+	li	r15,PAGE_SIZE>>3
- copyloop:
- 	ld	r13,pbe_address(r12)
- 	ld	r14,pbe_orig_address(r12)
---- wireless-testing.orig/arch/powerpc/Kconfig	2008-09-24 15:32:36.483825650 +0200
-+++ wireless-testing/arch/powerpc/Kconfig	2008-09-24 15:32:42.837826811 +0200
-@@ -194,7 +194,7 @@ config HIBERNATE_32
- 
- config HIBERNATE_64
- 	bool
--	depends on BROKEN || (PPC_PMAC64 && !PPC_64K_PAGES && EXPERIMENTAL)
-+	depends on BROKEN || (PPC_PMAC64 && EXPERIMENTAL)
- 	default y
- 
- config ARCH_HIBERNATION_POSSIBLE
+Hope about setting the upper bound to 32 or 64.  Since I believe this  
+in effect 2^FORCE_MAX_ZONEORDER, so 999 is just insane.  I'd almost  
+prefer something like 16 since that might still be in the realm of  
+reasonable and able to work.
+
+- k
