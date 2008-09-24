@@ -1,29 +1,17 @@
-Return-Path: <Yu.Liu@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1D172DDE0D
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 14:28:58 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m8O4SqI1012132
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 21:28:52 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m8O4Snc3026525
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 23:28:50 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] powerpc/math-emu: Use kernel generic math-emu code
-Date: Wed, 24 Sep 2008 12:28:48 +0800
-Message-ID: <D8176E55B81822498D63816C4ADC70100937C8@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1222229100-22375-1-git-send-email-galak@kernel.crashing.org>
-References: <1222229100-22375-1-git-send-email-galak@kernel.crashing.org>
-From: "Liu Yu-B13201" <Yu.Liu@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 71C63DDE11
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 14:36:21 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m8O4aHUm028022
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Sep 2008 23:36:18 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/86xx: Introduce a generic mpc86xx_defconfig
+Date: Tue, 23 Sep 2008 23:36:17 -0500
+Message-Id: <1222230977-24350-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,115 +21,198 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->=20
-> diff --git a/arch/powerpc/include/asm/sfp-machine.h=20
-> b/arch/powerpc/include/asm/sfp-machine.h
-> new file mode 100644
-> index 0000000..ced34f1
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/sfp-machine.h
-> @@ -0,0 +1,353 @@
-> +/* Machine-dependent software floating-point definitions. =20
-> PPC version.
-> +   Copyright (C) 1997 Free Software Foundation, Inc.
-> +   This file is part of the GNU C Library.
-> +
-> +   The GNU C Library is free software; you can redistribute it and/or
-> +   modify it under the terms of the GNU Library General=20
-> Public License as
-> +   published by the Free Software Foundation; either version 2 of the
-> +   License, or (at your option) any later version.
-> +
-> +   The GNU C Library is distributed in the hope that it will=20
-> be useful,
-> +   but WITHOUT ANY WARRANTY; without even the implied warranty of
-> +   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> +   Library General Public License for more details.
-> +
-> +   You should have received a copy of the GNU Library General Public
-> +   License along with the GNU C Library; see the file=20
-> COPYING.LIB.  If
-> +   not, write to the Free Software Foundation, Inc.,
-> +   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-> +
-> +   Actually, this is a PPC (32bit) version, written based on the
-> +   i386, sparc, and sparc64 versions, by me,
-> +   Peter Maydell (pmaydell@chiark.greenend.org.uk).
-> +   Comments are by and large also mine, although they may be=20
-> inaccurate.
-> +
-> +   In picking out asm fragments I've gone with the lowest common
-> +   denominator, which also happens to be the hardware I have :->
-> +   That is, a SPARC without hardware multiply and divide.
-> + */
-> +
-> +/* basic word size definitions */
-> +#define _FP_W_TYPE_SIZE		32
-> +#define _FP_W_TYPE		unsigned long
-> +#define _FP_WS_TYPE		signed long
-> +#define _FP_I_TYPE		long
-> +
-> +#define __ll_B			((UWtype) 1 <<=20
-> (W_TYPE_SIZE / 2))
-> +#define __ll_lowpart(t)		((UWtype) (t) & (__ll_B - 1))
-> +#define __ll_highpart(t)	((UWtype) (t) >> (W_TYPE_SIZE / 2))
-> +
-> +/* You can optionally code some things like addition in asm. For
-> + * example, i386 defines __FP_FRAC_ADD_2 as asm. If you don't
-> + * then you get a fragment of C code [if you change an #ifdef 0
-> + * in op-2.h] or a call to add_ssaaaa (see below).
-> + * Good places to look for asm fragments to use are gcc and glibc.
-> + * gcc's longlong.h is useful.
-> + */
-> +
-> +/* We need to know how to multiply and divide. If the host word size
-> + * is >=3D 2*fracbits you can use FP_MUL_MEAT_n_imm(t,R,X,Y) which
-> + * codes the multiply with whatever gcc does to 'a * b'.
-> + * _FP_MUL_MEAT_n_wide(t,R,X,Y,f) is used when you have an asm
-> + * function that can multiply two 1W values and get a 2W result.
-> + * Otherwise you're stuck with _FP_MUL_MEAT_n_hard(t,R,X,Y) which
-> + * does bitshifting to avoid overflow.
-> + * For division there is FP_DIV_MEAT_n_imm(t,R,X,Y,f) for word size
-> + * >=3D 2*fracbits, where f is either _FP_DIV_HELP_imm or
-> + * _FP_DIV_HELP_ldiv (see op-1.h).
-> + * _FP_DIV_MEAT_udiv() is if you have asm to do 2W/1W =3D> (1W, 1W).
-> + * [GCC and glibc have longlong.h which has the asm macro udiv_qrnnd
-> + * to do this.]
-> + * In general, 'n' is the number of words required to hold the type,
-> + * and 't' is either S, D or Q for single/double/quad.
-> + *           -- PMM
-> + */
-> +/* Example: SPARC64:
-> + * #define _FP_MUL_MEAT_S(R,X,Y)	_FP_MUL_MEAT_1_imm(S,R,X,Y)
-> + * #define _FP_MUL_MEAT_D(R,X,Y)=09
-> _FP_MUL_MEAT_1_wide(D,R,X,Y,umul_ppmm)
-> + * #define _FP_MUL_MEAT_Q(R,X,Y)=09
-> _FP_MUL_MEAT_2_wide(Q,R,X,Y,umul_ppmm)
-> + *
-> + * #define _FP_DIV_MEAT_S(R,X,Y)=09
-> _FP_DIV_MEAT_1_imm(S,R,X,Y,_FP_DIV_HELP_imm)
-> + * #define _FP_DIV_MEAT_D(R,X,Y)	_FP_DIV_MEAT_1_udiv(D,R,X,Y)
-> + * #define _FP_DIV_MEAT_Q(R,X,Y)	_FP_DIV_MEAT_2_udiv_64(Q,R,X,Y)
-> + *
-> + * Example: i386:
-> + * #define _FP_MUL_MEAT_S(R,X,Y)  =20
-> _FP_MUL_MEAT_1_wide(S,R,X,Y,_i386_mul_32_64)
-> + * #define _FP_MUL_MEAT_D(R,X,Y)  =20
-> _FP_MUL_MEAT_2_wide(D,R,X,Y,_i386_mul_32_64)
-> + *
-> + * #define _FP_DIV_MEAT_S(R,X,Y)  =20
-> _FP_DIV_MEAT_1_udiv(S,R,X,Y,_i386_div_64_32)
-> + * #define _FP_DIV_MEAT_D(R,X,Y)   _FP_DIV_MEAT_2_udiv_64(D,R,X,Y)
-> + */
-> +
-> +#define _FP_MUL_MEAT_S(R,X,Y)  =20
-> _FP_MUL_MEAT_1_wide(_FP_WFRACBITS_S,R,X,Y,umul_ppmm)
-> +#define _FP_MUL_MEAT_D(R,X,Y)  =20
-> _FP_MUL_MEAT_2_wide(_FP_WFRACBITS_D,R,X,Y,umul_ppmm)
-> +
-> +#define _FP_DIV_MEAT_S(R,X,Y)	_FP_DIV_MEAT_1_udiv(S,R,X,Y)
+Introduced a mpc86xx_defconfig that enables all 86xx boards and moved
+all other 86xx related defconfigs under configs/86xx to match 83xx
+and 85xx.
 
-It seems _FP_DIV_MEAT_S() should be defined to
-_FP_DIV_MEAT_1_udiv_norm().
-I can't remember very clear, but it seems single point float need to be
-normalized before calling udiv_qrnnd.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ .../configs/{ => 86xx}/mpc8610_hpcd_defconfig      |    0 
+ .../configs/{ => 86xx}/mpc8641_hpcn_defconfig      |    0 
+ arch/powerpc/configs/{ => 86xx}/sbc8641d_defconfig |    0 
+ .../{mpc8641_hpcn_defconfig => mpc86xx_defconfig}  |   44 +++++--------------
+ 4 files changed, 12 insertions(+), 32 deletions(-)
+ rename arch/powerpc/configs/{ => 86xx}/mpc8610_hpcd_defconfig (100%)
+ copy arch/powerpc/configs/{ => 86xx}/mpc8641_hpcn_defconfig (100%)
+ rename arch/powerpc/configs/{ => 86xx}/sbc8641d_defconfig (100%)
+ rename arch/powerpc/configs/{mpc8641_hpcn_defconfig => mpc86xx_defconfig} (97%)
+
+diff --git a/arch/powerpc/configs/mpc8610_hpcd_defconfig b/arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc8610_hpcd_defconfig
+rename to arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig
+diff --git a/arch/powerpc/configs/mpc8641_hpcn_defconfig b/arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig
+similarity index 100%
+copy from arch/powerpc/configs/mpc8641_hpcn_defconfig
+copy to arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig
+diff --git a/arch/powerpc/configs/sbc8641d_defconfig b/arch/powerpc/configs/86xx/sbc8641d_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/sbc8641d_defconfig
+rename to arch/powerpc/configs/86xx/sbc8641d_defconfig
+diff --git a/arch/powerpc/configs/mpc8641_hpcn_defconfig b/arch/powerpc/configs/mpc86xx_defconfig
+similarity index 97%
+rename from arch/powerpc/configs/mpc8641_hpcn_defconfig
+rename to arch/powerpc/configs/mpc86xx_defconfig
+index ea09be3..9d4be82 100644
+--- a/arch/powerpc/configs/mpc8641_hpcn_defconfig
++++ b/arch/powerpc/configs/mpc86xx_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.27-rc4
+-# Thu Aug 21 00:52:11 2008
++# Linux kernel version: 2.6.27-rc5
++# Tue Sep 23 23:28:38 2008
+ #
+ # CONFIG_PPC64 is not set
+ 
+@@ -100,7 +100,6 @@ CONFIG_HOTPLUG=y
+ CONFIG_PRINTK=y
+ CONFIG_BUG=y
+ CONFIG_ELF_CORE=y
+-CONFIG_PCSPKR_PLATFORM=y
+ CONFIG_COMPAT_BRK=y
+ CONFIG_BASE_FULL=y
+ CONFIG_FUTEX=y
+@@ -161,17 +160,18 @@ CONFIG_DEFAULT_CFQ=y
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="cfq"
+ CONFIG_CLASSIC_RCU=y
++# CONFIG_MPC8xxx_GPIO is not set
+ 
+ #
+ # Platform support
+ #
+ CONFIG_PPC_MULTIPLATFORM=y
+ CONFIG_CLASSIC32=y
+-CONFIG_PPC_CHRP=y
++# CONFIG_PPC_CHRP is not set
+ # CONFIG_MPC5121_ADS is not set
+ # CONFIG_MPC5121_GENERIC is not set
+ # CONFIG_PPC_MPC52xx is not set
+-CONFIG_PPC_PMAC=y
++# CONFIG_PPC_PMAC is not set
+ # CONFIG_PPC_CELL is not set
+ # CONFIG_PPC_CELL_NATIVE is not set
+ # CONFIG_PPC_82xx is not set
+@@ -179,25 +179,22 @@ CONFIG_PPC_PMAC=y
+ # CONFIG_PPC_83xx is not set
+ CONFIG_PPC_86xx=y
+ CONFIG_MPC8641_HPCN=y
+-# CONFIG_SBC8641D is not set
+-# CONFIG_MPC8610_HPCD is not set
++CONFIG_SBC8641D=y
++CONFIG_MPC8610_HPCD=y
++CONFIG_GEF_SBC610=y
+ CONFIG_MPC8641=y
+-CONFIG_PPC_NATIVE=y
+-# CONFIG_UDBG_RTAS_CONSOLE is not set
++CONFIG_MPC8610=y
+ # CONFIG_IPIC is not set
+ CONFIG_MPIC=y
+ # CONFIG_MPIC_WEIRD is not set
+ CONFIG_PPC_I8259=y
+-CONFIG_PPC_RTAS=y
+-# CONFIG_RTAS_ERROR_LOGGING is not set
+-CONFIG_RTAS_PROC=y
++# CONFIG_PPC_RTAS is not set
+ # CONFIG_MMIO_NVRAM is not set
+-CONFIG_PPC_MPC106=y
++# CONFIG_PPC_MPC106 is not set
+ # CONFIG_PPC_970_NAP is not set
+ # CONFIG_PPC_INDIRECT_IO is not set
+ # CONFIG_GENERIC_IOMAP is not set
+ # CONFIG_CPU_FREQ is not set
+-# CONFIG_PPC601_SYNC_FIX is not set
+ # CONFIG_TAU is not set
+ CONFIG_FSL_ULI1575=y
+ 
+@@ -221,7 +218,6 @@ CONFIG_PREEMPT_NONE=y
+ CONFIG_BINFMT_ELF=y
+ CONFIG_BINFMT_MISC=m
+ # CONFIG_IOMMU_HELPER is not set
+-# CONFIG_HOTPLUG_CPU is not set
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ CONFIG_ARCH_HAS_WALK_MEMORY=y
+ CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
+@@ -255,7 +251,6 @@ CONFIG_ISA_DMA_API=y
+ #
+ # Bus options
+ #
+-# CONFIG_ISA is not set
+ CONFIG_ZONE_DMA=y
+ CONFIG_GENERIC_ISA_DMA=y
+ CONFIG_PPC_INDIRECT_PCI=y
+@@ -425,7 +420,6 @@ CONFIG_OF_I2C=y
+ # CONFIG_PARPORT is not set
+ CONFIG_BLK_DEV=y
+ # CONFIG_BLK_DEV_FD is not set
+-# CONFIG_MAC_FLOPPY is not set
+ # CONFIG_BLK_CPQ_DA is not set
+ # CONFIG_BLK_CPQ_CISS_DA is not set
+ # CONFIG_BLK_DEV_DAC960 is not set
+@@ -528,8 +522,6 @@ CONFIG_SCSI_LOWLEVEL=y
+ # CONFIG_SCSI_DC390T is not set
+ # CONFIG_SCSI_NSP32 is not set
+ # CONFIG_SCSI_DEBUG is not set
+-# CONFIG_SCSI_MESH is not set
+-# CONFIG_SCSI_MAC53C94 is not set
+ # CONFIG_SCSI_SRP is not set
+ # CONFIG_SCSI_DH is not set
+ CONFIG_ATA=y
+@@ -634,8 +626,6 @@ CONFIG_VITESSE_PHY=y
+ # CONFIG_MDIO_BITBANG is not set
+ CONFIG_NET_ETHERNET=y
+ CONFIG_MII=y
+-# CONFIG_MACE is not set
+-# CONFIG_BMAC is not set
+ # CONFIG_HAPPYMEAL is not set
+ # CONFIG_SUNGEM is not set
+ # CONFIG_CASSINI is not set
+@@ -781,14 +771,11 @@ CONFIG_SERIAL_8250_RSA=y
+ # CONFIG_SERIAL_UARTLITE is not set
+ CONFIG_SERIAL_CORE=y
+ CONFIG_SERIAL_CORE_CONSOLE=y
+-# CONFIG_SERIAL_PMACZILOG is not set
+ # CONFIG_SERIAL_JSM is not set
+ # CONFIG_SERIAL_OF_PLATFORM is not set
+ CONFIG_UNIX98_PTYS=y
+ CONFIG_LEGACY_PTYS=y
+ CONFIG_LEGACY_PTY_COUNT=256
+-# CONFIG_BRIQ_PANEL is not set
+-# CONFIG_HVC_RTAS is not set
+ # CONFIG_IPMI_HANDLER is not set
+ # CONFIG_HW_RANDOM is not set
+ CONFIG_NVRAM=y
+@@ -825,12 +812,6 @@ CONFIG_I2C_HELPER_AUTO=y
+ # CONFIG_I2C_VIAPRO is not set
+ 
+ #
+-# Mac SMBus host controller drivers
+-#
+-# CONFIG_I2C_HYDRA is not set
+-CONFIG_I2C_POWERMAC=y
+-
+-#
+ # I2C system bus drivers (mostly embedded / system-on-chip)
+ #
+ CONFIG_I2C_MPC=y
+@@ -1135,8 +1116,6 @@ CONFIG_SND_INTEL8X0=y
+ # CONFIG_SND_VX222 is not set
+ # CONFIG_SND_YMFPCI is not set
+ CONFIG_SND_PPC=y
+-# CONFIG_SND_POWERMAC is not set
+-# CONFIG_SND_AOA is not set
+ CONFIG_SND_USB=y
+ # CONFIG_SND_USB_AUDIO is not set
+ # CONFIG_SND_USB_USX2Y is not set
+@@ -1567,6 +1546,7 @@ CONFIG_HAVE_ARCH_KGDB=y
+ # CONFIG_DEBUG_PAGEALLOC is not set
+ # CONFIG_CODE_PATCHING_SELFTEST is not set
+ # CONFIG_FTR_FIXUP_SELFTEST is not set
++# CONFIG_MSI_BITMAP_SELFTEST is not set
+ # CONFIG_XMON is not set
+ # CONFIG_IRQSTACKS is not set
+ # CONFIG_BDI_SWITCH is not set
+-- 
+1.5.5.1
