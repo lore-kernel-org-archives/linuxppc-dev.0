@@ -1,24 +1,25 @@
-Return-Path: <miltonm@bga.com>
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id B862FDDF05
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 21:02:26 +1000 (EST)
-In-Reply-To: <1222251467.8277.73.camel@pasglop>
-References: <200809231743.23828.ossthema@de.ibm.com> ,
-	<20080915100406.342e027a@bull.net>
-	<200809240958.m8O9wM7k010996@sullivan.realtime.net>
-	<1222251467.8277.73.camel@pasglop>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f30d1d832fd4ad096afccf198c14a7bb@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
-	hardirq preemption
-Date: Wed, 24 Sep 2008 06:02:54 -0500
-To: benh@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Sebastien Dugue <sebastien.dugue@bull.net>,
-	Jan-Bernd Themann <ossthema@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	Christoph Raisch <RAISCH@de.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 19372DDF34
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 21:42:33 +1000 (EST)
+Date: Wed, 24 Sep 2008 15:42:31 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/4] powerpc/qe: new call to revert a gpio to a
+	dedicated function
+Message-ID: <20080924114231.GA8469@oksana.dev.rtsoft.ru>
+References: <20080924000255.GA28054@oksana.dev.rtsoft.ru>
+	<20080924000336.GB29733@oksana.dev.rtsoft.ru>
+	<B8BAAB1F-10B5-419D-84A7-F724A7E77F41@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <B8BAAB1F-10B5-419D-84A7-F724A7E77F41@kernel.crashing.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,39 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sep 24, 2008, at 5:17 AM, Benjamin Herrenschmidt wrote:
-> On Wed, 2008-09-24 at 04:58 -0500, Milton Miller wrote:
->> The per-interrupt mask and unmask calls have to go through RTAS, a
->> single-threaded global context, which in addition to increasing
->> path length will really limit scalability.  The interrupt controller
->> poll and reject facilities are accessed through hypervisor calls
->> which are comparable to a fast syscall, and parallel to all cpus.
+On Tue, Sep 23, 2008 at 11:07:00PM -0500, Kumar Gala wrote:
 >
-> Note also that the XICS code thus assumes, iirc, as does the cell IIC
-> code, that eoi is called on the -same- cpu that fetched the interrupt
-> initially. That assumption can be broken with IRQ threads no ?
+> On Sep 23, 2008, at 7:03 PM, Anton Vorontsov wrote:
+>
+>> qe_gpio_set_dedicated() is a platform specific function, which is used
+>> to revert a pin to a dedicated function. Caller should have already
+>> obtained the gpio via gpio_request().
+>>
+>> This is needed to support Freescale USB Host Controller.
+>>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>> ---
+>> arch/powerpc/include/asm/qe.h     |    1 +
+>> arch/powerpc/sysdev/qe_lib/gpio.c |   46 ++++++++++++++++++++++++++++ 
+>> +++++++++
+>> 2 files changed, 47 insertions(+), 0 deletions(-)
+>
+> what do you mean by dedicated function.. be a bit clearer in the commit 
+> log.
 
-There may be some implicit assumption in that we expect the cpu 
-priority to be returned to normal by the EOI, but there is nothing in 
-the hardware that requires the EOI to come from the same cpu as 
-accepted the interrupt for processing, with the exception of the IPI 
-which is per-cpu (and the only interrupt that is per-cpu).
+This term is from the QE spec, I didn't invent anything. ;-)
 
-It would probably mean adding the concept of the current cpu priority 
-vs interrupts and making sure we write it to hardware at irq_exit() 
-time when deferring the actual irq handlers.
+"Each pin in the I/O ports can be configured as a general-purpose
+I/O signal or as a dedicated peripheral interface signal. ...many
+dedicated peripheral functions are multiplexed onto the ports."
 
-The MPIC hardware, on the other hand, maintains a queue of pending 
-interrupts (It has been about a decade but the number 4-5 comes to 
-mind), and the hardware must receive the EOI on the cpu that took it.  
-I am guessing that the handling described (take level irq, mask it, eoi 
-it, dispatch the thread, then unmask it after processing) is a result 
-to work within those limitations.  Do you know the cell IIC to know if 
-its mpic or xics in this regard?
+> Also, does this depend on gpio_to_chip() patch?
 
-The other unknown is the (very few) platforms that present as xics but 
-are really firmware on mpic.  If they do a full virtual layer and don't 
-take shortcuts but do eoi/mask like described here they should work, 
-but I would not be surprised that does not hold true :-(.
+Yeah, the point of exported gpio_to_chip is to let us write
+this function.
 
-milton
+Thanks!
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
