@@ -1,25 +1,21 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <lark@linux.net.cn>
+Received: from mx.linux.net.cn (unknown [210.82.31.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de",
-	Issuer "StartCom Class 1 Primary Intermediate Server CA" (not
-	verified)) by ozlabs.org (Postfix) with ESMTPS id 15D0FDDDEA
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 18:51:54 +1000 (EST)
-Message-ID: <48DB50E4.4050509@scram.de>
-Date: Thu, 25 Sep 2008 10:50:44 +0200
-From: Jochen Friedrich <jochen@scram.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A5309DDE41
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 18:54:30 +1000 (EST)
+Received: from [10.30.50.240] (unknown [218.241.174.18])
+	by mx.linux.net.cn (Postfix) with ESMTP id E9F523ED42
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 17:07:15 +0800 (CST)
+Message-ID: <48DB51C3.6040504@linux.net.cn>
+Date: Thu, 25 Sep 2008 16:54:27 +0800
+From: Wang Jian <lark@linux.net.cn>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Please pull from 'for-2.6.27'
-References: <Pine.LNX.4.64.0809121546530.6192@blarg.am.freescale.net>
-	<18BF734B-F71B-4FDD-B3C9-62AA5EB54283@kernel.crashing.org>
-	<18639.61790.750450.103022@cargo.ozlabs.ibm.com>
-	<48D0DC23.9070902@scram.de>
-	<20080924224347.GA29132@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20080924224347.GA29132@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] pata_platform struct resource signness fix
+References: <20080925083622.GA2701@debian>
+In-Reply-To: <20080925083622.GA2701@debian>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,24 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Scott,
+The alternative fix can be.
 
->> This isn't a regression since the stuff is new in 2.6.27. IMHO this can
->> wait until 2.6.28.
+diff --git a/drivers/ata/pata_of_platform.c b/drivers/ata/pata_of_platform.c
+index 408da30..1f18ad9 100644
+--- a/drivers/ata/pata_of_platform.c
++++ b/drivers/ata/pata_of_platform.c
+@@ -52,7 +52,7 @@ static int __devinit pata_of_platform_probe(struct of_device *ofdev,
+
+         ret = of_irq_to_resource(dn, 0, &irq_res);
+         if (ret == NO_IRQ)
+-               irq_res.start = irq_res.end = -1;
++               irq_res.start = irq_res.end = 0;
+         else
+                 irq_res.flags = 0;
+
+I just didn't spend much time to see which is better.
+
+Wang Jian wrote:
+> Hi,
 > 
-> It would be a bug in 2.6.27 that did not exist in 2.6.26...  is there
-> anything that used to use another mechanism that now uses this?
-
-No, GPIO support on CPM1/CPM2 is new in 2.6.27. Before, dedicated platform 
-drivers were needed to drive hardware connected to an GPIO pin.
-
-> That's not to say that it's necessarily critical enough this late in the
-> process, but in general I'm not very comfortable with not being able to
-> fix newly added code as soon as the merge window closes because it's not
-> a "regression".
-
-If i understood Linus correctly, this fix will have to wait for 2.6.28, but
-then it can also enter the 2.6.27 stable series (like 2.6.27.1).
-
-Thanks,
-Jochen
+> This patch is to pata_platform.c but at this time, it's powerpc specific
+> because it can only be triggerred using openfirmware, so I post the patch
+> here. The patch is against 2.6.26-rc8.
+> 
+> The problem is triggerred when ata device is populated using 
+> pata_of_platform.c, and no irq is assigned (poll mode, such as CF card).
+> 
+> pata_of_platform_probe() parse device tree and
+> 
+>         if (ret == NO_IRQ)
+> 	                irq_res.start = irq_res.end = -1;
+> 
+> Then irq is 0xffffffff, not NULL. Probe will fail coz irq can't be
+> requested.
+> 
+> 
+> ---
+> (irq_res->start > 0) will be true even when it is (-1). When the device
+> has no irq, irq_res->start is assigned (-1).
+> 
+> Signed-off-by: Wang Jian <lark@linux.net.cn>
+> ---
+>  drivers/ata/pata_platform.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/ata/pata_platform.c b/drivers/ata/pata_platform.c
+> index 8f65ad6..b12cd0c 100644
+> --- a/drivers/ata/pata_platform.c
+> +++ b/drivers/ata/pata_platform.c
+> @@ -123,7 +123,7 @@ int __devinit __pata_platform_probe(struct device *dev,
+>  	/*
+>  	 * And the IRQ
+>  	 */
+> -	if (irq_res && irq_res->start > 0) {
+> +	if (irq_res && irq_res->start != -1) {
+>  		irq = irq_res->start;
+>  		irq_flags = irq_res->flags;
+>  	}
