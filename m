@@ -1,22 +1,23 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id D5E94DDF76
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 22:23:45 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so61320yxg.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 05:23:43 -0700 (PDT)
-Date: Thu, 25 Sep 2008 08:22:41 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: paulus@samba.org
-Subject: Re: Fix PCI in Holly device tree
-Message-ID: <20080925122241.GC2243@yoda.jdub.homelinux.org>
-References: <20080925023904.GC15169@yookeroo.seuss>
-	<20080925081129.7f882085@zod.rchland.ibm.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8420EDDE9F
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 23:55:07 +1000 (EST)
+Message-ID: <48DB9816.4020603@freescale.com>
+Date: Thu, 25 Sep 2008 08:54:30 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080925081129.7f882085@zod.rchland.ibm.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	David Gibson <david@gibson.dropbear.id.au>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH v2] fsl-dma: allow Freescale Elo DMA driver to be compiled
+	as a module
+References: <1222293567-17694-1-git-send-email-timur@freescale.com>
+	<2a27d3730809242354u4cc24b96yda3973bfc3ddac92@mail.gmail.com>
+In-Reply-To: <2a27d3730809242354u4cc24b96yda3973bfc3ddac92@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, dan.j.williams@intel.com,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 25, 2008 at 08:11:29AM -0400, Josh Boyer wrote:
->On Thu, 25 Sep 2008 12:39:04 +1000
->David Gibson <david@gibson.dropbear.id.au> wrote:
->
->> The PCI bridge on the Holly board is current incorrectly represented
->> in the device tree.  The current device tree node for the PCI bridge
->> sits under the tsi-bridge node.  That's not obviously wrong, but the
->> PCI bridge translated some PCI spaces into CPU address ranges which
->> were not translated by the tsi-bridge node.
->> 
->> We used to get away with this problem because the PCI bridge discovery
->> code was also buggy, assuming incorrectly that PCI host bridge nodes
->> were always directly under the root bus and treating the translated
->> addresses as raw CPU addresses, rather than parent bus addresses.
->> This has since been fixed, breaking Holly.
->> 
->> This could be fixed by adding extra translations to the tsi-bridge
->> node, but this patch instead moves the Holly PCI bridge out of the
->> tsi-bridge node to the root bus.  This makes the tsi-bridge node
->> represent only the built-in IO devices in the bridge, with a
->> more-or-less contiguous address range.  This is the same convention
->> used on Freescale SoC chips, where the "soc" node represents only the
->> IMMR region, and the PCI and other bus bridges are separate nodes
->> under the root bus.
->> 
->> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
->
->Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
->
->Paul, I can include this in my 'next' branch if you aren't opposed.
->I'll have another set of patches going in there today/tomorrow.
+Li Yang wrote:
 
-Er... on second thought, this actually fixes a regression on Holly.  So
-I'll amend my offer to put it in my 'next' branch to be contingent on you
-not wanting to get it into 2.6.27 this late.
+>> -subsys_initcall(of_fsl_dma_chan_init);
+>>  subsys_initcall(of_fsl_dma_init);
+> 
+> Not a critical problem.  But module_init() are preferred for modules.
 
-josh
+This was intentional.  When compiled as a module, subsys_initcall becomes
+module_init().  When compiled in-kernel, this code is initialized before most
+drivers, so it's ready when the drivers are loaded.
+
+> Acked-by: Li Yang <leoli@freescale.com>
+
+Thanks.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
