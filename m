@@ -1,23 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8420EDDE9F
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 23:55:07 +1000 (EST)
-Message-ID: <48DB9816.4020603@freescale.com>
-Date: Thu, 25 Sep 2008 08:54:30 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH v2] fsl-dma: allow Freescale Elo DMA driver to be compiled
-	as a module
-References: <1222293567-17694-1-git-send-email-timur@freescale.com>
-	<2a27d3730809242354u4cc24b96yda3973bfc3ddac92@mail.gmail.com>
-In-Reply-To: <2a27d3730809242354u4cc24b96yda3973bfc3ddac92@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, dan.j.williams@intel.com,
-	linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id D9596DDE21
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Sep 2008 01:07:42 +1000 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m8PF7ca7030760
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 10:07:38 -0500
+Message-Id: <15B42E75-1BCE-4803-BF1B-00E938B2E390@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: purpose of definition of "linux,memory-limit" property
+Date: Thu, 25 Sep 2008 10:07:38 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +23,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Li Yang wrote:
+Can anyone tell me if "linux,memory-limit" is specified anywhere.  and  
+if so where and if not what its intent is?
 
->> -subsys_initcall(of_fsl_dma_chan_init);
->>  subsys_initcall(of_fsl_dma_init);
-> 
-> Not a critical problem.  But module_init() are preferred for modules.
-
-This was intentional.  When compiled as a module, subsys_initcall becomes
-module_init().  When compiled in-kernel, this code is initialized before most
-drivers, so it's ready when the drivers are loaded.
-
-> Acked-by: Li Yang <leoli@freescale.com>
-
-Thanks.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+- k
