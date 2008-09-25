@@ -1,31 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E83AADDF6C
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Sep 2008 02:43:56 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m8PGhnCx001369
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 09:43:49 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m8PGhngQ016628
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 11:43:49 -0500 (CDT)
-Date: Thu, 25 Sep 2008 11:43:48 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH v2] powerpc: implement support for MPC8349-compatible SOC
-	GPIOs
-Message-ID: <20080925164348.GB4435@ld0162-tx32.am.freescale.net>
-References: <20080917175820.GA22539@oksana.dev.rtsoft.ru>
-	<871vziwoxj.fsf@macbook.be.48ers.dk>
-	<20080918112020.GA11584@oksana.dev.rtsoft.ru>
-	<87ej3gyxv0.fsf@macbook.be.48ers.dk>
-Mime-Version: 1.0
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.231])
+	by ozlabs.org (Postfix) with ESMTP id B9D20DE521
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Sep 2008 02:54:26 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id k40so524689rvb.1
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 09:54:25 -0700 (PDT)
+Date: Thu, 25 Sep 2008 10:54:23 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: MPC5200 PCI interrupt routing
+Message-ID: <20080925165423.GA16018@secretlab.ca>
+References: <200809221556.34353.jbe@pengutronix.de>
+	<48D807C5.4070002@genesi-usa.com>
+	<200809231334.19175.jbe@pengutronix.de>
+	<200809241716.35285.jbe@pengutronix.de>
+	<20080924181542.GA9690@secretlab.ca>
+	<1222291345.8277.92.camel@pasglop>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87ej3gyxv0.fsf@macbook.be.48ers.dk>
+In-Reply-To: <1222291345.8277.92.camel@pasglop>
+Sender: Grant Likely <glikely@secretlab.ca>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -36,25 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 19, 2008 at 05:11:15PM +0200, Peter Korsgaard wrote:
->  Anton> This is purposely. We also need support for 8610, and maybe
->  Anton> later we'll find another chip with the same unit. So, to not touch
->  Anton> the Kconfig for every new chip I just made it PPC32-wide. Other
->  Anton> option is to depend on FSL_SOC, but the driver really does not
->  Anton> depend on any fsl_soc stuff...
+On Thu, Sep 25, 2008 at 07:22:25AM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2008-09-24 at 12:15 -0600, Grant Likely wrote:
+> > On Wed, Sep 24, 2008 at 05:16:34PM +0200, Juergen Beisert wrote:
+> > > On Dienstag, 23. September 2008, Juergen Beisert wrote:
+> > > > What Kernel do you run on your target? On my hardware a 2.6.23 still work
+> > > > as expected, but a 2.6.26 fails all the time.
+> > > 
+> > > One should enable the internal USB clock. If done, it works... In 2.6.23 is 
+> > > was done in mpc52xx_common.c. It was removed in 2.6.24.
+> > 
+> > It was removed because some 5200 platform do not use USB and should not
+> > enable the internal clock.  In general, it is not the kernel's job to configure
+> > clocking and pin usage on the chip.  Instead, it should be set correctly
+> > at power up by U-Boot.
 > 
-> Adding another symbol to the Kconfig once it is verified that a new
-> SoC is compatible doesn't seem like a big deal - Figuring out all the
-> knobs we already have is, without having options for stuff that is
-> known to be irrelevant for the SoC.
+> Or by the USB host driver :-)
 
-I agree with Anton; it's a lot less of a headache to say "no" to
-some unfamiliar kconfig option than it is to hunt around and figure out
-why you're not being given the option.  I'd be OK with depending on
-FSL_SOC.
+I hadn't really wanted to go down this route because the calculation of
+the clock, or the decision to use an external clock or calculate an
+internal clock is very board specific.  I'll need to take another look
+to decide if it is reasonable to encode it into the device tree.
 
-> The other 83xx specific drivers also depend on PPC_83xx.
+> I tend to thing that drivers should deal with their own clocks. In fact
+> it would be nice if one could stop the clocks while the host port is in
+> suspend no ?
 
-As pointed out above, this isn't 83xx-specific.
+Yeah, but in this case the clock can't actually be turned off.  It's
+just a select bit between internal or external clock and a calculation
+value on the divider.  Since it's a one-time board level setup
+config in a big block of shared chip level registers I'd rather just
+leave it in the domain of firmware.
 
--Scott
+g.
