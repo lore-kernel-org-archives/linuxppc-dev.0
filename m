@@ -1,24 +1,26 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.25])
-	by ozlabs.org (Postfix) with ESMTP id 8E081DDDD8
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 13:15:42 +1000 (EST)
-Received: by ey-out-2122.google.com with SMTP id 6so71790eyi.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 20:15:40 -0700 (PDT)
-Message-ID: <2a27d3730809242015j31fe1addgc2fac720ede146eb@mail.gmail.com>
-Date: Thu, 25 Sep 2008 11:15:40 +0800
-From: "Li Yang" <leoli@freescale.com>
-Sender: pku.leo@gmail.com
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: Merge linuxppc-embedded with linuxppc-dev
-In-Reply-To: <fa686aa40809221520n65c254b7ie7bb72e4ad4f96ac@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <fa686aa40809221508q22e23e53s2140b17de83bcb1a@mail.gmail.com>
-	<8bd0f97a0809221511v1aba47eemb1630f7e64412e4@mail.gmail.com>
-	<fa686aa40809221520n65c254b7ie7bb72e4ad4f96ac@mail.gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Jeremy Kerr <jk@ozlabs.org>, Mike Frysinger <vapier.adi@gmail.com>,
-	linuxppc-embedded@ozlabs.org
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 1316BDDEF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 13:56:18 +1000 (EST)
+In-Reply-To: <1222291005.8277.86.camel@pasglop>
+References: <200809231743.23828.ossthema@de.ibm.com>
+	<20080915100406.342e027a@bull.net>
+	<200809240958.m8O9wM7k010996@sullivan.realtime.net>
+	<20080924143055.6102f317@bull.net>
+	<0fa2693104ff3250114d82837911b9e8@bga.com>
+	<1222291005.8277.86.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9eea138fe97eb1e63e5169a4d7647883@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
+	hardirq preemption
+Date: Wed, 24 Sep 2008 22:56:54 -0500
+To: benh@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Sebastien Dugue <sebastien.dugue@bull.net>,
+	Jan-Bernd Themann <ossthema@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Christoph Raisch <RAISCH@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,28 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 23, 2008 at 6:20 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Mon, Sep 22, 2008 at 4:11 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
->> On Mon, Sep 22, 2008 at 18:08, Grant Likely <grant.likely@secretlab.ca> wrote:
->>> Jeremy,
->>>
->>> Can we eliminate the linuxppc-embedded mailing list and merge it with
->>> linuxppc-dev?  I don't think we need two separate lists anymore and
->>> patches to linuxppc-embedded don't always get dealt with.
->>>
->>> Anyone have any objections to eliminating linuxppc-embedded?
+On Sep 24, 2008, at 4:16 PM, Benjamin Herrenschmidt wrote:
+> On Wed, 2008-09-24 at 11:42 -0500, Milton Miller wrote:
 >>
->> you sent this e-mail to "linux-embedded" instead of "linuxppc-embedded"
->> -mike
+>> I was trying to understand why the mask and early eoi, but I guess its
+>> to handle other more limited interrupt controllers where the 
+>> interrupts
+>> stack in hardware instead of software.
 >
-> See!  My point proven!  That list just causes confusion.  :-)
->
-> Oops.  I've cc'd the linuxppc-embedded list now.  Sorry to all the
-> non-powerpc linux-embedded folks for the noise.
+> No Milton, we must do it that way, because the EOI must be done on the
+> right CPU even on XICS, or we won't get the CPU priority back properly.
 
-I agree.  Given the fact that most active embedded people are already
-watching the linuxppc-dev list.  It's a good idea for embedded people
-not having to subscribe two lists.  But I don't know if non-embedded
-people would like this idea.
+Ben and I had a online chat, and he pointed out I needed to be more 
+specific in saying what I was thinking.
 
-- Leo
+>> I think the flows we want on xics are:
+>>
+>> (non-threaded)
+>> 	getirq (implicit source specific mask until eoi)
+>> 	handle interrupt
+>> 	eoi (implicit cpu priority restore)
+>>
+>> (threaded)
+>> 	getirq (implicit source specific mask until eoi)
+>> 	explicit cpu priority restore
+>> 	handle interrupt
+>> 	eoi (implicit cpu priority restore to same as explicit level)
+
+
+cpu takes interrupt, checks soft disabled
+if so,
+	set hard disabled
+else
+	call get_irq
+	if threaded
+		write cppr to restore this cpu irq dispatch state to non-interrupt
+		mark irq thread as irq pending
+	else
+		handle interrupt
+		eoi (cppr = base)
+
+irq thread will
+	handle interrupt
+	eoi
+	wait for marked pending again
+
+The part Ben did not follow was that the cppr write to base priority is 
+done by the interrupted cpu (like the mask and eoi in the current flow) 
+and only the final eoi (where the mask is in the existing flow) is done 
+on which ever cpu happens to run the irq thread.
+
+
+(optional) As I was discussing with Paul, when taking an irq when 
+soft-disabled but still hard enabled, it is possible to write the cppr 
+such that it would reject the pending irq and have it be considered for 
+dispatch to another cpu.   But it would increase pathlength on both the 
+go-to-hard-disabled and return-from-hard-disabled and the hardware will 
+have some latency as it will likely send it back to the io source until 
+it retrys, so we would only want to do this if the hard-disable period 
+is sufficiently long.
+
+milton
