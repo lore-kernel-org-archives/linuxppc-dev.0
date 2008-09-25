@@ -1,16 +1,24 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910809241940p340beaa8xb9633707edbc1d8e@mail.gmail.com>
-Date: Wed, 24 Sep 2008 22:40:31 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: USB support on mpc5200 broken
-In-Reply-To: <1222307447.8277.147.camel@pasglop>
+Return-Path: <pku.leo@gmail.com>
+Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.25])
+	by ozlabs.org (Postfix) with ESMTP id 8E081DDDD8
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 13:15:42 +1000 (EST)
+Received: by ey-out-2122.google.com with SMTP id 6so71790eyi.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Sep 2008 20:15:40 -0700 (PDT)
+Message-ID: <2a27d3730809242015j31fe1addgc2fac720ede146eb@mail.gmail.com>
+Date: Thu, 25 Sep 2008 11:15:40 +0800
+From: "Li Yang" <leoli@freescale.com>
+Sender: pku.leo@gmail.com
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: Merge linuxppc-embedded with linuxppc-dev
+In-Reply-To: <fa686aa40809221520n65c254b7ie7bb72e4ad4f96ac@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
-	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
-	<1222307447.8277.147.camel@pasglop>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
+References: <fa686aa40809221508q22e23e53s2140b17de83bcb1a@mail.gmail.com>
+	<8bd0f97a0809221511v1aba47eemb1630f7e64412e4@mail.gmail.com>
+	<fa686aa40809221520n65c254b7ie7bb72e4ad4f96ac@mail.gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Jeremy Kerr <jk@ozlabs.org>, Mike Frysinger <vapier.adi@gmail.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,39 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 24, 2008 at 9:50 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Wed, 2008-09-24 at 21:09 -0400, Jon Smirl wrote:
->> On Wed, Sep 24, 2008 at 5:51 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
->> > USB is not working my hardware, so I booted my Efika and it's not
->> > working there either.  This is with linus' current git.
->> >
->> > Can anyone verify this? Or know what happened to USB?
->> > USB is loading but it is not finding anything plugged in.
->> > lsusb doesn't show anything.
->> >
->> > Last time I noticed it was working was about ten days ago. I don't use
->> > it everyday.
+On Tue, Sep 23, 2008 at 6:20 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Mon, Sep 22, 2008 at 4:11 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+>> On Mon, Sep 22, 2008 at 18:08, Grant Likely <grant.likely@secretlab.ca> wrote:
+>>> Jeremy,
+>>>
+>>> Can we eliminate the linuxppc-embedded mailing list and merge it with
+>>> linuxppc-dev?  I don't think we need two separate lists anymore and
+>>> patches to linuxppc-embedded don't always get dealt with.
+>>>
+>>> Anyone have any objections to eliminating linuxppc-embedded?
 >>
->> Efika is broken because of this:
->>
->> ohci-ppc-of.c...
->>       is_bigendian =
->>               of_device_is_compatible(dn, "ohci-bigendian") ||
->>               of_device_is_compatible(dn, "ohci-be");
->>
->> Efika doesn't have either of those in it's compatible string.
->>
->> This doesn't look to me like a very reliable way to determine bigendian.
+>> you sent this e-mail to "linux-embedded" instead of "linuxppc-embedded"
+>> -mike
 >
-> You mean it's not reliable to expect people device-trees not to
-> suck ? :-)
+> See!  My point proven!  That list just causes confusion.  :-)
+>
+> Oops.  I've cc'd the linuxppc-embedded list now.  Sorry to all the
+> non-powerpc linux-embedded folks for the noise.
 
-No, because the ochi driver has been changed to require
-"fsl,mpc5200b-ohci" or "fsl,mpc5200-ohci" and generic "ohci-be"
-doesn't work anymore.  You need CONFIG_USB_OHCI_HCD_PPC_SOC now for
-mpc5200 usb to work.
+I agree.  Given the fact that most active embedded people are already
+watching the linuxppc-dev list.  It's a good idea for embedded people
+not having to subscribe two lists.  But I don't know if non-embedded
+people would like this idea.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+- Leo
