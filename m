@@ -1,18 +1,28 @@
-Return-Path: <miltonm@bga.com>
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id D3BA6DE050
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Sep 2008 05:54:55 +1000 (EST)
-Sender: miltonm@bga.com
-From: "Milton Miller" <miltonm@bga.com>
-To: Sebastian Siewior <bigeasy@linutronix.de>,Milton Miller <miltonm@bga.com>
-Subject: Re: [RFC] powerpc/boot: compare _start against ei.loadsize instead
-	ei.memsize
-Date: Thu, 25 Sep 2008 14:54:45 -0500
-Message-id: <48dbec85.18e.ff6.1930157473@bga.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0E5F9DE381
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Sep 2008 06:16:54 +1000 (EST)
+Message-ID: <48DBF1AC.9060909@freescale.com>
+Date: Thu, 25 Sep 2008 15:16:44 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
-Reply-To: miltonm@bga.com
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v2] fsl-dma: allow Freescale Elo DMA driver to be compiled
+	as a module
+References: <1222293567-17694-1-git-send-email-timur@freescale.com>	
+	<2a27d3730809242354u4cc24b96yda3973bfc3ddac92@mail.gmail.com>	
+	<48DB9816.4020603@freescale.com>	
+	<20080925184020.GA5230@ld0162-tx32.am.freescale.net>
+	<ed82fe3e0809251147t30743080v593d194eba731a7b@mail.gmail.com>
+	<48DBDFC7.1060907@freescale.com> <48DBE1E1.6030709@freescale.com>
+In-Reply-To: <48DBE1E1.6030709@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, dan.j.williams@intel.com,
+	Li Yang <leoli@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,82 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
------ Original Message Follows -----
-From: Sebastian Siewior <bigeasy@linutronix.de>
-To: Milton Miller <miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson
-<david@gibson.dropbear.id.au>, Grant Likely
-<grant.likely@secretlab.ca>
-Subject: Re: [RFC] powerpc/boot: compare _start against
-ei.loadsize instead ei.memsize
-Date: Thu, 25 Sep 2008 12:21:41 +0200
- 
-> Milton Miller wrote:
->>> My current (working) solution is to move cuImage from 4
->>> MiB to 8 MiB. Something similar has been done for
->>> pSeries in 9b09c6d "powerpc: Change the default link
->>> address for pSeries zImage kernels". Would it be 
->>> appropriate to move initial address to 64 MiB as the
->>> default loading address or do we have here some boards
->> which have only 64 MiB of memory? 
->> I think there are some boards that have even less
->> (8xx?).  Is the link address a wrapper option yet?
+Timur Tabi wrote:
+> Scott Wood wrote:
 > 
-> Nope. The wrapper script distinguishes between platforms.
-> Default is 4MiB,  pSeries has 64MiB, coff does 5MiB and
-> the PS3 has other magic.
- 
-ok.  I think some of the embedded boards have less than
-64M.  On the other hand, my (64 bit with drivers) kernel
-static load is over 8M (close to 9).  The needed size
-is obviously configuration dependent.
- 
-There has been talk of reading the size to determine a
-suitable address, but its all talk so far.
- 
-There are two approaches: one is to make it self-
-configuring to the minimum for the image you build, 
-the other other is to make it a command line option
-to the wrapper and then put platform selections in
-Kconfig, hidden with embedded for most people.
- 
-Or we can change the default to say 16M and hope its
-enough but not too much for most and not can decode
-the platforms for the rest.
- 
-We could also add a link time check, but we need to
-know which platforms, like the OF ones, have a non-
-default vmlinux_alloc and don't put the kernel in
-place directly (and hence need to skip the check).
- 
-> >> --- a/arch/powerpc/boot/main.c
-> >> +++ b/arch/powerpc/boot/main.c
-> >> @@ -56,7 +56,7 @@ static struct addr_range
-> prep_kernel(void) >>      if (platform_ops.vmlinux_alloc)
-> { >>          addr =
-> platform_ops.vmlinux_alloc(ei.memsize); >>      } else {
-> >> -        if ((unsigned long)_start < ei.memsize)
-> >> +        if ((unsigned long)_start < ei.loadsize)
-> > 
-> > 
-> > I think this needs to be a two part test (add
-appropriate
-> >     casts):   _start < ei.loadsize || _end < ei.memsize
-> > 
-> > .. and a comment explaining why.
+>>> I chose subsys_initcall() to increase the probability that fsldma is
+>>> already present when DMA clients are loaded/initialized and register.
+>> If there's no dependency, why does it matter whether fsldma is already 
+>> present?
 > 
-> okay.
-> 
-> > We could do better if we kept allocating more memory
-> > until we got above it, but the current code has no such
-> > provision.  (prpmc2800, or one of those, actually
-> > decompresses the header to peek at memsize before
-> starting the simple_alloc code).
-> 
-> I don't thing I can follow. Do you want to move the
-> bootwrapper code above  the limit and recall it?
- 
-I'm saying the code could be changed to do better, but
-am not currently requesting any change.
- 
-milton
+> Re-read my explanation, please.
+
+I read it just fine the first time.
+
+> Technically, it doesn't *matter* in that
+> nothing will break, but so what?  It's nicer if the DMA driver is already
+> available when the client drivers load, so that they can use the DMA facilities
+> right away.
+
+It's not nicer to people reading the code and wondering why, or to 
+people who use it as a module and execute less-well-tested code paths, 
+and I doubt it's a significant addition to boot time to do things in the 
+normal way.
+
+I'm not particularly worried about the code going on strike because 
+we're not being "nice" to it.
+
+-Scott
