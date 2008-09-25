@@ -1,21 +1,23 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 145B5DDE17
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 4204BDDE00
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Sep 2008 19:42:31 +1000 (EST)
-Received: from bzq-79-182-166-32.red.bezeqint.net ([79.182.166.32]:50036
-	helo=felix.lan) by vega.surpasshosting.com with esmtpa (Exim 4.69)
-	(envelope-from <felix@embedded-sol.com>) id 1KinMg-0005Tk-Pp
-	for linuxppc-embedded@ozlabs.org; Thu, 25 Sep 2008 05:42:27 -0400
-Message-ID: <48DB5CE9.8080604@embedded-sol.com>
-Date: Thu, 25 Sep 2008 12:42:01 +0300
-From: Felix Radensky <felix@embedded-sol.com>
+	Thu, 25 Sep 2008 21:52:23 +1000 (EST)
+Received: by gxk14 with SMTP id 14so6619569gxk.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 25 Sep 2008 04:52:22 -0700 (PDT)
+Date: Thu, 25 Sep 2008 07:51:18 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: seokin Hong <nagne_hsi@naver.com>
+Subject: Re: Tickless and CPU Idle framework for PPC405
+Message-ID: <20080925115118.GA2243@yoda.jdub.homelinux.org>
+References: <001301c91e90$7e0090e0$7a01b2a0$@com>
+	<20080925001323.GA26152@yoda.jdub.homelinux.org>
+	<002a01c91ede$d3fdd310$7bf97930$@com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Kernel debugging on 460EX
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <002a01c91ede$d3fdd310$7bf97930$@com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,38 +28,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, Sep 25, 2008 at 04:17:54PM +0900, seokin Hong wrote:
+>Generic processor idle management framework 
+>http://ols.108.redhat.com/2007/Reprints/pallipadi-Reprint.pdf
+>
+>The interface and machine independent interface is in following directory..
+>/drivers/cpuidle
+>
+>So, I wonder that the linux kernel ported for PPC405 use this framework to
+>save power.
 
-I'm trying to debug Linux kernel (2.6.26) on custom 460EX based
-board using BDI3000. The U-Boot succeeds to download kernel and
-DTB into RAM and jump to kernel code.  Immediately after that
-the board resets without printing anything to console. I'm trying
-to set a breakpoint at _start kernel routine, but it doesn't work.
+No.
 
-My BDI3000  configuration file looks like this:
+PPC4xx doesn't have multiple hardware idle states, so having a govenor to
+manage that doesn't really make sense.
 
-[INIT]
+There was work done to support putting the CPU in wait state on idle for
+PowerPC 440 chips.  That could probably be ported over.  Beyond that, the
+cpuidle framework just seems like overkill for these CPUs.
 
-[TARGET]
-JTAGCLOCK       4       ;use 5 MHz JTAG clock
-CPUTYPE         440     ;the used target CPU type
-WAKEUP          500     ;wakeup time after reset
-BREAKMODE       SOFT    ;SOFT or HARD, HARD uses PPC hardware breakpoint
-STEPMODE        HWBP    ;JTAG or HWBP, HWBP uses one or two hardware 
-breakpoints
-RESET           HARD
-MMU             XLAT
+>And Is the tickless feature is added to that kernel?
 
-In BDI I let u-boot complete the initialization and get to the prompt.
-Then I do
+Tickless was added to all of PowerPC around 2.6.21 or 2.6.22 I think.  I
+don't recall anything explicitly added for 405, but it should make use of
+the generic support.
 
-halt
-bi 0xc0000000
-go
-
-and run bootd command in u-boot. However the board resets without breaking
-into kernel code. What am I doing wrong ?
-
-Thanks a lot in advance !
-
-Felix.
+josh
