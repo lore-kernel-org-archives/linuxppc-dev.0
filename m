@@ -1,29 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A94E0DE289
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Sep 2008 03:59:14 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m8PHx8bU013261
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 10:59:09 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m8PHx83U027661
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 12:59:08 -0500 (CDT)
-Date: Thu, 25 Sep 2008 12:59:07 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC] GPIO-Watchdog in devicetree
-Message-ID: <20080925175907.GA4747@ld0162-tx32.am.freescale.net>
-References: <20080922194357.GA32041@pengutronix.de>
-	<20080923150256.GC13593@secretlab.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080923150256.GC13593@secretlab.ca>
+Return-Path: <jonsmirl@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
+	by ozlabs.org (Postfix) with ESMTP id B8984DDF70
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Sep 2008 04:02:10 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so81053qwb.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 11:02:09 -0700 (PDT)
+Message-ID: <9e4733910809251102i9c87fcfrfc5ae45e90dd07f@mail.gmail.com>
+Date: Thu, 25 Sep 2008 14:02:08 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: MPC5200 PCI interrupt routing
+In-Reply-To: <20080925165755.GB16018@secretlab.ca>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_Part_1888_13909867.1222365729065"
+References: <200809221556.34353.jbe@pengutronix.de>
+	<20080924181542.GA9690@secretlab.ca>
+	<1222291345.8277.92.camel@pasglop>
+	<200809250951.15941.jbe@pengutronix.de>
+	<20080925165755.GB16018@secretlab.ca>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -34,17 +28,201 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 23, 2008 at 09:02:56AM -0600, Grant Likely wrote:
-> For example:
-> / {
-> 	model = "pengutronix,super-sexy-board";
-> 	#address-cells = <1>;
-> 	#size-cells = <1>;
-> 	super-sexy-board,watchdog-gpio = <&gpio_simple 19 0>;
-> 	...
-> }
+------=_Part_1888_13909867.1222365729065
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Why as a property of the root node, and not as a node with a very
-specific compatible property?
+On Thu, Sep 25, 2008 at 12:57 PM, Grant Likely
+<grant.likely@secretlab.ca> wrote:
+> On Thu, Sep 25, 2008 at 09:51:14AM +0200, Juergen Beisert wrote:
+>> Benjamin,
+>>
+>> On Mittwoch, 24. September 2008, Benjamin Herrenschmidt wrote:
+>> > On Wed, 2008-09-24 at 12:15 -0600, Grant Likely wrote:
+>> > > On Wed, Sep 24, 2008 at 05:16:34PM +0200, Juergen Beisert wrote:
+>> > > > On Dienstag, 23. September 2008, Juergen Beisert wrote:
+>> > > > > What Kernel do you run on your target? On my hardware a 2.6.23 still
+>> > > > > work as expected, but a 2.6.26 fails all the time.
+>> > > >
+>> > > > One should enable the internal USB clock. If done, it works... In
+>> > > > 2.6.23 is was done in mpc52xx_common.c. It was removed in 2.6.24.
+>> > >
+>> > > It was removed because some 5200 platform do not use USB and should not
+>> > > enable the internal clock.  In general, it is not the kernel's job to
+>> > > configure clocking and pin usage on the chip.  Instead, it should be set
+>> > > correctly at power up by U-Boot.
 
--Scott
+I got the attached diagram from Freescale on how to program the
+divider. It's not in the user manual.
+
+Freescale is recommending a 33.333Mhz crystal for the mpc5200 now. If
+you use 33.3333Mhz you won't be able to set a 48Mhz internal clock.
+Closest you can get is 48.4848Mhz.  Sticking with a 33Mhz crystal
+allow an accurate 48Mhz clock. Clocking USB at the wrong clock rate
+will make some devices not function or get errors.
+
+The new mpc5200 datasheet has removed the option of using a 16x
+multiplier on a 33Mhz crystal and running the core at 528Mhz. The new
+datasheet only allows up to 400Mhz for the core. Anyone know what is
+going on?
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
+
+------=_Part_1888_13909867.1222365729065
+Content-Type: application/pdf; name=fractinal_div.pdf
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fljmwzip0
+Content-Disposition: attachment; filename=fractinal_div.pdf
+
+JVBERi0xLjIKJeLjz9MNCjEwIDAgb2JqCjw8IAovTGluZWFyaXplZCAxIAovTyAxMyAKL0ggWyA3
+MzMgMTczIF0gCi9MIDgzODMgCi9FIDc0NDkgCi9OIDEgCi9UIDgwNjUgCj4+IAplbmRvYmoKICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICB4cmVmCjEwIDE0IAowMDAwMDAwMDE2IDAwMDAwIG4gCjAwMDAwMDA2MjYgMDAwMDAgbiAKMDAw
+MDAwMDY5NSAwMDAwMCBuIAowMDAwMDAwOTA2IDAwMDAwIG4gCjAwMDAwMDEwNTkgMDAwMDAgbiAK
+MDAwMDAwMTE2MiAwMDAwMCBuIAowMDAwMDA0MTE2IDAwMDAwIG4gCjAwMDAwMDQzNTAgMDAwMDAg
+biAKMDAwMDAwNDczMyAwMDAwMCBuIAowMDAwMDA1MDY0IDAwMDAwIG4gCjAwMDAwMDU1ODEgMDAw
+MDAgbiAKMDAwMDAwNzMxMCAwMDAwMCBuIAowMDAwMDAwNzMzIDAwMDAwIG4gCjAwMDAwMDA4ODYg
+MDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSAyNAovSW5mbyA4IDAgUiAKL1Jvb3QgMTEgMCBSIAov
+UHJldiA4MDU1IAovSURbPDU4N2Q4ZjQ4NDBkN2Q1MzE3ZDBlZmRhMjBhZDdhODg3Pjw1ODdkOGY0
+ODQwZDdkNTMxN2QwZWZkYTIwYWQ3YTg4Nz5dCj4+CnN0YXJ0eHJlZgowCiUlRU9GCiAgICAgIAox
+MSAwIG9iago8PCAKL1R5cGUgL0NhdGFsb2cgCi9QYWdlcyA5IDAgUiAKL05hbWVzIDEyIDAgUiAK
+Pj4gCmVuZG9iagoxMiAwIG9iago8PCAKL0Rlc3RzIDcgMCBSIAo+PiAKZW5kb2JqCjIyIDAgb2Jq
+Cjw8IC9TIDM2IC9FIDc2IC9GaWx0ZXIgL0ZsYXRlRGVjb2RlIC9MZW5ndGggMjMgMCBSID4+IApz
+dHJlYW0NCkiJYmBg4GFgYLrLAASSoQzYAAeUFgBiTihmYAhk4GFpENs8YabQg1/SbgVQNYwMDDJG
+QJodyNwCEGAAEG8IHwplbmRzdHJlYW0KZW5kb2JqCjIzIDAgb2JqCjYzIAplbmRvYmoKMTMgMCBv
+YmoKPDwgCi9UeXBlIC9QYWdlIAovUGFyZW50IDkgMCBSIAovUmVzb3VyY2VzIDE0IDAgUiAKL0Nv
+bnRlbnRzIDIwIDAgUiAKL0Nyb3BCb3ggWyAwIDAgNjEyIDc5MiBdIAovTWVkaWFCb3ggWyAwIDAg
+NjEyIDc5MiBdIAovUm90YXRlIDAgCj4+IAplbmRvYmoKMTQgMCBvYmoKPDwgCi9Qcm9jU2V0IFsg
+L1BERiAvVGV4dCBdIAovRm9udCA8PCAvRjEgMTggMCBSID4+IAovRXh0R1N0YXRlIDw8IC9HUzEg
+MjEgMCBSID4+IAo+PiAKZW5kb2JqCjE1IDAgb2JqCjw8IC9GaWx0ZXIgL0ZsYXRlRGVjb2RlIC9M
+ZW5ndGggMjg2MiAvU3VidHlwZSAvVHlwZTFDID4+IApzdHJlYW0NCkiJnFULUBRXFu1mpqcB2REY
+W0tapttvYgTBzyKsikFE8IOMMkEhKuAwIMFhcD7gKBgRFc2IEIzGICMguDoIDIqQuIlx0Yi4i3xi
+FIgkouUaiYmitXofvkllG0z2E5Oq1FZ3ne66991zzzv93muSEDsQJEmODgtVhCjmT1Ema9T6ZeqM
+FVpNfKoiMlw5mPRDbgRiSTTGAY0RodFi5OkyEs/G+57vfO5AyUvJH83mF+hCo8nDUYzbxTEuD9wJ
+0SDzMNKTnBqsTTPpkpPWG/hXVZP5aQH+/l4CBvgO4Ywh9BvCWUP4IhvAByVo16n5SJPeoNbo+UWp
+Kq0uTauLN6gTpvJ80IYN/IpBTj2/Qq1X69KF6JB6XpDPD+nnk/V8PG/QxSeoNfG6FF6byBvWq/lw
+barWYEpT88E/8SVrU714nTopWWikUyfwyalD496I5BVCs1QDH5+awCv/TRORmJisUg8FNfEmXpD4
+v7Uqtc4QLzy1AomOf8uoS9YnJKsGu+hfUqiIfNlxghQuwoUg3MTEKAeCJQg5QUwgiMkEMZUg5hBE
+IEG8ThALxMRSilCSRLQDMV6wmhARFPEKsYEoI74lw8k9ZJ8D45DncMnhnihUVCMeLvYWLxGvFZdT
+7tRa6oRkq+Qx/Sr9maOXo87xG6cUp+POXs4lzjd5KS8FFbTUkVBUJ4KidqYOciG3Dgugwrl4lwp2
+SaRZ1gFnK2l7ANseiGDfgD/jjV3G4hycAy5j+/rA5SnkQA52eerNacRAHMDr5mGDCrvOHZ8Fqk4w
+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
+anQ9apryH8wpyEA4FvRDOFSmUNaWxlAjh/JfLrQiRkhV4TSWpEavX+vruUH39XeYe9EVl8foopde
+z7xBlB+SsUUPITL/hN3H9y075FlWxAolmW1z8MMXsswfaS8nl8KuRrIiWXH6ZJ1Is4BfkOmzas+c
+/9EUG6MRqo11DfX0GctDPwLnmo/8ZZSIAa564wLEQQQkUu9BAWop9TodC+tVZdnnzNEMxLGkrrrX
+ftvp6bei+ZVn6cRNnaNSI1PXmHX8dpUsqWgaWs5DsZDw4h3x2OcYu8/7KZEhh261NzBn85sbUcNl
+rZNoHSifG5TdsXfZ+PRQMuTssDJvPPgHvcn4lqlej2YjerlGPh/jqP3QyUqpgZosQmVQy8toqlCr
+Y6vomlr9JaVXMzq26PpyD1FpIOcqCcdN210Pz4tjSAdrrmto0xsZtBsbdkAVYRzSO20yz3D3CE8s
+Z8gH7cMltgqR5IPFy23xhkyzsGIVcPtgG3+w+JY6UyqNE4UwwyGC3RDjcJb8eGPYEqBBJsTTG4hg
+OERKGq3rCVasHQS9RchFWja+dpF/lES/SqG+TYEwX59YHBgQb+Y6ImFd+lOAAQA03yEZCmVuZHN0
+cmVhbQplbmRvYmoKMTYgMCBvYmoKPDwgCi9UeXBlIC9FbmNvZGluZyAKL0RpZmZlcmVuY2VzIFsg
+MSAvZiAvcyAveSAvdCAvZSAvbSAvZm91ciAvZWlnaHQgL00gL0ggL3ogL3NwYWNlIC9DIC9sIC9v
+IC9jIC9rIC9nIAovZCAvdW5kZXJzY29yZSAvcCAvdGhyZWUgL24gL2JyYWNrZXRsZWZ0IC90d28g
+L2NvbG9uIC96ZXJvIC9icmFja2V0cmlnaHQgCi9lcXVhbCAveCAvb25lIC9zaXggL3NldmVuIC9w
+bHVzIF0gCj4+IAplbmRvYmoKMTcgMCBvYmoKPDwgCi9UeXBlIC9Gb250RGVzY3JpcHRvciAKL0Fz
+Y2VudCA1OTIgCi9DYXBIZWlnaHQgNzEyIAovRGVzY2VudCAtMjMyIAovRmxhZ3MgNiAKL0ZvbnRC
+Qm94IFsgLTE2NyAtMjUwIDEwMDkgODc4IF0gCi9Gb250TmFtZSAvSEdQRVBCK1RpbWVzTmV3Um9t
+YW5QU01UIAovSXRhbGljQW5nbGUgMCAKL1N0ZW1WIDgxIAovWEhlaWdodCA0NzIgCi9DaGFyU2V0
+ICgvcGx1cy95L24vZm91ci9sL2UvcC96L2YvZXF1YWwvYnJhY2tldHJpZ2h0L3gvc2l4L3NwYWNl
+L2Qvcy9zZXZlbi90L2VpZ2hcCnQvZy91bmRlcnNjb3JlL00vemVyby9vbmUvay90d28vbS9jb2xv
+bi9DL0gvdGhyZWUvby9icmFja2V0bGVmdC9jKQovRm9udEZpbGUzIDE1IDAgUiAKPj4gCmVuZG9i
+agoxOCAwIG9iago8PCAKL1R5cGUgL0ZvbnQgCi9TdWJ0eXBlIC9UeXBlMSAKL0ZpcnN0Q2hhciAx
+IAovTGFzdENoYXIgMzQgCi9XaWR0aHMgWyAzMzMgMzg5IDUwMCAyNzggNDQ0IDc3OCA1MDAgNTAw
+IDg4OSA3MjIgNDQ0IDI1MCA2NjcgMjc4IDUwMCA0NDQgNTAwIAo1MDAgNTAwIDUwMCA1MDAgNTAw
+IDUwMCAzMzMgNTAwIDI3OCA1MDAgMzMzIDU2NCA1MDAgNTAwIDUwMCA1MDAgCjU2NCBdIAovRW5j
+b2RpbmcgMTYgMCBSIAovQmFzZUZvbnQgL0hHUEVQQitUaW1lc05ld1JvbWFuUFNNVCAKL0ZvbnRE
+ZXNjcmlwdG9yIDE3IDAgUiAKL1RvVW5pY29kZSAxOSAwIFIgCj4+IAplbmRvYmoKMTkgMCBvYmoK
+PDwgL0ZpbHRlciAvRmxhdGVEZWNvZGUgL0xlbmd0aCA0NDMgPj4gCnN0cmVhbQ0KSIlsk01Lw0AQ
+hu/9FXtUPGQn2yQVSkCrQg9+YKv3NJmUgNmETYr47913pgqChwxvns1+PUySzfZu67vZJC9hqHc8
+m7bzTeBpOIWazYGPnTeUmqar5/Ob1LqvRpPEybuvaeZ+69vBrNeL5DUOTnP4Mhf7rufpiT9fh77y
+L7vH/ZW9NMlzaDh0/hjH6e09gt1pHD+4Zz8ba8rSNNwuks1jNT5VPZvkn1XkEzofY2h4GquaQ+WP
+bNaWSrNO09Kwb/6OLZzTKYdW3/VbLTbPywhSZCm2cAAO2Sm4BlgiLxUsATLkTNfIAHLkXMEdQIEs
+xTqZskJeKVgBXCNLsUuZUiFXCuSLA/JBt70BqJGl2NQCNMiNTpGjMzLrOTYALXKr4CECsjFLiQBT
+CCro7OMWACpIfeQFAFSQ+shxF4IKUh+ZLAoVpD4KHIyggtSHk12ggtRHfg8AFaQ+MtkWKkh9uBQA
+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
+c3RyZWFtCmVuZG9iagoyMSAwIG9iago8PCAKL1R5cGUgL0V4dEdTdGF0ZSAKL1NBIGZhbHNlIAov
+U00gMC4wMTk5OCAKL1RSIC9JZGVudGl0eSAKPj4gCmVuZG9iagoxIDAgb2JqCjw8IAovRCBbIDEz
+IDAgUiAvWFlaIG51bGwgbnVsbCBudWxsIF0gCj4+IAplbmRvYmoKMiAwIG9iago8PCAKL0QgWyAx
+MyAwIFIgL1hZWiBudWxsIG51bGwgbnVsbCBdIAo+PiAKZW5kb2JqCjMgMCBvYmoKPDwgCi9EIFsg
+MTMgMCBSIC9YWVogbnVsbCBudWxsIG51bGwgXSAKPj4gCmVuZG9iago0IDAgb2JqCjw8IAovRCBb
+IDEzIDAgUiAvWFlaIDY1IDczMiBudWxsIF0gCj4+IAplbmRvYmoKNSAwIG9iago8PCAKL0QgWyAx
+MyAwIFIgL1hZWiA2NSA3MzIgbnVsbCBdIAo+PiAKZW5kb2JqCjYgMCBvYmoKPDwgCi9MaW1pdHMg
+WyAoRikoUC4xKV0gCi9OYW1lcyBbIChGKTIgMCBSIChJMS45OTgyMDEpNSAwIFIgKEwpMyAwIFIg
+KE05KTQgMCBSIChQLjEpMSAwIFIgXSAKPj4gCmVuZG9iago3IDAgb2JqCjw8IAovS2lkcyBbIDYg
+MCBSIF0gCj4+IAplbmRvYmoKOCAwIG9iago8PCAKL1Byb2R1Y2VyIChBY3JvYmF0IERpc3RpbGxl
+ciA0LjA1IGZvciBTcGFyYyBTb2xhcmlzKQovQ3JlYXRvciAoRnJhbWVNYWtlciA2LjApCi9Nb2RE
+YXRlIChEOjIwMDMxMjAzMTA0MTQ5KQovQ3JlYXRpb25EYXRlIChEOjIwMDMxMjAxMTIzNDEwKQo+
+PiAKZW5kb2JqCjkgMCBvYmoKPDwgCi9UeXBlIC9QYWdlcyAKL0tpZHMgWyAxMyAwIFIgXSAKL0Nv
+dW50IDEgCj4+IAplbmRvYmoKeHJlZgowIDEwIAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDcz
+OTEgMDAwMDAgbiAKMDAwMDAwNzQ0OSAwMDAwMCBuIAowMDAwMDA3NTA3IDAwMDAwIG4gCjAwMDAw
+MDc1NjUgMDAwMDAgbiAKMDAwMDAwNzYyMCAwMDAwMCBuIAowMDAwMDA3Njc1IDAwMDAwIG4gCjAw
+MDAwMDc3ODcgMDAwMDAgbiAKMDAwMDAwNzgyNyAwMDAwMCBuIAowMDAwMDA3OTkwIDAwMDAwIG4g
+CnRyYWlsZXIKPDwKL1NpemUgMTAKL0lEWzw1ODdkOGY0ODQwZDdkNTMxN2QwZWZkYTIwYWQ3YTg4
+Nz48NTg3ZDhmNDg0MGQ3ZDUzMTdkMGVmZGEyMGFkN2E4ODc+XQo+PgpzdGFydHhyZWYKMTczCiUl
+RU9GCg==
+------=_Part_1888_13909867.1222365729065--
