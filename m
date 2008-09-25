@@ -1,21 +1,23 @@
 Return-Path: <jbe@pengutronix.de>
 Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 893C9DDDFA
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 9E614DDE17
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Sep 2008 22:29:12 +1000 (EST)
+	Thu, 25 Sep 2008 23:25:55 +1000 (EST)
 Received: from themisto.extern.pengutronix.de ([83.236.181.29]
 	helo=jupiter.intranet.kreuzholzen.de)
 	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
-	(envelope-from <jbe@pengutronix.de>) id 1Kipxu-000473-Ve
-	for linuxppc-embedded@ozlabs.org; Thu, 25 Sep 2008 14:29:07 +0200
+	(envelope-from <jbe@pengutronix.de>) id 1KiqqY-000528-1P
+	for linuxppc-embedded@ozlabs.org; Thu, 25 Sep 2008 15:25:48 +0200
 From: Juergen Beisert <jbe@pengutronix.de>
 To: linuxppc-embedded@ozlabs.org
-Date: Thu, 25 Sep 2008 14:29:00 +0200
+Date: Thu, 25 Sep 2008 15:25:27 +0200
+References: <200809251429.01633.jbe@pengutronix.de>
+In-Reply-To: <200809251429.01633.jbe@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
-Message-Id: <200809251429.01633.jbe@pengutronix.de>
-Subject: Watchdog usage on MPC5200B platform
+Message-Id: <200809251525.28557.jbe@pengutronix.de>
+Subject: Re: Watchdog usage on MPC5200B platform
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,16 +30,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi,
 
-has anybody an idea why when I'm using drivers/watchdog/mpc5200_wdt.c, the=
+On Donnerstag, 25. September 2008, Juergen Beisert wrote:
+> has anybody an idea why when I'm using drivers/watchdog/mpc5200_wdt.c, the
+> system freezes instead of doing a restart?
+
+Once again: It does a restart with kernel 2.6.23, but not with 2.6.26. Agai=
+n=20
+it seems something related is not setup correctly. Any idea? I didn't find=
 =20
-system freezes instead of doing a restart?
+anything special in the MPC5200B generic part of 2.6.23.
 
-When I'm running the "reboot" command it does a restart as expected.
-
-=46or both cases the same hardware will be used (WDT in timer@600 marked=20
-with "fsl,has-wdt" in the oftree).
-
-Regards
 Juergen
 
 =2D-=20
