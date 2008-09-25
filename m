@@ -1,21 +1,20 @@
-Return-Path: <yanjun.luo@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.188])
-	by ozlabs.org (Postfix) with ESMTP id A94B1DDDFF
+Return-Path: <nagne_hsi@naver.com>
+Received: from smtp2.nm.naver.com (i61972.naver.com [211.218.150.186])
+	by ozlabs.org (Postfix) with ESMTP id 57E37DDEE8
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Sep 2008 15:43:09 +1000 (EST)
-Received: by ti-out-0910.google.com with SMTP id w7so161116tib.13
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Sep 2008 22:43:08 -0700 (PDT)
-Date: Thu, 25 Sep 2008 13:45:06 +0800
-From: "yanjun.luo" <yanjun.luo@gmail.com>
-To: "Bruce_Leonard@selinc.com" <Bruce_Leonard@selinc.com>,
-	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-References: <OFFC64870C.57753273-ON882574CF.001088E7-882574CF.001228E4@selinc.com>
-Subject: Re: How do I access nvRAM from user space?
-Message-ID: <200809251345052340726@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=====003_Dragon466406411802_====="
+	Thu, 25 Sep 2008 17:18:33 +1000 (EST)
+From: "seokin Hong" <nagne_hsi@naver.com>
+To: "'Josh Boyer'" <jwboyer@gmail.com>
+References: <001301c91e90$7e0090e0$7a01b2a0$@com>
+	<20080925001323.GA26152@yoda.jdub.homelinux.org>
+In-Reply-To: <20080925001323.GA26152@yoda.jdub.homelinux.org>
+Subject: RE: Tickless and CPU Idle framework for PPC405
+Date: Thu, 25 Sep 2008 16:17:54 +0900
+Message-ID: <002a01c91ede$d3fdd310$7bf97930$@com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,108 +25,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Generic processor idle management framework 
+http://ols.108.redhat.com/2007/Reprints/pallipadi-Reprint.pdf
 
-This is a multi-part message in MIME format.
+The interface and machine independent interface is in following directory..
+/drivers/cpuidle
 
---=====003_Dragon466406411802_=====
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+So, I wonder that the linux kernel ported for PPC405 use this framework to
+save power.
+And Is the tickless feature is added to that kernel?
 
-SGkgQnJ1Y2UsDQpZb3UgY2FuIHVzZSBtbWFwIHRvIGFjY2VzcyBOVlJBTSBmcm9tIHVzZXIgc3Bh
-Y2UsIGJ1dCB5b3Ugc2hvdWxkIGNvbmZpZyANCmxvY2FsIGJ1cyBmaXJzdCwgbGlrZSB3aWR0aCwg
-c3BlZWQgZXRjLg0KDQpSZWdhcmRzLA0KWWFuanVuIEx1by4NCg0KDQoNCg0Kt6K8/sjLo7ogQnJ1
-Y2VfTGVvbmFyZEBzZWxpbmMuY29tIA0Kt6LLzcqxvOSjuiAyMDA4LTA5LTI1ICAxMTo0NDo1NiAN
-CsrVvP7Iy6O6IGxpbnV4cHBjLWVtYmVkZGVkQG96bGFicy5vcmcgDQqzrcvNo7ogDQrW98zio7og
-SG93IGRvIEkgYWNjZXNzIG52UkFNIGZyb20gdXNlciBzcGFjZT8gDQogDQpTb3JyeSBmb3IgdGhl
-IGR1bWIgcXVlc3Rpb24sIEkganVzdCBjYW4gZmlndXJlIG91dCB0aGUgcmlnaHQgZ29vZ2xlIHNl
-YXJjaCANCnRvIGZpbmQgd2hhdCBJJ20gdHJ5aW5nIHRvIGRvLiAgSSdtIHJ1bm5pbmcgMi42LjI3
-LXJjNCBvbiBhbiBtcGM4MzQ3IHdpdGggDQphIDMyS2lCIG52U1JBTSAoQ3lwcmVzcyBDWTE0QjI1
-NkwpIG9uIHRoZSBsb2NhbCBidXMuICBXZSBqdXN0IHdhbnQgdG8gYmUgDQphYmxlIHRvIGFjY2Vz
-cyB0aGlzIG1lbW9yeSBmcm9tIHVzZXIgc3BhY2Ugc2VwZXJhdGVseSBmcm9tICJtYWluIiBtZW1v
-cnkuIA0KV2UndmUgZ290IGEgcHJvY2VzcyB0aGF0IG5lZWRzIHRvIGJlIGFibGUgdG8gcmVtZW1i
-ZXIgaW5mbyB0aHJvdWdoIHBvd2VyIA0KY3ljbGVzLiAgQ2FuIGFueW9uZSBwb2ludCBtZSB0byBh
-biBhcnRpY2xlIG9yIHNvbWUgY29kZSBzbmlwcGV0IHRoYXQgZG9lcyANCnNvbWV0aGluZyBsaWtl
-IHRoaXMgc28gSSBjYW4gc2luayBteSB0ZWV0aCBpbnRvIGl0Pw0KQnJ1Y2UNCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQpMaW51eHBwYy1lbWJlZGRlZCBt
-YWlsaW5nIGxpc3QNCkxpbnV4cHBjLWVtYmVkZGVkQG96bGFicy5vcmcNCmh0dHBzOi8vb3psYWJz
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4cHBjLWVtYmVkZGVkDQo=
 
---=====003_Dragon466406411802_=====
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
-dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
-MC4yOTAwLjMxNTciIG5hbWU9R0VORVJBVE9SPg0KPFNUWUxFPkBmb250LWZhY2Ugew0KCWZvbnQt
-ZmFtaWx5OiDLzszlOw0KfQ0KQGZvbnQtZmFjZSB7DQoJZm9udC1mYW1pbHk6IFZlcmRhbmE7DQp9
-DQpAZm9udC1mYWNlIHsNCglmb250LWZhbWlseTogQMvOzOU7DQp9DQpAcGFnZSBTZWN0aW9uMSB7
-c2l6ZTogNTk1LjNwdCA4NDEuOXB0OyBtYXJnaW46IDcyLjBwdCA5MC4wcHQgNzIuMHB0IDkwLjBw
-dDsgbGF5b3V0LWdyaWQ6IDE1LjZwdDsgfQ0KUC5Nc29Ob3JtYWwgew0KCVRFWFQtSlVTVElGWTog
-aW50ZXItaWRlb2dyYXBoOyBGT05ULVNJWkU6IDEwLjVwdDsgTUFSR0lOOiAwY20gMGNtIDBwdDsg
-Rk9OVC1GQU1JTFk6ICJUaW1lcyBOZXcgUm9tYW4iOyBURVhULUFMSUdOOiBqdXN0aWZ5DQp9DQpM
-SS5Nc29Ob3JtYWwgew0KCVRFWFQtSlVTVElGWTogaW50ZXItaWRlb2dyYXBoOyBGT05ULVNJWkU6
-IDEwLjVwdDsgTUFSR0lOOiAwY20gMGNtIDBwdDsgRk9OVC1GQU1JTFk6ICJUaW1lcyBOZXcgUm9t
-YW4iOyBURVhULUFMSUdOOiBqdXN0aWZ5DQp9DQpESVYuTXNvTm9ybWFsIHsNCglURVhULUpVU1RJ
-Rlk6IGludGVyLWlkZW9ncmFwaDsgRk9OVC1TSVpFOiAxMC41cHQ7IE1BUkdJTjogMGNtIDBjbSAw
-cHQ7IEZPTlQtRkFNSUxZOiAiVGltZXMgTmV3IFJvbWFuIjsgVEVYVC1BTElHTjoganVzdGlmeQ0K
-fQ0KQTpsaW5rIHsNCglDT0xPUjogYmx1ZTsgVEVYVC1ERUNPUkFUSU9OOiB1bmRlcmxpbmUNCn0N
-ClNQQU4uTXNvSHlwZXJsaW5rIHsNCglDT0xPUjogYmx1ZTsgVEVYVC1ERUNPUkFUSU9OOiB1bmRl
-cmxpbmUNCn0NCkE6dmlzaXRlZCB7DQoJQ09MT1I6IHB1cnBsZTsgVEVYVC1ERUNPUkFUSU9OOiB1
-bmRlcmxpbmUNCn0NClNQQU4uTXNvSHlwZXJsaW5rRm9sbG93ZWQgew0KCUNPTE9SOiBwdXJwbGU7
-IFRFWFQtREVDT1JBVElPTjogdW5kZXJsaW5lDQp9DQpTUEFOLkVtYWlsU3R5bGUxNyB7DQoJRk9O
-VC1XRUlHSFQ6IG5vcm1hbDsgQ09MT1I6IHdpbmRvd3RleHQ7IEZPTlQtU1RZTEU6IG5vcm1hbDsg
-Rk9OVC1GQU1JTFk6IFZlcmRhbmE7IFRFWFQtREVDT1JBVElPTjogbm9uZTsgbXNvLXN0eWxlLXR5
-cGU6IHBlcnNvbmFsLWNvbXBvc2UNCn0NCkRJVi5TZWN0aW9uMSB7DQoJcGFnZTogU2VjdGlvbjEN
-Cn0NClVOS05PV04gew0KCUZPTlQtU0laRTogMTBwdA0KfQ0KQkxPQ0tRVU9URSB7DQoJTUFSR0lO
-LVRPUDogMHB4OyBNQVJHSU4tQk9UVE9NOiAwcHg7IE1BUkdJTi1MRUZUOiAyZW0NCn0NCk9MIHsN
-CglNQVJHSU4tVE9QOiAwcHg7IE1BUkdJTi1CT1RUT006IDBweA0KfQ0KVUwgew0KCU1BUkdJTi1U
-T1A6IDBweDsgTUFSR0lOLUJPVFRPTTogMHB4DQp9DQo8L1NUWUxFPg0KPC9IRUFEPg0KPEJPRFkg
-c3R5bGU9IkZPTlQtU0laRTogMTBwdDsgTUFSR0lOOiAxMHB4OyBGT05ULUZBTUlMWTogdmVyZGFu
-YSI+DQo8RElWPjxGT05UIGZhY2U9VmVyZGFuYSBjb2xvcj0jMDAwMDgwIHNpemU9Mj5IaSBCcnVj
-ZSw8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIGNvbG9yPSMwMDAwODA+WW91IGNhbiB1c2UgbW1h
-cCB0byBhY2Nlc3MgTlZSQU0gZnJvbSB1c2VyIHNwYWNlLCBidXQgDQp5b3Ugc2hvdWxkIGNvbmZp
-ZyA8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIGNvbG9yPSMwMDAwODA+bG9jYWwgYnVzIGZpcnN0
-LCBsaWtlIHdpZHRoLCBzcGVlZCBldGMuPC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBjb2xvcj0j
-MDAwMDgwPjwvRk9OVD4mbmJzcDs8L0RJVj4NCjxESVY+PEZPTlQgY29sb3I9IzAwMDA4MD5SZWdh
-cmRzLDwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgY29sb3I9IzAwMDA4MD5ZYW5qdW4gTHVvLjwv
-Rk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1WZXJkYW5hIGNvbG9yPSMwMDAwODAgc2l6ZT0y
-PjwvRk9OVD4mbmJzcDs8L0RJVj4NCjxIUiBjb2xvcj0jYjVjNGRmIFNJWkU9MT4NCg0KPERJVj48
-Rk9OVCBmYWNlPVZlcmRhbmEgc2l6ZT0yPjxTVFJPTkc+t6K8/sjLo7o8L1NUUk9ORz4gQnJ1Y2Vf
-TGVvbmFyZEBzZWxpbmMuY29tIA0KPC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBmYWNlPVZlcmRh
-bmEgc2l6ZT0yPjxTVFJPTkc+t6LLzcqxvOSjujwvU1RST05HPiAyMDA4LTA5LTI1Jm5ic3A7IDEx
-OjQ0OjU2IA0KPC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBmYWNlPVZlcmRhbmEgc2l6ZT0yPjxT
-VFJPTkc+ytW8/sjLo7o8L1NUUk9ORz4gDQpsaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnIDwv
-Rk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1WZXJkYW5hIHNpemU9Mj48U1RST05HPrOty82j
-ujwvU1RST05HPiA8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIGZhY2U9VmVyZGFuYSBzaXplPTI+
-PFNUUk9ORz7W98zio7o8L1NUUk9ORz4gSG93IGRvIEkgYWNjZXNzIG52UkFNIGZyb20gDQp1c2Vy
-IHNwYWNlPyA8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIGZhY2U9VmVyZGFuYSBzaXplPTI+PC9G
-T05UPiA8L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1WZXJkYW5hIHNpemU9Mj4NCjxESVY+U29ycnkm
-bmJzcDtmb3ImbmJzcDt0aGUmbmJzcDtkdW1iJm5ic3A7cXVlc3Rpb24sJm5ic3A7SSZuYnNwO2p1
-c3QmbmJzcDtjYW4mbmJzcDtmaWd1cmUmbmJzcDtvdXQmbmJzcDt0aGUmbmJzcDtyaWdodCZuYnNw
-O2dvb2dsZSZuYnNwO3NlYXJjaCZuYnNwOzwvRElWPg0KPERJVj50byZuYnNwO2ZpbmQmbmJzcDt3
-aGF0Jm5ic3A7SSdtJm5ic3A7dHJ5aW5nJm5ic3A7dG8mbmJzcDtkby4mbmJzcDsmbmJzcDtJJ20m
-bmJzcDtydW5uaW5nJm5ic3A7Mi42LjI3LXJjNCZuYnNwO29uJm5ic3A7YW4mbmJzcDttcGM4MzQ3
-Jm5ic3A7d2l0aCZuYnNwOzwvRElWPg0KPERJVj5hJm5ic3A7MzJLaUImbmJzcDtudlNSQU0mbmJz
-cDsoQ3lwcmVzcyZuYnNwO0NZMTRCMjU2TCkmbmJzcDtvbiZuYnNwO3RoZSZuYnNwO2xvY2FsJm5i
-c3A7YnVzLiZuYnNwOyZuYnNwO1dlJm5ic3A7anVzdCZuYnNwO3dhbnQmbmJzcDt0byZuYnNwO2Jl
-Jm5ic3A7PC9ESVY+DQo8RElWPmFibGUmbmJzcDt0byZuYnNwO2FjY2VzcyZuYnNwO3RoaXMmbmJz
-cDttZW1vcnkmbmJzcDtmcm9tJm5ic3A7dXNlciZuYnNwO3NwYWNlJm5ic3A7c2VwZXJhdGVseSZu
-YnNwO2Zyb20mbmJzcDsibWFpbiImbmJzcDttZW1vcnkuJm5ic3A7PC9ESVY+DQo8RElWPldlJ3Zl
-Jm5ic3A7Z290Jm5ic3A7YSZuYnNwO3Byb2Nlc3MmbmJzcDt0aGF0Jm5ic3A7bmVlZHMmbmJzcDt0
-byZuYnNwO2JlJm5ic3A7YWJsZSZuYnNwO3RvJm5ic3A7cmVtZW1iZXImbmJzcDtpbmZvJm5ic3A7
-dGhyb3VnaCZuYnNwO3Bvd2VyJm5ic3A7PC9ESVY+DQo8RElWPmN5Y2xlcy4mbmJzcDsmbmJzcDtD
-YW4mbmJzcDthbnlvbmUmbmJzcDtwb2ludCZuYnNwO21lJm5ic3A7dG8mbmJzcDthbiZuYnNwO2Fy
-dGljbGUmbmJzcDtvciZuYnNwO3NvbWUmbmJzcDtjb2RlJm5ic3A7c25pcHBldCZuYnNwO3RoYXQm
-bmJzcDtkb2VzJm5ic3A7PC9ESVY+DQo8RElWPnNvbWV0aGluZyZuYnNwO2xpa2UmbmJzcDt0aGlz
-Jm5ic3A7c28mbmJzcDtJJm5ic3A7Y2FuJm5ic3A7c2luayZuYnNwO215Jm5ic3A7dGVldGgmbmJz
-cDtpbnRvJm5ic3A7aXQ/PC9ESVY+DQo8RElWPjwvRElWPg0KPERJVj5CcnVjZTwvRElWPg0KPERJ
-Vj5fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXzwvRElWPg0K
-PERJVj5MaW51eHBwYy1lbWJlZGRlZCZuYnNwO21haWxpbmcmbmJzcDtsaXN0PC9ESVY+DQo8RElW
-PkxpbnV4cHBjLWVtYmVkZGVkQG96bGFicy5vcmc8L0RJVj4NCjxESVY+aHR0cHM6Ly9vemxhYnMu
-b3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1iZWRkZWQ8L0RJVj48L0ZPTlQ+PC9ESVY+
-PC9CT0RZPjwvSFRNTD4NCg==
 
---=====003_Dragon466406411802_=====--
+-----Original Message-----
+From: linuxppc-embedded-bounces+nagne_hsi=naver.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+nagne_hsi=naver.com@ozlabs.org] On Behalf
+Of Josh Boyer
+Sent: Thursday, September 25, 2008 9:13 AM
+To: seokin Hong
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Tickless and CPU Idle framework for PPC405
+
+On Thu, Sep 25, 2008 at 06:57:09AM +0900, seokin Hong wrote:
+>Hi, All
+>
+> 
+>
+>Is the tickless feature and CPU Idle framework is added in linux tree for
+>PPC405?
+
+What CPU Idle framework?
+
+josh
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
