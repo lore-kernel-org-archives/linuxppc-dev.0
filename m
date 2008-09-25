@@ -1,21 +1,17 @@
-Return-Path: <bigeasy@www.tglx.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ACABDDDF5F
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Sep 2008 07:44:23 +1000 (EST)
-Date: Thu, 25 Sep 2008 23:43:57 +0200
-From: Sebastian Siewior <bigeasy@linutronix.de>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [RFC] powerpc/boot: compare _start against ei.loadsize instead
-	ei.memsize
-Message-ID: <20080925214357.GA2929@www.tglx.de>
-References: <20080923203857.GB10935@www.tglx.de>
-	<200809240146.m8O1kIpZ077447@sullivan.realtime.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <200809240146.m8O1kIpZ077447@sullivan.realtime.net>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 24EC4DDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Sep 2008 09:40:32 +1000 (EST)
+Sender: miltonm@bga.com
+From: "Milton Miller" <miltonm@bga.com>
+To: Sebastien Dugue <sebastien.dugue@bull.net>, Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
+	hardirq preemption
+Date: Thu, 25 Sep 2008 18:40:28 -0500
+Message-id: <48dc216c.b3.9f2.577594313@bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,88 +21,266 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Milton Miller | 2008-09-23 20:46:18 [-0500]:
-
->On Wed Sep 24 at about 06:38:57 EST in 2008, Sebastian Siewior wrote:
->> My mylinux binary incl. bss is ~5 MiB without bss less than 4 MiB.
->> Therefore I though that I could replace ei.memsize with ei.loadsize. It
->> didn't work. I'm not sure why it did not work but I guess that the
->> memset() of bss in the initial kernel code overwrote the cuimage code
->> which is required for some reason. Maybe some device-tree callbacks.
->
->probably because the bss extended beyond the cuboot _end to include
->where your device tree was copied (just a malloc and we start
->simple_malloc at the boot _end on most platforms).
-
-Right, the bss section went past _dtb_start, moving the device tree
-helps.
-
-Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
----
- arch/powerpc/boot/libfdt-wrapper.c |   16 ++++++++--------
- arch/powerpc/boot/main.c           |   12 +++++++++++-
- 2 files changed, 19 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/boot/libfdt-wrapper.c b/arch/powerpc/boot/libfdt-wrapper.c
-index c541fd8..1daa73f 100644
---- a/arch/powerpc/boot/libfdt-wrapper.c
-+++ b/arch/powerpc/boot/libfdt-wrapper.c
-@@ -165,6 +165,7 @@ static unsigned long fdt_wrapper_finalize(void)
- void fdt_init(void *blob)
- {
- 	int err;
-+	int bufsize;
+(I trimmed the cc list for the implementation discussion).
  
- 	dt_ops.finddevice = fdt_wrapper_finddevice;
- 	dt_ops.getprop = fdt_wrapper_getprop;
-@@ -178,16 +179,15 @@ void fdt_init(void *blob)
+> On Wed, 24 Sep 2008 11:42:15 -0500 Milton Miller
+> <miltonm@bga.com> wrote:
+> 
+> > On Sep 24, 2008, at 7:30 AM, Sebastien Dugue wrote:
+> > >   Hi Milton,
+> > > On Wed, 24 Sep 2008 04:58:22 -0500 (CDT) Milton Miller
+> > > <miltonm@bga.com> wrote:
+> > >> On Mon Sep 15 at 18:04:06 EST in 2008, Sebastien
+> > Dugue wrote: >>> When entering the low level handler,
+> > level sensitive interrupts are >>> masked, then eio'd in
+> > interrupt context and then unmasked at the >>> end of
+> > hardirq processing.  That's fine as any interrupt
+> > comming >>> in-between will still be processed since the
+> > kernel replays those >>> pending interrupts.
+> > >>
+> > >> Is this to generate some kind of software managed
+> > nesting and priority >> of the hardware level
+> > interrupts? >
+> > >   No, not really. This is only to be sure to not miss
+> > > interrupts coming from the same source that were
+> > > received during threaded hardirq  processing.
+> > > Some instrumentation showed that it never seems to
+> > > happen in the eHEA interrupt case, so I think we can
+> > > forget this aspect. 
+> > I don't trust "the interrupt can never happen during hea
+> > hardirq",  because I think there will be a race between
+> > their rearming the next  interrupt and the unmask being
+> > called.
+> 
+>   So do I, it was just to make sure I was not hit by
+> another interrupt while handling the previous one and thus
+> reduce the number of hypothesis.
+> 
+>   I sure do not say that it cannot happen, just that that
+> path is not taken when I have the eHEA hang.
+> 
+> > I was trying to understand why the mask and early eoi,
+> > but I guess its  to handle other more limited interrupt
+> > controllers where the interrupts  stack in hardware
+> > instead of software. 
+> > >   Also, the problem only manifests with the eHEA RX
+> > > interrupt. For  example,
+> > > the IBM Power Raid (ipr) SCSI exhibits absolutely no
+> > > problem under an  RT
+> > > kernel. From this I conclude that:
+> > >
+> > >   IPR - PCI - XICS is OK
+> > >   eHEA - IBMEBUS - XICS is broken with hardirq
+> > preemption. >
+> > >   I also checked that forcing the eHEA interrupt to
+> > > take the non  threaded
+> > > path does work.
+> > 
+> > For a long period of time, XICS dealt only with level
+> > interrupts.    First Micro Channel, and later PCI buses.
+> >  The IPI is made level by  software conventions. 
+> > Recently, EHCA, EHEA, and MSI interrupts were  added
+> > which by their nature are edge based.  The logic that
+> > converts  those interrupts to the XICS layer is
+> > responsible for the resend when  no cpu can accept them,
+> > but not to retrigger after an EOI.
+> 
+>  OK
+> 
+> > 
+> > >   Here is a side by side comparison of the fasteoi
+> > > flow with and  without hardirq
+> > > threading (sorry it's a bit wide)
+> > (removed)
+> > >   the non-threaded flow does (in interrupt context):
+> > >
+> > >     mask
+> 
+>   Whoops, my bad, in the non threaded case, there's no
+> mask at all, only an unmask+eoi at the end, maybe that's
+> an oversight!
  
- 	/* Make sure the dt blob is the right version and so forth */
- 	fdt = blob;
--	err = fdt_open_into(fdt, fdt, fdt_totalsize(blob));
--	if (err == -FDT_ERR_NOSPACE) {
--		int bufsize = fdt_totalsize(fdt) + 4;
--		buf = malloc(bufsize);
--		err = fdt_open_into(fdt, buf, bufsize);
--	}
-+	bufsize = fdt_totalsize(fdt) + 4;
-+	buf = malloc(bufsize);
-+	if(!buf)
-+		fatal("malloc failed. can't relocate the device tree\n\r");
-+
-+	err = fdt_open_into(fdt, buf, bufsize);
+No, not an oversight.  The point is, don't mask/unmask
+between ack/eoi while handling the interrupt.  For many
+irq controllers, the eoi must be done from the same cpu,
+hence the mask and eoi before actually handling the
+interrupt in the general case.   Its a feature of xics
+that we don't have to play that game, but can do the
+cpu and device eoi separately.
  
- 	if (err != 0)
- 		fatal("fdt_init(): %s\n\r", fdt_strerror(err));
+> > >     handle interrupt
+> > >     unmask
+> > >     eoi
+> > >
+> > >   the threaded flow does:
+> > >
+> > >     mask
+> > >     eoi
+> > >         handle interrupt
+> > >         unmask
+> > >
+> > >   If I remove the mask() call, then the eHEA is no
+> > > longer hanging. 
+> > Hmm, I guess I'm confused.  You are saying the irq does
+> > not appear if  it occurs while it is masked?
+> 
+>   Looks like it is, but I cannot say for sure, the only
+> observable effect is that I do not get any more interrupts
+> coming from the eHEA.
  
--	if (buf)
--		fdt = buf;
-+	fdt = buf;
- }
-diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
-index 45a81c3..f5fcd14 100644
---- a/arch/powerpc/boot/main.c
-+++ b/arch/powerpc/boot/main.c
-@@ -56,9 +56,19 @@ static struct addr_range prep_kernel(void *chosen)
- 	if (platform_ops.vmlinux_alloc) {
- 		addr = platform_ops.vmlinux_alloc(ei.memsize);
- 	} else {
-+		/*
-+		 * Check if the kernel image (without bss) would overwrite the
-+		 * bootwrapper. The device tree has been moved in fdt_init()
-+		 * to an area allocated with malloc() (somewhere past _end).
-+		 */
- 		if ((unsigned long)_start < ei.loadsize)
- 			fatal("Insufficient memory for kernel at address 0!"
--			       " (_start=%p)\n\r", _start);
-+			       " (_start=%p, uncomressed size=%08x)\n\r",
-+			       _start, ei.loadsize);
-+
-+		if ((unsigned long)_end < ei.memsize)
-+			fatal("The final kernel image would overwrite the "
-+					"device tree\n\r");
- 	}
+(removed features of xics)
  
- 	/* Finally, gunzip the kernel */
--- 
-1.5.6.5
+ 
+>   That may be, but I'm only looking at the code (read no
+> specifications at hand) and it looks like a black box to
+> me.
+ 
+"PowerPC External Interrupt Architecture" is defined in
+appendix A of "Power.org=99 Standard for 
+Power Architecture=99 Platform Requirements
+(Workstation, Server)", available to Power.org members.
+"The developer-level membership in Power.org is free."
+(see www.power.org).
+ 
+That said, it likely won't mention the eHEA in enough
+detail to note that the interrupt gets cleared on
+unmask.
+ 
+On the other hand, I have actually seen the source
+to implementations of the xics logic, so I have a
+very good understanding of it (and know of a few
+implementation "features", shall we say).
+ 
+ 
+> > The path lengh for mask and unmask is always VERY slow
+> > and single  threaded global lock and single context in
+> > xics.  It is designed and  tuned to run at driver
+> > startup and shutdown (and adapter reset and  reinitalize
+> > during pci error processing), not during normal irq 
+> > processing.
+> 
+>   Now, that is quite interesting then. Those mask() and
+> unmask() should then be called shutdown() and startup()
+> and not at each interrupt or am I misunderstanding you.
+ 
+Basically, yes.  but linux likes to let drivers mask at
+other times, and that is the facility we have.
+ 
+> > The XICS hardware implicitly masks the specific source
+> > as part of  interrupt ack (get_irq), and implicitly
+> > undoes this mask at eoi.   In  addition, it helps to
+> > manage the cpu priority by supplying the previous 
+> priority as part of the get_irq process and providing for
+> > the priority  to be restored (lowered only) as part of
+> > the eoi.  The hardware does  support setting the cpu
+> priority independently.
+> 
+>   This confirms, then, that the mask and unmask methods
+> should be empty for the xics.
+> 
+> > 
+> > We should only be using this implicit masking for xics,
+> > and not the  explicit masking for any normal interrupt
+> > processing.
+> 
+>   OK
+> 
+> >  I don't know if 
+> > this means making the mask/unmask setting a bit in
+> > software,
+> 
+>   Used by whom? 
+ 
+The thought here was if we can't change the caller, then
+maybe we could try to figure out what the caller was
+trying to accomplish and defer what was requested based
+on context.   Obviously, we are better off changing the
+caller.
+ 
+> 
+> > and the 
+> > enable/disable to actually call what we do now on
+> > mask/unmask, or if it  means we need a new flow type on
+> real time.
+> 
+>   Maybe a new flow type is not necessary considering what
+> you said.
+ 
+Maybe not, but I think it would be preferred ... we do have
+the source to both sides.
+ 
+> > While call to mask and unmask might work on level
+> > interrupts, its  really slow and will limit performance
+> > if done on every interrupt. 
+> > >   the non-threaded flow does (in interrupt context):
+> > >
+> > >     mask
+> 
+>   Same Whoops, no mask is done in the non threaded case
+I was just copying for context :=3d)
+ 
+> > >     handle interrupt
+> > >     unmask
+> > >     eoi
+> > >
+> > >   the threaded flow does:
+> > >
+> > >     mask
+> > >     eoi
+> > >         handle interrupt
+> > >         unmask
+> > 
+> > I think the flows we want on xics are:
+> > 
+> > (non-threaded)
+> >     getirq (implicit source specific mask until eoi)
+> >     handle interrupt
+> >     eoi (implicit cpu priority restore)
+> 
+>   Yep
+> 
+> > 
+> > (threaded)
+> >     getirq (implicit source specific mask until eoi)
+> >     explicit cpu priority restore
+>         ^
+>   How do you go about doing that? Still not clear to me.
+ 
+xics_set_cpu_priority(0xff)
+ 
+of course, there needs to be some kind of 
+struct irq_chip method to call it.
+ 
+> >     handle interrupt
+> >     eoi (implicit cpu priority restore to same as
+> > explicit level) 
+> > Where the cpu priority restore allows receiving other
+> > interrupts of the  same priority from the hardware.
+> > 
+> > So I guess the question is can the rt kernel interrupt
+> > processing take  advantage of xics auto mask,
+> 
+>   It should, but even mainline could benefit from it I
+> guess.
+> 
+ 
+I haven't looked, but are you implying mainline calls
+mask and unmask for each interrupt, and not just when
+the driver does unmask/mask/request/free?
+ 
+Otherwise, I am not sure mainline is doing anything wrong.
+ 
+> > or does someone need to write state 
+> > tracking in the xics code to work around this, changing
+> > mask under  interrupt to "defer eoi to unmask" (which I
+> > can not see as clean, and  having shutdown problems).
+> > 
+>   Thanks a lot Milton for those explanations,
+> 
+>   Sebastien.
+ 
+You're welcome.  I don't have time to work on the rt kernel,
+but I'll be glad to help suggest an implementation that
+works efficiently.
+ 
+milton
