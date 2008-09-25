@@ -1,21 +1,37 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 99298DE070
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Sep 2008 01:47:30 +1000 (EST)
-Date: Thu, 25 Sep 2008 19:47:27 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Wang Jian <lark@linux.net.cn>
-Subject: Re: [PATCH] pata_platform struct resource signness fix
-Message-ID: <20080925154727.GA1620@oksana.dev.rtsoft.ru>
-References: <20080925083622.GA2701@debian> <48DB51C3.6040504@linux.net.cn>
-	<2a27d3730809250340p5cbd307crb1f70e5fb1a2fc1f@mail.gmail.com>
-	<48DBAF4F.3020003@linux.net.cn>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <48DBAF4F.3020003@linux.net.cn>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
-	linux-ide@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A3387DDF6A
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Sep 2008 02:41:28 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m8PGfJhR020684
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 09:41:20 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m8PGfJiO016025
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 11:41:19 -0500 (CDT)
+Date: Thu, 25 Sep 2008 11:41:18 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc: implement support for MPC8349-compatible SOC
+	GPIOs
+Message-ID: <20080925164118.GA4435@ld0162-tx32.am.freescale.net>
+References: <20080917175820.GA22539@oksana.dev.rtsoft.ru>
+	<871vziwoxj.fsf@macbook.be.48ers.dk>
+	<20080918112020.GA11584@oksana.dev.rtsoft.ru>
+	<87ej3gyxv0.fsf@macbook.be.48ers.dk>
+	<20080919153325.GA548@oksana.dev.rtsoft.ru>
+	<1BA571BA-BA43-4C18-9CBF-0F1461E6734E@kernel.crashing.org>
+	<20080919181258.GA14093@oksana.dev.rtsoft.ru>
+	<ABD97D30-4503-4A5E-A04B-2D644BF31124@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <ABD97D30-4503-4A5E-A04B-2D644BF31124@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +41,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 25, 2008 at 11:33:35PM +0800, Wang Jian wrote:
-> Li Yang wrote:
->> On Thu, Sep 25, 2008 at 4:54 PM, Wang Jian <lark@linux.net.cn> wrote:
->>> The alternative fix can be.
->>
->> This one is better as 0 is defined as 'invalid irq' for all
->> architectures.  Added linux-ide and Anton to cc.
->
-> However, this is not very true. Just git grep "#define NO_IRQ" and see. It
-> seems that the NO_IRQ is in transition from (-1) to (0).
+On Fri, Sep 19, 2008 at 01:46:49PM -0500, Kumar Gala wrote:
+> You are correct we try to avoid this, but than I suggest we do it by  
+> family.  I think its confusing to show 8610 and 8349 in the same dev  
+> tree.
 
-Yeah, there is a mess, but it gets better as time goes by.
-The platforms/drivers should be fixed, since 0 is the only
-invalid VIRQ.
+I don't think it's confusing (at least, not moreso than picking an
+arbitrary chip within the same family), if it really is compatible and
+there is nothing new in the 86xx GPIO that warrants having a common
+compatible for them.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+-Scott
