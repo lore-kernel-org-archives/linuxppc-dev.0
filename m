@@ -1,29 +1,19 @@
-Return-Path: <sebastien.dugue@bull.net>
-Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id A0CA0DDF4A
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 18:39:13 +1000 (EST)
-Date: Thu, 25 Sep 2008 10:39:03 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
-	hardirq preemption
-Message-ID: <20080925103903.3581226f@bull.net>
-In-Reply-To: <1222331779.8277.183.camel@pasglop>
-References: <200809231743.23828.ossthema@de.ibm.com>
-	<20080915100406.342e027a@bull.net>
-	<200809240958.m8O9wM7k010996@sullivan.realtime.net>
-	<1222251467.8277.73.camel@pasglop>
-	<20080924143552.29a14f10@bull.net>
-	<1222290917.8277.83.camel@pasglop>
-	<20080925091827.29b5087c@bull.net>
-	<1222327361.8277.179.camel@pasglop>
-	<20080925094231.442a4c75@bull.net>
-	<1222331779.8277.183.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Jan-Bernd Themann <ossthema@de.ibm.com>
+Return-Path: <lark@linux.net.cn>
+Received: from mx.linux.net.cn (unknown [210.82.31.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C9018DDDEC
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 18:45:36 +1000 (EST)
+Received: from debian (unknown [218.241.174.18])
+	by mx.linux.net.cn (Postfix) with ESMTP id 807833ED42
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Sep 2008 16:58:18 +0800 (CST)
+Date: Thu, 25 Sep 2008 16:36:46 +0800
+From: Wang Jian <lark@linux.net.cn>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] pata_platform struct resource signness fix
+Message-ID: <20080925083622.GA2701@debian>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,19 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 25 Sep 2008 18:36:19 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Hi,
 
-> 
-> >   Do you mean creating a custom fasteoi handler into xics.c? Also, it's
-> > not clear to me from looking at the code how you go about changing the
-> > cpu priority.
-> 
-> Yup. I think the priority is the CPPR.. Milton can give you more
-> details, if not, I'll pick it up tomorrow when at the office.
-> 
+This patch is to pata_platform.c but at this time, it's powerpc specific
+because it can only be triggerred using openfirmware, so I post the patch
+here. The patch is against 2.6.26-rc8.
 
-  Thanks Ben, will look into this.
+The problem is triggerred when ata device is populated using 
+pata_of_platform.c, and no irq is assigned (poll mode, such as CF card).
 
-  Nite
+pata_of_platform_probe() parse device tree and
 
-  Sebastien.
+        if (ret == NO_IRQ)
+	                irq_res.start = irq_res.end = -1;
+
+Then irq is 0xffffffff, not NULL. Probe will fail coz irq can't be
+requested.
+
+
+---
+(irq_res->start > 0) will be true even when it is (-1). When the device
+has no irq, irq_res->start is assigned (-1).
+
+Signed-off-by: Wang Jian <lark@linux.net.cn>
+---
+ drivers/ata/pata_platform.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/ata/pata_platform.c b/drivers/ata/pata_platform.c
+index 8f65ad6..b12cd0c 100644
+--- a/drivers/ata/pata_platform.c
++++ b/drivers/ata/pata_platform.c
+@@ -123,7 +123,7 @@ int __devinit __pata_platform_probe(struct device *dev,
+ 	/*
+ 	 * And the IRQ
+ 	 */
+-	if (irq_res && irq_res->start > 0) {
++	if (irq_res && irq_res->start != -1) {
+ 		irq = irq_res->start;
+ 		irq_flags = irq_res->flags;
+ 	}
+-- 
+1.5.5.4
