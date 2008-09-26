@@ -1,23 +1,22 @@
-Return-Path: <dbeamonte@telnet-ri.es>
-Received: from smtp242.efor.es (leela.efor.es [195.55.174.242])
-	by ozlabs.org (Postfix) with ESMTP id 33A2EDDE01
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 11F3CDDDE0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 Sep 2008 01:36:46 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by leela.efor.es (Postfix) with ESMTP id 8D4C515F710
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Sep 2008 17:36:42 +0200 (CEST)
-Received: from [192.168.200.117] (unknown [213.0.25.185])
-	by leela.efor.es (Postfix) with ESMTP id 5C14115F6D9
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Sep 2008 17:36:40 +0200 (CEST)
-Message-ID: <48DD0169.7090709@telnet-ri.es>
-Date: Fri, 26 Sep 2008 17:36:09 +0200
-From: David Beamonte <dbeamonte@telnet-ri.es>
+	Sat, 27 Sep 2008 02:34:00 +1000 (EST)
+Message-ID: <48DD0E7D.6030107@freescale.com>
+Date: Fri, 26 Sep 2008 11:31:57 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Interrupts get disabled on USB access on MPC8272
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: David Beamonte <dbeamonte@telnet-ri.es>
+Subject: Re: Interrupts get disabled on USB access on MPC8272
+References: <48DD0169.7090709@telnet-ri.es>
+In-Reply-To: <48DD0169.7090709@telnet-ri.es>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,25 +27,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+David Beamonte wrote:
+> I have debugged the kernel and what I can see is that, once the 
+> processor tries to send a buffer of the USB controller, interrupts get 
+> disabled. And so, there is no ethernet, serial port, or whatever way of 
+> communication to the processor. With my debugger I can see that the 
+> kernel keeps running and executing cpu_idle() and so on. Furtheremore, 
+> jiffies increase, but no other interrupts occur.
 
-I'm trying to make USB driver work on my MPC8272 with kernel 2.6.21.
+It's probably waiting for an interrupt that never came.
 
-The driver detects properly the root hub (the embedded controller), but 
-when it tries to communicate with a device, the system seems to hang.
+> It seems to happen when buffers try to access external memory. Can it be 
+> related to bus arbitration?
 
-I have debugged the kernel and what I can see is that, once the 
-processor tries to send a buffer of the USB controller, interrupts get 
-disabled. And so, there is no ethernet, serial port, or whatever way of 
-communication to the processor. With my debugger I can see that the 
-kernel keeps running and executing cpu_idle() and so on. Furtheremore, 
-jiffies increase, but no other interrupts occur.
+Probably not; usually that sort of problem results in a hard lock-up.
 
-Has anyone experienced a problem like this?
-
-It seems to happen when buffers try to access external memory. Can it be 
-related to bus arbitration?
-
-Regards,
-
-David
+-Scott
