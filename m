@@ -1,19 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id D89C1DDE1E
+Return-Path: <dbeamonte@telnet-ri.es>
+Received: from smtp242.efor.es (leela.efor.es [195.55.174.242])
+	by ozlabs.org (Postfix) with ESMTP id 33A2EDDE01
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Sep 2008 19:24:23 +1000 (EST)
-To: =?iso-8859-9?Q?Mustafa_Cay=FDr?= <mustafa.cayir@bte.mam.gov.tr>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Linux Init Hangs
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <7B9A8FF57DBB524190E98CABF6E56F07DD412C@itri.bte.mam.gov.tr>
-References: <7B9A8FF57DBB524190E98CABF6E56F07DD412C@itri.bte.mam.gov.tr>
-Date: Fri, 26 Sep 2008 11:24:20 +0200
-Sender: wd@denx.de
-Message-Id: <20080926092420.BAB7E248CD@gemini.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 27 Sep 2008 01:36:46 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by leela.efor.es (Postfix) with ESMTP id 8D4C515F710
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 26 Sep 2008 17:36:42 +0200 (CEST)
+Received: from [192.168.200.117] (unknown [213.0.25.185])
+	by leela.efor.es (Postfix) with ESMTP id 5C14115F6D9
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 26 Sep 2008 17:36:40 +0200 (CEST)
+Message-ID: <48DD0169.7090709@telnet-ri.es>
+Date: Fri, 26 Sep 2008 17:36:09 +0200
+From: David Beamonte <dbeamonte@telnet-ri.es>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: Interrupts get disabled on USB access on MPC8272
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,37 +28,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear =?iso-8859-9?Q?Mustafa_Cay=FDr?=,
+Hi,
 
-In message <7B9A8FF57DBB524190E98CABF6E56F07DD412C@itri.bte.mam.gov.tr> you wrote:
->
-> my kernel hangs by initializing the system. My target is mpc7457-based. =
-> I use ELDK 3.1.1 and mount my root-fs over nfs.
+I'm trying to make USB driver work on my MPC8272 with kernel 2.6.21.
 
-ELDK 3.1.1 is vry old - and it means that you must be using a 2.4
-Linux kernel, whichis also very old.
+The driver detects properly the root hub (the embedded controller), but 
+when it tries to communicate with a device, the system seems to hang.
 
-Please consider updating to current versions.
+I have debugged the kernel and what I can see is that, once the 
+processor tries to send a buffer of the USB controller, interrupts get 
+disabled. And so, there is no ethernet, serial port, or whatever way of 
+communication to the processor. With my debugger I can see that the 
+kernel keeps running and executing cpu_idle() and so on. Furtheremore, 
+jiffies increase, but no other interrupts occur.
 
-> After printing the message "Freeing unused kernel memory: 112k init", it
-> hangs Any ideas?
+Has anyone experienced a problem like this?
 
-You provide very little information, so we can only speculate.
+It seems to happen when buffers try to access external memory. Can it be 
+related to bus arbitration?
 
-Are you sure that /dev/console exists in your target root file
-system, and did you run the ELDK_MAKEDEV script when installing the
-ELDK?
+Regards,
 
-Also, did you pass the appropriate console=... boot argument to the
-Linux kernel?
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Always try to do things in chronological order; it's  less  confusing
-that way.
+David
