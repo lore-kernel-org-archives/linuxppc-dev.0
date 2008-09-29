@@ -1,20 +1,23 @@
-Return-Path: <tmarri@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 2CAA0DDDF5
+Return-Path: <Ralf.Truebenbach@men.de>
+Received: from de2.hostedsecurity.org (de2.hostedsecurity.org [82.98.75.133])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E9BF3DDED3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 28 Sep 2008 07:43:50 +1000 (EST)
+	Mon, 29 Sep 2008 19:47:03 +1000 (EST)
+Received: FROM [195.127.220.117] ([195.127.220.117]) (envelope-from
+	<Ralf.Truebenbach@men.de>) BY de2.hostedsecurity.org
+	([82.98.75.133]) WITH ESMTP (EmailSecurity KH67IU80pQXWo) ID
+	180785725 FOR <linuxppc-embedded@ozlabs.org>;
+	Mon, 29 Sep 2008 09:35:44 +0000
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C920E8.B39BD3DE"
-Subject: rootfs mount problem.
-Date: Sat, 27 Sep 2008 14:33:45 -0700
-Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C06052F29@SDCEXCHANGE01.ad.amcc.com>
-From: "Tirumala Reddy Marri" <tmarri@amcc.com>
-To: <inuxppc-dev@ozlabs.org>,
-	<linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: PCI Bus Mapping for MPC8548 with multiple PCI interfaces
+Date: Mon, 29 Sep 2008 11:35:44 +0200
+Message-ID: <D0B748CCD5DF144CA5C56A9D860A31340FE1C0@men-exch1.intra.men.de>
+From: =?iso-8859-1?Q?Ralf_Tr=FCbenbach?= <Ralf.Truebenbach@men.de>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,128 +28,90 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C920E8.B39BD3DE
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-Hi ,
-  I am trying to bring up a new SOC. I am seeing the following error.
-Has any one seen this error before. I am pretty sure RAMDISK is not
-corrupted.
-Thanks,
-Marri
-------------------- LOG ---------------
-NET: Registered protocol family 17
-RPC: Registered udp transport module.
-RPC: Registered tcp transport module.
-prepare_namespace line 361=20
-prepare_namespace line 385=20
-RAMDISK: Compressed image found at block 0
-invalid compressed format (err=3D1)
-EXT3-fs error (device ram0): ext3_check_descriptors: Block bitmap for
-group 0 not in group (block 14728687)!
-EXT3-fs: group descriptors corrupted!
-EXT2-fs error (device ram0): ext2_check_descriptors: Block bitmap for
-group 0 not in group (block 14728687)!
-EXT2-fs: group descriptors corrupted!
-List of all partitions:
-No filesystem could mount root, tried:  ext3 ext2 cramfs
-Kernel panic - not syncing: VFS: Unable to mount root fs on
-unknown-block(1,0)
-Rebooting in 180 seconds..?
+Hello,
 =20
-U-Boot 1.3.2 (Sep 24 2008 - 14:25:32)
+I'm currently developing a bootloader for a MPC8548 based board. This =
+board has got three PCI interfaces (PCI1, PCI2 and PCIe). At the PCIe =
+interface the MPC8548 appears as PCI-Bridge (at bus 0 device 0), at the =
+PCI1/2 interfaces the MPC8548 appears as normal devices (bus 0 device =
+0).
 
------------------------------------------------ back trace -----------
-(gdb) bt
-#0  __delay (loops=3D800000) at include/asm/time.h:97
-#1  0xc001f07c in panic (fmt=3DVariable "fmt" is not available.
-) at kernel/panic.c:115
-#2  0xc0248dc4 in mount_block_root (name=3D0xc020f9f4 "/dev/root",
-flags=3D32768) at init/do_mounts.c:277
-#3  0xc02491b0 in prepare_namespace () at init/do_mounts.c:403
-#4  0xc02489a8 in kernel_init (unused=3DVariable "unused" is not
-available.
-) at init/main.c:878
-#5  0xc000cf08 in kernel_thread ()
-Previous frame inner to this frame (corrupt stack?)
-(gdb)=20
----------------
+And now I'm a little bit unshure about how Linux expects the PCI bus =
+mapping. I see two ways:
 
-------_=_NextPart_001_01C920E8.B39BD3DE
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.3354" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial size=3D2>Hi=20
-,</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial size=3D2>&nbsp; =
-I am trying=20
-to bring up a new SOC. I am seeing the following error. Has any one seen =
-this=20
-error before. I am pretty sure RAMDISK is not =
-corrupted.</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial=20
-size=3D2>Thanks,</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial=20
-size=3D2>Marri</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial =
-size=3D2>-------------------=20
-LOG ---------------</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial size=3D2>NET: =
-Registered=20
-protocol family 17<BR>RPC: Registered udp transport module.<BR>RPC: =
-Registered=20
-tcp transport module.<BR>prepare_namespace line 361 =
-<BR>prepare_namespace line=20
-385 <BR>RAMDISK: Compressed image found at block 0<BR>invalid compressed =
-format=20
-(err=3D1)<BR>EXT3-fs error (device ram0): ext3_check_descriptors: Block =
-bitmap for=20
-group 0 not in group (block 14728687)!<BR>EXT3-fs: group descriptors=20
-corrupted!<BR>EXT2-fs error (device ram0): ext2_check_descriptors: Block =
-bitmap=20
-for group 0 not in group (block 14728687)!<BR>EXT2-fs: group descriptors =
+A)
+--------
+MPC8548:   PCI1         PCI2         PCIe
+             |           |             |
+             |           |             3
+             |           |           bridge
+             0           2             4
+--------     |           |             |
+extern:   -------      ------        ------
+          |  |  |      |    |        |    |
+         dev | dev     dev dev...   dev  dev ...
+             0
+           bridge
+             1
+             |
+          ---------
+          |   |   |
+         dev dev dev...
 
-corrupted!<BR>List of all partitions:<BR>No filesystem could mount root, =
+Since I have to create Type 0 Config Read/Writes to access the first bus =
+of an interface, my PciConfigRead/Write functions would have to convert =
+the bus no. from 0->0 2->0 3->0 (for the example). And PCIe bridge's =
+primary bus no. has to be set to 0.
 
-tried:&nbsp; ext3 ext2 cramfs<BR>Kernel panic - not syncing: VFS: Unable =
-to=20
-mount root fs on unknown-block(1,0)<BR>Rebooting in 180=20
-seconds..?</FONT></SPAN></DIV>
-<DIV>&nbsp;</DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial size=3D2>U-Boot =
-1.3.2 (Sep 24=20
-2008 - 14:25:32)<BR></FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial=20
-size=3D2>----------------------------------------------- back trace=20
------------</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial size=3D2>(gdb) =
-bt<BR>#0&nbsp;=20
-__delay (loops=3D800000) at include/asm/time.h:97<BR>#1&nbsp; 0xc001f07c =
-in panic=20
-(fmt=3DVariable "fmt" is not available.<BR>) at =
-kernel/panic.c:115<BR>#2&nbsp;=20
-0xc0248dc4 in mount_block_root (name=3D0xc020f9f4 "/dev/root", =
-flags=3D32768) at=20
-init/do_mounts.c:277<BR>#3&nbsp; 0xc02491b0 in prepare_namespace () at=20
-init/do_mounts.c:403<BR>#4&nbsp; 0xc02489a8 in kernel_init =
-(unused=3DVariable=20
-"unused" is not available.<BR>) at init/main.c:878<BR>#5&nbsp; =
-0xc000cf08 in=20
-kernel_thread ()<BR>Previous frame inner to this frame (corrupt =
-stack?)<BR>(gdb)=20
-</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial=20
-size=3D2>---------------</DIV></FONT></SPAN></BODY></HTML>
 
-------_=_NextPart_001_01C920E8.B39BD3DE--
+
+or B)
+--------
+MPC8548:   PCI1         PCI2         PCIe
+             |           |             |
+             |           |             0
+             |           |           bridge
+             0           0             1
+--------     |           |             |
+extern:   -------      ------        ------
+          |  |  |      |    |        |    |
+         dev | dev     dev dev...   dev  dev ...
+             0
+           bridge
+             1
+             |
+          ---------
+          |   |   |
+         dev dev dev...
+
+Every bus is mapped independently. And PciConfigRead/Write functions =
+convert the bus no. so that upper layers (and user) see a bus mapping =
+similar to A).
+
+Maybe someone knows how U-Boot or Linux would map the interfaces?
+
+Thank you for your Help.
+
+Ralf
+
+
+Best Regards/Mit freundlichen Gruessen
+=20
+
+Ralf Tr=FCbenbach, Software Design
+MEN Mikro Elektronik GmbH
+Neuwieder Stra=DFe 5-7
+90411 Nuremberg, Germany
+Phone +49-911-99 33 5-0
+Fax +49-911-99 33 5-910
+E-Mail Ralf.Truebenbach@men.de <mailto:Ralf.Truebenbach@men.de>=20
+www.men.de <http://www.men.de/>=20
+
+----------------------------------------------------------------------
+
+MEN Mikro Elektronik GmbH - Gesch=E4ftsf=FChrer Manfred Schmitz, Udo =
+Fuchs - Handelsregister N=FCrnberg HRB 5540 - UST-ID-Nr./VAT DE 133 528 =
+744 - Umsatzsteuer-Nr./Turnover Tax No 238/159/58551 - WEEE-Reg.-Nr. DE =
+49081198 - Deutsche Bank AG Kto. Nr. 0390 211, BLZ 760 700 12 - =
+HypoVereinsbank Kto. Nr. 1560 224 300, BLZ 760 200 70
