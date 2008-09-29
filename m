@@ -1,21 +1,19 @@
-Return-Path: <jacmet@gmail.com>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: USB support on mpc5200 broken
-References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
-	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
-	<1222307447.8277.147.camel@pasglop> <48E02FD0.8000809@genesi-usa.com>
-	<20080929034329.GB8694@yookeroo.seuss>
-	<9e4733910809290714td2dc6cclecf2e2b080a80ca1@mail.gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Mon, 29 Sep 2008 16:22:26 +0200
-In-Reply-To: <9e4733910809290714td2dc6cclecf2e2b080a80ca1@mail.gmail.com> (Jon
-	Smirl's message of "Mon\, 29 Sep 2008 10\:14\:18 -0400")
-Message-ID: <874p3zowv1.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 381A7DE28B
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 00:23:30 +1000 (EST)
+Message-Id: <6BDA49F4-EF06-4107-A011-EAC600CEEE70@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20080929135603.GA27252@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc/fsl_soc: remove mpc83xx_wdt code
+Date: Mon, 29 Sep 2008 09:23:26 -0500
+References: <20080929135603.GA27252@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Jon" == Jon Smirl <jonsmirl@gmail.com> writes:
 
-Hi,
+On Sep 29, 2008, at 8:56 AM, Anton Vorontsov wrote:
 
- Jon> How do I adjust my build to put the DTB into a wrapper? I'm
- Jon> based on the pcm030 makefile and it assumes the DTB is built
- Jon> externally.
+> mpc83xx_wdt is the OF driver now, so we don't need fsl_soc  
+> constructor.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>
+> Just resending the following patch:
+>
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056253.html
+>
+> arch/powerpc/sysdev/fsl_soc.c |   47  
+> -----------------------------------------
+> 1 files changed, 0 insertions(+), 47 deletions(-)
 
- Jon> Can u-boot handle the wrapped DTB? I'm using a pointer to kernel
- Jon> and one to DTB when booting from u-boot.
+applied.
 
-See my recent (nacked by Wolfgang, but sane in principle) patch for
-uImage.<platform> support:
-
-http://patchwork.ozlabs.org/patch/589/
-
--- 
-Bye, Peter Korsgaard
+- k
