@@ -2,18 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D46E3DDE1F
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 18:52:11 +1000 (EST)
-Subject: Re: Device Tree
+	by ozlabs.org (Postfix) with ESMTPS id B1311DDED4
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 18:54:27 +1000 (EST)
+Subject: Re: Fix PCI in Holly device tree
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?= <chretien@enseirb.fr>
-In-Reply-To: <48E07490.9020805@enseirb.fr>
-References: <48E07490.9020805@enseirb.fr>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 29 Sep 2008 18:51:52 +1000
-Message-Id: <1222678312.7807.95.camel@pasglop>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20080925122241.GC2243@yoda.jdub.homelinux.org>
+References: <20080925023904.GC15169@yookeroo.seuss>
+	<20080925081129.7f882085@zod.rchland.ibm.com>
+	<20080925122241.GC2243@yoda.jdub.homelinux.org>
+Content-Type: text/plain
+Date: Mon, 29 Sep 2008 18:53:03 +1000
+Message-Id: <1222678383.7807.97.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	David Gibson <david@gibson.dropbear.id.au>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,18 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-09-29 at 08:24 +0200, Sébastien Chrétien wrote:
-> Hello,
-> I have a question about Device Tree.
-> Is Device Tree found only only on Linux Powerpc ?
 
-Sparc also uses open firmware and shares some of the device-tree
-handling code with powerpc in linux. Other operating systems on those
-platforms also use it (AIX, Solaris, MacOS, ...)
+> >> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> >
+> >Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> >
+> >Paul, I can include this in my 'next' branch if you aren't opposed.
+> >I'll have another set of patches going in there today/tomorrow.
+> 
+> Er... on second thought, this actually fixes a regression on Holly.  So
+> I'll amend my offer to put it in my 'next' branch to be contingent on you
+> not wanting to get it into 2.6.27 this late.
 
-I think the proposed new Xilinx microblaze architecture also uses it,
-and at least on x86, the OLPC has an Open Firmware implementation though
-it doesn't use the device-tree the way we do currently on powerpc and
-sparc and has its own interface to the firmware.
+I've picked it up, I need to check a thing or two and I'll send patches
+for .27 to Linus tomorrow (Paulus is on vacation for a week). With a bit
+of luck he won't have closed .27 before that :-)
 
+Cheers
 Ben.
