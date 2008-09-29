@@ -1,24 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Date: Mon, 29 Sep 2008 16:02:28 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: USB support on mpc5200 broken
-Message-ID: <20080929220228.GA18313@secretlab.ca>
-References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
-	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
-	<1222307447.8277.147.camel@pasglop>
-	<48E02FD0.8000809@genesi-usa.com>
-	<20080929034329.GB8694@yookeroo.seuss>
-	<9e4733910809290714td2dc6cclecf2e2b080a80ca1@mail.gmail.com>
-	<20080929201829.GA16153@ld0162-tx32.am.freescale.net>
-	<9e4733910809291404y1b5f14b6j3f9d29cda6ce4bd5@mail.gmail.com>
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id A4B01DDE19
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 08:05:03 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so341390ywh.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 15:05:01 -0700 (PDT)
+Message-ID: <c384c5ea0809291505p5a12f5aerd48515cb5c305155@mail.gmail.com>
+Date: Tue, 30 Sep 2008 00:05:01 +0200
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "=?ISO-8859-1?Q?Andr=E9_Schwarz?=" <Andre.Schwarz@matrix-vision.de>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: How to prevent embedded ppc reset deadlock? (MPC83xx/85xx)
+In-Reply-To: <48E14DAE.9040101@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910809291404y1b5f14b6j3f9d29cda6ce4bd5@mail.gmail.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <c384c5ea0809291433j10619a49xe713415f6bb90204@mail.gmail.com>
+	<48E14DAE.9040101@matrix-vision.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +24,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 29, 2008 at 05:04:22PM -0400, Jon Smirl wrote:
-> On Mon, Sep 29, 2008 at 4:18 PM, Scott Wood <scottwood@freescale.com> wrote:
-> > On Mon, Sep 29, 2008 at 10:14:18AM -0400, Jon Smirl wrote:
-> >> Shouldn't the driver already know it is being used on a BE machine?
-> >
-> > No.  Endianness of the CPU is not necessarily the same as the endianness
-> > of device registers.
-> >
-> > For example, PCI OHCI on a big-endian host.
-> 
-> Endianess is encoded in the specific compatible string.
-> 
-> compatible = "fsl,mpc5200b-ohci","fsl,mpc5200-ohci";
-> This is BE.
-> 
-> inside PCI bus section
-> compatible = "my-pci-ohci-card"
-> This would be LE
-> 
-> The specifically loaded driver knows it's endianess.
-> 
-> But now you're tell me I need
-> compatible = "fsl,mpc5200b-ohci","fsl,mpc5200-ohci",  "ohci-be"
+Hello Andr=E9,
 
-No, we can't do that.
+On Mon, Sep 29, 2008 at 11:50 PM, Andr=E9 Schwarz
+<Andre.Schwarz@matrix-vision.de> wrote:
+> Leon,
+>
+> you're right.
+> PORESET is just there to prevent the core from running as long as power m=
+ay
+> be unstable and/or PLLs are out of lock.
+> HRESET is the signal that should reset everything. I did it on my board a=
+nd
+> it works fine.
+>
+Understood so far.
 
-You're right about the current data in compatible being sufficient.
-The kernel needs to deal with what firmware hands it,
-either by fixups to the device tree data or by teaching the driver
-what fsl,mpc5200b-ohci means.
+> Since you also have to assert HRESET when you assert PORESET
+>
+But when I assert PORESET, the processor will assert HRESET itself
+AFAIK, so why do this?
 
-g.
+> you can wire-or them with a low drop schottky diode.
+>
+Ooh, analog electronics, long time ago. Let me think: arrow of diode
+symbol pointing from HRESET# to PORESET#, right, so that PORESET#
+going low will pull HRESET# low enough, right?
+
+> Hope this helps.
+>
+Yes it does, thanks.
+
+Regards, Leon.
+
+
+> Leon Woestenberg wrote:
+>>
+>> Hello all,
+>>
+>> not Linux related per se*, but I wonder how your board designs deal
+>> with the reset circuitry for embedded PowerPC processors (MPC8313E in
+>> my case).
+>> My requirement is that both a processor-external hard reset and
+>> processor-internal hard reset must both reset the boot device NOR
+>> FlashROM, so that it does not remain in write mode (if it is).
+>>
+>> Given those processor pins:
+>>
+>> PORESET# (input pin to the processor, power on reset)
+>> HRESET# (bidirectional pin on the processor, asserted by processor on
+>> hard reset such as watchdog)
+>>
+>> I see many designs (even the Freescale reference designs) where the
+>> HRESET# resets some of the board, but not the FlashROM, and where
+>> PORESET# resets the FlashROM. This can cause a deadlock in the case
+>> where the watchdog resets during writing to FlashROM, as the FlashROM
+>> is not reset and remains in write mode, not allowing the processor to
+>> boot from it.
+>>
+>> I am thinking of using this approach: PORESET# -> processor <-->
+>> HRESET# -> board reset.
+>>
+>> Would that work? or why not?
+>>
+>> Regards,
+>>
+>
+>
+> MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  - Registergeric=
+ht:
+> Amtsgericht Stuttgart, HRB 271090
+> Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+>
+
+
+
+--=20
+Leon
