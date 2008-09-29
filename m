@@ -1,20 +1,17 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
-	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id E7422DE17B
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 00:08:49 +1000 (EST)
-Received: by gxk14 with SMTP id 14so10130241gxk.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 07:08:48 -0700 (PDT)
-Message-ID: <7d1d9c250809290708i763b1739pe4ef1bd86ce6a329@mail.gmail.com>
-Date: Mon, 29 Sep 2008 10:08:48 -0400
-From: "Paul Gortmaker" <paul.gortmaker@windriver.com>
-Sender: paul.gortmaker@gmail.com
-To: "Becky Bruce" <becky.bruce@freescale.com>
-Subject: Re: [PATCH 1/2] Drop redundant machine type print in show_cpuinfo
-In-Reply-To: <1222293214-22698-1-git-send-email-becky.bruce@freescale.com>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910809290714td2dc6cclecf2e2b080a80ca1@mail.gmail.com>
+Date: Mon, 29 Sep 2008 10:14:18 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Matt Sealey" <matt@genesi-usa.com>, linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	"David Gibson" <david@gibson.dropbear.id.au>
+Subject: Re: USB support on mpc5200 broken
+In-Reply-To: <20080929034329.GB8694@yookeroo.seuss>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <1222293214-22698-1-git-send-email-becky.bruce@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
+	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
+	<1222307447.8277.147.camel@pasglop> <48E02FD0.8000809@genesi-usa.com>
+	<20080929034329.GB8694@yookeroo.seuss>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +21,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 24, 2008 at 5:53 PM, Becky Bruce <becky.bruce@freescale.com> wrote:
-> For many of the embedded boards, "model" and "Machine" are printing
-> the same thing; remove the redundant code and allow the generic
-> show_cpuinfo to print the model information.
+On Sun, Sep 28, 2008 at 11:43 PM, David Gibson
+<david@gibson.dropbear.id.au> wrote:
+> On Sun, Sep 28, 2008 at 08:30:56PM -0500, Matt Sealey wrote:
+>>
+>> Benjamin Herrenschmidt wrote:
+>>> On Wed, 2008-09-24 at 21:09 -0400, Jon Smirl wrote:
+>>>>> Last time I noticed it was working was about ten days ago. I don't use
+>>>>> it everyday.
+>>>> Efika is broken because of this:
+>>>>
+>>>> ohci-ppc-of.c...
+>>>>     is_bigendian =
+>>>>             of_device_is_compatible(dn, "ohci-bigendian") ||
+>>>>             of_device_is_compatible(dn, "ohci-be");
+>>>>
+>>>> Efika doesn't have either of those in it's compatible string.
+>>>>
+>>>> This doesn't look to me like a very reliable way to determine bigendian.
+>>>
+>>> You mean it's not reliable to expect people device-trees not to
+>>> suck ? :-)
+>
+> Alas, this is true :(.
 
-Sounds good to me.  Thanks for changing the sbc boards as well.
+
+Efika has this:
+compatible = "fsl,mpc5200b-ohci","fsl,mpc5200-ohci";
+
+That completely describes the hardware. Isn't that what a device tree
+is supposed to do?
+
+If we really need a big endian flag, should it be an attribute?
+
+		usb@1000 {
+			compatible = "fsl,mpc5200b-ohci","fsl,mpc5200-ohci";
+			ohci-be;
+			reg = <0x1000 0xff>;
+			interrupts = <0x2 0x6 0x0>;
+			interrupt-parent = <&mpc5200_pic>;
+		};
+
+Shouldn't the driver already know it is being used on a BE machine?
+
 
 >
-> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
-
-Acked-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-
-> ---
->  arch/powerpc/platforms/85xx/mpc85xx_ads.c         |    1 -
->  arch/powerpc/platforms/85xx/sbc8560.c             |    1 -
->  arch/powerpc/platforms/86xx/gef_sbc610.c          |    8 --------
->  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c        |    8 --------
->  arch/powerpc/platforms/86xx/sbc8641d.c            |    8 --------
->  arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |    1 -
->  6 files changed, 0 insertions(+), 27 deletions(-)
+>> It's reasonable to expect that device-trees do not get updated with the
+>> kernel for certain platforms (it does not fit into most quality assurance
+>> schedules to reflash every user's firmware every time they want to move up
+>> one revision to another, given the kernel release schedule of every 3-4
+>> months) and when updating the search for compatible entries it should
+>> take into account these platforms.
 >
+> This, of course, is exactly why I *don't* recommend embedded platforms
+> move to including the device tree in the flashed firmware.  Keeping
+> the device tree in the bootwrapper means that it *is* updated with the
+> kernel and we don't have to mess around with as much backwards
+> compatibility junk.
+
+How do I adjust my build to put the DTB into a wrapper? I'm based on
+the pcm030 makefile and it assumes the DTB is built externally.
+
+Can u-boot handle the wrapped DTB? I'm using a pointer to kernel and
+one to DTB when booting from u-boot.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
