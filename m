@@ -1,23 +1,22 @@
-Return-Path: <jacmet@gmail.com>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: USB support on mpc5200 broken
-References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
-	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
-	<1222307447.8277.147.camel@pasglop> <48E02FD0.8000809@genesi-usa.com>
-	<20080929034329.GB8694@yookeroo.seuss>
-	<9e4733910809290714td2dc6cclecf2e2b080a80ca1@mail.gmail.com>
-	<874p3zowv1.fsf@macbook.be.48ers.dk>
-	<9e4733910809290728i1395aa8er66069e1fcb1513e5@mail.gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Mon, 29 Sep 2008 17:07:38 +0200
-In-Reply-To: <9e4733910809290728i1395aa8er66069e1fcb1513e5@mail.gmail.com>
-	(Jon Smirl's message of "Mon\, 29 Sep 2008 10\:28\:04 -0400")
-Message-ID: <87zllrng79.fsf@macbook.be.48ers.dk>
+Return-Path: <SRS0+eca42ad5687460bcf41d+1863+infradead.org+hch@bombadil.srs.infradead.org>
+Date: Mon, 29 Sep 2008 11:13:19 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] sputrace : use marker_synchronize_unregister()
+Message-ID: <20080929151319.GA25247@infradead.org>
+References: <48E08B05.7030802@cn.fujitsu.com> <20080929082722.GB18663@elte.hu>
+	<20080929151147.GH11245@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	linuxppc-dev <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <20080929151147.GH11245@Krystal>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	Jeremy Kerr <jk@ozlabs.org>, Ingo Molnar <mingo@elte.hu>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +26,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Jon" == Jon Smirl <jonsmirl@gmail.com> writes:
+On Mon, Sep 29, 2008 at 11:11:47AM -0400, Mathieu Desnoyers wrote:
+> We need a marker_synchronize_unregister() before the end of exit() to make sure
+> every probe callers have exited the non preemptible section and thus are not
+> executing the probe code anymore.
 
-Hi,
-
- Jon> Can u-boot handle the wrapped DTB? I'm using a pointer to kernel
- Jon> and one to DTB when booting from u-boot.
- >> 
- >> See my recent (nacked by Wolfgang, but sane in principle) patch for
- >> uImage.<platform> support:
- >> 
- >> http://patchwork.ozlabs.org/patch/589/
-
- Jon> So I should wait for the version that uses FIT images.
-
-Well, yeah. As I said earlier, I won't have time to work on that right
-away, so you can either use the patch as is, wait or implement FIT
-support yourself.
-
--- 
-Bye, Peter Korsgaard
+Looks good.
