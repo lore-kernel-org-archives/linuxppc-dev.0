@@ -1,19 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4803DDE17C
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 00:26:10 +1000 (EST)
-Message-Id: <7C1F8BC3-F4C0-4276-BEA3-ECCA2F7D1EFC@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <20080929123515.26226.91402.stgit@ubuntu8041.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc: Correct USB support for GE Fanuc SBC610
-Date: Mon, 29 Sep 2008 09:25:59 -0500
-References: <20080929123515.26226.91402.stgit@ubuntu8041.localdomain>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910809290728i1395aa8er66069e1fcb1513e5@mail.gmail.com>
+Date: Mon, 29 Sep 2008 10:28:04 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Peter Korsgaard" <jacmet@sunsite.dk>
+Subject: Re: USB support on mpc5200 broken
+In-Reply-To: <874p3zowv1.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
+	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
+	<1222307447.8277.147.camel@pasglop> <48E02FD0.8000809@genesi-usa.com>
+	<20080929034329.GB8694@yookeroo.seuss>
+	<9e4733910809290714td2dc6cclecf2e2b080a80ca1@mail.gmail.com>
+	<874p3zowv1.fsf@macbook.be.48ers.dk>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Sep 29, 2008, at 7:35 AM, Martyn Welch wrote:
-
-> Support for the SBC610 VPX Single Board Computer from GE Fanuc  
-> (PowerPC
-> MPC8641D).
+On Mon, Sep 29, 2008 at 10:22 AM, Peter Korsgaard <jacmet@sunsite.dk> wrote:
+>>>>>> "Jon" == Jon Smirl <jonsmirl@gmail.com> writes:
 >
-> Fixup to correctly reconfigure USB, provided by an NEC uPD720101,  
-> after
-> device is reset. This requires a set of chip specific registers in the
-> devices configuration space to be correctly written, enabling all  
-> ports
-> and switching the device to use an external 48-MHz Oscillator.
+> Hi,
 >
-> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
-> ---
+>  Jon> How do I adjust my build to put the DTB into a wrapper? I'm
+>  Jon> based on the pcm030 makefile and it assumes the DTB is built
+>  Jon> externally.
 >
-> arch/powerpc/platforms/86xx/gef_sbc610.c |   17 +++++++++++++++++
-> 1 files changed, 17 insertions(+), 0 deletions(-)
+>  Jon> Can u-boot handle the wrapped DTB? I'm using a pointer to kernel
+>  Jon> and one to DTB when booting from u-boot.
+>
+> See my recent (nacked by Wolfgang, but sane in principle) patch for
+> uImage.<platform> support:
+>
+> http://patchwork.ozlabs.org/patch/589/
 
-applied
+So I should wait for the version that uses FIT images.
 
-- k
+>
+> --
+> Bye, Peter Korsgaard
+>
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
