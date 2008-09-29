@@ -1,20 +1,22 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910809290728i1395aa8er66069e1fcb1513e5@mail.gmail.com>
-Date: Mon, 29 Sep 2008 10:28:04 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Peter Korsgaard" <jacmet@sunsite.dk>
-Subject: Re: USB support on mpc5200 broken
-In-Reply-To: <874p3zowv1.fsf@macbook.be.48ers.dk>
+Return-Path: <jwboyer@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
+	by ozlabs.org (Postfix) with ESMTP id C6A15DE06B
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 00:41:45 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so96013anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 07:41:43 -0700 (PDT)
+Date: Mon, 29 Sep 2008 10:40:27 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Please pull from 'dma' branch
+Message-ID: <20080929144027.GA3866@yoda.jdub.homelinux.org>
+References: <Pine.LNX.4.64.0809241652540.22678@blarg.am.freescale.net>
+	<295973D9-5AD2-47A3-B858-CED501169D86@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
-	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
-	<1222307447.8277.147.camel@pasglop> <48E02FD0.8000809@genesi-usa.com>
-	<20080929034329.GB8694@yookeroo.seuss>
-	<9e4733910809290714td2dc6cclecf2e2b080a80ca1@mail.gmail.com>
-	<874p3zowv1.fsf@macbook.be.48ers.dk>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <295973D9-5AD2-47A3-B858-CED501169D86@kernel.crashing.org>
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 29, 2008 at 10:22 AM, Peter Korsgaard <jacmet@sunsite.dk> wrote:
->>>>>> "Jon" == Jon Smirl <jonsmirl@gmail.com> writes:
+On Mon, Sep 29, 2008 at 08:12:11AM -0500, Kumar Gala wrote:
 >
-> Hi,
+> On Sep 24, 2008, at 4:54 PM, Kumar Gala wrote:
 >
->  Jon> How do I adjust my build to put the DTB into a wrapper? I'm
->  Jon> based on the pcm030 makefile and it assumes the DTB is built
->  Jon> externally.
+>> Please pull from 'dma' branch of
+>>
+>> (forgot linuxppc-dev on first go around)
+>>
+>> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git dma
+>>
+>> to receive the following updates:
+>>
+>> arch/powerpc/include/asm/device.h       |    3
+>> arch/powerpc/include/asm/dma-mapping.h  |  187 ++++++++ 
+>> +--------------------
+>> arch/powerpc/include/asm/machdep.h      |    5
+>> arch/powerpc/include/asm/pci.h          |   14 +-
+>> arch/powerpc/include/asm/types.h        |    2
+>> arch/powerpc/kernel/Makefile            |    4
+>> arch/powerpc/kernel/dma-iommu.c         |  103 ++++++++++++++++
+>> arch/powerpc/kernel/dma.c               |  127 ++++++++++++++++++++
+>> arch/powerpc/kernel/dma_64.c            |  200  
+>> --------------------------------
+>> arch/powerpc/kernel/of_device.c         |    2
+>> arch/powerpc/kernel/pci-common.c        |   48 +++++++
+>> arch/powerpc/kernel/pci_32.c            |    7 +
+>> arch/powerpc/kernel/pci_64.c            |   49 -------
+>> arch/powerpc/kernel/vio.c               |    2
+>> arch/powerpc/platforms/cell/iommu.c     |    6
+>> arch/powerpc/platforms/ps3/system-bus.c |    2
+>> 16 files changed, 366 insertions(+), 395 deletions(-)
+>>
+>> Becky Bruce (5):
+>>      powerpc: Rename dma_64.c to dma.c
+>>      powerpc: Move iommu dma ops from dma.c to dma-iommu.c
+>>      powerpc: Drop archdata numa_node
+>>      powerpc: Merge 32 and 64-bit dma code
+>>      powerpc: Make dma_addr_t a u64 if CONFIG_PHYS_64BIT is set
 >
->  Jon> Can u-boot handle the wrapped DTB? I'm using a pointer to kernel
->  Jon> and one to DTB when booting from u-boot.
+> Paul,
 >
-> See my recent (nacked by Wolfgang, but sane in principle) patch for
-> uImage.<platform> support:
->
-> http://patchwork.ozlabs.org/patch/589/
+> poke..
 
-So I should wait for the version that uses FIT images.
+Vacation for a week.  I guess we're supposed to poke benh now.  Or wait a week.
 
->
-> --
-> Bye, Peter Korsgaard
->
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+josh
