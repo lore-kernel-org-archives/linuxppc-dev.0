@@ -1,17 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 29 Sep 2008 13:43:29 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: USB support on mpc5200 broken
-Message-ID: <20080929034329.GB8694@yookeroo.seuss>
-References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
-	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
-	<1222307447.8277.147.camel@pasglop>
-	<48E02FD0.8000809@genesi-usa.com>
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E5013DDE06
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 14:19:35 +1000 (EST)
+Message-ID: <48E05742.1030609@pobox.com>
+Date: Mon, 29 Sep 2008 00:19:14 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48E02FD0.8000809@genesi-usa.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] pata_platform struct resource signness fix
+References: <20080925083622.GA2701@debian> <48DB51C3.6040504@linux.net.cn>
+	<2a27d3730809250340p5cbd307crb1f70e5fb1a2fc1f@mail.gmail.com>
+	<20080925104847.GA311@oksana.dev.rtsoft.ru>
+In-Reply-To: <20080925104847.GA311@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=windows-1251; format=flowed
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Li Yang <leoli@freescale.com>, Wang Jian <lark@linux.net.cn>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,43 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Sep 28, 2008 at 08:30:56PM -0500, Matt Sealey wrote:
->
-> Benjamin Herrenschmidt wrote:
->> On Wed, 2008-09-24 at 21:09 -0400, Jon Smirl wrote:
->>>> Last time I noticed it was working was about ten days ago. I don't use
->>>> it everyday.
->>> Efika is broken because of this:
->>>
->>> ohci-ppc-of.c...
->>> 	is_bigendian =
->>> 		of_device_is_compatible(dn, "ohci-bigendian") ||
->>> 		of_device_is_compatible(dn, "ohci-be");
->>>
->>> Efika doesn't have either of those in it's compatible string.
->>>
->>> This doesn't look to me like a very reliable way to determine bigendian.
->>
->> You mean it's not reliable to expect people device-trees not to
->> suck ? :-)
+Anton Vorontsov wrote:
+> On Thu, Sep 25, 2008 at 06:40:59PM +0800, Li Yang wrote:
+>> On Thu, Sep 25, 2008 at 4:54 PM, Wang Jian <lark@linux.net.cn> wrote:
+>>> The alternative fix can be.
+>> This one is better as 0 is defined as 'invalid irq' for all
+>> architectures.  Added linux-ide and Anton to cc.
+> 
+> Thanks for the correct Cc.
+> 
+> I've sent a patch to fix the issue more than a month ago.
+> 
+> http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg22851.html
+> 
+> Jeff, could you apply the patch?
 
-Alas, this is true :(.
-
-> It's reasonable to expect that device-trees do not get updated with the
-> kernel for certain platforms (it does not fit into most quality assurance
-> schedules to reflash every user's firmware every time they want to move up
-> one revision to another, given the kernel release schedule of every 3-4
-> months) and when updating the search for compatible entries it should
-> take into account these platforms.
-
-This, of course, is exactly why I *don't* recommend embedded platforms
-move to including the device tree in the flashed firmware.  Keeping
-the device tree in the bootwrapper means that it *is* updated with the
-kernel and we don't have to mess around with as much backwards
-compatibility junk.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Can you resend, I don't seem to have it...
