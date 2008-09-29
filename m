@@ -1,21 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 62FA8DDFE1
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 23:35:36 +1000 (EST)
-Message-Id: <B298C397-2B60-4A05-8F9E-E5038700F20D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Becky Bruce <becky.bruce@freescale.com>
-In-Reply-To: <1222293214-22698-1-git-send-email-becky.bruce@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 1/2] Drop redundant machine type print in show_cpuinfo
-Date: Mon, 29 Sep 2008 08:35:22 -0500
-References: <1222293214-22698-1-git-send-email-becky.bruce@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Martyn Welch <martyn.welch@gefanuc.com>,
-	Paul Gortmaker <paul.gortmaker@windriver.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 6BD65DDDF4
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 23:56:05 +1000 (EST)
+Date: Mon, 29 Sep 2008 17:56:03 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/fsl_soc: remove mpc83xx_wdt code
+Message-ID: <20080929135603.GA27252@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +19,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+mpc83xx_wdt is the OF driver now, so we don't need fsl_soc constructor.
 
-On Sep 24, 2008, at 4:53 PM, Becky Bruce wrote:
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
-> For many of the embedded boards, "model" and "Machine" are printing
-> the same thing; remove the redundant code and allow the generic
-> show_cpuinfo to print the model information.
->
-> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
-> ---
-> arch/powerpc/platforms/85xx/mpc85xx_ads.c         |    1 -
-> arch/powerpc/platforms/85xx/sbc8560.c             |    1 -
-> arch/powerpc/platforms/86xx/gef_sbc610.c          |    8 --------
-> arch/powerpc/platforms/86xx/mpc86xx_hpcn.c        |    8 --------
-> arch/powerpc/platforms/86xx/sbc8641d.c            |    8 --------
-> arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |    1 -
-> 6 files changed, 0 insertions(+), 27 deletions(-)
+Just resending the following patch:
 
-Do any of the board maintainers have issue with this change? Martyn,  
-Paul?
+http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056253.html
 
-I'm fine w/it for the FSL ones.
+ arch/powerpc/sysdev/fsl_soc.c |   47 -----------------------------------------
+ 1 files changed, 0 insertions(+), 47 deletions(-)
 
-- k
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 214388e..eeb0700 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -412,53 +412,6 @@ err:
+ 
+ arch_initcall(gfar_of_init);
+ 
+-
+-#ifdef CONFIG_PPC_83xx
+-static int __init mpc83xx_wdt_init(void)
+-{
+-	struct resource r;
+-	struct device_node *np;
+-	struct platform_device *dev;
+-	u32 freq = fsl_get_sys_freq();
+-	int ret;
+-
+-	np = of_find_compatible_node(NULL, "watchdog", "mpc83xx_wdt");
+-
+-	if (!np) {
+-		ret = -ENODEV;
+-		goto nodev;
+-	}
+-
+-	memset(&r, 0, sizeof(r));
+-
+-	ret = of_address_to_resource(np, 0, &r);
+-	if (ret)
+-		goto err;
+-
+-	dev = platform_device_register_simple("mpc83xx_wdt", 0, &r, 1);
+-	if (IS_ERR(dev)) {
+-		ret = PTR_ERR(dev);
+-		goto err;
+-	}
+-
+-	ret = platform_device_add_data(dev, &freq, sizeof(freq));
+-	if (ret)
+-		goto unreg;
+-
+-	of_node_put(np);
+-	return 0;
+-
+-unreg:
+-	platform_device_unregister(dev);
+-err:
+-	of_node_put(np);
+-nodev:
+-	return ret;
+-}
+-
+-arch_initcall(mpc83xx_wdt_init);
+-#endif
+-
+ static enum fsl_usb2_phy_modes determine_usb_phy(const char *phy_type)
+ {
+ 	if (!phy_type)
+-- 
+1.5.6.3
