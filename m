@@ -1,20 +1,28 @@
-Return-Path: <tmarri@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 392A4DE551
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 03:05:45 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C92255.9AF04439"
-Subject: Disabling L1 D-cache and side effects
-Date: Mon, 29 Sep 2008 10:05:41 -0700
-Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C060530C1@SDCEXCHANGE01.ad.amcc.com>
-In-Reply-To: <9323BAFB78DE7C4183466AD03F73EA424D46071D@SDCEXCHANGE01.ad.amcc.com>
-References: <9323BAFB78DE7C4183466AD03F73EA424D46071D@SDCEXCHANGE01.ad.amcc.com>
-From: "Tirumala Reddy Marri" <tmarri@amcc.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <rmachet@slac.stanford.edu>
+Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
+	[134.79.18.120])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B47F7DDF18
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 03:26:12 +1000 (EST)
+Received: from mailgate02.slac.stanford.edu (mailgate02.slac.stanford.edu
+	[134.79.18.92])
+	by nospam3.slac.stanford.edu (8.13.8/8.13.8) with ESMTP id
+	m8THQ6cr029017
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 10:26:06 -0700 (PDT)
+	(envelope-from rmachet@slac.stanford.edu)
+Received: from [134.79.128.151] (pcds-ts102.slac.stanford.edu [134.79.128.151])
+	by mailgate02.slac.stanford.edu (8.13.8/8.13.8) with ESMTP id
+	m8THQ6I2028913
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 10:26:06 -0700 (PDT)
+	(envelope-from rmachet@slac.stanford.edu)
+Subject: New dma-noncoherent code, looking for comment and people to test
+From: Remi Machet <rmachet@slac.stanford.edu>
+To: Linux PPC <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Mon, 29 Sep 2008 10:26:05 -0700
+Message-Id: <1222709165.8628.4.camel@pcds-ts102.slac.stanford.edu>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,185 +32,523 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C92255.9AF04439
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-=20
 Hi,
-  I had to bring up a PPC based SOC with L1 dcache disabled.  I did that
-and tried to boot Linux using RAMDISK/NFS mount. In RAMDISK I see the
-file system errors. In case of NFS mount I see error saying failed to
-load ld.so library.
-=20
- Could you guys please share thoughts what are the different side
-effects might be causing this.
-Thanks,
-Marri
 
+I rewrote dma-noncoherent.c and I am looking for people to review and test it 
+on various platforms that use it to make sure I did not introduce any bug.
+The platforms affected by this change are those that define
+CONFIG_NOT_COHERENT_CACHE:
+ppc44x
+walnut
+makalu
+kilauea
+ep405
+adder875
+ep88xc
+taishan
+warp
+sam440ep
+sequoia
+bamboo
+canyonlands
+rainier
+katmai
+ebony
+mpc885_ads
+mpc866_ads
+ppc40x
+c2k (already tested)
+prpmc2800
 
-________________________________
+The old code in dma-noncoherent.c uses a memory pool at a hard coded
+virtual address set by CONFIG_CONSISTENT_START (typically 0xFF100000). If not
+set carefully this address can conflict with early ioremap in systems
+that enable HIGHMEM, on top of that the code is overly complex because it
+needs to have its own memory manager.
+This is why I tried to re-implement the code using standard memory
+management APIs. The new code does not require the user to set
+CONFIG_CONSISTENT_START or CONFIG_CONSISTENT_SIZE, is much smaller and
+simplier. It also can allocate as much memory as available in ZONE_DMA
+(instead of being limited by CONFIG_CONSISTENT_SIZE).
 
-From: Tirumala Reddy Marri=20
-Sent: Saturday, September 27, 2008 2:37 PM
-To: linuxppc-dev@ozlabs.org
-Subject: rootfs mount problem
+I also removed the HIGHMEM support in dma_sync since memory allocated for
+DMA transfer should always be in ZONE_DMA (ie not in ZONE_HIGHMEM).
 
+Looking forward to any comment about why this code may not work or is not
+as good as the original. If you do test this code on your platform, let me
+know how it goes ... if no-one object and no bug is found I will submit
+this patch in a month or so.
 
-Hi ,
-  I am trying to bring up a new SOC. I am seeing the following error.
-Has any one seen this error before. I am pretty sure RAMDISK is not
-corrupted.
-Thanks,
-Marri
-------------------- LOG ---------------
-NET: Registered protocol family 17
-RPC: Registered udp transport module.
-RPC: Registered tcp transport module.
-prepare_namespace line 361=20
-prepare_namespace line 385=20
-RAMDISK: Compressed image found at block 0
-invalid compressed format (err=3D1)
-EXT3-fs error (device ram0): ext3_check_descriptors: Block bitmap for
-group 0 not in group (block 14728687)!
-EXT3-fs: group descriptors corrupted!
-EXT2-fs error (device ram0): ext2_check_descriptors: Block bitmap for
-group 0 not in group (block 14728687)!
-EXT2-fs: group descriptors corrupted!
-List of all partitions:
-No filesystem could mount root, tried:  ext3 ext2 cramfs
-Kernel panic - not syncing: VFS: Unable to mount root fs on
-unknown-block(1,0)
-Rebooting in 180 seconds..?
-=20
-U-Boot 1.3.2 (Sep 24 2008 - 14:25:32)
+Thanks !
 
------------------------------------------------ back trace -----------
-(gdb) bt
-#0  __delay (loops=3D800000) at include/asm/time.h:97
-#1  0xc001f07c in panic (fmt=3DVariable "fmt" is not available.
-) at kernel/panic.c:115
-#2  0xc0248dc4 in mount_block_root (name=3D0xc020f9f4 "/dev/root",
-flags=3D32768) at init/do_mounts.c:277
-#3  0xc02491b0 in prepare_namespace () at init/do_mounts.c:403
-#4  0xc02489a8 in kernel_init (unused=3DVariable "unused" is not
-available.
-) at init/main.c:878
-#5  0xc000cf08 in kernel_thread ()
-Previous frame inner to this frame (corrupt stack?)
-(gdb)=20
----------------
+Remi
 
-------_=_NextPart_001_01C92255.9AF04439
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.3354" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff=20
-size=3D2></FONT>&nbsp;</DIV>
-<DIV><SPAN class=3D956050117-29092008></SPAN><FONT face=3DArial><FONT=20
-color=3D#0000ff><FONT size=3D2>Hi,</FONT></FONT></FONT></DIV>
-<DIV><FONT><FONT color=3D#0000ff><FONT size=3D2><SPAN=20
-class=3D956050117-29092008></SPAN></FONT></FONT></FONT><SPAN=20
-class=3D956050117-29092008></SPAN><FONT face=3DArial><FONT =
-color=3D#0000ff><FONT=20
-size=3D2>&nbsp;<SPAN class=3D956050117-29092008> I had to bring up a PPC =
-based SOC=20
-with L1 dcache disabled.&nbsp; I did that and tried to boot Linux using=20
-RAMDISK/NFS mount. In RAMDISK I see the file system errors. In case of =
-NFS mount=20
-I see error saying failed to load ld.so=20
-library.</SPAN></FONT></FONT></FONT></DIV>
-<DIV><FONT face=3DArial><FONT color=3D#0000ff><FONT size=3D2><SPAN=20
-class=3D956050117-29092008></SPAN></FONT></FONT></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial><FONT color=3D#0000ff><FONT size=3D2><SPAN=20
-class=3D956050117-29092008>&nbsp;Could you guys please share thoughts =
-what are the=20
-different side effects might be causing =
-this.</SPAN></FONT></FONT></FONT></DIV>
-<DIV><FONT face=3DArial><FONT color=3D#0000ff><FONT size=3D2><SPAN=20
-class=3D956050117-29092008>Thanks,</SPAN></FONT></FONT></FONT></DIV>
-<DIV><FONT face=3DArial><FONT color=3D#0000ff><FONT size=3D2><SPAN=20
-class=3D956050117-29092008>Marri</SPAN></FONT></FONT></FONT></DIV>
-<DIV><FONT face=3DArial color=3D#0000ff size=3D2></FONT><BR></DIV>
-<DIV class=3DOutlookMessageHeader lang=3Den-us dir=3Dltr align=3Dleft>
-<HR tabIndex=3D-1>
-<FONT face=3DTahoma size=3D2><B>From:</B> Tirumala Reddy Marri =
-<BR><B>Sent:</B>=20
-Saturday, September 27, 2008 2:37 PM<BR><B>To:</B>=20
-linuxppc-dev@ozlabs.org<BR><B>Subject:</B> rootfs mount=20
-problem<BR></FONT><BR></DIV>
-<DIV></DIV>
-<DIV><FONT face=3DArial size=3D2>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial size=3D2>Hi=20
-,</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial size=3D2>&nbsp; =
-I am trying=20
-to bring up a new SOC. I am seeing the following error. Has any one seen =
-this=20
-error before. I am pretty sure RAMDISK is not =
-corrupted.</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial=20
-size=3D2>Thanks,</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial=20
-size=3D2>Marri</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial =
-size=3D2>-------------------=20
-LOG ---------------</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial size=3D2>NET: =
-Registered=20
-protocol family 17<BR>RPC: Registered udp transport module.<BR>RPC: =
-Registered=20
-tcp transport module.<BR>prepare_namespace line 361 =
-<BR>prepare_namespace line=20
-385 <BR>RAMDISK: Compressed image found at block 0<BR>invalid compressed =
-format=20
-(err=3D1)<BR>EXT3-fs error (device ram0): ext3_check_descriptors: Block =
-bitmap for=20
-group 0 not in group (block 14728687)!<BR>EXT3-fs: group descriptors=20
-corrupted!<BR>EXT2-fs error (device ram0): ext2_check_descriptors: Block =
-bitmap=20
-for group 0 not in group (block 14728687)!<BR>EXT2-fs: group descriptors =
-
-corrupted!<BR>List of all partitions:<BR>No filesystem could mount root, =
-
-tried:&nbsp; ext3 ext2 cramfs<BR>Kernel panic - not syncing: VFS: Unable =
-to=20
-mount root fs on unknown-block(1,0)<BR>Rebooting in 180=20
-seconds..?</FONT></SPAN></DIV>
-<DIV>&nbsp;</DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial size=3D2>U-Boot =
-1.3.2 (Sep 24=20
-2008 - 14:25:32)<BR></FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial=20
-size=3D2>----------------------------------------------- back trace=20
------------</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial size=3D2>(gdb) =
-bt<BR>#0&nbsp;=20
-__delay (loops=3D800000) at include/asm/time.h:97<BR>#1&nbsp; 0xc001f07c =
-in panic=20
-(fmt=3DVariable "fmt" is not available.<BR>) at =
-kernel/panic.c:115<BR>#2&nbsp;=20
-0xc0248dc4 in mount_block_root (name=3D0xc020f9f4 "/dev/root", =
-flags=3D32768) at=20
-init/do_mounts.c:277<BR>#3&nbsp; 0xc02491b0 in prepare_namespace () at=20
-init/do_mounts.c:403<BR>#4&nbsp; 0xc02489a8 in kernel_init =
-(unused=3DVariable=20
-"unused" is not available.<BR>) at init/main.c:878<BR>#5&nbsp; =
-0xc000cf08 in=20
-kernel_thread ()<BR>Previous frame inner to this frame (corrupt =
-stack?)<BR>(gdb)=20
-</FONT></SPAN></DIV>
-<DIV><SPAN class=3D155142821-27092008><FONT face=3DArial=20
-size=3D2>---------------</DIV></FONT></SPAN></FONT></DIV></BODY></HTML>
-
-------_=_NextPart_001_01C92255.9AF04439--
+diff --git a/arch/powerpc/lib/dma-noncoherent.c b/arch/powerpc/lib/dma-noncoherent.c
+index 5d83907..6827ae9 100644
+--- a/arch/powerpc/lib/dma-noncoherent.c
++++ b/arch/powerpc/lib/dma-noncoherent.c
+@@ -29,143 +29,28 @@
+ #include <linux/types.h>
+ #include <linux/highmem.h>
+ #include <linux/dma-mapping.h>
++#include <linux/vmalloc.h>
+ 
+ #include <asm/tlbflush.h>
+ 
+ /*
+- * This address range defaults to a value that is safe for all
+- * platforms which currently set CONFIG_NOT_COHERENT_CACHE. It
+- * can be further configured for specific applications under
+- * the "Advanced Setup" menu. -Matt
+- */
+-#define CONSISTENT_BASE	(CONFIG_CONSISTENT_START)
+-#define CONSISTENT_END	(CONFIG_CONSISTENT_START + CONFIG_CONSISTENT_SIZE)
+-#define CONSISTENT_OFFSET(x)	(((unsigned long)(x) - CONSISTENT_BASE) >> PAGE_SHIFT)
+-
+-/*
+- * This is the page table (2MB) covering uncached, DMA consistent allocations
+- */
+-static pte_t *consistent_pte;
+-static DEFINE_SPINLOCK(consistent_lock);
+-
+-/*
+- * VM region handling support.
+- *
+- * This should become something generic, handling VM region allocations for
+- * vmalloc and similar (ioremap, module space, etc).
+- *
+- * I envisage vmalloc()'s supporting vm_struct becoming:
+- *
+- *  struct vm_struct {
+- *    struct vm_region	region;
+- *    unsigned long	flags;
+- *    struct page	**pages;
+- *    unsigned int	nr_pages;
+- *    unsigned long	phys_addr;
+- *  };
+- *
+- * get_vm_area() would then call vm_region_alloc with an appropriate
+- * struct vm_region head (eg):
+- *
+- *  struct vm_region vmalloc_head = {
+- *	.vm_list	= LIST_HEAD_INIT(vmalloc_head.vm_list),
+- *	.vm_start	= VMALLOC_START,
+- *	.vm_end		= VMALLOC_END,
+- *  };
+- *
+- * However, vmalloc_head.vm_start is variable (typically, it is dependent on
+- * the amount of RAM found at boot time.)  I would imagine that get_vm_area()
+- * would have to initialise this each time prior to calling vm_region_alloc().
+- */
+-struct vm_region {
+-	struct list_head	vm_list;
+-	unsigned long		vm_start;
+-	unsigned long		vm_end;
+-};
+-
+-static struct vm_region consistent_head = {
+-	.vm_list	= LIST_HEAD_INIT(consistent_head.vm_list),
+-	.vm_start	= CONSISTENT_BASE,
+-	.vm_end		= CONSISTENT_END,
+-};
+-
+-static struct vm_region *
+-vm_region_alloc(struct vm_region *head, size_t size, gfp_t gfp)
+-{
+-	unsigned long addr = head->vm_start, end = head->vm_end - size;
+-	unsigned long flags;
+-	struct vm_region *c, *new;
+-
+-	new = kmalloc(sizeof(struct vm_region), gfp);
+-	if (!new)
+-		goto out;
+-
+-	spin_lock_irqsave(&consistent_lock, flags);
+-
+-	list_for_each_entry(c, &head->vm_list, vm_list) {
+-		if ((addr + size) < addr)
+-			goto nospc;
+-		if ((addr + size) <= c->vm_start)
+-			goto found;
+-		addr = c->vm_end;
+-		if (addr > end)
+-			goto nospc;
+-	}
+-
+- found:
+-	/*
+-	 * Insert this entry _before_ the one we found.
+-	 */
+-	list_add_tail(&new->vm_list, &c->vm_list);
+-	new->vm_start = addr;
+-	new->vm_end = addr + size;
+-
+-	spin_unlock_irqrestore(&consistent_lock, flags);
+-	return new;
+-
+- nospc:
+-	spin_unlock_irqrestore(&consistent_lock, flags);
+-	kfree(new);
+- out:
+-	return NULL;
+-}
+-
+-static struct vm_region *vm_region_find(struct vm_region *head, unsigned long addr)
+-{
+-	struct vm_region *c;
+-
+-	list_for_each_entry(c, &head->vm_list, vm_list) {
+-		if (c->vm_start == addr)
+-			goto out;
+-	}
+-	c = NULL;
+- out:
+-	return c;
+-}
+-
+-/*
+  * Allocate DMA-coherent memory space and return both the kernel remapped
+  * virtual and bus address for that space.
+  */
+ void *
+ __dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
+ {
+-	struct page *page;
+-	struct vm_region *c;
++	struct page *page, *p;
+ 	unsigned long order;
++	unsigned long kaddr;
++	unsigned long addr;
+ 	u64 mask = 0x00ffffff, limit; /* ISA default */
+ 
+-	if (!consistent_pte) {
+-		printk(KERN_ERR "%s: not initialised\n", __func__);
+-		dump_stack();
+-		return NULL;
+-	}
+-
+ 	size = PAGE_ALIGN(size);
+ 	limit = (mask + 1) & ~mask;
+-	if ((limit && size >= limit) || size >= (CONSISTENT_END - CONSISTENT_BASE)) {
+-		printk(KERN_WARNING "coherent allocation too big (requested %#x mask %#Lx)\n",
+-		       size, mask);
++	if (limit && size >= limit) {
++		printk(KERN_WARNING "coherent allocation too big " \
++			"(requested %#x mask %#Lx)\n", size, mask);
+ 		return NULL;
+ 	}
+ 
+@@ -176,61 +61,47 @@ __dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
+ 
+ 	page = alloc_pages(gfp, order);
+ 	if (!page)
+-		goto no_page;
++		return NULL;
+ 
+ 	/*
+ 	 * Invalidate any data that might be lurking in the
+ 	 * kernel direct-mapped region for device DMA.
+ 	 */
+-	{
+-		unsigned long kaddr = (unsigned long)page_address(page);
+-		memset(page_address(page), 0, size);
+-		flush_dcache_range(kaddr, kaddr + size);
+-	}
++	kaddr = (unsigned long)page_address(page);
++	BUG_ON(kaddr == 0);
++	/* the name is confusing here: flush_dcache_range does a
++		flush + invalidate */
++	flush_dcache_range(kaddr, kaddr + size);
+ 
+ 	/*
+-	 * Allocate a virtual address in the consistent mapping region.
++	 * Out of the returned page generate a table of 1<<order
++	 * PAGE_SIZE pages. This make sure each page has its own PTE.
+ 	 */
+-	c = vm_region_alloc(&consistent_head, size,
+-			    gfp & ~(__GFP_DMA | __GFP_HIGHMEM));
+-	if (c) {
+-		unsigned long vaddr = c->vm_start;
+-		pte_t *pte = consistent_pte + CONSISTENT_OFFSET(vaddr);
+-		struct page *end = page + (1 << order);
+-
+-		split_page(page, order);
+-
+-		/*
+-		 * Set the "dma handle"
+-		 */
+-		*handle = page_to_bus(page);
+-
+-		do {
+-			BUG_ON(!pte_none(*pte));
+-
+-			SetPageReserved(page);
+-			set_pte_at(&init_mm, vaddr,
+-				   pte, mk_pte(page, pgprot_noncached(PAGE_KERNEL)));
+-			page++;
+-			pte++;
+-			vaddr += PAGE_SIZE;
+-		} while (size -= PAGE_SIZE);
+-
+-		/*
+-		 * Free the otherwise unused pages.
+-		 */
+-		while (page < end) {
+-			__free_page(page);
+-			page++;
+-		}
++	split_page(page, order);
+ 
+-		return (void *)c->vm_start;
++	/*
++	 * Mark the pages as Reserved: this memory is used by a DMA engine,
++	 * it cannot be swapped.
++	 * Also mark each page as un-cached. We ass ume here that a PTE
++	 * already exist (valid assumption for the DMA Zone)
++	 */
++	for (addr = kaddr, p = page; addr < kaddr+size;
++			addr += PAGE_SIZE, p++) {
++		pte_t *pte;
++		spinlock_t *ptl;
++
++		SetPageReserved(p);
++		pte = get_locked_pte(&init_mm, addr, &ptl);
++		set_pte_at(&init_mm, addr,
++			pte, mk_pte(p, pgprot_noncached(PAGE_KERNEL)));
++		pte_unmap_unlock(pte, ptl);
+ 	}
++	flush_tlb_kernel_range(kaddr, kaddr+size-1);
+ 
+-	if (page)
+-		__free_pages(page, order);
+- no_page:
+-	return NULL;
++	/* Handle is the physical address of the first page */
++	*handle = page_to_bus(page);
++
++	return (void *)kaddr;
+ }
+ EXPORT_SYMBOL(__dma_alloc_coherent);
+ 
+@@ -238,125 +109,62 @@ EXPORT_SYMBOL(__dma_alloc_coherent);
+  * free a page as defined by the above mapping.
+  */
+ void __dma_free_coherent(size_t size, void *vaddr)
+-{
+-	struct vm_region *c;
+-	unsigned long flags, addr;
+-	pte_t *ptep;
++{	struct page *page;
++	unsigned long order;
++	unsigned long addr;
+ 
++	/* This is safe because we do the same in __dma_alloc_coherent */
+ 	size = PAGE_ALIGN(size);
++	order = get_order(size);
+ 
+-	spin_lock_irqsave(&consistent_lock, flags);
+-
+-	c = vm_region_find(&consistent_head, (unsigned long)vaddr);
+-	if (!c)
+-		goto no_area;
+-
+-	if ((c->vm_end - c->vm_start) != size) {
+-		printk(KERN_ERR "%s: freeing wrong coherent size (%ld != %d)\n",
+-		       __func__, c->vm_end - c->vm_start, size);
+-		dump_stack();
+-		size = c->vm_end - c->vm_start;
++	/* Retrieve the page associated with this address */
++	page = virt_to_page(vaddr);
++	BUG_ON(page == NULL);
++
++	/* Release the physical memory */
++	for (addr = (unsigned long)vaddr; addr < (unsigned long)vaddr+size;
++			addr += PAGE_SIZE, page++) {
++		pte_t *pte;
++		spinlock_t *ptl;
++
++		ClearPageReserved(page);
++		pte = get_locked_pte(&init_mm, addr, &ptl);
++		set_pte_at(&init_mm, addr, pte, mk_pte(page, PAGE_KERNEL));
++		pte_unmap_unlock(pte, ptl);
++		__free_page(page);
+ 	}
+-
+-	ptep = consistent_pte + CONSISTENT_OFFSET(c->vm_start);
+-	addr = c->vm_start;
+-	do {
+-		pte_t pte = ptep_get_and_clear(&init_mm, addr, ptep);
+-		unsigned long pfn;
+-
+-		ptep++;
+-		addr += PAGE_SIZE;
+-
+-		if (!pte_none(pte) && pte_present(pte)) {
+-			pfn = pte_pfn(pte);
+-
+-			if (pfn_valid(pfn)) {
+-				struct page *page = pfn_to_page(pfn);
+-				ClearPageReserved(page);
+-
+-				__free_page(page);
+-				continue;
+-			}
+-		}
+-
+-		printk(KERN_CRIT "%s: bad page in kernel page table\n",
+-		       __func__);
+-	} while (size -= PAGE_SIZE);
+-
+-	flush_tlb_kernel_range(c->vm_start, c->vm_end);
+-
+-	list_del(&c->vm_list);
+-
+-	spin_unlock_irqrestore(&consistent_lock, flags);
+-
+-	kfree(c);
+-	return;
+-
+- no_area:
+-	spin_unlock_irqrestore(&consistent_lock, flags);
+-	printk(KERN_ERR "%s: trying to free invalid coherent area: %p\n",
+-	       __func__, vaddr);
+-	dump_stack();
+ }
+ EXPORT_SYMBOL(__dma_free_coherent);
+ 
+ /*
+- * Initialise the consistent memory allocation.
+- */
+-static int __init dma_alloc_init(void)
+-{
+-	pgd_t *pgd;
+-	pud_t *pud;
+-	pmd_t *pmd;
+-	pte_t *pte;
+-	int ret = 0;
+-
+-	do {
+-		pgd = pgd_offset(&init_mm, CONSISTENT_BASE);
+-		pud = pud_alloc(&init_mm, pgd, CONSISTENT_BASE);
+-		pmd = pmd_alloc(&init_mm, pud, CONSISTENT_BASE);
+-		if (!pmd) {
+-			printk(KERN_ERR "%s: no pmd tables\n", __func__);
+-			ret = -ENOMEM;
+-			break;
+-		}
+-		WARN_ON(!pmd_none(*pmd));
+-
+-		pte = pte_alloc_kernel(pmd, CONSISTENT_BASE);
+-		if (!pte) {
+-			printk(KERN_ERR "%s: no pte tables\n", __func__);
+-			ret = -ENOMEM;
+-			break;
+-		}
+-
+-		consistent_pte = pte;
+-	} while (0);
+-
+-	return ret;
+-}
+-
+-core_initcall(dma_alloc_init);
+-
+-/*
+  * make an area consistent.
+  */
+ void __dma_sync(void *vaddr, size_t size, int direction)
+ {
+ 	unsigned long start = (unsigned long)vaddr;
+ 	unsigned long end   = start + size;
++	int unaligned;
+ 
+ 	switch (direction) {
+ 	case DMA_NONE:
+ 		BUG();
+ 	case DMA_FROM_DEVICE:
+ 		/*
+-		 * invalidate only when cache-line aligned otherwise there is
+-		 * the potential for discarding uncommitted data from the cache
++		 * if start or size is not cache aligned we flush before
++		 * invalidating.
++		 * Beware: flush_dcache_range does flush and invalidate
+ 		 */
+-		if ((start & (L1_CACHE_BYTES - 1)) || (size & (L1_CACHE_BYTES - 1)))
+-			flush_dcache_range(start, end);
+-		else
+-			invalidate_dcache_range(start, end);
++		unaligned = start & (L1_CACHE_BYTES - 1);
++		if (unaligned) {
++			flush_dcache_range(start, start + L1_CACHE_BYTES);
++			start += L1_CACHE_BYTES - unaligned;
++		}
++		unaligned = end & (L1_CACHE_BYTES - 1);
++		if (unaligned) {
++			end -= unaligned;
++			flush_dcache_range(end, end + L1_CACHE_BYTES);
++		}
++		invalidate_dcache_range(start, end);
+ 		break;
+ 	case DMA_TO_DEVICE:		/* writeback only */
+ 		clean_dcache_range(start, end);
+@@ -368,48 +176,6 @@ void __dma_sync(void *vaddr, size_t size, int direction)
+ }
+ EXPORT_SYMBOL(__dma_sync);
+ 
+-#ifdef CONFIG_HIGHMEM
+-/*
+- * __dma_sync_page() implementation for systems using highmem.
+- * In this case, each page of a buffer must be kmapped/kunmapped
+- * in order to have a virtual address for __dma_sync(). This must
+- * not sleep so kmap_atomic()/kunmap_atomic() are used.
+- *
+- * Note: yes, it is possible and correct to have a buffer extend
+- * beyond the first page.
+- */
+-static inline void __dma_sync_page_highmem(struct page *page,
+-		unsigned long offset, size_t size, int direction)
+-{
+-	size_t seg_size = min((size_t)(PAGE_SIZE - offset), size);
+-	size_t cur_size = seg_size;
+-	unsigned long flags, start, seg_offset = offset;
+-	int nr_segs = 1 + ((size - seg_size) + PAGE_SIZE - 1)/PAGE_SIZE;
+-	int seg_nr = 0;
+-
+-	local_irq_save(flags);
+-
+-	do {
+-		start = (unsigned long)kmap_atomic(page + seg_nr,
+-				KM_PPC_SYNC_PAGE) + seg_offset;
+-
+-		/* Sync this buffer segment */
+-		__dma_sync((void *)start, seg_size, direction);
+-		kunmap_atomic((void *)start, KM_PPC_SYNC_PAGE);
+-		seg_nr++;
+-
+-		/* Calculate next buffer segment size */
+-		seg_size = min((size_t)PAGE_SIZE, size - cur_size);
+-
+-		/* Add the segment size to our running total */
+-		cur_size += seg_size;
+-		seg_offset = 0;
+-	} while (seg_nr < nr_segs);
+-
+-	local_irq_restore(flags);
+-}
+-#endif /* CONFIG_HIGHMEM */
+-
+ /*
+  * __dma_sync_page makes memory consistent. identical to __dma_sync, but
+  * takes a struct page instead of a virtual address
+@@ -417,11 +183,7 @@ static inline void __dma_sync_page_highmem(struct page *page,
+ void __dma_sync_page(struct page *page, unsigned long offset,
+ 	size_t size, int direction)
+ {
+-#ifdef CONFIG_HIGHMEM
+-	__dma_sync_page_highmem(page, offset, size, direction);
+-#else
+ 	unsigned long start = (unsigned long)page_address(page) + offset;
+ 	__dma_sync((void *)start, size, direction);
+-#endif
+ }
+ EXPORT_SYMBOL(__dma_sync_page);
