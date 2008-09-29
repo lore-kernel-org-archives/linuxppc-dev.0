@@ -1,29 +1,19 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-nj2ut-10.online-age.net (ext-nj2ut-10.online-age.net
-	[64.14.54.240])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-nj2ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 36888DDDE3
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 22:31:52 +1000 (EST)
-Received: from int-nj2ut-6.online-age.net (int-nj2ut-6.online-age.net
-	[3.159.237.75])
-	by ext-nj2ut-10.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id m8TCVghO024047
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 08:31:42 -0400
-Received: from alpmlip01.e2k.ad.ge.com (int-nj2ut-6.online-age.net
-	[3.159.237.75])
-	by int-nj2ut-6.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id m8TCVf7v018049
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 08:31:42 -0400
-From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH] powerpc: Correct USB support for GE Fanuc SBC610
-To: linuxppc-dev@ozlabs.org
-Date: Mon, 29 Sep 2008 13:35:15 +0100
-Message-ID: <20080929123515.26226.91402.stgit@ubuntu8041.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8ABC0DDEEB
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 23:12:18 +1000 (EST)
+Message-Id: <295973D9-5AD2-47A3-B858-CED501169D86@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <Pine.LNX.4.64.0809241652540.22678@blarg.am.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: Please pull from 'dma' branch
+Date: Mon, 29 Sep 2008 08:12:11 -0500
+References: <Pine.LNX.4.64.0809241652540.22678@blarg.am.freescale.net>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,52 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Support for the SBC610 VPX Single Board Computer from GE Fanuc (PowerPC
-MPC8641D).
 
-Fixup to correctly reconfigure USB, provided by an NEC uPD720101, after
-device is reset. This requires a set of chip specific registers in the
-devices configuration space to be correctly written, enabling all ports
-and switching the device to use an external 48-MHz Oscillator.
+On Sep 24, 2008, at 4:54 PM, Kumar Gala wrote:
 
-Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
----
+> Please pull from 'dma' branch of
+>
+> (forgot linuxppc-dev on first go around)
+>
+> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git dma
+>
+> to receive the following updates:
+>
+> arch/powerpc/include/asm/device.h       |    3
+> arch/powerpc/include/asm/dma-mapping.h  |  187 ++++++++ 
+> +--------------------
+> arch/powerpc/include/asm/machdep.h      |    5
+> arch/powerpc/include/asm/pci.h          |   14 +-
+> arch/powerpc/include/asm/types.h        |    2
+> arch/powerpc/kernel/Makefile            |    4
+> arch/powerpc/kernel/dma-iommu.c         |  103 ++++++++++++++++
+> arch/powerpc/kernel/dma.c               |  127 ++++++++++++++++++++
+> arch/powerpc/kernel/dma_64.c            |  200  
+> --------------------------------
+> arch/powerpc/kernel/of_device.c         |    2
+> arch/powerpc/kernel/pci-common.c        |   48 +++++++
+> arch/powerpc/kernel/pci_32.c            |    7 +
+> arch/powerpc/kernel/pci_64.c            |   49 -------
+> arch/powerpc/kernel/vio.c               |    2
+> arch/powerpc/platforms/cell/iommu.c     |    6
+> arch/powerpc/platforms/ps3/system-bus.c |    2
+> 16 files changed, 366 insertions(+), 395 deletions(-)
+>
+> Becky Bruce (5):
+>      powerpc: Rename dma_64.c to dma.c
+>      powerpc: Move iommu dma ops from dma.c to dma-iommu.c
+>      powerpc: Drop archdata numa_node
+>      powerpc: Merge 32 and 64-bit dma code
+>      powerpc: Make dma_addr_t a u64 if CONFIG_PHYS_64BIT is set
 
- arch/powerpc/platforms/86xx/gef_sbc610.c |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
+Paul,
 
-diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
-index 3543a9e..605678c 100644
---- a/arch/powerpc/platforms/86xx/gef_sbc610.c
-+++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
-@@ -12,6 +12,8 @@
-  *
-  * Based on: mpc86xx_hpcn.c (MPC86xx HPCN board specific routines)
-  * Copyright 2006 Freescale Semiconductor Inc.
-+ *
-+ * NEC fixup adapted from arch/mips/pci/fixup-lm2e.c
-  */
- 
- #include <linux/stddef.h>
-@@ -83,6 +85,21 @@ static void gef_sbc610_show_cpuinfo(struct seq_file *m)
- 	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
- }
- 
-+static void __init gef_sbc610_nec_fixup(struct pci_dev *pdev)
-+{
-+	unsigned int val;
-+
-+	printk(KERN_INFO "Running NEC uPD720101 Fixup\n");
-+
-+	/* Ensure ports 1, 2, 3, 4 & 5 are enabled */
-+	pci_read_config_dword(pdev, 0xe0, &val);
-+	pci_write_config_dword(pdev, 0xe0, (val & ~7) | 0x5);
-+
-+	/* System clock is 48-MHz Oscillator and EHCI Enabled. */
-+	pci_write_config_dword(pdev, 0xe4, 1 << 5);
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NEC, PCI_DEVICE_ID_NEC_USB,
-+	gef_sbc610_nec_fixup);
- 
- /*
-  * Called very early, device-tree isn't unflattened
+poke..
+
+- k
