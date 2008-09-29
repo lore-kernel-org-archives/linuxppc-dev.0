@@ -1,19 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BAD1CDE30D
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 02:09:12 +1000 (EST)
-Message-Id: <14B8C812-4B48-463B-875B-E107D704FFEA@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1222268456-22541-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v2] powerpc/math-emu: Use kernel generic math-emu code
-Date: Mon, 29 Sep 2008 11:09:04 -0500
-References: <1222268456-22541-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jacmet@gmail.com>
+To: Sven Luther <sven@genesi-usa.com>
+Subject: Re: USB support on mpc5200 broken
+References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
+	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
+	<1222307447.8277.147.camel@pasglop> <48E02FD0.8000809@genesi-usa.com>
+	<20080929034329.GB8694@yookeroo.seuss>
+	<20080929151854.GA29375@powerlinux.fr>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Mon, 29 Sep 2008 19:05:34 +0200
+In-Reply-To: <20080929151854.GA29375@powerlinux.fr> (Sven Luther's message of
+	"Mon\, 29 Sep 2008 17\:18\:54 +0200")
+Message-ID: <87iqseopb5.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>>>>> "Sven" == Sven Luther <sven@genesi-usa.com> writes:
 
-On Sep 24, 2008, at 10:00 AM, Kumar Gala wrote:
+Hi,
 
-> The math emulation code is centered around a set of generic macros  
-> that
-> provide the core of the emulation that are shared by the various
-> architectures and other projects (like glibc).  Each arch implements  
-> its
-> own sfp-machine.h to specific various arch specific details.
->
-> For historic reasons that are now lost the powerpc math-emu code had
-> its own version of the common headers.  This moves us to using the
-> kernel generic version and thus getting fixes when those are updated.
->
-> Also cleaned up exception/error reporting from the FP emulation  
-> functions.
->
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
->
-> With a better commit message, no code changes.
->
-> - k
+ >> This, of course, is exactly why I *don't* recommend embedded platforms
+ >> move to including the device tree in the flashed firmware.  Keeping
+ >> the device tree in the bootwrapper means that it *is* updated with the
+ >> kernel and we don't have to mess around with as much backwards
+ >> compatibility junk.
 
-since no one seems to have any comments on this I'm going to put it  
-into my powerpc-next tree.
+ Sven> This completely defeats the purpopse of having a separate
+ Sven> device tree though, no ? I mean, we could just as well hardcode
+ Sven> the device-tree info in the kernel in this case ?
 
-- k
+Well, yes and no. The device tree brings a number of advantages (and a
+few disadvantages as well), one of those being the potential
+decoupling of kernel and DT. Even if you don't make use of that
+feature in a production build you still have the other advantages
+(E.G. easy compile test of multiple boards, limited
+repeated-these-are-my-platform-devices code in board files, ...).
+
+ Sven> (In embedded cases, the kernel is usyually in the flash as
+ Sven> well, so you just upgrade both at the same time :)
+
+Sure, but if you do that you might as well include them in a single
+uImage because:
+
+- They are always in sync
+- You don't waste flash space (E.G. the DT is very small, but you
+  waste a complete flash sector)
+
+With uImage.<platform> U-Boot can still fix up the tree before booting
+the kernel, so you don't lose any functionality (E.G. if you
+enable/disable certain nodes based on what option boards are
+available).
+
+-- 
+Bye, Peter Korsgaard
