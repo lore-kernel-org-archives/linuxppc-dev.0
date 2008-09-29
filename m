@@ -1,9 +1,9 @@
 Return-Path: <sshtylyov@ru.mvista.com>
 Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 03B84DDDDB
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 18:25:51 +1000 (EST)
-Message-ID: <48E09108.4020400@ru.mvista.com>
-Date: Mon, 29 Sep 2008 12:25:44 +0400
+	by ozlabs.org (Postfix) with ESMTP id DB0B1DDF2D
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 18:25:57 +1000 (EST)
+Message-ID: <48E09110.5040700@ru.mvista.com>
+Date: Mon, 29 Sep 2008 12:25:52 +0400
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
 To: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?= <chretien@enseirb.fr>
@@ -24,7 +24,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Hello.
 
 Sébastien Chrétien wrote:
-> Hello,
+
 > I have a question about Device Tree.
 > Is Device Tree found only only on Linux Powerpc ?
 
