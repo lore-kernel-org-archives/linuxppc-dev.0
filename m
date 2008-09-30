@@ -1,21 +1,21 @@
 Return-Path: <neko@genesi-usa.com>
-Message-ID: <48E243C5.7000100@genesi-usa.com>
-Date: Tue, 30 Sep 2008 10:20:37 -0500
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
+	by ozlabs.org (Postfix) with ESMTP id D9B9DDE292
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 01:22:56 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m33so35273wag.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 08:22:55 -0700 (PDT)
+Message-ID: <48E2444D.1050301@genesi-usa.com>
+Date: Tue, 30 Sep 2008 10:22:53 -0500
 From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: USB support on mpc5200 broken
-References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>	
-	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>	
-	<1222307447.8277.147.camel@pasglop>
-	<48E02FD0.8000809@genesi-usa.com>	
-	<20080929034329.GB8694@yookeroo.seuss>
-	<9e4733910809290714td2dc6cclecf2e2b080a80ca1@mail.gmail.com>
-In-Reply-To: <9e4733910809290714td2dc6cclecf2e2b080a80ca1@mail.gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: Device Tree
+References: <48E07490.9020805@enseirb.fr> <48E09108.4020400@ru.mvista.com>
+In-Reply-To: <48E09108.4020400@ru.mvista.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Cc: =?UTF-8?B?U8OpYmFzdGllbiBDaHLDqXRpZW4=?= <chretien@enseirb.fr>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
 
+Sergei Shtylyov wrote:
+> Hello.
 > 
-> Efika has this:
-> compatible = "fsl,mpc5200b-ohci","fsl,mpc5200-ohci";
+> Sébastien Chrétien wrote:
+>> Hello,
+>> I have a question about Device Tree.
+>> Is Device Tree found only only on Linux Powerpc ?
+> 
+>   Not only Linux as it's a part of Open Firmware which is also used at 
+> least on SPARC.
 
-It doesn't :D
+The Toshiba TOPAS910 ARM development board also runs Open Firmware and
+contains patches to support OF device trees.
 
-My system, running production firmware, says
-
-ohci-bigendian,ohci-be,mpc5200-ohci,mpc5200-usb
-
-This is what we were recommended to use at the time. There is a patch
-on www.powerdeveloper.org which tweaks the tree to make it ultra-compliant
-with the Linux version of things, which implements every variation. It
-also implements a suggested patch which added a "big-endian" property
-(not built in to the compatible property, but another property).
-
-I don't see why THAT patch got reverted as it was a great idea that we
-all agreed was a great idea.
-
-Linux development around here is getting really schizophrenic. Nobody
-is writing these decisions down even as comments in the source code..
-
-> If we really need a big endian flag, should it be an attribute?
-
-Yes.
-
-> Shouldn't the driver already know it is being used on a BE machine?
-
-No; you can have little endian OHCI controllers on big endian machines.
-It's a property of the host controller, not the system architecture, just
-like PCI is always little endian (except when you have magic in hardware
-like Amiga PowerUP cards which endianswap for you :)
+I dare say there might be an x86 box or two out there, too. But they
+have ACPI tables too which is far more common..
 
 -- 
 Matt Sealey <matt@genesi-usa.com>
