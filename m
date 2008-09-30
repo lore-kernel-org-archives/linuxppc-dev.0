@@ -1,20 +1,23 @@
-Return-Path: <leon.woestenberg@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id A4B01DDE19
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 08:05:03 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so341390ywh.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Sep 2008 15:05:01 -0700 (PDT)
-Message-ID: <c384c5ea0809291505p5a12f5aerd48515cb5c305155@mail.gmail.com>
-Date: Tue, 30 Sep 2008 00:05:01 +0200
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "=?ISO-8859-1?Q?Andr=E9_Schwarz?=" <Andre.Schwarz@matrix-vision.de>,
-	linuxppc-dev@ozlabs.org
-Subject: Re: How to prevent embedded ppc reset deadlock? (MPC83xx/85xx)
-In-Reply-To: <48E14DAE.9040101@matrix-vision.de>
+Return-Path: <jk@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] sputrace : use marker_synchronize_unregister()
+Date: Tue, 30 Sep 2008 10:28:19 +1000
+References: <48E08B05.7030802@cn.fujitsu.com> <20080929082722.GB18663@elte.hu>
+	<20080929151147.GH11245@Krystal>
+In-Reply-To: <20080929151147.GH11245@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <c384c5ea0809291433j10619a49xe713415f6bb90204@mail.gmail.com>
-	<48E14DAE.9040101@matrix-vision.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200809301028.21485.jk@ozlabs.org>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>, cbe-oss-dev@ozlabs.org,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@elte.hu>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,80 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Andr=E9,
+Mathieu,
 
-On Mon, Sep 29, 2008 at 11:50 PM, Andr=E9 Schwarz
-<Andre.Schwarz@matrix-vision.de> wrote:
-> Leon,
->
-> you're right.
-> PORESET is just there to prevent the core from running as long as power m=
-ay
-> be unstable and/or PLLs are out of lock.
-> HRESET is the signal that should reset everything. I did it on my board a=
-nd
-> it works fine.
->
-Understood so far.
+> We need a marker_synchronize_unregister() before the end of exit() to
+> make sure every probe callers have exited the non preemptible section
+> and thus are not executing the probe code anymore.
 
-> Since you also have to assert HRESET when you assert PORESET
->
-But when I assert PORESET, the processor will assert HRESET itself
-AFAIK, so why do this?
+Looks good - added to spufs.git.
 
-> you can wire-or them with a low drop schottky diode.
->
-Ooh, analog electronics, long time ago. Let me think: arrow of diode
-symbol pointing from HRESET# to PORESET#, right, so that PORESET#
-going low will pull HRESET# low enough, right?
-
-> Hope this helps.
->
-Yes it does, thanks.
-
-Regards, Leon.
+Cheers,
 
 
-> Leon Woestenberg wrote:
->>
->> Hello all,
->>
->> not Linux related per se*, but I wonder how your board designs deal
->> with the reset circuitry for embedded PowerPC processors (MPC8313E in
->> my case).
->> My requirement is that both a processor-external hard reset and
->> processor-internal hard reset must both reset the boot device NOR
->> FlashROM, so that it does not remain in write mode (if it is).
->>
->> Given those processor pins:
->>
->> PORESET# (input pin to the processor, power on reset)
->> HRESET# (bidirectional pin on the processor, asserted by processor on
->> hard reset such as watchdog)
->>
->> I see many designs (even the Freescale reference designs) where the
->> HRESET# resets some of the board, but not the FlashROM, and where
->> PORESET# resets the FlashROM. This can cause a deadlock in the case
->> where the watchdog resets during writing to FlashROM, as the FlashROM
->> is not reset and remains in write mode, not allowing the processor to
->> boot from it.
->>
->> I am thinking of using this approach: PORESET# -> processor <-->
->> HRESET# -> board reset.
->>
->> Would that work? or why not?
->>
->> Regards,
->>
->
->
-> MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  - Registergeric=
-ht:
-> Amtsgericht Stuttgart, HRB 271090
-> Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
->
-
-
-
---=20
-Leon
+Jeremy
