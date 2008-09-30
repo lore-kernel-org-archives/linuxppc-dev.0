@@ -1,22 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <m.fortini@selcomgroup.com>
+Received: from xseries02.selcomgroup.com (mail.selcomgroup.com [85.18.34.51])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 66F9BDDE01
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 94400DDEEA
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Sep 2008 16:03:39 +1000 (EST)
-Message-ID: <48E0E981.60703@freescale.com>
-Date: Mon, 29 Sep 2008 09:43:13 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Tue, 30 Sep 2008 21:12:59 +1000 (EST)
+Received: from [172.26.6.73] ([172.26.6.73]) (authenticated bits=0)
+	by xseries02.selcomgroup.com (8.13.4/8.13.4) with ESMTP id
+	m8UBCqFa017220
+	for <linuxppc-embedded@ozlabs.org>; Tue, 30 Sep 2008 13:12:52 +0200
+Message-ID: <48E209B6.7070203@selcomgroup.com>
+Date: Tue, 30 Sep 2008 13:12:54 +0200
+From: Matteo Fortini <m.fortini@selcomgroup.com>
 MIME-Version: 1.0
-To: embedded <embedded@akb.net>
-Subject: Re: FCC1 failing on large packet PINGS, while FCC2 is successful
-References: <bfa0697f0809261600p7e1af4a6va360d0782cec8257@mail.gmail.com>
-In-Reply-To: <bfa0697f0809261600p7e1af4a6va360d0782cec8257@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: gpt frequency input/pwm driver for MPC512x
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,33 +26,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-embedded wrote:
-> We've found a way to get ping to fail all of the time by increasing
-> the size of the ping messages.  When we use the max in Windows of
-> 65500, every ping to the first FCC1 Ethernet is dropped.  However,
-> when we ping with a size of 65500 to the second FCC2 Ethernet
-> everything is fine and all echos are successful.
-> 
-> In windows:
-> ping -l 64000 172.24.100.11  -t
-> 
-> It definitely seems to be a problem with the mpc, but I'm not sure
-> where to look.  Board? KErnel? boot loader?  The two Ethernet devices
-> should be configured identically, and looking through the kernel code,
-> it seems that there aren't any preferred treatment differences.  Could
-> the problem be in the bit-banging mdio control, or should I look
-> within fs_enet?  We've got this reproducing on all of our boards and
-> it could also reside in the board setup...
-> 
-> Does anyone with experience on the ep8248 and/or mpc8272 family,
-> fs_enet-* code have any ideas where I should look next?
+We are developing a couple of gpt drivers (one for input capture and 
+frequency measurement, one for pwm lcd backlight control) for an 
+MPC512x, and we'd like to find the proper way of inserting it into the 
+kernel.
 
-It looks very similar to what I was seeing on ep8248 -- the first 
-ethernet port would fail when attempting to receive back-to-back 
-packets.  I didn't look into it too closely since I thought it was 
-probably a board issue (I had only one, and the firmware never generated 
-any traffic that resulted in back-to-back receives).
+Currently, the frequency input driver is reserving a character device 
+and registering as a platform device driver with the 
+of_register_platform_driver() calls.
+The character device interface is given through the old-style cdev_t 
+allocation and deallocation, but I see that maybe this kind of devices, 
+which seems not to conform to any device type, should register as 
+"miscdevice"s, is that correct? This would leave me with only 14 minor 
+numbers free to be allocated. Moreover, there seems to be no way of 
+getting to the device data when using miscdevice's file operations, so 
+we would be on our own allocating more than one frequency input.
 
-I'd be very interested if you ever figure out what's wrong.
+Same for the backlight driver: I'd like to have a pmw driver, which I 
+can register a new platform driver, but how do I "glue" it with the 
+backlight driver? I'd prefer not to have direct pwm  register calls in 
+the backlight driver, but I'd rather have the backlight driver call a 
+generic pwm driver in order to do its job.
 
--Scott
+Thanks,
+Matteo
