@@ -1,22 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 29EE4DE4E3
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 08:16:44 +1000 (EST)
-Message-Id: <3E9F4180-E242-408A-9092-7A39737291FF@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <48E69551.90300@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v2] powerpc: make Freescale QE support a selectable
-	Kconfig option
-Date: Fri, 3 Oct 2008 17:16:36 -0500
-References: <1223050450-32234-1-git-send-email-timur@freescale.com>
-	<398EE654-3AC7-4939-91DC-49E9520D2B18@kernel.crashing.org>
-	<48E69551.90300@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <niklaus.giger@member.fsf.org>
+Received: from viefep12-int.chello.at (viefep18-int.chello.at [213.46.255.22])
+	by ozlabs.org (Postfix) with ESMTP id 2DDEDDDEE0
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 07:11:50 +1000 (EST)
+Received: from ng.localnet ([77.56.223.114]) by viefep24-int.chello.at
+	(InterMail vM.7.08.02.00 201-2186-121-20061213) with ESMTP
+	id <20080930205601.ETGP19371.viefep24-int.chello.at@ng.localnet>
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 22:56:01 +0200
+From: Niklaus Giger <niklaus.giger@member.fsf.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Before adding preiliminary support for Netstal HCU4 (PPC405 based)
+	board
+Date: Tue, 30 Sep 2008 22:55:59 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200809302256.00350.niklaus.giger@member.fsf.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +24,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi
 
-On Oct 3, 2008, at 4:57 PM, Timur Tabi wrote:
+I will soon submit a patch to add some support for a custom board.
 
-> powerpc: fix conflict with Elo DMA driver in MPC8610 device tree
+I am a SW engineer at Netstal Maschinen in Switzerland. As I would like to get 
+out of the current proprietary OS we currently are using, I have been 
+following more or less closely the Linux kernel for quite a few years.
+During more than one year I maintained a buildbot (continuos integegration)
+for the xenomai realtime extension, which for various reasons I had no time
+to continue in the last few months.
 
-in my queue.
+Since more than 3 years I have on my desk at home a PPC405 based board
+(called HCU4) which has been running various linux version dating back to 
+2.6.10. I do not know whether I will be succesfull in convincing my boss to 
+use Linux but it would ease my job, if my board (and a little bit later its 
+successor)  could find its way into the Linux kernel. He at least donated me 
+the board(s) I am working on it.
 
-> powerpc: remove CHRP and PMAC support from defconfigs, fix Kconfigs
+The patch is fairly trivial, as it is more or less a clone of the Walnut 
+board, minus some hardware not present. Having waited for the powerp port paid 
+off, as the patch (after not having touched the Linux kernel for over 12 
+months) was done (again) in two hours!
 
-For BenH to look at.
+I hope that there are not too many stylistic. (After running 
+scripts/checkpatch.pl I even rename <asm/time.h> to <linux/time.h>).
 
-> powerpc: remove support for bootmem-allocated memory for the DIU  
-> driver
+The board itself boots find and I was able to run quite a few test using the 
+xenomai extensions. NFS, telnet, serial console, everything seems to work
+fine.
 
-I'll take a look
+The patch is against the master git of denx.de. It does not apply cleanly
+against linus' git as I cannot find there any include/asm-ppc subdirectory. 
+I cannot guarantee that I will do a checkout of all rc candidates made by 
+Linus or Wolfgang, but I will try hard to do it for at least one of the 
+release candidates for each version. If I cannot maintain may boards for 
+longer than six months I will at last submit a change to remove them 
+altogether if there are no more users. At least at the moment I do not know of 
+anybody else. (There a are surely cheaper ways to get hand on a PPC405 board 
+than buying one of our machines which are in the 6 to 7 digit price range.).
 
-- k
+I would appreciate a small feedback, whether this is good form to submit 
+patches.
+
+Best regards and many thanks for everybody who contributed to make the powerpc 
+architecture
+
+-- 
+NIklaus Giger
+Wieshoschet 6
+CH-8753 Mollis
++41  (0)55 612 20 54 P
++41  (0)55 618 64 68 G
