@@ -1,31 +1,33 @@
-Return-Path: <kniht@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-nj2ut-12.online-age.net (ext-nj2ut-12.online-age.net
+	[64.14.54.245])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AC286DE2B2
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 00:53:17 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m8UErDoY018531
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 10:53:13 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m8UErD53141754
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 10:53:13 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m8UErCsV019619
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 10:53:13 -0400
-Message-ID: <48E23D6C.4030406@linux.vnet.ibm.com>
-Date: Tue, 30 Sep 2008 09:53:32 -0500
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Linux Memory Management List <linux-mm@kvack.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Adam Litke <agl@linux.vnet.ibm.com>
-Subject: [PATCH] properly reserve in bootmem the lmb reserved regions that
-	cross numa nodes
-Content-Type: text/plain; charset=ISO-8859-1
+	(Client CN "ext-nj2ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id BC554DE368
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 00:58:49 +1000 (EST)
+Received: from int-nj2ut-3.online-age.net (int-nj2ut-3.online-age.net
+	[3.159.237.72])
+	by ext-nj2ut-12.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id m8UEwdWx023824
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 10:58:39 -0400
+Received: from alpmlip01.e2k.ad.ge.com (int-nj2ut-3.online-age.net
+	[3.159.237.72])
+	by int-nj2ut-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m8UEwda7026568
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 10:58:39 -0400
+Date: Tue, 30 Sep 2008 16:00:30 +0100
+From: Martyn Welch <martyn.welch@gefanuc.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: GE Fanuc's FPGA based PIC controller on the
+	SBC610
+Message-Id: <20080930160030.4c0d5903.martyn.welch@gefanuc.com>
+In-Reply-To: <E3BAFDF8-561A-47E9-8286-922929D908AE@kernel.crashing.org>
+References: <20080930142942.28193.943.stgit@ubuntu8041.localdomain>
+	<E3BAFDF8-561A-47E9-8286-922929D908AE@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,180 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If there are multiple reserved memory blocks via lmb_reserve() that are 
-contiguous addresses and on different numa nodes we are losing track of which 
-address ranges to reserve in bootmem on which node.  I discovered this 
-when I only recently got to try 16GB huge pages on a system with more 
-then 2 nodes.
+On Tue, 30 Sep 2008 09:50:58 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
+> 
+> On Sep 30, 2008, at 9:29 AM, Martyn Welch wrote:
+> 
+> >
+> > arch/powerpc/boot/dts/gef_sbc610.dts     |   38 ++++
+> > arch/powerpc/platforms/86xx/gef_sbc610.c |   25 +++
+> > arch/powerpc/sysdev/Makefile             |    2
+> > arch/powerpc/sysdev/gef_pic.c            |  258 +++++++++++++++++++++ 
+> > +++++++++
+> > arch/powerpc/sysdev/gef_pic.h            |   11 +
+> 
+> The gef_pic should really live in platforms/86xx/ since its specific  
+> to your board.
+> 
 
-When scanning the device tree in early boot we call lmb_reserve() with 
-the addresses of the 16G pages that we find so that the memory doesn't 
-get used for something else.  For example the addresses for the pages 
-could be 4000000000, 4400000000, 4800000000, 4C00000000, etc - 8 pages, 
-one on each of eight nodes.  In the lmb after all the pages have been 
-reserved it will look something like the following:
+Ah, ok. I'll move it and resubmit.
 
-lmb_dump_all:
-    memory.cnt            = 0x2
-    memory.size           = 0x3e80000000
-    memory.region[0x0].base       = 0x0
-                      .size     = 0x1e80000000
-    memory.region[0x1].base       = 0x4000000000
-                      .size     = 0x2000000000
-    reserved.cnt          = 0x5
-    reserved.size         = 0x3e80000000
-    reserved.region[0x0].base       = 0x0
-                      .size     = 0x7b5000
-    reserved.region[0x1].base       = 0x2a00000
-                      .size     = 0x78c000
-    reserved.region[0x2].base       = 0x328c000
-                      .size     = 0x43000
-    reserved.region[0x3].base       = 0xf4e8000
-                      .size     = 0xb18000
-    reserved.region[0x4].base       = 0x4000000000
-                      .size     = 0x2000000000
+> - k
 
 
-The reserved.region[0x4] contains the 16G pages.  In 
-arch/powerpc/mm/num.c: do_init_bootmem() we loop through each of the 
-node numbers looking for the reserved regions that belong to the 
-particular node.  It is not able to identify region 0x4 as being a part 
-of each of the 8 nodes.  It is assuming that a reserved region is only
-on a single node.
-
-This patch takes out the reserved region loop from inside
-the loop that goes over each node.  It looks up the active region containing
-the start of the reserved region.  If it extends past that active region then
-it adjusts the size and gets the next active region containing it.
-
-
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
----
-
-
- arch/powerpc/mm/numa.c |   63 ++++++++++++++++++++++++++++---------------------
- include/linux/mm.h     |    2 +
- mm/page_alloc.c        |   19 ++++++++++++++
- 3 files changed, 57 insertions(+), 27 deletions(-)
-
-
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index d9a1813..07b8726 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -837,36 +837,45 @@ void __init do_init_bootmem(void)
- 				  start_pfn, end_pfn);
-
- 		free_bootmem_with_active_regions(nid, end_pfn);
-+	}
-
--		/* Mark reserved regions on this node */
--		for (i = 0; i < lmb.reserved.cnt; i++) {
--			unsigned long physbase = lmb.reserved.region[i].base;
--			unsigned long size = lmb.reserved.region[i].size;
--			unsigned long start_paddr = start_pfn << PAGE_SHIFT;
--			unsigned long end_paddr = end_pfn << PAGE_SHIFT;
--
--			if (early_pfn_to_nid(physbase >> PAGE_SHIFT) != nid &&
--			    early_pfn_to_nid((physbase+size-1) >> PAGE_SHIFT) != nid)
--				continue;
--
--			if (physbase < end_paddr &&
--			    (physbase+size) > start_paddr) {
--				/* overlaps */
--				if (physbase < start_paddr) {
--					size -= start_paddr - physbase;
--					physbase = start_paddr;
--				}
--
--				if (size > end_paddr - physbase)
--					size = end_paddr - physbase;
--
--				dbg("reserve_bootmem %lx %lx\n", physbase,
--				    size);
--				reserve_bootmem_node(NODE_DATA(nid), physbase,
--						     size, BOOTMEM_DEFAULT);
--			}
-+	/* Mark reserved regions */
-+	for (i = 0; i < lmb.reserved.cnt; i++) {
-+		unsigned long physbase = lmb.reserved.region[i].base;
-+		unsigned long size = lmb.reserved.region[i].size;
-+		unsigned long start_pfn = physbase >> PAGE_SHIFT;
-+		unsigned long end_pfn = ((physbase+size-1) >> PAGE_SHIFT);
-+		struct node_active_region *node_ar;
-+
-+		node_ar = get_node_active_region(start_pfn);
-+		while (start_pfn < end_pfn && node_ar != NULL) {
-+			/*
-+			 * if reserved region extends past active region
-+			 * then trim size to active region
-+			 */
-+			if (end_pfn >= node_ar->end_pfn)
-+				size = (node_ar->end_pfn << PAGE_SHIFT)
-+					- (start_pfn << PAGE_SHIFT);
-+			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase, size,
-+				node_ar->nid);
-+			reserve_bootmem_node(NODE_DATA(node_ar->nid), physbase,
-+						size, BOOTMEM_DEFAULT);
-+			/*
-+			 * if reserved region extends past the active region
-+			 * then get next active region that contains
-+			 *        this reserved region
-+			 */
-+			if (end_pfn >= node_ar->end_pfn) {
-+				start_pfn = node_ar->end_pfn;
-+				physbase = start_pfn << PAGE_SHIFT;
-+				node_ar = get_node_active_region(start_pfn);
-+			} else
-+				break;
- 		}
-
-+	}
-+
-+	for_each_online_node(nid) {
- 		sparse_memory_present_with_active_regions(nid);
- 	}
- }
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 72a15dc..d186a7e 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1020,6 +1020,8 @@ extern void push_node_boundaries(unsigned int nid, unsigned long start_pfn,
- extern void remove_all_active_ranges(void);
- extern unsigned long absent_pages_in_range(unsigned long start_pfn,
- 						unsigned long end_pfn);
-+struct node_active_region *get_node_active_region(
-+						unsigned long start_pfn);
- extern void get_pfn_range_for_nid(unsigned int nid,
- 			unsigned long *start_pfn, unsigned long *end_pfn);
- extern unsigned long find_min_pfn_with_active_regions(void);
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index e293c58..3a15c49 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -3071,6 +3071,25 @@ static void __meminit account_node_boundary(unsigned int nid,
- 		unsigned long *start_pfn, unsigned long *end_pfn) {}
- #endif
-
-+/**
-+ * get_node_active_region - Return active region containing start_pfn
-+ * @start_pfn The page to return the region for.
-+ *
-+ * It will return NULL if active region is not found.
-+ */
-+struct node_active_region *get_node_active_region(
-+							unsigned long start_pfn)
-+{
-+	int i;
-+	for (i = 0; i < nr_nodemap_entries; i++) {
-+		unsigned long node_start_pfn = early_node_map[i].start_pfn;
-+		unsigned long node_end_pfn = early_node_map[i].end_pfn;
-+
-+		if (node_start_pfn <= start_pfn && node_end_pfn > start_pfn)
-+			return &early_node_map[i];
-+	}
-+	return NULL;
-+}
-
- /**
-  * get_pfn_range_for_nid - Return the start and end page frames for a node
+-- 
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
