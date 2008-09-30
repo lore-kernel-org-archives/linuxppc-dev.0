@@ -1,33 +1,18 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-nj2ut-12.online-age.net (ext-nj2ut-12.online-age.net
-	[64.14.54.245])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-nj2ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id BC554DE368
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 00:58:49 +1000 (EST)
-Received: from int-nj2ut-3.online-age.net (int-nj2ut-3.online-age.net
-	[3.159.237.72])
-	by ext-nj2ut-12.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id m8UEwdWx023824
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 10:58:39 -0400
-Received: from alpmlip01.e2k.ad.ge.com (int-nj2ut-3.online-age.net
-	[3.159.237.72])
-	by int-nj2ut-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id m8UEwda7026568
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 10:58:39 -0400
-Date: Tue, 30 Sep 2008 16:00:30 +0100
-From: Martyn Welch <martyn.welch@gefanuc.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: GE Fanuc's FPGA based PIC controller on the
-	SBC610
-Message-Id: <20080930160030.4c0d5903.martyn.welch@gefanuc.com>
-In-Reply-To: <E3BAFDF8-561A-47E9-8286-922929D908AE@kernel.crashing.org>
-References: <20080930142942.28193.943.stgit@ubuntu8041.localdomain>
-	<E3BAFDF8-561A-47E9-8286-922929D908AE@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <neko@genesi-usa.com>
+Message-ID: <48E24278.4010306@genesi-usa.com>
+Date: Tue, 30 Sep 2008 10:15:04 -0500
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Matt Sealey <matt@genesi-usa.com>, linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: Re: USB support on mpc5200 broken
+References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
+	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
+	<1222307447.8277.147.camel@pasglop>
+	<48E02FD0.8000809@genesi-usa.com>
+	<20080929034329.GB8694@yookeroo.seuss>
+In-Reply-To: <20080929034329.GB8694@yookeroo.seuss>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,30 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 30 Sep 2008 09:50:58 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
-> 
-> On Sep 30, 2008, at 9:29 AM, Martyn Welch wrote:
-> 
-> >
-> > arch/powerpc/boot/dts/gef_sbc610.dts     |   38 ++++
-> > arch/powerpc/platforms/86xx/gef_sbc610.c |   25 +++
-> > arch/powerpc/sysdev/Makefile             |    2
-> > arch/powerpc/sysdev/gef_pic.c            |  258 +++++++++++++++++++++ 
-> > +++++++++
-> > arch/powerpc/sysdev/gef_pic.h            |   11 +
-> 
-> The gef_pic should really live in platforms/86xx/ since its specific  
-> to your board.
-> 
 
-Ah, ok. I'll move it and resubmit.
+David Gibson wrote:
+> 
+> This, of course, is exactly why I *don't* recommend embedded platforms
+> move to including the device tree in the flashed firmware.  Keeping
+> the device tree in the bootwrapper means that it *is* updated with the
+> kernel and we don't have to mess around with as much backwards
+> compatibility junk.
 
-> - k
+Pardon my language, but this is such bullshit.
 
+This isn't "including a device tree in flashed firmware", this is
+"having a real Open Firmware". We don't embed anything in there, it's
+procedurally generated on each boot.
+
+Our whole problem here is that we have a device tree which was fixed
+for production before the device tree specification was nailed down
+for the MPC5200B, and it's still in flux. We can't be expected to
+walk lock-step with a 3 month kernel development cycle and we certainly
+do not appreciate sidelining real firmware in favor of static device
+trees which need to be compiled *per board*.
+
+All the FDT does is move a lot of extra hardcoded values out of the
+kernel and into a just-as-annoying extra file you need to be wary of
+keeping up to date since the format and specification changes so much.
+
+We never had this much whining about Apple's device tree, people just
+implemented the workarounds..
 
 -- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
