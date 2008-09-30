@@ -1,21 +1,27 @@
-Return-Path: <rmachet@slac.stanford.edu>
-Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
-	[134.79.18.120])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4A134DE4D1
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 02:28:03 +1000 (EST)
-Subject: Re: New dma-noncoherent code, looking for comment and people to test
-From: Remi Machet <rmachet@slac.stanford.edu>
-To: benh@kernel.crashing.org
-In-Reply-To: <1222759271.9006.45.camel@pasglop>
-References: <1222709165.8628.4.camel@pcds-ts102.slac.stanford.edu>
-	<1222759271.9006.45.camel@pasglop>
-Content-Type: text/plain
-Date: Tue, 30 Sep 2008 09:27:58 -0700
-Message-Id: <1222792079.8628.18.camel@pcds-ts102.slac.stanford.edu>
-Mime-Version: 1.0
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>
+Return-Path: <tmarri@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 4A3C9DDF0D
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 02:57:11 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Disabling L1 D-cache and side effects
+Date: Tue, 30 Sep 2008 09:57:00 -0700
+Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C06053428@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <1222758980.9006.43.camel@pasglop>
+References: <9323BAFB78DE7C4183466AD03F73EA424D46071D@SDCEXCHANGE01.ad.amcc.com>
+	<AC5E1C3367E37D44970B81A6ADD1DA2C060530C1@SDCEXCHANGE01.ad.amcc.com>
+	<20080929180455.GA19014@lixom.net>
+	<AC5E1C3367E37D44970B81A6ADD1DA2C060531D6@SDCEXCHANGE01.ad.amcc.com>
+	<20080929211401.GA22039@lixom.net>
+	<AC5E1C3367E37D44970B81A6ADD1DA2C0605320F@SDCEXCHANGE01.ad.amcc.com>
+	<1222758980.9006.43.camel@pasglop>
+From: "Tirumala Reddy Marri" <tmarri@amcc.com>
+To: <benh@kernel.crashing.org>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +31,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-09-30 at 17:21 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2008-09-29 at 10:26 -0700, Remi Machet wrote:
-> > 
-> > I also removed the HIGHMEM support in dma_sync since memory allocated for
-> > DMA transfer should always be in ZONE_DMA (ie not in ZONE_HIGHMEM).
-> 
-> While I like the idea of simplifying that stuff, the above sentence is
-> incorrect unfortunately.
-> 
-> ZONE_DMA is an artifact of x86 ISA DMA limitations. You -will- get
-> request for mapping pages for DMA that have been allocated within
-> different zones (notably highmem).
-> 
-> The problem with highmem is that whether you can or not DMA to/from
-> highmem is somewhat unclear, drivers set flags individually in various
-> layers to allow it, which is definitely not the right place to do so. So
-> while it would be nice to think we never will, in practice, we do.
-> 
+=20
+Ben,
+  Thanks for the response. I am wondering how user space would get
+affected by absence of L1 Dcache.
+Thanks,
+Marri
 
-Yes, I realized that looking at the changes Becky's made. I will put
-back the highmem support when merging my changes with those.
+-----Original Message-----
+From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]=20
+Sent: Tuesday, September 30, 2008 12:16 AM
+To: Tirumala Reddy Marri
+Cc: Olof Johansson; linuxppc-dev@ozlabs.org
+Subject: RE: Disabling L1 D-cache and side effects
 
-Thanks!
+On Mon, 2008-09-29 at 14:38 -0700, Tirumala Reddy Marri wrote:
+> Could you please point me to the which does the Critical error=20
+> (Machine
+> Check) recovery. BTW I am successful booting the Linux until rootfs is
 
-Remi
+> being mounted. It fails to mount the Linux saying that blocks are=20
+> corrupted in file system. I had to modify lots of initial bring up=20
+> code to disable D-cache and make sure all TLB's are cache inhibited.=20
+> Ando also made sure none of the misc_32.S , entry_32.S and head.S=20
+> makes any references to d-cache.
+
+Why the heck are you doing that btw ? AFAIK, as Olof says, things like
+atomic operations will not work, dcbz neither etc... it's likely that
+even if you manage to plaster around all of this in the kernel, whatever
+userspace code you'll try to run in userspace will blow up too...
+
+Cheers,
+Ben.
