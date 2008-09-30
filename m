@@ -1,27 +1,21 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EA313DDDFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 19:56:25 +1000 (EST)
-Date: Tue, 30 Sep 2008 11:55:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: [PATCH] sputrace : use marker_synchronize_unregister()
-Message-ID: <20080930095520.GB7557@elte.hu>
-References: <48E08B05.7030802@cn.fujitsu.com> <20080929082722.GB18663@elte.hu>
-	<20080929151147.GH11245@Krystal> <200809301028.21485.jk@ozlabs.org>
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id D12F5DDF91
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 21:07:27 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so367859ywh.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 04:07:26 -0700 (PDT)
+Message-ID: <c384c5ea0809300407o637814e7kfc94e6fb01479902@mail.gmail.com>
+Date: Tue, 30 Sep 2008 13:07:26 +0200
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "=?ISO-8859-1?Q?Andr=E9_Schwarz?=" <Andre.Schwarz@matrix-vision.de>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: How to prevent embedded ppc reset deadlock? (MPC83xx/85xx)
+In-Reply-To: <c384c5ea0809291505p5a12f5aerd48515cb5c305155@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200809301028.21485.jk@ozlabs.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	Lai Jiangshan <laijs@cn.fujitsu.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	cbe-oss-dev@ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <c384c5ea0809291433j10619a49xe713415f6bb90204@mail.gmail.com>
+	<48E14DAE.9040101@matrix-vision.de>
+	<c384c5ea0809291505p5a12f5aerd48515cb5c305155@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,18 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Andr=E9,
 
-* Jeremy Kerr <jk@ozlabs.org> wrote:
+On Tue, Sep 30, 2008 at 12:05 AM, Leon Woestenberg
+<leon.woestenberg@gmail.com> wrote:
+>> Since you also have to assert HRESET when you assert PORESET
+>>
+> But when I assert PORESET, the processor will assert HRESET itself
+> AFAIK, so why do this?
+>
+>> you can wire-or them with a low drop schottky diode.
+>>
 
-> Mathieu,
-> 
-> > We need a marker_synchronize_unregister() before the end of exit() to
-> > make sure every probe callers have exited the non preemptible section
-> > and thus are not executing the probe code anymore.
-> 
-> Looks good - added to spufs.git.
+MPC8313E PowerQUICC II Pro Integrated Processor Family Reference
+Manual, Rev. 1, section 4.2.2, page 4-6:
 
-that wont work very well as the patch relies on the new 
-marker_synchronize_unregister() facility.
+"Directly after the negation of PORESET, the device starts the
+configuration process. The device asserts HRESET throughout the
+power-on reset process, including configuration"
 
-	Ingo
+So, I will not drive HRESET myself but depend on the ppc to drive it for me=
+.
+
+Regards,
+--=20
+Leon
