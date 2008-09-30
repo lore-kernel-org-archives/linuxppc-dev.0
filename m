@@ -1,29 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A3DD3DDDF5
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 08:56:26 +1000 (EST)
-Subject: RE: Disabling L1 D-cache and side effects
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tirumala Reddy Marri <tmarri@amcc.com>
-In-Reply-To: <AC5E1C3367E37D44970B81A6ADD1DA2C060535A8@SDCEXCHANGE01.ad.amcc.com>
-References: <9323BAFB78DE7C4183466AD03F73EA424D46071D@SDCEXCHANGE01.ad.amcc.com>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C060530C1@SDCEXCHANGE01.ad.amcc.com>
-	<20080929180455.GA19014@lixom.net>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C060531D6@SDCEXCHANGE01.ad.amcc.com>
-	<20080929211401.GA22039@lixom.net>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C0605320F@SDCEXCHANGE01.ad.amcc.com>
-	<1222758980.9006.43.camel@pasglop>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C06053428@SDCEXCHANGE01.ad.amcc.com>
-	<1222810236.9006.54.camel@pasglop>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C060535A8@SDCEXCHANGE01.ad.amcc.com>
-Content-Type: text/plain
-Date: Wed, 01 Oct 2008 08:56:16 +1000
-Message-Id: <1222815376.9006.83.camel@pasglop>
-Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <neko@genesi-usa.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.224])
+	by ozlabs.org (Postfix) with ESMTP id 8991EDDE1B
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 09:08:31 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id s6so75802wxc.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Sep 2008 16:08:29 -0700 (PDT)
+Message-ID: <48E2B16C.6030501@genesi-usa.com>
+Date: Tue, 30 Sep 2008 18:08:28 -0500
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Gerald Van Baren <gvb.linuxppc.dev@gmail.com>
+Subject: Re: Device Tree
+References: <48E07490.9020805@enseirb.fr> <48E09108.4020400@ru.mvista.com>	
+	<48E2444D.1050301@genesi-usa.com>
+	<eee4c0020809301530w20d6d1e4sd2e3542366cc595d@mail.gmail.com>
+In-Reply-To: <eee4c0020809301530w20d6d1e4sd2e3542366cc595d@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: =?UTF-8?B?aHLDqXRpZW4=?= <chretien@enseirb.fr>,
+	=?UTF-8?B?U8OpYmFzdGllbiBD?=, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,87 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-09-30 at 15:26 -0700, Tirumala Reddy Marri wrote:
-> Ben,
->     I got to bring up Linux on one of the 440 processors with out L1
-> dcache to do some bench marking  and compare with  L1 d-cache enabled.  
-> 
-> I am avoiding any references to dcbz ,dcbt and dcbst .   Also the TLB's
-> are created with cache inhibited. I looked at lwarx/stwcx description,
-> there seem to be no dependency on L1 cache.
 
-Ok. Well, they are generally implemented at the L2 level but maybe not
-on 440, architecturally, they must be used on cacheable memory but it's
-possible that 440 being not SMP coherent, the actual implementation of
-those is too dumb to care.
+Gerald Van Baren wrote:
+> Matt Sealey wrote:
+ >>
+>> The Toshiba TOPAS910 ARM development board also runs Open Firmware and
+>> contains patches to support OF device trees.
+>>
+>> I dare say there might be an x86 box or two out there, too. But they
+>> have ACPI tables too which is far more common..
+> 
+> More than a box or two: lots of OLPC XOs out there now.  ;-)
+>     <http://wiki.laptop.org/go/Open_Firmware>
 
-> I don't see any critical exceptions or traps. All I  see is /init/bin
-> failing to execute because data is corrupted. 
+I was thinking more in a platform kind of numbers rather than a sales
+kind of numbers, but you're right.
 
-Have you properly replaced dcbz with multiple stores ? I did some bring
-up work internally on some stuff where dcbz wasn't quite there yet and
-one pitfall to be careful is that if you force-enable the alternate
-CONFIG_8xx implementation in the various copy & memset routines in
-arch/powerpc/lib, you also need to fix those implementations to copy
-or clear 32 bytes instead of just 16, as 8xx has 16 byte cache lines.
+It's far more common than people might think at first glance. With x86
+I am sure it would benefit the platform a little more if the OF support
+was in-line with the shared code between PPC and SPARC (and now I guess,
+ARM) but nevertheless it's an Open Firmware platform and something that
+appeared not too long ago.
 
-Typically failing to do so causes things like memset to fail to properly
-clear things such as page tables and thus random crap occurs.
+OF is still a going concern; if you want a nice flexible firmware, why
+not use it? Most of the implementations are open source (FirmWorks and
+CodeGen trees, and the Sun reference design) too.
 
-Cheers,
-Ben.
-
-> Thanks,
-> Marri
-
-> 
-> -----Original Message-----
-> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org] 
-> Sent: Tuesday, September 30, 2008 2:31 PM
-> To: Tirumala Reddy Marri
-> Cc: Olof Johansson; linuxppc-dev@ozlabs.org
-> Subject: RE: Disabling L1 D-cache and side effects
-> 
-> On Tue, 2008-09-30 at 09:57 -0700, Tirumala Reddy Marri wrote:
-> > Ben,
-> >   Thanks for the response. I am wondering how user space would get 
-> > affected by absence of L1 Dcache.
-> 
-> You didn't answer my question :-)
-> 
-> Well, as I said, things like lwarx/stwcx not working, dcbz taking
-> alignment exceptions, etc...
-> 
-> Ben.
-> 
-> > Thanks,
-> > Marri
-> > 
-> > -----Original Message-----
-> > From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
-> > Sent: Tuesday, September 30, 2008 12:16 AM
-> > To: Tirumala Reddy Marri
-> > Cc: Olof Johansson; linuxppc-dev@ozlabs.org
-> > Subject: RE: Disabling L1 D-cache and side effects
-> > 
-> > On Mon, 2008-09-29 at 14:38 -0700, Tirumala Reddy Marri wrote:
-> > > Could you please point me to the which does the Critical error 
-> > > (Machine
-> > > Check) recovery. BTW I am successful booting the Linux until rootfs 
-> > > is
-> > 
-> > > being mounted. It fails to mount the Linux saying that blocks are 
-> > > corrupted in file system. I had to modify lots of initial bring up 
-> > > code to disable D-cache and make sure all TLB's are cache inhibited.
-> > > Ando also made sure none of the misc_32.S , entry_32.S and head.S 
-> > > makes any references to d-cache.
-> > 
-> > Why the heck are you doing that btw ? AFAIK, as Olof says, things like
-> 
-> > atomic operations will not work, dcbz neither etc... it's likely that 
-> > even if you manage to plaster around all of this in the kernel, 
-> > whatever userspace code you'll try to run in userspace will blow up
-> too...
-> > 
-> > Cheers,
-> > Ben.
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
