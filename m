@@ -1,20 +1,29 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id E2628DDE1B
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 04:09:49 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m33so344287wag.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 01 Oct 2008 11:09:48 -0700 (PDT)
-Date: Wed, 1 Oct 2008 14:08:35 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Niklaus Giger <niklaus.giger@member.fsf.org>
-Subject: Re: [PATCH] Added preliminary support for Netstal HCU4 board
-Message-ID: <20081001180835.GA7601@yoda.jdub.homelinux.org>
-References: <200810011947.16543.niklaus.giger@member.fsf.org>
+Return-Path: <mohan@in.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E3184DDF13
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 04:26:19 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m91IQDuF012090
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Oct 2008 14:26:13 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m91IP43C204442
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Oct 2008 14:25:04 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m91IP4oj002896
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Oct 2008 14:25:04 -0400
+Date: Wed, 1 Oct 2008 23:55:01 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
+To: paulus@samba.org
+Subject: [PATCH] Fix kdump kernel hang issue with relocatable kernel patches
+Message-ID: <20081001182501.GA20319@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200810011947.16543.niklaus.giger@member.fsf.org>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, kexec@lists.infradead.org
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,109 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 01, 2008 at 07:47:16PM +0200, Niklaus Giger wrote:
->Adds preliminary support for a HCU4 PPC405GPr based board from
->Netstal Maschinen AG.
->
->For the last 3 years I have been the only user running Linux on this board, 
->but it served me well as testbed for the xenomai realtime extension to the 
->Linux kernel.
+One of the relocatable kernel support patches assumes that the target
+address will be 0. But for kdump kernels (without relocation support) it
+will be 32MB. The following patch fixes this issue.
 
-Overall, really nice for a first submission.
+Fix kdump kernel issue
 
->Patch against the  git://www.denx.de/git/linux-2.6-denx.git
+Kdump kernel without relocation support needs to be moved to
+PHYSICAL_START (ie 32MB) instead of 0. This patch fixes this
+issue.
 
-Can you rebase against:
+Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
+---
+ arch/powerpc/kernel/head_64.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
-
-?
-
->diff --git a/arch/powerpc/boot/dts/hcu4.dts b/arch/powerpc/boot/dts/hcu4.dts
->new file mode 100644
->index 0000000..a954165
->--- /dev/null
->+++ b/arch/powerpc/boot/dts/hcu4.dts
->@@ -0,0 +1,175 @@
->+/*
->+ * Device Tree Source for Netstal Maschinen HCU4
->+ * based on the IBM Walnut
-
-<snip>
-
-We want dts-v1 files in the kernel now.  It's a much
-cleaner represenation.  See the DTS files in the git repo
-I pointed to above for examples.  I think there are 
-conversion scripts as well.
-
->+/ {
->+	#address-cells = <1>;
->+	#size-cells = <1>;
->+	model = "ibm,hcu4";
->+	compatible = "ibm,hcu4";
-
-These shouldn't be "ibm,hcu4".  IBM didn't make these boards.
-Instead, you should make them "<company>,<board>", where
-<company> is the company that made them (often the stock ticker
-is used), and <board> is obviously hcu4 in this case.
-
->+	dcr-parent = <&/cpus/cpu@0>;
->+
->+	aliases {
->+		ethernet0 = &EMAC;
->+		serial0 = &UART0;
->+	};
->+
->+	cpus {
->+		#address-cells = <1>;
->+		#size-cells = <0>;
->+
->+		cpu@0 {
->+			device_type = "cpu";
->+			model = "PowerPC,405GPr";
->+			reg = <0>;
->+			clock-frequency = <bebc200>; /* Filled in by zImage */
-
-Still filled in, or is the comment bogus now?
-
-<snip>
-
->diff --git a/arch/powerpc/platforms/40x/Kconfig 
->b/arch/powerpc/platforms/40x/Kconfig
->index a9260e2..3bf4eb5 100644
->--- a/arch/powerpc/platforms/40x/Kconfig
->+++ b/arch/powerpc/platforms/40x/Kconfig
->@@ -23,6 +23,14 @@ config EP405
-> 	help
-> 	  This option enables support for the EP405/EP405PC boards.
-> 
->+config HCU4
->+	bool "Hcu4"
->+	depends on 40x
->+	default y
->+	select 405GPr
-
-I think this should have been:
-
-select 405GPR
-
-<snip>
-
->diff --git a/arch/ppc/platforms/4xx/hcu4.h b/arch/ppc/platforms/4xx/hcu4.h
->new file mode 100644
->index 0000000..c05a825
->--- /dev/null
->+++ b/arch/ppc/platforms/4xx/hcu4.h
-
-arch/ppc doesn't exist anymore.  You can drop this file entirely.
-
-<snip>
-
->diff --git a/include/asm-ppc/ibm4xx.h b/include/asm-ppc/ibm4xx.h
->index f56f1f8..71507c6 100644
->--- a/include/asm-ppc/ibm4xx.h
->+++ b/include/asm-ppc/ibm4xx.h
-
-Same comment as above.
-
-josh
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 84856be..8934500 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -1395,7 +1395,7 @@ _STATIC(__after_prom_start)
+  *
+  * Note: This process overwrites the OF exception vectors.
+  */
+-	li	r3,0			/* target addr */
++	LOAD_REG_IMMEDIATE(r3, PHYSICAL_START) /* target addr */
+ 	mr.	r4,r26			/* In some cases the loader may  */
+ 	beq	9f			/* have already put us at zero */
+ 	lis	r5,(copy_to_here - _stext)@ha
+-- 
+1.5.5.1
