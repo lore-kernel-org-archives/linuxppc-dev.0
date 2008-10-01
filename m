@@ -1,21 +1,33 @@
-Return-Path: <miltonm@bga.com>
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 28D50DDDEF
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 15:30:52 +1000 (EST)
-In-Reply-To: <48E26025.9030208@linutronix.de>
-References: <20080923195404.GA10935@www.tglx.de>
-	<200809240124.m8O1O2QK076012@sullivan.realtime.net>
-	<20080929200448.GA23025@www.tglx.de>
-	<5162f4985b6fa3ced7fe8670cdae926a@bga.com>
-	<48E26025.9030208@linutronix.de>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <fb72ceaf3497dca282cd7fe03f202eca@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [RFC] powerpc/boot: add kernel,end node to the cuboot target
-Date: Wed, 1 Oct 2008 00:33:15 -0500
-To: Sebastian Siewior <bigeasy@linutronix.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-cn0ut-4.online-age.net (ext-cn0ut-4.online-age.net
+	[63.210.253.233])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ext-cn0ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id ED204DDE1D
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 17:55:17 +1000 (EST)
+Received: from int-cn0ut-2.online-age.net (int-cn0ut-2.online-age.net
+	[3.159.252.71])
+	by ext-cn0ut-4.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id m917tEWV009901
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Oct 2008 03:55:14 -0400
+Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-2.online-age.net
+	[3.159.252.71])
+	by int-cn0ut-2.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m917tEmn023449
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Oct 2008 03:55:14 -0400
+Date: Wed, 1 Oct 2008 08:56:30 +0100
+From: Martyn Welch <martyn.welch@gefanuc.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: GE Fanuc's FPGA based PIC controller on the
+	SBC610
+Message-Id: <20081001085630.649e85a0.martyn.welch@gefanuc.com>
+In-Reply-To: <20080930170847.GA25725@ld0162-tx32.am.freescale.net>
+References: <20080930142942.28193.943.stgit@ubuntu8041.localdomain>
+	<20080930170847.GA25725@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,112 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sep 30, 2008, at 12:21 PM, Sebastian Siewior wrote:
-> Milton Miller wrote:
->>> |load: entry = 0x80053c flags = 0
->>> |nr_segments = 2
->>> |segment[0].buf   = 0x1002b8f0
->>> |segment[0].bufsz = 80
->>> |segment[0].mem   = (nil)
->>> |segment[0].memsz = 1000
->>> |segment[1].buf   = 0x4803f008
->>> |segment[1].bufsz = 3a3138
->>> |segment[1].mem   = 0x800000
->>> |segment[1].memsz = 3b0000
->> I would expect a third segment (kernel/zImage, dtb, and purgatory), 
->> but its not clear that you are getting that far yet.
->
-> segment 0 looks like a small segment which should create "boot loader 
-> environment". That one does nothing.
-> Segment 1 is my cuImage. What is purgatory?
+On Tue, 30 Sep 2008 12:08:47 -0500
+Scott Wood <scottwood@freescale.com> wrote:
+> On Tue, Sep 30, 2008 at 03:29:42PM +0100, Martyn Welch wrote:
+> > +		gef_pic: pic@4,4000 {
+> > +			#interrupt-cells = <2>;
+> 
+> What is the second interrupt cell for, given that all interrupts are
+> level-triggered and you don't implement .set_type?
+> 
 
-Purgatory is the code that runs between the old kernel exiting and the 
-new image loading.   Its supposed to be where any registers, dynamic 
-memory structures, etc get set before calling the image supplied to 
-kexec user space.   Its built as part of the kexec-tools suite as a 
-completley relocatable elf and selected and edited based on type of 
-image being loaded.  For powerpc64 it is where we take the "boot" / 
-master cpu's physical id from r3, put it in the dtb header, and load 
-the address of r3 with the dtb before going into the kernel (for 
-vmlinux, and could do for zImage but don't have support upstream).  If 
-you were booting a cuImage (as opossed to the code you are aparently 
-running, which is what grant called simple image, effectively), then 
-you would set any registers uboot leaves behind in this code.
+An error I guess. Queue v3 ;-)
 
-The standard code supplied by kexec-tools also calculates a checkum 
-(sha1) of each loaded segment (except itself) and checks that vs the 
-sum calculated by kexec-tools userspace (printing a message that on 
-powerpc has no way to be displayed then going into an infinite 
-spinloop.  Oh well, I digress.) and also where, for kdump, any memory 
-backup copy is performed when a specific memory segment is needed to 
-boot (eg initial page for ppc64 and classic32 that require interrupt 
-(exception) vectors to be in page 0-2).
+Thanks,
 
-The powerpc64 code reads the existing device tree from 
-/proc/device-tree and modifies a few things (initrd start, end, 
-bootargs = command line, and (for kdump) which memory is available and 
-usable to the kernel (vs reserved because it was used for the old 
-kernel, whose image we want to dump, and which could be under dma).
+Martyn
+
+> -Scott
 
 
->>> Now. The entry address in image->start is valid and is the 
->>> entrypoint of
->>> the "custom" cuImage. Custom means that it does not depend any 
->>> register
->>> values passed from u-boot (the original one needs a pointer to bd_t).
->>> The only requirement is a valid 1:1 memory mapping.
->> ok sounds good.  does this have the dtb in it too?
-> Yes it does.
-
-ok.   sounds like a simple image then ... ok to start with, but 
-eventually we want to dtb passed via the tool so we can set command 
-line etc.
-
-I actually developed the powerpc 64 code this way to, and let someone 
-else make the standard tool work.  But the standard tool is useful.
-
->>> The branch above is taken, so I've found my current mapping
->> ok, but should you not be using PID0 explictly to say global only?
-> The kernel mapping should only be global and therefore that might be a 
-> good idea.
->
->> obviously, a jtag or similar hardware debugger would be best.  Second
-> I have here CodeWarrior usb tap but after more than one hour playing 
-> with that thing I started to hack assembly char put. It helper more :) 
-> kexec seems to work now :) I get "nobody cared irq X" from time to 
-> time so I thing I have to fix here something.....
-
-kexec is a bit harder than kdump in that you have to make sure all 
-devices have shutdown handlers.   Easier for those that are modules 
-that can be loaded and unloaded (make sure they have a shutdown method 
-that is comparable to unload, or even unload in a script to test).   
-kdump is harder in that while the dma is left running in the old 
-kernel, the new kernel has to fit in the cracks left over, and has to 
-initialize devices that were not shutdown.
-
->> As a final note, it looks like you are currently replacing the code 
->> in relocate_new_kernel with book-e code.  Obviously this will need 
->> refinement to select or move to heat_xx to merge.
-> Yep, this is next what is going to happen. I would prefer to have them 
-> runtime switchable instead of build depend.
-
-well, I am thinking that we will end up with one exit condition for all 
-book-e, one for classic 32, and one for powerpc64.   I don't understand 
-what you think should be runtime switchable, unless you were thinking 
-about code that should be in purgatory (supplied by userspace as far as 
-the kernel is concerned).
-
-Remember the exit point of the kernel is a single entry point (we cheat 
-and make it 2 on powerpc64, one for master and a second for slaves, 
-although for book-e we could follow epapr instead), and specified pages 
-of memory with user specified content.  The state is supposed to be an 
-emulation of "mmu off", not "I just ran uboot and am its client 
-loader".
-
->> Again, I don't have any direct experience, but mauybe this gives you 
->> some ideas.
-> Your hints helped. Thx for that.
-
-sure.   Maybe the new hits about purgatory will keep you on track too.
-
-milton
+-- 
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
