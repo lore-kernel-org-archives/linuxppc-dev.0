@@ -1,15 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 1 Oct 2008 11:17:53 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: Re: [PATCH v2] powerpc: GE Fanuc's FPGA based PIC controller on
-	the SBC610
-Message-ID: <20081001011753.GA30810@yookeroo.seuss>
-References: <20080930153058.29602.28885.stgit@ubuntu8041.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080930153058.29602.28885.stgit@ubuntu8041.localdomain>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4F33BDDE0D
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 13:46:39 +1000 (EST)
+Subject: Re: Device Tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matt Sealey <matt@genesi-usa.com>
+In-Reply-To: <48E2B16C.6030501@genesi-usa.com>
+References: <48E07490.9020805@enseirb.fr> <48E09108.4020400@ru.mvista.com>
+	<48E2444D.1050301@genesi-usa.com>
+	<eee4c0020809301530w20d6d1e4sd2e3542366cc595d@mail.gmail.com>
+	<48E2B16C.6030501@genesi-usa.com>
+Content-Type: text/plain
+Date: Wed, 01 Oct 2008 13:24:55 +1000
+Message-Id: <1222831495.12264.2.camel@pasglop>
+Mime-Version: 1.0
+Cc: =?ISO-8859-1?Q?hr=E9tien?= <chretien@enseirb.fr>,
+	=?UTF-8?B?U8OpYmFzdGllbiBD?=@ozlabs.org, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,63 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 30, 2008 at 04:34:56PM +0100, Martyn Welch wrote:
-> Support for the SBC610 VPX Single Board Computer from GE Fanuc (PowerPC MPC8641D).
+On Tue, 2008-09-30 at 18:08 -0500, Matt Sealey wrote:
+> It's far more common than people might think at first glance. With x86
+> I am sure it would benefit the platform a little more if the OF support
+> was in-line with the shared code between PPC and SPARC (and now I guess,
+> ARM) but nevertheless it's an Open Firmware platform and something that
+> appeared not too long ago.
 > 
-> A number of MPC8641D based route interrupts for on-board interrupts through
-> a FPGA based interrupt controller, which is chained with the
-> MPC8641D's mpic. This patch provides a basic driver to allow basic routing
-> of interrupts to the mpic.
-> 
-> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
-> ---
-> 
-> Kumar: Thank you for you fast response.
-> 
-> Change for version 2:
->  * Driver moved from sysdev to platform/86xx
-> 
->  arch/powerpc/boot/dts/gef_sbc610.dts     |   38 ++++
->  arch/powerpc/platforms/86xx/Makefile     |    2 
->  arch/powerpc/platforms/86xx/gef_pic.c    |  258 ++++++++++++++++++++++++++++++
->  arch/powerpc/platforms/86xx/gef_pic.h    |   11 +
->  arch/powerpc/platforms/86xx/gef_sbc610.c |   25 +++
->  5 files changed, 328 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/gef_sbc610.dts b/arch/powerpc/boot/dts/gef_sbc610.dts
-> index 80b79e4..d7a591b 100644
-> --- a/arch/powerpc/boot/dts/gef_sbc610.dts
-> +++ b/arch/powerpc/boot/dts/gef_sbc610.dts
-> @@ -67,6 +67,36 @@
->  		reg = <0x0 0x40000000>;	// set by uboot
->  	};
->  
-> +	localbus@fef05000 {
-> +		#address-cells = <2>;
-> +		#size-cells = <1>;
-> +		compatible = "fsl,mpc8641-localbus", "simple-bus";
-> +		reg = <0xf8005000 0x1000>;
-> +		interrupts = <19 2>;
-> +		interrupt-parent = <&mpic>;
-> +
-> +		ranges = <0 0 0xff000000 0x01000000     // 16MB Boot flash
-> +			  1 0 0xe8000000 0x08000000     // Paged Flash 0
-> +			  2 0 0xe0000000 0x08000000     // Paged Flash 1
-> +			  3 0 0xfc100000 0x00020000     // NVRAM
-> +			  4 0 0xfc000000 0x00008000     // FPGA
-> +			  5 0 0xfc008000 0x00008000     // AFIX FPGA
-> +			  6 0 0xfd000000 0x00800000     // IO FPGA (8-bit)
-> +			  7 0 0xfd800000 0x00800000>;   // IO FPGA (32-bit)
-> +
-> +		gef_pic: pic@4,4000 {
-> +			#interrupt-cells = <2>;
-> +			interrupt-controller;
-> +			device_type = "interrupt-controller";
+> OF is still a going concern; if you want a nice flexible firmware, why
+> not use it? Most of the implementations are open source (FirmWorks and
+> CodeGen trees, and the Sun reference design) too.
 
-I don't think you should need this device_type.
+And SLOF :-)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Cheers,
+Ben.
