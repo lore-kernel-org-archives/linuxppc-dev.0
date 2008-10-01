@@ -1,22 +1,22 @@
-Return-Path: <venkatakrishnap@vrindatech.com>
-Received: from server.indiadomain.com (server.indiadomain.com [69.50.220.104])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D5AD3DDE19
+Return-Path: <rlefevre@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
+	by ozlabs.org (Postfix) with ESMTP id 4D719DDDEF
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Oct 2008 14:38:12 +1000 (EST)
-Received: from [122.169.155.6] (helo=venkatakrishna)
-	by server.indiadomain.com with esmtpa (Exim 4.69)
-	(envelope-from <venkatakrishnap@vrindatech.com>) id 1KktTT-0006en-1v
-	for linuxppc-embedded@ozlabs.org; Tue, 30 Sep 2008 21:38:07 -0700
-From: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: linux in kernel
-Date: Wed, 1 Oct 2008 10:01:46 +0530
+	Wed,  1 Oct 2008 23:36:06 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m33so284208wag.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 01 Oct 2008 06:36:05 -0700 (PDT)
+Message-ID: <4e0b9cb00810010636h10c0d1fw3385ecf1f0a27be5@mail.gmail.com>
+Date: Wed, 1 Oct 2008 15:36:05 +0200
+From: "Remi Lefevre" <rlefevre@gmail.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: FS_ENET ERROR(s) 0x12 at second NFS RPC port lookup (100005/1)
+In-Reply-To: <48E262FF.9020108@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0009_01C923AC.C00C52F0"
-Message-Id: <20081001043812.D5AD3DDE19@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4e0b9cb00809300944r2c2359dbx6df882705106c4d1@mail.gmail.com>
+	<48E262FF.9020108@freescale.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,115 +27,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Scott Wood  wrote:
+>>
+>> [    5.573391] fs_enet: eth0 FS_ENET ERROR(s) 0x12
+>
+> This is a transmit error; more detail can be found in the buffer descript=
+or.
+>
+> Check your pin and clock configuration.
 
-------=_NextPart_000_0009_01C923AC.C00C52F0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Thanks Scott,
 
-Hi All,
+Errors encountered are "Underrun" errors (from bd).
+A "do_restart" in the driver is then tried, but this has no effect.
 
- 
+I'm pretty confident about my pin configuration as:
+- I have exactly the same behavior on other FCC devices
+- They work fine in U-Boot TFTP transfers
+- FCC2 pins for example are identical to ep8248e ones included in the kerne=
+l
 
- When compiling linux-2.6.26.3 kernel in ELDK Kit 4.0. I got undefined
-reference to platform_init in the function DoSyscall of
-arch/ppc/kernel/entry.S file.
+I also think that cpm2_clk_setup calls are correct (and commenting them to =
+keep
+the configuration set by U-Boot leads to the same results).
 
-How can I solve this problem. How follow sequence of Linux booting up to
-serial console.
+Concerning clocks, they are identical to U-Boot ones:
+Bus clock =3D 82.944 MHz
 
- 
+[    0.000000] time_init: decrementer frequency =3D 20.736000 MHz
+[    0.000000] time_init: processor frequency   =3D 414.720000 MHz
+[    0.000000] clocksource: timebase mult[c0e6b75] shift[22] registered
+[    0.000000] clockevent: decrementer mult[54e] shift[16] cpu[0]
+[    0.000351] cpm-brg clock frequency =3D 36.288000 MHz
+[    0.554442] Calibrating delay loop... 41.34 BogoMIPS (lpj=3D82688)
 
-Thanks and Regards 
+CPM clock-frequency is not defined in the DTS, neither filled by U-Boot,
+but it doesn't seem to be needed, does it ?
 
+I'm a little confused, and find strange that the first UDP request complete=
+s
+correctly, as well as latter ARP ones.
 
-------=_NextPart_000_0009_01C923AC.C00C52F0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:"MS Mincho";
-	panose-1:2 2 6 9 4 2 5 8 3 4;}
-@font-face
-	{font-family:"\@MS Mincho";
-	panose-1:0 0 0 0 0 0 0 0 0 0;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi All,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;When compiling linux-2.6.26.3 kernel in ELDK =
-Kit 4.0. I
-got undefined reference to platform_init in the function DoSyscall of =
-arch/ppc/kernel/entry.S
-file.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>How can I solve this problem. How follow sequence of =
-Linux
-booting up to serial console.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks and Regards <o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0009_01C923AC.C00C52F0--
+R=E9mi
