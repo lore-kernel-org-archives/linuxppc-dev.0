@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: RE: USB support on mpc5200 broken
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Carsten Schlote <c.schlote@konzeptpark.de>
-In-Reply-To: <46597312D56D2A47A3A6E9C1D0D9B7AE012A7431@kpladc0001.konzeptpark.intra>
-References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
-	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
-	<1222307447.8277.147.camel@pasglop> <48E02FD0.8000809@genesi-usa.com>
-	<20080929034329.GB8694@yookeroo.seuss>
-	<9e4733910809290714td2dc6cclecf2e2b080a80ca1@mail.gmail.com>
-	<48E243C5.7000100@genesi-usa.com> <1222831901.12264.8.camel@pasglop>
-	<46597312D56D2A47A3A6E9C1D0D9B7AE012A7431@kpladc0001.konzeptpark.intra>
-Content-Type: text/plain
-Date: Wed, 01 Oct 2008 20:36:36 +1000
-Message-Id: <1222857396.12264.27.camel@pasglop>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 963A1DDED6
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Oct 2008 21:23:15 +1000 (EST)
+Date: Wed, 1 Oct 2008 13:22:48 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 1/2] OF: add fsl,mcu-mpc8349emitx to the exception list
+Message-ID: <20081001132248.191e92b3@hyperion.delvare>
+In-Reply-To: <20080930124424.GA6878@oksana.dev.rtsoft.ru>
+References: <20080923141219.GA31262@oksana.dev.rtsoft.ru>
+	<20080930124424.GA6878@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+	Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-10-01 at 11:46 +0200, Carsten Schlote wrote:
+Hi Anton,
+
+On Tue, 30 Sep 2008 16:44:24 +0400, Anton Vorontsov wrote:
+> On Tue, Sep 23, 2008 at 06:12:19PM +0400, Anton Vorontsov wrote:
+> > of/base.c matches on the first (most specific) entries, which isn't
+> > quite practical but it was discussed[1] that this won't change.
+> > 
+> > The bindings specifies verbose information for the devices, but
+> > it doesn't fit in the I2C ID's 20 characters limit. The limit won't
+> > change[2], and the bindings won't change either as they're correct.
+> > 
+> > So we have to put an exception for the MPC8349E-mITX-compatible
+> > MCUs.
+> > 
+> > [1] http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg21196.html
+> > [2] http://www.nabble.com/-PATCH-1-2--i2c:-expand-I2C's-id.name-to-23-characters-td19577063.html
+> > 
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> >  drivers/of/base.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> 
-> The framebuffer use-case is currently the only one, where such a
-> hardware-swapper could be really useful. But still the drivers would
-> have to know about this feature, it would require query/set macros/fcts
-> for endian translation modes in the kernel, ... - in short it causes
-> lots of extra overhead. And for framebuffers the need for such hard-ware
-> swappers can be eleminated by using the right framebuffer mode.
+> Any issues with this or the second patch? Can we merge them?
 
-Actually, fb's are -the- case where it's really necessary to have endian
-swappers when they sit on PCI due to the way byte lanes are swapped on a
-PCI host bridge on a BE platform, if you want to keep the same pixel
-order as an x86 which is usually not only all that cards support, while
-still having SW use native order which is usually all that the X server
-supports :-)
+I do not have the time to review these patches (and, honestly, have no
+interest in them.) So I will not merge them but I have no objection to
+them being merged by somebody else.
 
-> I fear, that such hard-wired 'magic' swapping is the source and reason
-> for some of my current problems.
-
-I wouldn't be surprised. The worst case I've seen is HW engineers trying
-to be too smart for their own good and swapping the byte lanes of >8
-bits data stream fifo's such as IDE (yeah, it makes the IDE ID block
-more directly readable, at the expense of swapping all the data
-effectively preventing the use of DMA unless you are fine with a custom
-on-disk format incompatible with everything else).
-
-Cheers,
-Ben.
+-- 
+Jean Delvare
