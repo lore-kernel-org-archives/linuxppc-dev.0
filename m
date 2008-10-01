@@ -1,31 +1,20 @@
-Return-Path: <tmarri@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id B0974DDDD8
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 04:07:23 +1000 (EST)
+Return-Path: <jwboyer@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
+	by ozlabs.org (Postfix) with ESMTP id E2628DDE1B
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 04:09:49 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m33so344287wag.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 01 Oct 2008 11:09:48 -0700 (PDT)
+Date: Wed, 1 Oct 2008 14:08:35 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Niklaus Giger <niklaus.giger@member.fsf.org>
+Subject: Re: [PATCH] Added preliminary support for Netstal HCU4 board
+Message-ID: <20081001180835.GA7601@yoda.jdub.homelinux.org>
+References: <200810011947.16543.niklaus.giger@member.fsf.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Disabling L1 D-cache and side effects
-Date: Wed, 1 Oct 2008 11:07:10 -0700
-Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C0605380A@SDCEXCHANGE01.ad.amcc.com>
-In-Reply-To: <1222815376.9006.83.camel@pasglop>
-References: <9323BAFB78DE7C4183466AD03F73EA424D46071D@SDCEXCHANGE01.ad.amcc.com>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C060530C1@SDCEXCHANGE01.ad.amcc.com>
-	<20080929180455.GA19014@lixom.net>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C060531D6@SDCEXCHANGE01.ad.amcc.com>
-	<20080929211401.GA22039@lixom.net>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C0605320F@SDCEXCHANGE01.ad.amcc.com>
-	<1222758980.9006.43.camel@pasglop>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C06053428@SDCEXCHANGE01.ad.amcc.com>
-	<1222810236.9006.54.camel@pasglop>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C060535A8@SDCEXCHANGE01.ad.amcc.com>
-	<1222815376.9006.83.camel@pasglop>
-From: "Tirumala Reddy Marri" <tmarri@amcc.com>
-To: <benh@kernel.crashing.org>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200810011947.16543.niklaus.giger@member.fsf.org>
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,108 +24,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Oct 01, 2008 at 07:47:16PM +0200, Niklaus Giger wrote:
+>Adds preliminary support for a HCU4 PPC405GPr based board from
+>Netstal Maschinen AG.
+>
+>For the last 3 years I have been the only user running Linux on this board, 
+>but it served me well as testbed for the xenomai realtime extension to the 
+>Linux kernel.
 
+Overall, really nice for a first submission.
 
-Ben,
-  You are right. After I corrected copy_page and __copy_tofrom_user
-functions Linux booted normally. Thanks a lot for the suggestions.
-Thanks,
-Marri
+>Patch against the  git://www.denx.de/git/linux-2.6-denx.git
 
------Original Message-----
-From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]=20
-Sent: Tuesday, September 30, 2008 3:56 PM
-To: Tirumala Reddy Marri
-Cc: Olof Johansson; linuxppc-dev@ozlabs.org
-Subject: RE: Disabling L1 D-cache and side effects
+Can you rebase against:
 
-On Tue, 2008-09-30 at 15:26 -0700, Tirumala Reddy Marri wrote:
-> Ben,
->     I got to bring up Linux on one of the 440 processors with out L1=20
-> dcache to do some bench marking  and compare with  L1 d-cache enabled.
->=20
-> I am avoiding any references to dcbz ,dcbt and dcbst .   Also the
-TLB's
-> are created with cache inhibited. I looked at lwarx/stwcx description,
+git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
 
-> there seem to be no dependency on L1 cache.
+?
 
-Ok. Well, they are generally implemented at the L2 level but maybe not
-on 440, architecturally, they must be used on cacheable memory but it's
-possible that 440 being not SMP coherent, the actual implementation of
-those is too dumb to care.
+>diff --git a/arch/powerpc/boot/dts/hcu4.dts b/arch/powerpc/boot/dts/hcu4.dts
+>new file mode 100644
+>index 0000000..a954165
+>--- /dev/null
+>+++ b/arch/powerpc/boot/dts/hcu4.dts
+>@@ -0,0 +1,175 @@
+>+/*
+>+ * Device Tree Source for Netstal Maschinen HCU4
+>+ * based on the IBM Walnut
 
-> I don't see any critical exceptions or traps. All I  see is /init/bin=20
-> failing to execute because data is corrupted.
+<snip>
 
-Have you properly replaced dcbz with multiple stores ? I did some bring
-up work internally on some stuff where dcbz wasn't quite there yet and
-one pitfall to be careful is that if you force-enable the alternate
-CONFIG_8xx implementation in the various copy & memset routines in
-arch/powerpc/lib, you also need to fix those implementations to copy or
-clear 32 bytes instead of just 16, as 8xx has 16 byte cache lines.
+We want dts-v1 files in the kernel now.  It's a much
+cleaner represenation.  See the DTS files in the git repo
+I pointed to above for examples.  I think there are 
+conversion scripts as well.
 
-Typically failing to do so causes things like memset to fail to properly
-clear things such as page tables and thus random crap occurs.
+>+/ {
+>+	#address-cells = <1>;
+>+	#size-cells = <1>;
+>+	model = "ibm,hcu4";
+>+	compatible = "ibm,hcu4";
 
-Cheers,
-Ben.
+These shouldn't be "ibm,hcu4".  IBM didn't make these boards.
+Instead, you should make them "<company>,<board>", where
+<company> is the company that made them (often the stock ticker
+is used), and <board> is obviously hcu4 in this case.
 
-> Thanks,
-> Marri
+>+	dcr-parent = <&/cpus/cpu@0>;
+>+
+>+	aliases {
+>+		ethernet0 = &EMAC;
+>+		serial0 = &UART0;
+>+	};
+>+
+>+	cpus {
+>+		#address-cells = <1>;
+>+		#size-cells = <0>;
+>+
+>+		cpu@0 {
+>+			device_type = "cpu";
+>+			model = "PowerPC,405GPr";
+>+			reg = <0>;
+>+			clock-frequency = <bebc200>; /* Filled in by zImage */
 
->=20
-> -----Original Message-----
-> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
-> Sent: Tuesday, September 30, 2008 2:31 PM
-> To: Tirumala Reddy Marri
-> Cc: Olof Johansson; linuxppc-dev@ozlabs.org
-> Subject: RE: Disabling L1 D-cache and side effects
->=20
-> On Tue, 2008-09-30 at 09:57 -0700, Tirumala Reddy Marri wrote:
-> > Ben,
-> >   Thanks for the response. I am wondering how user space would get=20
-> > affected by absence of L1 Dcache.
->=20
-> You didn't answer my question :-)
->=20
-> Well, as I said, things like lwarx/stwcx not working, dcbz taking=20
-> alignment exceptions, etc...
->=20
-> Ben.
->=20
-> > Thanks,
-> > Marri
-> >=20
-> > -----Original Message-----
-> > From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
-> > Sent: Tuesday, September 30, 2008 12:16 AM
-> > To: Tirumala Reddy Marri
-> > Cc: Olof Johansson; linuxppc-dev@ozlabs.org
-> > Subject: RE: Disabling L1 D-cache and side effects
-> >=20
-> > On Mon, 2008-09-29 at 14:38 -0700, Tirumala Reddy Marri wrote:
-> > > Could you please point me to the which does the Critical error=20
-> > > (Machine
-> > > Check) recovery. BTW I am successful booting the Linux until=20
-> > > rootfs is
-> >=20
-> > > being mounted. It fails to mount the Linux saying that blocks are=20
-> > > corrupted in file system. I had to modify lots of initial bring up
+Still filled in, or is the comment bogus now?
 
-> > > code to disable D-cache and make sure all TLB's are cache
-inhibited.
-> > > Ando also made sure none of the misc_32.S , entry_32.S and head.S=20
-> > > makes any references to d-cache.
-> >=20
-> > Why the heck are you doing that btw ? AFAIK, as Olof says, things=20
-> > like
->=20
-> > atomic operations will not work, dcbz neither etc... it's likely=20
-> > that even if you manage to plaster around all of this in the kernel,
+<snip>
 
-> > whatever userspace code you'll try to run in userspace will blow up
-> too...
-> >=20
-> > Cheers,
-> > Ben.
+>diff --git a/arch/powerpc/platforms/40x/Kconfig 
+>b/arch/powerpc/platforms/40x/Kconfig
+>index a9260e2..3bf4eb5 100644
+>--- a/arch/powerpc/platforms/40x/Kconfig
+>+++ b/arch/powerpc/platforms/40x/Kconfig
+>@@ -23,6 +23,14 @@ config EP405
+> 	help
+> 	  This option enables support for the EP405/EP405PC boards.
+> 
+>+config HCU4
+>+	bool "Hcu4"
+>+	depends on 40x
+>+	default y
+>+	select 405GPr
+
+I think this should have been:
+
+select 405GPR
+
+<snip>
+
+>diff --git a/arch/ppc/platforms/4xx/hcu4.h b/arch/ppc/platforms/4xx/hcu4.h
+>new file mode 100644
+>index 0000000..c05a825
+>--- /dev/null
+>+++ b/arch/ppc/platforms/4xx/hcu4.h
+
+arch/ppc doesn't exist anymore.  You can drop this file entirely.
+
+<snip>
+
+>diff --git a/include/asm-ppc/ibm4xx.h b/include/asm-ppc/ibm4xx.h
+>index f56f1f8..71507c6 100644
+>--- a/include/asm-ppc/ibm4xx.h
+>+++ b/include/asm-ppc/ibm4xx.h
+
+Same comment as above.
+
+josh
