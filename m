@@ -1,24 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DDFA8DDEF1
+Return-Path: <vbendeb@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id 37E28DDE01
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Oct 2008 01:17:04 +1000 (EST)
-Message-ID: <48E393E6.7000505@freescale.com>
-Date: Wed, 01 Oct 2008 10:14:46 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Thu,  2 Oct 2008 14:38:34 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m33so460919wag.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 01 Oct 2008 21:38:33 -0700 (PDT)
+Message-ID: <f608b67d0810012138w64ba5ecbg1f88fff505c820b7@mail.gmail.com>
+Date: Wed, 1 Oct 2008 21:38:32 -0700
+From: vb <vb@vsbe.com>
+Sender: vbendeb@gmail.com
+To: linuxppc-embedded@ozlabs.org
+Subject: EMAC2 in ibm_newemac driver
 MIME-Version: 1.0
-To: Remi Lefevre <rlefevre@gmail.com>
-Subject: Re: FS_ENET ERROR(s) 0x12 at second NFS RPC port lookup (100005/1)
-References: <4e0b9cb00809300944r2c2359dbx6df882705106c4d1@mail.gmail.com>	
-	<48E262FF.9020108@freescale.com>
-	<4e0b9cb00810010636h10c0d1fw3385ecf1f0a27be5@mail.gmail.com>
-In-Reply-To: <4e0b9cb00810010636h10c0d1fw3385ecf1f0a27be5@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -29,20 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Remi Lefevre wrote:
-> Errors encountered are "Underrun" errors (from bd).
+I have a 460GT based system with three ethernet interfaces, and I
+don't seem to be able to bring up EMAC2 in RGMII mode. The PHY works
+just fine, the counterpart on the other side of the serdes link
+autonegotiates successfully, etc. When I attempt to send something
+from the interface though, nothing shows up on the RGMII lines (I use
+a scope to probe it). The received traffic is passed from the  PHY to
+the MAC, but again, nothing is reported by the rx driver.
 
-Try elevating the arbiter priority for the FCC.
+I am using the latest released code from 2.6.26.5 (I started with
+2.6.25 release, and in that case just EMAC0 worked, updgrading to to
+2.6.26.5 made the second interface work, but the third one seems to be
+stuck. I see that the Denx tree has a lot of changes in the driver,
+but it is not as cleanly portable, so advancing  there is not an
+option.
 
-> CPM clock-frequency is not defined in the DTS, neither filled by U-Boot,
-> but it doesn't seem to be needed, does it ?
+I am trying to debug it, but  am wondering if anyone had more than two
+interfaces going on this architecture and if so - what are the
+gotchas.
 
-Not for ethernet.
+Any hints will be highly appreciated,
 
-> I'm a little confused, and find strange that the first UDP request completes
-> correctly, as well as latter ARP ones.
-
-If it's bus contention (as underrun implies), then it may happen only 
-under load.
-
--Scott
+cheers,
+VadimB
