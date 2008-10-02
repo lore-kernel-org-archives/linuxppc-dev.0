@@ -3,13 +3,13 @@ Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
 	(using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "Messaging Gateway Appliance Demo Cert",
 	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 13137DDF86
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 16:29:16 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 8ADFEDDFEA
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 16:29:29 +1000 (EST)
 From: Victor Gallardo <vgallardo@amcc.com>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: [PATCH 2/3 v3] Add AMCC Arches DTS
-Date: Wed,  1 Oct 2008 23:29:16 -0700
-Message-Id: <1222928956-10152-1-git-send-email-vgallardo@amcc.com>
+Subject: [PATCH 3/3 v3] Add AMCC Arches defconfig file
+Date: Wed,  1 Oct 2008 23:29:26 -0700
+Message-Id: <1222928966-10173-1-git-send-email-vgallardo@amcc.com>
 Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallardo@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -20,317 +20,792 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Basic functionality for the AMCC Arches eval Board.
 
 Signed-off-by: Victor Gallardo <vgallardo@amcc.com>
 ---
  v2:
- - only include basic functionality
+ - remove reference to IBM_NEW_EMAC_RGMII
+ - remove reference to IBM_NEW_EMAC_ZMII
+
  v3:
- - update description header
+ - sync up to use CONFIG_PPC44x_SIMPLE
 
- arch/powerpc/boot/dts/arches.dts |  293 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 293 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/arches.dts
+ arch/powerpc/configs/44x/arches_defconfig |  767 +++++++++++++++++++++++++++++
+ 1 files changed, 767 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/configs/44x/arches_defconfig
 
-diff --git a/arch/powerpc/boot/dts/arches.dts b/arch/powerpc/boot/dts/arches.dts
+diff --git a/arch/powerpc/configs/44x/arches_defconfig b/arch/powerpc/configs/44x/arches_defconfig
 new file mode 100644
-index 0000000..d9113b1
+index 0000000..70f4607
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/arches.dts
-@@ -0,0 +1,293 @@
-+/*
-+ * Device Tree Source for AMCC Arches (dual 460GT board)
-+ *
-+ * (C) Copyright 2008 Applied Micro Circuits Corporation
-+ * Victor Gallardo <vgallardo@amcc.com>
-+ * Adam Graham <agraham@amcc.com>
-+ *
-+ * Based on the glacier.dts file
-+ *   Stefan Roese <sr@denx.de>
-+ *   Copyright 2008 DENX Software Engineering
-+ *
-+ * See file CREDITS for list of people who contributed to this
-+ * project.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+ * MA 02111-1307 USA
-+ */
++++ b/arch/powerpc/configs/44x/arches_defconfig
+@@ -0,0 +1,767 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.27-rc5
++# Wed Oct  1 15:54:57 2008
++#
++# CONFIG_PPC64 is not set
 +
-+/dts-v1/;
++#
++# Processor support
++#
++# CONFIG_6xx is not set
++# CONFIG_PPC_85xx is not set
++# CONFIG_PPC_8xx is not set
++# CONFIG_40x is not set
++CONFIG_44x=y
++# CONFIG_E200 is not set
++CONFIG_PPC_FPU=y
++CONFIG_4xx=y
++CONFIG_BOOKE=y
++CONFIG_PTE_64BIT=y
++CONFIG_PHYS_64BIT=y
++# CONFIG_PPC_MM_SLICES is not set
++CONFIG_NOT_COHERENT_CACHE=y
++CONFIG_PPC32=y
++CONFIG_WORD_SIZE=32
++CONFIG_PPC_MERGE=y
++CONFIG_MMU=y
++CONFIG_GENERIC_CMOS_UPDATE=y
++CONFIG_GENERIC_TIME=y
++CONFIG_GENERIC_TIME_VSYSCALL=y
++CONFIG_GENERIC_CLOCKEVENTS=y
++CONFIG_GENERIC_HARDIRQS=y
++# CONFIG_HAVE_SETUP_PER_CPU_AREA is not set
++CONFIG_IRQ_PER_CPU=y
++CONFIG_STACKTRACE_SUPPORT=y
++CONFIG_HAVE_LATENCYTOP_SUPPORT=y
++CONFIG_LOCKDEP_SUPPORT=y
++CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_ARCH_HAS_ILOG2_U32=y
++CONFIG_GENERIC_HWEIGHT=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
++CONFIG_GENERIC_FIND_NEXT_BIT=y
++# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
++CONFIG_PPC=y
++CONFIG_EARLY_PRINTK=y
++CONFIG_GENERIC_NVRAM=y
++CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
++CONFIG_ARCH_MAY_HAVE_PC_FDC=y
++CONFIG_PPC_OF=y
++CONFIG_OF=y
++CONFIG_PPC_UDBG_16550=y
++# CONFIG_GENERIC_TBSYNC is not set
++CONFIG_AUDIT_ARCH=y
++CONFIG_GENERIC_BUG=y
++# CONFIG_DEFAULT_UIMAGE is not set
++CONFIG_PPC_DCR_NATIVE=y
++# CONFIG_PPC_DCR_MMIO is not set
++CONFIG_PPC_DCR=y
++CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
 +
-+/ {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	model = "amcc,arches";
-+	compatible = "amcc,arches";
-+	dcr-parent = <&{/cpus/cpu@0}>;
++#
++# General setup
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_BROKEN_ON_SMP=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
++CONFIG_LOCALVERSION=""
++CONFIG_LOCALVERSION_AUTO=y
++CONFIG_SWAP=y
++CONFIG_SYSVIPC=y
++CONFIG_SYSVIPC_SYSCTL=y
++CONFIG_POSIX_MQUEUE=y
++# CONFIG_BSD_PROCESS_ACCT is not set
++# CONFIG_TASKSTATS is not set
++# CONFIG_AUDIT is not set
++# CONFIG_IKCONFIG is not set
++CONFIG_LOG_BUF_SHIFT=14
++# CONFIG_CGROUPS is not set
++# CONFIG_GROUP_SCHED is not set
++CONFIG_SYSFS_DEPRECATED=y
++CONFIG_SYSFS_DEPRECATED_V2=y
++# CONFIG_RELAY is not set
++# CONFIG_NAMESPACES is not set
++CONFIG_BLK_DEV_INITRD=y
++CONFIG_INITRAMFS_SOURCE=""
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_SYSCTL=y
++CONFIG_EMBEDDED=y
++CONFIG_SYSCTL_SYSCALL=y
++CONFIG_KALLSYMS=y
++# CONFIG_KALLSYMS_ALL is not set
++# CONFIG_KALLSYMS_EXTRA_PASS is not set
++CONFIG_HOTPLUG=y
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++CONFIG_ELF_CORE=y
++CONFIG_COMPAT_BRK=y
++CONFIG_BASE_FULL=y
++CONFIG_FUTEX=y
++CONFIG_ANON_INODES=y
++CONFIG_EPOLL=y
++CONFIG_SIGNALFD=y
++CONFIG_TIMERFD=y
++CONFIG_EVENTFD=y
++CONFIG_SHMEM=y
++CONFIG_VM_EVENT_COUNTERS=y
++CONFIG_SLUB_DEBUG=y
++# CONFIG_SLAB is not set
++CONFIG_SLUB=y
++# CONFIG_SLOB is not set
++# CONFIG_PROFILING is not set
++# CONFIG_MARKERS is not set
++CONFIG_HAVE_OPROFILE=y
++# CONFIG_KPROBES is not set
++CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
++CONFIG_HAVE_IOREMAP_PROT=y
++CONFIG_HAVE_KPROBES=y
++CONFIG_HAVE_KRETPROBES=y
++CONFIG_HAVE_ARCH_TRACEHOOK=y
++# CONFIG_HAVE_DMA_ATTRS is not set
++# CONFIG_USE_GENERIC_SMP_HELPERS is not set
++# CONFIG_HAVE_CLK is not set
++CONFIG_PROC_PAGE_MONITOR=y
++# CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
++CONFIG_SLABINFO=y
++CONFIG_RT_MUTEXES=y
++# CONFIG_TINY_SHMEM is not set
++CONFIG_BASE_SMALL=0
++CONFIG_MODULES=y
++# CONFIG_MODULE_FORCE_LOAD is not set
++CONFIG_MODULE_UNLOAD=y
++# CONFIG_MODULE_FORCE_UNLOAD is not set
++# CONFIG_MODVERSIONS is not set
++# CONFIG_MODULE_SRCVERSION_ALL is not set
++CONFIG_KMOD=y
++CONFIG_BLOCK=y
++CONFIG_LBD=y
++# CONFIG_BLK_DEV_IO_TRACE is not set
++# CONFIG_LSF is not set
++# CONFIG_BLK_DEV_BSG is not set
++# CONFIG_BLK_DEV_INTEGRITY is not set
 +
-+	aliases {
-+		ethernet0 = &EMAC0;
-+		ethernet1 = &EMAC1;
-+		ethernet2 = &EMAC2;
-+		serial0 = &UART0;
-+	};
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++CONFIG_IOSCHED_AS=y
++CONFIG_IOSCHED_DEADLINE=y
++CONFIG_IOSCHED_CFQ=y
++CONFIG_DEFAULT_AS=y
++# CONFIG_DEFAULT_DEADLINE is not set
++# CONFIG_DEFAULT_CFQ is not set
++# CONFIG_DEFAULT_NOOP is not set
++CONFIG_DEFAULT_IOSCHED="anticipatory"
++CONFIG_CLASSIC_RCU=y
++CONFIG_PPC4xx_PCI_EXPRESS=y
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++#
++# Platform support
++#
++# CONFIG_PPC_CELL is not set
++# CONFIG_PPC_CELL_NATIVE is not set
++# CONFIG_PQ2ADS is not set
++# CONFIG_BAMBOO is not set
++# CONFIG_EBONY is not set
++# CONFIG_SAM440EP is not set
++# CONFIG_SEQUOIA is not set
++# CONFIG_TAISHAN is not set
++# CONFIG_KATMAI is not set
++# CONFIG_RAINIER is not set
++# CONFIG_WARP is not set
++CONFIG_ARCHES=y
++# CONFIG_CANYONLANDS is not set
++# CONFIG_GLACIER is not set
++# CONFIG_YOSEMITE is not set
++# CONFIG_XILINX_VIRTEX440_GENERIC_BOARD is not set
++CONFIG_PPC44x_SIMPLE=y
++CONFIG_460EX=y
++# CONFIG_IPIC is not set
++# CONFIG_MPIC is not set
++# CONFIG_MPIC_WEIRD is not set
++# CONFIG_PPC_I8259 is not set
++# CONFIG_PPC_RTAS is not set
++# CONFIG_MMIO_NVRAM is not set
++# CONFIG_PPC_MPC106 is not set
++# CONFIG_PPC_970_NAP is not set
++# CONFIG_PPC_INDIRECT_IO is not set
++# CONFIG_GENERIC_IOMAP is not set
++# CONFIG_CPU_FREQ is not set
++# CONFIG_FSL_ULI1575 is not set
 +
-+		cpu@0 {
-+			device_type = "cpu";
-+			model = "PowerPC,460GT";
-+			reg = <0x00000000>;
-+			clock-frequency = <0>; /* Filled in by U-Boot */
-+			timebase-frequency = <0>; /* Filled in by U-Boot */
-+			i-cache-line-size = <32>;
-+			d-cache-line-size = <32>;
-+			i-cache-size = <32768>;
-+			d-cache-size = <32768>;
-+			dcr-controller;
-+			dcr-access-method = "native";
-+		};
-+	};
++#
++# Kernel options
++#
++# CONFIG_HIGHMEM is not set
++CONFIG_TICK_ONESHOT=y
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
++# CONFIG_HZ_100 is not set
++CONFIG_HZ_250=y
++# CONFIG_HZ_300 is not set
++# CONFIG_HZ_1000 is not set
++CONFIG_HZ=250
++CONFIG_SCHED_HRTICK=y
++CONFIG_PREEMPT_NONE=y
++# CONFIG_PREEMPT_VOLUNTARY is not set
++# CONFIG_PREEMPT is not set
++CONFIG_BINFMT_ELF=y
++# CONFIG_BINFMT_MISC is not set
++# CONFIG_MATH_EMULATION is not set
++# CONFIG_IOMMU_HELPER is not set
++CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
++CONFIG_ARCH_HAS_WALK_MEMORY=y
++CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
++CONFIG_ARCH_FLATMEM_ENABLE=y
++CONFIG_ARCH_POPULATES_NODE_MAP=y
++CONFIG_SELECT_MEMORY_MODEL=y
++CONFIG_FLATMEM_MANUAL=y
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++# CONFIG_SPARSEMEM_MANUAL is not set
++CONFIG_FLATMEM=y
++CONFIG_FLAT_NODE_MEM_MAP=y
++# CONFIG_SPARSEMEM_STATIC is not set
++# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
++CONFIG_PAGEFLAGS_EXTENDED=y
++CONFIG_SPLIT_PTLOCK_CPUS=4
++CONFIG_MIGRATION=y
++CONFIG_RESOURCES_64BIT=y
++CONFIG_ZONE_DMA_FLAG=1
++CONFIG_BOUNCE=y
++CONFIG_VIRT_TO_BUS=y
++CONFIG_FORCE_MAX_ZONEORDER=11
++CONFIG_PROC_DEVICETREE=y
++CONFIG_CMDLINE_BOOL=y
++CONFIG_CMDLINE=""
++CONFIG_EXTRA_TARGETS=""
++CONFIG_SECCOMP=y
++CONFIG_ISA_DMA_API=y
 +
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x00000000 0x00000000>; /* Filled in by U-Boot */
-+	};
++#
++# Bus options
++#
++CONFIG_ZONE_DMA=y
++CONFIG_PPC_INDIRECT_PCI=y
++CONFIG_4xx_SOC=y
++CONFIG_PPC_PCI_CHOICE=y
++CONFIG_PCI=y
++CONFIG_PCI_DOMAINS=y
++CONFIG_PCI_SYSCALL=y
++# CONFIG_PCIEPORTBUS is not set
++CONFIG_ARCH_SUPPORTS_MSI=y
++# CONFIG_PCI_MSI is not set
++CONFIG_PCI_LEGACY=y
++# CONFIG_PCI_DEBUG is not set
++# CONFIG_PCCARD is not set
++# CONFIG_HOTPLUG_PCI is not set
++# CONFIG_HAS_RAPIDIO is not set
 +
-+	UIC0: interrupt-controller0 {
-+		compatible = "ibm,uic-460gt","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <0>;
-+		dcr-reg = <0x0c0 0x009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+	};
++#
++# Advanced setup
++#
++# CONFIG_ADVANCED_OPTIONS is not set
 +
-+	UIC1: interrupt-controller1 {
-+		compatible = "ibm,uic-460gt","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <1>;
-+		dcr-reg = <0x0d0 0x009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <0x1e 0x4 0x1f 0x4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
++#
++# Default settings for advanced configuration options are used
++#
++CONFIG_LOWMEM_SIZE=0x30000000
++CONFIG_PAGE_OFFSET=0xc0000000
++CONFIG_KERNEL_START=0xc0000000
++CONFIG_PHYSICAL_START=0x00000000
++CONFIG_TASK_SIZE=0xc0000000
++CONFIG_CONSISTENT_START=0xff100000
++CONFIG_CONSISTENT_SIZE=0x00200000
++CONFIG_NET=y
 +
-+	UIC2: interrupt-controller2 {
-+		compatible = "ibm,uic-460gt","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <2>;
-+		dcr-reg = <0x0e0 0x009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <0xa 0x4 0xb 0x4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
++#
++# Networking options
++#
++CONFIG_PACKET=y
++# CONFIG_PACKET_MMAP is not set
++CONFIG_UNIX=y
++# CONFIG_NET_KEY is not set
++CONFIG_INET=y
++# CONFIG_IP_MULTICAST is not set
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_FIB_HASH=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++CONFIG_IP_PNP_BOOTP=y
++# CONFIG_IP_PNP_RARP is not set
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_ARPD is not set
++# CONFIG_SYN_COOKIES is not set
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_XFRM_TUNNEL is not set
++# CONFIG_INET_TUNNEL is not set
++# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
++# CONFIG_INET_XFRM_MODE_TUNNEL is not set
++# CONFIG_INET_XFRM_MODE_BEET is not set
++# CONFIG_INET_LRO is not set
++CONFIG_INET_DIAG=y
++CONFIG_INET_TCP_DIAG=y
++# CONFIG_TCP_CONG_ADVANCED is not set
++CONFIG_TCP_CONG_CUBIC=y
++CONFIG_DEFAULT_TCP_CONG="cubic"
++# CONFIG_TCP_MD5SIG is not set
++# CONFIG_IPV6 is not set
++# CONFIG_NETWORK_SECMARK is not set
++# CONFIG_NETFILTER is not set
++# CONFIG_IP_DCCP is not set
++# CONFIG_IP_SCTP is not set
++# CONFIG_TIPC is not set
++# CONFIG_ATM is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_DECNET is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
++# CONFIG_NET_SCHED is not set
 +
-+	UIC3: interrupt-controller3 {
-+		compatible = "ibm,uic-460gt","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <3>;
-+		dcr-reg = <0x0f0 0x009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <0x10 0x4 0x11 0x4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++# CONFIG_HAMRADIO is not set
++# CONFIG_CAN is not set
++# CONFIG_IRDA is not set
++# CONFIG_BT is not set
++# CONFIG_AF_RXRPC is not set
 +
-+	SDR0: sdr {
-+		compatible = "ibm,sdr-460gt";
-+		dcr-reg = <0x00e 0x002>;
-+	};
++#
++# Wireless
++#
++# CONFIG_CFG80211 is not set
++# CONFIG_WIRELESS_EXT is not set
++# CONFIG_MAC80211 is not set
++# CONFIG_IEEE80211 is not set
++# CONFIG_RFKILL is not set
++# CONFIG_NET_9P is not set
 +
-+	CPR0: cpr {
-+		compatible = "ibm,cpr-460gt";
-+		dcr-reg = <0x00c 0x002>;
-+	};
++#
++# Device Drivers
++#
 +
-+	plb {
-+		compatible = "ibm,plb-460gt", "ibm,plb4";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges;
-+		clock-frequency = <0>; /* Filled in by U-Boot */
++#
++# Generic Driver Options
++#
++CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_STANDALONE=y
++CONFIG_PREVENT_FIRMWARE_BUILD=y
++CONFIG_FW_LOADER=y
++CONFIG_FIRMWARE_IN_KERNEL=y
++CONFIG_EXTRA_FIRMWARE=""
++# CONFIG_DEBUG_DRIVER is not set
++# CONFIG_DEBUG_DEVRES is not set
++# CONFIG_SYS_HYPERVISOR is not set
++CONFIG_CONNECTOR=y
++CONFIG_PROC_EVENTS=y
++# CONFIG_MTD is not set
++CONFIG_OF_DEVICE=y
++# CONFIG_PARPORT is not set
++CONFIG_BLK_DEV=y
++# CONFIG_BLK_DEV_FD is not set
++# CONFIG_BLK_CPQ_DA is not set
++# CONFIG_BLK_CPQ_CISS_DA is not set
++# CONFIG_BLK_DEV_DAC960 is not set
++# CONFIG_BLK_DEV_UMEM is not set
++# CONFIG_BLK_DEV_COW_COMMON is not set
++# CONFIG_BLK_DEV_LOOP is not set
++# CONFIG_BLK_DEV_NBD is not set
++# CONFIG_BLK_DEV_SX8 is not set
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=16
++CONFIG_BLK_DEV_RAM_SIZE=35000
++# CONFIG_BLK_DEV_XIP is not set
++# CONFIG_CDROM_PKTCDVD is not set
++# CONFIG_ATA_OVER_ETH is not set
++# CONFIG_XILINX_SYSACE is not set
++# CONFIG_BLK_DEV_HD is not set
++# CONFIG_MISC_DEVICES is not set
++CONFIG_HAVE_IDE=y
++# CONFIG_IDE is not set
 +
-+		SDRAM0: sdram {
-+			compatible = "ibm,sdram-460gt", "ibm,sdram-405gp";
-+			dcr-reg = <0x010 0x002>;
-+		};
++#
++# SCSI device support
++#
++# CONFIG_RAID_ATTRS is not set
++# CONFIG_SCSI is not set
++# CONFIG_SCSI_DMA is not set
++# CONFIG_SCSI_NETLINK is not set
++# CONFIG_ATA is not set
++# CONFIG_MD is not set
++# CONFIG_FUSION is not set
 +
-+		MAL0: mcmal {
-+			compatible = "ibm,mcmal-460gt", "ibm,mcmal2";
-+			dcr-reg = <0x180 0x062>;
-+			num-tx-chans = <3>;
-+			num-rx-chans = <24>;
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			interrupt-parent = <&UIC2>;
-+			interrupts = <	/*TXEOB*/ 0x6 0x4
-+					/*RXEOB*/ 0x7 0x4
-+					/*SERR*/  0x3 0x4
-+					/*TXDE*/  0x4 0x4
-+					/*RXDE*/  0x5 0x4>;
-+			desc-base-addr-high = <0x8>;
-+		};
++#
++# IEEE 1394 (FireWire) support
++#
 +
-+		POB0: opb {
-+			compatible = "ibm,opb-460gt", "ibm,opb";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges = <0xb0000000 0x00000004 0xb0000000 0x50000000>;
-+			clock-frequency = <0>; /* Filled in by U-Boot */
++#
++# Enable only one of the two stacks, unless you know what you are doing
++#
++# CONFIG_FIREWIRE is not set
++# CONFIG_IEEE1394 is not set
++# CONFIG_I2O is not set
++# CONFIG_MACINTOSH_DRIVERS is not set
++CONFIG_NETDEVICES=y
++# CONFIG_DUMMY is not set
++# CONFIG_BONDING is not set
++# CONFIG_MACVLAN is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
++# CONFIG_VETH is not set
++# CONFIG_ARCNET is not set
++# CONFIG_PHYLIB is not set
++CONFIG_NET_ETHERNET=y
++# CONFIG_MII is not set
++# CONFIG_HAPPYMEAL is not set
++# CONFIG_SUNGEM is not set
++# CONFIG_CASSINI is not set
++# CONFIG_NET_VENDOR_3COM is not set
++# CONFIG_NET_TULIP is not set
++# CONFIG_HP100 is not set
++CONFIG_IBM_NEW_EMAC=y
++CONFIG_IBM_NEW_EMAC_RXB=256
++CONFIG_IBM_NEW_EMAC_TXB=256
++CONFIG_IBM_NEW_EMAC_POLL_WEIGHT=32
++CONFIG_IBM_NEW_EMAC_RX_COPY_THRESHOLD=256
++CONFIG_IBM_NEW_EMAC_RX_SKB_HEADROOM=0
++# CONFIG_IBM_NEW_EMAC_DEBUG is not set
++# CONFIG_IBM_NEW_EMAC_ZMII is not set
++# CONFIG_IBM_NEW_EMAC_RGMII is not set
++CONFIG_IBM_NEW_EMAC_TAH=y
++CONFIG_IBM_NEW_EMAC_EMAC4=y
++# CONFIG_NET_PCI is not set
++# CONFIG_B44 is not set
++# CONFIG_NETDEV_1000 is not set
++# CONFIG_NETDEV_10000 is not set
++# CONFIG_TR is not set
 +
-+			EBC0: ebc {
-+				compatible = "ibm,ebc-460gt", "ibm,ebc";
-+				dcr-reg = <0x012 0x002>;
-+				#address-cells = <2>;
-+				#size-cells = <1>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				/* ranges property is supplied by U-Boot */
-+				interrupts = <0x6 0x4>;
-+				interrupt-parent = <&UIC1>;
-+			};
++#
++# Wireless LAN
++#
++# CONFIG_WLAN_PRE80211 is not set
++# CONFIG_WLAN_80211 is not set
++# CONFIG_IWLWIFI_LEDS is not set
++# CONFIG_WAN is not set
++# CONFIG_FDDI is not set
++# CONFIG_HIPPI is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++# CONFIG_NETCONSOLE is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
++# CONFIG_ISDN is not set
++# CONFIG_PHONE is not set
 +
-+			UART0: serial@ef600300 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <0xef600300 0x00000008>;
-+				virtual-reg = <0xef600300>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				current-speed = <0>; /* Filled in by U-Boot */
-+				interrupt-parent = <&UIC1>;
-+				interrupts = <0x1 0x4>;
-+			};
++#
++# Input device support
++#
++# CONFIG_INPUT is not set
 +
-+			IIC0: i2c@ef600700 {
-+				compatible = "ibm,iic-460gt", "ibm,iic";
-+				reg = <0xef600700 0x00000014>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x2 0x4>;
-+			};
++#
++# Hardware I/O ports
++#
++# CONFIG_SERIO is not set
++# CONFIG_GAMEPORT is not set
 +
-+			IIC1: i2c@ef600800 {
-+				compatible = "ibm,iic-460gt", "ibm,iic";
-+				reg = <0xef600800 0x00000014>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x3 0x4>;
-+			};
++#
++# Character devices
++#
++# CONFIG_VT is not set
++CONFIG_DEVKMEM=y
++# CONFIG_SERIAL_NONSTANDARD is not set
++# CONFIG_NOZOMI is not set
 +
-+			TAH0: emac-tah@ef601350 {
-+				compatible = "ibm,tah-460gt", "ibm,tah";
-+				reg = <0xef601350 0x00000030>;
-+			};
++#
++# Serial drivers
++#
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++# CONFIG_SERIAL_8250_PCI is not set
++CONFIG_SERIAL_8250_NR_UARTS=4
++CONFIG_SERIAL_8250_RUNTIME_UARTS=4
++CONFIG_SERIAL_8250_EXTENDED=y
++# CONFIG_SERIAL_8250_MANY_PORTS is not set
++CONFIG_SERIAL_8250_SHARE_IRQ=y
++# CONFIG_SERIAL_8250_DETECT_IRQ is not set
++# CONFIG_SERIAL_8250_RSA is not set
 +
-+			TAH1: emac-tah@ef601450 {
-+				compatible = "ibm,tah-460gt", "ibm,tah";
-+				reg = <0xef601450 0x00000030>;
-+			};
++#
++# Non-8250 serial port support
++#
++# CONFIG_SERIAL_UARTLITE is not set
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++# CONFIG_SERIAL_JSM is not set
++CONFIG_SERIAL_OF_PLATFORM=y
++CONFIG_UNIX98_PTYS=y
++CONFIG_LEGACY_PTYS=y
++CONFIG_LEGACY_PTY_COUNT=256
++# CONFIG_IPMI_HANDLER is not set
++# CONFIG_HW_RANDOM is not set
++# CONFIG_NVRAM is not set
++# CONFIG_GEN_RTC is not set
++# CONFIG_R3964 is not set
++# CONFIG_APPLICOM is not set
++# CONFIG_RAW_DRIVER is not set
++# CONFIG_TCG_TPM is not set
++CONFIG_DEVPORT=y
++# CONFIG_I2C is not set
++# CONFIG_SPI is not set
++CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
++# CONFIG_GPIOLIB is not set
++# CONFIG_W1 is not set
++# CONFIG_POWER_SUPPLY is not set
++# CONFIG_HWMON is not set
++# CONFIG_THERMAL is not set
++# CONFIG_THERMAL_HWMON is not set
++# CONFIG_WATCHDOG is not set
 +
-+			EMAC0: ethernet@ef600e00 {
-+				device_type = "network";
-+				compatible = "ibm,emac-460gt", "ibm,emac4sync";
-+				interrupt-parent = <&EMAC0>;
-+				interrupts = <0x0 0x1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0x0 &UIC2 0x10 0x4
-+						 /*Wake*/   0x1 &UIC2 0x14 0x4>;
-+				reg = <0xef600e00 0x000000c4>;
-+				local-mac-address = [000000000000]; /* Filled in by U-Boot */
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <0>;
-+				mal-rx-channel = <0>;
-+				cell-index = <0>;
-+				max-frame-size = <9000>;
-+				rx-fifo-size = <4096>;
-+				tx-fifo-size = <2048>;
-+				phy-mode = "sgmii";
-+				phy-map = <0xffffffff>;
-+				gpcs-address = <0x0000000a>;
-+				tah-device = <&TAH0>;
-+				tah-channel = <0>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+			};
++#
++# Sonics Silicon Backplane
++#
++CONFIG_SSB_POSSIBLE=y
++# CONFIG_SSB is not set
 +
-+			EMAC1: ethernet@ef600f00 {
-+				device_type = "network";
-+				compatible = "ibm,emac-460gt", "ibm,emac4sync";
-+				interrupt-parent = <&EMAC1>;
-+				interrupts = <0x0 0x1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0x0 &UIC2 0x11 0x4
-+						 /*Wake*/   0x1 &UIC2 0x15 0x4>;
-+				reg = <0xef600f00 0x000000c4>;
-+				local-mac-address = [000000000000]; /* Filled in by U-Boot */
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <1>;
-+				mal-rx-channel = <8>;
-+				cell-index = <1>;
-+				max-frame-size = <9000>;
-+				rx-fifo-size = <4096>;
-+				tx-fifo-size = <2048>;
-+				phy-mode = "sgmii";
-+				phy-map = <0x00000000>;
-+				gpcs-address = <0x0000000b>;
-+				tah-device = <&TAH1>;
-+				tah-channel = <1>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+				mdio-device = <&EMAC0>;
-+			};
++#
++# Multifunction device drivers
++#
++# CONFIG_MFD_CORE is not set
++# CONFIG_MFD_SM501 is not set
++# CONFIG_HTC_PASIC3 is not set
++# CONFIG_MFD_TMIO is not set
 +
-+			EMAC2: ethernet@ef601100 {
-+				device_type = "network";
-+				compatible = "ibm,emac-460gt", "ibm,emac4sync";
-+				interrupt-parent = <&EMAC2>;
-+				interrupts = <0x0 0x1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0x0 &UIC2 0x12 0x4
-+						 /*Wake*/   0x1 &UIC2 0x16 0x4>;
-+				reg = <0xef601100 0x000000c4>;
-+				local-mac-address = [000000000000]; /* Filled in by U-Boot */
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <2>;
-+				mal-rx-channel = <16>;
-+				cell-index = <2>;
-+				max-frame-size = <9000>;
-+				rx-fifo-size = <4096>;
-+				tx-fifo-size = <2048>;
-+				phy-mode = "sgmii";
-+				phy-map = <0x00000001>;
-+				gpcs-address = <0x0000000C>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+				mdio-device = <&EMAC0>;
-+			};
-+		};
-+	};
-+};
++#
++# Multimedia devices
++#
++
++#
++# Multimedia core support
++#
++# CONFIG_VIDEO_DEV is not set
++# CONFIG_DVB_CORE is not set
++# CONFIG_VIDEO_MEDIA is not set
++
++#
++# Multimedia drivers
++#
++CONFIG_DAB=y
++
++#
++# Graphics support
++#
++# CONFIG_AGP is not set
++# CONFIG_DRM is not set
++# CONFIG_VGASTATE is not set
++CONFIG_VIDEO_OUTPUT_CONTROL=m
++# CONFIG_FB is not set
++# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++
++#
++# Display device support
++#
++# CONFIG_DISPLAY_SUPPORT is not set
++# CONFIG_SOUND is not set
++# CONFIG_USB_SUPPORT is not set
++# CONFIG_MMC is not set
++# CONFIG_MEMSTICK is not set
++# CONFIG_NEW_LEDS is not set
++# CONFIG_ACCESSIBILITY is not set
++# CONFIG_INFINIBAND is not set
++# CONFIG_EDAC is not set
++# CONFIG_RTC_CLASS is not set
++# CONFIG_DMADEVICES is not set
++# CONFIG_UIO is not set
++
++#
++# File systems
++#
++CONFIG_EXT2_FS=y
++# CONFIG_EXT2_FS_XATTR is not set
++# CONFIG_EXT2_FS_XIP is not set
++# CONFIG_EXT3_FS is not set
++# CONFIG_EXT4DEV_FS is not set
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++# CONFIG_FS_POSIX_ACL is not set
++# CONFIG_XFS_FS is not set
++# CONFIG_OCFS2_FS is not set
++CONFIG_DNOTIFY=y
++CONFIG_INOTIFY=y
++CONFIG_INOTIFY_USER=y
++# CONFIG_QUOTA is not set
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++# CONFIG_MSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_KCORE=y
++CONFIG_PROC_SYSCTL=y
++CONFIG_SYSFS=y
++CONFIG_TMPFS=y
++# CONFIG_TMPFS_POSIX_ACL is not set
++# CONFIG_HUGETLB_PAGE is not set
++# CONFIG_CONFIGFS_FS is not set
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++CONFIG_CRAMFS=y
++# CONFIG_VXFS_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_OMFS_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++# CONFIG_ROMFS_FS is not set
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++CONFIG_NETWORK_FILESYSTEMS=y
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3=y
++# CONFIG_NFS_V3_ACL is not set
++# CONFIG_NFS_V4 is not set
++CONFIG_ROOT_NFS=y
++# CONFIG_NFSD is not set
++CONFIG_LOCKD=y
++CONFIG_LOCKD_V4=y
++CONFIG_NFS_COMMON=y
++CONFIG_SUNRPC=y
++# CONFIG_RPCSEC_GSS_KRB5 is not set
++# CONFIG_RPCSEC_GSS_SPKM3 is not set
++# CONFIG_SMB_FS is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++
++#
++# Partition Types
++#
++# CONFIG_PARTITION_ADVANCED is not set
++CONFIG_MSDOS_PARTITION=y
++# CONFIG_NLS is not set
++# CONFIG_DLM is not set
++
++#
++# Library routines
++#
++CONFIG_BITREVERSE=y
++# CONFIG_GENERIC_FIND_FIRST_BIT is not set
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++# CONFIG_CRC_T10DIF is not set
++# CONFIG_CRC_ITU_T is not set
++CONFIG_CRC32=y
++# CONFIG_CRC7 is not set
++# CONFIG_LIBCRC32C is not set
++CONFIG_ZLIB_INFLATE=y
++CONFIG_PLIST=y
++CONFIG_HAS_IOMEM=y
++CONFIG_HAS_IOPORT=y
++CONFIG_HAS_DMA=y
++CONFIG_HAVE_LMB=y
++
++#
++# Kernel hacking
++#
++# CONFIG_PRINTK_TIME is not set
++CONFIG_ENABLE_WARN_DEPRECATED=y
++CONFIG_ENABLE_MUST_CHECK=y
++CONFIG_FRAME_WARN=1024
++CONFIG_MAGIC_SYSRQ=y
++# CONFIG_UNUSED_SYMBOLS is not set
++CONFIG_DEBUG_FS=y
++# CONFIG_HEADERS_CHECK is not set
++CONFIG_DEBUG_KERNEL=y
++# CONFIG_DEBUG_SHIRQ is not set
++CONFIG_DETECT_SOFTLOCKUP=y
++# CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC is not set
++CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
++CONFIG_SCHED_DEBUG=y
++# CONFIG_SCHEDSTATS is not set
++# CONFIG_TIMER_STATS is not set
++# CONFIG_DEBUG_OBJECTS is not set
++# CONFIG_SLUB_DEBUG_ON is not set
++# CONFIG_SLUB_STATS is not set
++# CONFIG_DEBUG_RT_MUTEXES is not set
++# CONFIG_RT_MUTEX_TESTER is not set
++# CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_MUTEXES is not set
++# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
++# CONFIG_DEBUG_KOBJECT is not set
++# CONFIG_DEBUG_BUGVERBOSE is not set
++# CONFIG_DEBUG_INFO is not set
++# CONFIG_DEBUG_VM is not set
++# CONFIG_DEBUG_WRITECOUNT is not set
++# CONFIG_DEBUG_MEMORY_INIT is not set
++# CONFIG_DEBUG_LIST is not set
++# CONFIG_DEBUG_SG is not set
++# CONFIG_BOOT_PRINTK_DELAY is not set
++# CONFIG_RCU_TORTURE_TEST is not set
++# CONFIG_BACKTRACE_SELF_TEST is not set
++# CONFIG_FAULT_INJECTION is not set
++# CONFIG_LATENCYTOP is not set
++CONFIG_SYSCTL_SYSCALL_CHECK=y
++CONFIG_HAVE_FTRACE=y
++CONFIG_HAVE_DYNAMIC_FTRACE=y
++# CONFIG_FTRACE is not set
++# CONFIG_SCHED_TRACER is not set
++# CONFIG_CONTEXT_SWITCH_TRACER is not set
++# CONFIG_SAMPLES is not set
++CONFIG_HAVE_ARCH_KGDB=y
++# CONFIG_KGDB is not set
++# CONFIG_DEBUG_STACKOVERFLOW is not set
++# CONFIG_DEBUG_STACK_USAGE is not set
++# CONFIG_DEBUG_PAGEALLOC is not set
++# CONFIG_CODE_PATCHING_SELFTEST is not set
++# CONFIG_FTR_FIXUP_SELFTEST is not set
++# CONFIG_MSI_BITMAP_SELFTEST is not set
++# CONFIG_XMON is not set
++# CONFIG_IRQSTACKS is not set
++# CONFIG_VIRQ_DEBUG is not set
++# CONFIG_BDI_SWITCH is not set
++# CONFIG_PPC_EARLY_DEBUG is not set
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++# CONFIG_SECURITY_FILE_CAPABILITIES is not set
++# CONFIG_CRYPTO is not set
++# CONFIG_PPC_CLOCK is not set
++# CONFIG_VIRTUALIZATION is not set
 -- 
 1.5.5
