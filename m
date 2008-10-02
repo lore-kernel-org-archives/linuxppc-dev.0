@@ -1,35 +1,16 @@
-Return-Path: <kniht@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E585EDDDEA
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 07:51:49 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m92LpkkR004356
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Oct 2008 17:51:46 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m92Lpkac218934
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Oct 2008 15:51:46 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m92LpkPA009628
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Oct 2008 15:51:46 -0600
-Message-ID: <48E5428E.8080402@linux.vnet.ibm.com>
-Date: Thu, 02 Oct 2008 16:52:14 -0500
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Adam Litke <agl@us.ibm.com>
-Subject: Re: [PATCH] properly reserve in bootmem the lmb reserved regions
-	that cross numa nodes
-References: <48E23D6C.4030406@linux.vnet.ibm.com>
-	<1222789675.13978.14.camel@localhost.localdomain>
-In-Reply-To: <1222789675.13978.14.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Adam Litke <agl@linux.vnet.ibm.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linux Memory Management List <linux-mm@kvack.org>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 652C6DDF11
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 09:52:03 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: make Freescale QE support a selectable Kconfig option
+Date: Thu,  2 Oct 2008 10:27:57 -0500
+Message-Id: <1222961277-6166-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,61 +20,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adam Litke wrote:
-> This seems like the right approach to me.  I have pointed out a few
-> stylistic issues below.
->   
-Thanks.  I'll make those changes.  I assume by __mminit you meant __meminit
+Modify the Kconfig so that Freescale QUICC Engine (QE) support is a selectable
+option, thereby allowing users to compile kernels without any QE support.
 
-Jon
+The drawback is that QE support is now disabled by default on platforms that
+have a QE, and so a defconfig is needed to enable QE and QE devices (like
+UCC GETH).  Fortunately, all the current relevant defconfigs do that already.
 
-> On Tue, 2008-09-30 at 09:53 -0500, Jon Tollefson wrote:
-> <snip>
->   
->> +	/* Mark reserved regions */
->> +	for (i = 0; i < lmb.reserved.cnt; i++) {
->> +		unsigned long physbase = lmb.reserved.region[i].base;
->> +		unsigned long size = lmb.reserved.region[i].size;
->> +		unsigned long start_pfn = physbase >> PAGE_SHIFT;
->> +		unsigned long end_pfn = ((physbase+size-1) >> PAGE_SHIFT);
->>     
->
-> CodingStyle dictates that this should be:
-> unsigned long end_pfn = ((physbase + size - 1) >> PAGE_SHIFT);
->
-> <snip>
->
->   
->> +/**
->> + * get_node_active_region - Return active region containing start_pfn
->> + * @start_pfn The page to return the region for.
->> + *
->> + * It will return NULL if active region is not found.
->> + */
->> +struct node_active_region *get_node_active_region(
->> +							unsigned long start_pfn)
->>     
->
-> Bad style.  I think the convention would be to write it like this:
->
-> struct node_active_region *
-> get_node_active_region(unsigned long start_pfn)
->
->   
->> +{
->> +	int i;
->> +	for (i = 0; i < nr_nodemap_entries; i++) {
->> +		unsigned long node_start_pfn = early_node_map[i].start_pfn;
->> +		unsigned long node_end_pfn = early_node_map[i].end_pfn;
->> +
->> +		if (node_start_pfn <= start_pfn && node_end_pfn > start_pfn)
->> +			return &early_node_map[i];
->> +	}
->> +	return NULL;
->> +}
->>     
->
-> Since this is using the early_node_map[], should we mark the function
-> __mminit?  
->
->   
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+
+This patch should be applied to Kumar's branch for 2.6.28 patches.
+
+ arch/powerpc/platforms/83xx/Kconfig |    4 ----
+ arch/powerpc/platforms/Kconfig      |    3 ++-
+ 2 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
+index 6159c5d..4a6cc78 100644
+--- a/arch/powerpc/platforms/83xx/Kconfig
++++ b/arch/powerpc/platforms/83xx/Kconfig
+@@ -19,7 +19,6 @@ config MPC831x_RDB
+ config MPC832x_MDS
+ 	bool "Freescale MPC832x MDS"
+ 	select DEFAULT_UIMAGE
+-	select QUICC_ENGINE
+ 	select PPC_MPC832x
+ 	help
+ 	  This option enables support for the MPC832x MDS evaluation board.
+@@ -27,7 +26,6 @@ config MPC832x_MDS
+ config MPC832x_RDB
+ 	bool "Freescale MPC832x RDB"
+ 	select DEFAULT_UIMAGE
+-	select QUICC_ENGINE
+ 	select PPC_MPC832x
+ 	help
+ 	  This option enables support for the MPC8323 RDB board.
+@@ -57,14 +55,12 @@ config MPC834x_ITX
+ config MPC836x_MDS
+ 	bool "Freescale MPC836x MDS"
+ 	select DEFAULT_UIMAGE
+-	select QUICC_ENGINE
+ 	help
+ 	  This option enables support for the MPC836x MDS Processor Board.
+ 
+ config MPC836x_RDK
+ 	bool "Freescale/Logic MPC836x RDK"
+ 	select DEFAULT_UIMAGE
+-	select QUICC_ENGINE
+ 	select QE_GPIO
+ 	select FSL_GTM
+ 	select FSL_LBC
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 9578c45..6cf517f 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -239,7 +239,8 @@ config TAU_AVERAGE
+ 	  If in doubt, say N here.
+ 
+ config QUICC_ENGINE
+-	bool
++	bool "Freescale QUICC Engine (QE) Support"
++	depends on FSL_SOC
+ 	select PPC_LIB_RHEAP
+ 	select CRC32
+ 	help
+-- 
+1.5.5
