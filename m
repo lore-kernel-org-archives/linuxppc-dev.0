@@ -1,21 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0DE52DDF86
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 16:45:29 +1000 (EST)
-Subject: Re: [PATCH v2] ibm_newemac: Add support for GPCS, SGMII and
-	M88E1112 PHY
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Victor Gallardo <vgallardo@amcc.com>
-In-Reply-To: <1222929477-10329-1-git-send-email-vgallardo@amcc.com>
-References: <1222929477-10329-1-git-send-email-vgallardo@amcc.com>
-Content-Type: text/plain
-Date: Thu, 02 Oct 2008 16:45:20 +1000
-Message-Id: <1222929920.12264.96.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 2 Oct 2008 16:41:56 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Niklaus Giger <niklaus.giger@member.fsf.org>
+Subject: Re: [PATCH] Added preliminary support for Netstal HCU4 board
+Message-ID: <20081002064156.GS25598@yookeroo.seuss>
+References: <200810011947.16543.niklaus.giger@member.fsf.org>
+	<200810020014.20414.niklaus.giger@member.fsf.org>
+	<20081002005208.GE25598@yookeroo.seuss>
+	<200810020712.15088.niklaus.giger@member.fsf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <200810020712.15088.niklaus.giger@member.fsf.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,14 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-10-01 at 23:37 -0700, Victor Gallardo wrote:
-> Signed-off-by: Victor Gallardo <vgallardo@amcc.com>
-> ---
->  v2:
->  - update to sync up with latest ibm_newemac driver
+On Thu, Oct 02, 2008 at 07:12:14AM +0200, Niklaus Giger wrote:
+> Hi David
+> 
+> Am Donnerstag 02 Oktober 2008 02.52:08 schrieb David Gibson:
+> > That will work, but will lose comments, references, and other
+> > formatting, because it essentially compiles then decompiles the tree.
+> > You probably don't want to do that.  There's also an explicit
+> > conversion program, convert-dtsv0, which will preserve that
+> > not-significant-to-output, but useful for the reader information.
+> 
+> Thanks for providing me the hint. Using it, would surely  have been easier 
+> than adding manually the comment again. However I using the search 
+> "dtc dts-v1 syntax conversion script" didn't give me any hint and even in the 
+> the current  http://www.jdl.com/software/dtc.git I find no word in the 
+> Documentation about convert-dtsv0.
+> 
+> Neither does it get installed when calling make install.
 
-Ack.
+Ah, yes, that's a bug.
 
-Is this on top of Josh work ?
+> Therefore I would suggest you to add a small remark like this:
+> 
+> convert-dtsv0 is a small utility program which converts (DTS)
+> Device Tree Source from the obsolete version 0 to version 1. Version 1 DTS
+> files are marked by line "/dts-v1/;" at the top of the file.
 
-Ben.
+Add this remark where, though?
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
