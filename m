@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 00031DDFE6
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 05:48:59 +1000 (EST)
-Message-Id: <504AAC96-2F7E-4A06-B544-1F2169BB2176@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20081002151852.GA8823@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc/83xx: don't probe broken PCI on mpc837x_mds boards
-Date: Thu, 2 Oct 2008 14:48:44 -0500
-References: <20081002151852.GA8823@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <niklaus.giger@member.fsf.org>
+Received: from viefep24-int.chello.at (viefep18-int.chello.at [213.46.255.22])
+	by ozlabs.org (Postfix) with ESMTP id 702BCDE4EC
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 05:51:56 +1000 (EST)
+From: Niklaus Giger <niklaus.giger@member.fsf.org>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCH] Added preliminary support for Netstal HCU4 board
+Date: Thu, 2 Oct 2008 21:51:52 +0200
+References: <200810011947.16543.niklaus.giger@member.fsf.org>
+	<200810022108.44690.niklaus.giger@member.fsf.org>
+	<1222976220.9242.16.camel@ld0161-tx32>
+In-Reply-To: <1222976220.9242.16.camel@ld0161-tx32>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200810022151.53162.niklaus.giger@member.fsf.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 2, 2008, at 10:18 AM, Anton Vorontsov wrote:
-
-> In the standalone setup the board's CPLD disables the PCI internal
-> arbiter, thus any access to the PCI bus will hang the board.
+Am Donnerstag 02 Oktober 2008 21.37:00 schrieb Jon Loeliger:
+> On Thu, 2008-10-02 at 21:08 +0200, Niklaus Giger wrote:
+> > > > convert-dtsv0 is a small utility program which converts (DTS)
+> > > > Device Tree Source from the obsolete version 0 to version 1. Version
+> > > > 1 DTS files are marked by line "/dts-v1/;" at the top of the file.
+> > >
+> > > Add this remark where, though?
+> >
+> > Add a small chapter IV Utilities in your Documentation/manual.txt.
 >
-> When there is no PCI arbiter on the bus the u-boot marks the PCI
-> bus as broken and we should not try to probe it.
+> Patches welcome, of course. :-)
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > And if the http://www.jdl.com/git_repos/ would work again, I think the
+> > spiders would pick it up from there.
+>
+> I fetched http://www.jdl.com/software/dtc.git through
+> my firewall at work just this morning.  What problem
+> are you seeing?  Are you unable to clone
+> git://git.jdl.com/software/dtc/git ?
+>
+> jdl
+git pull worked perfectly. But in Documentation/manual.txt you promise:
+> -- The gitweb interface is:
+>
+>     http://www.jdl.com/git_repos/
+And this link does not work.
 
-Can you add to the commit message something about using the 'status  
-field in the device tree to determine if the pci controller is  
-available'
+Best regards.
 
-- k
+Niklaus
