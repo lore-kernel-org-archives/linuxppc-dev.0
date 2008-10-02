@@ -1,19 +1,17 @@
-Return-Path: <niklaus.giger@member.fsf.org>
-Received: from viefep28-int.chello.at (viefep28-int.chello.at [62.179.121.48])
-	by ozlabs.org (Postfix) with ESMTP id 7041FDDE06
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 15:36:43 +1000 (EST)
-Received: from ng.localnet ([77.56.223.114]) by viefep28-int.chello.at
-	(InterMail vM.7.08.02.02 201-2186-121-104-20070414) with ESMTP
-	id <20081002053641.JCLV14600.viefep28-int.chello.at@ng.localnet>
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Oct 2008 07:36:41 +0200
-From: Niklaus Giger <niklaus.giger@member.fsf.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH]ppc4xx-Walnut: fixes early boot messages
-Date: Thu, 2 Oct 2008 07:36:40 +0200
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 64D3CDDE20
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 16:04:03 +1000 (EST)
+Date: Thu, 2 Oct 2008 01:03:54 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Linus Torvalds <torvalds@osdl.org>
+Subject: [PATCH] powerpc: Fix boot hang regression on MPC8544DS
+Message-ID: <Pine.LNX.4.64.0810020102470.4717@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200810020736.40736.niklaus.giger@member.fsf.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +21,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Inherits the baudrate from U-boot to print things like:
-Using Walnut machine description                                          
-Linux version <..>
-console [udbg0] enabled                                                                                       
+Commit 00c5372d37a78990c1530184a9c792ee60a30067 caused the MPC8544DS
+board to hang at boot.  The MPC8544DS is unique in that it doesn't use
+the PCI slots on the ULI (unlike the MPC8572DS or MPC8610HPCD).  So
+the dummy read at the end of the address space causes us to hang.
 
-Signed-off-by: Niklaus Giger <niklaus.giger@member.fsf.org>
+We can detect the situation by comparing the bridge's BARs versus
+the root complex.
+
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/boot/dts/walnut.dts |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/walnut.dts 
-b/arch/powerpc/boot/dts/walnut.dts
-index 4a9f726..6c93f72 100644
---- a/arch/powerpc/boot/dts/walnut.dts
-+++ b/arch/powerpc/boot/dts/walnut.dts
-@@ -98,7 +98,7 @@
- 				reg = <0xef600300 0x00000008>;
- 				virtual-reg = <0xef600300>;
- 				clock-frequency = <0>; /* Filled in by zImage */
--				current-speed = <9600>;
-+				current-speed = <0>;	/* Filled in by U-Boot */
- 				interrupt-parent = <&UIC0>;
- 				interrupts = <0x0 0x4>;
- 			};
+This is a fix for 2.6.27 and is also available at:
+
+master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.27
+
+- k
+
+ arch/powerpc/platforms/fsl_uli1575.c |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/platforms/fsl_uli1575.c b/arch/powerpc/platforms/fsl_uli1575.c
+index ef74a07..8c61996 100644
+--- a/arch/powerpc/platforms/fsl_uli1575.c
++++ b/arch/powerpc/platforms/fsl_uli1575.c
+@@ -219,11 +219,21 @@ static void __devinit quirk_final_uli5249(struct pci_dev *dev)
+ 	int i;
+ 	u8 *dummy;
+ 	struct pci_bus *bus = dev->bus;
++	resource_size_t end = 0;
++
++	for (i = PCI_BRIDGE_RESOURCES; i < PCI_BRIDGE_RESOURCES+3; i++) {
++		unsigned long flags = pci_resource_flags(dev, i);
++		if ((flags & (IORESOURCE_MEM|IORESOURCE_PREFETCH)) == IORESOURCE_MEM)
++			end = pci_resource_end(dev, i);
++	}
+
+ 	for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+ 		if ((bus->resource[i]) &&
+ 			(bus->resource[i]->flags & IORESOURCE_MEM)) {
+-			dummy = ioremap(bus->resource[i]->end - 3, 0x4);
++			if (bus->resource[i]->end == end)
++				dummy = ioremap(bus->resource[i]->start, 0x4);
++			else
++				dummy = ioremap(bus->resource[i]->end - 3, 0x4);
+ 			if (dummy) {
+ 				in_8(dummy);
+ 				iounmap(dummy);
 -- 
-1.6.0.1
+1.5.5.1
