@@ -1,23 +1,23 @@
-Return-Path: <bigeasy@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C418DDDF90
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 23:03:33 +1000 (EST)
-Message-ID: <48E4C697.30105@linutronix.de>
-Date: Thu, 02 Oct 2008 15:03:19 +0200
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Return-Path: <vgallardo@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 607FADE157
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 23:42:44 +1000 (EST)
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: dtb and purgatory support for ppc32
-References: <1222896024-22172-1-git-send-email-sebastian@breakpoint.cc>
-	<1222896024-22172-4-git-send-email-sebastian@breakpoint.cc>
-	<2AF4947A-B0E5-4530-9240-55C94A73E9FC@kernel.crashing.org>
-In-Reply-To: <2AF4947A-B0E5-4530-9240-55C94A73E9FC@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org,
-	Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
-	kexec@lists.infradead.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C92494.BDC6EDB8"
+Subject: RE: [PATCH v2] ibm_newemac: Add support for GPCS, SGMIIandM88E1112 PHY
+Date: Thu, 2 Oct 2008 06:40:40 -0700
+Message-ID: <0CA0A16855646F4FA96D25A158E299D602C8137C@SDCEXCHANGE01.ad.amcc.com>
+References: <1222929477-10329-1-git-send-email-vgallardo@amcc.com><1222929920.12264.96.camel@pasglop><0CA0A16855646F4FA96D25A158E299D602C81377@SDCEXCHANGE01.ad.amcc.com><1222932759.12264.104.camel@pasglop><20081002063320.7b2331b4@zod.rchland.ibm.com><1222943668.12264.106.camel@pasglop><20081002065648.285cce25@zod.rchland.ibm.com><20081002115507.GB2227@yoda.jdub.homelinux.org>
+	<1222951068.12264.109.camel@pasglop>
+From: "Victor Gallardo" <vgallardo@amcc.com>
+To: <benh@kernel.crashing.org>,
+	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jgarzik@pobox.com>,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,49 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Oct 1, 2008, at 4:20 PM, Sebastian Andrzej Siewior wrote:
-> 
->> From: Sebastian Siewior <bigeasy@linutronix.de>
->>
->> Some code dtb scanning & filling has been borrowed from ppc64.
->> The old behavior is still available if compiled with GameCube,
->> other PowerPC platform use the can purgatory and specify a new
->> dtb.
->> The purgatory is disabled because somehting is wrong and I dunno
->> the reason. Booting a self containd cuImage (incl. dtb / wiuthout
->> the need for a bd sturct) can be booted.
->>
->> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
->> ---
->> kexec/arch/ppc/Makefile            |    1 +
->> kexec/arch/ppc/kexec-elf-ppc.c     |  167 ++++++++++----
->> kexec/arch/ppc/kexec-elf-rel-ppc.c |    4 +
->> kexec/arch/ppc/kexec-ppc.c         |  469 
->> +++++++++++++++++++++++++++++++++++-
->> purgatory/arch/ppc/Makefile        |    1 +
->> purgatory/arch/ppc/purgatory-ppc.c |    4 +
->> purgatory/arch/ppc/v2wrap.S        |   54 ++++
->> 7 files changed, 652 insertions(+), 48 deletions(-)
->> create mode 100644 purgatory/arch/ppc/v2wrap.S
-> 
-> I think I might have realized some of my confusion.. is this patch to 
-> the kernel or to some kexec tool?   If its to the kernel I don't answer 
-> at all.  If its to some kexec tool than that wasn't clear at all.
+This is a multi-part message in MIME format.
 
-Patch 1 and 2 were for kernel side support. Patch 3 is kexec userland 
-only. I wrote this down in the patch first email (should be 0/3) but now I 
-see that git did not enumerate them. Sorry for that, I see that I have to 
-work on git skills....
+------_=_NextPart_001_01C92494.BDC6EDB8
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-The two patches tagged with [RFC] is kernel side support. The third patch 
-tagged with [PATCH] is also meant to be [RFC] and is the kexec userland 
-part against [1].
+> Victor, while at it, can you do a fixup patch on top of it that guards
+> the new feature with a Kconfig option like some of the other ones so
+> that the code for it doesn't get compiled in when building, for =
+example.
+> for 405GP only ?
+>
+> The trick is to have the option not be part of the possible mask, so
+> that the compiler optimises out the feature tests as if (0) (gcc
+> nowadays is supposedly smart enough to rip off the code when it finds
+> such constructs).
 
+Hi Ben,=20
+=20
+Can you give an example of what you are asking for? I am not sure if I =
+understand your request.
+=20
+Thanks,
+=20
+Victor Gallardo
 
-[1] git://git.kernel.org/pub/scm/linux/kernel/git/horms/kexec-tools.git
+------_=_NextPart_001_01C92494.BDC6EDB8
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> - k
-
-Sebastian
+<HTML dir=3Dltr><HEAD><TITLE>Re: [PATCH v2] ibm_newemac: Add support for =
+GPCS, SGMIIandM88E1112 PHY</TITLE>=0A=
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
+<META content=3D"MSHTML 6.00.2800.1589" name=3DGENERATOR></HEAD>=0A=
+<BODY>=0A=
+<DIV id=3DidOWAReplyText61157 dir=3Dltr>=0A=
+<DIV dir=3Dltr><FONT size=3D2><FONT face=3D"Courier New">&gt; Victor, =
+while at it, can you do a fixup patch on top of it that guards<BR>&gt; =
+the new feature with a Kconfig option like some of the other ones =
+so<BR>&gt; that the code for it doesn't get compiled in when building, =
+for example.<BR>&gt; for 405GP only ?<BR>&gt;<BR>&gt; The trick is to =
+have the option not be part of the possible mask, so<BR>&gt; that the =
+compiler optimises out the feature tests as if (0) (gcc<BR>&gt; nowadays =
+is supposedly smart enough to rip off the code when it finds<BR>&gt; =
+such constructs).<BR><BR>Hi Ben,</FONT>=0A=
+<DIV dir=3Dltr>&nbsp;</DIV>=0A=
+<DIV dir=3Dltr><FONT face=3D"Courier New">Can you give an example of =
+what you are asking for? I am not sure if I understand your =
+request.</FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT face=3D"Courier New"></FONT>&nbsp;</DIV>=0A=
+<DIV dir=3Dltr><FONT face=3D"Courier New">Thanks,</FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT face=3D"Courier New"></FONT>&nbsp;</DIV>=0A=
+<DIV dir=3Dltr><FONT face=3D"Courier New">Victor =
+Gallardo</FONT></DIV></FONT></DIV></DIV></BODY></HTML>
+------_=_NextPart_001_01C92494.BDC6EDB8--
