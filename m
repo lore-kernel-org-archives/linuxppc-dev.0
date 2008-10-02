@@ -1,15 +1,16 @@
-Return-Path: <liu_lin02@tsinghua.org.cn>
-Received: from tsinghua.org.cn (unknown [210.77.143.232])
-	by ozlabs.org (Postfix) with SMTP id D8A0CDE234
+Return-Path: <Christopher.Varlese@keymile.com>
+Received: from mail.ch.keymile.com (mail.ch.keymile.com [193.17.201.103])
+	by ozlabs.org (Postfix) with SMTP id 1DD05DDF20
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Oct 2008 20:48:57 +1000 (EST)
-Message-ID: <422942429.11977@tsinghua.org.cn>
-From: "=?gb2312?B?wfXB1g==?=" <liu_lin02@tsinghua.org.cn>
-To: linuxppc-embedded@ozlabs.org
-Date: Thu, 02 Oct 2008 18:13:49 +0800
-Subject: Build cross compile tool chain for PPC
-Content-Type: text/plain
-Reply-To: =?gb2312?B?wfXB1g==?= <liu_lin02@tsinghua.org.cn>
+	Thu,  2 Oct 2008 22:07:21 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: MPC8360 : MDS/PIB RMII fast Ethernet help
+Date: Thu, 2 Oct 2008 13:56:50 +0200
+Message-ID: <D839955AA28B9A42A61B9181506E27C40121DF00@SRVCHBER1212.ch.keymile.net>
+From: "Varlese, Christopher" <Christopher.Varlese@keymile.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -20,50 +21,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, All,
+We are working with the Freescale MPC8360 MDS evaluation board and are
+having
+trouble getting the 8 x Fast Ethernet (RMII) interfaces working with
+Linux.
 
-I am a newby for ppc embedded linux. When trying to build the cross compiling tool
-chain, I got some error message in making glibc (binutils and gcc are successfully
-built).
+I would be interested to hear from anyone who has activated these
+interfaces
+with Linux or can offer useful advice.
 
-Error message is:
+Our setup:
+    - MPC8360EA MDS eval board (MPC8360 rev 2.1)
+    - PIB expansion board with 8 x FE via RMII to Realtek RTL8208 octal
+PHY
+    - UCC1 left in GbE/RGMII mode as the host debug connection
+    - UCC2 and UCC3 try to bring up in FE/RMII mode
+    - Linux kernel 2.6.26.5 and Freescale LTIB BSP environment
 
-{quote}
-assert.c: In function ¡®__assert_fail¡¯:
-assert.c:54: error: ¡®__libc_pthread_functions_init¡¯ undeclared (first use in
-this function)
-assert.c:54: error: (Each undeclared identifier is reported only once
-assert.c:54: error: for each function it appears in.)
-assert.c:54: warning: implicit declaration of function ¡®PTHFCT_CALL¡¯
-assert.c:54: error: ¡®ptr_pthread_setcancelstate¡¯ undeclared (first use in this
-function)
-assert.c:54: warning: left-hand operand of comma expression has no effect
-make[2]: ***
-[/root/embedded_linux/ppc/build-tools/build-glibc/ppc-glibc/assert/assert.os]
-Error 1
-make[2]: Leaving directory
-`/root/embedded_linux/ppc/build-tools/build-glibc/glibc-2.7/assert'
-make[1]: *** [assert/subdir_lib] Error 2
-make[1]: Leaving directory
-`/root/embedded_linux/ppc/build-tools/build-glibc/glibc-2.7'
-make: *** [all] Error 2
+We tried both UCC2 and UCC3.  UCC3 has a simpler connection just to the
+octal FE
+PHY; UCC2 can support both GbE/RGMII and FE/RMII setup via configuration
+to the
+board FPGA and I2C to switch the PHY interconnection.   For now we focus
+more
+on UCC3 as the simpler option.
 
-{quote}
+Our changes to configuration and code:
+    - flat device tree modified to setup:
+           - MPC8360 pin I/O config for UCC2/UCC3 RMII mode
+           - PHY config for MDIO to Realtek octal PHY
+           - UCC2/3 Ethernet MAC config
+    - In kernel also a few small fixes to UCC config mode for RMII:
+           - UPSMR register clear bits RPM/TBIM to comply with datasheet
+table 30-6
 
-My environments are:
+Current status:
+    - Linux device instances eth1/eth2 for UCC2/UCC3 get created
+    - PHYs for UCC2/UCC2 get link up 100Mbps FD and Linux device
+instances
+      react and are RUNNING
+    - MAC level RMII loopback : can send/recv packets :-)
+    - PHY level loopback : no receive packets :-(
+    - No loops : no send or recv packets :-(
 
-kernel: 2.26.     25
-gcc & powerpc-linux-gcc: 4.3.2
-binutils:2.18
-glibc:2.7, configured with  linuxthreads enabled and nptl disabled.
+The UCC MAC side seems OK as the RMII loop shows. But to/from the PHY
+nothing so far.
 
-My question is which packages should be used to build the toolchain for kernel
-2.26.25
-? Am I choosing the right version of these packages? Where can I find such
-information?
+Any suggestions or anyone have patched flat device tree / code where
+this was
+working?
 
-Thank you very much in advance for any hints or suggestions.
 
-Best Regards.
-
-Lin
+Best regards
+Christopher Varlese
+R&D Software
+KEYMILE AG
+Schwarzenburgstrasse 73
+3097 Bern, Switzerland
+www.keymile.com=20
