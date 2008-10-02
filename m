@@ -1,21 +1,29 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.247])
-	by ozlabs.org (Postfix) with ESMTP id BBAADDDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 22:10:51 +1000 (EST)
-Received: by hs-out-0708.google.com with SMTP id z77so335842hsz.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 02 Oct 2008 05:10:50 -0700 (PDT)
-Date: Thu, 2 Oct 2008 08:09:36 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH]ppc4xx-Walnut: fixes early boot messages
-Message-ID: <20081002120936.GA2316@yoda.jdub.homelinux.org>
-References: <200810020736.40736.niklaus.giger@member.fsf.org>
-	<20081002063954.GR25598@yookeroo.seuss>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081002063954.GR25598@yookeroo.seuss>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Niklaus Giger <niklaus.giger@member.fsf.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DE56EDDDEF
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 22:52:05 +1000 (EST)
+Subject: Re: [PATCH v2] ibm_newemac: Add support for GPCS, SGMII
+	andM88E1112 PHY
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20081002115507.GB2227@yoda.jdub.homelinux.org>
+References: <1222929477-10329-1-git-send-email-vgallardo@amcc.com>
+	<1222929920.12264.96.camel@pasglop>
+	<0CA0A16855646F4FA96D25A158E299D602C81377@SDCEXCHANGE01.ad.amcc.com>
+	<1222932759.12264.104.camel@pasglop>
+	<20081002063320.7b2331b4@zod.rchland.ibm.com>
+	<1222943668.12264.106.camel@pasglop>
+	<20081002065648.285cce25@zod.rchland.ibm.com>
+	<20081002115507.GB2227@yoda.jdub.homelinux.org>
+Content-Type: text/plain
+Date: Thu, 02 Oct 2008 22:37:48 +1000
+Message-Id: <1222951068.12264.109.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallardo@amcc.com>,
+	Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +33,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 02, 2008 at 04:39:54PM +1000, David Gibson wrote:
->On Thu, Oct 02, 2008 at 07:36:40AM +0200, Niklaus Giger wrote:
->> Inherits the baudrate from U-boot to print things like:
->> Using Walnut machine description                                          
->> Linux version <..>
->> console [udbg0] enabled                                                                                       
->Uh.. but what if you're booting from cuboot or openbios, rather than a
->device-tree-aware uboot.
+On Thu, 2008-10-02 at 07:55 -0400, Josh Boyer wrote:
+> >Yep.  You could pull now if you'd like.  I have a few more patches I'd
+> >like to get in before the merge window, but if it helps things I can do
+> >those in a separate pull request.
+> 
+> Actually, it seems not.  I pulled in an older version of the patch.  I'll
+> grab the new version today.
 
-Right.  I don't think we want this particular change.  U-Boot can always
-update it anyway.
+Victor, while at it, can you do a fixup patch on top of it that guards
+the new feature with a Kconfig option like some of the other ones so
+that the code for it doesn't get compiled in when building, for example.
+for 405GP only ?
 
-josh
+The trick is to have the option not be part of the possible mask, so
+that the compiler optimises out the feature tests as if (0) (gcc
+nowadays is supposedly smart enough to rip off the code when it finds
+such constructs).
+
+Thanks !
+
+Cheers,
+Ben.
