@@ -1,16 +1,13 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 2 Oct 2008 16:41:56 +1000
+Date: Thu, 2 Oct 2008 16:39:54 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Niklaus Giger <niklaus.giger@member.fsf.org>
-Subject: Re: [PATCH] Added preliminary support for Netstal HCU4 board
-Message-ID: <20081002064156.GS25598@yookeroo.seuss>
-References: <200810011947.16543.niklaus.giger@member.fsf.org>
-	<200810020014.20414.niklaus.giger@member.fsf.org>
-	<20081002005208.GE25598@yookeroo.seuss>
-	<200810020712.15088.niklaus.giger@member.fsf.org>
+Subject: Re: [PATCH]ppc4xx-Walnut: fixes early boot messages
+Message-ID: <20081002063954.GR25598@yookeroo.seuss>
+References: <200810020736.40736.niklaus.giger@member.fsf.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200810020712.15088.niklaus.giger@member.fsf.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200810020736.40736.niklaus.giger@member.fsf.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,33 +18,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 02, 2008 at 07:12:14AM +0200, Niklaus Giger wrote:
-> Hi David
-> 
-> Am Donnerstag 02 Oktober 2008 02.52:08 schrieb David Gibson:
-> > That will work, but will lose comments, references, and other
-> > formatting, because it essentially compiles then decompiles the tree.
-> > You probably don't want to do that.  There's also an explicit
-> > conversion program, convert-dtsv0, which will preserve that
-> > not-significant-to-output, but useful for the reader information.
-> 
-> Thanks for providing me the hint. Using it, would surely  have been easier 
-> than adding manually the comment again. However I using the search 
-> "dtc dts-v1 syntax conversion script" didn't give me any hint and even in the 
-> the current  http://www.jdl.com/software/dtc.git I find no word in the 
-> Documentation about convert-dtsv0.
-> 
-> Neither does it get installed when calling make install.
-
-Ah, yes, that's a bug.
-
-> Therefore I would suggest you to add a small remark like this:
-> 
-> convert-dtsv0 is a small utility program which converts (DTS)
-> Device Tree Source from the obsolete version 0 to version 1. Version 1 DTS
-> files are marked by line "/dts-v1/;" at the top of the file.
-
-Add this remark where, though?
+On Thu, Oct 02, 2008 at 07:36:40AM +0200, Niklaus Giger wrote:
+> Inherits the baudrate from U-boot to print things like:
+> Using Walnut machine description                                          
+> Linux version <..>
+> console [udbg0] enabled                                                                                       
+Uh.. but what if you're booting from cuboot or openbios, rather than a
+device-tree-aware uboot.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
