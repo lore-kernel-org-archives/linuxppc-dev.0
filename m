@@ -1,12 +1,15 @@
-Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: libfdt: Add function to explicitly expand aliases 
-In-reply-to: <20080820065514.GA18996@yookeroo.seuss> 
-References: <20080820065514.GA18996@yookeroo.seuss>
-Date: Thu, 02 Oct 2008 08:55:28 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1KlOeO-0007Dw-95@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B7704DDFC5
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 01:18:54 +1000 (EST)
+Date: Thu, 2 Oct 2008 19:18:52 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/83xx: don't probe broken PCI on mpc837x_mds boards
+Message-ID: <20081002151852.GA8823@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,14 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Kumar has already added alias expansion to fdt_path_offset().
-> However, in some circumstances it may be convenient for the user of
-> libfdt to explicitly get the string expansion of an alias.  This patch
-> adds a function to do this, fdt_get_alias(), and uses it to implement
-> fdt_path_offset().
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+In the standalone setup the board's CPLD disables the PCI internal
+arbiter, thus any access to the PCI bus will hang the board.
 
-Applied.
+When there is no PCI arbiter on the bus the u-boot marks the PCI
+bus as broken and we should not try to probe it.
 
-jdl
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/platforms/83xx/mpc837x_mds.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c b/arch/powerpc/platforms/83xx/mpc837x_mds.c
+index be62de2..8bb13c8 100644
+--- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
+@@ -85,8 +85,14 @@ static void __init mpc837x_mds_setup_arch(void)
+ 		ppc_md.progress("mpc837x_mds_setup_arch()", 0);
+ 
+ #ifdef CONFIG_PCI
+-	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
++	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
++		if (!of_device_is_available(np)) {
++			pr_warning("%s: disabled by the firmware.\n",
++				   np->full_name);
++			continue;
++		}
+ 		mpc83xx_add_bridge(np);
++	}
+ #endif
+ 	mpc837xmds_usb_cfg();
+ }
+-- 
+1.5.6.3
