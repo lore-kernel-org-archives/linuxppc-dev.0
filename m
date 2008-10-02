@@ -1,23 +1,17 @@
-Return-Path: <bigeasy@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 26EC8DDF43
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 17:50:43 +1000 (EST)
-Message-ID: <48E47D38.3040508@linutronix.de>
-Date: Thu, 02 Oct 2008 09:50:16 +0200
-From: Sebastian Siewior <bigeasy@linutronix.de>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: dtb and purgatory support for ppc32
-References: <1222896024-22172-1-git-send-email-sebastian@breakpoint.cc>
-	<1222896024-22172-4-git-send-email-sebastian@breakpoint.cc>
-	<7AB33E84-B8C2-4B32-B1F8-7FA213198FE4@kernel.crashing.org>
-In-Reply-To: <7AB33E84-B8C2-4B32-B1F8-7FA213198FE4@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org,
-	Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
-	kexec@lists.infradead.org
+	by ozlabs.org (Postfix) with ESMTPS id 52961DDF39
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 18:59:54 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m928xmb4006461
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Oct 2008 03:59:49 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/85xx: Wire up RTC interrupt on MPC8536DS
+Date: Thu,  2 Oct 2008 03:59:48 -0500
+Message-Id: <1222937988-2625-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+Add interrupt info to the MPC8536DS .dts for the RTC
 
-> are you trying to get this accepted?
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/boot/dts/mpc8536ds.dts |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-If the reviewer don't have any objections yes. You sound
-like there is something terrible wrong. Do you want it in smaller pieces?
-
-> - k
-Sebastian
+diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/mpc8536ds.dts
+index 1505d68..93fdd99 100644
+--- a/arch/powerpc/boot/dts/mpc8536ds.dts
++++ b/arch/powerpc/boot/dts/mpc8536ds.dts
+@@ -91,6 +91,8 @@
+ 			rtc@68 {
+ 				compatible = "dallas,ds3232";
+ 				reg = <0x68>;
++				interrupts = <0 0x1>;
++				interrupt-parent = <&mpic>;
+ 			};
+ 		};
+ 
 -- 
-Firmensitz: 88690 Uhldingen, Auf dem Berg 3
-Registergericht: Amtsgericht Freiburg i. Br., HRB 700 806;
-StNr. 87007/07777; Ust-Id Nr.: DE252739476
-Geschäftsführer: Heinz Egger, Thomas Gleixner
+1.5.5.1
