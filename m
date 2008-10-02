@@ -1,29 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DE56EDDDEF
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 22:52:05 +1000 (EST)
-Subject: Re: [PATCH v2] ibm_newemac: Add support for GPCS, SGMII
-	andM88E1112 PHY
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20081002115507.GB2227@yoda.jdub.homelinux.org>
-References: <1222929477-10329-1-git-send-email-vgallardo@amcc.com>
-	<1222929920.12264.96.camel@pasglop>
-	<0CA0A16855646F4FA96D25A158E299D602C81377@SDCEXCHANGE01.ad.amcc.com>
-	<1222932759.12264.104.camel@pasglop>
-	<20081002063320.7b2331b4@zod.rchland.ibm.com>
-	<1222943668.12264.106.camel@pasglop>
-	<20081002065648.285cce25@zod.rchland.ibm.com>
-	<20081002115507.GB2227@yoda.jdub.homelinux.org>
-Content-Type: text/plain
-Date: Thu, 02 Oct 2008 22:37:48 +1000
-Message-Id: <1222951068.12264.109.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallardo@amcc.com>,
-	Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id 0864CDDF01
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 22:53:06 +1000 (EST)
+Message-Id: <2AF4947A-B0E5-4530-9240-55C94A73E9FC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+In-Reply-To: <1222896024-22172-4-git-send-email-sebastian@breakpoint.cc>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: dtb and purgatory support for ppc32
+Date: Thu, 2 Oct 2008 07:52:37 -0500
+References: <1222896024-22172-1-git-send-email-sebastian@breakpoint.cc>
+	<1222896024-22172-4-git-send-email-sebastian@breakpoint.cc>
+Cc: linuxppc-dev@ozlabs.org, Sebastian Siewior <bigeasy@linutronix.de>,
+	kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,25 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-10-02 at 07:55 -0400, Josh Boyer wrote:
-> >Yep.  You could pull now if you'd like.  I have a few more patches I'd
-> >like to get in before the merge window, but if it helps things I can do
-> >those in a separate pull request.
-> 
-> Actually, it seems not.  I pulled in an older version of the patch.  I'll
-> grab the new version today.
 
-Victor, while at it, can you do a fixup patch on top of it that guards
-the new feature with a Kconfig option like some of the other ones so
-that the code for it doesn't get compiled in when building, for example.
-for 405GP only ?
+On Oct 1, 2008, at 4:20 PM, Sebastian Andrzej Siewior wrote:
 
-The trick is to have the option not be part of the possible mask, so
-that the compiler optimises out the feature tests as if (0) (gcc
-nowadays is supposedly smart enough to rip off the code when it finds
-such constructs).
+> From: Sebastian Siewior <bigeasy@linutronix.de>
+>
+> Some code dtb scanning & filling has been borrowed from ppc64.
+> The old behavior is still available if compiled with GameCube,
+> other PowerPC platform use the can purgatory and specify a new
+> dtb.
+> The purgatory is disabled because somehting is wrong and I dunno
+> the reason. Booting a self containd cuImage (incl. dtb / wiuthout
+> the need for a bd sturct) can be booted.
+>
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> ---
+> kexec/arch/ppc/Makefile            |    1 +
+> kexec/arch/ppc/kexec-elf-ppc.c     |  167 ++++++++++----
+> kexec/arch/ppc/kexec-elf-rel-ppc.c |    4 +
+> kexec/arch/ppc/kexec-ppc.c         |  469 +++++++++++++++++++++++++++ 
+> ++++++++-
+> purgatory/arch/ppc/Makefile        |    1 +
+> purgatory/arch/ppc/purgatory-ppc.c |    4 +
+> purgatory/arch/ppc/v2wrap.S        |   54 ++++
+> 7 files changed, 652 insertions(+), 48 deletions(-)
+> create mode 100644 purgatory/arch/ppc/v2wrap.S
 
-Thanks !
+I think I might have realized some of my confusion.. is this patch to  
+the kernel or to some kexec tool?   If its to the kernel I don't  
+answer at all.  If its to some kexec tool than that wasn't clear at all.
 
-Cheers,
-Ben.
+- k
