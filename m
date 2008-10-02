@@ -1,24 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <bigeasy@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9D360DDF31
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 17:34:59 +1000 (EST)
-Subject: RE: [PATCH v2] ibm_newemac: Add support for GPCS, SGMII
-	andM88E1112 PHY
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Victor Gallardo <vgallardo@amcc.com>
-In-Reply-To: <0CA0A16855646F4FA96D25A158E299D602C81377@SDCEXCHANGE01.ad.amcc.com>
-References: <1222929477-10329-1-git-send-email-vgallardo@amcc.com>
-	<1222929920.12264.96.camel@pasglop>
-	<0CA0A16855646F4FA96D25A158E299D602C81377@SDCEXCHANGE01.ad.amcc.com>
-Content-Type: text/plain
-Date: Thu, 02 Oct 2008 17:32:39 +1000
-Message-Id: <1222932759.12264.104.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jgarzik@pobox.com>,
-	netdev@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id 26EC8DDF43
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 17:50:43 +1000 (EST)
+Message-ID: <48E47D38.3040508@linutronix.de>
+Date: Thu, 02 Oct 2008 09:50:16 +0200
+From: Sebastian Siewior <bigeasy@linutronix.de>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: dtb and purgatory support for ppc32
+References: <1222896024-22172-1-git-send-email-sebastian@breakpoint.cc>
+	<1222896024-22172-4-git-send-email-sebastian@breakpoint.cc>
+	<7AB33E84-B8C2-4B32-B1F8-7FA213198FE4@kernel.crashing.org>
+In-Reply-To: <7AB33E84-B8C2-4B32-B1F8-7FA213198FE4@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org,
+	Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+	kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,16 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-10-02 at 00:30 -0700, Victor Gallardo wrote:
-> 
->  
-> Yes, this based on Josh's git repository. Should I sync up with your
-> git repository or is Josh's OK.
+Kumar Gala wrote:
 
-Josh is fine.
+> are you trying to get this accepted?
 
-Jeff, can we merge all those EMAC patches via the powerpc git ? need an
-ack from you I suppose ...
+If the reviewer don't have any objections yes. You sound
+like there is something terrible wrong. Do you want it in smaller pieces?
 
-Thanks,
-Ben.
+> - k
+Sebastian
+-- 
+Firmensitz: 88690 Uhldingen, Auf dem Berg 3
+Registergericht: Amtsgericht Freiburg i. Br., HRB 700 806;
+StNr. 87007/07777; Ust-Id Nr.: DE252739476
+Geschäftsführer: Heinz Egger, Thomas Gleixner
