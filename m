@@ -1,26 +1,35 @@
-Return-Path: <buytenh@wantstofly.org>
-Received: from xi.wantstofly.org (xi.wantstofly.org [83.160.184.112])
-	by ozlabs.org (Postfix) with ESMTP id 915A1DDFFC
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 20:15:11 +1000 (EST)
-Date: Thu, 2 Oct 2008 12:15:08 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
-	Vitaly Bordug <vbordug@ru.mvista.com>,
-	Michael Chan <mchan@broadcom.com>, Olof Johansson <olof@lixom.net>,
-	Kumar Gala <galak@kernel.crashing.org>, Eugene Konev <ejka@imfi.kspu.ru>,
-	Manuel Lauss <manuel.lauss@gmail.com>,
-	Kim Phillips <kim.phillips@freescale.com>,
-	Laurent Pinchart <laurentp@cse-semaphore.com>,
-	Haavard Skinnemoen <hskinnemoen@atmel.com>,
-	Anton Vorontsov <avorontsov@ru.mvista.com>,
-	Li Yang <leoli@freescale.com>, Scott Wood <scottwood@freescale.com>,
-	Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH,CFT] dynamic struct mii_bus allocation
-Message-ID: <20081002101508.GA31074@xi.wantstofly.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DBBA8DDFE3
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 20:33:46 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m92AaCT0029243
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Oct 2008 06:36:12 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m92AXLYt288472
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Oct 2008 06:33:21 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m92AXL89025781
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Oct 2008 06:33:21 -0400
+Date: Thu, 2 Oct 2008 06:33:20 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH v2] ibm_newemac: Add support for GPCS, SGMII andM88E1112
+	PHY
+Message-ID: <20081002063320.7b2331b4@zod.rchland.ibm.com>
+In-Reply-To: <1222932759.12264.104.camel@pasglop>
+References: <1222929477-10329-1-git-send-email-vgallardo@amcc.com>
+	<1222929920.12264.96.camel@pasglop>
+	<0CA0A16855646F4FA96D25A158E299D602C81377@SDCEXCHANGE01.ad.amcc.com>
+	<1222932759.12264.104.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, Andy Fleming <afleming@freescale.com>,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallardo@amcc.com>,
+	Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,66 +39,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi *,
+On Thu, 02 Oct 2008 17:32:39 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-You're listed as maintainer of one of the network drivers in the tree
-that use phylib.  Available at the URL below is a change to the phylib
-API (dynamic allocation of struct mii_bus, which is needed for hooking
-up mdio buses into the device tree) that needs corresponding mdio bus
-driver changes.  I've patched all mdio bus drivers I could find, and
-tried not to break anything, but it's possible I might have
-inadvertently broken something, so I'd like you to test these changes
-and let me know if they work for you or not:
+> On Thu, 2008-10-02 at 00:30 -0700, Victor Gallardo wrote:
+> > 
+> >  
+> > Yes, this based on Josh's git repository. Should I sync up with your
+> > git repository or is Josh's OK.
+> 
+> Josh is fine.
+> 
+> Jeff, can we merge all those EMAC patches via the powerpc git ? need an
+> ack from you I suppose ...
 
-	git://git.marvell.com/phylib.git master
+I already have this in my tree.  Jeff already acked it (twice now I
+think).
 
-As a side-effect of the last patch, you should end up with a list of
-mdio buses in your system in /sys/class/mdio_bus.
+http://git.kernel.org/?p=linux/kernel/git/jwboyer/powerpc-4xx.git;a=shortlog;h=next
 
-
-thanks,
-Lennert
-
-
-The following changes since commit e69c4e0f1210450841e40716894ba6a877b31d52:
-  Vlad Yasevich (1):
-        sctp: correctly save sctp_adaptation from parameter.
-
-are available in the git repository at:
-
-  git://git.marvell.com/phylib.git master
-
-Lennert Buytenhek (5):
-      phylib: phy_mii_ioctl() fixes
-      phylib: add mdiobus_{read,write}
-      phylib: rename mii_bus::dev to mii_bus::parent
-      phylib: move to dynamic allocation of struct mii_bus
-      phylib: give mdio buses a device tree presence
-
- arch/powerpc/platforms/82xx/ep8248e.c     |    2 +-
- arch/powerpc/platforms/pasemi/gpio_mdio.c |    6 +-
- drivers/net/au1000_eth.c                  |   43 ++++++---
- drivers/net/au1000_eth.h                  |    2 +-
- drivers/net/bfin_mac.c                    |   31 ++++---
- drivers/net/bfin_mac.h                    |    2 +-
- drivers/net/cpmac.c                       |   51 ++++++----
- drivers/net/fec_mpc52xx_phy.c             |    8 +-
- drivers/net/fs_enet/mii-bitbang.c         |    9 +-
- drivers/net/fs_enet/mii-fec.c             |    8 +-
- drivers/net/gianfar_mii.c                 |    9 +-
- drivers/net/macb.c                        |   49 ++++++----
- drivers/net/macb.h                        |    2 +-
- drivers/net/mv643xx_eth.c                 |   32 ++++---
- drivers/net/phy/fixed.c                   |   29 ++++--
- drivers/net/phy/mdio-bitbang.c            |    4 +-
- drivers/net/phy/mdio-ofgpio.c             |   11 +-
- drivers/net/phy/mdio_bus.c                |  144 ++++++++++++++++++++++++++++-
- drivers/net/phy/phy.c                     |   54 +----------
- drivers/net/sb1250-mac.c                  |   36 +++++---
- drivers/net/sh_eth.c                      |    4 +-
- drivers/net/tc35815.c                     |   45 ++++++----
- drivers/net/tg3.c                         |   66 +++++++-------
- drivers/net/tg3.h                         |    2 +-
- drivers/net/ucc_geth_mii.c                |    9 +-
- include/linux/phy.h                       |   54 ++++++++++--
- 26 files changed, 456 insertions(+), 256 deletions(-)
+josh
