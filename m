@@ -1,21 +1,19 @@
 Return-Path: <niklaus.giger@member.fsf.org>
-Received: from viefep24-int.chello.at (viefep18-int.chello.at [213.46.255.22])
-	by ozlabs.org (Postfix) with ESMTP id 702BCDE4EC
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 05:51:56 +1000 (EST)
+Received: from viefep23-int.chello.at (viefep18-int.chello.at [213.46.255.22])
+	by ozlabs.org (Postfix) with ESMTP id 3D5F1DE38C
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 06:06:43 +1000 (EST)
+Received: from ng.localnet ([77.56.223.114]) by viefep23-int.chello.at
+	(InterMail vM.7.08.02.00 201-2186-121-20061213) with ESMTP
+	id <20081002200641.ZBDZ29348.viefep23-int.chello.at@ng.localnet>
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Oct 2008 22:06:41 +0200
 From: Niklaus Giger <niklaus.giger@member.fsf.org>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [PATCH] Added preliminary support for Netstal HCU4 board
-Date: Thu, 2 Oct 2008 21:51:52 +0200
-References: <200810011947.16543.niklaus.giger@member.fsf.org>
-	<200810022108.44690.niklaus.giger@member.fsf.org>
-	<1222976220.9242.16.camel@ld0161-tx32>
-In-Reply-To: <1222976220.9242.16.camel@ld0161-tx32>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Install & document convert-dtsv0
+Date: Thu, 2 Oct 2008 22:06:35 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200810022151.53162.niklaus.giger@member.fsf.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+  charset="utf-8"
+Message-Id: <200810022206.36010.niklaus.giger@member.fsf.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Am Donnerstag 02 Oktober 2008 21.37:00 schrieb Jon Loeliger:
-> On Thu, 2008-10-02 at 21:08 +0200, Niklaus Giger wrote:
-> > > > convert-dtsv0 is a small utility program which converts (DTS)
-> > > > Device Tree Source from the obsolete version 0 to version 1. Version
-> > > > 1 DTS files are marked by line "/dts-v1/;" at the top of the file.
-> > >
-> > > Add this remark where, though?
-> >
-> > Add a small chapter IV Utilities in your Documentation/manual.txt.
->
-> Patches welcome, of course. :-)
->
-> > And if the http://www.jdl.com/git_repos/ would work again, I think the
-> > spiders would pick it up from there.
->
-> I fetched http://www.jdl.com/software/dtc.git through
-> my firewall at work just this morning.  What problem
-> are you seeing?  Are you unable to clone
-> git://git.jdl.com/software/dtc/git ?
->
-> jdl
-git pull worked perfectly. But in Documentation/manual.txt you promise:
-> -- The gitweb interface is:
->
->     http://www.jdl.com/git_repos/
-And this link does not work.
+Patch against http://www.jdl.com/software/dtc.git
+Signed-off-by: Niklaus Giger <niklaus.giger@member.fsf.org>
+---
+ Documentation/manual.txt |   20 ++++++++++++++++++++
+ Makefile                 |    1 +
+ 2 files changed, 21 insertions(+), 0 deletions(-)
 
-Best regards.
-
-Niklaus
+diff --git a/Documentation/manual.txt b/Documentation/manual.txt
+index b957662..0674384 100644
+--- a/Documentation/manual.txt
++++ b/Documentation/manual.txt
+@@ -19,6 +19,8 @@ II - The DT block format
+ 
+ III - libfdt
+ 
++IV - Conversion to Version 1
++
+ 
+ I - "dtc", the device tree compiler
+ ===================================
+@@ -613,6 +615,24 @@ strings block.
+ 
+ 
+ III - libfdt
++============
+ 
+ This library should be merged into dtc proper.
+ This library should likely be worked into U-Boot and the kernel.
++
++IV - Conversion to Version 1
++============================
++
++convert-dtsv0 is a small utility program which converts (DTS)
++Device Tree Source from the obsolete version 0 to version 1.
++
++Version 1 DTS files are marked by line "/dts-v1/;" at the top of the file.
++
++The syntax of the convert-dtsv0 command line is:
++
++convert-dtsv0 [<input_filename ... >]
++
++Each file passed will be converted to the new /dts-v1/ version by creating
++a new file with a "v1" appended the filename.
++
++Comments, empty lines, etc. are preserved.
+diff --git a/Makefile b/Makefile
+index 5ad0189..558e10c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -52,6 +52,7 @@ install: all
+ 	@$(VECHO) INSTALL
+ 	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+ 	$(INSTALL) -m 755 dtc $(DESTDIR)$(BINDIR)
++	$(INSTALL) -m 755 convert-dtsv0 $(DESTDIR)$(BINDIR)
+ 	$(INSTALL) -d $(DESTDIR)$(LIBDIR)
+ 	$(INSTALL) -m 644 $(LIBFDT_lib) $(DESTDIR)$(LIBDIR)
+ 	$(INSTALL) -d $(DESTDIR)$(INCLUDEDIR)
+-- 
+1.6.0.1
