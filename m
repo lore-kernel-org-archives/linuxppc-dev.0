@@ -1,17 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 52961DDF39
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 18:59:54 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m928xmb4006461
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Oct 2008 03:59:49 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/85xx: Wire up RTC interrupt on MPC8536DS
-Date: Thu,  2 Oct 2008 03:59:48 -0500
-Message-Id: <1222937988-2625-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+	by ozlabs.org (Postfix) with ESMTP id 62D72DDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 20:05:55 +1000 (EST)
+Date: Thu, 2 Oct 2008 20:05:53 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Sebastian Siewior <bigeasy@linutronix.de>
+Subject: Re: [PATCH] powerpc: dtb and purgatory support for ppc32
+Message-ID: <20081002100553.GA5886@verge.net.au>
+References: <1222896024-22172-1-git-send-email-sebastian@breakpoint.cc>
+	<1222896024-22172-4-git-send-email-sebastian@breakpoint.cc>
+	<7AB33E84-B8C2-4B32-B1F8-7FA213198FE4@kernel.crashing.org>
+	<48E47D38.3040508@linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48E47D38.3040508@linutronix.de>
+Cc: linuxppc-dev@ozlabs.org,
+	Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+	kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add interrupt info to the MPC8536DS .dts for the RTC
+On Thu, Oct 02, 2008 at 09:50:16AM +0200, Sebastian Siewior wrote:
+> Kumar Gala wrote:
+> 
+> > are you trying to get this accepted?
+> 
+> If the reviewer don't have any objections yes. You sound
+> like there is something terrible wrong. Do you want it in smaller pieces?
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/boot/dts/mpc8536ds.dts |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+I'm not speaking on behalf of Kumar Gala, just on behalf of myself.
 
-diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/mpc8536ds.dts
-index 1505d68..93fdd99 100644
---- a/arch/powerpc/boot/dts/mpc8536ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8536ds.dts
-@@ -91,6 +91,8 @@
- 			rtc@68 {
- 				compatible = "dallas,ds3232";
- 				reg = <0x68>;
-+				interrupts = <0 0x1>;
-+				interrupt-parent = <&mpic>;
- 			};
- 		};
- 
+I would like to get some review of this patch by if possible.
+Also, I'm a little unclear of how it will interact with the
+patches that Mohan Kumar sent this week. But at this point
+I don't see any particular need to break the patch up into
+smaller pieices.
+
+
 -- 
-1.5.5.1
+Simon Horman
+  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
+  H: www.vergenet.net/~horms/             W: www.valinux.co.jp/en
