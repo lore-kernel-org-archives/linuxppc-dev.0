@@ -1,16 +1,9 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 2 Oct 2008 10:52:08 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Niklaus Giger <niklaus.giger@member.fsf.org>
-Subject: Re: [PATCH] Added preliminary support for Netstal HCU4 board
-Message-ID: <20081002005208.GE25598@yookeroo.seuss>
-References: <200810011947.16543.niklaus.giger@member.fsf.org>
-	<20081001180835.GA7601@yoda.jdub.homelinux.org>
-	<200810020014.20414.niklaus.giger@member.fsf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200810020014.20414.niklaus.giger@member.fsf.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 02 Oct 2008 11:30:04 +1000
+Subject: [PATCH] powerpc: Fix sysfs pci mmap on 32-bit machines with 64-bit PCI
+Message-Id: <20081002013018.17A24DDE41@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +13,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 02, 2008 at 12:14:19AM +0200, Niklaus Giger wrote:
-> Am Mittwoch 01 Oktober 2008 20.08:35 schrieb Josh Boyer:
-> > On Wed, Oct 01, 2008 at 07:47:16PM +0200, Niklaus Giger wrote:
-> > >Adds preliminary support for a HCU4 PPC405GPr based board from
-> > >Netstal Maschinen AG.
-> > >
-> > >For the last 3 years I have been the only user running Linux on this
-> > > board, but it served me well as testbed for the xenomai realtime
-> > > extension to the Linux kernel.
-> >
-> > Overall, really nice for a first submission.
-> One never has a second chance to make a first imrpession.
-> 
-> It was easy to make the needed changes (except changing ibm -> amcc, see 
-> below). The dtc does the conversion from the old to the new format dts-v1 
-> without a hitch. Calling "dtc -I dts -O dts hcu5.dts.old >hcu5.dts.new"l
+When manipulating 64-bit PCI addresses, the code would lose the
+top 32-bit in a couple of places when shifting a pfn due to missing
+type casting from the 32-bit pfn to a 64-bit resource before the
+shift.
 
-That will work, but will lose comments, references, and other
-formatting, because it essentially compiles then decompiles the tree.
-You probably don't want to do that.  There's also an explicit
-conversion program, convert-dtsv0, which will preserve that
-not-significant-to-output, but useful for the reader information.
+This breaks using newer X servers for example on 440 machines
+with the PCI bus above 32-bit.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+ arch/powerpc/kernel/pci-common.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- linux-work.orig/arch/powerpc/kernel/pci-common.c	2008-10-02 11:18:34.000000000 +1000
++++ linux-work/arch/powerpc/kernel/pci-common.c	2008-10-02 11:27:35.000000000 +1000
+@@ -372,7 +372,7 @@ pgprot_t pci_phys_mem_access_prot(struct
+ 	struct pci_dev *pdev = NULL;
+ 	struct resource *found = NULL;
+ 	unsigned long prot = pgprot_val(protection);
+-	unsigned long offset = pfn << PAGE_SHIFT;
++	resource_size_t offset = ((resource_size_t)pfn) << PAGE_SHIFT;
+ 	int i;
+ 
+ 	if (page_is_ram(pfn))
+@@ -423,7 +423,8 @@ pgprot_t pci_phys_mem_access_prot(struct
+ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
+ 			enum pci_mmap_state mmap_state, int write_combine)
+ {
+-	resource_size_t offset = vma->vm_pgoff << PAGE_SHIFT;
++	resource_size_t offset =
++		((resource_size_t)vma->vm_pgoff) << PAGE_SHIFT;
+ 	struct resource *rp;
+ 	int ret;
+ 
