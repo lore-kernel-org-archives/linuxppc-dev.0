@@ -1,18 +1,15 @@
-Return-Path: <hofrat@hofr.at>
-Received: from mail.hofr.at (unknown [194.112.174.227])
-	by ozlabs.org (Postfix) with ESMTP id E94E4DDF9C
+Return-Path: <mditto@consentry.com>
+Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
+	by ozlabs.org (Postfix) with ESMTP id E1544DE0DE
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Oct 2008 04:38:08 +1000 (EST)
-Date: Fri, 3 Oct 2008 10:01:35 -0800 (AKDT)
-From: Nicholas Mc Guire <hofrat@hofr.at>
-To: Fillod Stephane <stephane.fillod@thomson.net>
-Subject: RE: SA-RTLinux for ppc?
-In-Reply-To: <0B45E93C5FF65740AEAE690BF3848B7AD383BB@rennsmail04.eu.thmulti.com>
-Message-ID: <Pine.LNX.4.58.0810030958420.2907@vlab.hofr.at>
-References: <0B45E93C5FF65740AEAE690BF3848B7AD383BB@rennsmail04.eu.thmulti.com>
+	Sat,  4 Oct 2008 06:25:21 +1000 (EST)
+Message-ID: <48E67CDD.8080002@consentry.com>
+Date: Fri, 03 Oct 2008 13:13:17 -0700
+From: Mike Ditto <mditto@consentry.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org, sumedh tirodkar <sumedhtirodkar@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: unit name for /soc in device tree
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,21 +20,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-> sumedh tirodkar wrote:
-> > does there exist a Standalone RTLinux for powerpc?
-> >
->
-> I don't know, but there's a very good hard real-time extension called
-> Xenomai
-> for powerpc (and many other arch's). http://www.xenomai.org
->
-RTLinux/GPL (www.rtlinux-gpl.org) currently does not support PPC though
-we do have the first ports for PPC 440 and 405 of XtratuM in testing it
-will be some time before RTLinux is fully available in a stable release.
-So atleast for now xenomai is your best bet for a free-software real-time
-extension. If you are interested in testing early releases let me know
-though.
+I'm starting a scratch port of Linux 2.6 to an MPC8272 board that currently
+runs 2.4 (MontaVista).
 
-thx!
-hofrat
+Documentation/powerpc/booting-without-of.txt says:
+    The name of an soc
+    node should start with "soc", and the remainder of the name should
+    represent the part number for the soc.  For example, the MPC8540's
+    soc node would be called "soc8540".
+
+So I used the unit name "soc8272@f0000000" in my .dts file.
+
+But arch/powerpc/boot/cpm-serial.c does:
+	muram = finddevice("/soc/cpm/muram/data");
+
+And that doesn't work if I follow the naming convention suggested.
+I changed the .dts file to use the name "soc" instead of "soc8272" and
+now the boot serial driver works.  Is that the right way to go?  Or
+will this lead to problems in the kernel later (I'm not that far yet)?
+
+					-=] Mike [=-
