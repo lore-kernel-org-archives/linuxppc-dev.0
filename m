@@ -1,17 +1,21 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 477C5DDE08
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 11:02:57 +1000 (EST)
-Date: Thu, 2 Oct 2008 21:02:54 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7B789DDDDB
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 14:19:54 +1000 (EST)
 Subject: Re: [PATCH] powerpc: Simple platform for the ISS 4xx simulator
-Message-ID: <20081002210254.09076765@lappy.seanm.ca>
-In-Reply-To: <20081003000737.85CFEDDE17@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sean MacLennan <smaclennan@pikatech.com>
+In-Reply-To: <20081002210254.09076765@lappy.seanm.ca>
 References: <20081003000737.85CFEDDE17@ozlabs.org>
+	<20081002210254.09076765@lappy.seanm.ca>
+Content-Type: text/plain
+Date: Fri, 03 Oct 2008 14:19:44 +1000
+Message-Id: <1223007584.12264.170.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,14 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 03 Oct 2008 10:07:19 +1000
-"Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
+On Thu, 2008-10-02 at 21:02 -0400, Sean MacLennan wrote:
+> On Fri, 03 Oct 2008 10:07:19 +1000
+> "Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
+> 
+> >  image-$(CONFIG_WARP)			+= cuImage.warp
+> > -image-$(CONFIG_YOSEMITE)		+= cuImage.yosemite
+> > +image-$(CONFIG_YOSEMITE)		+= cuImage.yosemit
+> 
+> Did you really mean to drop the e from yosemite?
 
->  image-$(CONFIG_WARP)			+= cuImage.warp
-> -image-$(CONFIG_YOSEMITE)		+= cuImage.yosemite
-> +image-$(CONFIG_YOSEMITE)		+= cuImage.yosemit
-
-Did you really mean to drop the e from yosemite?
+Nope :-) Thanks for catching this.
 
 Cheers,
-   Sean
+Ben.
