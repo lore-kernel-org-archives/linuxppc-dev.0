@@ -1,22 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 7F869DE02F
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 19:08:06 +1000 (EST)
-Date: Fri, 3 Oct 2008 13:08:04 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: make Freescale QE support a selectable
-	Kconfig option
-Message-ID: <20081003090804.GA29029@oksana.dev.rtsoft.ru>
-References: <1222961277-6166-1-git-send-email-timur@freescale.com>
-	<20081003070416.GA460@oksana.dev.rtsoft.ru>
-	<E50C84D1-E250-4827-B260-A5005CABE959@kernel.crashing.org>
-	<20081003084849.GA18271@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081003084849.GA18271@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B6415DDE21
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 19:31:41 +1000 (EST)
+Subject: Re: [RFC/PATCH] Block device for the ISS simulator
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20081003083522.GB25683@infradead.org>
+References: <20081003000904.0A812DDEEE@ozlabs.org>
+	<20081003083522.GB25683@infradead.org>
+Content-Type: text/plain
+Date: Fri, 03 Oct 2008 19:29:40 +1000
+Message-Id: <1223026180.12264.174.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,43 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 03, 2008 at 12:48:49PM +0400, Anton Vorontsov wrote:
-> On Fri, Oct 03, 2008 at 02:58:57AM -0500, Kumar Gala wrote:
-> >
-> > On Oct 3, 2008, at 2:04 AM, Anton Vorontsov wrote:
-> >
-> >> On Thu, Oct 02, 2008 at 10:27:57AM -0500, Timur Tabi wrote:
-> >>> Modify the Kconfig so that Freescale QUICC Engine (QE) support is a  
-> >>> selectable
-> >>> option, thereby allowing users to compile kernels without any QE  
-> >>> support.
-> >>>
-> >>> The drawback is that QE support is now disabled by default on  
-> >>> platforms that
-> >>> have a QE, and so a defconfig is needed to enable QE and QE devices  
-> >>> (like
-> >>> UCC GETH).  Fortunately, all the current relevant defconfigs do that 
-> >>> already.
-> >>>
-> >>> Signed-off-by: Timur Tabi <timur@freescale.com>
-> >>> ---
-> >>
-> >> [...]
-> >>> config MPC836x_RDK
-> >>> 	bool "Freescale/Logic MPC836x RDK"
-> >>> 	select DEFAULT_UIMAGE
-> >>> -	select QUICC_ENGINE
-> >>> 	select QE_GPIO
-> >>
-> >> IIRC selects do not honor any dependencies, i.e. you should delete
-> >> the QE_GPIO too.
-> >
-> > Is QE_GPIO need by the board?  or you just enabled it to have it?
+On Fri, 2008-10-03 at 04:35 -0400, Christoph Hellwig wrote:
+> On Fri, Oct 03, 2008 at 10:08:42AM +1000, Benjamin Herrenschmidt wrote:
+> > The ISS simulator is a simple powerpc simulator used among other things
+> > for hardware bringup. It implements a simple memory mapped block device
+> > interface.
+> > 
+> > This is a simple block driver that attaches to it. Note that the choice
+> > of a major device number is fishy, though because it's a simulator and
+> > not real hardware, it's not necessarily a big deal.
+> 
+> Please don't put in more block devices for every bloody simulator in the
+> world.  Just emulated some simpler enough existing hardware.
 
-Btw, as for the need.. yes, it was needed to support the FHCI. But
-now the FHCI would just depend on it, which is better approach anyway.
+I'm not sure I want it merged, but having it on the list "for the
+record" is useful and it might be useful to get comments in case it's
+terminally busted :-)
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+I'm trying to get ISS to implement an IDE interface in fact.
+
+Cheers,
+Ben.
