@@ -1,24 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 54C48DDDF9
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 02:05:48 +1000 (EST)
-Date: Fri, 3 Oct 2008 20:05:45 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc: make Freescale QE support a selectable Kconfig
-	option
-Message-ID: <20081003160545.GA29927@oksana.dev.rtsoft.ru>
-References: <1222961277-6166-1-git-send-email-timur@freescale.com>
-	<20081003070416.GA460@oksana.dev.rtsoft.ru>
-	<E50C84D1-E250-4827-B260-A5005CABE959@kernel.crashing.org>
-	<20081003084849.GA18271@oksana.dev.rtsoft.ru>
-	<20081003090804.GA29029@oksana.dev.rtsoft.ru>
-	<48E63DB6.8030102@freescale.com>
+Return-Path: <jbarnes@virtuousgeek.org>
+Received: from outbound-mail-156.bluehost.com (outbound-mail-156.bluehost.com
+	[67.222.39.36]) by ozlabs.org (Postfix) with SMTP id AEBD6DE14B
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 02:05:56 +1000 (EST)
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH 2/2] powerpc: Add legacy PCI access via sysfs
+Date: Fri, 3 Oct 2008 08:59:12 -0700
+References: <20081003094953.A7F4EDE184@ozlabs.org>
+In-Reply-To: <20081003094953.A7F4EDE184@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <48E63DB6.8030102@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200810030859.12335.jbarnes@virtuousgeek.org>
+Cc: linuxppc-dev@ozlabs.org, tony.luck@intel.com, linux-pci@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 03, 2008 at 10:43:50AM -0500, Timur Tabi wrote:
-> Anton Vorontsov wrote:
-> 
-> > Btw, as for the need.. yes, it was needed to support the FHCI. But
-> > now the FHCI would just depend on it, which is better approach anyway.
-> 
-> I also noticed that "QE GPIO support" is a top-level Kconfig option, instead of
-> under Device Drivers -> GPIO.  Is that intentional?
+On Friday, October 3, 2008 2:49 am Benjamin Herrenschmidt wrote:
+> +	/* WARNING: The generic code is idiotic. It gets passed a pointer
+> +	 * to what can be a 1, 2 or 4 byte quantity and always reads that
+> +	 * as a u32, which means that we have to correct the location of
+> +	 * the data read within those 32 bits for size 1 and 2
+> +	 */
+> +	switch(size) {
+> +	case 1:
+> +		out_8(addr, val >> 24);
+> +		return 1;
+> +	case 2:
+> +		if (port & 1)
+> +			return -EINVAL;
+> +		out_le16(addr, val >> 16);
+> +		return 2;
+> +	case 4:
+> +		if (port & 3)
+> +			return -EINVAL;
+> +		out_le32(addr, val);
+> +		return 4;
+> +	}
+> +	return -EINVAL;
 
-Yup. David said that platform GPIO controllers should not go into the
-drivers/gpio/, their place is in the arch/.
+Feel free to change the generic code if it makes things easier for you, the 
+only limitation is that we have to live within the generic sysfs read/write 
+functions.  Obviously I didn't worry about it when doing this code on ia64...
 
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Jesse
