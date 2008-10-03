@@ -1,17 +1,27 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 57BDADE1C9
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 02:14:31 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
-	avorontsov@ru.mvista.com
-Subject: [PATCH v2] powerpc: make Freescale QE support a selectable Kconfig
+	by ozlabs.org (Postfix) with ESMTPS id 249F7DDF3E
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 02:18:10 +1000 (EST)
+Message-Id: <370072EA-CFCC-4027-8D8C-7730A1C8D9A5@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <48E643A5.9060403@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: make Freescale QE support a selectable Kconfig
 	option
-Date: Fri,  3 Oct 2008 11:14:10 -0500
-Message-Id: <1223050450-32234-1-git-send-email-timur@freescale.com>
+Date: Fri, 3 Oct 2008 11:18:02 -0500
+References: <1222961277-6166-1-git-send-email-timur@freescale.com>
+	<20081003070416.GA460@oksana.dev.rtsoft.ru>
+	<E50C84D1-E250-4827-B260-A5005CABE959@kernel.crashing.org>
+	<20081003084849.GA18271@oksana.dev.rtsoft.ru>
+	<20081003090804.GA29029@oksana.dev.rtsoft.ru>
+	<48E63DB6.8030102@freescale.com>
+	<20081003160545.GA29927@oksana.dev.rtsoft.ru>
+	<48E643A5.9060403@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,84 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Modify the Kconfig so that Freescale QUICC Engine (QE) support is a selectable
-option, thereby allowing users to compile kernels without any QE support.
 
-The drawback is that QE support is now disabled by default on platforms that
-have a QE, and so a defconfig is needed to enable QE and QE devices (like
-UCC GETH).  Fortunately, all the current relevant defconfigs do that already.
+On Oct 3, 2008, at 11:09 AM, Timur Tabi wrote:
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+> Anton Vorontsov wrote:
+>
+>> Yup. David said that platform GPIO controllers should not go into the
+>> drivers/gpio/, their place is in the arch/.
+>
+> Then when I do "make menuconfig", why doesn't that option appear  
+> under "Platform
+> support"?  This is what I see now:
+>
+> [*] Networking support  --->
+>    Device Drivers  --->
+>    File systems  --->
+> [*] QE GPIO support
+>    Library routines  --->
+>    Kernel hacking  --->
 
-This patch should be applied to Kumar's branch for 2.6.28 patches.
+I'm moving it under platform like the 8xxx GPIO config
 
- arch/powerpc/platforms/83xx/Kconfig |    5 -----
- arch/powerpc/platforms/85xx/Kconfig |    1 -
- arch/powerpc/platforms/Kconfig      |    3 ++-
- 3 files changed, 2 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index 6159c5d..83c664a 100644
---- a/arch/powerpc/platforms/83xx/Kconfig
-+++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -19,7 +19,6 @@ config MPC831x_RDB
- config MPC832x_MDS
- 	bool "Freescale MPC832x MDS"
- 	select DEFAULT_UIMAGE
--	select QUICC_ENGINE
- 	select PPC_MPC832x
- 	help
- 	  This option enables support for the MPC832x MDS evaluation board.
-@@ -27,7 +26,6 @@ config MPC832x_MDS
- config MPC832x_RDB
- 	bool "Freescale MPC832x RDB"
- 	select DEFAULT_UIMAGE
--	select QUICC_ENGINE
- 	select PPC_MPC832x
- 	help
- 	  This option enables support for the MPC8323 RDB board.
-@@ -57,15 +55,12 @@ config MPC834x_ITX
- config MPC836x_MDS
- 	bool "Freescale MPC836x MDS"
- 	select DEFAULT_UIMAGE
--	select QUICC_ENGINE
- 	help
- 	  This option enables support for the MPC836x MDS Processor Board.
- 
- config MPC836x_RDK
- 	bool "Freescale/Logic MPC836x RDK"
- 	select DEFAULT_UIMAGE
--	select QUICC_ENGINE
--	select QE_GPIO
- 	select FSL_GTM
- 	select FSL_LBC
- 	help
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 291675b..b79dc71 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -33,7 +33,6 @@ config MPC85xx_CDS
- config MPC85xx_MDS
- 	bool "Freescale MPC85xx MDS"
- 	select DEFAULT_UIMAGE
--	select QUICC_ENGINE
- 	select PHYLIB
- 	help
- 	  This option enables support for the MPC85xx MDS board
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 9578c45..6cf517f 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -239,7 +239,8 @@ config TAU_AVERAGE
- 	  If in doubt, say N here.
- 
- config QUICC_ENGINE
--	bool
-+	bool "Freescale QUICC Engine (QE) Support"
-+	depends on FSL_SOC
- 	select PPC_LIB_RHEAP
- 	select CRC32
- 	help
--- 
-1.5.5
+- k
