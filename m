@@ -1,22 +1,21 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 45541DE067
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 07:04:02 +1000 (EST)
-Date: Sat, 4 Oct 2008 00:57:20 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-Subject: Re: [PATCH,CFT] dynamic struct mii_bus allocation
-Message-ID: <20081003205720.GA31330@server.dev.rtsoft.ru>
-References: <20081002101508.GA31074@xi.wantstofly.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2D755DDE28
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 07:52:11 +1000 (EST)
+Subject: Re: [RFC/PATCH 2/2] powerpc: Add legacy PCI access via sysfs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <200810030859.12335.jbarnes@virtuousgeek.org>
+References: <20081003094953.A7F4EDE184@ozlabs.org>
+	<200810030859.12335.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Sat, 04 Oct 2008 07:52:03 +1000
+Message-Id: <1223070723.12264.213.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-In-Reply-To: <20081002101508.GA31074@xi.wantstofly.org>
-Cc: Eugene Konev <ejka@imfi.kspu.ru>, Bryan Wu <cooloney@kernel.org>,
-	Li Yang <leoli@freescale.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>,
-	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Scott Wood <scottwood@freescale.com>,
-	Andy Fleming <afleming@freescale.com>, Michael Chan <mchan@broadcom.com>,
-	Olof Johansson <olof@lixom.net>, Manuel Lauss <manuel.lauss@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, tony.luck@intel.com, linux-pci@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,72 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 02, 2008 at 12:15 +0200, Lennert Buytenhek wrote:
-> Hi *,
+On Fri, 2008-10-03 at 08:59 -0700, Jesse Barnes wrote:
 > 
-> You're listed as maintainer of one of the network drivers in the tree
-> that use phylib.  Available at the URL below is a change to the phylib
-> API (dynamic allocation of struct mii_bus, which is needed for hooking
-> up mdio buses into the device tree) that needs corresponding mdio bus
-> driver changes.  I've patched all mdio bus drivers I could find, and
-> tried not to break anything, but it's possible I might have
-> inadvertently broken something, so I'd like you to test these changes
-> and let me know if they work for you or not:
-> 
-> 	git://git.marvell.com/phylib.git master
-> 
-> As a side-effect of the last patch, you should end up with a list of
-> mdio buses in your system in /sys/class/mdio_bus.
-> 
-> 
-> thanks,
-> Lennert
-> 
-> 
-> The following changes since commit e69c4e0f1210450841e40716894ba6a877b31d52:
->   Vlad Yasevich (1):
->         sctp: correctly save sctp_adaptation from parameter.
-> 
-> are available in the git repository at:
-> 
->   git://git.marvell.com/phylib.git master
-> 
-> Lennert Buytenhek (5):
->       phylib: phy_mii_ioctl() fixes
->       phylib: add mdiobus_{read,write}
->       phylib: rename mii_bus::dev to mii_bus::parent
->       phylib: move to dynamic allocation of struct mii_bus
->       phylib: give mdio buses a device tree presence
+> Feel free to change the generic code if it makes things easier for you, the 
+> only limitation is that we have to live within the generic sysfs read/write 
+> functions.  Obviously I didn't worry about it when doing this code on ia64...
 
-looks good, thanks!
+I started to do that and then decided not to bother...
 
-Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
-
-> 
->  arch/powerpc/platforms/82xx/ep8248e.c     |    2 +-
->  arch/powerpc/platforms/pasemi/gpio_mdio.c |    6 +-
->  drivers/net/au1000_eth.c                  |   43 ++++++---
->  drivers/net/au1000_eth.h                  |    2 +-
->  drivers/net/bfin_mac.c                    |   31 ++++---
->  drivers/net/bfin_mac.h                    |    2 +-
->  drivers/net/cpmac.c                       |   51 ++++++----
->  drivers/net/fec_mpc52xx_phy.c             |    8 +-
->  drivers/net/fs_enet/mii-bitbang.c         |    9 +-
->  drivers/net/fs_enet/mii-fec.c             |    8 +-
->  drivers/net/gianfar_mii.c                 |    9 +-
->  drivers/net/macb.c                        |   49 ++++++----
->  drivers/net/macb.h                        |    2 +-
->  drivers/net/mv643xx_eth.c                 |   32 ++++---
->  drivers/net/phy/fixed.c                   |   29 ++++--
->  drivers/net/phy/mdio-bitbang.c            |    4 +-
->  drivers/net/phy/mdio-ofgpio.c             |   11 +-
->  drivers/net/phy/mdio_bus.c                |  144 ++++++++++++++++++++++++++++-
->  drivers/net/phy/phy.c                     |   54 +----------
->  drivers/net/sb1250-mac.c                  |   36 +++++---
->  drivers/net/sh_eth.c                      |    4 +-
->  drivers/net/tc35815.c                     |   45 ++++++----
->  drivers/net/tg3.c                         |   66 +++++++-------
->  drivers/net/tg3.h                         |    2 +-
->  drivers/net/ucc_geth_mii.c                |    9 +-
->  include/linux/phy.h                       |   54 ++++++++++--
->  26 files changed, 456 insertions(+), 256 deletions(-)
+Ben.
