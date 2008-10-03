@@ -1,18 +1,19 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 25FFDDE14E
+Return-Path: <liranrazlinux@gmail.com>
+Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.25])
+	by ozlabs.org (Postfix) with ESMTP id 569A6DE191
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Oct 2008 02:15:01 +1000 (EST)
-Date: Fri, 3 Oct 2008 18:14:51 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: ???? <liu_lin02@tsinghua.org.cn>
-Subject: Re: Build cross compile tool chain for PPC
-Message-ID: <20081003161451.GK9852@pengutronix.de>
-References: <422942429.11977@tsinghua.org.cn>
+	Sat,  4 Oct 2008 02:40:37 +1000 (EST)
+Received: by ey-out-2122.google.com with SMTP id 6so531128eyi.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 03 Oct 2008 09:40:35 -0700 (PDT)
+Message-ID: <e3b3ab5c0810030940l3100e494id6b4fcdec71991a7@mail.gmail.com>
+Date: Fri, 3 Oct 2008 12:40:35 -0400
+From: "liran raz" <liranrazlinux@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: NOHZ: local_softirq_pending 08
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <422942429.11977@tsinghua.org.cn>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_6077_9824765.1223052035655"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,29 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 02, 2008 at 06:13:49PM +0800, ???? wrote:
-> I am a newby for ppc embedded linux. When trying to build the cross
-> compiling tool chain, I got some error message in making glibc
-> (binutils and gcc are successfully built).
+------=_Part_6077_9824765.1223052035655
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Building cross toolchains is a complicated thing; you may want to have a
-look at the existing community build tools, like for example
-OSELAS.Toolchain:
+hi,
+I have a driver that uses the scc1 intertupts.
+After enabling the scc1 interrupts I see this message
+coming from the kernel for some time:
+NOHZ: local_softirq_pending 08
+1. What is the meaning of this message? does
+2. Does it indicate that something is wrong & need a fix?
+3. How can I get rid of it?
+(The interrupt is connected to an ISR by using
+the standard request_irq() routine).
+Kernel 2.6.24
+Processor: MPC8272
+Thanks,
+Liran.
 
-http://www.pengutronix.de/oselas/toolchain/index_en.html
+------=_Part_6077_9824765.1223052035655
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-The latest beta for 2.0 is here:
-http://www.pengutronix.de/oselas/toolchain/download/OSELAS.Toolchain-1.99.0.tar.bz2
-(gcc-4.3.2, glibc-2.8, binutils-2.18, kernel-headers-2.6.26)
+<div dir="ltr">hi,<br>I have a driver that uses the scc1 intertupts.<br>After enabling the scc1 interrupts I see this message<br>coming from the kernel for some time:<br>NOHZ: local_softirq_pending 08<br>1. What is the meaning of this message? does<br>
+2. Does it indicate that something is wrong &amp; need a fix?<br>3. How can I get rid of it?<br>(The interrupt is connected to an ISR by using<br>the standard request_irq() routine).<br>Kernel 2.6.24<br>Processor: MPC8272<br>
+Thanks,<br>Liran.</div>
 
-The more stable 1.x series is here:
-http://www.pengutronix.de/oselas/toolchain/download/OSELAS.Toolchain-1.1.1.tar.bz2
-(gcc-4.1.2, glibc-2.6, binutils-2.16, kernel-headers-2.6.18)
-
-rsc
--- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+------=_Part_6077_9824765.1223052035655--
