@@ -1,14 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 3 Oct 2008 10:22:28 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Niklaus Giger <niklaus.giger@member.fsf.org>
-Subject: Re: [PATCH] Install & document convert-dtsv0
-Message-ID: <20081003002228.GA3002@yookeroo.seuss>
-References: <200810022206.36010.niklaus.giger@member.fsf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200810022206.36010.niklaus.giger@member.fsf.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 477C5DDE08
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 11:02:57 +1000 (EST)
+Date: Thu, 2 Oct 2008 21:02:54 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Simple platform for the ISS 4xx simulator
+Message-ID: <20081002210254.09076765@lappy.seanm.ca>
+In-Reply-To: <20081003000737.85CFEDDE17@ozlabs.org>
+References: <20081003000737.85CFEDDE17@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,16 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 02, 2008 at 10:06:35PM +0200, Niklaus Giger wrote:
-> Patch against http://www.jdl.com/software/dtc.git
-> Signed-off-by: Niklaus Giger <niklaus.giger@member.fsf.org>
+On Fri, 03 Oct 2008 10:07:19 +1000
+"Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
 
-Thanks.
+>  image-$(CONFIG_WARP)			+= cuImage.warp
+> -image-$(CONFIG_YOSEMITE)		+= cuImage.yosemite
+> +image-$(CONFIG_YOSEMITE)		+= cuImage.yosemit
 
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
+Did you really mean to drop the e from yosemite?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Cheers,
+   Sean
