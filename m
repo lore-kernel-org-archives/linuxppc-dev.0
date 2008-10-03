@@ -1,21 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2D755DDE28
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 07:52:11 +1000 (EST)
-Subject: Re: [RFC/PATCH 2/2] powerpc: Add legacy PCI access via sysfs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <200810030859.12335.jbarnes@virtuousgeek.org>
-References: <20081003094953.A7F4EDE184@ozlabs.org>
-	<200810030859.12335.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Date: Sat, 04 Oct 2008 07:52:03 +1000
-Message-Id: <1223070723.12264.213.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, tony.luck@intel.com, linux-pci@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <D750E93D-310B-42F4-87BD-F1AF9068B0CD@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+In-Reply-To: <20081001083141.18444.63918.stgit@ubuntu8041.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH v3] powerpc: GE Fanuc's FPGA based PIC controller on the
+	SBC610
+Date: Fri, 3 Oct 2008 16:53:21 -0500
+References: <20081001083141.18444.63918.stgit@ubuntu8041.localdomain>
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,12 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-10-03 at 08:59 -0700, Jesse Barnes wrote:
-> 
-> Feel free to change the generic code if it makes things easier for you, the 
-> only limitation is that we have to live within the generic sysfs read/write 
-> functions.  Obviously I didn't worry about it when doing this code on ia64...
 
-I started to do that and then decided not to bother...
+On Oct 1, 2008, at 3:32 AM, Martyn Welch wrote:
 
-Ben.
+> Support for the SBC610 VPX Single Board Computer from GE Fanuc  
+> (PowerPC MPC8641D).
+>
+> A number of MPC8641D based route interrupts for on-board interrupts  
+> through
+> a FPGA based interrupt controller, which is chained with the
+> MPC8641D's mpic. This patch provides a basic driver to allow basic  
+> routing
+> of interrupts to the mpic.
+>
+> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+> ---
+>
+> Scott, David: Thank you for your comments.
+>
+> Changes for version 3:
+> * Remove redundant "device_type" entry from gef_pic node
+> * Use 1 rather than 2 interrupt cells
+
+applied.
+
+- k
