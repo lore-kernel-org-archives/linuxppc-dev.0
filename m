@@ -1,21 +1,17 @@
-Return-Path: <sumedhtirodkar@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.185])
-	by ozlabs.org (Postfix) with ESMTP id 1479DDDF12
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 25FFDDE14E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Oct 2008 01:35:45 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id e27so808685nfd.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 03 Oct 2008 08:35:44 -0700 (PDT)
-Message-ID: <d2b9ccd90810030835m534f7619xe0be08078bad0019@mail.gmail.com>
-Date: Fri, 3 Oct 2008 21:05:44 +0530
-From: "sumedh tirodkar" <sumedhtirodkar@gmail.com>
-To: "Fillod Stephane" <stephane.fillod@thomson.net>
-Subject: Re: SA-RTLinux for ppc?
-In-Reply-To: <0B45E93C5FF65740AEAE690BF3848B7AD383BB@rennsmail04.eu.thmulti.com>
+	Sat,  4 Oct 2008 02:15:01 +1000 (EST)
+Date: Fri, 3 Oct 2008 18:14:51 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: ???? <liu_lin02@tsinghua.org.cn>
+Subject: Re: Build cross compile tool chain for PPC
+Message-ID: <20081003161451.GK9852@pengutronix.de>
+References: <422942429.11977@tsinghua.org.cn>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_22134_20966357.1223048144279"
-References: <0B45E93C5FF65740AEAE690BF3848B7AD383BB@rennsmail04.eu.thmulti.com>
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <422942429.11977@tsinghua.org.cn>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,47 +23,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_22134_20966357.1223048144279
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thu, Oct 02, 2008 at 06:13:49PM +0800, ???? wrote:
+> I am a newby for ppc embedded linux. When trying to build the cross
+> compiling tool chain, I got some error message in making glibc
+> (binutils and gcc are successfully built).
 
-actually i m tryin to find a linux like port for powerpc.
-lookin for a kernel which has very less functionalities.
+Building cross toolchains is a complicated thing; you may want to have a
+look at the existing community build tools, like for example
+OSELAS.Toolchain:
 
-On Fri, Oct 3, 2008 at 9:01 PM, Fillod Stephane <stephane.fillod@thomson.net
-> wrote:
+http://www.pengutronix.de/oselas/toolchain/index_en.html
 
-> sumedh tirodkar wrote:
-> > does there exist a Standalone RTLinux for powerpc?
-> >
->
-> I don't know, but there's a very good hard real-time extension called
-> Xenomai
-> for powerpc (and many other arch's). http://www.xenomai.org
->
-> Best Regards
-> --
-> Stephane
->
+The latest beta for 2.0 is here:
+http://www.pengutronix.de/oselas/toolchain/download/OSELAS.Toolchain-1.99.0.tar.bz2
+(gcc-4.3.2, glibc-2.8, binutils-2.18, kernel-headers-2.6.26)
 
-------=_Part_22134_20966357.1223048144279
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+The more stable 1.x series is here:
+http://www.pengutronix.de/oselas/toolchain/download/OSELAS.Toolchain-1.1.1.tar.bz2
+(gcc-4.1.2, glibc-2.6, binutils-2.16, kernel-headers-2.6.18)
 
-<div dir="ltr">actually i m tryin to find a linux like port for powerpc.<br>lookin for a kernel which has very less functionalities.<br><br><div class="gmail_quote">On Fri, Oct 3, 2008 at 9:01 PM, Fillod Stephane <span dir="ltr">&lt;<a href="mailto:stephane.fillod@thomson.net">stephane.fillod@thomson.net</a>&gt;</span> wrote:<br>
-<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div class="Ih2E3d">sumedh tirodkar wrote:<br>
-&gt; does there exist a Standalone RTLinux for powerpc?<br>
-&gt;<br>
-<br>
-</div>I don&#39;t know, but there&#39;s a very good hard real-time extension called<br>
-Xenomai<br>
-for powerpc (and many other arch&#39;s). <a href="http://www.xenomai.org" target="_blank">http://www.xenomai.org</a><br>
-<br>
-Best Regards<br>
---<br>
-<font color="#888888">Stephane<br>
-</font></blockquote></div><br></div>
-
-------=_Part_22134_20966357.1223048144279--
+rsc
+-- 
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
