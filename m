@@ -1,16 +1,20 @@
 Return-Path: <galak@kernel.crashing.org>
-Message-Id: <D750E93D-310B-42F4-87BD-F1AF9068B0CD@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 99EB0DDF0D
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 07:54:31 +1000 (EST)
+Message-Id: <398EE654-3AC7-4939-91DC-49E9520D2B18@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <20081001083141.18444.63918.stgit@ubuntu8041.localdomain>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <1223050450-32234-1-git-send-email-timur@freescale.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v3] powerpc: GE Fanuc's FPGA based PIC controller on the
-	SBC610
-Date: Fri, 3 Oct 2008 16:53:21 -0500
-References: <20081001083141.18444.63918.stgit@ubuntu8041.localdomain>
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	david@gibson.dropbear.id.au
+Subject: Re: [PATCH v2] powerpc: make Freescale QE support a selectable
+	Kconfig option
+Date: Fri, 3 Oct 2008 16:54:21 -0500
+References: <1223050450-32234-1-git-send-email-timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +25,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 1, 2008, at 3:32 AM, Martyn Welch wrote:
+On Oct 3, 2008, at 11:14 AM, Timur Tabi wrote:
 
-> Support for the SBC610 VPX Single Board Computer from GE Fanuc  
-> (PowerPC MPC8641D).
+> Modify the Kconfig so that Freescale QUICC Engine (QE) support is a  
+> selectable
+> option, thereby allowing users to compile kernels without any QE  
+> support.
 >
-> A number of MPC8641D based route interrupts for on-board interrupts  
-> through
-> a FPGA based interrupt controller, which is chained with the
-> MPC8641D's mpic. This patch provides a basic driver to allow basic  
-> routing
-> of interrupts to the mpic.
+> The drawback is that QE support is now disabled by default on  
+> platforms that
+> have a QE, and so a defconfig is needed to enable QE and QE devices  
+> (like
+> UCC GETH).  Fortunately, all the current relevant defconfigs do that  
+> already.
 >
-> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
 >
-> Scott, David: Thank you for your comments.
+> This patch should be applied to Kumar's branch for 2.6.28 patches.
 >
-> Changes for version 3:
-> * Remove redundant "device_type" entry from gef_pic node
-> * Use 1 rather than 2 interrupt cells
+> arch/powerpc/platforms/83xx/Kconfig |    5 -----
+> arch/powerpc/platforms/85xx/Kconfig |    1 -
+> arch/powerpc/platforms/Kconfig      |    3 ++-
+> 3 files changed, 2 insertions(+), 7 deletions(-)
 
-applied.
+applied
 
 - k
