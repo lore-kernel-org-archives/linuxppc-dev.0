@@ -2,9 +2,9 @@ Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>,
 	<linux-pci@vger.kernel.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 03 Oct 2008 19:49:32 +1000
-Subject: [RFC/PATCH 1/2] pci: Add ability to mmap legacy_io on some platforms
-Message-Id: <20081003094951.10B3FDE183@ozlabs.org>
+Date: Fri, 03 Oct 2008 19:49:35 +1000
+Subject: [RFC/PATCH 2/2] powerpc: Add legacy PCI access via sysfs
+Message-Id: <20081003094953.A7F4EDE184@ozlabs.org>
 Cc: tony.luck@intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -15,292 +15,210 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds the ability to mmap legacy IO space to the legacy_io files
-in sysfs on platforms that support it. This will allow to clean up
-X to use this instead of /dev/mem for legacy IO accesses such as
-those performed by Int10.
-
-While at it I moved pci_create/remove_legacy_files() to pci-sysfs.c
-where I think they belong, thus making more things statis in there
-and cleaned up some spurrious prototypes in the ia64 pci.h file
+This patch adds support for legacy_io and legacy_mem files in
+bus class directories in sysfs for powerpc
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-I didn't have a chance to test that I didn't break ia64, so I would
-be if somebody could give it a spin there ! Thanks !
+Unfortunately, I didn't have a chance to properly test it yet. I was
+hoping to use an old VGA card to muck around with but the card seems
+fried. I'll do some more tests next wee, but at least it appears to
+be mmap'ing the right physical address.
 
- arch/ia64/include/asm/pci.h |   12 -----
- arch/ia64/pci/pci.c         |    7 ++-
- drivers/pci/pci-sysfs.c     |   93 +++++++++++++++++++++++++++++++++++++++++---
- drivers/pci/pci.h           |    6 ++
- drivers/pci/probe.c         |   66 -------------------------------
- 5 files changed, 102 insertions(+), 82 deletions(-)
+ arch/powerpc/include/asm/pci.h   |   11 +++
+ arch/powerpc/kernel/pci-common.c |  140 ++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 149 insertions(+), 2 deletions(-)
 
---- linux-work.orig/arch/ia64/include/asm/pci.h	2008-10-03 11:24:12.000000000 +1000
-+++ linux-work/arch/ia64/include/asm/pci.h	2008-10-03 11:25:08.000000000 +1000
-@@ -95,16 +95,8 @@ extern int pci_mmap_page_range (struct p
- 				enum pci_mmap_state mmap_state, int write_combine);
- #define HAVE_PCI_LEGACY
- extern int pci_mmap_legacy_page_range(struct pci_bus *bus,
--				      struct vm_area_struct *vma);
--extern ssize_t pci_read_legacy_io(struct kobject *kobj,
--				  struct bin_attribute *bin_attr,
--				  char *buf, loff_t off, size_t count);
--extern ssize_t pci_write_legacy_io(struct kobject *kobj,
--				   struct bin_attribute *bin_attr,
--				   char *buf, loff_t off, size_t count);
--extern int pci_mmap_legacy_mem(struct kobject *kobj,
--			       struct bin_attribute *attr,
--			       struct vm_area_struct *vma);
+--- linux-work.orig/arch/powerpc/include/asm/pci.h	2008-10-02 16:11:43.000000000 +1000
++++ linux-work/arch/powerpc/include/asm/pci.h	2008-10-03 14:44:43.000000000 +1000
+@@ -123,6 +123,16 @@ int pci_mmap_page_range(struct pci_dev *
+ /* Tell drivers/pci/proc.c that we have pci_mmap_page_range() */
+ #define HAVE_PCI_MMAP	1
+ 
++extern int pci_legacy_read(struct pci_bus *bus, loff_t port, u32 *val,
++			   size_t count);
++extern int pci_legacy_write(struct pci_bus *bus, loff_t port, u32 val,
++			   size_t count);
++extern int pci_mmap_legacy_page_range(struct pci_bus *bus,
 +				      struct vm_area_struct *vma,
 +				      enum pci_mmap_state mmap_state);
- 
- #define pci_get_legacy_mem platform_pci_get_legacy_mem
- #define pci_legacy_read platform_pci_legacy_read
-Index: linux-work/arch/ia64/pci/pci.c
-===================================================================
---- linux-work.orig/arch/ia64/pci/pci.c	2008-10-03 11:23:35.000000000 +1000
-+++ linux-work/arch/ia64/pci/pci.c	2008-10-03 11:47:17.000000000 +1000
-@@ -614,12 +614,17 @@ char *ia64_pci_get_legacy_mem(struct pci
-  * vector to get the base address.
-  */
- int
--pci_mmap_legacy_page_range(struct pci_bus *bus, struct vm_area_struct *vma)
-+pci_mmap_legacy_page_range(struct pci_bus *bus, struct vm_area_struct *vma,
-+			   enum pci_mmap_state mmap_state)
- {
- 	unsigned long size = vma->vm_end - vma->vm_start;
- 	pgprot_t prot;
- 	char *addr;
- 
-+	/* We only support mmap'ing of legacy memory space */
-+	if (mmap_state != pci_mmap_mem)
-+		return -ENOSYS;
 +
- 	/*
- 	 * Avoid attribute aliasing.  See Documentation/ia64/aliasing.txt
- 	 * for more details.
-Index: linux-work/drivers/pci/pci-sysfs.c
-===================================================================
---- linux-work.orig/drivers/pci/pci-sysfs.c	2008-10-03 11:12:22.000000000 +1000
-+++ linux-work/drivers/pci/pci-sysfs.c	2008-10-03 11:45:34.000000000 +1000
-@@ -422,7 +422,7 @@ pci_write_vpd(struct kobject *kobj, stru
-  * Reads 1, 2, or 4 bytes from legacy I/O port space using an arch specific
-  * callback routine (pci_legacy_read).
-  */
--ssize_t
-+static ssize_t
- pci_read_legacy_io(struct kobject *kobj, struct bin_attribute *bin_attr,
- 		   char *buf, loff_t off, size_t count)
- {
-@@ -447,7 +447,7 @@ pci_read_legacy_io(struct kobject *kobj,
-  * Writes 1, 2, or 4 bytes from legacy I/O port space using an arch specific
-  * callback routine (pci_legacy_write).
-  */
--ssize_t
-+static ssize_t
- pci_write_legacy_io(struct kobject *kobj, struct bin_attribute *bin_attr,
- 		    char *buf, loff_t off, size_t count)
- {
-@@ -467,11 +467,11 @@ pci_write_legacy_io(struct kobject *kobj
-  * @attr: struct bin_attribute for this file
-  * @vma: struct vm_area_struct passed to mmap
-  *
-- * Uses an arch specific callback, pci_mmap_legacy_page_range, to mmap
-+ * Uses an arch specific callback, pci_mmap_legacy_mem_page_range, to mmap
-  * legacy memory space (first meg of bus space) into application virtual
-  * memory space.
-  */
--int
-+static int
- pci_mmap_legacy_mem(struct kobject *kobj, struct bin_attribute *attr,
-                     struct vm_area_struct *vma)
- {
-@@ -479,7 +479,90 @@ pci_mmap_legacy_mem(struct kobject *kobj
-                                                       struct device,
- 						      kobj));
- 
--        return pci_mmap_legacy_page_range(bus, vma);
-+        return pci_mmap_legacy_page_range(bus, vma, pci_mmap_mem);
-+}
++#define HAVE_PCI_LEGACY	1
 +
-+/**
-+ * pci_mmap_legacy_io - map legacy PCI IO into user memory space
-+ * @kobj: kobject corresponding to device to be mapped
-+ * @attr: struct bin_attribute for this file
-+ * @vma: struct vm_area_struct passed to mmap
-+ *
-+ * Uses an arch specific callback, pci_mmap_legacy_io_page_range, to mmap
-+ * legacy IO space (first meg of bus space) into application virtual
-+ * memory space. Returns -ENOSYS if the operation isn't supported
-+ */
-+static int
-+pci_mmap_legacy_io(struct kobject *kobj, struct bin_attribute *attr,
-+		   struct vm_area_struct *vma)
-+{
-+        struct pci_bus *bus = to_pci_bus(container_of(kobj,
-+                                                      struct device,
-+						      kobj));
-+
-+        return pci_mmap_legacy_page_range(bus, vma, pci_mmap_io);
-+}
-+
-+/**
-+ * pci_create_legacy_files - create legacy I/O port and memory files
-+ * @b: bus to create files under
-+ *
-+ * Some platforms allow access to legacy I/O port and ISA memory space on
-+ * a per-bus basis.  This routine creates the files and ties them into
-+ * their associated read, write and mmap files from pci-sysfs.c
-+ *
-+ * On error unwind, but don't propogate the error to the caller
-+ * as it is ok to set up the PCI bus without these files.
-+ */
-+void pci_create_legacy_files(struct pci_bus *b)
-+{
-+	int error;
-+
-+	b->legacy_io = kzalloc(sizeof(struct bin_attribute) * 2,
-+			       GFP_ATOMIC);
-+	if (!b->legacy_io)
-+		goto kzalloc_err;
-+
-+	b->legacy_io->attr.name = "legacy_io";
-+	b->legacy_io->size = 0xffff;
-+	b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
-+	b->legacy_io->read = pci_read_legacy_io;
-+	b->legacy_io->write = pci_write_legacy_io;
-+	b->legacy_io->mmap = pci_mmap_legacy_io;
-+	error = device_create_bin_file(&b->dev, b->legacy_io);
-+	if (error)
-+		goto legacy_io_err;
-+
-+	/* Allocated above after the legacy_io struct */
-+	b->legacy_mem = b->legacy_io + 1;
-+	b->legacy_mem->attr.name = "legacy_mem";
-+	b->legacy_mem->size = 1024*1024;
-+	b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
-+	b->legacy_mem->mmap = pci_mmap_legacy_mem;
-+	error = device_create_bin_file(&b->dev, b->legacy_mem);
-+	if (error)
-+		goto legacy_mem_err;
-+
-+	return;
-+
-+legacy_mem_err:
-+	device_remove_bin_file(&b->dev, b->legacy_io);
-+legacy_io_err:
-+	kfree(b->legacy_io);
-+	b->legacy_io = NULL;
-+kzalloc_err:
-+	printk(KERN_WARNING "pci: warning: could not create legacy I/O port "
-+	       "and ISA memory resources to sysfs\n");
-+	return;
-+}
-+
-+void pci_remove_legacy_files(struct pci_bus *b)
-+{
-+	if (b->legacy_io) {
-+		device_remove_bin_file(&b->dev, b->legacy_io);
-+		device_remove_bin_file(&b->dev, b->legacy_mem);
-+		kfree(b->legacy_io); /* both are allocated here */
-+	}
- }
- #endif /* HAVE_PCI_LEGACY */
- 
-Index: linux-work/drivers/pci/pci.h
-===================================================================
---- linux-work.orig/drivers/pci/pci.h	2008-10-03 11:17:53.000000000 +1000
-+++ linux-work/drivers/pci/pci.h	2008-10-03 11:18:32.000000000 +1000
-@@ -76,7 +76,13 @@ static inline int pci_proc_detach_bus(st
- /* Functions for PCI Hotplug drivers to use */
- extern unsigned int pci_do_scan_bus(struct pci_bus *bus);
- 
-+#ifdef HAVE_PCI_LEGACY
-+extern void pci_create_legacy_files(struct pci_bus *bus);
- extern void pci_remove_legacy_files(struct pci_bus *bus);
-+#else
-+static inline void pci_create_legacy_files(struct pci_bus *bus) { return; }
-+static inline void pci_remove_legacy_files(struct pci_bus *bus) { return; }
-+#endif
- 
- /* Lock for read/write access to pci device and bus lists */
- extern struct rw_semaphore pci_bus_sem;
-Index: linux-work/drivers/pci/probe.c
-===================================================================
---- linux-work.orig/drivers/pci/probe.c	2008-10-03 11:19:26.000000000 +1000
-+++ linux-work/drivers/pci/probe.c	2008-10-03 11:19:57.000000000 +1000
-@@ -44,72 +44,6 @@ int no_pci_devices(void)
- }
- EXPORT_SYMBOL(no_pci_devices);
- 
--#ifdef HAVE_PCI_LEGACY
--/**
-- * pci_create_legacy_files - create legacy I/O port and memory files
-- * @b: bus to create files under
-- *
-- * Some platforms allow access to legacy I/O port and ISA memory space on
-- * a per-bus basis.  This routine creates the files and ties them into
-- * their associated read, write and mmap files from pci-sysfs.c
-- *
-- * On error unwind, but don't propogate the error to the caller
-- * as it is ok to set up the PCI bus without these files.
-- */
--static void pci_create_legacy_files(struct pci_bus *b)
--{
--	int error;
--
--	b->legacy_io = kzalloc(sizeof(struct bin_attribute) * 2,
--			       GFP_ATOMIC);
--	if (!b->legacy_io)
--		goto kzalloc_err;
--
--	b->legacy_io->attr.name = "legacy_io";
--	b->legacy_io->size = 0xffff;
--	b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
--	b->legacy_io->read = pci_read_legacy_io;
--	b->legacy_io->write = pci_write_legacy_io;
--	error = device_create_bin_file(&b->dev, b->legacy_io);
--	if (error)
--		goto legacy_io_err;
--
--	/* Allocated above after the legacy_io struct */
--	b->legacy_mem = b->legacy_io + 1;
--	b->legacy_mem->attr.name = "legacy_mem";
--	b->legacy_mem->size = 1024*1024;
--	b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
--	b->legacy_mem->mmap = pci_mmap_legacy_mem;
--	error = device_create_bin_file(&b->dev, b->legacy_mem);
--	if (error)
--		goto legacy_mem_err;
--
--	return;
--
--legacy_mem_err:
--	device_remove_bin_file(&b->dev, b->legacy_io);
--legacy_io_err:
--	kfree(b->legacy_io);
--	b->legacy_io = NULL;
--kzalloc_err:
--	printk(KERN_WARNING "pci: warning: could not create legacy I/O port "
--	       "and ISA memory resources to sysfs\n");
--	return;
--}
--
--void pci_remove_legacy_files(struct pci_bus *b)
--{
--	if (b->legacy_io) {
--		device_remove_bin_file(&b->dev, b->legacy_io);
--		device_remove_bin_file(&b->dev, b->legacy_mem);
--		kfree(b->legacy_io); /* both are allocated here */
--	}
--}
--#else /* !HAVE_PCI_LEGACY */
--static inline void pci_create_legacy_files(struct pci_bus *bus) { return; }
--void pci_remove_legacy_files(struct pci_bus *bus) { return; }
--#endif /* HAVE_PCI_LEGACY */
--
+ #if defined(CONFIG_PPC64) || defined(CONFIG_NOT_COHERENT_CACHE)
  /*
-  * PCI Bus Class Devices
-  */
+  * For 64-bit kernels, pci_unmap_{single,page} is not a nop.
+@@ -226,5 +236,6 @@ extern void pci_resource_to_user(const s
+ extern void pcibios_do_bus_setup(struct pci_bus *bus);
+ extern void pcibios_fixup_of_probed_bus(struct pci_bus *bus);
+ 
++
+ #endif	/* __KERNEL__ */
+ #endif /* __ASM_POWERPC_PCI_H */
+Index: linux-work/arch/powerpc/kernel/pci-common.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci-common.c	2008-10-03 14:44:06.000000000 +1000
++++ linux-work/arch/powerpc/kernel/pci-common.c	2008-10-03 19:46:26.000000000 +1000
+@@ -452,7 +452,8 @@ pgprot_t pci_phys_mem_access_prot(struct
+ 		pci_dev_put(pdev);
+ 	}
+ 
+-	DBG("non-PCI map for %lx, prot: %lx\n", offset, prot);
++	DBG("non-PCI map for %llx, prot: %lx\n",
++	    (unsigned long long)offset, prot);
+ 
+ 	return __pgprot(prot);
+ }
+@@ -491,6 +492,141 @@ int pci_mmap_page_range(struct pci_dev *
+ 	return ret;
+ }
+ 
++/* This provides legacy IO read access on a bus */
++int pci_legacy_read(struct pci_bus *bus, loff_t port, u32 *val, size_t size)
++{
++	unsigned long offset;
++	struct pci_controller *hose = pci_bus_to_host(bus);
++	struct resource *rp = &hose->io_resource;
++	void __iomem *addr;
++
++	/* Check if port can be supported by that bus. We only check
++	 * the ranges of the PHB though, not the bus itself as the rules
++	 * for forwarding legacy cycles down bridges are not our problem
++	 * here. So if the host bridge supports it, we do it.
++	 */
++	offset = (unsigned long)hose->io_base_virt - _IO_BASE;
++	offset += port;
++
++	if (!(rp->flags & IORESOURCE_IO))
++		return -ENXIO;
++	if (offset < rp->start || (offset + size) > rp->end)
++		return -ENXIO;
++	addr = hose->io_base_virt + port;
++
++	switch(size) {
++	case 1:
++		*((u8 *)val) = in_8(addr);
++		return 1;
++	case 2:
++		if (port & 1)
++			return -EINVAL;
++		*((u16 *)val) = in_le16(addr);
++		return 2;
++	case 4:
++		if (port & 3)
++			return -EINVAL;
++		*((u32 *)val) = in_le32(addr);
++		return 4;
++	}
++	return -EINVAL;
++}
++
++/* This provides legacy IO write access on a bus */
++int pci_legacy_write(struct pci_bus *bus, loff_t port, u32 val, size_t size)
++{
++	unsigned long offset;
++	struct pci_controller *hose = pci_bus_to_host(bus);
++	struct resource *rp = &hose->io_resource;
++	void __iomem *addr;
++
++	/* Check if port can be supported by that bus. We only check
++	 * the ranges of the PHB though, not the bus itself as the rules
++	 * for forwarding legacy cycles down bridges are not our problem
++	 * here. So if the host bridge supports it, we do it.
++	 */
++	offset = (unsigned long)hose->io_base_virt - _IO_BASE;
++	offset += port;
++
++	if (!(rp->flags & IORESOURCE_IO))
++		return -ENXIO;
++	if (offset < rp->start || (offset + size) > rp->end)
++		return -ENXIO;
++	addr = hose->io_base_virt + port;
++
++	/* WARNING: The generic code is idiotic. It gets passed a pointer
++	 * to what can be a 1, 2 or 4 byte quantity and always reads that
++	 * as a u32, which means that we have to correct the location of
++	 * the data read within those 32 bits for size 1 and 2
++	 */
++	switch(size) {
++	case 1:
++		out_8(addr, val >> 24);
++		return 1;
++	case 2:
++		if (port & 1)
++			return -EINVAL;
++		out_le16(addr, val >> 16);
++		return 2;
++	case 4:
++		if (port & 3)
++			return -EINVAL;
++		out_le32(addr, val);
++		return 4;
++	}
++	return -EINVAL;
++}
++
++/* This provides legacy IO or memory mmap access on a bus */
++int pci_mmap_legacy_page_range(struct pci_bus *bus,
++			       struct vm_area_struct *vma,
++			       enum pci_mmap_state mmap_state)
++{
++	struct pci_controller *hose = pci_bus_to_host(bus);
++	resource_size_t offset =
++		((resource_size_t)vma->vm_pgoff) << PAGE_SHIFT;
++	resource_size_t size = vma->vm_end - vma->vm_start;
++	struct resource *rp;
++
++	pr_debug("pci_mmap_legacy_page_range(%04x:%02x, %s @%llx..%llx)\n",
++		 pci_domain_nr(bus), bus->number,
++		 mmap_state == pci_mmap_mem ? "MEM" : "IO",
++		 (unsigned long long)offset,
++		 (unsigned long long)(offset + size - 1));
++
++	if (mmap_state == pci_mmap_mem) {
++		int i;
++
++		offset += hose->pci_mem_offset;
++		for (i=0; i<3; i++) {
++			rp = &hose->mem_resources[i];
++			if (!(rp->flags & IORESOURCE_MEM))
++				continue;
++			if (offset < rp->start || (offset + size) > rp->end)
++				continue;
++			break;
++		}
++		if (i >= 3)
++			return -ENXIO;
++	} else {
++		unsigned long io_offset = (unsigned long)hose->io_base_virt - _IO_BASE;
++		unsigned long roffset = offset + io_offset;
++		rp = &hose->io_resource;
++		if (!(rp->flags & IORESOURCE_IO))
++			return -ENXIO;
++		if (roffset < rp->start || (roffset + size) > rp->end)
++			return -ENXIO;
++		offset += hose->io_base_phys;
++	}
++	pr_debug(" -> mapping phys %llx\n", (unsigned long long)offset);
++
++	vma->vm_pgoff = offset >> PAGE_SHIFT;
++	vma->vm_page_prot |= _PAGE_NO_CACHE | _PAGE_GUARDED;
++	return remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
++			       vma->vm_end - vma->vm_start,
++			       vma->vm_page_prot);
++}
++
+ void pci_resource_to_user(const struct pci_dev *dev, int bar,
+ 			  const struct resource *rsrc,
+ 			  resource_size_t *start, resource_size_t *end)
+@@ -649,7 +785,7 @@ void __devinit pci_process_bridge_OF_ran
+ 			break;
+ 		case 2:		/* PCI Memory space */
+ 		case 3:		/* PCI 64 bits Memory space */
+-			printk(KERN_INFO
++		printk(KERN_INFO
+ 			       " MEM 0x%016llx..0x%016llx -> 0x%016llx %s\n",
+ 			       cpu_addr, cpu_addr + size - 1, pci_addr,
+ 			       (pci_space & 0x40000000) ? "Prefetch" : "");
+ 
