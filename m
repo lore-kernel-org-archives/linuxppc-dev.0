@@ -1,21 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <SRS0+e80093b101f9c1e1d3ee+1867+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 26DA8DDE45
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 17:59:07 +1000 (EST)
-Message-Id: <E50C84D1-E250-4827-B260-A5005CABE959@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20081003070416.GA460@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc: make Freescale QE support a selectable Kconfig
-	option
-Date: Fri, 3 Oct 2008 02:58:57 -0500
-References: <1222961277-6166-1-git-send-email-timur@freescale.com>
-	<20081003070416.GA460@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 91E2DDDF15
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 18:35:25 +1000 (EST)
+Date: Fri, 3 Oct 2008 04:35:22 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] Block device for the ISS simulator
+Message-ID: <20081003083522.GB25683@infradead.org>
+References: <20081003000904.0A812DDEEE@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081003000904.0A812DDEEE@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Oct 03, 2008 at 10:08:42AM +1000, Benjamin Herrenschmidt wrote:
+> The ISS simulator is a simple powerpc simulator used among other things
+> for hardware bringup. It implements a simple memory mapped block device
+> interface.
+> 
+> This is a simple block driver that attaches to it. Note that the choice
+> of a major device number is fishy, though because it's a simulator and
+> not real hardware, it's not necessarily a big deal.
 
-On Oct 3, 2008, at 2:04 AM, Anton Vorontsov wrote:
-
-> On Thu, Oct 02, 2008 at 10:27:57AM -0500, Timur Tabi wrote:
->> Modify the Kconfig so that Freescale QUICC Engine (QE) support is a  
->> selectable
->> option, thereby allowing users to compile kernels without any QE  
->> support.
->>
->> The drawback is that QE support is now disabled by default on  
->> platforms that
->> have a QE, and so a defconfig is needed to enable QE and QE devices  
->> (like
->> UCC GETH).  Fortunately, all the current relevant defconfigs do  
->> that already.
->>
->> Signed-off-by: Timur Tabi <timur@freescale.com>
->> ---
->
-> [...]
->> config MPC836x_RDK
->> 	bool "Freescale/Logic MPC836x RDK"
->> 	select DEFAULT_UIMAGE
->> -	select QUICC_ENGINE
->> 	select QE_GPIO
->
-> IIRC selects do not honor any dependencies, i.e. you should delete
-> the QE_GPIO too.
-
-Is QE_GPIO need by the board?  or you just enabled it to have it?
-
-- k
+Please don't put in more block devices for every bloody simulator in the
+world.  Just emulated some simpler enough existing hardware.
