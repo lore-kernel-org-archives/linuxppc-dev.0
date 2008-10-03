@@ -1,23 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 343EFDDF08
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 07:57:48 +1000 (EST)
-Message-ID: <48E69551.90300@freescale.com>
-Date: Fri, 03 Oct 2008 16:57:37 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc: make Freescale QE support a selectable Kconfig
-	option
-References: <1223050450-32234-1-git-send-email-timur@freescale.com>
-	<398EE654-3AC7-4939-91DC-49E9520D2B18@kernel.crashing.org>
-In-Reply-To: <398EE654-3AC7-4939-91DC-49E9520D2B18@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5B709DE005
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 07:57:52 +1000 (EST)
+Message-Id: <497F4C67-0838-4725-B2EC-6510515AC0A1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+In-Reply-To: <20081001124620.23955.42588.stgit@ubuntu8041.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: FPGA support for GE Fanuc SBC610
+Date: Fri, 3 Oct 2008 16:57:43 -0500
+References: <20081001124620.23955.42588.stgit@ubuntu8041.localdomain>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
 
-> applied
+On Oct 1, 2008, at 7:46 AM, Martyn Welch wrote:
 
-I have a few other patches that I've sent you over the past couple weeks that
-you haven't applied:
+> Support for the SBC610 VPX Single Board Computer from GE Fanuc  
+> (PowerPC
+> MPC8641D).
+>
+> This patch adds support for the registers held in the devices main  
+> FPGA,
+> exposing extra information about the revision of the board through  
+> cpuinfo.
+>
+> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+> ---
 
-powerpc: fix conflict with Elo DMA driver in MPC8610 device tree
-powerpc: remove CHRP and PMAC support from defconfigs, fix Kconfigs
-powerpc: remove support for bootmem-allocated memory for the DIU driver
+this doesn't apply for me.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+- k
