@@ -1,29 +1,32 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
-	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 40772DDFA4
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 02:54:45 +1000 (EST)
-Received: by gxk14 with SMTP id 14so3506281gxk.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 03 Oct 2008 09:54:44 -0700 (PDT)
-Message-ID: <ed82fe3e0810030954r8f218c1q1f1cd451fcfbc5e1@mail.gmail.com>
-Date: Fri, 3 Oct 2008 11:54:43 -0500
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
-To: avorontsov@ru.mvista.com, "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: make Freescale QE support a selectable Kconfig
-	option
-In-Reply-To: <20081003162317.GA31740@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1222961277-6166-1-git-send-email-timur@freescale.com>
-	<20081003070416.GA460@oksana.dev.rtsoft.ru>
-	<E50C84D1-E250-4827-B260-A5005CABE959@kernel.crashing.org>
-	<20081003084849.GA18271@oksana.dev.rtsoft.ru>
-	<20081003090804.GA29029@oksana.dev.rtsoft.ru>
-	<48E63DB6.8030102@freescale.com>
-	<20081003160545.GA29927@oksana.dev.rtsoft.ru>
-	<48E643A5.9060403@freescale.com>
-	<20081003162317.GA31740@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <pbadari@us.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4EF91DDD01
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 03:40:44 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m93Hecg3016361
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Oct 2008 13:40:38 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m93HeaxQ199986
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Oct 2008 11:40:37 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m93HeaKg024070
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Oct 2008 11:40:36 -0600
+Received: from [9.47.17.100] (badari-desktop.beaverton.ibm.com [9.47.17.100])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m93HeaXU024031
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Oct 2008 11:40:36 -0600
+Subject: 2.6.27-rc8 boot failure
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Fri, 03 Oct 2008 10:40:51 -0700
+Message-Id: <1223055651.3419.47.camel@badari-desktop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,22 +36,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 3, 2008 at 11:23 AM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> How about this patch? Or we can move QUICC_ENGINE into the
-> qe_lib/Kconfig and include it in the platform/Kconfig... either
-> way would work.
->
-> Thanks for noticing.
->
->  arch/powerpc/Kconfig               |    2 --
->  arch/powerpc/platforms/Kconfig     |   36 ++++++++++++++++++++++++++++++++++++
->  arch/powerpc/sysdev/qe_lib/Kconfig |   35 -----------------------------------
->  3 files changed, 36 insertions(+), 37 deletions(-)
->  delete mode 100644 arch/powerpc/sysdev/qe_lib/Kconfig
+Hi,
 
-Acked-by: Timur Tabi <timur@freescale.com>
+I am not able to boot my Power5 box with 2.6.27-rc8 (defconfig).
+However, I am able to boot with my own custom config.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Known issue ?
+
+Thanks,
+Badari
+
+
+boot: 2627rc8 
+Please wait, loading kernel...
+   Elf32 kernel loaded...
+
+zImage starting: loaded at 0x040001fc (sp: 0x019ffa80)
+Allocating 0xac3450 bytes for kernel ...
+OF version = 'IBM,SF225_096'
+Trying to claim from 0x40001fc to 0x43d31fc (0x3d3000) got ffffffff
+gunzipping (0x01c00000 <- 0x040071fc:0x043c6dac)...done 0xa1d130 bytes
+
+Linux/PowerPC load: root=/dev/sdb3 selinux=0 elevator=cfq 
+Finalizing device tree... using OF tree (promptr=00c39a50)
+DEFAULT CATCH!, exception-handler=fff00700 
+at   %SRR0: 000000000257a02c   %SRR1: 0000000000083002 
+Open Firmware exception handler entered from non-OF code
+
+Client's Fix Pt Regs:
+ 00 0000000000000000 00000000019ffa80 0000000000000000 0000000000000000
+ 04 0000000000000000 0000000000c39a50 0000000000003002 00000000043d2a00
+ 08 0000000000000023 00000000043d2e00 0000000000000014 0000000000000010
+ 0c 0000000024004024 0000000000000000 0000000000000000 0000000000000000
+ 10 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+ 14 0000000000230000 0000000000000000 0000000000c84100 0000000000000000
+ 18 0000000000000000 0000000001c00000 0000000000ac3450 0000000001c00000
+ 1c 0000000000000000 00000000040066c4 000000000400e500 00000000043d2e44
+Special Regs:
+    %IV: 00000700     %CR: 24002022    %XER: 20000000  %DSISR: 00000000 
+  %SRR0: 000000000257a02c   %SRR1: 0000000000083002 
+    %LR: 00000000040009ec    %CTR: 0000000001c00000 
+   %DAR: 0000000000000000 
+Virtual PID = 0 
+PFW: Unable to send error log!
+ ok
+0 > 
