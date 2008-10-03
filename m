@@ -1,21 +1,32 @@
-Return-Path: <risto.suominen@gmail.com>
-Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
-	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 19BC4DDF67
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Oct 2008 06:47:36 +1000 (EST)
-Received: by gxk14 with SMTP id 14so763547gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 01 Oct 2008 13:47:35 -0700 (PDT)
-Message-ID: <46e1c7760810011347x22b32586yc2e3af6ea6f0a2de@mail.gmail.com>
-Date: Wed, 1 Oct 2008 23:47:34 +0300
-From: risto.suominen@gmail.com
-To: "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>
-Subject: Re: regression on imac G3: problems with sound
-In-Reply-To: <200810011755.11536.m.kozlowski@tuxland.pl>
+Return-Path: <elbert@us.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 754DFDDF6E
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Oct 2008 01:03:38 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e8.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id m93F0wxG026533
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Oct 2008 11:00:58 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m93F3YO9282814
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Oct 2008 11:03:34 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m93F3Ym5025971
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Oct 2008 11:03:34 -0400
+Received: from d01mlc04.pok.ibm.com (d01mlc04.pok.ibm.com [9.56.228.37])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m93F3Xqt025946
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Oct 2008 11:03:33 -0400
+Subject: ehea: Error in ehea_treat_poll_error: CQE Error for QP 16
+To: linuxppc-dev@ozlabs.org
+Message-ID: <OFC28D46A6.CBC04B8E-ON852574D7.0050523B-852574D7.0052B90B@us.ibm.com>
+From: Elbert C Hu <elbert@us.ibm.com>
+Date: Fri, 3 Oct 2008 11:03:34 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200810011755.11536.m.kozlowski@tuxland.pl>
-Cc: Takashi Iwai <tiwai@suse.de>, lkml <linux-kernel@vger.kernel.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, kernel-testers@vger.kernel.org
+Content-type: multipart/alternative;
+	Boundary="0__=0ABBFE44DFC3D4AB8f9e8a93df938690918c0ABBFE44DFC3D4AB"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,73 +36,313 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-2008/10/1, Mariusz Kozlowski <m.kozlowski@tuxland.pl>:
-> Hello,
->
-> 	I found that on my old iMac G3 aumix behaves weird on newer (up to
-> 2.6.27-rc8) kernels. The sound is only present _when_ muted and is quiet
-> I'd say 10% of 'normal' max level. If you turn the volume up - the box is
-> silent.
-> If you unmute - the box is silent. 100% reproducible.
->
-> Bisection result is a bit surprising as it seems it was introduced some time
-> ago,
-> in 2.6.25 ~ 2.6.26-rc1 window:
->
-> commit a8c2a6bf464d983c642c8b8b001a57aabbf76673
-> Author: Risto Suominen <Risto.Suominen@gmail.com>
-> Date:   Thu Apr 17 17:55:30 2008 +0200
->
->     [ALSA] snd-powermac: AWACS and Screamer mixers for PM7500, Beige, and
-> iMac SL
->
->     Add mixer controls and correct headphone detection bits for PowerMacs
->     7300/7500 (AWACS) and G3 Beige (Screamer), and iMac G3 Slot-loading
->     (Screamer).
->
->
-> 	Mariusz
->
->
->
-> processor       : 0
-> cpu             : 740/750
-> temperature     : 52 C (uncalibrated)
-> clock           : 400.000000MHz
-> revision        : 2.2 (pvr 0008 0202)
-> bogomips        : 49.79
-> timebase        : 24967326
-> platform        : PowerMac
-> model           : PowerMac2,1
-> machine         : PowerMac2,1
-> motherboard     : PowerMac2,1 MacRISC2 MacRISC Power Macintosh
-> detected as     : 66 (iMac FireWire)
-> pmac flags      : 00000014
-> L2 cache        : 512K unified
-> pmac-generation : NewWorld
->
-> 0000:00:0b.0 Host bridge: Apple Computer Inc. UniNorth AGP
-> 0000:00:10.0 Display controller: ATI Technologies Inc Rage 128 RL/VR AGP
-> 0001:10:0b.0 Host bridge: Apple Computer Inc. UniNorth PCI
-> 0001:10:12.0 FireWire (IEEE 1394): Texas Instruments TSB12LV23 IEEE-1394
-> Controller
-> 0001:10:13.0 Ethernet controller: Digital Equipment Corporation DECchip
-> 21142/43 (rev 41)
-> 0001:10:17.0 Class ff00: Apple Computer Inc. KeyLargo Mac I/O (rev 02)
-> 0001:10:18.0 USB Controller: Apple Computer Inc. KeyLargo USB
-> 0001:10:19.0 USB Controller: Apple Computer Inc. KeyLargo USB
-> 0002:20:0b.0 Host bridge: Apple Computer Inc. UniNorth Internal PCI
->
->
-Mariusz, thank you for the report. This is my fault. Sorry.
+--0__=0ABBFE44DFC3D4AB8f9e8a93df938690918c0ABBFE44DFC3D4AB
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: quoted-printable
 
-PowerMac2,1 seems to have the mute bit reversed compared to later
-models, PowerMac2,2 and PowerMac4,1, which I was using for testing my
-changes.
 
-This has been fixed in a later patch that should be included in kernel
-2.6.27, I believe.
 
-Takashi, when was this (or will be) included? I sent two patches on 2008-08-25.
 
-Risto
+
+
+System log shows a lot of "ehea: Error", see below, during system start=
+ up.
+Not sure what it is. I'd like to understand this, could someone points =
+me
+the direction? My "Machine Type and Model ... ST9146802SS" reported fro=
+m
+lscfg (p6 blade). OS is RHEL 5.2. Kernel level is 2.6.18-92.1.10.el5.
+
+Thanks.
+
+E. Hu
+************ ehea.modinfo ************
+filename:       /lib/modules/2.6.18-92.1.10.el5/kernel/drivers/net/ehea=
+/ehea.ko
+version:        EHEA_0076-05
+description:    IBM eServer HEA Driver.
+author:         Christoph Raisch <raisch@de.ibm.com>
+license:        GPL
+srcversion:     C481DB79B4694F406CF4AA7
+depends:
+vermagic:       2.6.18-92.1.10.el5 SMP mod_unload gcc-4.1
+parm:           num_tx_qps:Number of TX-QPS (int)
+parm:           msg_level:msg_level (int)
+parm:           prop_carrier_state:Propagate carrier state of physical =
+port
+to stack. 1:yes, 0:no.  Default =3D 0  (int)
+parm:           rq3_entries:Number of entries for Receive Queue 3 [2^x =
+-
+1], x =3D [6..14]. Default =3D 1023) (int)
+parm:           rq2_entries:Number of entries for Receive Queue 2 [2^x =
+-
+1], x =3D [6..14]. Default =3D 1023) (int)
+parm:           rq1_entries:Number of entries for Receive Queue 1 [2^x =
+-
+1], x =3D [6..14]. Default =3D 4095) (int)
+parm:           sq_entries: Number of entries for the Send Queue  [2^x =
+-
+1], x =3D [6..14]. Default =3D 1023) (int)
+parm:           use_mcs: 0:NAPI, 1:Multiple receive queues, Default =3D=
+ 0
+(int)
+parm:           lro_max_aggr: LRO: Max packets to be aggregated. Defaul=
+t =3D
+64 (int)..
+parm:           use_lro: Large Receive Offload, 1: enable, 0: disable,
+Default =3D 0 (int).
+module_sig:
+883f3504886ebc8736cb7d2578e3b1112b7ab09e3b2c69b141d16d1bbbd51ab063f7955=
+335a49e80a0ba218c849673e067f7c0ccc9d7353cc1ce05997
+
+************ system log ************
+Sep 29 09:35:35 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+:
+CQE Error for QP 16
+Sep 29 09:35:35 newhamburg kernel: ehea CQE adr=3Dc0000001ddbc1400 ofs=3D=
+0000
+0000000000000000 200040000000008e
+Sep 29 09:35:35 newhamburg kernel: ehea CQE adr=3Dc0000001ddbc1410 ofs=3D=
+0010
+0000d6ec002a0000 0400000000000000
+Sep 29 09:35:35 newhamburg kernel: ehea CQE adr=3Dc0000001ddbc1420 ofs=3D=
+0020
+0000000000000000 0000000000000000
+Sep 29 09:35:35 newhamburg kernel: ehea CQE adr=3Dc0000001ddbc1430 ofs=3D=
+0030
+0000000000000000 0000000000000000
+Sep 29 09:40:10 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+:
+CQE Error for QP 16
+Sep 29 09:40:10 newhamburg kernel: ehea CQE adr=3Dc0000001dd9d2800 ofs=3D=
+0000
+0000000000000000 200040000000008e
+Sep 29 09:40:10 newhamburg kernel: ehea CQE adr=3Dc0000001dd9d2810 ofs=3D=
+0010
+0000d6ec002a0000 0800000000000000
+Sep 29 09:40:10 newhamburg kernel: ehea CQE adr=3Dc0000001dd9d2820 ofs=3D=
+0020
+0000000000000000 0000000000000000
+Sep 29 09:40:10 newhamburg kernel: ehea CQE adr=3Dc0000001dd9d2830 ofs=3D=
+0030
+0000000000000000 0000000000000000
+Sep 29 10:08:17 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+:
+CQE Error for QP 16
+Sep 29 10:08:17 newhamburg kernel: ehea CQE adr=3Dc0000001dd9eb600 ofs=3D=
+0000
+0000000000000000 200040000000008e
+Sep 29 10:08:17 newhamburg kernel: ehea CQE adr=3Dc0000001dd9eb610 ofs=3D=
+0010
+0000d6ec002a0000 0600000000000000
+Sep 29 10:08:17 newhamburg kernel: ehea CQE adr=3Dc0000001dd9eb620 ofs=3D=
+0020
+0000000000000000 0000000000000000
+Sep 29 10:08:17 newhamburg kernel: ehea CQE adr=3Dc0000001dd9eb630 ofs=3D=
+0030
+0000000000000000 0000000000000000
+Sep 29 10:21:51 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+:
+CQE Error for QP 16
+Sep 29 10:21:51 newhamburg kernel: ehea CQE adr=3Dc0000001dd9e2300 ofs=3D=
+0000
+0000000000000000 200040000000008e
+Sep 29 10:21:51 newhamburg kernel: ehea CQE adr=3Dc0000001dd9e2310 ofs=3D=
+0010
+0000d6ec002a0000 0300000000000000
+Sep 29 10:21:51 newhamburg kernel: ehea CQE adr=3Dc0000001dd9e2320 ofs=3D=
+0020
+0000000000000000 0000000000000000
+Sep 29 10:21:51 newhamburg kernel: ehea CQE adr=3Dc0000001dd9e2330 ofs=3D=
+0030
+0000000000000000 0000000000000000
+Sep 29 16:16:23 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+:
+CQE Error for QP 16
+Sep 29 16:16:23 newhamburg kernel: ehea CQE adr=3Dc0000001ddb9a800 ofs=3D=
+0000
+0000030002630000 40804000000000e0
+Sep 29 16:16:23 newhamburg kernel: ehea CQE adr=3Dc0000001ddb9a810 ofs=3D=
+0010
+0000e10f002a0000 0800000000000000
+Sep 29 16:16:23 newhamburg kernel: ehea CQE adr=3Dc0000001ddb9a820 ofs=3D=
+0020
+0000000000000000 0000000000000000
+Sep 29 16:16:23 newhamburg kernel: ehea CQE adr=3Dc0000001ddb9a830 ofs=3D=
+0030
+0000000000000000 0000000000000000
+Sep 29 21:50:04 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+:
+CQE Error for QP 16
+Sep 29 21:50:04 newhamburg kernel: ehea CQE adr=3Dc0000001dd9c0700 ofs=3D=
+0000
+0000000000000000 2080400000000076
+Sep 29 21:50:04 newhamburg kernel: ehea CQE adr=3Dc0000001dd9c0710 ofs=3D=
+0010
+0000fb42002a0000 0700000000000000
+Sep 29 21:50:04 newhamburg kernel: ehea CQE adr=3Dc0000001dd9c0720 ofs=3D=
+0020
+0000000000000000 0000000000000000
+Sep 29 21:50:04 newhamburg kernel: ehea CQE adr=3Dc0000001dd9c0730 ofs=3D=
+0030
+0000000000000000 0000000000000000
+Sep 30 03:55:49 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+:
+CQE Error for QP 16
+Sep 30 03:55:49 newhamburg kernel: ehea CQE adr=3Dc0000001ddb4f900 ofs=3D=
+0000
+0000000000000000 2000400000000076
+Sep 30 03:55:49 newhamburg kernel: ehea CQE adr=3Dc0000001ddb4f910 ofs=3D=
+0010
+0000fb42002a0000 0900000000000000
+Sep 30 03:55:49 newhamburg kernel: ehea CQE adr=3Dc0000001ddb4f920 ofs=3D=
+0020
+0000000000000000 0000000000000000
+Sep 30 03:55:49 newhamburg kernel: ehea CQE adr=3Dc0000001ddb4f930 ofs=3D=
+0030
+0000000000000000 0000000000000000
+Sep 30 09:12:02 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+:
+CQE Error for QP 16
+Sep 30 09:12:02 newhamburg kernel: ehea CQE adr=3Dc0000001ddbd6400 ofs=3D=
+0000
+0000000000000000 208040000000008e
+Sep 30 09:12:02 newhamburg kernel: ehea CQE adr=3Dc0000001ddbd6410 ofs=3D=
+0010
+0000d6ec002a0000 0400000000000000
+Sep 30 09:12:02 newhamburg kernel: ehea CQE adr=3Dc0000001ddbd6420 ofs=3D=
+0020
+0000000000000000 0000000000000000
+Sep 30 09:12:02 newhamburg kernel: ehea CQE adr=3Dc0000001ddbd6430 ofs=3D=
+0030
+0000000000000000 0000000000000000=
+
+--0__=0ABBFE44DFC3D4AB8f9e8a93df938690918c0ABBFE44DFC3D4AB
+Content-type: text/html; charset=US-ASCII
+Content-Disposition: inline
+Content-transfer-encoding: quoted-printable
+
+<html><body>
+<p>System log shows a lot of &quot;ehea: Error&quot;, see below, during=
+ system start up. Not sure what it is. I'd like to understand this, cou=
+ld someone points me the direction? My &quot;Machine Type and Model ...=
+ ST9146802SS&quot; reported from lscfg (p6 blade). OS is RHEL 5.2. Kern=
+el level is 2.6.18-92.1.10.el5. <br>
+<br>
+Thanks.<br>
+<br>
+E. Hu<br>
+************ ehea.modinfo ************<br>
+filename:       /lib/modules/2.6.18-92.1.10.el5/kernel/drivers/net/ehea=
+/ehea.ko<br>
+version:        EHEA_0076-05<br>
+description:    IBM eServer HEA Driver<br>
+author:         Christoph Raisch &lt;raisch@de.ibm.com&gt;<br>
+license:        GPL<br>
+srcversion:     C481DB79B4694F406CF4AA7<br>
+depends:        <br>
+vermagic:       2.6.18-92.1.10.el5 SMP mod_unload gcc-4.1<br>
+parm:           num_tx_qps:Number of TX-QPS (int)<br>
+parm:           msg_level:msg_level (int)<br>
+parm:           prop_carrier_state:Propagate carrier state of physical =
+port to stack. 1:yes, 0:no.  Default =3D 0  (int)<br>
+parm:           rq3_entries:Number of entries for Receive Queue 3 [2^x =
+- 1], x =3D [6..14]. Default =3D 1023) (int)<br>
+parm:           rq2_entries:Number of entries for Receive Queue 2 [2^x =
+- 1], x =3D [6..14]. Default =3D 1023) (int)<br>
+parm:           rq1_entries:Number of entries for Receive Queue 1 [2^x =
+- 1], x =3D [6..14]. Default =3D 4095) (int)<br>
+parm:           sq_entries: Number of entries for the Send Queue  [2^x =
+- 1], x =3D [6..14]. Default =3D 1023) (int)<br>
+parm:           use_mcs: 0:NAPI, 1:Multiple receive queues, Default =3D=
+ 0  (int)<br>
+parm:           lro_max_aggr: LRO: Max packets to be aggregated. Defaul=
+t =3D 64 (int)<br>
+parm:           use_lro: Large Receive Offload, 1: enable, 0: disable, =
+Default =3D 0 (int)<br>
+module_sig:	883f3504886ebc8736cb7d2578e3b1112b7ab09e3b2c69b141d16d1bbbd=
+51ab063f7955335a49e80a0ba218c849673e067f7c0ccc9d7353cc1ce05997<br>
+<br>
+************ system log ************<br>
+Sep 29 09:35:35 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+: CQE Error for QP 16<br>
+Sep 29 09:35:35 newhamburg kernel: ehea CQE adr=3Dc0000001ddbc1400 ofs=3D=
+0000 0000000000000000 200040000000008e<br>
+Sep 29 09:35:35 newhamburg kernel: ehea CQE adr=3Dc0000001ddbc1410 ofs=3D=
+0010 0000d6ec002a0000 0400000000000000<br>
+Sep 29 09:35:35 newhamburg kernel: ehea CQE adr=3Dc0000001ddbc1420 ofs=3D=
+0020 0000000000000000 0000000000000000<br>
+Sep 29 09:35:35 newhamburg kernel: ehea CQE adr=3Dc0000001ddbc1430 ofs=3D=
+0030 0000000000000000 0000000000000000<br>
+Sep 29 09:40:10 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+: CQE Error for QP 16<br>
+Sep 29 09:40:10 newhamburg kernel: ehea CQE adr=3Dc0000001dd9d2800 ofs=3D=
+0000 0000000000000000 200040000000008e<br>
+Sep 29 09:40:10 newhamburg kernel: ehea CQE adr=3Dc0000001dd9d2810 ofs=3D=
+0010 0000d6ec002a0000 0800000000000000<br>
+Sep 29 09:40:10 newhamburg kernel: ehea CQE adr=3Dc0000001dd9d2820 ofs=3D=
+0020 0000000000000000 0000000000000000<br>
+Sep 29 09:40:10 newhamburg kernel: ehea CQE adr=3Dc0000001dd9d2830 ofs=3D=
+0030 0000000000000000 0000000000000000<br>
+Sep 29 10:08:17 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+: CQE Error for QP 16<br>
+Sep 29 10:08:17 newhamburg kernel: ehea CQE adr=3Dc0000001dd9eb600 ofs=3D=
+0000 0000000000000000 200040000000008e<br>
+Sep 29 10:08:17 newhamburg kernel: ehea CQE adr=3Dc0000001dd9eb610 ofs=3D=
+0010 0000d6ec002a0000 0600000000000000<br>
+Sep 29 10:08:17 newhamburg kernel: ehea CQE adr=3Dc0000001dd9eb620 ofs=3D=
+0020 0000000000000000 0000000000000000<br>
+Sep 29 10:08:17 newhamburg kernel: ehea CQE adr=3Dc0000001dd9eb630 ofs=3D=
+0030 0000000000000000 0000000000000000<br>
+Sep 29 10:21:51 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+: CQE Error for QP 16<br>
+Sep 29 10:21:51 newhamburg kernel: ehea CQE adr=3Dc0000001dd9e2300 ofs=3D=
+0000 0000000000000000 200040000000008e<br>
+Sep 29 10:21:51 newhamburg kernel: ehea CQE adr=3Dc0000001dd9e2310 ofs=3D=
+0010 0000d6ec002a0000 0300000000000000<br>
+Sep 29 10:21:51 newhamburg kernel: ehea CQE adr=3Dc0000001dd9e2320 ofs=3D=
+0020 0000000000000000 0000000000000000<br>
+Sep 29 10:21:51 newhamburg kernel: ehea CQE adr=3Dc0000001dd9e2330 ofs=3D=
+0030 0000000000000000 0000000000000000<br>
+Sep 29 16:16:23 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+: CQE Error for QP 16<br>
+Sep 29 16:16:23 newhamburg kernel: ehea CQE adr=3Dc0000001ddb9a800 ofs=3D=
+0000 0000030002630000 40804000000000e0<br>
+Sep 29 16:16:23 newhamburg kernel: ehea CQE adr=3Dc0000001ddb9a810 ofs=3D=
+0010 0000e10f002a0000 0800000000000000<br>
+Sep 29 16:16:23 newhamburg kernel: ehea CQE adr=3Dc0000001ddb9a820 ofs=3D=
+0020 0000000000000000 0000000000000000<br>
+Sep 29 16:16:23 newhamburg kernel: ehea CQE adr=3Dc0000001ddb9a830 ofs=3D=
+0030 0000000000000000 0000000000000000<br>
+Sep 29 21:50:04 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+: CQE Error for QP 16<br>
+Sep 29 21:50:04 newhamburg kernel: ehea CQE adr=3Dc0000001dd9c0700 ofs=3D=
+0000 0000000000000000 2080400000000076<br>
+Sep 29 21:50:04 newhamburg kernel: ehea CQE adr=3Dc0000001dd9c0710 ofs=3D=
+0010 0000fb42002a0000 0700000000000000<br>
+Sep 29 21:50:04 newhamburg kernel: ehea CQE adr=3Dc0000001dd9c0720 ofs=3D=
+0020 0000000000000000 0000000000000000<br>
+Sep 29 21:50:04 newhamburg kernel: ehea CQE adr=3Dc0000001dd9c0730 ofs=3D=
+0030 0000000000000000 0000000000000000<br>
+Sep 30 03:55:49 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+: CQE Error for QP 16<br>
+Sep 30 03:55:49 newhamburg kernel: ehea CQE adr=3Dc0000001ddb4f900 ofs=3D=
+0000 0000000000000000 2000400000000076<br>
+Sep 30 03:55:49 newhamburg kernel: ehea CQE adr=3Dc0000001ddb4f910 ofs=3D=
+0010 0000fb42002a0000 0900000000000000<br>
+Sep 30 03:55:49 newhamburg kernel: ehea CQE adr=3Dc0000001ddb4f920 ofs=3D=
+0020 0000000000000000 0000000000000000<br>
+Sep 30 03:55:49 newhamburg kernel: ehea CQE adr=3Dc0000001ddb4f930 ofs=3D=
+0030 0000000000000000 0000000000000000<br>
+Sep 30 09:12:02 newhamburg kernel: ehea: Error in ehea_treat_poll_error=
+: CQE Error for QP 16<br>
+Sep 30 09:12:02 newhamburg kernel: ehea CQE adr=3Dc0000001ddbd6400 ofs=3D=
+0000 0000000000000000 208040000000008e<br>
+Sep 30 09:12:02 newhamburg kernel: ehea CQE adr=3Dc0000001ddbd6410 ofs=3D=
+0010 0000d6ec002a0000 0400000000000000<br>
+Sep 30 09:12:02 newhamburg kernel: ehea CQE adr=3Dc0000001ddbd6420 ofs=3D=
+0020 0000000000000000 0000000000000000<br>
+Sep 30 09:12:02 newhamburg kernel: ehea CQE adr=3Dc0000001ddbd6430 ofs=3D=
+0030 0000000000000000 0000000000000000</body></html>=
+
+--0__=0ABBFE44DFC3D4AB8f9e8a93df938690918c0ABBFE44DFC3D4AB--
