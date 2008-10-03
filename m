@@ -1,21 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AA5C1DE0DE
+Return-Path: <mditto@consentry.com>
+Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
+	by ozlabs.org (Postfix) with ESMTP id BC937DDFAE
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Oct 2008 06:28:10 +1000 (EST)
-Message-ID: <48E67FCE.8010201@freescale.com>
-Date: Fri, 03 Oct 2008 15:25:50 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Sat,  4 Oct 2008 06:41:42 +1000 (EST)
+Message-ID: <48E68385.4060001@consentry.com>
+Date: Fri, 03 Oct 2008 13:41:41 -0700
+From: Mike Ditto <mditto@consentry.com>
 MIME-Version: 1.0
-To: Mike Ditto <mditto@consentry.com>
+To: Scott Wood <scottwood@freescale.com>
 Subject: Re: unit name for /soc in device tree
-References: <48E67CDD.8080002@consentry.com>
-In-Reply-To: <48E67CDD.8080002@consentry.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+References: <48E67CDD.8080002@consentry.com> <48E67FCE.8010201@freescale.com>
+In-Reply-To: <48E67FCE.8010201@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,17 +23,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mike Ditto wrote:
-> I'm starting a scratch port of Linux 2.6 to an MPC8272 board that currently
-> runs 2.4 (MontaVista).
-> 
-> Documentation/powerpc/booting-without-of.txt says:
->     The name of an soc
->     node should start with "soc", and the remainder of the name should
->     represent the part number for the soc.  For example, the MPC8540's
->     soc node would be called "soc8540".
+Scott Wood wrote:
+> Gah, what's that still doing in there?  Ignore it.
+> It's a bad idea, for exactly this reason.
 
-Gah, what's that still doing in there?  Ignore it.
-It's a bad idea, for exactly this reason.
-
--Scott
+Thanks!
