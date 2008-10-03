@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <andi@firstfloor.org>
+Received: from one.firstfloor.org (one.firstfloor.org [213.235.205.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7B789DDDDB
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 14:19:54 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Simple platform for the ISS 4xx simulator
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-In-Reply-To: <20081002210254.09076765@lappy.seanm.ca>
-References: <20081003000737.85CFEDDE17@ozlabs.org>
-	<20081002210254.09076765@lappy.seanm.ca>
-Content-Type: text/plain
-Date: Fri, 03 Oct 2008 14:19:44 +1000
-Message-Id: <1223007584.12264.170.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id 29B94DDED8
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Oct 2008 15:05:42 +1000 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] Block device for the ISS simulator
+From: Andi Kleen <andi@firstfloor.org>
+References: <20081003000904.0A812DDEEE@ozlabs.org>
+Date: Fri, 03 Oct 2008 06:44:03 +0200
+In-Reply-To: <20081003000904.0A812DDEEE@ozlabs.org> (Benjamin Herrenschmidt's
+	message of "Fri, 03 Oct 2008 10:08:42 +1000")
+Message-ID: <87tzbunv8s.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-10-02 at 21:02 -0400, Sean MacLennan wrote:
-> On Fri, 03 Oct 2008 10:07:19 +1000
-> "Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
-> 
-> >  image-$(CONFIG_WARP)			+= cuImage.warp
-> > -image-$(CONFIG_YOSEMITE)		+= cuImage.yosemite
-> > +image-$(CONFIG_YOSEMITE)		+= cuImage.yosemit
-> 
-> Did you really mean to drop the e from yosemite?
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Nope :-) Thanks for catching this.
+> The ISS simulator is a simple powerpc simulator used among other things
+> for hardware bringup. It implements a simple memory mapped block device
+> interface.
 
-Cheers,
-Ben.
+...
+>
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-work/drivers/block/iss_blk.c	2008-09-23 11:12:03.000000000 +1000
+> @@ -0,0 +1,365 @@
+> +/*
+> + * Simple block device for the ISS simulator
+> + */
+
+The first paragraph in your description above should be in this comment.
+
+-Andi
