@@ -1,12 +1,19 @@
-Return-Path: <venkatakrishnap@vrindatech.com>
-From: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
-To: <Linuxppc-embedded@ozlabs.org>
-Subject: linux compiling in ELDK
-Date: Sat, 4 Oct 2008 16:48:02 +0530
+Return-Path: <hofrat@hofr.at>
+Received: from mail.hofr.at (unknown [194.112.174.227])
+	by ozlabs.org (Postfix) with ESMTP id 10BEDDDD01
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun,  5 Oct 2008 00:02:12 +1000 (EST)
+Date: Sat, 4 Oct 2008 05:58:28 -0800 (AKDT)
+From: Nicholas Mc Guire <hofrat@hofr.at>
+To: sumedh tirodkar <sumedhtirodkar@gmail.com>
+Subject: Re: SA-RTLinux for ppc?
+In-Reply-To: <d2b9ccd90810030835m534f7619xe0be08078bad0019@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0810040551290.2427@vlab.hofr.at>
+References: <0B45E93C5FF65740AEAE690BF3848B7AD383BB@rennsmail04.eu.thmulti.com>
+	<d2b9ccd90810030835m534f7619xe0be08078bad0019@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0000_01C92640.FA468DA0"
-Message-Id: <20081004112414.525C8DDD0C@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -17,322 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------=_NextPart_000_0000_01C92640.FA468DA0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-Hi,
-
-    
-
-    The tooks arch/ppc/configs/TQM8260_defconfig files and change to
-VTPLM8260_defconfig in that I changed CONFIG_TQMM8260=y to
-CONFIG_VTPLM8260=y.
-
-    I executed commands given sequences.
-
- 
-
-1.       Make ARCH=ppc CROSS_COMPILE=ppc_82xx- VTPLM8260_defconfig.
-
-2.       Make ARCH=ppc CROSS_COMPILE=ppc_82xx- uImage
-
- 
-
-   I got error shown below how I can solve this problem. But I used
-TQM8260_defconfig file that time working fine. 
-
-arch/ppc/kernel/built-in.o: In function `DoSyscall':
-
-arch/ppc/kernel/entry.S:(.init.text+0x2dc): undefined reference to
-`prep_init'
-
-arch/ppc/syslib/built-in.o: In function `todc_direct_read_val':
-
-: undefined reference to `todc_info'
-
-arch/ppc/syslib/built-in.o: In function `todc_direct_read_val':
-
-: undefined reference to `todc_info'
-
-arch/ppc/syslib/built-in.o: In function `todc_direct_write_val':
-
-: undefined reference to `todc_info'
-
-arch/ppc/syslib/built-in.o: In function `todc_direct_write_val':
-
-: Undefined reference to `todc_info'
-
-arch/ppc/syslib/built-in.o: In function `todc_m48txx_write_val':
-
-: undefined reference to `todc_info'
-
-arch/ppc/syslib/built-in.o:: more undefined references to `todc_info' follow
-
-make: *** [vmlinux] Error 1
-
- 
-
- 
-
-   Kindly suggest me.
-
- 
-
-Thanks and Regards
-
-Venkatakrishna Pari.
-
- 
-
-            
-
-
-------=_NextPart_000_0000_01C92640.FA468DA0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:"MS Mincho";
-	panose-1:2 2 6 9 4 2 5 8 3 4;}
-@font-face
-	{font-family:"\@MS Mincho";
-	panose-1:0 0 0 0 0 0 0 0 0 0;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
- /* List Definitions */
- @list l0
-	{mso-list-id:85880831;
-	mso-list-type:hybrid;
-	mso-list-template-ids:-863353014 67698703 67698713 67698715 67698703 =
-67698713 67698715 67698703 67698713 67698715;}
-@list l0:level1
-	{mso-level-tab-stop:1.0in;
-	mso-level-number-position:left;
-	margin-left:1.0in;
-	text-indent:-.25in;}
-ol
-	{margin-bottom:0in;}
-ul
-	{margin-bottom:0in;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;&nbsp; &nbsp;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp; &nbsp;&nbsp;The tooks
-arch/ppc/configs/TQM8260_defconfig files and change to =
-VTPLM8260_defconfig in
-that I changed CONFIG_TQMM8260=3Dy to =
-CONFIG_VTPLM8260=3Dy.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp; I executed commands given =
-sequences.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal =
-style=3D'margin-left:1.0in;text-indent:-.25in;mso-list:l0 level1 =
-lfo1'><![if !supportLists]><font
-size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'><span
-style=3D'mso-list:Ignore'>1.<font size=3D1 face=3D"Times New =
-Roman"><span
-style=3D'font:7.0pt "Times New =
-Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-</span></font></span></span></font><![endif]><font
-size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Make
-ARCH=3Dppc CROSS_COMPILE=3Dppc_82xx- =
-VTPLM8260_defconfig.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal =
-style=3D'margin-left:1.0in;text-indent:-.25in;mso-list:l0 level1 =
-lfo1'><![if !supportLists]><font
-size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'><span
-style=3D'mso-list:Ignore'>2.<font size=3D1 face=3D"Times New =
-Roman"><span
-style=3D'font:7.0pt "Times New =
-Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-</span></font></span></span></font><![endif]><font
-size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Make
-ARCH=3Dppc CROSS_COMPILE=3Dppc_82xx- uImage<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;&nbsp; I got error shown below how I can solve =
-this problem.
-But I used TQM8260_defconfig file that time working fine. =
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>arch/ppc/kernel/built-in.o: In function =
-`DoSyscall':<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>arch/ppc/kernel/entry.S:(.init.text+0x2dc): =
-undefined
-reference to `prep_init'<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>arch/ppc/syslib/built-in.o: In function
-`todc_direct_read_val':<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>: undefined reference to =
-`todc_info'<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>arch/ppc/syslib/built-in.o: In function
-`todc_direct_read_val':<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>: undefined reference to =
-`todc_info'<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>arch/ppc/syslib/built-in.o: In function
-`todc_direct_write_val':<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>: undefined reference to =
-`todc_info'<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>arch/ppc/syslib/built-in.o: In function
-`todc_direct_write_val':<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>: Undefined reference to =
-`todc_info'<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>arch/ppc/syslib/built-in.o: In function
-`todc_m48txx_write_val':<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>: undefined reference to =
-`todc_info'<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>arch/ppc/syslib/built-in.o:: more undefined =
-references
-to `todc_info' follow<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-indent:.5in'><font size=3D3 =
-face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt'>make: *** [vmlinux] Error =
-1<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;&nbsp; Kindly suggest =
-me.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks and Regards<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Venkatakrishna Pari.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp; <o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0000_01C92640.FA468DA0--
+> actually i m tryin to find a linux like port for powerpc.
+> lookin for a kernel which has very less functionalities.
+>
+
+Well then XM2 might be of interest for you - this is really very close to
+what SaRTL was doing just based on the XtratuM hypervisor and thus
+providing seperated address spaces for the real-time domains (that is they
+run in user-mode) It boots stand-alone but can run Linux as a guest - the
+development is still at an early stage though, if you are interested in
+more details let me know - this is a bit off topic for here I guess. A
+number of presentations on both XtratuM and XM2 are scheduled for the 10th
+Real Time Linux Workshop in Mexico (Oct 29-Nov 1 2008) see:
+
+ http://www.realtimelinuxfoundation.org/events/rtlws-2008/rtlws10/
+
+thx!
+hofrat
