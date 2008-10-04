@@ -1,18 +1,15 @@
-Return-Path: <hofrat@hofr.at>
-Received: from mail.hofr.at (unknown [194.112.174.227])
-	by ozlabs.org (Postfix) with ESMTP id EE4F9DDD04
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Oct 2008 00:02:54 +1000 (EST)
-Date: Sat, 4 Oct 2008 05:59:12 -0800 (AKDT)
-From: Nicholas Mc Guire <hofrat@hofr.at>
-To: sumedh tirodkar <sumedhtirodkar@gmail.com>
-Subject: Re: SA-RTLinux for ppc?
-In-Reply-To: <d2b9ccd90810030826v642dd3c4ode01cfa75fccf4c4@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0810040559040.2427@vlab.hofr.at>
-References: <d2b9ccd90810030826v642dd3c4ode01cfa75fccf4c4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+Return-Path: <wd@denx.de>
+To: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: linux compiling in ELDK
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <20081004112414.525C8DDD0C@ozlabs.org>
+References: <20081004112414.525C8DDD0C@ozlabs.org>
+Date: Sat, 04 Oct 2008 16:26:07 +0200
+Sender: wd@denx.de
+Message-Id: <20081004142607.C55032478C@gemini.denx.de>
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,17 +20,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Tianshui South Road 222. Lanzhou 730000                      .P.R.China
-Tel:+86-931-8912025                                 Fax:+86-931-8912022
-Lichtensteinstr. 31, Mistelbach A-2130                          Austria
-Tel:+43-2572-201082                                 Fax:+43-2572-201084
-Open Source Automation Development Lab             http://www.osadl.org
-Safety Coordinator                                     safety@osadl.org
+Dear "VenkataKrishna",
 
-On Fri, 3 Oct 2008, sumedh tirodkar wrote:
+In message <20081004112414.525C8DDD0C@ozlabs.org> you wrote:
+> 
+>     The tooks arch/ppc/configs/TQM8260_defconfig files and change to
 
-> does there exist a Standalone RTLinux for powerpc?
->
-> Regards,
-> Sumedh
->
+arch/ppc is dead and gone - it has been removed from recent  versions
+of  the Linux kernel tree. The TQM8260 has never been actually ported
+to (and never been supported in) the 2.6 Linux context.
+
+> VTPLM8260_defconfig in that I changed CONFIG_TQMM8260=y to
+> CONFIG_VTPLM8260=y.
+
+I canot find any trace of a board named VTPLM8260 in the kernel.org
+Linux tree (nor in our linux-2.6-dex repo).
+
+>    I got error shown below how I can solve this problem. But I used
+> TQM8260_defconfig file that time working fine. 
+
+Obviously you are working with your own, out-of-tree port of Linux.
+And obviously your port is incomplete / buggy.
+
+We don't know what you changed, or what your hardware looks like,  or
+why you think that the (unsupported) TQM8260 board would be useful as
+a reference.
+
+There is little we can do based on such little information.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A list is only as strong as its weakest link.            -- Don Knuth
