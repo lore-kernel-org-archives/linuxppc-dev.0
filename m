@@ -1,16 +1,15 @@
 Return-Path: <hofrat@hofr.at>
 Received: from mail.hofr.at (unknown [194.112.174.227])
-	by ozlabs.org (Postfix) with ESMTP id 10BEDDDD01
+	by ozlabs.org (Postfix) with ESMTP id EE4F9DDD04
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Oct 2008 00:02:12 +1000 (EST)
-Date: Sat, 4 Oct 2008 05:58:28 -0800 (AKDT)
+	Sun,  5 Oct 2008 00:02:54 +1000 (EST)
+Date: Sat, 4 Oct 2008 05:59:12 -0800 (AKDT)
 From: Nicholas Mc Guire <hofrat@hofr.at>
 To: sumedh tirodkar <sumedhtirodkar@gmail.com>
 Subject: Re: SA-RTLinux for ppc?
-In-Reply-To: <d2b9ccd90810030835m534f7619xe0be08078bad0019@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0810040551290.2427@vlab.hofr.at>
-References: <0B45E93C5FF65740AEAE690BF3848B7AD383BB@rennsmail04.eu.thmulti.com>
-	<d2b9ccd90810030835m534f7619xe0be08078bad0019@mail.gmail.com>
+In-Reply-To: <d2b9ccd90810030826v642dd3c4ode01cfa75fccf4c4@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0810040559040.2427@vlab.hofr.at>
+References: <d2b9ccd90810030826v642dd3c4ode01cfa75fccf4c4@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
@@ -24,21 +23,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Tianshui South Road 222. Lanzhou 730000                      .P.R.China
+Tel:+86-931-8912025                                 Fax:+86-931-8912022
+Lichtensteinstr. 31, Mistelbach A-2130                          Austria
+Tel:+43-2572-201082                                 Fax:+43-2572-201084
+Open Source Automation Development Lab             http://www.osadl.org
+Safety Coordinator                                     safety@osadl.org
 
-> actually i m tryin to find a linux like port for powerpc.
-> lookin for a kernel which has very less functionalities.
+On Fri, 3 Oct 2008, sumedh tirodkar wrote:
+
+> does there exist a Standalone RTLinux for powerpc?
 >
-
-Well then XM2 might be of interest for you - this is really very close to
-what SaRTL was doing just based on the XtratuM hypervisor and thus
-providing seperated address spaces for the real-time domains (that is they
-run in user-mode) It boots stand-alone but can run Linux as a guest - the
-development is still at an early stage though, if you are interested in
-more details let me know - this is a bit off topic for here I guess. A
-number of presentations on both XtratuM and XM2 are scheduled for the 10th
-Real Time Linux Workshop in Mexico (Oct 29-Nov 1 2008) see:
-
- http://www.realtimelinuxfoundation.org/events/rtlws-2008/rtlws10/
-
-thx!
-hofrat
+> Regards,
+> Sumedh
+>
