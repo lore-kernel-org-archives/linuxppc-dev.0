@@ -1,15 +1,23 @@
-Return-Path: <wd@denx.de>
-To: "VenkataKrishna" <venkatakrishnap@vrindatech.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: linux compiling in ELDK
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <20081004112414.525C8DDD0C@ozlabs.org>
-References: <20081004112414.525C8DDD0C@ozlabs.org>
-Date: Sat, 04 Oct 2008 16:26:07 +0200
-Sender: wd@denx.de
-Message-Id: <20081004142607.C55032478C@gemini.denx.de>
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <sumedhtirodkar@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id 0E742DDDE0
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  6 Oct 2008 14:35:23 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id m2so1581053uge.14
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 05 Oct 2008 20:35:21 -0700 (PDT)
+Message-ID: <d2b9ccd90810052035s3c9ca659l3f71e4e228eb31b1@mail.gmail.com>
+Date: Mon, 6 Oct 2008 09:05:20 +0530
+From: "sumedh tirodkar" <sumedhtirodkar@gmail.com>
+To: "Nicholas Mc Guire" <hofrat@hofr.at>
+Subject: Re: SA-RTLinux for ppc?
+In-Reply-To: <Pine.LNX.4.58.0810030958420.2907@vlab.hofr.at>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_45337_13811043.1223264120686"
+References: <0B45E93C5FF65740AEAE690BF3848B7AD383BB@rennsmail04.eu.thmulti.com>
+	<Pine.LNX.4.58.0810030958420.2907@vlab.hofr.at>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -20,40 +28,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear "VenkataKrishna",
+------=_Part_45337_13811043.1223264120686
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-In message <20081004112414.525C8DDD0C@ozlabs.org> you wrote:
-> 
->     The tooks arch/ppc/configs/TQM8260_defconfig files and change to
+I would definitely like to try out the early releases. how can u help me
+with that?
 
-arch/ppc is dead and gone - it has been removed from recent  versions
-of  the Linux kernel tree. The TQM8260 has never been actually ported
-to (and never been supported in) the 2.6 Linux context.
+Regards,
+Sumedh
 
-> VTPLM8260_defconfig in that I changed CONFIG_TQMM8260=y to
-> CONFIG_VTPLM8260=y.
+On Fri, Oct 3, 2008 at 11:31 PM, Nicholas Mc Guire <hofrat@hofr.at> wrote:
 
-I canot find any trace of a board named VTPLM8260 in the kernel.org
-Linux tree (nor in our linux-2.6-dex repo).
+>
+> > sumedh tirodkar wrote:
+> > > does there exist a Standalone RTLinux for powerpc?
+> > >
+> >
+> > I don't know, but there's a very good hard real-time extension called
+> > Xenomai
+> > for powerpc (and many other arch's). http://www.xenomai.org
+> >
+> RTLinux/GPL (www.rtlinux-gpl.org) currently does not support PPC though
+> we do have the first ports for PPC 440 and 405 of XtratuM in testing it
+> will be some time before RTLinux is fully available in a stable release.
+> So atleast for now xenomai is your best bet for a free-software real-time
+> extension. If you are interested in testing early releases let me know
+> though.
+>
+> thx!
+> hofrat
+>
 
->    I got error shown below how I can solve this problem. But I used
-> TQM8260_defconfig file that time working fine. 
+------=_Part_45337_13811043.1223264120686
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Obviously you are working with your own, out-of-tree port of Linux.
-And obviously your port is incomplete / buggy.
+<div dir="ltr">I would definitely like to try out the early releases. how can u help me with that?<br><br>Regards,<br>Sumedh<br><br><div class="gmail_quote">On Fri, Oct 3, 2008 at 11:31 PM, Nicholas Mc Guire <span dir="ltr">&lt;<a href="mailto:hofrat@hofr.at">hofrat@hofr.at</a>&gt;</span> wrote:<br>
+<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div class="Ih2E3d"><br>
+&gt; sumedh tirodkar wrote:<br>
+&gt; &gt; does there exist a Standalone RTLinux for powerpc?<br>
+&gt; &gt;<br>
+&gt;<br>
+&gt; I don&#39;t know, but there&#39;s a very good hard real-time extension called<br>
+&gt; Xenomai<br>
+&gt; for powerpc (and many other arch&#39;s). <a href="http://www.xenomai.org" target="_blank">http://www.xenomai.org</a><br>
+&gt;<br>
+</div>RTLinux/GPL (<a href="http://www.rtlinux-gpl.org" target="_blank">www.rtlinux-gpl.org</a>) currently does not support PPC though<br>
+we do have the first ports for PPC 440 and 405 of XtratuM in testing it<br>
+will be some time before RTLinux is fully available in a stable release.<br>
+So atleast for now xenomai is your best bet for a free-software real-time<br>
+extension. If you are interested in testing early releases let me know<br>
+though.<br>
+<br>
+thx!<br>
+hofrat<br>
+</blockquote></div><br></div>
 
-We don't know what you changed, or what your hardware looks like,  or
-why you think that the (unsupported) TQM8260 board would be useful as
-a reference.
-
-There is little we can do based on such little information.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A list is only as strong as its weakest link.            -- Don Knuth
+------=_Part_45337_13811043.1223264120686--
