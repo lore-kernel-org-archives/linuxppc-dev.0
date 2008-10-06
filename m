@@ -1,20 +1,17 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id A4DA6DDDEF
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Oct 2008 18:49:15 +1100 (EST)
-Date: Mon, 6 Oct 2008 09:49:10 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Niklaus Giger <niklaus.giger@member.fsf.org>
-Subject: Re: Before adding preiliminary support for Netstal HCU4 (PPC405
-	based) board
-In-Reply-To: <200809302256.00350.niklaus.giger@member.fsf.org>
-Message-ID: <Pine.LNX.4.64.0810060948090.27914@vixen.sonytel.be>
-References: <200809302256.00350.niklaus.giger@member.fsf.org>
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
+	by ozlabs.org (Postfix) with ESMTP id 7EE84DDDEA
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Oct 2008 00:42:42 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so135247anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 06 Oct 2008 06:42:40 -0700 (PDT)
+Message-ID: <c384c5ea0810060642l2bbc2a08y5725a28b6d45aa8d@mail.gmail.com>
+Date: Mon, 6 Oct 2008 15:42:40 +0200
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: linuxppc-dev@ozlabs.org, "Jerry Huang" <Chang-Ming.Huangcm@freescale.com>,
+	"Tony Li" <Tony.Li@freescale.com>, "Stuart Hughes" <seh@zee2.com>
+Subject: MPC8315ERDB PCI Express support status?
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-1094596141-1223279350=:27914"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hello all,
 
----584349381-1094596141-1223279350=:27914
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 
-On Tue, 30 Sep 2008, Niklaus Giger wrote:
-> The patch is against the master git of denx.de. It does not apply cleanly
-> against linus' git as I cannot find there any include/asm-ppc subdirectory. 
+can Freescale or any of the powerpc maintainers indicate to what
+extend PCI Express support for the MPC8315E processor has been merged
+to Linux mainline, or what is still needs review or attention?
 
-{arch/,include-asm-}ppc/ has been removed, in favor of arch/powerpc/.
+I could find u-boot and Linux patches provided by Freescale in their
+open-source patch pool:
 
-With kind regards,
+http://www.bitshrine.org/gpp/
+http://www.bitshrine.org/gpp/linux-fsl-2.6.24.3-MPC8315ERDB-pcie-INTx-support.patch
 
-Geert Uytterhoeven
-Software Architect
+but I could not easily identify what has been merged upstream.
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+My first goal (and hardware on my desk) would be to test an Intel PCIe
+PRO/1000 Ethernet adapter, as a start to add a custom PCIe FPGA
+device.
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-1094596141-1223279350=:27914--
+Regards,
+-- 
+Leon
