@@ -1,17 +1,21 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8F865DDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Oct 2008 04:26:55 +1100 (EST)
-Date: Mon, 6 Oct 2008 21:26:54 +0400
+	by ozlabs.org (Postfix) with ESMTP id 44EAADDF18
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Oct 2008 04:28:33 +1100 (EST)
+Date: Mon, 6 Oct 2008 21:28:31 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH] pata_of_platform: fix no irq handling
-Message-ID: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
+To: Kumar Gala <galak@kernel.crashing.org>, Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH 1/2] OF: add fsl,mcu-mpc8349emitx to the exception list
+Message-ID: <20081006172831.GA27233@oksana.dev.rtsoft.ru>
+References: <20080923141219.GA31262@oksana.dev.rtsoft.ru>
+	<20080930124424.GA6878@oksana.dev.rtsoft.ru>
+	<20081001132248.191e92b3@hyperion.delvare>
+	<20081001113948.GA20115@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, Li Yang <leoli@freescale.com>,
-	Wang Jian <lark@linux.net.cn>
+In-Reply-To: <20081001113948.GA20115@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+	Ben Dooks <ben-linux@fluff.org>
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,34 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When no irq specified the pata_of_platform fills the irq_res with -1,
-which is wrong to do for two reasons:
+On Wed, Oct 01, 2008 at 03:39:48PM +0400, Anton Vorontsov wrote:
+[...]
+> > > Any issues with this or the second patch? Can we merge them?
+> > 
+> > I do not have the time to review these patches (and, honestly, have no
+> > interest in them.) So I will not merge them but I have no objection to
+> > them being merged by somebody else.
+> 
+> Ok, thanks for the sincerity.. ;-)
+> 
+> Kumar, could you pick up the two patches via the patchworks?
+> 
+> [1/2] OF: add fsl,mcu-mpc8349emitx to the exception list
+> http://patchwork.ozlabs.org/patch/1105/
+> 
+> [2/2] i2c: MPC8349E-mITX Power Management and GPIO expander driver
+> http://patchwork.ozlabs.org/patch/1106/
+> 
+> Or should I resend them to you? Or should I resend them to Andrew?
 
-1. By definition, 'no irq' should be IRQ 0, not some negative integer;
-2. pata_platform checks for irq_res.start > 0, but since irq_res.start
-   is unsigned type, the check will be true for `-1'.
+Ping?
 
-Reported-by: Steven A. Falco <sfalco@harris.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-
-Resending again...
-
- drivers/ata/pata_of_platform.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/ata/pata_of_platform.c b/drivers/ata/pata_of_platform.c
-index 408da30..1f18ad9 100644
---- a/drivers/ata/pata_of_platform.c
-+++ b/drivers/ata/pata_of_platform.c
-@@ -52,7 +52,7 @@ static int __devinit pata_of_platform_probe(struct of_device *ofdev,
- 
- 	ret = of_irq_to_resource(dn, 0, &irq_res);
- 	if (ret == NO_IRQ)
--		irq_res.start = irq_res.end = -1;
-+		irq_res.start = irq_res.end = 0;
- 	else
- 		irq_res.flags = 0;
- 
 -- 
-1.5.6.3
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
