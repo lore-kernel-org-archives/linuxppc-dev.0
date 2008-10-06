@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E79B6DDE06
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Oct 2008 03:48:56 +1100 (EST)
-Date: Mon, 6 Oct 2008 20:48:55 +0400
+	by ozlabs.org (Postfix) with ESMTP id 6F248DDE06
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Oct 2008 03:48:59 +1100 (EST)
+Date: Mon, 6 Oct 2008 20:48:57 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 1/2] OF: new helper: of_parse_phandles_with_args()
-Message-ID: <20081006164855.GA17942@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/2] powerpc/QE: implement QE Pin Multiplexing API
+Message-ID: <20081006164857.GB17942@oksana.dev.rtsoft.ru>
 References: <20081006164802.GA7105@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -23,223 +23,146 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The helper is factored out of of_get_gpio(). Will be used by the QE
-pin multiplexing functions (they need to parse the gpios = <> too).
+With this API we're able to set a QE pin to the GPIO mode or a dedicated
+peripheral function.
+
+The API relies on the fact that QE gpio controllers are registered. If
+they aren't, the API won't work (gracefully though).
+
+There is one caveat though: if anybody occupied the node->data before us,
+or overwrote it, then bad things will happen. Luckily this is all in the
+platform code that we fully control, so this should never happen.
+
+I could implement more checks (for example we could create a list of
+successfully registered QE controllers, and compare the node->data in the
+qe_pin_request()), but this is unneeded if nobody is going to do silly
+things behind our back.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/of/base.c  |  111 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/of/gpio.c  |   77 +++++++----------------------------
- include/linux/of.h |    3 +
- 3 files changed, 130 insertions(+), 61 deletions(-)
+ arch/powerpc/include/asm/qe.h     |    9 ++
+ arch/powerpc/sysdev/qe_lib/gpio.c |  195 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 204 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index ad8ac1a..d31686d 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -473,3 +473,114 @@ int of_modalias_node(struct device_node *node, char *modalias, int len)
- }
- EXPORT_SYMBOL_GPL(of_modalias_node);
+diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
+index edee15d..31ddbc9 100644
+--- a/arch/powerpc/include/asm/qe.h
++++ b/arch/powerpc/include/asm/qe.h
+@@ -112,6 +112,15 @@ extern int par_io_config_pin(u8 port, u8 pin, int dir, int open_drain,
+ 			     int assignment, int has_irq);
+ extern int par_io_data_set(u8 port, u8 pin, u8 val);
  
-+/**
-+ * of_parse_phandles_with_args - Find a node pointed by phandle in a list
-+ * @np:		pointer to a device tree node containing a list
-+ * @list_name:	property name that contains a list
-+ * @cells_name:	property name that specifies phandles' arguments count
-+ * @index:	index of a phandle to parse out
-+ * @out_node:	pointer to device_node struct pointer (will be filled)
-+ * @out_args:	pointer to arguments pointer (will be filled)
-+ *
-+ * This function is useful to parse lists of phandles and their arguments.
-+ * Returns 0 on success and fills out_node and out_args, on error returns
-+ * appropriate errno value.
-+ *
-+ * Example:
-+ *
-+ * phandle1: node1 {
-+ * 	#list-cells = <2>;
-+ * }
-+ *
-+ * phandle2: node2 {
-+ * 	#list-cells = <1>;
-+ * }
-+ *
-+ * node3 {
-+ * 	list = <&phandle1 1 2 &phandle2 3>;
-+ * }
-+ *
-+ * To get a device_node of the `node2' node you may call this:
-+ * of_parse_phandles_with_args(node3, "list", "#list-cells", 2, &node2, &args);
++/*
++ * Pin multiplexing functions.
 + */
-+int of_parse_phandles_with_args(struct device_node *np, const char *list_name,
-+				const char *cells_name, int index,
-+				struct device_node **out_node,
-+				const void **out_args)
++struct qe_pin;
++extern struct qe_pin *qe_pin_request(struct device_node *np, int index);
++extern void qe_pin_free(struct qe_pin *qe_pin);
++extern void qe_pin_set_gpio(struct qe_pin *qe_pin);
++extern void qe_pin_set_dedicated(struct qe_pin *pin);
++
+ /* QE internal API */
+ int qe_issue_cmd(u32 cmd, u32 device, u8 mcn_protocol, u32 cmd_input);
+ enum qe_clock qe_clock_source(const char *source);
+diff --git a/arch/powerpc/sysdev/qe_lib/gpio.c b/arch/powerpc/sysdev/qe_lib/gpio.c
+index 8e5a0bc..7f10b18 100644
+--- a/arch/powerpc/sysdev/qe_lib/gpio.c
++++ b/arch/powerpc/sysdev/qe_lib/gpio.c
+@@ -14,6 +14,7 @@
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/spinlock.h>
++#include <linux/err.h>
+ #include <linux/io.h>
+ #include <linux/of.h>
+ #include <linux/of_gpio.h>
+@@ -24,8 +25,14 @@ struct qe_gpio_chip {
+ 	struct of_mm_gpio_chip mm_gc;
+ 	spinlock_t lock;
+ 
++	unsigned long pin_flags[QE_PIO_PINS];
++#define QE_PIN_REQUESTED 0
++
+ 	/* shadowed data register to clear/set bits safely */
+ 	u32 cpdata;
++
++	/* saved_regs used to restore dedicated functions */
++	struct qe_pio_regs saved_regs;
+ };
+ 
+ static inline struct qe_gpio_chip *
+@@ -40,6 +47,12 @@ static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
+ 	struct qe_pio_regs __iomem *regs = mm_gc->regs;
+ 
+ 	qe_gc->cpdata = in_be32(&regs->cpdata);
++	qe_gc->saved_regs.cpdata = qe_gc->cpdata;
++	qe_gc->saved_regs.cpdir1 = in_be32(&regs->cpdir1);
++	qe_gc->saved_regs.cpdir2 = in_be32(&regs->cpdir2);
++	qe_gc->saved_regs.cppar1 = in_be32(&regs->cppar1);
++	qe_gc->saved_regs.cppar2 = in_be32(&regs->cppar2);
++	qe_gc->saved_regs.cpodr = in_be32(&regs->cpodr);
+ }
+ 
+ static int qe_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+@@ -103,6 +116,188 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ 	return 0;
+ }
+ 
++struct qe_pin {
++	/*
++	 * The qe_gpio_chip name is unfortunate, we should change that to
++	 * something like qe_pio_controller. Someday.
++	 */
++	struct qe_gpio_chip *controller;
++	int num;
++};
++
++/**
++ * qe_pin_request - Request a QE pin
++ * @np:		device node to get a pin from
++ * @index:	index of a pin in the device tree
++ * Context:	non-atomic
++ *
++ * This function return qe_pin so that you could use it with the rest of
++ * the QE Pin Multiplexing API.
++ */
++struct qe_pin *qe_pin_request(struct device_node *np, int index)
 +{
-+	int ret = -EINVAL;
-+	const u32 *list;
-+	u32 list_cells;
++	struct qe_pin *qe_pin;
++	struct device_node *gc;
++	struct of_gpio_chip *of_gc = NULL;
++	struct of_mm_gpio_chip *mm_gc;
++	struct qe_gpio_chip *qe_gc;
++	int err;
 +	int size;
-+	int i;
-+	int cur_index = 0;
-+	struct device_node *node = NULL;
-+	const void *args;
++	const void *gpio_spec;
++	const u32 *gpio_cells;
++	unsigned long flags;
 +
-+	list = of_get_property(np, list_name, &size);
-+	if (!list) {
-+		ret = -ENOENT;
-+		goto err0;
-+	}
-+	list_cells = size / sizeof(u32);
-+
-+	for (i = 0; i < list_cells; cur_index++) {
-+		const u32 *cells;
-+		const phandle *phandle;
-+
-+		phandle = list + i;
-+		args = phandle + 1;
-+
-+		/* one cell hole in the list = <>; */
-+		if (!*phandle) {
-+			if (cur_index == index)
-+				return -ENOENT;
-+			i++;
-+			continue;
-+		}
-+
-+		node = of_find_node_by_phandle(*phandle);
-+		if (!node) {
-+			pr_debug("%s: could not find phandle\n",
-+				 np->full_name);
-+			goto err0;
-+		}
-+
-+		cells = of_get_property(node, cells_name, &size);
-+		if (!cells || size != sizeof(*cells)) {
-+			pr_debug("%s: could not get %s for %s\n",
-+				 np->full_name, cells_name, node->full_name);
-+			goto err1;
-+		}
-+
-+		/* Next phandle is at phandle cells + #cells */
-+		i += sizeof(*phandle) / sizeof(u32) + *cells;
-+		if (i >= list_cells + 1) {
-+			pr_debug("%s: insufficient arguments length\n",
-+				 np->full_name);
-+			goto err1;
-+		}
-+
-+		if (cur_index == index)
-+			break;
-+
-+		node = NULL;
-+		of_node_put(node);
++	qe_pin = kzalloc(sizeof(*qe_pin), GFP_KERNEL);
++	if (!qe_pin) {
++		pr_debug("%s: can't allocate memory\n", __func__);
++		return ERR_PTR(-ENOMEM);
 +	}
 +
-+	if (!node) {
-+		ret = -ENOENT;
-+		goto err0;
-+	}
-+
-+	*out_node = node;
-+	*out_args = args;
-+
-+	return 0;
-+err1:
-+	of_node_put(node);
-+err0:
-+	pr_debug("%s failed with status %d\n", __func__, ret);
-+	return ret;
-+}
-+EXPORT_SYMBOL(of_parse_phandles_with_args);
-diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
-index 1c9cab8..6d6e4c0 100644
---- a/drivers/of/gpio.c
-+++ b/drivers/of/gpio.c
-@@ -28,78 +28,33 @@
-  */
- int of_get_gpio(struct device_node *np, int index)
- {
--	int ret = -EINVAL;
-+	int ret;
- 	struct device_node *gc;
- 	struct of_gpio_chip *of_gc = NULL;
- 	int size;
--	const u32 *gpios;
--	u32 nr_cells;
--	int i;
- 	const void *gpio_spec;
- 	const u32 *gpio_cells;
--	int gpio_index = 0;
- 
--	gpios = of_get_property(np, "gpios", &size);
--	if (!gpios) {
--		ret = -ENOENT;
-+	ret = of_parse_phandles_with_args(np, "gpios", "#gpio-cells", index,
++	err = of_parse_phandles_with_args(np, "gpios", "#gpio-cells", index,
 +					  &gc, &gpio_spec);
-+	if (ret) {
++	if (err) {
 +		pr_debug("%s: can't parse gpios property\n", __func__);
- 		goto err0;
- 	}
--	nr_cells = size / sizeof(u32);
--
--	for (i = 0; i < nr_cells; gpio_index++) {
--		const phandle *gpio_phandle;
--
--		gpio_phandle = gpios + i;
--		gpio_spec = gpio_phandle + 1;
--
--		/* one cell hole in the gpios = <>; */
--		if (!*gpio_phandle) {
--			if (gpio_index == index)
--				return -ENOENT;
--			i++;
--			continue;
--		}
--
--		gc = of_find_node_by_phandle(*gpio_phandle);
--		if (!gc) {
--			pr_debug("%s: could not find phandle for gpios\n",
--				 np->full_name);
--			goto err0;
--		}
--
--		of_gc = gc->data;
--		if (!of_gc) {
--			pr_debug("%s: gpio controller %s isn't registered\n",
--				 np->full_name, gc->full_name);
--			goto err1;
--		}
--
--		gpio_cells = of_get_property(gc, "#gpio-cells", &size);
--		if (!gpio_cells || size != sizeof(*gpio_cells) ||
--				*gpio_cells != of_gc->gpio_cells) {
--			pr_debug("%s: wrong #gpio-cells for %s\n",
--				 np->full_name, gc->full_name);
--			goto err1;
--		}
--
--		/* Next phandle is at phandle cells + #gpio-cells */
--		i += sizeof(*gpio_phandle) / sizeof(u32) + *gpio_cells;
--		if (i >= nr_cells + 1) {
--			pr_debug("%s: insufficient gpio-spec length\n",
--				 np->full_name);
--			goto err1;
--		}
--
--		if (gpio_index == index)
--			break;
--
--		of_gc = NULL;
--		of_node_put(gc);
--	}
- 
++		goto err0;
++	}
++
++	if (!of_device_is_compatible(gc, "fsl,mpc8323-qe-pario-bank")) {
++		pr_debug("%s: tried to get a non-qe pin\n", __func__);
++		err = -EINVAL;
++		goto err1;
++	}
++
 +	of_gc = gc->data;
- 	if (!of_gc) {
--		ret = -ENOENT;
--		goto err0;
++	if (!of_gc) {
 +		pr_debug("%s: gpio controller %s isn't registered\n",
 +			 np->full_name, gc->full_name);
++		err = -ENODEV;
 +		goto err1;
 +	}
 +
@@ -248,22 +171,127 @@ index 1c9cab8..6d6e4c0 100644
 +			*gpio_cells != of_gc->gpio_cells) {
 +		pr_debug("%s: wrong #gpio-cells for %s\n",
 +			 np->full_name, gc->full_name);
++		err = -EINVAL;
 +		goto err1;
- 	}
- 
- 	ret = of_gc->xlate(of_gc, np, gpio_spec);
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 79886ad..e2488f5 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -71,5 +71,8 @@ extern int of_n_size_cells(struct device_node *np);
- extern const struct of_device_id *of_match_node(
- 	const struct of_device_id *matches, const struct device_node *node);
- extern int of_modalias_node(struct device_node *node, char *modalias, int len);
-+extern int of_parse_phandles_with_args(struct device_node *np,
-+	const char *list_name, const char *cells_name, int index,
-+	struct device_node **out_node, const void **out_args);
- 
- #endif /* _LINUX_OF_H */
++	}
++
++	err = of_gc->xlate(of_gc, np, gpio_spec);
++	if (err < 0)
++		goto err1;
++
++	mm_gc = to_of_mm_gpio_chip(&of_gc->gc);
++	qe_gc = to_qe_gpio_chip(mm_gc);
++
++	spin_lock_irqsave(&qe_gc->lock, flags);
++
++	if (test_and_set_bit(QE_PIN_REQUESTED, &qe_gc->pin_flags[err]) == 0) {
++		qe_pin->controller = qe_gc;
++		qe_pin->num = err;
++		err = 0;
++	} else {
++		err = -EBUSY;
++	}
++
++	spin_unlock_irqrestore(&qe_gc->lock, flags);
++
++	if (!err)
++		return qe_pin;
++err1:
++	of_node_put(gc);
++err0:
++	kfree(qe_pin);
++	pr_debug("%s failed with status %d\n", __func__, err);
++	return ERR_PTR(err);
++}
++EXPORT_SYMBOL(qe_pin_request);
++
++/**
++ * qe_pin_free - Free a pin
++ * @qe_pin:	pointer to the qe_pin structure
++ * Context:	any
++ *
++ * This function frees the qe_pin structure and makes a pin available
++ * for further qe_pin_request() calls.
++ */
++void qe_pin_free(struct qe_pin *qe_pin)
++{
++	struct qe_gpio_chip *qe_gc = qe_pin->controller;
++	unsigned long flags;
++	const int pin = qe_pin->num;
++
++	spin_lock_irqsave(&qe_gc->lock, flags);
++	test_and_clear_bit(QE_PIN_REQUESTED, &qe_gc->pin_flags[pin]);
++	spin_unlock_irqrestore(&qe_gc->lock, flags);
++
++	kfree(qe_pin);
++}
++EXPORT_SYMBOL(qe_pin_free);
++
++/**
++ * qe_pin_set_dedicated - Revert a pin to a dedicated peripheral function mode
++ * @qe_pin:	pointer to the qe_pin structure
++ * Context:	any
++ *
++ * This function resets a pin to a dedicated peripheral function that
++ * has been set up by the firmware.
++ */
++void qe_pin_set_dedicated(struct qe_pin *qe_pin)
++{
++	struct qe_gpio_chip *qe_gc = qe_pin->controller;
++	struct qe_pio_regs __iomem *regs = qe_gc->mm_gc.regs;
++	struct qe_pio_regs *sregs = &qe_gc->saved_regs;
++	int pin = qe_pin->num;
++	u32 mask1 = 1 << (QE_PIO_PINS - (pin + 1));
++	u32 mask2 = 0x3 << (QE_PIO_PINS - (pin % (QE_PIO_PINS / 2) + 1) * 2);
++	bool second_reg = pin > (QE_PIO_PINS / 2) - 1;
++	unsigned long flags;
++
++	spin_lock_irqsave(&qe_gc->lock, flags);
++
++	if (second_reg) {
++		clrsetbits_be32(&regs->cpdir2, mask2, sregs->cpdir2 & mask2);
++		clrsetbits_be32(&regs->cppar2, mask2, sregs->cppar2 & mask2);
++	} else {
++		clrsetbits_be32(&regs->cpdir1, mask2, sregs->cpdir1 & mask2);
++		clrsetbits_be32(&regs->cppar1, mask2, sregs->cppar1 & mask2);
++	}
++
++	if (sregs->cpdata & mask1)
++		qe_gc->cpdata |= mask1;
++	else
++		qe_gc->cpdata &= ~mask1;
++
++	out_be32(&regs->cpdata, qe_gc->cpdata);
++	clrsetbits_be32(&regs->cpodr, mask1, sregs->cpodr & mask1);
++
++	spin_unlock_irqrestore(&qe_gc->lock, flags);
++}
++EXPORT_SYMBOL(qe_pin_set_dedicated);
++
++/**
++ * qe_pin_set_gpio - Set a pin to the GPIO mode
++ * @qe_pin:	pointer to the qe_pin structure
++ * Context:	any
++ *
++ * This function sets a pin to the GPIO mode.
++ */
++void qe_pin_set_gpio(struct qe_pin *qe_pin)
++{
++	struct qe_gpio_chip *qe_gc = qe_pin->controller;
++	struct qe_pio_regs __iomem *regs = qe_gc->mm_gc.regs;
++	unsigned long flags;
++
++	spin_lock_irqsave(&qe_gc->lock, flags);
++
++	/* Let's make it input by default, GPIO API is able to change that. */
++	__par_io_config_pin(regs, qe_pin->num, QE_PIO_DIR_IN, 0, 0, 0);
++
++	spin_unlock_irqrestore(&qe_gc->lock, flags);
++}
++EXPORT_SYMBOL(qe_pin_set_gpio);
++
+ static int __init qe_add_gpiochips(void)
+ {
+ 	struct device_node *np;
 -- 
 1.5.6.3
