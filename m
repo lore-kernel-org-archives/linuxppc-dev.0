@@ -1,18 +1,18 @@
-Return-Path: <duykynguyen@hotmail.com>
-Received: from bay0-omc1-s33.bay0.hotmail.com (bay0-omc1-s33.bay0.hotmail.com
-	[65.54.246.105]) by ozlabs.org (Postfix) with ESMTP id C163DDDE17
+Return-Path: <a.schmid@systeme-steuerungen.de>
+Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.161])
+	by ozlabs.org (Postfix) with ESMTP id AFD4FDDE1D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Oct 2008 17:14:01 +1100 (EST)
-Message-ID: <BLU119-DAV245BF96B99DC961FFF9EFBB380@phx.gbl>
-From: "Duy-Ky Nguyen" <duykynguyen@hotmail.com>
+	Tue,  7 Oct 2008 17:47:29 +1100 (EST)
+Date: Tue, 7 Oct 2008 08:35:32 +0200
+From: "Schmid Alexander" <a.schmid@systeme-steuerungen.de>
+Subject: German keyboard layout
 To: <linuxppc-embedded@ozlabs.org>
-References: <mailman.1.1223341202.18311.linuxppc-embedded@ozlabs.org>
-Subject: Trying to vfree() nonexistent vm area
-Date: Mon, 6 Oct 2008 23:14:01 -0700
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
-Cc: Scott Wood <scottwood@freescale.com>
+Message-Id: <FCELKENEBBOLLHKPHCCBIELFCEAA.a.schmid@systeme-steuerungen.de>
+Mime-Version: 1.0
+Content-Type: text/plain;
+   charset="iso-8859-1"
+Cc: PHYTEC Support <support@phytec.de>
+Reply-To: a.schmid@systeme-steuerungen.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,42 +23,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-My driver uses ioremap() the IMMR_BASE @ 0xE0000000 to access registers.
-A user-space app opens and close the deive file on every access to register.
+Hello, I have linux 2.6.23.1 on a MPC5200B with a USB keyboard!
+But the default language is US. How can I have a german layout?
+I tried cross-compiling the package kbd-1.0.6, but this seems to be very
+tricky! I didn`t finish that.
 
-There's no problem with FreeScale Linuc BSP 2..6.20 for eva board 
-MPC83813E-RDB.
+Then I tried it with the loadkmap from the busybox! But there is always the
+error: /dev/vc0: No such file or directory!
 
-For the latest FreeScale Linuc BSP 2..6.24 , I have NO problem for the very 
-FIRST run.
-But after the 1st run, I have problem with the new FreeScale Linuc BSP 
-2..6.24 with the following error message
+Can anyone help me please? I would only need a german keyboard layout!
 
-        Trying to vfree() nonexistent vm area (c98a0000)
-
-where c98a0000 is the mapped address of IMMR_BASE 0xE0000000.
-
-So, it appears to me that the device file could be closed improperly as it's 
-closed after the 1st run.
-
-I really appreciate your time and help
-
-Best Regards,
-
-Duy-Ky
-
-///////////////////////
-Below is outline of the driver
-
-init:
-     ppc_base = (unsigned long) ioremap_nocache(PPC_BASE, PPC_SIZE);
-
-//     ppc_base = (unsigned long) ioremap(PPC_BASE, PPC_SIZE);    // failure 
-with this way too
+Thank you
 
 
-close:
-    iounmap((void __iomem *)ppc_base);
-//    iounmap(PPC_BASE);        // failure with this way too !
+
+
+
+Alexander Schmid
+Dipl. Ing. (FH)
+-Entwicklung-
+Systeme & Steuerungen GmbH
+Josef-Buchinger-Strasse 8
+DE-94481 Grafenau
