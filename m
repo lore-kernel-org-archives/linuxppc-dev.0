@@ -1,18 +1,23 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 9D124DDE20
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 10:47:24 +1100 (EST)
-Date: Fri, 10 Oct 2008 19:47:21 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Stefan Roese" <sr@denx.de>
-Subject: Re: [PATCH v7] PPC440EPx gpio driver
-Message-ID: <20081010194721.0ae8785a@lappy.seanm.ca>
-In-Reply-To: <200810101602.33052.sr@denx.de>
-References: <48EF5DDB.7060302@harris.com>
-	<200810101602.33052.sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <tj@kernel.org>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D96F6DDDFD
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Oct 2008 12:47:37 +1100 (EST)
+Message-ID: <48EABBD3.1010401@kernel.org>
+Date: Tue, 07 Oct 2008 10:30:59 +0900
+From: Tejun Heo <tj@kernel.org>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] pata_of_platform: fix no irq handling
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
+	<48EA77EF.6080502@genesi-usa.com>
+	<20081006213209.GA13072@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081006213209.GA13072@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=windows-1251
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org, Li Yang <leoli@freescale.com>,
+	Jeff Garzik <jgarzik@pobox.com>, Wang Jian <lark@linux.net.cn>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,30 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 10 Oct 2008 16:02:32 +0200
-"Stefan Roese" <sr@denx.de> wrote:
+Anton Vorontsov wrote:
+> On Mon, Oct 06, 2008 at 03:41:19PM -0500, Matt Sealey wrote:
+>> There is a simple problem with the patch which is that an "IRQ 0" can and does
+>> actually exist on a bunch of platforms, at least to the best of my knowledge.
+>>
+>> Checking for -1 (which means for definite, no irq at all, because it is
+>> totally unambiguous, as a -1 IRQ numbering is "impossible") is more correct.
+> 
+> This was discussed years ago.
+> 
+> http://lkml.org/lkml/2005/11/22/159
+> http://lkml.org/lkml/2005/11/22/227
+> 
 
-> On Friday 10 October 2008, Steven A. Falco wrote:
-> > This patch adds support for the GPIO functions of PPC40x and PPC44x
-> > SOCs.
-> 
-> Looks good. But you should change the subject line now. Its not only
-> a PPC440EPx gpio driver but ppc4xx. Also please add "powerpc/4xx: "
-> to the beginning of the subject line. And you should always send 4xx
-> related patches to the subsystem maintainer too (CC), in this case
-> Josh Boyer.
-> 
-> > Signed-off-by: Steve Falco <sfalco at harris.com>
-> 
-> You can add my:
-> 
-> Acked-by: Stefan Roese <sr@denx.de>
-> 
-> in the next patch revision. :)
+Would this break any existing platforms?  If so, can those be fixed
+together or does it become a much bigger problem that way?
 
-Tested on the warp (440EP).
+Thanks.
 
-Acked-by: Sean MacLennan <smaclennan@pikatech.com>
-
-Cheers,
-   Sean
+-- 
+tejun
