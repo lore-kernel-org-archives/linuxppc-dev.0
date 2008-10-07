@@ -1,11 +1,18 @@
-Return-Path: <gregoire.banderet@ge.com>
-Message-ID: <48EA3158.4040204@ge.com>
-Date: Mon, 06 Oct 2008 17:40:08 +0200
-From: Gregoire Banderet <gregoire.banderet@ge.com>
+Return-Path: <fisherssml@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id 3D287DDE07
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  7 Oct 2008 16:15:19 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id m2so129191uge.14
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 06 Oct 2008 22:15:17 -0700 (PDT)
+Message-ID: <25fd1f750810062215q7f33664eo99908ab7dd26f502@mail.gmail.com>
+Date: Tue, 7 Oct 2008 13:15:17 +0800
+From: Fisherss <fisherssml@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: CPIO image date problem
 MIME-Version: 1.0
-To: Linuxppc-embedded@ozlabs.org
-Subject: Free memory, include "cached"?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -16,20 +23,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Hi all
 
-I have to report the amount of FreeMem on my embedded system. The rootfs
-is in RAM. I use /proc/meminfo.
-I started by doing : freemem = MemFree + Buffers + Cached
-But I realized (tell me if I'm wrong) that my rootfs filesystems is
-counted in "Cached".
-Part of the memory in "Cached" can be allocated, so I should add it as
-Free Memory, but part of it is my rootfs (i.e. really used).
-How should I compute freemem ?
+I have a weird problem on MPC8548E with Linux Kernel 2.6.24:
 
-Note that with linux 2.4 (initrd and not initramfs) I did use the ioctl 
-BLKGETSIZE in order to subtract the amount of memory used by the rootfs. 
-But now with initramfs it's dynamic.
+I use a CPIO image as my embedded system's root file system, but after
+booting, all files and directories' "date" attribute are set to "Jan
+1, 1970".
 
-Thanks,
-Greg
+Now what I have got is:
+====================
+U-boot and the cpio image are cleared. The roofs(cpio image) is loaded
+by Linux Kernel, not U-boot, and the image itself has successfully
+passed test, so we suppose the problem is in Linux Kernel.
+
+The Kernel loading sequence is : time_init() -> cpio image loading ->
+RTC driver loading
+
+That means, at the cpio image loading time, we don't have the RTC
+driver. In fact, Kernel uses the time_base register instead of RTC(at
+least at this time). All standard cpio images contain the "date" file
+attribute, but seems like Kernel just ignores it and uses its own
+"clock source"(and this clock source should be binded to time_base
+register).
+
+I have located the cpio image unpacking code in Kernel, but can not
+find anything about date attribute. This part of code is
+platform-independent.
+
+Anyone any idea ??
+
+Thanks
+
+-- 
+Fisherss
+fisherss@gmail.com
