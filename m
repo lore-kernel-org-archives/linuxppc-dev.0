@@ -3,14 +3,14 @@ Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
 	[134.79.18.120])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4E976DDF2E
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 08:05:55 +1100 (EST)
-Subject: [PATCH 2/3] powerpc: dma code cleanup
+	by ozlabs.org (Postfix) with ESMTPS id EC381DDF2D
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 08:06:46 +1100 (EST)
+Subject: [PATCH 3/3] powerpc: dma code cleanup
 From: Remi Machet <rmachet@slac.stanford.edu>
 To: Linux PPC <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Tue, 07 Oct 2008 14:05:44 -0700
-Message-Id: <1223413545.17585.29.camel@pcds-ts102.slac.stanford.edu>
+Date: Tue, 07 Oct 2008 14:06:38 -0700
+Message-Id: <1223413598.17585.31.camel@pcds-ts102.slac.stanford.edu>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,202 +21,535 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Code cleanup in arch/powerpc/include/asm/dma-mapping.h and 
-arch/powerpc/include/asm/io.h. 
-
-I replaced _dma_sync and _dma_sync_page with a new dma_mapping_ops 
-API called sync: this is necessary to make sure that the proper 
-synchronization mechanism is used for each device on a platform 
-where multiple DMA architecture would co-exist.
-
-Removed the page_to_bus macro which is not used anymore.
-
-Added the hook to use the new dma-noncoherent code if 
-CONFIG_NOT_COHERENT_CACHE is set.
+Remove old dma-noncoherent code and hooks. Also remove the config parameters
+CONSISTENT_SIZE and CONSISTENT_START which are not used anymore.
 
 Signed-off-by: Remi Machet <rmachet@slac.stanford.edu>
 ---
+ arch/powerpc/lib/dma-noncoherent.c |  427 -------------------------------------
+ b/arch/powerpc/Kconfig             |   25 --
+ b/arch/powerpc/kernel/dma.c        |    9
+ b/arch/powerpc/lib/Makefile        |    1
+ 4 files changed, 462 deletions(-)
 
- dma-mapping.h |   69 ++++++++++++++++++++++++++++++----------------------------
- io.h          |    6 -----
- 2 files changed, 36 insertions(+), 39 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index fddb229..3328244 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -18,32 +18,6 @@
- 
- #define DMA_ERROR_CODE		(~(dma_addr_t)0x0)
- 
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index 41fdd48..327a3e3 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -30,9 +30,6 @@ static unsigned long get_dma_direct_offset(struct device *dev)
+ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+ 				dma_addr_t *dma_handle, gfp_t flag)
+ {
 -#ifdef CONFIG_NOT_COHERENT_CACHE
+-	return __dma_alloc_coherent(size, dma_handle, flag);
+-#else
+ 	struct page *page;
+ 	void *ret;
+ 	int node = dev_to_node(dev);
+@@ -48,17 +45,12 @@ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+ 	*dma_handle = virt_to_abs(ret) + get_dma_direct_offset(dev);
+ 
+ 	return ret;
+-#endif
+ }
+ 
+ void dma_direct_free_coherent(struct device *dev, size_t size,
+ 			      void *vaddr, dma_addr_t dma_handle)
+ {
+-#ifdef CONFIG_NOT_COHERENT_CACHE
+-	__dma_free_coherent(size, vaddr);
+-#else
+ 	free_pages((unsigned long)vaddr, get_order(size));
+-#endif
+ }
+ 
+ static int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl,
+@@ -103,7 +95,6 @@ static inline dma_addr_t dma_direct_map_page(struct device *dev,
+ 					     struct dma_attrs *attrs)
+ {
+ 	BUG_ON(dir == DMA_NONE);
+-	__dma_sync_page(page, offset, size, dir);
+ 	return page_to_phys(page) + offset + get_dma_direct_offset(dev);
+ }
+ 
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index d69912c..0707d7a 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -15,7 +15,6 @@ obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
+ 			   memcpy_64.o usercopy_64.o mem_64.o string.o
+ obj-$(CONFIG_XMON)	+= sstep.o
+ obj-$(CONFIG_KPROBES)	+= sstep.o
+-obj-$(CONFIG_NOT_COHERENT_CACHE)	+= dma-noncoherent.o
+ 
+ ifeq ($(CONFIG_PPC64),y)
+ obj-$(CONFIG_SMP)	+= locks.o
+diff --git a/arch/powerpc/lib/dma-noncoherent.c b/arch/powerpc/lib/dma-noncoherent.c
+deleted file mode 100644
+index 5d83907..0000000
+--- a/arch/powerpc/lib/dma-noncoherent.c
++++ /dev/null
+@@ -1,427 +0,0 @@
 -/*
-- * DMA-consistent mapping functions for PowerPCs that don't support
-- * cache snooping.  These allocate/free a region of uncached mapped
-- * memory space for use with DMA devices.  Alternatively, you could
-- * allocate the space "normally" and use the cache management functions
-- * to ensure it is consistent.
+- *  PowerPC version derived from arch/arm/mm/consistent.c
+- *    Copyright (C) 2001 Dan Malek (dmalek@jlc.net)
+- *
+- *  Copyright (C) 2000 Russell King
+- *
+- * Consistent memory allocators.  Used for DMA devices that want to
+- * share uncached memory with the processor core.  The function return
+- * is the virtual address and 'dma_handle' is the physical address.
+- * Mostly stolen from the ARM port, with some changes for PowerPC.
+- *						-- Dan
+- *
+- * Reorganized to get rid of the arch-specific consistent_* functions
+- * and provide non-coherent implementations for the DMA API. -Matt
+- *
+- * Added in_interrupt() safe dma_alloc_coherent()/dma_free_coherent()
+- * implementation. This is pulled straight from ARM and barely
+- * modified. -Matt
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
 - */
--extern void *__dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp);
--extern void __dma_free_coherent(size_t size, void *vaddr);
--extern void __dma_sync(void *vaddr, size_t size, int direction);
--extern void __dma_sync_page(struct page *page, unsigned long offset,
--				 size_t size, int direction);
 -
--#else /* ! CONFIG_NOT_COHERENT_CACHE */
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/string.h>
+-#include <linux/types.h>
+-#include <linux/highmem.h>
+-#include <linux/dma-mapping.h>
+-
+-#include <asm/tlbflush.h>
+-
 -/*
-- * Cache coherent cores.
+- * This address range defaults to a value that is safe for all
+- * platforms which currently set CONFIG_NOT_COHERENT_CACHE. It
+- * can be further configured for specific applications under
+- * the "Advanced Setup" menu. -Matt
 - */
+-#define CONSISTENT_BASE	(CONFIG_CONSISTENT_START)
+-#define CONSISTENT_END	(CONFIG_CONSISTENT_START + CONFIG_CONSISTENT_SIZE)
+-#define CONSISTENT_OFFSET(x)	(((unsigned long)(x) - CONSISTENT_BASE) >> PAGE_SHIFT)
 -
--#define __dma_alloc_coherent(gfp, size, handle)	NULL
--#define __dma_free_coherent(size, addr)		((void)0)
--#define __dma_sync(addr, size, rw)		((void)0)
--#define __dma_sync_page(pg, off, sz, rw)	((void)0)
+-/*
+- * This is the page table (2MB) covering uncached, DMA consistent allocations
+- */
+-static pte_t *consistent_pte;
+-static DEFINE_SPINLOCK(consistent_lock);
 -
--#endif /* ! CONFIG_NOT_COHERENT_CACHE */
+-/*
+- * VM region handling support.
+- *
+- * This should become something generic, handling VM region allocations for
+- * vmalloc and similar (ioremap, module space, etc).
+- *
+- * I envisage vmalloc()'s supporting vm_struct becoming:
+- *
+- *  struct vm_struct {
+- *    struct vm_region	region;
+- *    unsigned long	flags;
+- *    struct page	**pages;
+- *    unsigned int	nr_pages;
+- *    unsigned long	phys_addr;
+- *  };
+- *
+- * get_vm_area() would then call vm_region_alloc with an appropriate
+- * struct vm_region head (eg):
+- *
+- *  struct vm_region vmalloc_head = {
+- *	.vm_list	= LIST_HEAD_INIT(vmalloc_head.vm_list),
+- *	.vm_start	= VMALLOC_START,
+- *	.vm_end		= VMALLOC_END,
+- *  };
+- *
+- * However, vmalloc_head.vm_start is variable (typically, it is dependent on
+- * the amount of RAM found at boot time.)  I would imagine that get_vm_area()
+- * would have to initialise this each time prior to calling vm_region_alloc().
+- */
+-struct vm_region {
+-	struct list_head	vm_list;
+-	unsigned long		vm_start;
+-	unsigned long		vm_end;
+-};
 -
- static inline unsigned long device_to_mask(struct device *dev)
- {
- 	if (dev->dma_mask && *dev->dma_mask)
-@@ -82,6 +56,8 @@ struct dma_mapping_ops {
- 				dma_addr_t dma_address, size_t size,
- 				enum dma_data_direction direction,
- 				struct dma_attrs *attrs);
-+	void 		(*sync)(struct device *dev, dma_addr_t dma_address,
-+				size_t size, enum dma_data_direction direction);
- };
- 
- /*
-@@ -90,6 +66,9 @@ struct dma_mapping_ops {
- #ifdef CONFIG_PPC64
- extern struct dma_mapping_ops dma_iommu_ops;
- #endif
-+#ifdef CONFIG_NOT_COHERENT_CACHE
-+extern struct dma_mapping_ops dma_noncoherent_direct_ops;
-+#endif
- extern struct dma_mapping_ops dma_direct_ops;
- 
- static inline struct dma_mapping_ops *get_dma_ops(struct device *dev)
-@@ -108,8 +87,12 @@ static inline struct dma_mapping_ops *get_dma_ops(struct device *dev)
- 		/* TODO: Long term, we should fix drivers so that dev and
- 		 * archdata dma_ops are set up for all buses.
- 		 */
-+#ifdef CONFIG_NOT_COHERENT_CACHE
-+		return &dma_noncoherent_direct_ops;
-+#else
- 		return &dma_direct_ops;
- #endif
-+#endif
- 	}
- 
- 	return dev->archdata.dma_ops;
-@@ -168,6 +151,8 @@ static inline dma_addr_t dma_map_single_attrs(struct device *dev,
- 		return dma_ops->map_single(dev, cpu_addr, size, direction,
- 					   attrs);
- 
-+	/* If vaddr is in high mem virt_to_page won't work */
-+	BUG_ON(!virt_addr_valid(cpu_addr));
- 	return dma_ops->map_page(dev, virt_to_page(cpu_addr),
- 				 (unsigned long)cpu_addr % PAGE_SIZE, size,
- 				 direction, attrs);
-@@ -312,42 +297,54 @@ static inline void dma_sync_single_for_cpu(struct device *dev,
- 		dma_addr_t dma_handle, size_t size,
- 		enum dma_data_direction direction)
- {
-+	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
-+
- 	BUG_ON(direction == DMA_NONE);
--	__dma_sync(bus_to_virt(dma_handle), size, direction);
-+	if (dma_ops->sync != NULL)
-+		dma_ops->sync(dev, dma_handle, size, direction);
- }
- 
- static inline void dma_sync_single_for_device(struct device *dev,
- 		dma_addr_t dma_handle, size_t size,
- 		enum dma_data_direction direction)
- {
-+	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
-+
- 	BUG_ON(direction == DMA_NONE);
--	__dma_sync(bus_to_virt(dma_handle), size, direction);
-+	if (dma_ops->sync != NULL)
-+		dma_ops->sync(dev, dma_handle, size, direction);
- }
- 
- static inline void dma_sync_sg_for_cpu(struct device *dev,
- 		struct scatterlist *sgl, int nents,
- 		enum dma_data_direction direction)
- {
-+	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
- 	struct scatterlist *sg;
- 	int i;
- 
- 	BUG_ON(direction == DMA_NONE);
- 
--	for_each_sg(sgl, sg, nents, i)
--		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
-+	if (dma_ops->sync != NULL)
-+		for_each_sg(sgl, sg, nents, i)
-+			dma_ops->sync(dev, sg->dma_address,
-+					sg->dma_length, direction);
- }
- 
- static inline void dma_sync_sg_for_device(struct device *dev,
- 		struct scatterlist *sgl, int nents,
- 		enum dma_data_direction direction)
- {
-+	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
- 	struct scatterlist *sg;
- 	int i;
- 
- 	BUG_ON(direction == DMA_NONE);
- 
--	for_each_sg(sgl, sg, nents, i)
--		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
-+	if (dma_ops->sync != NULL)
-+		for_each_sg(sgl, sg, nents, i)
-+			dma_ops->sync(dev, sg->dma_address,
-+					sg->dma_length, direction);
- }
- 
- static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
-@@ -401,8 +398,14 @@ static inline void dma_sync_single_range_for_device(struct device *dev,
- static inline void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
- 		enum dma_data_direction direction)
- {
-+	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
-+
- 	BUG_ON(direction == DMA_NONE);
--	__dma_sync(vaddr, size, (int)direction);
-+	if (dma_ops->sync != NULL) {
-+		/* If vaddr is in high mem virt_to_page won't work */
-+		BUG_ON(!virt_addr_valid(vaddr));
-+		dma_ops->sync(dev, virt_to_bus(vaddr), size, direction);
-+	}
- }
- 
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index 77c7fa0..fdb54d6 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -726,8 +726,6 @@ static inline void * phys_to_virt(unsigned long address)
-  * drivers (shame shame shame) that use bus_to_virt() and haven't been
-  * fixed yet so I need to define it here.
-  */
--#ifdef CONFIG_PPC32
+-static struct vm_region consistent_head = {
+-	.vm_list	= LIST_HEAD_INIT(consistent_head.vm_list),
+-	.vm_start	= CONSISTENT_BASE,
+-	.vm_end		= CONSISTENT_END,
+-};
 -
- static inline unsigned long virt_to_bus(volatile void * address)
- {
-         if (address == NULL)
-@@ -742,10 +740,6 @@ static inline void * bus_to_virt(unsigned long address)
-         return __va(address - PCI_DRAM_OFFSET);
- }
+-static struct vm_region *
+-vm_region_alloc(struct vm_region *head, size_t size, gfp_t gfp)
+-{
+-	unsigned long addr = head->vm_start, end = head->vm_end - size;
+-	unsigned long flags;
+-	struct vm_region *c, *new;
+-
+-	new = kmalloc(sizeof(struct vm_region), gfp);
+-	if (!new)
+-		goto out;
+-
+-	spin_lock_irqsave(&consistent_lock, flags);
+-
+-	list_for_each_entry(c, &head->vm_list, vm_list) {
+-		if ((addr + size) < addr)
+-			goto nospc;
+-		if ((addr + size) <= c->vm_start)
+-			goto found;
+-		addr = c->vm_end;
+-		if (addr > end)
+-			goto nospc;
+-	}
+-
+- found:
+-	/*
+-	 * Insert this entry _before_ the one we found.
+-	 */
+-	list_add_tail(&new->vm_list, &c->vm_list);
+-	new->vm_start = addr;
+-	new->vm_end = addr + size;
+-
+-	spin_unlock_irqrestore(&consistent_lock, flags);
+-	return new;
+-
+- nospc:
+-	spin_unlock_irqrestore(&consistent_lock, flags);
+-	kfree(new);
+- out:
+-	return NULL;
+-}
+-
+-static struct vm_region *vm_region_find(struct vm_region *head, unsigned long addr)
+-{
+-	struct vm_region *c;
+-
+-	list_for_each_entry(c, &head->vm_list, vm_list) {
+-		if (c->vm_start == addr)
+-			goto out;
+-	}
+-	c = NULL;
+- out:
+-	return c;
+-}
+-
+-/*
+- * Allocate DMA-coherent memory space and return both the kernel remapped
+- * virtual and bus address for that space.
+- */
+-void *
+-__dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
+-{
+-	struct page *page;
+-	struct vm_region *c;
+-	unsigned long order;
+-	u64 mask = 0x00ffffff, limit; /* ISA default */
+-
+-	if (!consistent_pte) {
+-		printk(KERN_ERR "%s: not initialised\n", __func__);
+-		dump_stack();
+-		return NULL;
+-	}
+-
+-	size = PAGE_ALIGN(size);
+-	limit = (mask + 1) & ~mask;
+-	if ((limit && size >= limit) || size >= (CONSISTENT_END - CONSISTENT_BASE)) {
+-		printk(KERN_WARNING "coherent allocation too big (requested %#x mask %#Lx)\n",
+-		       size, mask);
+-		return NULL;
+-	}
+-
+-	order = get_order(size);
+-
+-	if (mask != 0xffffffff)
+-		gfp |= GFP_DMA;
+-
+-	page = alloc_pages(gfp, order);
+-	if (!page)
+-		goto no_page;
+-
+-	/*
+-	 * Invalidate any data that might be lurking in the
+-	 * kernel direct-mapped region for device DMA.
+-	 */
+-	{
+-		unsigned long kaddr = (unsigned long)page_address(page);
+-		memset(page_address(page), 0, size);
+-		flush_dcache_range(kaddr, kaddr + size);
+-	}
+-
+-	/*
+-	 * Allocate a virtual address in the consistent mapping region.
+-	 */
+-	c = vm_region_alloc(&consistent_head, size,
+-			    gfp & ~(__GFP_DMA | __GFP_HIGHMEM));
+-	if (c) {
+-		unsigned long vaddr = c->vm_start;
+-		pte_t *pte = consistent_pte + CONSISTENT_OFFSET(vaddr);
+-		struct page *end = page + (1 << order);
+-
+-		split_page(page, order);
+-
+-		/*
+-		 * Set the "dma handle"
+-		 */
+-		*handle = page_to_bus(page);
+-
+-		do {
+-			BUG_ON(!pte_none(*pte));
+-
+-			SetPageReserved(page);
+-			set_pte_at(&init_mm, vaddr,
+-				   pte, mk_pte(page, pgprot_noncached(PAGE_KERNEL)));
+-			page++;
+-			pte++;
+-			vaddr += PAGE_SIZE;
+-		} while (size -= PAGE_SIZE);
+-
+-		/*
+-		 * Free the otherwise unused pages.
+-		 */
+-		while (page < end) {
+-			__free_page(page);
+-			page++;
+-		}
+-
+-		return (void *)c->vm_start;
+-	}
+-
+-	if (page)
+-		__free_pages(page, order);
+- no_page:
+-	return NULL;
+-}
+-EXPORT_SYMBOL(__dma_alloc_coherent);
+-
+-/*
+- * free a page as defined by the above mapping.
+- */
+-void __dma_free_coherent(size_t size, void *vaddr)
+-{
+-	struct vm_region *c;
+-	unsigned long flags, addr;
+-	pte_t *ptep;
+-
+-	size = PAGE_ALIGN(size);
+-
+-	spin_lock_irqsave(&consistent_lock, flags);
+-
+-	c = vm_region_find(&consistent_head, (unsigned long)vaddr);
+-	if (!c)
+-		goto no_area;
+-
+-	if ((c->vm_end - c->vm_start) != size) {
+-		printk(KERN_ERR "%s: freeing wrong coherent size (%ld != %d)\n",
+-		       __func__, c->vm_end - c->vm_start, size);
+-		dump_stack();
+-		size = c->vm_end - c->vm_start;
+-	}
+-
+-	ptep = consistent_pte + CONSISTENT_OFFSET(c->vm_start);
+-	addr = c->vm_start;
+-	do {
+-		pte_t pte = ptep_get_and_clear(&init_mm, addr, ptep);
+-		unsigned long pfn;
+-
+-		ptep++;
+-		addr += PAGE_SIZE;
+-
+-		if (!pte_none(pte) && pte_present(pte)) {
+-			pfn = pte_pfn(pte);
+-
+-			if (pfn_valid(pfn)) {
+-				struct page *page = pfn_to_page(pfn);
+-				ClearPageReserved(page);
+-
+-				__free_page(page);
+-				continue;
+-			}
+-		}
+-
+-		printk(KERN_CRIT "%s: bad page in kernel page table\n",
+-		       __func__);
+-	} while (size -= PAGE_SIZE);
+-
+-	flush_tlb_kernel_range(c->vm_start, c->vm_end);
+-
+-	list_del(&c->vm_list);
+-
+-	spin_unlock_irqrestore(&consistent_lock, flags);
+-
+-	kfree(c);
+-	return;
+-
+- no_area:
+-	spin_unlock_irqrestore(&consistent_lock, flags);
+-	printk(KERN_ERR "%s: trying to free invalid coherent area: %p\n",
+-	       __func__, vaddr);
+-	dump_stack();
+-}
+-EXPORT_SYMBOL(__dma_free_coherent);
+-
+-/*
+- * Initialise the consistent memory allocation.
+- */
+-static int __init dma_alloc_init(void)
+-{
+-	pgd_t *pgd;
+-	pud_t *pud;
+-	pmd_t *pmd;
+-	pte_t *pte;
+-	int ret = 0;
+-
+-	do {
+-		pgd = pgd_offset(&init_mm, CONSISTENT_BASE);
+-		pud = pud_alloc(&init_mm, pgd, CONSISTENT_BASE);
+-		pmd = pmd_alloc(&init_mm, pud, CONSISTENT_BASE);
+-		if (!pmd) {
+-			printk(KERN_ERR "%s: no pmd tables\n", __func__);
+-			ret = -ENOMEM;
+-			break;
+-		}
+-		WARN_ON(!pmd_none(*pmd));
+-
+-		pte = pte_alloc_kernel(pmd, CONSISTENT_BASE);
+-		if (!pte) {
+-			printk(KERN_ERR "%s: no pte tables\n", __func__);
+-			ret = -ENOMEM;
+-			break;
+-		}
+-
+-		consistent_pte = pte;
+-	} while (0);
+-
+-	return ret;
+-}
+-
+-core_initcall(dma_alloc_init);
+-
+-/*
+- * make an area consistent.
+- */
+-void __dma_sync(void *vaddr, size_t size, int direction)
+-{
+-	unsigned long start = (unsigned long)vaddr;
+-	unsigned long end   = start + size;
+-
+-	switch (direction) {
+-	case DMA_NONE:
+-		BUG();
+-	case DMA_FROM_DEVICE:
+-		/*
+-		 * invalidate only when cache-line aligned otherwise there is
+-		 * the potential for discarding uncommitted data from the cache
+-		 */
+-		if ((start & (L1_CACHE_BYTES - 1)) || (size & (L1_CACHE_BYTES - 1)))
+-			flush_dcache_range(start, end);
+-		else
+-			invalidate_dcache_range(start, end);
+-		break;
+-	case DMA_TO_DEVICE:		/* writeback only */
+-		clean_dcache_range(start, end);
+-		break;
+-	case DMA_BIDIRECTIONAL:	/* writeback and invalidate */
+-		flush_dcache_range(start, end);
+-		break;
+-	}
+-}
+-EXPORT_SYMBOL(__dma_sync);
+-
+-#ifdef CONFIG_HIGHMEM
+-/*
+- * __dma_sync_page() implementation for systems using highmem.
+- * In this case, each page of a buffer must be kmapped/kunmapped
+- * in order to have a virtual address for __dma_sync(). This must
+- * not sleep so kmap_atomic()/kunmap_atomic() are used.
+- *
+- * Note: yes, it is possible and correct to have a buffer extend
+- * beyond the first page.
+- */
+-static inline void __dma_sync_page_highmem(struct page *page,
+-		unsigned long offset, size_t size, int direction)
+-{
+-	size_t seg_size = min((size_t)(PAGE_SIZE - offset), size);
+-	size_t cur_size = seg_size;
+-	unsigned long flags, start, seg_offset = offset;
+-	int nr_segs = 1 + ((size - seg_size) + PAGE_SIZE - 1)/PAGE_SIZE;
+-	int seg_nr = 0;
+-
+-	local_irq_save(flags);
+-
+-	do {
+-		start = (unsigned long)kmap_atomic(page + seg_nr,
+-				KM_PPC_SYNC_PAGE) + seg_offset;
+-
+-		/* Sync this buffer segment */
+-		__dma_sync((void *)start, seg_size, direction);
+-		kunmap_atomic((void *)start, KM_PPC_SYNC_PAGE);
+-		seg_nr++;
+-
+-		/* Calculate next buffer segment size */
+-		seg_size = min((size_t)PAGE_SIZE, size - cur_size);
+-
+-		/* Add the segment size to our running total */
+-		cur_size += seg_size;
+-		seg_offset = 0;
+-	} while (seg_nr < nr_segs);
+-
+-	local_irq_restore(flags);
+-}
+-#endif /* CONFIG_HIGHMEM */
+-
+-/*
+- * __dma_sync_page makes memory consistent. identical to __dma_sync, but
+- * takes a struct page instead of a virtual address
+- */
+-void __dma_sync_page(struct page *page, unsigned long offset,
+-	size_t size, int direction)
+-{
+-#ifdef CONFIG_HIGHMEM
+-	__dma_sync_page_highmem(page, offset, size, direction);
+-#else
+-	unsigned long start = (unsigned long)page_address(page) + offset;
+-	__dma_sync((void *)start, size, direction);
+-#endif
+-}
+-EXPORT_SYMBOL(__dma_sync_page);
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 17c988b..d88ea21 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -775,31 +775,6 @@ config TASK_SIZE
+ 	default "0x80000000" if PPC_PREP || PPC_8xx
+ 	default "0xc0000000"
  
--#define page_to_bus(page)	(page_to_phys(page) + PCI_DRAM_OFFSET)
+-config CONSISTENT_START_BOOL
+-	bool "Set custom consistent memory pool address"
+-	depends on ADVANCED_OPTIONS && NOT_COHERENT_CACHE
+-	help
+-	  This option allows you to set the base virtual address
+-	  of the consistent memory pool.  This pool of virtual
+-	  memory is used to make consistent memory allocations.
 -
--#endif /* CONFIG_PPC32 */
+-config CONSISTENT_START
+-	hex "Base virtual address of consistent memory pool" if CONSISTENT_START_BOOL
+-	default "0xfd000000" if (NOT_COHERENT_CACHE && 8xx)
+-	default "0xff100000" if NOT_COHERENT_CACHE
 -
- /* access ports */
- #define setbits32(_addr, _v) out_be32((_addr), in_be32(_addr) |  (_v))
- #define clrbits32(_addr, _v) out_be32((_addr), in_be32(_addr) & ~(_v))
+-config CONSISTENT_SIZE_BOOL
+-	bool "Set custom consistent memory pool size"
+-	depends on ADVANCED_OPTIONS && NOT_COHERENT_CACHE
+-	help
+-	  This option allows you to set the size of the
+-	  consistent memory pool.  This pool of virtual memory
+-	  is used to make consistent memory allocations.
+-
+-config CONSISTENT_SIZE
+-	hex "Size of consistent memory pool" if CONSISTENT_SIZE_BOOL
+-	default "0x00200000" if NOT_COHERENT_CACHE
+-
+ config PIN_TLB
+ 	bool "Pinned Kernel TLBs (860 ONLY)"
+ 	depends on ADVANCED_OPTIONS && 8xx
