@@ -1,20 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EF60DDDEDA
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Oct 2008 23:44:31 +1100 (EST)
-Message-Id: <9AE5B028-CEB5-456A-B97F-834D0A9B665A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Nate Case <ncase@xes-inc.com>
-In-Reply-To: <1221866428-20621-1-git-send-email-ncase@xes-inc.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v2] edac: mpc85xx: Add support for MPC8572
-Date: Tue, 7 Oct 2008 07:39:17 -0500
-References: <1221866428-20621-1-git-send-email-ncase@xes-inc.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Kilkenny <akilkenny@xes-inc.com>,
-	Dave Jiang <djiang@mvista.com>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CED6CDDEF7
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 00:25:52 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m97DPnBa019261
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Oct 2008 09:25:49 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m97DPmNU222866
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Oct 2008 07:25:48 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m97DPmtU005113
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Oct 2008 07:25:48 -0600
+Date: Tue, 7 Oct 2008 09:25:46 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "mike zheng" <mail4mz@gmail.com>
+Subject: Re: BSP on Kernel2.4 needed for MPC8360E-MDS
+Message-ID: <20081007092546.5df8dc72@zod.rchland.ibm.com>
+In-Reply-To: <5c9cd53b0810061634sa8a67f7v41380c849c68a49a@mail.gmail.com>
+References: <5c9cd53b0810061634sa8a67f7v41380c849c68a49a@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +35,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 6 Oct 2008 16:34:39 -0700
+"mike zheng" <mail4mz@gmail.com> wrote:
 
-On Sep 19, 2008, at 6:20 PM, Nate Case wrote:
+> Hi All,
+> 
+> Is there any BSP on kernel 2.4 for MPC8360EMDS board?
 
-> From: Andrew Kilkenny <akilkenny@xes-inc.com>
->
-> This adds support for the dual-core MPC8572 processor.  We have
-> to support making SPR changes on each core.  Also, since we can
-> have multiple memory controllers sharing an interrupt, flag the
-> interrupts with IRQF_SHARED.
->
-> Signed-off-by: Andrew Kilkenny <akilkenny@xes-inc.com>
-> Signed-off-by: Nate Case <ncase@xes-inc.com>
-> ---
-> drivers/edac/mpc85xx_edac.c |   28 +++++++++++++++++++++++-----
-> 1 files changed, 23 insertions(+), 5 deletions(-)
+2.4 is really really old.  I doubt it.
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
-
-Guys, is there an edac git tree or something to create patches  
-against?  I've got one I've been sitting on but it should be updated  
-based on Nate's patch.
-
-- k
+josh
