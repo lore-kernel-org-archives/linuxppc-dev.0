@@ -1,18 +1,18 @@
-Return-Path: <fisherssml@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id 3D287DDE07
+Return-Path: <duykynguyen@hotmail.com>
+Received: from bay0-omc1-s33.bay0.hotmail.com (bay0-omc1-s33.bay0.hotmail.com
+	[65.54.246.105]) by ozlabs.org (Postfix) with ESMTP id C163DDDE17
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Oct 2008 16:15:19 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id m2so129191uge.14
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 06 Oct 2008 22:15:17 -0700 (PDT)
-Message-ID: <25fd1f750810062215q7f33664eo99908ab7dd26f502@mail.gmail.com>
-Date: Tue, 7 Oct 2008 13:15:17 +0800
-From: Fisherss <fisherssml@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: CPIO image date problem
+	Tue,  7 Oct 2008 17:14:01 +1100 (EST)
+Message-ID: <BLU119-DAV245BF96B99DC961FFF9EFBB380@phx.gbl>
+From: "Duy-Ky Nguyen" <duykynguyen@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+References: <mailman.1.1223341202.18311.linuxppc-embedded@ozlabs.org>
+Subject: Trying to vfree() nonexistent vm area
+Date: Mon, 6 Oct 2008 23:14:01 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,38 +23,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all
+Hello,
 
-I have a weird problem on MPC8548E with Linux Kernel 2.6.24:
+My driver uses ioremap() the IMMR_BASE @ 0xE0000000 to access registers.
+A user-space app opens and close the deive file on every access to register.
 
-I use a CPIO image as my embedded system's root file system, but after
-booting, all files and directories' "date" attribute are set to "Jan
-1, 1970".
+There's no problem with FreeScale Linuc BSP 2..6.20 for eva board 
+MPC83813E-RDB.
 
-Now what I have got is:
-====================
-U-boot and the cpio image are cleared. The roofs(cpio image) is loaded
-by Linux Kernel, not U-boot, and the image itself has successfully
-passed test, so we suppose the problem is in Linux Kernel.
+For the latest FreeScale Linuc BSP 2..6.24 , I have NO problem for the very 
+FIRST run.
+But after the 1st run, I have problem with the new FreeScale Linuc BSP 
+2..6.24 with the following error message
 
-The Kernel loading sequence is : time_init() -> cpio image loading ->
-RTC driver loading
+        Trying to vfree() nonexistent vm area (c98a0000)
 
-That means, at the cpio image loading time, we don't have the RTC
-driver. In fact, Kernel uses the time_base register instead of RTC(at
-least at this time). All standard cpio images contain the "date" file
-attribute, but seems like Kernel just ignores it and uses its own
-"clock source"(and this clock source should be binded to time_base
-register).
+where c98a0000 is the mapped address of IMMR_BASE 0xE0000000.
 
-I have located the cpio image unpacking code in Kernel, but can not
-find anything about date attribute. This part of code is
-platform-independent.
+So, it appears to me that the device file could be closed improperly as it's 
+closed after the 1st run.
 
-Anyone any idea ??
+I really appreciate your time and help
 
-Thanks
+Best Regards,
 
--- 
-Fisherss
-fisherss@gmail.com
+Duy-Ky
+
+///////////////////////
+Below is outline of the driver
+
+init:
+     ppc_base = (unsigned long) ioremap_nocache(PPC_BASE, PPC_SIZE);
+
+//     ppc_base = (unsigned long) ioremap(PPC_BASE, PPC_SIZE);    // failure 
+with this way too
+
+
+close:
+    iounmap((void __iomem *)ppc_base);
+//    iounmap(PPC_BASE);        // failure with this way too !
