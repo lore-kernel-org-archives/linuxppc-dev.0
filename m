@@ -1,30 +1,19 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from lxorguk.ukuu.org.uk (earthlight.etchedpixels.co.uk
-	[81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7683FDDDE7
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 21:28:44 +1100 (EST)
-Date: Wed, 8 Oct 2008 11:27:43 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH] pata_of_platform: fix no irq handling
-Message-ID: <20081008112743.6a90baf7@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0810081159240.24611@vixen.sonytel.be>
-References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
-	<48EA77EF.6080502@genesi-usa.com>
-	<20081006213209.GA13072@oksana.dev.rtsoft.ru>
-	<48EABBD3.1010401@kernel.org>
-	<20081007103723.0224671e@lxorguk.ukuu.org.uk>
-	<1223455254.3145.143.camel@macbook.infradead.org>
-	<20081008100025.1c535401@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.64.0810081159240.24611@vixen.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jgarzik@pobox.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-	Tejun Heo <tj@kernel.org>, Li Yang <leoli@freescale.com>,
-	David Woodhouse <dwmw2@infradead.org>, Wang Jian <lark@linux.net.cn>
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 7CD10DDE00
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 22:37:13 +1100 (EST)
+Received: by gxk14 with SMTP id 14so10673806gxk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 08 Oct 2008 04:37:11 -0700 (PDT)
+Date: Wed, 8 Oct 2008 07:35:47 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: zhangyihere@gmail.com
+Subject: Re: Could XUP be uesd as a SMP platform
+Message-ID: <20081008113547.GA2293@yoda.jdub.homelinux.org>
+References: <2c8360dd0810072349v4409f49ei7c0c45fc8dd4e798@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <2c8360dd0810072349v4409f49ei7c0c45fc8dd4e798@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,9 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > I'll leave you to argue with Linus about that, but since that was the
-> > decision back in 2005 (for good C reasons) we can safely rely on it.
-> 
-> `git grep NO_IRQ include arch/*/include' is still quite enlightening...
+On Wed, Oct 08, 2008 at 02:49:14PM +0800, =?GB2312?B?ItXF6fMiIDx6aGFuZ3lpaGVyZUBnbWFpbC5jb20+?= wrote:
+>Hi  all,
+>
+>I am working with a Xilinx Virtex II Pro evaluation board, which has two
+>PowerPC 405 and I have ported linux 2.6.24 onto that board when there is one
+>PPC405 configured.
+>
+>I'd like to use this board as a SMP platform. Is it feasible?
 
-Good guide to platform code we should delete really
+No.  The 405 cores are not designed with SMP in mind and it
+will not work.
+
+If the board has discrete memory for each CPU, you might be
+able to run it in an AMP fashion.
+
+josh
