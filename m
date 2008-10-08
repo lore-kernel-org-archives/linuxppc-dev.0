@@ -1,20 +1,20 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 55E2EDDF2A
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 02:28:55 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so620465ywh.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 08 Oct 2008 08:28:53 -0700 (PDT)
-Message-ID: <ed82fe3e0810080828r115b3e85laf08e8d1e47faf42@mail.gmail.com>
-Date: Wed, 8 Oct 2008 10:28:53 -0500
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
-Subject: Re: [PATCH] powerpc: remove CHRP and PMAC support from defconfigs,
-	fix Kconfigs
-In-Reply-To: <1222449586-14622-1-git-send-email-timur@freescale.com>
+Return-Path: <neko@genesi-usa.com>
+Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
+	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 2450ADE21A
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 02:29:35 +1100 (EST)
+Received: by gxk14 with SMTP id 14so11098930gxk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 08 Oct 2008 08:29:33 -0700 (PDT)
+Message-ID: <48ECD1DD.8030004@genesi-usa.com>
+Date: Wed, 08 Oct 2008 10:29:33 -0500
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1222449586-14622-1-git-send-email-timur@freescale.com>
+To: John Rigby <jrigby@freescale.com>
+Subject: Re: [PATCH 0/3] MPC5121 add pci support
+References: <1223406020-12278-1-git-send-email-jrigby@freescale.com>
+In-Reply-To: <1223406020-12278-1-git-send-email-jrigby@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 26, 2008 at 12:19 PM, Timur Tabi <timur@freescale.com> wrote:
-> The Kconfig files for PowerPC CHRP and PMAC support had "default=y" for some
-> Kconfig options, and this caused support for CHRP and PMAC platforms to be
-> enabled incorrectly for several platforms.  Fix the Kconfigs and the
-> affected defconfigs.
+If this patchset is okay with everyone, is it possible that it could
+be rushed into 2.6.27 before it hits rc10 or release? :/
 
-Ben,
-
-When you applied this patch, you removed the Kconfig changes.  Without
-those, doing a "make xxx_defconfig" will just add "CONFIG_PPC_PMAC=y"
-and "CONFIG_PPC_CHRP=y" to the .config!
-
-$ make 83xx/mpc834x_itxgp_defconfig
-  HOSTCC  scripts/basic/fixdep
-  HOSTCC  scripts/basic/docproc
-  HOSTCC  scripts/kconfig/conf.o
-  HOSTCC  scripts/kconfig/kxgettext.o
-  SHIPPED scripts/kconfig/zconf.tab.c
-  SHIPPED scripts/kconfig/lex.zconf.c
-  SHIPPED scripts/kconfig/zconf.hash.c
-  HOSTCC  scripts/kconfig/zconf.tab.o
-  HOSTLD  scripts/kconfig/conf
-#
-# configuration written to .config
-#
-$ grep CHRP .config
-CONFIG_PPC_CHRP=y
-
-So please apply my *original* patch.
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
+
+John Rigby wrote:
+> The following three patches add pci support for MPC5121
+> These got no NACKs back in August but they were not picked up
+> by anyone either.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
