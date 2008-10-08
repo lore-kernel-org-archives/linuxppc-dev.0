@@ -1,20 +1,21 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from col0-omc1-s8.col0.hotmail.com (col0-omc1-s8.col0.hotmail.com
-	[65.55.34.18]) by ozlabs.org (Postfix) with ESMTP id A9C54DDF2B
+Return-Path: <domino@mikroswiat.pl>
+Received: from jupiter.az.pl (jupiter.az.pl [62.146.68.61])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CB285DDE01
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Oct 2008 01:47:56 +1100 (EST)
-Message-ID: <COL107-W13F1CD2E656CAB97C189C9B23B0@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_8c59598d-386b-41f8-8e87-8c6583791a40_"
-From: MingLiu <eemingliu@hotmail.com>
-To: John Linn <john.linn@xilinx.com>, <linuxppc-embedded@ozlabs.org>
-Subject: RE: Linux driver for Xilinx ICAP
-Date: Wed, 8 Oct 2008 14:47:55 +0000
-In-Reply-To: <20081008143431.326B3E1806A@mail96-sin.bigfish.com>
-References: <COL107-W38E2468E159F1CBB304906B23B0@phx.gbl>
-	<20081008143431.326B3E1806A@mail96-sin.bigfish.com>
+	Thu,  9 Oct 2008 01:52:27 +1100 (EST)
+Received: from afp172.internetdsl.tpnet.pl ([83.16.145.172] helo=[192.168.2.8])
+	by jupiter.az.pl with esmtpsa (TLSv1:AES256-SHA:256) (Exim 4.68)
+	(envelope-from <domino@mikroswiat.pl>) id 1KnaCc-0001uf-Up
+	for linuxppc-embedded@ozlabs.org; Wed, 08 Oct 2008 16:39:51 +0200
+Message-ID: <48ECC611.3030309@mikroswiat.pl>
+Date: Wed, 08 Oct 2008 16:39:13 +0200
+From: Dominik Bozek <domino@mikroswiat.pl>
 MIME-Version: 1.0
-Cc: Stephen Neuendorffer <stephenn@xilinx.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: performance: memcpy vs. __copy_tofrom_user
+Content-Type: text/plain; charset=ISO-8859-2
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,138 +26,151 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_8c59598d-386b-41f8-8e87-8c6583791a40_
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+Hi all,
+
+I have done a test of memcpy() and __copy_tofrom_user() on the mpc8313.
+And the major conclusion is that __copy_tofrom_user is more efficient
+than memcpy. Sometimes about 40%.
+
+If I good understand, the memcpy() just copy the data, while
+__copy_tofrom_user() take care if the memory wasn't swapped out. So then
+memcpy() shall be faster than __copy_tofrom_user(). Am I right?
+Is here anybody, who can confirm such results and maybe is able to
+improve the memcpy()?
 
 
-Dear John,
-Nice to hear from you. If possible, could you please show me your .mhs file concerning to the xps_hwicap core? Mine is listed as below:
- 
-BEGIN xps_hwicap PARAMETER INSTANCE = xps_hwicap_0 PARAMETER HW_VER = 1.00.a PARAMETER C_BASEADDR = 0x40200000 PARAMETER C_HIGHADDR = 0x4020FFFF BUS_INTERFACE SPLB = plb PORT IP2INTC_Irpt = xps_hwicap_0_IP2INTC_IrptEND
- 
-The interrupt signal is connected to the interrupt controller. 
- 
-I suspect that the driver in Linux doesn't support interrupt mode for this core, since I didn't find interrupt handler registration function in the source code, like "request_irq", etc.. 
- 
-I will appreciate if you can have some comments to me. 
- 
-Br
-Ming
- 
+Let talk about the test.
+I have prepared two pieces of memory of size 64KB and I make sure that
+this memory is not swapped out (necessary for memcpy() later). Then I
+run one of the memory copy function to transfer 32MB and I measure the
+time. The memory is copied in chunks from 64KB to 8B. I take care about
+the cache calling flush_dcache_range() whenever whole 64KB was used.
+I know, that memcpy on the kernel level is not intended to copy memory
+blocks in userspace and __copy_tofrom_user is not intended to copy data
+only between two user blocks, but for the performance test it doesn't
+matter.
+Bellow you may see the short piece of code in the kernel module.
 
+#define TEST_BUF_SIZE (64*1024)
+int function;
+char *buf1, *buf2, *buf1_bis, *buf2_bis;
+unsigned int size, cnt;
 
+get_user(function, &((TEST_ARG*)(arg))->function);
+get_user(buf1, &((TEST_ARG*)(arg))->buf1);
+get_user(buf2, &((TEST_ARG*)(arg))->buf2);
+get_user(size, &((TEST_ARG*)(arg))->size);
 
-Subject: RE: Linux driver for Xilinx ICAPDate: Wed, 8 Oct 2008 08:34:28 -0600From: John.Linn@xilinx.comTo: eemingliu@hotmail.com; linuxppc-embedded@ozlabs.orgCC: stephenn@xilinx.com
+cnt = (32*1024*1024)/size; /* how many repeats of memory copy is needed
+to transfer 32MB ? */
+buf1_bis = buf1;
+buf2_bis = buf2;
 
-
-
-
-
-
-Hi Ming,
- 
-I’m copying our local expert on this core to see his thoughts as I don’t actively use this core myself.
- 
-Thanks,
-John
- 
-
-
-
-
-
-From: linuxppc-embedded-bounces+john.linn=xilinx.com@ozlabs.org [mailto:linuxppc-embedded-bounces+john.linn=xilinx.com@ozlabs.org] On Behalf Of MingLiuSent: Wednesday, October 08, 2008 7:48 AMTo: linuxppc-embedded@ozlabs.orgSubject: Linux driver for Xilinx ICAP
- 
-Dear all,Has someone manage to use the driver for the Xilinx xps_hwicap core to reconfigure bitstreams? I have enabled the driver in Linux configuration (version 2.6.24 from Xilinx tree). However I failed to use it to reconfigure bitstreams. The operations are listed as follows: # cp partial.bit /dev/icap0# No error information is shown, however the partial bitstream is not successfully configured. I checked /proc/devices and the device "icap" has been successfully registered with the major of 259. But in /proc/interrupts, I didn't find any matching entry of the interrupt for icap core. I tried to reconfigure the PR module with JTAG, and my design works well.  Any hints for this problem? Is the problem on the interrupt? Thanks so much if someone can help me.  BRMing
-
-
-
-Windows Live Writer，支持离线撰写博客内容，随时随地想写就写。 立即使用！This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately. 
-_________________________________________________________________
-Windows Live Photo gallery 数码相机的超级伴侣，轻松管理和编辑照片，还能制作全景美图！
-http://get.live.cn/product/photo.html
---_8c59598d-386b-41f8-8e87-8c6583791a40_
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: 8bit
-
-<html>
-<head>
-<style>
-.hmmessage P
+switch (function)
 {
-margin:0px;
-padding:0px
+    case MEMCPY_TEST:
+        while (cnt-->0)
+        {
+            if (buf1_bis >= buf1+TEST_BUF_SIZE)
+            {
+                /* need for flusch data cache as seldom as possible */
+                buf1_bis = buf1;
+                buf2_bis = buf2;
+                flush_dcache_range((int)buf1, (int)(buf2+TEST_BUF_SIZE));
+            }
+            if (buf1_bis != memcpy(buf1_bis, buf2_bis, size))
+                break;
+            buf1_bis += size;
+            buf2_bis += size;
+        }
+        break;
+
+    case COPY_TOFROM_USER_TEST:
+        while (cnt-->0)
+        {
+            if (buf1_bis >= buf1+TEST_BUF_SIZE)
+            {
+                /* need for flusch data cache as seldom as possible */
+                buf1_bis = buf1;
+                buf2_bis = buf2;
+                flush_dcache_range((int)buf1, (int)(buf2+TEST_BUF_SIZE));
+            }
+            ret = __copy_tofrom_user(buf1_bis, buf2_bis, size);
+            if (ret != 0)
+                break;
+            buf1_bis += size;
+            buf2_bis += size;
+        }
+        break;
 }
-body.hmmessage
-{
-FONT-SIZE: 9pt;
-FONT-FAMILY:Tahoma
-}
-</style>
-</head>
-<body class='hmmessage'>
-Dear John,<BR>
-Nice to hear from you. If possible, could you please show me your .mhs file concerning to the xps_hwicap core? Mine is listed as below:<BR>
-&nbsp;<BR>
-BEGIN xps_hwicap<BR>&nbsp;PARAMETER INSTANCE = xps_hwicap_0<BR>&nbsp;PARAMETER HW_VER = 1.00.a<BR>&nbsp;PARAMETER C_BASEADDR = 0x40200000<BR>&nbsp;PARAMETER C_HIGHADDR = 0x4020FFFF<BR>&nbsp;BUS_INTERFACE SPLB = plb<BR>&nbsp;PORT IP2INTC_Irpt = xps_hwicap_0_IP2INTC_Irpt<BR>END<BR>
-&nbsp;<BR>
-The interrupt signal is connected to the interrupt controller. <BR>
-&nbsp;<BR>
-I suspect that the driver in Linux doesn't support interrupt mode for this core, since I didn't find interrupt handler registration function in the source code, like "request_irq", etc.. <BR>
-&nbsp;<BR>
-I will appreciate if you can have some comments to me. <BR>
-&nbsp;<BR>
-Br<BR>
-Ming<BR>
-<BR><BR>&nbsp;<BR>
 
-<HR>
-<BR>
-Subject: RE: Linux driver for Xilinx ICAP<BR>Date: Wed, 8 Oct 2008 08:34:28 -0600<BR>From: John.Linn@xilinx.com<BR>To: eemingliu@hotmail.com; linuxppc-embedded@ozlabs.org<BR>CC: stephenn@xilinx.com<BR><BR><BR>
-<META content="Microsoft SafeHTML" name=Generator>
-<STYLE>
-.ExternalClass .EC_shape
-{;}
-</STYLE>
 
-<STYLE>
-.ExternalClass p.EC_MsoNormal, .ExternalClass li.EC_MsoNormal, .ExternalClass div.EC_MsoNormal
-{margin-bottom:.0001pt;font-size:12.0pt;font-family:SimSun;}
-.ExternalClass a:link, .ExternalClass span.EC_MsoHyperlink
-{color:blue;text-decoration:underline;}
-.ExternalClass a:visited, .ExternalClass span.EC_MsoHyperlinkFollowed
-{color:blue;text-decoration:underline;}
-.ExternalClass p
-{margin-right:0in;margin-left:0in;font-size:12.0pt;font-family:SimSun;}
-.ExternalClass span.EC_EmailStyle18
-{font-family:Arial;color:navy;}
-@page Section1
-{size:8.5in 11.0in;}
-.ExternalClass div.EC_Section1
-{page:Section1;}
+Bellow are the results:
 
-</STYLE>
+memcpy()
+chunk:  65536 [B] | transfer:     69.2 [MB/s] | time: 1.849727 [s] |
+size:  128.000 [MB]
+chunk:  32768 [B] | transfer:     69.2 [MB/s] | time: 1.849700 [s] |
+size:  128.000 [MB]
+chunk:  16384 [B] | transfer:     69.2 [MB/s] | time: 1.849845 [s] |
+size:  128.000 [MB]
+chunk:   8192 [B] | transfer:     69.2 [MB/s] | time: 1.850535 [s] |
+size:  128.000 [MB]
+chunk:   4096 [B] | transfer:     69.1 [MB/s] | time: 1.853405 [s] |
+size:  128.000 [MB]
+chunk:   2048 [B] | transfer:     69.1 [MB/s] | time: 1.852877 [s] |
+size:  128.000 [MB]
+chunk:   1024 [B] | transfer:     69.2 [MB/s] | time: 1.849963 [s] |
+size:  128.000 [MB]
+chunk:    512 [B] | transfer:     69.0 [MB/s] | time: 1.853793 [s] |
+size:  128.000 [MB]
+chunk:    256 [B] | transfer:     68.6 [MB/s] | time: 1.866222 [s] |
+size:  128.000 [MB]
+chunk:    128 [B] | transfer:     68.0 [MB/s] | time: 1.883002 [s] |
+size:  128.000 [MB]
+chunk:     64 [B] | transfer:     67.2 [MB/s] | time: 1.904073 [s] |
+size:  128.000 [MB]
+chunk:     32 [B] | transfer:     64.7 [MB/s] | time: 1.978109 [s] |
+size:  128.000 [MB]
+chunk:     16 [B] | transfer:     54.5 [MB/s] | time: 2.348682 [s] |
+size:  128.000 [MB]
+chunk:      8 [B] | transfer:     47.4 [MB/s] | time: 2.698635 [s] |
+size:  128.000 [MB]
 
-<DIV class=EC_Section1>
-<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">Hi Ming,</SPAN></FONT></P>
-<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">&nbsp;</SPAN></FONT></P>
-<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">I’m copying our local expert on this core to see his thoughts as I don’t actively use this core myself.</SPAN></FONT></P>
-<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">&nbsp;</SPAN></FONT></P>
-<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">Thanks,</SPAN></FONT></P>
-<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">John</SPAN></FONT></P>
-<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">&nbsp;</SPAN></FONT></P>
-<DIV style="BORDER-RIGHT: medium none; PADDING-RIGHT: 0in; BORDER-TOP: medium none; PADDING-LEFT: 4pt; PADDING-BOTTOM: 0in; BORDER-LEFT: blue 1.5pt solid; PADDING-TOP: 0in; BORDER-BOTTOM: medium none">
-<DIV>
-<DIV class=EC_MsoNormal style="TEXT-ALIGN: center" align=center><FONT face=SimSun size=3><SPAN style="FONT-SIZE: 12pt">
-<HR align=center width="100%" SIZE=2>
-</SPAN></FONT></DIV>
-<P class=EC_MsoNormal><B><FONT face=Tahoma size=2><SPAN style="FONT-WEIGHT: bold; FONT-SIZE: 10pt; FONT-FAMILY: Tahoma">From:</SPAN></FONT></B><FONT face=Tahoma size=2><SPAN style="FONT-SIZE: 10pt; FONT-FAMILY: Tahoma"> linuxppc-embedded-bounces+john.linn=xilinx.com@ozlabs.org [mailto:linuxppc-embedded-bounces+john.linn=xilinx.com@ozlabs.org] <B><SPAN style="FONT-WEIGHT: bold">On Behalf Of </SPAN></B>MingLiu<BR><B><SPAN style="FONT-WEIGHT: bold">Sent:</SPAN></B> Wednesday, October 08, 2008 7:48 AM<BR><B><SPAN style="FONT-WEIGHT: bold">To:</SPAN></B> linuxppc-embedded@ozlabs.org<BR><B><SPAN style="FONT-WEIGHT: bold">Subject:</SPAN></B> Linux driver for Xilinx ICAP</SPAN></FONT></P></DIV>
-<P class=EC_MsoNormal><FONT face=SimSun size=3><SPAN style="FONT-SIZE: 12pt">&nbsp;</SPAN></FONT></P>
-<P class=EC_MsoNormal style="MARGIN-BOTTOM: 12pt"><FONT face=Tahoma size=1><SPAN style="FONT-SIZE: 9pt; FONT-FAMILY: Tahoma">Dear all,<BR>Has someone manage to use the driver for the Xilinx xps_hwicap core to reconfigure bitstreams? I have enabled the driver in Linux configuration (version 2.6.24 from Xilinx tree). However I failed to use it to reconfigure bitstreams. The operations are listed as follows:<BR>&nbsp;<BR># cp partial.bit /dev/icap0<BR>#<BR>&nbsp;<BR>No error information is shown, however the partial bitstream is not successfully configured. I checked /proc/devices and the device "icap" has been successfully registered with the major of 259. But in /proc/interrupts, I didn't find any matching entry of the interrupt for icap core. I tried to reconfigure the PR module with JTAG, and my design works well. <BR>&nbsp;<BR>Any hints for this problem? Is the problem on the interrupt? Thanks so much if someone can help me. <BR>&nbsp;<BR>BR<BR>Ming</SPAN></FONT></P>
-<DIV class=EC_MsoNormal style="TEXT-ALIGN: center" align=center><FONT face=Tahoma size=1><SPAN style="FONT-SIZE: 9pt; FONT-FAMILY: Tahoma">
-<HR align=center width="100%" SIZE=2>
-</SPAN></FONT></DIV>
-<P class=EC_MsoNormal><FONT face=Tahoma size=1><SPAN style="FONT-SIZE: 9pt; FONT-FAMILY: Tahoma">Windows Live Writer</SPAN></FONT><FONT size=1><SPAN lang=ZH-CN style="FONT-SIZE: 9pt">，支持离线撰写博客内容，随时随地想写就写。</SPAN></FONT><FONT face=Tahoma size=1><SPAN lang=ZH-CN style="FONT-SIZE: 9pt; FONT-FAMILY: Tahoma"> </SPAN></FONT><FONT face=Tahoma size=1><SPAN style="FONT-SIZE: 9pt; FONT-FAMILY: Tahoma"><A href="http://get.live.cn/product/writer.html" target=_blank><FONT face=SimSun><SPAN lang=ZH-CN style="FONT-FAMILY: SimSun">立即使用！</SPAN></FONT></A></SPAN></FONT></P></DIV></DIV><BR clear=all>This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately. <br /><hr />使用新一代 Windows Live Messenger 轻松交流和共享！ <a href='http://messenger.live.cn/' target='_new'>立即体验！</a></body>
-</html>
---_8c59598d-386b-41f8-8e87-8c6583791a40_--
+
+__copy_tofrom_user()
+chunk:  65536 [B] | transfer:     97.3 [MB/s] | time: 1.315155 [s] |
+size:  128.000 [MB]
+chunk:  32768 [B] | transfer:     97.3 [MB/s] | time: 1.315762 [s] |
+size:  128.000 [MB]
+chunk:  16384 [B] | transfer:     97.2 [MB/s] | time: 1.316946 [s] |
+size:  128.000 [MB]
+chunk:   8192 [B] | transfer:     96.8 [MB/s] | time: 1.321705 [s] |
+size:  128.000 [MB]
+chunk:   4096 [B] | transfer:     96.6 [MB/s] | time: 1.325516 [s] |
+size:  128.000 [MB]
+chunk:   2048 [B] | transfer:     96.6 [MB/s] | time: 1.325570 [s] |
+size:  128.000 [MB]
+chunk:   1024 [B] | transfer:     96.8 [MB/s] | time: 1.322599 [s] |
+size:  128.000 [MB]
+chunk:    512 [B] | transfer:     97.8 [MB/s] | time: 1.308186 [s] |
+size:  128.000 [MB]
+chunk:    256 [B] | transfer:    100.2 [MB/s] | time: 1.277788 [s] |
+size:  128.000 [MB]
+chunk:    128 [B] | transfer:     91.5 [MB/s] | time: 1.398216 [s] |
+size:  128.000 [MB]
+chunk:     64 [B] | transfer:     87.0 [MB/s] | time: 1.471784 [s] |
+size:  128.000 [MB]
+chunk:     32 [B] | transfer:     75.0 [MB/s] | time: 1.706426 [s] |
+size:  128.000 [MB]
+chunk:     16 [B] | transfer:     47.8 [MB/s] | time: 2.678039 [s] |
+size:  128.000 [MB]
+chunk:      8 [B] | transfer:     41.5 [MB/s] | time: 3.084689 [s] |
+size:  128.000 [MB]
+
+Regards
+Dominik Bozek
+
+
+BTW. The memcpy() maybe optimized as it is on i32 when the size of block
+is known at compile time.
