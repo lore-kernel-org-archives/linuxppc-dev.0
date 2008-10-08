@@ -1,18 +1,16 @@
-Return-Path: <juan-antonio.medina@anafocus.com>
-Received: from mail.anafocus.com (mail.anafocus.com [213.227.43.181])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 61F5DDDF64
+Return-Path: <eemingliu@hotmail.com>
+Received: from col0-omc1-s3.col0.hotmail.com (col0-omc1-s3.col0.hotmail.com
+	[65.55.34.13]) by ozlabs.org (Postfix) with ESMTP id BDC2FDDEDE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Oct 2008 18:49:18 +1100 (EST)
-From: "Juan Antonio Medina Guerrero" <juan-antonio.medina@anafocus.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: DMA IRQ Linux configuring problem
-Date: Wed, 8 Oct 2008 09:42:51 +0200
-Message-ID: <86DF51AEEB064389B85403E2C27FE6B7@svq.anafocus.com>
-MIME-Version: 1.0
+	Thu,  9 Oct 2008 00:52:38 +1100 (EST)
+Message-ID: <COL107-W38E2468E159F1CBB304906B23B0@phx.gbl>
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_000B_01C9292A.3B36EB70"
+	boundary="_71988eab-273a-453a-9881-7ea86234c170_"
+From: MingLiu <eemingliu@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Linux driver for Xilinx ICAP
+Date: Wed, 8 Oct 2008 13:47:33 +0000
+MIME-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,186 +21,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+--_71988eab-273a-453a-9881-7ea86234c170_
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
-------=_NextPart_000_000B_01C9292A.3B36EB70
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 
-Hello,
-
-      
-
-      We are facing some issues when trying to implement the interrup-driven
-DMA. The function request_irq returns error when trying to use the DMA
-interrupt. Following you can find some tests we've performed to try to solve
-this trouble:
-
+Dear all,
+Has someone manage to use the driver for the Xilinx xps_hwicap core to reconfigure bitstreams? I have enabled the driver in Linux configuration (version 2.6.24 from Xilinx tree). However I failed to use it to reconfigure bitstreams. The operations are listed as follows:
  
-
-      - We have been trying various IRQ ID. If we use the spi IRQ_ID the
-function request_irq returns error because this IRQ is already being used,
-as expected. If we use the usb IRQ_ID the function doesn't return error but
-of course doesn't launch the IRQ handle.
-
+# cp partial.bit /dev/icap0#
  
-
-      - We have changed the IRQ_ID from USB to DMA in device usb section in
-file mpc8313erdb.dts. Then we use dma IRQ_ID and there are launchs of
-IRQ_DMA_handler. This method isn't the solution but gives us an idea of the
-problem.
-
+No error information is shown, however the partial bitstream is not successfully configured. I checked /proc/devices and the device "icap" has been successfully registered with the major of 259. But in /proc/interrupts, I didn't find any matching entry of the interrupt for icap core. I tried to reconfigure the PR module with JTAG, and my design works well. 
  
-
-      - Finally, we make a new device section in dts file but it doesn't
-work. We believe that we have created bad the device section or that we need
-to do something else. Could you please help us with this?
-
+Any hints for this problem? Is the problem on the interrupt? Thanks so much if someone can help me. 
  
+BR
+Ming
+_________________________________________________________________
+用手机MSN聊天写邮件看空间，无限沟通，分享精彩！
+http://mobile.msn.com.cn/
+--_71988eab-273a-453a-9881-7ea86234c170_
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
-Kind regards,
-
-Medina
-
-
-------=_NextPart_000_000B_01C9292A.3B36EB70
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
+<html>
 <head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
 <style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:595.3pt 841.9pt;
-	margin:70.85pt 3.0cm 70.85pt 3.0cm;}
-div.Section1
-	{page:Section1;}
--->
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 9pt;
+FONT-FAMILY:Tahoma
+}
 </style>
-
 </head>
-
-<body lang=3DES link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
-New"'>Hello,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
-New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
-New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; We
-are facing some issues when trying to implement the interrup-driven DMA. =
-The
-function request_irq returns error when trying to use the DMA interrupt. =
-Following
-you can find some tests we've performed to try to solve this =
-trouble:<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
-New"'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
-New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -
-We have been trying various IRQ ID. If we use the spi IRQ_ID the =
-function
-request_irq returns error because this IRQ is already being used, as =
-expected. If
-we use the usb IRQ_ID the function doesn't return error but of course =
-doesn't
-launch the IRQ handle.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
-New"'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
-New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -
-We have changed the IRQ_ID from USB to DMA in device usb section in file
-mpc8313erdb.dts. Then we use dma IRQ_ID and there are launchs of
-IRQ_DMA_handler. This method isn't the solution but gives us an idea of =
-the
-problem.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
-New"'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
-New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -
-Finally, we make a new device section in dts file but it doesn't work. =
-We
-believe that we have created bad the device section or that we need to =
-do
-something else. </span></font><font size=3D2 face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier New"'>Could you please =
-help us
-with this?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier =
-New"'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier New"'>Kind =
-regards,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;
-font-family:"Courier New"'>Medina</span></font><font size=3D2 =
-face=3DArial><span
-style=3D'font-size:10.0pt;font-family:Arial'><o:p></o:p></span></font></p=
->
-
-</div>
-
-</body>
-
+<body class='hmmessage'>
+Dear all,<BR>
+Has someone manage to use the driver for the Xilinx xps_hwicap core to reconfigure bitstreams? I have enabled the driver in Linux configuration (version 2.6.24 from Xilinx tree). However I failed to use it to reconfigure bitstreams. The operations are listed as follows:<BR>
+&nbsp;<BR>
+# cp partial.bit /dev/icap0<BR>#<BR>
+&nbsp;<BR>
+No error information is shown, however the partial bitstream is not successfully configured. I checked /proc/devices and the device "icap" has been successfully registered with the major of 259. But in /proc/interrupts, I didn't find any matching entry of the interrupt for icap core. I tried to reconfigure the PR module with JTAG, and my design works well. <BR>
+&nbsp;<BR>
+Any hints for this problem? Is the problem on the interrupt? Thanks so much if someone can help me. <BR>
+&nbsp;<BR>
+BR<BR>
+Ming<BR><br /><hr />Windows Live Writer，支持离线撰写博客内容，随时随地想写就写。 <a href='http://get.live.cn/product/writer.html' target='_new'>立即使用！</a></body>
 </html>
-
-------=_NextPart_000_000B_01C9292A.3B36EB70--
+--_71988eab-273a-453a-9881-7ea86234c170_--
