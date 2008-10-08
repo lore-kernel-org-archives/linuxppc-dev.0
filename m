@@ -2,20 +2,17 @@ Return-Path: <bgat@billgatliff.com>
 Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5B73ADE079
+	by ozlabs.org (Postfix) with ESMTPS id C9C26DE08D
 	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 04:00:38 +1100 (EST)
 From: Bill Gatliff <bgat@billgatliff.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC 6/6] [PWM] New LED driver and trigger that use PWM API
-Date: Wed,  8 Oct 2008 11:43:17 -0500
-Message-Id: <ea8648b0cf23133f49da6b8bd84ad782aa3764ed.1223482372.git.bgat@billgatliff.com>
-In-Reply-To: <475b4a5985463015fdfa943b9835ab8136dbc06a.1223482372.git.bgat@billgatliff.com>
+Subject: [RFC 3/6] [PWM] Documentation
+Date: Wed,  8 Oct 2008 11:43:14 -0500
+Message-Id: <7b16004ca5f8030184c2de96cbcee38657d56252.1223482372.git.bgat@billgatliff.com>
+In-Reply-To: <88de40673cc33e014928c2ee3a86bdac566021c8.1223482372.git.bgat@billgatliff.com>
 References: <cover.1223482372.git.bgat@billgatliff.com>
 	<4b5c3aa2b1bc2b7efad834da49c2dec8c0a8726b.1223482372.git.bgat@billgatliff.com>
 	<88de40673cc33e014928c2ee3a86bdac566021c8.1223482372.git.bgat@billgatliff.com>
-	<7b16004ca5f8030184c2de96cbcee38657d56252.1223482372.git.bgat@billgatliff.com>
-	<5640f37b779f953c83e79c16b2a0466c0f5da702.1223482372.git.bgat@billgatliff.com>
-	<475b4a5985463015fdfa943b9835ab8136dbc06a.1223482372.git.bgat@billgatliff.com>
 In-Reply-To: <cover.1223482372.git.bgat@billgatliff.com>
 References: <cover.1223482372.git.bgat@billgatliff.com>
 Cc: Bill Gatliff <bgat@billgatliff.com>
@@ -31,368 +28,273 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Bill Gatliff <bgat@billgatliff.com>
 ---
- drivers/leds/Kconfig       |   21 ++++--
- drivers/leds/Makefile      |    2 +
- drivers/leds/leds-pwm.c    |  141 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/leds/ledtrig-dim.c |   95 +++++++++++++++++++++++++++++
- include/linux/pwm-led.h    |   34 +++++++++++
- 5 files changed, 286 insertions(+), 7 deletions(-)
- create mode 100644 drivers/leds/leds-pwm.c
- create mode 100644 drivers/leds/ledtrig-dim.c
- create mode 100644 include/linux/pwm-led.h
+ Documentation/pwm.txt |  258 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 258 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/pwm.txt
 
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 9556262..019c2e8 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -17,13 +17,6 @@ config LEDS_CLASS
- 
- comment "LED drivers"
- 
--config LEDS_ATMEL_PWM
--	tristate "LED Support using Atmel PWM outputs"
--	depends on LEDS_CLASS && ATMEL_PWM
--	help
--	  This option enables support for LEDs driven using outputs
--	  of the dedicated PWM controller found on newer Atmel SOCs.
--
- config LEDS_CORGI
- 	tristate "LED Support for the Sharp SL-C7x0 series"
- 	depends on LEDS_CLASS && PXA_SHARP_C7xx
-@@ -119,6 +112,12 @@ config LEDS_GPIO
- 	  outputs. To be useful the particular board must have LEDs
- 	  and they must be connected to the GPIO lines.
- 
-+config LEDS_PWM
-+       tristate "LED Support for PWM connected LEDs"
-+       depends on LEDS_CLASS && GENERIC_PWM
-+       help
-+         Enables support for LEDs connected to PWM outputs.
-+
- config LEDS_CM_X270
- 	tristate "LED Support for the CM-X270 LEDs"
- 	depends on LEDS_CLASS && MACH_ARMCORE
-@@ -190,6 +189,14 @@ config LEDS_TRIGGER_IDE_DISK
- 	  This allows LEDs to be controlled by IDE disk activity.
- 	  If unsure, say Y.
- 
-+config LEDS_TRIGGER_DIM
-+	tristate "LED Dimmer Trigger"
-+	depends on LEDS_TRIGGERS
-+	help
-+	  Regulates the brightness of an LED based on the 1-minute CPU
-+	  load average.  Ideal for PWM-driven LEDs.
-+	  If unsure, say Y.
-+
- config LEDS_TRIGGER_HEARTBEAT
- 	tristate "LED Heartbeat Trigger"
- 	depends on LEDS_TRIGGERS
-diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index ff7982b..1031086 100644
---- a/drivers/leds/Makefile
-+++ b/drivers/leds/Makefile
-@@ -18,6 +18,7 @@ obj-$(CONFIG_LEDS_COBALT_QUBE)		+= leds-cobalt-qube.o
- obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
- obj-$(CONFIG_LEDS_PCA9532)		+= leds-pca9532.o
- obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
-+obj-$(CONFIG_LEDS_PWM)					+= leds-pwm.o
- obj-$(CONFIG_LEDS_CM_X270)              += leds-cm-x270.o
- obj-$(CONFIG_LEDS_CLEVO_MAIL)		+= leds-clevo-mail.o
- obj-$(CONFIG_LEDS_HP6XX)		+= leds-hp6xx.o
-@@ -27,5 +28,6 @@ obj-$(CONFIG_LEDS_PCA955X)		+= leds-pca955x.o
- # LED Triggers
- obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
- obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)	+= ledtrig-ide-disk.o
-+obj-$(CONFIG_LEDS_TRIGGER_DIM)		+= ledtrig-dim.o
- obj-$(CONFIG_LEDS_TRIGGER_HEARTBEAT)	+= ledtrig-heartbeat.o
- obj-$(CONFIG_LEDS_TRIGGER_DEFAULT_ON)	+= ledtrig-default-on.o
-diff --git a/drivers/leds/leds-pwm.c b/drivers/leds/leds-pwm.c
+diff --git a/Documentation/pwm.txt b/Documentation/pwm.txt
 new file mode 100644
-index 0000000..3bd9afb
+index 0000000..b8932dd
 --- /dev/null
-+++ b/drivers/leds/leds-pwm.c
-@@ -0,0 +1,141 @@
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/leds.h>
-+#include <linux/io.h>
-+#include <linux/pwm.h>
-+#include <linux/pwm-led.h>
++++ b/Documentation/pwm.txt
+@@ -0,0 +1,258 @@
++                       Generic PWM Device API
++
++                          October 8, 2008
++                           Bill Gatliff
++                       <bgat@billgatliff.com>
 +
 +
-+struct led_pwm {
-+	struct led_classdev	led;
-+	struct pwm_channel	*pwm;
-+	int percent;
-+};
++
++The code in drivers/pwm and include/linux/pwm.h implements an API for
++applications involving pulse-width-modulation signals.  This document
++describes how the API implementation facilitates both PWM-generating
++devices, and users of those devices.
 +
 +
-+static void
-+led_pwm_brightness_set(struct led_classdev *c,
-+		       enum led_brightness b)
-+{
-+	struct led_pwm *led;
-+	int percent;
 +
-+	percent = (b * 100) / (LED_FULL - LED_OFF);
-+	led = container_of(c, struct led_pwm, led);
-+	led->percent = percent;
-+	pwm_duty_percent(led->pwm, percent);
-+}
++Motivation
 +
++The primary goals for implementing the "generic PWM API" are to
++consolidate the various PWM implementations within a consistent and
++redundancy-reducing framework, and to facilitate the use of
++hotpluggable PWM devices.
 +
-+static enum led_brightness
-+led_pwm_brightness_get(struct led_classdev *c)
-+{
-+	struct led_pwm *led;
-+	led = container_of(c, struct led_pwm, led);
-+	return led->percent;
-+}
++Previous PWM-related implementations within the Linux kernel achieved
++their consistency via cut-and-paste, but did not need to (and didn't)
++facilitate more than one PWM-generating device within the system---
++hotplug or otherwise.  The Generic PWM Device API might be most
++appropriately viewed as an update to those implementations, rather
++than a complete rewrite.
 +
 +
-+static int __init
-+led_pwm_probe(struct platform_device *pdev)
-+{
-+	struct pwm_led_platform_data *pdata = pdev->dev.platform_data;
-+	struct led_pwm *led;
-+	struct device *d = &pdev->dev;
-+	int ret;
 +
-+	if (!pdata || !pdata->led_info)
-+		return -EINVAL;
++Challenges
 +
-+	if (!try_module_get(d->driver->owner))
-+		return -ENODEV;
++One of the difficulties in implementing a generic PWM framework is the
++fact that pulse-width-modulation applications involve real-world
++signals, which often must be carefully managed to prevent destruction
++of hardware that is linked to those signals.  A DC motor that
++experiences a brief interruption in the PWM signal controlling it
++might destructively overheat; it could change speed, losing
++synchronization with a sensor; it could even suddenly change direction
++or torque, breaking the mechanical device connected to it.
 +
-+	led = kzalloc(sizeof(*led), GFP_KERNEL);
-+	if (!led)
-+		return -ENOMEM;
++(A generic PWM device framework is not directly responsible for
++preventing the above scenarios: that responsibility lies with the
++hardware designer and the application and driver authors.  But it must
++to the greatest extent possible make it easy to avoid such problems).
 +
-+	led->pwm = pwm_request(pdata->bus_id, pdata->chan,
-+			       pdata->led_info->name);
-+	if (!led->pwm) {
-+		ret = -EINVAL;
-+		goto err_pwm_request;
-+	}
++A generic PWM device framework must accomodate the substantial
++differences between available PWM-generating hardware devices, without
++becoming sub-optimal for any of them.
 +
-+	platform_set_drvdata(pdev, led);
++Finally, a generic PWM device framework must be relatively
++lightweight, computationally speaking.  Some PWM users demand
++high-speed outputs, plus the ability to regulate those outputs
++quickly.  A device framework must be able to "keep up" with such
++hardware, while still leaving time to do real work.
 +
-+	led->led.name = pdata->led_info->name;
-+	led->led.default_trigger = pdata->led_info->default_trigger;
-+	led->led.brightness_set = led_pwm_brightness_set;
-+	led->led.brightness_get = led_pwm_brightness_get;
-+	led->led.brightness = LED_OFF;
-+
-+	ret = pwm_config(led->pwm, pdata->config);
-+	if (ret)
-+		goto err_pwm_config;
-+	pwm_start(led->pwm);
-+
-+	ret = led_classdev_register(&pdev->dev, &led->led);
-+	if (ret < 0)
-+		goto err_classdev_register;
-+
-+	return 0;
-+
-+err_classdev_register:
-+	pwm_stop(led->pwm);
-+err_pwm_config:
-+	pwm_free(led->pwm);
-+err_pwm_request:
-+	kfree(led);
-+
-+	return ret;
-+}
++The Generic PWM Device API is an attempt to meet all of the above
++requirements.  At its initial publication, the API was already in use
++managing small DC motors through a custom-designed, optically-isolated
++H-bridge driver.
 +
 +
-+static int
-+led_pwm_remove(struct platform_device *pdev)
-+{
-+	struct led_pwm *led = platform_get_drvdata(pdev);
-+	struct device *d = &pdev->dev;
 +
-+	led_classdev_unregister(&led->led);
++Functional Overview
 +
-+	if (led->pwm) {
-+		pwm_stop(led->pwm);
-+		pwm_free(led->pwm);
-+	}
++The Generic PWM Device API framework is implemented in
++include/linux/pwm.h and drivers/pwm/pwm.c.  The functions therein use
++information from pwm_device, pwm_channel and pwm_channel_config
++structures to invoke services in PWM peripheral device drivers.
++Consult drivers/pwm/atmel-pwm.c for an example driver.
 +
-+	kfree(led);
-+	module_put(d->driver->owner);
++There are two classes of adopters of the PWM framework:
 +
-+	return 0;
-+}
++  "Users" -- those wishing to employ the API merely to produce PWM
++  signals; once they have identified the appropriate physical output
++  on the platform in question, they don't care about the details of
++  the underlying hardware
 +
++  "Driver authors" -- those wishing to bind devices that can generate
++  PWM signals to the Generic PWM Device API, so that the services of
++  those devices become available to users; assuming the hardware can
++  support the needs of a user, driver authors don't care about the
++  details of the user's application
 +
-+static struct platform_driver led_pwm_driver = {
-+	.driver = {
-+		.name =		"leds-pwm",
-+		.owner =	THIS_MODULE,
-+	},
-+	.probe = led_pwm_probe,
-+	.remove = led_pwm_remove,
-+};
++Generally speaking, users will first invoke pwm_request() to obtain a
++handle to a PWM device.  They will then pass that handle to functions
++like pwm_duty_ns() and pwm_period_ns() to set the duty cycle and
++period of the PWM signal, respectively.  They will also invoke
++pwm_start() and pwm_stop() to turn the signal on and off.
 +
++The framework also provides a sysfs interface to PWM devices, which is
++adequate for basic needs and testing.
 +
-+static int __init led_pwm_modinit(void)
-+{
-+	return platform_driver_register(&led_pwm_driver);
-+}
-+module_init(led_pwm_modinit);
++Driver authors fill out a pwm_device structure, which describes the
++capabilities of the PWM hardware being driven--- including the number
++of distinct output "channels" the peripheral offers.  They then invoke
++pwm_register() (usually from within their device's probe() handler) to
++make the PWM API aware of their device.  The framework will call back
++to the methods described in the pwm_device structure to configure and
++use the hardware.
 +
-+
-+static void __exit led_pwm_modexit(void)
-+{
-+	platform_driver_unregister(&led_pwm_driver);
-+}
-+module_exit(led_pwm_modexit);
-+
-+
-+MODULE_AUTHOR("Bill Gatliff <bgat@billgatliff.com>");
-+MODULE_DESCRIPTION("Driver for LEDs with PWM-controlled brightness");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:leds-pwm");
-diff --git a/drivers/leds/ledtrig-dim.c b/drivers/leds/ledtrig-dim.c
-new file mode 100644
-index 0000000..299865b
---- /dev/null
-+++ b/drivers/leds/ledtrig-dim.c
-@@ -0,0 +1,95 @@
-+/*
-+ * LED Dim Trigger
-+ *
-+ * Copyright (C) 2008 Bill Gatliff <bgat@billgatliff.com>
-+ *
-+ * "Dims" an LED based on system load.  Derived from Atsushi Nemoto's
-+ * ledtrig-heartbeat.c.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/timer.h>
-+#include <linux/sched.h>
-+#include <linux/leds.h>
-+
-+#include "leds.h"
-+
-+struct dim_trig_data {
-+	struct timer_list timer;
-+};
++Note that PWM signals can be produced by a variety of peripherals,
++beyond the true "PWM hardware" offered by many system-on-chip devices.
++Other possibilities include timer/counters with compare-match
++capabilities, carefully-programmed synchronous serial ports
++(e.g. SPI), and GPIO pins driven by kernel interval timers.  With a
++proper pwm_device structure, these devices and pseudo-devices can all
++be accomodated by the Generic PWM Device API framework.
 +
 +
-+static void
-+led_dim_function(unsigned long data)
-+{
-+	struct led_classdev *led_cdev = (struct led_classdev *)data;
-+	struct dim_trig_data *dim_data = led_cdev->trigger_data;
-+	unsigned int brightness;
 +
-+	brightness = ((LED_FULL - LED_OFF) * avenrun[0]) / EXP_1;
-+	if (brightness > LED_FULL)
-+		brightness = LED_FULL;
-+
-+	led_set_brightness(led_cdev, brightness);
-+	mod_timer(&dim_data->timer, jiffies + msecs_to_jiffies(500));
-+}
++Using the API to Generate PWM Signals -- Basic Functions for Users
 +
 +
-+static void
-+dim_trig_activate(struct led_classdev *led_cdev)
-+{
-+	struct dim_trig_data *dim_data;
++pwm_request() -- Returns a pwm_channel pointer, which is subsequently
++passed to the other user-related PWM functions.  Once requested, a PWM
++channel is marked as in-use and subsequent requests prior to
++pwm_free() will fail.
 +
-+	dim_data = kzalloc(sizeof(*dim_data), GFP_KERNEL);
-+	if (!dim_data)
-+		return;
-+
-+	led_cdev->trigger_data = dim_data;
-+	setup_timer(&dim_data->timer,
-+		    led_dim_function, (unsigned long)led_cdev);
-+	led_dim_function(dim_data->timer.data);
-+}
++The names used to refer to PWM devices are defined by driver authors.
++Typically they are platform device bus identifiers, and this
++convention is encouraged for consistency.
 +
 +
-+static void
-+dim_trig_deactivate(struct led_classdev *led_cdev)
-+{
-+	struct dim_trig_data *dim_data = led_cdev->trigger_data;
-+
-+	if (dim_data) {
-+		del_timer_sync(&dim_data->timer);
-+		kfree(dim_data);
-+	}
-+}
++pwm_free() -- Marks a PWM channel as no longer in use.  The PWM device
++is stopped before it is released by the API.
 +
 +
-+static struct led_trigger dim_led_trigger = {
-+	.name     = "dim",
-+	.activate = dim_trig_activate,
-+	.deactivate = dim_trig_deactivate,
-+};
++pwm_period_ns() -- Specifies the PWM signal's period, in nanoseconds.
 +
 +
-+static int __init dim_trig_init(void)
-+{
-+	return led_trigger_register(&dim_led_trigger);
-+}
-+module_init(dim_trig_init);
++pwm_duty_ns() -- Specifies the PWM signal's active duration, in nanoseconds.
 +
 +
-+static void __exit dim_trig_exit(void)
-+{
-+	led_trigger_unregister(&dim_led_trigger);
-+}
-+module_exit(dim_trig_exit);
++pwm_duty_percent() -- Specifies the PWM signal's active duration, as a
++percentage of the current period of the signal.  NOTE: this value is
++not recalculated if the period of the signal is subsequently changed.
 +
 +
-+MODULE_AUTHOR("Bill Gatliff <bgat@billgatliff.com>");
-+MODULE_DESCRIPTION("Dim LED trigger");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/pwm-led.h b/include/linux/pwm-led.h
-new file mode 100644
-index 0000000..92363c8
---- /dev/null
-+++ b/include/linux/pwm-led.h
-@@ -0,0 +1,34 @@
-+#ifndef __LINUX_PWM_LED_H
-+#define __LINUX_PWM_LED_H
++pwm_start(), pwm_stop() -- Turns the PWM signal on and off.  Except
++where stated otherwise by a driver author, signals are stopped at the
++end of the current period, at which time the output is set to its
++inactive state.
 +
-+/*
-+ * include/linux/pwm-led.h
-+ *
-+ * Copyright (C) 2008 Bill Gatliff
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
 +
-+struct led_info;
-+struct pwm_channel_config;
++pwm_polarity() -- Defines whether the PWM signal output's active
++region is "1" or "0".  A 10% duty-cycle, polarity=1 signal will
++conventionally be at 5V (or 3.3V, or 1000V, or whatever the platform
++hardware does) for 10% of the period.  The same configuration of a
++polarity=0 signal will be at 5V (or 3.3V, or ...) for 90% of the
++period.
 +
-+struct pwm_led_platform_data {
-+	const char *bus_id;
-+	int chan;
-+	struct pwm_channel_config *config;
-+	struct led_info *led_info;
-+};
 +
-+#endif /* __LINUX_PWM_LED_H */
++
++Using the API to Generate PWM Signals -- Advanced Functions
++
++
++pwm_config() -- Passes a pwm_channel_config structure to the
++associated device driver.  This function is invoked by pwm_start(),
++pwm_duty_ns(), etc. and is one of two main entry points to the PWM
++driver for the hardware being used.  The configuration change is
++guaranteed atomic if multiple configuration changes are specified.
++This function might sleep, depending on what the device driver has to
++do to satisfy the request.  All PWM device drivers must support this
++entry point.
++
++
++pwm_config_nosleep() -- Passes a pwm_channel_config structure to the
++associated device driver.  If the driver must sleep in order to
++implement the requested configuration change, -EWOULDBLOCK is
++returned.  Users may call this function from interrupt handlers, for
++example.  This is the other main entry point into the PWM hardware
++driver, but not all device drivers support this entry point.
++
++
++pwm_synchronize(), pwm_unsynchronize() -- "Synchronizes" two or more
++PWM channels, if the underlying hardware permits.  (If it doesn't, the
++framework facilitates emulating this capability but it is not yet
++implemented).  Synchronized channels will start and stop
++simultaneously when any single channel in the group is started or
++stopped.  Use pwm_unsynchronize(..., NULL) to completely detach a
++channel from any other synchronized channels.
++
++
++pwm_set_handler() -- Defines an end-of-period callback.  The indicated
++function will be invoked in a worker thread at the end of each PWM
++period, and can subsequently invoke pwm_config(), etc.  Must be used
++with extreme care for high-speed PWM outputs.  Set the handler
++function to NULL to un-set the handler.
++
++
++
++Implementing a PWM Device API Driver -- Functions for Driver Authors
++
++
++Fill out the appropriate fields in a pwm_device structure, and submit
++to pwm_register():
++
++
++bus_id -- the plaintext name of the device.  Users will bind to a
++channel on the device using this name plus the channel number.  For
++example, the Atmel PWMC's bus_id is "atmel_pwmc", the same as used by
++the platform device driver (recommended).  The first device registered
++thereby receives bus_id "atmel_pwmc.0", which is what you put in
++pwm_device.bus_id.  Channels are then named "atmel_pwmc.0:[0-3]".
++(Hint: just use pdev->dev.bus_id in your probe() method).
++
++
++nchan -- the number of distinct output channels provided by the device.
++
++
++request -- (optional) Invoked each time a user requests a channel.
++Use to turn on clocks, clean up register states, etc.  The framework
++takes care of device locking/unlocking; you will see only successful
++requests.
++
++
++free -- (optional) Callback for each time a user relinquishes a
++channel.  The framework will have already stopped, unsynchronized and
++un-handled the channel.  Use to turn off clocks, etc. as necessary.
++
++
++synchronize, unsynchronize -- (optional) Callbacks to
++synchronize/unsynchronize channels.  Some devices provide this
++capability in hardware; for others, it can be emulated (see
++atmel_pwmc.c's sync_mask for an example).
++
++
++set_callback -- (optional) Invoked when a user requests a handler.  If
++the hardware supports an end-of-period interrupt, invoke the function
++indicated during your interrupt handler.  The callback function itself
++is always internal to the API, and does not map directly to the user's
++callback function.
++
++
++config -- Invoked to change the device configuration, always from a
++sleep-capable context.  All the changes indicated must be performed
++atomically, ideally synchronized to an end-of-period event (so that
++you avoid short or long output pulses).  You may sleep, etc. as
++necessary within this function.
++
++
++config_nosleep -- (optional) Invoked to change device configuration
++from within a context that is not allowed to sleep.  If you cannot
++perform the requested configuration changes without sleeping, return
++-EWOULDBLOCK.
++
++
++
++Acknowledgements
++
++
++The author expresses his gratitude to the countless developers who
++have reviewed and submitted feedback on the various versions of the
++Generic PWM Device API code, and those who have submitted drivers and
++applications that use the framework.  You know who you are.  ;)
++
 -- 
 1.5.6.5
