@@ -1,14 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Message-ID: <48ECF08F.7000400@freescale.com>
-Date: Wed, 08 Oct 2008 12:40:31 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Dominik Bozek <domino@mikroswiat.pl>
-Subject: Re: performance: memcpy vs. __copy_tofrom_user
-References: <48ECC611.3030309@mikroswiat.pl>
-In-Reply-To: <48ECC611.3030309@mikroswiat.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id ED14BDDF5D
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 05:03:11 +1100 (EST)
+Message-Id: <44593583-8B1D-4F99-85BA-D9A2E0EFF330@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40810080914n508150bcva235ec85322ff5cf@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 0/3] MPC5121 add pci support
+Date: Wed, 8 Oct 2008 13:02:15 -0500
+References: <1223406020-12278-1-git-send-email-jrigby@freescale.com>
+	<77D97C6B-7F07-45AA-98D0-EE4723E2ABAD@kernel.crashing.org>
+	<fa686aa40810080914n508150bcva235ec85322ff5cf@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,29 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dominik Bozek wrote:
-> I have done a test of memcpy() and __copy_tofrom_user() on the mpc8313.
-> And the major conclusion is that __copy_tofrom_user is more efficient
-> than memcpy. Sometimes about 40%.
-> 
-> If I good understand, the memcpy() just copy the data, while
-> __copy_tofrom_user() take care if the memory wasn't swapped out.
 
-There's not much overhead in dealing with bad pointers; it's mostly 
-fixup after the fault.
+On Oct 8, 2008, at 11:14 AM, Grant Likely wrote:
 
-The performance difference most likely comes from the fact that copy 
-to/from user can assume that the memory is cacheable, while memcpy is 
-occasionally used on cache-inhibited memory -- so dcbz isn't used.  We 
-may be better off handling the alignment fault on those occasions, and 
-we should use dcba on chips that support it.
+> On Wed, Oct 8, 2008 at 12:20 AM, Kumar Gala  
+> <galak@kernel.crashing.org> wrote:
+>>
+>> On Oct 7, 2008, at 2:00 PM, John Rigby wrote:
+>>
+>>> The following three patches add pci support for MPC5121
+>>> These got no NACKs back in August but they were not picked up
+>>> by anyone either.
+>>
+>> I'll look at picking up patches 1/3 and 3/3.  I'll leave 2/3 to  
+>> Grant.
+>
+> Kumar, since both 1/3 and 2/3 touch fsl_pci.c, can you please pick up
+> 2/3?  It won't conflict with anything that I'm pushing.  I'll post my
+> ack-by line.
 
-I'm not sure why we don't use dcbt in memcpy(), as it's just ignored if 
-the memory is cache-inhibited.
+will do.
 
-> BTW. The memcpy() maybe optimized as it is on i32 when the size of block
-> is known at compile time.
-
-Yes, that would be nice.
-
--Scott
+- k
