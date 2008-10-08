@@ -2,17 +2,17 @@ Return-Path: <bgat@billgatliff.com>
 Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C9C26DE08D
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 04:00:38 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 2E44CDE067
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 04:00:39 +1100 (EST)
 From: Bill Gatliff <bgat@billgatliff.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC 3/6] [PWM] Documentation
-Date: Wed,  8 Oct 2008 11:43:14 -0500
-Message-Id: <7b16004ca5f8030184c2de96cbcee38657d56252.1223482372.git.bgat@billgatliff.com>
-In-Reply-To: <88de40673cc33e014928c2ee3a86bdac566021c8.1223482372.git.bgat@billgatliff.com>
+Subject: [RFC 2/6] [PWM] Changes to existing include/linux/pwm.h to adapt to
+	generic PWM API
+Date: Wed,  8 Oct 2008 11:43:13 -0500
+Message-Id: <88de40673cc33e014928c2ee3a86bdac566021c8.1223482372.git.bgat@billgatliff.com>
+In-Reply-To: <4b5c3aa2b1bc2b7efad834da49c2dec8c0a8726b.1223482372.git.bgat@billgatliff.com>
 References: <cover.1223482372.git.bgat@billgatliff.com>
 	<4b5c3aa2b1bc2b7efad834da49c2dec8c0a8726b.1223482372.git.bgat@billgatliff.com>
-	<88de40673cc33e014928c2ee3a86bdac566021c8.1223482372.git.bgat@billgatliff.com>
 In-Reply-To: <cover.1223482372.git.bgat@billgatliff.com>
 References: <cover.1223482372.git.bgat@billgatliff.com>
 Cc: Bill Gatliff <bgat@billgatliff.com>
@@ -28,273 +28,191 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Bill Gatliff <bgat@billgatliff.com>
 ---
- Documentation/pwm.txt |  258 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 258 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/pwm.txt
+ include/linux/pwm.h |  168 ++++++++++++++++++++++++++++++++++++++++++++------
+ 1 files changed, 147 insertions(+), 21 deletions(-)
 
-diff --git a/Documentation/pwm.txt b/Documentation/pwm.txt
-new file mode 100644
-index 0000000..b8932dd
---- /dev/null
-+++ b/Documentation/pwm.txt
-@@ -0,0 +1,258 @@
-+                       Generic PWM Device API
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index 3945f80..d3d18f7 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -1,31 +1,157 @@
+ #ifndef __LINUX_PWM_H
+ #define __LINUX_PWM_H
+ 
+-struct pwm_device;
+-
+ /*
+- * pwm_request - request a PWM device
++ * include/linux/pwm.h
++ *
++ * Copyright (C) 2008 Bill Gatliff
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
+-struct pwm_device *pwm_request(int pwm_id, const char *label);
+ 
+-/*
+- * pwm_free - free a PWM device
+- */
+-void pwm_free(struct pwm_device *pwm);
++enum {
++	PWM_CONFIG_DUTY_TICKS = BIT(0),
++	PWM_CONFIG_PERIOD_TICKS = BIT(1),
++	PWM_CONFIG_POLARITY = BIT(2),
++	PWM_CONFIG_START = BIT(3),
++	PWM_CONFIG_STOP = BIT(4),
+ 
+-/*
+- * pwm_config - change a PWM device configuration
+- */
+-int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns);
++	PWM_CONFIG_HANDLER = BIT(5),
+ 
+-/*
+- * pwm_enable - start a PWM output toggling
+- */
+-int pwm_enable(struct pwm_device *pwm);
++	PWM_CONFIG_DUTY_NS = BIT(6),
++	PWM_CONFIG_DUTY_PERCENT = BIT(7),
++	PWM_CONFIG_PERIOD_NS = BIT(8),
++};
++
++struct pwm_channel;
++struct work_struct;
++
++typedef int (*pwm_handler_t)(struct pwm_channel *p, void *data);
++typedef void (*pwm_callback_t)(struct pwm_channel *p);
++
++struct pwm_channel_config {
++	int config_mask;
++	unsigned long duty_ticks;
++	unsigned long period_ticks;
++	int polarity;
++
++	pwm_handler_t handler;
++
++	unsigned long duty_ns;
++	unsigned long period_ns;
++	int duty_percent;
++};
++
++struct pwm_device {
++	struct list_head list;
++	spinlock_t list_lock;
++	struct device *dev;
++	struct module *owner;
++	struct pwm_channel *channels;
++
++	const char *bus_id;
++	int nchan;
++
++	int	(*request)	(struct pwm_channel *p);
++	void	(*free)		(struct pwm_channel *p);
++	int	(*config)	(struct pwm_channel *p,
++				 struct pwm_channel_config *c);
++	int	(*config_nosleep)(struct pwm_channel *p,
++				  struct pwm_channel_config *c);
++	int	(*synchronize)	(struct pwm_channel *p,
++				 struct pwm_channel *to_p);
++	int	(*unsynchronize)(struct pwm_channel *p,
++				 struct pwm_channel *from_p);
++	int	(*set_callback)	(struct pwm_channel *p,
++				 pwm_callback_t callback);
++};
++
++int pwm_register(struct pwm_device *pwm);
++int pwm_unregister(struct pwm_device *pwm);
 +
-+                          October 8, 2008
-+                           Bill Gatliff
-+                       <bgat@billgatliff.com>
++enum {
++	FLAG_REQUESTED = 0,
++	FLAG_STOP = 1,
++};
 +
++struct pwm_channel {
++	struct list_head list;
++	struct pwm_device *pwm;
++	const char *requester;
++	int chan;
++	unsigned long flags;
++	unsigned long tick_hz;
 +
-+
-+The code in drivers/pwm and include/linux/pwm.h implements an API for
-+applications involving pulse-width-modulation signals.  This document
-+describes how the API implementation facilitates both PWM-generating
-+devices, and users of those devices.
++	spinlock_t lock;
++	struct completion complete;
 +
++	pwm_callback_t callback;
 +
++	struct work_struct handler_work;
++	pwm_handler_t handler;
++	void *handler_data;
 +
-+Motivation
++	int active_low;
++	unsigned long period_ticks;
++	unsigned long duty_ticks;
++};
 +
-+The primary goals for implementing the "generic PWM API" are to
-+consolidate the various PWM implementations within a consistent and
-+redundancy-reducing framework, and to facilitate the use of
-+hotpluggable PWM devices.
++struct pwm_channel *
++pwm_request(const char *bus_id, int chan,
++	    const char *requester);
 +
-+Previous PWM-related implementations within the Linux kernel achieved
-+their consistency via cut-and-paste, but did not need to (and didn't)
-+facilitate more than one PWM-generating device within the system---
-+hotplug or otherwise.  The Generic PWM Device API might be most
-+appropriately viewed as an update to those implementations, rather
-+than a complete rewrite.
++void pwm_free(struct pwm_channel *pwm);
 +
++int pwm_config_nosleep(struct pwm_channel *pwm,
++		       struct pwm_channel_config *c);
 +
++int pwm_config(struct pwm_channel *pwm,
++	       struct pwm_channel_config *c);
 +
-+Challenges
++unsigned long pwm_ns_to_ticks(struct pwm_channel *pwm,
++			      unsigned long nsecs);
 +
-+One of the difficulties in implementing a generic PWM framework is the
-+fact that pulse-width-modulation applications involve real-world
-+signals, which often must be carefully managed to prevent destruction
-+of hardware that is linked to those signals.  A DC motor that
-+experiences a brief interruption in the PWM signal controlling it
-+might destructively overheat; it could change speed, losing
-+synchronization with a sensor; it could even suddenly change direction
-+or torque, breaking the mechanical device connected to it.
++unsigned long pwm_ticks_to_ns(struct pwm_channel *pwm,
++			      unsigned long ticks);
 +
-+(A generic PWM device framework is not directly responsible for
-+preventing the above scenarios: that responsibility lies with the
-+hardware designer and the application and driver authors.  But it must
-+to the greatest extent possible make it easy to avoid such problems).
++int pwm_period_ns(struct pwm_channel *pwm,
++		  unsigned long period_ns);
 +
-+A generic PWM device framework must accomodate the substantial
-+differences between available PWM-generating hardware devices, without
-+becoming sub-optimal for any of them.
++int pwm_duty_ns(struct pwm_channel *pwm,
++		unsigned long duty_ns);
 +
-+Finally, a generic PWM device framework must be relatively
-+lightweight, computationally speaking.  Some PWM users demand
-+high-speed outputs, plus the ability to regulate those outputs
-+quickly.  A device framework must be able to "keep up" with such
-+hardware, while still leaving time to do real work.
++int pwm_duty_percent(struct pwm_channel *pwm,
++		     int percent);
 +
-+The Generic PWM Device API is an attempt to meet all of the above
-+requirements.  At its initial publication, the API was already in use
-+managing small DC motors through a custom-designed, optically-isolated
-+H-bridge driver.
++int pwm_polarity(struct pwm_channel *pwm,
++		 int active_high);
 +
++int pwm_start(struct pwm_channel *pwm);
 +
++int pwm_stop(struct pwm_channel *pwm);
 +
-+Functional Overview
++int pwm_set_handler(struct pwm_channel *pwm,
++		    pwm_handler_t handler,
++		    void *data);
 +
-+The Generic PWM Device API framework is implemented in
-+include/linux/pwm.h and drivers/pwm/pwm.c.  The functions therein use
-+information from pwm_device, pwm_channel and pwm_channel_config
-+structures to invoke services in PWM peripheral device drivers.
-+Consult drivers/pwm/atmel-pwm.c for an example driver.
++int pwm_synchronize(struct pwm_channel *p,
++		    struct pwm_channel *to_p);
 +
-+There are two classes of adopters of the PWM framework:
 +
-+  "Users" -- those wishing to employ the API merely to produce PWM
-+  signals; once they have identified the appropriate physical output
-+  on the platform in question, they don't care about the details of
-+  the underlying hardware
-+
-+  "Driver authors" -- those wishing to bind devices that can generate
-+  PWM signals to the Generic PWM Device API, so that the services of
-+  those devices become available to users; assuming the hardware can
-+  support the needs of a user, driver authors don't care about the
-+  details of the user's application
-+
-+Generally speaking, users will first invoke pwm_request() to obtain a
-+handle to a PWM device.  They will then pass that handle to functions
-+like pwm_duty_ns() and pwm_period_ns() to set the duty cycle and
-+period of the PWM signal, respectively.  They will also invoke
-+pwm_start() and pwm_stop() to turn the signal on and off.
-+
-+The framework also provides a sysfs interface to PWM devices, which is
-+adequate for basic needs and testing.
-+
-+Driver authors fill out a pwm_device structure, which describes the
-+capabilities of the PWM hardware being driven--- including the number
-+of distinct output "channels" the peripheral offers.  They then invoke
-+pwm_register() (usually from within their device's probe() handler) to
-+make the PWM API aware of their device.  The framework will call back
-+to the methods described in the pwm_device structure to configure and
-+use the hardware.
-+
-+Note that PWM signals can be produced by a variety of peripherals,
-+beyond the true "PWM hardware" offered by many system-on-chip devices.
-+Other possibilities include timer/counters with compare-match
-+capabilities, carefully-programmed synchronous serial ports
-+(e.g. SPI), and GPIO pins driven by kernel interval timers.  With a
-+proper pwm_device structure, these devices and pseudo-devices can all
-+be accomodated by the Generic PWM Device API framework.
-+
-+
-+
-+Using the API to Generate PWM Signals -- Basic Functions for Users
-+
-+
-+pwm_request() -- Returns a pwm_channel pointer, which is subsequently
-+passed to the other user-related PWM functions.  Once requested, a PWM
-+channel is marked as in-use and subsequent requests prior to
-+pwm_free() will fail.
-+
-+The names used to refer to PWM devices are defined by driver authors.
-+Typically they are platform device bus identifiers, and this
-+convention is encouraged for consistency.
-+
-+
-+pwm_free() -- Marks a PWM channel as no longer in use.  The PWM device
-+is stopped before it is released by the API.
-+
-+
-+pwm_period_ns() -- Specifies the PWM signal's period, in nanoseconds.
-+
-+
-+pwm_duty_ns() -- Specifies the PWM signal's active duration, in nanoseconds.
-+
-+
-+pwm_duty_percent() -- Specifies the PWM signal's active duration, as a
-+percentage of the current period of the signal.  NOTE: this value is
-+not recalculated if the period of the signal is subsequently changed.
-+
-+
-+pwm_start(), pwm_stop() -- Turns the PWM signal on and off.  Except
-+where stated otherwise by a driver author, signals are stopped at the
-+end of the current period, at which time the output is set to its
-+inactive state.
-+
-+
-+pwm_polarity() -- Defines whether the PWM signal output's active
-+region is "1" or "0".  A 10% duty-cycle, polarity=1 signal will
-+conventionally be at 5V (or 3.3V, or 1000V, or whatever the platform
-+hardware does) for 10% of the period.  The same configuration of a
-+polarity=0 signal will be at 5V (or 3.3V, or ...) for 90% of the
-+period.
-+
-+
-+
-+Using the API to Generate PWM Signals -- Advanced Functions
-+
-+
-+pwm_config() -- Passes a pwm_channel_config structure to the
-+associated device driver.  This function is invoked by pwm_start(),
-+pwm_duty_ns(), etc. and is one of two main entry points to the PWM
-+driver for the hardware being used.  The configuration change is
-+guaranteed atomic if multiple configuration changes are specified.
-+This function might sleep, depending on what the device driver has to
-+do to satisfy the request.  All PWM device drivers must support this
-+entry point.
-+
-+
-+pwm_config_nosleep() -- Passes a pwm_channel_config structure to the
-+associated device driver.  If the driver must sleep in order to
-+implement the requested configuration change, -EWOULDBLOCK is
-+returned.  Users may call this function from interrupt handlers, for
-+example.  This is the other main entry point into the PWM hardware
-+driver, but not all device drivers support this entry point.
-+
-+
-+pwm_synchronize(), pwm_unsynchronize() -- "Synchronizes" two or more
-+PWM channels, if the underlying hardware permits.  (If it doesn't, the
-+framework facilitates emulating this capability but it is not yet
-+implemented).  Synchronized channels will start and stop
-+simultaneously when any single channel in the group is started or
-+stopped.  Use pwm_unsynchronize(..., NULL) to completely detach a
-+channel from any other synchronized channels.
-+
-+
-+pwm_set_handler() -- Defines an end-of-period callback.  The indicated
-+function will be invoked in a worker thread at the end of each PWM
-+period, and can subsequently invoke pwm_config(), etc.  Must be used
-+with extreme care for high-speed PWM outputs.  Set the handler
-+function to NULL to un-set the handler.
-+
-+
-+
-+Implementing a PWM Device API Driver -- Functions for Driver Authors
-+
-+
-+Fill out the appropriate fields in a pwm_device structure, and submit
-+to pwm_register():
-+
-+
-+bus_id -- the plaintext name of the device.  Users will bind to a
-+channel on the device using this name plus the channel number.  For
-+example, the Atmel PWMC's bus_id is "atmel_pwmc", the same as used by
-+the platform device driver (recommended).  The first device registered
-+thereby receives bus_id "atmel_pwmc.0", which is what you put in
-+pwm_device.bus_id.  Channels are then named "atmel_pwmc.0:[0-3]".
-+(Hint: just use pdev->dev.bus_id in your probe() method).
-+
-+
-+nchan -- the number of distinct output channels provided by the device.
-+
-+
-+request -- (optional) Invoked each time a user requests a channel.
-+Use to turn on clocks, clean up register states, etc.  The framework
-+takes care of device locking/unlocking; you will see only successful
-+requests.
-+
-+
-+free -- (optional) Callback for each time a user relinquishes a
-+channel.  The framework will have already stopped, unsynchronized and
-+un-handled the channel.  Use to turn off clocks, etc. as necessary.
-+
-+
-+synchronize, unsynchronize -- (optional) Callbacks to
-+synchronize/unsynchronize channels.  Some devices provide this
-+capability in hardware; for others, it can be emulated (see
-+atmel_pwmc.c's sync_mask for an example).
-+
-+
-+set_callback -- (optional) Invoked when a user requests a handler.  If
-+the hardware supports an end-of-period interrupt, invoke the function
-+indicated during your interrupt handler.  The callback function itself
-+is always internal to the API, and does not map directly to the user's
-+callback function.
-+
-+
-+config -- Invoked to change the device configuration, always from a
-+sleep-capable context.  All the changes indicated must be performed
-+atomically, ideally synchronized to an end-of-period event (so that
-+you avoid short or long output pulses).  You may sleep, etc. as
-+necessary within this function.
-+
-+
-+config_nosleep -- (optional) Invoked to change device configuration
-+from within a context that is not allowed to sleep.  If you cannot
-+perform the requested configuration changes without sleeping, return
-+-EWOULDBLOCK.
-+
-+
-+
-+Acknowledgements
-+
-+
-+The author expresses his gratitude to the countless developers who
-+have reviewed and submitted feedback on the various versions of the
-+Generic PWM Device API code, and those who have submitted drivers and
-+applications that use the framework.  You know who you are.  ;)
-+
++int pwm_unsynchronize(struct pwm_channel *p,
++		      struct pwm_channel *from_p);
+ 
+-/*
+- * pwm_disable - stop a PWM output toggling
+- */
+-void pwm_disable(struct pwm_device *pwm);
+ 
+-#endif /* __ASM_ARCH_PWM_H */
++#endif /* __LINUX_PWM_H */
 -- 
 1.5.6.5
