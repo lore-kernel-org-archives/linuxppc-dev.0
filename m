@@ -1,19 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7096CDE039
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 17:30:43 +1100 (EST)
-Message-Id: <B8EF017C-5055-4637-8203-4052D79E0900@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Remi Machet <rmachet@slac.stanford.edu>
-In-Reply-To: <1223413433.17585.26.camel@pcds-ts102.slac.stanford.edu>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 0/3] powerpc: dma code cleanup
-Date: Wed, 8 Oct 2008 01:30:35 -0500
-References: <1223413433.17585.26.camel@pcds-ts102.slac.stanford.edu>
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>
+Return-Path: <zhangyihere@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id 7A605DDE9F
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 17:49:18 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so586462ywh.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 07 Oct 2008 23:49:17 -0700 (PDT)
+Message-ID: <2c8360dd0810072349v4409f49ei7c0c45fc8dd4e798@mail.gmail.com>
+Date: Wed, 8 Oct 2008 14:49:14 +0800
+From: "=?GB2312?B?1cXp8w==?=" <zhangyihere@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Could XUP be uesd as a SMP platform
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_50741_23709507.1223448554914"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+------=_Part_50741_23709507.1223448554914
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Oct 7, 2008, at 4:03 PM, Remi Machet wrote:
+Hi  all,
 
-> Hi,
->
-> Following is the whole DMA code cleanup on top of the work
-> already done by Becky Bruce. It includes removing __dma_sync
-> and __dma_sync_page that got replaced by dma_mapping_ops->sync,
-> getting rid of the old dma-noncoherent code which is now another
-> type of dma_mapping_ops and cleaning up the dma non-coherent
-> code by removing the virtual address pool it was using.
->
-> This code was tested on a 32bits PowerPC C2K board (noncoherent
-> cache) and I verified it builds on pmac32 (coherent cache, 32bits)
-> and pseries (64bits).
->
-> If anyone would be willing to test this code on other platforms
-> (mainly ones with non-coherent DMA architectures), I would
-> greatly appreciate!
+I am working with a Xilinx Virtex II Pro evaluation board, which has two
+PowerPC 405 and I have ported linux 2.6.24 onto that board when there is one
+PPC405 configured.
 
-Your patch commit subject should be more descriptive for each patch.   
-Have the same "subject" is not acceptable.
+I'd like to use this board as a SMP platform. Is it feasible?
 
-- k
+If it works, what steps should i follow? Could you give me some
+recommendations or any literatures I could refer to?
+
+Thanks a lot!
+
+------=_Part_50741_23709507.1223448554914
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div dir="ltr">Hi&nbsp; all,<br><br>I am working with a Xilinx Virtex II Pro  evaluation board, which has two PowerPC 405 and I have ported linux 2.6.24 onto that board when there is one PPC405 configured.<br><br>I&#39;d like to use this board as a SMP platform. Is it feasible?<br>
+<br>If it works, what steps should i follow? Could you give me some recommendations or any literatures I could refer to?<br><br>Thanks a lot!<br><br></div>
+
+------=_Part_50741_23709507.1223448554914--
