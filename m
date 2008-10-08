@@ -2,20 +2,15 @@ Return-Path: <bgat@billgatliff.com>
 Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C84CDDDE45
+	by ozlabs.org (Postfix) with ESMTPS id C9118DDF29
 	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 04:17:17 +1100 (EST)
 From: Bill Gatliff <bgat@billgatliff.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC 5/6] [PWM] Install new Atmel PWMC driver in Kconfig,
-	expunge old one
-Date: Wed,  8 Oct 2008 11:43:16 -0500
-Message-Id: <475b4a5985463015fdfa943b9835ab8136dbc06a.1223482372.git.bgat@billgatliff.com>
-In-Reply-To: <5640f37b779f953c83e79c16b2a0466c0f5da702.1223482372.git.bgat@billgatliff.com>
+Subject: [RFC 1/6] [PWM] Generic PWM API implementation
+Date: Wed,  8 Oct 2008 11:43:12 -0500
+Message-Id: <4b5c3aa2b1bc2b7efad834da49c2dec8c0a8726b.1223482372.git.bgat@billgatliff.com>
+In-Reply-To: <cover.1223482372.git.bgat@billgatliff.com>
 References: <cover.1223482372.git.bgat@billgatliff.com>
-	<4b5c3aa2b1bc2b7efad834da49c2dec8c0a8726b.1223482372.git.bgat@billgatliff.com>
-	<88de40673cc33e014928c2ee3a86bdac566021c8.1223482372.git.bgat@billgatliff.com>
-	<7b16004ca5f8030184c2de96cbcee38657d56252.1223482372.git.bgat@billgatliff.com>
-	<5640f37b779f953c83e79c16b2a0466c0f5da702.1223482372.git.bgat@billgatliff.com>
 In-Reply-To: <cover.1223482372.git.bgat@billgatliff.com>
 References: <cover.1223482372.git.bgat@billgatliff.com>
 Cc: Bill Gatliff <bgat@billgatliff.com>
@@ -31,532 +26,682 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Bill Gatliff <bgat@billgatliff.com>
 ---
- arch/arm/Kconfig         |    2 +
- drivers/Makefile         |    2 +
- drivers/misc/Kconfig     |    9 -
- drivers/misc/Makefile    |    1 -
- drivers/misc/atmel_pwm.c |  409 ----------------------------------------------
- drivers/pwm/Kconfig      |   24 +++
- drivers/pwm/Makefile     |    6 +
- 7 files changed, 34 insertions(+), 419 deletions(-)
- delete mode 100644 drivers/misc/atmel_pwm.c
- create mode 100644 drivers/pwm/Kconfig
- create mode 100644 drivers/pwm/Makefile
+ drivers/pwm/pwm.c |  667 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 667 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/pwm/pwm.c
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 70dba16..fed3eef 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -1196,6 +1196,8 @@ source "drivers/spi/Kconfig"
- 
- source "drivers/gpio/Kconfig"
- 
-+source "drivers/pwm/Kconfig"
-+
- source "drivers/w1/Kconfig"
- 
- source "drivers/power/Kconfig"
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 2735bde..f242fc6 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -6,6 +6,8 @@
- #
- 
- obj-y				+= gpio/
-+obj-$(CONFIG_GENERIC_PWM)	+= pwm/
-+
- obj-$(CONFIG_PCI)		+= pci/
- obj-$(CONFIG_PARISC)		+= parisc/
- obj-$(CONFIG_RAPIDIO)		+= rapidio/
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index a726f3b..cdea0bb 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -13,15 +13,6 @@ menuconfig MISC_DEVICES
- 
- if MISC_DEVICES
- 
--config ATMEL_PWM
--	tristate "Atmel AT32/AT91 PWM support"
--	depends on AVR32 || ARCH_AT91
--	help
--	  This option enables device driver support for the PWM channels
--	  on certain Atmel prcoessors.  Pulse Width Modulation is used for
--	  purposes including software controlled power-efficent backlights
--	  on LCD displays, motor control, and waveform generation.
--
- config ATMEL_TCLIB
- 	bool "Atmel AT32/AT91 Timer/Counter Library"
- 	depends on (AVR32 || ARCH_AT91)
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index c6c13f6..9e67012 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -10,7 +10,6 @@ obj-$(CONFIG_EEEPC_LAPTOP)	+= eeepc-laptop.o
- obj-$(CONFIG_MSI_LAPTOP)	+= msi-laptop.o
- obj-$(CONFIG_COMPAL_LAPTOP)	+= compal-laptop.o
- obj-$(CONFIG_ACER_WMI)		+= acer-wmi.o
--obj-$(CONFIG_ATMEL_PWM)		+= atmel_pwm.o
- obj-$(CONFIG_ATMEL_SSC)		+= atmel-ssc.o
- obj-$(CONFIG_ATMEL_TCLIB)	+= atmel_tclib.o
- obj-$(CONFIG_HP_WMI)		+= hp-wmi.o
-diff --git a/drivers/misc/atmel_pwm.c b/drivers/misc/atmel_pwm.c
-deleted file mode 100644
-index 6aa5294..0000000
---- a/drivers/misc/atmel_pwm.c
-+++ /dev/null
-@@ -1,409 +0,0 @@
--#include <linux/module.h>
--#include <linux/clk.h>
--#include <linux/err.h>
--#include <linux/io.h>
--#include <linux/interrupt.h>
--#include <linux/platform_device.h>
--#include <linux/atmel_pwm.h>
--
--
--/*
-- * This is a simple driver for the PWM controller found in various newer
-- * Atmel SOCs, including the AVR32 series and the AT91sam9263.
-- *
-- * Chips with current Linux ports have only 4 PWM channels, out of max 32.
-- * AT32UC3A and AT32UC3B chips have 7 channels (but currently no Linux).
-- * Docs are inconsistent about the width of the channel counter registers;
-- * it's at least 16 bits, but several places say 20 bits.
-- */
--#define	PWM_NCHAN	4		/* max 32 */
--
--struct pwm {
--	spinlock_t		lock;
--	struct platform_device	*pdev;
--	u32			mask;
--	int			irq;
--	void __iomem		*base;
--	struct clk		*clk;
--	struct pwm_channel	*channel[PWM_NCHAN];
--	void			(*handler[PWM_NCHAN])(struct pwm_channel *);
--};
--
--
--/* global PWM controller registers */
--#define PWM_MR		0x00
--#define PWM_ENA		0x04
--#define PWM_DIS		0x08
--#define PWM_SR		0x0c
--#define PWM_IER		0x10
--#define PWM_IDR		0x14
--#define PWM_IMR		0x18
--#define PWM_ISR		0x1c
--
--static inline void pwm_writel(const struct pwm *p, unsigned offset, u32 val)
--{
--	__raw_writel(val, p->base + offset);
--}
--
--static inline u32 pwm_readl(const struct pwm *p, unsigned offset)
--{
--	return __raw_readl(p->base + offset);
--}
--
--static inline void __iomem *pwmc_regs(const struct pwm *p, int index)
--{
--	return p->base + 0x200 + index * 0x20;
--}
--
--static struct pwm *pwm;
--
--static void pwm_dumpregs(struct pwm_channel *ch, char *tag)
--{
--	struct device	*dev = &pwm->pdev->dev;
--
--	dev_dbg(dev, "%s: mr %08x, sr %08x, imr %08x\n",
--		tag,
--		pwm_readl(pwm, PWM_MR),
--		pwm_readl(pwm, PWM_SR),
--		pwm_readl(pwm, PWM_IMR));
--	dev_dbg(dev,
--		"pwm ch%d - mr %08x, dty %u, prd %u, cnt %u\n",
--		ch->index,
--		pwm_channel_readl(ch, PWM_CMR),
--		pwm_channel_readl(ch, PWM_CDTY),
--		pwm_channel_readl(ch, PWM_CPRD),
--		pwm_channel_readl(ch, PWM_CCNT));
--}
--
--
--/**
-- * pwm_channel_alloc - allocate an unused PWM channel
-- * @index: identifies the channel
-- * @ch: structure to be initialized
-- *
-- * Drivers allocate PWM channels according to the board's wiring, and
-- * matching board-specific setup code.  Returns zero or negative errno.
-- */
--int pwm_channel_alloc(int index, struct pwm_channel *ch)
--{
--	unsigned long	flags;
--	int		status = 0;
--
--	/* insist on PWM init, with this signal pinned out */
--	if (!pwm || !(pwm->mask & 1 << index))
--		return -ENODEV;
--
--	if (index < 0 || index >= PWM_NCHAN || !ch)
--		return -EINVAL;
--	memset(ch, 0, sizeof *ch);
--
--	spin_lock_irqsave(&pwm->lock, flags);
--	if (pwm->channel[index])
--		status = -EBUSY;
--	else {
--		clk_enable(pwm->clk);
--
--		ch->regs = pwmc_regs(pwm, index);
--		ch->index = index;
--
--		/* REVISIT: ap7000 seems to go 2x as fast as we expect!! */
--		ch->mck = clk_get_rate(pwm->clk);
--
--		pwm->channel[index] = ch;
--		pwm->handler[index] = NULL;
--
--		/* channel and irq are always disabled when we return */
--		pwm_writel(pwm, PWM_DIS, 1 << index);
--		pwm_writel(pwm, PWM_IDR, 1 << index);
--	}
--	spin_unlock_irqrestore(&pwm->lock, flags);
--	return status;
--}
--EXPORT_SYMBOL(pwm_channel_alloc);
--
--static int pwmcheck(struct pwm_channel *ch)
--{
--	int		index;
--
--	if (!pwm)
--		return -ENODEV;
--	if (!ch)
--		return -EINVAL;
--	index = ch->index;
--	if (index < 0 || index >= PWM_NCHAN || pwm->channel[index] != ch)
--		return -EINVAL;
--
--	return index;
--}
--
--/**
-- * pwm_channel_free - release a previously allocated channel
-- * @ch: the channel being released
-- *
-- * The channel is completely shut down (counter and IRQ disabled),
-- * and made available for re-use.  Returns zero, or negative errno.
-- */
--int pwm_channel_free(struct pwm_channel *ch)
--{
--	unsigned long	flags;
--	int		t;
--
--	spin_lock_irqsave(&pwm->lock, flags);
--	t = pwmcheck(ch);
--	if (t >= 0) {
--		pwm->channel[t] = NULL;
--		pwm->handler[t] = NULL;
--
--		/* channel and irq are always disabled when we return */
--		pwm_writel(pwm, PWM_DIS, 1 << t);
--		pwm_writel(pwm, PWM_IDR, 1 << t);
--
--		clk_disable(pwm->clk);
--		t = 0;
--	}
--	spin_unlock_irqrestore(&pwm->lock, flags);
--	return t;
--}
--EXPORT_SYMBOL(pwm_channel_free);
--
--int __pwm_channel_onoff(struct pwm_channel *ch, int enabled)
--{
--	unsigned long	flags;
--	int		t;
--
--	/* OMITTED FUNCTIONALITY:  starting several channels in synch */
--
--	spin_lock_irqsave(&pwm->lock, flags);
--	t = pwmcheck(ch);
--	if (t >= 0) {
--		pwm_writel(pwm, enabled ? PWM_ENA : PWM_DIS, 1 << t);
--		t = 0;
--		pwm_dumpregs(ch, enabled ? "enable" : "disable");
--	}
--	spin_unlock_irqrestore(&pwm->lock, flags);
--
--	return t;
--}
--EXPORT_SYMBOL(__pwm_channel_onoff);
--
--/**
-- * pwm_clk_alloc - allocate and configure CLKA or CLKB
-- * @prescale: from 0..10, the power of two used to divide MCK
-- * @div: from 1..255, the linear divisor to use
-- *
-- * Returns PWM_CPR_CLKA, PWM_CPR_CLKB, or negative errno.  The allocated
-- * clock will run with a period of (2^prescale * div) / MCK, or twice as
-- * long if center aligned PWM output is used.  The clock must later be
-- * deconfigured using pwm_clk_free().
-- */
--int pwm_clk_alloc(unsigned prescale, unsigned div)
--{
--	unsigned long	flags;
--	u32		mr;
--	u32		val = (prescale << 8) | div;
--	int		ret = -EBUSY;
--
--	if (prescale >= 10 || div == 0 || div > 255)
--		return -EINVAL;
--
--	spin_lock_irqsave(&pwm->lock, flags);
--	mr = pwm_readl(pwm, PWM_MR);
--	if ((mr & 0xffff) == 0) {
--		mr |= val;
--		ret = PWM_CPR_CLKA;
--	} else if ((mr & (0xffff << 16)) == 0) {
--		mr |= val << 16;
--		ret = PWM_CPR_CLKB;
--	}
--	if (ret > 0)
--		pwm_writel(pwm, PWM_MR, mr);
--	spin_unlock_irqrestore(&pwm->lock, flags);
--	return ret;
--}
--EXPORT_SYMBOL(pwm_clk_alloc);
--
--/**
-- * pwm_clk_free - deconfigure and release CLKA or CLKB
-- *
-- * Reverses the effect of pwm_clk_alloc().
-- */
--void pwm_clk_free(unsigned clk)
--{
--	unsigned long	flags;
--	u32		mr;
--
--	spin_lock_irqsave(&pwm->lock, flags);
--	mr = pwm_readl(pwm, PWM_MR);
--	if (clk == PWM_CPR_CLKA)
--		pwm_writel(pwm, PWM_MR, mr & ~(0xffff << 0));
--	if (clk == PWM_CPR_CLKB)
--		pwm_writel(pwm, PWM_MR, mr & ~(0xffff << 16));
--	spin_unlock_irqrestore(&pwm->lock, flags);
--}
--EXPORT_SYMBOL(pwm_clk_free);
--
--/**
-- * pwm_channel_handler - manage channel's IRQ handler
-- * @ch: the channel
-- * @handler: the handler to use, possibly NULL
-- *
-- * If the handler is non-null, the handler will be called after every
-- * period of this PWM channel.  If the handler is null, this channel
-- * won't generate an IRQ.
-- */
--int pwm_channel_handler(struct pwm_channel *ch,
--		void (*handler)(struct pwm_channel *ch))
--{
--	unsigned long	flags;
--	int		t;
--
--	spin_lock_irqsave(&pwm->lock, flags);
--	t = pwmcheck(ch);
--	if (t >= 0) {
--		pwm->handler[t] = handler;
--		pwm_writel(pwm, handler ? PWM_IER : PWM_IDR, 1 << t);
--		t = 0;
--	}
--	spin_unlock_irqrestore(&pwm->lock, flags);
--
--	return t;
--}
--EXPORT_SYMBOL(pwm_channel_handler);
--
--static irqreturn_t pwm_irq(int id, void *_pwm)
--{
--	struct pwm	*p = _pwm;
--	irqreturn_t	handled = IRQ_NONE;
--	u32		irqstat;
--	int		index;
--
--	spin_lock(&p->lock);
--
--	/* ack irqs, then handle them */
--	irqstat = pwm_readl(pwm, PWM_ISR);
--
--	while (irqstat) {
--		struct pwm_channel *ch;
--		void (*handler)(struct pwm_channel *ch);
--
--		index = ffs(irqstat) - 1;
--		irqstat &= ~(1 << index);
--		ch = pwm->channel[index];
--		handler = pwm->handler[index];
--		if (handler && ch) {
--			spin_unlock(&p->lock);
--			handler(ch);
--			spin_lock(&p->lock);
--			handled = IRQ_HANDLED;
--		}
--	}
--
--	spin_unlock(&p->lock);
--	return handled;
--}
--
--static int __init pwm_probe(struct platform_device *pdev)
--{
--	struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	int irq = platform_get_irq(pdev, 0);
--	u32 *mp = pdev->dev.platform_data;
--	struct pwm *p;
--	int status = -EIO;
--
--	if (pwm)
--		return -EBUSY;
--	if (!r || irq < 0 || !mp || !*mp)
--		return -ENODEV;
--	if (*mp & ~((1<<PWM_NCHAN)-1)) {
--		dev_warn(&pdev->dev, "mask 0x%x ... more than %d channels\n",
--			*mp, PWM_NCHAN);
--		return -EINVAL;
--	}
--
--	p = kzalloc(sizeof(*p), GFP_KERNEL);
--	if (!p)
--		return -ENOMEM;
--
--	spin_lock_init(&p->lock);
--	p->pdev = pdev;
--	p->mask = *mp;
--	p->irq = irq;
--	p->base = ioremap(r->start, r->end - r->start + 1);
--	if (!p->base)
--		goto fail;
--	p->clk = clk_get(&pdev->dev, "pwm_clk");
--	if (IS_ERR(p->clk)) {
--		status = PTR_ERR(p->clk);
--		p->clk = NULL;
--		goto fail;
--	}
--
--	status = request_irq(irq, pwm_irq, 0, pdev->name, p);
--	if (status < 0)
--		goto fail;
--
--	pwm = p;
--	platform_set_drvdata(pdev, p);
--
--	return 0;
--
--fail:
--	if (p->clk)
--		clk_put(p->clk);
--	if (p->base)
--		iounmap(p->base);
--
--	kfree(p);
--	return status;
--}
--
--static int __exit pwm_remove(struct platform_device *pdev)
--{
--	struct pwm *p = platform_get_drvdata(pdev);
--
--	if (p != pwm)
--		return -EINVAL;
--
--	clk_enable(pwm->clk);
--	pwm_writel(pwm, PWM_DIS, (1 << PWM_NCHAN) - 1);
--	pwm_writel(pwm, PWM_IDR, (1 << PWM_NCHAN) - 1);
--	clk_disable(pwm->clk);
--
--	pwm = NULL;
--
--	free_irq(p->irq, p);
--	clk_put(p->clk);
--	iounmap(p->base);
--	kfree(p);
--
--	return 0;
--}
--
--static struct platform_driver atmel_pwm_driver = {
--	.driver = {
--		.name = "atmel_pwm",
--		.owner = THIS_MODULE,
--	},
--	.remove = __exit_p(pwm_remove),
--
--	/* NOTE: PWM can keep running in AVR32 "idle" and "frozen" states;
--	 * and all AT91sam9263 states, albeit at reduced clock rate if
--	 * MCK becomes the slow clock (i.e. what Linux labels STR).
--	 */
--};
--
--static int __init pwm_init(void)
--{
--	return platform_driver_probe(&atmel_pwm_driver, pwm_probe);
--}
--module_init(pwm_init);
--
--static void __exit pwm_exit(void)
--{
--	platform_driver_unregister(&atmel_pwm_driver);
--}
--module_exit(pwm_exit);
--
--MODULE_DESCRIPTION("Driver for AT32/AT91 PWM module");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:atmel_pwm");
-diff --git a/drivers/pwm/Kconfig b/drivers/pwm/Kconfig
+diff --git a/drivers/pwm/pwm.c b/drivers/pwm/pwm.c
 new file mode 100644
-index 0000000..933bb2c
+index 0000000..2f28c20
 --- /dev/null
-+++ b/drivers/pwm/Kconfig
-@@ -0,0 +1,24 @@
-+#
-+# PWM infrastructure and devices
-+#
++++ b/drivers/pwm/pwm.c
+@@ -0,0 +1,667 @@
++/*
++ * drivers/pwm/pwm.c
++ *
++ * Copyright (C) 2008 Bill Gatliff
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
 +
-+menuconfig GENERIC_PWM
-+	tristate "PWM Support"
-+	help
-+	  This enables PWM support through the generic PWM library.
-+	  If unsure, say N.
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/device.h>
++#include <linux/spinlock.h>
++#include <linux/fs.h>
++#include <linux/completion.h>
++#include <linux/workqueue.h>
++#include <linux/pwm.h>
 +
-+if GENERIC_PWM
 +
-+config ATMEL_PWM
-+	tristate "Atmel AT32/AT91 PWM support"
-+	depends on AVR32 || ARCH_AT91
-+	help
-+	  This option enables device driver support for the PWMC
-+	  peripheral channels found on certain Atmel processors.
-+	  Pulse Width Modulation is used many for purposes, including
-+	  software controlled power-efficent backlights on LCD
-+	  displays, motor control, and waveform generation.  If
-+	  unsure, say N.
++static int __pwm_create_sysfs(struct pwm_device *pwm);
 +
-+endif
-diff --git a/drivers/pwm/Makefile b/drivers/pwm/Makefile
-new file mode 100644
-index 0000000..21634f6
---- /dev/null
-+++ b/drivers/pwm/Makefile
-@@ -0,0 +1,6 @@
-+#
-+# Makefile for pwm devices
-+#
-+obj-y := pwm.o
++static LIST_HEAD(pwm_device_list);
++static DEFINE_MUTEX(device_list_mutex);
++static struct class pwm_class;
++static struct workqueue_struct *pwm_handler_workqueue;
 +
-+obj-$(CONFIG_ATMEL_PWM)		+= atmel-pwm.o
++
++int pwm_register(struct pwm_device *pwm)
++{
++	struct pwm_channel *p;
++	int wchan;
++	int ret = 0;
++
++	spin_lock_init(&pwm->list_lock);
++
++	p = kcalloc(pwm->nchan, sizeof(struct pwm_channel), GFP_KERNEL);
++	if (!p)
++		return -ENOMEM;
++
++	for (wchan = 0; wchan < pwm->nchan; wchan++) {
++		spin_lock_init(&p[wchan].lock);
++		init_completion(&p[wchan].complete);
++		p[wchan].chan = wchan;
++		p[wchan].pwm = pwm;
++	}
++
++	pwm->channels = p;
++
++	mutex_lock(&device_list_mutex);
++
++	list_add_tail(&pwm->list, &pwm_device_list);
++	ret = __pwm_create_sysfs(pwm);
++	if (ret) {
++		mutex_unlock(&device_list_mutex);
++		goto err_create_sysfs;
++	}
++
++	mutex_unlock(&device_list_mutex);
++
++	pr_info("%s: %d channels\n", pwm->bus_id, pwm->nchan);
++	return 0;
++
++err_create_sysfs:
++	kfree(p);
++
++	return ret;
++}
++EXPORT_SYMBOL(pwm_register);
++
++
++static int __match_device(struct device *dev, void *data)
++{
++	return dev_get_drvdata(dev) == data;
++}
++
++
++int pwm_unregister(struct pwm_device *pwm)
++{
++	int wchan;
++	struct device *dev;
++
++	mutex_lock(&device_list_mutex);
++
++	for (wchan = 0; wchan < pwm->nchan; wchan++) {
++		if (pwm->channels[wchan].flags & FLAG_REQUESTED) {
++			mutex_unlock(&device_list_mutex);
++			return -EBUSY;
++		}
++	}
++
++	for (wchan = 0; wchan < pwm->nchan; wchan++) {
++		dev = class_find_device(&pwm_class, NULL,
++					&pwm->channels[wchan],
++					__match_device);
++		if (dev) {
++			put_device(dev);
++			device_unregister(dev);
++		}
++	}
++
++	kfree(pwm->channels);
++	list_del(&pwm->list);
++	mutex_unlock(&device_list_mutex);
++
++	return 0;
++}
++EXPORT_SYMBOL(pwm_unregister);
++
++
++static struct pwm_device *
++__pwm_find_device(const char *bus_id)
++{
++	struct pwm_device *p;
++
++	list_for_each_entry(p, &pwm_device_list, list)
++	{
++		if (!strcmp(bus_id, p->bus_id))
++			return p;
++	}
++	return NULL;
++}
++
++
++static int
++__pwm_request_channel(struct pwm_channel *p,
++		      const char *requester)
++{
++	int ret;
++
++	if (test_and_set_bit(FLAG_REQUESTED, &p->flags))
++		return -EBUSY;
++
++	if (p->pwm->request) {
++		ret = p->pwm->request(p);
++		if (ret) {
++			clear_bit(FLAG_REQUESTED, &p->flags);
++			return ret;
++		}
++	}
++
++	p->requester = requester;
++	return 0;
++}
++
++
++struct pwm_channel *
++pwm_request(const char *bus_id,
++	    int chan,
++	    const char *requester)
++{
++	struct pwm_device *p;
++	int ret;
++
++	mutex_lock(&device_list_mutex);
++
++	p = __pwm_find_device(bus_id);
++	if (!p || chan >= p->nchan)
++		goto err_no_device;
++
++	if (!try_module_get(p->owner))
++		goto err_module_get_failed;
++
++	ret = __pwm_request_channel(&p->channels[chan], requester);
++	if (ret)
++		goto err_request_failed;
++
++	mutex_unlock(&device_list_mutex);
++
++	pr_debug("%s: %s:%d returns %p\n", __func__,
++		 bus_id, chan, &p->channels[chan]);
++
++	return &p->channels[chan];
++
++err_request_failed:
++	module_put(p->owner);
++err_module_get_failed:
++err_no_device:
++
++	mutex_unlock(&device_list_mutex);
++
++	pr_debug("%s: %s:%d returns NULL\n",
++		 __func__, bus_id, chan);
++
++	return NULL;
++}
++EXPORT_SYMBOL(pwm_request);
++
++
++void pwm_free(struct pwm_channel *p)
++{
++	mutex_lock(&device_list_mutex);
++
++	if (!test_and_clear_bit(FLAG_REQUESTED, &p->flags))
++		goto done;
++
++	pwm_stop(p);
++	pwm_unsynchronize(p, NULL);
++	pwm_set_handler(p, NULL, NULL);
++
++	if (p->pwm->free)
++		p->pwm->free(p);
++	module_put(p->pwm->owner);
++
++	pr_debug("%s: %s:%d free\n",
++		 __func__, p->pwm->bus_id, p->chan);
++
++done:
++	mutex_unlock(&device_list_mutex);
++}
++EXPORT_SYMBOL(pwm_free);
++
++
++unsigned long pwm_ns_to_ticks(struct pwm_channel *p,
++			      unsigned long nsecs)
++{
++	unsigned long long ticks;
++
++	ticks = nsecs;
++	ticks *= p->tick_hz;
++	do_div(ticks, 1000000000);
++	return ticks;
++}
++EXPORT_SYMBOL(pwm_ns_to_ticks);
++
++
++unsigned long pwm_ticks_to_ns(struct pwm_channel *p,
++			      unsigned long ticks)
++{
++	unsigned long long ns;
++
++	if (!p->tick_hz)
++		return 0;
++
++	ns = ticks;
++	ns *= 1000000000UL;
++	do_div(ns, p->tick_hz);
++	return ns;
++}
++EXPORT_SYMBOL(pwm_ticks_to_ns);
++
++
++static void
++pwm_config_ns_to_ticks(struct pwm_channel *p,
++		       struct pwm_channel_config *c)
++{
++	if (c->config_mask & PWM_CONFIG_PERIOD_NS) {
++		c->period_ticks = pwm_ns_to_ticks(p, c->period_ns);
++		c->config_mask &= ~PWM_CONFIG_PERIOD_NS;
++		c->config_mask |= PWM_CONFIG_PERIOD_TICKS;
++	}
++
++	if (c->config_mask & PWM_CONFIG_DUTY_NS) {
++		c->duty_ticks = pwm_ns_to_ticks(p, c->duty_ns);
++		c->config_mask &= ~PWM_CONFIG_DUTY_NS;
++		c->config_mask |= PWM_CONFIG_DUTY_TICKS;
++	}
++}
++
++
++static void
++pwm_config_percent_to_ticks(struct pwm_channel *p,
++			    struct pwm_channel_config *c)
++{
++	if (c->config_mask & PWM_CONFIG_DUTY_PERCENT) {
++		if (c->config_mask & PWM_CONFIG_PERIOD_TICKS)
++			c->duty_ticks = c->period_ticks;
++		else
++			c->duty_ticks = p->period_ticks;
++
++		c->duty_ticks *= c->duty_percent;
++		c->duty_ticks /= 100;
++		c->config_mask &= ~PWM_CONFIG_DUTY_PERCENT;
++		c->config_mask |= PWM_CONFIG_DUTY_TICKS;
++	}
++}
++
++
++int pwm_config_nosleep(struct pwm_channel *p,
++		       struct pwm_channel_config *c)
++{
++	if (!p->pwm->config_nosleep)
++		return -EINVAL;
++
++	pwm_config_ns_to_ticks(p, c);
++	pwm_config_percent_to_ticks(p, c);
++
++	return p->pwm->config_nosleep(p, c);
++}
++EXPORT_SYMBOL(pwm_config_nosleep);
++
++
++int pwm_config(struct pwm_channel *p,
++	       struct pwm_channel_config *c)
++{
++	int ret = 0;
++
++	if (unlikely(!p->pwm->config)) {
++		pr_debug("%s: %s:%d has no config handler (-EINVAL)\n",
++			 __func__, p->pwm->bus_id, p->chan);
++		return -EINVAL;
++	}
++
++	pwm_config_ns_to_ticks(p, c);
++	pwm_config_percent_to_ticks(p, c);
++
++	switch (c->config_mask & (PWM_CONFIG_PERIOD_TICKS
++				  | PWM_CONFIG_DUTY_TICKS)) {
++	case PWM_CONFIG_PERIOD_TICKS:
++		if (p->duty_ticks > c->period_ticks) {
++			ret = -EINVAL;
++			goto err;
++		}
++		break;
++	case PWM_CONFIG_DUTY_TICKS:
++		if (p->period_ticks < c->duty_ticks) {
++			ret = -EINVAL;
++			goto err;
++		}
++		break;
++	case PWM_CONFIG_DUTY_TICKS | PWM_CONFIG_PERIOD_TICKS:
++		if (c->duty_ticks > c->period_ticks) {
++			ret = -EINVAL;
++			goto err;
++		}
++		break;
++	default:
++		break;
++	}
++
++err:
++	pr_debug("%s: config_mask %d period_ticks %lu duty_ticks %lu"
++		 " polarity %d duty_ns %lu period_ns %lu duty_percent %d\n",
++		 __func__, c->config_mask, c->period_ticks, c->duty_ticks,
++		 c->polarity, c->duty_ns, c->period_ns, c->duty_percent);
++
++	if (ret)
++		return ret;
++	return p->pwm->config(p, c);
++}
++EXPORT_SYMBOL(pwm_config);
++
++
++int pwm_period_ns(struct pwm_channel *p,
++		  unsigned long period_ns)
++{
++	struct pwm_channel_config c = {
++		.config_mask = PWM_CONFIG_PERIOD_TICKS,
++		.period_ticks = pwm_ns_to_ticks(p, period_ns),
++	};
++
++	return pwm_config(p, &c);
++}
++EXPORT_SYMBOL(pwm_period_ns);
++
++
++int pwm_duty_ns(struct pwm_channel *p,
++		unsigned long duty_ns)
++{
++	struct pwm_channel_config c = {
++		.config_mask = PWM_CONFIG_DUTY_TICKS,
++		.duty_ticks = pwm_ns_to_ticks(p, duty_ns),
++	};
++	return pwm_config(p, &c);
++}
++EXPORT_SYMBOL(pwm_duty_ns);
++
++
++int pwm_duty_percent(struct pwm_channel *p,
++		     int percent)
++{
++	struct pwm_channel_config c = {
++		.config_mask = PWM_CONFIG_DUTY_PERCENT,
++		.duty_percent = percent,
++	};
++	return pwm_config(p, &c);
++}
++EXPORT_SYMBOL(pwm_duty_percent);
++
++
++int pwm_polarity(struct pwm_channel *p,
++		 int active_high)
++{
++	struct pwm_channel_config c = {
++		.config_mask = PWM_CONFIG_POLARITY,
++		.polarity = active_high,
++	};
++	return pwm_config(p, &c);
++}
++EXPORT_SYMBOL(pwm_polarity);
++
++
++int pwm_start(struct pwm_channel *p)
++{
++	struct pwm_channel_config c = {
++		.config_mask = PWM_CONFIG_START,
++	};
++	return pwm_config(p, &c);
++}
++EXPORT_SYMBOL(pwm_start);
++
++
++int pwm_stop(struct pwm_channel *p)
++{
++	struct pwm_channel_config c = {
++		.config_mask = PWM_CONFIG_STOP,
++	};
++	return pwm_config(p, &c);
++}
++EXPORT_SYMBOL(pwm_stop);
++
++
++int pwm_synchronize(struct pwm_channel *p,
++		    struct pwm_channel *to_p)
++{
++	if (p->pwm != to_p->pwm) {
++		/* TODO: support cross-device synchronization */
++		return -EINVAL;
++	}
++
++	if (!p->pwm->synchronize)
++		return -EINVAL;
++
++	return p->pwm->synchronize(p, to_p);
++}
++EXPORT_SYMBOL(pwm_synchronize);
++
++
++int pwm_unsynchronize(struct pwm_channel *p,
++		      struct pwm_channel *from_p)
++{
++	if (from_p && (p->pwm != from_p->pwm)) {
++		/* TODO: support cross-device synchronization */
++		return -EINVAL;
++	}
++
++	if (!p->pwm->unsynchronize)
++		return -EINVAL;
++
++	return p->pwm->unsynchronize(p, from_p);
++}
++EXPORT_SYMBOL(pwm_unsynchronize);
++
++
++static void pwm_handler(struct work_struct *w)
++{
++	struct pwm_channel *p = container_of(w, struct pwm_channel,
++					     handler_work);
++	if (p->handler && p->handler(p, p->handler_data))
++		pwm_stop(p);
++}
++
++
++static void __pwm_callback(struct pwm_channel *p)
++{
++	queue_work(pwm_handler_workqueue, &p->handler_work);
++	pr_debug("%s:%d handler %p scheduled with data %p\n",
++		 p->pwm->bus_id, p->chan, p->handler, p->handler_data);
++}
++
++
++int pwm_set_handler(struct pwm_channel *p,
++		    pwm_handler_t handler,
++		    void *data)
++{
++	if (p->pwm->set_callback) {
++		p->handler_data = data;
++		p->handler = handler;
++		INIT_WORK(&p->handler_work, pwm_handler);
++		return p->pwm->set_callback(p, handler ? __pwm_callback : NULL);
++	}
++	return -EINVAL;
++}
++EXPORT_SYMBOL(pwm_set_handler);
++
++
++static ssize_t pwm_run_store(struct device *dev,
++			     struct device_attribute *attr,
++			     const char *buf,
++			     size_t len)
++{
++	struct pwm_channel *p = dev_get_drvdata(dev);
++	if (sysfs_streq(buf, "1"))
++		pwm_start(p);
++	else if (sysfs_streq(buf, "0"))
++		pwm_stop(p);
++	return len;
++}
++static DEVICE_ATTR(run, 0200, NULL, pwm_run_store);
++
++
++static ssize_t pwm_duty_ns_show(struct device *dev,
++				struct device_attribute *attr,
++				char *buf)
++{
++	struct pwm_channel *p = dev_get_drvdata(dev);
++	return sprintf(buf, "%lu\n", pwm_ticks_to_ns(p, p->duty_ticks));
++}
++
++static ssize_t pwm_duty_ns_store(struct device *dev,
++				 struct device_attribute *attr,
++				 const char *buf,
++				 size_t len)
++{
++	unsigned long duty_ns;
++	struct pwm_channel *p = dev_get_drvdata(dev);
++
++	if (1 == sscanf(buf, "%lu", &duty_ns))
++		pwm_duty_ns(p, duty_ns);
++	return len;
++}
++static DEVICE_ATTR(duty_ns, 0644, pwm_duty_ns_show, pwm_duty_ns_store);
++
++
++static ssize_t pwm_period_ns_show(struct device *dev,
++				  struct device_attribute *attr,
++				  char *buf)
++{
++	struct pwm_channel *p = dev_get_drvdata(dev);
++	return sprintf(buf, "%lu\n", pwm_ticks_to_ns(p, p->period_ticks));
++}
++
++
++static ssize_t pwm_period_ns_store(struct device *dev,
++				   struct device_attribute *attr,
++				   const char *buf,
++				   size_t len)
++{
++	unsigned long period_ns;
++	struct pwm_channel *p = dev_get_drvdata(dev);
++
++	if (1 == sscanf(buf, "%lu", &period_ns))
++		pwm_period_ns(p, period_ns);
++	return len;
++}
++static DEVICE_ATTR(period_ns, 0644, pwm_period_ns_show, pwm_period_ns_store);
++
++
++static ssize_t pwm_polarity_show(struct device *dev,
++				 struct device_attribute *attr,
++				 char *buf)
++{
++	struct pwm_channel *p = dev_get_drvdata(dev);
++	return sprintf(buf, "%d\n", p->active_low ? 0 : 1);
++}
++
++
++static ssize_t pwm_polarity_store(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf,
++				  size_t len)
++{
++	int polarity;
++	struct pwm_channel *p = dev_get_drvdata(dev);
++
++	if (1 == sscanf(buf, "%d", &polarity))
++		pwm_polarity(p, polarity);
++	return len;
++}
++static DEVICE_ATTR(polarity, 0644, pwm_polarity_show, pwm_polarity_store);
++
++
++static ssize_t pwm_request_show(struct device *dev,
++				struct device_attribute *attr,
++				char *buf)
++{
++	struct pwm_channel *p = dev_get_drvdata(dev);
++	mutex_lock(&device_list_mutex);
++	__pwm_request_channel(p, "sysfs");
++	mutex_unlock(&device_list_mutex);
++
++	return sprintf(buf, "%s\n", p->requester);
++}
++
++
++static ssize_t pwm_request_store(struct device *dev,
++				 struct device_attribute *attr,
++				 const char *buf,
++				 size_t len)
++{
++	struct pwm_channel *p = dev_get_drvdata(dev);
++	pwm_free(p);
++	return len;
++}
++static DEVICE_ATTR(request, 0644, pwm_request_show, pwm_request_store);
++
++
++static const struct attribute *pwm_attrs[] =
++{
++	&dev_attr_run.attr,
++	&dev_attr_polarity.attr,
++	&dev_attr_duty_ns.attr,
++	&dev_attr_period_ns.attr,
++	&dev_attr_request.attr,
++	NULL,
++};
++
++
++static const struct attribute_group pwm_device_attr_group = {
++	.attrs = (struct attribute **)pwm_attrs,
++};
++
++
++static int __pwm_create_sysfs(struct pwm_device *pwm)
++{
++	int ret = 0;
++	struct device *dev;
++	int wchan;
++
++	for (wchan = 0; wchan < pwm->nchan; wchan++) {
++		dev = device_create(&pwm_class, pwm->dev, MKDEV(0, 0),
++				    pwm->channels + wchan,
++				    "%s:%d", pwm->bus_id, wchan);
++		if (!dev)
++			goto err_dev_create;
++		ret = sysfs_create_group(&dev->kobj, &pwm_device_attr_group);
++		if (ret)
++			goto err_dev_group_create;
++	}
++
++	return ret;
++
++err_dev_group_create:
++err_dev_create:
++	/* TODO: undo all the successful device_create calls */
++	return -ENODEV;
++}
++
++
++static struct class_attribute pwm_class_attrs[] = {
++	__ATTR_NULL,
++};
++
++static struct class pwm_class = {
++	.name = "pwm",
++	.owner = THIS_MODULE,
++
++	.class_attrs = pwm_class_attrs,
++};
++
++
++static int __init pwm_init(void)
++{
++	int ret;
++
++	/* TODO: how to deal with devices that register very early? */
++
++	ret = class_register(&pwm_class);
++	if (ret < 0)
++		return ret;
++
++	pwm_handler_workqueue = create_workqueue("pwmd");
++
++	return 0;
++}
++postcore_initcall(pwm_init);
 -- 
 1.5.6.5
