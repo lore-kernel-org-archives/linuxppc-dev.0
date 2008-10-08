@@ -2,22 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C3FD1DDF01
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 23:10:23 +1100 (EST)
-Message-Id: <9F5B82DA-D13D-4997-A247-59EAD0483230@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 7D1B6DDF03
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 23:22:23 +1100 (EST)
+Date: Wed, 8 Oct 2008 07:22:18 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1223458152.8157.72.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: powerpc.git status
-Date: Wed, 8 Oct 2008 07:10:17 -0500
-References: <1223357268.8157.38.camel@pasglop>
-	<9B078573-0862-4176-A945-E273D78B260F@kernel.crashing.org>
-	<1223405857.8157.55.camel@pasglop>
-	<1351959C-EAEB-4C14-8A55-665F4C4C0601@kernel.crashing.org>
-	<1223458152.8157.72.camel@pasglop>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: norsk5@yahoo.com
+Subject: [PATCH] edac: mpc85xx: Add support for new compatible types, mpc8536
+	and mpc8560
+Message-ID: <Pine.LNX.4.64.0810080721120.4673@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +22,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+All other compatibles that are uniquely identifying the processor use
+a prefix of the form fsl,mpc85...'.  We add support for it so we
+can deprecate the older 'fsl,85...' that was inproperly used here.
 
-On Oct 8, 2008, at 4:29 AM, Benjamin Herrenschmidt wrote:
+Additionally added mpc8536 & mpc8560 to the compatible lists.
 
->
->> Its useful to not rebase a branch you expect people to send you
->> patches against and sub-maintainers are using to build tree's
->> against.  It sounds like 'next' is that branch.
->
-> Indeed. Though so far I've managed to avoid rebasing anything :-)
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-So what's the status of the patches moving from master into next?
+This patch is based on Nate's 8572 patch.
 
-- k
+ drivers/edac/mpc85xx_edac.c |   74 ++++++++++++++++++------------------------
+ 1 files changed, 32 insertions(+), 42 deletions(-)
+
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index 63bdc47..184799a 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -630,27 +630,22 @@ static int mpc85xx_l2_err_remove(struct of_device *op)
+ }
+
+ static struct of_device_id mpc85xx_l2_err_of_match[] = {
+-	{
+-	 .compatible = "fsl,8540-l2-cache-controller",
+-	 },
+-	{
+-	 .compatible = "fsl,8541-l2-cache-controller",
+-	 },
+-	{
+-	 .compatible = "fsl,8544-l2-cache-controller",
+-	 },
+-	{
+-	 .compatible = "fsl,8548-l2-cache-controller",
+-	 },
+-	{
+-	 .compatible = "fsl,8555-l2-cache-controller",
+-	 },
+-	{
+-	 .compatible = "fsl,8568-l2-cache-controller",
+-	 },
+-	{
+-	 .compatible = "fsl,mpc8572-l2-cache-controller",
+-	 },
++/* deprecate the fsl,85.. forms in the future, 2.6.30? */
++	{ .compatible = "fsl,8540-l2-cache-controller", },
++	{ .compatible = "fsl,8541-l2-cache-controller", },
++	{ .compatible = "fsl,8544-l2-cache-controller", },
++	{ .compatible = "fsl,8548-l2-cache-controller", },
++	{ .compatible = "fsl,8555-l2-cache-controller", },
++	{ .compatible = "fsl,8568-l2-cache-controller", },
++	{ .compatible = "fsl,mpc8536-l2-cache-controller", },
++	{ .compatible = "fsl,mpc8540-l2-cache-controller", },
++	{ .compatible = "fsl,mpc8541-l2-cache-controller", },
++	{ .compatible = "fsl,mpc8544-l2-cache-controller", },
++	{ .compatible = "fsl,mpc8548-l2-cache-controller", },
++	{ .compatible = "fsl,mpc8555-l2-cache-controller", },
++	{ .compatible = "fsl,mpc8560-l2-cache-controller", },
++	{ .compatible = "fsl,mpc8568-l2-cache-controller", },
++	{ .compatible = "fsl,mpc8572-l2-cache-controller", },
+ 	{},
+ };
+
+@@ -967,27 +962,22 @@ static int mpc85xx_mc_err_remove(struct of_device *op)
+ }
+
+ static struct of_device_id mpc85xx_mc_err_of_match[] = {
+-	{
+-	 .compatible = "fsl,8540-memory-controller",
+-	 },
+-	{
+-	 .compatible = "fsl,8541-memory-controller",
+-	 },
+-	{
+-	 .compatible = "fsl,8544-memory-controller",
+-	 },
+-	{
+-	 .compatible = "fsl,8548-memory-controller",
+-	 },
+-	{
+-	 .compatible = "fsl,8555-memory-controller",
+-	 },
+-	{
+-	 .compatible = "fsl,8568-memory-controller",
+-	 },
+-	{
+-	 .compatible = "fsl,mpc8572-memory-controller",
+-	 },
++/* deprecate the fsl,85.. forms in the future, 2.6.30? */
++	{ .compatible = "fsl,8540-memory-controller", },
++	{ .compatible = "fsl,8541-memory-controller", },
++	{ .compatible = "fsl,8544-memory-controller", },
++	{ .compatible = "fsl,8548-memory-controller", },
++	{ .compatible = "fsl,8555-memory-controller", },
++	{ .compatible = "fsl,8568-memory-controller", },
++	{ .compatible = "fsl,mpc8536-memory-controller", },
++	{ .compatible = "fsl,mpc8540-memory-controller", },
++	{ .compatible = "fsl,mpc8541-memory-controller", },
++	{ .compatible = "fsl,mpc8544-memory-controller", },
++	{ .compatible = "fsl,mpc8548-memory-controller", },
++	{ .compatible = "fsl,mpc8555-memory-controller", },
++	{ .compatible = "fsl,mpc8560-memory-controller", },
++	{ .compatible = "fsl,mpc8568-memory-controller", },
++	{ .compatible = "fsl,mpc8572-memory-controller", },
+ 	{},
+ };
+
+-- 
+1.5.5.1
