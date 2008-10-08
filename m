@@ -1,16 +1,17 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 9A697DDDF4
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 10:02:21 +1100 (EST)
-Date: Thu, 9 Oct 2008 03:02:19 +0400
+	by ozlabs.org (Postfix) with ESMTP id 1AD75DDF29
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 10:17:58 +1100 (EST)
+Date: Thu, 9 Oct 2008 03:17:56 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
 Subject: Re: fsl_upm compile failure.
-Message-ID: <20081008230219.GA8075@oksana.dev.rtsoft.ru>
+Message-ID: <20081008231756.GA2150@oksana.dev.rtsoft.ru>
 References: <20081008222815.GA20542@redhat.com>
+	<20081008230219.GA8075@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081008222815.GA20542@redhat.com>
+In-Reply-To: <20081008230219.GA8075@oksana.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,58 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, Oct 09, 2008 at 03:02:19AM +0400, Anton Vorontsov wrote:
+> Though better option would be to uninline the fsl_upm_run_pattern()..
+> it is quite big anyway... Something like this:
 
-On Wed, Oct 08, 2008 at 06:28:15PM -0400, Dave Jones wrote:
-> Hi Anton, 
->  I tried reenabling CONFIG_MTD_NAND_FSL_UPM in the Fedora kernel
-> today (currently on 2.6.27-rc9-git1), and got the error below.
-> 
-> ERROR: "fsl_lbc_lock" [drivers/mtd/nand/fsl_upm.ko] undefined!
+Even better. We don't need exported fsl_lbc_regs too. And also we can
+mark the lock and regs as static. Yeah, w/o inline things look much
+better.
 
-Weird. It works for me with mpc836x_rdk_defconfig and
-MTD_NAND_FSL_UPM=m...
-
-Hm..
-
-  CC      drivers/mtd/nand/fsl_upm.mod.o
-  LD [M]  drivers/mtd/nand/fsl_upm.ko
-
-Can you send me the .config file you use?
-
-> It seems that this isn't exported to modules.
-> diff below fixes this.  (Not tested yet, the Fedora ppc
->  builders are a little slow).
-> 
-> 	Dave
-> 
-> --- 
-> 
-> CONFIG_MTD_NAND_FSL_UPM can be built modular, but needs to
-> use fsl_lbc_lock, which isn't currently exported.
-> 
-> Signed-off-by: Dave Jones <davej@redhat.com>
-> 
-> diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
-> index 422c8fa..1c6c522 100644
-> --- a/arch/powerpc/sysdev/fsl_lbc.c
-> +++ b/arch/powerpc/sysdev/fsl_lbc.c
-> @@ -16,6 +16,7 @@
->  #include <asm/fsl_lbc.h>
->
->  spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
-> +EXPORT_SYMBOL(fsl_lbc_lock);
->
->  struct fsl_lbc_regs __iomem *fsl_lbc_regs;
->  EXPORT_SYMBOL(fsl_lbc_regs);
-
-But the patch looks obviously correct. Much thanks for catching this.
-
-Though better option would be to uninline the fsl_upm_run_pattern()..
-it is quite big anyway... Something like this:
 
 diff --git a/arch/powerpc/include/asm/fsl_lbc.h b/arch/powerpc/include/asm/fsl_lbc.h
-index 303f548..af2b535 100644
+index 303f548..375f46c 100644
 --- a/arch/powerpc/include/asm/fsl_lbc.h
 +++ b/arch/powerpc/include/asm/fsl_lbc.h
 @@ -24,7 +24,6 @@
@@ -84,15 +44,17 @@ index 303f548..af2b535 100644
  #include <asm/io.h>
  
  struct fsl_lbc_bank {
-@@ -228,7 +227,6 @@ struct fsl_lbc_regs {
+@@ -227,9 +226,6 @@ struct fsl_lbc_regs {
+ 	u8 res8[0xF00];
  };
  
- extern struct fsl_lbc_regs __iomem *fsl_lbc_regs;
+-extern struct fsl_lbc_regs __iomem *fsl_lbc_regs;
 -extern spinlock_t fsl_lbc_lock;
- 
+-
  /*
   * FSL UPM routines
-@@ -268,44 +266,7 @@ static inline void fsl_upm_end_pattern(struct fsl_upm *upm)
+  */
+@@ -268,44 +264,7 @@ static inline void fsl_upm_end_pattern(struct fsl_upm *upm)
  		cpu_relax();
  }
  
@@ -140,18 +102,26 @@ index 303f548..af2b535 100644
  
  #endif /* __ASM_FSL_LBC_H */
 diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
-index 422c8fa..d81297c 100644
+index 422c8fa..cb4f570 100644
 --- a/arch/powerpc/sysdev/fsl_lbc.c
 +++ b/arch/powerpc/sysdev/fsl_lbc.c
-@@ -13,6 +13,7 @@
+@@ -13,12 +13,12 @@
  
  #include <linux/kernel.h>
  #include <linux/of.h>
 +#include <linux/spinlock.h>
  #include <asm/fsl_lbc.h>
  
- spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
-@@ -127,3 +128,43 @@ int fsl_upm_find(phys_addr_t addr_base, struct fsl_upm *upm)
+-spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
++static spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
+ 
+-struct fsl_lbc_regs __iomem *fsl_lbc_regs;
+-EXPORT_SYMBOL(fsl_lbc_regs);
++static struct fsl_lbc_regs __iomem *fsl_lbc_regs;
+ 
+ static char __initdata *compat_lbc[] = {
+ 	"fsl,pq2-localbus",
+@@ -127,3 +127,43 @@ int fsl_upm_find(phys_addr_t addr_base, struct fsl_upm *upm)
  	return 0;
  }
  EXPORT_SYMBOL(fsl_upm_find);
@@ -195,20 +165,3 @@ index 422c8fa..d81297c 100644
 +	return ret;
 +}
 +EXPORT_SYMBOL(fsl_upm_run_pattern);
-
-
-(This also adds missing linux/spinlock.h include to the fsl_lbc.c)
-
-Anyhow, whatever approach you chose, feel free to add my:
-
-Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-
-Then please resend the patch with added
-Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-
-^^ Kumar would apply the patch to his powerpc.git tree, powerpc-next branch.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
