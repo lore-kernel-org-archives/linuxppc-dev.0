@@ -1,21 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ED14BDDF5D
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 05:03:11 +1100 (EST)
-Message-Id: <44593583-8B1D-4F99-85BA-D9A2E0EFF330@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40810080914n508150bcva235ec85322ff5cf@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 0/3] MPC5121 add pci support
-Date: Wed, 8 Oct 2008 13:02:15 -0500
-References: <1223406020-12278-1-git-send-email-jrigby@freescale.com>
-	<77D97C6B-7F07-45AA-98D0-EE4723E2ABAD@kernel.crashing.org>
-	<fa686aa40810080914n508150bcva235ec85322ff5cf@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 6D7DEDE3F8
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 05:16:11 +1100 (EST)
+Date: Wed, 8 Oct 2008 22:16:05 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/83xx: add DS1374 RTC support for the MPC837xE-MDS
+	boards
+Message-ID: <20081008181605.GA15034@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +20,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The RTC is sitting on the I2C1 bus at address 0x68. RTC interrupt signal
+is connected to the IPIC's EXT3 interrupt line.
 
-On Oct 8, 2008, at 11:14 AM, Grant Likely wrote:
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/boot/dts/mpc8377_mds.dts |    7 +++++++
+ arch/powerpc/boot/dts/mpc8378_mds.dts |    7 +++++++
+ arch/powerpc/boot/dts/mpc8379_mds.dts |    7 +++++++
+ 3 files changed, 21 insertions(+), 0 deletions(-)
 
-> On Wed, Oct 8, 2008 at 12:20 AM, Kumar Gala  
-> <galak@kernel.crashing.org> wrote:
->>
->> On Oct 7, 2008, at 2:00 PM, John Rigby wrote:
->>
->>> The following three patches add pci support for MPC5121
->>> These got no NACKs back in August but they were not picked up
->>> by anyone either.
->>
->> I'll look at picking up patches 1/3 and 3/3.  I'll leave 2/3 to  
->> Grant.
->
-> Kumar, since both 1/3 and 2/3 touch fsl_pci.c, can you please pick up
-> 2/3?  It won't conflict with anything that I'm pushing.  I'll post my
-> ack-by line.
-
-will do.
-
-- k
+diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
+index 432782b..6ec8b86 100644
+--- a/arch/powerpc/boot/dts/mpc8377_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
+@@ -136,6 +136,13 @@
+ 			interrupts = <14 0x8>;
+ 			interrupt-parent = <&ipic>;
+ 			dfsrr;
++
++			rtc@68 {
++				compatible = "dallas,ds1374";
++				reg = <0x68>;
++				interrupts = <19 0x8>;
++				interrupt-parent = <&ipic>;
++			};
+ 		};
+ 
+ 		i2c@3100 {
+diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
+index ed32c8d..c87340d 100644
+--- a/arch/powerpc/boot/dts/mpc8378_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
+@@ -136,6 +136,13 @@
+ 			interrupts = <14 0x8>;
+ 			interrupt-parent = <&ipic>;
+ 			dfsrr;
++
++			rtc@68 {
++				compatible = "dallas,ds1374";
++				reg = <0x68>;
++				interrupts = <19 0x8>;
++				interrupt-parent = <&ipic>;
++			};
+ 		};
+ 
+ 		i2c@3100 {
+diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dts/mpc8379_mds.dts
+index f4db9ed..22cd183 100644
+--- a/arch/powerpc/boot/dts/mpc8379_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
+@@ -136,6 +136,13 @@
+ 			interrupts = <14 0x8>;
+ 			interrupt-parent = <&ipic>;
+ 			dfsrr;
++
++			rtc@68 {
++				compatible = "dallas,ds1374";
++				reg = <0x68>;
++				interrupts = <19 0x8>;
++				interrupt-parent = <&ipic>;
++			};
+ 		};
+ 
+ 		i2c@3100 {
+-- 
+1.5.6.3
