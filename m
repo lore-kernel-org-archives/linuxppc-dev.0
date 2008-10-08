@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 020A2DDF44
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 23:39:32 +1100 (EST)
-Message-Id: <4800D7D4-28BC-435A-9858-8FAF41F38468@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: John Rigby <jrigby@freescale.com>
-In-Reply-To: <1223413998-15577-1-git-send-email-jrigby@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 2/3] powerpc: 5121: Add PCI support.
-Date: Wed, 8 Oct 2008 07:38:58 -0500
-References: <1223413998-15577-1-git-send-email-jrigby@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 72EDEDE146
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 00:53:52 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so608701yxg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 08 Oct 2008 06:53:50 -0700 (PDT)
+Message-ID: <c384c5ea0810080653x76234b4ma53188bed2a3d59d@mail.gmail.com>
+Date: Wed, 8 Oct 2008 15:53:50 +0200
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+	"John Rigby" <jrigby@freescale.com>
+Subject: Re: MPC8315ERDB PCI Express support status?
+In-Reply-To: <9509FE83-529D-4C0B-B226-B7169FA727DB@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <c384c5ea0810060642l2bbc2a08y5725a28b6d45aa8d@mail.gmail.com>
+	<9509FE83-529D-4C0B-B226-B7169FA727DB@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Stuart Hughes <seh@zee2.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar, John,
 
-On Oct 7, 2008, at 4:13 PM, John Rigby wrote:
-
-> Uses mpc83xx_add_bridge in fsl_pci.c
+On Mon, Oct 6, 2008 at 5:09 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
+> On Oct 6, 2008, at 8:42 AM, Leon Woestenberg wrote:
+>> can Freescale or any of the powerpc maintainers indicate to what
+>> extend PCI Express support for the MPC8315E processor has been merged
+>> to Linux mainline, or what is still needs review or attention?
+>>
+>> I could find u-boot and Linux patches provided by Freescale in their
+>> [...]
+>> but I could not easily identify what has been merged upstream.
+>>
+>> My first goal (and hardware on my desk) would be to test an Intel PCIe
+>> PRO/1000 Ethernet adapter, as a start to add a custom PCIe FPGA
+>> device.
 >
-> Adds second register tuple to pci node register property
-> as done for 83xx device trees in a previous patch.
+> No PCI-e support for 83xx has been merged in any mainline kernel.
 >
-> Signed-off-by: John Rigby <jrigby@freescale.com>
-> ---
-> arch/powerpc/boot/dts/mpc5121ads.dts      |    3 ++-
-> arch/powerpc/platforms/512x/Kconfig       |    2 ++
-> arch/powerpc/platforms/512x/mpc5121_ads.c |   10 ++++++++++
-> arch/powerpc/sysdev/fsl_pci.c             |    4 ++--
-> 4 files changed, 16 insertions(+), 3 deletions(-)
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
+I got MPC8315E working with PCI Express, using an Intel PRO/1000 GbE
+PCIe x1 card, using 2.6.24.3-rt3 with a lot of Freescale patches, as
+well as u-boot 1.2.0 forward patched to 1.3.0 by Freescale with some
+PCIe initialization work. So, basically the BSP 20080627.
 
-- k
+I would like these patches to be ported forward to mainline, and I can
+put some time in this, but I'ld rather first know what the Freescale
+status on the patches is?
+
+John, Stuart, could you please check if there is ongoing work in
+Freescale? I hate double efforts when I'm short on time :-) Thanks.
+
+Regards,
+-- 
+Leon
