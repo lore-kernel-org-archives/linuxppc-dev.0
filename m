@@ -1,21 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.172])
-	by ozlabs.org (Postfix) with ESMTP id 13A44DE3C5
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 03:14:52 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 82306DE784
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 03:15:20 +1100 (EST)
 Received: by wf-out-1314.google.com with SMTP id 24so4196375wfg.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 08 Oct 2008 09:14:51 -0700 (PDT)
-Message-ID: <fa686aa40810080914n508150bcva235ec85322ff5cf@mail.gmail.com>
-Date: Wed, 8 Oct 2008 10:14:51 -0600
+	for <linuxppc-dev@ozlabs.org>; Wed, 08 Oct 2008 09:15:20 -0700 (PDT)
+Message-ID: <fa686aa40810080915v38a1c40cs7cac3825ee5a7bac@mail.gmail.com>
+Date: Wed, 8 Oct 2008 10:15:20 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: [PATCH 0/3] MPC5121 add pci support
-In-Reply-To: <77D97C6B-7F07-45AA-98D0-EE4723E2ABAD@kernel.crashing.org>
+Subject: Re: [PATCH 2/3] powerpc: 5121: Add PCI support.
+In-Reply-To: <4800D7D4-28BC-435A-9858-8FAF41F38468@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <1223406020-12278-1-git-send-email-jrigby@freescale.com>
-	<77D97C6B-7F07-45AA-98D0-EE4723E2ABAD@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>
+References: <1223413998-15577-1-git-send-email-jrigby@freescale.com>
+	<4800D7D4-28BC-435A-9858-8FAF41F38468@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 8, 2008 at 12:20 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
+On Wed, Oct 8, 2008 at 6:38 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
 >
-> On Oct 7, 2008, at 2:00 PM, John Rigby wrote:
+> On Oct 7, 2008, at 4:13 PM, John Rigby wrote:
 >
->> The following three patches add pci support for MPC5121
->> These got no NACKs back in August but they were not picked up
->> by anyone either.
+>> Uses mpc83xx_add_bridge in fsl_pci.c
+>>
+>> Adds second register tuple to pci node register property
+>> as done for 83xx device trees in a previous patch.
+>>
+>> Signed-off-by: John Rigby <jrigby@freescale.com>
+>> ---
+>> arch/powerpc/boot/dts/mpc5121ads.dts      |    3 ++-
+>> arch/powerpc/platforms/512x/Kconfig       |    2 ++
+>> arch/powerpc/platforms/512x/mpc5121_ads.c |   10 ++++++++++
+>> arch/powerpc/sysdev/fsl_pci.c             |    4 ++--
+>> 4 files changed, 16 insertions(+), 3 deletions(-)
 >
-> I'll look at picking up patches 1/3 and 3/3.  I'll leave 2/3 to Grant.
-
-Kumar, since both 1/3 and 2/3 touch fsl_pci.c, can you please pick up
-2/3?  It won't conflict with anything that I'm pushing.  I'll post my
-ack-by line.
-
-g.
-
->
-> - k
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
+> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
 
 -- 
