@@ -1,34 +1,26 @@
-Return-Path: <TKLEIN@de.ibm.com>
-Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.17.162])
+Return-Path: <SRS0+f7cfbddb351789caec09+1872+infradead.org+dwmw2@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 03B56DDFD7
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 18:55:09 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate2.de.ibm.com (8.13.1/8.13.1) with ESMTP id m987t32P016726
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Oct 2008 07:55:03 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id m987t2oK3289338
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Oct 2008 09:55:02 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m987sxKQ025534
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Oct 2008 09:54:59 +0200
-In-Reply-To: <26463.1223447053@neuling.org>
-Subject: Re: ehea: Error in ehea_treat_poll_error: CQE Error for QP 16
-To: Elbert C Hu <elbert@us.ibm.com>
-Message-ID: <OFEDF1AA40.7B5AD8B8-ONC12574DC.002974D0-C12574DC.002B7D59@de.ibm.com>
-From: Thomas Q Klein <TKLEIN@de.ibm.com>
-Date: Wed, 8 Oct 2008 09:54:58 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Christoph Raisch <raisch@de.ibm.com>,
-	Hannes Hering2 <HERING2@de.ibm.com>,
-	Michael Neuling <mneuling@au1.ibm.com>,
-	Jan-Bernd Themann <themann@de.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4EB37DDFB2
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 19:41:15 +1100 (EST)
+Subject: Re: [PATCH] pata_of_platform: fix no irq handling
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081007103723.0224671e@lxorguk.ukuu.org.uk>
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
+	<48EA77EF.6080502@genesi-usa.com>
+	<20081006213209.GA13072@oksana.dev.rtsoft.ru>
+	<48EABBD3.1010401@kernel.org>
+	<20081007103723.0224671e@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Wed, 08 Oct 2008 09:40:54 +0100
+Message-Id: <1223455254.3145.143.camel@macbook.infradead.org>
+Mime-Version: 1.0
+Cc: Li Yang <leoli@freescale.com>, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@pobox.com>,
+	Wang Jian <lark@linux.net.cn>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,166 +30,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Neuling <mneuling@au1.ibm.com> wrote on 08.10.2008 08:24:13:
+On Tue, 2008-10-07 at 10:37 +0100, Alan Cox wrote:
+> Zero means no IRQ. Any platform with bits of code left over exposing IRQ
+> 0 is already not supported by lots of driver code including libata.
 
-> Elbert,
->
-> Just CCing in the ehea maintainers...
->
-> Jan-Bernd, Thomas, Christoph: can you help with this query?
->
-> Mikey
-> --------
-> System log shows a lot of "ehea: Error", see below, during system start
-up.
-> Not sure what it is. I'd like to understand this, could someone points me
-the
-> direction? My "Machine Type and Model ... ST9146802SS" reported fromlscfg
-(p6
-> blade). OS is RHEL 5.2. Kernel level is 2.6.18-92.1.10.el5.
->
-> Thanks.
->
-> E. Hu
+...and must implement some kind of interrupt remapping crap just to work
+around this bogus design decision.
 
-Elbert,
-
-The ehea driver in RHEL 5.2 logs packets with a bad TCP checksum in the way
-you
-see in your logs. As this is obviously too noisy, the driver has meanwhile
-been
-modified not to log TCP checksum errors but just incremented the respective
-statistics counters. RHEL 5.3 will contain this patch. Mainline kernel
-contains
-the patch since 2.6.24.
-
-Regards
-Thomas
-
-
-> ************ ehea.modinfo ************
-> filename: /lib/modules/2.6.18-92.1.10.el5/kernel/drivers/net/ehea/ehea.ko
-> version: EHEA_0076-05
-> description: IBM eServer HEA Driver
-> author: Christoph Raisch <raisch@de.ibm.com>
-> license: GPL
-> srcversion: C481DB79B4694F406CF4AA7
-> depends:
-> vermagic: 2.6.18-92.1.10.el5 SMP mod_unload gcc-4.1
-> parm: num_tx_qps:Number of TX-QPS (int)
-> parm: msg_level:msg_level (int)
-> parm: prop_carrier_state:Propagate carrier state of physical port to
-stack.
-> 1:yes, 0:no. Default = 0 (int)
-> parm: rq3_entries:Number of entries for Receive Queue 3 [2^x - 1], x =
-> [6..14]. Default = 1023) (int)
-> parm: rq2_entries:Number of entries for Receive Queue 2 [2^x - 1], x =
-> [6..14]. Default = 1023) (int)
-> parm: rq1_entries:Number of entries for Receive Queue 1 [2^x - 1], x =
-> [6..14]. Default = 4095) (int)
-> parm: sq_entries: Number of entries for the Send Queue [2^x - 1], x =
-[6..14].
-> Default = 1023) (int)
-> parm: use_mcs: 0:NAPI, 1:Multiple receive queues, Default = 0 (int)
-> parm: lro_max_aggr: LRO: Max packets to be aggregated. Default = 64 (int)
-> parm: use_lro: Large Receive Offload, 1: enable, 0: disable, Default= 0
-(int)
-> module_sig:
->
-883f3504886ebc8736cb7d2578e3b1112b7ab09e3b2c69b141d16d1bbbd51ab063f7955335a49e80a0ba218c849673e067f7c0ccc9d7353cc1ce05997
-
->
-> ************ system log ************
-> Sep 29 09:35:35 newhamburg kernel: ehea: Error in ehea_treat_poll_error:
-CQE
-> Error for QP 16
-> Sep 29 09:35:35 newhamburg kernel: ehea CQE adr=c0000001ddbc1400 ofs=0000
-> 0000000000000000 200040000000008e
-> Sep 29 09:35:35 newhamburg kernel: ehea CQE adr=c0000001ddbc1410 ofs=0010
-> 0000d6ec002a0000 0400000000000000
-> Sep 29 09:35:35 newhamburg kernel: ehea CQE adr=c0000001ddbc1420 ofs=0020
-> 0000000000000000 0000000000000000
-> Sep 29 09:35:35 newhamburg kernel: ehea CQE adr=c0000001ddbc1430 ofs=0030
-> 0000000000000000 0000000000000000
-> Sep 29 09:40:10 newhamburg kernel: ehea: Error in ehea_treat_poll_error:
-CQE
-> Error for QP 16
-> Sep 29 09:40:10 newhamburg kernel: ehea CQE adr=c0000001dd9d2800 ofs=0000
-> 0000000000000000 200040000000008e
-> Sep 29 09:40:10 newhamburg kernel: ehea CQE adr=c0000001dd9d2810 ofs=0010
-> 0000d6ec002a0000 0800000000000000
-> Sep 29 09:40:10 newhamburg kernel: ehea CQE adr=c0000001dd9d2820 ofs=0020
-> 0000000000000000 0000000000000000
-> Sep 29 09:40:10 newhamburg kernel: ehea CQE adr=c0000001dd9d2830 ofs=0030
-> 0000000000000000 0000000000000000
-> Sep 29 10:08:17 newhamburg kernel: ehea: Error in ehea_treat_poll_error:
-CQE
-> Error for QP 16
-> Sep 29 10:08:17 newhamburg kernel: ehea CQE adr=c0000001dd9eb600 ofs=0000
-> 0000000000000000 200040000000008e
-> Sep 29 10:08:17 newhamburg kernel: ehea CQE adr=c0000001dd9eb610 ofs=0010
-> 0000d6ec002a0000 0600000000000000
-> Sep 29 10:08:17 newhamburg kernel: ehea CQE adr=c0000001dd9eb620 ofs=0020
-> 0000000000000000 0000000000000000
-> Sep 29 10:08:17 newhamburg kernel: ehea CQE adr=c0000001dd9eb630 ofs=0030
-> 0000000000000000 0000000000000000
-> Sep 29 10:21:51 newhamburg kernel: ehea: Error in ehea_treat_poll_error:
-CQE
-> Error for QP 16
-> Sep 29 10:21:51 newhamburg kernel: ehea CQE adr=c0000001dd9e2300 ofs=0000
-> 0000000000000000 200040000000008e
-> Sep 29 10:21:51 newhamburg kernel: ehea CQE adr=c0000001dd9e2310 ofs=0010
-> 0000d6ec002a0000 0300000000000000
-> Sep 29 10:21:51 newhamburg kernel: ehea CQE adr=c0000001dd9e2320 ofs=0020
-> 0000000000000000 0000000000000000
-> Sep 29 10:21:51 newhamburg kernel: ehea CQE adr=c0000001dd9e2330 ofs=0030
-> 0000000000000000 0000000000000000
-> Sep 29 16:16:23 newhamburg kernel: ehea: Error in ehea_treat_poll_error:
-CQE
-> Error for QP 16
-> Sep 29 16:16:23 newhamburg kernel: ehea CQE adr=c0000001ddb9a800 ofs=0000
-> 0000030002630000 40804000000000e0
-> Sep 29 16:16:23 newhamburg kernel: ehea CQE adr=c0000001ddb9a810 ofs=0010
-> 0000e10f002a0000 0800000000000000
-> Sep 29 16:16:23 newhamburg kernel: ehea CQE adr=c0000001ddb9a820 ofs=0020
-> 0000000000000000 0000000000000000
-> Sep 29 16:16:23 newhamburg kernel: ehea CQE adr=c0000001ddb9a830 ofs=0030
-> 0000000000000000 0000000000000000
-> Sep 29 21:50:04 newhamburg kernel: ehea: Error in ehea_treat_poll_error:
-CQE
-> Error for QP 16
-> Sep 29 21:50:04 newhamburg kernel: ehea CQE adr=c0000001dd9c0700 ofs=0000
-> 0000000000000000 2080400000000076
-> Sep 29 21:50:04 newhamburg kernel: ehea CQE adr=c0000001dd9c0710 ofs=0010
-> 0000fb42002a0000 0700000000000000
-> Sep 29 21:50:04 newhamburg kernel: ehea CQE adr=c0000001dd9c0720 ofs=0020
-> 0000000000000000 0000000000000000
-> Sep 29 21:50:04 newhamburg kernel: ehea CQE adr=c0000001dd9c0730 ofs=0030
-> 0000000000000000 0000000000000000
-> Sep 30 03:55:49 newhamburg kernel: ehea: Error in ehea_treat_poll_error:
-CQE
-> Error for QP 16
-> Sep 30 03:55:49 newhamburg kernel: ehea CQE adr=c0000001ddb4f900 ofs=0000
-> 0000000000000000 2000400000000076
-> Sep 30 03:55:49 newhamburg kernel: ehea CQE adr=c0000001ddb4f910 ofs=0010
-> 0000fb42002a0000 0900000000000000
-> Sep 30 03:55:49 newhamburg kernel: ehea CQE adr=c0000001ddb4f920 ofs=0020
-> 0000000000000000 0000000000000000
-> Sep 30 03:55:49 newhamburg kernel: ehea CQE adr=c0000001ddb4f930 ofs=0030
-> 0000000000000000 0000000000000000
-> Sep 30 09:12:02 newhamburg kernel: ehea: Error in ehea_treat_poll_error:
-CQE
-> Error for QP 16
-> Sep 30 09:12:02 newhamburg kernel: ehea CQE adr=c0000001ddbd6400 ofs=0000
-> 0000000000000000 208040000000008e
-> Sep 30 09:12:02 newhamburg kernel: ehea CQE adr=c0000001ddbd6410 ofs=0010
-> 0000d6ec002a0000 0400000000000000
-> Sep 30 09:12:02 newhamburg kernel: ehea CQE adr=c0000001ddbd6420 ofs=0020
-> 0000000000000000 0000000000000000
-> Sep 30 09:12:02 newhamburg kernel: ehea CQE adr=c0000001ddbd6430 ofs=0030
-> 0000000000000000 0000000000000000
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
