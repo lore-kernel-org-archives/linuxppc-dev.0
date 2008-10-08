@@ -2,18 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D405EDDF6F
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 17:21:06 +1100 (EST)
-Message-Id: <77D97C6B-7F07-45AA-98D0-EE4723E2ABAD@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 7096CDE039
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 17:30:43 +1100 (EST)
+Message-Id: <B8EF017C-5055-4637-8203-4052D79E0900@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: John Rigby <jrigby@freescale.com>
-In-Reply-To: <1223406020-12278-1-git-send-email-jrigby@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Remi Machet <rmachet@slac.stanford.edu>
+In-Reply-To: <1223413433.17585.26.camel@pcds-ts102.slac.stanford.edu>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 0/3] MPC5121 add pci support
-Date: Wed, 8 Oct 2008 01:20:31 -0500
-References: <1223406020-12278-1-git-send-email-jrigby@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 0/3] powerpc: dma code cleanup
+Date: Wed, 8 Oct 2008 01:30:35 -0500
+References: <1223413433.17585.26.camel@pcds-ts102.slac.stanford.edu>
+Cc: Linux PPC <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,12 +24,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 7, 2008, at 2:00 PM, John Rigby wrote:
+On Oct 7, 2008, at 4:03 PM, Remi Machet wrote:
 
-> The following three patches add pci support for MPC5121
-> These got no NACKs back in August but they were not picked up
-> by anyone either.
+> Hi,
+>
+> Following is the whole DMA code cleanup on top of the work
+> already done by Becky Bruce. It includes removing __dma_sync
+> and __dma_sync_page that got replaced by dma_mapping_ops->sync,
+> getting rid of the old dma-noncoherent code which is now another
+> type of dma_mapping_ops and cleaning up the dma non-coherent
+> code by removing the virtual address pool it was using.
+>
+> This code was tested on a 32bits PowerPC C2K board (noncoherent
+> cache) and I verified it builds on pmac32 (coherent cache, 32bits)
+> and pseries (64bits).
+>
+> If anyone would be willing to test this code on other platforms
+> (mainly ones with non-coherent DMA architectures), I would
+> greatly appreciate!
 
-I'll look at picking up patches 1/3 and 3/3.  I'll leave 2/3 to Grant.
+Your patch commit subject should be more descriptive for each patch.   
+Have the same "subject" is not acceptable.
 
 - k
