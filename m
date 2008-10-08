@@ -1,19 +1,19 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from SG2EHSOBE003.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id E0E70DE479
+Return-Path: <eemingliu@hotmail.com>
+Received: from col0-omc1-s8.col0.hotmail.com (col0-omc1-s8.col0.hotmail.com
+	[65.55.34.18]) by ozlabs.org (Postfix) with ESMTP id A9C54DDF2B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Oct 2008 01:35:13 +1100 (EST)
-MIME-Version: 1.0
+	Thu,  9 Oct 2008 01:47:56 +1100 (EST)
+Message-ID: <COL107-W13F1CD2E656CAB97C189C9B23B0@phx.gbl>
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C92952.F8EE135F"
+	boundary="_8c59598d-386b-41f8-8e87-8c6583791a40_"
+From: MingLiu <eemingliu@hotmail.com>
+To: John Linn <john.linn@xilinx.com>, <linuxppc-embedded@ozlabs.org>
 Subject: RE: Linux driver for Xilinx ICAP
-Date: Wed, 8 Oct 2008 08:34:28 -0600
-In-Reply-To: <COL107-W38E2468E159F1CBB304906B23B0@phx.gbl>
+Date: Wed, 8 Oct 2008 14:47:55 +0000
+In-Reply-To: <20081008143431.326B3E1806A@mail96-sin.bigfish.com>
 References: <COL107-W38E2468E159F1CBB304906B23B0@phx.gbl>
-From: John Linn <John.Linn@xilinx.com>
-To: "MingLiu" <eemingliu@hotmail.com>,
-	<linuxppc-embedded@ozlabs.org>
-Message-ID: <20081008143431.326B3E1806A@mail96-sin.bigfish.com>
+	<20081008143431.326B3E1806A@mail96-sin.bigfish.com>
+MIME-Version: 1.0
 Cc: Stephen Neuendorffer <stephenn@xilinx.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,281 +25,138 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------_=_NextPart_001_01C92952.F8EE135F
-Content-Type: text/plain; charset="GB2312"
-Content-Transfer-Encoding: quoted-printable
+--_8c59598d-386b-41f8-8e87-8c6583791a40_
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 8bit
+
+
+Dear John,
+Nice to hear from you. If possible, could you please show me your .mhs file concerning to the xps_hwicap core? Mine is listed as below:
+ 
+BEGIN xps_hwicap PARAMETER INSTANCE = xps_hwicap_0 PARAMETER HW_VER = 1.00.a PARAMETER C_BASEADDR = 0x40200000 PARAMETER C_HIGHADDR = 0x4020FFFF BUS_INTERFACE SPLB = plb PORT IP2INTC_Irpt = xps_hwicap_0_IP2INTC_IrptEND
+ 
+The interrupt signal is connected to the interrupt controller. 
+ 
+I suspect that the driver in Linux doesn't support interrupt mode for this core, since I didn't find interrupt handler registration function in the source code, like "request_irq", etc.. 
+ 
+I will appreciate if you can have some comments to me. 
+ 
+Br
+Ming
+ 
+
+
+
+Subject: RE: Linux driver for Xilinx ICAPDate: Wed, 8 Oct 2008 08:34:28 -0600From: John.Linn@xilinx.comTo: eemingliu@hotmail.com; linuxppc-embedded@ozlabs.orgCC: stephenn@xilinx.com
+
+
+
+
+
 
 Hi Ming,
-
- =
-
-
-I=A1=AFm copying our local expert on this core to see his thoughts as I don=
-=A1=AFt actively use this core myself.
-
- =
-
-
+ 
+I’m copying our local expert on this core to see his thoughts as I don’t actively use this core myself.
+ 
 Thanks,
-
 John
-
- =
-
-
-________________________________
-
-From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org [mailto:l=
-inuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Mi=
-ngLiu
-Sent: Wednesday, October 08, 2008 7:48 AM
-To: linuxppc-embedded@ozlabs.org
-Subject: Linux driver for Xilinx ICAP
-
- =
-
-
-Dear all,
-Has someone manage to use the driver for the Xilinx xps_hwicap core to reco=
-nfigure bitstreams? I have enabled the driver in Linux configuration (versi=
-on 2.6.24 from Xilinx tree). However I failed to use it to reconfigure bits=
-treams. The operations are listed as follows:
- =
-
-# cp partial.bit /dev/icap0
-#
- =
-
-No error information is shown, however the partial bitstream is not success=
-fully configured. I checked /proc/devices and the device "icap" has been su=
-ccessfully registered with the major of 259. But in /proc/interrupts, I did=
-n't find any matching entry of the interrupt for icap core. I tried to reco=
-nfigure the PR module with JTAG, and my design works well. =
-
- =
-
-Any hints for this problem? Is the problem on the interrupt? Thanks so much=
- if someone can help me. =
-
- =
-
-BR
-Ming
-
-________________________________
-
-Windows Live Writer=A3=AC=D6=A7=B3=D6=C0=EB=CF=DF=D7=AB=D0=B4=B2=A9=BF=CD=
-=C4=DA=C8=DD=A3=AC=CB=E6=CA=B1=CB=E6=B5=D8=CF=EB=D0=B4=BE=CD=D0=B4=A1=A3 =
-=C1=A2=BC=B4=CA=B9=D3=C3=A3=A1 <http://get.live.cn/product/writer.html> =
+ 
 
 
 
 
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+
+From: linuxppc-embedded-bounces+john.linn=xilinx.com@ozlabs.org [mailto:linuxppc-embedded-bounces+john.linn=xilinx.com@ozlabs.org] On Behalf Of MingLiuSent: Wednesday, October 08, 2008 7:48 AMTo: linuxppc-embedded@ozlabs.orgSubject: Linux driver for Xilinx ICAP
+ 
+Dear all,Has someone manage to use the driver for the Xilinx xps_hwicap core to reconfigure bitstreams? I have enabled the driver in Linux configuration (version 2.6.24 from Xilinx tree). However I failed to use it to reconfigure bitstreams. The operations are listed as follows: # cp partial.bit /dev/icap0# No error information is shown, however the partial bitstream is not successfully configured. I checked /proc/devices and the device "icap" has been successfully registered with the major of 259. But in /proc/interrupts, I didn't find any matching entry of the interrupt for icap core. I tried to reconfigure the PR module with JTAG, and my design works well.  Any hints for this problem? Is the problem on the interrupt? Thanks so much if someone can help me.  BRMing
 
 
-------_=_NextPart_001_01C92952.F8EE135F
-Content-Type: text/html; charset="GB2312"
-Content-Transfer-Encoding: quoted-printable
 
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
-osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
+Windows Live Writer，支持离线撰写博客内容，随时随地想写就写。 立即使用！This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately. 
+_________________________________________________________________
+Windows Live Photo gallery 数码相机的超级伴侣，轻松管理和编辑照片，还能制作全景美图！
+http://get.live.cn/product/photo.html
+--_8c59598d-386b-41f8-8e87-8c6583791a40_
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
+<html>
 <head>
-<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dgb2312">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<!--[if !mso]>
 <style>
-v\:* {behavior:url(#default#VML);}
-o\:* {behavior:url(#default#VML);}
-w\:* {behavior:url(#default#VML);}
-.shape {behavior:url(#default#VML);}
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 9pt;
+FONT-FAMILY:Tahoma
+}
 </style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:SimSun;
-	panose-1:2 1 6 0 3 1 1 1 1 1;}
-@font-face
-	{font-family:Tahoma;
-	panose-1:2 11 6 4 3 5 4 4 2 4;}
-@font-face
-	{font-family:"\@SimSun";}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:SimSun;}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:blue;
-	text-decoration:underline;}
-p
-	{mso-margin-top-alt:auto;
-	margin-right:0in;
-	mso-margin-bottom-alt:auto;
-	margin-left:0in;
-	font-size:12.0pt;
-	font-family:SimSun;}
-span.EmailStyle18
-	{mso-style-type:personal-reply;
-	font-family:Arial;
-	color:navy;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
 </head>
+<body class='hmmessage'>
+Dear John,<BR>
+Nice to hear from you. If possible, could you please show me your .mhs file concerning to the xps_hwicap core? Mine is listed as below:<BR>
+&nbsp;<BR>
+BEGIN xps_hwicap<BR>&nbsp;PARAMETER INSTANCE = xps_hwicap_0<BR>&nbsp;PARAMETER HW_VER = 1.00.a<BR>&nbsp;PARAMETER C_BASEADDR = 0x40200000<BR>&nbsp;PARAMETER C_HIGHADDR = 0x4020FFFF<BR>&nbsp;BUS_INTERFACE SPLB = plb<BR>&nbsp;PORT IP2INTC_Irpt = xps_hwicap_0_IP2INTC_Irpt<BR>END<BR>
+&nbsp;<BR>
+The interrupt signal is connected to the interrupt controller. <BR>
+&nbsp;<BR>
+I suspect that the driver in Linux doesn't support interrupt mode for this core, since I didn't find interrupt handler registration function in the source code, like "request_irq", etc.. <BR>
+&nbsp;<BR>
+I will appreciate if you can have some comments to me. <BR>
+&nbsp;<BR>
+Br<BR>
+Ming<BR>
+<BR><BR>&nbsp;<BR>
 
-<body lang=3DEN-US link=3Dblue vlink=3Dblue>
+<HR>
+<BR>
+Subject: RE: Linux driver for Xilinx ICAP<BR>Date: Wed, 8 Oct 2008 08:34:28 -0600<BR>From: John.Linn@xilinx.com<BR>To: eemingliu@hotmail.com; linuxppc-embedded@ozlabs.org<BR>CC: stephenn@xilinx.com<BR><BR><BR>
+<META content="Microsoft SafeHTML" name=Generator>
+<STYLE>
+.ExternalClass .EC_shape
+{;}
+</STYLE>
 
-<div class=3DSection1>
+<STYLE>
+.ExternalClass p.EC_MsoNormal, .ExternalClass li.EC_MsoNormal, .ExternalClass div.EC_MsoNormal
+{margin-bottom:.0001pt;font-size:12.0pt;font-family:SimSun;}
+.ExternalClass a:link, .ExternalClass span.EC_MsoHyperlink
+{color:blue;text-decoration:underline;}
+.ExternalClass a:visited, .ExternalClass span.EC_MsoHyperlinkFollowed
+{color:blue;text-decoration:underline;}
+.ExternalClass p
+{margin-right:0in;margin-left:0in;font-size:12.0pt;font-family:SimSun;}
+.ExternalClass span.EC_EmailStyle18
+{font-family:Arial;color:navy;}
+@page Section1
+{size:8.5in 11.0in;}
+.ExternalClass div.EC_Section1
+{page:Section1;}
 
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Hi Ming,<o:p></o:p></span></font></p>
+</STYLE>
 
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>I=A1=AFm copying our local expert on t=
-his core
-to see his thoughts as I don=A1=AFt actively use this core myself.<o:p></o:=
-p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Thanks,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>John<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<div style=3D'border:none;border-left:solid blue 1.5pt;padding:0in 0in 0in =
-4.0pt'>
-
-<div>
-
-<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font siz=
-e=3D3
-face=3DSimSun><span style=3D'font-size:12.0pt'>
-
-<hr size=3D2 width=3D"100%" align=3Dcenter tabindex=3D-1>
-
-</span></font></div>
-
-<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span style=3D'font-si=
-ze:10.0pt;
-font-family:Tahoma;font-weight:bold'>From:</span></font></b><font size=3D2
-face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'>
-linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org] <b><sp=
-an
-style=3D'font-weight:bold'>On Behalf Of </span></b>MingLiu<br>
-<b><span style=3D'font-weight:bold'>Sent:</span></b> Wednesday, October 08,=
- 2008
-7:48 AM<br>
-<b><span style=3D'font-weight:bold'>To:</span></b> linuxppc-embedded@ozlabs=
-.org<br>
-<b><span style=3D'font-weight:bold'>Subject:</span></b> Linux driver for Xi=
-linx
-ICAP</span></font><o:p></o:p></p>
-
-</div>
-
-<p class=3DMsoNormal><font size=3D3 face=3DSimSun><span style=3D'font-size:=
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'margin-bottom:12.0pt'><font size=3D1 face=3DT=
-ahoma><span
-style=3D'font-size:9.0pt;font-family:Tahoma'>Dear all,<br>
-Has someone manage to use the driver for the Xilinx xps_hwicap core to
-reconfigure bitstreams? I have enabled the driver in Linux configuration
-(version 2.6.24 from Xilinx tree). However I failed to use it to reconfigur=
-e
-bitstreams. The operations are listed as follows:<br>
-&nbsp;<br>
-# cp partial.bit /dev/icap0<br>
-#<br>
-&nbsp;<br>
-No error information is shown, however the partial bitstream is not
-successfully configured. I checked /proc/devices and the device
-&quot;icap&quot; has been successfully registered with the major of 259. Bu=
-t in
-/proc/interrupts, I didn't find any matching entry of the interrupt for ica=
-p
-core. I tried to reconfigure the PR module with JTAG, and my design works w=
-ell.
-<br>
-&nbsp;<br>
-Any hints for this problem? Is the problem on the interrupt? Thanks so much=
- if
-someone can help me. <br>
-&nbsp;<br>
-BR<br>
-Ming<o:p></o:p></span></font></p>
-
-<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font siz=
-e=3D1
-face=3DTahoma><span style=3D'font-size:9.0pt;font-family:Tahoma'>
-
-<hr size=3D2 width=3D"100%" align=3Dcenter>
-
-</span></font></div>
-
-<p class=3DMsoNormal><font size=3D1 face=3DTahoma><span style=3D'font-size:=
-9.0pt;
-font-family:Tahoma'>Windows Live Writer</span></font><font size=3D1><span
-lang=3DZH-CN style=3D'font-size:9.0pt'>=A3=AC=D6=A7=B3=D6=C0=EB=CF=DF=D7=AB=
-=D0=B4=B2=A9=BF=CD=C4=DA=C8=DD=A3=AC=CB=E6=CA=B1=CB=E6=B5=D8=CF=EB=D0=B4=BE=
-=CD=D0=B4=A1=A3</span></font><font
-size=3D1 face=3DTahoma><span lang=3DZH-CN style=3D'font-size:9.0pt;font-fam=
-ily:Tahoma'>
-</span></font><font size=3D1 face=3DTahoma><span style=3D'font-size:9.0pt;f=
-ont-family:
-Tahoma'><a href=3D"http://get.live.cn/product/writer.html" target=3D"_new">=
-<font
-face=3DSimSun><span lang=3DZH-CN style=3D'font-family:SimSun'>=C1=A2=BC=B4=
-=CA=B9=D3=C3=A3=A1</span></font></a><o:p></o:p></span></font></p>
-
-</div>
-
-</div>
-
-<br clear=3Dall> This email and any attachments are intended for the sole u=
-se of the named recipient(s) and contain(s) confidential information that m=
-ay be proprietary, privileged or copyrighted under applicable law. If you a=
-re not the intended recipient, do not read, copy, or forward this email mes=
-sage or any attachments. Delete this email message and any attachments imme=
-diately.
-</body>
-
+<DIV class=EC_Section1>
+<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">Hi Ming,</SPAN></FONT></P>
+<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">&nbsp;</SPAN></FONT></P>
+<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">I’m copying our local expert on this core to see his thoughts as I don’t actively use this core myself.</SPAN></FONT></P>
+<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">&nbsp;</SPAN></FONT></P>
+<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">Thanks,</SPAN></FONT></P>
+<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">John</SPAN></FONT></P>
+<P class=EC_MsoNormal><FONT face=Arial color=navy size=2><SPAN style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Arial">&nbsp;</SPAN></FONT></P>
+<DIV style="BORDER-RIGHT: medium none; PADDING-RIGHT: 0in; BORDER-TOP: medium none; PADDING-LEFT: 4pt; PADDING-BOTTOM: 0in; BORDER-LEFT: blue 1.5pt solid; PADDING-TOP: 0in; BORDER-BOTTOM: medium none">
+<DIV>
+<DIV class=EC_MsoNormal style="TEXT-ALIGN: center" align=center><FONT face=SimSun size=3><SPAN style="FONT-SIZE: 12pt">
+<HR align=center width="100%" SIZE=2>
+</SPAN></FONT></DIV>
+<P class=EC_MsoNormal><B><FONT face=Tahoma size=2><SPAN style="FONT-WEIGHT: bold; FONT-SIZE: 10pt; FONT-FAMILY: Tahoma">From:</SPAN></FONT></B><FONT face=Tahoma size=2><SPAN style="FONT-SIZE: 10pt; FONT-FAMILY: Tahoma"> linuxppc-embedded-bounces+john.linn=xilinx.com@ozlabs.org [mailto:linuxppc-embedded-bounces+john.linn=xilinx.com@ozlabs.org] <B><SPAN style="FONT-WEIGHT: bold">On Behalf Of </SPAN></B>MingLiu<BR><B><SPAN style="FONT-WEIGHT: bold">Sent:</SPAN></B> Wednesday, October 08, 2008 7:48 AM<BR><B><SPAN style="FONT-WEIGHT: bold">To:</SPAN></B> linuxppc-embedded@ozlabs.org<BR><B><SPAN style="FONT-WEIGHT: bold">Subject:</SPAN></B> Linux driver for Xilinx ICAP</SPAN></FONT></P></DIV>
+<P class=EC_MsoNormal><FONT face=SimSun size=3><SPAN style="FONT-SIZE: 12pt">&nbsp;</SPAN></FONT></P>
+<P class=EC_MsoNormal style="MARGIN-BOTTOM: 12pt"><FONT face=Tahoma size=1><SPAN style="FONT-SIZE: 9pt; FONT-FAMILY: Tahoma">Dear all,<BR>Has someone manage to use the driver for the Xilinx xps_hwicap core to reconfigure bitstreams? I have enabled the driver in Linux configuration (version 2.6.24 from Xilinx tree). However I failed to use it to reconfigure bitstreams. The operations are listed as follows:<BR>&nbsp;<BR># cp partial.bit /dev/icap0<BR>#<BR>&nbsp;<BR>No error information is shown, however the partial bitstream is not successfully configured. I checked /proc/devices and the device "icap" has been successfully registered with the major of 259. But in /proc/interrupts, I didn't find any matching entry of the interrupt for icap core. I tried to reconfigure the PR module with JTAG, and my design works well. <BR>&nbsp;<BR>Any hints for this problem? Is the problem on the interrupt? Thanks so much if someone can help me. <BR>&nbsp;<BR>BR<BR>Ming</SPAN></FONT></P>
+<DIV class=EC_MsoNormal style="TEXT-ALIGN: center" align=center><FONT face=Tahoma size=1><SPAN style="FONT-SIZE: 9pt; FONT-FAMILY: Tahoma">
+<HR align=center width="100%" SIZE=2>
+</SPAN></FONT></DIV>
+<P class=EC_MsoNormal><FONT face=Tahoma size=1><SPAN style="FONT-SIZE: 9pt; FONT-FAMILY: Tahoma">Windows Live Writer</SPAN></FONT><FONT size=1><SPAN lang=ZH-CN style="FONT-SIZE: 9pt">，支持离线撰写博客内容，随时随地想写就写。</SPAN></FONT><FONT face=Tahoma size=1><SPAN lang=ZH-CN style="FONT-SIZE: 9pt; FONT-FAMILY: Tahoma"> </SPAN></FONT><FONT face=Tahoma size=1><SPAN style="FONT-SIZE: 9pt; FONT-FAMILY: Tahoma"><A href="http://get.live.cn/product/writer.html" target=_blank><FONT face=SimSun><SPAN lang=ZH-CN style="FONT-FAMILY: SimSun">立即使用！</SPAN></FONT></A></SPAN></FONT></P></DIV></DIV><BR clear=all>This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately. <br /><hr />使用新一代 Windows Live Messenger 轻松交流和共享！ <a href='http://messenger.live.cn/' target='_new'>立即体验！</a></body>
 </html>
-
-
-------_=_NextPart_001_01C92952.F8EE135F--
+--_8c59598d-386b-41f8-8e87-8c6583791a40_--
