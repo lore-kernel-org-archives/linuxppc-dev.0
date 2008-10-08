@@ -1,19 +1,15 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id CDEDDDE34E
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 03:18:39 +1100 (EST)
-Message-ID: <48ECDD5B.1070507@mvista.com>
-Date: Wed, 08 Oct 2008 09:18:35 -0700
-From: Dave Jiang <djiang@mvista.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] edac: mpc85xx: Add support for new compatible types,
-	mpc8536	and mpc8560
-References: <Pine.LNX.4.64.0810080721120.4673@blarg.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.64.0810080721120.4673@blarg.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: norsk5@yahoo.com, bluesmoke-devel@lists.sourceforge.net,
-	linuxppc-dev@ozlabs.org
+Return-Path: <bgat@billgatliff.com>
+Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5B6D9DE067
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 04:00:38 +1100 (EST)
+From: Bill Gatliff <bgat@billgatliff.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC 0/6] Proposal for a Generic PWM Device API
+Date: Wed,  8 Oct 2008 11:43:11 -0500
+Message-Id: <cover.1223482372.git.bgat@billgatliff.com>
+Cc: Bill Gatliff <bgat@billgatliff.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,122 +19,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Acked-by: Dave Jiang <djiang@mvista.com>
+This series proposes a "generic PWM" driver API.
 
-Kumar Gala wrote:
-> All other compatibles that are uniquely identifying the processor use
-> a prefix of the form fsl,mpc85...'.  We add support for it so we
-> can deprecate the older 'fsl,85...' that was inproperly used here.
-> 
-> Additionally added mpc8536 & mpc8560 to the compatible lists.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> 
-> This patch is based on Nate's 8572 patch.
-> 
->  drivers/edac/mpc85xx_edac.c |   74 ++++++++++++++++++------------------------
->  1 files changed, 32 insertions(+), 42 deletions(-)
-> 
-> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-> index 63bdc47..184799a 100644
-> --- a/drivers/edac/mpc85xx_edac.c
-> +++ b/drivers/edac/mpc85xx_edac.c
-> @@ -630,27 +630,22 @@ static int mpc85xx_l2_err_remove(struct of_device *op)
->  }
-> 
->  static struct of_device_id mpc85xx_l2_err_of_match[] = {
-> -	{
-> -	 .compatible = "fsl,8540-l2-cache-controller",
-> -	 },
-> -	{
-> -	 .compatible = "fsl,8541-l2-cache-controller",
-> -	 },
-> -	{
-> -	 .compatible = "fsl,8544-l2-cache-controller",
-> -	 },
-> -	{
-> -	 .compatible = "fsl,8548-l2-cache-controller",
-> -	 },
-> -	{
-> -	 .compatible = "fsl,8555-l2-cache-controller",
-> -	 },
-> -	{
-> -	 .compatible = "fsl,8568-l2-cache-controller",
-> -	 },
-> -	{
-> -	 .compatible = "fsl,mpc8572-l2-cache-controller",
-> -	 },
-> +/* deprecate the fsl,85.. forms in the future, 2.6.30? */
-> +	{ .compatible = "fsl,8540-l2-cache-controller", },
-> +	{ .compatible = "fsl,8541-l2-cache-controller", },
-> +	{ .compatible = "fsl,8544-l2-cache-controller", },
-> +	{ .compatible = "fsl,8548-l2-cache-controller", },
-> +	{ .compatible = "fsl,8555-l2-cache-controller", },
-> +	{ .compatible = "fsl,8568-l2-cache-controller", },
-> +	{ .compatible = "fsl,mpc8536-l2-cache-controller", },
-> +	{ .compatible = "fsl,mpc8540-l2-cache-controller", },
-> +	{ .compatible = "fsl,mpc8541-l2-cache-controller", },
-> +	{ .compatible = "fsl,mpc8544-l2-cache-controller", },
-> +	{ .compatible = "fsl,mpc8548-l2-cache-controller", },
-> +	{ .compatible = "fsl,mpc8555-l2-cache-controller", },
-> +	{ .compatible = "fsl,mpc8560-l2-cache-controller", },
-> +	{ .compatible = "fsl,mpc8568-l2-cache-controller", },
-> +	{ .compatible = "fsl,mpc8572-l2-cache-controller", },
->  	{},
->  };
-> 
-> @@ -967,27 +962,22 @@ static int mpc85xx_mc_err_remove(struct of_device *op)
->  }
-> 
->  static struct of_device_id mpc85xx_mc_err_of_match[] = {
-> -	{
-> -	 .compatible = "fsl,8540-memory-controller",
-> -	 },
-> -	{
-> -	 .compatible = "fsl,8541-memory-controller",
-> -	 },
-> -	{
-> -	 .compatible = "fsl,8544-memory-controller",
-> -	 },
-> -	{
-> -	 .compatible = "fsl,8548-memory-controller",
-> -	 },
-> -	{
-> -	 .compatible = "fsl,8555-memory-controller",
-> -	 },
-> -	{
-> -	 .compatible = "fsl,8568-memory-controller",
-> -	 },
-> -	{
-> -	 .compatible = "fsl,mpc8572-memory-controller",
-> -	 },
-> +/* deprecate the fsl,85.. forms in the future, 2.6.30? */
-> +	{ .compatible = "fsl,8540-memory-controller", },
-> +	{ .compatible = "fsl,8541-memory-controller", },
-> +	{ .compatible = "fsl,8544-memory-controller", },
-> +	{ .compatible = "fsl,8548-memory-controller", },
-> +	{ .compatible = "fsl,8555-memory-controller", },
-> +	{ .compatible = "fsl,8568-memory-controller", },
-> +	{ .compatible = "fsl,mpc8536-memory-controller", },
-> +	{ .compatible = "fsl,mpc8540-memory-controller", },
-> +	{ .compatible = "fsl,mpc8541-memory-controller", },
-> +	{ .compatible = "fsl,mpc8544-memory-controller", },
-> +	{ .compatible = "fsl,mpc8548-memory-controller", },
-> +	{ .compatible = "fsl,mpc8555-memory-controller", },
-> +	{ .compatible = "fsl,mpc8560-memory-controller", },
-> +	{ .compatible = "fsl,mpc8568-memory-controller", },
-> +	{ .compatible = "fsl,mpc8572-memory-controller", },
->  	{},
->  };
-> 
+This proposed API is motivated by the author's need to support
+pluggable devices; a secondary objective is to consolidate the
+existing PWM implementations behind an agreeable, consistent,
+redundancy-reducing interface.
+
+The code included in this patch draws heavily from the existing PWM
+infrastructure and driver for the AT91SAM9263 PWMC.  The author is
+grateful to Russell King, Eric Miao, David Brownell and others for
+providing such tall "shoulders" to stand upon.  The proposed updates
+to that code should not be interpreted as attempts to address
+shortcomings, but rather to extend functionality in ways that were not
+originally required.
+
+The implementation of the proposed API is structurally similar to the
+generic GPIO API, except that the PWM code uses platform bus_id
+strings instead of integers to identify devices.  A configuration
+structure is also provided, so that the API can be extended in a
+source-code-compatible way to accomodate devices with features not
+anticipated by the current code.
+
+Pulse width modulated signals are used in an astounding number and
+range of applications, and there is no "one true way" of either
+realizing them or employing them to accomplish real work.  The current
+proposal attempts to provide a useful feature set for the most basic
+users, packaged in such a way as to allow the API to be extended in a
+backwards-compatible way as new needs are identified.  Some of these
+needs have already been identified.
+
+The proposed code has been run-tested on a Cogent CSB737
+(AT91SAM9263), mated to a custom circuit that drives multiple DC
+motors and sensors.
 
 
--- 
+Feedback is welcome!
 
-------------------------------------------------------
-Dave Jiang
-Software Engineer
-MontaVista Software, Inc.
-http://www.mvista.com
-------------------------------------------------------
+
+
+b.g.
+--
+Bill Gatliff
+<bgat@billgatliff.com>
+
+
+==========================================================================
+
+Bill Gatliff (6):
+  [PWM] Generic PWM API implementation
+  [PWM] Changes to existing pwm.h to adapt to generic PWM API
+  [PWM] Documentation
+  [PWM] Driver for Atmel PWMC peripheral
+  [PWM] Install new Atmel PWMC driver in Kconfig, expunge old one
+  [PWM] New LED driver and trigger that use PWM API
+
+ Documentation/pwm.txt      |  258 +++++++++++++++++
+ arch/arm/Kconfig           |    2 +
+ drivers/Makefile           |    2 +
+ drivers/leds/Kconfig       |   21 +-
+ drivers/leds/Makefile      |    2 +
+ drivers/leds/leds-pwm.c    |  141 ++++++++++
+ drivers/leds/ledtrig-dim.c |   95 +++++++
+ drivers/misc/Kconfig       |    9 -
+ drivers/misc/Makefile      |    1 -
+ drivers/misc/atmel_pwm.c   |  409 ---------------------------
+ drivers/pwm/Kconfig        |   24 ++
+ drivers/pwm/Makefile       |    6 +
+ drivers/pwm/atmel-pwm.c    |  631 +++++++++++++++++++++++++++++++++++++++++
+ drivers/pwm/pwm.c          |  667 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pwm-led.h    |   34 +++
+ include/linux/pwm.h        |  168 ++++++++++--
+ 16 files changed, 2023 insertions(+), 447 deletions(-)
+ create mode 100644 Documentation/pwm.txt
+ create mode 100644 drivers/leds/leds-pwm.c
+ create mode 100644 drivers/leds/ledtrig-dim.c
+ delete mode 100644 drivers/misc/atmel_pwm.c
+ create mode 100644 drivers/pwm/Kconfig
+ create mode 100644 drivers/pwm/Makefile
+ create mode 100644 drivers/pwm/atmel-pwm.c
+ create mode 100644 drivers/pwm/pwm.c
+ create mode 100644 include/linux/pwm-led.h
