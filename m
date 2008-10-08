@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F2366DDEF9
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 17:01:58 +1100 (EST)
-Message-Id: <977E50EC-A7B4-4375-AC9A-DB474565A51D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Doug Thompson <norsk5@yahoo.com>
-In-Reply-To: <5262.14504.qm@web50104.mail.re2.yahoo.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v2] edac: mpc85xx: Add support for MPC8572
-Date: Wed, 8 Oct 2008 01:01:06 -0500
-References: <5262.14504.qm@web50104.mail.re2.yahoo.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Kilkenny <akilkenny@xes-inc.com>,
-	Nate Case <ncase@xes-inc.com>, Dave Jiang <djiang@mvista.com>
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+	by ozlabs.org (Postfix) with ESMTP id 15D42DDF23
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 17:11:26 +1100 (EST)
+Date: Wed, 8 Oct 2008 17:11:25 +1100
+From: Simon Horman <horms@verge.net.au>
+To: Mohan Kumar M <mohan@in.ibm.com>
+Subject: Re: [PATCH] Relocatable kdump kernel support in kexec-tools
+Message-ID: <20081008061123.GE22396@verge.net.au>
+References: <20080930125621.GC1945@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080930125621.GC1945@in.ibm.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, kexec@lists.infradead.org,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Sep 30, 2008 at 06:26:21PM +0530, Mohan Kumar M wrote:
+> Relocatable kdump kernel support in kexec-tools
+> 
+> This patch adds relocatable kernel support for kdump in the kexec-tools
+> code. A signature (0xfeed1234) is passed in r6 from panic code to the
+> purgatory code through kexec_sequence function. The signature is used to
+> differentiate between relocatable kdump kernel and non-kdump kernels.
+> 
+> The purgatory code compares the signature and sets the __kdump_flag in
+> head_64.S by using the offset with respect to next kernel load address.
+> During the boot up, kernel code checks __kdump_flag and if it is set, the
+> kernel will behave as relocatable kdump kernel.
 
-On Oct 7, 2008, at 6:10 PM, Doug Thompson wrote:
+Thanks Mohan, applied.
 
-> the SVN repos is
->
-> svn checkout https://bluesmoke.svn.sourceforge.net/svnroot/bluesmoke/trunk
-> the info page is
->
-> http://bluesmoke.sourceforge.net/
->
-> doug t
-
-SVN, ick..
-
-- k
+-- 
+Simon Horman
+  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
+  H: www.vergenet.net/~horms/             W: www.valinux.co.jp/en
