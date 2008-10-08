@@ -1,21 +1,18 @@
-Return-Path: <js084@bucknell.edu>
-Received: from ivory.bucknell.edu (ivory.bucknell.edu [134.82.9.79])
-	by ozlabs.org (Postfix) with ESMTP id 54876DDF22
+Return-Path: <juan-antonio.medina@anafocus.com>
+Received: from mail.anafocus.com (mail.anafocus.com [213.227.43.181])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 61F5DDDF64
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Oct 2008 02:52:13 +1100 (EST)
-Received: from [134.82.109.42] (js084.resnet.bucknell.edu [134.82.109.42])
-	(authenticated bits=0)
-	by ivory.bucknell.edu (8.14.2/8.14.2) with ESMTP id m97FqA6A023514
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>; Tue, 7 Oct 2008 11:52:11 -0400
-Message-ID: <48EB85A9.1000302@bucknell.edu>
-Date: Tue, 07 Oct 2008 11:52:09 -0400
-From: Juliana Su <js084@bucknell.edu>
+	Wed,  8 Oct 2008 18:49:18 +1100 (EST)
+From: "Juan Antonio Medina Guerrero" <juan-antonio.medina@anafocus.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: DMA IRQ Linux configuring problem
+Date: Wed, 8 Oct 2008 09:42:51 +0200
+Message-ID: <86DF51AEEB064389B85403E2C27FE6B7@svq.anafocus.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: SysACE driver and Ethernet support? - mainline Linux 2.6.10 and Xilinx
-	ML310
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_000B_01C9292A.3B36EB70"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,115 +23,186 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+This is a multi-part message in MIME format.
 
-I finally got PCI support on my Xilinx ML310 with a mainline Linux 
-2.6.10 kernel and gcc-3.4.5-glibc-2.3.6 (with the help of the awesome 
-people at UNCC). Now, I'm trying to get Xilinx SystemACE device driver 
-support and Ethernet working. Unfortunately, I do not know much about 
-adding support for a driver that does not currently exist in the kernel. 
-Does anybody know if it would be possible to get SysACE driver support 
-in 2.6.10? Downloading an ELF file onto a board using a JTAG cable is 
-slow and inconvenient... 
+------=_NextPart_000_000B_01C9292A.3B36EB70
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-My attempt at adding SysACE driver support involved adding in 
-drivers/block/xsysace.c and linux/platform_device.h (files pulled from 
-mainline Linux 2.6.24) and editing drivers/block/Kconfig and 
-drivers/block/Makefile. The kernel failed to compile, however, and spit 
-out these errors:
+Hello,
 
+      
 
-In file included from drivers/block/xsysace.c:93:
-include/linux/platform_device.h:16: error: redefinition of `struct 
-platform_device'
-include/linux/platform_device.h:39: error: conflicting types for 
-'platform_device_register_simple'
-include/linux/device.h:387: error: previous declaration of 
-'platform_device_register_simple' was here
-include/linux/platform_device.h:39: error: conflicting types for 
-'platform_device_register_simple'
-include/linux/device.h:387: error: previous declaration of 
-'platform_device_register_simple' was here
-include/linux/platform_device.h:52: error: syntax error before 
-"pm_message_t"
-include/linux/platform_device.h:52: warning: function declaration isn't 
-a prototype
-include/linux/platform_device.h:53: error: syntax error before 
-"pm_message_t"
-include/linux/platform_device.h:53: warning: function declaration isn't 
-a prototype
-drivers/block/xsysace.c: In function `ace_fsm_yieldirq':
-drivers/block/xsysace.c:461: error: `NO_IRQ' undeclared (first use in 
-this function)
-drivers/block/xsysace.c:461: error: (Each undeclared identifier is 
-reported only once
-drivers/block/xsysace.c:461: error: for each function it appears in.)
-drivers/block/xsysace.c: In function `ace_fsm_dostate':
-drivers/block/xsysace.c:723: error: too many arguments to function 
-`end_that_request_last'
-drivers/block/xsysace.c: At top level:
-drivers/block/xsysace.c:931: error: unknown field `getgeo' specified in 
-initializer
-drivers/block/xsysace.c:931: warning: initialization from incompatible 
-pointer type
-drivers/block/xsysace.c: In function `ace_setup':
-drivers/block/xsysace.c:960: warning: implicit declaration of function 
-`setup_timer'
-drivers/block/xsysace.c:1009: error: `NO_IRQ' undeclared (first use in 
-this function)
-drivers/block/xsysace.c:1010: warning: passing arg 2 of `request_irq' 
-from incompatible pointer type
-drivers/block/xsysace.c: In function `ace_teardown':
-drivers/block/xsysace.c:1061: error: `NO_IRQ' undeclared (first use in 
-this function)
-drivers/block/xsysace.c: In function `ace_alloc':
-drivers/block/xsysace.c:1081: warning: implicit declaration of function 
-`kzalloc'
-drivers/block/xsysace.c:1081: warning: assignment makes pointer from 
-integer without a cast
-drivers/block/xsysace.c: In function `ace_probe':
-drivers/block/xsysace.c:1131: error: `NO_IRQ' undeclared (first use in 
-this function)
-make[2]: *** [drivers/block/xsysace.o] Error 1
-make[1]: *** [drivers/block] Error 2
-make: *** [drivers] Error 2
-
-
-Also, is anybody familiar with the Ethernet drivers? My boot-log 
-contains this error concerning Ethernet:
-
-
-eepro100.c:v1.09j-t 9/29/99 Donald Becker 
-http://www.scyld.com/network/eepro100.html
-eepro100.c: $Revision: 1.36 $ 2000/11/17 Modified by Andrey V. Savochkin 
-<saw@saw.sw.com.sg> and others
-eth0: Invalid EEPROM checksum 0xbf8a, check settings before activating 
-this device!
-eth0: OEM i82557/i82558 10/100 Ethernet, 00:0A:35:00:7C:A0, IRQ 0.
-  Board assembly 727095-004, Physical connectors present: RJ45
-  Primary interface chip i82555 PHY #1.
-Self test failed, status ffffffff:
- Failure to initialize the i82557.
- Verify that the card is a bus-master capable slot.
-
-
-I also tried another Ethernet driver and got this error instead:
-
-
-e100: Intel(R) PRO/100 Network Driver, 3.2.3-k2-NAPI
-e100: Copyright(c) 1999-2004 Intel Corporation
-e100: 0000:00:07.0: e100_eeprom_load: EEPROM corrupted
-e100: probe of 0000:00:07.0 failed with error -11
-
-
-I know that newer versions of mainline and Xilinx Linux 2.6 have SysACE 
-support, but I would prefer to stick with mainline 2.6.10 because, well, 
-it sort of works for me at the moment (I was able to mount an ATA hard 
-drive with an ext2 file system). Any help/suggestions would be greatly 
-appreciated. Let me know if you need me to provide any additional 
-information. Thanks!
-
-
--Juliana
+      We are facing some issues when trying to implement the interrup-driven
+DMA. The function request_irq returns error when trying to use the DMA
+interrupt. Following you can find some tests we've performed to try to solve
+this trouble:
 
  
+
+      - We have been trying various IRQ ID. If we use the spi IRQ_ID the
+function request_irq returns error because this IRQ is already being used,
+as expected. If we use the usb IRQ_ID the function doesn't return error but
+of course doesn't launch the IRQ handle.
+
+ 
+
+      - We have changed the IRQ_ID from USB to DMA in device usb section in
+file mpc8313erdb.dts. Then we use dma IRQ_ID and there are launchs of
+IRQ_DMA_handler. This method isn't the solution but gives us an idea of the
+problem.
+
+ 
+
+      - Finally, we make a new device section in dts file but it doesn't
+work. We believe that we have created bad the device section or that we need
+to do something else. Could you please help us with this?
+
+ 
+
+Kind regards,
+
+Medina
+
+
+------=_NextPart_000_000B_01C9292A.3B36EB70
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 3.0cm 70.85pt 3.0cm;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DES link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>Hello,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; We
+are facing some issues when trying to implement the interrup-driven DMA. =
+The
+function request_irq returns error when trying to use the DMA interrupt. =
+Following
+you can find some tests we've performed to try to solve this =
+trouble:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
+New"'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -
+We have been trying various IRQ ID. If we use the spi IRQ_ID the =
+function
+request_irq returns error because this IRQ is already being used, as =
+expected. If
+we use the usb IRQ_ID the function doesn't return error but of course =
+doesn't
+launch the IRQ handle.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
+New"'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -
+We have changed the IRQ_ID from USB to DMA in device usb section in file
+mpc8313erdb.dts. Then we use dma IRQ_ID and there are launchs of
+IRQ_DMA_handler. This method isn't the solution but gives us an idea of =
+the
+problem.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
+New"'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+lang=3DEN-GB style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -
+Finally, we make a new device section in dts file but it doesn't work. =
+We
+believe that we have created bad the device section or that we need to =
+do
+something else. </span></font><font size=3D2 face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>Could you please =
+help us
+with this?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>Kind =
+regards,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-family:"Courier New"'>Medina</span></font><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial'><o:p></o:p></span></font></p=
+>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_000B_01C9292A.3B36EB70--
