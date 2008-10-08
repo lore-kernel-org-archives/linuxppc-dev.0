@@ -1,20 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.225])
-	by ozlabs.org (Postfix) with ESMTP id E8F96DDEF2
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 19:02:42 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so4197625rvb.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 09 Oct 2008 01:02:41 -0700 (PDT)
-Message-ID: <fa686aa40810090102wcc8acf0i4577f195ca40eac6@mail.gmail.com>
-Date: Thu, 9 Oct 2008 02:02:41 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Paul Mackerras" <paulus@samba.org>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Please pull 'next' branch of
-	git://git.secretlab.ca/git/linux-2.6-mpc52xx
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CD8FFDDEFE
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 19:45:01 +1100 (EST)
+Message-ID: <48ED1B9E.3020907@freescale.com>
+Date: Wed, 08 Oct 2008 15:44:14 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] powerpc: remove default=y from PMAC and CHRP Kconfigs
+References: <1223495845-14149-1-git-send-email-timur@freescale.com>	
+	<1223496186.8157.82.camel@pasglop>	
+	<ed82fe3e0810081314g34b902f7j76f5049faf91f905@mail.gmail.com>
+	<1223498380.8157.86.camel@pasglop>
+In-Reply-To: <1223498380.8157.86.camel@pasglop>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Ben,
+Benjamin Herrenschmidt wrote:
 
-Can you please pull my mpc52xx support tree?
+> I'm happy with -all- platforms for a given CPU type defaulting to y. 
 
-Thanks,
-g.
-
-The following changes since commit 7c12d906f4ef690c65e60111375856640f63a545:
-  Benjamin Herrenschmidt (1):
-        powerpc: Fix sysfs pci mmap on 32-bit machines with 64-bit PCI
-
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx next
-
-Anton Vorontsov (1):
-      OF: add fsl,mcu-mpc8349emitx to the exception list
-
-Grant Likely (1):
-      powerpc/mpc5200: fix build warnings on mpc52xx_psc_spi driver
-
-Tony Breeds (1):
-      powerpc/mpc5200: Silence warnings in
-arch/powerpc/platforms/52xx/mpc52xx_pci.c
-
-Wolfgang Grandegger (1):
-      i2c-mpc: suppress I2C device probing
-
-Wolfram Sang (1):
-      powerpc/mpc5200: trivial printk-fixes in mpc52xx_common
-
- arch/powerpc/platforms/52xx/mpc52xx_common.c |    5 +++--
- arch/powerpc/platforms/52xx/mpc52xx_pci.c    |   13 +++++++++----
- drivers/i2c/busses/i2c-mpc.c                 |    1 -
- drivers/of/base.c                            |    2 +-
- drivers/spi/mpc52xx_psc_spi.c                |    6 +++---
- 5 files changed, 16 insertions(+), 11 deletions(-)
-
+I'm not sure I understand.  The current Kconfigs defaults to Y for CHRP and PMAC
+on *all* PowerPC systems, including those that are neither CHRP nor PMAC.  Are
+you saying that's a good thing?
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Timur Tabi
+Linux kernel developer at Freescale
