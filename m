@@ -1,17 +1,18 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id D0D24DDF40
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 08:33:50 +1100 (EST)
-Message-ID: <48ED273B.7080101@harris.com>
-Date: Wed, 08 Oct 2008 17:33:47 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 9A697DDDF4
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 10:02:21 +1100 (EST)
+Date: Thu, 9 Oct 2008 03:02:19 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: fsl_upm compile failure.
+Message-ID: <20081008230219.GA8075@oksana.dev.rtsoft.ru>
+References: <20081008222815.GA20542@redhat.com>
 MIME-Version: 1.0
-To: "Steven A. Falco" <sfalco@harris.com>
-Subject: Re: PPC440EPx gpio driver
-References: <48ED1E96.4060406@harris.com>
-In-Reply-To: <48ED1E96.4060406@harris.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <20081008222815.GA20542@redhat.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,46 +22,193 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here is the remainder of the driver - just the structure of the
-registers for the 440EPx.  I put the struct in this file because that
-is similar to what was done for the mpc52xx, but the struct could go
-elsewhere if more appropriate.
+Hi,
 
-Anyway, I'd like some feedback on this driver, because I imagine other
-folks would like to have a gpio driver for the 440 family.
+On Wed, Oct 08, 2008 at 06:28:15PM -0400, Dave Jones wrote:
+> Hi Anton, 
+>  I tried reenabling CONFIG_MTD_NAND_FSL_UPM in the Fedora kernel
+> today (currently on 2.6.27-rc9-git1), and got the error below.
+> 
+> ERROR: "fsl_lbc_lock" [drivers/mtd/nand/fsl_upm.ko] undefined!
 
-Signed-off-by: Steve Falco <sfalco at harris.com>
+Weird. It works for me with mpc836x_rdk_defconfig and
+MTD_NAND_FSL_UPM=m...
 
-diff --git a/arch/powerpc/include/asm/ppc4xx.h b/arch/powerpc/include/asm/ppc4xx.h
-index 033039a..acbccb7 100644
---- a/arch/powerpc/include/asm/ppc4xx.h
-+++ b/arch/powerpc/include/asm/ppc4xx.h
-@@ -13,6 +13,28 @@
- #ifndef __ASM_POWERPC_PPC4xx_H__
- #define __ASM_POWERPC_PPC4xx_H__
+Hm..
+
+  CC      drivers/mtd/nand/fsl_upm.mod.o
+  LD [M]  drivers/mtd/nand/fsl_upm.ko
+
+Can you send me the .config file you use?
+
+> It seems that this isn't exported to modules.
+> diff below fixes this.  (Not tested yet, the Fedora ppc
+>  builders are a little slow).
+> 
+> 	Dave
+> 
+> --- 
+> 
+> CONFIG_MTD_NAND_FSL_UPM can be built modular, but needs to
+> use fsl_lbc_lock, which isn't currently exported.
+> 
+> Signed-off-by: Dave Jones <davej@redhat.com>
+> 
+> diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
+> index 422c8fa..1c6c522 100644
+> --- a/arch/powerpc/sysdev/fsl_lbc.c
+> +++ b/arch/powerpc/sysdev/fsl_lbc.c
+> @@ -16,6 +16,7 @@
+>  #include <asm/fsl_lbc.h>
+>
+>  spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
+> +EXPORT_SYMBOL(fsl_lbc_lock);
+>
+>  struct fsl_lbc_regs __iomem *fsl_lbc_regs;
+>  EXPORT_SYMBOL(fsl_lbc_regs);
+
+But the patch looks obviously correct. Much thanks for catching this.
+
+Though better option would be to uninline the fsl_upm_run_pattern()..
+it is quite big anyway... Something like this:
+
+diff --git a/arch/powerpc/include/asm/fsl_lbc.h b/arch/powerpc/include/asm/fsl_lbc.h
+index 303f548..af2b535 100644
+--- a/arch/powerpc/include/asm/fsl_lbc.h
++++ b/arch/powerpc/include/asm/fsl_lbc.h
+@@ -24,7 +24,6 @@
+ #define __ASM_FSL_LBC_H
  
-+/* GPIO */
-+struct ppc4xx_gpio {
-+	unsigned int gpio_or;
-+	unsigned int gpio_tcr;
-+	unsigned int gpio_osrl;
-+	unsigned int gpio_osrh;
-+	unsigned int gpio_tsrl;
-+	unsigned int gpio_tsrh;
-+	unsigned int gpio_odr;
-+	unsigned int gpio_ir;
-+	unsigned int gpio_rr1;
-+	unsigned int gpio_rr2;
-+	unsigned int gpio_rr3;
-+	unsigned int reserved1;
-+	unsigned int gpio_isr1l;
-+	unsigned int gpio_isr1h;
-+	unsigned int gpio_isr2l;
-+	unsigned int gpio_isr2h;
-+	unsigned int gpio_isr3l;
-+	unsigned int gpio_isr3h;
-+};
+ #include <linux/types.h>
+-#include <linux/spinlock.h>
+ #include <asm/io.h>
+ 
+ struct fsl_lbc_bank {
+@@ -228,7 +227,6 @@ struct fsl_lbc_regs {
+ };
+ 
+ extern struct fsl_lbc_regs __iomem *fsl_lbc_regs;
+-extern spinlock_t fsl_lbc_lock;
+ 
+ /*
+  * FSL UPM routines
+@@ -268,44 +266,7 @@ static inline void fsl_upm_end_pattern(struct fsl_upm *upm)
+ 		cpu_relax();
+ }
+ 
+-/**
+- * fsl_upm_run_pattern - actually run an UPM pattern
+- * @upm:	pointer to the fsl_upm structure obtained via fsl_upm_find
+- * @io_base:	remapped pointer to where memory access should happen
+- * @mar:	MAR register content during pattern execution
+- *
+- * This function triggers dummy write to the memory specified by the io_base,
+- * thus UPM pattern actually executed. Note that mar usage depends on the
+- * pre-programmed AMX bits in the UPM RAM.
+- */
+-static inline int fsl_upm_run_pattern(struct fsl_upm *upm,
+-				      void __iomem *io_base, u32 mar)
+-{
+-	int ret = 0;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&fsl_lbc_lock, flags);
+-
+-	out_be32(&fsl_lbc_regs->mar, mar << (32 - upm->width));
+-
+-	switch (upm->width) {
+-	case 8:
+-		out_8(io_base, 0x0);
+-		break;
+-	case 16:
+-		out_be16(io_base, 0x0);
+-		break;
+-	case 32:
+-		out_be32(io_base, 0x0);
+-		break;
+-	default:
+-		ret = -EINVAL;
+-		break;
+-	}
+-
+-	spin_unlock_irqrestore(&fsl_lbc_lock, flags);
+-
+-	return ret;
+-}
++extern int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base,
++			       u32 mar);
+ 
+ #endif /* __ASM_FSL_LBC_H */
+diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
+index 422c8fa..d81297c 100644
+--- a/arch/powerpc/sysdev/fsl_lbc.c
++++ b/arch/powerpc/sysdev/fsl_lbc.c
+@@ -13,6 +13,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/of.h>
++#include <linux/spinlock.h>
+ #include <asm/fsl_lbc.h>
+ 
+ spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
+@@ -127,3 +128,43 @@ int fsl_upm_find(phys_addr_t addr_base, struct fsl_upm *upm)
+ 	return 0;
+ }
+ EXPORT_SYMBOL(fsl_upm_find);
 +
- extern void ppc4xx_reset_system(char *cmd);
- 
- #endif /* __ASM_POWERPC_PPC4xx_H__ */
++/**
++ * fsl_upm_run_pattern - actually run an UPM pattern
++ * @upm:	pointer to the fsl_upm structure obtained via fsl_upm_find
++ * @io_base:	remapped pointer to where memory access should happen
++ * @mar:	MAR register content during pattern execution
++ *
++ * This function triggers dummy write to the memory specified by the io_base,
++ * thus UPM pattern actually executed. Note that mar usage depends on the
++ * pre-programmed AMX bits in the UPM RAM.
++ */
++int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base, u32 mar)
++{
++	int ret = 0;
++	unsigned long flags;
++
++	spin_lock_irqsave(&fsl_lbc_lock, flags);
++
++	out_be32(&fsl_lbc_regs->mar, mar << (32 - upm->width));
++
++	switch (upm->width) {
++	case 8:
++		out_8(io_base, 0x0);
++		break;
++	case 16:
++		out_be16(io_base, 0x0);
++		break;
++	case 32:
++		out_be32(io_base, 0x0);
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	}
++
++	spin_unlock_irqrestore(&fsl_lbc_lock, flags);
++
++	return ret;
++}
++EXPORT_SYMBOL(fsl_upm_run_pattern);
+
+
+(This also adds missing linux/spinlock.h include to the fsl_lbc.c)
+
+Anyhow, whatever approach you chose, feel free to add my:
+
+Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+
+Then please resend the patch with added
+Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+
+^^ Kumar would apply the patch to his powerpc.git tree, powerpc-next branch.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
