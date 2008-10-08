@@ -1,15 +1,18 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 89899DDFC4
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 06:59:44 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
-Subject: [PATCH] powerpc: remove default=y from PMAC and CHRP Kconfigs
-Date: Wed,  8 Oct 2008 14:57:25 -0500
-Message-Id: <1223495845-14149-1-git-send-email-timur@freescale.com>
+Return-Path: <kevdig@hypersurf.com>
+Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
+	by ozlabs.org (Postfix) with ESMTP id A9E43DE597
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 07:01:52 +1100 (EST)
+Received: from [192.168.1.37] (66-81-71-59.bayarea.dialup.o1.com [66.81.71.59])
+	(authenticated bits=0)
+	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id m98JpovC035381
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Oct 2008 12:52:02 -0700 (PDT)
+Message-ID: <48ED0F30.7080103@hypersurf.com>
+Date: Wed, 08 Oct 2008 12:51:12 -0700
+From: Kevin Diggs <kevdig@hypersurf.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: 8600 serial support
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,48 +22,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove the "default y" from the Kconfig options for CHRP, PMAC, and PMAC64
-platforms.  This patch is a follow-up to "remove CHRP and PMAC support from
-defconfigs, fix Kconfigs", which was applied incompletely.
+Hi,
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+	I thought I might take a whack at fixing the 2.6 serial driver
+for my 8600. At the top of pmac_zilog.c (2.6.26) there is a todo for DMA.
+A quick glance at macserial.c (2.4.31) suggests it has dbdma support for
+receive. Anyone know of any pitfalls for adding dbdma support for
+pmac_zilog.c?
 
-Ben, in the future, please apply either all of my patch or none of it.
-Applying half of my patch and "thinking about" the other half doesn't do me
-any good.
-
- arch/powerpc/platforms/chrp/Kconfig     |    1 -
- arch/powerpc/platforms/powermac/Kconfig |    4 ----
- 2 files changed, 0 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/platforms/chrp/Kconfig b/arch/powerpc/platforms/chrp/Kconfig
-index 22b4b4e..682afbc 100644
---- a/arch/powerpc/platforms/chrp/Kconfig
-+++ b/arch/powerpc/platforms/chrp/Kconfig
-@@ -9,4 +9,3 @@ config PPC_CHRP
- 	select PPC_UDBG_16550
- 	select PPC_NATIVE
- 	select PCI
--	default y
-diff --git a/arch/powerpc/platforms/powermac/Kconfig b/arch/powerpc/platforms/powermac/Kconfig
-index 055990c..85619d3 100644
---- a/arch/powerpc/platforms/powermac/Kconfig
-+++ b/arch/powerpc/platforms/powermac/Kconfig
-@@ -6,7 +6,6 @@ config PPC_PMAC
- 	select PPC_INDIRECT_PCI if PPC32
- 	select PPC_MPC106 if PPC32
- 	select PPC_NATIVE
--	default y
- 
- config PPC_PMAC64
- 	bool
-@@ -16,6 +15,3 @@ config PPC_PMAC64
- 	select MPIC_U3_HT_IRQS
- 	select GENERIC_TBSYNC
- 	select PPC_970_NAP
--	default y
--
--
--- 
-1.5.5
+kevin
