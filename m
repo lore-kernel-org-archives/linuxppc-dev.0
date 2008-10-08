@@ -1,17 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.228])
-	by ozlabs.org (Postfix) with ESMTP id C23B6DDE26
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 02:05:37 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so3796084rvb.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 08 Oct 2008 08:05:36 -0700 (PDT)
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] of-bindings: Don't support linux, <modalias> compatible values
-To: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
-Date: Wed, 08 Oct 2008 09:05:29 -0600
-Message-ID: <20081008150529.21059.52235.stgit@localhost.localdomain>
+Return-Path: <timur.tabi@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id 55E2EDDF2A
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 02:28:55 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so620465ywh.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 08 Oct 2008 08:28:53 -0700 (PDT)
+Message-ID: <ed82fe3e0810080828r115b3e85laf08e8d1e47faf42@mail.gmail.com>
+Date: Wed, 8 Oct 2008 10:28:53 -0500
+From: "Timur Tabi" <timur@freescale.com>
+Sender: timur.tabi@gmail.com
+To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] powerpc: remove CHRP and PMAC support from defconfigs,
+	fix Kconfigs
+In-Reply-To: <1222449586-14622-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Sender: Grant Likely <glikely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1222449586-14622-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,66 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Fri, Sep 26, 2008 at 12:19 PM, Timur Tabi <timur@freescale.com> wrote:
+> The Kconfig files for PowerPC CHRP and PMAC support had "default=y" for some
+> Kconfig options, and this caused support for CHRP and PMAC platforms to be
+> enabled incorrectly for several platforms.  Fix the Kconfigs and the
+> affected defconfigs.
 
-Compatible property values in the form linux,<modalias> is not documented
-anywhere and using it leaks Linux implementation details into the device
-tree data (which is bad).  Remove support for compatible values of this
-form.
+Ben,
 
-If any platforms exist which depended on this code (and I don't know of
-any), then they can be fixed up by adding legacy translations to the
-lookup table in this file.
+When you applied this patch, you removed the Kconfig changes.  Without
+those, doing a "make xxx_defconfig" will just add "CONFIG_PPC_PMAC=y"
+and "CONFIG_PPC_CHRP=y" to the .config!
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+$ make 83xx/mpc834x_itxgp_defconfig
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/basic/docproc
+  HOSTCC  scripts/kconfig/conf.o
+  HOSTCC  scripts/kconfig/kxgettext.o
+  SHIPPED scripts/kconfig/zconf.tab.c
+  SHIPPED scripts/kconfig/lex.zconf.c
+  SHIPPED scripts/kconfig/zconf.hash.c
+  HOSTCC  scripts/kconfig/zconf.tab.o
+  HOSTLD  scripts/kconfig/conf
+#
+# configuration written to .config
+#
+$ grep CHRP .config
+CONFIG_PPC_CHRP=y
 
- drivers/of/base.c |   25 +++++--------------------
- 1 files changed, 5 insertions(+), 20 deletions(-)
-
-
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index ad8ac1a..cd1ce7a 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -420,13 +420,12 @@ static struct of_modalias_table of_modalias_table[] = {
-  * @len:	Length of modalias value
-  *
-  * Based on the value of the compatible property, this routine will determine
-- * an appropriate modalias value for a particular device tree node.  Three
-- * separate methods are used to derive a modalias value.
-+ * an appropriate modalias value for a particular device tree node.  Two
-+ * separate methods are attempted to derive a modalias value.
-  *
-  * First method is to lookup the compatible value in of_modalias_table.
-- * Second is to look for a "linux,<modalias>" entry in the compatible list
-- * and used that for modalias.  Third is to strip off the manufacturer
-- * prefix from the first compatible entry and use the remainder as modalias
-+ * Second is to strip off the manufacturer prefix from the first
-+ * compatible entry and use the remainder as modalias
-  *
-  * This routine returns 0 on success
-  */
-@@ -449,21 +448,7 @@ int of_modalias_node(struct device_node *node, char *modalias, int len)
- 	if (!compatible)
- 		return -ENODEV;
- 
--	/* 2. search for linux,<modalias> entry */
--	p = compatible;
--	while (cplen > 0) {
--		if (!strncmp(p, "linux,", 6)) {
--			p += 6;
--			strlcpy(modalias, p, len);
--			return 0;
--		}
--
--		i = strlen(p) + 1;
--		p += i;
--		cplen -= i;
--	}
--
--	/* 3. take first compatible entry and strip manufacturer */
-+	/* 2. take first compatible entry and strip manufacturer */
- 	p = strchr(compatible, ',');
- 	if (!p)
- 		return -ENODEV;
+So please apply my *original* patch.
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
