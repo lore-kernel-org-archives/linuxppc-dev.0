@@ -2,23 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CC187DE6BD
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 06:16:51 +1100 (EST)
-Subject: Re: powerpc.git status
+	by ozlabs.org (Postfix) with ESMTPS id 044DCDE9DB
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 06:20:06 +1100 (EST)
+Subject: Re: [PATCH] powerpc: remove CHRP and PMAC support from defconfigs,
+	fix Kconfigs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <9F5B82DA-D13D-4997-A247-59EAD0483230@kernel.crashing.org>
-References: <1223357268.8157.38.camel@pasglop>
-	<9B078573-0862-4176-A945-E273D78B260F@kernel.crashing.org>
-	<1223405857.8157.55.camel@pasglop>
-	<1351959C-EAEB-4C14-8A55-665F4C4C0601@kernel.crashing.org>
-	<1223458152.8157.72.camel@pasglop>
-	<9F5B82DA-D13D-4997-A247-59EAD0483230@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <ed82fe3e0810080828r115b3e85laf08e8d1e47faf42@mail.gmail.com>
+References: <1222449586-14622-1-git-send-email-timur@freescale.com>
+	<ed82fe3e0810080828r115b3e85laf08e8d1e47faf42@mail.gmail.com>
 Content-Type: text/plain
-Date: Thu, 09 Oct 2008 06:16:45 +1100
-Message-Id: <1223493405.8157.76.camel@pasglop>
+Date: Thu, 09 Oct 2008 06:19:56 +1100
+Message-Id: <1223493596.8157.80.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,18 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-10-08 at 07:10 -0500, Kumar Gala wrote:
-> On Oct 8, 2008, at 4:29 AM, Benjamin Herrenschmidt wrote:
+On Wed, 2008-10-08 at 10:28 -0500, Timur Tabi wrote:
+> On Fri, Sep 26, 2008 at 12:19 PM, Timur Tabi <timur@freescale.com> wrote:
+> > The Kconfig files for PowerPC CHRP and PMAC support had "default=y" for some
+> > Kconfig options, and this caused support for CHRP and PMAC platforms to be
+> > enabled incorrectly for several platforms.  Fix the Kconfigs and the
+> > affected defconfigs.
 > 
-> >
-> >> Its useful to not rebase a branch you expect people to send you
-> >> patches against and sub-maintainers are using to build tree's
-> >> against.  It sounds like 'next' is that branch.
-> >
-> > Indeed. Though so far I've managed to avoid rebasing anything :-)
+> Ben,
 > 
-> So what's the status of the patches moving from master into next?
+> When you applied this patch, you removed the Kconfig changes.  Without
+> those, doing a "make xxx_defconfig" will just add "CONFIG_PPC_PMAC=y"
+> and "CONFIG_PPC_CHRP=y" to the .config!
 
-Mostly "just in case". No big deal. I'll move them over today hopefully.
+Hrm. Yes, I removed those changes because I want to think more about
+that aspect of things.
+
+> $ make 83xx/mpc834x_itxgp_defconfig
+>   HOSTCC  scripts/basic/fixdep
+>   HOSTCC  scripts/basic/docproc
+>   HOSTCC  scripts/kconfig/conf.o
+>   HOSTCC  scripts/kconfig/kxgettext.o
+>   SHIPPED scripts/kconfig/zconf.tab.c
+>   SHIPPED scripts/kconfig/lex.zconf.c
+>   SHIPPED scripts/kconfig/zconf.hash.c
+>   HOSTCC  scripts/kconfig/zconf.tab.o
+>   HOSTLD  scripts/kconfig/conf
+> #
+> # configuration written to .config
+> #
+> $ grep CHRP .config
+> CONFIG_PPC_CHRP=y
+> 
+> So please apply my *original* patch.
+
+yeah well, there's a consistency problem. If we remove default for these
+we should remove default for all.
+
+The bug I think is in your original patch in fact to just remove those
+from .config rather than explicitely set them to "not set".
+
+I'm not going to remove the applied patch to avoid rebasing, it's
+harmless to keep it in, please send another one that does the above.
 
 Ben.
+
+ 
