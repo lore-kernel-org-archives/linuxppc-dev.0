@@ -1,15 +1,25 @@
-Return-Path: <domino@mikroswiat.pl>
-Message-ID: <48EDEDDB.1040102@mikroswiat.pl>
-Date: Thu, 09 Oct 2008 13:41:15 +0200
-From: Dominik Bozek <domino@mikroswiat.pl>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
+	by ozlabs.org (Postfix) with ESMTP id 2DE3FDDDF6
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 23:04:55 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so1131846qwb.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 09 Oct 2008 05:04:54 -0700 (PDT)
+Message-ID: <c384c5ea0810090504x570cb6aai6d136a150e74ac05@mail.gmail.com>
+Date: Thu, 9 Oct 2008 14:04:53 +0200
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Dominik Bozek" <domino@mikroswiat.pl>
 Subject: Re: performance: memcpy vs. __copy_tofrom_user
-References: <48ECC611.3030309@mikroswiat.pl>	<20081008154212.GA21723@secretlab.ca>	<18669.28058.495259.72182@cargo.ozlabs.ibm.com>	<48EDD905.6070609@mikroswiat.pl>
-	<18669.58803.48011.686743@cargo.ozlabs.ibm.com>
-In-Reply-To: <18669.58803.48011.686743@cargo.ozlabs.ibm.com>
+In-Reply-To: <48EDEDDB.1040102@mikroswiat.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+References: <48ECC611.3030309@mikroswiat.pl>
+	<20081008154212.GA21723@secretlab.ca>
+	<18669.28058.495259.72182@cargo.ozlabs.ibm.com>
+	<48EDD905.6070609@mikroswiat.pl>
+	<18669.58803.48011.686743@cargo.ozlabs.ibm.com>
+	<48EDEDDB.1040102@mikroswiat.pl>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Dominik Bozek writes:
->
->   
->> Actually I made couple of other tests on that mpc8313. Most of them are
->> to ugly to publish them, but... My problem is that I have to boost the
->> gigabit interface on the mpc8313. I made simple substitution and
->> __copy_tofrom_user was used instead of memcpy. I know, it's wrong, but I
->> speedup that way the network interface for about 10%.
->>     
->
-> Very interesting.  Can you work out where memcpy is being called on
-> the network data?  I wouldn't have expected that.
->   
+Hello all,
 
-I'm not the fastest, but I will. Just need some time.
+On Thu, Oct 9, 2008 at 1:41 PM, Dominik Bozek <domino@mikroswiat.pl> wrote:
+> Paul Mackerras wrote:
+>> Dominik Bozek writes:
+>>> Actually I made couple of other tests on that mpc8313. Most of them are
+>>> to ugly to publish them, but... My problem is that I have to boost the
+>>> gigabit interface on the mpc8313. I made simple substitution and
+>>
+>> Very interesting.  Can you work out where memcpy is being called on
+>> the network data?  I wouldn't have expected that.
+>>
 
-> There is actually no strong reason not to use __copy_tofrom_user as
-> memcpy, in fact, as long as we are sure that source and destination
-> are both cacheable.
->   
+Also see this recent thread David Jander on August 25th, "Efficient
+memcpy()/memmove() for G2/G3 cores..."
+on linuxppc-dev@ozlabs.org.
 
-My board doesn't have graphics, sound,...  so I don't know if and how it
-touch that subsystems, but for sure ext2 fail. Interesting because it
-was a ramdisk. Remember, that it was very tricky test, don't make any
-wrong conclusion out of it.
+http://ozlabs.org/pipermail/linuxppc-dev/2008-September/062449.html
 
-Dominik
+BTW, I am interested in this work as well, I'm currently working with
+a 8313 and 8315 design, both are e300 cores.
+
+My current goal is PCIe though, but I need fast GbE performance as well.
+
+Also, did you test Freescale's 2.6.24.3 patches that tune the gianfar
+interfaces for higher performance?
+
+Regards,
+-- 
+Leon
