@@ -1,29 +1,16 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 193C6DDFDC
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 08:32:43 +1100 (EST)
-Message-ID: <48EE7872.8070104@freescale.com>
-Date: Thu, 09 Oct 2008 16:32:34 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Sven Luther <sven@genesi-usa.com>
-Subject: Re: [PATCH] powerpc: remove default=y from PMAC and CHRP Kconfigs
-References: <1223496186.8157.82.camel@pasglop>
-	<ed82fe3e0810081314g34b902f7j76f5049faf91f905@mail.gmail.com>
-	<1223498380.8157.86.camel@pasglop> <48ED1B9E.3020907@freescale.com>
-	<48EE2A49.10405@genesi-usa.com>
-	<ed82fe3e0810090920t25442258gcd5cedabf686fe2d@mail.gmail.com>
-	<48EE3636.7020305@genesi-usa.com>
-	<ed82fe3e0810091023j5f746a9cs7f8564c1e6ea8dcb@mail.gmail.com>
-	<20081009201833.GA14746@powerlinux.fr>
-	<ed82fe3e0810091414i32ed515di62230a3f4ac78a03@mail.gmail.com>
-	<20081009212821.GA15626@powerlinux.fr>
-In-Reply-To: <20081009212821.GA15626@powerlinux.fr>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 2753FDDE98
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 09:08:29 +1100 (EST)
+Date: Thu, 9 Oct 2008 18:08:26 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: PPC440EPx gpio driver
+Message-ID: <20081009180826.32999ba8@lappy.seanm.ca>
+In-Reply-To: <48ED1E96.4060406@harris.com>
+References: <48ED1E96.4060406@harris.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,14 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sven Luther wrote:
+On Wed, 08 Oct 2008 16:56:54 -0400
+"Steven A. Falco" <sfalco@harris.com> wrote:
 
-> You just turn it on by default for 64bit and idsable it for 32bit :)
+>  have begun writing a driver for the GPIOs of the PPC440EPx.  I just
+> noticed that the PIKA Warp .dts references a device "ibm,gpio-440ep",
+> but so far I have not been able to find a driver for that device.
 
-That hack might work for now, but it will break once we have 64-bit embedded
-systems.  Regardless, it doesn't address the core issue - there should be no
-default platform for PowerPC.
+It's just around the corner, through the blue door ;) That device string
+was put in optimistically hoping somebody would write a gpio driver.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+FYI the warp has two leds tied to gpios. It currently uses a custom led
+driver. Once a gpio driver is written, the of gpio leds driver should
+work and the custom driver will go away.
+
+So I am very interested in your driver ;)
+
+Cheers,
+   Sean
