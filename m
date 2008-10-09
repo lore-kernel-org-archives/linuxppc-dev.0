@@ -1,26 +1,18 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-gx0-f21.google.com (mail-gx0-f21.google.com
-	[209.85.217.21]) by ozlabs.org (Postfix) with ESMTP id 95395DE69D
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 04:23:08 +1100 (EST)
-Received: by gxk14 with SMTP id 14so357675gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 09 Oct 2008 10:23:07 -0700 (PDT)
-Message-ID: <ed82fe3e0810091023j5f746a9cs7f8564c1e6ea8dcb@mail.gmail.com>
-Date: Thu, 9 Oct 2008 12:23:06 -0500
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
-To: "Matt Sealey" <matt@genesi-usa.com>
-Subject: Re: [PATCH] powerpc: remove default=y from PMAC and CHRP Kconfigs
-In-Reply-To: <48EE3636.7020305@genesi-usa.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id D3EACDE69B
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 04:23:40 +1100 (EST)
+Date: Thu, 9 Oct 2008 21:23:38 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Jeff Borlin <jborlin@aclaratech.com>
+Subject: Re: Compact Flash on 8349mITX
+Message-ID: <20081009172338.GA4292@oksana.dev.rtsoft.ru>
+References: <19900326.post@talk.nabble.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1223495845-14149-1-git-send-email-timur@freescale.com>
-	<1223496186.8157.82.camel@pasglop>
-	<ed82fe3e0810081314g34b902f7j76f5049faf91f905@mail.gmail.com>
-	<1223498380.8157.86.camel@pasglop> <48ED1B9E.3020907@freescale.com>
-	<48EE2A49.10405@genesi-usa.com>
-	<ed82fe3e0810090920t25442258gcd5cedabf686fe2d@mail.gmail.com>
-	<48EE3636.7020305@genesi-usa.com>
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <19900326.post@talk.nabble.com>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,47 +22,120 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 9, 2008 at 11:49 AM, Matt Sealey <matt@genesi-usa.com> wrote:
-> Because they are by far the historically most common configuration, and
-> still in production as the defacto standard PowerPC system configuration.
+On Thu, Oct 09, 2008 at 08:52:09AM -0700, Jeff Borlin wrote:
+> 
+> I have taken over this effort to get Compact Flash working on the 8349mITX
+> board and am running into these same issues.  I can get uBoot to list the
+> contents of a CF card,
 
-Not really.  PMAC systems are not being built any more.  So that leaves CHRP.
+U-Boot doesn't use interrupts.
 
-> IBM blades etc. with SLOF will boot up as a CHRP-ish system, as well as the
-> Efika and Pegasos and anything else Genesi produces. Since Linux
-> distributions generally do not support tiny embedded boards,
+> but am running into a couple problems through the
+> kernel.  There appears to be an IRQ problem and a general communication
+> problem with the CF card, possibly related.  Note that I am very new to
+> Linux so please don't assume obvious things are correct
+> 
+> I am using the latest from /linux/kernel/git/benh/powerpc.git, and created
+> my dtb from:  arch/powerpc/dts/mpc8349emitx.dts.  
+> 
+> Any ideas on what I could try or look into next with either issue?  
+> 
+> boot info:  
+> [...]
+[...]
 
-So what?  Distributions don't need our help to turn on the options
-that are important to them.  This is a ridiculous argument.
+This happens just before the PATA information is printed. I'm not
+libata expert; and from the brief look I don't see where libata
+clears any pending "unexpected" irqs. Just a guesswork,
+could you try this patch?
 
-> you can imagine why it's
-> disabled by default, but there's no reason it can't be ENABLED by default
-> and turned off by a distribution, the same way it can't be enabled by
-> default and turned off by YOU (compare and contrast having to manually
-> select which board you want to build for every time).
+diff --git a/drivers/ata/pata_platform.c b/drivers/ata/pata_platform.c
+index 8f65ad6..3b7c79d 100644
+--- a/drivers/ata/pata_platform.c
++++ b/drivers/ata/pata_platform.c
+@@ -15,6 +15,7 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/blkdev.h>
++#include <linux/io.h>
+ #include <scsi/scsi_host.h>
+ #include <linux/ata.h>
+ #include <linux/libata.h>
+@@ -171,6 +172,8 @@ int __devinit __pata_platform_probe(struct device *dev,
+ 
+ 	pata_platform_setup_port(&ap->ioaddr, ioport_shift);
+ 
++	ioread8(ap->ioaddr.status_addr);
++
+ 	ata_port_desc(ap, "%s cmd 0x%llx ctl 0x%llx", mmio ? "mmio" : "ioport",
+ 		      (unsigned long long)io_res->start,
+ 		      (unsigned long long)ctl_res->start);
 
-This problem is solved with defconfigs.  Kconfig options are supposed
-to make sense.  Not all PowerPC systems are CHRP, therefore CHRP
-should not be enabled by default.
 
-> But, turning them all on would not matter. You would build a kernel for
-> every one and a device tree for every one increasing your build time a
-> bit for a default kernel,
+> irq 23: nobody cared (try booting with the "irqpoll" option)
+> Call Trace:
+> [cec29a30] [c00089a4] 0xc00089a4 (unreliable)
+> [cec29a60] [c00467d8] 0xc00467d8
+> [...]
+> Disabling IRQ #23
+> scsi4 : pata_platform
+> ata5: PATA max PIO6 mmio cmd 0xf0000000 ctl 0xf000020c irq 23
+> ata5.00: CFA: SanDisk SDCFJ-512, HDX 3.13, max MWDMA2
+> ata5.00: 1000944 sectors, multi 0: LBA
+> ata5.00: configured for PIO
 
-Not really true.  Having the default be disabled for specific
-platforms can make a big difference in compile time.
+Can you check if the CF will work w/o IRQs? To try it:
 
-> but you would be guaranteed to get a kernel
-> binary somewhere in the tree that would work on all of them :)
+1. open the arch/powerpc/dts/mpc8349emitx.dts file, find the pata node:
 
-Again, not relevant.  One giant kernel that works on a Freescale
-embedded system *and* an IBM mainframe is useless.  No one would
-actually ever do that.
+                pata@3,0 {
+                        compatible = "fsl,mpc8349emitx-pata", "ata-generic";
+                        reg = <0x3 0x0 0x10 0x3 0x20c 0x4>;
+                        reg-shift = <1>;
+                        pio-mode = <6>;
+                        interrupts = <23 0x8>;
+                        interrupt-parent = <&ipic>;
+                };
 
-> Genesi, Manager, Developer Relations
+2. delete interrupts = <>; and interrupt-parent = <>; lines.
 
-Developer Relations, eh?
+3. recompile the dts to dtb.
+
+4. Apply this patch to the kernel http://lkml.org/lkml/2008/10/6/176
+
+5. And try to boot the patched kernel using the re-compiled dtb file.
+
+> scsi 4:0:0:0: Direct-Access     ATA      SanDisk SDCFJ-51 HDX  PQ: 0 ANSI: 5
+> sd 4:0:0:0: [sda] 1000944 512-byte hardware sectors (512 MB)
+> sd 4:0:0:0: [sda] Write Protect is off
+> sd 4:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't
+> support DPO or FUA
+> sd 4:0:0:0: [sda] 1000944 512-byte hardware sectors (512 MB)
+> sd 4:0:0:0: [sda] Write Protect is off
+> sd 4:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't
+> support DPO or FUA
+>  sda:<3>ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+> ata5.00: cmd 20/00:08:00:00:00/00:00:00:00:00/e0 tag 0 pio 4096 in
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata5.00: status: { DRDY }
+> ata5: soft resetting link
+> ata5.00: configured for PIO
+> ata5: EH complete
+> ata5.00: limiting speed to UDMA7:PIO5
+> ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+> ata5.00: cmd 20/00:08:00:00:00/00:00:00:00:00/e0 tag 0 pio 4096 in
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata5.00: status: { DRDY }
+> ata5: soft resetting link
+> ata5.00: configured for PIO
+> ata5: EH complete
+> ata5.00: limiting speed to PIO0
+> [...]
+
+
+Thanks,
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
