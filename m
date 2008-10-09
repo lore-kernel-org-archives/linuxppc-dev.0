@@ -1,18 +1,19 @@
-Return-Path: <xcarandiru@gmail.com>
-Received: from gv-out-0910.google.com (gv-out-0910.google.com [216.239.58.189])
-	by ozlabs.org (Postfix) with ESMTP id A0B79DE423
+Return-Path: <AymanE@tanisys.com>
+Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [206.127.28.197])
+	by ozlabs.org (Postfix) with ESMTP id 220AADE489
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Oct 2008 08:04:29 +1100 (EST)
-Received: by gv-out-0910.google.com with SMTP id y18so129116gvf.14
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 09 Oct 2008 14:04:25 -0700 (PDT)
-Message-ID: <d970ff420810091404j49492e80xcd9250d0ffdcd592@mail.gmail.com>
-Date: Thu, 9 Oct 2008 18:04:25 -0300
-From: Alemao <xcarandiru@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: MTD map drivers (FSL UPM NAND)
+	Fri, 10 Oct 2008 08:05:50 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C92A52.CD6CA400"
+Subject: RE: Toolchain for ppc-440 without FPU
+Date: Thu, 9 Oct 2008 16:05:47 -0500
+Message-ID: <16691A8B34B5D9458EA3A1C37A11555A0137F80B@tanisys-ex2.Tanisys.Local>
+In-Reply-To: <2204d6480810091208u1776e81fx6597719734751edb@mail.gmail.com>
+References: <2204d6480810091208u1776e81fx6597719734751edb@mail.gmail.com>
+From: "Ayman El-Khashab" <AymanE@tanisys.com>
+To: "Ademir Zanetti Junior" <ademirzanetti@gmail.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,88 +24,174 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+This is a multi-part message in MIME format.
 
-Im trying to use a physmap driver for NOR and NAND flash devices.
+------_=_NextPart_001_01C92A52.CD6CA400
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-With NOR, everything ok. It uses CFI driver.
+I was compiling for the 440FP under cygwin, I believe that I had to use
+--enable-long-long when I configured gcc in order to build glibc.
 
-The problem is with NAND, cause it is connected at Freescale
-LocalBus UPM, and at a first look, the UPM driver is loading after the
-physmap (lines 14-15 in kernel output)
+________________________________
 
-Here some outputs from the board:
-
-Bootloader (U-Boot 1.2.0):
-
-CPU:   e300c1, MPC8360E, Rev: 21 at 499.999 MHz, CSB:  333 MHz
-Board: MPC8360KTX
-I2C:   ready
-DDR RAM: 128 MB
-FLASH: 16 MB
-NAND:  64 MiB
-In:    serial
-Out:   serial
-Err:   serial
+From: linuxppc-embedded-bounces+aymane=3Dtanisys.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+aymane=3Dtanisys.com@ozlabs.org] On
+Behalf Of Ademir Zanetti Junior
+Sent: Thursday, October 09, 2008 2:08 PM
+To: linuxppc-embedded@ozlabs.org
+Subject: Toolchain for ppc-440 without FPU
 
 
-Kernel (linux-2.6.17):
+Hello all,
 
-1               physmap nor flash device: 1000000 at ff000000
-2               NOR flash: Found 1 x16 devices at 0x0 in 16-bit bank
-3                Amd/Fujitsu Extended Query Table at 0x0040
-4                number of CFI chips: 1
-5               Using physmap partition definition
-6               Creating 6 MTD partitions on "NOR flash":
-7               0x00000000-0x00040000 : "u-boot"
-8               0x00040000-0x00060000 : "env."
-9               0x00060000-0x00080000 : "sys"
-10              0x00080000-0x000c0000 : "logs"
-11              0x000c0000-0x00860000 : "admin"
-12              0x00860000-0x01000000 : "users"
-13
-14              physmap nand flash device: 4000000 at 60000000
-15              UPM: User-Programmable Machine NAND driver
+I am trying to create a toolchain by hand and I am facing some problems
+when I try to configure the glibc 2.7 for a powerpc. When I try to
+configure the glibc to install the headers I get the following error:
+
+configure --prefix=3D/usr --host=3Dpowerpc-440-linux-gnu
+--with-headers=3D${SYSROOT}/usr/include --disable-shared --without-cvs
+--with-binutils=3D/home/azanetti/ml507/powerpc/bin/
+
+checking build system type... i686-pc-linux-gnu
+checking host system type... i686-pc-linux-gnu
+configure: running configure fragment for add-on nptl
+checking sysdep dirs... sysdeps/i386/elf
+nptl/sysdeps/unix/sysv/linux/i386/i686 nptl/sysdeps/unix/sysv/linux/i386
+sysdeps/unix/sysv/linux/i386 nptl/sysdeps/unix/sysv/linux
+nptl/sysdeps/pthread sysdeps/pthread sysdeps/unix/sysv/linux sysdeps/gnu
+sysdeps/unix/common sysdeps/unix/mman sysdeps/unix/inet
+sysdeps/unix/sysv/i386 nptl/sysdeps/unix/sysv sysdeps/unix/sysv
+sysdeps/unix/i386 nptl/sysdeps/unix sysdeps/unix sysdeps/posix
+sysdeps/i386/i686/fpu nptl/sysdeps/i386/i686 sysdeps/i386/i686
+sysdeps/i386/i486 nptl/sysdeps/i386/i486 sysdeps/i386/fpu
+nptl/sysdeps/i386 sysdeps/i386 sysdeps/wordsize-32
+sysdeps/ieee754/ldbl-96 sysdeps/ieee754/dbl-64 sysdeps/ieee754/flt-32
+sysdeps/ieee754 sysdeps/generic/elf sysdeps/generic
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether ln -s works... yes
+checking for gcc... gcc
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ISO C89... none needed
+checking how to run the C preprocessor... gcc -E
+checking for g++... g++
+
+.
+.
+.
+checking for long double... yes
+checking size of long double... 12
+running configure fragment for sysdeps/powerpc/powerpc32/elf
+checking for powerpc32 TLS support... no
+running configure fragment for sysdeps/unix/sysv/linux/powerpc
+checking whether gcc -B/home/azanetti/ml507/powerpc/bin/ -g -O2
+-mlong-double-128 uses IBM extended format... no
+checking whether gcc -B/home/azanetti/ml507/powerpc/bin/ -g -O2 supports
+-mabi=3Dibmlongdouble... no
+configure: error: this configuration requires -mlong-double-128 IBM
+extended format support
 
 
-Device Tree Source:
+I already have the binutils 2.18 compiled on my PATH. I know that it is
+easier to use a script like crosstool to compile it but I do want to
+understand what is happening behind the scenes.
 
-localbus@e0005000 {
-  compatible = "fsl,board-localbus";
-  #address-cells = <2>;
-  #size-cells = <1>;
-  reg = <e0005000 d8>;    // BRx, ORx, etc
+Regards.
 
-  ranges = <0 0 ff000000 1000000     // nor flash,  16 MB
-                    1 0 60000000 4000000>;   // nand flash, 64 MB
+Ademir
 
-  flash@0,0 {
-      compatible = "atmel,29LV256", "cfi-flash";
-      reg = <0 0 1000000>;
-      bank-width = <2>;
-      device-width = <1>;
-  };
 
-  nand@1,0 {
-      compatible = "stmicro,NAND512W3A", "fsl,upm-nand";
-      reg = <1 0 4000000>;   //reg = <1 0 1>;
-      width = <1>;
-      upm = "A";
-      upm-addr-offset = <16>;
-      upm-cmd-offset = <8>;
-      gpios = <4 18>;
-      gpio-parent = <&qe_pio>;
-      wait-pattern;
-      wait-write;
-  };
-};
+------_=_NextPart_001_01C92A52.CD6CA400
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-The CFI driver is at linux/drivers/mtd/chips
-The UPM driver is at linux/drivers/mtd/nand
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.6000.16705" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D587420421-09102008><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>I was compiling for the 440FP under cygwin, I =
+believe that=20
+I had to use --enable-long-long when I configured gcc in order to build=20
+glibc.</FONT></SPAN></DIV><BR>
+<DIV class=3DOutlookMessageHeader lang=3Den-us dir=3Dltr align=3Dleft>
+<HR tabIndex=3D-1>
+<FONT face=3DTahoma size=3D2><B>From:</B>=20
+linuxppc-embedded-bounces+aymane=3Dtanisys.com@ozlabs.org=20
+[mailto:linuxppc-embedded-bounces+aymane=3Dtanisys.com@ozlabs.org] <B>On =
+Behalf Of=20
+</B>Ademir Zanetti Junior<BR><B>Sent:</B> Thursday, October 09, 2008 =
+2:08=20
+PM<BR><B>To:</B> linuxppc-embedded@ozlabs.org<BR><B>Subject:</B> =
+Toolchain for=20
+ppc-440 without FPU<BR></FONT><BR></DIV>
+<DIV></DIV>
+<DIV dir=3Dltr>Hello all,<BR><BR>I am trying to create a toolchain by =
+hand and I=20
+am facing some problems when I try to configure the glibc 2.7 for a =
+powerpc.=20
+When I try to configure the glibc to install the headers I get the =
+following=20
+error:<BR><BR><FONT style=3D"FONT-FAMILY: courier new,monospace" =
+size=3D1>configure=20
+--prefix=3D/usr --host=3Dpowerpc-440-linux-gnu =
+--with-headers=3D${SYSROOT}/usr/include=20
+--disable-shared --without-cvs=20
+--with-binutils=3D/home/azanetti/ml507/powerpc/bin/<BR><BR>checking =
+build system=20
+type... i686-pc-linux-gnu<BR>checking host system type...=20
+i686-pc-linux-gnu<BR>configure: running configure fragment for add-on=20
+nptl<BR>checking sysdep dirs... sysdeps/i386/elf=20
+nptl/sysdeps/unix/sysv/linux/i386/i686 nptl/sysdeps/unix/sysv/linux/i386 =
 
-So, how can I load the UPM driver before physmap?
+sysdeps/unix/sysv/linux/i386 nptl/sysdeps/unix/sysv/linux =
+nptl/sysdeps/pthread=20
+sysdeps/pthread sysdeps/unix/sysv/linux sysdeps/gnu sysdeps/unix/common=20
+sysdeps/unix/mman sysdeps/unix/inet sysdeps/unix/sysv/i386=20
+nptl/sysdeps/unix/sysv sysdeps/unix/sysv sysdeps/unix/i386 =
+nptl/sysdeps/unix=20
+sysdeps/unix sysdeps/posix sysdeps/i386/i686/fpu nptl/sysdeps/i386/i686=20
+sysdeps/i386/i686 sysdeps/i386/i486 nptl/sysdeps/i386/i486 =
+sysdeps/i386/fpu=20
+nptl/sysdeps/i386 sysdeps/i386 sysdeps/wordsize-32 =
+sysdeps/ieee754/ldbl-96=20
+sysdeps/ieee754/dbl-64 sysdeps/ieee754/flt-32 sysdeps/ieee754=20
+sysdeps/generic/elf sysdeps/generic<BR>checking for a BSD-compatible =
+install...=20
+/usr/bin/install -c<BR>checking whether ln -s works... yes<BR>checking =
+for=20
+gcc... gcc<BR>checking for suffix of object files... o<BR>checking =
+whether we=20
+are using the GNU C compiler... yes<BR>checking whether gcc accepts =
+-g...=20
+yes<BR>checking for gcc option to accept ISO C89... none =
+needed<BR>checking how=20
+to run the C preprocessor... gcc -E<BR>checking for g++...=20
+g++<BR><BR>.<BR>.<BR>.<BR>checking for long double... yes<BR>checking =
+size of=20
+long double... 12<BR>running configure fragment for=20
+sysdeps/powerpc/powerpc32/elf<BR>checking for powerpc32 TLS support...=20
+no<BR>running configure fragment for =
+sysdeps/unix/sysv/linux/powerpc<BR>checking=20
+whether gcc -B/home/azanetti/ml507/powerpc/bin/ -g -O2 -mlong-double-128 =
+uses=20
+IBM extended format... no<BR>checking whether gcc=20
+-B/home/azanetti/ml507/powerpc/bin/ -g -O2 supports =
+-mabi=3Dibmlongdouble...=20
+no<BR>configure: error: this configuration requires -mlong-double-128 =
+IBM=20
+extended format support<BR><BR></FONT><BR>I already have the binutils =
+2.18=20
+compiled on my PATH. I know that it is easier to use a script like =
+crosstool to=20
+compile it but I do want to understand what is happening behind the=20
+scenes.<BR><BR>Regards.<BR><BR>Ademir<BR></DIV></BODY></HTML>
 
-Thanks in advance,
-
---
-Alemao
+------_=_NextPart_001_01C92A52.CD6CA400--
