@@ -1,15 +1,17 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <48EE5EAE.1090105@grandegger.com>
-Date: Thu, 09 Oct 2008 21:42:38 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <rep.dot.nop@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.153])
+	by ozlabs.org (Postfix) with ESMTP id 6604BDE002
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 06:51:25 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so111827fga.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 09 Oct 2008 12:51:16 -0700 (PDT)
+Date: Thu, 9 Oct 2008 21:51:25 +0200
+From: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
+To: linuxppc-dev@ozlabs.org, paulus@samba.org, benh@kernel.crashing.org
+Subject: [PATCH] Fix linking modules against crtsavres.o
+Message-ID: <20081009195125.GG5178@mx.loc>
 MIME-Version: 1.0
-To: Linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v3] [NAND] driver extension to support NAND on TQM85xx
-	modules
-References: <484CE77C.70506@grandegger.com> <486B39C8.10502@grandegger.com>
-In-Reply-To: <486B39C8.10502@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
+Content-Type: multipart/mixed; boundary="5QAgd0e35j3NYeGe"
+Cc: sam@ravnborg.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,122 +21,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Grandegger wrote:
-> Hello,
-> 
-> I would like to ask for the status of the patch below and the related
-> ones. Any chance to get them in for 2.6.27.
 
-Already sometime ago I asked for the status of these patches but I never
-got an answer and they did make it into 2.6.27, like the related patches
-from Anton. That's really disappointing. What do I need to do to get
-them finally accepted?
+--5QAgd0e35j3NYeGe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks,
+Hi,
 
-Wolfgang.
+[ http://bugzilla.kernel.org/show_bug.cgi?id=11143 has it all]
 
-> Wolfgang Grandegger wrote:
->> This patch extends the FSL UPM NAND driver from Anton Vorontsov to
->> support hardware which does not have the R/B pin of the NAND chip
->> connected, like the TQM8548 module:
->>
->> - The OF_GPIO dependency has been removed from the Kconfig option
->>   because GPIO is not needed. The relevant gpio_* function are then
->>   stubbed out in <linux/gpio.h>.
->>  
->> - It re-introduces the chip-delay property to define an appropriate
->>   maximum delay time (tR) required for read operations. The binding
->>   will be documented in a separate patch.
->>
->> Note: this patch is based on a patch from Anton Vorontsov aöready
->>       posted to this list:
->>
->>       http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055587.html.
->>       http://ozlabs.org/pipermail/linuxppc-dev/2008-May/057158.html
->>
->> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
->> ---
->>  drivers/mtd/nand/Kconfig   |    2 +-
->>  drivers/mtd/nand/fsl_upm.c |   17 +++++++++++++----
->>  2 files changed, 14 insertions(+), 5 deletions(-)
->>
->> Index: linux-2.6-galak/drivers/mtd/nand/Kconfig
->> ===================================================================
->> --- linux-2.6-galak.orig/drivers/mtd/nand/Kconfig
->> +++ linux-2.6-galak/drivers/mtd/nand/Kconfig
->> @@ -380,7 +380,7 @@ config MTD_NAND_FSL_ELBC
->>  
->>  config MTD_NAND_FSL_UPM
->>      tristate "Support for NAND on Freescale UPM"
->> -    depends on MTD_NAND && OF_GPIO && (PPC_83xx || PPC_85xx)
->> +    depends on MTD_NAND && (PPC_83xx || PPC_85xx)
->>      select FSL_LBC
->>      help
->>        Enables support for NAND Flash chips wired onto Freescale PowerPC
->> Index: linux-2.6-galak/drivers/mtd/nand/fsl_upm.c
->> ===================================================================
->> --- linux-2.6-galak.orig/drivers/mtd/nand/fsl_upm.c
->> +++ linux-2.6-galak/drivers/mtd/nand/fsl_upm.c
->> @@ -13,6 +13,7 @@
->>  
->>  #include <linux/kernel.h>
->>  #include <linux/module.h>
->> +#include <linux/delay.h>
->>  #include <linux/mtd/nand.h>
->>  #include <linux/mtd/nand_ecc.h>
->>  #include <linux/mtd/partitions.h>
->> @@ -36,6 +37,7 @@ struct fsl_upm_nand {
->>      uint8_t upm_cmd_offset;
->>      void __iomem *io_base;
->>      int rnb_gpio;
->> +    int chip_delay;
->>  };
->>  
->>  #define to_fsl_upm_nand(mtd) container_of(mtd, struct fsl_upm_nand, mtd)
->> @@ -58,10 +60,11 @@ static void fun_wait_rnb(struct fsl_upm_
->>      if (fun->rnb_gpio >= 0) {
->>          while (--cnt && !fun_chip_ready(&fun->mtd))
->>              cpu_relax();
->> +        if (!cnt)
->> +            dev_err(fun->dev, "tired waiting for RNB\n");
->> +    } else {
->> +        ndelay(100);
->>      }
->> -
->> -    if (!cnt)
->> -        dev_err(fun->dev, "tired waiting for RNB\n");
->>  }
->>  
->>  static void fun_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int
->> ctrl)
->> @@ -129,7 +132,7 @@ static int __devinit fun_chip_init(struc
->>      fun->chip.IO_ADDR_R = fun->io_base;
->>      fun->chip.IO_ADDR_W = fun->io_base;
->>      fun->chip.cmd_ctrl = fun_cmd_ctrl;
->> -    fun->chip.chip_delay = 50;
->> +    fun->chip.chip_delay = fun->chip_delay;
->>      fun->chip.read_byte = fun_read_byte;
->>      fun->chip.read_buf = fun_read_buf;
->>      fun->chip.write_buf = fun_write_buf;
->> @@ -233,6 +236,12 @@ static int __devinit fun_probe(struct of
->>          goto err2;
->>      }
->>  
->> +    prop = of_get_property(ofdev->node, "chip-delay", NULL);
->> +    if (prop)
->> +        fun->chip_delay = *prop;
->> +    else
->> +        fun->chip_delay = 50;
->> +
->>      fun->io_base = devm_ioremap_nocache(&ofdev->dev, io_res.start,
->>                        io_res.end - io_res.start + 1);
->>      if (!fun->io_base) {
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>
->>
-> 
-> 
+targeting ppc(32), e.g. 405 (!fp), previously i got:
+  CC      drivers/char/hw_random/rng-core.mod.o
+  LD [M]  drivers/char/hw_random/rng-core.ko
+/there/src/buildroot.git.ppc/build_powerpc_nofpu/staging_dir/usr/bin/powerpc-linux-uclibc-ld:
+arch/powerpc/lib/crtsavres.o: No such file: No such file or directory
+
+	* Makefile (LDFLAGS_MODULE_PREREQ): New variable to hold prerequisite
+	files for modules.
+	* arch/powerpc/Makefile: add crtsavres.o to LDFLAGS_MODULE_PREREQ.
+	* scripts/Makefile.modpost (cmd_as_o_S): Copy from Makefile.build.
+	(cmd_ld_ko_o): Also link LDFLAGS_MODULE_PREREQ.
+	Provide rule to build objects from assembler.
+
+The attached patch (same as attached to abovementioned bug) fixes this.
+I'm asking the ppc maintainers or you, Sam, to consider something to
+that effect for inclusing in the stable series.
+thanks,
+
+--5QAgd0e35j3NYeGe
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="linux-2.6.26.5-powerpc-crtsavres_for_modules.patch"
+
+Fix linking modules against crtsavres.o
+
+Previously we got
+  CC      drivers/char/hw_random/rng-core.mod.o
+  LD [M]  drivers/char/hw_random/rng-core.ko
+/there/src/buildroot.git.ppc/build_powerpc_nofpu/staging_dir/usr/bin/powerpc-linux-uclibc-ld: arch/powerpc/lib/crtsavres.o: No such file: No such file or directory
+
+	* Makefile (LDFLAGS_MODULE_PREREQ): New variable to hold prerequisite
+	files for modules.
+	* arch/powerpc/Makefile: add crtsavres.o to LDFLAGS_MODULE_PREREQ.
+	* scripts/Makefile.modpost (cmd_as_o_S): Copy from Makefile.build.
+	(cmd_ld_ko_o): Also link LDFLAGS_MODULE_PREREQ.
+	Provide rule to build objects from assembler.
+
+Signed-off-by:  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+
+diff -rup ../../x/linux-2.6.26.5.old/arch/powerpc/Makefile linux-2.6.26.5/arch/powerpc/Makefile
+--- ../../x/linux-2.6.26.5.old/arch/powerpc/Makefile	2008-09-08 19:40:20.000000000 +0200
++++ linux-2.6.26.5/arch/powerpc/Makefile	2008-10-07 14:28:08.000000000 +0200
+@@ -97,7 +97,7 @@ else
+ 	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
+ endif
+ else
+-LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
++LDFLAGS_MODULE_PREREQ += arch/powerpc/lib/crtsavres.o
+ endif
+ 
+ ifeq ($(CONFIG_TUNE_CELL),y)
+diff -rup ../../x/linux-2.6.26.5.old/Makefile linux-2.6.26.5/Makefile
+--- ../../x/linux-2.6.26.5.old/Makefile	2008-09-08 19:40:20.000000000 +0200
++++ linux-2.6.26.5/Makefile	2008-10-07 14:15:59.000000000 +0200
+@@ -318,6 +318,7 @@ MODFLAGS	= -DMODULE
+ CFLAGS_MODULE   = $(MODFLAGS)
+ AFLAGS_MODULE   = $(MODFLAGS)
+ LDFLAGS_MODULE  =
++LDFLAGS_MODULE_PREREQ  =
+ CFLAGS_KERNEL	=
+ AFLAGS_KERNEL	=
+ 
+@@ -342,7 +343,7 @@ KERNELVERSION = $(VERSION).$(PATCHLEVEL)
+ export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
+ export ARCH SRCARCH CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
+ export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL UTS_MACHINE
+-export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS
++export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE LDFLAGS_MODULE_PREREQ CHECK CHECKFLAGS
+ 
+ export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS LDFLAGS
+ export KBUILD_CFLAGS CFLAGS_KERNEL CFLAGS_MODULE
+diff -rup ../../x/linux-2.6.26.5.old/scripts/Makefile.modpost linux-2.6.26.5/scripts/Makefile.modpost
+--- ../../x/linux-2.6.26.5.old/scripts/Makefile.modpost	2008-09-08 19:40:20.000000000 +0200
++++ linux-2.6.26.5/scripts/Makefile.modpost	2008-10-07 14:24:34.000000000 +0200
+@@ -122,14 +122,21 @@ quiet_cmd_cc_o_c = CC      $@
+       cmd_cc_o_c = $(CC) $(c_flags) $(CFLAGS_MODULE)	\
+ 		   -c -o $@ $<
+ 
+-$(modules:.ko=.mod.o): %.mod.o: %.mod.c FORCE
++quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
++cmd_as_o_S       = $(CC) $(a_flags) $(AFLAGS_MODULE) -c -o $@ $<
++
++$(LDFLAGS_MODULE_PREREQ): %.o: %.S FORCE
++	$(call if_changed_dep,as_o_S)
++
++$(modules:.ko=.mod.o): %.mod.o: %.mod.c $(LDFLAGS_MODULE_PREREQ) FORCE
+ 	$(call if_changed_dep,cc_o_c)
+ 
+ targets += $(modules:.ko=.mod.o)
+ 
+ # Step 6), final link of the modules
+ quiet_cmd_ld_ko_o = LD [M]  $@
+-      cmd_ld_ko_o = $(LD) -r $(LDFLAGS) $(LDFLAGS_MODULE) -o $@		\
++      cmd_ld_ko_o = $(LD) -r $(LDFLAGS) $(LDFLAGS_MODULE_PREREQ)	\
++			  $(LDFLAGS_MODULE) -o $@		\
+ 			  $(filter-out FORCE,$^)
+ 
+ $(modules): %.ko :%.o %.mod.o FORCE
+
+--5QAgd0e35j3NYeGe--
