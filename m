@@ -1,20 +1,15 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 6B5DCDE211
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 06:03:43 +1100 (EST)
-Date: Thu, 9 Oct 2008 23:03:40 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: PPC440EPx gpio driver
-Message-ID: <20081009190340.GA28107@oksana.dev.rtsoft.ru>
-References: <48ED1E96.4060406@harris.com>
-	<20081009173810.GA14959@oksana.dev.rtsoft.ru>
-	<48EE47C1.1000303@harris.com> <200810092046.44665.sr@denx.de>
+Return-Path: <wg@grandegger.com>
+Message-ID: <48EE5EAE.1090105@grandegger.com>
+Date: Thu, 09 Oct 2008 21:42:38 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <200810092046.44665.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+To: Linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v3] [NAND] driver extension to support NAND on TQM85xx
+	modules
+References: <484CE77C.70506@grandegger.com> <486B39C8.10502@grandegger.com>
+In-Reply-To: <486B39C8.10502@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,80 +19,122 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 09, 2008 at 08:46:44PM +0200, Stefan Roese wrote:
-[...]
-> > +struct ppc4xx_gpio_chip {
-> > +	struct of_mm_gpio_chip mm_gc;
-> > +	spinlock_t lock;
-> > +	u32 shadow_or;
-> > +	u32 shadow_tcr;
-> > +	u32 shadow_osrl;
-> > +	u32 shadow_osrh;
-> > +	u32 shadow_tsrl;
-> > +	u32 shadow_tsrh;
-> > +	u32 shadow_odr;
-> > +};
+Wolfgang Grandegger wrote:
+> Hello,
 > 
-> Do we really need all those shadow registers? Access to the "real" registers 
-> is done while holding the spinlock.
+> I would like to ask for the status of the patch below and the related
+> ones. Any chance to get them in for 2.6.27.
 
-The shadowed registers aren't about holding a spinlock, but are
-about open drain pins and the fact that some GPIO controllers are
-using single "data" register for "read state", "set state" and
-"clear state" GPIO operations.
-
-See Grant's reply:
-
-http://ozlabs.org/pipermail/linuxppc-dev/2008-January/050826.html
-
-(I didn't look for the hardware details of this driver, so I don't
-know if the driver really needs to shadow the registers.)
-
-[...]
-> > +	for_each_compatible_node(np, NULL, "amcc,ppc4xx-gpio") {
-> > +		int ret;
-> > +		struct ppc4xx_gpio_chip *ppc4xx_gc;
-> > +		struct of_mm_gpio_chip *mm_gc;
-> > +		struct of_gpio_chip *of_gc;
-> > +		struct gpio_chip *gc;
-> > +
-> > +		ppc4xx_gc = kzalloc(sizeof(*ppc4xx_gc), GFP_KERNEL);
-> > +		if (!ppc4xx_gc) {
-> > +			ret = -ENOMEM;
-> > +			goto err;
-> > +		}
-> > +
-> > +		spin_lock_init(&ppc4xx_gc->lock);
-> > +
-> > +		mm_gc = &ppc4xx_gc->mm_gc;
-> > +		of_gc = &mm_gc->of_gc;
-> > +		gc = &of_gc->gc;
-> > +
-> > +		mm_gc->save_regs = ppc4xx_gpio_save_regs;
-> > +		of_gc->gpio_cells = 2;
-> > +		gc->ngpio = 32;
-> > +		gc->direction_input = ppc4xx_gpio_dir_in;
-> > +		gc->direction_output = ppc4xx_gpio_dir_out;
-> > +		gc->get = ppc4xx_gpio_get;
-> > +		gc->set = ppc4xx_gpio_set;
-> > +
-> > +		ret = of_mm_gpiochip_add(np, mm_gc);
-> > +		if (ret)
-> > +			goto err;
-> > +		continue;
-> > +err:
-> > +		pr_err("%s: registration failed with status %d\n",
-> > +		       np->full_name, ret);
-> > +		kfree(ppc4xx_gc);
-> 
-> This probably crashes if the kzalloc() fails above.
-
-kfree(NULL); is defined to be a no-op.
-
+Already sometime ago I asked for the status of these patches but I never
+got an answer and they did make it into 2.6.27, like the related patches
+from Anton. That's really disappointing. What do I need to do to get
+them finally accepted?
 
 Thanks,
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Wolfgang.
+
+> Wolfgang Grandegger wrote:
+>> This patch extends the FSL UPM NAND driver from Anton Vorontsov to
+>> support hardware which does not have the R/B pin of the NAND chip
+>> connected, like the TQM8548 module:
+>>
+>> - The OF_GPIO dependency has been removed from the Kconfig option
+>>   because GPIO is not needed. The relevant gpio_* function are then
+>>   stubbed out in <linux/gpio.h>.
+>>  
+>> - It re-introduces the chip-delay property to define an appropriate
+>>   maximum delay time (tR) required for read operations. The binding
+>>   will be documented in a separate patch.
+>>
+>> Note: this patch is based on a patch from Anton Vorontsov aöready
+>>       posted to this list:
+>>
+>>       http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055587.html.
+>>       http://ozlabs.org/pipermail/linuxppc-dev/2008-May/057158.html
+>>
+>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+>> ---
+>>  drivers/mtd/nand/Kconfig   |    2 +-
+>>  drivers/mtd/nand/fsl_upm.c |   17 +++++++++++++----
+>>  2 files changed, 14 insertions(+), 5 deletions(-)
+>>
+>> Index: linux-2.6-galak/drivers/mtd/nand/Kconfig
+>> ===================================================================
+>> --- linux-2.6-galak.orig/drivers/mtd/nand/Kconfig
+>> +++ linux-2.6-galak/drivers/mtd/nand/Kconfig
+>> @@ -380,7 +380,7 @@ config MTD_NAND_FSL_ELBC
+>>  
+>>  config MTD_NAND_FSL_UPM
+>>      tristate "Support for NAND on Freescale UPM"
+>> -    depends on MTD_NAND && OF_GPIO && (PPC_83xx || PPC_85xx)
+>> +    depends on MTD_NAND && (PPC_83xx || PPC_85xx)
+>>      select FSL_LBC
+>>      help
+>>        Enables support for NAND Flash chips wired onto Freescale PowerPC
+>> Index: linux-2.6-galak/drivers/mtd/nand/fsl_upm.c
+>> ===================================================================
+>> --- linux-2.6-galak.orig/drivers/mtd/nand/fsl_upm.c
+>> +++ linux-2.6-galak/drivers/mtd/nand/fsl_upm.c
+>> @@ -13,6 +13,7 @@
+>>  
+>>  #include <linux/kernel.h>
+>>  #include <linux/module.h>
+>> +#include <linux/delay.h>
+>>  #include <linux/mtd/nand.h>
+>>  #include <linux/mtd/nand_ecc.h>
+>>  #include <linux/mtd/partitions.h>
+>> @@ -36,6 +37,7 @@ struct fsl_upm_nand {
+>>      uint8_t upm_cmd_offset;
+>>      void __iomem *io_base;
+>>      int rnb_gpio;
+>> +    int chip_delay;
+>>  };
+>>  
+>>  #define to_fsl_upm_nand(mtd) container_of(mtd, struct fsl_upm_nand, mtd)
+>> @@ -58,10 +60,11 @@ static void fun_wait_rnb(struct fsl_upm_
+>>      if (fun->rnb_gpio >= 0) {
+>>          while (--cnt && !fun_chip_ready(&fun->mtd))
+>>              cpu_relax();
+>> +        if (!cnt)
+>> +            dev_err(fun->dev, "tired waiting for RNB\n");
+>> +    } else {
+>> +        ndelay(100);
+>>      }
+>> -
+>> -    if (!cnt)
+>> -        dev_err(fun->dev, "tired waiting for RNB\n");
+>>  }
+>>  
+>>  static void fun_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int
+>> ctrl)
+>> @@ -129,7 +132,7 @@ static int __devinit fun_chip_init(struc
+>>      fun->chip.IO_ADDR_R = fun->io_base;
+>>      fun->chip.IO_ADDR_W = fun->io_base;
+>>      fun->chip.cmd_ctrl = fun_cmd_ctrl;
+>> -    fun->chip.chip_delay = 50;
+>> +    fun->chip.chip_delay = fun->chip_delay;
+>>      fun->chip.read_byte = fun_read_byte;
+>>      fun->chip.read_buf = fun_read_buf;
+>>      fun->chip.write_buf = fun_write_buf;
+>> @@ -233,6 +236,12 @@ static int __devinit fun_probe(struct of
+>>          goto err2;
+>>      }
+>>  
+>> +    prop = of_get_property(ofdev->node, "chip-delay", NULL);
+>> +    if (prop)
+>> +        fun->chip_delay = *prop;
+>> +    else
+>> +        fun->chip_delay = 50;
+>> +
+>>      fun->io_base = devm_ioremap_nocache(&ofdev->dev, io_res.start,
+>>                        io_res.end - io_res.start + 1);
+>>      if (!fun->io_base) {
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>>
+>>
+> 
+> 
