@@ -1,12 +1,17 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 28F38DDE19
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 01:53:40 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/4xx: Add 4xx gpio support
-Date: Thu,  9 Oct 2008 16:53:34 +0200
-Message-Id: <1223564014-16757-1-git-send-email-sr@denx.de>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 7E6C8DE10D
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 02:10:28 +1100 (EST)
+Message-ID: <48EE1EE1.1050206@harris.com>
+Date: Thu, 09 Oct 2008 11:10:25 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
+MIME-Version: 1.0
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: PPC440EPx gpio driver
+References: <48ED1E96.4060406@harris.com>
+In-Reply-To: <48ED1E96.4060406@harris.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,161 +21,147 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a 4xx gpio driver. Tested on a 405EP and a 440EPx
-platform.
+Anton - thanks very much for your comments.  I learned a lot, and I've
+incorporated your suggestions into the driver, copy attached.
 
-Signed-off-by: Stefan Roese <sr@denx.de>
----
+Stefan - hope I didn't step on your toes, but I was not aware you were
+also working on this.  Anyway, it seemed like a good place to make my
+first "significant" contribution to the kernel source.  But I'll defer
+to the choice of the community.
 
-This driver probably needs some final polishing. E.g. some parts can
-be extraced from ppc4xx_gpio_dir_in()/ppc4xx_gpio_dir_out() and moved
-into seperate functions to make the code more compact. Also some
-documentation would be handy. I didn't include it for now since I
-wanted this driver version out now for comments. Documentation
-will follow in a later version.
+Signed-off-by: Steve Falco <sfalco at harris.com>
 
-Other suggestion are welcome. :)
-
-
- arch/powerpc/sysdev/Kconfig       |    8 ++
- arch/powerpc/sysdev/Makefile      |    1 +
- arch/powerpc/sysdev/ppc4xx_gpio.c |  233 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 242 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/sysdev/ppc4xx_gpio.c
-
-diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
-index 72fb35b..f4a8edb 100644
---- a/arch/powerpc/sysdev/Kconfig
-+++ b/arch/powerpc/sysdev/Kconfig
-@@ -6,3 +6,11 @@ config PPC4xx_PCI_EXPRESS
- 	bool
- 	depends on PCI && 4xx
- 	default n
+diff --git a/arch/powerpc/include/asm/ppc4xx.h b/arch/powerpc/include/asm/ppc4xx.h
+index 033039a..acbccb7 100644
+--- a/arch/powerpc/include/asm/ppc4xx.h
++++ b/arch/powerpc/include/asm/ppc4xx.h
+@@ -13,6 +13,28 @@
+ #ifndef __ASM_POWERPC_PPC4xx_H__
+ #define __ASM_POWERPC_PPC4xx_H__
+ 
++/* GPIO */
++struct ppc4xx_gpio {
++	unsigned int gpio_or;
++	unsigned int gpio_tcr;
++	unsigned int gpio_osrl;
++	unsigned int gpio_osrh;
++	unsigned int gpio_tsrl;
++	unsigned int gpio_tsrh;
++	unsigned int gpio_odr;
++	unsigned int gpio_ir;
++	unsigned int gpio_rr1;
++	unsigned int gpio_rr2;
++	unsigned int gpio_rr3;
++	unsigned int reserved1;
++	unsigned int gpio_isr1l;
++	unsigned int gpio_isr1h;
++	unsigned int gpio_isr2l;
++	unsigned int gpio_isr2h;
++	unsigned int gpio_isr3l;
++	unsigned int gpio_isr3h;
++};
 +
-+config PPC4xx_GPIO
-+	bool "PPC4xx GPIO support"
-+	depends on 4xx
-+	select ARCH_REQUIRE_GPIOLIB
-+	select GENERIC_GPIO
-+	help
-+	  Enable gpiolib support for PPC4xx based boards
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index a90054b..35d5765 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -35,6 +35,7 @@ obj-$(CONFIG_OF_RTC)		+= of_rtc.o
- ifeq ($(CONFIG_PCI),y)
- obj-$(CONFIG_4xx)		+= ppc4xx_pci.o
- endif
-+obj-$(CONFIG_PPC4xx_GPIO)	+= ppc4xx_gpio.o
-
- # Temporary hack until we have migrated to asm-powerpc
- ifeq ($(ARCH),powerpc)
-diff --git a/arch/powerpc/sysdev/ppc4xx_gpio.c b/arch/powerpc/sysdev/ppc4xx_gpio.c
+ extern void ppc4xx_reset_system(char *cmd);
+ 
+ #endif /* __ASM_POWERPC_PPC4xx_H__ */
+diff --git a/arch/powerpc/platforms/44x/ppc4xx-gpio.c b/arch/powerpc/platforms/44x/ppc4xx-gpio.c
 new file mode 100644
-index 0000000..9847579
+index 0000000..fb80544
 --- /dev/null
-+++ b/arch/powerpc/sysdev/ppc4xx_gpio.c
-@@ -0,1 +1,233 @@
++++ b/arch/powerpc/platforms/44x/ppc4xx-gpio.c
+@@ -0,0 +1,265 @@
 +/*
-+ * IBM/AMCC PPC4xx GPIO LIB API implementation
++ * PPC4xx gpio driver
 + *
-+ * Copyright 2008 Stefan Roese <sr@denx.de>, DENX Software Engineering
++ * Copyright (c) 2008 Harris Corporation
++ * Copyright (c) 2008 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
 + *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
 +
-+#undef DEBUG
-+
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
 +#include <linux/of.h>
++#include <linux/kernel.h>
 +#include <linux/of_gpio.h>
++#include <linux/io.h>
 +#include <linux/of_platform.h>
++#include <linux/init.h>
++#include <linux/compiler.h>
++#include <linux/types.h>
++#include <linux/spinlock.h>
++#include <linux/gpio.h>
 +
-+#include <asm/dcr.h>
-+#include <asm/dcr-regs.h>
-+#include <asm/reg.h>
-+#include <asm/io.h>
++#include <asm/ppc4xx.h>
 +
-+#define GPIO_ALT1_SEL	0x40000000
-+#define GPIO_ALT2_SEL	0x80000000
-+#define GPIO_ALT3_SEL	0xc0000000
-+#define GPIO_IN_SEL	0x40000000
-+#define GPIO_MASK	0xc0000000
-+
-+#define GPIO_MAX	32
-+#define GPIO_VAL(gpio)	(0x80000000 >> (gpio))
-+
-+struct ppc4xx_gpio {
-+	u32 or;		/* 0x00: Output */
-+	u32 tcr;	/* 0x04: Three-State Control */
-+	u32 osrl;	/* 0x08: Output Select (Low) */
-+	u32 osrh;	/* 0x0c: Output Select (High) */
-+	u32 tsrl;	/* 0x10: Three-State Select (Low) */
-+	u32 tsrh;	/* 0x14: Three-State Select (High) */
-+	u32 odr;	/* 0x18: Open Drain */
-+	u32 ir;		/* 0x1c: Input */
-+	u32 rr1;	/* 0x20: Receive Register 1 */
-+	u32 rr2;	/* 0x24: Receive Register 2 */
-+	u32 rr3;	/* 0x28: Receive Register 3 */
-+	u32 res;
-+	u32 isr1l;	/* 0x30: Input Select 1 (Low) */
-+	u32 isr1h;	/* 0x34: Input Select 1 (High) */
-+	u32 isr2l;	/* 0x38: Input Select 1 (Low) */
-+	u32 isr2h;	/* 0x3c: Input Select 1 (High) */
-+	u32 isr3l;	/* 0x40: Input Select 1 (Low) */
-+	u32 isr3h;	/* 0x44: Input Select 1 (High) */
-+};
-+
-+struct ppc4xx_gpio_chip {
++struct ppc4xx_gpiochip {
 +	struct of_mm_gpio_chip mmchip;
-+	spinlock_t lock;
++	spinlock_t gpio_lock;
++	__be32 shadow_or;
++	__be32 shadow_tcr;
++	__be32 shadow_osrl;
++	__be32 shadow_osrh;
++	__be32 shadow_tsrl;
++	__be32 shadow_tsrh;
++	__be32 shadow_odr;
 +};
 +
-+static inline struct ppc4xx_gpio_chip *
-+to_ppc4xx_gpio_chip(struct of_mm_gpio_chip *mm_gc)
-+{
-+	return container_of(mm_gc, struct ppc4xx_gpio_chip, mmchip);
-+}
++/*
++ * GPIO LIB API implementation for GPIOs
++ *
++ * There are a maximum of 64 gpios, spread over two sets of control registers.
++ * The sets are called GPIO0 and GPIO1.  Each set is managed separately, so
++ * there will be two entried in the .dts file.
++ */
 +
 +static int ppc4xx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
 +{
 +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
 +	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++	u32 ret;
 +
-+	return (in_be32(&regs->ir) & GPIO_VAL(gpio) ? 1 : 0);
++	ret = (in_be32(&regs->gpio_ir) >> (31 - gpio)) & 1;
++
++	return ret;
 +}
 +
-+static inline void __ppc4xx_gpio_set(struct gpio_chip *gc,
-+				     unsigned int gpio, int val)
++static inline void
++__ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
 +{
 +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct ppc4xx_gpiochip *chip = container_of(mm_gc,
++			struct ppc4xx_gpiochip, mmchip);
 +	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
 +
 +	if (val)
-+		out_be32(&regs->or, in_be32(&regs->or) | GPIO_VAL(gpio));
++		chip->shadow_or |= 1 << (31 - gpio);
 +	else
-+		out_be32(&regs->or, in_be32(&regs->or) & ~GPIO_VAL(gpio));
++		chip->shadow_or &= ~(1 << (31 - gpio));
++	out_be32(&regs->gpio_or, chip->shadow_or);
 +}
 +
-+static void ppc4xx_gpio_set(struct gpio_chip *gc,
-+			    unsigned int gpio, int val)
++static void
++ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
 +{
 +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct ppc4xx_gpio_chip *chip = to_ppc4xx_gpio_chip(mm_gc);
++	struct ppc4xx_gpiochip *chip = container_of(mm_gc,
++			struct ppc4xx_gpiochip, mmchip);
 +	unsigned long flags;
 +
-+	spin_lock_irqsave(&chip->lock, flags);
++	spin_lock_irqsave(&chip->gpio_lock, flags);
++
 +	__ppc4xx_gpio_set(gc, gpio, val);
-+	spin_unlock_irqrestore(&chip->lock, flags);
++
++	spin_unlock_irqrestore(&chip->gpio_lock, flags);
 +
 +	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
 +}
@@ -178,79 +169,105 @@ index 0000000..9847579
 +static int ppc4xx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
 +{
 +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct ppc4xx_gpio_chip *chip = to_ppc4xx_gpio_chip(mm_gc);
++	struct ppc4xx_gpiochip *chip = container_of(mm_gc,
++			struct ppc4xx_gpiochip, mmchip);
 +	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
 +	unsigned long flags;
-+	u32 offs, mask, mask2, val32;
-+	u32 gpio2 = 0;
 +
-+	spin_lock_irqsave(&chip->lock, flags);
++	spin_lock_irqsave(&chip->gpio_lock, flags);
 +
-+	if (gpio >= GPIO_MAX / 2) {
-+		offs = 0x4;
-+		gpio2 = (gpio - GPIO_MAX / 2) << 1;
++	/* Disable open-drain function */
++	chip->shadow_odr &= ~(1 << (31 - gpio));
++	out_be32(&regs->gpio_odr, chip->shadow_odr);
++
++	/* Float the pin */
++	chip->shadow_tcr &= ~(1 << (31 - gpio));
++	out_be32(&regs->gpio_tcr, chip->shadow_tcr);
++
++	/* Bits 0-15 use TSRL/OSRL, bits 16-31 use TSRH/OSRH */
++	if (gpio < 16) {
++		chip->shadow_osrl &= ~(3 << ((15 - gpio) * 2));
++		out_be32(&regs->gpio_osrl, chip->shadow_osrl);
++
++		chip->shadow_tsrl &= ~(3 << ((15 - gpio) * 2));
++		out_be32(&regs->gpio_tsrl, chip->shadow_tsrl);
++	} else {
++		chip->shadow_osrh &= ~(3 << ((31 - gpio) * 2));
++		out_be32(&regs->gpio_osrh, chip->shadow_osrh);
++
++		chip->shadow_tsrh &= ~(3 << ((31 - gpio) * 2));
++		out_be32(&regs->gpio_tsrh, chip->shadow_tsrh);
 +	}
 +
-+	mask = 0x80000000 >> gpio;
-+	mask2 = 0xc0000000 >> gpio2;
-+
-+	/* first set TCR to 0 */
-+	out_be32(&regs->tcr, in_be32(&regs->tcr) & ~mask);
-+
-+	/* now set the direction */
-+	val32 = in_be32(&regs->isr1l + offs) & ~mask2;
-+	val32 |= GPIO_IN_SEL >> gpio2;
-+	out_be32(&regs->isr1l + offs, val32);
-+
-+	spin_unlock_irqrestore(&chip->lock, flags);
++	spin_unlock_irqrestore(&chip->gpio_lock, flags);
 +
 +	return 0;
 +}
 +
-+static int ppc4xx_gpio_dir_out(struct gpio_chip *gc,
-+			       unsigned int gpio, int val)
++static int
++ppc4xx_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
 +{
 +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct ppc4xx_gpio_chip *chip = to_ppc4xx_gpio_chip(mm_gc);
++	struct ppc4xx_gpiochip *chip = container_of(mm_gc,
++			struct ppc4xx_gpiochip, mmchip);
 +	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
 +	unsigned long flags;
-+	u32 offs, mask, mask2, val32;
-+	u32 gpio2 = 0;
 +
-+	spin_lock_irqsave(&chip->lock, flags);
++	spin_lock_irqsave(&chip->gpio_lock, flags);
 +
-+	if (gpio >= GPIO_MAX / 2) {
-+		offs = 0x4;
-+		gpio2 = (gpio - GPIO_MAX / 2) << 1;
-+	}
-+
-+	mask = 0x80000000 >> gpio;
-+	mask2 = 0xc0000000 >> gpio2;
-+
-+	/* first set TCR to 0 */
-+	out_be32(&regs->tcr, in_be32(&regs->tcr) & ~mask);
-+
-+	/* set initial value */
++	/* First set initial value */
 +	__ppc4xx_gpio_set(gc, gpio, val);
 +
-+	/* now set the direction */
-+	val32 = in_be32(&regs->osrl + offs) & ~mask2;
-+	out_be32(&regs->osrl + offs, val32);
++	/* Disable open-drain function */
++	chip->shadow_odr &= ~(1 << (31 - gpio));
++	out_be32(&regs->gpio_odr, chip->shadow_odr);
 +
-+	/* now configure TCR to drive output */
-+	out_be32(&regs->tcr, in_be32(&regs->tcr) | mask);
++	/* Drive the pin */
++	chip->shadow_tcr |= (1 << (31 - gpio));
++	out_be32(&regs->gpio_tcr, chip->shadow_tcr);
 +
-+	spin_unlock_irqrestore(&chip->lock, flags);
++	/* Bits 0-15 use TSRL, bits 16-31 use TSRH */
++	if (gpio < 16) {
++		chip->shadow_osrl &= ~(3 << ((15 - gpio) * 2));
++		out_be32(&regs->gpio_osrl, chip->shadow_osrl);
++
++		chip->shadow_tsrl &= ~(3 << ((15 - gpio) * 2));
++		out_be32(&regs->gpio_tsrl, chip->shadow_tsrl);
++	} else {
++		chip->shadow_osrh &= ~(3 << ((31 - gpio) * 2));
++		out_be32(&regs->gpio_osrh, chip->shadow_osrh);
++
++		chip->shadow_tsrh &= ~(3 << ((31 - gpio) * 2));
++		out_be32(&regs->gpio_tsrh, chip->shadow_tsrh);
++	}
++
++	spin_unlock_irqrestore(&chip->gpio_lock, flags);
 +
 +	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
 +
 +	return 0;
 +}
 +
-+static int __devinit ppc4xx_gpiochip_probe(struct of_device *ofdev,
-+					   const struct of_device_id *match)
++static void __devinit ppc4xx_gpiochip_save_regs(struct of_mm_gpio_chip *mm_gc)
 +{
-+	struct ppc4xx_gpio_chip *chip;
++	struct ppc4xx_gpiochip *chip = container_of(mm_gc,
++			struct ppc4xx_gpiochip, mmchip);
++	struct ppc4xx_gpio __iomem *regs;
++
++	regs = mm_gc->regs;
++	chip->shadow_or = in_be32(&regs->gpio_or);
++	chip->shadow_tcr = in_be32(&regs->gpio_tcr);
++	chip->shadow_osrl = in_be32(&regs->gpio_osrl);
++	chip->shadow_osrh = in_be32(&regs->gpio_osrh);
++	chip->shadow_tsrl = in_be32(&regs->gpio_tsrl);
++	chip->shadow_tsrh = in_be32(&regs->gpio_tsrh);
++	chip->shadow_odr = in_be32(&regs->gpio_odr);
++}
++
++static int __devinit ppc4xx_gpiochip_probe(struct of_device *ofdev,
++					const struct of_device_id *match)
++{
++	struct ppc4xx_gpiochip *chip;
 +	struct of_gpio_chip *ofchip;
 +	int ret;
 +
@@ -258,20 +275,22 @@ index 0000000..9847579
 +	if (!chip)
 +		return -ENOMEM;
 +
++	spin_lock_init(&chip->gpio_lock);
++
++	chip->mmchip.save_regs = ppc4xx_gpiochip_save_regs;
++
 +	ofchip = &chip->mmchip.of_gc;
 +
-+	spin_lock_init(&chip->lock);
-+
-+	ofchip->gpio_cells = 2;
-+	ofchip->gc.ngpio = 32;
-+	ofchip->gc.direction_input = ppc4xx_gpio_dir_in;
++	ofchip->gpio_cells          = 2;
++	ofchip->gc.ngpio            = 32;
++	ofchip->gc.direction_input  = ppc4xx_gpio_dir_in;
 +	ofchip->gc.direction_output = ppc4xx_gpio_dir_out;
-+	ofchip->gc.get = ppc4xx_gpio_get;
-+	ofchip->gc.set = ppc4xx_gpio_set;
++	ofchip->gc.get              = ppc4xx_gpio_get;
++	ofchip->gc.set              = ppc4xx_gpio_set;
 +
 +	ret = of_mm_gpiochip_add(ofdev->node, &chip->mmchip);
 +	if (ret) {
-+		free(chip);
++		kfree(chip);
 +		return ret;
 +	}
 +
@@ -285,13 +304,13 @@ index 0000000..9847579
 +
 +static const struct of_device_id ppc4xx_gpiochip_match[] = {
 +	{
-+		.compatible = "ibm,gpio",
++		.compatible = "amcc,ppc4xx-gpio",
 +	},
 +	{}
 +};
 +
 +static struct of_platform_driver ppc4xx_gpiochip_driver = {
-+	.name = "gpio",
++	.name = "ppc4xx-gpio",
 +	.match_table = ppc4xx_gpiochip_match,
 +	.probe = ppc4xx_gpiochip_probe,
 +	.remove = ppc4xx_gpiochip_remove,
@@ -300,10 +319,19 @@ index 0000000..9847579
 +static int __init ppc4xx_gpio_init(void)
 +{
 +	if (of_register_platform_driver(&ppc4xx_gpiochip_driver))
-+		printk(KERN_ERR "%s: Unable to register GPIO driver\n", __func__);
++		printk(KERN_ERR "%s: Unable to register GPIO driver\n",
++			       	__func__);
 +
 +	return 0;
 +}
-+arch_initcall(ppc4xx_gpio_init);
---
-1.6.0.2
++
++
++/* Make sure we get initialised before anyone else tries to use us */
++subsys_initcall(ppc4xx_gpio_init);
++
++/* No exit call at the moment as we cannot unregister of gpio chips */
++
++MODULE_DESCRIPTION("AMCC PPC4xx gpio driver");
++MODULE_AUTHOR("Steve Falco <sfalco@harris.com");
++MODULE_LICENSE("GPL v2");
++
