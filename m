@@ -1,25 +1,20 @@
-Return-Path: <sven@powerlinux.fr>
-Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
-	by ozlabs.org (Postfix) with ESMTP id ABB1FDE0D4
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 08:28:22 +1100 (EST)
-Date: Thu, 9 Oct 2008 23:28:21 +0200
-From: Sven Luther <sven@genesi-usa.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc: remove default=y from PMAC and CHRP Kconfigs
-Message-ID: <20081009212821.GA15626@powerlinux.fr>
-References: <1223496186.8157.82.camel@pasglop>
-	<ed82fe3e0810081314g34b902f7j76f5049faf91f905@mail.gmail.com>
-	<1223498380.8157.86.camel@pasglop> <48ED1B9E.3020907@freescale.com>
-	<48EE2A49.10405@genesi-usa.com>
-	<ed82fe3e0810090920t25442258gcd5cedabf686fe2d@mail.gmail.com>
-	<48EE3636.7020305@genesi-usa.com>
-	<ed82fe3e0810091023j5f746a9cs7f8564c1e6ea8dcb@mail.gmail.com>
-	<20081009201833.GA14746@powerlinux.fr>
-	<ed82fe3e0810091414i32ed515di62230a3f4ac78a03@mail.gmail.com>
+Return-Path: <bgat@billgatliff.com>
+Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0CA42DE1A6
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 08:29:59 +1100 (EST)
+Message-ID: <48EE77D7.8030700@billgatliff.com>
+Date: Thu, 09 Oct 2008 16:29:59 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ed82fe3e0810091414i32ed515di62230a3f4ac78a03@mail.gmail.com>
-Cc: Sven Luther <sven@genesi-usa.com>, linuxppc-dev@ozlabs.org
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: [RFC 0/6] Proposal for a Generic PWM Device API
+References: <cover.1223482372.git.bgat@billgatliff.com>
+	<48EE72C1.4040206@genesi-usa.com>
+In-Reply-To: <48EE72C1.4040206@genesi-usa.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,27 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 09, 2008 at 04:14:36PM -0500, Timur Tabi wrote:
-> On Thu, Oct 9, 2008 at 3:18 PM, Sven Luther <sven@genesi-usa.com> wrote:
-> >> Not really true.  Having the default be disabled for specific
-> >> platforms can make a big difference in compile time.
-> >
-> > Notice that the defconfigs answer also applies here :)
+Matt Sealey wrote:
+> I'm all for this if you manage it.
 > 
-> Not really.  In order for me to create a new defconfig for an embedded
-> platform, I have to turn *off* CHRP *and* PMAC support, and then turn
-> on whatever platform I want.
-> 
-> That's the point behind my patch.  The default is on, so anyone
-> creating a non-CHRP or non-PMAC platform has to do extra work.
-> 
-> And the argument that embedded platforms aren't as important as the
-> exalted CHRP is bollocks.  All platforms should be treated equally.
-> And like I said earlier, PMAC platforms aren't even being built any
-> more, so it's ridiculous to consider that the default.
+> The code and API looks good. We have some projects which involve PWM
+> and having a nice clean standard API like the GPIO API was on the
+> wishlist.. this will make it so much easier to do fan control,
+> backlight control, drive motors, audio output, and the billion
+> other things..
 
-You just turn it on by default for 64bit and idsable it for 32bit :)
+/me blushes
 
-Friendly,
+Aw, shucks.  I'm just glad I could help.  :)
 
-Sven Luther
+
+b.g.
+-- 
+Bill Gatliff
+bgat@billgatliff.com
