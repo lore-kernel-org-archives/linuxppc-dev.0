@@ -1,23 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.238])
-	by ozlabs.org (Postfix) with ESMTP id F388EDDF35
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 18:07:34 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so4177830rvb.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 09 Oct 2008 00:07:32 -0700 (PDT)
-Message-ID: <fa686aa40810090007u27908fd6p1234acff06c75761@mail.gmail.com>
-Date: Thu, 9 Oct 2008 01:07:32 -0600
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.225])
+	by ozlabs.org (Postfix) with ESMTP id E8F96DDEF2
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 19:02:42 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so4197625rvb.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 09 Oct 2008 01:02:41 -0700 (PDT)
+Message-ID: <fa686aa40810090102wcc8acf0i4577f195ca40eac6@mail.gmail.com>
+Date: Thu, 9 Oct 2008 02:02:41 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Remi Machet" <rmachet@slac.stanford.edu>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Subject: Re: [PATCH 4/5] powerpc: Make the 64-bit kernel as a
-	position-independent executable
-In-Reply-To: <1222474260.19465.24.camel@pcds-ts102.slac.stanford.edu>
+To: "Paul Mackerras" <paulus@samba.org>,
+	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Please pull 'next' branch of
+	git://git.secretlab.ca/git/linux-2.6-mpc52xx
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <18616.42451.914835.305138@cargo.ozlabs.ibm.com>
-	<1222474260.19465.24.camel@pcds-ts102.slac.stanford.edu>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,41 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 26, 2008 at 6:10 PM, Remi Machet <rmachet@slac.stanford.edu> wrote:
-> Hi Paul,
->
-> This patch breaks my build with the following error:
->
-> /u1/rmachet/projects/c2k/linux-powerpc-git $ make cuImage.c2k modules ARCH=powerpc V=1
-> ...
->  powerpc-linux-gnu-ld -m elf32ppc  -Bstatic  -o .tmp_vmlinux1 -T arch/powerpc/kernel/vmlinux.lds arch/powerpc/kernel/head_32.o arch/powerpc/kernel/fpu.o  init/built-in.o --start-group  usr/built-in.o  arch/powerpc/kernel/built-in.o  arch/powerpc/mm/built-in.o  arch/powerpc/lib/built-in.o  arch/powerpc/sysdev/built-in.o  arch/powerpc/platforms/built-in.o  kernel/built-in.o  mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o  block/built-in.o  lib/lib.a  lib/built-in.o  drivers/built-in.o  sound/built-in.o  firmware/built-in.o  net/built-in.o --end-group
-> powerpc-linux-gnu-ld: BFD 2.16.1 internal error, aborting at /u1/rmachet/project/crosstool/crosstool-0.43/build/powerpc-linux-gnu/gcc-4.1.1-glibc-2.3.6/binutils-2.16.1/bfd/elflink.c line 6419 in elf_link_output_extsym
->
-> powerpc-linux-gnu-ld: Please report this bug.
+Hi Ben,
 
-I can confirm this problem.  This patch breaks builds using binutils
-2.16.1.  It definitely looks like a binutils bug.  It builds fine with
-2.17.
+Can you please pull my mpc52xx support tree?
 
->
-> I isolated the problem to line 202 in arch/powerpc/kernel/vmlinux.lds.S: If I remove that
-> line then the kernel builds and run fine on my board (a PowerPC 32bits c2k).
-> For reference the line is:
->
->        .rela.dyn : AT(ADDR(.rela.dyn) - LOAD_OFFSET)
->        {
-> 202->           __rela_dyn_start = .;
->                *(.rela*)
->        }
-
-There are still a lot of embedded developers using 2.16.1 binutils in
-their toolchains so I think that this needs to be worked around.
-Otherwise we'll see lots of complaints when this gets merged into
-mainline.  However, I haven't figured out a workaround yet.  Looking
-at the binutils sourcecode doesn't reveal anything obvious, but it's
-too late for my brain to work properly.  Anyone else have any ideas?
-
+Thanks,
 g.
+
+The following changes since commit 7c12d906f4ef690c65e60111375856640f63a545:
+  Benjamin Herrenschmidt (1):
+        powerpc: Fix sysfs pci mmap on 32-bit machines with 64-bit PCI
+
+are available in the git repository at:
+
+  git://git.secretlab.ca/git/linux-2.6-mpc52xx next
+
+Anton Vorontsov (1):
+      OF: add fsl,mcu-mpc8349emitx to the exception list
+
+Grant Likely (1):
+      powerpc/mpc5200: fix build warnings on mpc52xx_psc_spi driver
+
+Tony Breeds (1):
+      powerpc/mpc5200: Silence warnings in
+arch/powerpc/platforms/52xx/mpc52xx_pci.c
+
+Wolfgang Grandegger (1):
+      i2c-mpc: suppress I2C device probing
+
+Wolfram Sang (1):
+      powerpc/mpc5200: trivial printk-fixes in mpc52xx_common
+
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |    5 +++--
+ arch/powerpc/platforms/52xx/mpc52xx_pci.c    |   13 +++++++++----
+ drivers/i2c/busses/i2c-mpc.c                 |    1 -
+ drivers/of/base.c                            |    2 +-
+ drivers/spi/mpc52xx_psc_spi.c                |    6 +++---
+ 5 files changed, 16 insertions(+), 11 deletions(-)
 
 
 -- 
