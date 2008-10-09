@@ -1,20 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 49CE4DE35A
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 04:38:12 +1100 (EST)
-Date: Thu, 9 Oct 2008 21:38:10 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: "Steven A. Falco" <sfalco@harris.com>
-Subject: Re: PPC440EPx gpio driver
-Message-ID: <20081009173810.GA14959@oksana.dev.rtsoft.ru>
-References: <48ED1E96.4060406@harris.com> <48EE1EE1.1050206@harris.com>
-	<20081009160803.GA20923@oksana.dev.rtsoft.ru>
-	<48EE3ABE.6090007@harris.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <48EE3ABE.6090007@harris.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <rmachet@slac.stanford.edu>
+Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
+	[134.79.18.120])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4E1CEDEA47
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 04:41:32 +1100 (EST)
+Subject: Re: [PATCH 1/3] powerpc: dma code cleanup
+From: Remi Machet <rmachet@slac.stanford.edu>
+To: benh@kernel.crashing.org
+In-Reply-To: <1223414534.8157.63.camel@pasglop>
+References: <1223413504.17585.28.camel@pcds-ts102.slac.stanford.edu>
+	<1223414534.8157.63.camel@pasglop>
+Content-Type: text/plain
+Date: Thu, 09 Oct 2008 10:41:06 -0700
+Message-Id: <1223574067.22565.24.camel@pcds-ts102.slac.stanford.edu>
+Mime-Version: 1.0
+Cc: Linux PPC <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,98 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 09, 2008 at 01:09:18PM -0400, Steven A. Falco wrote:
-> Please disregard the previous version, and consider this one instead.
-> The only difference is making better use of to_ppc4xx_gpiochip(), which
-> helps readability.
+On Wed, 2008-10-08 at 08:22 +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2008-10-07 at 14:05 -0700, Remi Machet wrote:
+> > +       /*
+> > +        * Mark the pages as Reserved: this memory is used by a DMA
+> > engine,
+> > +        * it cannot be swapped.
+> > +        * Also mark each page as un-cached. We ass ume here that a
+> > PTE
+> > +        * already exist (valid assumption for the DMA Zone)
+> > +        */
+> > +       for (addr = kaddr, p = page; addr < kaddr+size;
+> > +                       addr += PAGE_SIZE, p++) {
+> > +               pte_t *pte;
+> > +               spinlock_t *ptl;
+> > +
+> > +               SetPageReserved(p);
+> > +               pte = get_locked_pte(&init_mm, addr, &ptl);
+> > +               set_pte_at(&init_mm, addr,
+> > +                       pte, mk_pte(p,
+> > pgprot_noncached(PAGE_KERNEL)));
+> > +               pte_unmap_unlock(pte, ptl);
+> > +       }
+> > +       flush_tlb_kernel_range(kaddr, kaddr+size-1);
+> > +
 > 
-> Signed-off-by: Steve Falco <sfalco at harris.com>
-[...]
->  #endif /* __ASM_POWERPC_PPC4xx_H__ */
-> diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
-> index 72fb35b..f4a8edb 100644
-> --- a/arch/powerpc/sysdev/Kconfig
-> +++ b/arch/powerpc/sysdev/Kconfig
-> @@ -6,3 +6,11 @@ config PPC4xx_PCI_EXPRESS
->  	bool
->  	depends on PCI && 4xx
->  	default n
-> +
-> +config PPC4xx_GPIO
-> +	bool "PPC4xx GPIO support"
-> +	depends on 4xx
-> +	select ARCH_REQUIRE_GPIOLIB
-> +	select GENERIC_GPIO
-> +	help
-> +	  Enable gpiolib support for PPC4xx based boards
+> There are a few problems with the above approach:
+> 
+>  - Avoid SetPageReserved. It's not useful. Kernel memory doesn't
+> get swapped, and if you happen to map it into userspace, it's up
+> to that mapping to have the right attributes to prevent that.
+> 
+>  - Setting the PTE to non-cached will not work for a whole bunch of
+> things. The kernel linear mapping is often mapped using large bolted TLB
+> entries. For example, on 44x, if you page is in the bottom 768M, it will
+> be mapped using a bolted 256M cacheable TLB entry and you may not even
+> have a PTE for it. kmap will not help
+Do you know of any powerpc architecture where the DMA engine accessible
+address space is limited?
 
-User-selectable options should go into the
-arch/powerpc/platforms/Kconfig, otherwise you'll see the PPC4xx GPIO
-support in the top-level menu in the menuconfig.
+The old dma-noncoherent code had some convoluted code to decide whether
+or not it should add GFP_DMA to the list of flags in dma_alloc_coherent:
 
-> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-> index a90054b..35d5765 100644
-> --- a/arch/powerpc/sysdev/Makefile
-> +++ b/arch/powerpc/sysdev/Makefile
-> @@ -35,6 +35,7 @@ obj-$(CONFIG_OF_RTC)		+= of_rtc.o
->  ifeq ($(CONFIG_PCI),y)
->  obj-$(CONFIG_4xx)		+= ppc4xx_pci.o
->  endif
-> +obj-$(CONFIG_PPC4xx_GPIO)	+= ppc4xx_gpio.o
-
-Though the driver and Makefile entries are OK to live in the the
-sysdev/.
-
->  
->  # Temporary hack until we have migrated to asm-powerpc
->  ifeq ($(ARCH),powerpc)
-> diff --git a/arch/powerpc/sysdev/ppc4xx_gpio.c b/arch/powerpc/sysdev/ppc4xx_gpio.c
-> new file mode 100644
-> index 0000000..93acd3f
-> --- /dev/null
-> +++ b/arch/powerpc/sysdev/ppc4xx_gpio.c
-> @@ -0,0 +1,238 @@
-> +/*
-> + * PPC4xx gpio driver
-> + *
-> + * Copyright (c) 2008 Harris Corporation
-> + * Copyright (c) 2008 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
-> + * Copyright (c) MontaVista Software, Inc. 2008.
-> + *
-> + * Author: Steve Falco <sfalco@harris.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2
-> + * as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/io.h>
-> +#include <linux/of.h>
-> +#include <linux/of_gpio.h>
-> +#include <linux/gpio.h>
-
-We explicitly include all the headers, even if they're already
-included in some header files. Thus you might want to add
-#include <linux/types.h>
+	u64 mask = 0x00ffffff, limit; /* ISA default */
+	...
+	limit = (mask + 1) & ~mask;
+	if ((limit && size >= limit) || size >= (CONSISTENT_END - CONSISTENT_BASE)) {
+		printk(KERN_WARNING "coherent allocation too big (requested %#x mask %#Lx)\n",
+		       size, mask);
+		return NULL;
+	}
+	...
+	if (mask != 0xffffffff)
+		gfp |= GFP_DMA;
 
 
-Reviewed-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Since mask is forced to 0x00ffffff, GFP_DMA is always added ... should I
+just add it too or leave that to the caller of dma_alloc_coherent? (I
+would personally rather leave that to the caller but it may break some
+driver).
 
-Thanks!
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Remi
