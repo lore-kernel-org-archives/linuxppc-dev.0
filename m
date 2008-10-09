@@ -1,20 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B263BDDE31
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 11:33:01 +1100 (EST)
-Date: Thu, 9 Oct 2008 04:32:59 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-	Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: fix fsl_upm nand driver modular build
-Message-ID: <20081009003259.GA8373@oksana.dev.rtsoft.ru>
-References: <20081008222815.GA20542@redhat.com>
-	<20081008230219.GA8075@oksana.dev.rtsoft.ru>
-	<20081008233306.GA31771@redhat.com>
+Return-Path: <kevdig@hypersurf.com>
+Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
+	by ozlabs.org (Postfix) with ESMTP id 6968ADDE1E
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 12:42:20 +1100 (EST)
+Received: from [192.168.1.37] (66-81-71-76.bayarea.dialup.o1.com [66.81.71.76])
+	(authenticated bits=0)
+	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id m991ever057293
+	for <linuxppc-dev@ozlabs.org>; Wed, 8 Oct 2008 18:42:12 -0700 (PDT)
+Message-ID: <48ED60F9.1010908@hypersurf.com>
+Date: Wed, 08 Oct 2008 18:40:10 -0700
+From: Kevin Diggs <kevdig@hypersurf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081008233306.GA31771@redhat.com>
-Reply-To: avorontsov@ru.mvista.com
+CC: linuxppc-dev@ozlabs.org
+Subject: Re: 8600 serial support
+References: <48ED0F30.7080103@hypersurf.com> <1223498711.8157.90.camel@pasglop>
+In-Reply-To: <1223498711.8157.90.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,210 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The fsl_upm nand driver fails to build because fsl_lbc_lock isn't
-exported, the lock is needed by the inlined fsl_upm_run_pattern()
-function:
-
-ERROR: "fsl_lbc_lock" [drivers/mtd/nand/fsl_upm.ko] undefined!
-
-Dave Jones purposed to export the lock, but it is better to just uninline
-the fsl_upm_run_pattern().
-
-When uninlined we also no longer need the exported fsl_lbc_regs, and
-both fsl_lbc_lock and fsl_lbc_regs could be marked static.
-
-While at it, also add some missing includes that we should have included
-explicitly.
-
-Reported-by: Dave Jones <davej@redhat.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-
-On Wed, Oct 08, 2008 at 07:33:06PM -0400, Dave Jones wrote:
-[...]
->  > > ERROR: "fsl_lbc_lock" [drivers/mtd/nand/fsl_upm.ko] undefined!
->  > 
->  > Weird. It works for me with mpc836x_rdk_defconfig and
->  > MTD_NAND_FSL_UPM=m...
->  > 
->  > Hm..
->  > 
->  >   CC      drivers/mtd/nand/fsl_upm.mod.o
->  >   LD [M]  drivers/mtd/nand/fsl_upm.ko
->  > 
->  > Can you send me the .config file you use?
->  
-> http://davej.fedorapeople.org/ppc.config
-
-Still works here. :-/  I'm using latest Linus' git tree, pulled few
-minutes ago just in case.
-
-gcc version 4.2.0 (MontaVista 4.2.0-16.0.20.0800760 2008-04-05)
-GNU ld (GNU Binutils) 2.17.50.20070611
-
-Most probably something on my side, maybe need to update the toolchain.
-
->  > But the patch looks obviously correct. Much thanks for catching this.
->  > 
->  > Though better option would be to uninline the fsl_upm_run_pattern()..
->  > it is quite big anyway... Something like this:
+Benjamin Herrenschmidt wrote:
+> On Wed, 2008-10-08 at 12:51 -0700, Kevin Diggs wrote:
 > 
-> I'll leave it to you to decide what to push to Linus
+>>Hi,
+>>
+>>	I thought I might take a whack at fixing the 2.6 serial driver
+>>for my 8600. At the top of pmac_zilog.c (2.6.26) there is a todo for DMA.
+>>A quick glance at macserial.c (2.4.31) suggests it has dbdma support for
+>>receive. Anyone know of any pitfalls for adding dbdma support for
+>>pmac_zilog.c?
+> 
+> 
+> Yes, it's not totally trivial and I wouldn't recommend using the weirdo
+> code in macserial (it does things that I don't understand how they work
+> with the dbdma engine).
+> 
+> The best way I see is to start from scratch with two different
+> mechanisms:
+> 
+>  - For Tx, that's the easiest, the fire off DMA's for outgoing chars,
+> maybe queue up a few descriptors to let data accumulate.
+> 
+>  - For Rx, one descriptor per byte. That sucks but I think that's also
+> what Apple does. No need to have a huge Rx buffer anyway. That gives you
+> precise Rx status to the byte.
+> 
+> Ben.
+> 
+> 
 
-Ok, here it is. Since I'm unable to reproduce the error, I'd
-appreciate Tested-by: tag if you could find time to build-test
-the patch. It works for me though...
+Does the 8530 (as implemented in the PowerMac ASICs) have a receive
+buffer like the 16550? Any pointers to some "good" dbdma example code?
+Anyone know where one might find some 8530 docs?
 
-Thanks again,
+This driver "should" work for ppp without receive dma, right?
 
- arch/powerpc/include/asm/fsl_lbc.h |   48 +++-----------------------------
- arch/powerpc/sysdev/fsl_lbc.c      |   53 +++++++++++++++++++++++++++++++++---
- 2 files changed, 53 insertions(+), 48 deletions(-)
+One descriptor per byte???
 
-diff --git a/arch/powerpc/include/asm/fsl_lbc.h b/arch/powerpc/include/asm/fsl_lbc.h
-index 303f548..63a4f77 100644
---- a/arch/powerpc/include/asm/fsl_lbc.h
-+++ b/arch/powerpc/include/asm/fsl_lbc.h
-@@ -23,9 +23,9 @@
- #ifndef __ASM_FSL_LBC_H
- #define __ASM_FSL_LBC_H
- 
-+#include <linux/compiler.h>
- #include <linux/types.h>
--#include <linux/spinlock.h>
--#include <asm/io.h>
-+#include <linux/io.h>
- 
- struct fsl_lbc_bank {
- 	__be32 br;             /**< Base Register  */
-@@ -227,9 +227,6 @@ struct fsl_lbc_regs {
- 	u8 res8[0xF00];
- };
- 
--extern struct fsl_lbc_regs __iomem *fsl_lbc_regs;
--extern spinlock_t fsl_lbc_lock;
--
- /*
-  * FSL UPM routines
-  */
-@@ -268,44 +265,7 @@ static inline void fsl_upm_end_pattern(struct fsl_upm *upm)
- 		cpu_relax();
- }
- 
--/**
-- * fsl_upm_run_pattern - actually run an UPM pattern
-- * @upm:	pointer to the fsl_upm structure obtained via fsl_upm_find
-- * @io_base:	remapped pointer to where memory access should happen
-- * @mar:	MAR register content during pattern execution
-- *
-- * This function triggers dummy write to the memory specified by the io_base,
-- * thus UPM pattern actually executed. Note that mar usage depends on the
-- * pre-programmed AMX bits in the UPM RAM.
-- */
--static inline int fsl_upm_run_pattern(struct fsl_upm *upm,
--				      void __iomem *io_base, u32 mar)
--{
--	int ret = 0;
--	unsigned long flags;
--
--	spin_lock_irqsave(&fsl_lbc_lock, flags);
--
--	out_be32(&fsl_lbc_regs->mar, mar << (32 - upm->width));
--
--	switch (upm->width) {
--	case 8:
--		out_8(io_base, 0x0);
--		break;
--	case 16:
--		out_be16(io_base, 0x0);
--		break;
--	case 32:
--		out_be32(io_base, 0x0);
--		break;
--	default:
--		ret = -EINVAL;
--		break;
--	}
--
--	spin_unlock_irqrestore(&fsl_lbc_lock, flags);
--
--	return ret;
--}
-+extern int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base,
-+			       u32 mar);
- 
- #endif /* __ASM_FSL_LBC_H */
-diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
-index 422c8fa..0494ee5 100644
---- a/arch/powerpc/sysdev/fsl_lbc.c
-+++ b/arch/powerpc/sysdev/fsl_lbc.c
-@@ -11,14 +11,19 @@
-  * (at your option) any later version.
-  */
- 
-+#include <linux/init.h>
-+#include <linux/module.h>
- #include <linux/kernel.h>
-+#include <linux/compiler.h>
-+#include <linux/spinlock.h>
-+#include <linux/types.h>
-+#include <linux/io.h>
- #include <linux/of.h>
-+#include <asm/prom.h>
- #include <asm/fsl_lbc.h>
- 
--spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
--
--struct fsl_lbc_regs __iomem *fsl_lbc_regs;
--EXPORT_SYMBOL(fsl_lbc_regs);
-+static spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
-+static struct fsl_lbc_regs __iomem *fsl_lbc_regs;
- 
- static char __initdata *compat_lbc[] = {
- 	"fsl,pq2-localbus",
-@@ -127,3 +132,43 @@ int fsl_upm_find(phys_addr_t addr_base, struct fsl_upm *upm)
- 	return 0;
- }
- EXPORT_SYMBOL(fsl_upm_find);
-+
-+/**
-+ * fsl_upm_run_pattern - actually run an UPM pattern
-+ * @upm:	pointer to the fsl_upm structure obtained via fsl_upm_find
-+ * @io_base:	remapped pointer to where memory access should happen
-+ * @mar:	MAR register content during pattern execution
-+ *
-+ * This function triggers dummy write to the memory specified by the io_base,
-+ * thus UPM pattern actually executed. Note that mar usage depends on the
-+ * pre-programmed AMX bits in the UPM RAM.
-+ */
-+int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base, u32 mar)
-+{
-+	int ret = 0;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&fsl_lbc_lock, flags);
-+
-+	out_be32(&fsl_lbc_regs->mar, mar << (32 - upm->width));
-+
-+	switch (upm->width) {
-+	case 8:
-+		out_8(io_base, 0x0);
-+		break;
-+	case 16:
-+		out_be16(io_base, 0x0);
-+		break;
-+	case 32:
-+		out_be32(io_base, 0x0);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	spin_unlock_irqrestore(&fsl_lbc_lock, flags);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(fsl_upm_run_pattern);
--- 
-1.5.6.3
+kevin
