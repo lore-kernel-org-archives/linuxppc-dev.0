@@ -1,24 +1,17 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CD8FFDDEFE
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 19:45:01 +1100 (EST)
-Message-ID: <48ED1B9E.3020907@freescale.com>
-Date: Wed, 08 Oct 2008 15:44:14 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] powerpc: remove default=y from PMAC and CHRP Kconfigs
-References: <1223495845-14149-1-git-send-email-timur@freescale.com>	
-	<1223496186.8157.82.camel@pasglop>	
-	<ed82fe3e0810081314g34b902f7j76f5049faf91f905@mail.gmail.com>
-	<1223498380.8157.86.camel@pasglop>
-In-Reply-To: <1223498380.8157.86.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18669.58803.48011.686743@cargo.ozlabs.ibm.com>
+Date: Thu, 9 Oct 2008 22:06:27 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Dominik Bozek <domino@mikroswiat.pl>
+Subject: Re: performance: memcpy vs. __copy_tofrom_user
+In-Reply-To: <48EDD905.6070609@mikroswiat.pl>
+References: <48ECC611.3030309@mikroswiat.pl>
+	<20081008154212.GA21723@secretlab.ca>
+	<18669.28058.495259.72182@cargo.ozlabs.ibm.com>
+	<48EDD905.6070609@mikroswiat.pl>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,14 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
+Dominik Bozek writes:
 
-> I'm happy with -all- platforms for a given CPU type defaulting to y. 
+> Actually I made couple of other tests on that mpc8313. Most of them are
+> to ugly to publish them, but... My problem is that I have to boost the
+> gigabit interface on the mpc8313. I made simple substitution and
+> __copy_tofrom_user was used instead of memcpy. I know, it's wrong, but I
+> speedup that way the network interface for about 10%.
 
-I'm not sure I understand.  The current Kconfigs defaults to Y for CHRP and PMAC
-on *all* PowerPC systems, including those that are neither CHRP nor PMAC.  Are
-you saying that's a good thing?
+Very interesting.  Can you work out where memcpy is being called on
+the network data?  I wouldn't have expected that.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+There is actually no strong reason not to use __copy_tofrom_user as
+memcpy, in fact, as long as we are sure that source and destination
+are both cacheable.
+
+Paul.
