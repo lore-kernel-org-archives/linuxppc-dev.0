@@ -1,32 +1,25 @@
-Return-Path: <mohan@in.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5023ADE303
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 03:35:43 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e38.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id m99GZ6T7019160
-	for <linuxppc-dev@ozlabs.org>; Thu, 9 Oct 2008 10:35:06 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m99GZYeA213434
-	for <linuxppc-dev@ozlabs.org>; Thu, 9 Oct 2008 10:35:35 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m99GZTMu019347
-	for <linuxppc-dev@ozlabs.org>; Thu, 9 Oct 2008 10:35:29 -0600
-Message-ID: <48EE32CA.5070401@in.ibm.com>
-Date: Thu, 09 Oct 2008 22:05:22 +0530
-From: Mohan Kumar M <mohan@in.ibm.com>
+Return-Path: <neko@genesi-usa.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.236])
+	by ozlabs.org (Postfix) with ESMTP id A5C45DDF81
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 03:49:59 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id s6so41965wxc.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 09 Oct 2008 09:49:58 -0700 (PDT)
+Message-ID: <48EE3636.7020305@genesi-usa.com>
+Date: Thu, 09 Oct 2008 11:49:58 -0500
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Support for relocatable kdump kernel
-References: <20081001182645.GB20319@in.ibm.com>
-	<18669.38444.112286.785452@cargo.ozlabs.ibm.com>
-In-Reply-To: <18669.38444.112286.785452@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, kexec@lists.infradead.org
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc: remove default=y from PMAC and CHRP Kconfigs
+References: <1223495845-14149-1-git-send-email-timur@freescale.com>	
+	<1223496186.8157.82.camel@pasglop>	
+	<ed82fe3e0810081314g34b902f7j76f5049faf91f905@mail.gmail.com>	
+	<1223498380.8157.86.camel@pasglop>
+	<48ED1B9E.3020907@freescale.com>	 <48EE2A49.10405@genesi-usa.com>
+	<ed82fe3e0810090920t25442258gcd5cedabf686fe2d@mail.gmail.com>
+In-Reply-To: <ed82fe3e0810090920t25442258gcd5cedabf686fe2d@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,109 +29,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
 
-Thank you for the review. I will implement the changes you suggested and 
-send the patches.
+Timur Tabi wrote:
+> On Thu, Oct 9, 2008 at 10:59 AM, Matt Sealey <matt@genesi-usa.com> wrote:
+> 
+>> If you really want to build a single-cpu single-board kernel, disable CHRP
+>> and PMAC for those board configs, but the default definitely should be to
+>> enable them all within reason
+> 
+> The problem is that this is inconsistent with most Kconfig options.
+> Last I heard, the kernel community generally frowns on "default y" in
+> Kconfig options.
+> 
+> I'm waiting for someone to explain to me what's so special about CHRP
+> and PMAC that these two platforms should be enabled by default, when
+> all other PowerPC platforms are disabled by default.
+> 
+> This is what I see in menuconfig when I create a fresh .config for PowerPC:
+> 
+>   │ │    [*] Common Hardware Reference Platform (CHRP) based machines (NEW)
+>   │ │    [ ] Freescale MPC5121E ADS (NEW)
+>   │ │    [ ] Generic support for simple MPC5121 based boards (NEW)
+>   │ │    [ ] 52xx-based boards (NEW)
+>   │ │    [*] Apple PowerMac based machines (NEW)
+>   │ │    [ ] 82xx-based boards (PQ II) (NEW)  --->
+>   │ │    [ ] 83xx-based boards (NEW)  --->
+>   │ │    [ ] 86xx-based boards (NEW)  --->
+>   │ │    [ ] Embedded 6xx/7xx/7xxx-based boards (NEW)
+> 
+> CHRP and PMAC aren't following the rules that everyone else is following.  Why?
 
-Regards,
-Mohan.
+Because they are by far the historically most common configuration, and
+still in production as the defacto standard PowerPC system configuration.
+IBM blades etc. with SLOF will boot up as a CHRP-ish system, as well as the
+Efika and Pegasos and anything else Genesi produces. Since Linux distributions
+generally do not support tiny embedded boards, you can imagine why it's
+disabled by default, but there's no reason it can't be ENABLED by default
+and turned off by a distribution, the same way it can't be enabled by
+default and turned off by YOU (compare and contrast having to manually
+select which board you want to build for every time).
 
-> Mohan Kumar M writes:
-> 
->> Support for relocatable kdump kernel
-> 
-> [snip]
-> 
->> @@ -1384,7 +1392,15 @@ _STATIC(__after_prom_start)
->>  	/* process relocations for the final address of the kernel */
->>  	lis	r25,PAGE_OFFSET@highest	/* compute virtual base of kernel */
->>  	sldi	r25,r25,32
->> -	mr	r3,r25
->> +#ifdef CONFIG_CRASH_DUMP
->> +	ld	r7,__kdump_flag@got(r2)
->> +	add	r7,r7,r26
->> +	ld	r7,0(r7)
-> 
-> I think it is dangerous to use an address from the GOT at this point
-> when we haven't called relocate() yet.  In fact those 3 instructions
-> can be replaced by one:
-> 
-> 	ld	r7,__kdump_flag-_stext(r26)
-> 
-> since we have our base address (i.e. the address of _stext) in r26 at
-> this point.
-> 
->> +#ifdef CONFIG_RELOCATABLE
->> +#ifdef CONFIG_CRASH_DUMP
->> +/*
->> + * Check if the kernel has to be running as relocatable kernel based on the
->> + * variable __kdump_flag, if it is set the kernel is treated as relocatble
->> + * kernel, otherwise it will be moved to PHYSICAL_START
->> + */
->> +	ld	r7,__kdump_flag@got(r2)
->> +	ld	r7,0(r7)
-> 
-> Here again I would rather you did
-> 
-> 	ld	r7,__kdump_flag-_stext(r26)
-> 
-> since the kernel is relocated for its final location by this point,
-> but it is not running at the final location yet.
-> 
->> +	cmpldi	cr0,r7,1
->> +	bne	regular
->> +
->> +	li	r5,__end_interrupts - _stext	/* just copy interrupts */
->> +	b	5f
->> +regular:
->> +#endif
->> +	lis	r5,(copy_to_here - _stext)@ha
->> +	addi	r5,r5,(copy_to_here - _stext)@l /* # bytes of memory to copy */
->>  
->>  	bl	.copy_and_flush		/* copy the first n bytes	 */
->>  					/* this includes the code being	 */
->> @@ -1411,15 +1443,33 @@ _STATIC(__after_prom_start)
->>  	mtctr	r8
->>  	bctr
->>  
->> +p_end:	.llong	_end - _stext
->> +
->>  4:	/* Now copy the rest of the kernel up to _end */
->>  	addis	r5,r26,(p_end - _stext)@ha
->>  	ld	r5,(p_end - _stext)@l(r5)	/* get _end */
->> -	bl	.copy_and_flush		/* copy the rest */
->> +#else
->> +	lis	r5,(copy_to_here - _stext)@ha
->> +	addi	r5,r5,(copy_to_here - _stext)@l /* # bytes of memory to copy */
->>  
->> -9:	b	.start_here_multiplatform
->> +	bl	.copy_and_flush		/* copy the first n bytes	 */
->> +					/* this includes the code being	 */
->> +					/* executed here.		 */
->> +	addis	r8,r3,(4f - _stext)@ha	/* Jump to the copy of this code */
->> +	addi	r8,r8,(4f - _stext)@l	/* that we just made */
->> +	mtctr	r8
->> +	bctr
->>  
->>  p_end:	.llong	_end - _stext
->>  
->> +4:	/* Now copy the rest of the kernel up to _end */
->> +	addis	r5,r26,(p_end - _stext)@ha
->> +	ld	r5,(p_end - _stext)@l(r5)	/* get _end */
->> +#endif
->> +5:	bl	.copy_and_flush		/* copy the rest */
->> +
->> +9:	b	.start_here_multiplatform
-> 
-> You have ended up with two separate copies of the code here depending
-> on whether or not we have CONFIG_RELOCATABLE set.  I don't think the
-> code paths should be different to such an extent.  Please try to make
-> the ifdef as small as possible (ideally, nonexistent).
-> 
-> Paul.
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+But, turning them all on would not matter. You would build a kernel for
+every one and a device tree for every one increasing your build time a
+bit for a default kernel, but you would be guaranteed to get a kernel
+binary somewhere in the tree that would work on all of them :)
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
