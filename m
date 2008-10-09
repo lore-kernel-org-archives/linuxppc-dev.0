@@ -1,25 +1,18 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.236])
-	by ozlabs.org (Postfix) with ESMTP id A5C45DDF81
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 03:49:59 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id s6so41965wxc.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 09 Oct 2008 09:49:58 -0700 (PDT)
-Message-ID: <48EE3636.7020305@genesi-usa.com>
-Date: Thu, 09 Oct 2008 11:49:58 -0500
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
+	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id DD12ADE39A
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 03:55:52 +1100 (EST)
+Message-ID: <48EE3796.30807@harris.com>
+Date: Thu, 09 Oct 2008 12:55:50 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc: remove default=y from PMAC and CHRP Kconfigs
-References: <1223495845-14149-1-git-send-email-timur@freescale.com>	
-	<1223496186.8157.82.camel@pasglop>	
-	<ed82fe3e0810081314g34b902f7j76f5049faf91f905@mail.gmail.com>	
-	<1223498380.8157.86.camel@pasglop>
-	<48ED1B9E.3020907@freescale.com>	 <48EE2A49.10405@genesi-usa.com>
-	<ed82fe3e0810090920t25442258gcd5cedabf686fe2d@mail.gmail.com>
-In-Reply-To: <ed82fe3e0810090920t25442258gcd5cedabf686fe2d@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org
+To: avorontsov@ru.mvista.com
+Subject: Re: PPC440EPx gpio driver
+References: <48ED1E96.4060406@harris.com> <48EE1EE1.1050206@harris.com>
+	<20081009160803.GA20923@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081009160803.GA20923@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=windows-1251
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,51 +22,323 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Thanks again for the comments.  I followed the structure of your
+qe_lib/gpio.c; here is the result.  At this point, I've tested input
+and output, so it is looking pretty good for me.
 
-Timur Tabi wrote:
-> On Thu, Oct 9, 2008 at 10:59 AM, Matt Sealey <matt@genesi-usa.com> wrote:
-> 
->> If you really want to build a single-cpu single-board kernel, disable CHRP
->> and PMAC for those board configs, but the default definitely should be to
->> enable them all within reason
-> 
-> The problem is that this is inconsistent with most Kconfig options.
-> Last I heard, the kernel community generally frowns on "default y" in
-> Kconfig options.
-> 
-> I'm waiting for someone to explain to me what's so special about CHRP
-> and PMAC that these two platforms should be enabled by default, when
-> all other PowerPC platforms are disabled by default.
-> 
-> This is what I see in menuconfig when I create a fresh .config for PowerPC:
-> 
->   │ │    [*] Common Hardware Reference Platform (CHRP) based machines (NEW)
->   │ │    [ ] Freescale MPC5121E ADS (NEW)
->   │ │    [ ] Generic support for simple MPC5121 based boards (NEW)
->   │ │    [ ] 52xx-based boards (NEW)
->   │ │    [*] Apple PowerMac based machines (NEW)
->   │ │    [ ] 82xx-based boards (PQ II) (NEW)  --->
->   │ │    [ ] 83xx-based boards (NEW)  --->
->   │ │    [ ] 86xx-based boards (NEW)  --->
->   │ │    [ ] Embedded 6xx/7xx/7xxx-based boards (NEW)
-> 
-> CHRP and PMAC aren't following the rules that everyone else is following.  Why?
+I added __init to the ppc4xx_gpio_save_regs because it looks like it is
+only needed when first adding the gpios.
 
-Because they are by far the historically most common configuration, and
-still in production as the defacto standard PowerPC system configuration.
-IBM blades etc. with SLOF will boot up as a CHRP-ish system, as well as the
-Efika and Pegasos and anything else Genesi produces. Since Linux distributions
-generally do not support tiny embedded boards, you can imagine why it's
-disabled by default, but there's no reason it can't be ENABLED by default
-and turned off by a distribution, the same way it can't be enabled by
-default and turned off by YOU (compare and contrast having to manually
-select which board you want to build for every time).
+Signed-off-by: Steve Falco <sfalco at harris.com>
 
-But, turning them all on would not matter. You would build a kernel for
-every one and a device tree for every one increasing your build time a
-bit for a default kernel, but you would be guaranteed to get a kernel
-binary somewhere in the tree that would work on all of them :)
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+diff --git a/arch/powerpc/include/asm/ppc4xx.h b/arch/powerpc/include/asm/ppc4xx.h
+index 033039a..589ff5c 100644
+--- a/arch/powerpc/include/asm/ppc4xx.h
++++ b/arch/powerpc/include/asm/ppc4xx.h
+@@ -13,6 +13,30 @@
+ #ifndef __ASM_POWERPC_PPC4xx_H__
+ #define __ASM_POWERPC_PPC4xx_H__
+ 
++#include <linux/types.h>
++
++/* GPIO */
++struct ppc4xx_gpio {
++	__be32 gpio_or;
++	__be32 gpio_tcr;
++	__be32 gpio_osrl;
++	__be32 gpio_osrh;
++	__be32 gpio_tsrl;
++	__be32 gpio_tsrh;
++	__be32 gpio_odr;
++	__be32 gpio_ir;
++	__be32 gpio_rr1;
++	__be32 gpio_rr2;
++	__be32 gpio_rr3;
++	__be32 reserved1;
++	__be32 gpio_isr1l;
++	__be32 gpio_isr1h;
++	__be32 gpio_isr2l;
++	__be32 gpio_isr2h;
++	__be32 gpio_isr3l;
++	__be32 gpio_isr3h;
++};
++
+ extern void ppc4xx_reset_system(char *cmd);
+ 
+ #endif /* __ASM_POWERPC_PPC4xx_H__ */
+diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
+index 72fb35b..f4a8edb 100644
+--- a/arch/powerpc/sysdev/Kconfig
++++ b/arch/powerpc/sysdev/Kconfig
+@@ -6,3 +6,11 @@ config PPC4xx_PCI_EXPRESS
+ 	bool
+ 	depends on PCI && 4xx
+ 	default n
++
++config PPC4xx_GPIO
++	bool "PPC4xx GPIO support"
++	depends on 4xx
++	select ARCH_REQUIRE_GPIOLIB
++	select GENERIC_GPIO
++	help
++	  Enable gpiolib support for PPC4xx based boards
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index a90054b..35d5765 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -35,6 +35,7 @@ obj-$(CONFIG_OF_RTC)		+= of_rtc.o
+ ifeq ($(CONFIG_PCI),y)
+ obj-$(CONFIG_4xx)		+= ppc4xx_pci.o
+ endif
++obj-$(CONFIG_PPC4xx_GPIO)	+= ppc4xx_gpio.o
+ 
+ # Temporary hack until we have migrated to asm-powerpc
+ ifeq ($(ARCH),powerpc)
+diff --git a/arch/powerpc/sysdev/ppc4xx_gpio.c b/arch/powerpc/sysdev/ppc4xx_gpio.c
+new file mode 100644
+index 0000000..95c4204
+--- /dev/null
++++ b/arch/powerpc/sysdev/ppc4xx_gpio.c
+@@ -0,0 +1,242 @@
++/*
++ * PPC4xx gpio driver
++ *
++ * Copyright (c) 2008 Harris Corporation
++ * Copyright (c) 2008 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
++ * Copyright (c) MontaVista Software, Inc. 2008.
++ *
++ * Author: Steve Falco <sfalco@harris.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/spinlock.h>
++#include <linux/io.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
++#include <linux/gpio.h>
++
++#include <asm/ppc4xx.h>
++
++struct ppc4xx_gpio_chip {
++	struct of_mm_gpio_chip mm_gc;
++	spinlock_t lock;
++	u32 shadow_or;
++	u32 shadow_tcr;
++	u32 shadow_osrl;
++	u32 shadow_osrh;
++	u32 shadow_tsrl;
++	u32 shadow_tsrh;
++	u32 shadow_odr;
++};
++
++/*
++ * GPIO LIB API implementation for GPIOs
++ *
++ * There are a maximum of 64 gpios, spread over two sets of control registers.
++ * The sets are called GPIO0 and GPIO1.  Each set is managed separately, so
++ * there will be two entried in the .dts file.
++ */
++
++static inline struct ppc4xx_gpio_chip *
++to_ppc4xx_gpiochip(struct of_mm_gpio_chip *mm_gc)
++{
++	return container_of(mm_gc, struct ppc4xx_gpio_chip, mm_gc);
++}
++
++static int ppc4xx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++	u32 ret;
++
++	ret = (in_be32(&regs->gpio_ir) >> (31 - gpio)) & 1;
++
++	return ret;
++}
++
++static inline void
++__ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct ppc4xx_gpio_chip *chip = container_of(mm_gc,
++			struct ppc4xx_gpio_chip, mm_gc);
++	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++
++	if (val)
++		chip->shadow_or |= 1 << (31 - gpio);
++	else
++		chip->shadow_or &= ~(1 << (31 - gpio));
++	out_be32(&regs->gpio_or, chip->shadow_or);
++}
++
++static void
++ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct ppc4xx_gpio_chip *chip = container_of(mm_gc,
++			struct ppc4xx_gpio_chip, mm_gc);
++	unsigned long flags;
++
++	spin_lock_irqsave(&chip->lock, flags);
++
++	__ppc4xx_gpio_set(gc, gpio, val);
++
++	spin_unlock_irqrestore(&chip->lock, flags);
++
++	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
++}
++
++static int ppc4xx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct ppc4xx_gpio_chip *chip = container_of(mm_gc,
++			struct ppc4xx_gpio_chip, mm_gc);
++	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++	unsigned long flags;
++
++	spin_lock_irqsave(&chip->lock, flags);
++
++	/* Disable open-drain function */
++	chip->shadow_odr &= ~(1 << (31 - gpio));
++	out_be32(&regs->gpio_odr, chip->shadow_odr);
++
++	/* Float the pin */
++	chip->shadow_tcr &= ~(1 << (31 - gpio));
++	out_be32(&regs->gpio_tcr, chip->shadow_tcr);
++
++	/* Bits 0-15 use TSRL/OSRL, bits 16-31 use TSRH/OSRH */
++	if (gpio < 16) {
++		chip->shadow_osrl &= ~(3 << ((15 - gpio) * 2));
++		out_be32(&regs->gpio_osrl, chip->shadow_osrl);
++
++		chip->shadow_tsrl &= ~(3 << ((15 - gpio) * 2));
++		out_be32(&regs->gpio_tsrl, chip->shadow_tsrl);
++	} else {
++		chip->shadow_osrh &= ~(3 << ((31 - gpio) * 2));
++		out_be32(&regs->gpio_osrh, chip->shadow_osrh);
++
++		chip->shadow_tsrh &= ~(3 << ((31 - gpio) * 2));
++		out_be32(&regs->gpio_tsrh, chip->shadow_tsrh);
++	}
++
++	spin_unlock_irqrestore(&chip->lock, flags);
++
++	return 0;
++}
++
++static int
++ppc4xx_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct ppc4xx_gpio_chip *chip = container_of(mm_gc,
++			struct ppc4xx_gpio_chip, mm_gc);
++	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++	unsigned long flags;
++
++	spin_lock_irqsave(&chip->lock, flags);
++
++	/* First set initial value */
++	__ppc4xx_gpio_set(gc, gpio, val);
++
++	/* Disable open-drain function */
++	chip->shadow_odr &= ~(1 << (31 - gpio));
++	out_be32(&regs->gpio_odr, chip->shadow_odr);
++
++	/* Drive the pin */
++	chip->shadow_tcr |= (1 << (31 - gpio));
++	out_be32(&regs->gpio_tcr, chip->shadow_tcr);
++
++	/* Bits 0-15 use TSRL, bits 16-31 use TSRH */
++	if (gpio < 16) {
++		chip->shadow_osrl &= ~(3 << ((15 - gpio) * 2));
++		out_be32(&regs->gpio_osrl, chip->shadow_osrl);
++
++		chip->shadow_tsrl &= ~(3 << ((15 - gpio) * 2));
++		out_be32(&regs->gpio_tsrl, chip->shadow_tsrl);
++	} else {
++		chip->shadow_osrh &= ~(3 << ((31 - gpio) * 2));
++		out_be32(&regs->gpio_osrh, chip->shadow_osrh);
++
++		chip->shadow_tsrh &= ~(3 << ((31 - gpio) * 2));
++		out_be32(&regs->gpio_tsrh, chip->shadow_tsrh);
++	}
++
++	spin_unlock_irqrestore(&chip->lock, flags);
++
++	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
++
++	return 0;
++}
++
++static void __init ppc4xx_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
++{
++	struct ppc4xx_gpio_chip *chip = to_ppc4xx_gpiochip(mm_gc);
++	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++
++	chip->shadow_or = in_be32(&regs->gpio_or);
++	chip->shadow_tcr = in_be32(&regs->gpio_tcr);
++	chip->shadow_osrl = in_be32(&regs->gpio_osrl);
++	chip->shadow_osrh = in_be32(&regs->gpio_osrh);
++	chip->shadow_tsrl = in_be32(&regs->gpio_tsrl);
++	chip->shadow_tsrh = in_be32(&regs->gpio_tsrh);
++	chip->shadow_odr = in_be32(&regs->gpio_odr);
++}
++
++static int __init ppc4xx_add_gpiochips(void)
++{
++	struct device_node *np;
++
++	for_each_compatible_node(np, NULL, "amcc,ppc4xx-gpio") {
++		int ret;
++		struct ppc4xx_gpio_chip *ppc4xx_gc;
++		struct of_mm_gpio_chip *mm_gc;
++		struct of_gpio_chip *of_gc;
++		struct gpio_chip *gc;
++
++		ppc4xx_gc = kzalloc(sizeof(*ppc4xx_gc), GFP_KERNEL);
++		if (!ppc4xx_gc) {
++			ret = -ENOMEM;
++			goto err;
++		}
++
++		spin_lock_init(&ppc4xx_gc->lock);
++
++		mm_gc = &ppc4xx_gc->mm_gc;
++		of_gc = &mm_gc->of_gc;
++		gc = &of_gc->gc;
++
++		mm_gc->save_regs = ppc4xx_gpio_save_regs;
++		of_gc->gpio_cells = 2;
++		gc->ngpio = 32;
++		gc->direction_input = ppc4xx_gpio_dir_in;
++		gc->direction_output = ppc4xx_gpio_dir_out;
++		gc->get = ppc4xx_gpio_get;
++		gc->set = ppc4xx_gpio_set;
++
++		ret = of_mm_gpiochip_add(np, mm_gc);
++		if (ret)
++			goto err;
++		continue;
++err:
++		pr_err("%s: registration failed with status %d\n",
++		       np->full_name, ret);
++		kfree(ppc4xx_gc);
++		/* try others anyway */
++	}
++	return 0;
++}
++arch_initcall(ppc4xx_add_gpiochips);
