@@ -1,17 +1,15 @@
-Return-Path: <rep.dot.nop@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.153])
-	by ozlabs.org (Postfix) with ESMTP id 6604BDE002
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 06:51:25 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so111827fga.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 09 Oct 2008 12:51:16 -0700 (PDT)
-Date: Thu, 9 Oct 2008 21:51:25 +0200
-From: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org, benh@kernel.crashing.org
-Subject: [PATCH] Fix linking modules against crtsavres.o
-Message-ID: <20081009195125.GG5178@mx.loc>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 5494DDDF64
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 07:05:33 +1100 (EST)
+Message-ID: <48EE6408.3020006@harris.com>
+Date: Thu, 09 Oct 2008 16:05:28 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="5QAgd0e35j3NYeGe"
-Cc: sam@ravnborg.org
+To: Stefan Roese <sr@denx.de>, Anton Vorontsov <avorontsov@ru.mvista.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: [PATCH v6] PPC440EPx gpio driver
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,111 +19,307 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch adds support for the GPIO functions of PPC40x and PPC44x
+SOCs.
 
---5QAgd0e35j3NYeGe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Steve Falco <sfalco at harris.com>
+---
 
-Hi,
+I looked more closely at the datasheet.  Stefan is correct that the
+shadow registers are not needed for these processors, because they have
+separate registers for input and output.
 
-[ http://bugzilla.kernel.org/show_bug.cgi?id=11143 has it all]
+I've incorporated the other changes, with one exception.  I want
+ppc4xx_gpio_get() to return 0 or 1 (rather than Anton's comment that any
+non-zero value is ok), because when you use the new "export feature" in
+sysfs, you see the raw value returned from ppc4xx_gpio_get().  So, without
+the !!  in the return statement, you would see a strange value, like 32768
+instead of 1:
 
-targeting ppc(32), e.g. 405 (!fp), previously i got:
-  CC      drivers/char/hw_random/rng-core.mod.o
-  LD [M]  drivers/char/hw_random/rng-core.ko
-/there/src/buildroot.git.ppc/build_powerpc_nofpu/staging_dir/usr/bin/powerpc-linux-uclibc-ld:
-arch/powerpc/lib/crtsavres.o: No such file: No such file or directory
+	# cd gpio208
+	# cat value
+	32768
 
-	* Makefile (LDFLAGS_MODULE_PREREQ): New variable to hold prerequisite
-	files for modules.
-	* arch/powerpc/Makefile: add crtsavres.o to LDFLAGS_MODULE_PREREQ.
-	* scripts/Makefile.modpost (cmd_as_o_S): Copy from Makefile.build.
-	(cmd_ld_ko_o): Also link LDFLAGS_MODULE_PREREQ.
-	Provide rule to build objects from assembler.
+So, I think it is worth sanitizing the return value here.
 
-The attached patch (same as attached to abovementioned bug) fixes this.
-I'm asking the ppc maintainers or you, Sam, to consider something to
-that effect for inclusing in the stable series.
-thanks,
-
---5QAgd0e35j3NYeGe
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="linux-2.6.26.5-powerpc-crtsavres_for_modules.patch"
-
-Fix linking modules against crtsavres.o
-
-Previously we got
-  CC      drivers/char/hw_random/rng-core.mod.o
-  LD [M]  drivers/char/hw_random/rng-core.ko
-/there/src/buildroot.git.ppc/build_powerpc_nofpu/staging_dir/usr/bin/powerpc-linux-uclibc-ld: arch/powerpc/lib/crtsavres.o: No such file: No such file or directory
-
-	* Makefile (LDFLAGS_MODULE_PREREQ): New variable to hold prerequisite
-	files for modules.
-	* arch/powerpc/Makefile: add crtsavres.o to LDFLAGS_MODULE_PREREQ.
-	* scripts/Makefile.modpost (cmd_as_o_S): Copy from Makefile.build.
-	(cmd_ld_ko_o): Also link LDFLAGS_MODULE_PREREQ.
-	Provide rule to build objects from assembler.
-
-Signed-off-by:  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
-
-diff -rup ../../x/linux-2.6.26.5.old/arch/powerpc/Makefile linux-2.6.26.5/arch/powerpc/Makefile
---- ../../x/linux-2.6.26.5.old/arch/powerpc/Makefile	2008-09-08 19:40:20.000000000 +0200
-+++ linux-2.6.26.5/arch/powerpc/Makefile	2008-10-07 14:28:08.000000000 +0200
-@@ -97,7 +97,7 @@ else
- 	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
- endif
- else
--LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
-+LDFLAGS_MODULE_PREREQ += arch/powerpc/lib/crtsavres.o
- endif
+diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+index a9260e2..aaada72 100644
+--- a/arch/powerpc/platforms/40x/Kconfig
++++ b/arch/powerpc/platforms/40x/Kconfig
+@@ -139,6 +139,14 @@ config STB03xxx
+ 	select IBM405_ERR77
+ 	select IBM405_ERR51
  
- ifeq ($(CONFIG_TUNE_CELL),y)
-diff -rup ../../x/linux-2.6.26.5.old/Makefile linux-2.6.26.5/Makefile
---- ../../x/linux-2.6.26.5.old/Makefile	2008-09-08 19:40:20.000000000 +0200
-+++ linux-2.6.26.5/Makefile	2008-10-07 14:15:59.000000000 +0200
-@@ -318,6 +318,7 @@ MODFLAGS	= -DMODULE
- CFLAGS_MODULE   = $(MODFLAGS)
- AFLAGS_MODULE   = $(MODFLAGS)
- LDFLAGS_MODULE  =
-+LDFLAGS_MODULE_PREREQ  =
- CFLAGS_KERNEL	=
- AFLAGS_KERNEL	=
- 
-@@ -342,7 +343,7 @@ KERNELVERSION = $(VERSION).$(PATCHLEVEL)
- export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
- export ARCH SRCARCH CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
- export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL UTS_MACHINE
--export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS
-+export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE LDFLAGS_MODULE_PREREQ CHECK CHECKFLAGS
- 
- export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS LDFLAGS
- export KBUILD_CFLAGS CFLAGS_KERNEL CFLAGS_MODULE
-diff -rup ../../x/linux-2.6.26.5.old/scripts/Makefile.modpost linux-2.6.26.5/scripts/Makefile.modpost
---- ../../x/linux-2.6.26.5.old/scripts/Makefile.modpost	2008-09-08 19:40:20.000000000 +0200
-+++ linux-2.6.26.5/scripts/Makefile.modpost	2008-10-07 14:24:34.000000000 +0200
-@@ -122,14 +122,21 @@ quiet_cmd_cc_o_c = CC      $@
-       cmd_cc_o_c = $(CC) $(c_flags) $(CFLAGS_MODULE)	\
- 		   -c -o $@ $<
- 
--$(modules:.ko=.mod.o): %.mod.o: %.mod.c FORCE
-+quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
-+cmd_as_o_S       = $(CC) $(a_flags) $(AFLAGS_MODULE) -c -o $@ $<
++config PPC4xx_GPIO
++	bool "PPC4xx GPIO support"
++	depends on 40x
++	select ARCH_REQUIRE_GPIOLIB
++	select GENERIC_GPIO
++	help
++	  Enable gpiolib support for ppc40x based boards
 +
-+$(LDFLAGS_MODULE_PREREQ): %.o: %.S FORCE
-+	$(call if_changed_dep,as_o_S)
+ # 40x errata/workaround config symbols, selected by the CPU models above
+ 
+ # All 405-based cores up until the 405GPR and 405EP have this errata.
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index 249ba01..eec5cb4 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -127,6 +143,14 @@ config XILINX_VIRTEX440_GENERIC_BOARD
+ 	  Most Virtex 5 designs should use this unless it needs to do some
+ 	  special configuration at board probe time.
+ 
++config PPC4xx_GPIO
++	bool "PPC4xx GPIO support"
++	depends on 44x
++	select ARCH_REQUIRE_GPIOLIB
++	select GENERIC_GPIO
++	help
++	  Enable gpiolib support for ppc440 based boards
 +
-+$(modules:.ko=.mod.o): %.mod.o: %.mod.c $(LDFLAGS_MODULE_PREREQ) FORCE
- 	$(call if_changed_dep,cc_o_c)
+ # 44x specific CPU modules, selected based on the board above.
+ config 440EP
+ 	bool
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index a90054b..35d5765 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -35,6 +35,7 @@ obj-$(CONFIG_OF_RTC)		+= of_rtc.o
+ ifeq ($(CONFIG_PCI),y)
+ obj-$(CONFIG_4xx)		+= ppc4xx_pci.o
+ endif
++obj-$(CONFIG_PPC4xx_GPIO)	+= ppc4xx_gpio.o
  
- targets += $(modules:.ko=.mod.o)
- 
- # Step 6), final link of the modules
- quiet_cmd_ld_ko_o = LD [M]  $@
--      cmd_ld_ko_o = $(LD) -r $(LDFLAGS) $(LDFLAGS_MODULE) -o $@		\
-+      cmd_ld_ko_o = $(LD) -r $(LDFLAGS) $(LDFLAGS_MODULE_PREREQ)	\
-+			  $(LDFLAGS_MODULE) -o $@		\
- 			  $(filter-out FORCE,$^)
- 
- $(modules): %.ko :%.o %.mod.o FORCE
-
---5QAgd0e35j3NYeGe--
+ # Temporary hack until we have migrated to asm-powerpc
+ ifeq ($(ARCH),powerpc)
+diff --git a/arch/powerpc/sysdev/ppc4xx_gpio.c b/arch/powerpc/sysdev/ppc4xx_gpio.c
+new file mode 100644
+index 0000000..b15aa5d
+--- /dev/null
++++ b/arch/powerpc/sysdev/ppc4xx_gpio.c
+@@ -0,0 +1,225 @@
++/*
++ * PPC4xx gpio driver
++ *
++ * Copyright (c) 2008 Harris Corporation
++ * Copyright (c) 2008 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
++ * Copyright (c) MontaVista Software, Inc. 2008.
++ *
++ * Author: Steve Falco <sfalco@harris.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/spinlock.h>
++#include <linux/io.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
++#include <linux/gpio.h>
++#include <linux/types.h>
++
++#define GPIO_MASK(gpio)		(0x80000000 >> (gpio))
++#define GPIO_MASK2(gpio)	(0xc0000000 >> ((gpio) * 2))
++
++/* Physical GPIO register layout */
++struct ppc4xx_gpio {
++	__be32 or;
++	__be32 tcr;
++	__be32 osrl;
++	__be32 osrh;
++	__be32 tsrl;
++	__be32 tsrh;
++	__be32 odr;
++	__be32 ir;
++	__be32 rr1;
++	__be32 rr2;
++	__be32 rr3;
++	__be32 reserved1;
++	__be32 isr1l;
++	__be32 isr1h;
++	__be32 isr2l;
++	__be32 isr2h;
++	__be32 isr3l;
++	__be32 isr3h;
++};
++
++struct ppc4xx_gpio_chip {
++	struct of_mm_gpio_chip mm_gc;
++	spinlock_t lock;
++};
++
++/*
++ * GPIO LIB API implementation for GPIOs
++ *
++ * There are a maximum of 32 gpios in each gpio controller.
++ */
++
++static inline struct ppc4xx_gpio_chip *
++to_ppc4xx_gpiochip(struct of_mm_gpio_chip *mm_gc)
++{
++	return container_of(mm_gc, struct ppc4xx_gpio_chip, mm_gc);
++}
++
++static int ppc4xx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++
++	return !!(in_be32(&regs->ir) & GPIO_MASK(gpio));
++}
++
++static inline void
++__ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++
++	if (val)
++		out_be32(&regs->or, in_be32(&regs->or) | GPIO_MASK(gpio));
++	else
++		out_be32(&regs->or, in_be32(&regs->or) & ~GPIO_MASK(gpio));
++}
++
++static void
++ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct ppc4xx_gpio_chip *chip = to_ppc4xx_gpiochip(mm_gc);
++	unsigned long flags;
++
++	spin_lock_irqsave(&chip->lock, flags);
++
++	__ppc4xx_gpio_set(gc, gpio, val);
++
++	spin_unlock_irqrestore(&chip->lock, flags);
++
++	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
++}
++
++static int ppc4xx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct ppc4xx_gpio_chip *chip = to_ppc4xx_gpiochip(mm_gc);
++	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++	unsigned long flags;
++
++	spin_lock_irqsave(&chip->lock, flags);
++
++	/* Disable open-drain function */
++	out_be32(&regs->odr, in_be32(&regs->odr) & ~GPIO_MASK(gpio));
++
++	/* Float the pin */
++	out_be32(&regs->tcr, in_be32(&regs->tcr) & ~GPIO_MASK(gpio));
++
++	/* Bits 0-15 use TSRL/OSRL, bits 16-31 use TSRH/OSRH */
++	if (gpio < 16) {
++		out_be32(&regs->osrl,
++			       	in_be32(&regs->osrl) & ~GPIO_MASK2(gpio));
++		out_be32(&regs->tsrl,
++			       	in_be32(&regs->tsrl) & ~GPIO_MASK2(gpio));
++	} else {
++		out_be32(&regs->osrh,
++			       	in_be32(&regs->osrh) & ~GPIO_MASK2(gpio - 16));
++		out_be32(&regs->tsrh,
++			       	in_be32(&regs->tsrh) & ~GPIO_MASK2(gpio - 16));
++	}
++
++	spin_unlock_irqrestore(&chip->lock, flags);
++
++	return 0;
++}
++
++static int
++ppc4xx_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct ppc4xx_gpio_chip *chip = to_ppc4xx_gpiochip(mm_gc);
++	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++	unsigned long flags;
++
++	spin_lock_irqsave(&chip->lock, flags);
++
++	/* First set initial value */
++	__ppc4xx_gpio_set(gc, gpio, val);
++
++	/* Disable open-drain function */
++	out_be32(&regs->odr, in_be32(&regs->odr) & ~GPIO_MASK(gpio));
++
++	/* Drive the pin */
++	out_be32(&regs->tcr, in_be32(&regs->tcr) | GPIO_MASK(gpio));
++
++	/* Bits 0-15 use TSRL, bits 16-31 use TSRH */
++	if (gpio < 16) {
++		out_be32(&regs->osrl,
++			       	in_be32(&regs->osrl) & ~GPIO_MASK2(gpio));
++		out_be32(&regs->tsrl,
++			       	in_be32(&regs->tsrl) & ~GPIO_MASK2(gpio));
++	} else {
++		out_be32(&regs->osrh,
++			       	in_be32(&regs->osrh) & ~GPIO_MASK2(gpio - 16));
++		out_be32(&regs->tsrh,
++			       	in_be32(&regs->tsrh) & ~GPIO_MASK2(gpio - 16));
++	}
++
++	spin_unlock_irqrestore(&chip->lock, flags);
++
++	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
++
++	return 0;
++}
++
++static int __init ppc4xx_add_gpiochips(void)
++{
++	struct device_node *np;
++
++	for_each_compatible_node(np, NULL, "amcc,ppc4xx-gpio") {
++		int ret;
++		struct ppc4xx_gpio_chip *ppc4xx_gc;
++		struct of_mm_gpio_chip *mm_gc;
++		struct of_gpio_chip *of_gc;
++		struct gpio_chip *gc;
++
++		ppc4xx_gc = kzalloc(sizeof(*ppc4xx_gc), GFP_KERNEL);
++		if (!ppc4xx_gc) {
++			ret = -ENOMEM;
++			goto err;
++		}
++
++		spin_lock_init(&ppc4xx_gc->lock);
++
++		mm_gc = &ppc4xx_gc->mm_gc;
++		of_gc = &mm_gc->of_gc;
++		gc = &of_gc->gc;
++
++		of_gc->gpio_cells = 2;
++		gc->ngpio = 32;
++		gc->direction_input = ppc4xx_gpio_dir_in;
++		gc->direction_output = ppc4xx_gpio_dir_out;
++		gc->get = ppc4xx_gpio_get;
++		gc->set = ppc4xx_gpio_set;
++
++		ret = of_mm_gpiochip_add(np, mm_gc);
++		if (ret)
++			goto err;
++		continue;
++err:
++		pr_err("%s: registration failed with status %d\n",
++		       np->full_name, ret);
++		kfree(ppc4xx_gc);
++		/* try others anyway */
++	}
++	return 0;
++}
++arch_initcall(ppc4xx_add_gpiochips);
