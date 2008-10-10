@@ -1,21 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5AD25DE240
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 10:19:52 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Add legacy PCI access via sysfs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <200810100902.30191.jbarnes@virtuousgeek.org>
-References: <20081010025101.B48CADDEF7@ozlabs.org>
-	<200810100902.30191.jbarnes@virtuousgeek.org>
-Content-Type: text/plain
-Date: Sat, 11 Oct 2008 10:19:45 +1100
-Message-Id: <1223680785.8157.168.camel@pasglop>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 9D124DDE20
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 10:47:24 +1100 (EST)
+Date: Fri, 10 Oct 2008 19:47:21 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Stefan Roese" <sr@denx.de>
+Subject: Re: [PATCH v7] PPC440EPx gpio driver
+Message-ID: <20081010194721.0ae8785a@lappy.seanm.ca>
+In-Reply-To: <200810101602.33052.sr@denx.de>
+References: <48EF5DDB.7060302@harris.com>
+	<200810101602.33052.sr@denx.de>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pci@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,11 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-10-10 at 09:02 -0700, Jesse Barnes wrote:
-> Ah I was worried the first one might need a respin, but it applied
-> fine, so 
-> I'll go ahead and apply this one too.
+On Fri, 10 Oct 2008 16:02:32 +0200
+"Stefan Roese" <sr@denx.de> wrote:
 
-Let's hope it doesn't collide with the pending powerpc.git merge...
+> On Friday 10 October 2008, Steven A. Falco wrote:
+> > This patch adds support for the GPIO functions of PPC40x and PPC44x
+> > SOCs.
+> 
+> Looks good. But you should change the subject line now. Its not only
+> a PPC440EPx gpio driver but ppc4xx. Also please add "powerpc/4xx: "
+> to the beginning of the subject line. And you should always send 4xx
+> related patches to the subsystem maintainer too (CC), in this case
+> Josh Boyer.
+> 
+> > Signed-off-by: Steve Falco <sfalco at harris.com>
+> 
+> You can add my:
+> 
+> Acked-by: Stefan Roese <sr@denx.de>
+> 
+> in the next patch revision. :)
 
-Ben.
+Tested on the warp (440EP).
+
+Acked-by: Sean MacLennan <smaclennan@pikatech.com>
+
+Cheers,
+   Sean
