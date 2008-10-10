@@ -1,17 +1,20 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH] remove bogus ppc_select syscall
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id ABF00DDF00
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 15:52:15 +1100 (EST)
+Subject: Re: [PATCH 2/2] Move memory size print into common show_cpuinfo
+	for 32-bit
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200809240839.14902.arnd@arndb.de>
-References: <7B7EF7F090B9804A830ACC82F2CDE95D56E206@insardxms01.ap.sony.com>
-	<1222160853.12085.136.camel@pasglop> <200809240823.12484.arnd@arndb.de>
-	<200809240839.14902.arnd@arndb.de>
+To: Becky Bruce <becky.bruce@freescale.com>
+In-Reply-To: <1222293230-22725-1-git-send-email-becky.bruce@freescale.com>
+References: <1222293230-22725-1-git-send-email-becky.bruce@freescale.com>
 Content-Type: text/plain
-Date: Fri, 10 Oct 2008 15:29:41 +1100
-Message-Id: <1223612981.8157.146.camel@pasglop>
+Date: Fri, 10 Oct 2008 15:32:20 +1100
+Message-Id: <1223613140.8157.150.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>,
-	paulus@samba.org, linuxppc-embedded@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,21 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-09-24 at 08:39 +0200, Arnd Bergmann wrote:
-> The ppc_select function was introduced in linux-2.3.48 in order to support
-> code confusing the legacy select() calling convention with the standard one.
-> Even 11 years ago, all correctly built code should not have done this and
-> could have easily been phased out. Nothing that was compiled later should
-> actually try to use the old_select interface, and it would have been broken
-> already on all ppc64 kernels with the syscall emulation layer.
-> 
-> This patch brings the 32 bit compat ABI and the native 32 bit ABI for
-> powerpc into a consistent state, by removing support for both the
-> old_select system call number and the handler for it.
+On Wed, 2008-09-24 at 16:53 -0500, Becky Bruce wrote:
+> Most of the platforms were printing the size of the memory
+> in their show_cpuinfo implementations. This moves that to
+> the common show_cpuinfo, so that all 32-bit platforms will
+> now print the size of memory.  I also update the code
+> to deal with the fact that total_memory is now a phys_addr_t.
 
- .../...
-
-It's me or the patch is whitespaces damaged ?
+Doesn't apply anymore, care to rebase ?
 
 Cheers,
 Ben.
