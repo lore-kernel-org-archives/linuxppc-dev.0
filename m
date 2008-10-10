@@ -1,23 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9621BDDF3E
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 14:46:12 +1100 (EST)
-Subject: Re: [PATCH] dma: add new dma_mapping_ops API sync_page
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Remi Machet <rmachet@slac.stanford.edu>
-In-Reply-To: <1223314733.21869.38.camel@pcds-ts102.slac.stanford.edu>
-References: <1222898599.8628.52.camel@pcds-ts102.slac.stanford.edu>
-	<1223051594.4251.12.camel@pcds-ts102.slac.stanford.edu>
-	<48EA3D0C.1050107@freescale.com>
-	<1223314733.21869.38.camel@pcds-ts102.slac.stanford.edu>
-Content-Type: text/plain
-Date: Fri, 10 Oct 2008 14:46:02 +1100
-Message-Id: <1223610362.8157.139.camel@pasglop>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, Linux PPC <linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id A0258DDE2A
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 14:50:22 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: dwmw2@infradead.org
+Subject: [PATCH] mtd: remove dead Kconfig associated with !CONFIG_PPC_MERGE
+Date: Thu,  9 Oct 2008 22:50:06 -0500
+Message-Id: <1223610606-13096-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,36 +19,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Removed the Kconfig associated with 'NDFC NanD Flash Controller'.
+We can't enable !CONFIG_PPC_MERGE so there is no way to enable
+this.  Additionally the code needs to get updated for arch/powerpc.
 
-> > A virtual address will typically be needed to perform the flush; why 
-> > pass the bus address?
+For the time being lets just remove the Kconfig option so we can
+actually remove CONFIG_PPC_MERGE.
 
-> Because it is a sync API. You want to make sure that a physical memory
-> area is in sync with the caches, not the virtual address. This
-> distinction can become important in the event where the page is mapped
-> multiple times in the memory and the architecture does not take care of
-> synchronizing the multiple mapping, the dma_mapping_ops code should be
-> able to synchronize the multiple mapping. In most case it would be easy
-> of course to go from virtual address to the page address, but not if the
-> page is in high memory ...
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/mtd/nand/Kconfig |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
 
-Well, not really. IE, you are right that a dma_addr_t or a struct page
-is the way to go but for the wrong reasons :-)
-
-All mappings should be coherent. The powerpc architecture is pretty
-strict with that. The only known violation is the instruction cache on
-44x but that's irrelevant to your problem.
-
-Thus, -any- virtual address will do.
-
-However, you may not have a virtual address. You may get into a
-situation where the page isn't in the linear mapping and needs to be
-kmap'ed for the sync to happen.
-
-Now, using PCI_DRAM_OFFSET in bus_to_page() is incorrect here with
-Becky's new set of changes. You need to get the offset properly using
-the accessor she provides (I don't have the name off the top of my
-head).
-
-Cheers,
-Ben.
+diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+index 41f361c..1acdff7 100644
+--- a/drivers/mtd/nand/Kconfig
++++ b/drivers/mtd/nand/Kconfig
+@@ -163,13 +163,6 @@ config MTD_NAND_S3C2410_HWECC
+ 	  incorrect ECC generation, and if using these, the default of
+ 	  software ECC is preferable.
+ 
+-config MTD_NAND_NDFC
+-	tristate "NDFC NanD Flash Controller"
+-	depends on 4xx && !PPC_MERGE
+-	select MTD_NAND_ECC_SMC
+-	help
+-	 NDFC Nand Flash Controllers are integrated in IBM/AMCC's 4xx SoCs
+-
+ config MTD_NAND_S3C2410_CLKSTOP
+ 	bool "S3C2410 NAND IDLE clock stop"
+ 	depends on MTD_NAND_S3C2410
+-- 
+1.5.5.1
