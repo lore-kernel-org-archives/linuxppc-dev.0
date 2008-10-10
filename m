@@ -2,17 +2,16 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CAB2DDE341
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 22:57:14 +1100 (EST)
-Date: Fri, 10 Oct 2008 06:56:50 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id 64507DE7CA
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 22:57:43 +1100 (EST)
+Date: Fri, 10 Oct 2008 06:56:28 -0500 (CDT)
 From: Milton Miller <miltonm@bga.com>
 Sender: Milton Miller <miltonm@realtime.net>
 To: linuxppc-dev@ozlabs.org, Ben Herrenschmidt <benh@kernel.crashing.org>,
 	Paul Mackerras <paulus@samba.org>
-Message-id: <patch-ipi-4@bga.com>
-In-Reply-To: <patch-ipi-2@bga.com>
-Subject: [PATCH 15/16] powerpc cell: use smp_request_message_ipi
-Cc: Arnd Bergmann <arnd@arndb.de>
+Message-id: <patch-xics-2@bga.com>
+In-Reply-To: <patch-xics-0@bga.com>
+Subject: [PATCH 2/16] xics: update default_server during migrate_irqs_away
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,62 +21,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-cell native has 4 interrupts for ipis, so use the new smp_request_message_ipi
-to save pathlength and the data-dependent branch.
+Currently, every time we determine which irq server to use, we check if
+default_server, which is the id of the bootcpu, is still online.  But
+default_server is a hardware cpu, not the logical cpu id needed to index
+cpu_online_map.  
 
-This has the side effects of enabling the debugger ipi for kdump and
-setting IRQF_PERCPU for the ipi interrupts.  It doesn't undo the virq
-mapping if it turns out the ipi is not used.
+Since the default server can only go offline during a cpu hotplug event,
+explicitly check the default server and choose the new one when we move
+irqs away from the cpu being offlined.
+
+This has the added benefit of only needing the boot_cpuid to be updated
+and not relying on the cpu being marked offline during migrate_irqs_away.
+
+Also, since xics_update_irq_servers only reads device tree information, we
+can call it before xics_init_host in xics_init_IRQ and then default_server
+will always be valid when we can reach get_irq_server via the host ops.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
+---
+I realized the hard vs soft cpu id as I was writing the patch description.
+get_irq_server is called from unmask and set affinity.  
 
-Index: next.git/arch/powerpc/platforms/cell/interrupt.c
+The effects of this bug would be the increased pathlength to walk the
+device tree in the unmask and set affinity methods, and possible failure
+to migrate irqs during cpu hotplug removal (not likely to be seen on
+until a sequence of remove and adds is performed).
+
+This check dates to 2.6.25 via de0723dcca6e593a12a259798a54eb0e82628fb8.
+
+Index: next.git/arch/powerpc/platforms/pseries/xics.c
 ===================================================================
---- next.git.orig/arch/powerpc/platforms/cell/interrupt.c	2008-10-04 23:40:24.000000000 -0500
-+++ next.git/arch/powerpc/platforms/cell/interrupt.c	2008-10-04 23:44:49.000000000 -0500
-@@ -190,38 +190,25 @@ struct irq_host *iic_get_irq_host(int no
- }
- EXPORT_SYMBOL_GPL(iic_get_irq_host);
+--- next.git.orig/arch/powerpc/platforms/pseries/xics.c	2008-10-04 16:36:07.000000000 -0500
++++ next.git/arch/powerpc/platforms/pseries/xics.c	2008-10-04 16:36:09.000000000 -0500
+@@ -208,9 +208,6 @@ static int get_irq_server(unsigned int v
+ 	cpumask_t cpumask = irq_desc[virq].affinity;
+ 	cpumask_t tmp = CPU_MASK_NONE;
  
--static irqreturn_t iic_ipi_action(int irq, void *dev_id)
--{
--	int ipi = (int)(long)dev_id;
+-	if (! cpu_isset(default_server, cpu_online_map))
+-		xics_update_irq_servers();
 -
--	smp_message_recv(ipi);
--
--	return IRQ_HANDLED;
--}
--static void iic_request_ipi(int ipi, const char *name)
-+static void iic_request_ipi(int ipi)
- {
- 	int virq;
+ 	if (!distribute_irqs)
+ 		return default_server;
  
- 	virq = irq_create_mapping(iic_host, iic_ipi_to_irq(ipi));
- 	if (virq == NO_IRQ) {
- 		printk(KERN_ERR
--		       "iic: failed to map IPI %s\n", name);
-+		       "iic: failed to map IPI %s\n", smp_ipi_name[ipi]);
+@@ -685,8 +682,8 @@ void __init xics_init_IRQ(void)
+ 	if (found == 0)
  		return;
- 	}
--	if (request_irq(virq, iic_ipi_action, IRQF_DISABLED, name,
--			(void *)(long)ipi))
--		printk(KERN_ERR
--		       "iic: failed to request IPI %s\n", name);
-+	smp_request_message_ipi(virq, ipi);
- }
  
- void iic_request_IPIs(void)
- {
--	iic_request_ipi(PPC_MSG_CALL_FUNCTION, "IPI-call");
--	iic_request_ipi(PPC_MSG_RESCHEDULE, "IPI-resched");
--	iic_request_ipi(PPC_MSG_CALL_FUNC_SINGLE, "IPI-call-single");
--#ifdef CONFIG_DEBUGGER
--	iic_request_ipi(PPC_MSG_DEBUGGER_BREAK, "IPI-debug");
--#endif /* CONFIG_DEBUGGER */
-+	iic_request_ipi(PPC_MSG_CALL_FUNCTION);
-+	iic_request_ipi(PPC_MSG_RESCHEDULE);
-+	iic_request_ipi(PPC_MSG_CALL_FUNC_SINGLE);
-+	iic_request_ipi(PPC_MSG_DEBUGGER_BREAK);
- }
+-	xics_init_host();
+ 	xics_update_irq_servers();
++	xics_init_host();
  
- #endif /* CONFIG_SMP */
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		ppc_md.get_irq = xics_get_irq_lpar;
+@@ -779,6 +776,10 @@ void xics_migrate_irqs_away(void)
+ 	int cpu = smp_processor_id(), hw_cpu = hard_smp_processor_id();
+ 	unsigned int irq, virq;
+ 
++	/* If we used to be the default server, move to the new "boot_cpuid" */
++	if (hw_cpu == default_server)
++		xics_update_irq_servers();
++
+ 	/* Reject any interrupt that was queued to us... */
+ 	xics_set_cpu_priority(0);
+ 
