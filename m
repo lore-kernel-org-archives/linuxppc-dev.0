@@ -1,22 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 73D89DDE01
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 22:40:54 +1100 (EST)
-Date: Fri, 10 Oct 2008 15:40:48 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Wang Jian <lark@linux.net.cn>
-Subject: Re: Compact Flash on 8349mITX
-Message-ID: <20081010114048.GA5481@oksana.dev.rtsoft.ru>
-References: <6011A7C9CD0EE74792C3ED2A83556086342189@mail.twacs.com>
-	<6011A7C9CD0EE74792C3ED2A8355608634218F@mail.twacs.com>
-	<19900326.post@talk.nabble.com>
-	<20081009172338.GA4292@oksana.dev.rtsoft.ru>
-	<19911261.post@talk.nabble.com> <48EF0388.3070006@linux.net.cn>
+Return-Path: <jwboyer@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.227])
+	by ozlabs.org (Postfix) with ESMTP id 21A5CDDF2D
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 22:41:33 +1100 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so263755wra.1
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 04:41:32 -0700 (PDT)
+Date: Fri, 10 Oct 2008 07:40:08 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] mtd: remove dead Kconfig associated with !CONFIG_PPC_MERGE
+Message-ID: <20081010114008.GA8590@yoda.jdub.homelinux.org>
+References: <1223610606-13096-1-git-send-email-galak@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <48EF0388.3070006@linux.net.cn>
-Cc: linuxppc-dev@ozlabs.org, Jeff Borlin <jborlin@aclaratech.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1223610606-13096-1-git-send-email-galak@kernel.crashing.org>
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 10, 2008 at 03:26:00PM +0800, Wang Jian wrote:
-> Jeff Borlin wrote:
->>
->> Anton Vorontsov-2 wrote:
->>> This happens just before the PATA information is printed. I'm not
->>> libata expert; and from the brief look I don't see where libata
->>> clears any pending "unexpected" irqs. Just a guesswork,
->>> could you try this patch?
->>>
->> This patch did not appear to change anything.  
+On Thu, Oct 09, 2008 at 10:50:06PM -0500, Kumar Gala wrote:
+>Removed the Kconfig associated with 'NDFC NanD Flash Controller'.
+>We can't enable !CONFIG_PPC_MERGE so there is no way to enable
+>this.  Additionally the code needs to get updated for arch/powerpc.
 >
-> Without this patch, you can't use it without irq.
+>For the time being lets just remove the Kconfig option so we can
+>actually remove CONFIG_PPC_MERGE.
+>
+>Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-I purposed two patches to Jeff: one is
+The driver does need fixing, and there are patches for it.  We just
+haven't settled on an implementation yet so:
 
-+       ioread8(ap->ioaddr.status_addr);
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-I.e. clear an interrupt before requesting (just to be sure, I guess
-libata is doing this already, just don't see where exactly). That didn't
-work. :-/
-
-And another approach was to try IRQ-less pata (another patch).
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+>---
+> drivers/mtd/nand/Kconfig |    7 -------
+> 1 files changed, 0 insertions(+), 7 deletions(-)
+>
+>diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+>index 41f361c..1acdff7 100644
+>--- a/drivers/mtd/nand/Kconfig
+>+++ b/drivers/mtd/nand/Kconfig
+>@@ -163,13 +163,6 @@ config MTD_NAND_S3C2410_HWECC
+> 	  incorrect ECC generation, and if using these, the default of
+> 	  software ECC is preferable.
+> 
+>-config MTD_NAND_NDFC
+>-	tristate "NDFC NanD Flash Controller"
+>-	depends on 4xx && !PPC_MERGE
+>-	select MTD_NAND_ECC_SMC
+>-	help
+>-	 NDFC Nand Flash Controllers are integrated in IBM/AMCC's 4xx SoCs
+>-
+> config MTD_NAND_S3C2410_CLKSTOP
+> 	bool "S3C2410 NAND IDLE clock stop"
+> 	depends on MTD_NAND_S3C2410
+>-- 
+>1.5.5.1
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-dev
