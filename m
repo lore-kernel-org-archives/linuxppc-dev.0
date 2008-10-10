@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 43C27DDF26
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 00:29:34 +1100 (EST)
-Message-Id: <488B87CB-8998-4A29-903A-4952B3A806AB@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 3A002DE3B5
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 00:31:44 +1100 (EST)
+Message-Id: <DAB34CED-1278-4ECE-8043-7E727D3232F7@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <1222181221-13425-1-git-send-email-timur@freescale.com>
+In-Reply-To: <1222449610-14672-1-git-send-email-timur@freescale.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc: remove support for bootmem-allocated memory for
-	the DIU driver
-Date: Fri, 10 Oct 2008 08:28:01 -0500
-References: <1222181221-13425-1-git-send-email-timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, yorksun@freescale.com
+Subject: Re: [PATCH] powerpc: fix conflict with Elo DMA driver in MPC8610
+	device tree
+Date: Fri, 10 Oct 2008 08:30:02 -0500
+References: <1222449610-14672-1-git-send-email-timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +25,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 23, 2008, at 9:47 AM, Timur Tabi wrote:
+On Sep 26, 2008, at 12:20 PM, Timur Tabi wrote:
 
-> Early versions of the Freescale DIU framebuffer driver depended on a  
-> bootmem
-> allocation of memory for the video buffer.  The need for this  
-> feature was
-> removed in commit 6b51d51a, so now we can remove the platform- 
-> specific code
-> that allocated that memory.
+> The Freescale Elo DMA driver binds to all DMA channels in the device  
+> tree that
+> are compatible with "fsl,eloplus-dma-channel".  This conflicts with  
+> the sound
+> drivers for the MPC8610.  To avoid the conflict, change the  
+> compatible property
+> for the DMA channels needed by the sound drivers to "fsl,ssi-dma- 
+> channel".
+> This works because the sound drivers don't actually check the  
+> compatible
+> property when it grabs DMA channels.
+>
+> Also update dma.txt and ssi.txt with this information.
 >
 > Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
->
-> This patch is for 2.6.28.
->
-> arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    1 -
-> arch/powerpc/sysdev/fsl_soc.c              |   38  
-> +---------------------------
-> arch/powerpc/sysdev/fsl_soc.h              |    8 ------
-> 3 files changed, 1 insertions(+), 46 deletions(-)
+> Documentation/powerpc/dts-bindings/fsl/dma.txt |   13 +++++++++++--
+> Documentation/powerpc/dts-bindings/fsl/ssi.txt |   12 ++++++++++--
+> arch/powerpc/boot/dts/mpc8610_hpcd.dts         |    4 ++--
+> 3 files changed, 23 insertions(+), 6 deletions(-)
 
-applied.
+Break this into two patches.  The second one should just be the .dts  
+and specifically say "on the MPC8610 HPCD board we use SSI and thus  
+the dma channel is not available for general purpose use"...
 
 - k
