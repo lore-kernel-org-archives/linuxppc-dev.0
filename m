@@ -1,18 +1,24 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-122.bluehost.com (outbound-mail-122.bluehost.com
-	[67.222.38.22]) by ozlabs.org (Postfix) with SMTP id 65A11DE3BB
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 03:09:12 +1100 (EST)
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Add legacy PCI access via sysfs
-Date: Fri, 10 Oct 2008 09:02:29 -0700
-References: <20081010025101.B48CADDEF7@ozlabs.org>
-In-Reply-To: <20081010025101.B48CADDEF7@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200810100902.30191.jbarnes@virtuousgeek.org>
-Cc: linuxppc-dev@ozlabs.org, linux-pci@vger.kernel.org
+Return-Path: <rmachet@slac.stanford.edu>
+Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
+	[134.79.18.120])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EC287DE134
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 03:16:25 +1100 (EST)
+Subject: Re: [PATCH] dma: add new dma_mapping_ops API sync_page
+From: Remi Machet <rmachet@slac.stanford.edu>
+To: benh@kernel.crashing.org
+In-Reply-To: <1223610362.8157.139.camel@pasglop>
+References: <1222898599.8628.52.camel@pcds-ts102.slac.stanford.edu>
+	<1223051594.4251.12.camel@pcds-ts102.slac.stanford.edu>
+	<48EA3D0C.1050107@freescale.com>
+	<1223314733.21869.38.camel@pcds-ts102.slac.stanford.edu>
+	<1223610362.8157.139.camel@pasglop>
+Content-Type: text/plain
+Date: Fri, 10 Oct 2008 09:16:15 -0700
+Message-Id: <1223655376.374.12.camel@pcds-ts102.slac.stanford.edu>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>, Linux PPC <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,30 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday, October 9, 2008 7:50 pm Benjamin Herrenschmidt wrote:
-> This patch adds support for legacy_io and legacy_mem files in
-> bus class directories in sysfs for powerpc
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->
-> This is version 2, slightly different approach for getting at VGA
-> memory which works a lot better with bridges providing a separate
-> ISA Memory hole (which is the case of most of them).
->
-> Also tested on a variety of hardware with a little tool using x86emu
-> to run VGA BIOSes, do VBE calls and whack text mode.
->
-> This patch relies on its generic counterpart, posted previously
-> being applied first.
->
-> Jesse, due to the dependency, it's better if we have both in
-> the powerpc tree -or- both in the PCI tree, what do you think
-> is best ? Either that or I have to delay applying it to powerpc
-> until you get the generic part in.
+On Fri, 2008-10-10 at 14:46 +1100, Benjamin Herrenschmidt wrote: 
+> > > A virtual address will typically be needed to perform the flush; why 
+> > > pass the bus address?
+> 
+> > Because it is a sync API. You want to make sure that a physical memory
+> > area is in sync with the caches, not the virtual address. This
+> > distinction can become important in the event where the page is mapped
+> > multiple times in the memory and the architecture does not take care of
+> > synchronizing the multiple mapping, the dma_mapping_ops code should be
+> > able to synchronize the multiple mapping. In most case it would be easy
+> > of course to go from virtual address to the page address, but not if the
+> > page is in high memory ...
+> 
+> Well, not really. IE, you are right that a dma_addr_t or a struct page
+> is the way to go but for the wrong reasons :-)
+> 
+> All mappings should be coherent. The powerpc architecture is pretty
+> strict with that. The only known violation is the instruction cache on
+> 44x but that's irrelevant to your problem.
+> 
+> Thus, -any- virtual address will do.
+Good! That certainly simplify the code.
 
-Ah I was worried the first one might need a respin, but it applied fine, so 
-I'll go ahead and apply this one too.
+> However, you may not have a virtual address. You may get into a
+> situation where the page isn't in the linear mapping and needs to be
+> kmap'ed for the sync to happen.
+> 
+> Now, using PCI_DRAM_OFFSET in bus_to_page() is incorrect here with
+> Becky's new set of changes. You need to get the offset properly using
+> the accessor she provides (I don't have the name off the top of my
+> head).
+> 
+Totally agree with that. In the last set of patch I committed (which I
+need to re-commit because I need to use vmalloc in dma-noncoherent.c) I
+removed most of the reference to PCI_DRAM_OFFSET. The only reference to
+it remaining is in virt_to_bus which is called by dma_cache_sync.
 
-Thanks,
-Jesse
+I did not see an accessor that can be used in dma-mapping.h (the
+accessor API I have seen is private to dma.c and dma-noncoherent.c), I
+would be happy to use it if there really is one though. I could add
+another 2 APIs to dma_mapping_ops which converts a page to/from its bus
+address, what do you think?
+
+Remi
