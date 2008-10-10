@@ -1,23 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Haavard.Skinnemoen@atmel.com>
+Received: from bagnes.atmel.com (smtpeu1.atmel.com [195.65.72.27])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D4CF2DDF80
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 02:01:06 +1100 (EST)
-Message-Id: <CB31A54E-7518-4E26-8A5C-AC3CBB0F1384@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20081010144545.GA956@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 2/2] i2c: MPC8349E-mITX Power Management and GPIO expander
-	driver
-Date: Fri, 10 Oct 2008 09:58:44 -0500
-References: <20080923141300.GB31262@oksana.dev.rtsoft.ru>
-	<683C10AE-E5F2-4196-B2C7-1E1CC317EC24@kernel.crashing.org>
-	<20081010144545.GA956@oksana.dev.rtsoft.ru>
-Cc: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
-	Ben Dooks <ben-linux@fluff.org>, linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 7DE09DE10F
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 02:06:39 +1100 (EST)
+Date: Fri, 10 Oct 2008 16:32:45 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Bill Gatliff <bgat@billgatliff.com>
+Subject: Re: [RFC 0/6] Proposal for a Generic PWM Device API
+Message-ID: <20081010163245.3c2f0240@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <48EF60B6.20409@billgatliff.com>
+References: <cover.1223482372.git.bgat@billgatliff.com>
+	<1223608819.8157.127.camel@pasglop>
+	<48EED4D1.2040506@billgatliff.com>
+	<Pine.LNX.4.64.0810101054140.12257@vixen.sonytel.be>
+	<20081010093642.GA10579@linux-sh.org>
+	<48EF60B6.20409@billgatliff.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux/PPC,
+	Paul Mundt <lethal@linux-sh.org>, linux-embedded@vger.kernel.org,
+	Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,44 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Bill Gatliff <bgat@billgatliff.com> wrote:
+> Paul Mundt wrote:
+> > This is likely because some of those lists are subscribers only, so cross
+> > posting is poor form. It makes sense to keep the discussion in one place,
+> > and to send notification messages with a pointer to the list archives to
+> > the other lists so folks can jump in if they really care. Splitting it
+> > out doesn't help matters in the least, but unfortunately this is what
+> > seems to happen the most when subscribers only lists are involved.  
+> 
+> Alright, then maybe I can do this when I post the "final" changeset for review:
+> cross-post to lkml and linux-embedded, and then post one short note on l-a-k,
+> linuxppc-dev and elsewhere that refers those interested to the actual content.
+> I can live with that.
 
-On Oct 10, 2008, at 9:45 AM, Anton Vorontsov wrote:
+Feel free to cross-post to kernel@avr32linux.org. It's open for
+non-subscribers, and there may be people interested in PWM there
+(especially since you include a driver for the PWM hardware on AVR32
+devices.)
 
-> On Fri, Oct 10, 2008 at 09:22:02AM -0500, Kumar Gala wrote:
->>
->> On Sep 23, 2008, at 9:13 AM, Anton Vorontsov wrote:
->>
->>> On MPC8349E-mITX, MPC8315E-RDB and MPC837x-RDB boards there is a
->>> Freescale MC9S08QG8 (MCU) chip with the custom firmware
->>> pre-programmed. The chip is used to power-off the board by the
->>> software, and to control some GPIO pins.
->>>
->>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->>> ---
->>> drivers/i2c/chips/Kconfig            |   11 ++
->>> drivers/i2c/chips/Makefile           |    1 +
->>> drivers/i2c/chips/mcu_mpc8349emitx.c |  209 +++++++++++++++++++++++ 
->>> ++
->>> +++++++++
->>> 3 files changed, 221 insertions(+), 0 deletions(-)
->>> create mode 100644 drivers/i2c/chips/mcu_mpc8349emitx.c
->>
->> is the plan to connect ppc_md.machine_shutdown() with this?
->
-> You mean poweroff? It's already connected.
->
-> +       /* XXX: this is potentially racy, but there is no lock for  
-> ppc_md */
-> +       if (!ppc_md.power_off) {
-> +               glob_mcu = mcu;
-> +               ppc_md.power_off = mcu_power_off;
-> +               dev_info(&client->dev, "will provide power-off  
-> service\n");
-> +       }
-
-
-uuh, yeah.. poweroff :)
-
-and look at that.  Is this in Jean's queue?
-
-- k
+Haavard
