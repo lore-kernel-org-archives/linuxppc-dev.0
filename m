@@ -1,22 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 70FACDDECF
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 14:42:28 +1100 (EST)
-Message-Id: <EA71A3A9-4137-490D-82BB-9817D3D4E01C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40810080915v38a1c40cs7cac3825ee5a7bac@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 2/3] powerpc: 5121: Add PCI support.
-Date: Thu, 9 Oct 2008 22:42:19 -0500
-References: <1223413998-15577-1-git-send-email-jrigby@freescale.com>
-	<4800D7D4-28BC-435A-9858-8FAF41F38468@kernel.crashing.org>
-	<fa686aa40810080915v38a1c40cs7cac3825ee5a7bac@mail.gmail.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	John Rigby <jrigby@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 9621BDDF3E
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 14:46:12 +1100 (EST)
+Subject: Re: [PATCH] dma: add new dma_mapping_ops API sync_page
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Remi Machet <rmachet@slac.stanford.edu>
+In-Reply-To: <1223314733.21869.38.camel@pcds-ts102.slac.stanford.edu>
+References: <1222898599.8628.52.camel@pcds-ts102.slac.stanford.edu>
+	<1223051594.4251.12.camel@pcds-ts102.slac.stanford.edu>
+	<48EA3D0C.1050107@freescale.com>
+	<1223314733.21869.38.camel@pcds-ts102.slac.stanford.edu>
+Content-Type: text/plain
+Date: Fri, 10 Oct 2008 14:46:02 +1100
+Message-Id: <1223610362.8157.139.camel@pasglop>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>, Linux PPC <linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +28,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 8, 2008, at 11:15 AM, Grant Likely wrote:
+> > A virtual address will typically be needed to perform the flush; why 
+> > pass the bus address?
 
-> On Wed, Oct 8, 2008 at 6:38 AM, Kumar Gala  
-> <galak@kernel.crashing.org> wrote:
->>
->> On Oct 7, 2008, at 4:13 PM, John Rigby wrote:
->>
->>> Uses mpc83xx_add_bridge in fsl_pci.c
->>>
->>> Adds second register tuple to pci node register property
->>> as done for 83xx device trees in a previous patch.
->>>
->>> Signed-off-by: John Rigby <jrigby@freescale.com>
->>> ---
->>> arch/powerpc/boot/dts/mpc5121ads.dts      |    3 ++-
->>> arch/powerpc/platforms/512x/Kconfig       |    2 ++
->>> arch/powerpc/platforms/512x/mpc5121_ads.c |   10 ++++++++++
->>> arch/powerpc/sysdev/fsl_pci.c             |    4 ++--
->>> 4 files changed, 16 insertions(+), 3 deletions(-)
->>
->> Acked-by: Kumar Gala <galak@kernel.crashing.org>
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> Because it is a sync API. You want to make sure that a physical memory
+> area is in sync with the caches, not the virtual address. This
+> distinction can become important in the event where the page is mapped
+> multiple times in the memory and the architecture does not take care of
+> synchronizing the multiple mapping, the dma_mapping_ops code should be
+> able to synchronize the multiple mapping. In most case it would be easy
+> of course to go from virtual address to the page address, but not if the
+> page is in high memory ...
 
-applied
+Well, not really. IE, you are right that a dma_addr_t or a struct page
+is the way to go but for the wrong reasons :-)
 
-- k
+All mappings should be coherent. The powerpc architecture is pretty
+strict with that. The only known violation is the instruction cache on
+44x but that's irrelevant to your problem.
+
+Thus, -any- virtual address will do.
+
+However, you may not have a virtual address. You may get into a
+situation where the page isn't in the linear mapping and needs to be
+kmap'ed for the sync to happen.
+
+Now, using PCI_DRAM_OFFSET in bus_to_page() is incorrect here with
+Becky's new set of changes. You need to get the offset properly using
+the accessor she provides (I don't have the name off the top of my
+head).
+
+Cheers,
+Ben.
