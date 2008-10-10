@@ -1,28 +1,9 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3D639DDF1D
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 14:02:11 +1100 (EST)
-Subject: Re: [PATCH] powerpc: remove default=y from PMAC and CHRP Kconfigs
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <ed82fe3e0810091851g1035f860u42ea22956aaa822@mail.gmail.com>
-References: <1223495845-14149-1-git-send-email-timur@freescale.com>
-	<1223496186.8157.82.camel@pasglop>
-	<ed82fe3e0810081314g34b902f7j76f5049faf91f905@mail.gmail.com>
-	<1223498380.8157.86.camel@pasglop> <48ED1B9E.3020907@freescale.com>
-	<48EE2A49.10405@genesi-usa.com>
-	<ed82fe3e0810090920t25442258gcd5cedabf686fe2d@mail.gmail.com>
-	<18670.42312.827841.167852@cargo.ozlabs.ibm.com>
-	<68168CE9-D17F-4C55-BF0B-0FAFC3672398@kernel.crashing.org>
-	<ed82fe3e0810091851g1035f860u42ea22956aaa822@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 10 Oct 2008 14:01:59 +1100
-Message-Id: <1223607719.8157.125.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+Date: Fri, 10 Oct 2008 14:06:24 +1100
+Subject: [PATCH] powerpc: Fix DMA offset for non-coherent DMA
+Message-Id: <20081010030653.5AE1CDDEF9@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,24 +13,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-10-09 at 20:51 -0500, Timur Tabi wrote:
-> On Thu, Oct 9, 2008 at 8:22 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
-> 
-> >> The problem with making all platforms default to N is that if you take
-> >> the default values for all config options you end up with a config
-> >> that won't build.  So we want at least one platform to default to Y,
-> >> and pmac has been as good a choice as any for that (and probably still
-> >> is).
-> 
-> Ok, I can accept that.
-> 
-> > I've got no issue w/grandfathering CHRP or PMAC as default Y.  However I DO
-> > NOT think we should default other platforms to 'Y' as that means updating
-> > configs will pick up platforms they dont want.
-> 
-> As far as I know, CHRP and PMAC are the only PowerPC platforms that
-> default to Y.
+After Becky's work we can almost have different DMA offsets
+between on-chip devices and PCI. Almost because there's a
+problem with the non-coherent DMA code that basically ignores
+the programmed offset to use the global one for everything.
+This fixes it.
 
-There use to be PREP too I think :-)
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Ben.
+v2. This one fixes a typo that I introduced when rebasing/cleaning
+    up a larger patch to produce this one that causes void *ret to
+    be defined twice for coherent platforms
+
+
+ arch/powerpc/kernel/dma.c          |    8 ++++++--
+ arch/powerpc/lib/dma-noncoherent.c |    2 +-
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+--- linux-work.orig/arch/powerpc/kernel/dma.c	2008-10-10 14:04:08.000000000 +1100
++++ linux-work/arch/powerpc/kernel/dma.c	2008-10-10 14:04:30.000000000 +1100
+@@ -30,11 +30,15 @@ static unsigned long get_dma_direct_offs
+ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+ 				dma_addr_t *dma_handle, gfp_t flag)
+ {
++	void *ret;
+ #ifdef CONFIG_NOT_COHERENT_CACHE
+-	return __dma_alloc_coherent(size, dma_handle, flag);
++	ret = __dma_alloc_coherent(size, dma_handle, flag);
++	if (ret == NULL)
++		return NULL;
++	*dma_handle += get_dma_direct_offset(dev);
++	return ret;
+ #else
+ 	struct page *page;
+-	void *ret;
+ 	int node = dev_to_node(dev);
+ 
+ 	/* ignore region specifiers */
+Index: linux-work/arch/powerpc/lib/dma-noncoherent.c
+===================================================================
+--- linux-work.orig/arch/powerpc/lib/dma-noncoherent.c	2008-10-10 14:04:08.000000000 +1100
++++ linux-work/arch/powerpc/lib/dma-noncoherent.c	2008-10-10 14:04:12.000000000 +1100
+@@ -203,7 +203,7 @@ __dma_alloc_coherent(size_t size, dma_ad
+ 		/*
+ 		 * Set the "dma handle"
+ 		 */
+-		*handle = page_to_bus(page);
++		*handle = page_to_phys(page);
+ 
+ 		do {
+ 			BUG_ON(!pte_none(*pte));
