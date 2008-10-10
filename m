@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ABF00DDF00
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 15:52:15 +1100 (EST)
-Subject: Re: [PATCH 2/2] Move memory size print into common show_cpuinfo
-	for 32-bit
+	by ozlabs.org (Postfix) with ESMTPS id 36EEADDDF3
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 16:02:31 +1100 (EST)
+Subject: Re: [RFC 0/6] Proposal for a Generic PWM Device API
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Becky Bruce <becky.bruce@freescale.com>
-In-Reply-To: <1222293230-22725-1-git-send-email-becky.bruce@freescale.com>
-References: <1222293230-22725-1-git-send-email-becky.bruce@freescale.com>
+To: Bill Gatliff <bgat@billgatliff.com>
+In-Reply-To: <48EED4D1.2040506@billgatliff.com>
+References: <cover.1223482372.git.bgat@billgatliff.com>
+	<1223608819.8157.127.camel@pasglop> <48EED4D1.2040506@billgatliff.com>
 Content-Type: text/plain
-Date: Fri, 10 Oct 2008 15:32:20 +1100
-Message-Id: <1223613140.8157.150.camel@pasglop>
+Date: Fri, 10 Oct 2008 16:02:23 +1100
+Message-Id: <1223614943.8157.158.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -25,14 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-09-24 at 16:53 -0500, Becky Bruce wrote:
-> Most of the platforms were printing the size of the memory
-> in their show_cpuinfo implementations. This moves that to
-> the common show_cpuinfo, so that all 32-bit platforms will
-> now print the size of memory.  I also update the code
-> to deal with the fact that total_memory is now a phys_addr_t.
+On Thu, 2008-10-09 at 23:06 -0500, Bill Gatliff wrote:
+> Benjamin Herrenschmidt wrote:
+> > On Wed, 2008-10-08 at 11:43 -0500, Bill Gatliff wrote:
+> >> This series proposes a "generic PWM" driver API.
+> >>
+> >> This proposed API is motivated by the author's need to support
+> >> pluggable devices; a secondary objective is to consolidate the
+> >> existing PWM implementations behind an agreeable, consistent,
+> >> redundancy-reducing interface.
+> > 
+> >  .../...
+> > 
+> > You should send your patches to the main linux kernel list !
+> 
+> Perhaps.  But it seemed more relevant to this crowd, and the linux-embedded
+> crowd, and the linux-arm-kernel crowd.
 
-Doesn't apply anymore, care to rebase ?
+Sure but if you want then applied, you probably still need lkml and
+andrew.
+
+> At the very least, it made sense to present it in this sort of venue first.
+> Given that it's a "global" API proposal, I suppose I'll have to run it by lkml
+> at some point--- unless one of the aforementioned groups can mainline it themselves.
+
+For review and comments, sure.
 
 Cheers,
-Ben.
