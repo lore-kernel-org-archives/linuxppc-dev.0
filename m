@@ -1,18 +1,21 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 15591DE57B
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 01:03:47 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: "Steven A. Falco" <sfalco@harris.com>
-Subject: Re: [PATCH v7] PPC440EPx gpio driver
-Date: Fri, 10 Oct 2008 16:02:32 +0200
-References: <48EF5DDB.7060302@harris.com>
-In-Reply-To: <48EF5DDB.7060302@harris.com>
+Return-Path: <bgat@billgatliff.com>
+Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3625BDE443
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 01:04:30 +1100 (EST)
+Message-ID: <48EF60F2.2050403@billgatliff.com>
+Date: Fri, 10 Oct 2008 09:04:34 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200810101602.33052.sr@denx.de>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [RFC 0/6] Proposal for a Generic PWM Device API
+References: <cover.1223482372.git.bgat@billgatliff.com>	<1223608819.8157.127.camel@pasglop>
+	<48EED4D1.2040506@billgatliff.com>	<1223614943.8157.158.camel@pasglop>
+	<9e4733910810092206r5ba516ddv3d3ec910634431f5@mail.gmail.com>
+In-Reply-To: <9e4733910810092206r5ba516ddv3d3ec910634431f5@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 10 October 2008, Steven A. Falco wrote:
-> This patch adds support for the GPIO functions of PPC40x and PPC44x
-> SOCs.
+Jon Smirl wrote:
 
-Looks good. But you should change the subject line now. Its not only a 
-PPC440EPx gpio driver but ppc4xx. Also please add "powerpc/4xx: " to the 
-beginning of the subject line. And you should always send 4xx related patches 
-to the subsystem maintainer too (CC), in this case Josh Boyer.
+> What do the device tree deities have to say about PWM support?
 
-> Signed-off-by: Steve Falco <sfalco at harris.com>
+Dunno.  What lists are they on?  :)
 
-You can add my:
 
-Acked-by: Stefan Roese <sr@denx.de>
-
-in the next patch revision. :)
-
-Best regards,
-Stefan
+b.g.
+-- 
+Bill Gatliff
+bgat@billgatliff.com
