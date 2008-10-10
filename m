@@ -1,26 +1,20 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
+Return-Path: <m.fortini@selcomgroup.com>
+Received: from xseries02.selcomgroup.com (mail.selcomgroup.com [85.18.34.51])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 766D2DE389
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 00:59:43 +1100 (EST)
-Message-ID: <48EF5FD7.7060603@billgatliff.com>
-Date: Fri, 10 Oct 2008 08:59:51 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
+	by ozlabs.org (Postfix) with ESMTPS id 8AD6CDE252
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 01:03:22 +1100 (EST)
+Received: from [172.26.6.73] ([172.26.6.73]) (authenticated bits=0)
+	by xseries02.selcomgroup.com (8.13.4/8.13.4) with ESMTP id
+	m9ADbLmc023497
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 15:37:21 +0200
+Message-ID: <48EF5A94.3070707@selcomgroup.com>
+Date: Fri, 10 Oct 2008 15:37:24 +0200
+From: Matteo Fortini <m.fortini@selcomgroup.com>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [RFC 0/6] Proposal for a Generic PWM Device API
-References: <cover.1223482372.git.bgat@billgatliff.com>	
-	<1223608819.8157.127.camel@pasglop>
-	<48EED4D1.2040506@billgatliff.com>	
-	<Pine.LNX.4.64.0810101054140.12257@vixen.sonytel.be>	
-	<20081010093642.GA10579@linux-sh.org>
-	<1223632003.12547.65.camel@macbook.infradead.org>
-In-Reply-To: <1223632003.12547.65.camel@macbook.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Paul Mundt <lethal@linux-sh.org>, linux-embedded@vger.kernel.org,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: kernel 2.6.27 MPC512x status
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,13 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Woodhouse wrote:
-> Subscriber-only lists are broken. Just don't use them.
+I gave a try to the brand new 2.6.27 kernel on my ADS5121 evaluation board:
 
-You owe me a new keyboard!  :)
+    * FEC support is not in, though it was quite easy to add FSL patches
+      from 2.6.24.6 and have the ethernet working
+    * If I turn on any USB support, the board resets itself as soon as
+      the USB driver is loaded. Without USB, I can get to a prompt.
+      Funny that the software reset is not working, but this bug is
+      actually able to sw reset the board...
+    * PCI seems not to be working, but I need to test it more. The fact
+      that FSL needed to patch 2.6.24.6 in order to get PCI working
+      makes me think it's needs some work.
 
+This is bad because I wanted to incorporate some newer patches, like the 
+PWM one, but kernel 2.6.24.6 is too backward in time, while 2.6.27 is 
+too forward for FSL patches...
 
-b.g.
--- 
-Bill Gatliff
-bgat@billgatliff.com
+M
