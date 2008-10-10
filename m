@@ -1,15 +1,14 @@
 Return-Path: <jwboyer@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.232])
-	by ozlabs.org (Postfix) with ESMTP id 0F0A6DE6B7
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 23:38:27 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id s6so234303wxc.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 05:38:26 -0700 (PDT)
-Message-Id: <e380d3eb20ec0791a9a07ce8c102b5ea5953fec9.1223642006.git.jwboyer@linux.vnet.ibm.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.234])
+	by ozlabs.org (Postfix) with ESMTP id 19754DE6F2
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 23:38:30 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id s6so234309wxc.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 05:38:28 -0700 (PDT)
+Message-Id: <08b1aac771a655c52e84e2265d3a4c571caa1956.1223642006.git.jwboyer@linux.vnet.ibm.com>
 In-Reply-To: <cover.1223642006.git.jwboyer@linux.vnet.ibm.com>
 References: <cover.1223642006.git.jwboyer@linux.vnet.ibm.com>
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date: Thu, 9 Oct 2008 08:56:38 -0400
-Subject: [PATCH 3/5] powerpc/40x: Add AMCC PowerPC 405EZ to cputable
+Subject: [PATCH 4/5] powerpc/40x: Add cuboot wrapper for Acadia board
 To: linuxppc-dev@ozlabs.org
 Mime-Version: 1.0
 Sender: Josh Boyer <jwboyer@gmail.com>
@@ -21,37 +20,219 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Date: Fri, 10 Oct 2008 12:38:32 -0000
 
-This adds the AMCC PowerPC 405EZ chip to the cputable
+This adds a cuboot wrapper for the AMCC PowerPC 405EZ Acadia board.  The
+clocking code is derived from U-Boot, originally written by Stefan Roese.
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Signed-off-by: Josh Boyer <jwboyer@linux.ibm.com>
 ---
- arch/powerpc/kernel/cputable.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/Makefile        |    4 +-
+ arch/powerpc/boot/cuboot-acadia.c |  174 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 177 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/cuboot-acadia.c
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index e70d048..b1eb834 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1277,6 +1277,19 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check		= machine_check_4xx,
- 		.platform		= "ppc405",
- 	},
-+	{
-+		/* 405EZ */
-+		.pvr_mask		= 0xffff0000,
-+		.pvr_value		= 0x41510000,
-+		.cpu_name		= "405EZ",
-+		.cpu_features		= CPU_FTRS_40X,
-+		.cpu_user_features	= PPC_FEATURE_32 |
-+			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 32,
-+		.machine_check		= machine_check_4xx,
-+		.platform		= "ppc405",
-+	},
- 	{	/* default match */
- 		.pvr_mask		= 0x00000000,
- 		.pvr_value		= 0x00000000,
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 6403275..5f4a59c 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -68,7 +68,8 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
+ 		fixed-head.S ep88xc.c ep405.c cuboot-c2k.c \
+ 		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
+ 		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
+-		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c
++		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
++		cuboot-acadia.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
+ 
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+@@ -211,6 +212,7 @@ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+ # Board ports in arch/powerpc/platform/40x/Kconfig
+ image-$(CONFIG_EP405)			+= dtbImage.ep405
+ image-$(CONFIG_WALNUT)			+= treeImage.walnut
++image-$(CONFIG_ACADIA)			+= cuImage.acadia
+ 
+ # Board ports in arch/powerpc/platform/44x/Kconfig
+ image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
+diff --git a/arch/powerpc/boot/cuboot-acadia.c b/arch/powerpc/boot/cuboot-acadia.c
+new file mode 100644
+index 0000000..0634aba
+--- /dev/null
++++ b/arch/powerpc/boot/cuboot-acadia.c
+@@ -0,0 +1,174 @@
++/*
++ * Old U-boot compatibility for Acadia
++ *
++ * Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
++ *
++ * Copyright 2008 IBM Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include "ops.h"
++#include "io.h"
++#include "dcr.h"
++#include "stdio.h"
++#include "4xx.h"
++#include "44x.h"
++#include "cuboot.h"
++
++#define TARGET_4xx
++#include "ppcboot.h"
++
++static bd_t bd;
++
++#define CPR_PERD0_SPIDV_MASK   0x000F0000     /* SPI Clock Divider */
++
++#define PLLC_SRC_MASK	       0x20000000     /* PLL feedback source */
++
++#define PLLD_FBDV_MASK	       0x1F000000     /* PLL feedback divider value */
++#define PLLD_FWDVA_MASK        0x000F0000     /* PLL forward divider A value */
++#define PLLD_FWDVB_MASK        0x00000700     /* PLL forward divider B value */
++
++#define PRIMAD_CPUDV_MASK      0x0F000000     /* CPU Clock Divisor Mask */
++#define PRIMAD_PLBDV_MASK      0x000F0000     /* PLB Clock Divisor Mask */
++#define PRIMAD_OPBDV_MASK      0x00000F00     /* OPB Clock Divisor Mask */
++#define PRIMAD_EBCDV_MASK      0x0000000F     /* EBC Clock Divisor Mask */
++
++#define PERD0_PWMDV_MASK       0xFF000000     /* PWM Divider Mask */
++#define PERD0_SPIDV_MASK       0x000F0000     /* SPI Divider Mask */
++#define PERD0_U0DV_MASK        0x0000FF00     /* UART 0 Divider Mask */
++#define PERD0_U1DV_MASK        0x000000FF     /* UART 1 Divider Mask */
++
++static void get_clocks(void)
++{
++	unsigned long sysclk, cpr_plld, cpr_pllc, cpr_primad, plloutb, i;
++	unsigned long pllFwdDiv, pllFwdDivB, pllFbkDiv, pllPlbDiv, pllExtBusDiv;
++	unsigned long pllOpbDiv, freqEBC, freqUART, freqOPB;
++	unsigned long div;		/* total divisor udiv * bdiv */
++	unsigned long umin;		/* minimum udiv	*/
++	unsigned short diff;		/* smallest diff */
++	unsigned long udiv;		/* best udiv */
++	unsigned short idiff;		/* current diff */
++	unsigned short ibdiv;		/* current bdiv */
++	unsigned long est;		/* current estimate */
++	unsigned long baud;
++	void *np;
++
++	/* read the sysclk value from the CPLD */
++	sysclk = (in_8((unsigned char *)0x80000000) == 0xc) ? 66666666 : 33333000;
++
++	/*
++	 * Read PLL Mode registers
++	 */
++	cpr_plld = CPR0_READ(DCRN_CPR0_PLLD);
++	cpr_pllc = CPR0_READ(DCRN_CPR0_PLLC);
++
++	/*
++	 * Determine forward divider A
++	 */
++	pllFwdDiv = ((cpr_plld & PLLD_FWDVA_MASK) >> 16);
++
++	/*
++	 * Determine forward divider B
++	 */
++	pllFwdDivB = ((cpr_plld & PLLD_FWDVB_MASK) >> 8);
++	if (pllFwdDivB == 0)
++		pllFwdDivB = 8;
++
++	/*
++	 * Determine FBK_DIV.
++	 */
++	pllFbkDiv = ((cpr_plld & PLLD_FBDV_MASK) >> 24);
++	if (pllFbkDiv == 0)
++		pllFbkDiv = 256;
++
++	/*
++	 * Read CPR_PRIMAD register
++	 */
++	cpr_primad = CPR0_READ(DCRN_CPR0_PRIMAD);
++
++	/*
++	 * Determine PLB_DIV.
++	 */
++	pllPlbDiv = ((cpr_primad & PRIMAD_PLBDV_MASK) >> 16);
++	if (pllPlbDiv == 0)
++		pllPlbDiv = 16;
++
++	/*
++	 * Determine EXTBUS_DIV.
++	 */
++	pllExtBusDiv = (cpr_primad & PRIMAD_EBCDV_MASK);
++	if (pllExtBusDiv == 0)
++		pllExtBusDiv = 16;
++
++	/*
++	 * Determine OPB_DIV.
++	 */
++	pllOpbDiv = ((cpr_primad & PRIMAD_OPBDV_MASK) >> 8);
++	if (pllOpbDiv == 0)
++		pllOpbDiv = 16;
++
++	/* There is a bug in U-Boot that prevents us from using
++	 * bd.bi_opbfreq because U-Boot doesn't populate it for
++	 * 405EZ.  We get to calculate it, yay!
++	 */
++	freqOPB = (sysclk *pllFbkDiv) /pllOpbDiv;
++
++	freqEBC = (sysclk * pllFbkDiv) / pllExtBusDiv;
++
++	plloutb = ((sysclk * ((cpr_pllc & PLLC_SRC_MASK) ?
++					   pllFwdDivB : pllFwdDiv) *
++		    pllFbkDiv) / pllFwdDivB);
++
++	np = find_node_by_alias("serial0");
++	if (getprop(np, "current-speed", &baud, sizeof(baud)) != sizeof(baud))
++		fatal("no current-speed property\n\r");
++
++	udiv = 256;			/* Assume lowest possible serial clk */
++	div = plloutb / (16 * baud); /* total divisor */
++	umin = (plloutb / freqOPB) << 1;	/* 2 x OPB divisor */
++	diff = 256;			/* highest possible */
++
++	/* i is the test udiv value -- start with the largest
++	 * possible (256) to minimize serial clock and constrain
++	 * search to umin.
++	 */
++	for (i = 256; i > umin; i--) {
++		ibdiv = div / i;
++		est = i * ibdiv;
++		idiff = (est > div) ? (est-div) : (div-est);
++		if (idiff == 0) {
++			udiv = i;
++			break;      /* can't do better */
++		} else if (idiff < diff) {
++			udiv = i;       /* best so far */
++			diff = idiff;   /* update lowest diff*/
++		}
++	}
++	freqUART = plloutb / udiv;
++
++	dt_fixup_cpu_clocks(bd.bi_procfreq, bd.bi_intfreq, bd.bi_plb_busfreq);
++	dt_fixup_clock("/plb/ebc", freqEBC);
++	dt_fixup_clock("/plb/opb", freqOPB);
++	dt_fixup_clock("/plb/opb/serial@ef600300", freqUART);
++	dt_fixup_clock("/plb/opb/serial@ef600400", freqUART);
++}
++
++static void acadia_fixups(void)
++{
++	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
++	get_clocks();
++	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
++}
++	
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
++		unsigned long r6, unsigned long r7)
++{
++	CUBOOT_INIT();
++	platform_ops.fixups = acadia_fixups;
++	platform_ops.exit = ibm40x_dbcr_reset;
++	fdt_init(_dtb_start);
++	serial_console_init();
++}
 -- 
 1.5.5.1
