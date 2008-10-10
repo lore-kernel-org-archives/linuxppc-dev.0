@@ -1,21 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BA266DE064
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 05:48:47 +1100 (EST)
-Message-Id: <7669DEAF-DD9D-42CD-8701-289165E78BBD@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080923141300.GB31262@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 2/2] i2c: MPC8349E-mITX Power Management and GPIO expander
-	driver
-Date: Fri, 10 Oct 2008 13:46:19 -0500
-References: <20080923141300.GB31262@oksana.dev.rtsoft.ru>
-Cc: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
-	Ben Dooks <ben-linux@fluff.org>, linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-gx0-f14.google.com (mail-gx0-f14.google.com
+	[209.85.217.14]) by ozlabs.org (Postfix) with ESMTP id 76808DE69D
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 06:00:49 +1100 (EST)
+Received: by gxk7 with SMTP id 7so624329gxk.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 12:00:48 -0700 (PDT)
+Date: Fri, 10 Oct 2008 14:53:21 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] Remove old workaround for arch/ppc vs. arch/powerpc from
+	Makefile
+Message-ID: <20081010185321.GA16769@yoda.jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+There is an old workaround in the sysdev/Makefile for dealing
+with arch/ppc vs. arch/powerpc compiles.  This is no longer
+needed as arch/ppc is dead.
 
-On Sep 23, 2008, at 9:13 AM, Anton Vorontsov wrote:
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+---
 
-> On MPC8349E-mITX, MPC8315E-RDB and MPC837x-RDB boards there is a
-> Freescale MC9S08QG8 (MCU) chip with the custom firmware
-> pre-programmed. The chip is used to power-off the board by the
-> software, and to control some GPIO pins.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> drivers/i2c/chips/Kconfig            |   11 ++
-> drivers/i2c/chips/Makefile           |    1 +
-> drivers/i2c/chips/mcu_mpc8349emitx.c |  209 +++++++++++++++++++++++++ 
-> +++++++++
-> 3 files changed, 221 insertions(+), 0 deletions(-)
-> create mode 100644 drivers/i2c/chips/mcu_mpc8349emitx.c
-
-applied
-
-- k
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 55618ba..a44709a 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -38,15 +38,12 @@ ifeq ($(CONFIG_PCI),y)
+ obj-$(CONFIG_4xx)              += ppc4xx_pci.o
+ endif
+ 
+-# Temporary hack until we have migrated to asm-powerpc
+-ifeq ($(ARCH),powerpc)
+ obj-$(CONFIG_CPM)              += cpm_common.o
+ obj-$(CONFIG_CPM2)             += cpm2.o cpm2_pic.o
+ obj-$(CONFIG_QUICC_ENGINE)     += cpm_common.o
+ obj-$(CONFIG_PPC_DCR)          += dcr.o
+ obj-$(CONFIG_8xx)              += mpc8xx_pic.o cpm1.o
+ obj-$(CONFIG_UCODE_PATCH)      += micropatch.o
+-endif
+ 
+ ifeq ($(CONFIG_SUSPEND),y)
+ obj-$(CONFIG_6xx)              += 6xx-suspend.o
