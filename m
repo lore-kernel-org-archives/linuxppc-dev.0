@@ -1,24 +1,21 @@
-Return-Path: <rmachet@slac.stanford.edu>
-Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
-	[134.79.18.120])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EC287DE134
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 03:16:25 +1100 (EST)
-Subject: Re: [PATCH] dma: add new dma_mapping_ops API sync_page
-From: Remi Machet <rmachet@slac.stanford.edu>
-To: benh@kernel.crashing.org
-In-Reply-To: <1223610362.8157.139.camel@pasglop>
-References: <1222898599.8628.52.camel@pcds-ts102.slac.stanford.edu>
-	<1223051594.4251.12.camel@pcds-ts102.slac.stanford.edu>
-	<48EA3D0C.1050107@freescale.com>
-	<1223314733.21869.38.camel@pcds-ts102.slac.stanford.edu>
-	<1223610362.8157.139.camel@pasglop>
-Content-Type: text/plain
-Date: Fri, 10 Oct 2008 09:16:15 -0700
-Message-Id: <1223655376.374.12.camel@pcds-ts102.slac.stanford.edu>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, Linux PPC <linuxppc-dev@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 96087474C1
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 03:18:03 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/5] powerpc/40x: Add support for PowerPC 405EZ Acadia
+	board
+Date: Fri, 10 Oct 2008 18:16:55 +0200
+References: <cover.1223642006.git.jwboyer@linux.vnet.ibm.com>
+	<200810101758.54939.arnd@arndb.de>
+	<20081010160522.GB13966@yoda.jdub.homelinux.org>
+In-Reply-To: <20081010160522.GB13966@yoda.jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200810101816.55399.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,47 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-10-10 at 14:46 +1100, Benjamin Herrenschmidt wrote: 
-> > > A virtual address will typically be needed to perform the flush; why 
-> > > pass the bus address?
-> 
-> > Because it is a sync API. You want to make sure that a physical memory
-> > area is in sync with the caches, not the virtual address. This
-> > distinction can become important in the event where the page is mapped
-> > multiple times in the memory and the architecture does not take care of
-> > synchronizing the multiple mapping, the dma_mapping_ops code should be
-> > able to synchronize the multiple mapping. In most case it would be easy
-> > of course to go from virtual address to the page address, but not if the
-> > page is in high memory ...
-> 
-> Well, not really. IE, you are right that a dma_addr_t or a struct page
-> is the way to go but for the wrong reasons :-)
-> 
-> All mappings should be coherent. The powerpc architecture is pretty
-> strict with that. The only known violation is the instruction cache on
-> 44x but that's irrelevant to your problem.
-> 
-> Thus, -any- virtual address will do.
-Good! That certainly simplify the code.
+On Friday 10 October 2008, Josh Boyer wrote:
+> It would, except for timing. =A0I didn't get a chance to convert
+> 40x over before the merge window opened and I'd rather not try
+> to cram it in during the 1 week we have. =A0And Acadia is ported
+> now (and has been for a few weeks), so getting that in seemed
+> to be an easier route to take.
+>=20
+> I do have plans to convert 40x for 2.6.29, and if there are
+> major objections I can hold off Acadia until then. =A0I just
+> don't like holding back board ports for the "next re-org".
+>=20
 
-> However, you may not have a virtual address. You may get into a
-> situation where the page isn't in the linear mapping and needs to be
-> kmap'ed for the sync to happen.
-> 
-> Now, using PCI_DRAM_OFFSET in bus_to_page() is incorrect here with
-> Becky's new set of changes. You need to get the offset properly using
-> the accessor she provides (I don't have the name off the top of my
-> head).
-> 
-Totally agree with that. In the last set of patch I committed (which I
-need to re-commit because I need to use vmalloc in dma-noncoherent.c) I
-removed most of the reference to PCI_DRAM_OFFSET. The only reference to
-it remaining is in virt_to_bus which is called by dma_cache_sync.
+How about just renaming 40x/acadia.c to 40x/ppc405_simple.c
+without the merge? Then you can merge in the other platforms
+as time permits and any other new ones can start using the
+_simple platform right away.
 
-I did not see an accessor that can be used in dma-mapping.h (the
-accessor API I have seen is private to dma.c and dma-noncoherent.c), I
-would be happy to use it if there really is one though. I could add
-another 2 APIs to dma_mapping_ops which converts a page to/from its bus
-address, what do you think?
-
-Remi
+	Arnd <><
