@@ -1,15 +1,32 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id F0BB7DE1B8
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 05:05:18 +1100 (EST)
-Date: Fri, 10 Oct 2008 22:05:12 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/83xx: add NAND support for the MPC8360E-RDK boards
-Message-ID: <20081010180512.GA3554@oksana.dev.rtsoft.ru>
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E2200DE254
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 05:18:30 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9AIIQOu002596
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 14:18:26 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9AIIQ3j103800
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 12:18:26 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9AIIQxf015359
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 12:18:26 -0600
+Message-ID: <48EF9C71.9000009@austin.ibm.com>
+Date: Fri, 10 Oct 2008 13:18:25 -0500
+From: Joel Schopp <jschopp@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Cc: linuxppc-dev@ozlabs.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH/RFC] 64 bit csum_partial_copy_generic
+References: <alpine.LFD.1.10.0809101502580.14991@localhost.localdomain>
+	<18670.62070.659790.67023@drongo.ozlabs.ibm.com>
+In-Reply-To: <18670.62070.659790.67023@drongo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, fulkgl@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,39 +36,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The StMicro NAND chip (512Mbit, 64MB) is connected to the local bus,
-the first local bus' user-programmable machine is configured by the
-firmware to work with NAND chips.
 
-QE GPIO pin is used to poll the NAND's Ready-Not-Busy signal.
+> Thanks for doing this.  A few comments below, but first, can you
+> clarify what your and George Fulk's roles were in producing this?  I had
+> the impression George had written the code, and if that's the case,
+> you need to put a "From: George Fulk <...>" line as the first line of
+> your mail when you re-send the patch.
+>   
+I wrote the patch, George wrote some very useful testcases.  So a 
+Tested-by: George Fulk <fulkgl@us.ibm.com> line would be appropriate, 
+not sure if that line ever really caught on.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/boot/dts/mpc836x_rdk.dts |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-index b4f3a17..10237dc 100644
---- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-@@ -398,6 +398,18 @@
- 			device-width = <1>;
- 		};
- 
-+		upm@1,0 {
-+			compatible = "fsl,upm-nand";
-+			reg = <1 0 1>;
-+			fsl,upm-addr-offset = <16>;
-+			fsl,upm-cmd-offset = <8>;
-+			gpios = <&qe_pio_e 18 0>;
-+
-+			flash {
-+				compatible = "stm,nand512-a";
-+			};
-+		};
-+
- 		display@2,0 {
- 			device_type = "display";
- 			compatible = "fujitsu,MB86277", "fujitsu,mint";
--- 
-1.5.6.3
+As for the technical comments, I agree with all of them and will 
+incorporate them into the next version.
