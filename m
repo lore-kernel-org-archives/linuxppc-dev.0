@@ -2,16 +2,16 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1DE3CDE140
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 22:56:43 +1100 (EST)
-Date: Fri, 10 Oct 2008 06:56:34 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id C667DDE0F8
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 22:56:45 +1100 (EST)
+Date: Fri, 10 Oct 2008 06:56:35 -0500 (CDT)
 From: Milton Miller <miltonm@bga.com>
 Sender: Milton Miller <miltonm@realtime.net>
 To: linuxppc-dev@ozlabs.org, Ben Herrenschmidt <benh@kernel.crashing.org>,
 	Paul Mackerras <paulus@samba.org>
-Message-id: <patch-xics-8@bga.com>
+Message-id: <patch-xics-9@bga.com>
 In-Reply-To: <patch-xics-0@bga.com>
-Subject: [PATCH 8/16] xics: factor out giq set and unset
+Subject: [PATCH 9/16] powerpc: eoi xics ipi by hand in kexec 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,93 +21,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There is a bit of math to calculate the arguments to rtas to join
-or leave the global interrupt queue, and a warning on failure
-afterwards.  Make a helper for the 3 callers.
+EOI normally has the side effect of returning the cpu to the base
+priority to recieve the next interrupt.  This is actually controlled
+by the top byte of the xirr register.   When we are exiting the
+kernel in kexec we must eoi the ipi for the next kernel because we
+never return from the handler, but we want to leave interrupt
+delivery blocked until the next kernel takes action.
+
+Since the hardware ipi vector is fixed, its easiest to just do the
+eoi explicitly.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 
 Index: next.git/arch/powerpc/platforms/pseries/xics.c
 ===================================================================
---- next.git.orig/arch/powerpc/platforms/pseries/xics.c	2008-10-04 17:40:00.000000000 -0500
-+++ next.git/arch/powerpc/platforms/pseries/xics.c	2008-10-04 17:42:53.000000000 -0500
-@@ -727,20 +727,19 @@ static void xics_set_cpu_priority(unsign
- 	iosync();
- }
+--- next.git.orig/arch/powerpc/platforms/pseries/xics.c	2008-10-04 17:43:17.000000000 -0500
++++ next.git/arch/powerpc/platforms/pseries/xics.c	2008-10-04 21:56:17.000000000 -0500
+@@ -757,25 +757,21 @@ void xics_teardown_cpu(void)
  
-+/* Have the calling processor join or leave the specified global queue */
-+static void xics_set_cpu_giq(unsigned int gserver, unsigned int join)
-+{
-+	int status = rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
-+		(1UL << interrupt_server_size) - 1 - gserver, join);
-+	WARN_ON(status < 0);
-+}
- 
- void xics_setup_cpu(void)
+ void xics_kexec_teardown_cpu(int secondary)
  {
- 	xics_set_cpu_priority(0xff);
+-	unsigned int ipi;
+-	struct irq_desc *desc;
+-
+ 	xics_teardown_cpu();
  
--	/*
--	 * Put the calling processor into the GIQ.  This is really only
--	 * necessary from a secondary thread as the OF start-cpu interface
--	 * performs this function for us on primary threads.
--	 *
--	 * XXX: undo of teardown on kexec needs this too, as may hotplug
--	 */
--	rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
--		(1UL << interrupt_server_size) - 1 - default_distrib_server, 1);
-+	xics_set_cpu_giq(default_distrib_server, 1);
- }
- 
- void xics_teardown_cpu(void)
-@@ -749,9 +748,7 @@ void xics_teardown_cpu(void)
- 
- 	xics_set_cpu_priority(0);
- 
--	/*
--	 * Clear IPI
--	 */
-+	/* Clear any pending IPI request */
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		lpar_qirr_info(cpu, 0xff);
- 	else
-@@ -785,9 +782,7 @@ void xics_kexec_teardown_cpu(int seconda
- 	 * so leave the master cpu in the group.
+ 	/*
+-	 * we need to EOI the IPI
++	 * we take the ipi irq but and never return so we
++	 * need to EOI the IPI, but want to leave our priority 0
+ 	 *
+-	 * probably need to check all the other interrupts too
++	 * should we check all the other interrupts too?
+ 	 * should we be flagging idle loop instead?
+ 	 * or creating some task to be scheduled?
  	 */
- 	if (secondary)
--		rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
--				   (1UL << interrupt_server_size) - 1 -
--				   default_distrib_server, 0);
-+		xics_set_cpu_giq(default_distrib_server, 0);
- }
  
- #ifdef CONFIG_HOTPLUG_CPU
-@@ -795,7 +790,6 @@ void xics_kexec_teardown_cpu(int seconda
- /* Interrupts are disabled. */
- void xics_migrate_irqs_away(void)
- {
--	int status;
- 	int cpu = smp_processor_id(), hw_cpu = hard_smp_processor_id();
- 	unsigned int irq, virq;
+-	ipi = irq_find_mapping(xics_host, XICS_IPI);
+-	if (ipi == XICS_IRQ_SPURIOUS)
+-		return;
+-	desc = get_irq_desc(ipi);
+-	if (desc->chip && desc->chip->eoi)
+-		desc->chip->eoi(ipi);
++	if (firmware_has_feature(FW_FEATURE_LPAR))
++		lpar_xirr_info_set((0x00 << 24) | XICS_IPI);
++	else
++		direct_xirr_info_set((0x00 << 24) | XICS_IPI);
  
-@@ -806,10 +800,8 @@ void xics_migrate_irqs_away(void)
- 	/* Reject any interrupt that was queued to us... */
- 	xics_set_cpu_priority(0);
- 
--	/* remove ourselves from the global interrupt queue */
--	status = rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
--		(1UL << interrupt_server_size) - 1 - default_distrib_server, 0);
--	WARN_ON(status < 0);
-+	/* Remove ourselves from the global interrupt queue */
-+	xics_set_cpu_giq(default_distrib_server, 0);
- 
- 	/* Allow IPIs again... */
- 	xics_set_cpu_priority(DEFAULT_PRIORITY);
-@@ -817,6 +809,7 @@ void xics_migrate_irqs_away(void)
- 	for_each_irq(virq) {
- 		struct irq_desc *desc;
- 		int xics_status[2];
-+		int status;
- 		unsigned long flags;
- 
- 		/* We cant set affinity on ISA interrupts */
+ 	/*
+ 	 * Some machines need to have at least one cpu in the GIQ,
