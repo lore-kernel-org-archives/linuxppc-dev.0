@@ -1,21 +1,15 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3625BDE443
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 01:04:30 +1100 (EST)
-Message-ID: <48EF60F2.2050403@billgatliff.com>
-Date: Fri, 10 Oct 2008 09:04:34 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id A4F02DED13
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 01:04:36 +1100 (EST)
+Message-ID: <48EF60F1.1010001@harris.com>
+Date: Fri, 10 Oct 2008 10:04:33 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [RFC 0/6] Proposal for a Generic PWM Device API
-References: <cover.1223482372.git.bgat@billgatliff.com>	<1223608819.8157.127.camel@pasglop>
-	<48EED4D1.2040506@billgatliff.com>	<1223614943.8157.158.camel@pasglop>
-	<9e4733910810092206r5ba516ddv3d3ec910634431f5@mail.gmail.com>
-In-Reply-To: <9e4733910810092206r5ba516ddv3d3ec910634431f5@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, david-b@pacbell.net
+Subject: [PATCH] Modify sysfs gpio export so that "value" displays as 0 or
+ 1
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,14 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
+gpiolib can export GPIOs to userspace via sysfs.  This patch modifies
+the gpio_value_show() so that any non-zero value is explicitly printed
+as "1", rather than whatever numerical value the lower-level driver returns.
 
-> What do the device tree deities have to say about PWM support?
+Signed-off-by: Steve Falco <sfalco at harris.com>
+---
 
-Dunno.  What lists are they on?  :)
-
-
-b.g.
--- 
-Bill Gatliff
-bgat@billgatliff.com
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 8d29405..36bf72b 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -237,7 +237,7 @@ static ssize_t gpio_value_show(struct device *dev,
+ 	if (!test_bit(FLAG_EXPORT, &desc->flags))
+ 		status = -EIO;
+ 	else
+-		status = sprintf(buf, "%d\n", gpio_get_value_cansleep(gpio));
++		status = sprintf(buf, "%d\n", !!gpio_get_value_cansleep(gpio));
+ 
+ 	mutex_unlock(&sysfs_lock);
+ 	return status;
