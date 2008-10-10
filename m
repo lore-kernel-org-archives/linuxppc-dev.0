@@ -1,21 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 96087474C1
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 03:18:03 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/5] powerpc/40x: Add support for PowerPC 405EZ Acadia
-	board
-Date: Fri, 10 Oct 2008 18:16:55 +0200
-References: <cover.1223642006.git.jwboyer@linux.vnet.ibm.com>
-	<200810101758.54939.arnd@arndb.de>
-	<20081010160522.GB13966@yoda.jdub.homelinux.org>
-In-Reply-To: <20081010160522.GB13966@yoda.jdub.homelinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200810101816.55399.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BCADCDE00F
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 03:52:41 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: reserve two DMA channels for audio in MPC8610 HPCD
+	device tree
+Date: Fri, 10 Oct 2008 11:52:32 -0500
+Message-Id: <1223657552-15008-2-git-send-email-timur@freescale.com>
+In-Reply-To: <1223657552-15008-1-git-send-email-timur@freescale.com>
+References: <1223657552-15008-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 10 October 2008, Josh Boyer wrote:
-> It would, except for timing. =A0I didn't get a chance to convert
-> 40x over before the merge window opened and I'd rather not try
-> to cram it in during the 1 week we have. =A0And Acadia is ported
-> now (and has been for a few weeks), so getting that in seemed
-> to be an easier route to take.
->=20
-> I do have plans to convert 40x for 2.6.29, and if there are
-> major objections I can hold off Acadia until then. =A0I just
-> don't like holding back board ports for the "next re-org".
->=20
+The Freescale Elo DMA driver binds to all DMA channels in the device tree that
+are compatible with "fsl,eloplus-dma-channel".  This conflicts with the sound
+drivers for the MPC8610 HPCD.  On this board, the SSI uses two DMA channels and
+therefore those channels are not available for general purpose use.  We
+change the compatible properties for these channels "fsl,ssi-dma-channel".
+This works because the sound drivers don't actually check the compatible
+property when it grabs channels.
 
-How about just renaming 40x/acadia.c to 40x/ppc405_simple.c
-without the merge? Then you can merge in the other platforms
-as time permits and any other new ones can start using the
-_simple platform right away.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-	Arnd <><
+diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+index 0f3a36e..3f4c610 100644
+--- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
++++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+@@ -237,7 +237,7 @@
+ 
+ 			dma00: dma-channel@0 {
+ 				compatible = "fsl,mpc8610-dma-channel",
+-					"fsl,eloplus-dma-channel";
++					"fsl,ssi-dma-channel";
+ 				cell-index = <0>;
+ 				reg = <0x0 0x80>;
+ 				interrupt-parent = <&mpic>;
+@@ -245,7 +245,7 @@
+ 			};
+ 			dma01: dma-channel@1 {
+ 				compatible = "fsl,mpc8610-dma-channel",
+-					"fsl,eloplus-dma-channel";
++					"fsl,ssi-dma-channel";
+ 				cell-index = <1>;
+ 				reg = <0x80 0x80>;
+ 				interrupt-parent = <&mpic>;
+-- 
+1.5.5
