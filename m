@@ -1,22 +1,19 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-6.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 9E066DE2D5
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 08:41:53 +1100 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1] IB/ehca: Disallow creating UC QP with SRQ
-References: <200810011306.31544.hnguyen@linux.vnet.ibm.com>
-Date: Fri, 10 Oct 2008 14:41:39 -0700
-In-Reply-To: <200810011306.31544.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
-	Nguyen's message of "Wed, 1 Oct 2008 13:06:31 +0200")
-Message-ID: <adazllcku0c.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	general@lists.openfabrics.org, micfaath@de.ibm.com,
-	stefan.roscher@de.ibm.com
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH] remove bogus ppc_select syscall
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18671.1955.407703.974646@cargo.ozlabs.ibm.com>
+References: <7B7EF7F090B9804A830ACC82F2CDE95D56E206@insardxms01.ap.sony.com>
+	<1222160853.12085.136.camel@pasglop> <200809240823.12484.arnd@arndb.de>
+	<200809240839.14902.arnd@arndb.de> <1223612981.8157.146.camel@pasglop>
+	<18671.1955.407703.974646@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Sat, 11 Oct 2008 10:17:52 +1100
+Message-Id: <1223680673.8157.166.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>,
+	Arnd Bergmann <arnd@arndb.de>, linuxppc-embedded@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, applied -- it didn't apply to the latest tree, because of the
-flush CQE changes, so I merged it manually as below -- let me know if
-this is wrong:
+On Fri, 2008-10-10 at 18:43 +1100, Paul Mackerras wrote:
+> > It's me or the patch is whitespaces damaged ?
+> 
+> Please don't apply Arnd's patch.  As I said, all we need is this
+> one-line change in arch/powerpc/include/asm/systbl.h:
+> 
+> -SYSX_SPU(sys_select,ppc32_select,ppc_select)
+> +SYSX_SPU(sys_select,ppc32_select,sys_select)
 
-commit 0540bbbe455e123a1692d26205ad1a29983883b0
-Author: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Date:   Fri Oct 10 14:40:39 2008 -0700
+Ok, so you want to keep compat with the old stuff. Note that we still
+have this weird thing that on 64-bit kernels, we don't provide this.
 
-    IB/ehca: Don't allow creating UC QP with SRQ
-    
-    This patch prevents a UC QP to be created attached to an SRQ, since
-    current firmware does not support this feature.
-    
-    Signed-off-by: Michael Faath <micfaath@de.ibm.com>
-    Signed-off-by: Roland Dreier <rolandd@cisco.com>
-
-diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-index 4dbe287..40b578d 100644
---- a/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -502,6 +502,12 @@ static struct ehca_qp *internal_create_qp(
- 	if (init_attr->srq) {
- 		my_srq = container_of(init_attr->srq, struct ehca_qp, ib_srq);
- 
-+		if (qp_type == IB_QPT_UC) {
-+			ehca_err(pd->device, "UC with SRQ not supported");
-+			atomic_dec(&shca->num_qps);
-+			return ERR_PTR(-EINVAL);
-+		}
-+
- 		has_srq = 1;
- 		parms.ext_type = EQPT_SRQBASE;
- 		parms.srq_qpn = my_srq->real_qp_num;
+Ben.
