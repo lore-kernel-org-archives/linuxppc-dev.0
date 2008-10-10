@@ -1,24 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 96E09DDFA3
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 14:37:54 +1100 (EST)
-Subject: Re: [PATCH 1/2] OF: new helper: of_parse_phandles_with_args()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080925183710.GA25627@oksana.dev.rtsoft.ru>
-References: <20080925183641.GA20037@oksana.dev.rtsoft.ru>
-	<20080925183710.GA25627@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Fri, 10 Oct 2008 14:37:29 +1100
-Message-Id: <1223609849.8157.135.camel@pasglop>
-Mime-Version: 1.0
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id 70FACDDECF
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Oct 2008 14:42:28 +1100 (EST)
+Message-Id: <EA71A3A9-4137-490D-82BB-9817D3D4E01C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40810080915v38a1c40cs7cac3825ee5a7bac@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 2/3] powerpc: 5121: Add PCI support.
+Date: Thu, 9 Oct 2008 22:42:19 -0500
+References: <1223413998-15577-1-git-send-email-jrigby@freescale.com>
+	<4800D7D4-28BC-435A-9858-8FAF41F38468@kernel.crashing.org>
+	<fa686aa40810080915v38a1c40cs7cac3825ee5a7bac@mail.gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,33 +27,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> +	for (i = 0; i < list_cells; cur_index++) {
-> +		const u32 *cells;
-> +		const phandle *phandle;
-> +
-> +		phandle = list + i;
-> +		args = phandle + 1;
+On Oct 8, 2008, at 11:15 AM, Grant Likely wrote:
 
-Rather than incrementing i, I would just use a running pointer "list"
-and drop "i" totally. Not big deal tho.
+> On Wed, Oct 8, 2008 at 6:38 AM, Kumar Gala  
+> <galak@kernel.crashing.org> wrote:
+>>
+>> On Oct 7, 2008, at 4:13 PM, John Rigby wrote:
+>>
+>>> Uses mpc83xx_add_bridge in fsl_pci.c
+>>>
+>>> Adds second register tuple to pci node register property
+>>> as done for 83xx device trees in a previous patch.
+>>>
+>>> Signed-off-by: John Rigby <jrigby@freescale.com>
+>>> ---
+>>> arch/powerpc/boot/dts/mpc5121ads.dts      |    3 ++-
+>>> arch/powerpc/platforms/512x/Kconfig       |    2 ++
+>>> arch/powerpc/platforms/512x/mpc5121_ads.c |   10 ++++++++++
+>>> arch/powerpc/sysdev/fsl_pci.c             |    4 ++--
+>>> 4 files changed, 16 insertions(+), 3 deletions(-)
+>>
+>> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-> +		/* one cell hole in the list = <>; */
-> +		if (!*phandle) {
-> +			if (cur_index == index)
-> +				return -ENOENT;
-> +			i++;
-> +			continue;
-> +		}
+applied
 
-I don't totally understand the above. The 0 phandle terminates the list
-or is just an empty slot in it ? In the later case, it might be more
-readable to use goto to skip over down to the normal if (cur_index ==
-index) break; and let it return via the normal if (!node) return -ENOENT
-out of the loop.
-
-Appart from that it's good and I'm fine with putting it in if you respin
-despite being a bit late mostly because it's me who is later reviewing
-there :-)
-
-Cheers,
-Ben.
+- k
