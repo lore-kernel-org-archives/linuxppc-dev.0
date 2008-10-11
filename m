@@ -1,20 +1,15 @@
-Return-Path: <domino@mikroswiat.pl>
-Received: from jupiter.az.pl (jupiter.az.pl [62.146.68.61])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 190C4DDF1F
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Oct 2008 21:23:39 +1100 (EST)
-Message-ID: <48EDD905.6070609@mikroswiat.pl>
-Date: Thu, 09 Oct 2008 12:12:21 +0200
-From: Dominik Bozek <domino@mikroswiat.pl>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 11 Oct 2008 17:56:18 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/3] powerpc: add driver for simple GPIO banks
+Message-ID: <20081011065618.GA11731@yookeroo.seuss>
+References: <20081010165410.GA4291@oksana.dev.rtsoft.ru>
+	<20081010165501.GB4291@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: performance: memcpy vs. __copy_tofrom_user
-References: <48ECC611.3030309@mikroswiat.pl>	<20081008154212.GA21723@secretlab.ca>
-	<18669.28058.495259.72182@cargo.ozlabs.ibm.com>
-In-Reply-To: <18669.28058.495259.72182@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081010165501.GB4291@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +19,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
+On Fri, Oct 10, 2008 at 08:55:01PM +0400, Anton Vorontsov wrote:
+> The driver supports very simple GPIO controllers, that is, when a
+> controller provides just a 'data' register. Such controllers may be
+> found in various BCSRs (Board's FPGAs used to control board's
+> switches, LEDs, chip-selects, Ethernet/USB PHY power, etc).
+> 
+> So far we support only 1-byte GPIO banks. Support for other widths may
+> be implemented when/if needed.
+> 
+> p.s.
+> To avoid "made up" compatible entries (like compatible = "simple-gpio"),
+> boards must call the simple_gpiochip_init() to pass the compatible
+> string.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>  Documentation/powerpc/dts-bindings/fsl/board.txt |   30 ++++
+>  arch/powerpc/platforms/Kconfig                   |   11 ++
+>  arch/powerpc/sysdev/Makefile                     |    1 +
+>  arch/powerpc/sysdev/simple_gpio.c                |  157 ++++++++++++++++++++++
+>  arch/powerpc/sysdev/simple_gpio.h                |   13 ++
+>  5 files changed, 212 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/sysdev/simple_gpio.c
+>  create mode 100644 arch/powerpc/sysdev/simple_gpio.h
+> 
+> diff --git a/Documentation/powerpc/dts-bindings/fsl/board.txt b/Documentation/powerpc/dts-bindings/fsl/board.txt
+> index 74ae6f1..e97877f 100644
+> --- a/Documentation/powerpc/dts-bindings/fsl/board.txt
+> +++ b/Documentation/powerpc/dts-bindings/fsl/board.txt
+> @@ -27,3 +27,33 @@ Example (MPC8610HPCD):
+>  		compatible = "fsl,fpga-pixis";
+>  		reg = <0xe8000000 32>;
+>  	};
+> +
+> +* Freescale BCSR GPIO banks
+> +
+> +Some BCSR registers act as simple GPIO controllers, each such
+> +register can be represented by the gpio-controller node.
+> +
+> +Required properities:
+> +- compatible : Should be "fsl,<board>-bcsr-gpio";
+> +- reg : Should contain the address and the lenght of the GPIO bank
+> +  register;
+> +- #gpio-cells : Should be two. The first cell is the pin number and the
+> +  second cell is used to specify optional paramters (currently unused);
+> +- gpio-controller : Marks the port as GPIO controller.
+> +
+> +Example:
+> +
+> +	bcsr@1,0 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		device_type = "board-control";
 
-> When I looked at this last (which was a few years ago, I'll admit), I
-> found that the vast majority of memcpy calls were for small copies,
-> i.e. less than 128 bytes, whereas __copy_tofrom_user was often used
-> for larger copies (usually 1 page).  So with memcpy the focus was more
-> on keeping the startup costs low, while __copy_tofrom_user was
-> optimized more for bandwidth.
->
-> The other point is that the kernel memcpy doesn't consume a noticeable
-> amount of CPU time (at least not on any workload I've seen), so it
-> hasn't been a target for aggressive optimization.
->   
+This device_type field should not be used.  I know it is in the
+existing samples, which is another bug.  But please don't document it
+(and thereby further encourage it).
 
-
-Actually I made couple of other tests on that mpc8313. Most of them are
-to ugly to publish them, but... My problem is that I have to boost the
-gigabit interface on the mpc8313. I made simple substitution and
-__copy_tofrom_user was used instead of memcpy. I know, it's wrong, but I
-speedup that way the network interface for about 10%.
-
-I made also some calculation based on the results I had send. One
-__copy_tofrom_user of 1500B compensate profit from 258 memcpy of 8B. But
-of course this is the case of mpc8313 (333MHz core, DDR2 at 266MHz). On
-other hardware it may work differently and to make any binding
-conclusion we need to see some results done on other cpus.
-Unfortunately, right now, I don't have any other ppc to make such test
-and compare it.
-Other hand my test do not cover all cases. I believe most of small
-transfer involve data already cached. This is big point for current memcpy.
-
-Maybe there is another solution. Method, agressive or "low cost setup",
-will be chosen depend on the size of the copied block and fixed limit.
-Limit shall be known at compile time and related to the chosen cpu/platfrom.
-
-If someone ask for other tests. I had optimized memcpy for cases when
-transfer size is known at compile time and... hard to say if the system
-was "faster", but for sure I didn't notice any boost at network
-interface. Maybe my optimization was bad. It's possible with me.
-
-Dominik
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
