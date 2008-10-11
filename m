@@ -1,20 +1,15 @@
 Return-Path: <benh@kernel.crashing.org>
 Subject: Re: performance: memcpy vs. __copy_tofrom_user
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Matt Sealey <matt@genesi-usa.com>
-In-Reply-To: <48EE2553.30903@genesi-usa.com>
-References: <48ECC611.3030309@mikroswiat.pl>
-	<20081008154212.GA21723@secretlab.ca>
-	<18669.28058.495259.72182@cargo.ozlabs.ibm.com>
-	<48EDD905.6070609@mikroswiat.pl>
-	<18669.58803.48011.686743@cargo.ozlabs.ibm.com>
-	<48EE2553.30903@genesi-usa.com>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <48ECF08F.7000400@freescale.com>
+References: <48ECC611.3030309@mikroswiat.pl> <48ECF08F.7000400@freescale.com>
 Content-Type: text/plain
-Date: Sun, 12 Oct 2008 09:30:26 +1100
-Message-Id: <1223764226.8157.182.camel@pasglop>
+Date: Sun, 12 Oct 2008 09:32:07 +1100
+Message-Id: <1223764327.8157.185.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Dominik Bozek <domino@mikroswiat.pl>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-embedded@ozlabs.org
+	linuxppc-embedded@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,19 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-10-09 at 10:37 -0500, Matt Sealey wrote:
+On Wed, 2008-10-08 at 12:40 -0500, Scott Wood wrote:
 > 
-> Ahem, but nobody here wants AltiVec in the kernel do they?
+> The performance difference most likely comes from the fact that copy 
+> to/from user can assume that the memory is cacheable, while memcpy is 
+> occasionally used on cache-inhibited memory -- so dcbz isn't used.  We 
+> may be better off handling the alignment fault on those occasions, and 
+> we should use dcba on chips that support it.
 
-It depends. We do use altivec in the kernel for example for
-RAID accelerations.
+Note that the kernel memcpy isn't supposed to be used for non-cacheable
+memory. That's what memcpy_to/fromio are for.
 
-The reason where we require a -real-good- reason to do it is
-simply because of the drawbacks. The cost of enabling altivec
-in the kernel can be high (especially if the user is using it)
-and it's not context switched for kernel code (just like the
-FPU) for obvious performance reasons. Thus any use of altivec in the
-kernel must be done within non-preemptible sections, which can
-cause higher latencies in preemptible kernels.
+But Paul has a point that for small copies especially, the cost of
+the cache instructions outweigh their benefit.
 
+Cheers,
 Ben.
