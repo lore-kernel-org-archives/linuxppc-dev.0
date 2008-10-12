@@ -1,26 +1,20 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.227])
-	by ozlabs.org (Postfix) with ESMTP id E54FBDDDD8
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Oct 2008 13:06:00 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id c48so683160wra.1
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 19:05:58 -0700 (PDT)
-Message-ID: <48F15B7D.3060608@genesi-usa.com>
-Date: Sat, 11 Oct 2008 21:05:49 -0500
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <lark@linux.net.cn>
+Received: from mx.linux.net.cn (unknown [210.82.31.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3EB80DDDEA
+	for <linuxppc-dev@ozlabs.org>; Sun, 12 Oct 2008 13:19:47 +1100 (EST)
+Message-ID: <48F15EBD.4040807@linux.net.cn>
+Date: Sun, 12 Oct 2008 10:19:41 +0800
+From: Wang Jian <lark@linux.net.cn>
 MIME-Version: 1.0
 To: benh@kernel.crashing.org
-Subject: Re: performance: memcpy vs. __copy_tofrom_user
-References: <48ECC611.3030309@mikroswiat.pl>	
-	<20081008154212.GA21723@secretlab.ca>	
-	<18669.28058.495259.72182@cargo.ozlabs.ibm.com>	
-	<48EDD905.6070609@mikroswiat.pl>	
-	<18669.58803.48011.686743@cargo.ozlabs.ibm.com>	
-	<48EE2553.30903@genesi-usa.com> <1223764226.8157.182.camel@pasglop>
-In-Reply-To: <1223764226.8157.182.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org, Dominik Bozek <domino@mikroswiat.pl>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH RFC] pata_platform: add 8 bit data io support
+References: <20081011180014.GA4908@debian> <1223763687.8157.178.camel@pasglop>
+In-Reply-To: <1223763687.8157.178.camel@pasglop>
+Content-Type: text/plain; charset=GB2312
+Cc: linuxppc-dev@ozlabs.org, Tejun Heo <htejun@gmail.com>,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,48 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2008-10-09 at 10:37 -0500, Matt Sealey wrote:
->> Ahem, but nobody here wants AltiVec in the kernel do they?
+Benjamin Herrenschmidt Ð´µÀ:
+> On Sun, 2008-10-12 at 02:00 +0800, Wang Jian wrote:
+>> To avoid adding another rare used ata_port member, new bit is added to
+>> ata_port->flags.
+>>
+>> Originally, I hacked pata_platform to make it 8bit only to support 8bit
+>> data wired CF card. This patch is more generic.
+>>
+>> With this patch, __pata_platform_probe() interface is changed, and
+>> pata_of_platform is broken, so a small patch is needed.
+>>
+>> Signed-off-by: Wang Jian <lark@linux.net.cn>
+>> ---
 > 
-> It depends. We do use altivec in the kernel for example for
-> RAID accelerations.
+> A couple of things. First I would personally prefer (but I'm not the
+> libata maintainer so it's up to Jeff ...) if you had a separate patch
+> that adds the 8-bit support to libata core first, and then a patch that
+> modifies pata_platform.
+
+I will do that if my 8-bit mode patch is done right technically.
+
 > 
-> The reason where we require a -real-good- reason to do it is
-> simply because of the drawbacks. The cost of enabling altivec
-> in the kernel can be high (especially if the user is using it)
-> and it's not context switched for kernel code (just like the
-> FPU) for obvious performance reasons. Thus any use of altivec in the
-> kernel must be done within non-preemptible sections, which can
-> cause higher latencies in preemptible kernels.
+> Then, in order to avoid breaking bisection, I would like you to fixup
+> pata_of_platform in the same patch that modifies __pata_platform_probe
+> so there is no breakage in between patches.
 
-Would the examples (page copy, page clear) be an okay place to do it?
-These sections can't be preempted anyway (right?), and it's noted that
-doing it with AltiVec is a tad faster than using MMU tricks or standard
-copies?
+Yes.
 
-In Scott's case, while "optimizing memcpy for 48byte blocks" was a joke,
-this is 3 load/stores in AltiVec, which as long as every SKB is 16
-byte aligned (is there any reason why it would not be? :)
+> 
+> Now, regarding the patch itself, if the core grows a 8-bit flag, then
+> I strongly suspect the core should also grow the 8-bit xfer function
+> rather than having it hidden in pata_platform.
 
-skb_clone might not be something you want to dump AltiVec into and would
-make a mess if an skb got extended somehow, but the principle is outlined
-in a very good document from a very long time ago;
+This is the main reason I send a single RFC patch. Where to add 8-bit
+mode should be decided first.
 
-http://www.motorola.com.cn/semiconductors/sndf/conference/PDF/AH1109.pdf
+Because 8-bit mode is mostly used for embedded devices, my opinion is
+8-bit mode in pata_platform is enough.
 
-I think a lot of it still holds true as long as you really don't care
-about preemption under these circumstances (where network throughput
-is more important, and where AltiVec actually *reduces* CPU time, the
-overhead of disabling preemption is lower anyway). You could say the
-same about the RAID functions - I bet LatencyTOP has a field day when
-you're using RAID5 AltiVec. But if you're more concerned about fast disk
-access, would you really care (especially since the algorithm is
-automatically selected on boot, you've not much chance of having any
-choice in the matter anyway)?
+However, look at pata_platform_data_xfer() I added, the code can be
+merged into ata_sff_data_xfer() of libata-sff.c easily. Moving the
+code there is trivial if necessary.
 
-Granted it also doesn't help Scott one bit. Sorry :D
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Another problem should be addressed: using flags v.s. using data_width
+member. I add a bit to indicate 8 bit mode, but this seems to be a problem
+for future 32 bit I/O support in libata.
