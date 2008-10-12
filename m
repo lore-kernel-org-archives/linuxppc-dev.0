@@ -1,22 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: performance: memcpy vs. __copy_tofrom_user
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Matt Sealey <matt@genesi-usa.com>
-In-Reply-To: <48F15B7D.3060608@genesi-usa.com>
-References: <48ECC611.3030309@mikroswiat.pl>
-	<20081008154212.GA21723@secretlab.ca>
-	<18669.28058.495259.72182@cargo.ozlabs.ibm.com>
-	<48EDD905.6070609@mikroswiat.pl>
-	<18669.58803.48011.686743@cargo.ozlabs.ibm.com>
-	<48EE2553.30903@genesi-usa.com> <1223764226.8157.182.camel@pasglop>
-	<48F15B7D.3060608@genesi-usa.com>
-Content-Type: text/plain
-Date: Sun, 12 Oct 2008 15:05:37 +1100
-Message-Id: <1223784337.8157.193.camel@pasglop>
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 326D8DDE01
+	for <linuxppc-dev@ozlabs.org>; Sun, 12 Oct 2008 16:47:15 +1100 (EST)
+Date: Sun, 12 Oct 2008 07:46:34 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Ingo Molnar <mingo@elte.hu>, linux-arch@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, benh@kernel.crashing.org
+Subject: [patch] mutex: optimise generic mutex implementations
+Message-ID: <20081012054634.GA12535@wotan.suse.de>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Dominik Bozek <domino@mikroswiat.pl>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-embedded@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,48 +21,110 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Speed up generic mutex implementations.
 
-> Would the examples (page copy, page clear) be an okay place to do it?
-> These sections can't be preempted anyway (right?), and it's noted that
-> doing it with AltiVec is a tad faster than using MMU tricks or standard
-> copies?
+- atomic operations which both modify the variable and return something imply
+  full smp memory barriers before and after the memory operations involved
+  (failing atomic_cmpxchg, atomic_add_unless, etc don't imply a barrier because
+  they don't modify the target). See Documentation/atomic_ops.txt.
+  So remove extra barriers and branches.
+  
+- All architectures support atomic_cmpxchg. This has no relation to
+  __HAVE_ARCH_CMPXCHG. We can just take the atomic_cmpxchg path unconditionally
 
-I think typically page copying and clearing -are- preemptible. I'm not
-sure what you mean by MMU tricks, but it's not clear whether using
-altivec will result in any significant performance gain here,
-considering the cost of enabling/disabling altivec (added to handling
-the preemption issue).
+This reduces a simple single threaded fastpath lock+unlock test from 590 cycles
+to 203 cycles on a ppc970 system.
 
-However, nothing prevents you from trying to do it and we'll see what
-the results are with hard numbers.
-
-> In Scott's case, while "optimizing memcpy for 48byte blocks" was a joke,
-> this is 3 load/stores in AltiVec, which as long as every SKB is 16
-> byte aligned (is there any reason why it would not be? :)
-
-In this case, the cost of enabling/saving/restoring altivec will far
-outweight any benefit. In addition, skb's are often not well aligned due
-to the alignment tricks done with packet headers.
-
-> skb_clone might not be something you want to dump AltiVec into and would
-> make a mess if an skb got extended somehow, but the principle is outlined
-> in a very good document from a very long time ago;
-> 
-> http://www.motorola.com.cn/semiconductors/sndf/conference/PDF/AH1109.pdf
-> 
-> I think a lot of it still holds true as long as you really don't care
-> about preemption under these circumstances (where network throughput
-> is more important, and where AltiVec actually *reduces* CPU time, the
-> overhead of disabling preemption is lower anyway). You could say the
-> same about the RAID functions - I bet LatencyTOP has a field day when
-> you're using RAID5 AltiVec.
-
-RAID6 actually :-)
-
-In any case, as I said, people are welcome to implement something that
-can be put to the test and measured. If it proves beneficial enough, then
-I see no reason not to merge it. Basically, enough talks, just do something
-and we'll see whether it proves useful or not.
-
-Cheers,
-Ben.
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+Index: linux-2.6/include/asm-generic/mutex-dec.h
+===================================================================
+--- linux-2.6.orig/include/asm-generic/mutex-dec.h
++++ linux-2.6/include/asm-generic/mutex-dec.h
+@@ -22,8 +22,6 @@ __mutex_fastpath_lock(atomic_t *count, v
+ {
+ 	if (unlikely(atomic_dec_return(count) < 0))
+ 		fail_fn(count);
+-	else
+-		smp_mb();
+ }
+ 
+ /**
+@@ -41,10 +39,7 @@ __mutex_fastpath_lock_retval(atomic_t *c
+ {
+ 	if (unlikely(atomic_dec_return(count) < 0))
+ 		return fail_fn(count);
+-	else {
+-		smp_mb();
+-		return 0;
+-	}
++	return 0;
+ }
+ 
+ /**
+@@ -63,7 +58,6 @@ __mutex_fastpath_lock_retval(atomic_t *c
+ static inline void
+ __mutex_fastpath_unlock(atomic_t *count, void (*fail_fn)(atomic_t *))
+ {
+-	smp_mb();
+ 	if (unlikely(atomic_inc_return(count) <= 0))
+ 		fail_fn(count);
+ }
+@@ -98,15 +92,9 @@ __mutex_fastpath_trylock(atomic_t *count
+ 	 * just as efficient (and simpler) as a 'destructive' probing of
+ 	 * the mutex state would be.
+ 	 */
+-#ifdef __HAVE_ARCH_CMPXCHG
+-	if (likely(atomic_cmpxchg(count, 1, 0) == 1)) {
+-		smp_mb();
++	if (likely(atomic_cmpxchg(count, 1, 0) == 1))
+ 		return 1;
+-	}
+ 	return 0;
+-#else
+-	return fail_fn(count);
+-#endif
+ }
+ 
+ #endif
+Index: linux-2.6/include/asm-generic/mutex-xchg.h
+===================================================================
+--- linux-2.6.orig/include/asm-generic/mutex-xchg.h
++++ linux-2.6/include/asm-generic/mutex-xchg.h
+@@ -27,8 +27,6 @@ __mutex_fastpath_lock(atomic_t *count, v
+ {
+ 	if (unlikely(atomic_xchg(count, 0) != 1))
+ 		fail_fn(count);
+-	else
+-		smp_mb();
+ }
+ 
+ /**
+@@ -46,10 +44,7 @@ __mutex_fastpath_lock_retval(atomic_t *c
+ {
+ 	if (unlikely(atomic_xchg(count, 0) != 1))
+ 		return fail_fn(count);
+-	else {
+-		smp_mb();
+-		return 0;
+-	}
++	return 0;
+ }
+ 
+ /**
+@@ -67,7 +62,6 @@ __mutex_fastpath_lock_retval(atomic_t *c
+ static inline void
+ __mutex_fastpath_unlock(atomic_t *count, void (*fail_fn)(atomic_t *))
+ {
+-	smp_mb();
+ 	if (unlikely(atomic_xchg(count, 1) != 0))
+ 		fail_fn(count);
+ }
+@@ -110,7 +104,6 @@ __mutex_fastpath_trylock(atomic_t *count
+ 		if (prev < 0)
+ 			prev = 0;
+ 	}
+-	smp_mb();
+ 
+ 	return prev;
+ }
