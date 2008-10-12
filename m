@@ -1,20 +1,23 @@
-Return-Path: <lark@linux.net.cn>
-Received: from mx.linux.net.cn (unknown [210.82.31.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3EB80DDDEA
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Oct 2008 13:19:47 +1100 (EST)
-Message-ID: <48F15EBD.4040807@linux.net.cn>
-Date: Sun, 12 Oct 2008 10:19:41 +0800
-From: Wang Jian <lark@linux.net.cn>
+Return-Path: <neko@genesi-usa.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.226])
+	by ozlabs.org (Postfix) with ESMTP id B80DADDD0B
+	for <linuxppc-dev@ozlabs.org>; Sun, 12 Oct 2008 13:33:02 +1100 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so687220wra.1
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Oct 2008 19:33:01 -0700 (PDT)
+Message-ID: <48F161D4.90003@genesi-usa.com>
+Date: Sat, 11 Oct 2008 21:32:52 -0500
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH RFC] pata_platform: add 8 bit data io support
-References: <20081011180014.GA4908@debian> <1223763687.8157.178.camel@pasglop>
-In-Reply-To: <1223763687.8157.178.camel@pasglop>
-Content-Type: text/plain; charset=GB2312
-Cc: linuxppc-dev@ozlabs.org, Tejun Heo <htejun@gmail.com>,
-	linux-ide@vger.kernel.org
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [RFC 0/6] Proposal for a Generic PWM Device API
+References: <cover.1223482372.git.bgat@billgatliff.com>	<1223608819.8157.127.camel@pasglop>
+	<48EED4D1.2040506@billgatliff.com>	<1223614943.8157.158.camel@pasglop>	<9e4733910810092206r5ba516ddv3d3ec910634431f5@mail.gmail.com>	<48EF60F2.2050403@billgatliff.com>
+	<1223671514.4889.6.camel@ld0161-tx32>
+In-Reply-To: <1223671514.4889.6.camel@ld0161-tx32>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Bill Gatliff <bgat@billgatliff.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,49 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt Ð´µÀ:
-> On Sun, 2008-10-12 at 02:00 +0800, Wang Jian wrote:
->> To avoid adding another rare used ata_port member, new bit is added to
->> ata_port->flags.
+Jon Loeliger wrote:
+> On Fri, 2008-10-10 at 09:04 -0500, Bill Gatliff wrote:
+>> Jon Smirl wrote:
 >>
->> Originally, I hacked pata_platform to make it 8bit only to support 8bit
->> data wired CF card. This patch is more generic.
+>>> What do the device tree deities have to say about PWM support?
+>> Dunno.  What lists are they on?  :)
 >>
->> With this patch, __pata_platform_probe() interface is changed, and
->> pata_of_platform is broken, so a small patch is needed.
->>
->> Signed-off-by: Wang Jian <lark@linux.net.cn>
->> ---
 > 
-> A couple of things. First I would personally prefer (but I'm not the
-> libata maintainer so it's up to Jeff ...) if you had a separate patch
-> that adds the 8-bit support to libata core first, and then a patch that
-> modifies pata_platform.
+> Perhaps devicetree-discuss@ozlabs.org too.
 
-I will do that if my 8-bit mode patch is done right technically.
+I thought this was what ePAPR was for.
 
-> 
-> Then, in order to avoid breaking bisection, I would like you to fixup
-> pata_of_platform in the same patch that modifies __pata_platform_probe
-> so there is no breakage in between patches.
+Why would it need all that discussion if it's being codified into
+a proper standard? Someone should just submit a reasonable extension
+to a reasonable extension-managing body :)
 
-Yes.
-
-> 
-> Now, regarding the patch itself, if the core grows a 8-bit flag, then
-> I strongly suspect the core should also grow the 8-bit xfer function
-> rather than having it hidden in pata_platform.
-
-This is the main reason I send a single RFC patch. Where to add 8-bit
-mode should be decided first.
-
-Because 8-bit mode is mostly used for embedded devices, my opinion is
-8-bit mode in pata_platform is enough.
-
-However, look at pata_platform_data_xfer() I added, the code can be
-merged into ata_sff_data_xfer() of libata-sff.c easily. Moving the
-code there is trivial if necessary.
-
-Another problem should be addressed: using flags v.s. using data_width
-member. I add a bit to indicate 8 bit mode, but this seems to be a problem
-for future 32 bit I/O support in libata.
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
