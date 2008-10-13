@@ -2,18 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D8DC3DE88A
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 03:44:28 +1100 (EST)
-Message-Id: <659A0204-FBEE-4415-9E38-36FC92FFDA7F@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 0FF7DDE8C7
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 03:46:20 +1100 (EST)
+Message-Id: <F51E4B63-C0B1-4394-872E-3C8A3C0C0BB4@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <20081013151537.19033.25006.stgit@ubuntu8041.localdomain>
+To: ehrhardt@linux.vnet.ibm.com
+In-Reply-To: <1221546450-15761-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v3] powerpc: FPGA support for GE Fanuc SBC610
-Date: Mon, 13 Oct 2008 11:44:16 -0500
-References: <20081013151537.19033.25006.stgit@ubuntu8041.localdomain>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, sfr@canb.auug.org.au
+Subject: Re: [PATCH 2/3] kvmppc: add hypercall infrastructure - guest part v3
+Date: Mon, 13 Oct 2008 11:42:49 -0500
+References: <1221546450-15761-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	<1221546450-15761-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, hollisb@us.ibm.com, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +25,73 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 13, 2008, at 10:16 AM, Martyn Welch wrote:
+On Sep 16, 2008, at 1:27 AM, ehrhardt@linux.vnet.ibm.com wrote:
 
-> Support for the SBC610 VPX Single Board Computer from GE Fanuc  
-> (PowerPC
-> MPC8641D).
+> From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 >
-> This patch adds support for the registers held in the devices main  
-> FPGA,
-> exposing extra information about the revision of the board through  
-> cpuinfo.
+> This adds the guest portion of the hypercall infrastructure.
 >
-> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+> Version 3 now follows the beat ABI, but proposes a new  
+> implementation style as
+> static inline asm functions instead of pure assembler code. That  
+> should allow
+> the compiler to be more flexible and therefore a better optimization.
+>
+> If people agree on that new implementation style we might merge this  
+> code.
+> The current implementation of beat style hypercalls can be found in
+> arch/powerpc/platforms/cell/beat_hvCall.S
+>
+> Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 > ---
 >
-> Stephen: Thanks for spotting that error.
+> [diffstat]
+> epapr_hcalls.h |   59 +++++++++++++++++++++++++++++++++++++++++++++++ 
+> ++++++++++
+> 1 file changed, 59 insertions(+)
 >
-> New to rev 3:
-> * Added of_node_put()
+> [diff]
 >
-> arch/powerpc/boot/dts/gef_sbc610.dts     |    4 +++
-> arch/powerpc/platforms/86xx/gef_sbc610.c |   40 +++++++++++++++++++++ 
-> +++++++++
-> 2 files changed, 44 insertions(+), 0 deletions(-)
+> diff --git a/include/asm-powerpc/epapr_hcalls.h b/include/asm- 
+> powerpc/epapr_hcalls.h
+> new file mode 100644
+> --- /dev/null
+> +++ b/include/asm-powerpc/epapr_hcalls.h
+> @@ -0,0 +1,59 @@
+> +/*
+> + * This program is free software; you can redistribute it and/or  
+> modify
+> + * it under the terms of the GNU General Public License, version 2,  
+> as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA   
+> 02110-1301, USA.
+> + *
+> + * Copyright IBM Corp. 2008
+> + *
+> + * Authors:
+> + * 	Christian Ehrhardt <ehrhardt@de.ibm.com>
+> + */
+> +
+> +#ifndef __POWERPC_EPAPR_HCALLS_H__
+> +#define __POWERPC_EPAPR_HCALLS_H__
+> +
+> +#ifdef __KERNEL__
+> +
+> +/* Hypercalls use the beat ABI */
+> +#define KVM_HYPERCALL_BIN 0x44000022
 
-applied.
+Any reason this isn't 'sc' ?
+
+Also, can we make this "sc 1" so its works when we have HW hypervisor  
+support?
 
 - k
