@@ -1,19 +1,31 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id DD8B0DDF5D
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 22:04:43 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-Subject: Re: Floating inputs on unused GPIO pins
-Date: Mon, 13 Oct 2008 13:04:41 +0200
-References: <200810131156.59477.laurentp@cse-semaphore.com>
-	<c384c5ea0810130308q5cfa2c2ld8ea5eafec99bba3@mail.gmail.com>
-In-Reply-To: <c384c5ea0810130308q5cfa2c2ld8ea5eafec99bba3@mail.gmail.com>
+Return-Path: <ossrosch@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3F0ADDDF59
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 22:10:41 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9DBAaVU002487
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 07:10:36 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9DBAa5j211616
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 05:10:36 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9DBAahX004860
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 05:10:36 -0600
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: Roland Dreier <rolandd@cisco.com>, general@lists.openfabrics.org,
+	"LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH]IB/ehca:reject dynamic memory add/remove
+Date: Mon, 13 Oct 2008 13:10:32 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1296436.mzcYet2qAg";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200810131304.41435.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200810131310.34413.ossrosch@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,67 +35,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1296436.mzcYet2qAg
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Since the ehca device driver does not support dynamic memory add and remove
+operations, the driver must explicitly reject such requests in order to prevent
+unpredictable behaviors related to memory regions already occupied and being
+used by InfiniBand applications.
+The solution is to add a memory notifier to the ehca device driver and if a request
+for dynamic memory add or remove comes in, ehca will always reject it.
 
-Hi Leon,
+Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
+---
 
-On Monday 13 October 2008, Leon Woestenberg wrote:
-> Hello Laurent,
->=20
-> On Mon, Oct 13, 2008 at 11:56 AM, Laurent Pinchart
-> <laurentp@cse-semaphore.com> wrote:
-> > our hardware engineer asked me to make sure all unused GPIO pins are
-> > configured as outputs to avoid floating inputs. He got theory on his si=
-de
-> > (floating inputs can lead to higher current consumption, metastability =
-or
-> > even permanent damage), but I'd like to ask the list for practical
-> > feedback.   =20
-> >
-> Ideally, configure them as inputs or tri-state (both mean high
-> impedance), and do use pull-down or -up resistors.
-
-As I explained in my mail to Geert, that's not really an option. The GPIO p=
-ins are connected to an optional expansion module. When the module is plugg=
-ed in the pins have dedicated functions. When the module is not present the=
-y are by default floating inputs. That's the case our hardware engineer is =
-concerned about.
-
-> Now, the answer might be different when your pins are not connected.
-> Check on the processor if internal pull resistors are present. If so,
-> use as input. If not, then your h/w engineer *may* have a point, not
-> sure on that though.
-
-There are no internal pull-up or pull-down resistors on the MPC8248 GPIO pi=
-ns. I know our hardware engineer has a valid point theoretically. Does the =
-point stand practically, or does the MPC8248 "state-of-the-art"(tm)(c)(what=
-ever) technology make floating inputs safe ?
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1296436.mzcYet2qAg
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkjzK0kACgkQ8y9gWxC9vpeNgQCg3rWmoJjnooykfi8m8aZSRqig
-FpoAoLGzVClm6F8lesGvwKaeszolEHC1
-=fP1L
------END PGP SIGNATURE-----
-
---nextPart1296436.mzcYet2qAg--
+diff -Nurp linux-2.6.27-rc6-7/drivers/infiniband/hw/ehca/ehca_main.c linux-2.6.27-rc6-7.new/drivers/infiniband/hw/ehca/ehca_main.c
+--- linux-2.6.27-rc6-7/drivers/infiniband/hw/ehca/ehca_main.c	2008-09-16 18:19:27.000000000 +0200
++++ linux-2.6.27-rc6-7.new/drivers/infiniband/hw/ehca/ehca_main.c	2008-10-03 13:52:50.000000000 +0200
+@@ -44,6 +44,8 @@
+ #include <linux/slab.h>
+ #endif
+ 
++#include <linux/notifier.h>
++#include <linux/memory.h>
+ #include "ehca_classes.h"
+ #include "ehca_iverbs.h"
+ #include "ehca_mrmw.h"
+@@ -964,6 +966,41 @@ void ehca_poll_eqs(unsigned long data)
+ 	spin_unlock(&shca_list_lock);
+ }
+ 
++static int ehca_mem_notifier(struct notifier_block *nb,
++                             unsigned long action, void *data)
++{
++	static unsigned long ehca_dmem_warn_time;
++
++	switch (action) {
++	case MEM_CANCEL_OFFLINE:
++	case MEM_CANCEL_ONLINE:
++	case MEM_ONLINE:
++	case MEM_OFFLINE:
++		return NOTIFY_OK;
++	case MEM_GOING_ONLINE:
++	case MEM_GOING_OFFLINE:
++		/* only ok if no hca is attached to the lpar */
++		spin_lock(&shca_list_lock);
++		if (list_empty(&shca_list)) {
++			spin_unlock(&shca_list_lock);
++			return NOTIFY_OK;
++		} else {
++			spin_unlock(&shca_list_lock);
++			if (printk_timed_ratelimit(&ehca_dmem_warn_time,
++						   30 * 1000))
++				ehca_gen_err("DMEM operations are not allowed"
++					     "as long as an ehca adapter is"
++					     "attached to the LPAR");
++			return NOTIFY_BAD;
++		}
++	}
++	return NOTIFY_OK;
++}
++
++static struct notifier_block ehca_mem_nb = {
++	.notifier_call = ehca_mem_notifier,
++};
++
+ static int __init ehca_module_init(void)
+ {
+ 	int ret;
+@@ -991,6 +1028,12 @@ static int __init ehca_module_init(void)
+ 		goto module_init2;
+ 	}
+ 
++	ret = register_memory_notifier(&ehca_mem_nb);
++	if (ret) {
++		ehca_gen_err("Failed registering memory add/remove notifier");
++		goto module_init3;
++	}
++
+ 	if (ehca_poll_all_eqs != 1) {
+ 		ehca_gen_err("WARNING!!!");
+ 		ehca_gen_err("It is possible to lose interrupts.");
+@@ -1003,6 +1046,9 @@ static int __init ehca_module_init(void)
+ 
+ 	return 0;
+ 
++module_init3:
++	ibmebus_unregister_driver(&ehca_driver);
++
+ module_init2:
+ 	ehca_destroy_slab_caches();
+ 
+@@ -1018,6 +1064,8 @@ static void __exit ehca_module_exit(void
+ 
+ 	ibmebus_unregister_driver(&ehca_driver);
+ 
++	unregister_memory_notifier(&ehca_mem_nb);
++
+ 	ehca_destroy_slab_caches();
+ 
+ 	ehca_destroy_comp_pool();
