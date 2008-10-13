@@ -1,16 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Date: Mon, 13 Oct 2008 10:06:13 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: performance: memcpy vs. __copy_tofrom_user
-Message-ID: <20081013150613.GD18502@ld0162-tx32.am.freescale.net>
-References: <48ECC611.3030309@mikroswiat.pl> <48ECF08F.7000400@freescale.com>
-	<1223764327.8157.185.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1223764327.8157.185.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, Dominik Bozek <domino@mikroswiat.pl>,
-	linuxppc-embedded@ozlabs.org
+Return-Path: <robert.richter@amd.com>
+Date: Mon, 13 Oct 2008 17:13:07 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Cbe-oss-dev] powerpc/cell/oprofile: fix mutex locking for
+	spu-oprofile
+Message-ID: <20081013151307.GA23557@erda.amd.com>
+References: <1217620879.15667.145.camel@carll-linux-desktop>
+	<18610.20951.764057.574721@cargo.ozlabs.ibm.com>
+	<200808250955.57638.arnd@arndb.de>
+	<200810131653.29631.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+In-Reply-To: <200810131653.29631.arnd@arndb.de>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, oprofile-list@lists.sourceforge.net,
+	cel <cel@linux.vnet.ibm.com>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Oct 12, 2008 at 09:32:07AM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2008-10-08 at 12:40 -0500, Scott Wood wrote:
-> > 
-> > The performance difference most likely comes from the fact that copy 
-> > to/from user can assume that the memory is cacheable, while memcpy is 
-> > occasionally used on cache-inhibited memory -- so dcbz isn't used.  We 
-> > may be better off handling the alignment fault on those occasions, and 
-> > we should use dcba on chips that support it.
-> 
-> Note that the kernel memcpy isn't supposed to be used for non-cacheable
-> memory. That's what memcpy_to/fromio are for.
+On 13.10.08 16:53:28, Arnd Bergmann wrote:
+> On Monday 25 August 2008, Arnd Bergmann wrote:
+> > On Monday 25 August 2008, Paul Mackerras wrote:
+> > >=20
+> > > > Since rc4 is out now, I understand if you feel more comfortable w=
+ith
+> > > > putting the patch into -next instead of -merge.
+> > >=20
+> > > Linus has been getting stricter about only putting in fixes for
+> > > regressions and serious bugs (see his recent email to Dave Airlie o=
+n
+> > > LKML for instance). =A0I assume that the corruption is just in the =
+data
+> > > that is supplied to userspace and doesn't extend to any kernel data
+> > > structures.
+> >=20
+> > That's right, please queue it for -next then.
+>=20
+> I just realized that this patch never made it into powerpc-next after
+> all, neither benh nor paulus version. Whoever is handling it today,
+> could you please pull
+>=20
+>  master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git merge
+>=20
+> to get this commit below. I have rebased it on top of the current
+> benh/powerpc/next branch.
 
-I agree that it *shouldn't*, but the presence of cacheble_memcpy (used
-only by the EMAC driver, AFAICT) suggests that it was a concern.
+All powerpc oprofile patches are in this branch:
 
-> But Paul has a point that for small copies especially, the cost of
-> the cache instructions outweigh their benefit.
+git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git powerpc-f=
+or-paul
 
-Possibly, but what is the overall effect on the system of using them,
-even if it hurts small copies slightly?  How many small copies are of
-constant size, which could be diverted to another implementation at
-compile-time?  Even run-time diversion may help, as the cost of a small
-memcpy is only important if you do it many times, in which case the
-branch will probably be correctly predicted.
+Pending patches are:
 
-Given the networking results Dominik posted, I think it's worth a look.
+Carl Love (1):
+      powerpc/cell/oprofile: fix mutex locking for spu-oprofile
 
--Scott
+Roel Kluin (1):
+      powerpc/cell/oprofile: vma_map: fix test on overlay_tbl_offset
+
+Please pull from there.
+
+-Robert
+
+--=20
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
