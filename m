@@ -1,14 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18674.42140.69339.584403@drongo.ozlabs.ibm.com>
-Date: Mon, 13 Oct 2008 12:30:04 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: mohan@in.ibm.com
-Subject: Re: [PATCH] Support for relocatable kdump kernel
-In-Reply-To: <20081012233420.GA6240@in.ibm.com>
-References: <20081012233420.GA6240@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A22C3DDDD4
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 13:46:06 +1100 (EST)
+Subject: Re: [PATCH 7/16] xics: initialization cleanups
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <patch-xics-7@bga.com>
+References: <patch-xics-7@bga.com>
+Content-Type: text/plain
+Date: Mon, 13 Oct 2008 11:55:04 +1100
+Message-Id: <1223859304.8157.207.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,20 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mohan Kumar M writes:
 
-> Support for relocatable kdump kernel
+>  static void __init xics_init_one_node(struct device_node *np,
+> @@ -700,8 +694,10 @@ void __init xics_init_IRQ(void)
+>  
+>  	for_each_node_by_type(np, "PowerPC-External-Interrupt-Presentation") {
+>  		found = 1;
+> -		if (firmware_has_feature(FW_FEATURE_LPAR))
+> +		if (firmware_has_feature(FW_FEATURE_LPAR)) {
+> +			of_node_put(np);
+>  			break;
+> +			}
 
-> @@ -1401,9 +1414,21 @@ _STATIC(__after_prom_start)
->  	beq	9f			/* have already put us at zero */
->  	li	r6,0x100		/* Start offset, the first 0x100 */
->  					/* bytes were copied earlier.	 */
-> -#ifdef CONFIG_RELOCATABLE
-> +
-> +#ifdef CONFIG_CRASH_DUMP
+Little tab damage up here... no big deal.
 
-What tree is this patch against?  No tree that I can find has a line
-saying "#ifdef CONFIG_RELOCATABLE" at that point.  Or is there a
-prerequisite patch that I haven't seen yet?
-
-Paul.
+>  		xics_init_one_node(np, &indx);
+>  	}
+>  	if (found == 0
