@@ -1,24 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AA1B8DDDF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:33:52 +1100 (EST)
-Message-ID: <48F393EB.6000100@freescale.com>
-Date: Mon, 13 Oct 2008 13:31:07 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <bunk@kernel.org>
+Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
+	by ozlabs.org (Postfix) with ESMTP id A6EDDDE516
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:36:07 +1100 (EST)
+Date: Mon, 13 Oct 2008 21:35:03 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Brice Goglin <brice@myri.com>
+Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc
+	selectsCONFIG_INTEL_IOATDMA=y
+Message-ID: <20081013183503.GA28133@cs181140183.pp.htv.fi>
+References: <20081013101559.GA14372@linux.vnet.ibm.com>
+	<20081013112631.GD29938@cs181140183.pp.htv.fi>
+	<36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com>
+	<48F391B9.1000206@myri.com>
 MIME-Version: 1.0
-To: joakim.tjernlund@transmode.se
-Subject: Re: MPC8321, ethernet and i2c problems after upgrade from 2.6.25
-	to 2.6.27
-References: <1223899315.32141.42.camel@gentoo-jocke.transmode.se>	
-	<20081013163151.GD19080@ld0162-tx32.am.freescale.net>
-	<1223918059.32141.62.camel@gentoo-jocke.transmode.se>
-In-Reply-To: <1223918059.32141.62.camel@gentoo-jocke.transmode.se>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <48F391B9.1000206@myri.com>
+Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org, "Sosnowski,
+	Maciej" <maciej.sosnowski@intel.com>,
+	linux-kernel@vger.kernel.org, "Brandeburg,
+	Jesse" <jesse.brandeburg@intel.com>, linuxppc-dev@ozlabs.org,
+	"Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, sam@ravnborg.org,
+	Jeff Garzik <jgarzik@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,32 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund wrote:
-> On Mon, 2008-10-13 at 11:31 -0500, Scott Wood wrote:
->> i2c-mpc.c now registers as a dynamically-numbered bus; you need to either
->> use the device tree, or call i2c_new_device().
+On Mon, Oct 13, 2008 at 08:21:45PM +0200, Brice Goglin wrote:
+> Brandeburg, Jesse wrote:
+> > What we want, is myri10ge and ixgbe drivers that can build whether or not CONFIG_INTEL_IOATDMA is enabled.  IF CONFIG_INTEL_IOATDMA *is* enabled (which it should not be on PPC) then there are several cases we want to work:
+> > CONFIG_INTEL_IOATDMA=m  ---> CONFIG_IXGBE=[m|n]
+> > CONFIG_INTEL_IOATDMA=y  ---> CONFIG_IXGBE=[m|y|n]
+> > CONFIG_INTEL_IOATDMA=n  ---> CONFIG_IXGBE=[m|y|n]
+> > CONFIG_INTEL_IOATDMA depends on X86
 > 
-> Thanks, but is this really so? Reading include/linux/i2c.h makes me
-> wonder if not the i2c_register_board_info() should still work.
+> I am not sure I want to prevent myri10ge=y just because ioatdma=m.
+>...
 
-Why?  Note that the "add-on" versus "mainboard" distinction in the 
-comment is just an example; the actual distinction is 
-dynamically-numbered versus statically-numbered.  Since the controller 
-itself is probed from the device tree, there's no good way of statically 
-assigning a bus number to it.
+Technically both solutions are possible, which to choose is just a 
+policy decision you have to agree on.
 
-> Calling i2c_new_device() from an initcall() procedure does not
-> seem easy/possible, you need the adapter to do that. Maybe I just
-> missing something obvious?
+In practice it will anyway only rarely matter.
 
-The obvious and easy way is to just use the device tree.
+But considering that igb is in a similar situation it would be nice if 
+all 3 drivers would handle it the same way.
 
-If that isn't possible (such as due to device trees embedded in existing 
-firmware), you can find the adapter device as a child of the of_device.
+> Brice
 
-Finding the of_device from the device_node may be difficult, though.
-We could have i2c-mpc set node->data to the of_device (or maybe the 
-adapter struct), or maybe should add an of_device member of device_node 
-that gets filled in by of_platform?
+cu
+Adrian
 
--Scott
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
