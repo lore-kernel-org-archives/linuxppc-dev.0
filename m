@@ -2,19 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5F666DE058
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 10:25:32 +1100 (EST)
-Subject: Re: [PATCH 1/2] powerpc: don't pass unused regs around in head_.*.S
+	by ozlabs.org (Postfix) with ESMTPS id 61CEBDE0D6
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 10:27:40 +1100 (EST)
+Subject: Re: [PATCH] pata_of_platform: fix no irq handling
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-In-Reply-To: <1223820494-7822-2-git-send-email-sebastian@breakpoint.cc>
-References: <1223820494-7822-1-git-send-email-sebastian@breakpoint.cc>
-	<1223820494-7822-2-git-send-email-sebastian@breakpoint.cc>
+To: Tejun Heo <tj@kernel.org>
+In-Reply-To: <48F2F138.6020103@kernel.org>
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
+	<48F2F138.6020103@kernel.org>
 Content-Type: text/plain
-Date: Tue, 14 Oct 2008 10:25:12 +1100
-Message-Id: <1223940312.8157.281.camel@pasglop>
+Date: Tue, 14 Oct 2008 10:27:14 +1100
+Message-Id: <1223940434.8157.283.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
+	Jeff Garzik <jgarzik@pobox.com>, Wang Jian <lark@linux.net.cn>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,22 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2008-10-12 at 16:08 +0200, Sebastian Andrzej Siewior wrote:
-> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+On Mon, 2008-10-13 at 15:56 +0900, Tejun Heo wrote:
+> Anton Vorontsov wrote:
+> > When no irq specified the pata_of_platform fills the irq_res with -1,
+> > which is wrong to do for two reasons:
+> > 
+> > 1. By definition, 'no irq' should be IRQ 0, not some negative integer;
+> > 2. pata_platform checks for irq_res.start > 0, but since irq_res.start
+> >    is unsigned type, the check will be true for `-1'.
+> > 
+> > Reported-by: Steven A. Falco <sfalco@harris.com>
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > 
-> This looks like a relict from arch/ppc. machine_init() is accepting
-> only two parameters (dtb, phys) and is using only the first one.
+> applied to #tj-upstream (will soon be sent upstream)
 
-This isn't 100% correct actually...
-
-First, the base head_32.S (could be called head_6xx.S I suppose)
-supports a few more calling conventions such as the real OF one, with
-added support for initrd and cmdline in registers , and the BootX one.
-
-Then, calling convention for the other cases is slightly better defined
-than just having r3 contain a device-tree pointer. The physical address
-is an important part of it, the fact that r5 is NULL to differenciate
-from an OF entry too, and we're moving toward the full ePAPR definition.
+Hrm... I applied it to powerpc.git too :-) Hopefully the merge will sort
+it out !
 
 Cheers,
 Ben.
