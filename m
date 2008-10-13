@@ -1,15 +1,15 @@
 Return-Path: <g.liakhovetski@gmx.de>
 Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id DD81BDDEFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:03:12 +1100 (EST)
-Date: Mon, 13 Oct 2008 20:03:25 +0200 (CEST)
+	by ozlabs.org (Postfix) with SMTP id 380B4DDE11
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:04:59 +1100 (EST)
+Date: Mon, 13 Oct 2008 20:05:09 +0200 (CEST)
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 To: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-Subject: Re: [PATCH] powerpc: compile kernel for linkstations optimized for
-	size
-In-Reply-To: <20081013040703.GA11059@ime.usp.br>
-Message-ID: <Pine.LNX.4.64.0810131959140.9041@axis700.grange>
+Subject: Re: [PATCH] powerpc: enable heap randomization for linkstations
+In-Reply-To: <20081013045116.GA11637@ime.usp.br>
+Message-ID: <Pine.LNX.4.64.0810132003350.9041@axis700.grange>
 References: <20081013040703.GA11059@ime.usp.br>
+	<20081013045116.GA11637@ime.usp.br>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=iso-8859-1
 Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
@@ -25,48 +25,58 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Mon, 13 Oct 2008, Rog=E9rio Brito wrote:
 
-> From: Rog=E9rio Brito <rbrito@ime.usp.br>
+> The current defconfig for Linkstation/Kuroboxes has the "Disable Heap
+> Randomization" option enabled.
 >=20
-> Since Linkstations and Kuroboxes often have *very* little memory (as
-> they are embedded systems), it is desirable to get their kernels
-> compiled optimized for size.
->=20
-> Signed-off-by: Rog=E9rio Brito <rbrito@ime.usp.br>
->=20
-> ---
->=20
-> I have been using kernels optimized for size on my Kurobox (standard)
-> for many different releases and I have experienced no problem with this
-> option enabled. Thus, this patch.
+> Since some of these machines are facing the internet, it helps to have
+> heap randomization enabled. This patch enables it.
 
-The comment for this option says: "watch out for broken compilers," if=20
-this doesn't hold any more, it should be remove, if it still holds, I=20
-wouldn't turn this on by default, as I don't think we can test all=20
-possible (cross- or native-) compilers users might want to use. In any=20
-case this is one of options that users can select themselves, if it suits=
+Same as the previous patch - this is one of options, that users select=20
+according to their needs. If any specific distribution enables this option=
 =20
-them. Also I don't think your CC list is correct, you wanted to send this=
-=20
-to the powerpc list and one of powerpc / subarch maintainer.
+by default in their kernels, they can do this too, don't think this is=20
+critical enough to patch the defconfig.
 
 Thanks
 Guennadi
 
 >=20
+>=20
+> Signed-off-by: Rog=E9rio Brito <rbrito@ime.usp.br>
+>=20
+> ---
+>=20
 > --- linux/arch/powerpc/configs/linkstation_defconfig.old=092008-10-13 00:=
 33:00.000000000 -0300
-> +++ linux/arch/powerpc/configs/linkstation_defconfig=092008-10-13 00:38:5=
+> +++ linux/arch/powerpc/configs/linkstation_defconfig=092008-10-13 01:11:2=
 8.000000000 -0300
-> @@ -90,7 +90,7 @@ CONFIG_NAMESPACES=3Dy
->  # CONFIG_PID_NS is not set
->  CONFIG_BLK_DEV_INITRD=3Dy
->  CONFIG_INITRAMFS_SOURCE=3D""
-> -# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-> +CONFIG_CC_OPTIMIZE_FOR_SIZE=3Dy
->  CONFIG_SYSCTL=3Dy
->  # CONFIG_EMBEDDED is not set
->  CONFIG_SYSCTL_SYSCALL=3Dy
->=20
+> @@ -1,7 +1,7 @@
+>  #
+>  # Automatically generated make config: don't edit
+> -# Linux kernel version: 2.6.27-rc4
+> -# Thu Aug 21 00:52:05 2008
+> +# Linux kernel version: 2.6.27
+> +# Mon Oct 13 01:11:21 2008
+>  #
+>  # CONFIG_PPC64 is not set
+> =20
+> @@ -101,7 +101,7 @@ CONFIG_HOTPLUG=3Dy
+>  CONFIG_PRINTK=3Dy
+>  CONFIG_BUG=3Dy
+>  CONFIG_ELF_CORE=3Dy
+> -CONFIG_COMPAT_BRK=3Dy
+> +# CONFIG_COMPAT_BRK is not set
+>  CONFIG_BASE_FULL=3Dy
+>  CONFIG_FUTEX=3Dy
+>  CONFIG_ANON_INODES=3Dy
+> @@ -1211,7 +1211,6 @@ CONFIG_USB_STORAGE=3Dm
+>  # CONFIG_USB_STORAGE_ALAUDA is not set
+>  # CONFIG_USB_STORAGE_ONETOUCH is not set
+>  # CONFIG_USB_STORAGE_KARMA is not set
+> -# CONFIG_USB_STORAGE_SIERRA is not set
+>  # CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
+>  # CONFIG_USB_LIBUSUAL is not set
+> =20
 >=20
 > --=20
 > Rog=E9rio Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
