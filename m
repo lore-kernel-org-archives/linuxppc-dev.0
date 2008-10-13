@@ -1,27 +1,33 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
-	by ozlabs.org (Postfix) with ESMTP id A6EDDDE516
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:36:07 +1100 (EST)
-Date: Mon, 13 Oct 2008 21:35:03 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Brice Goglin <brice@myri.com>
-Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc
-	selectsCONFIG_INTEL_IOATDMA=y
-Message-ID: <20081013183503.GA28133@cs181140183.pp.htv.fi>
-References: <20081013101559.GA14372@linux.vnet.ibm.com>
-	<20081013112631.GD29938@cs181140183.pp.htv.fi>
-	<36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com>
-	<48F391B9.1000206@myri.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <48F391B9.1000206@myri.com>
-Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org, "Sosnowski,
-	Maciej" <maciej.sosnowski@intel.com>,
-	linux-kernel@vger.kernel.org, "Brandeburg,
-	Jesse" <jesse.brandeburg@intel.com>, linuxppc-dev@ozlabs.org,
-	"Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, sam@ravnborg.org,
-	Jeff Garzik <jgarzik@redhat.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8F4BADE79D
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:44:50 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m9DIiisk011583
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 11:44:45 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m9DIiiQW027651
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 13:44:44 -0500 (CDT)
+Date: Mon, 13 Oct 2008 13:44:43 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH] powerpc: enable heap randomization for linkstations
+Message-ID: <20081013184443.GA20612@ld0162-tx32.am.freescale.net>
+References: <20081013040703.GA11059@ime.usp.br>
+	<20081013045116.GA11637@ime.usp.br>
+	<Pine.LNX.4.64.0810132003350.9041@axis700.grange>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <Pine.LNX.4.64.0810132003350.9041@axis700.grange>
+Cc: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>,
+	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,33 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 13, 2008 at 08:21:45PM +0200, Brice Goglin wrote:
-> Brandeburg, Jesse wrote:
-> > What we want, is myri10ge and ixgbe drivers that can build whether or not CONFIG_INTEL_IOATDMA is enabled.  IF CONFIG_INTEL_IOATDMA *is* enabled (which it should not be on PPC) then there are several cases we want to work:
-> > CONFIG_INTEL_IOATDMA=m  ---> CONFIG_IXGBE=[m|n]
-> > CONFIG_INTEL_IOATDMA=y  ---> CONFIG_IXGBE=[m|y|n]
-> > CONFIG_INTEL_IOATDMA=n  ---> CONFIG_IXGBE=[m|y|n]
-> > CONFIG_INTEL_IOATDMA depends on X86
+On Mon, Oct 13, 2008 at 08:05:09PM +0200, Guennadi Liakhovetski wrote:
+> On Mon, 13 Oct 2008, Rogério Brito wrote:
 > 
-> I am not sure I want to prevent myri10ge=y just because ioatdma=m.
->...
+> > The current defconfig for Linkstation/Kuroboxes has the "Disable Heap
+> > Randomization" option enabled.
+> > 
+> > Since some of these machines are facing the internet, it helps to have
+> > heap randomization enabled. This patch enables it.
+> 
+> Same as the previous patch - this is one of options, that users select 
+> according to their needs. If any specific distribution enables this option 
+> by default in their kernels, they can do this too, don't think this is 
+> critical enough to patch the defconfig.
 
-Technically both solutions are possible, which to choose is just a 
-policy decision you have to agree on.
+Just because users/distros can change it doesn't mean it's pointless to
+discuss what default is sane, and make changes if the current default
+isn't.
 
-In practice it will anyway only rarely matter.
+For security-related options it's usually best to default to the more
+secure state, especially since the option description talks about it
+being needed mainly for libc5 compatibility -- did libc5 ever even exist
+for powerpc?  
 
-But considering that igb is in a similar situation it would be nice if 
-all 3 drivers would handle it the same way.
+The only reason it was turned on in the first place was likely the
+"default y", which in turn is there to avoid breaking old x86 distros.
 
-> Brice
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+-Scott
