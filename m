@@ -1,19 +1,21 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6A50FDE07C
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 00:11:58 +1100 (EST)
-Message-ID: <48F34922.503@billgatliff.com>
-Date: Mon, 13 Oct 2008 08:12:02 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
-MIME-Version: 1.0
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
+	by ozlabs.org (Postfix) with ESMTP id A2BA1DDFB3
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 00:40:01 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so460105qwb.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 06:40:00 -0700 (PDT)
+Message-ID: <c384c5ea0810130640w7d0031f5j130c4edf83acccaf@mail.gmail.com>
+Date: Mon, 13 Oct 2008 15:40:00 +0200
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Bill Gatliff" <bgat@billgatliff.com>
 Subject: Re: Floating inputs on unused GPIO pins
-References: <200810131156.59477.laurentp@cse-semaphore.com>	<c384c5ea0810130308q5cfa2c2ld8ea5eafec99bba3@mail.gmail.com>
-	<200810131304.41435.laurentp@cse-semaphore.com>
-In-Reply-To: <200810131304.41435.laurentp@cse-semaphore.com>
+In-Reply-To: <48F34922.503@billgatliff.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+References: <200810131156.59477.laurentp@cse-semaphore.com>
+	<c384c5ea0810130308q5cfa2c2ld8ea5eafec99bba3@mail.gmail.com>
+	<200810131304.41435.laurentp@cse-semaphore.com>
+	<48F34922.503@billgatliff.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,33 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Laurent Pinchart wrote:
+Hello Laurent,
 
-> 
-> There are no internal pull-up or pull-down resistors on the MPC8248 GPIO pins. I know our hardware engineer has a valid point theoretically. Does the point stand practically, or does the MPC8248 "state-of-the-art"(tm)(c)(whatever) technology make floating inputs safe ?
+On Mon, Oct 13, 2008 at 3:12 PM, Bill Gatliff <bgat@billgatliff.com> wrote:
+> At least until someone plugs in that expansion module!
+>
+Bill's remark made a neuron connection in my head:
 
-Well, Freescale's own layout recommendations recommend pullups or pulldowns for
-all input pins, but it's isn't clear what motivates that suggestion.
+Can you detect if the module is inserted or not? (By reading a known
+state of some pin)?
 
-The block diagram, Figure 37-21, is less than helpful.  :)  I recall a doc
-somewhere that showed the input protection circuitry ends up providing a modest
-pullup/down, so the line never truly "floats".  But it's a very high-impedance
-path, and I can't seem to find the doc anyway so it could be for a completely
-different chip altogether.
+You could then configure the pins dynamically in your driver.
 
-The part isn't going to blow up if you leave inputs unconnected, at least if you
-avoid high-EMI/RFI environments.  But I can imagine the possibility of increased
-power consumption if I try hard enough.  I would think that the magnitude would
-be completely swamped by the consumption of the rest of the chip, however...
-
-The technical answer might not be the best political one, at least not without
-Freescale-branded docs to back you up.  I say, write the code and make everyone
-else happy.  :)
-
-At least until someone plugs in that expansion module!
-
-
-b.g.
+Regards,
 -- 
-Bill Gatliff
-bgat@billgatliff.com
+Leon
