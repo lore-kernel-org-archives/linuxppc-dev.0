@@ -2,26 +2,28 @@ Return-Path: <rbrito@ime.usp.br>
 Received: from smtp.gru.flash.tv.br (smtp.flash.net.br [201.46.240.48])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 99314DDDF0
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 15:07:34 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 271C3DDDF9
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 15:51:33 +1100 (EST)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp.gru.flash.tv.br (Postfix) with ESMTP id 044841C881D
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 01:07:27 -0200 (BRST)
+	by smtp.gru.flash.tv.br (Postfix) with ESMTP id 0E0C11C87DD
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 01:51:38 -0200 (BRST)
 Received: from smtp.gru.flash.tv.br ([127.0.0.1])
 	by localhost (smtp.gru.flash.tv.br [127.0.0.1]) (amavisd-new,
-	port 10024) with ESMTP id h8quWJGAmmv8 for <linuxppc-dev@ozlabs.org>;
-	Mon, 13 Oct 2008 01:07:20 -0200 (BRST)
+	port 10024) with ESMTP id R8-qx90XKFmG for <linuxppc-dev@ozlabs.org>;
+	Mon, 13 Oct 2008 01:51:33 -0200 (BRST)
 Received: from chagas.nectar.ath.cx (189-39-150-147.gru.flash.tv.br
 	[189.39.150.147])
-	by smtp.gru.flash.tv.br (Postfix) with ESMTPA id 3F9911C8735
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 01:07:20 -0200 (BRST)
-Date: Mon, 13 Oct 2008 01:07:03 -0300
+	by smtp.gru.flash.tv.br (Postfix) with ESMTPA id E45071C87C5
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 01:51:32 -0200 (BRST)
+Date: Mon, 13 Oct 2008 01:51:17 -0300
 From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: compile kernel for linkstations optimized for size
-Message-ID: <20081013040703.GA11059@ime.usp.br>
+Subject: [PATCH] powerpc: enable heap randomization for linkstations
+Message-ID: <20081013045116.GA11637@ime.usp.br>
+References: <20081013040703.GA11059@ime.usp.br>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20081013040703.GA11059@ime.usp.br>
 Cc: rbrito@ime.usp.br, linuxppc-dev@ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -32,32 +34,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Rogério Brito <rbrito@ime.usp.br>
+The current defconfig for Linkstation/Kuroboxes has the "Disable Heap
+Randomization" option enabled.
 
-Since Linkstations and Kuroboxes often have *very* little memory (as
-they are embedded systems), it is desirable to get their kernels
-compiled optimized for size.
+Since some of these machines are facing the internet, it helps to have
+heap randomization enabled. This patch enables it.
+
 
 Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
 
 ---
 
-I have been using kernels optimized for size on my Kurobox (standard)
-for many different releases and I have experienced no problem with this
-option enabled. Thus, this patch.
-
 --- linux/arch/powerpc/configs/linkstation_defconfig.old	2008-10-13 00:33:00.000000000 -0300
-+++ linux/arch/powerpc/configs/linkstation_defconfig	2008-10-13 00:38:58.000000000 -0300
-@@ -90,7 +90,7 @@ CONFIG_NAMESPACES=y
- # CONFIG_PID_NS is not set
- CONFIG_BLK_DEV_INITRD=y
- CONFIG_INITRAMFS_SOURCE=""
--# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
- CONFIG_SYSCTL=y
- # CONFIG_EMBEDDED is not set
- CONFIG_SYSCTL_SYSCALL=y
-
++++ linux/arch/powerpc/configs/linkstation_defconfig	2008-10-13 01:11:28.000000000 -0300
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.27-rc4
+-# Thu Aug 21 00:52:05 2008
++# Linux kernel version: 2.6.27
++# Mon Oct 13 01:11:21 2008
+ #
+ # CONFIG_PPC64 is not set
+ 
+@@ -101,7 +101,7 @@ CONFIG_HOTPLUG=y
+ CONFIG_PRINTK=y
+ CONFIG_BUG=y
+ CONFIG_ELF_CORE=y
+-CONFIG_COMPAT_BRK=y
++# CONFIG_COMPAT_BRK is not set
+ CONFIG_BASE_FULL=y
+ CONFIG_FUTEX=y
+ CONFIG_ANON_INODES=y
+@@ -1211,7 +1211,6 @@ CONFIG_USB_STORAGE=m
+ # CONFIG_USB_STORAGE_ALAUDA is not set
+ # CONFIG_USB_STORAGE_ONETOUCH is not set
+ # CONFIG_USB_STORAGE_KARMA is not set
+-# CONFIG_USB_STORAGE_SIERRA is not set
+ # CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
+ # CONFIG_USB_LIBUSUAL is not set
+ 
 
 -- 
 Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
