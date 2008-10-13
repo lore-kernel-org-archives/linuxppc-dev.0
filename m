@@ -1,32 +1,21 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9B4C5DE194
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 04:29:52 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9DHL4lZ021929
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 13:21:04 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9DHTlIx171152
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 11:29:47 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9DHTk3v002851
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 11:29:47 -0600
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D51D3DE5D0
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 04:47:07 +1100 (EST)
+Message-Id: <8BA1DE5D-9815-4855-BC4C-C84809753D57@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+In-Reply-To: <1223918983.16033.30.camel@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
 Subject: Re: [PATCH 2/3] kvmppc: add hypercall infrastructure - guest part v3
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <F51E4B63-C0B1-4394-872E-3C8A3C0C0BB4@kernel.crashing.org>
+Date: Mon, 13 Oct 2008 12:44:07 -0500
 References: <1221546450-15761-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
 	<1221546450-15761-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
 	<F51E4B63-C0B1-4394-872E-3C8A3C0C0BB4@kernel.crashing.org>
-Content-Type: text/plain
-Date: Mon, 13 Oct 2008 12:29:43 -0500
-Message-Id: <1223918983.16033.30.camel@localhost.localdomain>
-Mime-Version: 1.0
+	<1223918983.16033.30.camel@localhost.localdomain>
 Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -37,21 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-10-13 at 11:42 -0500, Kumar Gala wrote:
-> > +
-> > +/* Hypercalls use the beat ABI */
-> > +#define KVM_HYPERCALL_BIN 0x44000022
-> 
-> Any reason this isn't 'sc' ?
-> 
-> Also, can we make this "sc 1" so its works when we have HW hypervisor  
-> support?
 
-Actually, it is "sc 1".
+On Oct 13, 2008, at 12:29 PM, Hollis Blanchard wrote:
 
-Many versions of as (including 2.16.1) don't recognize that instruction.
-This is the standard workaround for situations like that.
+> On Mon, 2008-10-13 at 11:42 -0500, Kumar Gala wrote:
+>>> +
+>>> +/* Hypercalls use the beat ABI */
+>>> +#define KVM_HYPERCALL_BIN 0x44000022
+>>
+>> Any reason this isn't 'sc' ?
+>>
+>> Also, can we make this "sc 1" so its works when we have HW hypervisor
+>> support?
+>
+> Actually, it is "sc 1".
+>
+> Many versions of as (including 2.16.1) don't recognize that  
+> instruction.
+> This is the standard workaround for situations like that.
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+Ahh, we'll than can we add that to the comment, and rename  
+'KVM_HYPERCALL_BIN' to something like 'EPAPR_HYPERCALL_INSTR'
+
+- k
