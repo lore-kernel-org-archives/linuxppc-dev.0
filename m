@@ -1,19 +1,22 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 380B4DDE11
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:04:59 +1100 (EST)
-Date: Mon, 13 Oct 2008 20:05:09 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-Subject: Re: [PATCH] powerpc: enable heap randomization for linkstations
-In-Reply-To: <20081013045116.GA11637@ime.usp.br>
-Message-ID: <Pine.LNX.4.64.0810132003350.9041@axis700.grange>
-References: <20081013040703.GA11059@ime.usp.br>
-	<20081013045116.GA11637@ime.usp.br>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EA14DDE072
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:10:03 +1100 (EST)
+Message-Id: <209E575D-DDE2-406A-82DE-2DD445046C02@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20081013154127.GA27124@yoda.jdub.homelinux.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH V2 4/4] POWERPC: Merge 32 and 64-bit dma code
+Date: Mon, 13 Oct 2008 13:06:36 -0500
+References: <1220900995-11928-5-git-send-email-becky.bruce@freescale.com>
+	<1221251686-5567-1-git-send-email-becky.bruce@freescale.com>
+	<20081013144904.GB18363@yoda.jdub.homelinux.org>
+	<20081013154127.GA27124@yoda.jdub.homelinux.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,71 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 13 Oct 2008, Rog=E9rio Brito wrote:
 
-> The current defconfig for Linkstation/Kuroboxes has the "Disable Heap
-> Randomization" option enabled.
->=20
-> Since some of these machines are facing the internet, it helps to have
-> heap randomization enabled. This patch enables it.
+On Oct 13, 2008, at 10:41 AM, Josh Boyer wrote:
 
-Same as the previous patch - this is one of options, that users select=20
-according to their needs. If any specific distribution enables this option=
-=20
-by default in their kernels, they can do this too, don't think this is=20
-critical enough to patch the defconfig.
+> On Mon, Oct 13, 2008 at 10:49:04AM -0400, Josh Boyer wrote:
+>> On Fri, Sep 12, 2008 at 03:34:46PM -0500, Becky Bruce wrote:
+>>> We essentially adopt the 64-bit dma code, with some changes to  
+>>> support
+>>> 32-bit systems, including HIGHMEM.  dma functions on 32-bit are now
+>>> invoked via accessor functions which call the correct op for a  
+>>> device based
+>>> on archdata dma_ops.  If there is no archdata dma_ops, this defaults
+>>> to dma_direct_ops.
+>>>
+>>> In addition, the dma_map/unmap_page functions are added to dma_ops
+>>> because we can't just fall back on map/unmap_single when HIGHMEM is
+>>> enabled. In the case of dma_direct_*, we stop using map/unmap_single
+>>> and just use the page version - this saves a lot of ugly
+>>> ifdeffing.  We leave map/unmap_single in the dma_ops definition,
+>>> though, because they are needed by the iommu code, which does not
+>>> implement map/unmap_page.  Ideally, going forward, we will  
+>>> completely
+>>> eliminate map/unmap_single and just have map/unmap_page, if it's
+>>> workable for 64-bit.
+>>>
+>>> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+>>
+>> While doing a buildall this morning, I notice chrp32_defconfig fails
+>> to build with:
+>>
+>> drivers/built-in.o: In function `hard_dma_setup':
+>> floppy.c:(.text+0x6e40e): undefined reference to `isa_bridge_pcidev'
+>> floppy.c:(.text+0x6e412): undefined reference to `isa_bridge_pcidev'
+>> floppy.c:(.text+0x6e53e): undefined reference to `isa_bridge_pcidev'
+>> floppy.c:(.text+0x6e546): undefined reference to `isa_bridge_pcidev'
+>> floppy.c:(.text+0x6e54a): undefined reference to `isa_bridge_pcidev'
+>> make[1]: *** [.tmp_vmlinux1] Error 1
+>>
+>> (the hard_dma_setup thing is in arch/powerpc/include/asm/floppy.h).
+>>
+>> I did a git bisect and it pointed at this commit as causing the build
+>> to fail.  Why, I have no idea.
+>
+> Ok, I was annoyed enough to look at why.
+>
+> Basically, before this patch pci_map_single on 32-bit PPC seemed to
+> be compiled down to __dma_sync(ptr, size, direction); and the "dev"
+> parameter to the function was never actually used.  The compiler
+> seems to have optimized this out entirely, so we don't get the odd
+> link reference to isa_bridge_pcidev at all.  (Neither pci_map_single
+> or isa_bridge_pcidev are present in the vmlinux at all).
+>
+> With the patch, the compiler doesn't do this code elimination
+> because pci_map_single boils down to dma_map_page, which calls
+> get_dma_direct_offset with the "dev" parameter.  So since it is
+> still used, the compiler can't eliminate it and hence FAIL.
+>
+> I have no patch for this at the moment.  Someone should look at
+> it more closely, because this is causing the 5 chrp32_defconfig
+> users to weep.
 
-Thanks
-Guennadi
+Isn't this the type of regression we should fix post -rc1 :)
 
->=20
->=20
-> Signed-off-by: Rog=E9rio Brito <rbrito@ime.usp.br>
->=20
-> ---
->=20
-> --- linux/arch/powerpc/configs/linkstation_defconfig.old=092008-10-13 00:=
-33:00.000000000 -0300
-> +++ linux/arch/powerpc/configs/linkstation_defconfig=092008-10-13 01:11:2=
-8.000000000 -0300
-> @@ -1,7 +1,7 @@
->  #
->  # Automatically generated make config: don't edit
-> -# Linux kernel version: 2.6.27-rc4
-> -# Thu Aug 21 00:52:05 2008
-> +# Linux kernel version: 2.6.27
-> +# Mon Oct 13 01:11:21 2008
->  #
->  # CONFIG_PPC64 is not set
-> =20
-> @@ -101,7 +101,7 @@ CONFIG_HOTPLUG=3Dy
->  CONFIG_PRINTK=3Dy
->  CONFIG_BUG=3Dy
->  CONFIG_ELF_CORE=3Dy
-> -CONFIG_COMPAT_BRK=3Dy
-> +# CONFIG_COMPAT_BRK is not set
->  CONFIG_BASE_FULL=3Dy
->  CONFIG_FUTEX=3Dy
->  CONFIG_ANON_INODES=3Dy
-> @@ -1211,7 +1211,6 @@ CONFIG_USB_STORAGE=3Dm
->  # CONFIG_USB_STORAGE_ALAUDA is not set
->  # CONFIG_USB_STORAGE_ONETOUCH is not set
->  # CONFIG_USB_STORAGE_KARMA is not set
-> -# CONFIG_USB_STORAGE_SIERRA is not set
->  # CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
->  # CONFIG_USB_LIBUSUAL is not set
-> =20
->=20
-> --=20
-> Rog=E9rio Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-> http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-> Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->=20
-
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+- k
