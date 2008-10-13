@@ -1,26 +1,20 @@
-Return-Path: <brice@myri.com>
-Received: from myri.com (mailbox2.myri.com [64.172.73.26])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <bgat@billgatliff.com>
+Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D81F3DE7B5
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 23:19:00 +1100 (EST)
-Message-ID: <48F338D2.9080300@myri.com>
-Date: Mon, 13 Oct 2008 14:02:26 +0200
-From: Brice Goglin <brice@myri.com>
+	by ozlabs.org (Postfix) with ESMTPS id 6A50FDE07C
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 00:11:58 +1100 (EST)
+Message-ID: <48F34922.503@billgatliff.com>
+Date: Mon, 13 Oct 2008 08:12:02 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc selects
-	CONFIG_INTEL_IOATDMA=y
-References: <20081013101559.GA14372@linux.vnet.ibm.com>
-	<20081013112631.GD29938@cs181140183.pp.htv.fi>
-In-Reply-To: <20081013112631.GD29938@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
-Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-	Jesse Brandeburg <jesse.brandeburg@intel.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, sam@ravnborg.org,
-	Jeff Garzik <jgarzik@redhat.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: Floating inputs on unused GPIO pins
+References: <200810131156.59477.laurentp@cse-semaphore.com>	<c384c5ea0810130308q5cfa2c2ld8ea5eafec99bba3@mail.gmail.com>
+	<200810131304.41435.laurentp@cse-semaphore.com>
+In-Reply-To: <200810131304.41435.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,48 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adrian Bunk wrote:
-> On Mon, Oct 13, 2008 at 03:45:59PM +0530, Kamalesh Babulal wrote:
->   
->> Hi,
->>
->>    2.6.27-git2 kernel build fails, while building the kernel with
->> allyesconfig option. The allyesconfig selects CONFIG_INTEL_IOATDMA=y
->>
->> CC   drivers/dma/ioat_dca.o
->> drivers/dma/ioat_dca.c: In function âdca_enabled_in_biosâ:
->> drivers/dma/ioat_dca.c:81: error: implicit declaration of function âcpuid_eaxâ
->> drivers/dma/ioat_dca.c: In function âsystem_has_dca_enabledâ:
->> drivers/dma/ioat_dca.c:91: error: implicit declaration of function âboot_cpu_hasâ
->> drivers/dma/ioat_dca.c:91: error: âX86_FEATURE_DCAâ undeclared (first use in this function)
->> drivers/dma/ioat_dca.c:91: error: (Each undeclared identifier is reported only once
->> drivers/dma/ioat_dca.c:91: error: for each function it appears in.)
->> drivers/dma/ioat_dca.c: In function âioat_dca_get_tagâ:
->> drivers/dma/ioat_dca.c:190: error: implicit declaration of function âcpu_physical_idâ
->> make[2]: *** [drivers/dma/ioat_dca.o] Error 1
->> make[1]: *** [drivers/dma] Error 2
->> make: *** [drivers] Error 2
->> ...
->>     
->
-> Thanks for the report, the MYRI10GE and IXGBE commits that introduced 
-> the select's are really broken.
->
-> For fixing it I need to know the intended semantics.
->
-> Brian, Jesse, is it OK to limit the drivers to m with 
-> CONFIG_INTEL_IOATDMA=m ?
->   
+Laurent Pinchart wrote:
 
-I think I would rather drop DCA from myri10ge if IOATDMA=m while
-myri10ge=y. What's the simplest way to do so?
+> 
+> There are no internal pull-up or pull-down resistors on the MPC8248 GPIO pins. I know our hardware engineer has a valid point theoretically. Does the point stand practically, or does the MPC8248 "state-of-the-art"(tm)(c)(whatever) technology make floating inputs safe ?
 
-When Jesse told me to commit this in myri10ge, I thought it would be
-nice to have DCA work the same than NETDMA/DMAengine does: you can have
-NETDMA enabled without IOATDMA (either not built at all, or just not
-loaded). You just don't get any DMA channel when you ask for one. Why
-not do the same for DCA? There could be some generic DCA layer that can
-be built all the time and returns DCA resources only if IOATDMA is
-loaded/built ?
+Well, Freescale's own layout recommendations recommend pullups or pulldowns for
+all input pins, but it's isn't clear what motivates that suggestion.
 
-Brice
+The block diagram, Figure 37-21, is less than helpful.  :)  I recall a doc
+somewhere that showed the input protection circuitry ends up providing a modest
+pullup/down, so the line never truly "floats".  But it's a very high-impedance
+path, and I can't seem to find the doc anyway so it could be for a completely
+different chip altogether.
+
+The part isn't going to blow up if you leave inputs unconnected, at least if you
+avoid high-EMI/RFI environments.  But I can imagine the possibility of increased
+power consumption if I try hard enough.  I would think that the magnitude would
+be completely swamped by the consumption of the rest of the chip, however...
+
+The technical answer might not be the best political one, at least not without
+Freescale-branded docs to back you up.  I say, write the code and make everyone
+else happy.  :)
+
+At least until someone plugs in that expansion module!
+
+
+b.g.
+-- 
+Bill Gatliff
+bgat@billgatliff.com
