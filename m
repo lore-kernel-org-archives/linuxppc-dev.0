@@ -1,36 +1,29 @@
-Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-cn0ut-5.online-age.net (ext-cn0ut-5.online-age.net
+	[63.210.253.234])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AFFCFDE19E
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 19:47:31 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate3.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m9D8lKV5181282
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 08:47:20 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
-	[9.149.37.213])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id m9D8lKkb3887248
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 09:47:20 +0100
-Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m9D8lJlU019848
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 09:47:19 +0100
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH 1/1] IB/ehca: Disallow creating UC QP with SRQ
-Date: Mon, 13 Oct 2008 09:34:09 +0200
-References: <200810011306.31544.hnguyen@linux.vnet.ibm.com>
-	<adazllcku0c.fsf@cisco.com>
-In-Reply-To: <adazllcku0c.fsf@cisco.com>
+	(Client CN "ext-cn0ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 7E7E9DDF00
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 19:54:01 +1100 (EST)
+Received: from int-cn0ut-4.online-age.net (int-cn0ut-4.online-age.net
+	[3.159.252.73])
+	by ext-cn0ut-5.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id m9D8rt78007757
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 04:53:56 -0400
+Received: from alpmlip01.e2k.ad.ge.com (int-cn0ut-4.online-age.net
+	[3.159.252.73])
+	by int-cn0ut-4.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m9D8rtKw011111
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 04:53:55 -0400
+From: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [PATCH v2] powerpc: FPGA support for GE Fanuc SBC610
+To: linuxppc-dev@ozlabs.org
+Date: Mon, 13 Oct 2008 09:53:49 +0100
+Message-ID: <20081013085202.15525.75859.stgit@ubuntu8041.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200810130934.09592.hnguyen@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	general@lists.openfabrics.org, micfaath@de.ibm.com,
-	stefan.roscher@de.ibm.com
+Content-Type: text/plain; charset="utf-8"
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,44 +33,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Roland,
-That looks good to me.
-Thanks for all help.
+Support for the SBC610 VPX Single Board Computer from GE Fanuc (PowerPC
+MPC8641D).
 
-Nam
+This patch adds support for the registers held in the devices main FPGA,
+exposing extra information about the revision of the board through cpuinfo.
 
-On Friday 10 October 2008 23:41, Roland Dreier wrote:
-> thanks, applied -- it didn't apply to the latest tree, because of the
-> flush CQE changes, so I merged it manually as below -- let me know if
-> this is wrong:
-> 
-> commit 0540bbbe455e123a1692d26205ad1a29983883b0
-> Author: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-> Date:   Fri Oct 10 14:40:39 2008 -0700
-> 
->     IB/ehca: Don't allow creating UC QP with SRQ
->     
->     This patch prevents a UC QP to be created attached to an SRQ, since
->     current firmware does not support this feature.
->     
->     Signed-off-by: Michael Faath <micfaath@de.ibm.com>
->     Signed-off-by: Roland Dreier <rolandd@cisco.com>
-> 
-> diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-> index 4dbe287..40b578d 100644
-> --- a/drivers/infiniband/hw/ehca/ehca_qp.c
-> +++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-> @@ -502,6 +502,12 @@ static struct ehca_qp *internal_create_qp(
->  	if (init_attr->srq) {
->  		my_srq = container_of(init_attr->srq, struct ehca_qp, ib_srq);
-> 
-> +		if (qp_type == IB_QPT_UC) {
-> +			ehca_err(pd->device, "UC with SRQ not supported");
-> +			atomic_dec(&shca->num_qps);
-> +			return ERR_PTR(-EINVAL);
-> +		}
-> +
->  		has_srq = 1;
->  		parms.ext_type = EQPT_SRQBASE;
->  		parms.srq_qpn = my_srq->real_qp_num;
-> 
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+---
+
+Kumar: Sorry for the delay, I was on holiday.
+
+This patch has been reworked to apply on top of Becky's show_cpuinfo patch
+(0161dca52d950676d727336cef1441ea2bcfba98)
+
+ arch/powerpc/boot/dts/gef_sbc610.dts     |    4 +++
+ arch/powerpc/platforms/86xx/gef_sbc610.c |   39 ++++++++++++++++++++++++++++++
+ 2 files changed, 43 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/gef_sbc610.dts b/arch/powerpc/boot/dts/gef_sbc610.dts
+index 771a776..6ed6083 100644
+--- a/arch/powerpc/boot/dts/gef_sbc610.dts
++++ b/arch/powerpc/boot/dts/gef_sbc610.dts
+@@ -84,6 +84,10 @@
+ 			  6 0 0xfd000000 0x00800000     // IO FPGA (8-bit)
+ 			  7 0 0xfd800000 0x00800000>;   // IO FPGA (32-bit)
+ 
++		fpga@4,0 {
++			compatible = "gef,fpga-regs";
++			reg = <0x4 0x0 0x40>;
++		};
+ 		gef_pic: pic@4,4000 {
+ 			#interrupt-cells = <1>;
+ 			interrupt-controller;
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
+index 3873c20..64162b6 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc610.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
+@@ -73,6 +73,7 @@ static void __init gef_sbc610_init_irq(void)
+ 
+ static void __init gef_sbc610_setup_arch(void)
+ {
++	struct device_node *regs;
+ #ifdef CONFIG_PCI
+ 	struct device_node *np;
+ 
+@@ -86,8 +87,42 @@ static void __init gef_sbc610_setup_arch(void)
+ #ifdef CONFIG_SMP
+ 	mpc86xx_smp_init();
+ #endif
++
++	/* Remap basic board registers */
++	regs = of_find_compatible_node(NULL, NULL, "gef,fpga-regs");
++	if (regs) {
++		sbc610_regs = of_iomap(regs, 0);
++		if (sbc610_regs == NULL)
++			printk(KERN_WARNING "Unable to map board registers\n");
++	}
++}
++
++/* Return the PCB revision */
++static unsigned int gef_sbc610_get_pcb_rev(void)
++{
++	unsigned int reg;
++
++	reg = ioread32(sbc610_regs);
++	return (reg >> 8) & 0xff;
++}
++
++/* Return the board (software) revision */
++static unsigned int gef_sbc610_get_board_rev(void)
++{
++	unsigned int reg;
++
++	reg = ioread32(sbc610_regs);
++	return (reg >> 16) & 0xff;
+ }
+ 
++/* Return the FPGA revision */
++static unsigned int gef_sbc610_get_fpga_rev(void)
++{
++	unsigned int reg;
++
++	reg = ioread32(sbc610_regs);
++	return (reg >> 24) & 0xf;
++}
+ 
+ static void gef_sbc610_show_cpuinfo(struct seq_file *m)
+ {
+@@ -96,6 +131,10 @@ static void gef_sbc610_show_cpuinfo(struct seq_file *m)
+ 
+ 	seq_printf(m, "Vendor\t\t: GE Fanuc Intelligent Platforms\n");
+ 
++	seq_printf(m, "Revision\t: %u%c\n", gef_sbc610_get_pcb_rev(),
++		('A' + gef_sbc610_get_board_rev() - 1));
++	seq_printf(m, "FPGA Revision\t: %u\n", gef_sbc610_get_fpga_rev());
++
+ 	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
+ 	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
