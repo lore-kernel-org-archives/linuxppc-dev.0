@@ -1,26 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C4A3DDE36D
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 06:06:39 +1100 (EST)
-Message-ID: <48F39B97.6030602@freescale.com>
-Date: Mon, 13 Oct 2008 14:03:51 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 4331CDED75
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 06:27:35 +1100 (EST)
+Date: Mon, 13 Oct 2008 21:27:29 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: enable heap randomization for linkstations
+In-Reply-To: <20081013184443.GA20612@ld0162-tx32.am.freescale.net>
+Message-ID: <Pine.LNX.4.64.0810132119510.9041@axis700.grange>
+References: <20081013040703.GA11059@ime.usp.br>
+	<20081013045116.GA11637@ime.usp.br>
+	<Pine.LNX.4.64.0810132003350.9041@axis700.grange>
+	<20081013184443.GA20612@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: MPC8321, ethernet and i2c problems after upgrade from 2.6.25
-	to 2.6.27
-References: <1223899315.32141.42.camel@gentoo-jocke.transmode.se>	
-	<20081013163151.GD19080@ld0162-tx32.am.freescale.net>
-	<1223918059.32141.62.camel@gentoo-jocke.transmode.se>
-	<48F393EB.6000100@freescale.com>
-	<02f501c92d65$828b64d0$87a22e70$@Tjernlund@transmode.se>
-In-Reply-To: <02f501c92d65$828b64d0$87a22e70$@Tjernlund@transmode.se>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Cc: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>,
+	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,45 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund wrote:
-> Because all the kernel comments I can see still implies that this should work
+On Mon, 13 Oct 2008, Scott Wood wrote:
 
-Which kernel comments?
+> On Mon, Oct 13, 2008 at 08:05:09PM +0200, Guennadi Liakhovetski wrote:
+> > On Mon, 13 Oct 2008, Rog=E9rio Brito wrote:
+> >=20
+> > > The current defconfig for Linkstation/Kuroboxes has the "Disable Heap
+> > > Randomization" option enabled.
+> > >=20
+> > > Since some of these machines are facing the internet, it helps to hav=
+e
+> > > heap randomization enabled. This patch enables it.
+> >=20
+> > Same as the previous patch - this is one of options, that users select=
+=20
+> > according to their needs. If any specific distribution enables this opt=
+ion=20
+> > by default in their kernels, they can do this too, don't think this is=
+=20
+> > critical enough to patch the defconfig.
+>=20
+> Just because users/distros can change it doesn't mean it's pointless to
+> discuss what default is sane, and make changes if the current default
+> isn't.
+>=20
+> For security-related options it's usually best to default to the more
+> secure state, especially since the option description talks about it
+> being needed mainly for libc5 compatibility -- did libc5 ever even exist
+> for powerpc? =20
 
-> and because this was the only way in earlier releases to add an i2c device.
+In a 2.6.27-rc5-ish snapshot I counted 68 enabled and 11 disabled=20
+CONFIG_COMPAT_BRK under arch/powerpc/configs/. Ok, enabling it for all=20
+would be a bit rude, and one has to start somewhere...
 
-We've supported enumerating i2c-mpc devices using the device tree for 
-almost as long as there's been new-style i2c devices.
+> The only reason it was turned on in the first place was likely the
+> "default y", which in turn is there to avoid breaking old x86 distros.
 
->> The obvious and easy way is to just use the device tree.
->>
->> If that isn't possible (such as due to device trees embedded in existing
->> firmware), you can find the adapter device as a child of the of_device.
-> 
-> Possible yes, safe no. As is now I cannot use 2.6.27 on my current u-boot. 
+Then maybe it would be better to make default y only for some platforms?
 
-Why not?  U-boot allows you to pass in a device tree dynamically.
-
-> I always had the impression that OF was an optional add on, but now it seems
-> that it is mandatory for i2c?
-
-It's mandatory for device drivers such as i2c-mpc that expect it.
-
->> Finding the of_device from the device_node may be difficult, though.
->> We could have i2c-mpc set node->data to the of_device (or maybe the
->> adapter struct), or maybe should add an of_device member of device_node
->> that gets filled in by of_platform?
-> 
-> hmm, no easy way out then? I need a way to do this from my board code without
-> adding new stuff to the driver. A hack that only works in 2.6.27 will do.
-
-You could add the node to the device tree from platform code, if you run 
-before the i2c adapter's probe() runs.  Or, if you really want to stick 
-with your current way of doing things, and are willing to own both 
-pieces if it breaks, you can comment out this test in 
-i2c_register_adapter, and always call i2c_scan_static_board_info:
-
-if (adap->nr < __i2c_first_dynamic_bus_num)
-	i2c_scan_static_board_info(adap);
-
--Scott
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
