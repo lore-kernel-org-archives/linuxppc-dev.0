@@ -1,21 +1,21 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id C55B9DE0BA
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 01:50:29 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so383386yxg.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 07:50:27 -0700 (PDT)
-Date: Mon, 13 Oct 2008 10:49:04 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: [PATCH V2 4/4] POWERPC: Merge 32 and 64-bit dma code
-Message-ID: <20081013144904.GB18363@yoda.jdub.homelinux.org>
-References: <1220900995-11928-5-git-send-email-becky.bruce@freescale.com>
-	<1221251686-5567-1-git-send-email-becky.bruce@freescale.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [Cbe-oss-dev] powerpc/cell/oprofile: fix mutex locking for
+	spu-oprofile
+Date: Mon, 13 Oct 2008 16:53:28 +0200
+References: <1217620879.15667.145.camel@carll-linux-desktop>
+	<18610.20951.764057.574721@cargo.ozlabs.ibm.com>
+	<200808250955.57638.arnd@arndb.de>
+In-Reply-To: <200808250955.57638.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1221251686-5567-1-git-send-email-becky.bruce@freescale.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200810131653.29631.arnd@arndb.de>
+Cc: Robert Richter <robert.richter@amd.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Paul Mackerras <paulus@samba.org>, oprofile-list@lists.sourceforge.net,
+	cel <cel@linux.vnet.ibm.com>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +25,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 12, 2008 at 03:34:46PM -0500, Becky Bruce wrote:
->We essentially adopt the 64-bit dma code, with some changes to support
->32-bit systems, including HIGHMEM.  dma functions on 32-bit are now
->invoked via accessor functions which call the correct op for a device based
->on archdata dma_ops.  If there is no archdata dma_ops, this defaults
->to dma_direct_ops.
->
->In addition, the dma_map/unmap_page functions are added to dma_ops
->because we can't just fall back on map/unmap_single when HIGHMEM is
->enabled. In the case of dma_direct_*, we stop using map/unmap_single
->and just use the page version - this saves a lot of ugly
->ifdeffing.  We leave map/unmap_single in the dma_ops definition,
->though, because they are needed by the iommu code, which does not
->implement map/unmap_page.  Ideally, going forward, we will completely
->eliminate map/unmap_single and just have map/unmap_page, if it's
->workable for 64-bit.
->
->Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+On Monday 25 August 2008, Arnd Bergmann wrote:
+> On Monday 25 August 2008, Paul Mackerras wrote:
+> >=20
+> > > Since rc4 is out now, I understand if you feel more comfortable with
+> > > putting the patch into -next instead of -merge.
+> >=20
+> > Linus has been getting stricter about only putting in fixes for
+> > regressions and serious bugs (see his recent email to Dave Airlie on
+> > LKML for instance). =A0I assume that the corruption is just in the data
+> > that is supplied to userspace and doesn't extend to any kernel data
+> > structures.
+>=20
+> That's right, please queue it for -next then.
 
-While doing a buildall this morning, I notice chrp32_defconfig fails
-to build with:
+I just realized that this patch never made it into powerpc-next after
+all, neither benh nor paulus version. Whoever is handling it today,
+could you please pull
 
-drivers/built-in.o: In function `hard_dma_setup':
-floppy.c:(.text+0x6e40e): undefined reference to `isa_bridge_pcidev'
-floppy.c:(.text+0x6e412): undefined reference to `isa_bridge_pcidev'
-floppy.c:(.text+0x6e53e): undefined reference to `isa_bridge_pcidev'
-floppy.c:(.text+0x6e546): undefined reference to `isa_bridge_pcidev'
-floppy.c:(.text+0x6e54a): undefined reference to `isa_bridge_pcidev'
-make[1]: *** [.tmp_vmlinux1] Error 1
+ master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git merge
 
-(the hard_dma_setup thing is in arch/powerpc/include/asm/floppy.h).
+to get this commit below. I have rebased it on top of the current
+benh/powerpc/next branch.
 
-I did a git bisect and it pointed at this commit as causing the build
-to fail.  Why, I have no idea.
+Thanks,
 
-josh
+	Arnd <><
+
+=2D--
+
+commit aa5810fa545515c9f383e3e649bd120bef9c7f29
+Author: Carl Love <cel@us.ibm.com>
+Date:   Fri Aug 8 15:38:36 2008 -0700
+
+    powerpc/cell/oprofile: fix mutex locking for spu-oprofile
+
+    The issue is the SPU code is not holding the kernel mutex lock while
+    adding samples to the kernel buffer.
+
+    This patch creates per SPU buffers to hold the data.  Data
+    is added to the buffers from in interrupt context.  The data
+    is periodically pushed to the kernel buffer via a new Oprofile
+    function oprofile_put_buff(). The oprofile_put_buff() function
+    is called via a work queue enabling the funtion to acquire the
+    mutex lock.
+
+    The existing user controls for adjusting the per CPU buffer
+    size is used to control the size of the per SPU buffers.
+    Similarly, overflows of the SPU buffers are reported by
+    incrementing the per CPU buffer stats.  This eliminates the
+    need to have architecture specific controls for the per SPU
+    buffers which is not acceptable to the OProfile user tool
+    maintainer.
+
+    The export of the oprofile add_event_entry() is removed as it
+    is no longer needed given this patch.
+
+    Note, this patch has not addressed the issue of indexing arrays
+    by the spu number.  This still needs to be fixed as the spu
+    numbering is not guarenteed to be 0 to max_num_spus-1.
+
+    Signed-off-by: Carl Love <carll@us.ibm.com>
+    Signed-off-by: Maynard Johnson <maynardj@us.ibm.com>
+    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+    Acked-by: Acked-by: Robert Richter <robert.richter@amd.com>
+
+ arch/powerpc/oprofile/cell/pr_util.h       |   13 +
+ arch/powerpc/oprofile/cell/spu_profiler.c  |    4
+ arch/powerpc/oprofile/cell/spu_task_sync.c |  236 ++++++++++++++++++++++++=
+=2D--
+ drivers/oprofile/buffer_sync.c             |   24 ++
+ drivers/oprofile/cpu_buffer.c              |   15 +
+ drivers/oprofile/event_buffer.c            |    2
+ drivers/oprofile/event_buffer.h            |    7
+ include/linux/oprofile.h                   |   16 +
+ drivers/oprofile/cpu_buffer.c              |    4
+ 9 files changed, 284 insertions(+), 37 deletions(-)
