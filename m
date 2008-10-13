@@ -2,24 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7DE95DDF00
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 10:31:30 +1100 (EST)
-Subject: Re: [PATCH V2 4/4] POWERPC: Merge 32 and 64-bit dma code
+	by ozlabs.org (Postfix) with ESMTPS id 7CDB2DE2AD
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 10:46:14 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Add legacy PCI access via sysfs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <AF818ED4-F261-4EF8-A4CB-CA06FCA9386D@kernel.crashing.org>
-References: <1220900995-11928-5-git-send-email-becky.bruce@freescale.com>
-	<1221251686-5567-1-git-send-email-becky.bruce@freescale.com>
-	<20081013144904.GB18363@yoda.jdub.homelinux.org>
-	<20081013154127.GA27124@yoda.jdub.homelinux.org>
-	<209E575D-DDE2-406A-82DE-2DD445046C02@kernel.crashing.org>
-	<20081013142100.7efc2c81@zod.rchland.ibm.com>
-	<AF818ED4-F261-4EF8-A4CB-CA06FCA9386D@kernel.crashing.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <200810131029.11822.jbarnes@virtuousgeek.org>
+References: <20081010025101.B48CADDEF7@ozlabs.org>
+	<200810101039.18300.jbarnes@virtuousgeek.org>
+	<20081013140734.GA9793@yoda.jdub.homelinux.org>
+	<200810131029.11822.jbarnes@virtuousgeek.org>
 Content-Type: text/plain
-Date: Tue, 14 Oct 2008 10:30:59 +1100
-Message-Id: <1223940659.8157.288.camel@pasglop>
+Date: Tue, 14 Oct 2008 10:39:36 +1100
+Message-Id: <1223941176.8157.290.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-pci@vger.kernel.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -30,20 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-10-13 at 13:22 -0500, Kumar Gala wrote:
-> > I don't think it matters much when it gets fixed, pre or post -rc1.   
-> > But
-> > it should probably get fixed.  My hack was to pull isa_bridge_pcidev
-> > into pci-common.c and export it from there.  The 64-bit PCI code can
-> > initialized it, and the 32-bit can leave it NULL.  But I have no idea
-> > if that is sane.  If so, I can probably submit a patch for it.
-> 
-> I was just joking around about our "new" regression policy.. anyways I  
-> hope ben or maybe anton can comment about the ISA code.
 
-My policy for that sort of bug is fix ASAP. I'll give it a go when I do
-my test builds. Funny I didn't catch it, I might be lacking a chrp32
-defconfig in my build tests :-)
+> > Is that targeted towards .28 or .29?  Ben has a 4xx specific patch
+> > that depends on this one, and I just need to know which version to
+> > bring that in for.
+> 
+> I was planning on sending it for .28.
+
+There's a minor bogon in the powerpc side patch, ie, I left an unused
+variable from an old version of the patch. No big deal, but if you
+haven't merged yet, let me know and I'll do a new spin. If you have
+already, I'll do a fixup later on via the powerpc.git tree.
+
+BTW. When do you intend to send that to Linus ?
 
 Cheers,
 Ben.
