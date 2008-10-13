@@ -2,22 +2,21 @@ Return-Path: <rbrito@ime.usp.br>
 Received: from smtp.gru.flash.tv.br (smtp.flash.net.br [201.46.240.48])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 246BFDE14D
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 07:56:57 +1100 (EST)
-In-Reply-To: <20081013184443.GA20612@ld0162-tx32.am.freescale.net>
+	by ozlabs.org (Postfix) with ESMTPS id D0194DE073
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 08:28:26 +1100 (EST)
+In-Reply-To: <Pine.LNX.4.64.0810131959140.9041@axis700.grange>
 References: <20081013040703.GA11059@ime.usp.br>
-	<20081013045116.GA11637@ime.usp.br>
-	<Pine.LNX.4.64.0810132003350.9041@axis700.grange>
-	<20081013184443.GA20612@ld0162-tx32.am.freescale.net>
+	<Pine.LNX.4.64.0810131959140.9041@axis700.grange>
 Mime-Version: 1.0 (Apple Message framework v753.1)
 Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <66BF36BF-E218-4F2C-BE98-2A84E1E98C0D@ime.usp.br>
+Message-Id: <BAFAB2E9-A9E1-443D-9774-459965AF52C1@ime.usp.br>
 From: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
-Subject: Re: [PATCH] powerpc: enable heap randomization for linkstations
-Date: Mon, 13 Oct 2008 18:56:38 -0200
-To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: compile kernel for linkstations optimized for
+	size
+Date: Mon, 13 Oct 2008 19:28:02 -0200
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-kernel@vger.kernel.org
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,57 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Scott, Guennadi.
+Hi, Guennadi.
 
-On 13/10/2008, at 16:44, Scott Wood wrote:
+On 13/10/2008, at 16:03, Guennadi Liakhovetski wrote:
 
-> On Mon, Oct 13, 2008 at 08:05:09PM +0200, Guennadi Liakhovetski wrote:
->> On Mon, 13 Oct 2008, Rog=E9rio Brito wrote:
+> On Mon, 13 Oct 2008, Rog=E9rio Brito wrote:
+>
+>> From: Rog=E9rio Brito <rbrito@ime.usp.br>
 >>
->>> The current defconfig for Linkstation/Kuroboxes has the "Disable =20
->>> Heap
->>> Randomization" option enabled.
->>>
->>> Since some of these machines are facing the internet, it helps to =20=
-
->>> have
->>> heap randomization enabled. This patch enables it.
+>> Since Linkstations and Kuroboxes often have *very* little memory (as
+>> they are embedded systems), it is desirable to get their kernels
+>> compiled optimized for size.
 >>
->> Same as the previous patch - this is one of options, that users =20
->> select
->> according to their needs. If any specific distribution enables =20
->> this option
->> by default in their kernels, they can do this too, don't think =20
->> this is
->> critical enough to patch the defconfig.
+>> Signed-off-by: Rog=E9rio Brito <rbrito@ime.usp.br>
+>>
+>> ---
+>>
+>> I have been using kernels optimized for size on my Kurobox (standard)
+>> for many different releases and I have experienced no problem with =20=
 
-I think that the matter is not being critical or not, but of =20
-including a sane default as the kernel should be a place for best-=20
-current-practices.
+>> this
+>> option enabled. Thus, this patch.
+>
+> The comment for this option says: "watch out for broken compilers," if
+> this doesn't hold any more, it should be remove, if it still holds, I
+> wouldn't turn this on by default, as I don't think we can test all
 
-> Just because users/distros can change it doesn't mean it's =20
-> pointless to
-> discuss what default is sane, and make changes if the current default
-> isn't.
+Pragmatically speaking, -O2 can be broken too (and see the amount of =20
+ICEs that you can get with newer kernels even compiling with -O2). =20
+Unless you prove that the compiler is correct and keeps all its =20
+invariants, then you can rely on this. But, pragmatically speaking =20
+again, gcc has bugs.
 
-Exactly my point.
+But leaving the mathematical situation aside (Dijkstra would have =20
+spanked all of us here :)), as I mentioned below the signed off line, =20=
 
-> For security-related options it's usually best to default to the more
-> secure state, especially since the option description talks about it
-> being needed mainly for libc5 compatibility -- did libc5 ever even =20
-> exist
-> for powerpc?
+I have been using -Os and it is working fine. It's serving me quite =20
+well and with a decent uptime:
 
-I don't know, but even Debian's very ancient distributions all came =20
-with libc6 on powerpc.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - =20=
 
-> The only reason it was turned on in the first place was likely the
-> "default y", which in turn is there to avoid breaking old x86 distros.
+- - -
+lutz:~# uptime
+  19:22:53 up 17 days,  5:56,  1 user,  load average: 0.00, 0.00, 0.00
+lutz:~# uname -a
+Linux lutz 2.6.27-rc6.try02 #8 Fri Sep 26 11:29:55 BRT 2008 ppc GNU/=20
+Linux
+lutz:~#
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - =20=
 
-Exactly. Agreed 100%.
+- - -
 
+And, despite the 0.00 load, I'm streaming music with it via mt-daapd =20
+and serving cifs mounts.
 
-Regards, Rog=E9rio Brito.
+> possible (cross- or native-) compilers users might want to use. In any
+> case this is one of options that users can select themselves, if it =20=
+
+> suits
+> them.
+
+And that is, not to mention, with a very home-brew and quick'n'dirty =20
+cross-compiled kernel (with a vanilla gcc 4.2.0 taken straight from =20
+gcc.gnu.org; the same with the kernel: no patches applied).
 
 --=20
 Rog=E9rio Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
