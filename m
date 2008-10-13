@@ -1,14 +1,26 @@
-Return-Path: <halesh.sadashiv@ap.sony.com>
+Return-Path: <brice@myri.com>
+Received: from myri.com (mailbox2.myri.com [64.172.73.26])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D81F3DE7B5
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 23:19:00 +1100 (EST)
+Message-ID: <48F338D2.9080300@myri.com>
+Date: Mon, 13 Oct 2008 14:02:26 +0200
+From: Brice Goglin <brice@myri.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH] remove bogus ppc_select syscall
-Date: Mon, 13 Oct 2008 17:48:09 +0530
-Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D5F6F60@insardxms01.ap.sony.com>
-From: "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>
-To: "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>,
-	"Paul Mackerras" <paulus@samba.org>, <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-	linuxppc-embedded@ozlabs.org
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc selects
+	CONFIG_INTEL_IOATDMA=y
+References: <20081013101559.GA14372@linux.vnet.ibm.com>
+	<20081013112631.GD29938@cs181140183.pp.htv.fi>
+In-Reply-To: <20081013112631.GD29938@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8
+Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+	Jesse Brandeburg <jesse.brandeburg@intel.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, sam@ravnborg.org,
+	Jeff Garzik <jgarzik@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,50 +30,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-
->>Please don't apply Arnd's patch.  As I said, all we need is this
->>one-line change in arch/powerpc/include/asm/systbl.h:
+Adrian Bunk wrote:
+> On Mon, Oct 13, 2008 at 03:45:59PM +0530, Kamalesh Babulal wrote:
+>   
+>> Hi,
 >>
->>-SYSX_SPU(sys_select,ppc32_select,ppc_select)
->>+SYSX_SPU(sys_select,ppc32_select,sys_select)
->
->
->I have tested the testcase that I have provided at the time of
-reporting
->this issue. But it didn't work as expected with the above patch you
->provided.
->(Failed to return EINVAL on negative value of n to select())
->
->Please let me know about this. I have tested on PPC32 2.6.23.
-
-Hi all,
-
-Apologies, Test failed because of small typo in test case, The above
-patch provided has been tested on PPC32. Works fine and as expected.
-
-Reported-by: Halesh Sadashiv <halesh.sadashiv@ap.sony.com>
-Tested-by: Halesh Sadashiv <halesh.sadashiv@ap.sony.com>
-
-Thanks,
-Halesh
-
-
->
->-Halesh
->
+>>    2.6.27-git2 kernel build fails, while building the kernel with
+>> allyesconfig option. The allyesconfig selects CONFIG_INTEL_IOATDMA=y
 >>
->>Paul.
+>> CC   drivers/dma/ioat_dca.o
+>> drivers/dma/ioat_dca.c: In function âdca_enabled_in_biosâ:
+>> drivers/dma/ioat_dca.c:81: error: implicit declaration of function âcpuid_eaxâ
+>> drivers/dma/ioat_dca.c: In function âsystem_has_dca_enabledâ:
+>> drivers/dma/ioat_dca.c:91: error: implicit declaration of function âboot_cpu_hasâ
+>> drivers/dma/ioat_dca.c:91: error: âX86_FEATURE_DCAâ undeclared (first use in this function)
+>> drivers/dma/ioat_dca.c:91: error: (Each undeclared identifier is reported only once
+>> drivers/dma/ioat_dca.c:91: error: for each function it appears in.)
+>> drivers/dma/ioat_dca.c: In function âioat_dca_get_tagâ:
+>> drivers/dma/ioat_dca.c:190: error: implicit declaration of function âcpu_physical_idâ
+>> make[2]: *** [drivers/dma/ioat_dca.o] Error 1
+>> make[1]: *** [drivers/dma] Error 2
+>> make: *** [drivers] Error 2
+>> ...
+>>     
+>
+> Thanks for the report, the MYRI10GE and IXGBE commits that introduced 
+> the select's are really broken.
+>
+> For fixing it I need to know the intended semantics.
+>
+> Brian, Jesse, is it OK to limit the drivers to m with 
+> CONFIG_INTEL_IOATDMA=m ?
+>   
 
+I think I would rather drop DCA from myri10ge if IOATDMA=m while
+myri10ge=y. What's the simplest way to do so?
 
+When Jesse told me to commit this in myri10ge, I thought it would be
+nice to have DCA work the same than NETDMA/DMAengine does: you can have
+NETDMA enabled without IOATDMA (either not built at all, or just not
+loaded). You just don't get any DMA channel when you ask for one. Why
+not do the same for DCA? There could be some generic DCA layer that can
+be built all the time and returns DCA resources only if IOATDMA is
+loaded/built ?
 
--------------------------------------------------------------------
-This email is confidential and intended only for the use of the =
-individual or entity named above and may contain information that is =
-privileged. If you are not the intended recipient, you are notified that =
-any dissemination, distribution or copying of this email is strictly =
-prohibited. If you have received this email in error, please notify us =
-immediately by return email or telephone and destroy the original =
-message. - This mail is sent via Sony Asia Pacific Mail Gateway.
--------------------------------------------------------------------
+Brice
