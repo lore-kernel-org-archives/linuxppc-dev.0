@@ -1,31 +1,20 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2BCF6DE66E
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 04:12:42 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9DHCco6001283
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 13:12:38 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9DHCc7n272442
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 13:12:38 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9DHCcWV030606
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 13:12:38 -0400
-Subject: Re: [PATCH]IB/ehca:reject dynamic memory add/remove
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-In-Reply-To: <200810131310.34413.ossrosch@linux.vnet.ibm.com>
-References: <200810131310.34413.ossrosch@linux.vnet.ibm.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from mail.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id A54AFDDFD5
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 04:14:23 +1100 (EST)
+Subject: Re: MPC8321, ethernet and i2c problems after upgrade from 2.6.25
+	to 2.6.27
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20081013163151.GD19080@ld0162-tx32.am.freescale.net>
+References: <1223899315.32141.42.camel@gentoo-jocke.transmode.se>
+	<20081013163151.GD19080@ld0162-tx32.am.freescale.net>
 Content-Type: text/plain
-Date: Mon, 13 Oct 2008 10:09:26 -0700
-Message-Id: <1223917766.29877.17.camel@nimitz>
+Date: Mon, 13 Oct 2008 19:14:19 +0200
+Message-Id: <1223918059.32141.62.camel@gentoo-jocke.transmode.se>
 Mime-Version: 1.0
-Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
-	general@lists.openfabrics.org
+Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,17 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-10-13 at 13:10 +0200, Stefan Roscher wrote:
-> Since the ehca device driver does not support dynamic memory add and remove
-> operations, the driver must explicitly reject such requests in order to prevent
-> unpredictable behaviors related to memory regions already occupied and being
-> used by InfiniBand applications.
-> The solution is to add a memory notifier to the ehca device driver and if a request
-> for dynamic memory add or remove comes in, ehca will always reject it.
+On Mon, 2008-10-13 at 11:31 -0500, Scott Wood wrote:
+> On Mon, Oct 13, 2008 at 02:01:55PM +0200, Joakim Tjernlund wrote:
+> > Secondly i2c, I have this in my platform driver:
+> > static struct i2c_board_info __initdata tmcu_i2c_devices[] = {
+> > 	{ I2C_BOARD_INFO("rtc-ds1307", 0x68),
+> > 	  .type = "ds1337",
+> > 	},
+> > };
+> > 
+> > int __init tmcu_i2c_board_devs(void)
+> > {
+> > 	int ret;
+> > 	ret = i2c_register_board_info(0, tmcu_i2c_devices,
+> > 				      ARRAY_SIZE(tmcu_i2c_devices));
+> > 	return ret;
+> > }
+> > arch_initcall(tmcu_i2c_board_devs);
+> 
+> i2c-mpc.c now registers as a dynamically-numbered bus; you need to either
+> use the device tree, or call i2c_new_device().
+> 
+> -Scott
 
-Why doesn't the driver support it?
+Thanks, but is this really so? Reading include/linux/i2c.h makes me
+wonder if not the i2c_register_board_info() should still work.
+Calling i2c_new_device() from an initcall() procedure does not
+seem easy/possible, you need the adapter to do that. Maybe I just
+missing something obvious?
 
-This seems like an awfully extreme action to take.  Do you have plans to
-support this in the driver soon?
-
--- Dave
+ Jocke
