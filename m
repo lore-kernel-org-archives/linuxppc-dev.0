@@ -1,22 +1,32 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 4331CDED75
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 06:27:35 +1100 (EST)
-Date: Mon, 13 Oct 2008 21:27:29 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc: enable heap randomization for linkstations
-In-Reply-To: <20081013184443.GA20612@ld0162-tx32.am.freescale.net>
-Message-ID: <Pine.LNX.4.64.0810132119510.9041@axis700.grange>
-References: <20081013040703.GA11059@ime.usp.br>
-	<20081013045116.GA11637@ime.usp.br>
-	<Pine.LNX.4.64.0810132003350.9041@axis700.grange>
-	<20081013184443.GA20612@ld0162-tx32.am.freescale.net>
+Return-Path: <nfont@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 359BFDDF3A
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 07:18:25 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9DKIN0Q001252
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 16:18:23 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9DKIMSs237660
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 16:18:22 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9DKIMWA024141
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 16:18:22 -0400
+Received: from austin.ibm.com (netmail2.austin.ibm.com [9.41.248.176])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m9DKHmdk021459
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 16:18:22 -0400
+Message-ID: <48F39678.9000604@austin.ibm.com>
+Date: Mon, 13 Oct 2008 13:42:00 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Cc: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>,
-	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc:  pseries_remove_lmb() should validate pfn 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Badari Pulavarty <pbadari@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,46 +36,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 13 Oct 2008, Scott Wood wrote:
+The pfn of the memory to be removed should be validated prior to
+attempting to remove the memory.  In cases where the probe of a
+memory section fails during hotplug add, the pfn for the lmb may
+not be valid.
 
-> On Mon, Oct 13, 2008 at 08:05:09PM +0200, Guennadi Liakhovetski wrote:
-> > On Mon, 13 Oct 2008, Rog=E9rio Brito wrote:
-> >=20
-> > > The current defconfig for Linkstation/Kuroboxes has the "Disable Heap
-> > > Randomization" option enabled.
-> > >=20
-> > > Since some of these machines are facing the internet, it helps to hav=
-e
-> > > heap randomization enabled. This patch enables it.
-> >=20
-> > Same as the previous patch - this is one of options, that users select=
-=20
-> > according to their needs. If any specific distribution enables this opt=
-ion=20
-> > by default in their kernels, they can do this too, don't think this is=
-=20
-> > critical enough to patch the defconfig.
->=20
-> Just because users/distros can change it doesn't mean it's pointless to
-> discuss what default is sane, and make changes if the current default
-> isn't.
->=20
-> For security-related options it's usually best to default to the more
-> secure state, especially since the option description talks about it
-> being needed mainly for libc5 compatibility -- did libc5 ever even exist
-> for powerpc? =20
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 
-In a 2.6.27-rc5-ish snapshot I counted 68 enabled and 11 disabled=20
-CONFIG_COMPAT_BRK under arch/powerpc/configs/. Ok, enabling it for all=20
-would be a bit rude, and one has to start somewhere...
-
-> The only reason it was turned on in the first place was likely the
-> "default y", which in turn is there to avoid breaking old x86 distros.
-
-Then maybe it would be better to make default y only for some platforms?
-
-Thanks
-Guennadi
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+
+--- linux-2.6.orig/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-10-01 14:20:08.000000000 -0500
++++ linux-2.6/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-10-13 13:19:49.000000000 -0500
+@@ -22,6 +22,12 @@
+ 	int ret;
+ 
+ 	start_pfn = base >> PAGE_SHIFT;
++
++	if (!pfn_valid(start_pfn)) {
++		lmb_remove(base, lmb_size);
++		return 0;
++	}
++
+ 	zone = page_zone(pfn_to_page(start_pfn));
+ 
+ 	/*
