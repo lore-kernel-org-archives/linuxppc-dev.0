@@ -1,25 +1,34 @@
-Return-Path: <jesse.brandeburg@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-	by ozlabs.org (Postfix) with ESMTP id 3262FDE5A0
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:15:49 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc
-	selectsCONFIG_INTEL_IOATDMA=y
-Date: Mon, 13 Oct 2008 11:05:43 -0700
-Message-ID: <36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20081013112631.GD29938@cs181140183.pp.htv.fi>
-References: <20081013101559.GA14372@linux.vnet.ibm.com>
-	<20081013112631.GD29938@cs181140183.pp.htv.fi>
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: "Adrian Bunk" <bunk@kernel.org>,
-	"Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
-	"Brice Goglin" <brice@myri.com>, "Jeff Garzik" <jgarzik@redhat.com>,
-	"Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
-Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org, "Sosnowski,
-	Maciej" <maciej.sosnowski@intel.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, sam@ravnborg.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4E26EDDFFC
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:21:10 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9DIL3Ro016990
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 14:21:03 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9DIL3LZ225916
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 14:21:03 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9DIL2Vp024275
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 14:21:03 -0400
+Date: Mon, 13 Oct 2008 14:21:00 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH V2 4/4] POWERPC: Merge 32 and 64-bit dma code
+Message-ID: <20081013142100.7efc2c81@zod.rchland.ibm.com>
+In-Reply-To: <209E575D-DDE2-406A-82DE-2DD445046C02@kernel.crashing.org>
+References: <1220900995-11928-5-git-send-email-becky.bruce@freescale.com>
+	<1221251686-5567-1-git-send-email-becky.bruce@freescale.com>
+	<20081013144904.GB18363@yoda.jdub.homelinux.org>
+	<20081013154127.GA27124@yoda.jdub.homelinux.org>
+	<209E575D-DDE2-406A-82DE-2DD445046C02@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,65 +38,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adrian Bunk wrote:
-> On Mon, Oct 13, 2008 at 03:45:59PM +0530, Kamalesh Babulal wrote:
->> Hi,
->>=20
->>    2.6.27-git2 kernel build fails, while building the kernel with
+On Mon, 13 Oct 2008 13:06:36 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-from subject, on PPC.
+> 
+> On Oct 13, 2008, at 10:41 AM, Josh Boyer wrote:
+> 
+> > On Mon, Oct 13, 2008 at 10:49:04AM -0400, Josh Boyer wrote:
+> >> On Fri, Sep 12, 2008 at 03:34:46PM -0500, Becky Bruce wrote:
+> >>> We essentially adopt the 64-bit dma code, with some changes to  
+> >>> support
+> >>> 32-bit systems, including HIGHMEM.  dma functions on 32-bit are now
+> >>> invoked via accessor functions which call the correct op for a  
+> >>> device based
+> >>> on archdata dma_ops.  If there is no archdata dma_ops, this defaults
+> >>> to dma_direct_ops.
+> >>>
+> >>> In addition, the dma_map/unmap_page functions are added to dma_ops
+> >>> because we can't just fall back on map/unmap_single when HIGHMEM is
+> >>> enabled. In the case of dma_direct_*, we stop using map/unmap_single
+> >>> and just use the page version - this saves a lot of ugly
+> >>> ifdeffing.  We leave map/unmap_single in the dma_ops definition,
+> >>> though, because they are needed by the iommu code, which does not
+> >>> implement map/unmap_page.  Ideally, going forward, we will  
+> >>> completely
+> >>> eliminate map/unmap_single and just have map/unmap_page, if it's
+> >>> workable for 64-bit.
+> >>>
+> >>> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+> >>
+> >> While doing a buildall this morning, I notice chrp32_defconfig fails
+> >> to build with:
+> >>
+> >> drivers/built-in.o: In function `hard_dma_setup':
+> >> floppy.c:(.text+0x6e40e): undefined reference to `isa_bridge_pcidev'
+> >> floppy.c:(.text+0x6e412): undefined reference to `isa_bridge_pcidev'
+> >> floppy.c:(.text+0x6e53e): undefined reference to `isa_bridge_pcidev'
+> >> floppy.c:(.text+0x6e546): undefined reference to `isa_bridge_pcidev'
+> >> floppy.c:(.text+0x6e54a): undefined reference to `isa_bridge_pcidev'
+> >> make[1]: *** [.tmp_vmlinux1] Error 1
+> >>
+> >> (the hard_dma_setup thing is in arch/powerpc/include/asm/floppy.h).
+> >>
+> >> I did a git bisect and it pointed at this commit as causing the build
+> >> to fail.  Why, I have no idea.
+> >
+> > Ok, I was annoyed enough to look at why.
+> >
+> > Basically, before this patch pci_map_single on 32-bit PPC seemed to
+> > be compiled down to __dma_sync(ptr, size, direction); and the "dev"
+> > parameter to the function was never actually used.  The compiler
+> > seems to have optimized this out entirely, so we don't get the odd
+> > link reference to isa_bridge_pcidev at all.  (Neither pci_map_single
+> > or isa_bridge_pcidev are present in the vmlinux at all).
+> >
+> > With the patch, the compiler doesn't do this code elimination
+> > because pci_map_single boils down to dma_map_page, which calls
+> > get_dma_direct_offset with the "dev" parameter.  So since it is
+> > still used, the compiler can't eliminate it and hence FAIL.
+> >
+> > I have no patch for this at the moment.  Someone should look at
+> > it more closely, because this is causing the 5 chrp32_defconfig
+> > users to weep.
+> 
+> Isn't this the type of regression we should fix post -rc1 :)
 
->> allyesconfig option. The allyesconfig selects =
-CONFIG_INTEL_IOATDMA=3Dy
->>=20
->> CC   drivers/dma/ioat_dca.o
->> drivers/dma/ioat_dca.c: In function =
-=E2=80=98dca_enabled_in_bios=E2=80=99:
->> drivers/dma/ioat_dca.c:81: error: implicit declaration of function
->> =E2=80=98cpuid_eax=E2=80=99 drivers/dma/ioat_dca.c: In function
->> =E2=80=98system_has_dca_enabled=E2=80=99:=20
->> drivers/dma/ioat_dca.c:91: error: implicit declaration of function
->> =E2=80=98boot_cpu_has=E2=80=99 drivers/dma/ioat_dca.c:91: error:
->> =E2=80=98X86_FEATURE_DCA=E2=80=99 undeclared (first use in this =
-function)
->> drivers/dma/ioat_dca.c:91: error: (Each undeclared identifier is
->> reported only once drivers/dma/ioat_dca.c:91: error: for each
->> function it appears in.) =20
->> drivers/dma/ioat_dca.c: In function =
-=E2=80=98ioat_dca_get_tag=E2=80=99:
->> drivers/dma/ioat_dca.c:190: error: implicit declaration of function
->> =E2=80=98cpu_physical_id=E2=80=99 make[2]: *** =
-[drivers/dma/ioat_dca.o] Error 1
->> make[1]: *** [drivers/dma] Error 2
->> make: *** [drivers] Error 2
->> ...
->=20
-> Thanks for the report, the MYRI10GE and IXGBE commits that introduced
-> the select's are really broken.
+I don't think it matters much when it gets fixed, pre or post -rc1.  But
+it should probably get fixed.  My hack was to pull isa_bridge_pcidev
+into pci-common.c and export it from there.  The 64-bit PCI code can
+initialized it, and the 32-bit can leave it NULL.  But I have no idea
+if that is sane.  If so, I can probably submit a patch for it.
 
-it fixed an obvious bug with CONFIG_IXGBE=3Dy and =
-CONFIG_INTEL_IOATDMA=3Dm, unfortunate that it is so difficult to use =
-Kconfig for the uninitiated.
-=20
-> For fixing it I need to know the intended semantics.
->=20
-> Brian, Jesse, is it OK to limit the drivers to m with
-> CONFIG_INTEL_IOATDMA=3Dm ?
-
-why is the IOATDMA driver not depending on x86?  x86 hardware (32 and 64 =
-bit) are the only machines that will have ioatdma support, since the =
-ioatdma (and dca) device is only in Intel server chipsets since S5000 =
-(aka S5000, S5400, S7400 and derivatives/followons)
-
-What we want, is myri10ge and ixgbe drivers that can build whether or =
-not CONFIG_INTEL_IOATDMA is enabled.  IF CONFIG_INTEL_IOATDMA *is* =
-enabled (which it should not be on PPC) then there are several cases we =
-want to work:
-CONFIG_INTEL_IOATDMA=3Dm  ---> CONFIG_IXGBE=3D[m|n]
-CONFIG_INTEL_IOATDMA=3Dy  ---> CONFIG_IXGBE=3D[m|y|n]
-CONFIG_INTEL_IOATDMA=3Dn  ---> CONFIG_IXGBE=3D[m|y|n]
-CONFIG_INTEL_IOATDMA depends on X86
-
-same for myri10ge I think.  I hope that cleared something up, we can =
-seriously use some help from the experts to get Kconfig correct for =
-this.
+josh
