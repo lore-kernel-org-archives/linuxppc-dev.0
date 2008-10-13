@@ -2,19 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0FF7DDE8C7
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 03:46:20 +1100 (EST)
-Message-Id: <F51E4B63-C0B1-4394-872E-3C8A3C0C0BB4@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id F3726DDF23
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 03:48:45 +1100 (EST)
+Message-Id: <141BB874-FDA4-4107-BEF6-15B84023E44B@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: ehrhardt@linux.vnet.ibm.com
-In-Reply-To: <1221546450-15761-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20081009003259.GA8373@oksana.dev.rtsoft.ru>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 2/3] kvmppc: add hypercall infrastructure - guest part v3
-Date: Mon, 13 Oct 2008 11:42:49 -0500
-References: <1221546450-15761-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
-	<1221546450-15761-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, hollisb@us.ibm.com, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH] powerpc: fix fsl_upm nand driver modular build
+Date: Mon, 13 Oct 2008 11:48:38 -0500
+References: <20081008222815.GA20542@redhat.com>
+	<20081008230219.GA8075@oksana.dev.rtsoft.ru>
+	<20081008233306.GA31771@redhat.com>
+	<20081009003259.GA8373@oksana.dev.rtsoft.ru>
+Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,73 +28,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 16, 2008, at 1:27 AM, ehrhardt@linux.vnet.ibm.com wrote:
+On Oct 8, 2008, at 7:32 PM, Anton Vorontsov wrote:
 
-> From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+> The fsl_upm nand driver fails to build because fsl_lbc_lock isn't
+> exported, the lock is needed by the inlined fsl_upm_run_pattern()
+> function:
 >
-> This adds the guest portion of the hypercall infrastructure.
+> ERROR: "fsl_lbc_lock" [drivers/mtd/nand/fsl_upm.ko] undefined!
 >
-> Version 3 now follows the beat ABI, but proposes a new  
-> implementation style as
-> static inline asm functions instead of pure assembler code. That  
-> should allow
-> the compiler to be more flexible and therefore a better optimization.
+> Dave Jones purposed to export the lock, but it is better to just  
+> uninline
+> the fsl_upm_run_pattern().
 >
-> If people agree on that new implementation style we might merge this  
-> code.
-> The current implementation of beat style hypercalls can be found in
-> arch/powerpc/platforms/cell/beat_hvCall.S
+> When uninlined we also no longer need the exported fsl_lbc_regs, and
+> both fsl_lbc_lock and fsl_lbc_regs could be marked static.
 >
-> Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+> While at it, also add some missing includes that we should have  
+> included
+> explicitly.
+>
+> Reported-by: Dave Jones <davej@redhat.com>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
->
-> [diffstat]
-> epapr_hcalls.h |   59 +++++++++++++++++++++++++++++++++++++++++++++++ 
-> ++++++++++
-> 1 file changed, 59 insertions(+)
->
-> [diff]
->
-> diff --git a/include/asm-powerpc/epapr_hcalls.h b/include/asm- 
-> powerpc/epapr_hcalls.h
-> new file mode 100644
-> --- /dev/null
-> +++ b/include/asm-powerpc/epapr_hcalls.h
-> @@ -0,0 +1,59 @@
-> +/*
-> + * This program is free software; you can redistribute it and/or  
-> modify
-> + * it under the terms of the GNU General Public License, version 2,  
-> as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA   
-> 02110-1301, USA.
-> + *
-> + * Copyright IBM Corp. 2008
-> + *
-> + * Authors:
-> + * 	Christian Ehrhardt <ehrhardt@de.ibm.com>
-> + */
-> +
-> +#ifndef __POWERPC_EPAPR_HCALLS_H__
-> +#define __POWERPC_EPAPR_HCALLS_H__
-> +
-> +#ifdef __KERNEL__
-> +
-> +/* Hypercalls use the beat ABI */
-> +#define KVM_HYPERCALL_BIN 0x44000022
 
-Any reason this isn't 'sc' ?
 
-Also, can we make this "sc 1" so its works when we have HW hypervisor  
-support?
+applied.
 
 - k
