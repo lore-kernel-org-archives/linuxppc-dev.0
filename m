@@ -1,15 +1,14 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from mail.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 34338DE3ED
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 23:01:58 +1100 (EST)
-Subject: MPC8321, ethernet and i2c problems after upgrade from 2.6.25 to 2.6.27
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Mon, 13 Oct 2008 14:01:55 +0200
-Message-Id: <1223899315.32141.42.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <halesh.sadashiv@ap.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH] remove bogus ppc_select syscall
+Date: Mon, 13 Oct 2008 17:48:09 +0530
+Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D5F6F60@insardxms01.ap.sony.com>
+From: "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>
+To: "Sadashiiv, Halesh" <halesh.sadashiv@ap.sony.com>,
+	"Paul Mackerras" <paulus@samba.org>, <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,53 +18,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So I upgraded my tree for our custom mpc8321 boards.
-I2c and ethernet stopped working.
 
-Ethernet: I am using the ucc_geth driver and now
-it seems like it won't TX any pkgs.
-ethtool -S eth0  shows that the RX countes are increasing but
-the TX ones stays a zero. 
 
-Secondly i2c, I have this in my platform driver:
-static struct i2c_board_info __initdata tmcu_i2c_devices[] = {
-	{ I2C_BOARD_INFO("rtc-ds1307", 0x68),
-	  .type = "ds1337",
-	},
-};
 
-int __init tmcu_i2c_board_devs(void)
-{
-	int ret;
-	ret = i2c_register_board_info(0, tmcu_i2c_devices,
-				      ARRAY_SIZE(tmcu_i2c_devices));
-	return ret;
-}
-arch_initcall(tmcu_i2c_board_devs);
+>>Please don't apply Arnd's patch.  As I said, all we need is this
+>>one-line change in arch/powerpc/include/asm/systbl.h:
+>>
+>>-SYSX_SPU(sys_select,ppc32_select,ppc_select)
+>>+SYSX_SPU(sys_select,ppc32_select,sys_select)
+>
+>
+>I have tested the testcase that I have provided at the time of
+reporting
+>this issue. But it didn't work as expected with the above patch you
+>provided.
+>(Failed to return EINVAL on negative value of n to select())
+>
+>Please let me know about this. I have tested on PPC32 2.6.23.
 
-This no longer works, but if I add
-rtc@68 {
-		compatible = "dallas,ds1337";
-		reg = <68>;
-	};
-to my device tree so the whole I2c node looks like this:
-	i2c@3000 {
-		#address-cells = <1>;
-		#size-cells = <0>;
-		cell-index = <0>;
-		device_type = "i2c";
-		compatible = "fsl-i2c";
-		reg = <3000 100>;
-		interrupts = <e 8>;
-		interrupt-parent = <&ipic>;
-		dfsrr;
+Hi all,
 
-		rtc@68 {
-			compatible = "dallas,ds1337";
-			reg = <68>;
-		};
-	};
-it works again. Is my static init of the rtc device faulty or is this
-a bug in the kernel?
+Apologies, Test failed because of small typo in test case, The above
+patch provided has been tested on PPC32. Works fine and as expected.
 
- Jocke
+Reported-by: Halesh Sadashiv <halesh.sadashiv@ap.sony.com>
+Tested-by: Halesh Sadashiv <halesh.sadashiv@ap.sony.com>
+
+Thanks,
+Halesh
+
+
+>
+>-Halesh
+>
+>>
+>>Paul.
+
+
+
+-------------------------------------------------------------------
+This email is confidential and intended only for the use of the =
+individual or entity named above and may contain information that is =
+privileged. If you are not the intended recipient, you are notified that =
+any dissemination, distribution or copying of this email is strictly =
+prohibited. If you have received this email in error, please notify us =
+immediately by return email or telephone and destroy the original =
+message. - This mail is sent via Sony Asia Pacific Mail Gateway.
+-------------------------------------------------------------------
