@@ -1,20 +1,17 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from mail.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id A54AFDDFD5
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 04:14:23 +1100 (EST)
-Subject: Re: MPC8321, ethernet and i2c problems after upgrade from 2.6.25
-	to 2.6.27
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20081013163151.GD19080@ld0162-tx32.am.freescale.net>
-References: <1223899315.32141.42.camel@gentoo-jocke.transmode.se>
-	<20081013163151.GD19080@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain
-Date: Mon, 13 Oct 2008 19:14:19 +0200
-Message-Id: <1223918059.32141.62.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <bunk@kernel.org>
+Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
+	by ozlabs.org (Postfix) with ESMTP id AB1DEDE023
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 04:20:08 +1100 (EST)
+Date: Mon, 13 Oct 2008 20:19:00 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Lennert Buytenhek <buytenh@marvell.com>,
+	Andy Fleming <afleming@freescale.com>, jgarzik@pobox.com
+Subject: [2.6 patch] export genphy_restart_aneg
+Message-ID: <20081013171900.GK29938@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-10-13 at 11:31 -0500, Scott Wood wrote:
-> On Mon, Oct 13, 2008 at 02:01:55PM +0200, Joakim Tjernlund wrote:
-> > Secondly i2c, I have this in my platform driver:
-> > static struct i2c_board_info __initdata tmcu_i2c_devices[] = {
-> > 	{ I2C_BOARD_INFO("rtc-ds1307", 0x68),
-> > 	  .type = "ds1337",
-> > 	},
-> > };
-> > 
-> > int __init tmcu_i2c_board_devs(void)
-> > {
-> > 	int ret;
-> > 	ret = i2c_register_board_info(0, tmcu_i2c_devices,
-> > 				      ARRAY_SIZE(tmcu_i2c_devices));
-> > 	return ret;
-> > }
-> > arch_initcall(tmcu_i2c_board_devs);
-> 
-> i2c-mpc.c now registers as a dynamically-numbered bus; you need to either
-> use the device tree, or call i2c_new_device().
-> 
-> -Scott
+This patch fixes the following build error caused by
+commit ed94493fb38a665cebcf750dfabe8a6dd13e136f
+(mv643xx_eth: convert to phylib):
 
-Thanks, but is this really so? Reading include/linux/i2c.h makes me
-wonder if not the i2c_register_board_info() should still work.
-Calling i2c_new_device() from an initcall() procedure does not
-seem easy/possible, you need the adapter to do that. Maybe I just
-missing something obvious?
+<--  snip  -->
 
- Jocke
+...
+  Building modules, stage 2.
+  MODPOST 1280 modules
+ERROR: "genphy_restart_aneg" [drivers/net/mv643xx_eth.ko] undefined!
+...
+make[2]: *** [__modpost] Error 1
+
+<--  snip  -->
+
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+
+diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+index 1716274..f11e900 100644
+--- a/drivers/net/phy/phy_device.c
++++ b/drivers/net/phy/phy_device.c
+@@ -557,6 +557,7 @@ int genphy_restart_aneg(struct phy_device *phydev)
+ 
+ 	return ctl;
+ }
++EXPORT_SYMBOL(genphy_restart_aneg);
+ 
+ 
+ /**
