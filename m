@@ -1,26 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <npiggin@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4FFE0DDDE7
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 11:01:25 +1100 (EST)
-Subject: Re: [PATCH 1/2 v2] OF: new helper: of_parse_phandles_with_args()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20081010144317.GA2634@oksana.dev.rtsoft.ru>
-References: <20080925183641.GA20037@oksana.dev.rtsoft.ru>
-	<20080925183710.GA25627@oksana.dev.rtsoft.ru>
-	<1223609849.8157.135.camel@pasglop>
-	<20081010144317.GA2634@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Mon, 13 Oct 2008 10:31:23 +1100
-Message-Id: <1223854283.8157.202.camel@pasglop>
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 30A59DDDEC
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 12:18:36 +1100 (EST)
+Date: Mon, 13 Oct 2008 03:18:27 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Ingo Molnar <mingo@elte.hu>, linux-arch@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, benh@kernel.crashing.org
+Subject: Re: [patch] powerpc: implement optimised mutex fastpaths
+Message-ID: <20081013011827.GA1299@wotan.suse.de>
+References: <20081012054634.GA12535@wotan.suse.de>
+	<20081012054732.GB12535@wotan.suse.de>
 Mime-Version: 1.0
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081012054732.GB12535@wotan.suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,41 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-10-10 at 18:43 +0400, Anton Vorontsov wrote:
-> The helper is factored out of of_get_gpio(). Will be used by the QE
-> pin multiplexing functions (they need to parse the gpios = <> too).
+On Sun, Oct 12, 2008 at 07:47:32AM +0200, Nick Piggin wrote:
 > 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
+> Implement a more optimal mutex fastpath for powerpc, making use of acquire
+> and release barrier semantics. This takes the mutex lock+unlock benchmark
+> from 203 to 173 cycles on a G5.
+> 
+> +static inline int
+> +__mutex_fastpath_trylock(atomic_t *count, int (*fail_fn)(atomic_t *))
+> +{
+> +	if (likely(__mutex_cmpxchg_lock(count, 1, 0) == 1))
+> +		return 1;
 
-> +	while (list < list_end) {
-> +		const u32 *cells;
-> +		const phandle *phandle;
-> +
-> +		phandle = list;
-> +		args = list + 1;
-> +
-> +		/* one cell hole in the list = <>; */
-> +		if (!*phandle) {
-> +			list++;
-> +			goto next;
-> +		}
+Oops, I must have sent the wrong version. This needs a return 0 here.
 
-Allright. I'll merge it. It might have been nicer to write here
-
-		phandle = list++;
-		args = list;
-
-		if (!*phandle)
-			goto next;
-
-		.../...
-
-		list += *cells;
-
-But it's not big deal, I'll merge it as-is and if you feel like it
-you can aways submit a cleanup later. In fact you can even completely
-drop "args" I think.
-
-Cheers,
-Ben.
+> +}
