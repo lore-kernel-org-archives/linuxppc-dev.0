@@ -1,20 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A22C3DDDD4
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 13:46:06 +1100 (EST)
-Subject: Re: [PATCH 7/16] xics: initialization cleanups
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <patch-xics-7@bga.com>
-References: <patch-xics-7@bga.com>
-Content-Type: text/plain
-Date: Mon, 13 Oct 2008 11:55:04 +1100
-Message-Id: <1223859304.8157.207.camel@pasglop>
-Mime-Version: 1.0
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 13 Oct 2008 14:54:24 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Get USE_STRICT_MM_TYPECHECKS working again
+Message-ID: <20081013035423.GG22431@yookeroo.seuss>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +16,176 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The typesafe version of the powerpc pagetable handling (with
+USE_STRICT_MM_TYPECHECKS defined) has bitrotted again.  This patch
+makes a bunch of small fixes to get it building again.
 
->  static void __init xics_init_one_node(struct device_node *np,
-> @@ -700,8 +694,10 @@ void __init xics_init_IRQ(void)
->  
->  	for_each_node_by_type(np, "PowerPC-External-Interrupt-Presentation") {
->  		found = 1;
-> -		if (firmware_has_feature(FW_FEATURE_LPAR))
-> +		if (firmware_has_feature(FW_FEATURE_LPAR)) {
-> +			of_node_put(np);
->  			break;
-> +			}
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Little tab damage up here... no big deal.
+---
 
->  		xics_init_one_node(np, &indx);
->  	}
->  	if (found == 0
+Rebased onto current benh/next as requested.
+
+Index: working-2.6/arch/powerpc/include/asm/pgtable-ppc64.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/include/asm/pgtable-ppc64.h	2008-10-13 11:44:13.000000000 +1100
++++ working-2.6/arch/powerpc/include/asm/pgtable-ppc64.h	2008-10-13 13:52:36.000000000 +1100
+@@ -117,10 +117,10 @@
+ #define PAGE_AGP	__pgprot(_PAGE_BASE | _PAGE_WRENABLE | _PAGE_NO_CACHE)
+ #define HAVE_PAGE_AGP
+ 
+-#define PAGE_PROT_BITS	__pgprot(_PAGE_GUARDED | _PAGE_COHERENT | \
+-				 _PAGE_NO_CACHE | _PAGE_WRITETHRU | \
+-				 _PAGE_4K_PFN | _PAGE_RW | _PAGE_USER | \
+- 				 _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_EXEC)
++#define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | \
++			 _PAGE_NO_CACHE | _PAGE_WRITETHRU |		\
++			 _PAGE_4K_PFN | _PAGE_RW | _PAGE_USER |		\
++			 _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_EXEC)
+ /* PTEIDX nibble */
+ #define _PTEIDX_SECONDARY	0x8
+ #define _PTEIDX_GROUP_IX	0x7
+@@ -264,9 +264,9 @@ static inline pte_t pte_mkhuge(pte_t pte
+ 	return pte; }
+ static inline pte_t pte_mkspecial(pte_t pte) {
+ 	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
+-static inline unsigned long pte_pgprot(pte_t pte)
++static inline pgprot_t pte_pgprot(pte_t pte)
+ {
+-	return __pgprot(pte_val(pte)) & PAGE_PROT_BITS;
++	return __pgprot(pte_val(pte) & PAGE_PROT_BITS);
+ }
+ 
+ /* Atomic PTE updates */
+Index: working-2.6/arch/powerpc/include/asm/pgtable-ppc32.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/include/asm/pgtable-ppc32.h	2008-10-13 11:44:13.000000000 +1100
++++ working-2.6/arch/powerpc/include/asm/pgtable-ppc32.h	2008-10-13 14:36:09.000000000 +1100
+@@ -431,11 +431,11 @@ extern int icache_44x_need_flush;
+ #define _PAGE_CHG_MASK	(PAGE_MASK | _PAGE_ACCESSED | _PAGE_DIRTY)
+ 
+ 
+-#define PAGE_PROT_BITS	__pgprot(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
+-				 _PAGE_WRITETHRU | _PAGE_ENDIAN | \
+-				 _PAGE_USER | _PAGE_ACCESSED | \
+-				 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | \
+-				 _PAGE_EXEC | _PAGE_HWEXEC)
++#define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
++			 _PAGE_WRITETHRU | _PAGE_ENDIAN | \
++			 _PAGE_USER | _PAGE_ACCESSED | \
++			 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | \
++			 _PAGE_EXEC | _PAGE_HWEXEC)
+ /*
+  * Note: the _PAGE_COHERENT bit automatically gets set in the hardware
+  * PTE if CONFIG_SMP is defined (hash_page does this); there is no need
+@@ -570,9 +570,9 @@ static inline pte_t pte_mkyoung(pte_t pt
+ 	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
+ static inline pte_t pte_mkspecial(pte_t pte) {
+ 	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
+-static inline unsigned long pte_pgprot(pte_t pte)
++static inline pgprot_t pte_pgprot(pte_t pte)
+ {
+-	return __pgprot(pte_val(pte)) & PAGE_PROT_BITS;
++	return __pgprot(pte_val(pte) & PAGE_PROT_BITS);
+ }
+ 
+ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+@@ -688,7 +688,8 @@ static inline void __set_pte_at(struct m
+ 	: "=m" (*ptep), "=m" (*((unsigned char *)ptep+4))
+ 	: "r" (pte) : "memory");
+ #else
+-	*ptep = (*ptep & _PAGE_HASHPTE) | (pte & ~_PAGE_HASHPTE);
++	*ptep = __pte((pte_val(*ptep) & _PAGE_HASHPTE)
++		      | (pte_val(pte) & ~_PAGE_HASHPTE));
+ #endif
+ }
+ 
+Index: working-2.6/arch/powerpc/include/asm/mman.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/include/asm/mman.h	2008-10-13 11:44:13.000000000 +1100
++++ working-2.6/arch/powerpc/include/asm/mman.h	2008-10-13 13:52:36.000000000 +1100
+@@ -44,7 +44,7 @@ static inline unsigned long arch_calc_vm
+ 
+ static inline pgprot_t arch_vm_get_page_prot(unsigned long vm_flags)
+ {
+-	return (vm_flags & VM_SAO) ? __pgprot(_PAGE_SAO) : 0;
++	return (vm_flags & VM_SAO) ? __pgprot(_PAGE_SAO) : __pgprot(0);
+ }
+ #define arch_vm_get_page_prot(vm_flags) arch_vm_get_page_prot(vm_flags)
+ 
+Index: working-2.6/arch/powerpc/mm/gup.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/gup.c	2008-10-02 11:39:22.000000000 +1000
++++ working-2.6/arch/powerpc/mm/gup.c	2008-10-13 13:52:36.000000000 +1100
+@@ -41,7 +41,7 @@ static noinline int gup_pte_range(pmd_t 
+ 		page = pte_page(pte);
+ 		if (!page_cache_get_speculative(page))
+ 			return 0;
+-		if (unlikely(pte != *ptep)) {
++		if (unlikely(pte_val(pte) != pte_val(*ptep))) {
+ 			put_page(page);
+ 			return 0;
+ 		}
+@@ -92,7 +92,7 @@ static noinline int gup_huge_pte(pte_t *
+ 		*nr -= refs;
+ 		return 0;
+ 	}
+-	if (unlikely(pte != *ptep)) {
++	if (unlikely(pte_val(pte) != pte_val(*ptep))) {
+ 		/* Could be optimized better */
+ 		while (*nr) {
+ 			put_page(page);
+@@ -237,7 +237,8 @@ int get_user_pages_fast(unsigned long st
+ 			pgd_t pgd = *pgdp;
+ 
+ 			VM_BUG_ON(shift != mmu_psize_defs[get_slice_psize(mm, addr)].shift);
+-			pr_debug("  %016lx: normal pgd %p\n", addr, (void *)pgd);
++			pr_debug("  %016lx: normal pgd %p\n", addr,
++				 (void *)pgd_val(pgd));
+ 			next = pgd_addr_end(addr, end);
+ 			if (pgd_none(pgd))
+ 				goto slow;
+Index: working-2.6/arch/powerpc/mm/hash_utils_64.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/hash_utils_64.c	2008-10-13 11:44:14.000000000 +1100
++++ working-2.6/arch/powerpc/mm/hash_utils_64.c	2008-10-13 13:52:36.000000000 +1100
+@@ -541,7 +541,7 @@ static unsigned long __init htab_get_tab
+ void create_section_mapping(unsigned long start, unsigned long end)
+ {
+ 	BUG_ON(htab_bolt_mapping(start, end, __pa(start),
+-				 PAGE_KERNEL, mmu_linear_psize,
++				 pgprot_val(PAGE_KERNEL), mmu_linear_psize,
+ 				 mmu_kernel_ssize));
+ }
+ 
+@@ -649,7 +649,7 @@ void __init htab_initialize(void)
+ 		mtspr(SPRN_SDR1, _SDR1);
+ 	}
+ 
+-	prot = PAGE_KERNEL;
++	prot = pgprot_val(PAGE_KERNEL);
+ 
+ #ifdef CONFIG_DEBUG_PAGEALLOC
+ 	linear_map_hash_count = lmb_end_of_DRAM() >> PAGE_SHIFT;
+Index: working-2.6/arch/powerpc/mm/init_64.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/init_64.c	2008-10-13 11:44:14.000000000 +1100
++++ working-2.6/arch/powerpc/mm/init_64.c	2008-10-13 13:52:36.000000000 +1100
+@@ -228,8 +228,8 @@ int __meminit vmemmap_populate(struct pa
+ 			start, p, __pa(p));
+ 
+ 		mapped = htab_bolt_mapping(start, start + page_size, __pa(p),
+-					   PAGE_KERNEL, mmu_vmemmap_psize,
+-					   mmu_kernel_ssize);
++					   pgprot_val(PAGE_KERNEL),
++					   mmu_vmemmap_psize, mmu_kernel_ssize);
+ 		BUG_ON(mapped < 0);
+ 	}
+ 
+
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
