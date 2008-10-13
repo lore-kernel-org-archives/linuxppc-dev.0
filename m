@@ -1,39 +1,19 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 73CB1DDF3A
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 18:52:42 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id m9D7pYjm616744
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 07:51:34 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id m9D7pYDg3227660
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 09:51:34 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m9D7pWj8013149
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 09:51:33 +0200
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [RFC 1/3] hvc_console: rework setup to replace irq functions with
-	callbacks
-Date: Mon, 13 Oct 2008 09:51:31 +0200
-References: <200806031444.21945.borntraeger@de.ibm.com>
-	<200806031445.22561.borntraeger@de.ibm.com>
-	<1223875013.8157.230.camel@pasglop>
-In-Reply-To: <1223875013.8157.230.camel@pasglop>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 6317CDDEFC
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 18:58:03 +1100 (EST)
+Date: Mon, 13 Oct 2008 09:58:01 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Aaron Tokhy <atokhy@gmail.com>
+Subject: Re: [PROBLEM] Soft lockup on Linux 2.6.27, 2 patches, Cell/PPC64
+In-Reply-To: <48F17DE6.106@gmail.com>
+Message-ID: <Pine.LNX.4.64.0810130945260.17287@vixen.sonytel.be>
+References: <48F17DE6.106@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200810130951.31733.borntraeger@de.ibm.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-	Virtualization Mailing List <virtualization@lists.osdl.org>,
-	Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>,
-	Linux PPC devel <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-1703107711-1223884681=:17287"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,81 +23,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Am Montag, 13. Oktober 2008 schrieb Benjamin Herrenschmidt:
-> =A0 ... key =A0 =A0 =A0at: [<c000000000939018>] proc_subdir_lock+0x18/0x38
-> =A0... acquired at:
-> =A0 =A0[<c0000000000832e8>] .__lock_acquire+0x814/0x8ec
-> =A0 =A0[<c000000000083464>] .lock_acquire+0xa4/0xec
-> =A0 =A0[<c0000000004e713c>] ._spin_lock+0x44/0xa0
-> =A0 =A0[<c000000000139144>] .xlate_proc_name+0x50/0xf8
-> =A0 =A0[<c0000000001392f4>] .remove_proc_entry+0x44/0x298
-> =A0 =A0[<c0000000000a1e74>] .unregister_handler_proc+0x40/0x58
-> =A0 =A0[<c00000000009fc58>] .free_irq+0x124/0x18c
-> =A0 =A0[<c0000000002e6634>] .notifier_del_irq+0x28/0x48
-> =A0 =A0[<c0000000002e5ddc>] .hvc_close+0xa0/0x110
-> =A0 =A0[<c0000000002cc328>] .release_dev+0x244/0x580
-> =A0 =A0[<c0000000002cc688>] .tty_release+0x24/0x44
-> =A0 =A0[<c0000000000e5384>] .__fput+0xf8/0x1dc
-> =A0 =A0[<c0000000000e1bec>] .filp_close+0xb4/0xdc
-> =A0 =A0[<c0000000000e33a4>] .sys_close+0xac/0x100
-> =A0 =A0[<c0000000000084d4>] syscall_exit+0x0/0x40
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
+---584349381-1703107711-1223884681=:17287
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Hmmm.=20
-Can you try if this patch fixes the lockdep trace?
+On Sun, 12 Oct 2008, Aaron Tokhy wrote:
+> I recently built 2.6.27 with these patches on my PS3.
+> 
+> http://www.kernel.org/pub/linux/kernel/people/geoff/cell/ps3-linux-patches/ps3-wip/ps3vram-driver.patch
+> http://www.kernel.org/pub/linux/kernel/people/geoff/cell/ps3-linux-patches/ps3-wip/ps3vram-proc-fs.patch
+> 
+> These patches enable the 'ps3vram' module, which creates a MTD node
 
-This would be analog to
-commit b1b135c8d619cb2c7045d6ee4e48375882518bb5
-Author: Christian Borntraeger <borntraeger@de.ibm.com>
-Date:   Thu Aug 7 09:18:34 2008 +0200
+> Now I am not sure if the patch is the issue.  None of the functions in
 
-    fix spinlock recursion in hvc_console
+No, we've seen similar things happen without ps3vram, too.
 
-    commit 611e097d7707741a336a0677d9d69bec40f29f3d
-    Author: Christian Borntraeger <borntraeger@de.ibm.com>
-    hvc_console: rework setup to replace irq functions with callbacks
-    introduced a spinlock recursion problem.
+> BUG: soft lockup - CPU#0 stuck for 61s! [top:22788]
+> Modules linked in: evdev hci_usb usbhid bluetooth usb_storage snd_ps3
+> ehci_hcd snd_pcm ohci_hcd snd_page_alloc snd_timer usbcore snd sg
+> ps3_lpm soundcore
+> irq event stamp: 5018780
+> hardirqs last  enabled at (5018779): [<c000000000007c1c>] restore+0x1c/0xe4
+> hardirqs last disabled at (5018780): [<c000000000003600>] decrementer_common+0x100/0x180
+> softirqs last  enabled at (5018778): [<c000000000020928>] .call_do_softirq+0x14/0x24
+> softirqs last disabled at (5018773): [<c000000000020928>] .call_do_softirq+0x14/0x24
+> NIP: c000000000084110 LR: c000000000084468 CTR: c0000000003181d0
+> REGS: c000000006f37280 TRAP: 0901   Not tainted  (2.6.27)
+> MSR: 8000000000008032 <EE,IR,DR>  CR: 42004424  XER: 00000000
+> TASK = c000000007980000[22788] 'top' THREAD: c000000006f34000 CPU: 0
+> GPR00: 0000000000000001 c000000006f37500 c0000000005543d0 c000000006f37570
+> GPR04: 0000000000000000 c00000000008427c 0000000000000001 0000000000000000
+> GPR08: 0000000000000830 0000000000000001 0000000000000000 c000000000b96874
+> GPR12: 8000000000008032 c000000000586300
+> NIP [c000000000084110] .csd_flag_wait+0x14/0x1c
+> LR [c000000000084468] .smp_call_function_single+0x13c/0x164
+> Call Trace:
+> [c000000006f37500] [c000000000084468] .smp_call_function_single+0x13c/0x164 (unreliable)
 
+smp_call_function_single() causes an IPI to be sent to the other CPU thread.
+However, the IPI never seems to arrive at the other CPU thread, causing the
+soft lockup message to be printed on the console.
 
-Signed-off-by: Christian Borntraeger<borntraeger@de.ibm.com>
-=2D--
- drivers/char/hvc_console.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+If this happens when the BKL is held before sending the IPI, the system will
+deadlock when the other CPU thread tries to acquire the BKL. In that
+unfortunate case, you won't see any message on the console of a retail PS3,
+though.
 
-Index: linux-2.6/drivers/char/hvc_console.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-=2D-- linux-2.6.orig/drivers/char/hvc_console.c
-+++ linux-2.6/drivers/char/hvc_console.c
-@@ -367,13 +367,13 @@ static void hvc_close(struct tty_struct=20
- 	spin_lock_irqsave(&hp->lock, flags);
-=20
- 	if (--hp->count =3D=3D 0) {
-=2D		if (hp->ops->notifier_del)
-=2D			hp->ops->notifier_del(hp, hp->data);
-=2D
- 		/* We are done with the tty pointer now. */
- 		hp->tty =3D NULL;
- 		spin_unlock_irqrestore(&hp->lock, flags);
-=20
-+		if (hp->ops->notifier_del)
-+			hp->ops->notifier_del(hp, hp->data);
-+
- 		/*
- 		 * Chain calls chars_in_buffer() and returns immediately if
- 		 * there is no buffered data otherwise sleeps on a wait queue
-@@ -416,11 +416,11 @@ static void hvc_hangup(struct tty_struct
- 	hp->n_outbuf =3D 0;
- 	hp->tty =3D NULL;
-=20
-+	spin_unlock_irqrestore(&hp->lock, flags);
-+
- 	if (hp->ops->notifier_del)
- 			hp->ops->notifier_del(hp, hp->data);
-=20
-=2D	spin_unlock_irqrestore(&hp->lock, flags);
-=2D
- 	while(temp_open_count) {
- 		--temp_open_count;
- 		kref_put(&hp->kref, destroy_hvc_struct);
+So far we do not know what's the exact cause of the IPI not arriving, hence
+suggestions are welcome.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-1703107711-1223884681=:17287--
