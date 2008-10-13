@@ -1,22 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EA14DDE072
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:10:03 +1100 (EST)
-Message-Id: <209E575D-DDE2-406A-82DE-2DD445046C02@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20081013154127.GA27124@yoda.jdub.homelinux.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH V2 4/4] POWERPC: Merge 32 and 64-bit dma code
-Date: Mon, 13 Oct 2008 13:06:36 -0500
-References: <1220900995-11928-5-git-send-email-becky.bruce@freescale.com>
-	<1221251686-5567-1-git-send-email-becky.bruce@freescale.com>
-	<20081013144904.GB18363@yoda.jdub.homelinux.org>
-	<20081013154127.GA27124@yoda.jdub.homelinux.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-gx0-f14.google.com (mail-gx0-f14.google.com
+	[209.85.217.14]) by ozlabs.org (Postfix) with ESMTP id DBF0FDE7F1
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:10:54 +1100 (EST)
+Received: by gxk7 with SMTP id 7so4771188gxk.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 11:10:53 -0700 (PDT)
+Message-Id: <cover.1223921238.git.jwboyer@linux.vnet.ibm.com>
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Date: Mon, 13 Oct 2008 14:07:18 -0400
+Subject: [PATCH 0/5] Acadia support
+To: linuxppc-dev@ozlabs.org
+Mime-Version: 1.0
+Sender: Josh Boyer <jwboyer@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,66 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Updated patch set for the AMCC Acadia board.  As Arnd suggested, I implemented
+the ppc40x_simple platform and simply add Acadia as the first supported board.
 
-On Oct 13, 2008, at 10:41 AM, Josh Boyer wrote:
+The patches are slightly reordered and the defconfig is updated as well.
 
-> On Mon, Oct 13, 2008 at 10:49:04AM -0400, Josh Boyer wrote:
->> On Fri, Sep 12, 2008 at 03:34:46PM -0500, Becky Bruce wrote:
->>> We essentially adopt the 64-bit dma code, with some changes to  
->>> support
->>> 32-bit systems, including HIGHMEM.  dma functions on 32-bit are now
->>> invoked via accessor functions which call the correct op for a  
->>> device based
->>> on archdata dma_ops.  If there is no archdata dma_ops, this defaults
->>> to dma_direct_ops.
->>>
->>> In addition, the dma_map/unmap_page functions are added to dma_ops
->>> because we can't just fall back on map/unmap_single when HIGHMEM is
->>> enabled. In the case of dma_direct_*, we stop using map/unmap_single
->>> and just use the page version - this saves a lot of ugly
->>> ifdeffing.  We leave map/unmap_single in the dma_ops definition,
->>> though, because they are needed by the iommu code, which does not
->>> implement map/unmap_page.  Ideally, going forward, we will  
->>> completely
->>> eliminate map/unmap_single and just have map/unmap_page, if it's
->>> workable for 64-bit.
->>>
->>> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
->>
->> While doing a buildall this morning, I notice chrp32_defconfig fails
->> to build with:
->>
->> drivers/built-in.o: In function `hard_dma_setup':
->> floppy.c:(.text+0x6e40e): undefined reference to `isa_bridge_pcidev'
->> floppy.c:(.text+0x6e412): undefined reference to `isa_bridge_pcidev'
->> floppy.c:(.text+0x6e53e): undefined reference to `isa_bridge_pcidev'
->> floppy.c:(.text+0x6e546): undefined reference to `isa_bridge_pcidev'
->> floppy.c:(.text+0x6e54a): undefined reference to `isa_bridge_pcidev'
->> make[1]: *** [.tmp_vmlinux1] Error 1
->>
->> (the hard_dma_setup thing is in arch/powerpc/include/asm/floppy.h).
->>
->> I did a git bisect and it pointed at this commit as causing the build
->> to fail.  Why, I have no idea.
->
-> Ok, I was annoyed enough to look at why.
->
-> Basically, before this patch pci_map_single on 32-bit PPC seemed to
-> be compiled down to __dma_sync(ptr, size, direction); and the "dev"
-> parameter to the function was never actually used.  The compiler
-> seems to have optimized this out entirely, so we don't get the odd
-> link reference to isa_bridge_pcidev at all.  (Neither pci_map_single
-> or isa_bridge_pcidev are present in the vmlinux at all).
->
-> With the patch, the compiler doesn't do this code elimination
-> because pci_map_single boils down to dma_map_page, which calls
-> get_dma_direct_offset with the "dev" parameter.  So since it is
-> still used, the compiler can't eliminate it and hence FAIL.
->
-> I have no patch for this at the moment.  Someone should look at
-> it more closely, because this is causing the 5 chrp32_defconfig
-> users to weep.
+josh
 
-Isn't this the type of regression we should fix post -rc1 :)
+Josh Boyer (5):
+  powerpc/40x: AMCC PowerPC 405EZ Acadia DTS
+  powerpc/40x: Add AMCC PowerPC 405EZ to cputable
+  powerpc/40x: Add PowerPC 40x simple platform support
+  powerpc/40x: Add cuboot wrapper for Acadia board
+  powerpc/40x: Add PowerPC 405EZ Acadia defconfig
 
-- k
+ arch/powerpc/boot/Makefile                 |    4 +-
+ arch/powerpc/boot/cuboot-acadia.c          |  174 ++++++
+ arch/powerpc/boot/dts/acadia.dts           |  224 +++++++
+ arch/powerpc/configs/40x/acadia_defconfig  |  921 ++++++++++++++++++++++++++++
+ arch/powerpc/kernel/cputable.c             |   13 +
+ arch/powerpc/platforms/40x/Kconfig         |   22 +
+ arch/powerpc/platforms/40x/Makefile        |    1 +
+ arch/powerpc/platforms/40x/ppc40x_simple.c |   80 +++
+ 8 files changed, 1438 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/cuboot-acadia.c
+ create mode 100644 arch/powerpc/boot/dts/acadia.dts
+ create mode 100644 arch/powerpc/configs/40x/acadia_defconfig
+ create mode 100644 arch/powerpc/platforms/40x/ppc40x_simple.c
