@@ -1,19 +1,26 @@
-Return-Path: <htejun@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.190])
-	by ozlabs.org (Postfix) with ESMTP id C3A4DDDE21
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 18:18:35 +1100 (EST)
-Received: by ti-out-0910.google.com with SMTP id w7so935487tib.13
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 00:18:33 -0700 (PDT)
-Message-ID: <48F2F5EE.6060201@gmail.com>
-Date: Mon, 13 Oct 2008 16:17:02 +0900
-From: Tejun Heo <htejun@gmail.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id B4751DDEFE
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 18:40:54 +1100 (EST)
+Date: Mon, 13 Oct 2008 09:40:51 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Bill Gatliff <bgat@billgatliff.com>
+Subject: Re: [RFC 0/6] Proposal for a Generic PWM Device API
+In-Reply-To: <48EFB025.6050808@billgatliff.com>
+Message-ID: <Pine.LNX.4.64.0810130939500.17287@vixen.sonytel.be>
+References: <cover.1223482372.git.bgat@billgatliff.com>
+	<1223608819.8157.127.camel@pasglop>
+	<48EED4D1.2040506@billgatliff.com>
+	<Pine.LNX.4.64.0810101054140.12257@vixen.sonytel.be>
+	<48EF5FAC.1060807@billgatliff.com>
+	<20081010174003.GC10579@linux-sh.org>
+	<48EFB025.6050808@billgatliff.com>
 MIME-Version: 1.0
-To: Wang Jian <lark@linux.net.cn>
-Subject: Re: [PATCH RFC] pata_platform: add 8 bit data io support
-References: <20081011180014.GA4908@debian>
-In-Reply-To: <20081011180014.GA4908@debian>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-107637092-1223883651=:17287"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Paul Mundt <lethal@linux-sh.org>, linux-embedded@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,60 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Wang Jian wrote:
-> +static void pata_platform_postreset(struct ata_link *link, unsigned int *classes)
-> +{
-> +	struct ata_port *ap = link->ap;
-> +	struct ata_device *dev;
-> +	u8 select = ATA_DEVICE_OBS;
-> +
-> +	/* Call default callback first */
-> +	ata_sff_postreset(link, classes);
-> +
-> +	if (!(ap->flags & ATA_FLAG_8BIT_DATA))
-> +		return;
-> +
-> +	/* Set 8-bit mode. We know we can do that */
-> +	ata_link_for_each_dev(dev, link) {
-> +		if (dev->devno)
-> +			select |= ATA_DEV1;
-> +
-> +		iowrite8(SETFEATURES_8BIT_ON, ap->ioaddr.feature_addr);
-> +		iowrite8(select, ap->ioaddr.device_addr);
-> +		iowrite8(ATA_CMD_SET_FEATURES, ap->ioaddr.command_addr);
+---584349381-107637092-1223883651=:17287
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Aieee... Please don't do this.  I think it best belongs to
-ata_dev_configure() or ->dev_config() if you wanna put it in low level
-driver.
+On Fri, 10 Oct 2008, Bill Gatliff wrote:
+> Paul Mundt wrote:
+> > Your first version should have been to linux-embedded and linux-kernel.
+> > If you want to alert the linux-arm-kernel people to the fact that a
+> > discussion is going on in this area, then feel free to post a
+> > notification to the list with references to the relevant lists. There is
+> > no reason why public lists should have to dig in to private archives to
+> > try and play catch up.
+> 
+> I'm not asking anyone to do that.  Just review the patches posted to the list of
+> your choice.  Or, don't review them.  Up to you.
+> 
+> My next update will be the one where I formally request a review with intent to
+> merge into mainline.  That one will go to linux-embedded only, with
+> notifications sent elsewhere as indicated per community request.  I don't have a
+> problem with that.  I can't change history, but I'm doing what you are asking of
+> me otherwise.
 
-> @@ -106,7 +159,8 @@ int __devinit __pata_platform_probe(struct device *dev,
->  				    struct resource *ctl_res,
->  				    struct resource *irq_res,
->  				    unsigned int ioport_shift,
-> -				    int __pio_mask)
-> +				    int __pio_mask,
-> +				    unsigned int data_width)
->  {
->  	struct ata_host *host;
->  	struct ata_port *ap;
-> @@ -140,6 +194,9 @@ int __devinit __pata_platform_probe(struct device *dev,
->  	ap->pio_mask = __pio_mask;
->  	ap->flags |= ATA_FLAG_SLAVE_POSS;
->  
-> +	if (data_width == ATA_DATA_WIDTH_8BIT)
-> +		ap->flags |= ATA_FLAG_8BIT_DATA;
+For a formally request for review, you do want to CC lkml.
 
-It's strange to define ATA_DATA_WIDTH_* constants in ata.h and only
-use it in ata_platform.
+With kind regards,
 
-Overall, I think the bulk of the 8bit PIO implementation should go
-into the libata core layer and transfer width should be property of
-struct ata_device - probably right above or below pio/dma_mode and
-xfer_mode/shift fields.
+Geert Uytterhoeven
+Software Architect
 
-Thanks.
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
--- 
-tejun
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-107637092-1223883651=:17287--
