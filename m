@@ -1,14 +1,14 @@
 Return-Path: <jwboyer@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
-	by ozlabs.org (Postfix) with ESMTP id 6116BDE9DD
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:11:13 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m33so962870wag.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 11:11:11 -0700 (PDT)
-Message-Id: <89c4121dc4a0897323fc5590ba69fea9db5c1a5e.1223921238.git.jwboyer@linux.vnet.ibm.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
+	by ozlabs.org (Postfix) with ESMTP id 57FA3DE8DC
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 05:11:21 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so1812224wfg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 11:11:19 -0700 (PDT)
+Message-Id: <1c32c32bf9c0792949ba47e55dd50076dc3a8bd3.1223921238.git.jwboyer@linux.vnet.ibm.com>
 In-Reply-To: <cover.1223921238.git.jwboyer@linux.vnet.ibm.com>
 References: <cover.1223921238.git.jwboyer@linux.vnet.ibm.com>
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: [PATCH 3/5] powerpc/40x: Add PowerPC 40x simple platform support
+Subject: [PATCH 4/5] powerpc/40x: Add cuboot wrapper for Acadia board
 To: linuxppc-dev@ozlabs.org
 Mime-Version: 1.0
 Sender: Josh Boyer <jwboyer@gmail.com>
@@ -20,166 +20,219 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Date: Mon, 13 Oct 2008 18:11:15 -0000
+Date: Mon, 13 Oct 2008 18:11:22 -0000
 
-This adds a common board file for almost all of the "simple" PowerPC 40x
-boards that exist today.  This is intended to be a single place to add
-support for boards that do not differ in platform support from most of the
-evaluation boards that are used as reference platforms.  Boards that have
-specific requirements or custom hardware setup should still have their own
-board.c file.
+This adds a cuboot wrapper for the AMCC PowerPC 405EZ Acadia board.  The
+clocking code is derived from U-Boot, originally written by Stefan Roese.
 
-The first board ported to this is the AMCC PowerPC 405EZ Acadia board.
-
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Signed-off-by: Josh Boyer <jwboyer@linux.ibm.com>
 ---
- arch/powerpc/platforms/40x/Kconfig         |   22 ++++++++
- arch/powerpc/platforms/40x/Makefile        |    1 +
- arch/powerpc/platforms/40x/ppc40x_simple.c |   80 ++++++++++++++++++++++++++++
- 3 files changed, 103 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/40x/ppc40x_simple.c
+ arch/powerpc/boot/Makefile        |    4 +-
+ arch/powerpc/boot/cuboot-acadia.c |  174 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 177 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/cuboot-acadia.c
 
-diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-index a9260e2..72ba3a7 100644
---- a/arch/powerpc/platforms/40x/Kconfig
-+++ b/arch/powerpc/platforms/40x/Kconfig
-@@ -14,6 +14,15 @@
- #	help
- #	  This option enables support for the CPCI405 board.
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 6403275..5f4a59c 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -68,7 +68,8 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
+ 		fixed-head.S ep88xc.c ep405.c cuboot-c2k.c \
+ 		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
+ 		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
+-		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c
++		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
++		cuboot-acadia.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
  
-+config ACADIA
-+	bool "Acadia"
-+	depends on 40x
-+	default n
-+	select PPC40x_SIMPLE
-+	select 405EZ
-+	help
-+	  This option enables support for the AMCC 405EZ Acadia evaluation board.
-+
- config EP405
- 	bool "EP405/EP405PC"
- 	depends on 40x
-@@ -93,6 +102,13 @@ config XILINX_VIRTEX_GENERIC_BOARD
- 	  Most Virtex designs should use this unless it needs to do some
- 	  special configuration at board probe time.
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+@@ -211,6 +212,7 @@ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+ # Board ports in arch/powerpc/platform/40x/Kconfig
+ image-$(CONFIG_EP405)			+= dtbImage.ep405
+ image-$(CONFIG_WALNUT)			+= treeImage.walnut
++image-$(CONFIG_ACADIA)			+= cuImage.acadia
  
-+config PPC40x_SIMPLE
-+	bool "Simple PowerPC 40x board support"
-+	depends on 40x
-+	default n
-+	help
-+	  This option enables the simple PowerPC 40x platform support.
-+
- # 40x specific CPU modules, selected based on the board above.
- config NP405H
- 	bool
-@@ -118,6 +134,12 @@ config 405EX
- 	select IBM_NEW_EMAC_EMAC4
- 	select IBM_NEW_EMAC_RGMII
- 
-+config 405EZ
-+	bool
-+	select IBM_NEW_EMAC_NO_FLOW_CTRL
-+	select IBM_NEW_EMAC_MAL_CLR_ICINTSTAT
-+	select IBM_NEW_EMAC_MAL_COMMON_ERR
-+
- config 405GPR
- 	bool
- 
-diff --git a/arch/powerpc/platforms/40x/Makefile b/arch/powerpc/platforms/40x/Makefile
-index 5533a5c..1d93273 100644
---- a/arch/powerpc/platforms/40x/Makefile
-+++ b/arch/powerpc/platforms/40x/Makefile
-@@ -3,3 +3,4 @@ obj-$(CONFIG_MAKALU)				+= makalu.o
- obj-$(CONFIG_WALNUT)				+= walnut.o
- obj-$(CONFIG_XILINX_VIRTEX_GENERIC_BOARD)	+= virtex.o
- obj-$(CONFIG_EP405)				+= ep405.o
-+obj-$(CONFIG_PPC40x_SIMPLE)		+= ppc40x_simple.o
-diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
+ # Board ports in arch/powerpc/platform/44x/Kconfig
+ image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
+diff --git a/arch/powerpc/boot/cuboot-acadia.c b/arch/powerpc/boot/cuboot-acadia.c
 new file mode 100644
-index 0000000..4498a86
+index 0000000..0634aba
 --- /dev/null
-+++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
-@@ -0,0 +1,80 @@
++++ b/arch/powerpc/boot/cuboot-acadia.c
+@@ -0,0 +1,174 @@
 +/*
-+ * Generic PowerPC 40x platform support
++ * Old U-boot compatibility for Acadia
++ *
++ * Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 + *
 + * Copyright 2008 IBM Corporation
 + *
 + * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; version 2 of the License.
-+ *
-+ * This implements simple platform support for PowerPC 44x chips.  This is
-+ * mostly used for eval boards or other simple and "generic" 44x boards.  If
-+ * your board has custom functions or hardware, then you will likely want to
-+ * implement your own board.c file to accommodate it.
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
 + */
 +
-+#include <asm/machdep.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/ppc4xx.h>
-+#include <asm/prom.h>
-+#include <asm/time.h>
-+#include <asm/udbg.h>
-+#include <asm/uic.h>
++#include "ops.h"
++#include "io.h"
++#include "dcr.h"
++#include "stdio.h"
++#include "4xx.h"
++#include "44x.h"
++#include "cuboot.h"
 +
-+#include <linux/init.h>
-+#include <linux/of_platform.h>
++#define TARGET_4xx
++#include "ppcboot.h"
 +
-+static __initdata struct of_device_id ppc40x_of_bus[] = {
-+	{ .compatible = "ibm,plb3", },
-+	{ .compatible = "ibm,plb4", },
-+	{ .compatible = "ibm,opb", },
-+	{ .compatible = "ibm,ebc", },
-+	{ .compatible = "simple-bus", },
-+	{},
-+};
++static bd_t bd;
 +
-+static int __init ppc40x_device_probe(void)
++#define CPR_PERD0_SPIDV_MASK   0x000F0000     /* SPI Clock Divider */
++
++#define PLLC_SRC_MASK	       0x20000000     /* PLL feedback source */
++
++#define PLLD_FBDV_MASK	       0x1F000000     /* PLL feedback divider value */
++#define PLLD_FWDVA_MASK        0x000F0000     /* PLL forward divider A value */
++#define PLLD_FWDVB_MASK        0x00000700     /* PLL forward divider B value */
++
++#define PRIMAD_CPUDV_MASK      0x0F000000     /* CPU Clock Divisor Mask */
++#define PRIMAD_PLBDV_MASK      0x000F0000     /* PLB Clock Divisor Mask */
++#define PRIMAD_OPBDV_MASK      0x00000F00     /* OPB Clock Divisor Mask */
++#define PRIMAD_EBCDV_MASK      0x0000000F     /* EBC Clock Divisor Mask */
++
++#define PERD0_PWMDV_MASK       0xFF000000     /* PWM Divider Mask */
++#define PERD0_SPIDV_MASK       0x000F0000     /* SPI Divider Mask */
++#define PERD0_U0DV_MASK        0x0000FF00     /* UART 0 Divider Mask */
++#define PERD0_U1DV_MASK        0x000000FF     /* UART 1 Divider Mask */
++
++static void get_clocks(void)
 +{
-+	of_platform_bus_probe(NULL, ppc40x_of_bus, NULL);
++	unsigned long sysclk, cpr_plld, cpr_pllc, cpr_primad, plloutb, i;
++	unsigned long pllFwdDiv, pllFwdDivB, pllFbkDiv, pllPlbDiv, pllExtBusDiv;
++	unsigned long pllOpbDiv, freqEBC, freqUART, freqOPB;
++	unsigned long div;		/* total divisor udiv * bdiv */
++	unsigned long umin;		/* minimum udiv	*/
++	unsigned short diff;		/* smallest diff */
++	unsigned long udiv;		/* best udiv */
++	unsigned short idiff;		/* current diff */
++	unsigned short ibdiv;		/* current bdiv */
++	unsigned long est;		/* current estimate */
++	unsigned long baud;
++	void *np;
 +
-+	return 0;
-+}
-+machine_device_initcall(ppc40x_simple, ppc40x_device_probe);
++	/* read the sysclk value from the CPLD */
++	sysclk = (in_8((unsigned char *)0x80000000) == 0xc) ? 66666666 : 33333000;
 +
-+/* This is the list of boards that can be supported by this simple
-+ * platform code.  This does _not_ mean the boards are compatible,
-+ * as they most certainly are not from a device tree perspective.
-+ * However, their differences are handled by the device tree and the
-+ * drivers and therefore they don't need custom board support files.
-+ *
-+ * Again, if your board needs to do things differently then create a
-+ * board.c file for it rather than adding it to this list.
-+ */
-+static char *board[] __initdata = {
-+	"amcc,acadia"
-+};
++	/*
++	 * Read PLL Mode registers
++	 */
++	cpr_plld = CPR0_READ(DCRN_CPR0_PLLD);
++	cpr_pllc = CPR0_READ(DCRN_CPR0_PLLC);
 +
-+static int __init ppc40x_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+	int i = 0;
++	/*
++	 * Determine forward divider A
++	 */
++	pllFwdDiv = ((cpr_plld & PLLD_FWDVA_MASK) >> 16);
 +
-+	for (i = 0; i < ARRAY_SIZE(board); i++) {
-+		if (of_flat_dt_is_compatible(root, board[i])) {
-+			ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
-+			return 1;
++	/*
++	 * Determine forward divider B
++	 */
++	pllFwdDivB = ((cpr_plld & PLLD_FWDVB_MASK) >> 8);
++	if (pllFwdDivB == 0)
++		pllFwdDivB = 8;
++
++	/*
++	 * Determine FBK_DIV.
++	 */
++	pllFbkDiv = ((cpr_plld & PLLD_FBDV_MASK) >> 24);
++	if (pllFbkDiv == 0)
++		pllFbkDiv = 256;
++
++	/*
++	 * Read CPR_PRIMAD register
++	 */
++	cpr_primad = CPR0_READ(DCRN_CPR0_PRIMAD);
++
++	/*
++	 * Determine PLB_DIV.
++	 */
++	pllPlbDiv = ((cpr_primad & PRIMAD_PLBDV_MASK) >> 16);
++	if (pllPlbDiv == 0)
++		pllPlbDiv = 16;
++
++	/*
++	 * Determine EXTBUS_DIV.
++	 */
++	pllExtBusDiv = (cpr_primad & PRIMAD_EBCDV_MASK);
++	if (pllExtBusDiv == 0)
++		pllExtBusDiv = 16;
++
++	/*
++	 * Determine OPB_DIV.
++	 */
++	pllOpbDiv = ((cpr_primad & PRIMAD_OPBDV_MASK) >> 8);
++	if (pllOpbDiv == 0)
++		pllOpbDiv = 16;
++
++	/* There is a bug in U-Boot that prevents us from using
++	 * bd.bi_opbfreq because U-Boot doesn't populate it for
++	 * 405EZ.  We get to calculate it, yay!
++	 */
++	freqOPB = (sysclk *pllFbkDiv) /pllOpbDiv;
++
++	freqEBC = (sysclk * pllFbkDiv) / pllExtBusDiv;
++
++	plloutb = ((sysclk * ((cpr_pllc & PLLC_SRC_MASK) ?
++					   pllFwdDivB : pllFwdDiv) *
++		    pllFbkDiv) / pllFwdDivB);
++
++	np = find_node_by_alias("serial0");
++	if (getprop(np, "current-speed", &baud, sizeof(baud)) != sizeof(baud))
++		fatal("no current-speed property\n\r");
++
++	udiv = 256;			/* Assume lowest possible serial clk */
++	div = plloutb / (16 * baud); /* total divisor */
++	umin = (plloutb / freqOPB) << 1;	/* 2 x OPB divisor */
++	diff = 256;			/* highest possible */
++
++	/* i is the test udiv value -- start with the largest
++	 * possible (256) to minimize serial clock and constrain
++	 * search to umin.
++	 */
++	for (i = 256; i > umin; i--) {
++		ibdiv = div / i;
++		est = i * ibdiv;
++		idiff = (est > div) ? (est-div) : (div-est);
++		if (idiff == 0) {
++			udiv = i;
++			break;      /* can't do better */
++		} else if (idiff < diff) {
++			udiv = i;       /* best so far */
++			diff = idiff;   /* update lowest diff*/
 +		}
 +	}
++	freqUART = plloutb / udiv;
 +
-+	return 0;
++	dt_fixup_cpu_clocks(bd.bi_procfreq, bd.bi_intfreq, bd.bi_plb_busfreq);
++	dt_fixup_clock("/plb/ebc", freqEBC);
++	dt_fixup_clock("/plb/opb", freqOPB);
++	dt_fixup_clock("/plb/opb/serial@ef600300", freqUART);
++	dt_fixup_clock("/plb/opb/serial@ef600400", freqUART);
 +}
 +
-+define_machine(ppc40x_simple) {
-+	.name = "PowerPC 40x Platform",
-+	.probe = ppc40x_probe,
-+	.progress = udbg_progress,
-+	.init_IRQ = uic_init_tree,
-+	.get_irq = uic_get_irq,
-+	.restart = ppc4xx_reset_system,
-+	.calibrate_decr = generic_calibrate_decr,
-+};
++static void acadia_fixups(void)
++{
++	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
++	get_clocks();
++	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
++}
++	
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
++		unsigned long r6, unsigned long r7)
++{
++	CUBOOT_INIT();
++	platform_ops.fixups = acadia_fixups;
++	platform_ops.exit = ibm40x_dbcr_reset;
++	fdt_init(_dtb_start);
++	serial_console_init();
++}
 -- 
 1.5.5.1
