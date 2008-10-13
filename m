@@ -1,24 +1,22 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D36DCDDF66
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 07:51:48 +1100 (EST)
-Subject: Re: [PATCH] powerpc/cell/oprofile: vma_map: fix test on
-	overlay_tbl_offset
+Subject: Re: performance: memcpy vs. __copy_tofrom_user
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Robert Richter <robert.richter@amd.com>
-In-Reply-To: <20081013152139.GB23557@erda.amd.com>
-References: <1223357268.8157.38.camel@pasglop>
-	<200810071038.34085.arnd@arndb.de>
-	<20081013152139.GB23557@erda.amd.com>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20081013152028.GA18639@ld0162-tx32.am.freescale.net>
+References: <48ECC611.3030309@mikroswiat.pl>
+	<20081008154212.GA21723@secretlab.ca>
+	<18669.28058.495259.72182@cargo.ozlabs.ibm.com>
+	<48EDD905.6070609@mikroswiat.pl>
+	<18669.58803.48011.686743@cargo.ozlabs.ibm.com>
+	<48EE2553.30903@genesi-usa.com> <1223764226.8157.182.camel@pasglop>
+	<48F15B7D.3060608@genesi-usa.com>
+	<20081013152028.GA18639@ld0162-tx32.am.freescale.net>
 Content-Type: text/plain
-Date: Tue, 14 Oct 2008 07:51:08 +1100
-Message-Id: <1223931068.8157.274.camel@pasglop>
+Date: Tue, 14 Oct 2008 07:50:27 +1100
+Message-Id: <1223931027.8157.272.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Roel Kluin <12o3l@tiscali.nl>, oprofile-list@lists.sourceforge.net,
-	Arnd Bergmann <arnd@arndb.de>
+Cc: Dominik Bozek <domino@mikroswiat.pl>, linuxppc-embedded@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,28 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-10-13 at 17:21 +0200, Robert Richter wrote:
-> On 07.10.08 10:38:33, Arnd Bergmann wrote:
-> > From: Roel Kluin <12o3l@tiscali.nl>
-> > 
-> > Offset is unsigned and when an address isn't found in the vma map
-> > vma_map_lookup() returns the vma physical address + 0x10000000.
-> > 
-> > vma_map_lookup used to return 0xffffffff on a failed lookup, but
-> > a change was made to return the vma physical address + 0x10000000
-> > There are two callers of vam_map_lookup: one of them correctly 
-> > deals with this new return value, but the other (below) did not.  
-> > 
-> > Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> > Acked-by: Maynard Johnson <maynardj@us.ibm.com>
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > Cc: oprofile-list@lists.sf.net
-> > Cc: Carl Love <cel@us.ibm.com>
-> 
-> The patch has been applied to the powerpc-for-paul branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git
 
-I think I already put it in the powerpc next branch.
+> It doesn't need to be done in non-preemptible sections, if you have a
+> separate per-thread save area for kernel fp/altivec use (and appropriate
+> flags so an FP unavailable handler knows which regs to restore), and you
+> can avoid using it in a preempting context.
 
-Cheers,
+Yuck.
+
 Ben.
