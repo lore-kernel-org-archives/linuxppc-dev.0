@@ -1,22 +1,30 @@
-Return-Path: <sebastian@breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <brice@myri.com>
+Received: from myri.com (mailbox2.myri.com [64.172.73.26])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 646FFDDDE0
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 20:08:53 +1100 (EST)
-Date: Tue, 14 Oct 2008 11:08:44 +0200
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc: don't pass unused regs around in head_.*.S
-Message-ID: <20081014090844.GA20507@Chamillionaire.breakpoint.cc>
-References: <1223820494-7822-1-git-send-email-sebastian@breakpoint.cc>
-	<1223820494-7822-2-git-send-email-sebastian@breakpoint.cc>
-	<1223940312.8157.281.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTPS id A4A58DDDE7
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 20:19:35 +1100 (EST)
+Message-ID: <48F4627E.30300@myri.com>
+Date: Tue, 14 Oct 2008 11:12:30 +0200
+From: Brice Goglin <brice@myri.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1223940312.8157.281.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on
+	powerpc	selectsCONFIG_INTEL_IOATDMA=y
+References: <20081013101559.GA14372@linux.vnet.ibm.com>
+	<20081013112631.GD29938@cs181140183.pp.htv.fi>
+	<36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com>
+	<48F391B9.1000206@myri.com>
+	<20081013183503.GA28133@cs181140183.pp.htv.fi>
+In-Reply-To: <20081013183503.GA28133@cs181140183.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8
+Cc: Adrian Bunk <bunk@kernel.org>, e1000-devel@lists.sourceforge.net,
+	netdev@vger.kernel.org, "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
+	linux-kernel@vger.kernel.org,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, "Kirsher,
+	Jeffrey T" <jeffrey.t.kirsher@intel.com>, sam@ravnborg.org,
+	Jeff Garzik <jgarzik@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +34,168 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Benjamin Herrenschmidt | 2008-10-14 10:25:12 [+1100]:
+Adrian Bunk wrote:
+> But considering that igb is in a similar situation it would be nice if 
+> all 3 drivers would handle it the same way.
+>   
 
->On Sun, 2008-10-12 at 16:08 +0200, Sebastian Andrzej Siewior wrote:
->> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
->> 
->> This looks like a relict from arch/ppc. machine_init() is accepting
->> only two parameters (dtb, phys) and is using only the first one.
->
->This isn't 100% correct actually...
->
->First, the base head_32.S (could be called head_6xx.S I suppose)
->supports a few more calling conventions such as the real OF one, with
->added support for initrd and cmdline in registers , and the BootX one.
-Yep, those extra register are only used in prom_init() or bootx_init().
-In case we called one of those two we end up again in __start(dtb, phys, 0)
+Jesse,
+What do you think of the below patch?
+I am not very familiar with Kconfig, but it seems to solve the problem.
+If a Kconfig guru could double-check...
+Brice
 
->Then, calling convention for the other cases is slightly better defined
->than just having r3 contain a device-tree pointer. The physical address
->is an important part of it, the fact that r5 is NULL to differenciate
->from an OF entry too, and we're moving toward the full ePAPR definition.
-Okay. Power_ePAPR_APPROVED_v1.0.pdf says we have r4, r5, r8, r9 = 0, r6 =
-magic and r7 size of the initial mapped area. I don't see the physical
-address here.
 
-Do you want me to update the comment / patch description or leave
-everything as it? I guess we don't have to pass unused register to
-machine_init(), do we?
+myri10ge: Add MYRI10GE_DCA instead of selecting INTEL_IOATDMA
 
->Cheers,
->Ben.
+Add a bool MYRI10GE_DCA defined to y if MYRI10GE and DCA are enabled, but
+MYRI10GE isn't y while DCA=m. And thus remove the need to select INTEL_IOATDMA
+when MYRI10GE is enabled, so that non-x86 architectures can build the myri10ge.
 
-Sebastian
+Signed-off-by: Brice Goglin <brice@myri.com>
+
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index e9d5294..0162d55 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2462,7 +2462,6 @@ config MYRI10GE
+ 	select FW_LOADER
+ 	select CRC32
+ 	select INET_LRO
+-	select INTEL_IOATDMA
+ 	---help---
+ 	  This driver supports Myricom Myri-10G Dual Protocol interface in
+ 	  Ethernet mode. If the eeprom on your board is not recent enough,
+@@ -2474,6 +2473,11 @@ config MYRI10GE
+ 	  To compile this driver as a module, choose M here. The module
+ 	  will be called myri10ge.
+ 
++config MYRI10GE_DCA
++	bool
++	default y
++	depends on MYRI10GE && DCA && !(MYRI10GE=y && DCA=m)
++
+ config NETXEN_NIC
+ 	tristate "NetXen Multi port (1/10) Gigabit Ethernet NIC"
+ 	depends on PCI
+diff --git a/drivers/net/myri10ge/myri10ge.c b/drivers/net/myri10ge/myri10ge.c
+index 6dce901..a9aebad 100644
+--- a/drivers/net/myri10ge/myri10ge.c
++++ b/drivers/net/myri10ge/myri10ge.c
+@@ -188,7 +188,7 @@ struct myri10ge_slice_state {
+ 	dma_addr_t fw_stats_bus;
+ 	int watchdog_tx_done;
+ 	int watchdog_tx_req;
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	int cached_dca_tag;
+ 	int cpu;
+ 	__be32 __iomem *dca_tag;
+@@ -220,7 +220,7 @@ struct myri10ge_priv {
+ 	int msi_enabled;
+ 	int msix_enabled;
+ 	struct msix_entry *msix_vectors;
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	int dca_enabled;
+ #endif
+ 	u32 link_state;
+@@ -902,7 +902,7 @@ static int myri10ge_reset(struct myri10ge_priv *mgp)
+ 	struct myri10ge_slice_state *ss;
+ 	int i, status;
+ 	size_t bytes;
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	unsigned long dca_tag_off;
+ #endif
+ 
+@@ -1012,7 +1012,7 @@ static int myri10ge_reset(struct myri10ge_priv *mgp)
+ 	}
+ 	put_be32(htonl(mgp->intr_coal_delay), mgp->intr_coal_delay_ptr);
+ 
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	status = myri10ge_send_cmd(mgp, MXGEFW_CMD_GET_DCA_OFFSET, &cmd, 0);
+ 	dca_tag_off = cmd.data0;
+ 	for (i = 0; i < mgp->num_slices; i++) {
+@@ -1051,7 +1051,7 @@ static int myri10ge_reset(struct myri10ge_priv *mgp)
+ 	return status;
+ }
+ 
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ static void
+ myri10ge_write_dca(struct myri10ge_slice_state *ss, int cpu, int tag)
+ {
+@@ -1505,7 +1505,7 @@ static int myri10ge_poll(struct napi_struct *napi, int budget)
+ 	struct net_device *netdev = ss->mgp->dev;
+ 	int work_done;
+ 
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	if (ss->mgp->dca_enabled)
+ 		myri10ge_update_dca(ss);
+ #endif
+@@ -1736,7 +1736,7 @@ static const char myri10ge_gstrings_main_stats[][ETH_GSTRING_LEN] = {
+ 	"tx_boundary", "WC", "irq", "MSI", "MSIX",
+ 	"read_dma_bw_MBs", "write_dma_bw_MBs", "read_write_dma_bw_MBs",
+ 	"serial_number", "watchdog_resets",
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	"dca_capable_firmware", "dca_device_present",
+ #endif
+ 	"link_changes", "link_up", "dropped_link_overflow",
+@@ -1815,7 +1815,7 @@ myri10ge_get_ethtool_stats(struct net_device *netdev,
+ 	data[i++] = (unsigned int)mgp->read_write_dma;
+ 	data[i++] = (unsigned int)mgp->serial_number;
+ 	data[i++] = (unsigned int)mgp->watchdog_resets;
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	data[i++] = (unsigned int)(mgp->ss[0].dca_tag != NULL);
+ 	data[i++] = (unsigned int)(mgp->dca_enabled);
+ #endif
+@@ -3844,7 +3844,7 @@ static int myri10ge_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		dev_err(&pdev->dev, "failed reset\n");
+ 		goto abort_with_slices;
+ 	}
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	myri10ge_setup_dca(mgp);
+ #endif
+ 	pci_set_drvdata(pdev, mgp);
+@@ -3948,7 +3948,7 @@ static void myri10ge_remove(struct pci_dev *pdev)
+ 	netdev = mgp->dev;
+ 	unregister_netdev(netdev);
+ 
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	myri10ge_teardown_dca(mgp);
+ #endif
+ 	myri10ge_dummy_rdma(mgp, 0);
+@@ -3993,7 +3993,7 @@ static struct pci_driver myri10ge_driver = {
+ #endif
+ };
+ 
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ static int
+ myri10ge_notify_dca(struct notifier_block *nb, unsigned long event, void *p)
+ {
+@@ -4024,7 +4024,7 @@ static __init int myri10ge_init_module(void)
+ 		       myri10ge_driver.name, myri10ge_rss_hash);
+ 		myri10ge_rss_hash = MXGEFW_RSS_HASH_TYPE_SRC_PORT;
+ 	}
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	dca_register_notify(&myri10ge_dca_notifier);
+ #endif
+ 	if (myri10ge_max_slices > MYRI10GE_MAX_SLICES)
+@@ -4037,7 +4037,7 @@ module_init(myri10ge_init_module);
+ 
+ static __exit void myri10ge_cleanup_module(void)
+ {
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	dca_unregister_notify(&myri10ge_dca_notifier);
+ #endif
+ 	pci_unregister_driver(&myri10ge_driver);
