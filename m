@@ -1,26 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E4CF2DDE17
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 12:53:09 +1100 (EST)
-Message-Id: <9EE82BA3-5B0C-43BB-90B4-2A93999285C1@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1223940659.8157.288.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH V2 4/4] POWERPC: Merge 32 and 64-bit dma code
-Date: Mon, 13 Oct 2008 20:52:25 -0500
-References: <1220900995-11928-5-git-send-email-becky.bruce@freescale.com>
-	<1221251686-5567-1-git-send-email-becky.bruce@freescale.com>
-	<20081013144904.GB18363@yoda.jdub.homelinux.org>
-	<20081013154127.GA27124@yoda.jdub.homelinux.org>
-	<209E575D-DDE2-406A-82DE-2DD445046C02@kernel.crashing.org>
-	<20081013142100.7efc2c81@zod.rchland.ibm.com>
-	<AF818ED4-F261-4EF8-A4CB-CA06FCA9386D@kernel.crashing.org>
-	<1223940659.8157.288.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 14 Oct 2008 12:57:53 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: Re: [PATCH] powerpc/boot: compare _start against ei.loadsize
+	instead ei.memsize
+Message-ID: <20081014015753.GD20620@yookeroo.seuss>
+References: <20080923203857.GB10935@www.tglx.de>
+	<200809240146.m8O1kIpZ077447@sullivan.realtime.net>
+	<20080925214357.GA2929@www.tglx.de>
+	<1223611088.8157.144.camel@pasglop>
+	<20081013091526.GA9925@www.tglx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081013091526.GA9925@www.tglx.de>
+Cc: Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,29 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Oct 13, 2008 at 11:15:26AM +0200, Sebastian Andrzej Siewior wrote:
+> If the vmlinux binary in memory is larger than 4 MiB than it collides
+> with the initial boot code which is linked at 4 MiB in case of cuBoot.
+> If the the uncompressed image size (on disk size) is less than 4 MiB
+> then it would fit. The difference between those two sizes is the bss
+> section. In cuBoot we have the dtb embedded right after the data
+> section so it is very likely that the reset of the bss section (in
+> kernel's start up code) will overwrite the dtb blob. Therefore we
+> reallocate the dtb. Something similar is allready done to the initrd.
+> 
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-On Oct 13, 2008, at 6:30 PM, Benjamin Herrenschmidt wrote:
+This patch looks sound to me.  It does strike me as only a stopgap
+until we come up with some better way of managing the early memory,
+preferably avoiding the magical fixed 4MiB (or whatever) offset.
 
-> On Mon, 2008-10-13 at 13:22 -0500, Kumar Gala wrote:
->>> I don't think it matters much when it gets fixed, pre or post -rc1.
->>> But
->>> it should probably get fixed.  My hack was to pull isa_bridge_pcidev
->>> into pci-common.c and export it from there.  The 64-bit PCI code can
->>> initialized it, and the 32-bit can leave it NULL.  But I have no  
->>> idea
->>> if that is sane.  If so, I can probably submit a patch for it.
->>
->> I was just joking around about our "new" regression policy..  
->> anyways I
->> hope ben or maybe anton can comment about the ISA code.
->
-> My policy for that sort of bug is fix ASAP. I'll give it a go when I  
-> do
-> my test builds. Funny I didn't catch it, I might be lacking a chrp32
-> defconfig in my build tests :-)
+Still, it looks safe - since it does check that the wrapper's malloc()
+region can't collide with the kernel's BSS.  So, if this little slice
+of extra BSS room is useful for the time being, I see no reason not to
+apply the patch.
 
-I pointed out to Stephen that kisskb.ellerman.id.au hasn't been  
-updating.. there is a chrp32 defconfig in there that would normally  
-catch something like this.
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
-- k
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
