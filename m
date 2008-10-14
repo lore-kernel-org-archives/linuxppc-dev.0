@@ -1,24 +1,27 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from mail.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 55BCDDDE02
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 18:55:33 +1100 (EST)
-Subject: Re: MPC8321, ethernet and i2c problems after upgrade from 2.6.25
-	to 2.6.27
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <48F39B97.6030602@freescale.com>
-References: <1223899315.32141.42.camel@gentoo-jocke.transmode.se>
-	<20081013163151.GD19080@ld0162-tx32.am.freescale.net>
-	<1223918059.32141.62.camel@gentoo-jocke.transmode.se>
-	<48F393EB.6000100@freescale.com>
-	<02f501c92d65$828b64d0$87a22e70$@Tjernlund@transmode.se>
-	<48F39B97.6030602@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BC286DDE03
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 19:22:06 +1100 (EST)
+Subject: Re: [RFC 1/3] hvc_console: rework setup to replace irq functions
+	with callbacks
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+In-Reply-To: <200810140842.31806.borntraeger@de.ibm.com>
+References: <200806031444.21945.borntraeger@de.ibm.com>
+	<200810130951.31733.borntraeger@de.ibm.com>
+	<1223944714.8157.300.camel@pasglop>
+	<200810140842.31806.borntraeger@de.ibm.com>
 Content-Type: text/plain
-Date: Tue, 14 Oct 2008 09:55:31 +0200
-Message-Id: <1223970931.32141.80.camel@gentoo-jocke.transmode.se>
+Date: Tue, 14 Oct 2008 19:18:51 +1100
+Message-Id: <1223972331.8157.331.camel@pasglop>
 Mime-Version: 1.0
-Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
-Reply-To: joakim.tjernlund@transmode.se
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+	Virtualization Mailing List <virtualization@lists.osdl.org>,
+	Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>,
+	Linux PPC devel <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@elte.hu>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,64 +31,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-10-13 at 14:03 -0500, Scott Wood wrote:
-> Joakim Tjernlund wrote:
-> > Because all the kernel comments I can see still implies that this should work
-> 
-> Which kernel comments?
-
-The one already mentioned and in i2c-boardinfo.c
-
-> 
-> > and because this was the only way in earlier releases to add an i2c device.
-> 
-> We've supported enumerating i2c-mpc devices using the device tree for 
-> almost as long as there's been new-style i2c devices.
-
-Don't know how long that has been but looking at the mpc832x_mds dts
-file it has been there less than a year.
-
-> 
-> >> The obvious and easy way is to just use the device tree.
-> >>
-> >> If that isn't possible (such as due to device trees embedded in existing
-> >> firmware), you can find the adapter device as a child of the of_device.
+On Tue, 2008-10-14 at 08:42 +0200, Christian Borntraeger wrote:
+> Am Dienstag, 14. Oktober 2008 schrieb Benjamin Herrenschmidt:
 > > 
-> > Possible yes, safe no. As is now I cannot use 2.6.27 on my current u-boot. 
-> 
-> Why not?  U-boot allows you to pass in a device tree dynamically.
-
-I don't use a dynamic device tree, mine is built in.
-
-> 
-> > I always had the impression that OF was an optional add on, but now it seems
-> > that it is mandatory for i2c?
-> 
-> It's mandatory for device drivers such as i2c-mpc that expect it.
-
-This is the main point, up to now I belived that OF only drivers was a
-bug that should be fixed but since no one is supports my view I guess
-I have misunderstod. 
-
-> 
-> >> Finding the of_device from the device_node may be difficult, though.
-> >> We could have i2c-mpc set node->data to the of_device (or maybe the
-> >> adapter struct), or maybe should add an of_device member of device_node
-> >> that gets filled in by of_platform?
+> > > Hmmm. 
+> > > Can you try if this patch fixes the lockdep trace?
 > > 
-> > hmm, no easy way out then? I need a way to do this from my board code without
-> > adding new stuff to the driver. A hack that only works in 2.6.27 will do.
+> > Yup, the patch fixes it, I'll commit it via the powerpc.git tree if you
+> > don't have any objection.
 > 
-> You could add the node to the device tree from platform code, if you run 
-> before the i2c adapter's probe() runs.  Or, if you really want to stick 
-> with your current way of doing things, and are willing to own both 
-> pieces if it breaks, you can comment out this test in 
-> i2c_register_adapter, and always call i2c_scan_static_board_info:
-> 
-> if (adap->nr < __i2c_first_dynamic_bus_num)
-> 	i2c_scan_static_board_info(adap);
+> Sure, go ahead.
 
-No, I don't want to hack general i2c code. I guess I will
-just have to update our boot too.
+Allright, I have a batch about ready to go to Linus, so I'll add that
+and ask him to pull tomorrow.
 
- Jocke
+Thanks,
+Ben.
