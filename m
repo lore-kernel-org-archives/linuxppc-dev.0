@@ -1,27 +1,30 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id 86C33DE4C3
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 03:18:43 +1100 (EST)
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1KpmJW-0001Ka-Ck
-	for linuxppc-dev@ozlabs.org; Tue, 14 Oct 2008 16:00:02 +0000
-Received: from ppp91-122-81-211.pppoe.avangarddsl.ru ([91.122.81.211])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 16:00:02 +0000
-Received: from dbaryshkov by ppp91-122-81-211.pppoe.avangarddsl.ru with local
-	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 16:00:02 +0000
-To: linuxppc-dev@ozlabs.org
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH] Add new framebuffer driver for Fujitsu	MB862xx GDCs
-Date: Tue, 14 Oct 2008 15:50:52 +0000 (UTC)
-Message-ID: <gd2f4s$82f$1@ger.gmane.org>
-References: <1223997906-19900-1-git-send-email-agust@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Sender: news <news@ger.gmane.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Return-Path: <jesse.brandeburg@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
+	by ozlabs.org (Postfix) with ESMTP id 01D54DDF83
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 03:23:41 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on
+	powerpc	selectsCONFIG_INTEL_IOATDMA=y
+Date: Tue, 14 Oct 2008 09:10:33 -0700
+Message-ID: <36D9DB17C6DE9E40B059440DB8D95F52066E36C7@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <48F4627E.30300@myri.com>
+References: <20081013101559.GA14372@linux.vnet.ibm.com>
+	<20081013112631.GD29938@cs181140183.pp.htv.fi>
+	<36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com>
+	<48F391B9.1000206@myri.com>
+	<20081013183503.GA28133@cs181140183.pp.htv.fi>
+	<48F4627E.30300@myri.com>
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: "Brice Goglin" <brice@myri.com>
+Cc: Adrian Bunk <bunk@kernel.org>, e1000-devel@lists.sourceforge.net,
+	netdev@vger.kernel.org, "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
+	linux-kernel@vger.kernel.org,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, "Kirsher,
+	Jeffrey T" <jeffrey.t.kirsher@intel.com>, sam@ravnborg.org,
+	Jeff Garzik <jgarzik@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,20 +34,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anatolij Gustschin wrote:
+Brice Goglin wrote:
+> Adrian Bunk wrote:
+>> But considering that igb is in a similar situation it would be nice
+>> if all 3 drivers would handle it the same way.
+>>=20
+>=20
+> Jesse,
+> What do you think of the below patch?
 
-> This patch adds framebuffer driver for Fujitsu Carmine/Coral-P(A)/Lime
-> graphics controllers. Lime GDC support is known to work on PPC440EPx
-> based lwmon5 and MPC8544E based socrates embedded boards, both equipped
-> with Lime GDC. Carmine/Coral-P PCI GDC support is known to work on
-> PPC440EPx based Sequoia board and also on x86 platform.
-> 
-> Signed-off-by: Anatolij Gustschin <agust@denx.de> ---
-> There are some PPC OF bits, so I'm cc'ing linuxppc-dev list.
+Seems like a much better solution.  I can have Jeff Kirsher work on the
+equivalent patches for igb, and ixgbe today.
 
-I though there is already carminefb driver. Probably you should either merge
-them or state that carminefb should be dropped.
+> I am not very familiar with Kconfig, but it seems to solve the
+> problem.=20
+> If a Kconfig guru could double-check...
 
--- 
-With best wishes
-Dmitry
+Yeah, please Kconfig gurus on the list have a quick look.
