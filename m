@@ -1,21 +1,31 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 14 Oct 2008 13:00:04 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] powerpc/boot: compare _start against ei.loadsize
-	instead ei.memsize
-Message-ID: <20081014020004.GE20620@yookeroo.seuss>
-References: <20080923203857.GB10935@www.tglx.de>
-	<200809240146.m8O1kIpZ077447@sullivan.realtime.net>
-	<20080925214357.GA2929@www.tglx.de>
-	<1223611088.8157.144.camel@pasglop>
-	<20081013091526.GA9925@www.tglx.de>
-	<20081014015753.GD20620@yookeroo.seuss>
+Return-Path: <neko@genesi-usa.com>
+Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.250])
+	by ozlabs.org (Postfix) with ESMTP id 9970CDDF0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 13:14:35 +1100 (EST)
+Received: by hs-out-0708.google.com with SMTP id z77so906065hsz.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Oct 2008 19:14:24 -0700 (PDT)
+Message-ID: <48F40077.5060003@genesi-usa.com>
+Date: Mon, 13 Oct 2008 21:14:15 -0500
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081014015753.GD20620@yookeroo.seuss>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: performance: memcpy vs. __copy_tofrom_user
+References: <48ECC611.3030309@mikroswiat.pl>	
+	<20081008154212.GA21723@secretlab.ca>	
+	<18669.28058.495259.72182@cargo.ozlabs.ibm.com>	
+	<48EDD905.6070609@mikroswiat.pl>	
+	<18669.58803.48011.686743@cargo.ozlabs.ibm.com>	
+	<48EE2553.30903@genesi-usa.com>
+	<1223764226.8157.182.camel@pasglop>	
+	<48F15B7D.3060608@genesi-usa.com>	
+	<20081013152028.GA18639@ld0162-tx32.am.freescale.net>
+	<1223931027.8157.272.camel@pasglop>
+	<48F3B7A2.3010004@freescale.com>
+In-Reply-To: <48F3B7A2.3010004@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: Dominik Bozek <domino@mikroswiat.pl>, linuxppc-embedded@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 14, 2008 at 12:57:53PM +1100, David Gibson wrote:
-> On Mon, Oct 13, 2008 at 11:15:26AM +0200, Sebastian Andrzej Siewior wrote:
-> > If the vmlinux binary in memory is larger than 4 MiB than it collides
-> > with the initial boot code which is linked at 4 MiB in case of cuBoot.
-> > If the the uncompressed image size (on disk size) is less than 4 MiB
-> > then it would fit. The difference between those two sizes is the bss
-> > section. In cuBoot we have the dtb embedded right after the data
-> > section so it is very likely that the reset of the bss section (in
-> > kernel's start up code) will overwrite the dtb blob. Therefore we
-> > reallocate the dtb. Something similar is allready done to the initrd.
-> > 
-> > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Scott Wood wrote:
+> Benjamin Herrenschmidt wrote:
+>>
+>> Yuck.
 > 
-> This patch looks sound to me.  It does strike me as only a stopgap
-> until we come up with some better way of managing the early memory,
-> preferably avoiding the magical fixed 4MiB (or whatever) offset.
+> Hmm?  It's simple and achieves the desired result (avoiding 
+> non-preemptible regions without unduly restricting the ability to 
+> extract performance from the hardware).
 > 
-> Still, it looks safe - since it does check that the wrapper's malloc()
-> region can't collide with the kernel's BSS.  So, if this little slice
-> of extra BSS room is useful for the time being, I see no reason not to
-> apply the patch.
-> 
-> Acked-by: David Gibson <david@gibson.dropbear.id.au>
+> Would it be nicer to avoid FP/Altivec in the kernel altogether?  Sure. 
+> If the benchmarking says that we're better off with it, though, then so 
+> be it.
 
-Oh, one other thing.  Since we are now unconditionally copying the dtb
-into a malloc()ed buffer, possibly it would be sensible to add a
-little padding to the buffer at that point, so that further device
-tree manipulations won't need to reallocate it.
+There should definitely be a nice API for an in-kernel AltiVec context
+save/restore. When preemption happens doesn't it do some equivalent of
+the userspace context switch? Why can't the preemption system take care
+of it?
+
+At worst case you make the worst case latency bigger, but at best case
+you gain performance across the board.
+
+One thing which is worrying me is that now that Ben has thrown down the
+gauntlet (note, I'm not going to be coding a line, but I know a man who
+can :) how on earth do we benchmark the differences here?
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
