@@ -1,29 +1,29 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
-	by ozlabs.org (Postfix) with ESMTP id 28DF4DDE31
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 20:36:48 +1100 (EST)
-Date: Tue, 14 Oct 2008 12:35:41 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Brice Goglin <brice@myri.com>
-Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc
-	selectsCONFIG_INTEL_IOATDMA=y
-Message-ID: <20081014093541.GA10453@cs181140183.pp.htv.fi>
-References: <20081013101559.GA14372@linux.vnet.ibm.com>
-	<20081013112631.GD29938@cs181140183.pp.htv.fi>
-	<36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com>
-	<48F391B9.1000206@myri.com>
-	<20081013183503.GA28133@cs181140183.pp.htv.fi>
-	<48F4627E.30300@myri.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <48F4627E.30300@myri.com>
-Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org, "Sosnowski,
-	Maciej" <maciej.sosnowski@intel.com>,
-	linux-kernel@vger.kernel.org, "Brandeburg,
-	Jesse" <jesse.brandeburg@intel.com>, linuxppc-dev@ozlabs.org,
-	"Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, sam@ravnborg.org,
-	Jeff Garzik <jgarzik@redhat.com>
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1D807DDE0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 20:43:09 +1100 (EST)
+Date: Tue, 14 Oct 2008 10:40:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 2/5] hvc_console: Add tty driver flag
+	TTY_DRIVER_RESET_TERMIOS
+Message-ID: <20081014104025.517ae734@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081014091413.003841094@linux.vnet.ibm.com>
+References: <20081014091247.433079967@linux.vnet.ibm.com>
+	<20081014091413.003841094@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+	Christian Borntraeger <borntraeger@de.ibm.com>,
+	Russell <rusty@rustcorp.com.au>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Linux PPC devel <linuxppc-dev@ozlabs.org>, Rusty,
+	Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,29 +33,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 14, 2008 at 11:12:30AM +0200, Brice Goglin wrote:
-> Adrian Bunk wrote:
-> > But considering that igb is in a similar situation it would be nice if 
-> > all 3 drivers would handle it the same way.
-> >   
+On Tue, 14 Oct 2008 11:12:49 +0200
+Hendrik Brueckner <brueckner@linux.vnet.ibm.com> wrote:
+
+> From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
 > 
-> Jesse,
-> What do you think of the below patch?
-> I am not very familiar with Kconfig, but it seems to solve the problem.
-> If a Kconfig guru could double-check...
+> After a tty hangup() or close() operation, processes might not reset the
+> termio settings to a sane state.
 
-The patch looks good, but the main problem is to get an agreement 
-on the policy.
+That is the job of the getty task normally. pty is special as the reissue
+of the same pty is done as a new device (with new state).
 
-> Brice
->...
+Setting this on the hvc would parallel the PC vt console behaviour but
+differ from most other ports.
 
-cu
-Adrian
+Anyway its a policy question for PPC64 so if thats how you want it to work
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Acked-by: Alan Cox <alan@redhat.com>
