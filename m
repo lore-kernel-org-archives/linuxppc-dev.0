@@ -1,20 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 676C9DDE1D
+Return-Path: <afleming@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
+	by ozlabs.org (Postfix) with ESMTP id AFAEFDDE04
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Oct 2008 01:35:19 +1100 (EST)
-Message-Id: <22A97B63-36D5-44BA-8F49-BAF5870FA08A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Mike Dyer <mike.dyer@provision-comm.com>
-In-Reply-To: <48F4A8CD.6000101@provision-comm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: MPC8313E RDB: Badness at fs/sysfs/dir.c:463
-Date: Tue, 14 Oct 2008 09:35:14 -0500
-References: <48F49D7D.5070107@provision-comm.com>
-	<48F4A8CD.6000101@provision-comm.com>
+	Wed, 15 Oct 2008 09:38:06 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so2504985wfg.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 14 Oct 2008 15:38:05 -0700 (PDT)
+Message-ID: <2acbd3e40810141538w3781fa4r75cfbe2833a21f81@mail.gmail.com>
+Date: Tue, 14 Oct 2008 17:38:05 -0500
+From: "Andy Fleming" <afleming@gmail.com>
+To: Pieter <phenning@vastech.co.za>
+Subject: Re: networking fails to activate
+In-Reply-To: <48F450CD.8060309@vastech.co.za>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <48F450CD.8060309@vastech.co.za>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,17 +26,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 14, 2008, at 9:12 AM, Mike Dyer wrote:
-
-> Hi All,
+On Tue, Oct 14, 2008 at 2:57 AM, Pieter <phenning@vastech.co.za> wrote:
+> Hi
 >
-> Apologies for the bad formatting of the previous message...
+> We have a powerpc (8548) based board. running eldk4.1. the board has
+> three ethernet ports using Gainfair ethernet controller v1.2.
 >
-> I've just pulled the 2.6.27 kernel from git and am trying it out on  
-> my MPC8313E RDB dev kit.  I get the following badness during boot  
-> (the complete boot record is attached later) :
+> If the board powers up with any network cable plugged in, that specific
+> network is accessible.
+> if the board powers up without network cables connected and a cable is
+> plugged in, the network does not become active.
+> The kernal makes a log entry stating that the phy is up when the cable
+> is plugged in - but the interface is not pingable
+> Running ifdown and ifup manually does not result in a pingable interface.
+> Neither does running /etc/init.d/network restart
+>
+> can anyone help me pls.
 
-can you enable kernel symbols in your build (CONFIG_KALLSYMS)
 
-- k
+Check the statistics counters to see if you are getting any bad
+packets, or to see if you are getting interrupts.  Several people have
+reported that their PHYs have powerdown issues, though I wouldn't
+expect the PHY to report the link as up, then.  Make sure that your
+dts specifies the correct PHY address for the connected PHY.
+
+What happens if you start up with the PHY connected, bring up the
+interface, and *then* disconnect and reconnect the cable (after a
+delay)?
+
+Andy
