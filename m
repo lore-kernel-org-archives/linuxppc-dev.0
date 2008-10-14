@@ -1,34 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 78766DE04E
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 03:16:58 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m9EGAYcJ003267
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 09:16:53 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m9EFRxC9001882
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 10:27:59 -0500 (CDT)
-Date: Tue, 14 Oct 2008 10:27:58 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: MPC8321,
-	ethernet and i2c problems after upgrade from 2.6.25 to 2.6.27
-Message-ID: <20081014152758.GC12934@ld0162-tx32.am.freescale.net>
-References: <1223899315.32141.42.camel@gentoo-jocke.transmode.se>
-	<20081013163151.GD19080@ld0162-tx32.am.freescale.net>
-	<1223918059.32141.62.camel@gentoo-jocke.transmode.se>
-	<48F393EB.6000100@freescale.com> <48F39B97.6030602@freescale.com>
-	<1223970931.32141.80.camel@gentoo-jocke.transmode.se>
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	by ozlabs.org (Postfix) with ESMTP id 86C33DE4C3
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 03:18:43 +1100 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1KpmJW-0001Ka-Ck
+	for linuxppc-dev@ozlabs.org; Tue, 14 Oct 2008 16:00:02 +0000
+Received: from ppp91-122-81-211.pppoe.avangarddsl.ru ([91.122.81.211])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 16:00:02 +0000
+Received: from dbaryshkov by ppp91-122-81-211.pppoe.avangarddsl.ru with local
+	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 16:00:02 +0000
+To: linuxppc-dev@ozlabs.org
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH] Add new framebuffer driver for Fujitsu	MB862xx GDCs
+Date: Tue, 14 Oct 2008 15:50:52 +0000 (UTC)
+Message-ID: <gd2f4s$82f$1@ger.gmane.org>
+References: <1223997906-19900-1-git-send-email-agust@denx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1223970931.32141.80.camel@gentoo-jocke.transmode.se>
-Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
+Sender: news <news@ger.gmane.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,42 +31,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 14, 2008 at 09:55:31AM +0200, Joakim Tjernlund wrote:
-> On Mon, 2008-10-13 at 14:03 -0500, Scott Wood wrote:
-> > Joakim Tjernlund wrote:
-> > > Because all the kernel comments I can see still implies that this should work
-> > 
-> > Which kernel comments?
+Anatolij Gustschin wrote:
+
+> This patch adds framebuffer driver for Fujitsu Carmine/Coral-P(A)/Lime
+> graphics controllers. Lime GDC support is known to work on PPC440EPx
+> based lwmon5 and MPC8544E based socrates embedded boards, both equipped
+> with Lime GDC. Carmine/Coral-P PCI GDC support is known to work on
+> PPC440EPx based Sequoia board and also on x86 platform.
 > 
-> The one already mentioned and in i2c-boardinfo.c
+> Signed-off-by: Anatolij Gustschin <agust@denx.de> ---
+> There are some PPC OF bits, so I'm cc'ing linuxppc-dev list.
 
-I already addressed the one already mentioned (it was sloppy terminology
-in the comment, written from the perspective of devtree-less arches). 
-The latter is even less clear, as it doesn't mention dynamic buses at
-all.
+I though there is already carminefb driver. Probably you should either merge
+them or state that carminefb should be dropped.
 
-Feel free to submit a documentation patch clearing it up. :-)
-
-> > > and because this was the only way in earlier releases to add an i2c device.
-> > 
-> > We've supported enumerating i2c-mpc devices using the device tree for 
-> > almost as long as there's been new-style i2c devices.
-> 
-> Don't know how long that has been but looking at the mpc832x_mds dts
-> file it has been there less than a year.
-
-commit d13ae8620dfdedfa7e9ab6d1eec294adc0516065 added i2c device probing
-from the device tree in 7/21/07, less than 3 months after new-style i2c
-devices were added to the i2c core.  There were patches floating around
-the lists for longer than that.
-
-> > Why not?  U-boot allows you to pass in a device tree dynamically.
-> 
-> I don't use a dynamic device tree, mine is built in.
-
-So do a fixup in your board code.
-
-I'm not sure how you would even go about building a device tree into
-U-boot currently, though.
-
--Scott
+-- 
+With best wishes
+Dmitry
