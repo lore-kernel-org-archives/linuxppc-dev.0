@@ -1,34 +1,19 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B3669DDEF9
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 23:29:25 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e8.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id m9ECQMdQ018550
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 08:26:22 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9ECTJel222468
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 08:29:19 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9ECTJEn015829
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 08:29:19 -0400
-Subject: Re: [PATCH]IB/ehca:reject dynamic memory add/remove
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Stefan Roscher <stefan.roscher@vnet.de.ibm.com>
-In-Reply-To: <200810141423.48111.stefan.roscher@vnet.de.ibm.com>
-References: <200810131310.34413.ossrosch@linux.vnet.ibm.com>
-	<1223917766.29877.17.camel@nimitz>
-	<200810141423.48111.stefan.roscher@vnet.de.ibm.com>
-Content-Type: text/plain
-Date: Tue, 14 Oct 2008 05:29:13 -0700
-Message-Id: <1223987353.29877.40.camel@nimitz>
-Mime-Version: 1.0
-Cc: LKML <linux-kernel@vger.kernel.org>,
-	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, general@lists.openfabrics.org
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id B19F6DDE1A
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 00:33:54 +1100 (EST)
+Date: Tue, 14 Oct 2008 15:33:46 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Please pull 'next' branch of
+	git://git.secretlab.ca/git/linux-2.6-mpc52xx
+Message-ID: <20081014133346.GE23594@pengutronix.de>
+References: <fa686aa40810090102wcc8acf0i4577f195ca40eac6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="vmttodhTwj0NAgWp"
+In-Reply-To: <fa686aa40810090102wcc8acf0i4577f195ca40eac6@mail.gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,32 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-10-14 at 14:23 +0200, Stefan Roscher wrote:
-> On Monday 13 October 2008 07:09:26 pm Dave Hansen wrote:
-> > On Mon, 2008-10-13 at 13:10 +0200, Stefan Roscher wrote:
-> > > Since the ehca device driver does not support dynamic memory add and remove
-> > > operations, the driver must explicitly reject such requests in order to prevent
-> > > unpredictable behaviors related to memory regions already occupied and being
-> > > used by InfiniBand applications.
-> > > The solution is to add a memory notifier to the ehca device driver and if a request
-> > > for dynamic memory add or remove comes in, ehca will always reject it.
-> > 
-> > Why doesn't the driver support it?
-> > 
-> > This seems like an awfully extreme action to take.  Do you have plans to
-> > support this in the driver soon?
-> > 
-> There is currently a slight incompatibility how openfabrics uses MRs
-> and how System p does DMEM add/remove, which basically disables this
-> support.
-> If you want to talk to the firmware developpers, I can give you the right contacts.
 
-I wish I knew what an 'MR' is. :(
+--vmttodhTwj0NAgWp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Could you be a bit more specific so we can get a better changelog?
-Perhaps if we understand the situation better, we can come up with a
-better solution.
+Hello Grant,
 
-Does this have anything in common with the problems with 16GB pages?
+On Thu, Oct 09, 2008 at 02:02:41AM -0600, Grant Likely wrote:
 
--- Dave
+> Wolfram Sang (1):
+>       powerpc/mpc5200: trivial printk-fixes in mpc52xx_common
+
+Thanks.
+
+What about these? :)
+
+http://oldpatchwork.ozlabs.org/linuxppc-embedded/patch?id=3D20188
+(remove obsolete code from mpc52xx_phy)
+
+http://oldpatchwork.ozlabs.org/linuxppc-embedded/patch?id=3D20189
+(simplify read/write in mpc52xx_phy)
+
+We use them for some time now and there are no bad side-effects.
+
+And to which tree did this one go? I couldn't find it on
+git.secretlab.ca.
+
+http://oldpatchwork.ozlabs.org/linuxppc-embedded/patch?id=3D20202
+(don't touch pipelining)
+
+All the best,
+
+   Wolfram
+
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+
+--vmttodhTwj0NAgWp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkj0n7kACgkQD27XaX1/VRuKzQCgyx6uuSDkLABnhawFJzSE1YtN
+9hQAnA3kO4Ltqud3G9aDPmXMnWkRIVwv
+=keYr
+-----END PGP SIGNATURE-----
+
+--vmttodhTwj0NAgWp--
