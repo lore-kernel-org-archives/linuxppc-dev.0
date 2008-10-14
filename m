@@ -1,34 +1,32 @@
 Return-Path: <brueckner@linux.vnet.ibm.com>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
+Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [194.196.100.161])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 38D7FDDF18
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 20:14:21 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id m9E9ED4K612912
+	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 12E72DDF18
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 20:14:23 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate1.uk.ibm.com (8.13.1/8.13.1) with ESMTP id m9E9EDFZ015382
 	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 09:14:13 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id m9E9EDe92326618
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 11:14:13 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m9E9ECcb021571
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 11:14:13 +0200
-Message-Id: <20081014091412.847833204@linux.vnet.ibm.com>
-References: <20081014091247.433079967@linux.vnet.ibm.com>
-Date: Tue, 14 Oct 2008 11:12:48 +0200
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.1) with
+	ESMTP id m9E9EDtO3883126
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 10:14:13 +0100
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m9E9ECRN005220
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 10:14:13 +0100
+Message-Id: <20081014091247.433079967@linux.vnet.ibm.com>
+Date: Tue, 14 Oct 2008 11:12:47 +0200
 From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	Linux PPC devel <linuxppc-dev@ozlabs.org>,
 	Jeremy Fitzhardinge <jeremy@goop.org>,
 	Rusty Russell <rusty@rustcorp.com.au>, "Ryan S. Arnold" <rsa@us.ibm.com>
-Subject: [RFC PATCH 1/5] hvc_console: Adding hangup notifier
+Subject: [RFC PATCH 0/5] patches for a network-based hvc backend (s390)
 Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
 	Christian Borntraeger <borntraeger@de.ibm.com>,
-	Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
 	Heiko Carstens <heiko.carstens@de.ibm.com>,
 	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -40,111 +38,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Hello,
 
-I have added a hangup notifier that can be used by hvc console
-backends to handle a tty hangup. The default irq hangup notifier
-calls the notifier_del_irq() for compatibility.
+I work on a network-based hvc console backend for s390 that allows
+to get "full-screen" terminal access to z/VM guest machines.
+The solution consists of a HVC backend that provides the terminal interface;
+and a tool to connect to the terminal via a z/VM specific communication
+protocol.
 
-Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
----
- drivers/char/hvc_console.c    |    4 ++--
- drivers/char/hvc_console.h    |    4 +++-
- drivers/char/hvc_irq.c        |    5 +++++
- drivers/char/hvc_iseries.c    |    1 +
- drivers/char/hvc_vio.c        |    1 +
- drivers/char/hvc_xen.c        |    1 +
- drivers/char/virtio_console.c |    1 +
- 7 files changed, 14 insertions(+), 3 deletions(-)
+The network-based backend differs in a few aspects from the notifier-based
+model of the HVC console; because it has to deal with (dis)connects and must
+take care of virtual tty hangups. Therefore, I would like to introduce a third
+notifier for hangups (see patch 1).
 
---- a/drivers/char/hvc_console.c	2008-10-08 16:08:40.000000000 +0200
-+++ b/drivers/char/hvc_console.c	2008-10-09 10:30:13.000000000 +0200
-@@ -416,8 +416,8 @@ static void hvc_hangup(struct tty_struct
- 	hp->n_outbuf = 0;
- 	hp->tty = NULL;
- 
--	if (hp->ops->notifier_del)
--			hp->ops->notifier_del(hp, hp->data);
-+	if (hp->ops->notifier_hangup)
-+			hp->ops->notifier_hangup(hp, hp->data);
- 
- 	spin_unlock_irqrestore(&hp->lock, flags);
- 
---- a/drivers/char/hvc_console.h	2008-10-08 16:08:40.000000000 +0200
-+++ b/drivers/char/hvc_console.h	2008-10-09 10:30:13.000000000 +0200
-@@ -65,9 +65,10 @@ struct hv_ops {
- 	int (*get_chars)(uint32_t vtermno, char *buf, int count);
- 	int (*put_chars)(uint32_t vtermno, const char *buf, int count);
- 
--	/* Callbacks for notification. Called in open and close */
-+	/* Callbacks for notification. Called in open, close and hangup */
- 	int (*notifier_add)(struct hvc_struct *hp, int irq);
- 	void (*notifier_del)(struct hvc_struct *hp, int irq);
-+	void (*notifier_hangup)(struct hvc_struct *hp, int irq);
- };
- 
- /* Register a vterm and a slot index for use as a console (console_init) */
-@@ -86,6 +87,7 @@ void hvc_kick(void);
- /* default notifier for irq based notification */
- extern int notifier_add_irq(struct hvc_struct *hp, int data);
- extern void notifier_del_irq(struct hvc_struct *hp, int data);
-+extern void notifier_hangup_irq(struct hvc_struct *hp, int data);
- 
- 
- #if defined(CONFIG_XMON) && defined(CONFIG_SMP)
---- a/drivers/char/hvc_irq.c	2008-10-08 16:08:40.000000000 +0200
-+++ b/drivers/char/hvc_irq.c	2008-10-09 10:30:13.000000000 +0200
-@@ -42,3 +42,8 @@ void notifier_del_irq(struct hvc_struct 
- 	free_irq(irq, hp);
- 	hp->irq_requested = 0;
- }
-+
-+void notifier_hangup_irq(struct hvc_struct *hp, int irq)
-+{
-+	notifier_del_irq(hp, irq);
-+}
---- a/drivers/char/hvc_iseries.c	2008-10-08 16:08:40.000000000 +0200
-+++ b/drivers/char/hvc_iseries.c	2008-10-09 10:30:13.000000000 +0200
-@@ -202,6 +202,7 @@ static struct hv_ops hvc_get_put_ops = {
- 	.put_chars = put_chars,
- 	.notifier_add = notifier_add_irq,
- 	.notifier_del = notifier_del_irq,
-+	.notifier_hangup = notifier_hangup_irq,
- };
- 
- static int __devinit hvc_vio_probe(struct vio_dev *vdev,
---- a/drivers/char/hvc_xen.c	2008-10-08 16:08:40.000000000 +0200
-+++ b/drivers/char/hvc_xen.c	2008-10-09 10:30:13.000000000 +0200
-@@ -102,6 +102,7 @@ static struct hv_ops hvc_ops = {
- 	.put_chars = write_console,
- 	.notifier_add = notifier_add_irq,
- 	.notifier_del = notifier_del_irq,
-+	.notifier_hangup = notifier_hangup_irq,
- };
- 
- static int __init xen_init(void)
---- a/drivers/char/hvc_vio.c	2008-10-08 16:08:40.000000000 +0200
-+++ b/drivers/char/hvc_vio.c	2008-10-09 10:30:13.000000000 +0200
-@@ -82,6 +82,7 @@ static struct hv_ops hvc_get_put_ops = {
- 	.put_chars = hvc_put_chars,
- 	.notifier_add = notifier_add_irq,
- 	.notifier_del = notifier_del_irq,
-+	.notifier_hangup = notifier_hangup_irq,
- };
- 
- static int __devinit hvc_vio_probe(struct vio_dev *vdev,
---- a/drivers/char/virtio_console.c	2008-10-09 10:29:41.000000000 +0200
-+++ b/drivers/char/virtio_console.c	2008-10-09 10:30:23.000000000 +0200
-@@ -198,6 +198,7 @@ static int __devinit virtcons_probe(stru
- 	virtio_cons.put_chars = put_chars;
- 	virtio_cons.notifier_add = notifier_add_vio;
- 	virtio_cons.notifier_del = notifier_del_vio;
-+	virtio_cons.notifier_hangup = notifier_del_vio;
- 
- 	/* The first argument of hvc_alloc() is the virtual console number, so
- 	 * we use zero.  The second argument is the parameter for the
+Further I found out that if put_char() returns 0 in particular cases, the hvc
+console starts to loop. I tried to address this problem with patch 3 and I hope
+that it will work for all backends.
 
+Finally, I would like to add a function that allows to resize the terminal
+window of a HVC terminal (patch 4).
+
+
+Here is an overview about the complete patch series:
+ Patch 1 adds a hangup notifier
+ Patch 2 adds tty driver flag TTY_DRIVER_RESET_TERMIOS
+ Patch 3 fixes a loop if put_char() returns 0
+ Patch 4 adds a function to resize the tty window
+ Patch 5 removes __devexit of hvc_remove() for use in __(dev)init sections
+
+
+Any review feedback would be greatly appreciated.
+Thank you in advance.
+
+Regards,
+Hendrik
 -- 
 Hendrik Brueckner
 D/3303 Linux on System z Development
