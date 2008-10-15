@@ -1,19 +1,22 @@
-Return-Path: <mike.dyer@provision-comm.com>
-Received: from smtp1.betherenow.co.uk (smtp1.betherenow.co.uk [87.194.0.68])
-	by ozlabs.org (Postfix) with SMTP id 53D22DDF1F
+Return-Path: <glikely@secretlab.ca>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
+	by ozlabs.org (Postfix) with ESMTP id A629FDDF9B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Oct 2008 21:06:32 +1100 (EST)
-Subject: Re: MPC8313E RDB: Badness at fs/sysfs/dir.c:463
-From: Mike Dyer <mike.dyer@provision-comm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <22A97B63-36D5-44BA-8F49-BAF5870FA08A@kernel.crashing.org>
-References: <48F49D7D.5070107@provision-comm.com>
-	<48F4A8CD.6000101@provision-comm.com>
-	<22A97B63-36D5-44BA-8F49-BAF5870FA08A@kernel.crashing.org>
-Content-Type: text/plain
-Date: Wed, 15 Oct 2008 11:06:25 +0100
-Message-Id: <1224065185.457.31.camel@mike-linux.provision-comm.com>
-Mime-Version: 1.0
+	Thu, 16 Oct 2008 01:28:58 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so2753527wfg.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 15 Oct 2008 07:28:57 -0700 (PDT)
+Date: Wed, 15 Oct 2008 08:28:55 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [patch 1/2] FEC_MPC52XX_PHY: Remove obsolete code
+Message-ID: <20081015142855.GE16262@secretlab.ca>
+References: <20080816023159.126377505@pengutronix.de>
+	<20080816024055.241009929@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080816024055.241009929@pengutronix.de>
+Sender: Grant Likely <glikely@secretlab.ca>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,53 +28,96 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar,
-
-On Tue, 2008-10-14 at 09:35 -0500, Kumar Gala wrote: 
-> On Oct 14, 2008, at 9:12 AM, Mike Dyer wrote:
+On Sat, Aug 16, 2008 at 04:32:00AM +0200, Wolfram Sang wrote:
+> Remove last remains of the former (and broken) irq support code. The
+> driver is polling only.
 > 
-> > Hi All,
-> >
-> > Apologies for the bad formatting of the previous message...
-> >
-> > I've just pulled the 2.6.27 kernel from git and am trying it out on  
-> > my MPC8313E RDB dev kit.  I get the following badness during boot  
-> > (the complete boot record is attached later) :
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+
+I'm not convinced on this one.  At the very least I need a more detailed
+description of what is wrong and why the code needs to be removed.  As
+far as I can tell, this code affects two different IRQ paths.  First is
+the MDIO irq which tells the processor that an MDIO transaction has
+completed.  Second is an IRQ from the PHY itself which can come in from
+an entirely different path.
+
+As it stands, I'm going to hold off picking this one up.
+
+g.
+
+> ---
+>  drivers/net/fec_mpc52xx_phy.c |   20 --------------------
+>  1 file changed, 20 deletions(-)
 > 
-> can you enable kernel symbols in your build (CONFIG_KALLSYMS)
-
-I can, but it no longer boots...  Will keep trying.
-
-I've gone through my system.map and pulled out the call stack, if that
-helps.  I put a printk in sysfs_add_one, and it appears it is being
-called with sd->s_name = 'e00082a8.dma'
-
-> ------------[ cut here ]------------
-> Badness at c00c5b50 [verbose debug info unavailable]
-> NIP: c00c5b50 LR: c00c5b38 CTR: 00000000
-> REGS: c7827d90 TRAP: 0700   Not tainted  (2.6.27)
-> MSR: 00029032 <EE,ME,IR,DR>  CR: 22022042  XER: 20000000
-> TASK = c7816400[1] 'swapper' THREAD: c7826000
-> GPR00: c00c5b38 c7827e40 c7816400 ffffffef c7800e5c c7800b7c c7811570 00000000 
-> GPR08: 000001a0 c0370000 00000048 00000000 82044048 100b224c 07ffb000 00000000 
-> GPR16: 07ff09e0 07ff94c8 00000000 00000000 00000000 c035a76c c035a740 c7ace610 
-> GPR24: 00000000 00000000 00000000 00000001 c7811570 fffffffe c7acdc00 c7827e58 
-> Call Trace:
-> [c7827e40] [c00c5b38] 0xc00c5b38 (unreliable) sysfs_add_one
-> [c7827e50] [c00c6dc0] 0xc00c6dc0              sysfs_do_create_link
-> [c7827e80] [c0182d40] 0xc0182d40              bus_add_device
-> [c7827ea0] [c018153c] 0xc018153c              device_add
-> [c7827ef0] [c0213a14] 0xc0213a14              of_device_register
-> [c7827f00] [c0009818] 0xc0009818              of_platform_device_create
-> [c7827f10] [c00098c0] 0xc00098c0              of_platform_bus_create
-> [c7827f30] [c0009a30] 0xc0009a30              of_platform_bus_probe
-> [c7827f50] [c03281d4] 0xc03281d4              __machine_initcall_mpc831x_rdb_declare_of_platform_devices
-> [c7827f60] [c0003874] 0xc0003874              do_one_initcall
-> [c7827fd0] [c031317c] 0xc031317c              kernel_init
-> [c7827ff0] [c001216c] 0xc001216c              kernel_thread
-
+> Index: .kernel/drivers/net/fec_mpc52xx_phy.c
+> ===================================================================
+> --- .kernel.orig/drivers/net/fec_mpc52xx_phy.c
+> +++ .kernel/drivers/net/fec_mpc52xx_phy.c
+> @@ -76,7 +76,6 @@
+>  {
+>  	struct device *dev = &of->dev;
+>  	struct device_node *np = of->node;
+> -	struct device_node *child = NULL;
+>  	struct mii_bus *bus;
+>  	struct mpc52xx_fec_mdio_priv *priv;
+>  	struct resource res = {};
+> @@ -105,15 +104,6 @@
+>  	for (i=0; i<PHY_MAX_ADDR; i++)
+>  		bus->irq[i] = PHY_POLL;
+>  
+> -	while ((child = of_get_next_child(np, child)) != NULL) {
+> -		int irq = irq_of_parse_and_map(child, 0);
+> -		if (irq != NO_IRQ) {
+> -			const u32 *id = of_get_property(child, "reg", NULL);
+> -			if (id)
+> -				bus->irq[*id] = irq;
+> -		}
+> -	}
+> -
+>  	/* setup registers */
+>  	err = of_address_to_resource(np, 0, &res);
+>  	if (err)
+> @@ -133,9 +123,6 @@
+>  	/* set MII speed */
+>  	out_be32(&priv->regs->mii_speed, ((mpc52xx_find_ipb_freq(of->node) >> 20) / 5) << 1);
+>  
+> -	/* enable MII interrupt */
+> -	out_be32(&priv->regs->imask, in_be32(&priv->regs->imask) | FEC_IMASK_MII);
+> -
+>  	err = mdiobus_register(bus);
+>  	if (err)
+>  		goto out_unmap;
+> @@ -145,9 +132,6 @@
+>   out_unmap:
+>  	iounmap(priv->regs);
+>   out_free:
+> -	for (i=0; i<PHY_MAX_ADDR; i++)
+> -		if (bus->irq[i] != PHY_POLL)
+> -			irq_dispose_mapping(bus->irq[i]);
+>  	kfree(bus->irq);
+>  	kfree(priv);
+>  	kfree(bus);
+> @@ -160,15 +144,11 @@
+>  	struct device *dev = &of->dev;
+>  	struct mii_bus *bus = dev_get_drvdata(dev);
+>  	struct mpc52xx_fec_mdio_priv *priv = bus->priv;
+> -	int i;
+>  
+>  	mdiobus_unregister(bus);
+>  	dev_set_drvdata(dev, NULL);
+>  
+>  	iounmap(priv->regs);
+> -	for (i=0; i<PHY_MAX_ADDR; i++)
+> -		if (bus->irq[i])
+> -			irq_dispose_mapping(bus->irq[i]);
+>  	kfree(priv);
+>  	kfree(bus->irq);
+>  	kfree(bus);
 > 
-> - k
-
-Cheers,
-Mike
+> -- 
+>   Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+>  Pengutronix - Linux Solutions for Science and Industry
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
