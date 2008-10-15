@@ -1,20 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.170])
-	by ozlabs.org (Postfix) with ESMTP id 66DFADE40F
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 01:22:32 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so2750524wfg.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 07:22:31 -0700 (PDT)
-Date: Wed, 15 Oct 2008 08:22:28 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Wolfgang Ocker <weo@reccoware.de>
-Subject: Re: [PATCH] powerpc: SPI: specify chip select active high
-Message-ID: <20081015142228.GD16262@secretlab.ca>
-References: <1224075647.4022.33.camel@galileo.recco.de>
+Return-Path: <m.fortini@selcomgroup.com>
+Received: from xseries02.selcomgroup.com (mail.selcomgroup.com [85.18.34.51])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 58E7CDDEE4
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 01:30:59 +1100 (EST)
+Message-ID: <48F5FDCB.2090808@selcomgroup.com>
+Date: Wed, 15 Oct 2008 16:27:23 +0200
+From: Matteo Fortini <m.fortini@selcomgroup.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1224075647.4022.33.camel@galileo.recco.de>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH] Add new framebuffer driver for Fujitsu MB862xx GDCs
+References: <1223997906-19900-1-git-send-email-agust@denx.de>
+	<48F5F2BF.2040805@selcomgroup.com> <48F5FC55.4000708@denx.de>
+In-Reply-To: <48F5FC55.4000708@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-fbdev-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 15, 2008 at 03:00:47PM +0200, Wolfgang Ocker wrote:
-> The patch allows to specify that an SPI device needs an active high chip
-> select.
+Ok I understand.
 
-This look reasonable to me.  Anyone else have comments on this binding?
+FWIW, based on my trials:
 
-g.
+    * DirectFB support on BE hosts is somehow easier than with
+      carminefb: the patches from Nikita Egorov are working almost out
+      of the box (they basically change every single access to memory so
+      that it becomes ABGR, so that a simple memcpy to/from Carmine
+      memory is already the right alignment. I don't know if it would be
+      working without these patches on kernel >2.6.26 (with
+      FOREIGN_ENDIAN defines) since I'm currently stuck to a vanilla
+      2.6.24.6
+    * However, DirectFB has some troubles with panning, which is working
+      using a different approach by myself: I'll check it and see if
+      it's worth posting here.
+    * 800x600 resolution is supported if I try 800x600-24@60  before
+      trying 640x480-16@60
 
-> 
-> Signed-off-by: Wolfgang Ocker <weo@reccoware.de>
-> ---
-> 
-> --- linux-2.6.27-rc7/drivers/of/of_spi.c.of_spi_cshigh	2008-09-22 00:29:55.000000000 +0200
-> +++ linux-2.6.27-rc7/drivers/of/of_spi.c	2008-09-29 13:43:06.000000000 +0200
-> @@ -61,6 +61,8 @@
->  			spi->mode |= SPI_CPHA;
->  		if (of_find_property(nc, "spi-cpol", NULL))
->  			spi->mode |= SPI_CPOL;
-> +		if (of_find_property(nc, "spi-cs-high", NULL))
-> +			spi->mode |= SPI_CS_HIGH;
->  
->  		/* Device speed */
->  		prop = of_get_property(nc, "spi-max-frequency", &len);
-> --- linux-2.6.27-rc7/Documentation/powerpc/booting-without-of.txt.of_spi_cshigh	2008-09-29 14:14:08.000000000 +0200
-> +++ linux-2.6.27-rc7/Documentation/powerpc/booting-without-of.txt	2008-09-29 14:24:26.000000000 +0200
-> @@ -1917,6 +1917,8 @@
->  			inverse clock polarity (CPOL) mode
->      - spi-cpha        - (optional) Empty property indicating device requires
->  			shifted clock phase (CPHA) mode
-> +    - spi-cs-high     - (optional) Empty property indicating device requires
-> +			chip select active high
->  
->      SPI example for an MPC5200 SPI bus:
->  		spi@f00 {
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Thank you,
+M
+
+Anatolij Gustschin ha scritto:
+> Matteo Fortini wrote:
+>
+>   
+>> What about the mb86290 framebuffer driver directly from Fujitsu which is
+>> in the mainline kernel?
+>>     
+>
+> This mb86290 framebuffer driver from Fujitsu isn't in mainline, it
+> is in the DENX Linux Kernel tree.
+>
+>   
+>> It's from 2003 and supports only until 86293, but can it be used as a
+>> basis for a proper fb driver? It has a lot of features indeed...
+>>     
+>
+> I think it won't be accepted in mainline. It was developed for 2.4
+> Kernel and slightly modified for 2.6. These features could be added
+> to the new driver which is intended to provide initial support for
+> Fujitsu GDCs in mainline now.
+>
+> Anatolij
+>
+>   
