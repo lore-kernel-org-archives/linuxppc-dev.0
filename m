@@ -1,18 +1,23 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-158.bluehost.com (outbound-mail-158.bluehost.com
-	[67.222.39.38]) by ozlabs.org (Postfix) with SMTP id 6C74CDE29F
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 23:23:17 +1100 (EST)
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Add legacy PCI access via sysfs (v3)
-Date: Wed, 15 Oct 2008 05:16:29 -0700
-References: <20081014005701.A17D2DDF6A@ozlabs.org>
-In-Reply-To: <20081014005701.A17D2DDF6A@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200810150516.29683.jbarnes@virtuousgeek.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 68A14DDE21
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 00:26:23 +1100 (EST)
+Message-Id: <6115D7FB-7500-4F67-B02B-B64B92B33D1A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+In-Reply-To: <20081015085904.GA28369@Chamillionaire.breakpoint.cc>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: enforce a non-spe kernel build even on broken
+	compilers
+Date: Wed, 15 Oct 2008 08:25:54 -0500
+References: <20080901142302.GA13754@www.tglx.de>
+	<76A823BD-A9B8-4FB4-B09B-F818687193CA@kernel.crashing.org>
+	<20081014224946.GA2503@www.tglx.de>
+	<20081015085904.GA28369@Chamillionaire.breakpoint.cc>
+Cc: linuxppc-dev@ozlabs.org, Nate Case <ncase@xes-inc.com>, ths@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,13 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday, October 13, 2008 5:55 pm Benjamin Herrenschmidt wrote:
-> This patch adds support for legacy_io and legacy_mem files in
-> bus class directories in sysfs for powerpc
+
+On Oct 15, 2008, at 3:59 AM, Sebastian Andrzej Siewior wrote:
+
+> * Sebastian Andrzej Siewior | 2008-10-15 00:49:46 [+0200]:
 >
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> is the -mabi=no-spe really needed?
+>> It seems to work the other way around (without -mabi=no-spe but with
+>> -mabi=no-spe) alteast I did not find anything in do_syslog() or while
+>> browsing through the dissasm. I do a boot check tomorrow.
+>
+> Okay. I recompiled with -mspe=no and was able to boot without trouble.
+> It didn't work with -mabi=no-spe.
 
-Ok, applied this one.  Should be pushing to Linus soon.
+I'm confused.. what did you change from your patch?
 
-Thanks,
-Jesse
+- k
