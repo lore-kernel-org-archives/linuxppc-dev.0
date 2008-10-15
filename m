@@ -1,21 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
-	by ozlabs.org (Postfix) with ESMTP id A629FDDF9B
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.224])
+	by ozlabs.org (Postfix) with ESMTP id 3D101DE78A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Oct 2008 01:28:58 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so2753527wfg.15
+	Thu, 16 Oct 2008 01:29:21 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so2716421rvb.9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Oct 2008 07:28:57 -0700 (PDT)
-Date: Wed, 15 Oct 2008 08:28:55 -0600
+	Wed, 15 Oct 2008 07:29:19 -0700 (PDT)
+Date: Wed, 15 Oct 2008 08:29:17 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
 To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [patch 1/2] FEC_MPC52XX_PHY: Remove obsolete code
-Message-ID: <20081015142855.GE16262@secretlab.ca>
+Subject: Re: [patch 2/2] FEC_MPC52XX_PHY: Refactor read/write routines
+Message-ID: <20081015142917.GF16262@secretlab.ca>
 References: <20080816023159.126377505@pengutronix.de>
-	<20080816024055.241009929@pengutronix.de>
+	<20080816024055.390926728@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080816024055.241009929@pengutronix.de>
+In-Reply-To: <20080816024055.390926728@pengutronix.de>
 Sender: Grant Likely <glikely@secretlab.ca>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -28,91 +28,121 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, Aug 16, 2008 at 04:32:00AM +0200, Wolfram Sang wrote:
-> Remove last remains of the former (and broken) irq support code. The
-> driver is polling only.
-> 
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+On Sat, Aug 16, 2008 at 04:32:01AM +0200, Wolfram Sang wrote:
+> Read & write functions now call a generic transfer function, so identical
+> code in both routines could be eliminated. The result is easier to maintain
+> and smaller in source and binary code. Also, fix some checkpatch warnings.
 
-I'm not convinced on this one.  At the very least I need a more detailed
-description of what is wrong and why the code needs to be removed.  As
-far as I can tell, this code affects two different IRQ paths.  First is
-the MDIO irq which tells the processor that an MDIO transaction has
-completed.  Second is an IRQ from the PHY itself which can come in from
-an entirely different path.
-
-As it stands, I'm going to hold off picking this one up.
+This looks good.  I'll pick it up.
 
 g.
 
+> 
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 > ---
->  drivers/net/fec_mpc52xx_phy.c |   20 --------------------
->  1 file changed, 20 deletions(-)
+>  drivers/net/fec_mpc52xx_phy.c |   55 ++++++++++++++++--------------------------
+>  1 file changed, 22 insertions(+), 33 deletions(-)
 > 
 > Index: .kernel/drivers/net/fec_mpc52xx_phy.c
 > ===================================================================
 > --- .kernel.orig/drivers/net/fec_mpc52xx_phy.c
 > +++ .kernel/drivers/net/fec_mpc52xx_phy.c
-> @@ -76,7 +76,6 @@
+> @@ -2,6 +2,7 @@
+>   * Driver for the MPC5200 Fast Ethernet Controller - MDIO bus driver
+>   *
+>   * Copyright (C) 2007  Domen Puncer, Telargo, Inc.
+> + * Copyright (C) 2008  Wolfram Sang, Pengutronix
+>   *
+>   * This file is licensed under the terms of the GNU General Public License
+>   * version 2. This program is licensed "as is" without any warranty of any
+> @@ -21,58 +22,45 @@
+>  	struct mpc52xx_fec __iomem *regs;
+>  };
+>  
+> -static int mpc52xx_fec_mdio_read(struct mii_bus *bus, int phy_id, int reg)
+> +static int mpc52xx_fec_mdio_transfer(struct mii_bus *bus, int phy_id,
+> +		int reg, u32 value)
+>  {
+>  	struct mpc52xx_fec_mdio_priv *priv = bus->priv;
+>  	struct mpc52xx_fec __iomem *fec;
+>  	int tries = 100;
+> -	u32 request = FEC_MII_READ_FRAME;
+> +
+> +	value |= (phy_id << FEC_MII_DATA_PA_SHIFT) & FEC_MII_DATA_PA_MSK;
+> +	value |= (reg << FEC_MII_DATA_RA_SHIFT) & FEC_MII_DATA_RA_MSK;
+>  
+>  	fec = priv->regs;
+>  	out_be32(&fec->ievent, FEC_IEVENT_MII);
+> -
+> -	request |= (phy_id << FEC_MII_DATA_PA_SHIFT) & FEC_MII_DATA_PA_MSK;
+> -	request |= (reg << FEC_MII_DATA_RA_SHIFT) & FEC_MII_DATA_RA_MSK;
+> -
+> -	out_be32(&priv->regs->mii_data, request);
+> +	out_be32(&priv->regs->mii_data, value);
+>  
+>  	/* wait for it to finish, this takes about 23 us on lite5200b */
+>  	while (!(in_be32(&fec->ievent) & FEC_IEVENT_MII) && --tries)
+>  		udelay(5);
+>  
+> -	if (tries == 0)
+> +	if (!tries)
+>  		return -ETIMEDOUT;
+>  
+> -	return in_be32(&priv->regs->mii_data) & FEC_MII_DATA_DATAMSK;
+> +	return value & FEC_MII_DATA_OP_RD ?
+> +		in_be32(&priv->regs->mii_data) & FEC_MII_DATA_DATAMSK : 0;
+>  }
+>  
+> -static int mpc52xx_fec_mdio_write(struct mii_bus *bus, int phy_id, int reg, u16 data)
+> +static int mpc52xx_fec_mdio_read(struct mii_bus *bus, int phy_id, int reg)
+>  {
+> -	struct mpc52xx_fec_mdio_priv *priv = bus->priv;
+> -	struct mpc52xx_fec __iomem *fec;
+> -	u32 value = data;
+> -	int tries = 100;
+> -
+> -	fec = priv->regs;
+> -	out_be32(&fec->ievent, FEC_IEVENT_MII);
+> -
+> -	value |= FEC_MII_WRITE_FRAME;
+> -	value |= (phy_id << FEC_MII_DATA_PA_SHIFT) & FEC_MII_DATA_PA_MSK;
+> -	value |= (reg << FEC_MII_DATA_RA_SHIFT) & FEC_MII_DATA_RA_MSK;
+> -
+> -	out_be32(&priv->regs->mii_data, value);
+> -
+> -	/* wait for request to finish */
+> -	while (!(in_be32(&fec->ievent) & FEC_IEVENT_MII) && --tries)
+> -		udelay(5);
+> -
+> -	if (tries == 0)
+> -		return -ETIMEDOUT;
+> +	return mpc52xx_fec_mdio_transfer(bus, phy_id, reg, FEC_MII_READ_FRAME);
+> +}
+>  
+> -	return 0;
+> +static int mpc52xx_fec_mdio_write(struct mii_bus *bus, int phy_id, int reg,
+> +		u16 data)
+> +{
+> +	return mpc52xx_fec_mdio_transfer(bus, phy_id, reg,
+> +		data | FEC_MII_WRITE_FRAME);
+>  }
+>  
+> -static int mpc52xx_fec_mdio_probe(struct of_device *of, const struct of_device_id *match)
+> +static int mpc52xx_fec_mdio_probe(struct of_device *of,
+> +		const struct of_device_id *match)
 >  {
 >  	struct device *dev = &of->dev;
 >  	struct device_node *np = of->node;
-> -	struct device_node *child = NULL;
->  	struct mii_bus *bus;
->  	struct mpc52xx_fec_mdio_priv *priv;
->  	struct resource res = {};
-> @@ -105,15 +104,6 @@
->  	for (i=0; i<PHY_MAX_ADDR; i++)
->  		bus->irq[i] = PHY_POLL;
+> @@ -121,7 +109,8 @@
+>  	dev_set_drvdata(dev, bus);
 >  
-> -	while ((child = of_get_next_child(np, child)) != NULL) {
-> -		int irq = irq_of_parse_and_map(child, 0);
-> -		if (irq != NO_IRQ) {
-> -			const u32 *id = of_get_property(child, "reg", NULL);
-> -			if (id)
-> -				bus->irq[*id] = irq;
-> -		}
-> -	}
-> -
->  	/* setup registers */
->  	err = of_address_to_resource(np, 0, &res);
->  	if (err)
-> @@ -133,9 +123,6 @@
 >  	/* set MII speed */
->  	out_be32(&priv->regs->mii_speed, ((mpc52xx_find_ipb_freq(of->node) >> 20) / 5) << 1);
+> -	out_be32(&priv->regs->mii_speed, ((mpc52xx_find_ipb_freq(of->node) >> 20) / 5) << 1);
+> +	out_be32(&priv->regs->mii_speed,
+> +		((mpc52xx_find_ipb_freq(of->node) >> 20) / 5) << 1);
 >  
-> -	/* enable MII interrupt */
-> -	out_be32(&priv->regs->imask, in_be32(&priv->regs->imask) | FEC_IMASK_MII);
-> -
 >  	err = mdiobus_register(bus);
 >  	if (err)
->  		goto out_unmap;
-> @@ -145,9 +132,6 @@
->   out_unmap:
->  	iounmap(priv->regs);
->   out_free:
-> -	for (i=0; i<PHY_MAX_ADDR; i++)
-> -		if (bus->irq[i] != PHY_POLL)
-> -			irq_dispose_mapping(bus->irq[i]);
->  	kfree(bus->irq);
->  	kfree(priv);
->  	kfree(bus);
-> @@ -160,15 +144,11 @@
->  	struct device *dev = &of->dev;
->  	struct mii_bus *bus = dev_get_drvdata(dev);
->  	struct mpc52xx_fec_mdio_priv *priv = bus->priv;
-> -	int i;
->  
->  	mdiobus_unregister(bus);
->  	dev_set_drvdata(dev, NULL);
->  
->  	iounmap(priv->regs);
-> -	for (i=0; i<PHY_MAX_ADDR; i++)
-> -		if (bus->irq[i])
-> -			irq_dispose_mapping(bus->irq[i]);
->  	kfree(priv);
->  	kfree(bus->irq);
->  	kfree(bus);
 > 
 > -- 
 >   Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
