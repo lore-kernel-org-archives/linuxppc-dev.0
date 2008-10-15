@@ -1,22 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.230])
-	by ozlabs.org (Postfix) with ESMTP id B0A53DDDD4
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 01:34:22 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so2717934rvb.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 07:34:21 -0700 (PDT)
-Date: Wed, 15 Oct 2008 08:34:19 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: Please pull 'next' branch of
-	git://git.secretlab.ca/git/linux-2.6-mpc52xx
-Message-ID: <20081015143419.GH16262@secretlab.ca>
-References: <fa686aa40810090102wcc8acf0i4577f195ca40eac6@mail.gmail.com>
-	<20081014133346.GE23594@pengutronix.de>
+Return-Path: <sebastian@breakpoint.cc>
+Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
+	[85.10.199.196])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 72D22DE532
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 01:44:10 +1100 (EST)
+Date: Wed, 15 Oct 2008 16:43:59 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: enforce a non-spe kernel build even on broken
+	compilers
+Message-ID: <20081015144359.GA30649@Chamillionaire.breakpoint.cc>
+References: <20080901142302.GA13754@www.tglx.de>
+	<76A823BD-A9B8-4FB4-B09B-F818687193CA@kernel.crashing.org>
+	<20081014224946.GA2503@www.tglx.de>
+	<20081015085904.GA28369@Chamillionaire.breakpoint.cc>
+	<6115D7FB-7500-4F67-B02B-B64B92B33D1A@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081014133346.GE23594@pengutronix.de>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <6115D7FB-7500-4F67-B02B-B64B92B33D1A@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Nate Case <ncase@xes-inc.com>, ths@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 14, 2008 at 03:33:46PM +0200, Wolfram Sang wrote:
-> What about these? :)
-> 
-> http://oldpatchwork.ozlabs.org/linuxppc-embedded/patch?id=20188
-> (remove obsolete code from mpc52xx_phy)
+* Kumar Gala | 2008-10-15 08:25:54 [-0500]:
 
-I'm not going to pick this one up yet (as mentioned in my earlier
-email)
+>
+> On Oct 15, 2008, at 3:59 AM, Sebastian Andrzej Siewior wrote:
+>
+>> * Sebastian Andrzej Siewior | 2008-10-15 00:49:46 [+0200]:
+>>
+>>>> is the -mabi=no-spe really needed?
+>>> It seems to work the other way around (without -mabi=no-spe but with
+>>> -mabi=no-spe) alteast I did not find anything in do_syslog() or while
+>>> browsing through the dissasm. I do a boot check tomorrow.
+>>
+>> Okay. I recompiled with -mspe=no and was able to boot without trouble.
+>> It didn't work with -mabi=no-spe.
+>
+> I'm confused.. what did you change from your patch?
 
-> http://oldpatchwork.ozlabs.org/linuxppc-embedded/patch?id=20189
-> (simplify read/write in mpc52xx_phy)
-> http://oldpatchwork.ozlabs.org/linuxppc-embedded/patch?id=20202
-> (don't touch pipelining)
+This is the patch it right now:
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -103,6 +103,7 @@ KBUILD_CFLAGS += $(call cc-option,-mno-altivec)
 
-Both of these are in my tree and I'll be asking Ben to pull soon.
+ # No SPE instruction when building kernel
+ KBUILD_CFLAGS += $(call cc-option,-mno-spe)
++KBUILD_CFLAGS += $(call cc-option,-mspe=no)
 
-> And to which tree did this one go? I couldn't find it on
-> git.secretlab.ca.
+ # Enable unit-at-a-time mode when possible. It shrinks the
+ # kernel considerably.
+-- 
 
-In the 'next' branch of my mpc52xx tree.
+With this patch it compiles and boots fine.
+The option -mabi=no-spe is not required.
 
-g.
+> - k
+Sebastian
