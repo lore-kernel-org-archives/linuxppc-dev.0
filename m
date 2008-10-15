@@ -1,17 +1,21 @@
 Return-Path: <horms@verge.net.au>
 Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
-	by ozlabs.org (Postfix) with ESMTP id 2C47FDDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 14:18:27 +1100 (EST)
-Date: Wed, 15 Oct 2008 14:18:18 +1100
+	by ozlabs.org (Postfix) with ESMTP id 1B753DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 14:38:34 +1100 (EST)
+Date: Wed, 15 Oct 2008 14:37:36 +1100
 From: Simon Horman <horms@verge.net.au>
-To: Maxim Uvarov <muvarov@gmail.com>
-Subject: Re: [PATCH] kexec memory ranges dynamic allocation
-Message-ID: <20081015031818.GC27243@verge.net.au>
-References: <572af9170810140811v446a6874pd67cb77753a9e32d@mail.gmail.com>
+To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Subject: Re: [PATCH] powerpc: dtb and purgatory support for ppc32
+Message-ID: <20081015033735.GG27243@verge.net.au>
+References: <1222896024-22172-1-git-send-email-sebastian@breakpoint.cc>
+	<1222896024-22172-4-git-send-email-sebastian@breakpoint.cc>
+	<20081008030325.GD22396@verge.net.au>
+	<20081012133955.GA7536@Chamillionaire.breakpoint.cc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <572af9170810140811v446a6874pd67cb77753a9e32d@mail.gmail.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, kexec@lists.infradead.org
+In-Reply-To: <20081012133955.GA7536@Chamillionaire.breakpoint.cc>
+Cc: linuxppc-dev@ozlabs.org, Sebastian Siewior <bigeasy@linutronix.de>,
+	kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,37 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 14, 2008 at 07:11:19PM +0400, Maxim Uvarov wrote:
-> Hello all,
->
-> As you all know it is not easy to count exact value of memory ranges from
-> device tree on powerpc.
-> It very depends on how dts file was written. What do you think about really
-> dynamic allocation buffers
-> for this buffers?
+On Sun, Oct 12, 2008 at 03:39:55PM +0200, Sebastian Andrzej Siewior wrote:
+> * Simon Horman | 2008-10-08 14:03:26 [+1100]:
+> 
+> >> +#ifdef WITH_GAMECUBE
+> >> +static int go_purgatory = 0;
+> >> +#else
+> >> +static int go_purgatory = 1;
+> >> +#endif
+> >
+> >Can you just use WITH_GAMECUBE inside elf_ppc_load() and remove
+> >the need for go_purgatory, or do you plan to make go_purgatory
+> >switchable at run-time at some point in the future?
 
-Conceptually I have no objections to the change,
-though I would like to get some review from ppc people.
-(linuxppc-dev@ozlabs.org CCed)
+> For the first shot I would prefer to use WITH_GAMECUBE inside of
+> elf_ppc_load(). In longterm I don't see any reason why GameCube can't
+> use the purgatory code like the other archs and get the memory maps from
+> the device tree. However I'm not sure if GameCube still runs on a recent
+> kernel: now that arc/ppc isn't available anymore GameCube has to pass a
+> dtb somehow and this isn't the case. So therefore I would like the keep
+> #ifdef and the exisiting behavior until someone clears this up.
 
-> Patch is attached.
-
-This patch doesn't seem to compile for me.
-
-# powerpc64-unknown-linux-gnu-gcc --version
-powerpc64-unknown-linux-gnu-gcc (GCC) 4.1.1
-Copyright (C) 2006 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-#make
-[snip]
-kexec/arch/ppc64/kexec-ppc64.c:100: warning: function declaration isn't a
-prototype
-kexec/arch/ppc64/kexec-ppc64.c: In function 'realloc_memory_ranges':
-kexec/arch/ppc64/kexec-ppc64.c:107: warning: passing argument 1 of 'realloc' makes pointer from integer without a cast
-kexec/arch/ppc64/kexec-ppc64.c:107: error: too few arguments to function 'realloc'
-kexec/arch/ppc64/kexec-ppc64.c:102: warning: unused variable 'tmp'
+Ok, in this case I would like to request that you remove
+go_purgatory (for now) and just use #ifdef WITH_GAMECUBE instead.
+I think that it will make things cleaner (for now).
 
 -- 
 Simon Horman
