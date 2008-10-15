@@ -1,21 +1,9 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
-	by ozlabs.org (Postfix) with ESMTP id 1B753DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 14:38:34 +1100 (EST)
-Date: Wed, 15 Oct 2008 14:37:36 +1100
-From: Simon Horman <horms@verge.net.au>
-To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-Subject: Re: [PATCH] powerpc: dtb and purgatory support for ppc32
-Message-ID: <20081015033735.GG27243@verge.net.au>
-References: <1222896024-22172-1-git-send-email-sebastian@breakpoint.cc>
-	<1222896024-22172-4-git-send-email-sebastian@breakpoint.cc>
-	<20081008030325.GD22396@verge.net.au>
-	<20081012133955.GA7536@Chamillionaire.breakpoint.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081012133955.GA7536@Chamillionaire.breakpoint.cc>
-Cc: linuxppc-dev@ozlabs.org, Sebastian Siewior <bigeasy@linutronix.de>,
-	kexec@lists.infradead.org
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 15 Oct 2008 15:25:28 +1100
+Subject: [PATCH] powerpc: Silent SW timebase sync
+Message-Id: <20081015042610.7ABA0DDDEE@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +13,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Oct 12, 2008 at 03:39:55PM +0200, Sebastian Andrzej Siewior wrote:
-> * Simon Horman | 2008-10-08 14:03:26 [+1100]:
-> 
-> >> +#ifdef WITH_GAMECUBE
-> >> +static int go_purgatory = 0;
-> >> +#else
-> >> +static int go_purgatory = 1;
-> >> +#endif
-> >
-> >Can you just use WITH_GAMECUBE inside elf_ppc_load() and remove
-> >the need for go_purgatory, or do you plan to make go_purgatory
-> >switchable at run-time at some point in the future?
+When no HW method is provided to sync the timebase, linux uses
+a software algorithm.
 
-> For the first shot I would prefer to use WITH_GAMECUBE inside of
-> elf_ppc_load(). In longterm I don't see any reason why GameCube can't
-> use the purgatory code like the other archs and get the memory maps from
-> the device tree. However I'm not sure if GameCube still runs on a recent
-> kernel: now that arc/ppc isn't available anymore GameCube has to pass a
-> dtb somehow and this isn't the case. So therefore I would like the keep
-> #ifdef and the exisiting behavior until someone clears this up.
+The code for that is very verbose using straight printk's without
+log level. A lot of this is mostly useless unless you want to debug
+the process, and we didn't have any problem with it for years anyway
+so this turns the bunch of them into pr_debug.
 
-Ok, in this case I would like to request that you remove
-go_purgatory (for now) and just use #ifdef WITH_GAMECUBE instead.
-I think that it will make things cleaner (for now).
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
--- 
-Simon Horman
-  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
-  H: www.vergenet.net/~horms/             W: www.valinux.co.jp/en
+ arch/powerpc/kernel/smp-tbsync.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+--- linux-work.orig/arch/powerpc/kernel/smp-tbsync.c	2008-10-15 14:42:24.000000000 +1100
++++ linux-work/arch/powerpc/kernel/smp-tbsync.c	2008-10-15 15:23:03.000000000 +1100
+@@ -113,7 +113,7 @@ void __devinit smp_generic_give_timebase
+ {
+ 	int i, score, score2, old, min=0, max=5000, offset=1000;
+ 
+-	printk("Synchronizing timebase\n");
++	pr_debug("Software timebase sync\n");
+ 
+ 	/* if this fails then this kernel won't work anyway... */
+ 	tbsync = kzalloc( sizeof(*tbsync), GFP_KERNEL );
+@@ -123,13 +123,13 @@ void __devinit smp_generic_give_timebase
+ 	while (!tbsync->ack)
+ 		barrier();
+ 
+-	printk("Got ack\n");
++	pr_debug("Got ack\n");
+ 
+ 	/* binary search */
+ 	for (old = -1; old != offset ; offset = (min+max) / 2) {
+ 		score = start_contest(kSetAndTest, offset, NUM_ITER);
+ 
+-		printk("score %d, offset %d\n", score, offset );
++		pr_debug("score %d, offset %d\n", score, offset );
+ 
+ 		if( score > 0 )
+ 			max = offset;
+@@ -140,8 +140,8 @@ void __devinit smp_generic_give_timebase
+ 	score = start_contest(kSetAndTest, min, NUM_ITER);
+ 	score2 = start_contest(kSetAndTest, max, NUM_ITER);
+ 
+-	printk("Min %d (score %d), Max %d (score %d)\n",
+-	       min, score, max, score2);
++	pr_debug("Min %d (score %d), Max %d (score %d)\n",
++		 min, score, max, score2);
+ 	score = abs(score);
+ 	score2 = abs(score2);
+ 	offset = (score < score2) ? min : max;
+@@ -155,7 +155,7 @@ void __devinit smp_generic_give_timebase
+ 		if (score2 <= score || score2 < 20)
+ 			break;
+ 	}
+-	printk("Final offset: %d (%d/%d)\n", offset, score2, NUM_ITER );
++	pr_debug("Final offset: %d (%d/%d)\n", offset, score2, NUM_ITER );
+ 
+ 	/* exiting */
+ 	tbsync->cmd = kExit;
