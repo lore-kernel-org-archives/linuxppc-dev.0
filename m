@@ -1,14 +1,16 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 4F1E7DE35B
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 05:10:29 +1100 (EST)
-Message-ID: <48F4E091.7080105@harris.com>
-Date: Tue, 14 Oct 2008 14:10:25 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <roel.kluin@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
+	by ozlabs.org (Postfix) with ESMTP id 76BE2DE8A9
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 05:36:36 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so1741224fga.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 11:36:34 -0700 (PDT)
+Message-ID: <48F53B0F.5010301@gmail.com>
+Date: Tue, 14 Oct 2008 20:36:31 -0400
+From: roel kluin <roel.kluin@gmail.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: pca9539 I2C gpio expander
-Content-Type: text/plain; charset=UTF-8
+To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] unsigned speed cannot be negative
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,30 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I am attempting to use a pca9539 I2C gpio driver on a PPC440EPx board.  The
-driver is "drivers/gpio/pca953x.c".  I've added an entry to the .dts file:
+unsigned speed cannot be negative
 
-IIC0: i2c@ef600700 {
-	compatible = "ibm,iic-440epx", "ibm,iic";
-	...
-	pca9539@76 {
-		compatible = "ti,pca9539";
-		reg = <76>;
-	};
-};
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+N.B. It could be possible that a different fix is needed.
 
-of_register_i2c_devices sees this entry and calls i2c_new_device.
-i2c_new_device copies info->platform_data to client->dev.platform_data, but
-I think that this structure is empty (at least I don't see where
-of_register_i2c_devices would set it).
-
-pca953x_probe is eventually called, but it expects to find its "lowest gpio
-number" in client->dev.platform_data->gpio_base, which has not been set.  So
-pca953x_probe returns -ENODEV.
-
-I don't understand where the disconnect is.  Should I be able to use the
-pca953x.c driver, or is it somehow incompatible?
-
-If it is incompatible, is there a strategy for making it compatible?
-
-	Steve
+diff --git a/arch/powerpc/kernel/udbg_16550.c b/arch/powerpc/kernel/udbg_16550.c
+index cb01ebc..7b7da8c 100644
+--- a/arch/powerpc/kernel/udbg_16550.c
++++ b/arch/powerpc/kernel/udbg_16550.c
+@@ -142,7 +142,7 @@ unsigned int udbg_probe_uart_speed(void __iomem *comport, unsigned int clock)
+ 	speed = (clock / prescaler) / (divisor * 16);
+ 
+ 	/* sanity check */
+-	if (speed < 0 || speed > (clock / 16))
++	if (speed > (clock / 16))
+ 		speed = 9600;
+ 
+ 	return speed;
