@@ -1,23 +1,22 @@
-Return-Path: <sebastian@breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 954FDDDE07
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 19:59:12 +1100 (EST)
-Date: Wed, 15 Oct 2008 10:59:04 +0200
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: enforce a non-spe kernel build even on broken
-	compilers
-Message-ID: <20081015085904.GA28369@Chamillionaire.breakpoint.cc>
-References: <20080901142302.GA13754@www.tglx.de>
-	<76A823BD-A9B8-4FB4-B09B-F818687193CA@kernel.crashing.org>
-	<20081014224946.GA2503@www.tglx.de>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id D15D2DDEFD
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 20:25:32 +1100 (EST)
+Date: Wed, 15 Oct 2008 11:25:30 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PROBLEM] Soft lockup on Linux 2.6.27, 2 patches, Cell/PPC64
+In-Reply-To: <1224046194.8157.428.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0810151050330.1133@vixen.sonytel.be>
+References: <48F17DE6.106@gmail.com>
+	<Pine.LNX.4.64.0810130945260.17287@vixen.sonytel.be>
+	<Pine.LNX.4.64.0810141130340.16020@vixen.sonytel.be>
+	<1224046194.8157.428.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20081014224946.GA2503@www.tglx.de>
-Cc: linuxppc-dev@ozlabs.org, Nate Case <ncase@xes-inc.com>, ths@linutronix.de
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-709154712-1224061093=:1133"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Aaron Tokhy <atokhy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +26,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Sebastian Andrzej Siewior | 2008-10-15 00:49:46 [+0200]:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->>is the -mabi=no-spe really needed?
->It seems to work the other way around (without -mabi=no-spe but with
->-mabi=no-spe) alteast I did not find anything in do_syslog() or while
->browsing through the dissasm. I do a boot check tomorrow.
+---584349381-709154712-1224061093=:1133
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0810151125001.1133@vixen.sonytel.be>
 
-Okay. I recompiled with -mspe=no and was able to boot without trouble.
-It didn't work with -mabi=no-spe.
+On Wed, 15 Oct 2008, Benjamin Herrenschmidt wrote:
+> On Tue, 2008-10-14 at 11:32 +0200, Geert Uytterhoeven wrote:
+> > which points again to smp_call_function_single...
+> 
+> Yup, it doesn't bring more information. At this stage, your 'other' CPU
+> is stuck with interrupts disabled. Hard to tell what's happening without
+> some HW assist. Do you have ways to trigger a non-maskable interrupt
+> such as a 0x100 ? That would allow to catch the other guy in xmon and
+> see what it was doing...
 
->>
->>- k
+Interrupts are not disabled on the other CPU thread, at least not according to
+the irqs_disabled() check I added to the printing of the `spinlock lockup'
+message in __spin_lock_debug().
 
-Sebastian
+As the log also said
+
+| hardirqs last  enabled at (5018779): [<c000000000007c1c>] restore+0x1c/0xe4
+| hardirqs last disabled at (5018780): [<c000000000003600>] decrementer_common+0x100/0x180
+
+I started blinking the LEDs on decrementer interupts, which do arrive on both
+CPU threads.
+
+However, I'm a bit puzzled by these `hardirqs last enabled/disabled' messages,
+as they do indicate interrupts are off...
+
+> It could be something in the ps3vram driver causing the kernel to
+> lockup.... Now the question is whether the kernel is stuffed with
+> something like a deadlock with interrupts off, or is it a HW problem
+> causing a CPU to lockup on an access to the vram ?
+
+It's not related to the ps3vram driver, as it happens without, too.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-709154712-1224061093=:1133--
