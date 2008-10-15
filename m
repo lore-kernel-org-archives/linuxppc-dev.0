@@ -1,20 +1,19 @@
-Return-Path: <afleming@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
-	by ozlabs.org (Postfix) with ESMTP id AFAEFDDE04
+Return-Path: <mike.dyer@provision-comm.com>
+Received: from smtp1.betherenow.co.uk (smtp1.betherenow.co.uk [87.194.0.68])
+	by ozlabs.org (Postfix) with SMTP id 53D22DDF1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Oct 2008 09:38:06 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so2504985wfg.15
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Oct 2008 15:38:05 -0700 (PDT)
-Message-ID: <2acbd3e40810141538w3781fa4r75cfbe2833a21f81@mail.gmail.com>
-Date: Tue, 14 Oct 2008 17:38:05 -0500
-From: "Andy Fleming" <afleming@gmail.com>
-To: Pieter <phenning@vastech.co.za>
-Subject: Re: networking fails to activate
-In-Reply-To: <48F450CD.8060309@vastech.co.za>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <48F450CD.8060309@vastech.co.za>
+	Wed, 15 Oct 2008 21:06:32 +1100 (EST)
+Subject: Re: MPC8313E RDB: Badness at fs/sysfs/dir.c:463
+From: Mike Dyer <mike.dyer@provision-comm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <22A97B63-36D5-44BA-8F49-BAF5870FA08A@kernel.crashing.org>
+References: <48F49D7D.5070107@provision-comm.com>
+	<48F4A8CD.6000101@provision-comm.com>
+	<22A97B63-36D5-44BA-8F49-BAF5870FA08A@kernel.crashing.org>
+Content-Type: text/plain
+Date: Wed, 15 Oct 2008 11:06:25 +0100
+Message-Id: <1224065185.457.31.camel@mike-linux.provision-comm.com>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,32 +25,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 14, 2008 at 2:57 AM, Pieter <phenning@vastech.co.za> wrote:
-> Hi
->
-> We have a powerpc (8548) based board. running eldk4.1. the board has
-> three ethernet ports using Gainfair ethernet controller v1.2.
->
-> If the board powers up with any network cable plugged in, that specific
-> network is accessible.
-> if the board powers up without network cables connected and a cable is
-> plugged in, the network does not become active.
-> The kernal makes a log entry stating that the phy is up when the cable
-> is plugged in - but the interface is not pingable
-> Running ifdown and ifup manually does not result in a pingable interface.
-> Neither does running /etc/init.d/network restart
->
-> can anyone help me pls.
+Hi Kumar,
 
+On Tue, 2008-10-14 at 09:35 -0500, Kumar Gala wrote: 
+> On Oct 14, 2008, at 9:12 AM, Mike Dyer wrote:
+> 
+> > Hi All,
+> >
+> > Apologies for the bad formatting of the previous message...
+> >
+> > I've just pulled the 2.6.27 kernel from git and am trying it out on  
+> > my MPC8313E RDB dev kit.  I get the following badness during boot  
+> > (the complete boot record is attached later) :
+> 
+> can you enable kernel symbols in your build (CONFIG_KALLSYMS)
 
-Check the statistics counters to see if you are getting any bad
-packets, or to see if you are getting interrupts.  Several people have
-reported that their PHYs have powerdown issues, though I wouldn't
-expect the PHY to report the link as up, then.  Make sure that your
-dts specifies the correct PHY address for the connected PHY.
+I can, but it no longer boots...  Will keep trying.
 
-What happens if you start up with the PHY connected, bring up the
-interface, and *then* disconnect and reconnect the cable (after a
-delay)?
+I've gone through my system.map and pulled out the call stack, if that
+helps.  I put a printk in sysfs_add_one, and it appears it is being
+called with sd->s_name = 'e00082a8.dma'
 
-Andy
+> ------------[ cut here ]------------
+> Badness at c00c5b50 [verbose debug info unavailable]
+> NIP: c00c5b50 LR: c00c5b38 CTR: 00000000
+> REGS: c7827d90 TRAP: 0700   Not tainted  (2.6.27)
+> MSR: 00029032 <EE,ME,IR,DR>  CR: 22022042  XER: 20000000
+> TASK = c7816400[1] 'swapper' THREAD: c7826000
+> GPR00: c00c5b38 c7827e40 c7816400 ffffffef c7800e5c c7800b7c c7811570 00000000 
+> GPR08: 000001a0 c0370000 00000048 00000000 82044048 100b224c 07ffb000 00000000 
+> GPR16: 07ff09e0 07ff94c8 00000000 00000000 00000000 c035a76c c035a740 c7ace610 
+> GPR24: 00000000 00000000 00000000 00000001 c7811570 fffffffe c7acdc00 c7827e58 
+> Call Trace:
+> [c7827e40] [c00c5b38] 0xc00c5b38 (unreliable) sysfs_add_one
+> [c7827e50] [c00c6dc0] 0xc00c6dc0              sysfs_do_create_link
+> [c7827e80] [c0182d40] 0xc0182d40              bus_add_device
+> [c7827ea0] [c018153c] 0xc018153c              device_add
+> [c7827ef0] [c0213a14] 0xc0213a14              of_device_register
+> [c7827f00] [c0009818] 0xc0009818              of_platform_device_create
+> [c7827f10] [c00098c0] 0xc00098c0              of_platform_bus_create
+> [c7827f30] [c0009a30] 0xc0009a30              of_platform_bus_probe
+> [c7827f50] [c03281d4] 0xc03281d4              __machine_initcall_mpc831x_rdb_declare_of_platform_devices
+> [c7827f60] [c0003874] 0xc0003874              do_one_initcall
+> [c7827fd0] [c031317c] 0xc031317c              kernel_init
+> [c7827ff0] [c001216c] 0xc001216c              kernel_thread
+
+> 
+> - k
+
+Cheers,
+Mike
