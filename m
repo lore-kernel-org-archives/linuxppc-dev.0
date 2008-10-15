@@ -1,14 +1,31 @@
-Return-Path: <bgat@billgatliff.com>
-Message-ID: <48F635A2.1090709@billgatliff.com>
-Date: Wed, 15 Oct 2008 13:25:38 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
-	kernel@avr32linux.org
-Subject: Proposal for a Generic PWM Device API posted on linux-embedded
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4A773DDF02
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 07:53:22 +1100 (EST)
+Subject: Re: [PROBLEM] Soft lockup on Linux 2.6.27, 2 patches, Cell/PPC64
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <Pine.LNX.4.64.0810151355470.1133@vixen.sonytel.be>
+References: <48F17DE6.106@gmail.com>
+	<Pine.LNX.4.64.0810130945260.17287@vixen.sonytel.be>
+	<Pine.LNX.4.64.0810141130340.16020@vixen.sonytel.be>
+	<1224046194.8157.428.camel@pasglop>
+	<Pine.LNX.4.64.0810151050330.1133@vixen.sonytel.be>
+	<1224062907.8157.446.camel@pasglop>
+	<Pine.LNX.4.64.0810151135330.1133@vixen.sonytel.be>
+	<1224070653.8157.452.camel@pasglop>
+	<Pine.LNX.4.64.0810151343480.1133@vixen.sonytel.be>
+	<1224071392.8157.455.camel@pasglop>
+	<Pine.LNX.4.64.0810151355470.1133@vixen.sonytel.be>
+Content-Type: text/plain
+Date: Thu, 16 Oct 2008 07:53:09 +1100
+Message-Id: <1224103989.8157.469.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Aaron Tokhy <atokhy@gmail.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,33 +35,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Greetings, all!
+On Wed, 2008-10-15 at 14:05 +0200, Geert Uytterhoeven wrote:
+> I guess it's auto-enabled when the decrementer interrupt handler exits?
+> So shouldn't there be a `bl trace_hardirqs_on' somewhere?
 
+The interrupts are restored to their previous state on exit of
+interrupts via the TRACE_AND_RESTORE_IRQ() macro which is called
+from entry_64.S in the main restore path and in head_64.S in the
+fast path and hashing faults.
 
-I just posted code to implement a Generic PWM Device API to linux-embedded.  If
-you need them, archives of that mailing list are available at the following link
-(and elsewhere):
-
-http://www.mail-archive.com/linux-embedded@vger.kernel.org/
-
-Previous versions of this code were posted on linux-arm-kernel, linuxppc-dev,
-avr32linux.org and elsewhere.  It's an API that cuts across machine
-architectures--- not unlike the GPIO API--- and I really appreciate the
-constructive feedback I have received from all corners of the architecture globe.
-
-Multiple reviewers suggested that the best place to review the final code is
-linux-embedded, rather than cross-posting all over the place.  I encourage you
-to submit your feedback there.
-
-I would love to see this code included in the mainline kernel at some point in
-the not-too-distant future.  It has proven very useful to me, I think it will be
-useful for many others as well.
-
-
-Kindest regards,
-
-
-b.g.
--- 
-Bill Gatliff
-bgat@billgatliff.com
+Cheers,
+Ben.
