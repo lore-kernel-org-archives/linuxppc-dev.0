@@ -1,25 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <bgill@blarg.am.freescale.net>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C2375DE289
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 03:32:23 +1100 (EST)
-Message-Id: <A6C48706-BF92-4CF5-98DF-A51C6726D328@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-In-Reply-To: <20081015144359.GA30649@Chamillionaire.breakpoint.cc>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc: enforce a non-spe kernel build even on broken
-	compilers
-Date: Wed, 15 Oct 2008 11:31:59 -0500
-References: <20080901142302.GA13754@www.tglx.de>
-	<76A823BD-A9B8-4FB4-B09B-F818687193CA@kernel.crashing.org>
-	<20081014224946.GA2503@www.tglx.de>
-	<20081015085904.GA28369@Chamillionaire.breakpoint.cc>
-	<6115D7FB-7500-4F67-B02B-B64B92B33D1A@kernel.crashing.org>
-	<20081015144359.GA30649@Chamillionaire.breakpoint.cc>
-Cc: linuxppc-dev@ozlabs.org, Nate Case <ncase@xes-inc.com>, ths@linutronix.de
+	by ozlabs.org (Postfix) with ESMTPS id 6A890DDF10
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 05:25:36 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m9FIPUmi000057
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 11:25:31 -0700 (MST)
+Received: from blarg.am.freescale.net (blarg.am.freescale.net [10.82.19.176])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	m9FIPTCH013766
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 13:25:30 -0500 (CDT)
+From: Becky Bruce <becky.bruce@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Move memory size print into common show_cpuinfo for
+	32-bit
+Date: Wed, 15 Oct 2008 13:25:28 -0500
+Message-Id: <1224095128-7785-1-git-send-email-becky.bruce@freescale.com>
+In-Reply-To: <1223613140.8157.150.camel@pasglop>
+References: <1223613140.8157.150.camel@pasglop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,45 +30,293 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Most of the platforms were printing the size of the memory
+in their show_cpuinfo implementations. This moves that to
+the common show_cpuinfo, so that all 32-bit platforms will
+now print the size of memory.  I also update the code
+to deal with the fact that total_memory is now a phys_addr_t.
 
-On Oct 15, 2008, at 9:43 AM, Sebastian Andrzej Siewior wrote:
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+---
+ arch/powerpc/kernel/setup-common.c             |    7 +++++++
+ arch/powerpc/platforms/85xx/ksi8560.c          |    4 ----
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c      |    4 ----
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c      |    4 ----
+ arch/powerpc/platforms/85xx/sbc8548.c          |    4 ----
+ arch/powerpc/platforms/85xx/sbc8560.c          |    4 ----
+ arch/powerpc/platforms/85xx/stx_gp3.c          |    4 ----
+ arch/powerpc/platforms/85xx/tqm85xx.c          |    4 ----
+ arch/powerpc/platforms/86xx/gef_sbc610.c       |    2 --
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c     |    2 --
+ arch/powerpc/platforms/86xx/sbc8641d.c         |    2 --
+ arch/powerpc/platforms/embedded6xx/c2k.c       |    3 ---
+ arch/powerpc/platforms/embedded6xx/prpmc2800.c |    3 ---
+ 13 files changed, 7 insertions(+), 40 deletions(-)
 
-> * Kumar Gala | 2008-10-15 08:25:54 [-0500]:
->
->>
->> On Oct 15, 2008, at 3:59 AM, Sebastian Andrzej Siewior wrote:
->>
->>> * Sebastian Andrzej Siewior | 2008-10-15 00:49:46 [+0200]:
->>>
->>>>> is the -mabi=no-spe really needed?
->>>> It seems to work the other way around (without -mabi=no-spe but  
->>>> with
->>>> -mabi=no-spe) alteast I did not find anything in do_syslog() or  
->>>> while
->>>> browsing through the dissasm. I do a boot check tomorrow.
->>>
->>> Okay. I recompiled with -mspe=no and was able to boot without  
->>> trouble.
->>> It didn't work with -mabi=no-spe.
->>
->> I'm confused.. what did you change from your patch?
->
-> This is the patch it right now:
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -103,6 +103,7 @@ KBUILD_CFLAGS += $(call cc-option,-mno-altivec)
->
-> # No SPE instruction when building kernel
-> KBUILD_CFLAGS += $(call cc-option,-mno-spe)
-> +KBUILD_CFLAGS += $(call cc-option,-mspe=no)
->
-> # Enable unit-at-a-time mode when possible. It shrinks the
-> # kernel considerably.
-> -- 
->
-> With this patch it compiles and boots fine.
-> The option -mabi=no-spe is not required.
-
-ok.  can post a clean patch w/just this change.
-
-- k
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 5ec56ff..705fc4b 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -59,6 +59,7 @@
+ #include <asm/mmu.h>
+ #include <asm/xmon.h>
+ #include <asm/cputhreads.h>
++#include <mm/mmu_decl.h>
+ 
+ #include "setup.h"
+ 
+@@ -190,6 +191,12 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 		if (ppc_md.show_cpuinfo != NULL)
+ 			ppc_md.show_cpuinfo(m);
+ 
++#ifdef CONFIG_PPC32
++		/* Display the amount of memory */
++		seq_printf(m, "Memory\t\t: %d MB\n",
++			   (unsigned int)(total_memory / (1024 * 1024)));
++#endif
++
+ 		return 0;
+ 	}
+ 
+diff --git a/arch/powerpc/platforms/85xx/ksi8560.c b/arch/powerpc/platforms/85xx/ksi8560.c
+index 8a3b117..81cee7b 100644
+--- a/arch/powerpc/platforms/85xx/ksi8560.c
++++ b/arch/powerpc/platforms/85xx/ksi8560.c
+@@ -193,7 +193,6 @@ static void __init ksi8560_setup_arch(void)
+ static void ksi8560_show_cpuinfo(struct seq_file *m)
+ {
+ 	uint pvid, svid, phid1;
+-	uint memsize = total_memory;
+ 
+ 	pvid = mfspr(SPRN_PVR);
+ 	svid = mfspr(SPRN_SVR);
+@@ -215,9 +214,6 @@ static void ksi8560_show_cpuinfo(struct seq_file *m)
+ 	/* Display cpu Pll setting */
+ 	phid1 = mfspr(SPRN_HID1);
+ 	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
+-
+-	/* Display the amount of memory */
+-	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+ 
+ static struct of_device_id __initdata of_bus_ids[] = {
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+index 0293e3d..21f0090 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -207,7 +207,6 @@ static void __init mpc85xx_ads_setup_arch(void)
+ static void mpc85xx_ads_show_cpuinfo(struct seq_file *m)
+ {
+ 	uint pvid, svid, phid1;
+-	uint memsize = total_memory;
+ 
+ 	pvid = mfspr(SPRN_PVR);
+ 	svid = mfspr(SPRN_SVR);
+@@ -219,9 +218,6 @@ static void mpc85xx_ads_show_cpuinfo(struct seq_file *m)
+ 	/* Display cpu Pll setting */
+ 	phid1 = mfspr(SPRN_HID1);
+ 	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
+-
+-	/* Display the amount of memory */
+-	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+ 
+ static struct of_device_id __initdata of_bus_ids[] = {
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index 50d7ea8..aeb6a5b 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -307,7 +307,6 @@ static void __init mpc85xx_cds_setup_arch(void)
+ static void mpc85xx_cds_show_cpuinfo(struct seq_file *m)
+ {
+ 	uint pvid, svid, phid1;
+-	uint memsize = total_memory;
+ 
+ 	pvid = mfspr(SPRN_PVR);
+ 	svid = mfspr(SPRN_SVR);
+@@ -320,9 +319,6 @@ static void mpc85xx_cds_show_cpuinfo(struct seq_file *m)
+ 	/* Display cpu Pll setting */
+ 	phid1 = mfspr(SPRN_HID1);
+ 	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
+-
+-	/* Display the amount of memory */
+-	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+ 
+ 
+diff --git a/arch/powerpc/platforms/85xx/sbc8548.c b/arch/powerpc/platforms/85xx/sbc8548.c
+index b9246ea..7ec77ce 100644
+--- a/arch/powerpc/platforms/85xx/sbc8548.c
++++ b/arch/powerpc/platforms/85xx/sbc8548.c
+@@ -136,7 +136,6 @@ static void __init sbc8548_setup_arch(void)
+ static void sbc8548_show_cpuinfo(struct seq_file *m)
+ {
+ 	uint pvid, svid, phid1;
+-	uint memsize = total_memory;
+ 
+ 	pvid = mfspr(SPRN_PVR);
+ 	svid = mfspr(SPRN_SVR);
+@@ -149,9 +148,6 @@ static void sbc8548_show_cpuinfo(struct seq_file *m)
+ 	/* Display cpu Pll setting */
+ 	phid1 = mfspr(SPRN_HID1);
+ 	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
+-
+-	/* Display the amount of memory */
+-	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+ 
+ static struct of_device_id __initdata of_bus_ids[] = {
+diff --git a/arch/powerpc/platforms/85xx/sbc8560.c b/arch/powerpc/platforms/85xx/sbc8560.c
+index 0c9a856..472f254 100644
+--- a/arch/powerpc/platforms/85xx/sbc8560.c
++++ b/arch/powerpc/platforms/85xx/sbc8560.c
+@@ -194,7 +194,6 @@ static void __init sbc8560_setup_arch(void)
+ static void sbc8560_show_cpuinfo(struct seq_file *m)
+ {
+ 	uint pvid, svid, phid1;
+-	uint memsize = total_memory;
+ 
+ 	pvid = mfspr(SPRN_PVR);
+ 	svid = mfspr(SPRN_SVR);
+@@ -206,9 +205,6 @@ static void sbc8560_show_cpuinfo(struct seq_file *m)
+ 	/* Display cpu Pll setting */
+ 	phid1 = mfspr(SPRN_HID1);
+ 	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
+-
+-	/* Display the amount of memory */
+-	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+ 
+ static struct of_device_id __initdata of_bus_ids[] = {
+diff --git a/arch/powerpc/platforms/85xx/stx_gp3.c b/arch/powerpc/platforms/85xx/stx_gp3.c
+index 18499d7..0cca8f5 100644
+--- a/arch/powerpc/platforms/85xx/stx_gp3.c
++++ b/arch/powerpc/platforms/85xx/stx_gp3.c
+@@ -130,7 +130,6 @@ static void __init stx_gp3_setup_arch(void)
+ static void stx_gp3_show_cpuinfo(struct seq_file *m)
+ {
+ 	uint pvid, svid, phid1;
+-	uint memsize = total_memory;
+ 
+ 	pvid = mfspr(SPRN_PVR);
+ 	svid = mfspr(SPRN_SVR);
+@@ -142,9 +141,6 @@ static void stx_gp3_show_cpuinfo(struct seq_file *m)
+ 	/* Display cpu Pll setting */
+ 	phid1 = mfspr(SPRN_HID1);
+ 	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
+-
+-	/* Display the amount of memory */
+-	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+ 
+ static struct of_device_id __initdata of_bus_ids[] = {
+diff --git a/arch/powerpc/platforms/85xx/tqm85xx.c b/arch/powerpc/platforms/85xx/tqm85xx.c
+index d850880..2933a8e 100644
+--- a/arch/powerpc/platforms/85xx/tqm85xx.c
++++ b/arch/powerpc/platforms/85xx/tqm85xx.c
+@@ -138,7 +138,6 @@ static void __init tqm85xx_setup_arch(void)
+ static void tqm85xx_show_cpuinfo(struct seq_file *m)
+ {
+ 	uint pvid, svid, phid1;
+-	uint memsize = total_memory;
+ 
+ 	pvid = mfspr(SPRN_PVR);
+ 	svid = mfspr(SPRN_SVR);
+@@ -150,9 +149,6 @@ static void tqm85xx_show_cpuinfo(struct seq_file *m)
+ 	/* Display cpu Pll setting */
+ 	phid1 = mfspr(SPRN_HID1);
+ 	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
+-
+-	/* Display the amount of memory */
+-	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+ 
+ static struct of_device_id __initdata of_bus_ids[] = {
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
+index 821c45f..fb371f5 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc610.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
+@@ -127,7 +127,6 @@ static unsigned int gef_sbc610_get_fpga_rev(void)
+ 
+ static void gef_sbc610_show_cpuinfo(struct seq_file *m)
+ {
+-	uint memsize = total_memory;
+ 	uint svid = mfspr(SPRN_SVR);
+ 
+ 	seq_printf(m, "Vendor\t\t: GE Fanuc Intelligent Platforms\n");
+@@ -137,7 +136,6 @@ static void gef_sbc610_show_cpuinfo(struct seq_file *m)
+ 	seq_printf(m, "FPGA Revision\t: %u\n", gef_sbc610_get_fpga_rev());
+ 
+ 	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
+-	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+ 
+ static void __init gef_sbc610_nec_fixup(struct pci_dev *pdev)
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index 2672829..27e0e68 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -101,13 +101,11 @@ mpc86xx_hpcn_setup_arch(void)
+ static void
+ mpc86xx_hpcn_show_cpuinfo(struct seq_file *m)
+ {
+-	uint memsize = total_memory;
+ 	uint svid = mfspr(SPRN_SVR);
+ 
+ 	seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
+ 
+ 	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
+-	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+ 
+ 
+diff --git a/arch/powerpc/platforms/86xx/sbc8641d.c b/arch/powerpc/platforms/86xx/sbc8641d.c
+index da677a7..5fd7ed4 100644
+--- a/arch/powerpc/platforms/86xx/sbc8641d.c
++++ b/arch/powerpc/platforms/86xx/sbc8641d.c
+@@ -63,13 +63,11 @@ sbc8641_setup_arch(void)
+ static void
+ sbc8641_show_cpuinfo(struct seq_file *m)
+ {
+-	uint memsize = total_memory;
+ 	uint svid = mfspr(SPRN_SVR);
+ 
+ 	seq_printf(m, "Vendor\t\t: Wind River Systems\n");
+ 
+ 	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
+-	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+ 
+ 
+diff --git a/arch/powerpc/platforms/embedded6xx/c2k.c b/arch/powerpc/platforms/embedded6xx/c2k.c
+index d0b25b8..32ba0fa 100644
+--- a/arch/powerpc/platforms/embedded6xx/c2k.c
++++ b/arch/powerpc/platforms/embedded6xx/c2k.c
+@@ -116,10 +116,7 @@ static void c2k_restart(char *cmd)
+ 
+ void c2k_show_cpuinfo(struct seq_file *m)
+ {
+-	uint memsize = total_memory;
+-
+ 	seq_printf(m, "Vendor\t\t: GEFanuc\n");
+-	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ 	seq_printf(m, "coherency\t: %s\n", COHERENCY_SETTING);
+ }
+ 
+diff --git a/arch/powerpc/platforms/embedded6xx/prpmc2800.c b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
+index 5a19b9a..4c485e9 100644
+--- a/arch/powerpc/platforms/embedded6xx/prpmc2800.c
++++ b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
+@@ -119,10 +119,7 @@ static void prpmc2800_restart(char *cmd)
+ 
+ void prpmc2800_show_cpuinfo(struct seq_file *m)
+ {
+-	uint memsize = total_memory;
+-
+ 	seq_printf(m, "Vendor\t\t: Motorola\n");
+-	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ 	seq_printf(m, "coherency\t: %s\n", PPRPM2800_COHERENCY_SETTING);
+ }
+ 
+-- 
+1.5.5.1
