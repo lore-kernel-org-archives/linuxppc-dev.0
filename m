@@ -1,21 +1,45 @@
-Return-Path: <muvarov@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
-	by ozlabs.org (Postfix) with ESMTP id 3BD32DDE08
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 17:28:43 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so1924644fga.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Oct 2008 23:28:41 -0700 (PDT)
-Message-ID: <572af9170810142328j7596290bv8e6c89df1e31dd48@mail.gmail.com>
-Date: Wed, 15 Oct 2008 10:28:41 +0400
-From: "Maxim Uvarov" <muvarov@gmail.com>
-To: "Simon Horman" <horms@verge.net.au>
-Subject: Re: [PATCH] kexec memory ranges dynamic allocation
-In-Reply-To: <20081015031818.GC27243@verge.net.au>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3749DDDE41
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 18:54:22 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id m9F7r0jS006013
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 18:53:00 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9F7sI3e4833504
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 18:54:18 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9F7sHpk020727
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 18:54:18 +1100
+Date: Wed, 15 Oct 2008 13:23:51 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc
+	selectsCONFIG_INTEL_IOATDMA=y
+Message-ID: <20081015075351.GA7925@linux.vnet.ibm.com>
+References: <20081013101559.GA14372@linux.vnet.ibm.com>
+	<20081013112631.GD29938@cs181140183.pp.htv.fi>
+	<36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com>
+	<48F391B9.1000206@myri.com>
+	<20081013183503.GA28133@cs181140183.pp.htv.fi>
+	<48F4627E.30300@myri.com>
+	<36D9DB17C6DE9E40B059440DB8D95F52066E36C7@orsmsx418.amr.corp.intel.com>
+	<20081014175822.GA4710@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_7357_391147.1224052121883"
-References: <572af9170810140811v446a6874pd67cb77753a9e32d@mail.gmail.com>
-	<20081015031818.GC27243@verge.net.au>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, kexec@lists.infradead.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20081014175822.GA4710@cs181140183.pp.htv.fi>
+Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org, "Sosnowski,
+	Maciej" <maciej.sosnowski@intel.com>,
+	linux-kernel@vger.kernel.org, "Brandeburg,
+	Jesse" <jesse.brandeburg@intel.com>, linuxppc-dev@ozlabs.org,
+	"Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+	sam@ravnborg.org, Jeff Garzik <jgarzik@redhat.com>,
+	Brice Goglin <brice@myri.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,109 +49,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_7357_391147.1224052121883
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+* Adrian Bunk <bunk@kernel.org> [2008-10-14 20:58:22]:
 
-2008/10/15 Simon Horman <horms@verge.net.au>
+> On Tue, Oct 14, 2008 at 09:10:33AM -0700, Brandeburg, Jesse wrote:
+> > Brice Goglin wrote:
+> > > Adrian Bunk wrote:
+> > >> But considering that igb is in a similar situation it would be nice
+> > >> if all 3 drivers would handle it the same way.
+> > >> 
+> > > 
+> > > Jesse,
+> > > What do you think of the below patch?
+> > 
+> > Seems like a much better solution.  I can have Jeff Kirsher work on the
+> > equivalent patches for igb, and ixgbe today.
+> > 
+> > > I am not very familiar with Kconfig, but it seems to solve the
+> > > problem. 
+> > > If a Kconfig guru could double-check...
+> > 
+> > Yeah, please Kconfig gurus on the list have a quick look.
+> 
+> Brice's patch looks fine.
+> 
+> cu
+> Adrian
+> 
 
-> On Tue, Oct 14, 2008 at 07:11:19PM +0400, Maxim Uvarov wrote:
-> > Hello all,
-> >
-> > As you all know it is not easy to count exact value of memory ranges from
-> > device tree on powerpc.
-> > It very depends on how dts file was written. What do you think about
-> really
-> > dynamic allocation buffers
-> > for this buffers?
->
-> Conceptually I have no objections to the change,
-> though I would like to get some review from ppc people.
-> (linuxppc-dev@ozlabs.org CCed)
->
-> > Patch is attached.
->
-> This patch doesn't seem to compile for me.
->
-> # powerpc64-unknown-linux-gnu-gcc --version
-> powerpc64-unknown-linux-gnu-gcc (GCC) 4.1.1
-> Copyright (C) 2006 Free Software Foundation, Inc.
-> This is free software; see the source for copying conditions.  There is NO
-> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
->
-> #make
-> [snip]
-> kexec/arch/ppc64/kexec-ppc64.c:100: warning: function declaration isn't a
-> prototype
-> kexec/arch/ppc64/kexec-ppc64.c: In function 'realloc_memory_ranges':
-> kexec/arch/ppc64/kexec-ppc64.c:107: warning: passing argument 1 of
-> 'realloc' makes pointer from integer without a cast
-> kexec/arch/ppc64/kexec-ppc64.c:107: error: too few arguments to function
-> 'realloc'
-> kexec/arch/ppc64/kexec-ppc64.c:102: warning: unused variable 'tmp'
->
-Sorry  I edited manually formated patch before sending and lost first
-argument to realloc. I will resend it.
-
->
-> --
-> Simon Horman
->  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
->  H: www.vergenet.net/~horms/ <http://www.vergenet.net/%7Ehorms/>
->   W: www.valinux.co.jp/en
->
->
-
+Thanks, the patch fixes the build failure with CONFIG_MYRI10GE=y, once
+patch for CONFIG_IXGBE are send out by Jeff Kirsher/Jesse, I will retest
+them.
 
 -- 
-Best regards,
-Maxim Uvarov
-
-------=_Part_7357_391147.1224052121883
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<br><br><div class="gmail_quote">2008/10/15 Simon Horman <span dir="ltr">&lt;<a href="mailto:horms@verge.net.au">horms@verge.net.au</a>&gt;</span><br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<div class="Ih2E3d">On Tue, Oct 14, 2008 at 07:11:19PM +0400, Maxim Uvarov wrote:<br>
-&gt; Hello all,<br>
-&gt;<br>
-&gt; As you all know it is not easy to count exact value of memory ranges from<br>
-&gt; device tree on powerpc.<br>
-&gt; It very depends on how dts file was written. What do you think about really<br>
-&gt; dynamic allocation buffers<br>
-&gt; for this buffers?<br>
-<br>
-</div>Conceptually I have no objections to the change,<br>
-though I would like to get some review from ppc people.<br>
-(<a href="mailto:linuxppc-dev@ozlabs.org">linuxppc-dev@ozlabs.org</a> CCed)<br>
-<br>
-&gt; Patch is attached.<br>
-<br>
-This patch doesn&#39;t seem to compile for me.<br>
-<br>
-# powerpc64-unknown-linux-gnu-gcc --version<br>
-powerpc64-unknown-linux-gnu-gcc (GCC) 4.1.1<br>
-Copyright (C) 2006 Free Software Foundation, Inc.<br>
-This is free software; see the source for copying conditions. &nbsp;There is NO<br>
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.<br>
-<br>
-#make<br>
-[snip]<br>
-kexec/arch/ppc64/kexec-ppc64.c:100: warning: function declaration isn&#39;t a<br>
-prototype<br>
-kexec/arch/ppc64/kexec-ppc64.c: In function &#39;realloc_memory_ranges&#39;:<br>
-kexec/arch/ppc64/kexec-ppc64.c:107: warning: passing argument 1 of &#39;realloc&#39; makes pointer from integer without a cast<br>
-kexec/arch/ppc64/kexec-ppc64.c:107: error: too few arguments to function &#39;realloc&#39;<br>
-kexec/arch/ppc64/kexec-ppc64.c:102: warning: unused variable &#39;tmp&#39;<br>
-<font color="#888888"></font></blockquote><div>Sorry&nbsp; I edited manually formated patch before sending and lost first argument to realloc. I will resend it. <br></div><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<font color="#888888"><br>
---<br>
-Simon Horman<br>
- &nbsp;VA Linux Systems Japan K.K., Sydney, Australia Satellite Office<br>
- &nbsp;H: <a href="http://www.vergenet.net/%7Ehorms/" target="_blank">www.vergenet.net/~horms/</a> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; W: <a href="http://www.valinux.co.jp/en" target="_blank">www.valinux.co.jp/en</a><br>
-<br>
-</font></blockquote></div><br><br clear="all"><br>-- <br>Best regards,<br>Maxim Uvarov<br>
-
-------=_Part_7357_391147.1224052121883--
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
