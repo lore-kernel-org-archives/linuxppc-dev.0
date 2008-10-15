@@ -1,26 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D53FFDDF63
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 20:41:57 +1100 (EST)
-Subject: Re: [git pull] Please pull from powerpc.git next branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200810151041.29069.arnd@arndb.de>
-References: <1224033396.8157.386.camel@pasglop>
-	<20081015083516.GL23557@erda.amd.com>
-	<200810151041.29069.arnd@arndb.de>
-Content-Type: text/plain
-Date: Wed, 15 Oct 2008 20:41:26 +1100
-Message-Id: <1224063686.8157.449.camel@pasglop>
-Mime-Version: 1.0
-Cc: Robert Richter <robert.richter@amd.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 68BFADDFFC
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 20:47:01 +1100 (EST)
+Date: Wed, 15 Oct 2008 11:46:54 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PROBLEM] Soft lockup on Linux 2.6.27, 2 patches, Cell/PPC64
+In-Reply-To: <1224062907.8157.446.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0810151135330.1133@vixen.sonytel.be>
+References: <48F17DE6.106@gmail.com>
+	<Pine.LNX.4.64.0810130945260.17287@vixen.sonytel.be>
+	<Pine.LNX.4.64.0810141130340.16020@vixen.sonytel.be>
+	<1224046194.8157.428.camel@pasglop>
+	<Pine.LNX.4.64.0810151050330.1133@vixen.sonytel.be>
+	<1224062907.8157.446.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-788405002-1224064014=:1133"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Aaron Tokhy <atokhy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,29 +28,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-10-15 at 10:41 +0200, Arnd Bergmann wrote:
-> On Wednesday 15 October 2008, Robert Richter wrote:
-> > there are still these OProfile patches for powerpc pending:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584349381-788405002-1224064014=:1133
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Wed, 15 Oct 2008, Benjamin Herrenschmidt wrote:
+> On Wed, 2008-10-15 at 11:25 +0200, Geert Uytterhoeven wrote:
+> > On Wed, 15 Oct 2008, Benjamin Herrenschmidt wrote:
+> > > On Tue, 2008-10-14 at 11:32 +0200, Geert Uytterhoeven wrote:
+> > > > which points again to smp_call_function_single...
+> > > 
+> > > Yup, it doesn't bring more information. At this stage, your 'other' CPU
+> > > is stuck with interrupts disabled. Hard to tell what's happening without
+> > > some HW assist. Do you have ways to trigger a non-maskable interrupt
+> > > such as a 0x100 ? That would allow to catch the other guy in xmon and
+> > > see what it was doing...
 > > 
-> > Carl Love (1):
-> >       powerpc/cell/oprofile: fix mutex locking for spu-oprofile
+> > Interrupts are not disabled on the other CPU thread, at least not according to
+> > the irqs_disabled() check I added to the printing of the `spinlock lockup'
+> > message in __spin_lock_debug().
 > > 
-> > Roel Kluin (1):
-> >       powerpc/cell/oprofile: vma_map: fix test on overlay_tbl_offset
+> > As the log also said
 > > 
-> > Can you or Paul send them upstream? You can pull from here:
+> > | hardirqs last  enabled at (5018779): [<c000000000007c1c>] restore+0x1c/0xe4
+> > | hardirqs last disabled at (5018780): [<c000000000003600>] decrementer_common+0x100/0x180
 > > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git powerpc-for-paul
-> > 
+> > I started blinking the LEDs on decrementer interupts, which do arrive on both
+> > CPU threads.
 > 
-> The patch from Roel is already in there, with a slightly different
-> subject line. The one from Carl is still missing.
+> Hrm, ok I though the log shows the decrementer interrupt of the thread
+> that's still working. If you are confident they are both taking
+> interrupts, then there's indeed something to track down.
+> 
+> > However, I'm a bit puzzled by these `hardirqs last enabled/disabled' messages,
+> > as they do indicate interrupts are off...
+> 
+> Well, at the time of the sample, the other CPU indeed -seems- to be in
+> an IRQ disabled section yes. 
 
-I'll put it in my tree tomorrow, it will be in the second batch. For
-lurkers, make sure that if you have a patch missing, it's resent and
-shows up in patchwork. Some patches that missed the new patchwork
-transition might have fallen off if paulus didn't pick them up before I
-took over.
+This is not really a sample. The hardirqs enable/disable is actually tracked
+using the TRACE_{EN,DIS}ABLE_INTS macros.
 
-Cheers,
-Ben.
+For the decrementer, the interrupt code is generated by the
+STD_EXCEPTION_COMMON_LITE() macro.
+
+Aha, none of the PPC interrupt handlers actually us TRACE_ENABLE_INTS (they do
+use TRACE_DISABLE_INTS). So that's why it thinks decrementer_common disabled
+interrupts, without enabling them again...
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-788405002-1224064014=:1133--
