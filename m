@@ -2,18 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 551ACDDDEE
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 15:46:08 +1100 (EST)
-Subject: Re: gigE 2.6.27 USB
+	by ozlabs.org (Postfix) with ESMTPS id A599EDDE0D
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Oct 2008 15:50:02 +1100 (EST)
+Subject: Re: [PROBLEM] Soft lockup on Linux 2.6.27, 2 patches, Cell/PPC64
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kevin Diggs <kevdig@hypersurf.com>
-In-Reply-To: <48F479ED.1030500@hypersurf.com>
-References: <48F32451.7020303@hypersurf.com> <48F479ED.1030500@hypersurf.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <Pine.LNX.4.64.0810141130340.16020@vixen.sonytel.be>
+References: <48F17DE6.106@gmail.com>
+	<Pine.LNX.4.64.0810130945260.17287@vixen.sonytel.be>
+	<Pine.LNX.4.64.0810141130340.16020@vixen.sonytel.be>
 Content-Type: text/plain
-Date: Wed, 15 Oct 2008 15:45:59 +1100
-Message-Id: <1224045959.8157.424.camel@pasglop>
+Date: Wed, 15 Oct 2008 15:49:54 +1100
+Message-Id: <1224046194.8157.428.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Aaron Tokhy <atokhy@gmail.com>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,34 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-10-14 at 03:52 -0700, Kevin Diggs wrote:
-> Kevin Diggs wrote:
-> > Hi,
-> > 
-> >     I managed to wrestle my gigE to the ground and get it to boot
-> > 2.6.27. I have, however, noticed that some messages are showing up in
-> > dmesg. There are alot of them. They are continuous. They appear to come
-> > from drivers/usb/core/hub.c:2916. It looks like they come in pairs (this
-> > beast has two ports (root hubs)). I plugged in a USB CF reader. It
-> > appears to work. The keyboard and mouse (a Logitech wireless receiver)
-> > seems to work. 2.6.24 did not do this.
-> > 
-> > kevin
-> > 
-> 	For what it is worth, I tricked a laptop into booting 2.6.27. It
-> does not appear to generate these messages. The PowerMac is running
-> Yellow Dog 4.
+On Tue, 2008-10-14 at 11:32 +0200, Geert Uytterhoeven wrote:
 
-It would be a lot more useful if you included informations in your
-report such as :
+> 
+> which points again to smp_call_function_single...
 
- - The actual error output
- - The full dmesg log
- - Informations about the adapter including output of lsusb -v
- - How do you actually trigger the problem
+Yup, it doesn't bring more information. At this stage, your 'other' CPU
+is stuck with interrupts disabled. Hard to tell what's happening without
+some HW assist. Do you have ways to trigger a non-maskable interrupt
+such as a 0x100 ? That would allow to catch the other guy in xmon and
+see what it was doing...
 
-It would be even more useful if you CC'ed some relevant list such
-as the linux-usb one too :-)
+It could be something in the ps3vram driver causing the kernel to
+lockup.... Now the question is whether the kernel is stuffed with
+something like a deadlock with interrupts off, or is it a HW problem
+causing a CPU to lockup on an access to the vram ?
+
+I'm afraid only you guys have tools that would allow to debug that
+sort of problem.
 
 Cheers,
 Ben.
