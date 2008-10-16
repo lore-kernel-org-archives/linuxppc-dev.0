@@ -1,22 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id F1110DDED9
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 16:03:12 +1100 (EST)
-Date: Wed, 15 Oct 2008 22:02:47 -0700 (PDT)
-Message-Id: <20081015.220247.262683261.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Subject: Re: powerpc allmodconfig
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081015213337.a99a9595.akpm@linux-foundation.org>
-References: <20081015213337.a99a9595.akpm@linux-foundation.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0B99BDDF20
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 16:20:35 +1100 (EST)
+Subject: Re: Problems with PCI-E devices not being detected with switch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ayman El-Khashab <AymanE@tanisys.com>
+In-Reply-To: <16691A8B34B5D9458EA3A1C37A11555A0137F81E@tanisys-ex2.Tanisys.Local>
+References: <16691A8B34B5D9458EA3A1C37A11555A0137F81E@tanisys-ex2.Tanisys.Local>
+Content-Type: text/plain
+Date: Thu, 16 Oct 2008 16:20:22 +1100
+Message-Id: <1224134422.8157.549.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: bzolnier@gmail.com, marek.vasut@gmail.com, tiwai@suse.de,
-	netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-	mark.fasheh@oracle.com, linuxppc-dev@ozlabs.org,
-	linux-ide@vger.kernel.org, dan.j.williams@intel.com,
-	linux-ext4@vger.kernel.org, dwmw2@infradead.org, mchehab@infradead.org
+Cc: Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org,
+	Victor Gallardo <vgallardo@amcc.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,68 +25,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 15 Oct 2008 21:33:37 -0700
+On Wed, 2008-10-15 at 10:47 -0500, Ayman El-Khashab wrote:
 
-> kernel/resource.c: In function '__reserve_region_with_split':
-> kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'resource_size_t'
-> kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'resource_size_t'
-> kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 6 has type 'resource_size_t'
-> kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 7 has type 'resource_size_t'
+Note for people on CC: This is a problem on 460EX on a canyonland using
+the 4x port.
 
-Known issue, Ben wants to add a new variant of %pX in order to print resources so that
-resource_size_t vs. unsigned long stuff doesn't matter like this any more.
+> The problem occurs when Linux boots. It sees the switch (and looking
+> in /sys/bus/... confirms it), but nothing on the downstream sides of
+> the switch (secondary busses) is visible.  There were no boot messages
+> to indicate it had seen the Sil 3531 and it doesn't function.  We've 
+> also tried other PCI-E devices (NI GPIB) on the downstream side and
+> they are also not detected, so it seems to be something in Linux, my
+> configuration, etc.  I've included the boot messages below from u-boot
+> and the kernel.  It is more than just the pci boot messages, but I was
+> not sure if something else in the log with provide some insight.
 
-> net/dccp/options.c: In function 'dccp_parse_options':
-> net/dccp/options.c:67: warning: 'value' may be used uninitialized in this function
+The messages below look really fishy indeed:
 
-Known issue, not trivial to fix, gcc is just being incredibly silly here as it
-can't see all of the control flow.
+> pci 0001:02:00.0: unknown header type 03, ignoring device
+> pci 0001:02:01.0: unknown header type 41, ignoring device
+> pci 0001:02:02.0: unknown header type 03, ignoring device
+> pci 0001:02:03.0: unknown header type 41, ignoring device
+> pci 0001:02:04.0: ignoring class 1d09 (doesn't match header type 02)
+> pci 0001:02:05.0: unknown header type 41, ignoring device
+> pci 0001:02:06.0: ignoring class 1d09 (doesn't match header type 02)
+> pci 0001:02:07.0: unknown header type 41, ignoring device
+> pci 0001:02:08.0: unknown header type 03, ignoring device
+> pci 0001:02:09.0: unknown header type 41, ignoring device
+> pci 0001:02:0a.0: ignoring class 7d09 (doesn't match header type 02)
+> pci 0001:02:0b.0: unknown header type 41, ignoring device
+> pci 0001:02:0c.0: ignoring class 1d01 (doesn't match header type 02)
+> pci 0001:02:0d.0: unknown header type 41, ignoring device
+> pci 0001:02:0e.0: ignoring class 7d09 (doesn't match header type 02)
+> pci 0001:02:0f.0: unknown header type 41, ignoring device
+> pci 0001:02:10.0: unknown header type 03, ignoring device
+> pci 0001:02:11.0: unknown header type 41, ignoring device
+> pci 0001:02:12.0: unknown header type 03, ignoring device
+> pci 0001:02:13.0: unknown header type 41, ignoring device
+> pci 0001:02:14.0: unknown header type 03, ignoring device
+> pci 0001:02:15.0: unknown header type 41, ignoring device
+> pci 0001:02:16.0: ignoring class 3d09 (doesn't match header type 02)
+> pci 0001:02:17.0: unknown header type 41, ignoring device
+> pci 0001:02:18.0: unknown header type 03, ignoring device
+> pci 0001:02:19.0: unknown header type 41, ignoring device
+> pci 0001:02:1a.0: unknown header type 03, ignoring device
+> pci 0001:02:1b.0: unknown header type 41, ignoring device
+> pci 0001:02:1c.0: ignoring class 5d01 (doesn't match header type 02)
+> pci 0001:02:1d.0: unknown header type 41, ignoring device
+> pci 0001:02:1e.0: unknown header type 03, ignoring device
+> pci 0001:02:1f.0: unknown header type 41, ignoring device
 
-> drivers/dma/ioat_dca.c: In function 'dca_enabled_in_bios':
-> drivers/dma/ioat_dca.c:81: error: implicit declaration of function 'cpuid_eax'
-> drivers/dma/ioat_dca.c: In function 'system_has_dca_enabled':
-> drivers/dma/ioat_dca.c:91: error: implicit declaration of function 'boot_cpu_has'
-> drivers/dma/ioat_dca.c:91: error: 'X86_FEATURE_DCA' undeclared (first use in this function)
-> drivers/dma/ioat_dca.c:91: error: (Each undeclared identifier is reported only once
-> drivers/dma/ioat_dca.c:91: error: for each function it appears in.)
-> drivers/dma/ioat_dca.c: In function 'ioat_dca_get_tag':
-> drivers/dma/ioat_dca.c:190: error: implicit declaration of function 'cpu_physical_id'
+Stefan, do you reckon it could be that we aren't leaving enough time
+for the things behind the switch to initialize ? Or could there be
+a subtle kernel bug here ? It looks to me that config space
+access behind the switch is broken.
 
-Known issue.  I tried to ping Jeff Garzik about doing a driver bug fix run in
-order to fix this, but he hasn't shown any signs of life.
+Ayman, can you try adding a long delay (such as msleep(5000), ie 5s)
+at the beginning of pcibios_init() in arch/powerpc/kernel/pci_32.c ?
+This will add 5s delay between the init/reset of the port and the
+probing by linux. Do that help ?
 
-So I'll do it myself later tonight. :-/
+Stefan, shouldn't we find a nice way to avoid the whole port reset and
+reconfiguration of the HW also when uboot already did a good enough job,
+maybe via some device-tree property ? It would also significantly speed
+up boot times.
 
-> net/sched/sch_generic.c: In function 'dev_watchdog':
-> net/sched/sch_generic.c:224: warning: unused variable 'drivername'
-
-Sucky, if WARN_ONCE() evaluates to nothing the sprintf() string buffer
-on the stack looks unused.
-
-> drivers/rtc/rtc-ds1286.c: In function 'ds1286_rtc_read':
-> drivers/rtc/rtc-ds1286.c:33: error: implicit declaration of function '__raw_readl'
-> drivers/rtc/rtc-ds1286.c: In function 'ds1286_rtc_write':
-> drivers/rtc/rtc-ds1286.c:38: error: implicit declaration of function '__raw_writel'
-> drivers/rtc/rtc-ds1286.c: In function 'ds1286_probe':
-> drivers/rtc/rtc-ds1286.c:345: error: implicit declaration of function 'ioremap'
-> drivers/rtc/rtc-ds1286.c:345: warning: assignment makes pointer from integer without a cast
-> drivers/rtc/rtc-ds1286.c:365: error: implicit declaration of function 'iounmap'
-
-Missing asm/io.h include.
-
-> drivers/rtc/rtc-m48t35.c: In function 'm48t35_read_time':
-> drivers/rtc/rtc-m48t35.c:59: error: implicit declaration of function 'readb'
-> drivers/rtc/rtc-m48t35.c:60: error: implicit declaration of function 'writeb'
-> drivers/rtc/rtc-m48t35.c: In function 'm48t35_probe':
-> drivers/rtc/rtc-m48t35.c:168: error: implicit declaration of function 'ioremap'
-> drivers/rtc/rtc-m48t35.c:168: warning: assignment makes pointer from integer without a cast
-> drivers/rtc/rtc-m48t35.c:188: error: implicit declaration of function 'iounmap'
-
-Likewise.
-
-> drivers/net/wireless/libertas_tf/if_usb.c: In function '__if_usb_submit_rx_urb':
-> drivers/net/wireless/libertas_tf/if_usb.c:334: warning: cast to pointer from integer of different size
-
-I've seen this one on sparc64 too, I think the arg is totally unused in the end
-for this callback control flow and we can just use NULL or zero instead.
+Cheers,
+Ben.
