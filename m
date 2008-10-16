@@ -1,21 +1,16 @@
-Return-Path: <rwoodworth@securics.com>
-Received: from securics.com (mail.securics.com [128.198.58.14])
-	by ozlabs.org (Postfix) with ESMTP id 516E9DDED6
+Return-Path: <eemingliu@hotmail.com>
+Received: from col0-omc1-s4.col0.hotmail.com (col0-omc1-s4.col0.hotmail.com
+	[65.55.34.14]) by ozlabs.org (Postfix) with ESMTP id 0CD19DDF84
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Oct 2008 03:02:32 +1100 (EST)
-Received: from [192.168.1.182] (unknown [192.168.1.182])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(No client certificate requested)
-	by securics.com (Postfix) with ESMTP id DE8EFB8C0A3
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Oct 2008 09:54:35 -0600 (MDT)
-Message-Id: <1BA180A8-1655-4F10-ADDD-E5667DE182BE@securics.com>
-From: Robert Woodworth <rwoodworth@securics.com>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Cache control
-Date: Thu, 16 Oct 2008 09:57:27 -0600
+	Fri, 17 Oct 2008 06:38:47 +1100 (EST)
+Message-ID: <COL107-W14F82F8CC72D8E57C374ABB2330@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_dff7b032-e938-41fb-984d-dcae65a7003f_"
+From: MingLiu <eemingliu@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: xparameters file in the Xilinx kernel tree version 2.6.27-rc4
+Date: Thu, 16 Oct 2008 19:38:46 +0000
+MIME-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,31 +21,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have a Virtex4 VF60 device with 256MB DDR2.
-
-I have told the Linux kernel that the device has only 128MB and its  
-working fine.  There is an HDL module that is populating the next 16MB  
-with sensor data (0x08000000 - 0x09000000)  I mapped the area into my  
-driver via `ioremap()` and also via `mmap / remap_pfn_range()`  It  
-works fine.
-
-I know that PPC cache regions work in 128MB blocks.  I assume that the  
-kernel bootup is turning on cache in the first 128, because it thinks  
-that its the full RAM range, and not cached in the next 128MB.
-
-I know that if I declare the area cached, and invalidate the region  
-before I read it,  the reads should be much faster than if it's not  
-cached.
+--_dff7b032-e938-41fb-984d-dcae65a7003f_
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
 
-How can I control if the area is cached? and then invalidate it when  
-new data arrives?
+Dear all,
+I downloaded the newest version 2.6.27 kernel from the Xilinx tree. I found that it is much different with the previous version 2.6.24-rc8 we are using. Maybe my question is stupid, but I cannot find the previous xparameters_ml40x.h file in arch/ppc/platform/4xx/xparameters/ in the new arch/powerpc folder. So how can I import my BSP parameters in the new kernel for the customized design?
+ 
+One more question is, I tried "make zImage". But I cannot find the generated zImage.elf, as the previous kernel will do.How to generate the .elf kernel file?
+ 
+Thanks for your help and answering.
+ 
+BR
+Ming
+ 
+_________________________________________________________________
+Windows Live Photo gallery 数码相机的超级伴侣，轻松管理和编辑照片，还能制作全景美图！
+http://get.live.cn/product/photo.html
+--_dff7b032-e938-41fb-984d-dcae65a7003f_
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
-Is there a PPC/Linux API call to declare the region cached and  
-invalidate regions before read?
-
-
-
-
-
-Rob.
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 9pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body class='hmmessage'>
+Dear all,<BR>
+I downloaded the newest version 2.6.27 kernel from the Xilinx tree. I found that it is much different with the previous version 2.6.24-rc8 we are using. Maybe my question is stupid, but I cannot find the previous xparameters_ml40x.h file in arch/ppc/platform/4xx/xparameters/ in the new arch/powerpc folder. So how can I import my BSP parameters in the new kernel for the customized design?<BR>
+&nbsp;<BR>
+One more question is, I tried "make zImage". But I cannot find the generated zImage.elf,&nbsp;as the previous kernel will do.How to generate the .elf kernel file?<BR>
+&nbsp;<BR>
+Thanks for your help and answering.<BR>
+&nbsp;<BR>
+BR<BR>
+Ming<BR>
+&nbsp;<BR><br /><hr />使用新一代 Windows Live Messenger 轻松交流和共享！ <a href='http://messenger.live.cn/' target='_new'>立即体验！</a></body>
+</html>
+--_dff7b032-e938-41fb-984d-dcae65a7003f_--
