@@ -1,23 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 56BA9DDF26
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 08:17:48 +1100 (EST)
-Date: Thu, 16 Oct 2008 14:17:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH] Add new framebuffer driver for Fujitsu MB862xx GDCs
-Message-Id: <20081016141729.1f6550f0.akpm@linux-foundation.org>
-In-Reply-To: <1223997906-19900-1-git-send-email-agust@denx.de>
-References: <1223997906-19900-1-git-send-email-agust@denx.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EF470DDDEF
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 08:19:08 +1100 (EST)
+Subject: RE: Problems with PCI-E devices not being detected with switch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ayman El-Khashab <AymanE@tanisys.com>
+In-Reply-To: <16691A8B34B5D9458EA3A1C37A11555A0137F822@tanisys-ex2.Tanisys.Local>
+References: <16691A8B34B5D9458EA3A1C37A11555A0137F81E@tanisys-ex2.Tanisys.Local>
+	<1224134422.8157.549.camel@pasglop>
+	<16691A8B34B5D9458EA3A1C37A11555A0137F822@tanisys-ex2.Tanisys.Local>
+Content-Type: text/plain
+Date: Fri, 17 Oct 2008 08:19:02 +1100
+Message-Id: <1224191942.7654.24.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Dmitry, linux-fbdev-devel@lists.sourceforge.net,
-	Baryshkov <dbaryshkov@gmail.com>,
-	Matteo Fortini <m.fortini@selcomgroup.com>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 14 Oct 2008 17:25:06 +0200
-Anatolij Gustschin <agust@denx.de> wrote:
+On Thu, 2008-10-16 at 10:01 -0500, Ayman El-Khashab wrote:
+> 
+> Thanks for your help.  I did try a 5s delay and other than the boot
+> taking an extra couple of seconds, there was no change.  The messages
+> above "unknown header" still showed up.  Downstream devices were not
+> found.
+> BTW, this is with both the Denx kernel tree and the official 2.6.27
+> kernel.  
+> Both have the same results. One added note, just to rule out bad
+> electronics,
+> I have confirmed that the switch+sata work correctly together if placed
+> into a plain x86 pc with 2.6.24.  So the electronics are fine.
 
-> This patch adds framebuffer driver for Fujitsu
-> Carmine/Coral-P(A)/Lime graphics controllers.
-> Lime GDC support is known to work on PPC440EPx
-> based lwmon5 and MPC8544E based socrates embedded
-> boards, both equipped with Lime GDC. Carmine/Coral-P
-> PCI GDC support is known to work on PPC440EPx based
-> Sequoia board and also on x86 platform.
+I think I know where the problem comes from. The bus numbers aren't
+getting properly assigned below the root bus. I'm working on some test
+patches, I'll let you know when I have something.
 
-Well I've read all the followup discussion and now I don't know what
-to do.
-
-I think I'll just merge it and see if anyone shouts at me.
+Cheers,
+Ben.
