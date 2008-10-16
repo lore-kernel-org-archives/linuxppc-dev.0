@@ -1,20 +1,23 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id F319CDDF53
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 07:39:22 +1100 (EST)
-Date: Thu, 16 Oct 2008 22:39:14 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] i2c-cpm: Suppress autoprobing for devices
-Message-ID: <20081016203914.GC13629@pengutronix.de>
-References: <20081016111300.GC3432@pengutronix.de>
-	<FC91562A-D6B4-4E62-A5EA-43171A80B766@kernel.crashing.org>
-	<20081016.122325.188129775.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="JP+T4n/bALQSJXh8"
-In-Reply-To: <20081016.122325.188129775.davem@davemloft.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 56BA9DDF26
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 08:17:48 +1100 (EST)
+Date: Thu, 16 Oct 2008 14:17:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH] Add new framebuffer driver for Fujitsu MB862xx GDCs
+Message-Id: <20081016141729.1f6550f0.akpm@linux-foundation.org>
+In-Reply-To: <1223997906-19900-1-git-send-email-agust@denx.de>
+References: <1223997906-19900-1-git-send-email-agust@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Dmitry, linux-fbdev-devel@lists.sourceforge.net,
+	Baryshkov <dbaryshkov@gmail.com>,
+	Matteo Fortini <m.fortini@selcomgroup.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 14 Oct 2008 17:25:06 +0200
+Anatolij Gustschin <agust@denx.de> wrote:
 
---JP+T4n/bALQSJXh8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> This patch adds framebuffer driver for Fujitsu
+> Carmine/Coral-P(A)/Lime graphics controllers.
+> Lime GDC support is known to work on PPC440EPx
+> based lwmon5 and MPC8544E based socrates embedded
+> boards, both equipped with Lime GDC. Carmine/Coral-P
+> PCI GDC support is known to work on PPC440EPx based
+> Sequoia board and also on x86 platform.
 
-On Thu, Oct 16, 2008 at 12:23:25PM -0700, David Miller wrote:
+Well I've read all the followup discussion and now I don't know what
+to do.
 
-> Don't bother, he'll just argue with you about the fact that class
-> based probing should be maintained.
->=20
-> He's doing exactly that with me right now.
-
-I think the two of you talked at cross purposes. Just observing, I can
-follow his point, that you can easily switch probing off in the driver
-(like Wolfgang Grandegger's and my patch does), so there is no need to
-sacrifice some functionality of a whole algorithm. Just clear the
-=2Eclass-entry in your driver and there should be peace ;)
-
-All the best,
-
-   Wolfram
-
---=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-
---JP+T4n/bALQSJXh8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkj3pnIACgkQD27XaX1/VRvV1ACgg8Q6OPaWFIBgNm9HzVW4gY2a
-9fwAoJOo54T2+HctYWonDa63G3f4obOd
-=XfkI
------END PGP SIGNATURE-----
-
---JP+T4n/bALQSJXh8--
+I think I'll just merge it and see if anyone shouts at me.
