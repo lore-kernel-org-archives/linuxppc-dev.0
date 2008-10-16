@@ -1,19 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mingo@elte.hu>
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 853ACDDEF0
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 03:09:37 +1100 (EST)
-Message-Id: <FC91562A-D6B4-4E62-A5EA-43171A80B766@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Wolfram Sang <w.sang@pengutronix.de>
-In-Reply-To: <20081016111300.GC3432@pengutronix.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] i2c-cpm: Suppress autoprobing for devices
-Date: Thu, 16 Oct 2008 11:09:30 -0500
-References: <20081016111300.GC3432@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 7FBE6DE05C
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 03:14:40 +1100 (EST)
+Date: Thu, 16 Oct 2008 18:14:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: linux-next:  build failure
+Message-ID: <20081016161405.GA14440@elte.hu>
+References: <20081016202907.978d00b1.sfr@canb.auug.org.au>
+	<20081016103916.GA30745@elte.hu> <48F767C5.8000207@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48F767C5.8000207@goop.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +27,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 16, 2008, at 6:13 AM, Wolfram Sang wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
+> Ingo Molnar wrote:
+>> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>>
+>>   
+>>> Hi all,
+>>>
+>>> Today's linux-next build (powerpc allyesconfig) failed like this:
+>>>
+>>> In file included from arch/powerpc/include/asm/mmu-hash64.h:17,
+>>>                  from arch/powerpc/include/asm/mmu.h:8,
+>>>                  from arch/powerpc/include/asm/pgtable.h:8,
+>>>                  from arch/powerpc/mm/slb.c:20:
+>>> arch/powerpc/include/asm/page.h:76: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'memstart_addr'
+>>> arch/powerpc/include/asm/page.h:77: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'kernstart_addr'
+>>>
+>>> Caused by commit 600715dcdf567c86f8b2c6173fcfb4b873e25a19 ("generic: add
+>>> phys_addr_t for holding physical addresses") from the tip-core tree.
+>>> This only fails if CONFIG_RELOCATABLE is set.
+>>>
+>>> I have applied the patch below.
+>>>     
+>>
+>> applied to tip/core/urgent, thanks Stephen!
+>>   
 >
-> Similar to commit 618b26d52843c0f85b8eb143cf2695d7f6fd072d, also  
-> remove
-> automatic probing for this i2c controller. Might need updates to dts  
-> files
-> using it.
->
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> ---
-> drivers/i2c/busses/i2c-cpm.c |    1 -
-> 1 file changed, 1 deletion(-)
+> Shouldn't this go via a ppc tree?  Won't having ppc changes in tip.git  
+> make people grumpy?
 
-The i2c list should be CC'd.  Jean should pick this up.
+it was broken via a generic topic: tip/core/resources, not the x86 tree.
 
-- k
+	Ingo
