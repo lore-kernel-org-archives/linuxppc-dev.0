@@ -1,31 +1,18 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 164A5DDDE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 01:58:52 +1100 (EST)
-Subject: Re: powerpc allmodconfig
-From: Johannes Berg <johannes@sipsolutions.net>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20081015.220247.262683261.davem@davemloft.net>
-	(sfid-20081016_070321_484206_CF986FB8)
-References: <20081015213337.a99a9595.akpm@linux-foundation.org>
-	<20081015.220247.262683261.davem@davemloft.net>
-	(sfid-20081016_070321_484206_CF986FB8)
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-RwDHazsTlsfHEjp3GDNS"
-Date: Thu, 16 Oct 2008 16:57:19 +0200
-Message-Id: <1224169039.735.57.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: bzolnier@gmail.com, marek.vasut@gmail.com, tiwai@suse.de,
-	netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-	mark.fasheh@oracle.com, linuxppc-dev@ozlabs.org,
-	linux-ide@vger.kernel.org, akpm@linux-foundation.org,
-	linux-ext4@vger.kernel.org, dwmw2@infradead.org,
-	dan.j.williams@intel.com, mchehab@infradead.org,
-	Arjan van de Ven <arjan@infradead.org>
+Return-Path: <AymanE@tanisys.com>
+Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [206.127.28.197])
+	by ozlabs.org (Postfix) with ESMTP id 4EEA6DDF93
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 02:01:57 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Problems with PCI-E devices not being detected with switch
+Date: Thu, 16 Oct 2008 10:01:55 -0500
+Message-ID: <16691A8B34B5D9458EA3A1C37A11555A0137F822@tanisys-ex2.Tanisys.Local>
+In-Reply-To: <1224134422.8157.549.camel@pasglop>
+References: <16691A8B34B5D9458EA3A1C37A11555A0137F81E@tanisys-ex2.Tanisys.Local>
+	<1224134422.8157.549.camel@pasglop>
+From: "Ayman El-Khashab" <AymanE@tanisys.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,46 +22,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-RwDHazsTlsfHEjp3GDNS
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2008-10-15 at 22:02 -0700, David Miller wrote:
+Benjamin Herrenschmidt wrote:
+> On Wed, 2008-10-15 at 10:47 -0500, Ayman El-Khashab wrote:
+>=20
+> Note for people on CC: This is a problem on 460EX on a canyonland
+> using the 4x port.=20
+>=20
+>> The problem occurs when Linux boots. It sees the switch (and looking
+>> in /sys/bus/... confirms it), but nothing on the downstream sides of
+>> the switch (secondary busses) is visible.  There were no boot
+>> messages to indicate it had seen the Sil 3531 and it doesn't
+>> function.  We've also tried other PCI-E devices (NI GPIB) on the
+>> downstream side and they are also not detected, so it seems to be
+>> something in Linux, my configuration, etc.  I've included the boot
+>> messages below from u-boot and the kernel.  It is more than just the
+>> pci boot messages, but I was not sure if something else in the log
+>> with provide some insight.=20
+>=20
+> The messages below look really fishy indeed:
+>=20
+>> pci 0001:02:00.0: unknown header type 03, ignoring device pci
+>> 0001:02:01.0: unknown header type 41, ignoring device pci
+>> 0001:02:02.0: unknown header type 03, ignoring device pci
+>> 0001:02:03.0: unknown header type 41, ignoring device pci
+>> 0001:02:04.0: ignoring class 1d09 (doesn't match header type 02) pci
+>> 0001:02:05.0: unknown header type 41, ignoring device pci
+>> 0001:02:06.0: ignoring class 1d09 (doesn't match header type 02) pci
+>> 0001:02:07.0: unknown header type 41, ignoring device pci
+>> 0001:02:08.0: unknown header type 03, ignoring device pci
+>> 0001:02:09.0: unknown header type 41, ignoring device pci
+>> 0001:02:0a.0: ignoring class 7d09 (doesn't match header type 02) pci
+>> 0001:02:0b.0: unknown header type 41, ignoring device pci
+>> 0001:02:0c.0: ignoring class 1d01 (doesn't match header type 02) pci
+>> 0001:02:0d.0: unknown header type 41, ignoring device pci
+>> 0001:02:0e.0: ignoring class 7d09 (doesn't match header type 02) pci
+>> 0001:02:0f.0: unknown header type 41, ignoring device pci
+>> 0001:02:10.0: unknown header type 03, ignoring device pci
+>> 0001:02:11.0: unknown header type 41, ignoring device pci
+>> 0001:02:12.0: unknown header type 03, ignoring device pci
+>> 0001:02:13.0: unknown header type 41, ignoring device pci
+>> 0001:02:14.0: unknown header type 03, ignoring device pci
+>> 0001:02:15.0: unknown header type 41, ignoring device pci
+>> 0001:02:16.0: ignoring class 3d09 (doesn't match header type 02) pci
+>> 0001:02:17.0: unknown header type 41, ignoring device pci
+>> 0001:02:18.0: unknown header type 03, ignoring device pci
+>> 0001:02:19.0: unknown header type 41, ignoring device pci
+>> 0001:02:1a.0: unknown header type 03, ignoring device pci
+>> 0001:02:1b.0: unknown header type 41, ignoring device pci
+>> 0001:02:1c.0: ignoring class 5d01 (doesn't match header type 02) pci
+>> 0001:02:1d.0: unknown header type 41, ignoring device pci
+>> 0001:02:1e.0: unknown header type 03, ignoring device pci
+>> 0001:02:1f.0: unknown header type 41, ignoring device
 >=20
 >=20
-> > net/sched/sch_generic.c: In function 'dev_watchdog':
-> > net/sched/sch_generic.c:224: warning: unused variable 'drivername'
+> Ayman, can you try adding a long delay (such as msleep(5000), ie 5s)
+> at the beginning of pcibios_init() in arch/powerpc/kernel/pci_32.c ?=20
+> This will add 5s delay between the init/reset of the port and the
+> probing by linux. Do that help ?=20
 >=20
-> Sucky, if WARN_ONCE() evaluates to nothing the sprintf() string buffer
-> on the stack looks unused.
 
-I've complained about this to Arjan before, we actually lose all
-messages passed to WARN() or WARN_ONCE() on platforms that use bug traps
-for warnings too.
+Thanks for your help.  I did try a 5s delay and other than the boot
+taking an extra couple of seconds, there was no change.  The messages
+above "unknown header" still showed up.  Downstream devices were not
+found.
+BTW, this is with both the Denx kernel tree and the official 2.6.27
+kernel. =20
+Both have the same results. One added note, just to rule out bad
+electronics,
+I have confirmed that the switch+sata work correctly together if placed
+into a plain x86 pc with 2.6.24.  So the electronics are fine.
 
-johannes
-
---=-RwDHazsTlsfHEjp3GDNS
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJI91ZLAAoJEKVg1VMiehFYYlcQAIVtjS9xcVR3ZmM6893/7UIV
-2XEXfwlKMLunk5fBVAPz2DF2x83tlyNHrALOW1zTWjM2teLzKCq0XtFsXIoMrUX5
-0AuQBKmN/nf2+93YbfBH73zWmeegBz0yO1IaCdnjDT5P0Orn6mj4h7OBnb1u2Dxo
-pNK/wOiX/v/2MKrfQnEBo9LHqMmlGonbvFPxBIVOeONzsjlv5BVMWqPhfxf9D7wI
-m1GIDO13dYZ/ZkKuC5SchD+UJhFhPZd2pG1rxK8eRctDJXHa1dFEcVLrQq9zshBL
-7xJ5n4jdw1M5PVKNB4Frd3H1nv8PGNKoNliodaNwj/ZC5ULxZXnFxECkPl3VGU63
-5cUVGYTsqHUewPT7TigoYTD45AU85LWyhYHtN63hqbkeNH5Sf2QgN5XwQ7Wb3Urm
-gk3MMi01RcUvuV0MtiWsqZ/Cu1HM6S4QsgxypZ7gtv867LiB17c3ucVbswPVRGgZ
-A036WQSNA+gAQU3tV5J5D9eq8lphlmioLfUq4/mPKSn+UgI22iYMTPk9hMY/3dkZ
-Iox3vd7GfiDiPmNoHaF27w9dlQURjU3ue0eC5G5gUvImzawU3l6bmVEHoNhT/DUJ
-Q+2NSFvtZhYzFm1TUnHpyF0KYnAz6pogNY8155qCZ5dX7Wlc2wgpUkZJpdhc8iv9
-nb5xAVWpNharfmm23n+R
-=pg7B
------END PGP SIGNATURE-----
-
---=-RwDHazsTlsfHEjp3GDNS--
+Ayman
