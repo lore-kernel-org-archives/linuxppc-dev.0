@@ -1,40 +1,22 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
+Return-Path: <broonie@opensource.wolfsonmicro.com>
+Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
+	[80.75.67.52])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5BA0BDDF70
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 23:00:25 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m9GBwhrd451658
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 11:58:43 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
-	[9.149.37.216])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id m9GBwhJZ3543070
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 12:58:43 +0100
-Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m9GBwgra018998
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 12:58:42 +0100
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [RFC PATCH 4/5] hvc_console: Add tty window resizing
-Date: Thu, 16 Oct 2008 13:58:40 +0200
-References: <20081014091247.433079967@linux.vnet.ibm.com>
-	<20081014091413.306993844@linux.vnet.ibm.com>
-	<200810162241.29883.rusty@rustcorp.com.au>
-In-Reply-To: <200810162241.29883.rusty@rustcorp.com.au>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 08751DE0E2
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 23:12:29 +1100 (EST)
+Date: Thu, 16 Oct 2008 13:04:16 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] mfd/wm8350: don't export static functions
+Message-ID: <20081016120416.GA5753@rakim.wolfsonmicro.main>
+References: <20081016204754.a41646e5.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200810161358.40428.borntraeger@de.ibm.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Linux PPC devel <linuxppc-dev@ozlabs.org>,
-	Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081016204754.a41646e5.sfr@canb.auug.org.au>
+Cc: LKML <linux-kernel@vger.kernel.org>, ppc-dev <linuxppc-dev@ozlabs.org>,
+	linux-next@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linus <torvalds@linux-foundation.org>, Liam Girdwood <lrg@slimlogic.co.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,21 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Am Donnerstag, 16. Oktober 2008 schrieb Rusty Russell:
-> > The patch provides the hvc_resize() function to update the terminal
-> > window dimensions (struct winsize) for a specified hvc console.
-> > The function stores the new window size and schedules a function
-> > that finally updates the tty winsize and signals the change to
-> > user space (SIGWINCH).
-> > Because the winsize update must acquire a mutex and might sleep,
-> > the function is scheduled instead of being called from hvc_poll()
-> > or khvcd.
-> 
-> I want this functionality for lguest, too.  But I don't see anything which 
-> uses this call yet?   Are we going to use the config_change notifier from 
-> virtio?  (Which IIRC neither S/390 nor lguest have plumbed in).
+On Thu, Oct 16, 2008 at 08:47:54PM +1100, Stephen Rothwell wrote:
+> Today's linux-next build (powerpc allyesconfig) failed like this:
 
-I have some prototype patches for virtio_console, but did not find the time to 
-finish them.
+> drivers/mfd/wm8350-core.c:1131: error: __ksymtab_wm8350_create_cache causes a section type conflict
 
-Christian
+> Caused by commit 89b4012befb1abca5e86d232bc0e2a797b0d9825 ("mfd: Core
+> support for the WM8350 AudioPlus PMIC"). wm8350_create_cache is not used
+> elsewhere, so remove the EXPORT_SYMBOL.
+
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
