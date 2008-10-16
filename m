@@ -1,31 +1,16 @@
-Return-Path: <mohan@in.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5A5C3DDDF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 21:33:23 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e8.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id m9GAUIGo015182
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 06:30:18 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9GAXJ7D277404
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 06:33:19 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9GAXJ3s028459
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 06:33:19 -0400
-Message-ID: <48F71868.8000507@in.ibm.com>
-Date: Thu, 16 Oct 2008 16:03:12 +0530
-From: Mohan Kumar M <mohan@in.ibm.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Support for relocatable kdump kernel
-References: <20081012233420.GA6240@in.ibm.com>
-	<18674.42140.69339.584403@drongo.ozlabs.ibm.com>
-In-Reply-To: <18674.42140.69339.584403@drongo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7A1FFDDFC5
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 21:34:22 +1100 (EST)
+Date: Thu, 16 Oct 2008 20:29:07 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: linux-next:  build failure
+Message-Id: <20081016202907.978d00b1.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Ingo, ppc-dev <linuxppc-dev@ozlabs.org>, Molnar <mingo@elte.hu>,
+	linux-next@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,29 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Mohan Kumar M writes:
-> 
->> Support for relocatable kdump kernel
-> 
->> @@ -1401,9 +1414,21 @@ _STATIC(__after_prom_start)
->>  	beq	9f			/* have already put us at zero */
->>  	li	r6,0x100		/* Start offset, the first 0x100 */
->>  					/* bytes were copied earlier.	 */
->> -#ifdef CONFIG_RELOCATABLE
->> +
->> +#ifdef CONFIG_CRASH_DUMP
-> 
-> What tree is this patch against?  No tree that I can find has a line
-> saying "#ifdef CONFIG_RELOCATABLE" at that point.  Or is there a
-> prerequisite patch that I haven't seen yet?
+Hi all,
 
-Hi Paul,
+Today's linux-next build (powerpc allyesconfig) failed like this:
 
-My patch is based on your PATCH 5 of relocatable kernel patchset (which 
-demonstrates kernel can be relocatable).
+In file included from arch/powerpc/include/asm/mmu-hash64.h:17,
+                 from arch/powerpc/include/asm/mmu.h:8,
+                 from arch/powerpc/include/asm/pgtable.h:8,
+                 from arch/powerpc/mm/slb.c:20:
+arch/powerpc/include/asm/page.h:76: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'memstart_addr'
+arch/powerpc/include/asm/page.h:77: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'kernstart_addr'
 
-Do I need to resend the patch by generating the diff with your patch5 also?
+Caused by commit 600715dcdf567c86f8b2c6173fcfb4b873e25a19 ("generic: add
+phys_addr_t for holding physical addresses") from the tip-core tree.
+This only fails if CONFIG_RELOCATABLE is set.
 
-Regards,
-Mohan.
+I have applied the patch below.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+>From 3e3a6a5f9479a4d35070c15f863a8635e9865058 Mon Sep 17 00:00:00 2001
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 16 Oct 2008 20:07:00 +1100
+Subject: [PATCH] tip-core/powerpc: phys_addr_t has moved to linux/types.h
+
+So include that instead of asm/types.h in asm/page.h for
+the CONFIG_RELOCATABLE case.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/include/asm/page.h |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 64e1445..5ac51e6 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -10,9 +10,13 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ 
++#ifndef __ASSEMBLY__
++#include <linux/types.h>
++#else
++#include <asm/types.h>
++#endif
+ #include <asm/asm-compat.h>
+ #include <asm/kdump.h>
+-#include <asm/types.h>
+ 
+ /*
+  * On PPC32 page size is 4K. For PPC64 we support either 4K or 64K software
+-- 
+1.5.6.5
