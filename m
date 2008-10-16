@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EF470DDDEF
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 08:19:08 +1100 (EST)
-Subject: RE: Problems with PCI-E devices not being detected with switch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ayman El-Khashab <AymanE@tanisys.com>
-In-Reply-To: <16691A8B34B5D9458EA3A1C37A11555A0137F822@tanisys-ex2.Tanisys.Local>
-References: <16691A8B34B5D9458EA3A1C37A11555A0137F81E@tanisys-ex2.Tanisys.Local>
-	<1224134422.8157.549.camel@pasglop>
-	<16691A8B34B5D9458EA3A1C37A11555A0137F822@tanisys-ex2.Tanisys.Local>
-Content-Type: text/plain
-Date: Fri, 17 Oct 2008 08:19:02 +1100
-Message-Id: <1224191942.7654.24.camel@pasglop>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id F155DDDED5
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 09:37:05 +1100 (EST)
+Date: Thu, 16 Oct 2008 15:36:41 -0700 (PDT)
+Message-Id: <20081016.153641.32547403.davem@davemloft.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 1/7] powerpc and sparc: introduce dev_archdata node
+	accessors
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081016171251.GA5515@oksana.dev.rtsoft.ru>
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+	<20081016171251.GA5515@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, khali@linux-fr.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-10-16 at 10:01 -0500, Ayman El-Khashab wrote:
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Date: Thu, 16 Oct 2008 21:12:51 +0400
+
+> The name of the device_node field differ across the platforms, so we
+> have to implement inlined accessors. This is needed to avoid ugly
+> #ifdef in the generic code.
 > 
-> Thanks for your help.  I did try a 5s delay and other than the boot
-> taking an extra couple of seconds, there was no change.  The messages
-> above "unknown header" still showed up.  Downstream devices were not
-> found.
-> BTW, this is with both the Denx kernel tree and the official 2.6.27
-> kernel.  
-> Both have the same results. One added note, just to rule out bad
-> electronics,
-> I have confirmed that the switch+sata work correctly together if placed
-> into a plain x86 pc with 2.6.24.  So the electronics are fine.
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-I think I know where the problem comes from. The bus numbers aren't
-getting properly assigned below the root bus. I'm working on some test
-patches, I'll let you know when I have something.
+I'm happy to just change this member name on sparc to match
+powerpc's choice.
 
-Cheers,
-Ben.
+That being said, this abstraction still has value and I'd
+like to let you merge this now and make forward progress
+so:
+
+Acked-by: David S. Miller <davem@davemloft.net>
