@@ -1,42 +1,15 @@
-Return-Path: <brueckner@linux.vnet.ibm.com>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 35434DDEDE
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 22:11:23 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id m9GB9qaf632098
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 11:09:52 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id m9GB9prR3465320
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 13:09:51 +0200
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m9GB9oNB001305
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 13:09:51 +0200
-Date: Thu, 16 Oct 2008 13:09:50 +0200
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC PATCH 2/5] hvc_console: Add tty driver flag
-	TTY_DRIVER_RESET_TERMIOS
-Message-ID: <20081016110950.GA4125@cetus.boeblingen.de.ibm.com>
-References: <20081014091247.433079967@linux.vnet.ibm.com>
-	<20081014091413.003841094@linux.vnet.ibm.com>
-	<20081014104025.517ae734@lxorguk.ukuu.org.uk>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 7A2E6DDFB4
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 22:12:58 +1100 (EST)
+Date: Thu, 16 Oct 2008 13:13:00 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] i2c-cpm: Suppress autoprobing for devices
+Message-ID: <20081016111300.GC3432@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081014104025.517ae734@lxorguk.ukuu.org.uk>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-	Christian Borntraeger <borntraeger@de.ibm.com>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Linux PPC devel <linuxppc-dev@ozlabs.org>,
-	Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="HG+GLK89HZ1zG0kk"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -46,81 +19,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-for the sake of completion, here are few more details why I have suggest to
-add the TTY_DRIVER_RESET_TERMIOS flag:
+--HG+GLK89HZ1zG0kk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 14, 2008 at 10:40:25AM +0100, Alan Cox wrote:
-> On Tue, 14 Oct 2008 11:12:49 +0200
-> Hendrik Brueckner <brueckner@linux.vnet.ibm.com> wrote:
-> 
-> > After a tty hangup() or close() operation, processes might not reset the
-> > termio settings to a sane state.
-> That is the job of the getty task normally. pty is special as the reissue
-> of the same pty is done as a new device (with new state).
 
-During some testing, I have experienced that the bash alters few termios
-settings before showing the bash prompt:
--
-ioctl(0, TCGETS, {B38400 opost isig icanon echo ...}) = 0
-ioctl(0, TCSETSW, {B38400 opost isig -icanon -echo ...}) = 0
-write(2, "root@t6345050:~# ", 17) = 17
--
-If the tty gets a hangup, the bash gets terminated but the settings still
-remains after init has respawned the getty process.
-For my network-based hvc backend, a tty_hangup() is caused by a disconnect.
+Similar to commit 618b26d52843c0f85b8eb143cf2695d7f6fd072d, also remove
+automatic probing for this i2c controller. Might need updates to dts files
+using it.
 
-I looked into the tty_io.c source and found out that the termios settings
-are stored in an array of the tty driver struct and they remains unchanged
-if a tty device is released and initialized again.
-At tty device initialization, the tty_init_termios() set tty->termios to the
-tty->driver->termios[tty->index].
-
-The idea is to ensure that when a tty is initialized it has the
-default (initial) termio settings; and that is actually done if
-TTY_DRIVER_RESET_TERMIOS is set.
-
-Anyhow the other possibility might be to always set the initial termios
-when the tty is initialized (see patch below).
-But I am not sure if that case is the general behavior of ttys.
-Please let me know if there is a reason not to re-initialize the termios
-of a new tty.
-
-Thanks.
-
-Best regards
-Hendrik
-
-Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 ---
- drivers/char/tty_io.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/i2c/busses/i2c-cpm.c |    1 -
+ 1 file changed, 1 deletion(-)
 
---- a/drivers/char/tty_io.c	2008-10-16 09:48:00.000000000 +0200
-+++ b/drivers/char/tty_io.c	2008-10-16 12:55:52.000000000 +0200
-@@ -1243,10 +1243,9 @@ int tty_init_termios(struct tty_struct *
- 		tp = kzalloc(sizeof(struct ktermios[2]), GFP_KERNEL);
- 		if (tp == NULL)
- 			return -ENOMEM;
--		memcpy(tp, &tty->driver->init_termios,
--						sizeof(struct ktermios));
- 		tty->driver->termios[idx] = tp;
- 	}
-+	memcpy(tp, &tty->driver->init_termios, sizeof(struct ktermios));
- 	tty->termios = tp;
- 	tty->termios_locked = tp + 1;
- 
--- 
-Hendrik Brueckner
-D/3303 Linux on System z Development
-Tel: +49 7031 16-1073
-Fax: +49 7031 16-3456
-eMail: brueckner@linux.vnet.ibm.com
-IBM Deutschland Research & Development GmbH, Schoenaicher Str. 220, 71032 Boeblingen
+Index: linux-2.6/drivers/i2c/busses/i2c-cpm.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/drivers/i2c/busses/i2c-cpm.c
++++ linux-2.6/drivers/i2c/busses/i2c-cpm.c
+@@ -423,7 +423,6 @@ static const struct i2c_adapter cpm_ops=20
+ 	.owner		=3D THIS_MODULE,
+ 	.name		=3D "i2c-cpm",
+ 	.algo		=3D &cpm_i2c_algo,
+-	.class		=3D I2C_CLASS_HWMON | I2C_CLASS_SPD,
+ };
+=20
+ static int __devinit cpm_i2c_setup(struct cpm_i2c *cpm)
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
 
-IBM Deutschland Research & Development GmbH
-Vorsitzender des Aufsichtsrats: Martin Jetter
-Geschaeftsfuehrung: Erich Baier
-Sitz der Gesellschaft: Boeblingen
-Registergericht: Amtsgericht Stuttgart, HRB 243294
+--HG+GLK89HZ1zG0kk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkj3IbwACgkQD27XaX1/VRuNmgCdFZ6tJK1hrlUMY7LZsCIU/U5z
+Y60An2H5rXTCDWl/p6sqUVTcOW1VefT2
+=fuI2
+-----END PGP SIGNATURE-----
+
+--HG+GLK89HZ1zG0kk--
