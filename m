@@ -1,18 +1,20 @@
-Return-Path: <AymanE@tanisys.com>
-Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [206.127.28.197])
-	by ozlabs.org (Postfix) with ESMTP id 4EEA6DDF93
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 02:01:57 +1100 (EST)
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.231])
+	by ozlabs.org (Postfix) with ESMTP id 3122ADDF78
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 02:24:06 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so36117rvb.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 08:24:04 -0700 (PDT)
+Date: Thu, 16 Oct 2008 09:24:02 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
+Subject: Re: [PATCH] Fix linking modules against crtsavres.o
+Message-ID: <20081016152402.GA12408@secretlab.ca>
+References: <20081009195125.GG5178@mx.loc>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Problems with PCI-E devices not being detected with switch
-Date: Thu, 16 Oct 2008 10:01:55 -0500
-Message-ID: <16691A8B34B5D9458EA3A1C37A11555A0137F822@tanisys-ex2.Tanisys.Local>
-In-Reply-To: <1224134422.8157.549.camel@pasglop>
-References: <16691A8B34B5D9458EA3A1C37A11555A0137F81E@tanisys-ex2.Tanisys.Local>
-	<1224134422.8157.549.camel@pasglop>
-From: "Ayman El-Khashab" <AymanE@tanisys.com>
-To: <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081009195125.GG5178@mx.loc>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, sam@ravnborg.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,74 +24,119 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2008-10-15 at 10:47 -0500, Ayman El-Khashab wrote:
->=20
-> Note for people on CC: This is a problem on 460EX on a canyonland
-> using the 4x port.=20
->=20
->> The problem occurs when Linux boots. It sees the switch (and looking
->> in /sys/bus/... confirms it), but nothing on the downstream sides of
->> the switch (secondary busses) is visible.  There were no boot
->> messages to indicate it had seen the Sil 3531 and it doesn't
->> function.  We've also tried other PCI-E devices (NI GPIB) on the
->> downstream side and they are also not detected, so it seems to be
->> something in Linux, my configuration, etc.  I've included the boot
->> messages below from u-boot and the kernel.  It is more than just the
->> pci boot messages, but I was not sure if something else in the log
->> with provide some insight.=20
->=20
-> The messages below look really fishy indeed:
->=20
->> pci 0001:02:00.0: unknown header type 03, ignoring device pci
->> 0001:02:01.0: unknown header type 41, ignoring device pci
->> 0001:02:02.0: unknown header type 03, ignoring device pci
->> 0001:02:03.0: unknown header type 41, ignoring device pci
->> 0001:02:04.0: ignoring class 1d09 (doesn't match header type 02) pci
->> 0001:02:05.0: unknown header type 41, ignoring device pci
->> 0001:02:06.0: ignoring class 1d09 (doesn't match header type 02) pci
->> 0001:02:07.0: unknown header type 41, ignoring device pci
->> 0001:02:08.0: unknown header type 03, ignoring device pci
->> 0001:02:09.0: unknown header type 41, ignoring device pci
->> 0001:02:0a.0: ignoring class 7d09 (doesn't match header type 02) pci
->> 0001:02:0b.0: unknown header type 41, ignoring device pci
->> 0001:02:0c.0: ignoring class 1d01 (doesn't match header type 02) pci
->> 0001:02:0d.0: unknown header type 41, ignoring device pci
->> 0001:02:0e.0: ignoring class 7d09 (doesn't match header type 02) pci
->> 0001:02:0f.0: unknown header type 41, ignoring device pci
->> 0001:02:10.0: unknown header type 03, ignoring device pci
->> 0001:02:11.0: unknown header type 41, ignoring device pci
->> 0001:02:12.0: unknown header type 03, ignoring device pci
->> 0001:02:13.0: unknown header type 41, ignoring device pci
->> 0001:02:14.0: unknown header type 03, ignoring device pci
->> 0001:02:15.0: unknown header type 41, ignoring device pci
->> 0001:02:16.0: ignoring class 3d09 (doesn't match header type 02) pci
->> 0001:02:17.0: unknown header type 41, ignoring device pci
->> 0001:02:18.0: unknown header type 03, ignoring device pci
->> 0001:02:19.0: unknown header type 41, ignoring device pci
->> 0001:02:1a.0: unknown header type 03, ignoring device pci
->> 0001:02:1b.0: unknown header type 41, ignoring device pci
->> 0001:02:1c.0: ignoring class 5d01 (doesn't match header type 02) pci
->> 0001:02:1d.0: unknown header type 41, ignoring device pci
->> 0001:02:1e.0: unknown header type 03, ignoring device pci
->> 0001:02:1f.0: unknown header type 41, ignoring device
->=20
->=20
-> Ayman, can you try adding a long delay (such as msleep(5000), ie 5s)
-> at the beginning of pcibios_init() in arch/powerpc/kernel/pci_32.c ?=20
-> This will add 5s delay between the init/reset of the port and the
-> probing by linux. Do that help ?=20
->=20
+On Thu, Oct 09, 2008 at 09:51:25PM +0200, Bernhard Reutner-Fischer wrote:
+> Hi,
+> 
+> [ http://bugzilla.kernel.org/show_bug.cgi?id=11143 has it all]
+> 
+> targeting ppc(32), e.g. 405 (!fp), previously i got:
+>   CC      drivers/char/hw_random/rng-core.mod.o
+>   LD [M]  drivers/char/hw_random/rng-core.ko
+> /there/src/buildroot.git.ppc/build_powerpc_nofpu/staging_dir/usr/bin/powerpc-linux-uclibc-ld:
+> arch/powerpc/lib/crtsavres.o: No such file: No such file or directory
+> 
+> 	* Makefile (LDFLAGS_MODULE_PREREQ): New variable to hold prerequisite
+> 	files for modules.
+> 	* arch/powerpc/Makefile: add crtsavres.o to LDFLAGS_MODULE_PREREQ.
+> 	* scripts/Makefile.modpost (cmd_as_o_S): Copy from Makefile.build.
+> 	(cmd_ld_ko_o): Also link LDFLAGS_MODULE_PREREQ.
+> 	Provide rule to build objects from assembler.
+> 
+> The attached patch (same as attached to abovementioned bug) fixes this.
+> I'm asking the ppc maintainers or you, Sam, to consider something to
+> that effect for inclusing in the stable series.
+> thanks,
 
-Thanks for your help.  I did try a 5s delay and other than the boot
-taking an extra couple of seconds, there was no change.  The messages
-above "unknown header" still showed up.  Downstream devices were not
-found.
-BTW, this is with both the Denx kernel tree and the official 2.6.27
-kernel. =20
-Both have the same results. One added note, just to rule out bad
-electronics,
-I have confirmed that the switch+sata work correctly together if placed
-into a plain x86 pc with 2.6.24.  So the electronics are fine.
+This patch solves the problem for me.  Without it building modules
+before the kernel proper fails to find crtsavres.o when linking.
 
-Ayman
+Ben, Paul or Sam, could you please look at this and make comment
+if it is the right approach?
+
+I also agree that this should be back ported to the stable series
+
+(Note: for some reason this patch did *not* show up in patchwork).
+
+Cheers,
+g.
+
+> Fix linking modules against crtsavres.o
+> 
+> Previously we got
+>   CC      drivers/char/hw_random/rng-core.mod.o
+>   LD [M]  drivers/char/hw_random/rng-core.ko
+> /there/src/buildroot.git.ppc/build_powerpc_nofpu/staging_dir/usr/bin/powerpc-linux-uclibc-ld: arch/powerpc/lib/crtsavres.o: No such file: No such file or directory
+> 
+> 	* Makefile (LDFLAGS_MODULE_PREREQ): New variable to hold prerequisite
+> 	files for modules.
+> 	* arch/powerpc/Makefile: add crtsavres.o to LDFLAGS_MODULE_PREREQ.
+> 	* scripts/Makefile.modpost (cmd_as_o_S): Copy from Makefile.build.
+> 	(cmd_ld_ko_o): Also link LDFLAGS_MODULE_PREREQ.
+> 	Provide rule to build objects from assembler.
+> 
+> Signed-off-by:  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+> 
+> diff -rup ../../x/linux-2.6.26.5.old/arch/powerpc/Makefile linux-2.6.26.5/arch/powerpc/Makefile
+> --- ../../x/linux-2.6.26.5.old/arch/powerpc/Makefile	2008-09-08 19:40:20.000000000 +0200
+> +++ linux-2.6.26.5/arch/powerpc/Makefile	2008-10-07 14:28:08.000000000 +0200
+> @@ -97,7 +97,7 @@ else
+>  	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
+>  endif
+>  else
+> -LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
+> +LDFLAGS_MODULE_PREREQ += arch/powerpc/lib/crtsavres.o
+>  endif
+>  
+>  ifeq ($(CONFIG_TUNE_CELL),y)
+> diff -rup ../../x/linux-2.6.26.5.old/Makefile linux-2.6.26.5/Makefile
+> --- ../../x/linux-2.6.26.5.old/Makefile	2008-09-08 19:40:20.000000000 +0200
+> +++ linux-2.6.26.5/Makefile	2008-10-07 14:15:59.000000000 +0200
+> @@ -318,6 +318,7 @@ MODFLAGS	= -DMODULE
+>  CFLAGS_MODULE   = $(MODFLAGS)
+>  AFLAGS_MODULE   = $(MODFLAGS)
+>  LDFLAGS_MODULE  =
+> +LDFLAGS_MODULE_PREREQ  =
+>  CFLAGS_KERNEL	=
+>  AFLAGS_KERNEL	=
+>  
+> @@ -342,7 +343,7 @@ KERNELVERSION = $(VERSION).$(PATCHLEVEL)
+>  export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
+>  export ARCH SRCARCH CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
+>  export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL UTS_MACHINE
+> -export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS
+> +export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE LDFLAGS_MODULE_PREREQ CHECK CHECKFLAGS
+>  
+>  export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS LDFLAGS
+>  export KBUILD_CFLAGS CFLAGS_KERNEL CFLAGS_MODULE
+> diff -rup ../../x/linux-2.6.26.5.old/scripts/Makefile.modpost linux-2.6.26.5/scripts/Makefile.modpost
+> --- ../../x/linux-2.6.26.5.old/scripts/Makefile.modpost	2008-09-08 19:40:20.000000000 +0200
+> +++ linux-2.6.26.5/scripts/Makefile.modpost	2008-10-07 14:24:34.000000000 +0200
+> @@ -122,14 +122,21 @@ quiet_cmd_cc_o_c = CC      $@
+>        cmd_cc_o_c = $(CC) $(c_flags) $(CFLAGS_MODULE)	\
+>  		   -c -o $@ $<
+>  
+> -$(modules:.ko=.mod.o): %.mod.o: %.mod.c FORCE
+> +quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
+> +cmd_as_o_S       = $(CC) $(a_flags) $(AFLAGS_MODULE) -c -o $@ $<
+> +
+> +$(LDFLAGS_MODULE_PREREQ): %.o: %.S FORCE
+> +	$(call if_changed_dep,as_o_S)
+> +
+> +$(modules:.ko=.mod.o): %.mod.o: %.mod.c $(LDFLAGS_MODULE_PREREQ) FORCE
+>  	$(call if_changed_dep,cc_o_c)
+>  
+>  targets += $(modules:.ko=.mod.o)
+>  
+>  # Step 6), final link of the modules
+>  quiet_cmd_ld_ko_o = LD [M]  $@
+> -      cmd_ld_ko_o = $(LD) -r $(LDFLAGS) $(LDFLAGS_MODULE) -o $@		\
+> +      cmd_ld_ko_o = $(LD) -r $(LDFLAGS) $(LDFLAGS_MODULE_PREREQ)	\
+> +			  $(LDFLAGS_MODULE) -o $@		\
+>  			  $(filter-out FORCE,$^)
+>  
+>  $(modules): %.ko :%.o %.mod.o FORCE
+
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
