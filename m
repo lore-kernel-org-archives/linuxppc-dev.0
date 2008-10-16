@@ -1,19 +1,19 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 5F24ADE189
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 04:12:25 +1100 (EST)
-Date: Thu, 16 Oct 2008 21:12:22 +0400
+	by ozlabs.org (Postfix) with ESMTP id 8F86ADE370
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 04:12:55 +1100 (EST)
+Date: Thu, 16 Oct 2008 21:12:53 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/7 RFC] Handle I2C GPIO controllers with the OF (was:
-	pca9539 I2C gpio expander)
-Message-ID: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/7] i2c: add info->archdata field
+Message-ID: <20081016171253.GB5515@oksana.dev.rtsoft.ru>
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
 Cc: David Brownell <dbrownell@users.sourceforge.net>, linuxppc-dev@ozlabs.org,
 	i2c@lm-sensors.org, Jean Delvare <khali@linux-fr.org>,
 	David Miller <davem@davemloft.net>
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,67 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+If present the info->archdata is copied into the dev->archdata.
+Some (OpenFirmware) platforms need it.
 
-Recently there was a question about I2C GPIO controllers and how should
-we handle them with the OpenFirmware and such.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/i2c/i2c-core.c |    3 +++
+ include/linux/i2c.h    |    2 ++
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-Here is the attempt to "connect" I2C GPIO controllers to the
-"OpenFirmware" device tree, without writing an OF-specific bindings
-for each driver.
-
-The salt is in these two patches:
-
-[PATCH 3/7] of: fill the archdata for I2C devices
-^ Here we're storing the device tree node into the I2C device.
-
-[PATCH 5/7] of/gpio: implement of_dev_gpiochip_{add,remove} calls
-^ And here we extracting the the stored node to put the registered
-  of_gpio_chip into that node.
-
-
-How does it look?
-
-p.s. The original question:
-
------ Forwarded message from "Steven A. Falco" <sfalco@harris.com> -----
-
-Date: Tue, 14 Oct 2008 14:10:25 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: pca9539 I2C gpio expander
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-
-I am attempting to use a pca9539 I2C gpio driver on a PPC440EPx board.  The
-driver is "drivers/gpio/pca953x.c".  I've added an entry to the .dts file:
-
-IIC0: i2c@ef600700 {
-	compatible = "ibm,iic-440epx", "ibm,iic";
-	...
-	pca9539@76 {
-		compatible = "ti,pca9539";
-		reg = <76>;
-	};
-};
-
-of_register_i2c_devices sees this entry and calls i2c_new_device.
-i2c_new_device copies info->platform_data to client->dev.platform_data, but
-I think that this structure is empty (at least I don't see where
-of_register_i2c_devices would set it).
-
-pca953x_probe is eventually called, but it expects to find its "lowest gpio
-number" in client->dev.platform_data->gpio_base, which has not been set.  So
-pca953x_probe returns -ENODEV.
-
-I don't understand where the disconnect is.  Should I be able to use the
-pca953x.c driver, or is it somehow incompatible?
-
-If it is incompatible, is there a strategy for making it compatible?
-
-	Steve
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
------ End forwarded message -----
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index 42e852d..5a485c2 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -266,6 +266,9 @@ i2c_new_device(struct i2c_adapter *adap, struct i2c_board_info const *info)
+ 
+ 	client->dev.platform_data = info->platform_data;
+ 
++	if (info->archdata)
++		client->dev.archdata = *info->archdata;
++
+ 	client->flags = info->flags;
+ 	client->addr = info->addr;
+ 	client->irq = info->irq;
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index 0611512..3e358d3 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -240,6 +240,7 @@ static inline void i2c_set_clientdata (struct i2c_client *dev, void *data)
+  * @flags: to initialize i2c_client.flags
+  * @addr: stored in i2c_client.addr
+  * @platform_data: stored in i2c_client.dev.platform_data
++ * @archdata: copied into i2c_client.dev.archdata
+  * @irq: stored in i2c_client.irq
+  *
+  * I2C doesn't actually support hardware probing, although controllers and
+@@ -259,6 +260,7 @@ struct i2c_board_info {
+ 	unsigned short	flags;
+ 	unsigned short	addr;
+ 	void		*platform_data;
++	struct dev_archdata	*archdata;
+ 	int		irq;
+ };
+ 
+-- 
+1.5.6.3
