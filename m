@@ -1,27 +1,22 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp5.pp.htv.fi (smtp5.pp.htv.fi [213.243.153.39])
-	by ozlabs.org (Postfix) with ESMTP id 12843DE0A2
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 19:22:07 +1100 (EST)
-Date: Thu, 16 Oct 2008 11:21:57 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: powerpc allmodconfig
-Message-ID: <20081016082157.GC23630@cs181140183.pp.htv.fi>
-References: <20081015213337.a99a9595.akpm@linux-foundation.org>
-	<s5h1vyhrsja.wl%tiwai@suse.de>
-	<20081016073836.GB23630@cs181140183.pp.htv.fi>
-	<s5hiqrtq8fc.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <s5hiqrtq8fc.wl%tiwai@suse.de>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, marek.vasut@gmail.com,
-	netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-	Mark Fasheh <mark.fasheh@oracle.com>, linuxppc-dev@ozlabs.org,
-	linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-ext4@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Mauro Carvalho Chehab <mchehab@infradead.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 38A04DDE45
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 19:41:19 +1100 (EST)
+Subject: Re: Problems with PCI-E devices not being detected with switch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200810161003.31801.sr@denx.de>
+References: <16691A8B34B5D9458EA3A1C37A11555A0137F81E@tanisys-ex2.Tanisys.Local>
+	<1224134422.8157.549.camel@pasglop>  <200810161003.31801.sr@denx.de>
+Content-Type: text/plain
+Date: Thu, 16 Oct 2008 19:29:45 +1100
+Message-Id: <1224145785.7654.4.camel@pasglop>
+Mime-Version: 1.0
+Cc: Ayman El-Khashab <AymanE@tanisys.com>, Victor Gallardo <vgallardo@amcc.com>,
+	linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,50 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 16, 2008 at 09:57:11AM +0200, Takashi Iwai wrote:
-> At Thu, 16 Oct 2008 10:38:36 +0300,
-> Adrian Bunk wrote:
-> > 
-> > On Thu, Oct 16, 2008 at 07:57:29AM +0200, Takashi Iwai wrote:
-> > > At Wed, 15 Oct 2008 21:33:37 -0700,
-> > > Andrew Morton wrote:
-> > > > 
-> > > > sound/soc/soc-dapm.c:1029: warning: 'snd_soc_dapm_connect_input' is deprecated (declared at sound/soc/soc-dapm.c:1026)
-> > > > sound/soc/soc-dapm.c:1029: warning: 'snd_soc_dapm_connect_input' is deprecated (declared at sound/soc/soc-dapm.c:1026)
-> > > 
-> > > These are definitions of deprecated interfaces.
-> > > We can remove it in 2.6.29.  If we don't want to be conservative, it
-> > > can be removed in 2.6.28, too.
-> > >...
-> > 
-> > Since it's an in-kernel API there's no reason to keep it once there are 
-> > no users left.
-> 
-> Right.  But, IMO, now is no suitable time.
-> A thing like API removal should have been tested in linux-next, and we
-> had plenty of time indeed for 2.6.28.
->...
+On Thu, 2008-10-16 at 10:03 +0200, Stefan Roese wrote:
+> Doing this unconditionally is not a good idea since we could have an old 
+> (buggy) firmware which didn't configure the PCIe controller correctly. But I 
+> really like your idea with the device-tree property to optionally skip this 
+> re-configuration. Now we only need to find some "volunteer" to do this 
+> job... ;)
 
-A grep through the tree and one test compile that covers 
-sound/soc/soc-dapm.c should be enough testing.
+I don't have a problem adding support for testing that property and
+skipping most of the initial HW setup, basically treating the endpoint
+as pre-configured.
 
-And having it then in -next once should be enough to discover if someone 
-wrongly added a new user.
+What about using a value for "status" ? Or an empty "configured"
+property ? Ideally, it should have been the other way around, ie
+"unconfigured" for old/buggy stuff but I'm worried there may be existing
+out-of-tree device-trees without it :-)
 
-I have removed many functions in the kernel, and there isn't much that 
-can go wrong - even adding a PCI ID to a driver has a bigger risk of 
-introducing a regression.
-
-> thanks,
-> 
-> Takashi
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Cheers,
+Ben
