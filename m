@@ -1,20 +1,20 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id C43B3DE032
+Return-Path: <santhoshunnikrishnan@tataelxsi.co.in>
+Received: from vsnlchnsym02.vsnlxchange.com (VSNLCHNSYM02.vsnlxchange.com
+	[59.163.96.4]) by ozlabs.org (Postfix) with ESMTP id ED951DDE01
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Oct 2008 18:45:36 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Felix Radensky <felix@embedded-sol.com>
-Subject: Re: External interrupt on 460EX
-Date: Thu, 16 Oct 2008 09:44:54 +0200
-References: <48F60192.6050803@embedded-sol.com> <200810151700.30741.sr@denx.de>
-	<48F609D2.5000301@embedded-sol.com>
-In-Reply-To: <48F609D2.5000301@embedded-sol.com>
+	Thu, 16 Oct 2008 19:45:52 +1100 (EST)
+Received: from vsnlchnsym02.vsnlxchange.com (unknown [127.0.0.1])
+	by vsnlchnsym02.vsnlxchange.com (Symantec Mail Security) with ESMTP id
+	E02251BD1 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 16 Oct 2008 13:59:41 +0530 (IST)
+From: <santhoshunnikrishnan@tataelxsi.co.in>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: uImage getting changed each time when kernel build
+Date: Thu, 16 Oct 2008 13:50:22 +0530
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200810160944.54428.sr@denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/related;
+	boundary="----=_NextPart_000_029B_01C92F96.22996D50"
+Message-ID: <VSNLCHNFE002GXn5olX00012f98@VSNLCHNFE002.VSNLXCHANGE.COM>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,102 +25,129 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Felix,
+This is a multi-part message in MIME format.
 
-On Wednesday 15 October 2008, Felix Radensky wrote:
-> >> The interrupt is connected to GPIO 45. U-Boot (1.3.4) configures this
-> >> pin as external interrupt 12 (interrupt 20 in UIC 3). I've added the
-> >> following
-> >> entry to board device tree (in opb section)
-> >>
-> >> cpld@2,0 {
-> >>     device_type = "cpld";
-> >>     interrupts = <20 1>;
-> >
-> > Is this interrupt active on rising edge? This is what you have configured
-> > here. When you need level, active low, then you need to write:
-> >
-> >      interrupts = <20 8>;
-> >
-> > And be careful which dts version you are using. Is this 20 decimal or
-> > hex?
->
-> The interrupt is indeed level, active low. Where can I find information
-> on UIC
-> interrupt settings for device tree ?
+------=_NextPart_000_029B_01C92F96.22996D50
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_001_029C_01C92F96.229BDE50"
 
-Not sure if this is really documented. Those values are from 
-include/asm-ppc/irq.h:
 
-#define IRQ_TYPE_NONE           0x00000000      /* Default, unspecified type 
-*/
-#define IRQ_TYPE_EDGE_RISING    0x00000001      /* Edge rising type */
-#define IRQ_TYPE_EDGE_FALLING   0x00000002      /* Edge falling type */
-#define IRQ_TYPE_EDGE_BOTH (IRQ_TYPE_EDGE_FALLING | IRQ_TYPE_EDGE_RISING)
-#define IRQ_TYPE_LEVEL_HIGH     0x00000004      /* Level high type */
-#define IRQ_TYPE_LEVEL_LOW      0x00000008      /* Level low type */
+------=_NextPart_001_029C_01C92F96.229BDE50
+Content-Type: text/plain;
+	charset="us-ascii"
+content-transfer-encoding: 7bit
 
-> I'm using dtc 1.2.0, 20 is decimal. 
-> Is it ok ?
+Hi ,
 
-This doesn't really depend on the dtc version but on the version of the dts 
-file itself. Is your dts a v1 dts file? Do you have this in your dts:
+I am working on SH4 architecture. I observed one strange thing. Each time i
+build my kernel image (uImage) the last 10% of the uImage content is
+changing. I compared uImages using diff command and with Beyond Compare
+tool, which i did using binary as well as rule based comparison with time
+stamp comparison disabled. I observed that every time when i build the
+kernel image the lower 10% of the uImage differ from the previously build
+uImage (build with in 20 min before the last one). Can any one help me to
+know the reason behind this behavior? I want to know more about the format
+of uImage and what exactly the lower 10% contains? i searched in various
+sites and referred the documentation of U-boot. But i dint get the reason
+for this behavior. I did the same comparison with vmlinux and vmlinux.bin
+and i observed that each time i build these vmlinux and vimlinux.bin they
+differ from the previous images (which i build 20 min before the last one )
+by a max of 10 lines.
+When i opened two vimlinux images (which i build with in a time gap of 20
+min)using the readelf command. I observed that the last byte of some of the
+address are different in the two vmlinux images. why it is so?
+Please help me to understand this.
 
-/dts-v1/;
+Thanks,
+Santhosh
+ 
+Regards,
+Santhosh Unnikrishnan
 
-?
+ 
 
-If yes, then you have a v1 dts file and all number without 0x are decimal 
-numbers. Then the "20" is correct for ext IRQ 12. If not then this number is 
-hex and you should write "14" instead.
 
-> >>     interrupt-parent = <&UIC3>;
-> >> };
-> >>
-> >> In my driver I do the following:
-> >>
-> >>     /* Find CPLD node in device tree */
-> >>     np = of_find_node_by_type(NULL, "cpld");
-> >>     if (!np) {
-> >>         printk(KERN_INFO "No CPLD found in device tree\n");
-> >>         return -1;
-> >>     }
-> >>
-> >>     /* Get and map irq number from device tree */
-> >>     cpld_irq = irq_of_parse_and_map(np, 0);
-> >>     if (cpld_irq == NO_IRQ) {
-> >>         printk(KERN_ERR "irq_of_parse_and_map failed\n");
-> >>         of_node_put(np);
-> >>         return -ENODEV;
-> >>     }
-> >>
-> >>     /* Register CPLD interrupt handler */
-> >>     rc = request_irq(cpld_irq, cpld_interrupt,
-> >>              IRQF_TRIGGER_LOW, "CPLD", NULL);
-> >>
-> >> And I see this interrupt in /proc/interrups after loading
-> >> the driver. However interrupt handler is never invoked,
-> >> although hardware guys see that GPIO line goes down
-> >> when interrupt is generated.
-> >>
-> >> What am I doing wrong ?
-> >
-> > Another idea is that you didn't configure the pin multiplexing correctly.
-> > Most external IRQ's are shared with other functions and/or GPIO's. You
-> > need to configure the multiplexing correctly for external IRQ
-> > functionality. This is usually done in U-Boot with the
-> > CFG_4xx_GPIO_TABLE.
-> >
-> > I suggest you check here first.
->
-> I've checked that, here's the relevant line from u-boot:
-> {GPIO1_BASE, GPIO_IN , GPIO_ALT3, GPIO_OUT_0}, /* GPIO45 CS(5)
-> EOT/TC1         IRQ(12)*/
->
-> If I understand this code correctly, u-boot configures this line as ALT3
-> (which is external IRQ 12)
+The information contained in this electronic message and any attachments to this message are intended for the exclusive use of the addressee(s) and may contain proprietary, confidential or privileged information. If you are not the intended recipient, you should not disseminate, distribute or copy this e-mail. Please notify the sender immediately and destroy all copies of this message and any attachments contained in it.
 
-Yes, this seems to be correct.
+------=_NextPart_001_029C_01C92F96.229BDE50
+Content-Type: text/html;
+	charset="us-ascii"
+content-transfer-encoding: quoted-printable
 
-Best regards,
-Stefan
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD><TITLE id=3DridTitle>Blank</TITLE>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
+<STYLE>BODY {
+	MARGIN-TOP: 25px; FONT-SIZE: 10pt; MARGIN-LEFT: 25px; COLOR: #000000; FONT-=
+FAMILY: Arial, Helvetica
+}
+P.msoNormal {
+	MARGIN-TOP: 0px; FONT-SIZE: 10pt; MARGIN-LEFT: 0px; COLOR: #ffffcc; FONT-FA=
+MILY: Helvetica, "Times New Roman"
+}
+LI.msoNormal {
+	MARGIN-TOP: 0px; FONT-SIZE: 10pt; MARGIN-LEFT: 0px; COLOR: #ffffcc; FONT-FA=
+MILY: Helvetica, "Times New Roman"
+}
+</STYLE>
+
+<META content=3D"MSHTML 6.00.2900.3395" name=3DGENERATOR></HEAD>
+<BODY id=3DridBody background=3Dcid:572381808@16102008-3459>
+<DIV><FONT face=3D"Times New Roman"><FONT size=3D3>Hi ,<BR><BR>I am working=
+ on SH4 
+architecture. I observed one strange thing. Each time i build my kernel imag=
+e 
+(uImage) the last 10% of the uImage content is changing. I compared uImages=
+ 
+using diff command and with Beyond Compare tool, which i did using binary as=
+ 
+well as rule based comparison with time stamp comparison disabled. I observe=
+d 
+that every time when i build the kernel image the lower 10% of the uImage di=
+ffer 
+from the previously build uImage (build with in 20 min before the last one).=
+ Can 
+any one help me to know the reason behind this behavior? I want to know more=
+ 
+about the format of uImage and what exactly the lower 10% contains? i search=
+ed 
+in various sites and referred the documentation of U-boot. But i dint get th=
+e 
+reason for this behavior. I did the same comparison with vmlinux and vmlinux=
+.bin 
+and i observed that each time i build these vmlinux and vimlinux.bin they di=
+ffer 
+from the previous images (which i build 20 min before the last one ) by a ma=
+x of 
+10 lines.<BR>When i opened two vimlinux images (which i build with in a time=
+ gap 
+of 20 min)using the readelf command. I observed that the last byte of some o=
+f 
+the address are different in the two vmlinux images. why it is so?<BR>Please=
+ 
+help me to understand this.<BR><BR>Thanks,<BR>S<SPAN 
+class=3D572381808-16102008>anthosh</SPAN></FONT></FONT></DIV>
+<DIV>&nbsp;</DIV>
+<DIV align=3Dleft>Regards,</DIV>
+<DIV align=3Dleft><STRONG>Santhosh Unnikrishnan</STRONG></DIV>
+<P>&nbsp;</P><p>The information contained in this electronic message and any=
+ attachments to this message are intended for the exclusive use of the addre=
+ssee(s) and may contain proprietary, confidential or privileged information.=
+ If you are not the intended recipient, you should not disseminate, distribu=
+te or copy this e-mail. Please notify the sender immediately and destroy all=
+ copies of this message and any attachments contained in it.</p>
+</BODY></HTML>
+
+------=_NextPart_001_029C_01C92F96.229BDE50--
+
+------=_NextPart_000_029B_01C92F96.22996D50
+Content-Type: image/gif;
+	name="Blank Bkgrd.gif"
+Content-Transfer-Encoding: base64
+Content-ID: <572381808@16102008-3459>
+
+R0lGODlhLQAtAID/AP////f39ywAAAAALQAtAEACcAxup8vtvxKQsFon6d02898pGkgiYoCm6sq2
+7iqWcmzOsmeXeA7uPJd5CYdD2g9oPF58ygqz+XhCG9JpJGmlYrPXGlfr/Yo/VW45e7amp2tou/lW
+xo/zX513z+Vt+1n/tiX2pxP4NUhy2FM4xtjIUQAAOw==
+
+------=_NextPart_000_029B_01C92F96.22996D50--
