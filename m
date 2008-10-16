@@ -1,16 +1,21 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from col0-omc1-s4.col0.hotmail.com (col0-omc1-s4.col0.hotmail.com
-	[65.55.34.14]) by ozlabs.org (Postfix) with ESMTP id 0CD19DDF84
+Return-Path: <mark@bish.net>
+Received: from vincent.bish.net (bish.net [209.241.232.100])
+	by ozlabs.org (Postfix) with ESMTP id B738BDE05A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Oct 2008 06:38:47 +1100 (EST)
-Message-ID: <COL107-W14F82F8CC72D8E57C374ABB2330@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_dff7b032-e938-41fb-984d-dcae65a7003f_"
-From: MingLiu <eemingliu@hotmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: xparameters file in the Xilinx kernel tree version 2.6.27-rc4
-Date: Thu, 16 Oct 2008 19:38:46 +0000
+	Fri, 17 Oct 2008 06:38:54 +1100 (EST)
+Received: from www-data by vincent.bish.net with local (Exim 4.63)
+	(envelope-from <mark@bish.net>) id 1KqXqg-00036s-5P
+	for linuxppc-embedded@ozlabs.org; Thu, 16 Oct 2008 14:45:27 -0400
+Message-ID: <20081016144526.tjuq1t5mgw4ks4co@www.bish.net>
+Date: Thu, 16 Oct 2008 14:45:26 -0400
+From: Mark Bishop <mark@bish.net>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Subject: How can I make flash writeable?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,53 +26,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_dff7b032-e938-41fb-984d-dcae65a7003f_
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+I am using the MPC8313E-RDB and I am having some problems using the  
+flash that comes on the board.  Let me preface this by saying that I  
+haven't worked in the embedded linux arena in about 10 years so I am  
+trying to catch up with all the new toys.
+
+This board uses uBoot and it currently has 128M of DDR2, 8M flash and  
+32M NAND Flash.  I have a few questions:
+
+How can I tell which memory device it uses to boot out of?
+How can I tell which devices are mapped to /proc/mtd devices?
 
 
-Dear all,
-I downloaded the newest version 2.6.27 kernel from the Xilinx tree. I found that it is much different with the previous version 2.6.24-rc8 we are using. Maybe my question is stupid, but I cannot find the previous xparameters_ml40x.h file in arch/ppc/platform/4xx/xparameters/ in the new arch/powerpc folder. So how can I import my BSP parameters in the new kernel for the customized design?
- 
-One more question is, I tried "make zImage". But I cannot find the generated zImage.elf, as the previous kernel will do.How to generate the .elf kernel file?
- 
-Thanks for your help and answering.
- 
-BR
-Ming
- 
-_________________________________________________________________
-Windows Live Photo gallery 数码相机的超级伴侣，轻松管理和编辑照片，还能制作全景美图！
-http://get.live.cn/product/photo.html
---_dff7b032-e938-41fb-984d-dcae65a7003f_
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+I want to create a writeable flash partition, is there a FAQ out there  
+I could look at.
 
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px;
-padding:0px
-}
-body.hmmessage
-{
-FONT-SIZE: 9pt;
-FONT-FAMILY:Tahoma
-}
-</style>
-</head>
-<body class='hmmessage'>
-Dear all,<BR>
-I downloaded the newest version 2.6.27 kernel from the Xilinx tree. I found that it is much different with the previous version 2.6.24-rc8 we are using. Maybe my question is stupid, but I cannot find the previous xparameters_ml40x.h file in arch/ppc/platform/4xx/xparameters/ in the new arch/powerpc folder. So how can I import my BSP parameters in the new kernel for the customized design?<BR>
-&nbsp;<BR>
-One more question is, I tried "make zImage". But I cannot find the generated zImage.elf,&nbsp;as the previous kernel will do.How to generate the .elf kernel file?<BR>
-&nbsp;<BR>
-Thanks for your help and answering.<BR>
-&nbsp;<BR>
-BR<BR>
-Ming<BR>
-&nbsp;<BR><br /><hr />使用新一代 Windows Live Messenger 轻松交流和共享！ <a href='http://messenger.live.cn/' target='_new'>立即体验！</a></body>
-</html>
---_dff7b032-e938-41fb-984d-dcae65a7003f_--
+All of this is after a few days of using Google to try and glean some  
+data from the internet.  And the books don't get here from Amazon  
+until Monday.
+
+I would appreciate any help.  Even a RTFM - if you could point me to  
+TFM, it would greatly help.
