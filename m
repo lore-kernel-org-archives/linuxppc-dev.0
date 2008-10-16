@@ -1,27 +1,18 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
-	by ozlabs.org (Postfix) with ESMTP id 16E0CDDF18
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 06:04:12 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so68912qwb.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 12:04:11 -0700 (PDT)
-Date: Thu, 16 Oct 2008 14:35:29 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
-Message-ID: <20081016183529.GB29739@yoda.jdub.homelinux.org>
-References: <20080906050602.409299112@goodmis.org>
-	<20080906120346.GA30964@elte.hu>
-	<20081016181452.GA29739@yoda.jdub.homelinux.org>
-	<alpine.DEB.1.10.0810161421530.11042@gandalf.stny.rr.com>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id CD3EEDE42D
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 06:12:06 +1100 (EST)
+Date: Thu, 16 Oct 2008 21:12:00 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [RESEND] i2c-cpm: Suppress autoprobing for devices
+Message-ID: <20081016191200.GB13629@pengutronix.de>
+References: <20081016111300.GC3432@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.1.10.0810161421530.11042@gandalf.stny.rr.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="0OAP2g/MAC+5xKAE"
+In-Reply-To: <20081016111300.GC3432@pengutronix.de>
+Cc: i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,42 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 16, 2008 at 02:22:48PM -0400, Steven Rostedt wrote:
->
->On Thu, 16 Oct 2008, Josh Boyer wrote:
->
->> On Sat, Sep 06, 2008 at 02:03:47PM +0200, Ingo Molnar wrote:
->> >
->> >* Steven Rostedt <rostedt@goodmis.org> wrote:
->> >
->> >> I spent the day chasing a bug that would hang PPC on boot up when 
->> >> ftrace is configured in. I found that it was simply a stupid bug I did 
->> >> to handle the non MCOUNT_RECORD case. Since I was testing only on x86, 
->> >> and the MCOUNT_RECORD is automatically set for dynamic ftrace if it is 
->> >> available, I did not test the case where MCOUNT_RECORD was not set.
->> >> 
->> >> I have not finished porting MCOUNT_RECORD to PPC, but have found that 
->> >> it has caused some issues for archs that do not support it yet.
->> >> 
->> >> This patch series handles these cases.
->> >
->> >applied to tip/tracing/ftrace, thanks Steve.
->> 
->> Are these two merged yet?  I just spent the better part of the morning
->> trying to figure out why various Fedora kernels based on 2.6.27-rcX and
->> 2.6.27 final hung on my G5 and finally got one booting with FTRACE
->> disabled.
->
->My powerbook does not boot with ftrace enabled. I'm currently debugging 
->it. When I get it working, you'll see patches.
 
-Well, that's why I asked.  You sent 2 patches out over a month ago that
-don't appear to have shown up in any Linus or PowerPC tree.
+--0OAP2g/MAC+5xKAE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->They will be to linux-tip though, and not for the current mainline (unless 
->the code in linux-tip gets merged).
+Similar to commit 618b26d52843c0f85b8eb143cf2695d7f6fd072d, also remove
+automatic probing for this i2c controller. Might need updates to dts files
+using it.
 
-If linux-tip is some x86 topic branch, I think that's the wrong place for
-fixes that are needed on non-x86 arches.
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Acked-by: Jochen Friedrich <jochen@scram.de>
+---
+Resend with cc to i2c.
 
-josh
+ drivers/i2c/busses/i2c-cpm.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+Index: linux-2.6/drivers/i2c/busses/i2c-cpm.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/drivers/i2c/busses/i2c-cpm.c
++++ linux-2.6/drivers/i2c/busses/i2c-cpm.c
+@@ -423,7 +423,6 @@ static const struct i2c_adapter cpm_ops=20
+ 	.owner		=3D THIS_MODULE,
+ 	.name		=3D "i2c-cpm",
+ 	.algo		=3D &cpm_i2c_algo,
+-	.class		=3D I2C_CLASS_HWMON | I2C_CLASS_SPD,
+ };
+=20
+ static int __devinit cpm_i2c_setup(struct cpm_i2c *cpm)
+
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+
+--0OAP2g/MAC+5xKAE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkj3kgAACgkQD27XaX1/VRutfQCgyXxb8ffSIjRPSbTSCewXsdyG
+cYIAnAlJbPLIGbATxXKoPA6bwhw88zzK
+=W+5A
+-----END PGP SIGNATURE-----
+
+--0OAP2g/MAC+5xKAE--
