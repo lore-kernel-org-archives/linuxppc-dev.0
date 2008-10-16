@@ -1,21 +1,22 @@
-Return-Path: <rep.dot.nop@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.157])
-	by ozlabs.org (Postfix) with ESMTP id 35FDFDE11A
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 03:15:12 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so44542fga.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 09:15:09 -0700 (PDT)
-Date: Thu, 16 Oct 2008 18:15:31 +0200
-From: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Fix linking modules against crtsavres.o
-Message-ID: <20081016161531.GA5299@mx.loc>
-References: <20081009195125.GG5178@mx.loc>
-	<20081016152402.GA12408@secretlab.ca>
-	<547FA711-EB43-4F0A-B69D-AE7C9557AC37@kernel.crashing.org>
+Return-Path: <jeremy@goop.org>
+Received: from mail.goop.org (gw.goop.org [64.81.55.164])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 2CD2FDE3C7
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 03:20:59 +1100 (EST)
+Message-ID: <48F767C5.8000207@goop.org>
+Date: Thu, 16 Oct 2008 09:11:49 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <547FA711-EB43-4F0A-B69D-AE7C9557AC37@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, sam@ravnborg.org
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next:  build failure
+References: <20081016202907.978d00b1.sfr@canb.auug.org.au>
+	<20081016103916.GA30745@elte.hu>
+In-Reply-To: <20081016103916.GA30745@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 16, 2008 at 11:07:27AM -0500, Kumar Gala wrote:
+Ingo Molnar wrote:
+> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 >
-> On Oct 16, 2008, at 10:24 AM, Grant Likely wrote:
->
->> On Thu, Oct 09, 2008 at 09:51:25PM +0200, Bernhard Reutner-Fischer  
->> wrote:
->>> Hi,
->>>
->>> [ http://bugzilla.kernel.org/show_bug.cgi?id=11143 has it all]
-
->> This patch solves the problem for me.  Without it building modules
->> before the kernel proper fails to find crtsavres.o when linking.
-
-I did not install the .o nor it's prerequisites so only fixed building
-modules in tree. For building external modules these
-LDFLAGS_MODULE_PREREQ would need to be installed too, as noted by Olaf
-in the bug. I do not need them to be installed myself, so please take
-care of it if you have time to do so.
-
->> Ben, Paul or Sam, could you please look at this and make comment
->> if it is the right approach?
+>   
+>> Hi all,
 >>
->> I also agree that this should be back ported to the stable series
+>> Today's linux-next build (powerpc allyesconfig) failed like this:
 >>
->> (Note: for some reason this patch did *not* show up in patchwork).
+>> In file included from arch/powerpc/include/asm/mmu-hash64.h:17,
+>>                  from arch/powerpc/include/asm/mmu.h:8,
+>>                  from arch/powerpc/include/asm/pgtable.h:8,
+>>                  from arch/powerpc/mm/slb.c:20:
+>> arch/powerpc/include/asm/page.h:76: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'memstart_addr'
+>> arch/powerpc/include/asm/page.h:77: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'kernstart_addr'
+>>
+>> Caused by commit 600715dcdf567c86f8b2c6173fcfb4b873e25a19 ("generic: add
+>> phys_addr_t for holding physical addresses") from the tip-core tree.
+>> This only fails if CONFIG_RELOCATABLE is set.
+>>
+>> I have applied the patch below.
+>>     
 >
-> because it was sent as an attachment.
+> applied to tip/core/urgent, thanks Stephen!
+>   
 
-Indeed. Sorry for that..
+Shouldn't this go via a ppc tree?  Won't having ppc changes in tip.git 
+make people grumpy?
+
+    J
