@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8F86ADE370
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 04:12:55 +1100 (EST)
-Date: Thu, 16 Oct 2008 21:12:53 +0400
+	by ozlabs.org (Postfix) with ESMTP id 79C04DE3A8
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 04:12:53 +1100 (EST)
+Date: Thu, 16 Oct 2008 21:12:51 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/7] i2c: add info->archdata field
-Message-ID: <20081016171253.GB5515@oksana.dev.rtsoft.ru>
+Subject: [PATCH 1/7] powerpc and sparc: introduce dev_archdata node accessors
+Message-ID: <20081016171251.GA5515@oksana.dev.rtsoft.ru>
 References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -23,48 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If present the info->archdata is copied into the dev->archdata.
-Some (OpenFirmware) platforms need it.
+The name of the device_node field differ across the platforms, so we
+have to implement inlined accessors. This is needed to avoid ugly
+#ifdef in the generic code.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/i2c/i2c-core.c |    3 +++
- include/linux/i2c.h    |    2 ++
- 2 files changed, 5 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/device.h |   12 ++++++++++++
+ arch/sparc/include/asm/device.h   |   12 ++++++++++++
+ 2 files changed, 24 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index 42e852d..5a485c2 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -266,6 +266,9 @@ i2c_new_device(struct i2c_adapter *adap, struct i2c_board_info const *info)
- 
- 	client->dev.platform_data = info->platform_data;
- 
-+	if (info->archdata)
-+		client->dev.archdata = *info->archdata;
-+
- 	client->flags = info->flags;
- 	client->addr = info->addr;
- 	client->irq = info->irq;
-diff --git a/include/linux/i2c.h b/include/linux/i2c.h
-index 0611512..3e358d3 100644
---- a/include/linux/i2c.h
-+++ b/include/linux/i2c.h
-@@ -240,6 +240,7 @@ static inline void i2c_set_clientdata (struct i2c_client *dev, void *data)
-  * @flags: to initialize i2c_client.flags
-  * @addr: stored in i2c_client.addr
-  * @platform_data: stored in i2c_client.dev.platform_data
-+ * @archdata: copied into i2c_client.dev.archdata
-  * @irq: stored in i2c_client.irq
-  *
-  * I2C doesn't actually support hardware probing, although controllers and
-@@ -259,6 +260,7 @@ struct i2c_board_info {
- 	unsigned short	flags;
- 	unsigned short	addr;
- 	void		*platform_data;
-+	struct dev_archdata	*archdata;
- 	int		irq;
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index dfd504c..7d2277c 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -18,4 +18,16 @@ struct dev_archdata {
+ 	void			*dma_data;
  };
  
++static inline void dev_archdata_set_node(struct dev_archdata *ad,
++					 struct device_node *np)
++{
++	ad->of_node = np;
++}
++
++static inline struct device_node *
++dev_archdata_get_node(const struct dev_archdata *ad)
++{
++	return ad->of_node;
++}
++
+ #endif /* _ASM_POWERPC_DEVICE_H */
+diff --git a/arch/sparc/include/asm/device.h b/arch/sparc/include/asm/device.h
+index 19790eb..3702e08 100644
+--- a/arch/sparc/include/asm/device.h
++++ b/arch/sparc/include/asm/device.h
+@@ -20,4 +20,16 @@ struct dev_archdata {
+ 	int			numa_node;
+ };
+ 
++static inline void dev_archdata_set_node(struct dev_archdata *ad,
++					 struct device_node *np)
++{
++	ad->prom_node = np;
++}
++
++static inline struct device_node *
++dev_archdata_get_node(const struct dev_archdata *ad)
++{
++	return ad->prom_node;
++}
++
+ #endif /* _ASM_SPARC_DEVICE_H */
 -- 
 1.5.6.3
