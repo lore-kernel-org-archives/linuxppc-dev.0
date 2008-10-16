@@ -1,23 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 387A4DDF8A
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 19:58:31 +1100 (EST)
-Subject: Re: Problems with PCI-E devices not being detected with switch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200810161048.45937.sr@denx.de>
-References: <16691A8B34B5D9458EA3A1C37A11555A0137F81E@tanisys-ex2.Tanisys.Local>
-	<200810161003.31801.sr@denx.de> <1224145785.7654.4.camel@pasglop>
-	<200810161048.45937.sr@denx.de>
-Content-Type: text/plain
-Date: Thu, 16 Oct 2008 19:58:18 +1100
-Message-Id: <1224147498.7654.8.camel@pasglop>
-Mime-Version: 1.0
-Cc: Ayman El-Khashab <AymanE@tanisys.com>, Victor Gallardo <vgallardo@amcc.com>,
-	linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id D1B57DE1BE
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Oct 2008 20:12:30 +1100 (EST)
+Message-ID: <48F7056F.7050602@garzik.org>
+Date: Thu, 16 Oct 2008 05:12:15 -0400
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ehea: Fix memory hotplug support
+References: <200809171619.46741.hannes.hering@linux.vnet.ibm.com>
+	<200810151318.59151.hannes.hering@linux.vnet.ibm.com>
+In-Reply-To: <200810151318.59151.hannes.hering@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: themann@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	raisch@de.ibm.com, ossrosch@linux.vnet.ibm.com,
+	linuxppc-dev@ozlabs.org, ossthema@de.ibm.com, osstklei@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,13 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-10-16 at 10:48 +0200, Stefan Roese wrote:
-> Yeah. I could add this "configured" property to the current U-Boot version. 
-> Perhaps we should add some version information to it so that Linux could 
-> eventually decide to re-configure when the "configured" version is known to 
-> be buggy. What do you think?
+Hannes Hering wrote:
+> This patch implements the memory notifier to update the busmap instantly
+> instead of rebuilding the whole map. This is necessary because
+> walk_memory_resource provides different information than required during memory
+> hotplug.
+> 
+> Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+> ---
+> This patch is based on the current netdev-2.6-git. It supersedes the previous
+> post "ehea: Fix memory hotplug support".
+> http://www.spinics.net/lists/netdev/msg75413.html
 
-I'd rather have the platform have a way to override it rather than
-having tests for uboot versions in the pci code itself.
+Due to vacation, netdev-2.6.git is stale.  Please regenerate this patch 
+against davem's net-2.6.git.
 
-Ben.
+	Jeff
