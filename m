@@ -1,18 +1,21 @@
-Return-Path: <Tom.Bucken@sybase.com>
-Received: from fm200.sybase.com (fm200.sybase.com [192.138.151.122])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "fm200.sybase.com", Issuer "fm200.sybase.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C15C5DE04B
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 02:47:36 +1100 (EST)
-To: linuxppc-dev@ozlabs.org
-Subject: finding fuction names
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id BE483DE0E0
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 03:07:23 +1100 (EST)
+Message-ID: <48F8B833.7080807@harris.com>
+Date: Fri, 17 Oct 2008 12:07:15 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-Message-ID: <OFED6BB455.1624F375-ON852574E5.005284FE-852574E5.00530CF0@sybase.com>
-From: Tom.Bucken@sybase.com
-Date: Fri, 17 Oct 2008 11:07:11 -0400
-Content-Type: multipart/alternative;
-	boundary="=_alternative 00530CEE852574E5_="
-Cc: vicknair@us.ibm.com
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 0/7 RFC] Handle I2C GPIO controllers with the OF (was:
+	pca9539 I2C gpio expander)
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=windows-1251
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org, Jean Delvare <khali@linux-fr.org>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,100 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 00530CEE852574E5_=
-Content-Type: text/plain; charset="US-ASCII"
+Anton Vorontsov wrote:
+> Hi all,
+> 
+> Recently there was a question about I2C GPIO controllers and how should
+> we handle them with the OpenFirmware and such.
+> 
+> Here is the attempt to "connect" I2C GPIO controllers to the
+> "OpenFirmware" device tree, without writing an OF-specific bindings
+> for each driver.
+> 
+> The salt is in these two patches:
+> 
+> [PATCH 3/7] of: fill the archdata for I2C devices
+> ^ Here we're storing the device tree node into the I2C device.
+> 
+> [PATCH 5/7] of/gpio: implement of_dev_gpiochip_{add,remove} calls
+> ^ And here we extracting the the stored node to put the registered
+>   of_gpio_chip into that node.
+> 
+> 
+> How does it look?
 
-/*
+I've just tested this with a pca9539 chip attached to my Sequoia board,
+and it works perfectly for me.  I don't have the mcu_mpc8349emitx.c file
+in my tree, so I was not able to apply part 7 of 7, but the rest looks
+fine.  Thanks for doing this.
 
-Hi,
-
-   We have code in our product that produces stacktraces.  Part of the
-implementation of this code runs nm to find all of the entry points in 
-our libraries.
-
-   Using the 7.0 version of this compiler to compile the simple code below
-
-xlC_r -c -q64 tt.cxx 
- nm -C tt.o
-                 U __IBMCPlusPlusExceptionV1
-0000000000000000 D test()
-0000000000000000 T .test()
-
-   Using the 8.0 version of this compiler to compile the simple code below
-
-xlC_r -c -q64 tt.cxx 
-nm -C tt.o
-                 U __IBMCPlusPlusExceptionV2
-0000000000000000 D test()
-
-
-    We grep the nm output for text symbols which are labeled with 'T'.
-Not all function names are not labeled as text in objects compiled with 
-8.0.
-Is there another way to find all of the fuction names in a library or
-a compiler switch that will put all fuctions into the text segment ?
-
-thanks,
-
-Tom
-
-*/
- 
-int test()
-{
-  return 1;
-}
-
---=_alternative 00530CEE852574E5_=
-Content-Type: text/html; charset="US-ASCII"
-
-
-<div>
-<br><font size=2 face="sans-serif">/*</font>
-<br>
-<br><font size=2 face="sans-serif">Hi,</font>
-<br>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp;We have code in our product
-that produces stacktraces. &nbsp;Part of the<br>
-implementation of this code runs nm to find all of the entry points in
-<br>
-our libraries.</font>
-<br>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp;Using the 7.0 version of
-this compiler to compile the simple code below</font>
-<br>
-<br><font size=2 face="sans-serif">xlC_r -c -q64 tt.cxx <br>
- nm -C tt.o<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; U __IBMCPlusPlusExceptionV1<br>
-0000000000000000 D test()<br>
-0000000000000000 T .test()</font>
-<br>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp;Using the 8.0 version of
-this compiler to compile the simple code below</font>
-<br>
-<br><font size=2 face="sans-serif">xlC_r -c -q64 tt.cxx <br>
-nm -C tt.o<br>
- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; U __IBMCPlusPlusExceptionV2<br>
-0000000000000000 D test()</font>
-<br>
-<br>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; We grep the nm output
-for text symbols which are labeled with 'T'.<br>
-Not all function names are not labeled as text in objects compiled with
-8.0.<br>
-Is there another way to find all of the fuction names in a library or<br>
-a compiler switch that will put all fuctions into the text segment ?</font>
-<br>
-<br><font size=2 face="sans-serif">thanks,</font>
-<br>
-<br><font size=2 face="sans-serif">Tom</font>
-<br>
-<br><font size=2 face="sans-serif">*/<br>
- &nbsp;<br>
-int test()<br>
-{<br>
- &nbsp;return 1;<br>
-}</font>
-<br></div>
---=_alternative 00530CEE852574E5_=--
+Acked by: Steve Falco <sfalco@harris.com>
