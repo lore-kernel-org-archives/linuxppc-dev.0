@@ -1,20 +1,18 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id F1163DDF05
+Return-Path: <marco.stornelli@coritel.it>
+Received: from nausicaa2.coritel.it
+	(host254-130-static.190-82-b.business.telecomitalia.it
+	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id DD41EDDE01
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Oct 2008 08:30:27 +1100 (EST)
-Date: Thu, 16 Oct 2008 23:30:21 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [patch 1/2] FEC_MPC52XX_PHY: Remove obsolete code
-Message-ID: <20081016213021.GD13629@pengutronix.de>
-References: <20080816023159.126377505@pengutronix.de>
-	<20080816024055.241009929@pengutronix.de>
-	<20081015142855.GE16262@secretlab.ca>
+	Fri, 17 Oct 2008 18:00:12 +1100 (EST)
+Message-ID: <48F8384A.6090901@coritel.it>
+Date: Fri, 17 Oct 2008 09:01:30 +0200
+From: Marco Stornelli <marco.stornelli@coritel.it>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Bu8it7iiRSEf40bY"
-In-Reply-To: <20081015142855.GE16262@secretlab.ca>
+To: Mark Bishop <mark@bish.net>
+Subject: Re: How can I make flash writeable?
+References: <20081016144526.tjuq1t5mgw4ks4co@www.bish.net>
+In-Reply-To: <20081016144526.tjuq1t5mgw4ks4co@www.bish.net>
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,77 +24,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Mark,
 
---Bu8it7iiRSEf40bY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> How can I tell which devices are mapped to /proc/mtd devices?
 
-On Wed, Oct 15, 2008 at 08:28:55AM -0600, Grant Likely wrote:
+If I well understand the question, you'd like to change the partitions
+layout (?), so you should check out the dts file to see the flash
+layout, then you can specify there the partitions and change the
+dimensions, if they are read-only...and so on.
 
-> description of what is wrong and why the code needs to be removed.  As
-> far as I can tell, this code affects two different IRQ paths.  First is
+Regards,
 
-Ups, you are right! I am sorry that I missed that somehow :( Here is
-hopefully a better version, which just skips the really unnecessary
-interrupt and fixes a glitch in mdio_remove:
+Mark Bishop ha scritto:
+> I am using the MPC8313E-RDB and I am having some problems using the
+> flash that comes on the board.  Let me preface this by saying that I
+> haven't worked in the embedded linux arena in about 10 years so I am
+> trying to catch up with all the new toys.
+> 
+> This board uses uBoot and it currently has 128M of DDR2, 8M flash and
+> 32M NAND Flash.  I have a few questions:
+> 
+> How can I tell which memory device it uses to boot out of?
+> How can I tell which devices are mapped to /proc/mtd devices?
+> 
+> 
+> I want to create a writeable flash partition, is there a FAQ out there I
+> could look at.
+> 
+> All of this is after a few days of using Google to try and glean some
+> data from the internet.  And the books don't get here from Amazon until
+> Monday.
+> 
+> I would appreciate any help.  Even a RTFM - if you could point me to
+> TFM, it would greatly help.
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
 
-=3D=3D=3D
-[MPC52XX] fec_mpc52xx_phy: Minor cleanups
+-- 
+Marco Stornelli
+Embedded Software Engineer
+CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
+http://www.coritel.it
 
-As this driver polls for a complete MDIO transaction, there is no need to e=
-nable
-interrupts for it. Furthermore, make both checks for freeing MDIO-bus irqs
-consistent.
-
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
----
- drivers/net/fec_mpc52xx_phy.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/fec_mpc52xx_phy.c b/drivers/net/fec_mpc52xx_phy.c
-index 08e18bc..3ad3750 100644
---- a/drivers/net/fec_mpc52xx_phy.c
-+++ b/drivers/net/fec_mpc52xx_phy.c
-@@ -133,9 +133,6 @@ static int mpc52xx_fec_mdio_probe(struct of_device *of,=
- const struct of_device_i
- 	/* set MII speed */
- 	out_be32(&priv->regs->mii_speed, ((mpc52xx_find_ipb_freq(of->node) >> 20)=
- / 5) << 1);
-=20
--	/* enable MII interrupt */
--	out_be32(&priv->regs->imask, in_be32(&priv->regs->imask) | FEC_IMASK_MII);
--
- 	err =3D mdiobus_register(bus);
- 	if (err)
- 		goto out_unmap;
-@@ -167,7 +164,7 @@ static int mpc52xx_fec_mdio_remove(struct of_device *of)
-=20
- 	iounmap(priv->regs);
- 	for (i=3D0; i<PHY_MAX_ADDR; i++)
--		if (bus->irq[i])
-+		if (bus->irq[i] !=3D PHY_POLL)
- 			irq_dispose_mapping(bus->irq[i]);
- 	kfree(priv);
- 	kfree(bus->irq);
---=20
-1.5.6.5
-
---=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-
---Bu8it7iiRSEf40bY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkj3sm0ACgkQD27XaX1/VRutrgCeNUFoABTRVlogYPWfGqZRZV4N
-OYIAn1tyXYiAzqLs91xAPJ9JEUC4unbx
-=gl2n
------END PGP SIGNATURE-----
-
---Bu8it7iiRSEf40bY--
+marco.stornelli@coritel.it
++39 06 72582838
