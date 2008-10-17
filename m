@@ -1,21 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 88AF2DDED6
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 07:37:50 +1100 (EST)
-Message-Id: <FEFFA236-AA3B-49F1-AED2-E42950B87BD7@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Badari Pulavarty <pbadari@gmail.com>
-In-Reply-To: <1224267073.15582.8.camel@badari-desktop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: 2.6.27-git7 compile error (ppc)
-Date: Fri, 17 Oct 2008 15:37:44 -0500
-References: <1224265634.15582.3.camel@badari-desktop>
-	<1224267073.15582.8.camel@badari-desktop>
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp126.sbc.mail.sp1.yahoo.com (smtp126.sbc.mail.sp1.yahoo.com
+	[69.147.65.185]) by ozlabs.org (Postfix) with SMTP id 07963DE0DF
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 07:38:27 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Date: Fri, 17 Oct 2008 13:24:42 -0700
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+	<20081016171259.GD5515@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081016171259.GD5515@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200810171324.42650.david-b@pacbell.net>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org, Jean Delvare <khali@linux-fr.org>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,59 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 16 October 2008, Anton Vorontsov wrote:
+> +/*
+> + * Platforms can define their own __dev_ versions to glue gpio_chips with the
+> + * architecture-specific code.
+> + */
+> +#ifndef __dev_gpiochip_add
+> +#define __dev_gpiochip_add __dev_gpiochip_add
+> +static inline int __dev_gpiochip_add(struct device *dev,
+> +                                    struct gpio_chip *chip)
+> +{
+> +       chip->dev = dev;
+> +       return gpiochip_add(chip);
+> +}
+> +#endif /* __dev_gpiochip_add */
 
-On Oct 17, 2008, at 1:11 PM, Badari Pulavarty wrote:
+This is pretty ugly, especially the implication that *EVERY* gpio_chip
+provider needs modification to use these calls.
 
-> On Fri, 2008-10-17 at 10:47 -0700, Badari Pulavarty wrote:
->> Hi,
->>
->> I get this following compile error on my ppc box.
->>
->> Let me know if its a known issue. Otherwise, I can figure out
->> whats happening.
->>
->> Thanks,
->> Badari
->
-> This is due to recent changes to move phys_add_t definition from
-> arch/powerpc/include/asm/types.h to include/linux/types.h.
->
-> arch/powerpc/include/asm/page.h needs phys_addr_t for
-> CONFIG_RELOCATABLE. Needs fixing..
->
-> Thanks,
-> Badari
->
->>
->>  CC      arch/powerpc/mm/slb.o
->> In file included from /usr/src/linux-2.6.27/arch/powerpc/include/ 
->> asm/mmu-hash64.h:16,
->>                 from /usr/src/linux-2.6.27/arch/powerpc/include/asm/ 
->> mmu.h:7,
->>                 from /usr/src/linux-2.6.27/arch/powerpc/include/asm/ 
->> pgtable.h:7,
->>                 from arch/powerpc/mm/slb.c:19:
->> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:76: error:  
->> parse error before "memstart_addr"
->> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:76: warning:  
->> type defaults to `int' in declaration of `memstart_addr'
->> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:76: warning:  
->> data definition has no type or storage class
->> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:77: error:  
->> parse error before "kernstart_addr"
->> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:77: warning:  
->> type defaults to `int' in declaration of `kernstart_addr'
->> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:77: warning:  
->> data definition has no type or storage class
->>  AS      arch/powerpc/lib/string.o
->>  CC      arch/powerpc/lib/alloc.o
->>  CALL    arch/powerpc/kernel/systbl_chk.sh
->>  CC      arch/powerpc/kernel/sysfs.o
->> make[1]: *** [arch/powerpc/mm/slb.o] Error 1
->> make: *** [arch/powerpc/mm] Error 2
->> make: *** Waiting for unfinished jobs....
+Surely it would be a lot simpler to just add platform-specific hooks
+to gpiochip_{add,remove}(), so that no providers need to be changed??
 
-I've got a patch that seems to address this for me building w/ 
-CONFIG_RELOCATABLE on ppc32/85xx.
 
-- k
+> +#ifndef __dev_gpiochip_remove
+> +#define __dev_gpiochip_remove __dev_gpiochip_remove
+> +static inline int __dev_gpiochip_remove(struct device *dev,
+> +                                       struct gpio_chip *chip)
+> +{
+> +       return gpiochip_remove(chip);
+> +}
+> +#endif /* __dev_gpiochip_remove */
