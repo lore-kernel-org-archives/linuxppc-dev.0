@@ -1,25 +1,16 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zcars04f.nortel.com (zcars04f.nortel.com [47.129.242.57])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 29128DDDFD
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 16:37:18 +1100 (EST)
-Message-ID: <48F82481.8070201@nortel.com>
-Date: Thu, 16 Oct 2008 23:37:05 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
-References: <20080906050602.409299112@goodmis.org>
-	<20080906120346.GA30964@elte.hu>
-	<20081016181452.GA29739@yoda.jdub.homelinux.org>
-In-Reply-To: <20081016181452.GA29739@yoda.jdub.homelinux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-	Steven Rostedt <rostedt@goodmis.org>,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <swarthou@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B28E1DDE06
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 16:42:03 +1100 (EST)
+From: Ed Swarthout <Ed.Swarthout@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix mpc8536ds dma interrupt numbers
+Date: Fri, 17 Oct 2008 00:41:32 -0500
+Message-Id: <1224222092-9301-1-git-send-email-Ed.Swarthout@freescale.com>
+Cc: Ed Swarthout <Ed.Swarthout@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,34 +20,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
+Swap pci1 and pci2 labels -
+Per user manual, pcie1 is at a000 and pcie2 is at 9000.
 
- > Are these two merged yet?  I just spent the better part of the morning
- > trying to figure out why various Fedora kernels based on 2.6.27-rcX and
- > 2.6.27 final hung on my G5 and finally got one booting with FTRACE
- > disabled.
+Signed-off-by: Ed Swarthout <Ed.Swarthout@freescale.com>
+---
+ arch/powerpc/boot/dts/mpc8536ds.dts |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-Until recently I could boot my G5 with FTRACE enabled, but it totally screwed 
-up load balancing.
-
-As of a couple days ago, -tip hung on boot due to the following genirq 
-issue:
-
-
-diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-index 570d1ea..1c178ae 100644
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -132,7 +132,7 @@ int set_irq_type(unsigned int irq, unsigned int type)
-    		return 0;
-
-    	spin_lock_irqsave(&desc->lock, flags);
--	ret = __irq_set_trigger(desc, irq, flags);
-+	ret = __irq_set_trigger(desc, irq, type);
-    	spin_unlock_irqrestore(&desc->lock, flags);
-    	return ret;
-    }
-
-
-
-Chris
+diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/mpc8536ds.dts
+index 93fdd99..ac4233a 100644
+--- a/arch/powerpc/boot/dts/mpc8536ds.dts
++++ b/arch/powerpc/boot/dts/mpc8536ds.dts
+@@ -109,7 +109,7 @@
+ 				reg = <0x0 0x80>;
+ 				cell-index = <0>;
+ 				interrupt-parent = <&mpic>;
+-				interrupts = <14 0x2>;
++				interrupts = <20 2>;
+ 			};
+ 			dma-channel@80 {
+ 				compatible = "fsl,mpc8536-dma-channel",
+@@ -117,7 +117,7 @@
+ 				reg = <0x80 0x80>;
+ 				cell-index = <1>;
+ 				interrupt-parent = <&mpic>;
+-				interrupts = <15 0x2>;
++				interrupts = <21 2>;
+ 			};
+ 			dma-channel@100 {
+ 				compatible = "fsl,mpc8536-dma-channel",
+@@ -125,7 +125,7 @@
+ 				reg = <0x100 0x80>;
+ 				cell-index = <2>;
+ 				interrupt-parent = <&mpic>;
+-				interrupts = <16 0x2>;
++				interrupts = <22 2>;
+ 			};
+ 			dma-channel@180 {
+ 				compatible = "fsl,mpc8536-dma-channel",
+@@ -133,7 +133,7 @@
+ 				reg = <0x180 0x80>;
+ 				cell-index = <3>;
+ 				interrupt-parent = <&mpic>;
+-				interrupts = <17 0x2>;
++				interrupts = <23 2>;
+ 			};
+ 		};
+ 
+@@ -321,7 +321,7 @@
+ 		reg = <0xffe08000 0x1000>;
+ 	};
+ 
+-	pci1: pcie@ffe09000 {
++	pci2: pcie@ffe09000 {
+ 		cell-index = <1>;
+ 		compatible = "fsl,mpc8548-pcie";
+ 		device_type = "pci";
+@@ -358,7 +358,7 @@
+ 		};
+ 	};
+ 
+-	pci2: pcie@ffe0a000 {
++	pci1: pcie@ffe0a000 {
+ 		cell-index = <2>;
+ 		compatible = "fsl,mpc8548-pcie";
+ 		device_type = "pci";
+-- 
+1.5.6.5
