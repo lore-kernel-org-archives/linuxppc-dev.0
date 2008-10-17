@@ -1,23 +1,17 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 08E04DDF37
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 08:29:44 +1100 (EST)
-Date: Sat, 18 Oct 2008 01:29:42 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
-Message-ID: <20081017212942.GA1919@oksana.dev.rtsoft.ru>
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
-	<20081016171259.GD5515@oksana.dev.rtsoft.ru>
-	<200810171324.42650.david-b@pacbell.net>
+Return-Path: <amodra@bigpond.net.au>
+Received: from nschwmtas05p.mx.bigpond.com (nschwmtas05p.mx.bigpond.com
+	[61.9.189.149]) by ozlabs.org (Postfix) with ESMTP id CCB50DDEF0
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 08:59:31 +1100 (EST)
+Date: Sat, 18 Oct 2008 08:29:30 +1030
+From: Alan Modra <amodra@bigpond.net.au>
+To: munroesj@us.ibm.com, Tom.Bucken@sybase.com
+Subject: Re: [Fwd: finding fuction names]
+Message-ID: <20081017215930.GC9946@bubble.grove.modra.org>
+References: <1224266789.28869.441.camel@spokane1.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <200810171324.42650.david-b@pacbell.net>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org, Jean Delvare <khali@linux-fr.org>,
-	David Miller <davem@davemloft.net>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1224266789.28869.441.camel@spokane1.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, vicknair@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,41 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 17, 2008 at 01:24:42PM -0700, David Brownell wrote:
-> On Thursday 16 October 2008, Anton Vorontsov wrote:
-> > +/*
-> > + * Platforms can define their own __dev_ versions to glue gpio_chips with the
-> > + * architecture-specific code.
-> > + */
-> > +#ifndef __dev_gpiochip_add
-> > +#define __dev_gpiochip_add __dev_gpiochip_add
-> > +static inline int __dev_gpiochip_add(struct device *dev,
-> > +                                    struct gpio_chip *chip)
-> > +{
-> > +       chip->dev = dev;
-> > +       return gpiochip_add(chip);
-> > +}
-> > +#endif /* __dev_gpiochip_add */
+On Fri, Oct 17, 2008 at 01:06:29PM -0500, Steven Munroe wrote:
+> Alan can you respond to this. This XLC but I suspect it is common with
+> GCC and the PPC64 ABI.
+
+Indeed, this is due to the ABI.
+
+Content-Description: Forwarded message - finding fuction names
+> To: linuxppc-dev@ozlabs.org
+> Subject: finding fuction names
+> From: Tom.Bucken@sybase.com
+> Date: Fri, 17 Oct 2008 11:07:11 -0400
+> Cc: vicknair@us.ibm.com
 > 
-> This is pretty ugly, especially the implication that *EVERY* gpio_chip
-> provider needs modification to use these calls.
+> /*
+> 
+> Hi,
+> 
+>    We have code in our product that produces stacktraces.  Part of the
+> implementation of this code runs nm to find all of the entry points in 
+> our libraries.
+> 
+>    Using the 7.0 version of this compiler to compile the simple code below
+> 
+> xlC_r -c -q64 tt.cxx 
+>  nm -C tt.o
+>                  U __IBMCPlusPlusExceptionV1
+> 0000000000000000 D test()
+> 0000000000000000 T .test()
+> 
+>    Using the 8.0 version of this compiler to compile the simple code below
+> 
+> xlC_r -c -q64 tt.cxx 
+> nm -C tt.o
+>                  U __IBMCPlusPlusExceptionV2
+> 0000000000000000 D test()
+> 
+> 
+>     We grep the nm output for text symbols which are labeled with 'T'.
+> Not all function names are not labeled as text in objects compiled with 
+> 8.0.
+> Is there another way to find all of the fuction names in a library or
+> a compiler switch that will put all fuctions into the text segment ?
 
-Anyway most of them need some modifications to work with OF...
+The PowerPC64 ABI uses function descriptors, stored in the .opd
+section, a data section.  The address of a function is that of its
+descriptor, which nm correctly shows as a 'D' type symbol.  A symbol
+marking the start of the function code is unnecessary since you can
+find that from the descriptor, so later compilers omit the "dot"
+symbol.
 
-> Surely it would be a lot simpler to just add platform-specific hooks
-> to gpiochip_{add,remove}(), [...]
-
-We have printk and dev_printk. kzalloc and devm_kzalloc (though I
-aware that devm_ are different than just dev_).  So I thought that
-dev_gpiochip_* would be logical order of things...
-
-If you don't like it, I can readily implement hooks for
-gpiochip_{add,remove}().
-
-
-Thanks for the comments,
+nm --synthetic will look up the descriptor for you and display fake
+"dot" symbols marking the start of each function's code.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Alan Modra
+Australia Development Lab, IBM
