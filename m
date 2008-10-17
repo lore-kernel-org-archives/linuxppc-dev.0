@@ -1,18 +1,14 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C26DCDE42B
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 06:16:17 +1100 (EST)
-Date: Fri, 17 Oct 2008 23:16:16 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 4/4] powerpc/83xx: add USB Host support for the
-	MPC8360E-RDK boards
-Message-ID: <20081017191616.GD9499@oksana.dev.rtsoft.ru>
-References: <20081017191536.GA2391@oksana.dev.rtsoft.ru>
+Return-Path: <mditto@consentry.com>
+Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
+	by ozlabs.org (Postfix) with ESMTP id E550DDE114
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 06:28:13 +1100 (EST)
+Message-ID: <48F8E737.9090904@consentry.com>
+Date: Fri, 17 Oct 2008 12:27:51 -0700
+From: Mike Ditto <mditto@consentry.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081017191536.GA2391@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Bug in boot code memcmp with zero length
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,46 +18,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Simply add the usb node to support USB host on the MPC8360E-RDK
-boards.
+I noticed, when trying to use, e.g.,
+node = find_node_by_prop_value(prev, "booleanprop", "", 0))
+to search for all nodes with a certain boolean property, that memcmp()
+returns garbage when comparing zero bytes.  It should return zero.
 
-Currently U-Boot doesn't fill the clock-frequency property for
-timer nodes, so for now we have to fill it manually.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/boot/dts/mpc836x_rdk.dts |   19 +++++++++++++++++--
- 1 files changed, 17 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-index decadf3..37b7895 100644
---- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-@@ -218,8 +218,23 @@
- 				reg = <0x440 0x40>;
- 				interrupts = <12 13 14 15>;
- 				interrupt-parent = <&qeic>;
--				/* filled by u-boot */
--				clock-frequency = <0>;
-+				clock-frequency = <166666666>;
-+			};
-+
-+			usb@6c0 {
-+				compatible = "fsl,mpc8360-qe-usb",
-+					     "fsl,mpc8323-qe-usb";
-+				reg = <0x6c0 0x40 0x8b00 0x100>;
-+				interrupts = <11>;
-+				interrupt-parent = <&qeic>;
-+				fsl,fullspeed-clock = "clk21";
-+				gpios = <&qe_pio_b  2 0 /* USBOE */
-+					 &qe_pio_b  3 0 /* USBTP */
-+					 &qe_pio_b  8 0 /* USBTN */
-+					 &qe_pio_b  9 0 /* USBRP */
-+					 &qe_pio_b 11 0 /* USBRN */
-+					 &qe_pio_e 20 0 /* SPEED */
-+					 &qe_pio_e 21 1 /* POWER */>;
- 			};
- 
- 			spi@4c0 {
--- 
-1.5.6.3
+Index: arch/powerpc/boot/string.S
+===================================================================
+retrieving revision 1.1.1.1
+diff -u -r1.1.1.1 string.S
+--- arch/powerpc/boot/string.S	11 Oct 2008 02:51:35 -0000	1.1.1.1
++++ arch/powerpc/boot/string.S	17 Oct 2008 19:11:18 -0000
+@@ -235,7 +235,7 @@
+ 	.globl	memcmp
+ memcmp:
+ 	cmpwi	0,r5,0
+-	blelr
++	ble	2f
+ 	mtctr	r5
+ 	addi	r6,r3,-1
+ 	addi	r4,r4,-1
+@@ -243,6 +243,8 @@
+ 	lbzu	r0,1(r4)
+ 	subf.	r3,r0,r3
+ 	bdnzt	2,1b
++	blr
++2:	li	r3,0
+ 	blr
