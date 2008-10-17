@@ -1,12 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 96A86DDEEF
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 06:16:07 +1100 (EST)
-Date: Fri, 17 Oct 2008 23:16:05 +0400
+	by ozlabs.org (Postfix) with ESMTP id B121FDE33B
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 06:16:14 +1100 (EST)
+Date: Fri, 17 Oct 2008 23:16:13 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 1/4] powerpc/QE: implement QE Pin Multiplexing API
-Message-ID: <20081017191605.GA9499@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/4] powerpc/83xx: add USB Host/Gadget support for the
+	MPC8360E-MDS boards
+Message-ID: <20081017191613.GC9499@oksana.dev.rtsoft.ru>
 References: <20081017191536.GA2391@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -21,275 +22,182 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With this API we're able to set a QE pin to the GPIO mode or a dedicated
-peripheral function.
+- Update the device tree per QE USB bindings;
+- Add timer (FSL GTM) node;
+- Add gpio-controller node for BCSR13 bank (GPIOs on that bank
+  are used to control the USB transceiver);
+- Set up other BCSR registers;
+- Configure the QE Par IO.
 
-The API relies on the fact that QE gpio controllers are registered. If
-they aren't, the API won't work (gracefully though).
+The work is loosely based on Li Yang's patch[1], which is used
+to support peripheral mode only.
 
-There is one caveat though: if anybody occupied the node->data before us,
-or overwrote it, then bad things will happen. Luckily this is all in the
-platform code that we fully control, so this should never happen.
+[1] http://ozlabs.org/pipermail/linuxppc-dev/2008-August/061357.html
 
-I could implement more checks (for example we could create a list of
-successfully registered QE controllers, and compare the node->data in the
-qe_pin_request()), but this is unneeded if nobody is going to do silly
-things behind our back.
+The s-o-b line of the original patch preserved here.
 
+Signed-off-by: Li Yang <leoli@freescale.com>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/include/asm/qe.h     |    9 ++
- arch/powerpc/sysdev/qe_lib/gpio.c |  195 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 204 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/mpc836x_mds.dts     |   43 ++++++++++++++++++++++-
+ arch/powerpc/platforms/83xx/mpc836x_mds.c |   52 ++++++++++++++++++++++++++++-
+ 2 files changed, 92 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
-index edee15d..31ddbc9 100644
---- a/arch/powerpc/include/asm/qe.h
-+++ b/arch/powerpc/include/asm/qe.h
-@@ -112,6 +112,15 @@ extern int par_io_config_pin(u8 port, u8 pin, int dir, int open_drain,
- 			     int assignment, int has_irq);
- extern int par_io_data_set(u8 port, u8 pin, u8 val);
+diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
+index 66a12d2..bdb14ba 100644
+--- a/arch/powerpc/boot/dts/mpc836x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
+@@ -69,8 +69,18 @@
+ 		};
  
-+/*
-+ * Pin multiplexing functions.
-+ */
-+struct qe_pin;
-+extern struct qe_pin *qe_pin_request(struct device_node *np, int index);
-+extern void qe_pin_free(struct qe_pin *qe_pin);
-+extern void qe_pin_set_gpio(struct qe_pin *qe_pin);
-+extern void qe_pin_set_dedicated(struct qe_pin *pin);
+ 		bcsr@1,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			device_type = "board-control";
+ 			reg = <1 0 0x8000>;
++			ranges = <0 1 0 0x8000>;
 +
- /* QE internal API */
- int qe_issue_cmd(u32 cmd, u32 device, u8 mcn_protocol, u32 cmd_input);
- enum qe_clock qe_clock_source(const char *source);
-diff --git a/arch/powerpc/sysdev/qe_lib/gpio.c b/arch/powerpc/sysdev/qe_lib/gpio.c
-index 8e5a0bc..7f10b18 100644
---- a/arch/powerpc/sysdev/qe_lib/gpio.c
-+++ b/arch/powerpc/sysdev/qe_lib/gpio.c
-@@ -14,6 +14,7 @@
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/spinlock.h>
-+#include <linux/err.h>
- #include <linux/io.h>
- #include <linux/of.h>
- #include <linux/of_gpio.h>
-@@ -24,8 +25,14 @@ struct qe_gpio_chip {
- 	struct of_mm_gpio_chip mm_gc;
- 	spinlock_t lock;
++			bcsr13: gpio-controller@d {
++				#gpio-cells = <2>;
++				compatible = "fsl,mpc8360mds-bcsr-gpio";
++				reg = <0xd 1>;
++				gpio-controller;
++			};
+ 		};
+ 	};
  
-+	unsigned long pin_flags[QE_PIO_PINS];
-+#define QE_PIN_REQUESTED 0
+@@ -195,10 +205,21 @@
+ 		};
+ 
+ 		par_io@1400 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			reg = <0x1400 0x100>;
++			ranges = <0 0x1400 0x100>;
+ 			device_type = "par_io";
+ 			num-ports = <7>;
+ 
++			qe_pio_b: gpio-controller@18 {
++				#gpio-cells = <2>;
++				compatible = "fsl,mpc8360-qe-pario-bank",
++					     "fsl,mpc8323-qe-pario-bank";
++				reg = <0x18 0x18>;
++				gpio-controller;
++			};
 +
- 	/* shadowed data register to clear/set bits safely */
- 	u32 cpdata;
+ 			pio1: ucc_pin@01 {
+ 				pio-map = <
+ 			/* port  pin  dir  open_drain  assignment  has_irq */
+@@ -282,6 +303,15 @@
+ 			};
+ 		};
+ 
++		timer@440 {
++			compatible = "fsl,mpc8360-qe-gtm",
++				     "fsl,qe-gtm", "fsl,gtm";
++			reg = <0x440 0x40>;
++			clock-frequency = <132000000>;
++			interrupts = <12 13 14 15>;
++			interrupt-parent = <&qeic>;
++		};
 +
-+	/* saved_regs used to restore dedicated functions */
-+	struct qe_pio_regs saved_regs;
- };
+ 		spi@4c0 {
+ 			cell-index = <0>;
+ 			compatible = "fsl,spi";
+@@ -301,11 +331,20 @@
+ 		};
  
- static inline struct qe_gpio_chip *
-@@ -40,6 +47,12 @@ static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
- 	struct qe_pio_regs __iomem *regs = mm_gc->regs;
+ 		usb@6c0 {
+-			compatible = "qe_udc";
++			compatible = "fsl,mpc8360-qe-usb",
++				     "fsl,mpc8323-qe-usb";
+ 			reg = <0x6c0 0x40 0x8b00 0x100>;
+ 			interrupts = <11>;
+ 			interrupt-parent = <&qeic>;
+-			mode = "slave";
++			fsl,fullspeed-clock = "clk21";
++			fsl,lowspeed-clock = "brg9";
++			gpios = <&qe_pio_b  2 0   /* USBOE */
++				 &qe_pio_b  3 0   /* USBTP */
++				 &qe_pio_b  8 0   /* USBTN */
++				 &qe_pio_b  9 0   /* USBRP */
++				 &qe_pio_b 11 0   /* USBRN */
++				 &bcsr13    5 0   /* SPEED */
++				 &bcsr13    4 1>; /* POWER */
+ 		};
  
- 	qe_gc->cpdata = in_be32(&regs->cpdata);
-+	qe_gc->saved_regs.cpdata = qe_gc->cpdata;
-+	qe_gc->saved_regs.cpdir1 = in_be32(&regs->cpdir1);
-+	qe_gc->saved_regs.cpdir2 = in_be32(&regs->cpdir2);
-+	qe_gc->saved_regs.cppar1 = in_be32(&regs->cppar1);
-+	qe_gc->saved_regs.cppar2 = in_be32(&regs->cppar2);
-+	qe_gc->saved_regs.cpodr = in_be32(&regs->cpodr);
+ 		enet0: ucc@2000 {
+diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+index 9d46e5b..4e69f7b 100644
+--- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+@@ -43,6 +43,7 @@
+ #include <asm/udbg.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
++#include <sysdev/simple_gpio.h>
+ #include <asm/qe.h>
+ #include <asm/qe_ic.h>
+ 
+@@ -127,9 +128,58 @@ static void __init mpc836x_mds_setup_arch(void)
+ 			iounmap(immap);
+ 		}
+ 
+-		iounmap(bcsr_regs);
+ 		of_node_put(np);
+ 	}
++#ifdef CONFIG_QE_USB
++	np = of_find_compatible_node(NULL, NULL, "fsl,mpc8323-qe-usb");
++	if (np) {
++		const char *mode = of_get_property(np, "mode", NULL);
++
++		par_io_config_pin(1,  2, 1, 0, 3, 0); /* USBOE  */
++		par_io_config_pin(1,  3, 1, 0, 3, 0); /* USBTP  */
++		par_io_config_pin(1,  8, 1, 0, 1, 0); /* USBTN  */
++		par_io_config_pin(1, 10, 2, 0, 3, 0); /* USBRXD */
++		par_io_config_pin(1,  9, 2, 1, 3, 0); /* USBRP  */
++		par_io_config_pin(1, 11, 2, 1, 3, 0); /* USBRN  */
++		par_io_config_pin(2, 20, 2, 0, 1, 0); /* CLK21  */
++
++#define BCSR8_TSEC1M_MASK	(0x3 << 6)
++#define BCSR8_TSEC1M_RGMII	(0x0 << 6)
++#define BCSR8_TSEC2M_MASK	(0x3 << 4)
++#define BCSR8_TSEC2M_RGMII	(0x0 << 4)
++		/*
++		 * Default is GMII (2), but we should set it to RGMII (0) if
++		 * we use USB (Eth PHY is in RGMII mode anyway).
++		 */
++		clrsetbits_8(&bcsr_regs[8],
++			     BCSR8_TSEC1M_MASK | BCSR8_TSEC2M_MASK,
++			     BCSR8_TSEC1M_RGMII | BCSR8_TSEC2M_RGMII);
++
++#define BCSR13_USBMASK	0x0f
++#define BCSR13_nUSBEN	0x08 /* 1 - Disable, 0 - Enable			*/
++#define BCSR13_USBSPEED 0x04 /* 1 - Full, 0 - Low			*/
++#define BCSR13_USBMODE	0x02 /* 1 - Host, 0 - Function			*/
++#define BCSR13_nUSBVCC	0x01 /* 1 - gets VBUS, 0 - supplies VBUS 	*/
++
++		clrsetbits_8(&bcsr_regs[13], BCSR13_USBMASK, BCSR13_USBSPEED);
++
++		if (mode && !strcmp(mode, "peripheral")) {
++			setbits8(&bcsr_regs[13], BCSR13_nUSBVCC);
++			qe_usb_clock_set(QE_CLK21, 48000000);
++		} else {
++			setbits8(&bcsr_regs[13], BCSR13_USBMODE);
++			/*
++			 * The BCSR GPIOs are used to control power and
++			 * speed of the USB transceiver. This is needed for
++			 * the USB Host only.
++			 */
++			simple_gpiochip_init("fsl,mpc8360mds-bcsr-gpio");
++		}
++
++		of_node_put(np);
++	}
++#endif				/* CONFIG_QE_USB */
++	iounmap(bcsr_regs);
+ #endif				/* CONFIG_QUICC_ENGINE */
  }
  
- static int qe_gpio_get(struct gpio_chip *gc, unsigned int gpio)
-@@ -103,6 +116,188 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	return 0;
- }
- 
-+struct qe_pin {
-+	/*
-+	 * The qe_gpio_chip name is unfortunate, we should change that to
-+	 * something like qe_pio_controller. Someday.
-+	 */
-+	struct qe_gpio_chip *controller;
-+	int num;
-+};
-+
-+/**
-+ * qe_pin_request - Request a QE pin
-+ * @np:		device node to get a pin from
-+ * @index:	index of a pin in the device tree
-+ * Context:	non-atomic
-+ *
-+ * This function return qe_pin so that you could use it with the rest of
-+ * the QE Pin Multiplexing API.
-+ */
-+struct qe_pin *qe_pin_request(struct device_node *np, int index)
-+{
-+	struct qe_pin *qe_pin;
-+	struct device_node *gc;
-+	struct of_gpio_chip *of_gc = NULL;
-+	struct of_mm_gpio_chip *mm_gc;
-+	struct qe_gpio_chip *qe_gc;
-+	int err;
-+	int size;
-+	const void *gpio_spec;
-+	const u32 *gpio_cells;
-+	unsigned long flags;
-+
-+	qe_pin = kzalloc(sizeof(*qe_pin), GFP_KERNEL);
-+	if (!qe_pin) {
-+		pr_debug("%s: can't allocate memory\n", __func__);
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
-+	err = of_parse_phandles_with_args(np, "gpios", "#gpio-cells", index,
-+					  &gc, &gpio_spec);
-+	if (err) {
-+		pr_debug("%s: can't parse gpios property\n", __func__);
-+		goto err0;
-+	}
-+
-+	if (!of_device_is_compatible(gc, "fsl,mpc8323-qe-pario-bank")) {
-+		pr_debug("%s: tried to get a non-qe pin\n", __func__);
-+		err = -EINVAL;
-+		goto err1;
-+	}
-+
-+	of_gc = gc->data;
-+	if (!of_gc) {
-+		pr_debug("%s: gpio controller %s isn't registered\n",
-+			 np->full_name, gc->full_name);
-+		err = -ENODEV;
-+		goto err1;
-+	}
-+
-+	gpio_cells = of_get_property(gc, "#gpio-cells", &size);
-+	if (!gpio_cells || size != sizeof(*gpio_cells) ||
-+			*gpio_cells != of_gc->gpio_cells) {
-+		pr_debug("%s: wrong #gpio-cells for %s\n",
-+			 np->full_name, gc->full_name);
-+		err = -EINVAL;
-+		goto err1;
-+	}
-+
-+	err = of_gc->xlate(of_gc, np, gpio_spec);
-+	if (err < 0)
-+		goto err1;
-+
-+	mm_gc = to_of_mm_gpio_chip(&of_gc->gc);
-+	qe_gc = to_qe_gpio_chip(mm_gc);
-+
-+	spin_lock_irqsave(&qe_gc->lock, flags);
-+
-+	if (test_and_set_bit(QE_PIN_REQUESTED, &qe_gc->pin_flags[err]) == 0) {
-+		qe_pin->controller = qe_gc;
-+		qe_pin->num = err;
-+		err = 0;
-+	} else {
-+		err = -EBUSY;
-+	}
-+
-+	spin_unlock_irqrestore(&qe_gc->lock, flags);
-+
-+	if (!err)
-+		return qe_pin;
-+err1:
-+	of_node_put(gc);
-+err0:
-+	kfree(qe_pin);
-+	pr_debug("%s failed with status %d\n", __func__, err);
-+	return ERR_PTR(err);
-+}
-+EXPORT_SYMBOL(qe_pin_request);
-+
-+/**
-+ * qe_pin_free - Free a pin
-+ * @qe_pin:	pointer to the qe_pin structure
-+ * Context:	any
-+ *
-+ * This function frees the qe_pin structure and makes a pin available
-+ * for further qe_pin_request() calls.
-+ */
-+void qe_pin_free(struct qe_pin *qe_pin)
-+{
-+	struct qe_gpio_chip *qe_gc = qe_pin->controller;
-+	unsigned long flags;
-+	const int pin = qe_pin->num;
-+
-+	spin_lock_irqsave(&qe_gc->lock, flags);
-+	test_and_clear_bit(QE_PIN_REQUESTED, &qe_gc->pin_flags[pin]);
-+	spin_unlock_irqrestore(&qe_gc->lock, flags);
-+
-+	kfree(qe_pin);
-+}
-+EXPORT_SYMBOL(qe_pin_free);
-+
-+/**
-+ * qe_pin_set_dedicated - Revert a pin to a dedicated peripheral function mode
-+ * @qe_pin:	pointer to the qe_pin structure
-+ * Context:	any
-+ *
-+ * This function resets a pin to a dedicated peripheral function that
-+ * has been set up by the firmware.
-+ */
-+void qe_pin_set_dedicated(struct qe_pin *qe_pin)
-+{
-+	struct qe_gpio_chip *qe_gc = qe_pin->controller;
-+	struct qe_pio_regs __iomem *regs = qe_gc->mm_gc.regs;
-+	struct qe_pio_regs *sregs = &qe_gc->saved_regs;
-+	int pin = qe_pin->num;
-+	u32 mask1 = 1 << (QE_PIO_PINS - (pin + 1));
-+	u32 mask2 = 0x3 << (QE_PIO_PINS - (pin % (QE_PIO_PINS / 2) + 1) * 2);
-+	bool second_reg = pin > (QE_PIO_PINS / 2) - 1;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&qe_gc->lock, flags);
-+
-+	if (second_reg) {
-+		clrsetbits_be32(&regs->cpdir2, mask2, sregs->cpdir2 & mask2);
-+		clrsetbits_be32(&regs->cppar2, mask2, sregs->cppar2 & mask2);
-+	} else {
-+		clrsetbits_be32(&regs->cpdir1, mask2, sregs->cpdir1 & mask2);
-+		clrsetbits_be32(&regs->cppar1, mask2, sregs->cppar1 & mask2);
-+	}
-+
-+	if (sregs->cpdata & mask1)
-+		qe_gc->cpdata |= mask1;
-+	else
-+		qe_gc->cpdata &= ~mask1;
-+
-+	out_be32(&regs->cpdata, qe_gc->cpdata);
-+	clrsetbits_be32(&regs->cpodr, mask1, sregs->cpodr & mask1);
-+
-+	spin_unlock_irqrestore(&qe_gc->lock, flags);
-+}
-+EXPORT_SYMBOL(qe_pin_set_dedicated);
-+
-+/**
-+ * qe_pin_set_gpio - Set a pin to the GPIO mode
-+ * @qe_pin:	pointer to the qe_pin structure
-+ * Context:	any
-+ *
-+ * This function sets a pin to the GPIO mode.
-+ */
-+void qe_pin_set_gpio(struct qe_pin *qe_pin)
-+{
-+	struct qe_gpio_chip *qe_gc = qe_pin->controller;
-+	struct qe_pio_regs __iomem *regs = qe_gc->mm_gc.regs;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&qe_gc->lock, flags);
-+
-+	/* Let's make it input by default, GPIO API is able to change that. */
-+	__par_io_config_pin(regs, qe_pin->num, QE_PIO_DIR_IN, 0, 0, 0);
-+
-+	spin_unlock_irqrestore(&qe_gc->lock, flags);
-+}
-+EXPORT_SYMBOL(qe_pin_set_gpio);
-+
- static int __init qe_add_gpiochips(void)
- {
- 	struct device_node *np;
 -- 
 1.5.6.3
