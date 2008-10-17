@@ -1,16 +1,21 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zcars04e.nortel.com (zcars04e.nortel.com [47.129.242.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 878FCDE1A3
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 06:33:14 +1100 (EST)
-Message-ID: <48F8E86B.702@nortel.com>
-Date: Fri, 17 Oct 2008 13:32:59 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, Linux kernel <linux-kernel@vger.kernel.org>
-Subject: build failure on powerpc with current -git
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 88AF2DDED6
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 07:37:50 +1100 (EST)
+Message-Id: <FEFFA236-AA3B-49F1-AED2-E42950B87BD7@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Badari Pulavarty <pbadari@gmail.com>
+In-Reply-To: <1224267073.15582.8.camel@badari-desktop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: 2.6.27-git7 compile error (ppc)
+Date: Fri, 17 Oct 2008 15:37:44 -0500
+References: <1224265634.15582.3.camel@badari-desktop>
+	<1224267073.15582.8.camel@badari-desktop>
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,38 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The current -git fails to build on 64-bit powerpc (failure log below) . 
-  Initially I tried using my older toolchain, when I first saw the 
-problem I built a new toolchain with crosstool (gcc 4.1.2 and binutils 
-2.16.1) and tried again but got the same problem.
 
-2.6.27 doesn't show this problem.
+On Oct 17, 2008, at 1:11 PM, Badari Pulavarty wrote:
 
-Any ideas what's going on and how I can fix it?
+> On Fri, 2008-10-17 at 10:47 -0700, Badari Pulavarty wrote:
+>> Hi,
+>>
+>> I get this following compile error on my ppc box.
+>>
+>> Let me know if its a known issue. Otherwise, I can figure out
+>> whats happening.
+>>
+>> Thanks,
+>> Badari
+>
+> This is due to recent changes to move phys_add_t definition from
+> arch/powerpc/include/asm/types.h to include/linux/types.h.
+>
+> arch/powerpc/include/asm/page.h needs phys_addr_t for
+> CONFIG_RELOCATABLE. Needs fixing..
+>
+> Thanks,
+> Badari
+>
+>>
+>>  CC      arch/powerpc/mm/slb.o
+>> In file included from /usr/src/linux-2.6.27/arch/powerpc/include/ 
+>> asm/mmu-hash64.h:16,
+>>                 from /usr/src/linux-2.6.27/arch/powerpc/include/asm/ 
+>> mmu.h:7,
+>>                 from /usr/src/linux-2.6.27/arch/powerpc/include/asm/ 
+>> pgtable.h:7,
+>>                 from arch/powerpc/mm/slb.c:19:
+>> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:76: error:  
+>> parse error before "memstart_addr"
+>> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:76: warning:  
+>> type defaults to `int' in declaration of `memstart_addr'
+>> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:76: warning:  
+>> data definition has no type or storage class
+>> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:77: error:  
+>> parse error before "kernstart_addr"
+>> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:77: warning:  
+>> type defaults to `int' in declaration of `kernstart_addr'
+>> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:77: warning:  
+>> data definition has no type or storage class
+>>  AS      arch/powerpc/lib/string.o
+>>  CC      arch/powerpc/lib/alloc.o
+>>  CALL    arch/powerpc/kernel/systbl_chk.sh
+>>  CC      arch/powerpc/kernel/sysfs.o
+>> make[1]: *** [arch/powerpc/mm/slb.o] Error 1
+>> make: *** [arch/powerpc/mm] Error 2
+>> make: *** Waiting for unfinished jobs....
 
-Thanks,
+I've got a patch that seems to address this for me building w/ 
+CONFIG_RELOCATABLE on ppc32/85xx.
 
-Chris
-
-
-   LD      vmlinux.o
-   MODPOST vmlinux.o
-WARNING: modpost: Found 4 section mismatch(es).
-To see full details build your kernel with:
-'make CONFIG_DEBUG_SECTION_MISMATCH=y'
-   GEN     .version
-   CHK     include/linux/compile.h
-   UPD     include/linux/compile.h
-   CC      init/version.o
-   LD      init/built-in.o
-   LD      .tmp_vmlinux1
-/opt/crosstool/gcc-4.1.2-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/powerpc64-unknown-linux-gnu-ld: 
-BFD 2.16.1 internal error, aborting at 
-/home/cfriesen/crosstool-0.43/build/powerpc64-unknown-linux-gnu/gcc-4.1.2-glibc-2.3.6/binutils-2.16.1/bfd/elflink.c 
-line 6419 in elf_link_output_extsym
-
-/opt/crosstool/gcc-4.1.2-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/powerpc64-unknown-linux-gnu-ld: 
-Please report this bug.
-
-make[1]: *** [.tmp_vmlinux1] Error 1
-make: *** [sub-make] Error 2
+- k
