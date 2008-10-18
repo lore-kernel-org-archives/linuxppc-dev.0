@@ -1,22 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.232])
-	by ozlabs.org (Postfix) with ESMTP id 74ED4DDE20
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 40CFBDDDF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Oct 2008 17:32:50 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so823935rvb.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Oct 2008 23:32:49 -0700 (PDT)
-Date: Sat, 18 Oct 2008 00:32:47 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Robert Woodworth <rwoodworth@securics.com>
-Subject: Re: Cache control
-Message-ID: <20081018063246.GA5594@secretlab.ca>
-References: <1BA180A8-1655-4F10-ADDD-E5667DE182BE@securics.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1BA180A8-1655-4F10-ADDD-E5667DE182BE@securics.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Sat, 18 Oct 2008 19:00:47 +1100 (EST)
+To: "Duy-Ky Nguyen" <duykynguyen@hotmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: How can I make flash writeable?
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <BLU119-DAV13B797B2CC811E90F87406BB2D0@phx.gbl>
+References: <mailman.1.1224291602.14390.linuxppc-embedded@ozlabs.org>
+	<BLU119-DAV13B797B2CC811E90F87406BB2D0@phx.gbl>
+Date: Sat, 18 Oct 2008 09:53:16 +0200
+Message-Id: <20081018075316.11AB0835697A@gemini.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,35 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 16, 2008 at 09:57:27AM -0600, Robert Woodworth wrote:
-> I have a Virtex4 VF60 device with 256MB DDR2.
->
-> I have told the Linux kernel that the device has only 128MB and its  
-> working fine.  There is an HDL module that is populating the next 16MB  
-> with sensor data (0x08000000 - 0x09000000)  I mapped the area into my  
-> driver via `ioremap()` and also via `mmap / remap_pfn_range()`  It works 
-> fine.
->
-> I know that PPC cache regions work in 128MB blocks.  I assume that the  
-> kernel bootup is turning on cache in the first 128, because it thinks  
-> that its the full RAM range, and not cached in the next 128MB.
+Dear "Duy-Ky Nguyen",
 
-That's only true when the MMU is off.  Linux runs with the MMU on and
-the TLB entries specify the caching per mapping.
+In message <BLU119-DAV13B797B2CC811E90F87406BB2D0@phx.gbl> you wrote:
+> 
+> I guess you want to have RW filesystem for your Linux target.
+> If that's the case you need to have root filesystem as JFFS2.
 
-> I know that if I declare the area cached, and invalidate the region  
-> before I read it,  the reads should be much faster than if it's not  
-> cached.
+This is not correct. You can use a read-only root file system combined
+with additionala ,writable file systems.
 
-Correct.
+> There's a document MPC8313E-RDB BSP User's Guide comes with the MPC8313E-RDB 
+> package.
+> It has all info for several filesystems like NFS (network), Ramdisk 
+> (Read-Only), and JFFS2 (Read/Write)
 
-> How can I control if the area is cached? and then invalidate it when new 
-> data arrives?
->
-> Is there a PPC/Linux API call to declare the region cached and  
-> invalidate regions before read?
+That's incorrect, either. A ramdisk is usually writable (unless you
+mount it read-only, which would be very unusuak).
 
-Take a look at dma_alloc_coherent() and related functions.
+See also
+http://www.denx.de/wiki/view/DULG/RootFileSystemDesignAndBuilding
 
-Cheers,
-g.
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+To get something done, a committee should consist  of  no  more  than
+three men, two of them absent.
