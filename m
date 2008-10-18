@@ -1,17 +1,16 @@
-Return-Path: <amodra@bigpond.net.au>
-Received: from nschwmtas05p.mx.bigpond.com (nschwmtas05p.mx.bigpond.com
-	[61.9.189.149]) by ozlabs.org (Postfix) with ESMTP id CCB50DDEF0
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 08:59:31 +1100 (EST)
-Date: Sat, 18 Oct 2008 08:29:30 +1030
-From: Alan Modra <amodra@bigpond.net.au>
-To: munroesj@us.ibm.com, Tom.Bucken@sybase.com
-Subject: Re: [Fwd: finding fuction names]
-Message-ID: <20081017215930.GC9946@bubble.grove.modra.org>
-References: <1224266789.28869.441.camel@spokane1.rchland.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 9A1B9DDDFB
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 11:23:54 +1100 (EST)
+Date: Sat, 18 Oct 2008 04:23:52 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc: remove device_type = "board-control"
+Message-ID: <20081018002352.GA9661@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1224266789.28869.441.camel@spokane1.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, vicknair@us.ibm.com
+Content-Type: text/plain; charset=windows-1251
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,59 +20,120 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 17, 2008 at 01:06:29PM -0500, Steven Munroe wrote:
-> Alan can you respond to this. This XLC but I suspect it is common with
-> GCC and the PPC64 ABI.
+We don't want to encourage the bogus device_type usage.
 
-Indeed, this is due to the ABI.
+The device type isn't used in the code, so we can simply remove it from
+the documentation and dts files.
 
-Content-Description: Forwarded message - finding fuction names
-> To: linuxppc-dev@ozlabs.org
-> Subject: finding fuction names
-> From: Tom.Bucken@sybase.com
-> Date: Fri, 17 Oct 2008 11:07:11 -0400
-> Cc: vicknair@us.ibm.com
-> 
-> /*
-> 
-> Hi,
-> 
->    We have code in our product that produces stacktraces.  Part of the
-> implementation of this code runs nm to find all of the entry points in 
-> our libraries.
-> 
->    Using the 7.0 version of this compiler to compile the simple code below
-> 
-> xlC_r -c -q64 tt.cxx 
->  nm -C tt.o
->                  U __IBMCPlusPlusExceptionV1
-> 0000000000000000 D test()
-> 0000000000000000 T .test()
-> 
->    Using the 8.0 version of this compiler to compile the simple code below
-> 
-> xlC_r -c -q64 tt.cxx 
-> nm -C tt.o
->                  U __IBMCPlusPlusExceptionV2
-> 0000000000000000 D test()
-> 
-> 
->     We grep the nm output for text symbols which are labeled with 'T'.
-> Not all function names are not labeled as text in objects compiled with 
-> 8.0.
-> Is there another way to find all of the fuction names in a library or
-> a compiler switch that will put all fuctions into the text segment ?
+Boards should specify proper compatible entries instead.
 
-The PowerPC64 ABI uses function descriptors, stored in the .opd
-section, a data section.  The address of a function is that of its
-descriptor, which nm correctly shows as a 'D' type symbol.  A symbol
-marking the start of the function code is unnecessary since you can
-find that from the descriptor, so later compilers omit the "dot"
-symbol.
+Suggested-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
-nm --synthetic will look up the descriptor for you and display fake
-"dot" symbols marking the start of each function's code.
+On Sat, Oct 11, 2008 at 05:56:18PM +1100, David Gibson wrote:
+[...]
+> > +Example:
+> > +
+> > +	bcsr@1,0 {
+> > +		#address-cells = <1>;
+> > +		#size-cells = <1>;
+> > +		device_type = "board-control";
+> 
+> This device_type field should not be used.  I know it is in the
+> existing samples, which is another bug.  But please don't document it
+> (and thereby further encourage it).
 
+I didn't forget your comment. ;-) Here is a cleanup patch for
+the documentation and dts files.
+
+ Documentation/powerpc/dts-bindings/fsl/board.txt |    6 +++---
+ arch/powerpc/boot/dts/mpc832x_mds.dts            |    2 +-
+ arch/powerpc/boot/dts/mpc834x_mds.dts            |    2 +-
+ arch/powerpc/boot/dts/mpc836x_mds.dts            |    2 +-
+ arch/powerpc/boot/dts/mpc8568mds.dts             |    2 +-
+ 5 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/Documentation/powerpc/dts-bindings/fsl/board.txt b/Documentation/powerpc/dts-bindings/fsl/board.txt
+index e97877f..2bd9888 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/board.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/board.txt
+@@ -2,13 +2,13 @@
+ 
+ Required properties:
+ 
+- - device_type : Should be "board-control"
++ - compatible : Should be "fsl,<board>-bcsr"
+  - reg : Offset and length of the register set for the device
+ 
+ Example:
+ 
+ 	bcsr@f8000000 {
+-		device_type = "board-control";
++		compatible = "fsl,mpc8360mds-bcsr";
+ 		reg = <f8000000 8000>;
+ 	};
+ 
+@@ -46,7 +46,7 @@ Example:
+ 	bcsr@1,0 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+-		device_type = "board-control";
++		compatible = "fsl,mpc8360mds-bcsr";
+ 		reg = <1 0 0x8000>;
+ 		ranges = <0 1 0 0x8000>;
+ 
+diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
+index e4cc176..57c595b 100644
+--- a/arch/powerpc/boot/dts/mpc832x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
+@@ -60,7 +60,7 @@
+ 	};
+ 
+ 	bcsr@f8000000 {
+-		device_type = "board-control";
++		compatible = "fsl,mpc8323mds-bcsr";
+ 		reg = <0xf8000000 0x8000>;
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
+index 04bfde3..c986c54 100644
+--- a/arch/powerpc/boot/dts/mpc834x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
+@@ -49,7 +49,7 @@
+ 	};
+ 
+ 	bcsr@e2400000 {
+-		device_type = "board-control";
++		compatible = "fsl,mpc8349mds-bcsr";
+ 		reg = <0xe2400000 0x8000>;
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
+index bdb14ba..98443fc 100644
+--- a/arch/powerpc/boot/dts/mpc836x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
+@@ -71,7 +71,7 @@
+ 		bcsr@1,0 {
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+-			device_type = "board-control";
++			compatible = "fsl,mpc8360mds-bcsr";
+ 			reg = <1 0 0x8000>;
+ 			ranges = <0 1 0 0x8000>;
+ 
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
+index a15f103..c80158f 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -52,7 +52,7 @@
+ 	};
+ 
+ 	bcsr@f8000000 {
+-		device_type = "board-control";
++		compatible = "fsl,mpc8568mds-bcsr";
+ 		reg = <0xf8000000 0x8000>;
+ 	};
+ 
 -- 
-Alan Modra
-Australia Development Lab, IBM
+1.5.6.3
