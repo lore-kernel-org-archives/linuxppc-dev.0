@@ -1,24 +1,16 @@
-Return-Path: <prodyuth@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
-	by ozlabs.org (Postfix) with ESMTP id B27A4DDE00
-	for <linuxppc-dev@ozlabs.org>; Sun, 19 Oct 2008 07:37:08 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so887767fga.39
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 13:36:50 -0700 (PDT)
-Message-ID: <49c0ff980810181336n1abcbecq57036e61a7cfe69@mail.gmail.com>
-Date: Sat, 18 Oct 2008 13:36:50 -0700
-From: "prodyut hazarika" <prodyuth@gmail.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc: add 16K/64K pages support for the 44x PPC32
-	architectures.
-In-Reply-To: <20081018085829.3757156e@zod.rchland.ibm.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.186])
+	by ozlabs.org (Postfix) with ESMTP id D5096DDDEC
+	for <linuxppc-dev@ozlabs.org>; Sun, 19 Oct 2008 08:41:02 +1100 (EST)
+Received: by rn-out-0910.google.com with SMTP id j40so444132rnf.16
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 14:41:00 -0700 (PDT)
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: [PATCH] Implement polling for 5200FEC to make netconsole work.
+To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Date: Sat, 18 Oct 2008 17:40:59 -0400
+Message-ID: <20081018214059.1506.28013.stgit@terra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <1224123753-20907-1-git-send-email-yanok@emcraft.com>
-	<1224123753-20907-2-git-send-email-yanok@emcraft.com>
-	<49c0ff980810170854jff48193r76a19c18497a1ec7@mail.gmail.com>
-	<20081018085829.3757156e@zod.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, dzu@denx.de, pvr@emcraft.com,
-	Ilya Yanok <yanok@emcraft.com>, wd@denx.de
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,11 +20,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> It helps if you CC the person you're writing too :).
-Thanks Josh for pointing this out :-) I will be careful in future.
+Implement polling for 5200FEC to make netconsole work. Tested on Phytec pcm030 and Efika.
 
-> Anyway, I looked over it briefly and agree it looks pretty good.  A bit
-> late for 2.6.28, but I'll do a more thorough review and get it in for
-> 2.6.29.
->
-Great. Look forward to seeing this on the mainline kernel.
+Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+---
+ drivers/net/fec_mpc52xx.c |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+index 4e4f683..aec3b97 100644
+--- a/drivers/net/fec_mpc52xx.c
++++ b/drivers/net/fec_mpc52xx.c
+@@ -401,6 +401,21 @@ static int mpc52xx_fec_hard_start_xmit(struct sk_buff *skb, struct net_device *d
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_NET_POLL_CONTROLLER
++static void mpc52xx_fec_poll_controller(struct net_device *dev)
++{
++	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
++
++	disable_irq(priv->t_irq);
++	mpc52xx_fec_tx_interrupt(priv->t_irq, dev);
++	enable_irq(priv->t_irq);
++	disable_irq(priv->r_irq);
++	mpc52xx_fec_rx_interrupt(priv->r_irq, dev);
++	enable_irq(priv->r_irq);
++}
++#endif
++
++
+ /* This handles BestComm transmit task interrupts
+  */
+ static irqreturn_t mpc52xx_fec_tx_interrupt(int irq, void *dev_id)
+@@ -926,6 +941,9 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
+ 	ndev->tx_timeout	= mpc52xx_fec_tx_timeout;
+ 	ndev->watchdog_timeo	= FEC_WATCHDOG_TIMEOUT;
+ 	ndev->base_addr		= mem.start;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	ndev->poll_controller = mpc52xx_fec_poll_controller;
++#endif
+ 
+ 	priv->t_irq = priv->r_irq = ndev->irq = NO_IRQ; /* IRQ are free for now */
+ 
