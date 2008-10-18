@@ -1,17 +1,18 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.230])
-	by ozlabs.org (Postfix) with ESMTP id 2DDABDDE1E
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 16:12:11 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so807122rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 22:12:10 -0700 (PDT)
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] powerpc: Add cuImage.initrd.% target
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
-Date: Fri, 17 Oct 2008 23:12:07 -0600
-Message-ID: <20081018051207.16279.16018.stgit@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 1DAD2DDE22
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 16:18:16 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so808397rvb.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 22:18:15 -0700 (PDT)
+Message-ID: <fa686aa40810172218i209c1a6cpec63f620cbb5917d@mail.gmail.com>
+Date: Fri, 17 Oct 2008 23:18:15 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	"Paul Mackerras" <paulus@samba.org>
+Subject: Please pull linux-2.6-mpc52xx
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Sender: Grant Likely <glikely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+The following changes since commit 6dc6472581f693b5fc95aebedf67b4960fb85cf0:
+  Benjamin Herrenschmidt (1):
+        Merge commit 'origin'
 
-This target is needed to build cuImages with an embedded ramdisk image.
+are available in the git repository at:
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+  git://git.secretlab.ca/git/linux-2.6-mpc52xx merge
 
- arch/powerpc/boot/Makefile |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+Grant Likely (1):
+      powerpc/52xx: Make cuImage more robust in locating immr node.
+
+Wolfram Sang (2):
+      powerpc/mpc5200: Don't touch pipelining for MPC5200B
+      powerpc/mpc5200: Refactor FEC mdio read/write routines
+
+ arch/powerpc/boot/cuboot-52xx.c              |    4 ++
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |    7 ++-
+ drivers/net/fec_mpc52xx_phy.c                |   55 ++++++++++---------------
+ 3 files changed, 31 insertions(+), 35 deletions(-)
 
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index aac1406..d83c642 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -319,6 +319,9 @@ $(obj)/zImage.iseries: vmlinux
- $(obj)/uImage: vmlinux $(wrapperbits)
- 	$(call if_changed,wrap,uboot)
- 
-+$(obj)/cuImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
-+	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
-+
- $(obj)/cuImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
- 	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb)
- 
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
