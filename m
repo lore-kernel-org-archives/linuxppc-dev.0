@@ -1,31 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 48DB5DDDF6
-	for <linuxppc-dev@ozlabs.org>; Sun, 19 Oct 2008 00:24:20 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9IDOGrO010708
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 09:24:16 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9IDOF16049952
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 09:24:15 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9IDOFZF023302
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 09:24:15 -0400
-Date: Sat, 18 Oct 2008 09:24:13 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Niklaus Giger <niklaus.giger@member.fsf.org>
-Subject: Re: 4xx 'next' branch updated
-Message-ID: <20081018092413.4949e453@zod.rchland.ibm.com>
-In-Reply-To: <200810181454.59864.niklaus.giger@member.fsf.org>
-References: <20081018003205.GA27307@yoda.jdub.homelinux.org>
-	<200810181454.59864.niklaus.giger@member.fsf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <prodyuth@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
+	by ozlabs.org (Postfix) with ESMTP id B27A4DDE00
+	for <linuxppc-dev@ozlabs.org>; Sun, 19 Oct 2008 07:37:08 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so887767fga.39
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 13:36:50 -0700 (PDT)
+Message-ID: <49c0ff980810181336n1abcbecq57036e61a7cfe69@mail.gmail.com>
+Date: Sat, 18 Oct 2008 13:36:50 -0700
+From: "prodyut hazarika" <prodyuth@gmail.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc: add 16K/64K pages support for the 44x PPC32
+	architectures.
+In-Reply-To: <20081018085829.3757156e@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+References: <1224123753-20907-1-git-send-email-yanok@emcraft.com>
+	<1224123753-20907-2-git-send-email-yanok@emcraft.com>
+	<49c0ff980810170854jff48193r76a19c18497a1ec7@mail.gmail.com>
+	<20081018085829.3757156e@zod.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, dzu@denx.de, pvr@emcraft.com,
+	Ilya Yanok <yanok@emcraft.com>, wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,24 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 18 Oct 2008 14:54:58 +0200
-Niklaus Giger <niklaus.giger@member.fsf.org> wrote:
+> It helps if you CC the person you're writing too :).
+Thanks Josh for pointing this out :-) I will be careful in future.
 
-> Am Samstag 18 Oktober 2008 02.32:05 schrieb Josh Boyer:
-> > Hi All,
-> <..>
-> > Niklaus Giger (1):
-> >       powerpc/40x: Add support for Netstal HCU4 board
-> Checked out the branch and tested it. The HCU4 board compiled  and ran without 
-> problems. 
-
-Wonderful.  Thanks for testing!
-
-> Thanks a lot for your advise and help. Getting it into the linux 
-> kernel seems not take as much effort as expected.
-
-That's because you did quite well on your original submission and in
-your responses to review.  Thanks for taking the time to submit the
-patch.
-
-josh
+> Anyway, I looked over it briefly and agree it looks pretty good.  A bit
+> late for 2.6.28, but I'll do a more thorough review and get it in for
+> 2.6.29.
+>
+Great. Look forward to seeing this on the mainline kernel.
