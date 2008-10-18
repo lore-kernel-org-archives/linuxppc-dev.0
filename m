@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 40CFBDDDF3
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 16CBEDDDF0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Oct 2008 19:00:47 +1100 (EST)
-To: "Duy-Ky Nguyen" <duykynguyen@hotmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: How can I make flash writeable?
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <BLU119-DAV13B797B2CC811E90F87406BB2D0@phx.gbl>
-References: <mailman.1.1224291602.14390.linuxppc-embedded@ozlabs.org>
-	<BLU119-DAV13B797B2CC811E90F87406BB2D0@phx.gbl>
-Date: Sat, 18 Oct 2008 09:53:16 +0200
-Message-Id: <20081018075316.11AB0835697A@gemini.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Sun, 19 Oct 2008 02:26:12 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KrDgt-0002LF-Hm
+	for linuxppc-embedded@ozlabs.org; Sat, 18 Oct 2008 08:26:07 -0700
+Message-ID: <20047836.post@talk.nabble.com>
+Date: Sat, 18 Oct 2008 08:26:07 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Related to Keypad Driver ....
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,34 +24,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear "Duy-Ky Nguyen",
 
-In message <BLU119-DAV13B797B2CC811E90F87406BB2D0@phx.gbl> you wrote:
-> 
-> I guess you want to have RW filesystem for your Linux target.
-> If that's the case you need to have root filesystem as JFFS2.
+Hi all ...
 
-This is not correct. You can use a read-only root file system combined
-with additionala ,writable file systems.
+If any of you have worked on key pad driver could you please guide me how to
+write the same as in the most standard form ...
 
-> There's a document MPC8313E-RDB BSP User's Guide comes with the MPC8313E-RDB 
-> package.
-> It has all info for several filesystems like NFS (network), Ramdisk 
-> (Read-Only), and JFFS2 (Read/Write)
+I have a CPLD from Whre i have to read the key physical status (debouncing
+logic in CPLD itself) on interrupt this i have to pass to the application
+which ever is using keys for its operation and control ....
 
-That's incorrect, either. A ramdisk is usually writable (unless you
-mount it read-only, which would be very unusuak).
+The concern is this ...
 
-See also
-http://www.denx.de/wiki/view/DULG/RootFileSystemDesignAndBuilding
 
-Best regards,
+What could the best way of passing the virtual key status to the application
+and how it is done in linux drivers ???? How should i make the API waiting
+for Key event and Getting Unblocked ???? Can i make the API as a thread
+waiting for signal ??? The same API application could use ... How is it done
+in Standard Keyboard Drivers ???
 
-Wolfgang Denk
+A code snipped or Documentation would really help me ...
 
+
+I am not sure what way i should proceed ...If any one implemented a Keypad
+driver or can suggest your experience 
+
+
+Thanks in Advance ...
+
+Misbah <><
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-To get something done, a committee should consist  of  no  more  than
-three men, two of them absent.
+View this message in context: http://www.nabble.com/Related-to-Keypad-Driver-....-tp20047836p20047836.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
