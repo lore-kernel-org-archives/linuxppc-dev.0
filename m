@@ -1,20 +1,31 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.232])
-	by ozlabs.org (Postfix) with ESMTP id 4BEB7DDE25
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 17:49:13 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so826956rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Oct 2008 23:49:11 -0700 (PDT)
-Date: Sat, 18 Oct 2008 00:49:09 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Chris Friesen <cfriesen@nortel.com>
-Subject: Re: build failure on powerpc with current -git
-Message-ID: <20081018064909.GB5594@secretlab.ca>
-References: <48F8E86B.702@nortel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48F8E86B.702@nortel.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, Linux kernel <linux-kernel@vger.kernel.org>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 31B7CDDDED
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 23:21:55 +1100 (EST)
+Subject: Re: powerpc allmodconfig
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20081016130237.4984967c@infradead.org>
+References: <20081015213337.a99a9595.akpm@linux-foundation.org>
+	<20081015.220247.262683261.davem@davemloft.net>
+	<1224169039.735.57.camel@johannes.berg>
+	<20081016.124923.222595655.davem@davemloft.net>
+	<20081016130237.4984967c@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-qXvhJ3JmCNBpXIwnMVne"
+Date: Sat, 18 Oct 2008 14:20:02 +0200
+Message-Id: <1224332402.6324.0.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, bzolnier@gmail.com, marek.vasut@gmail.com,
+	tiwai@suse.de, netdev@vger.kernel.org,
+	linux-wireless@vger.kernel.org, mark.fasheh@oracle.com,
+	ralf@linux-mips.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
+	akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+	dwmw2@infradead.org, dan.j.williams@intel.com, mchehab@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,59 +35,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 17, 2008 at 01:32:59PM -0600, Chris Friesen wrote:
-> The current -git fails to build on 64-bit powerpc (failure log below) .  
-> Initially I tried using my older toolchain, when I first saw the problem 
-> I built a new toolchain with crosstool (gcc 4.1.2 and binutils 2.16.1) 
-> and tried again but got the same problem.
->
-> 2.6.27 doesn't show this problem.
->
-> Any ideas what's going on and how I can fix it?
 
-This is a know bug with binutils 2.16.1.  You can work around it by
-either reverting commit 549e8152de8039506f69c677a4546e5427aa6ae7 or
-upgrading to a newer version of binutils.
+--=-qXvhJ3JmCNBpXIwnMVne
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Nobody has a fix for this problem yet.  (it's definitely a binutils bug,
-but the kernel exposed it where it wasn't an issue before.  I don't know
-if support for 2.16.1 is going to be depreciated due to this.  It seems
-like there are still a fair few users of binutils 2.16.1)
+On Thu, 2008-10-16 at 13:02 -0700, Arjan van de Ven wrote:
+> On Thu, 16 Oct 2008 12:49:23 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
+> > #endif
+> > #define __WARN() warn_on_slowpath(__FILE__, __LINE__)
+> > #define __WARN_printf(arg...) warn_slowpath(__FILE__, __LINE__, arg)
+> > #else
+> > #define __WARN_printf(arg...) __WARN()
+>=20
+> the easiest way I suppose would be to do
+>=20
+> #define __WARN_printf(arg..) do { printk(arg); __WARN(); } while (0)
+>=20
+> any obvious problems with this ?
 
-g.
+No, not really. You won't get it on kerneloops, but I guess that's not
+an easily tractable problem.
 
->
-> Thanks,
->
-> Chris
->
->
->   LD      vmlinux.o
->   MODPOST vmlinux.o
-> WARNING: modpost: Found 4 section mismatch(es).
-> To see full details build your kernel with:
-> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
- 
-> /opt/crosstool/gcc-4.1.2-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/powerpc64-unknown-linux-gnu-ld: 
-> BFD 2.16.1 internal error, aborting at  
-> /home/cfriesen/crosstool-0.43/build/powerpc64-unknown-linux-gnu/gcc-4.1.2-glibc-2.3.6/binutils-2.16.1/bfd/elflink.c 
-> line 6419 in elf_link_output_extsym
->
- 
-> /opt/crosstool/gcc-4.1.2-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/powerpc64-unknown-linux-gnu-ld: 
-> Please report this bug.
->
-> make[1]: *** [.tmp_vmlinux1] Error 1
-> make: *** [sub-make] Error 2
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+johannes
+
+--=-qXvhJ3JmCNBpXIwnMVne
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJI+dRuAAoJEKVg1VMiehFYmDYP/0kTJWdpsf24PrUnYtMIXVLv
+C46H78KmP/qVYLbDiE0uK4fCq6T5agsZga7fSK5kBA8NiNIL1wXc4X7KjibaDWkr
+lEmpAchTZZZgcgO4oW7AAuxoPtFJwJ0GVe8IOU93N+ItbPuCahA+XgbSC670VOIT
+G5655z9ApbE1Zk2ovPVezBgOhsQgCNEX+V57ALRLqNrW5/w3yFsaAcJSjWdNQQ6z
+YqKBNB96Ds8Y9aJNoFSoG9Y09FU3tuCvN0RyQTURxpwHKZ6f/PWBzdlGUZRYMUh0
+dHSrUvow0SzAFhWyZmhmAeRtCwC2F0T95wxun9LOht4o37hrKE3xN9ScIbSOFIYq
+m8KD5ZAd39nFuCEj41GBi4B0CRy0IhTqGeCIRqyVFYtKSFR4M+eJ9fskrPyWYJXI
+zofkGWlIqKBIGM9v8vMBWX5dalocIFBZFyYiPj/NYMsMRsRfJ33i0UVYk6VGijIs
+8b5gyl5ASmS/yjJAB5DwOQEW7UZs2RrTFSKI0A9BlQOp73Qplwdie7zas7QK/wHM
+vtosJ2/aTo3SdLumy+B9KphBwJBk09FxhNiU76aJnLtXsWnQ0/9kxQKlfW9dctTi
+bKCqB8k2XhGkZ13SEJvpKs9WGSfLXchv2kAOs/O7P+OWEMaz/4FpbZPhV+CGn5Ty
+Ff7sKOr58jw93iMShX+S
+=OjGy
+-----END PGP SIGNATURE-----
+
+--=-qXvhJ3JmCNBpXIwnMVne--
