@@ -1,17 +1,35 @@
-Return-Path: <niklaus.giger@member.fsf.org>
-Received: from viefep18-int.chello.at (viefep18-int.chello.at [213.46.255.22])
-	by ozlabs.org (Postfix) with ESMTP id 79EC5DDDF0
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 23:55:10 +1100 (EST)
-From: Niklaus Giger <niklaus.giger@member.fsf.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: 4xx 'next' branch updated
-Date: Sat, 18 Oct 2008 14:54:58 +0200
-References: <20081018003205.GA27307@yoda.jdub.homelinux.org>
-In-Reply-To: <20081018003205.GA27307@yoda.jdub.homelinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200810181454.59864.niklaus.giger@member.fsf.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 87614DDDFD
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 23:58:40 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9ICwXON019056
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 08:58:34 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9ICwXHu104194
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 06:58:33 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9ICwWlK001184
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Oct 2008 06:58:33 -0600
+Date: Sat, 18 Oct 2008 08:58:29 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "prodyut hazarika" <prodyuth@gmail.com>
+Subject: Re: [PATCH 1/2] powerpc: add 16K/64K pages support for the 44x
+	PPC32 architectures.
+Message-ID: <20081018085829.3757156e@zod.rchland.ibm.com>
+In-Reply-To: <49c0ff980810170854jff48193r76a19c18497a1ec7@mail.gmail.com>
+References: <1224123753-20907-1-git-send-email-yanok@emcraft.com>
+	<1224123753-20907-2-git-send-email-yanok@emcraft.com>
+	<49c0ff980810170854jff48193r76a19c18497a1ec7@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, dzu@denx.de, pvr@emcraft.com,
+	Ilya Yanok <yanok@emcraft.com>, wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,15 +39,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Am Samstag 18 Oktober 2008 02.32:05 schrieb Josh Boyer:
-> Hi All,
-<..>
-> Niklaus Giger (1):
->       powerpc/40x: Add support for Netstal HCU4 board
-Checked out the branch and tested it. The HCU4 board compiled  and ran without 
-problems. Thanks a lot for your advise and help. Getting it into the linux 
-kernel seems not take as much effort as expected.
+On Fri, 17 Oct 2008 08:54:52 -0700
+"prodyut hazarika" <prodyuth@gmail.com> wrote:
 
-Best regards
+> On Wed, Oct 15, 2008 at 7:22 PM, Ilya Yanok <yanok@emcraft.com> wrote:
+> > This patch adds support for page sizes bigger than 4K (16K/64K) on
+> > PPC 44x.
+> >
+> 
+> This patch looks good to me. Seems that all the review comments have
+> been incorporated.
+> 
+> Josh, it would be great if this patch is pulled into the mainline
+> kernel. I have seen significant performance improvement with RAID0/5
+> by using 64K pages.
 
-Niklaus
+It helps if you CC the person you're writing too :).
+
+Anyway, I looked over it briefly and agree it looks pretty good.  A bit
+late for 2.6.28, but I'll do a more thorough review and get it in for
+2.6.29.
+
+josh
