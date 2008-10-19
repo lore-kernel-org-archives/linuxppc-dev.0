@@ -1,36 +1,20 @@
-Return-Path: <rbrito@ime.usp.br>
-Received: from smtp.gru.flash.tv.br (smtp.flash.net.br [201.46.240.48])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C6B30DDDF3
-	for <linuxppc-dev@ozlabs.org>; Sun, 19 Oct 2008 14:17:26 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by smtp.gru.flash.tv.br (Postfix) with ESMTP id 510B81C725E
-	for <linuxppc-dev@ozlabs.org>; Sun, 19 Oct 2008 01:17:07 -0200 (BRST)
-Received: from smtp.gru.flash.tv.br ([127.0.0.1])
-	by localhost (smtp.gru.flash.tv.br [127.0.0.1]) (amavisd-new,
-	port 10024) with ESMTP id bpSXpcxhIKE0 for <linuxppc-dev@ozlabs.org>;
-	Sun, 19 Oct 2008 01:16:57 -0200 (BRST)
-Received: from chagas.nectar.ath.cx (189-39-150-138.gru.flash.tv.br
-	[189.39.150.138])
-	by smtp.gru.flash.tv.br (Postfix) with ESMTPA id AB4CB1C71F7
-	for <linuxppc-dev@ozlabs.org>; Sun, 19 Oct 2008 01:16:57 -0200 (BRST)
-Date: Sun, 19 Oct 2008 01:16:58 -0200
-From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc: enable heap randomization for linkstations
-Message-ID: <20081019031658.GC7887@ime.usp.br>
-References: <20081013040703.GA11059@ime.usp.br>
-	<20081013045116.GA11637@ime.usp.br>
-	<Pine.LNX.4.64.0810132003350.9041@axis700.grange>
-	<20081013184443.GA20612@ld0162-tx32.am.freescale.net>
-	<20081019025323.GA7887@ime.usp.br>
+Return-Path: <jonsmirl@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id 71B65DDDD4
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 00:49:15 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so216050yxg.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 19 Oct 2008 06:49:13 -0700 (PDT)
+Received: from localhost ([127.0.0.1] helo=[127.0.1.1])
+	by terra with esmtp (Exim 4.69) (envelope-from <jonsmirl@gmail.com>)
+	id 1KrYed-0006v8-Jf
+	for linuxppc-dev@ozlabs.org; Sun, 19 Oct 2008 09:49:11 -0400
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: [PATCH] Fix some minor errors in mpc5200 psc i2s driver
+To: linuxppc-dev@ozlabs.org
+Date: Sun, 19 Oct 2008 09:49:11 -0400
+Message-ID: <20081019134911.26576.13218.stgit@terra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20081019025323.GA7887@ime.usp.br>
-Cc: linux-kernel@vger.kernel.org, rbrito@ime.usp.br, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, akpm@linux-foundation.org,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,31 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi again.
+Fix missing unsigned for irqsave flags in psc i2s driver
+Make attribute visiblity static
+Collect all sysfs errors before checking status
 
-On Oct 18 2008, Rogério Brito wrote:
-> And it seems that there is something not quite right for these embedded
-> systems. Here is something that I get with a vanilla linkstation_defconfig:
-> 
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-> drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-(...)
-> I just saw that in the default config:
-> 
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-> # CONFIG_PPC_CLOCK is not set
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-> 
-> Maybe this should be enabled? I can iterate once more to see if this
-> option would make any difference here.
+Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+---
+ sound/soc/fsl/mpc5200_psc_i2s.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-Even if I enable this option, I still get the same problem as above. :-(
-
-
-Regards, Rogério Brito.
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+diff --git a/sound/soc/fsl/mpc5200_psc_i2s.c b/sound/soc/fsl/mpc5200_psc_i2s.c
+index 8692329..809c5c4 100644
+--- a/sound/soc/fsl/mpc5200_psc_i2s.c
++++ b/sound/soc/fsl/mpc5200_psc_i2s.c
+@@ -277,7 +277,7 @@ static int psc_i2s_trigger(struct snd_pcm_substream *substream, int cmd)
+ 	struct mpc52xx_psc __iomem *regs = psc_i2s->psc_regs;
+ 	u16 imr;
+ 	u8 psc_cmd;
+-	long flags;
++	unsigned long flags;
+ 
+ 	if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
+ 		s = &psc_i2s->capture;
+@@ -699,9 +699,9 @@ static ssize_t psc_i2s_stat_store(struct device *dev,
+ 	return count;
+ }
+ 
+-DEVICE_ATTR(status, 0644, psc_i2s_status_show, NULL);
+-DEVICE_ATTR(playback_underrun, 0644, psc_i2s_stat_show, psc_i2s_stat_store);
+-DEVICE_ATTR(capture_overrun, 0644, psc_i2s_stat_show, psc_i2s_stat_store);
++static DEVICE_ATTR(status, 0644, psc_i2s_status_show, NULL);
++static DEVICE_ATTR(playback_underrun, 0644, psc_i2s_stat_show, psc_i2s_stat_store);
++static DEVICE_ATTR(capture_overrun, 0644, psc_i2s_stat_show, psc_i2s_stat_store);
+ 
+ /* ---------------------------------------------------------------------
+  * OF platform bus binding code:
+@@ -819,8 +819,8 @@ static int __devinit psc_i2s_of_probe(struct of_device *op,
+ 
+ 	/* Register the SYSFS files */
+ 	rc = device_create_file(psc_i2s->dev, &dev_attr_status);
+-	rc = device_create_file(psc_i2s->dev, &dev_attr_capture_overrun);
+-	rc = device_create_file(psc_i2s->dev, &dev_attr_playback_underrun);
++	rc |= device_create_file(psc_i2s->dev, &dev_attr_capture_overrun);
++	rc |= device_create_file(psc_i2s->dev, &dev_attr_playback_underrun);
+ 	if (rc)
+ 		dev_info(psc_i2s->dev, "error creating sysfs files\n");
+ 
