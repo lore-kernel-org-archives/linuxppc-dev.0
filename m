@@ -1,21 +1,18 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id A8C5BDDDE1
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 07:59:14 +1100 (EST)
-Date: Sun, 19 Oct 2008 22:59:12 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-Subject: Re: [PATCH] powerpc: enable heap randomization for linkstations
-In-Reply-To: <20081019025323.GA7887@ime.usp.br>
-Message-ID: <Pine.LNX.4.64.0810192147030.21665@axis700.grange>
-References: <20081013040703.GA11059@ime.usp.br>
-	<20081013045116.GA11637@ime.usp.br>
-	<Pine.LNX.4.64.0810132003350.9041@axis700.grange>
-	<20081013184443.GA20612@ld0162-tx32.am.freescale.net>
-	<20081019025323.GA7887@ime.usp.br>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 924EEDDD0C
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 08:20:37 +1100 (EST)
+Date: Mon, 20 Oct 2008 01:20:34 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH] Add the of_find_i2c_device_by_node function
+Message-ID: <20081019212034.GA8224@oksana.dev.rtsoft.ru>
+References: <20081019140040.32281.65209.stgit@terra>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <20081019140040.32281.65209.stgit@terra>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,45 +22,110 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-(modified the cc-list somewhat)
+Hi Jon,
 
-On Sat, 18 Oct 2008, Rog=E9rio Brito wrote:
+On Sun, Oct 19, 2008 at 10:00:40AM -0400, Jon Smirl wrote:
+> Add the of_find_i2c_device_by_node function. This allows you to follow
+> a reference in the device tree to an i2c device node and then locate
+> the linux device instantiated by the device tree. Example use, an i2s
+> codec controlled by i2c. Depends on patch exporting i2c root bus symbol.
+> 
+> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 
-> systems. Here is something that I get with a vanilla linkstation_defconfi=
-g:
->=20
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-> drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
->=20
-> This gets me (with bootlogd enabled):
->=20
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-> Wed Dec 31 21:00:15 1969: Cannot access the Hardware Clock via any known =
-method.
-> Wed Dec 31 21:00:15 1969: Use the --debug option to see the details of ou=
-r search for an access method.
-> Wed Dec 31 21:00:15 1969: Unable to set System Clock to: Thu Jan 1 00:00:=
-15 UTC 1970 ^[[33m(warning).^[[39;49m
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Few comments are below.
 
-Yes, there seems to be a problem here now. The i2c adapter does not get=20
-probed, i.e., of-matching doesn't work. A quick look through other=20
-device-trees, using the same i2c driver, through git-logs of the i2c=20
-driver and the dts didn't bring me to a solution. Can anyone spot what's=20
-wrong with kuroboxHG.dts? lsprop output looks reasonable. Last working=20
-kernel was 2.6.25-rc6-ish.
+> ---
+>  drivers/of/of_i2c.c |   28 ++++++++++++++++++++++++----
+>  1 files changed, 24 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+> index 6a98dc8..ba7b394 100644
+> --- a/drivers/of/of_i2c.c
+> +++ b/drivers/of/of_i2c.c
+> @@ -19,7 +19,7 @@
+>  void of_register_i2c_devices(struct i2c_adapter *adap,
+>  			     struct device_node *adap_node)
+>  {
+> -	void *result;
+> +	struct i2c_client *i2c_dev;
+>  	struct device_node *node;
+>  
+>  	for_each_child_of_node(adap_node, node) {
+> @@ -41,18 +41,38 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+>  
+>  		info.addr = *addr;
+>  
+> -		request_module(info.type);
+> +		request_module("%s", info.type);
 
-> I just saw that in the default config:
->=20
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-> # CONFIG_PPC_CLOCK is not set
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Patch description doesn't mention this change.
 
-No, kurobox uses generic RTC class.
+>  
+> -		result = i2c_new_device(adap, &info);
+> -		if (result == NULL) {
+> +		i2c_dev = i2c_new_device(adap, &info);
+> +		if (i2c_dev == NULL) {
+>  			printk(KERN_ERR
+>  			       "of-i2c: Failed to load driver for %s\n",
+>  			       info.type);
+>  			irq_dispose_mapping(info.irq);
+>  			continue;
+>  		}
+> +		
+> +		i2c_dev->dev.archdata.of_node = of_node_get(node);
 
-Thanks for the report
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+Would break sparc build. Plus setting this after i2c_new_device() isn't
+right... Recently I sent few patches to deal with the archdata, could
+you please rebase your patch against these three patches?
+
+http://lkml.org/lkml/2008/10/16/250
+http://lkml.org/lkml/2008/10/16/251
+http://lkml.org/lkml/2008/10/16/252
+
+>  	}
+>  }
+>  EXPORT_SYMBOL(of_register_i2c_devices);
+>  
+> +static int of_dev_node_match(struct device *dev, void *data)
+> +{
+> +        return dev->archdata.of_node == data;
+> +}
+> +
+> +struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
+
+This should be documented. Especially the fact that every time you
+call this function, you must call device_put() when you're done with
+the returned i2c_client.
+
+> +{
+> +	struct device *dev;
+> +	
+> +	dev = bus_find_device(&i2c_bus_type, NULL, node, 
+> +					 of_dev_node_match);
+> +	if (!dev)
+> +		return NULL;
+> +		
+> +	return to_i2c_client(dev);
+> +}
+> +EXPORT_SYMBOL(of_find_i2c_device_by_node);
+> +
+>  MODULE_LICENSE("GPL");
+> diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
+> index bd2a870..17d5897 100644
+> --- a/include/linux/of_i2c.h
+> +++ b/include/linux/of_i2c.h
+> @@ -16,5 +16,7 @@
+>  
+>  void of_register_i2c_devices(struct i2c_adapter *adap,
+>  			     struct device_node *adap_node);
+> +struct i2c_client *of_find_i2c_device_by_node(struct device_node *node);
+> +			     
+>  
+>  #endif /* __LINUX_OF_I2C_H */
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
