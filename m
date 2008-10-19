@@ -1,18 +1,14 @@
 Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id 71B65DDDD4
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 00:49:15 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so216050yxg.39
-	for <linuxppc-dev@ozlabs.org>; Sun, 19 Oct 2008 06:49:13 -0700 (PDT)
-Received: from localhost ([127.0.0.1] helo=[127.0.1.1])
-	by terra with esmtp (Exim 4.69) (envelope-from <jonsmirl@gmail.com>)
-	id 1KrYed-0006v8-Jf
-	for linuxppc-dev@ozlabs.org; Sun, 19 Oct 2008 09:49:11 -0400
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.230])
+	by ozlabs.org (Postfix) with ESMTP id 7212CDDDE3
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 01:00:43 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id s6so984297wxc.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 19 Oct 2008 07:00:41 -0700 (PDT)
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH] Fix some minor errors in mpc5200 psc i2s driver
-To: linuxppc-dev@ozlabs.org
-Date: Sun, 19 Oct 2008 09:49:11 -0400
-Message-ID: <20081019134911.26576.13218.stgit@terra>
+Subject: [PATCH] Add the of_find_i2c_device_by_node function
+To: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Date: Sun, 19 Oct 2008 10:00:40 -0400
+Message-ID: <20081019140040.32281.65209.stgit@terra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,49 +20,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix missing unsigned for irqsave flags in psc i2s driver
-Make attribute visiblity static
-Collect all sysfs errors before checking status
+Add the of_find_i2c_device_by_node function. This allows you to follow
+a reference in the device tree to an i2c device node and then locate
+the linux device instantiated by the device tree. Example use, an i2s
+codec controlled by i2c. Depends on patch exporting i2c root bus symbol.
 
 Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 ---
- sound/soc/fsl/mpc5200_psc_i2s.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/of/of_i2c.c |   28 ++++++++++++++++++++++++----
+ 1 files changed, 24 insertions(+), 4 deletions(-)
 
-diff --git a/sound/soc/fsl/mpc5200_psc_i2s.c b/sound/soc/fsl/mpc5200_psc_i2s.c
-index 8692329..809c5c4 100644
---- a/sound/soc/fsl/mpc5200_psc_i2s.c
-+++ b/sound/soc/fsl/mpc5200_psc_i2s.c
-@@ -277,7 +277,7 @@ static int psc_i2s_trigger(struct snd_pcm_substream *substream, int cmd)
- 	struct mpc52xx_psc __iomem *regs = psc_i2s->psc_regs;
- 	u16 imr;
- 	u8 psc_cmd;
--	long flags;
-+	unsigned long flags;
+diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+index 6a98dc8..ba7b394 100644
+--- a/drivers/of/of_i2c.c
++++ b/drivers/of/of_i2c.c
+@@ -19,7 +19,7 @@
+ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 			     struct device_node *adap_node)
+ {
+-	void *result;
++	struct i2c_client *i2c_dev;
+ 	struct device_node *node;
  
- 	if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
- 		s = &psc_i2s->capture;
-@@ -699,9 +699,9 @@ static ssize_t psc_i2s_stat_store(struct device *dev,
- 	return count;
+ 	for_each_child_of_node(adap_node, node) {
+@@ -41,18 +41,38 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 
+ 		info.addr = *addr;
+ 
+-		request_module(info.type);
++		request_module("%s", info.type);
+ 
+-		result = i2c_new_device(adap, &info);
+-		if (result == NULL) {
++		i2c_dev = i2c_new_device(adap, &info);
++		if (i2c_dev == NULL) {
+ 			printk(KERN_ERR
+ 			       "of-i2c: Failed to load driver for %s\n",
+ 			       info.type);
+ 			irq_dispose_mapping(info.irq);
+ 			continue;
+ 		}
++		
++		i2c_dev->dev.archdata.of_node = of_node_get(node);
+ 	}
  }
+ EXPORT_SYMBOL(of_register_i2c_devices);
  
--DEVICE_ATTR(status, 0644, psc_i2s_status_show, NULL);
--DEVICE_ATTR(playback_underrun, 0644, psc_i2s_stat_show, psc_i2s_stat_store);
--DEVICE_ATTR(capture_overrun, 0644, psc_i2s_stat_show, psc_i2s_stat_store);
-+static DEVICE_ATTR(status, 0644, psc_i2s_status_show, NULL);
-+static DEVICE_ATTR(playback_underrun, 0644, psc_i2s_stat_show, psc_i2s_stat_store);
-+static DEVICE_ATTR(capture_overrun, 0644, psc_i2s_stat_show, psc_i2s_stat_store);
++static int of_dev_node_match(struct device *dev, void *data)
++{
++        return dev->archdata.of_node == data;
++}
++
++struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
++{
++	struct device *dev;
++	
++	dev = bus_find_device(&i2c_bus_type, NULL, node, 
++					 of_dev_node_match);
++	if (!dev)
++		return NULL;
++		
++	return to_i2c_client(dev);
++}
++EXPORT_SYMBOL(of_find_i2c_device_by_node);
++
+ MODULE_LICENSE("GPL");
+diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
+index bd2a870..17d5897 100644
+--- a/include/linux/of_i2c.h
++++ b/include/linux/of_i2c.h
+@@ -16,5 +16,7 @@
  
- /* ---------------------------------------------------------------------
-  * OF platform bus binding code:
-@@ -819,8 +819,8 @@ static int __devinit psc_i2s_of_probe(struct of_device *op,
+ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 			     struct device_node *adap_node);
++struct i2c_client *of_find_i2c_device_by_node(struct device_node *node);
++			     
  
- 	/* Register the SYSFS files */
- 	rc = device_create_file(psc_i2s->dev, &dev_attr_status);
--	rc = device_create_file(psc_i2s->dev, &dev_attr_capture_overrun);
--	rc = device_create_file(psc_i2s->dev, &dev_attr_playback_underrun);
-+	rc |= device_create_file(psc_i2s->dev, &dev_attr_capture_overrun);
-+	rc |= device_create_file(psc_i2s->dev, &dev_attr_playback_underrun);
- 	if (rc)
- 		dev_info(psc_i2s->dev, "error creating sysfs files\n");
- 
+ #endif /* __LINUX_OF_I2C_H */
