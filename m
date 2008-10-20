@@ -1,18 +1,20 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-125.bluehost.com (outbound-mail-125.bluehost.com
-	[67.222.38.25]) by ozlabs.org (Postfix) with SMTP id 276DADDE01
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 10:17:55 +1100 (EST)
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] pci: Workaround invalid P2P bridge bus numbers
-Date: Mon, 20 Oct 2008 16:17:49 -0700
-References: <20081020230717.2FD16DDDDB@ozlabs.org>
-In-Reply-To: <20081020230717.2FD16DDDDB@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200810201617.49733.jbarnes@virtuousgeek.org>
-Cc: linux-pci@vger.kernel.org, AymanE@tanisys.com, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 28B0BDDE02
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 10:21:27 +1100 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m9KNLLa1005431
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 18:21:22 -0500
+Subject: [Fwd: [RFC PATCH 4/5] hvc_console: Add tty window resizing]
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Tue, 21 Oct 2008 10:21:21 +1100
+Message-Id: <1224544881.7654.186.camel@pasglop>
+Mime-Version: 1.0
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +24,164 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday, October 20, 2008 4:06 pm Benjamin Herrenschmidt wrote:
-> Some firmware fail to properly configure P2P bridges, leaving them
-> with invalid bus numbers. In some cases, this happens on some embedded
-> 4xx boards as the result of the kernel allocating different bus space
-> than the firmware does to host bridges while not setting
-> pcibios_assign_all_busses() for various reasons. In other cases, it can
-> just be bogus firmware.
->
-> This adds some sanity checking to the PCI probing code. If a bridge is
-> found whose primary bus number doesn't match the bus it's sitting on,
-> or whose secondary bus number not strictly above it's primary bus
-> number, then the bridge bus numbers are deconfigured in the first pass
-> of pci_scan_bridge() to be re-assigned in the second pass.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->
-> Ayman, can you double check that this variant of the patch still
-> fixes your problem ? Thanks !
+Didn't make it to patchwork initially, resending.
 
-Sure, seems straightforward enough, I'll wait for Ayman's "Tested-by" before 
-pushing.
+-------- Forwarded Message --------
+From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux PPC devel
+<linuxppc-dev@ozlabs.org>, Jeremy Fitzhardinge <jeremy@goop.org>, Rusty
+Russell <rusty@rustcorp.com.au>, Ryan S. Arnold <rsa@us.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Christian Borntraeger
+<borntraeger@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+Martin Schwidefsky <schwidefsky@de.ibm.com>, Hendrik Brueckner
+<brueckner@linux.vnet.ibm.com>
+Subject: [RFC PATCH 4/5] hvc_console: Add tty window resizing
+Date: 	Tue, 14 Oct 2008 11:12:51 +0200
 
-Thanks,
-Jesse
+plain text document attachment (hvc)
+From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+
+The patch provides the hvc_resize() function to update the terminal
+window dimensions (struct winsize) for a specified hvc console.
+The function stores the new window size and schedules a function
+that finally updates the tty winsize and signals the change to
+user space (SIGWINCH).
+Because the winsize update must acquire a mutex and might sleep,
+the function is scheduled instead of being called from hvc_poll()
+or khvcd.
+
+Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+---
+ drivers/char/hvc_console.c |   61 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/char/hvc_console.h |    6 ++++
+ 2 files changed, 67 insertions(+)
+
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -494,6 +494,48 @@ static int hvc_write(struct tty_struct *
+ 	return written;
+ }
+ 
++/**
++ * hvc_set_winsz() - Resize the hvc tty terminal window.
++ * @work:	work structure.
++ *
++ * The routine shall not be called within an atomic context because it
++ * acquires the tty termios mutex and might sleep.
++ *
++ * Locking:	hp->lock, tty->termios_mutex and tty->ctrl_lock
++ */
++static void hvc_set_winsz(struct work_struct *work)
++{
++	struct hvc_struct *hp;
++	struct pid *pgrp;
++	unsigned long hvc_flags;
++	unsigned long ctrl_flags;
++
++	hp = container_of(work, struct hvc_struct, tty_resize);
++	if (!hp || !hp->tty)
++		return;
++
++	mutex_lock(&hp->tty->termios_mutex);
++	spin_lock_irqsave(&hp->lock, hvc_flags);
++
++	if ((hp->ws.ws_row == hp->tty->winsize.ws_row) &&
++	    (hp->ws.ws_col == hp->tty->winsize.ws_col))
++		goto out_mutex_unlock;
++
++	spin_lock_irqsave(&hp->tty->ctrl_lock, ctrl_flags);
++	pgrp = get_pid(hp->tty->pgrp);
++	spin_unlock_irqrestore(&hp->tty->ctrl_lock, ctrl_flags);
++
++	if (pgrp)
++		kill_pgrp(pgrp, SIGWINCH, 1);
++	put_pid(pgrp);
++
++	hp->tty->winsize = hp->ws;
++
++out_mutex_unlock:
++	spin_unlock_irqrestore(&hp->lock, hvc_flags);
++	mutex_unlock(&hp->tty->termios_mutex);
++}
++
+ /*
+  * This is actually a contract between the driver and the tty layer outlining
+  * how much write room the driver can guarantee will be sent OR BUFFERED.  This
+@@ -638,6 +680,24 @@ int hvc_poll(struct hvc_struct *hp)
+ }
+ EXPORT_SYMBOL_GPL(hvc_poll);
+ 
++/**
++ * hvc_resize() - Update terminal window size information.
++ * @hp:		HVC console pointer
++ * @ws:		Terminal window size structure
++ *
++ * Stores the specified window size information in the hvc structure of @hp.
++ * The function schedule the tty resize update.
++ *
++ * Locking:	Locking free; the function MUST be called holding hp->lock
++ */
++void hvc_resize(struct hvc_struct *hp, struct winsize ws)
++{
++	if ((hp->ws.ws_row != ws.ws_row) || (hp->ws.ws_col != ws.ws_col)) {
++		hp->ws = ws;
++		schedule_work(&hp->tty_resize);
++	}
++}
++
+ /*
+  * This kthread is either polling or interrupt driven.  This is determined by
+  * calling hvc_poll() who determines whether a console adapter support
+@@ -720,6 +780,7 @@ struct hvc_struct __devinit *hvc_alloc(u
+ 
+ 	kref_init(&hp->kref);
+ 
++	INIT_WORK(&hp->tty_resize, hvc_set_winsz);
+ 	spin_lock_init(&hp->lock);
+ 	spin_lock(&hvc_structs_lock);
+ 
+--- a/drivers/char/hvc_console.h
++++ b/drivers/char/hvc_console.h
+@@ -27,6 +27,7 @@
+ #ifndef HVC_CONSOLE_H
+ #define HVC_CONSOLE_H
+ #include <linux/kref.h>
++#include <linux/tty.h>
+ 
+ /*
+  * This is the max number of console adapters that can/will be found as
+@@ -56,6 +57,8 @@ struct hvc_struct {
+ 	struct hv_ops *ops;
+ 	int irq_requested;
+ 	int data;
++	struct winsize ws;
++	struct work_struct tty_resize;
+ 	struct list_head next;
+ 	struct kref kref; /* ref count & hvc_struct lifetime */
+ };
+@@ -84,6 +87,9 @@ extern int __devexit hvc_remove(struct h
+ int hvc_poll(struct hvc_struct *hp);
+ void hvc_kick(void);
+ 
++/* Resize hvc tty terminal window */
++extern void hvc_resize(struct hvc_struct *hp, struct winsize ws);
++
+ /* default notifier for irq based notification */
+ extern int notifier_add_irq(struct hvc_struct *hp, int data);
+ extern void notifier_del_irq(struct hvc_struct *hp, int data);
+
+-- 
+Hendrik Brueckner
+D/3303 Linux on System z Development
+Tel: +49 7031 16-1073
+Fax: +49 7031 16-3456
+eMail: brueckner@linux.vnet.ibm.com
+IBM Deutschland Research & Development GmbH, Schoenaicher Str. 220, 71032 Boeblingen
+
+IBM Deutschland Research & Development GmbH
+Vorsitzender des Aufsichtsrats: Martin Jetter
+Geschaeftsfuehrung: Erich Baier
+Sitz der Gesellschaft: Boeblingen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
+
