@@ -1,23 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 05C48DDDED
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 16:22:25 +1100 (EST)
-Subject: Re: [PATCH] Add the of_find_i2c_device_by_node function
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20081019220352.GA19539@oksana.dev.rtsoft.ru>
-References: <20081019140040.32281.65209.stgit@terra>
-	<20081019212034.GA8224@oksana.dev.rtsoft.ru>
-	<9e4733910810191450t36cbe120y106d18f71cb3163b@mail.gmail.com>
-	<20081019220352.GA19539@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Mon, 20 Oct 2008 16:19:56 +1100
-Message-Id: <1224479996.7654.130.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id D3DA7DDDED
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 16:55:28 +1100 (EST)
+Date: Mon, 20 Oct 2008 07:55:28 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH] powerpc: enable heap randomization for linkstations
+In-Reply-To: <9e4733910810191540p1000c28l89ca50794addae37@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0810200754550.3941@axis700.grange>
+References: <20081013040703.GA11059@ime.usp.br>
+	<20081013045116.GA11637@ime.usp.br>
+	<Pine.LNX.4.64.0810132003350.9041@axis700.grange>
+	<20081013184443.GA20612@ld0162-tx32.am.freescale.net>
+	<20081019025323.GA7887@ime.usp.br>
+	<Pine.LNX.4.64.0810192147030.21665@axis700.grange>
+	<9e4733910810191432o58d204adw490cb8e4fcc390ac@mail.gmail.com>
+	<Pine.LNX.4.64.0810192347250.21665@axis700.grange>
+	<9e4733910810191505u3ec1db0dl25e87bf3b78c740d@mail.gmail.com>
+	<Pine.LNX.4.64.0810200022040.21665@axis700.grange>
+	<9e4733910810191540p1000c28l89ca50794addae37@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>,
+	Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,19 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-10-20 at 02:03 +0400, Anton Vorontsov wrote:
-> > This is the original mail....
-> > http://lkml.org/lkml/2008/6/13/290
-> > http://lkml.org/lkml/2008/6/12/8
-> > I can't find the ones patching i2c.
-> 
-> Well, I didn't disagree with the change. I think this is good change
-> (and good catch, btw).
-> 
-> Just mention it in the patch description (or better yet, you could send
-> a separate patch for this particular issue, it seems quite serious).
+On Sun, 19 Oct 2008, Jon Smirl wrote:
 
-Yes, it should most definitely be a separate patch.
+> Is i2c-mpc built into your kernel? It's not going to module auto-load
+> because the names don't match - fsl-i2c and i2c-mpc.
 
-Cheers,
-Ben.
+It is built into the kernel.
+
+Thanks
+Guennadi
+
+> 
+> But a message on init and make sure it is loading.
+> static int __init fsl_i2c_init(void)
+> {
+> 	int rv;
+> 
+> 	rv = of_register_platform_driver(&mpc_i2c_driver);
+> 	if (rv)
+> 		printk(KERN_ERR DRV_NAME
+> 		       " of_register_platform_driver failed (%i)\n", rv);
+> 	return rv;
+> }
+> 
+> >
+> > Thanks
+> > Guennadi
+> > ---
+> > Guennadi Liakhovetski, Ph.D.
+> > Freelance Open-Source Software Developer
+> >
+> 
+> 
+> 
+> -- 
+> Jon Smirl
+> jonsmirl@gmail.com
+> 
+
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
