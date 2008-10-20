@@ -1,19 +1,14 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C0356DDF16
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 01:48:15 +1100 (EST)
-Message-Id: <DEDC04D8-1B2D-475E-965B-1610EA09FF42@kernel.crashing.org>
+Message-Id: <7D62F928-0BAC-49C4-93CC-51E51BCF283E@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Jason Jin <Jason.jin@freescale.com>
-In-Reply-To: <1224149492-11204-1-git-send-email-Jason.jin@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20081018002352.GA9661@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] Enable enhanced functions for 8536 TSEC
-Date: Mon, 20 Oct 2008 09:46:16 -0500
-References: <1224149492-11204-1-git-send-email-Jason.jin@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: remove device_type = "board-control"
+Date: Mon, 20 Oct 2008 09:48:37 -0500
+References: <20081018002352.GA9661@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,12 +19,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 16, 2008, at 4:31 AM, Jason Jin wrote:
+On Oct 17, 2008, at 7:23 PM, Anton Vorontsov wrote:
 
-> Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+> We don't want to encourage the bogus device_type usage.
+>
+> The device type isn't used in the code, so we can simply remove it  
+> from
+> the documentation and dts files.
+>
+> Boards should specify proper compatible entries instead.
+>
+> Suggested-by: David Gibson <david@gibson.dropbear.id.au>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
-> arch/powerpc/boot/dts/mpc8536ds.dts |    4 ++--
-> 1 files changed, 2 insertions(+), 2 deletions(-)
 
 applied
 
