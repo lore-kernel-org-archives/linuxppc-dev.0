@@ -1,16 +1,24 @@
-Return-Path: <mail4mz@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.184])
-	by ozlabs.org (Postfix) with ESMTP id 8FBA2DDDE1
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 09:00:35 +1100 (EST)
-Received: by fk-out-0910.google.com with SMTP id e30so2202525fke.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 15:00:33 -0700 (PDT)
-Message-ID: <5c9cd53b0810201500j1c86dfffxdbfc6f5c5ab9728c@mail.gmail.com>
-Date: Mon, 20 Oct 2008 15:00:33 -0700
-From: "mike zheng" <mail4mz@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Kernel Oops when run ifconfig on MPC8360MDS board
+Return-Path: <AymanE@tanisys.com>
+Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [206.127.28.197])
+	by ozlabs.org (Postfix) with ESMTP id 38227DDDEC
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 09:14:49 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Problems with PCI-E devices not being detected with switch
+Date: Mon, 20 Oct 2008 17:14:48 -0500
+Message-ID: <16691A8B34B5D9458EA3A1C37A11555A0137F832@tanisys-ex2.Tanisys.Local>
+In-Reply-To: <1224539820.7654.173.camel@pasglop>
+References: <16691A8B34B5D9458EA3A1C37A11555A0137F81E@tanisys-ex2.Tanisys.Local>
+	<1224134422.8157.549.camel@pasglop>
+	<16691A8B34B5D9458EA3A1C37A11555A0137F822@tanisys-ex2.Tanisys.Local>
+	<1224202209.7654.36.camel@pasglop>
+	<16691A8B34B5D9458EA3A1C37A11555A0137F829@tanisys-ex2.Tanisys.Local>
+	<1224278340.7654.103.camel@pasglop>
+	<16691A8B34B5D9458EA3A1C37A11555A0137F830@tanisys-ex2.Tanisys.Local>
+	<1224539820.7654.173.camel@pasglop>
+From: "Ayman El-Khashab" <AymanE@tanisys.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,32 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+Benjamin Herrenschmidt wrote:
 
-I have following kernel Oops when I run ifconfig to setup the UEC0 of
-MPC8360MDS board. There is no hardware problem, the UEC0 runs well
-under Uboot.
+>>>=20
+>>> +	/* Check if setup is sensible at all */
+>>> +	if ((buses & 0xff) !=3D bus->number ||
+>>> +	    ((buses >> 8) & 0xff) !=3D <=3D bus->number) {
+>>=20
+>> Note that I removed the <=3D from the above line -- I did not think =
+it
+>> was correct.  Please let me know if that was wrong.
+>=20
+> My logic is that the current setup is incorrect if the primary bus of
+> the bridge doesn't match the parent bus number, or if the secondary
+> bus number of the bridge is not strictly superior to the parent bus
+> number.  =20
+>=20
+> What sounds incorrect ?
+>=20
 
-Any idea on this issue?
+The part that didn't look correct is this line (note the operators)
 
-Thanks,
+   ((buses >> 8) & 0xff) !=3D <=3D bus->number) {
 
-Mike
+               Operators ^^ ^^
+
+>From reading through the code and your textual description of what was
+supposed to be happening, I went ahead and changed it to ...=20
+
+ ((buses >> 8) & 0xff) !=3D  bus->number) {
+
+And this is the code that generated the results from my previous
+message.
 
 
-[root@localhost root]# ifconfig eth0 47.135.148.158
-Oops: machine check, sig: 7
-NIP: C0126910 XER: 20000000 LR: C01268D0 SP: CC10DD80 REGS: cc10dcd0
-TRAP: 0200    Not tainted
-MSR: 00049030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = cc10c000[349] 'ifconfig' Last syscall: 54
-last math cc10c000 last altivec 00000000
-GPR00: 00000000 CC10DD80 CC10C000 00000000 00001032 CC12D000 C0247264 C04D24C8
-GPR08: BA2E8BA3 D1000010 C01EE55C 00000000 48022228 100235F8 00000000 00000000
-GPR16: 00000000 00000000 10020000 10020000 00009032 CC10DE78 00000000 00000000
-GPR24: FFFF8914 0000C000 C01D0000 CC10DDB8 D1000000 C0586E60 C0269C20 00000000
-Call backtrace:
-C0126890 C00D59D0 C00D761C C012F400 C0130DD4 C01746B4 C017712C
-C0127770 C004D8B0 C0005ABC 00000000 10001214 100023C4 0FEC4E00
-00000000
-Bus error
+Hope that made sense ...
+
+Regards,
+Ayman
