@@ -2,14 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A718BDDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 00:17:01 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id BFB85DDDE3
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 01:47:12 +1100 (EST)
+Message-Id: <751DF852-228C-49CF-942F-93ABCDE95AE1@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fix build issue with CONFIG_RELOCATABLE=y
-Date: Mon, 20 Oct 2008 08:16:55 -0500
-Message-Id: <1224508615-727-1-git-send-email-galak@kernel.crashing.org>
-Cc: pbadari@gmail.com
+To: Ed Swarthout <Ed.Swarthout@freescale.com>
+In-Reply-To: <1224222092-9301-1-git-send-email-Ed.Swarthout@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] Fix mpc8536ds dma interrupt numbers
+Date: Mon, 20 Oct 2008 09:46:28 -0500
+References: <1224222092-9301-1-git-send-email-Ed.Swarthout@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,52 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There are two issues when we enable CONFIG_RELOCATABLE.  The first is due
-to the fact that phys_addr_t is now defined in linux/types.h.  The second
-is due to the fact that the DMA code changes expose memstart_addr to
-prom_init.c
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/include/asm/page.h        |    5 ++++-
- arch/powerpc/kernel/prom_init_check.sh |    2 +-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+On Oct 17, 2008, at 12:41 AM, Ed Swarthout wrote:
 
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 64e1445..120f4d4 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -12,7 +12,9 @@
- 
- #include <asm/asm-compat.h>
- #include <asm/kdump.h>
--#include <asm/types.h>
-+#ifndef __ASSEMBLY__
-+#include <linux/types.h>
-+#endif
- 
- /*
-  * On PPC32 page size is 4K. For PPC64 we support either 4K or 64K software
-@@ -73,6 +75,7 @@
- 
- #if defined(CONFIG_RELOCATABLE)
- #ifndef __ASSEMBLY__
-+
- extern phys_addr_t memstart_addr;
- extern phys_addr_t kernstart_addr;
- #endif
-diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-index 2c7e8e8..ea3a2ec 100644
---- a/arch/powerpc/kernel/prom_init_check.sh
-+++ b/arch/powerpc/kernel/prom_init_check.sh
-@@ -20,7 +20,7 @@ WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
- _end enter_prom memcpy memset reloc_offset __secondary_hold
- __secondary_hold_acknowledge __secondary_hold_spinloop __start
- strcmp strcpy strlcpy strlen strncmp strstr logo_linux_clut224
--reloc_got2 kernstart_addr"
-+reloc_got2 kernstart_addr memstart_addr"
- 
- NM="$1"
- OBJ="$2"
--- 
-1.5.5.1
+> Swap pci1 and pci2 labels -
+> Per user manual, pcie1 is at a000 and pcie2 is at 9000.
+>
+> Signed-off-by: Ed Swarthout <Ed.Swarthout@freescale.com>
+> ---
+> arch/powerpc/boot/dts/mpc8536ds.dts |   12 ++++++------
+> 1 files changed, 6 insertions(+), 6 deletions(-)
+
+applied, dropped the pci changes.
+
+- k
