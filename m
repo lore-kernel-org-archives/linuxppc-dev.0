@@ -1,19 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 49929DDE04
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 01:52:28 +1100 (EST)
-Message-Id: <1E622D3C-D4DC-44A0-8A4C-E228714BDD28@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Wolfgang Ocker <weo@reccoware.de>
-In-Reply-To: <1224075647.4022.33.camel@galileo.recco.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc: SPI: specify chip select active high
-Date: Mon, 20 Oct 2008 09:52:19 -0500
-References: <1224075647.4022.33.camel@galileo.recco.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 50091DDE07
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 02:48:39 +1100 (EST)
+Date: Mon, 20 Oct 2008 19:48:35 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Message-ID: <20081020154835.GA3234@oksana.dev.rtsoft.ru>
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+	<200810171324.42650.david-b@pacbell.net>
+	<20081017212942.GA1919@oksana.dev.rtsoft.ru>
+	<200810200029.58312.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <200810200029.58312.david-b@pacbell.net>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org, Jean Delvare <khali@linux-fr.org>,
+	David Miller <davem@davemloft.net>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Oct 20, 2008 at 12:29:57AM -0700, David Brownell wrote:
+[...]
+> > Anyway most of them need some modifications to work with OF...
+> 
+> The changes I saw were just to cope with not having
+> the system-specific platform_data provided:  don't
+> fail if that pointer is NULL, and arrange for dynamic
+> allocation of some GPIO numbers.
+> 
+> With OpenFirmware, presumably the implication is that
+> the relevant data is in the OF device tree...
 
-On Oct 15, 2008, at 8:00 AM, Wolfgang Ocker wrote:
+Yes. Some data is in the device tree.
 
-> The patch allows to specify that an SPI device needs an active high  
-> chip
-> select.
->
-> Signed-off-by: Wolfgang Ocker <weo@reccoware.de>
-> ---
+> I think that it *barely* makes sense to allow the chips
+> to bind to drivers without platform data when there's
+> not even OF in the environment. ONLY in the case where
+> the GPIOs are exported through sysfs, in fact, since
+> otherwise there's no way for other system components
+> to know those GPIOs even exist!!  And even that seems
+> pretty marginal to me...
 
-applied
+Platform data is a completely different story. And yes, we can't
+handle it properly with the device tree. By "properly" I mean without
+adding an explicit OF stuff to the drivers, i.e. we should handle the
+pdata transparently to the existing drivers.
 
-- k
+I quite like the bus notifiers approach:
+
+http://lkml.org/lkml/2008/6/5/209  (mmc_spi example)
+
+But it doesn't work as a module (i.e. OF-specific bits should be
+always in-kernel).
+
+[...]
+> > If you don't like it, I can readily implement hooks for
+> > gpiochip_{add,remove}().
+> 
+> It seems a better way to a clean solution, IMO.
+
+Ok. I will do it.
+
+[...]
+> Did you look at providing chip-aware OF glue drivers
+> for this stuff?  Doing stuff like just turn the OF
+> device properties into the right platform_data, and
+> maybe runing FORTH bytecodes to do other configuration
+> magic needed...
+
+Yes. Few times already. To make the glue, every driver needs
+some modifications, and it is always triggers huge discussions
+about how to exactly refactor the driver to make it work with
+the OF.
+
+http://lkml.org/lkml/2008/5/23/297 (again mmc_spi example).
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
