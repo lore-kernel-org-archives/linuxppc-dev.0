@@ -1,22 +1,26 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
-	by ozlabs.org (Postfix) with ESMTP id 2A5EBDDDEA
+Return-Path: <peter.scott@ericsson.com>
+Received: from mailgw3.ericsson.se (mailgw3.ericsson.se [193.180.251.60])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CB2E5DDDE1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Oct 2008 05:01:38 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so2108562wfg.15
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 20 Oct 2008 11:01:37 -0700 (PDT)
-Date: Mon, 20 Oct 2008 12:01:35 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH] [MPC52XX] gpio: remove dead code
-Message-ID: <20081020180135.GA13667@secretlab.ca>
-References: <20081020171257.GC4362@pengutronix.de>
+	Tue, 21 Oct 2008 07:07:48 +1100 (EST)
+Received: from mailgw3.ericsson.se (unknown [127.0.0.1])
+	by mailgw3.ericsson.se (Symantec Mail Security) with ESMTP id
+	256FB204A8 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 20 Oct 2008 21:42:47 +0200 (CEST)
+Received: from esealmw127.eemea.ericsson.se (unknown [153.88.254.122])
+	by mailgw3.ericsson.se (Symantec Mail Security) with ESMTP id
+	F2BAA2001A for <linuxppc-embedded@ozlabs.org>;
+	Mon, 20 Oct 2008 21:42:46 +0200 (CEST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081020171257.GC4362@pengutronix.de>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C932EC.05024350"
+Subject: Xilininx GPIO
+Date: Mon, 20 Oct 2008 21:42:41 +0200
+Message-ID: <425A3BC99494A4409BEF99524478ED52092E7F36@esealmw103.eemea.ericsson.se>
+From: "Peter Scott" <peter.scott@ericsson.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,34 +31,101 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 20, 2008 at 07:12:57PM +0200, Wolfram Sang wrote:
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+This is a multi-part message in MIME format.
 
-Thanks, I'll pick this up.
+------_=_NextPart_001_01C932EC.05024350
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> ---
->  arch/powerpc/platforms/52xx/mpc52xx_gpio.c |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpio.c b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-> index 8a455eb..07f89ae 100644
-> --- a/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-> @@ -363,11 +363,8 @@ static int mpc52xx_gpt_gpio_get(struct gpio_chip *gc, unsigned int gpio)
->  {
->  	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
->  	struct mpc52xx_gpt __iomem *regs = mm_gc->regs;
-> -	unsigned int ret;
->  
->  	return (in_be32(&regs->status) & (1 << (31 - 23))) ? 1 : 0;
-> -
-> -	return ret;
->  }
->  
->  static void
-> -- 
-> 1.5.6.5
-> 
-> -- 
->   Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
->  Pengutronix - Linux Solutions for Science and Industry
+Hello there,
+
+I am having difficulties with some xilinx gpios and the xilinx-2.6-xlnx
+kernel. As far as I can tell the kernel is configured correctly for
+gpio.
+=20
+I can see that the module_init function "xgpio_init" is called, and that
+bus_add_driver and driver_add_groups returns without error. But I cannot
+see that the probe function is called.  /proc/misc doesnt list a driver
+for the gpios. I am not sure where to go next as there is no error
+printouts.
+
+I have seen other peoples consoles stating that the gpio is mapped to xx
+but this doesn't happen for me.
+
+I am using the default bit file for the ml507 board, and have created
+device files=20
+/dev/xgpio0=20
+/dev/xgpio1 etc with major 10 and minor 185=20
+
+However if I try to open these devices the open fails.=20
+
+I would rally appreciate it if someone could give me some pointers as to
+what to look for, or how a to go about debugging this.
+
+Many thanks
+Peter Scott
+
+------_=_NextPart_001_01C932EC.05024350
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7653.38">
+<TITLE>Xilininx GPIO</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Hello there,</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">I am having difficulties with some =
+xilinx gpios and the xilinx-2.6-xlnx kernel. As far as I can tell the =
+kernel is configured correctly for gpio.</FONT></P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">I can see that the module_init =
+function &quot;xgpio_init&quot; is called, and that bus_add_driver and =
+driver_add_groups returns without error. But I cannot see that the probe =
+function is called.&nbsp; /proc/misc doesnt list a driver for the gpios. =
+I am not sure where to go next as there is no error =
+printouts.</FONT></P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">I have seen other peoples consoles =
+stating that the gpio is mapped to xx but this doesn't happen for =
+me.</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">I am using the default bit file for the =
+ml507 board, and have created device files </FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">/dev/xgpio0 </FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">/dev/xgpio1 etc with major 10 and =
+minor 185 </FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">However if I try to open these devices =
+the open fails. </FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">I would rally appreciate it if someone =
+could give me some pointers as to what to look for, or how a to go about =
+debugging this.</FONT></P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Many thanks</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">Peter Scott</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C932EC.05024350--
