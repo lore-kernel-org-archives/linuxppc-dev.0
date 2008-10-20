@@ -2,22 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 69710DDDF3
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 10:43:59 +1100 (EST)
-Subject: Re: [PATCH] ibm_newemac: Fix new MAL feature handling
+	by ozlabs.org (Postfix) with ESMTPS id F398ADDE01
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 10:54:46 +1100 (EST)
+Subject: Re: [PATCH] Enable enhanced functions for 8536 TSEC
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20081016143840.GA29805@yoda.jdub.homelinux.org>
-References: <20081015213337.a99a9595.akpm@linux-foundation.org>
-	<1224133010.8157.543.camel@pasglop>
-	<20081016143840.GA29805@yoda.jdub.homelinux.org>
+To: Jason Jin <Jason.jin@freescale.com>
+In-Reply-To: <1224149492-11204-1-git-send-email-Jason.jin@freescale.com>
+References: <1224149492-11204-1-git-send-email-Jason.jin@freescale.com>
 Content-Type: text/plain
-Date: Tue, 21 Oct 2008 10:43:41 +1100
-Message-Id: <1224546221.7654.196.camel@pasglop>
+Date: Tue, 21 Oct 2008 10:54:35 +1100
+Message-Id: <1224546875.7654.198.camel@pasglop>
 Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-	Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -28,33 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-10-16 at 10:38 -0400, Josh Boyer wrote:
-> On Thu, Oct 16, 2008 at 03:56:50PM +1100, Benjamin Herrenschmidt wrote:
-> >> drivers/net/ibm_newemac/mal.c: In function 'mal_txeob':
-> >> drivers/net/ibm_newemac/mal.c:284: error: implicit declaration of function 'mtdcri'
-> >> drivers/net/ibm_newemac/mal.c:284: error: 'SDR0' undeclared (first use in this function)
-> >> drivers/net/ibm_newemac/mal.c:284: error: (Each undeclared identifier is reported only once
-> >> drivers/net/ibm_newemac/mal.c:284: error: for each function it appears in.)
-> >> drivers/net/ibm_newemac/mal.c:285: error: implicit declaration of function 'mfdcri'
-> >> drivers/net/ibm_newemac/mal.c: In function 'mal_rxeob':
-> >> drivers/net/ibm_newemac/mal.c:302: error: 'SDR0' undeclared (first use in this function)
-> >
-> >That's annoying, I'll have a look.
+On Thu, 2008-10-16 at 17:31 +0800, Jason Jin wrote:
+> Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+> ---
+>  arch/powerpc/boot/dts/mpc8536ds.dts |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> Support for new features needed by the PPC 405EZ boards
-> introduced some errors in the MAL and EMAC feature handling.
-> This broke 'allmodconfig' builds as CONFIG_PPC_DCR_NATIVE is
-> not set for those.
-> 
-> This patch fixes these errors by wrapping the code in the
-> appropriate #ifdefs.
-> 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/mpc8536ds.dts
+> index 93fdd99..dce2f65 100644
+> --- a/arch/powerpc/boot/dts/mpc8536ds.dts
+> +++ b/arch/powerpc/boot/dts/mpc8536ds.dts
+> @@ -180,7 +180,7 @@
+>  		enet0: ethernet@24000 {
+>  			cell-index = <0>;
+>  			device_type = "network";
+> -			model = "TSEC";
+> +			model = "eTSEC";
+>  			compatible = "gianfar";
+>  			reg = <0x24000 0x1000>;
+>  			local-mac-address = [ 00 00 00 00 00 00 ];
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+While this works, this isn't quite "proper" use of the device-tree,
+you should instead have something like
 
-Jeff, this breaks build, I'll put it in powerpc.git for a merge today,
+compatible="gianfar-eTSEC","gianfar" or something like that
 
 Cheers,
 Ben.
