@@ -2,16 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F398ADDE01
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 10:54:46 +1100 (EST)
-Subject: Re: [PATCH] Enable enhanced functions for 8536 TSEC
+	by ozlabs.org (Postfix) with ESMTPS id ECD42DDE01
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 10:56:27 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Remove Kconfig support for PPC_MERGE
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jason Jin <Jason.jin@freescale.com>
-In-Reply-To: <1224149492-11204-1-git-send-email-Jason.jin@freescale.com>
-References: <1224149492-11204-1-git-send-email-Jason.jin@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1224525826-17049-1-git-send-email-galak@kernel.crashing.org>
+References: <1224525826-17049-1-git-send-email-galak@kernel.crashing.org>
 Content-Type: text/plain
-Date: Tue, 21 Oct 2008 10:54:35 +1100
-Message-Id: <1224546875.7654.198.camel@pasglop>
+Date: Tue, 21 Oct 2008 10:56:20 +1100
+Message-Id: <1224546980.7654.200.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -24,30 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-10-16 at 17:31 +0800, Jason Jin wrote:
-> Signed-off-by: Jason Jin <Jason.jin@freescale.com>
-> ---
->  arch/powerpc/boot/dts/mpc8536ds.dts |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/mpc8536ds.dts
-> index 93fdd99..dce2f65 100644
-> --- a/arch/powerpc/boot/dts/mpc8536ds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8536ds.dts
-> @@ -180,7 +180,7 @@
->  		enet0: ethernet@24000 {
->  			cell-index = <0>;
->  			device_type = "network";
-> -			model = "TSEC";
-> +			model = "eTSEC";
->  			compatible = "gianfar";
->  			reg = <0x24000 0x1000>;
->  			local-mac-address = [ 00 00 00 00 00 00 ];
+On Mon, 2008-10-20 at 13:03 -0500, Kumar Gala wrote:
+> There are no users of PPC_MERGE in tree so we can get rid of it.
+> It was a hold over from the arch/ppc days.
 
-While this works, this isn't quite "proper" use of the device-tree,
-you should instead have something like
+That's is all good but shouldn't be in your git tree for merge.
 
-compatible="gianfar-eTSEC","gianfar" or something like that
-
-Cheers,
 Ben.
+
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+>  arch/powerpc/Kconfig |    3 ---
+>  1 files changed, 0 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 9391199..369d93e 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -19,9 +19,6 @@ config WORD_SIZE
+>  	default 64 if PPC64
+>  	default 32 if !PPC64
+>  
+> -config PPC_MERGE
+> -	def_bool y
+> -
+>  config ARCH_PHYS_ADDR_T_64BIT
+>         def_bool PPC64 || PHYS_64BIT
+>  
