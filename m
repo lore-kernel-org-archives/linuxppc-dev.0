@@ -2,18 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BFB85DDDE3
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 01:47:12 +1100 (EST)
-Message-Id: <751DF852-228C-49CF-942F-93ABCDE95AE1@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id EB553DDDE3
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 01:47:15 +1100 (EST)
+Message-Id: <00F15E59-07B4-436E-9CEA-B445826E5534@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Ed Swarthout <Ed.Swarthout@freescale.com>
-In-Reply-To: <1224222092-9301-1-git-send-email-Ed.Swarthout@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Wolfram Sang <w.sang@pengutronix.de>
+In-Reply-To: <20081016191200.GB13629@pengutronix.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] Fix mpc8536ds dma interrupt numbers
-Date: Mon, 20 Oct 2008 09:46:28 -0500
-References: <1224222092-9301-1-git-send-email-Ed.Swarthout@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [RESEND] i2c-cpm: Suppress autoprobing for devices
+Date: Mon, 20 Oct 2008 09:46:07 -0500
+References: <20081016111300.GC3432@pengutronix.de>
+	<20081016191200.GB13629@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +25,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 17, 2008, at 12:41 AM, Ed Swarthout wrote:
+On Oct 16, 2008, at 2:12 PM, Wolfram Sang wrote:
 
-> Swap pci1 and pci2 labels -
-> Per user manual, pcie1 is at a000 and pcie2 is at 9000.
+> Similar to commit 618b26d52843c0f85b8eb143cf2695d7f6fd072d, also  
+> remove
+> automatic probing for this i2c controller. Might need updates to dts  
+> files
+> using it.
 >
-> Signed-off-by: Ed Swarthout <Ed.Swarthout@freescale.com>
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Acked-by: Jochen Friedrich <jochen@scram.de>
 > ---
-> arch/powerpc/boot/dts/mpc8536ds.dts |   12 ++++++------
-> 1 files changed, 6 insertions(+), 6 deletions(-)
+> Resend with cc to i2c.
+>
+> drivers/i2c/busses/i2c-cpm.c |    1 -
+> 1 file changed, 1 deletion(-)
 
-applied, dropped the pci changes.
+applied
 
 - k
