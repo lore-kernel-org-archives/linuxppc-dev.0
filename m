@@ -1,28 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1E931DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 09:55:24 +1100 (EST)
-Subject: RE: Problems with PCI-E devices not being detected with switch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ayman El-Khashab <AymanE@tanisys.com>
-In-Reply-To: <16691A8B34B5D9458EA3A1C37A11555A0137F832@tanisys-ex2.Tanisys.Local>
-References: <16691A8B34B5D9458EA3A1C37A11555A0137F81E@tanisys-ex2.Tanisys.Local>
-	<1224134422.8157.549.camel@pasglop>
-	<16691A8B34B5D9458EA3A1C37A11555A0137F822@tanisys-ex2.Tanisys.Local>
-	<1224202209.7654.36.camel@pasglop>
-	<16691A8B34B5D9458EA3A1C37A11555A0137F829@tanisys-ex2.Tanisys.Local>
-	<1224278340.7654.103.camel@pasglop>
-	<16691A8B34B5D9458EA3A1C37A11555A0137F830@tanisys-ex2.Tanisys.Local>
-	<1224539820.7654.173.camel@pasglop>
-	<16691A8B34B5D9458EA3A1C37A11555A0137F832@tanisys-ex2.Tanisys.Local>
-Content-Type: text/plain
-Date: Tue, 21 Oct 2008 09:55:19 +1100
-Message-Id: <1224543319.7654.180.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <fweisbec@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
+	by ozlabs.org (Postfix) with ESMTP id 448C8DDF92
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 04:42:40 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id e27so934174nfd.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 10:42:38 -0700 (PDT)
+Message-ID: <c62985530810201042v4b3eed0ah62de285c64b2c0ba@mail.gmail.com>
+Date: Mon, 20 Oct 2008 19:42:38 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
+In-Reply-To: <20081020170808.GB7249@yoda.jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080906050602.409299112@goodmis.org>
+	<20080906120346.GA30964@elte.hu>
+	<20081016181452.GA29739@yoda.jdub.homelinux.org>
+	<alpine.DEB.1.10.0810161421530.11042@gandalf.stny.rr.com>
+	<20081016183529.GB29739@yoda.jdub.homelinux.org>
+	<alpine.DEB.1.10.0810161444050.11042@gandalf.stny.rr.com>
+	<20081016150106.6ddf7e46@zod.rchland.ibm.com>
+	<alpine.DEB.1.10.0810201222570.3760@gandalf.stny.rr.com>
+	<20081020170808.GB7249@yoda.jdub.homelinux.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,24 +36,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+2008/10/20 Josh Boyer <jwboyer@linux.vnet.ibm.com>:
+> That seems like a good plan.  Should we mark dynamic ftrace as X86 only
+> in Kconfig for .28 to prevent people from inadvertently setting it?
 
-> The part that didn't look correct is this line (note the operators)
-> 
->    ((buses >> 8) & 0xff) != <= bus->number) {
-> 
->                Operators ^^ ^^
+Hi Josh.
 
-Ooohhh ... nice typo :-) The right one is <=, thanks for catching this !
-
-> >From reading through the code and your textual description of what was
-> supposed to be happening, I went ahead and changed it to ... 
-> 
->  ((buses >> 8) & 0xff) !=  bus->number) {
-> 
-> And this is the code that generated the results from my previous
-> message.
-
-Yeah, that's enough to catch most of the problems incuding yours.
-
-Cheers,
-Ben.
+There are other arch that support ftrace as well like sh or sparc64
+(I'm currently working on
+an implementation for mips).
+So the choice would be better between waiting for a fix or disable
+dynamic ftrace
+on Kconfig only for PowerPC.
