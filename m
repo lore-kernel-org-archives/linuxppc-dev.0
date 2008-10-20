@@ -1,24 +1,27 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 50091DDE07
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 02:48:39 +1100 (EST)
-Date: Mon, 20 Oct 2008 19:48:35 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
-Message-ID: <20081020154835.GA3234@oksana.dev.rtsoft.ru>
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
-	<200810171324.42650.david-b@pacbell.net>
-	<20081017212942.GA1919@oksana.dev.rtsoft.ru>
-	<200810200029.58312.david-b@pacbell.net>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 58B1CDDE45
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 03:30:35 +1100 (EST)
+Date: Mon, 20 Oct 2008 12:30:33 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
+In-Reply-To: <20081016150106.6ddf7e46@zod.rchland.ibm.com>
+Message-ID: <alpine.DEB.1.10.0810201222570.3760@gandalf.stny.rr.com>
+References: <20080906050602.409299112@goodmis.org>
+	<20080906120346.GA30964@elte.hu>
+	<20081016181452.GA29739@yoda.jdub.homelinux.org>
+	<alpine.DEB.1.10.0810161421530.11042@gandalf.stny.rr.com>
+	<20081016183529.GB29739@yoda.jdub.homelinux.org>
+	<alpine.DEB.1.10.0810161444050.11042@gandalf.stny.rr.com>
+	<20081016150106.6ddf7e46@zod.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <200810200029.58312.david-b@pacbell.net>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org, Jean Delvare <khali@linux-fr.org>,
-	David Miller <davem@davemloft.net>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,63 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 20, 2008 at 12:29:57AM -0700, David Brownell wrote:
-[...]
-> > Anyway most of them need some modifications to work with OF...
+
+On Thu, 16 Oct 2008, Josh Boyer wrote:
+> > 
+> > On Thu, 16 Oct 2008, Josh Boyer wrote:
+> > > 
+> > > Well, that's why I asked.  You sent 2 patches out over a month ago that
+> > > don't appear to have shown up in any Linus or PowerPC tree.
+> > 
+> > Oh, the patches I sent on here, are not to solve this issue. It was 
+> > actually solving issues in linux-tip itself.
 > 
-> The changes I saw were just to cope with not having
-> the system-specific platform_data provided:  don't
-> fail if that pointer is NULL, and arrange for dynamic
-> allocation of some GPIO numbers.
+> Totally confused as to what linux-tip is, but ok.
 > 
-> With OpenFirmware, presumably the implication is that
-> the relevant data is in the OF device tree...
-
-Yes. Some data is in the device tree.
-
-> I think that it *barely* makes sense to allow the chips
-> to bind to drivers without platform data when there's
-> not even OF in the environment. ONLY in the case where
-> the GPIOs are exported through sysfs, in fact, since
-> otherwise there's no way for other system components
-> to know those GPIOs even exist!!  And even that seems
-> pretty marginal to me...
-
-Platform data is a completely different story. And yes, we can't
-handle it properly with the device tree. By "properly" I mean without
-adding an explicit OF stuff to the drivers, i.e. we should handle the
-pdata transparently to the existing drivers.
-
-I quite like the bus notifiers approach:
-
-http://lkml.org/lkml/2008/6/5/209  (mmc_spi example)
-
-But it doesn't work as a module (i.e. OF-specific bits should be
-always in-kernel).
-
-[...]
-> > If you don't like it, I can readily implement hooks for
-> > gpiochip_{add,remove}().
+> > I'm still looking into the cause for ftrace not to boot on PPC.
 > 
-> It seems a better way to a clean solution, IMO.
+> There were issues with -pg and some other compile flag on PPC at one
+> point.  I think you worked that out with Ben, but I don't recall.
+> 
+> Anyway, if you want a tester let me know.  It seems 2.6.27.1 should be
+> fine since FTRACE was disabled, but for .28-rc1 it would be cool if it
+> worked :).
 
-Ok. I will do it.
+Hi Josh,
 
-[...]
-> Did you look at providing chip-aware OF glue drivers
-> for this stuff?  Doing stuff like just turn the OF
-> device properties into the right platform_data, and
-> maybe runing FORTH bytecodes to do other configuration
-> magic needed...
+I've been looking deeper at the code for PPC. I realized that my PPC64 box 
+that I've been testing on did not use modules. While looking at the module 
+code it dawned on me the dynamic ftrace needs a bit of work. This is 
+because the way modules are handled in PPC (and other architectures as 
+well).  The jmps used by mcount is a 24 bit jump. Since the modules are 
+loaded farther than 24bits away, a trampoline is needed.
 
-Yes. Few times already. To make the glue, every driver needs
-some modifications, and it is always triggers huge discussions
-about how to exactly refactor the driver to make it work with
-the OF.
+A bit of rework is needed in the ftrace infrastructure to handle the 
+trampoline. Too much work to go into 28. I'll start working on code that 
+can hopefully be ready and tested for 29. It's not that major of a change, 
+but since the merge window for 28 has already been opened, we would like 
+to get a bit more testing in before we hand it over to Linus.
 
-http://lkml.org/lkml/2008/5/23/297 (again mmc_spi example).
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+-- Steve
