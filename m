@@ -2,19 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EB553DDDE3
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 01:47:15 +1100 (EST)
-Message-Id: <00F15E59-07B4-436E-9CEA-B445826E5534@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id C0356DDF16
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 01:48:15 +1100 (EST)
+Message-Id: <DEDC04D8-1B2D-475E-965B-1610EA09FF42@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Wolfram Sang <w.sang@pengutronix.de>
-In-Reply-To: <20081016191200.GB13629@pengutronix.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Jason Jin <Jason.jin@freescale.com>
+In-Reply-To: <1224149492-11204-1-git-send-email-Jason.jin@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] [RESEND] i2c-cpm: Suppress autoprobing for devices
-Date: Mon, 20 Oct 2008 09:46:07 -0500
-References: <20081016111300.GC3432@pengutronix.de>
-	<20081016191200.GB13629@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Subject: Re: [PATCH] Enable enhanced functions for 8536 TSEC
+Date: Mon, 20 Oct 2008 09:46:16 -0500
+References: <1224149492-11204-1-git-send-email-Jason.jin@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +24,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 16, 2008, at 2:12 PM, Wolfram Sang wrote:
+On Oct 16, 2008, at 4:31 AM, Jason Jin wrote:
 
-> Similar to commit 618b26d52843c0f85b8eb143cf2695d7f6fd072d, also  
-> remove
-> automatic probing for this i2c controller. Might need updates to dts  
-> files
-> using it.
->
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> Acked-by: Jochen Friedrich <jochen@scram.de>
+> Signed-off-by: Jason Jin <Jason.jin@freescale.com>
 > ---
-> Resend with cc to i2c.
->
-> drivers/i2c/busses/i2c-cpm.c |    1 -
-> 1 file changed, 1 deletion(-)
+> arch/powerpc/boot/dts/mpc8536ds.dts |    4 ++--
+> 1 files changed, 2 insertions(+), 2 deletions(-)
 
 applied
 
