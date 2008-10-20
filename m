@@ -1,13 +1,13 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 359DCDDEEE
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 04:28:26 +1100 (EST)
-Date: Mon, 20 Oct 2008 13:28:24 -0400 (EDT)
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 63370DDF83
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 04:53:13 +1100 (EST)
+Date: Mon, 20 Oct 2008 13:53:11 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
 Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
-In-Reply-To: <20081020170808.GB7249@yoda.jdub.homelinux.org>
-Message-ID: <alpine.DEB.1.10.0810201327410.4852@gandalf.stny.rr.com>
+In-Reply-To: <c62985530810201042v4b3eed0ah62de285c64b2c0ba@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0810201351130.5336@gandalf.stny.rr.com>
 References: <20080906050602.409299112@goodmis.org>
 	<20080906120346.GA30964@elte.hu>
 	<20081016181452.GA29739@yoda.jdub.homelinux.org>
@@ -17,12 +17,13 @@ References: <20080906050602.409299112@goodmis.org>
 	<20081016150106.6ddf7e46@zod.rchland.ibm.com>
 	<alpine.DEB.1.10.0810201222570.3760@gandalf.stny.rr.com>
 	<20081020170808.GB7249@yoda.jdub.homelinux.org>
+	<c62985530810201042v4b3eed0ah62de285c64b2c0ba@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
+	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,36 +34,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mon, 20 Oct 2008, Josh Boyer wrote:
+On Mon, 20 Oct 2008, Fr?d?ric Weisbecker wrote:
 
-> On Mon, Oct 20, 2008 at 12:30:33PM -0400, Steven Rostedt wrote:
-> >> Anyway, if you want a tester let me know.  It seems 2.6.27.1 should be
-> >> fine since FTRACE was disabled, but for .28-rc1 it would be cool if it
-> >> worked :).
-> >
-> >Hi Josh,
-> >
-> >I've been looking deeper at the code for PPC. I realized that my PPC64 box 
-> >that I've been testing on did not use modules. While looking at the module 
-> >code it dawned on me the dynamic ftrace needs a bit of work. This is 
-> >because the way modules are handled in PPC (and other architectures as 
-> >well).  The jmps used by mcount is a 24 bit jump. Since the modules are 
-> >loaded farther than 24bits away, a trampoline is needed.
-> 
-> Ah, indeed.
-> 
-> >A bit of rework is needed in the ftrace infrastructure to handle the 
-> >trampoline. Too much work to go into 28. I'll start working on code that 
-> >can hopefully be ready and tested for 29. It's not that major of a change, 
-> >but since the merge window for 28 has already been opened, we would like 
-> >to get a bit more testing in before we hand it over to Linus.
-> 
-> That seems like a good plan.  Should we mark dynamic ftrace as X86 only
-> in Kconfig for .28 to prevent people from inadvertently setting it?
+> There are other arch that support ftrace as well like sh or sparc64
+> (I'm currently working on
+> an implementation for mips).
+> So the choice would be better between waiting for a fix or disable
+> dynamic ftrace
+> on Kconfig only for PowerPC.
 
-Well, we probably should disable it for PPC at least. I don't know if 
-sparc has the same issue.
+Hi Frederic,
 
-David?
+I believe MIPS has the same issues as PPC. Doesn't it use a trampoline 
+too?  I want to make the generic code handle trampolines a bit better. 
+This is one of the problems with developing in x86. It avoids a lot of the 
+issues that other archs might have.
 
 -- Steve
