@@ -1,14 +1,11 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 20 Oct 2008 11:44:04 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] powerpc: remove device_type = "board-control"
-Message-ID: <20081020004404.GA24084@yookeroo.seuss>
-References: <20081018002352.GA9661@oksana.dev.rtsoft.ru>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081018002352.GA9661@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <18684.3939.334571.451857@drongo.ozlabs.ibm.com>
+Date: Mon, 20 Oct 2008 15:56:03 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Revert to real-base = 12MB on 32-bit CHRP
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,20 +15,133 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Oct 18, 2008 at 04:23:52AM +0400, Anton Vorontsov wrote:
-> We don't want to encourage the bogus device_type usage.
-> 
-> The device type isn't used in the code, so we can simply remove it from
-> the documentation and dts files.
-> 
-> Boards should specify proper compatible entries instead.
-> 
-> Suggested-by: David Gibson <david@gibson.dropbear.id.au>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
+Commit 9b09c6d909dfd8de96b99b9b9c808b94b0a71614 ("powerpc: Change the
+default link address for pSeries zImage kernels") changed the
+real-base value in the CHRP note added by addnote to the zImage from
+12MB to 32MB.  It turns out that this causes unnecessary extra reboots
+on old 32-bit CHRP machines.  This therefore adds a -r flag to addnote
+to allow us to specify what real-base value it should put in the CHRP
+note, and adjusts the wrapper script to pass -r c00000 to addnote when
+making a zImage for a CHRP machine.  Also, CHRP machines ignore the
+RPA note, so we don't need to arrange for it to be the same as the
+kernel's.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+diff --git a/arch/powerpc/boot/addnote.c b/arch/powerpc/boot/addnote.c
+index dcc9ab2..6fa77d0 100644
+--- a/arch/powerpc/boot/addnote.c
++++ b/arch/powerpc/boot/addnote.c
+@@ -11,7 +11,7 @@
+  * as published by the Free Software Foundation; either version
+  * 2 of the License, or (at your option) any later version.
+  *
+- * Usage: addnote zImage [note.elf]
++ * Usage: addnote [-r realbase] zImage [note.elf]
+  *
+  * If note.elf is supplied, it is the name of an ELF file that contains
+  * an RPA note to use instead of the built-in one.  Alternatively, the
+@@ -153,18 +153,31 @@ unsigned char *read_rpanote(const char *fname, int *nnp)
+ int
+ main(int ac, char **av)
+ {
+-	int fd, n, i;
++	int fd, n, i, ai;
+ 	int ph, ps, np;
+ 	int nnote, nnote2, ns;
+ 	unsigned char *rpap;
+-
+-	if (ac != 2 && ac != 3) {
+-		fprintf(stderr, "Usage: %s elf-file [rpanote.elf]\n", av[0]);
++	char *p, *endp;
++
++	ai = 1;
++	if (ac >= ai + 2 && strcmp(av[ai], "-r") == 0) {
++		/* process -r realbase */
++		p = av[ai + 1];
++		descr[1] = strtol(p, &endp, 16);
++		if (endp == p || *endp != 0) {
++			fprintf(stderr, "Can't parse -r argument '%s' as hex\n",
++				p);
++			exit(1);
++		}
++		ai += 2;
++	}
++	if (ac != ai + 1 && ac != ai + 2) {
++		fprintf(stderr, "Usage: %s [-r realbase] elf-file [rpanote.elf]\n", av[0]);
+ 		exit(1);
+ 	}
+-	fd = open(av[1], O_RDWR);
++	fd = open(av[ai], O_RDWR);
+ 	if (fd < 0) {
+-		perror(av[1]);
++		perror(av[ai]);
+ 		exit(1);
+ 	}
+ 
+@@ -184,12 +197,12 @@ main(int ac, char **av)
+ 	if (buf[E_IDENT+EI_CLASS] != ELFCLASS32
+ 	    || buf[E_IDENT+EI_DATA] != ELFDATA2MSB) {
+ 		fprintf(stderr, "%s is not a big-endian 32-bit ELF image\n",
+-			av[1]);
++			av[ai]);
+ 		exit(1);
+ 	}
+ 
+ 	if (ac == 3)
+-		rpap = read_rpanote(av[2], &nnote2);
++		rpap = read_rpanote(av[ai + 1], &nnote2);
+ 
+ 	ph = GET_32BE(buf, E_PHOFF);
+ 	ps = GET_16BE(buf, E_PHENTSIZE);
+@@ -202,7 +215,7 @@ main(int ac, char **av)
+ 	for (i = 0; i < np; ++i) {
+ 		if (GET_32BE(buf, ph + PH_TYPE) == PT_NOTE) {
+ 			fprintf(stderr, "%s already has a note entry\n",
+-				av[1]);
++				av[ai]);
+ 			exit(0);
+ 		}
+ 		ph += ps;
+@@ -260,18 +273,18 @@ main(int ac, char **av)
+ 		exit(1);
+ 	}
+ 	if (i < n) {
+-		fprintf(stderr, "%s: write truncated\n", av[1]);
++		fprintf(stderr, "%s: write truncated\n", av[ai]);
+ 		exit(1);
+ 	}
+ 
+ 	exit(0);
+ 
+  notelf:
+-	fprintf(stderr, "%s does not appear to be an ELF file\n", av[1]);
++	fprintf(stderr, "%s does not appear to be an ELF file\n", av[ai]);
+ 	exit(1);
+ 
+  nospace:
+ 	fprintf(stderr, "sorry, I can't find space in %s to put the note\n",
+-		av[1]);
++		av[ai]);
+ 	exit(1);
+ }
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index ee0dc41..f390735 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -306,11 +306,14 @@ fi
+ 
+ # post-processing needed for some platforms
+ case "$platform" in
+-pseries|chrp)
++pseries)
+     ${CROSS}objcopy -O binary -j .fakeelf "$kernel" "$ofile".rpanote
+     $objbin/addnote "$ofile" "$ofile".rpanote
+     rm -r "$ofile".rpanote
+     ;;
++chrp)
++    $objbin/addnote -r c00000 "$ofile"
++    ;;
+ coff)
+     ${CROSS}objcopy -O aixcoff-rs6000 --set-start "$entry" "$ofile"
+     $objbin/hack-coff "$ofile"
