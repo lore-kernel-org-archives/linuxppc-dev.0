@@ -1,29 +1,17 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 63370DDF83
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 04:53:13 +1100 (EST)
-Date: Mon, 20 Oct 2008 13:53:11 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
-In-Reply-To: <c62985530810201042v4b3eed0ah62de285c64b2c0ba@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0810201351130.5336@gandalf.stny.rr.com>
-References: <20080906050602.409299112@goodmis.org>
-	<20080906120346.GA30964@elte.hu>
-	<20081016181452.GA29739@yoda.jdub.homelinux.org>
-	<alpine.DEB.1.10.0810161421530.11042@gandalf.stny.rr.com>
-	<20081016183529.GB29739@yoda.jdub.homelinux.org>
-	<alpine.DEB.1.10.0810161444050.11042@gandalf.stny.rr.com>
-	<20081016150106.6ddf7e46@zod.rchland.ibm.com>
-	<alpine.DEB.1.10.0810201222570.3760@gandalf.stny.rr.com>
-	<20081020170808.GB7249@yoda.jdub.homelinux.org>
-	<c62985530810201042v4b3eed0ah62de285c64b2c0ba@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
-	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	David Miller <davem@davemloft.net>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A4F7BDE1BA
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 05:03:56 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m9KI3kTa011137
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 13:03:46 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Remove Kconfig support for PPC_MERGE
+Date: Mon, 20 Oct 2008 13:03:46 -0500
+Message-Id: <1224525826-17049-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,21 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+There are no users of PPC_MERGE in tree so we can get rid of it.
+It was a hold over from the arch/ppc days.
 
-On Mon, 20 Oct 2008, Fr?d?ric Weisbecker wrote:
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/Kconfig |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-> There are other arch that support ftrace as well like sh or sparc64
-> (I'm currently working on
-> an implementation for mips).
-> So the choice would be better between waiting for a fix or disable
-> dynamic ftrace
-> on Kconfig only for PowerPC.
-
-Hi Frederic,
-
-I believe MIPS has the same issues as PPC. Doesn't it use a trampoline 
-too?  I want to make the generic code handle trampolines a bit better. 
-This is one of the problems with developing in x86. It avoids a lot of the 
-issues that other archs might have.
-
--- Steve
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9391199..369d93e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -19,9 +19,6 @@ config WORD_SIZE
+ 	default 64 if PPC64
+ 	default 32 if !PPC64
+ 
+-config PPC_MERGE
+-	def_bool y
+-
+ config ARCH_PHYS_ADDR_T_64BIT
+        def_bool PPC64 || PHYS_64BIT
+ 
+-- 
+1.5.5.1
