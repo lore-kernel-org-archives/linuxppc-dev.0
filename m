@@ -1,29 +1,18 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.227])
-	by ozlabs.org (Postfix) with ESMTP id D060FDDDEA
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 23:19:38 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so1737990rvb.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 05:19:36 -0700 (PDT)
-Message-ID: <9e4733910810200519w4689131dv73bf3539c53d2bea@mail.gmail.com>
-Date: Mon, 20 Oct 2008 08:19:36 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH] powerpc: enable heap randomization for linkstations
-In-Reply-To: <Pine.LNX.4.64.0810200754550.3941@axis700.grange>
+Return-Path: <jwboyer@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.235])
+	by ozlabs.org (Postfix) with ESMTP id 94272DDDE3
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 00:15:38 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id s6so1194290wxc.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 06:15:36 -0700 (PDT)
+Date: Mon, 20 Oct 2008 09:14:02 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Please pull 'next' branch of 4xx tree
+Message-ID: <20081020131402.GA2300@yoda.jdub.homelinux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20081013040703.GA11059@ime.usp.br>
-	<20081013184443.GA20612@ld0162-tx32.am.freescale.net>
-	<20081019025323.GA7887@ime.usp.br>
-	<Pine.LNX.4.64.0810192147030.21665@axis700.grange>
-	<9e4733910810191432o58d204adw490cb8e4fcc390ac@mail.gmail.com>
-	<Pine.LNX.4.64.0810192347250.21665@axis700.grange>
-	<9e4733910810191505u3ec1db0dl25e87bf3b78c740d@mail.gmail.com>
-	<Pine.LNX.4.64.0810200022040.21665@axis700.grange>
-	<9e4733910810191540p1000c28l89ca50794addae37@mail.gmail.com>
-	<Pine.LNX.4.64.0810200754550.3941@axis700.grange>
-Cc: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>,
-	Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,66 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 20, 2008 at 1:55 AM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> On Sun, 19 Oct 2008, Jon Smirl wrote:
->
->> Is i2c-mpc built into your kernel? It's not going to module auto-load
->> because the names don't match - fsl-i2c and i2c-mpc.
->
-> It is built into the kernel.
+Hi Ben,
 
-Put a printk in it's init function to make sure it is initializing.
+Please pull the 'next' branch of the 4xx tree to pick up what should be
+most of the remaining changes for 2.6.28.  Defconfig updates will come
+after -rc1.
 
-Next thing I do is put printks over in arch/powerpc/.. to tell me
-which strings from the device tree are being looked for.
+josh
 
-You can also look in /proc/device_tree and make sure fsl-i2c is in there.
+The following changes since commit 6dc6472581f693b5fc95aebedf67b4960fb85cf0:
+  Benjamin Herrenschmidt (1):
+        Merge commit 'origin'
 
-When you find the problem is will probably be something simple like a
-mismatch between _ and -. I have been down this path before and spent
-a day figuring out why a module wouldn't load and it was a simple
-typo.
+are available in the git repository at:
 
->
-> Thanks
-> Guennadi
->
->>
->> But a message on init and make sure it is loading.
->> static int __init fsl_i2c_init(void)
->> {
->>       int rv;
->>
->>       rv = of_register_platform_driver(&mpc_i2c_driver);
->>       if (rv)
->>               printk(KERN_ERR DRV_NAME
->>                      " of_register_platform_driver failed (%i)\n", rv);
->>       return rv;
->> }
->>
->> >
->> > Thanks
->> > Guennadi
->> > ---
->> > Guennadi Liakhovetski, Ph.D.
->> > Freelance Open-Source Software Developer
->> >
->>
->>
->>
->> --
->> Jon Smirl
->> jonsmirl@gmail.com
->>
->
-> ---
-> Guennadi Liakhovetski, Ph.D.
-> Freelance Open-Source Software Developer
->
+  git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
 
+Josh Boyer (5):
+      powerpc/40x: AMCC PowerPC 405EZ Acadia DTS
+      powerpc/40x: Add AMCC PowerPC 405EZ to cputable
+      powerpc/40x: Add PowerPC 40x simple platform support
+      powerpc/40x: Add cuboot wrapper for Acadia board
+      powerpc/40x: Add PowerPC 405EZ Acadia defconfig
 
+Niklaus Giger (1):
+      powerpc/40x: Add support for Netstal HCU4 board
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Steven A. Falco (1):
+      powerpc/4xx: Add PowerPC 4xx GPIO driver
+
+ arch/powerpc/boot/Makefile                 |    4 +-
+ arch/powerpc/boot/cuboot-acadia.c          |  174 ++++++
+ arch/powerpc/boot/dts/acadia.dts           |  224 +++++++
+ arch/powerpc/boot/dts/hcu4.dts             |  168 +++++
+ arch/powerpc/configs/40x/acadia_defconfig  |  921 +++++++++++++++++++++++++++
+ arch/powerpc/configs/40x/hcu4_defconfig    |  929 ++++++++++++++++++++++++++++
+ arch/powerpc/kernel/cputable.c             |   13 +
+ arch/powerpc/platforms/40x/Kconfig         |   38 ++
+ arch/powerpc/platforms/40x/Makefile        |    2 +
+ arch/powerpc/platforms/40x/hcu4.c          |   61 ++
+ arch/powerpc/platforms/40x/ppc40x_simple.c |   80 +++
+ arch/powerpc/platforms/44x/Kconfig         |    8 +
+ arch/powerpc/sysdev/Makefile               |    1 +
+ arch/powerpc/sysdev/ppc4xx_gpio.c          |  217 +++++++
+ 14 files changed, 2839 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/cuboot-acadia.c
+ create mode 100644 arch/powerpc/boot/dts/acadia.dts
+ create mode 100644 arch/powerpc/boot/dts/hcu4.dts
+ create mode 100644 arch/powerpc/configs/40x/acadia_defconfig
+ create mode 100644 arch/powerpc/configs/40x/hcu4_defconfig
+ create mode 100644 arch/powerpc/platforms/40x/hcu4.c
+ create mode 100644 arch/powerpc/platforms/40x/ppc40x_simple.c
+ create mode 100644 arch/powerpc/sysdev/ppc4xx_gpio.c
