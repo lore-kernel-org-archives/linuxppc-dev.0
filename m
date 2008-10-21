@@ -1,21 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E48F5DDDF0
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 01:41:13 +1100 (EST)
-Date: Tue, 21 Oct 2008 18:41:11 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 821D1DDDD8
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 01:50:05 +1100 (EST)
+Message-Id: <6A645055-3599-49DC-871C-2BC42199926F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20081021144110.GA7249@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
 Subject: Re: Please pull from 'for-2.6.28' branch
-Message-ID: <20081021144110.GA7249@oksana.dev.rtsoft.ru>
+Date: Tue, 21 Oct 2008 09:49:58 -0500
 References: <Pine.LNX.4.64.0810201304160.17086@blarg.am.freescale.net>
 	<20081020191731.GA26789@oksana.dev.rtsoft.ru>
 	<76F4ACB5-204A-46F7-BE4F-069CA58114B3@kernel.crashing.org>
 	<20081020204737.GA13189@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081020204737.GA13189@oksana.dev.rtsoft.ru>
+	<20081021144110.GA7249@oksana.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 21, 2008 at 12:47:37AM +0400, Anton Vorontsov wrote:
-> On Mon, Oct 20, 2008 at 02:32:21PM -0500, Kumar Gala wrote:
-> >
-> > On Oct 20, 2008, at 2:17 PM, Anton Vorontsov wrote:
-> >
-> >> Hi Kumar,
-> >>
-> >> On Mon, Oct 20, 2008 at 01:04:36PM -0500, Kumar Gala wrote:
-> >>> Please pull from 'for-2.6.28' branch of
-> >>>
-> >>> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git  
-> >>> for-2.6.28
-> >>
-> >> Could you tell the status of this patch?
-> >>
-> >> [1/4] powerpc/QE: implement QE Pin Multiplexing API
-> >> http://patchwork.ozlabs.org/patch/4897/
-> >>
-> >> I reposted it several times (w/o changes), received no comments.
-> >> If it's ok, could you merge it for 2.6.28?
-> >
-> > Sorry, I was thinking this patch required an OF interface change getting 
-> > accepted... is that true?
-> 
-> Benjamin merged the OF patch, it's in the Linus' tree already.
 
-Maybe I was unclear... The OF interface change was accepted,
-so the QE pinmux patch doesn't depend on anything.. Thus, can we
-please merge the patch? It is needed for the FHCI USB driver,
-which I still hope could get in into the 2.6.28-rc2, since it
-is self-sufficient new feature that can't break anything.
+On Oct 21, 2008, at 9:41 AM, Anton Vorontsov wrote:
 
-Thanks and sorry for the annoyance,
+>
+> Maybe I was unclear... The OF interface change was accepted,
+> so the QE pinmux patch doesn't depend on anything.. Thus, can we
+> please merge the patch? It is needed for the FHCI USB driver,
+> which I still hope could get in into the 2.6.28-rc2, since it
+> is self-sufficient new feature that can't break anything.
+>
+> Thanks and sorry for the annoyance,
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+I understood, just haven't had time to look at these patches.  I don't  
+know if this is likely to make it into 2.6.28.
+
+- k
