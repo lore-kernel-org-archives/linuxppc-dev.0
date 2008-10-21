@@ -2,14 +2,16 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1D900DDDEC
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 12:37:10 +1100 (EST)
-Date: Mon, 20 Oct 2008 20:37:03 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id D6F2BDDE1E
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 12:37:24 +1100 (EST)
+Date: Mon, 20 Oct 2008 20:37:01 -0500 (CDT)
 From: Milton Miller <miltonm@bga.com>
 Sender: Milton Miller <miltonm@realtime.net>
-Message-id: <kexec-stale-props-t2@bga.com>
 To: linuxppc-dev@ozlabs.org
-Subject: powerpc: find and destroy possible stale kernel added properties
+Message-id: <patch-ipi-2-v2@bga.com>
+In-Reply-To: <patch-ipi-2@bga.com>
+Subject: [PATCH 14/16 v2] powerpc: expand vs demux ipi actions per message
+Cc: Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,58 +21,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-64 bit powerpc requires the kexec user space tools avoid overwriting
-the static kernel image and translation hash table when choosing
-where to put memory image data because it copies the data into place
-using the kernels virtual memory system.  Kexec userspace determines
-these and other areas blocked by reading properties the kernel adds,
-but does not filter these properties when creating the device tree
-for the next kernel.
+With the new generic smp call function helpers, I noticed the code in
+smp_message_recv was a single function call in many cases.  While
+getting the message number from the ipi data is easy, we can reduce
+the path length by a function and data dependent switch by registering
+separate ipi actions for these simple calls.
 
-When the second kernel tries to add its values for these properties,
-the export via /proc/device-tree is hidden by the pre-existing but
-stale values from the flat tree.  Kexec userspace reads the old
-property, allocates the new kernel at the old kernel's end, and
-gets rejected by the overlap check.
+Originally I left the ipi action array exposed, but then I realized the
+registration code should be common too.
 
-Search and remove these stale properties before adding the new values.
+The three users each had their own name array, so I made a fourth
+to convert all users to use a common one.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
-X-Patchwork-ID: 19579
-tested in July, compile tested on next-20081017
+v2: fix arg reversal noted by Geert Uytterhoeven.   This order is most
+similar to request_irq and message in data field, but without casting.
 
-While there is an override flag to tell kexec a minimum memory to use, that
-is a crude and manual workaround; this should be applied to stable.
+Perhaps we should make the common code look like an ipi action handler
+and remove this last call?  Currently we still have to allocate a stack
+frame to load the return value.
 
-
----
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index a168514..4bd8b4f 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -312,11 +312,24 @@ static struct property kernel_end_prop = {
- static void __init export_htab_values(void)
- {
- 	struct device_node *node;
-+	struct property *prop;
+Index: next.git/arch/powerpc/include/asm/smp.h
+===================================================================
+--- next.git.orig/arch/powerpc/include/asm/smp.h	2008-10-05 00:08:36.000000000 -0500
++++ next.git/arch/powerpc/include/asm/smp.h	2008-10-05 00:16:34.000000000 -0500
+@@ -81,6 +81,13 @@ extern int cpu_to_core_id(int cpu);
+ #define PPC_MSG_CALL_FUNC_SINGLE	2
+ #define PPC_MSG_DEBUGGER_BREAK  3
  
- 	node = of_find_node_by_path("/chosen");
- 	if (!node)
- 		return;
- 
-+	/* remove any stale propertys so ours can be found */
-+	prop = of_find_property(node, kernel_end_prop.name, NULL);
-+	if (prop)
-+		prom_remove_property(node, prop);
-+	prop = of_find_property(node, htab_base_prop.name, NULL);
-+	if (prop)
-+		prom_remove_property(node, prop);
-+	prop = of_find_property(node, htab_size_prop.name, NULL);
-+	if (prop)
-+		prom_remove_property(node, prop);
++/*
++ * irq controllers that have dedicated ipis per message and don't
++ * need additional code in the action handler may use this
++ */
++extern int smp_request_message_ipi(int virq, int message);
++extern const char *smp_ipi_name[];
 +
-+	/* information needed by userspace when using default_machine_kexec */
- 	kernel_end = __pa(_end);
- 	prom_add_property(node, &kernel_end_prop);
+ void smp_init_iSeries(void);
+ void smp_init_pSeries(void);
+ void smp_init_cell(void);
+Index: next.git/arch/powerpc/kernel/smp.c
+===================================================================
+--- next.git.orig/arch/powerpc/kernel/smp.c	2008-10-05 00:08:38.000000000 -0500
++++ next.git/arch/powerpc/kernel/smp.c	2008-10-05 00:19:12.000000000 -0500
+@@ -123,6 +123,65 @@ void smp_message_recv(int msg)
+ 	}
+ }
  
++static irqreturn_t call_function_action(int irq, void *data)
++{
++	generic_smp_call_function_interrupt();
++	return IRQ_HANDLED;
++}
++
++static irqreturn_t reschedule_action(int irq, void *data)
++{
++	/* we just need the return path side effect of checking need_resched */
++	return IRQ_HANDLED;
++}
++
++static irqreturn_t call_function_single_action(int irq, void *data)
++{
++	generic_smp_call_function_single_interrupt();
++	return IRQ_HANDLED;
++}
++
++static irqreturn_t debug_ipi_action(int irq, void *data)
++{
++	smp_message_recv(PPC_MSG_DEBUGGER_BREAK);
++	return IRQ_HANDLED;
++}
++
++static irq_handler_t smp_ipi_action[] = {
++	[PPC_MSG_CALL_FUNCTION] =  call_function_action,
++	[PPC_MSG_RESCHEDULE] = reschedule_action,
++	[PPC_MSG_CALL_FUNC_SINGLE] = call_function_single_action,
++	[PPC_MSG_DEBUGGER_BREAK] = debug_ipi_action,
++};
++
++const char *smp_ipi_name[] = {
++	[PPC_MSG_CALL_FUNCTION] =  "ipi call function",
++	[PPC_MSG_RESCHEDULE] = "ipi reschedule",
++	[PPC_MSG_CALL_FUNC_SINGLE] = "ipi call function single",
++	[PPC_MSG_DEBUGGER_BREAK] = "ipi debugger",
++};
++
++/* optional function to request ipi, for controllers with >= 4 ipis */
++int smp_request_message_ipi(int virq, int msg)
++{
++	int err;
++
++	if (msg < 0 || msg > PPC_MSG_DEBUGGER_BREAK) {
++		return -EINVAL;
++	}
++#if !defined(CONFIG_DEBUGGER) && !defined(CONFIG_KEXEC)
++	if (msg == PPC_MSG_DEBUGGER_BREAK) {
++		return 1;
++	}
++#endif
++	err = request_irq(virq, smp_ipi_action[msg], IRQF_DISABLED|IRQF_PERCPU,
++			  smp_ipi_name[msg], 0);
++	WARN(err < 0, "unable to request_irq %d for %s (rc %d)\n",
++		virq, ipi_names[msg], err);
++
++	return err;
++}
++
+ void smp_send_reschedule(int cpu)
+ {
+ 	if (likely(smp_ops))
