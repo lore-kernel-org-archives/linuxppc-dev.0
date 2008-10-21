@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ECD42DDE01
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 10:56:27 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Remove Kconfig support for PPC_MERGE
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1224525826-17049-1-git-send-email-galak@kernel.crashing.org>
-References: <1224525826-17049-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain
-Date: Tue, 21 Oct 2008 10:56:20 +1100
-Message-Id: <1224546980.7654.200.camel@pasglop>
-Mime-Version: 1.0
+Return-Path: <jwboyer@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id 8FD77DDDE7
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 11:06:08 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so342842yxg.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 17:06:06 -0700 (PDT)
+Date: Mon, 20 Oct 2008 20:04:20 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: Please pull 'next' branch of 4xx tree
+Message-ID: <20081021000420.GA12065@yoda.jdub.homelinux.org>
+References: <20081020131402.GA2300@yoda.jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081020131402.GA2300@yoda.jdub.homelinux.org>
+Sender: Josh Boyer <jwboyer@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-10-20 at 13:03 -0500, Kumar Gala wrote:
-> There are no users of PPC_MERGE in tree so we can get rid of it.
-> It was a hold over from the arch/ppc days.
+On Mon, Oct 20, 2008 at 09:14:02AM -0400, Josh Boyer wrote:
+>Hi Ben,
+>
+>Please pull the 'next' branch of the 4xx tree to pick up what should be
+>most of the remaining changes for 2.6.28.  Defconfig updates will come
+>after -rc1.
+>
+>josh
+>
+>The following changes since commit 6dc6472581f693b5fc95aebedf67b4960fb85cf0:
+>  Benjamin Herrenschmidt (1):
+>        Merge commit 'origin'
+>
+>are available in the git repository at:
+>
+>  git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
 
-That's is all good but shouldn't be in your git tree for merge.
+As we discussed, I added one more commit on top of this.  It's for the
+EMAC build break and is the patch that Stephen has been carrying in
+linux-next for the past few days.
 
-Ben.
-
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
->  arch/powerpc/Kconfig |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 9391199..369d93e 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -19,9 +19,6 @@ config WORD_SIZE
->  	default 64 if PPC64
->  	default 32 if !PPC64
->  
-> -config PPC_MERGE
-> -	def_bool y
-> -
->  config ARCH_PHYS_ADDR_T_64BIT
->         def_bool PPC64 || PHYS_64BIT
->  
+josh
