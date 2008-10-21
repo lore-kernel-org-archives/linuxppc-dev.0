@@ -1,16 +1,22 @@
-Return-Path: <miltonm@sullivan.realtime.net>
-Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4239CDDDE3
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 15:03:32 +1100 (EST)
-Date: Mon, 20 Oct 2008 23:03:18 -0500 (CDT)
-Message-Id: <200810210403.m9L43I6t054774@sullivan.realtime.net>
-From: Milton Miller <miltonm@bga.com>
-Subject: powerpc: delete prom_strtoul and prom_memparse
-Sender: Milton Miller <miltonm@realtime.net>
-To: Ben Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id E8926DDDE3
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 15:08:40 +1100 (EST)
+Message-Id: <6E35D2C4-9AC0-405B-8513-63F9A50052C9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: benh@kernel.crashing.org
+In-Reply-To: <1224561094.7654.229.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: Please pull from 'for-2.6.28' branch
+Date: Mon, 20 Oct 2008 23:08:35 -0500
+References: <Pine.LNX.4.64.0810201304160.17086@blarg.am.freescale.net>
+	<1224547898.7654.210.camel@pasglop>
+	<392E3825-8E5D-46B0-84CA-24A701BEDF96@kernel.crashing.org>
+	<1224561094.7654.229.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,83 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These functions should have been static, and inspection shows they
-are no longer used.   (We used to parse mem= but we now defer that
-to early_param).
 
-Signed-off-by: Milton Miller <miltonm@bga.com>
----
-This version removes them
+On Oct 20, 2008, at 10:51 PM, Benjamin Herrenschmidt wrote:
 
-Index: next.git/arch/powerpc/kernel/prom_init.c
-===================================================================
---- next.git.orig/arch/powerpc/kernel/prom_init.c	2008-10-20 17:51:15.000000000 -0500
-+++ next.git/arch/powerpc/kernel/prom_init.c	2008-10-20 22:40:16.000000000 -0500
-@@ -487,67 +487,6 @@ static int __init prom_setprop(phandle n
- 	return call_prom("interpret", 1, 1, (u32)(unsigned long) cmd);
- }
- 
--/* We can't use the standard versions because of RELOC headaches. */
--#define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
--			 || ('a' <= (c) && (c) <= 'f') \
--			 || ('A' <= (c) && (c) <= 'F'))
--
--#define isdigit(c)	('0' <= (c) && (c) <= '9')
--#define islower(c)	('a' <= (c) && (c) <= 'z')
--#define toupper(c)	(islower(c) ? ((c) - 'a' + 'A') : (c))
--
--unsigned long prom_strtoul(const char *cp, const char **endp)
--{
--	unsigned long result = 0, base = 10, value;
--
--	if (*cp == '0') {
--		base = 8;
--		cp++;
--		if (toupper(*cp) == 'X') {
--			cp++;
--			base = 16;
--		}
--	}
--
--	while (isxdigit(*cp) &&
--	       (value = isdigit(*cp) ? *cp - '0' : toupper(*cp) - 'A' + 10) < base) {
--		result = result * base + value;
--		cp++;
--	}
--
--	if (endp)
--		*endp = cp;
--
--	return result;
--}
--
--unsigned long prom_memparse(const char *ptr, const char **retptr)
--{
--	unsigned long ret = prom_strtoul(ptr, retptr);
--	int shift = 0;
--
--	/*
--	 * We can't use a switch here because GCC *may* generate a
--	 * jump table which won't work, because we're not running at
--	 * the address we're linked at.
--	 */
--	if ('G' == **retptr || 'g' == **retptr)
--		shift = 30;
--
--	if ('M' == **retptr || 'm' == **retptr)
--		shift = 20;
--
--	if ('K' == **retptr || 'k' == **retptr)
--		shift = 10;
--
--	if (shift) {
--		ret <<= shift;
--		(*retptr)++;
--	}
--
--	return ret;
--}
--
- /*
-  * Early parsing of the command line passed to the kernel, used for
-  * "mem=x" and the options that affect the iommu
+> On Mon, 2008-10-20 at 22:45 -0500, Kumar Gala wrote:
+>>
+>> If you had conventions on naming this is the first I've heard of
+>> them.  I know Paul asked about the [POWERPC] to powerpc: change on
+>> list.
+>
+> Well, they weren't official, but others seem to have picked them up,  
+> no
+> big deal but heh, here now you know about them :-)
+>
+>> I do so as well.  As stated above, if there are naming conventions
+>> that are desired I'm happy to conform but just need to know what they
+>> are.
+>
+> Well, my aim is mostly consistency. If you don't like what I want, I'm
+> happy to discuss it, but I'd like basically to keep consistency in the
+> naming conventions. In some cases though, my comment also refers to  
+> the
+> subject being a tad too vague to my taste. I know there isn't a strict
+> definition of what is good enough or not and we definitely don't  
+> want a
+> 3 lines novel there, but in the case of the .dts file update, it would
+> have been useful to highlight that fact for example.
+
+As stated, I know now so I'm happy to conform.
+
+>> The limit is based on trust.  I submitted all the other cleanup
+>> patches to remove PPC_MERGE.  I think I can handle such a patch going
+>> via my tree.
+>
+> I would have still preferred if we had discussed it before hand...
+
+Yeah, see my previous gripe about trivial patches and my tree :)
+
+- k
