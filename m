@@ -1,26 +1,24 @@
-Return-Path: <rbrito@ime.usp.br>
-Received: from hope.ime.usp.br (hope.ime.usp.br [143.107.45.8])
-	by ozlabs.org (Postfix) with SMTP id 72EE0DDDE1
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 18:19:39 +1100 (EST)
-Date: Tue, 21 Oct 2008 05:19:24 -0200
-From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [REGRESSION 2.6.27] i2c-mpc not probing on linkstation
-Message-ID: <20081021071924.GB15748@ime.usp.br>
-References: <20081019025323.GA7887@ime.usp.br>
-	<Pine.LNX.4.64.0810192147030.21665@axis700.grange>
-	<9e4733910810191432o58d204adw490cb8e4fcc390ac@mail.gmail.com>
-	<Pine.LNX.4.64.0810192347250.21665@axis700.grange>
-	<9e4733910810191505u3ec1db0dl25e87bf3b78c740d@mail.gmail.com>
-	<Pine.LNX.4.64.0810200022040.21665@axis700.grange>
-	<9e4733910810191540p1000c28l89ca50794addae37@mail.gmail.com>
-	<Pine.LNX.4.64.0810200754550.3941@axis700.grange>
-	<9e4733910810200519w4689131dv73bf3539c53d2bea@mail.gmail.com>
-	<Pine.LNX.4.64.0810210832260.4941@axis700.grange>
+Return-Path: <mingo@elte.hu>
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7E018DDDE1
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 18:23:59 +1100 (EST)
+Date: Tue, 21 Oct 2008 09:23:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] genirq: fix set_irq_type() when recording trigger type
+Message-ID: <20081021072340.GA25136@elte.hu>
+References: <200810202205.m9KM5une024759@hera.kernel.org>
+	<1224570730.7654.242.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <Pine.LNX.4.64.0810210832260.4941@axis700.grange>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1224570730.7654.242.camel@pasglop>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,160 +28,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Oct 21 2008, Guennadi Liakhovetski wrote:
-> On Mon, 20 Oct 2008, Jon Smirl wrote:
-> > Put a printk in it's init function to make sure it is initializing.
+
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Mon, 2008-10-20 at 22:05 +0000, Linux Kernel Mailing List wrote:
+> > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0c5d1eb77a8be917b638344a22afe1398236482b
+> > Commit:     0c5d1eb77a8be917b638344a22afe1398236482b
+> > Parent:     d6d5aeb661fc14655c417f3582ae7ec52985d2a8
+> > Author:     David Brownell <dbrownell@users.sourceforge.net>
+> > AuthorDate: Wed Oct 1 14:46:18 2008 -0700
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Thu Oct 2 10:24:09 2008 +0200
+[...]
+> > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > Acked-by: Thomas Gleixner <tglx@linutronix.de>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > 
-> I don't need that, I see it here:
+> This one is obviously broken and breaks booting on a whole bunch of 
+> machines (including powermac's and thus my G5, it's never good when my 
+> own machine breaks !).
 > 
-> /sys/bus/of_platform/drivers/mpc-i2c
+> Nice to see 3 SOB's and one Ack and nobody caught the obvious bug :-)
 
-I also see this:
+that patch came from -mm towards us shortly before the merge window. 
+Once we had it integrated Chris Friesen reported a boot hang on a G5, 
+and there's a fix pending for the bug, see it below.
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-lutz:/# tree /sys/bus/of_platform/drivers/mpc-i2c/
-/sys/bus/of_platform/drivers/mpc-i2c/
-|-- bind
-|-- uevent
-`-- unbind
+Will send it to Linus expressly. Fortunately only a minority of Linux 
+users will ever run a box that uses set_irq_type() - but yes it needs to 
+be fixed.
 
-0 directories, 3 files
-lutz:/#
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	Ingo
 
-> > Next thing I do is put printks over in arch/powerpc/.. to tell me
-> > which strings from the device tree are being looked for.
-> > 
-> > You can also look in /proc/device_tree and make sure fsl-i2c is in there.
+------------------------------>
+>From aac4ddd11a8d0e402ddc3fbc75204cb64efa0aac Mon Sep 17 00:00:00 2001
+From: Chris Friesen <cfriesen@nortel.com>
+Date: Mon, 20 Oct 2008 12:41:58 -0600
+Subject: [PATCH] genirq: fix set_irq_type() when recording trigger type
 
-Here is what I get in /proc/device_tree:
+In set_irq_type() we want to pass the type rather than the current
+interrupt state.
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-lutz:/proc/device-tree# tree
-.
-|-- #address-cells
-|-- #size-cells
-|-- aliases
-|   |-- name
-|   |-- pci0
-|   |-- serial0
-|   `-- serial1
-|-- chosen
-|   |-- bootargs
-|   |-- linux,platform
-|   |-- linux,stdout-path
-|   `-- name
-|-- compatible
-|-- cpus
-|   |-- #address-cells
-|   |-- #size-cells
-|   |-- PowerPC,603e
-|   |   |-- bus-frequency
-|   |   |-- clock-frequency
-|   |   |-- d-cache-size
-|   |   |-- device_type
-|   |   |-- i-cache-size
-|   |   |-- name
-|   |   |-- reg
-|   |   `-- timebase-frequency
-|   `-- name
-|-- memory
-|   |-- device_type
-|   |-- name
-|   `-- reg
-|-- model
-|-- name
-`-- soc10x
-    |-- #address-cells
-    |-- #size-cells
-    |-- compatible
-    |-- device_type
-    |-- i2c@80003000
-    |   |-- #address-cells
-    |   |-- #size-cells
-    |   |-- cell-index
-    |   |-- compatible
-    |   |-- interrupt-parent
-    |   |-- interrupts
-    |   |-- name
-    |   |-- reg
-    |   `-- rtc@32
-    |       |-- compatible
-    |       |-- device_type
-    |       |-- name
-    |       `-- reg
-    |-- interrupt-controller@80040000
-    |   |-- #address-cells
-    |   |-- #interrupt-cells
-    |   |-- compatible
-    |   |-- device_type
-    |   |-- interrupt-controller
-    |   |-- linux,phandle
-    |   |-- name
-    |   `-- reg
-    |-- name
-    |-- pci@fec00000
-    |   |-- #address-cells
-    |   |-- #interrupt-cells
-    |   |-- #size-cells
-    |   |-- bus-range
-    |   |-- clock-frequency
-    |   |-- compatible
-    |   |-- device_type
-    |   |-- interrupt-map
-    |   |-- interrupt-map-mask
-    |   |-- interrupt-parent
-    |   |-- name
-    |   |-- ranges
-    |   `-- reg
-    |-- ranges
-    |-- reg
-    |-- serial@80004500
-    |   |-- cell-index
-    |   |-- clock-frequency
-    |   |-- compatible
-    |   |-- current-speed
-    |   |-- device_type
-    |   |-- interrupt-parent
-    |   |-- interrupts
-    |   |-- name
-    |   `-- reg
-    |-- serial@80004600
-    |   |-- cell-index
-    |   |-- clock-frequency
-    |   |-- compatible
-    |   |-- current-speed
-    |   |-- device_type
-    |   |-- interrupt-parent
-    |   |-- interrupts
-    |   |-- name
-    |   `-- reg
-    `-- store-gathering
+Signed-off-by: Chris Friesen <cfriesen@nortel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/irq/chip.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-12 directories, 86 files
-lutz:/proc/device-tree# 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-Under that I see:
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-lutz:/proc/device-tree# grep -r -i fsl .
-Binary file ./soc10x/i2c@80003000/compatible matches
-lutz:/proc/device-tree# 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-The contents of that file:
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-fsl-i2c^@
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-Is there any further information that I can provide so that we can get
-things fixed?
-
-Thanks,
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+index 4895fde..3de6ea3 100644
+--- a/kernel/irq/chip.c
++++ b/kernel/irq/chip.c
+@@ -127,7 +127,7 @@ int set_irq_type(unsigned int irq, unsigned int type)
+ 		return 0;
+ 
+ 	spin_lock_irqsave(&desc->lock, flags);
+-	ret = __irq_set_trigger(desc, irq, flags);
++	ret = __irq_set_trigger(desc, irq, type);
+ 	spin_unlock_irqrestore(&desc->lock, flags);
+ 	return ret;
+ }
