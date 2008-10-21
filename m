@@ -1,16 +1,16 @@
-Return-Path: <miltonm@sullivan.realtime.net>
-Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9B31EDDDD8
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 15:37:01 +1100 (EST)
-Date: Mon, 20 Oct 2008 23:36:40 -0500 (CDT)
-Message-Id: <200810210436.m9L4aepT056796@sullivan.realtime.net>
-From: Milton Miller <miltonm@bga.com>
-Sender: Milton Miller <miltonm@realtime.net>
-To: Brian King <brking@linux.vnet.ibm.com>
-In-Reply-To: <200810202219.m9KMJiRX000463@d01av04.pok.ibm.com>
-Subject: Re: [1/1] powerpc: Update page in counter for CMM
+	by ozlabs.org (Postfix) with ESMTPS id 6BC68DDDD8
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 15:38:24 +1100 (EST)
+Date: Mon, 20 Oct 2008 23:38:19 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [UPDATED] Please pull from 'for-2.6.28' branch
+Message-ID: <Pine.LNX.4.64.0810202337580.18901@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,67 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-X-Patchwork-Id: 5144
+Please pull from 'for-2.6.28' branch of
 
-On Mon Oct 20, 2008 near 12:19:21 GMT, Brian King wrote:
-> 
-> A new field has been added to the VPA as a method for
-> the client OS to communicate to firmware the number of
-> page ins it is performing when running collaborative
-> memory overcommit. The hypervisor will use this information
-> to better determine if a partition is experiencing memory
-> pressure and needs more memory allocated to it.
-> 
-> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-> ---
-> 
->  arch/powerpc/include/asm/lppaca.h |    3 ++-
->  arch/powerpc/kernel/paca.c        |    1 +
->  arch/powerpc/mm/fault.c           |    8 ++++++--
->  3 files changed, 9 insertions(+), 3 deletions(-)
-> 
-> diff -puN arch/powerpc/mm/fault.c~powerpc_vrm_mm_pressure arch/powerpc/mm/fault.c
-> --- linux-2.6/arch/powerpc/mm/fault.c~powerpc_vrm_mm_pressure	2008-10-20 17:13:25.000000000 -0500
-> +++ linux-2.6-bjking1/arch/powerpc/mm/fault.c	2008-10-20 17:13:25.000000000 -0500
-..
-> @@ -318,9 +320,11 @@ good_area:
->  			goto do_sigbus;
->  		BUG();
->  	}
-> -	if (ret & VM_FAULT_MAJOR)
-> +	if (ret & VM_FAULT_MAJOR) {
->  		current->maj_flt++;
-> -	else
-> +		if (firmware_has_feature(FW_FEATURE_CMO))
-> +			atomic_inc((atomic_t *)(&(get_lppaca()->page_ins)));
-> +	} else
->  		current->min_flt++;
->  	up_read(&mm->mmap_sem);
->  	return 0;
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.28
 
-(1) why do we need atomic_inc and the hundreds or thousands of cycles to
-do the atomic inc in a per-cpu area?
+to receive the following updates:
 
-(2) assuming we make this a normal increment, should we keep the
-feature test or just do it unconditionally (ie is the additional load
-and branch worse that just doing the load and store of the counter --
-the address was previously reserved, right?  (no question if
-it has to be atomic).
+ Documentation/powerpc/booting-without-of.txt     |    2 +
+ Documentation/powerpc/dts-bindings/fsl/board.txt |    4 +--
+ arch/powerpc/boot/dts/mpc8315erdb.dts            |    8 ++++++
+ arch/powerpc/boot/dts/mpc832x_mds.dts            |    2 -
+ arch/powerpc/boot/dts/mpc8349emitx.dts           |   16 +++++++++++++
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts         |    8 ++++++
+ arch/powerpc/boot/dts/mpc834x_mds.dts            |    2 -
+ arch/powerpc/boot/dts/mpc836x_mds.dts            |    2 -
+ arch/powerpc/boot/dts/mpc8377_rdb.dts            |    8 ++++++
+ arch/powerpc/boot/dts/mpc8378_rdb.dts            |    8 ++++++
+ arch/powerpc/boot/dts/mpc8379_rdb.dts            |    8 ++++++
+ arch/powerpc/boot/dts/mpc8536ds.dts              |   12 +++++-----
+ arch/powerpc/boot/dts/mpc8568mds.dts             |    2 -
+ arch/powerpc/boot/dts/mpc8572ds.dts              |   27 +++++++++++------------
+ drivers/i2c/busses/i2c-cpm.c                     |    1
+ drivers/of/of_spi.c                              |    2 +
+ 16 files changed, 85 insertions(+), 27 deletions(-)
 
+Anton Vorontsov (3):
+      powerpc: Remove device_type = "board_control" properties in .dts files
+      powerpc/83xx: Add support for MCU microcontroller in .dts files
+      powerpc/83xx: Add DS1339 RTC support for MPC8349E-mITX boards .dts
 
-<Ramble things one might consider>
+Ed Swarthout (1):
+      powerpc/85xx: Fix mpc8536ds dma interrupt numbers
 
-Ben asked if we need to worry about the hypervisor clearing the
-count.  If they treat it as a only-incrementing then we don't need
-to worry.  And since its only an indicator, then we may not care
-about a big count by them interrupting between the load and store
+Jason Jin (1):
+      powerpc/85xx: Enable enhanced functions for 8536 TSEC
 
-If we are worried about linux preemption, then we need to disable
-it to avoid crossing cpu variables or  getting to this point multiple
-times.  (I have not looked at the context to see if we are already
-disabled).
+Kumar Gala (1):
+      powerpc/85xx: Move mpc8572ds.dts to address-cells/size-cells = <2>
 
-</Ramble>
+Wolfgang Ocker (1):
+      of/spi: Support specifying chip select as active high via device tree
 
-
-milton
+Wolfram Sang (1):
+      i2c-cpm: Suppress autoprobing for devices
