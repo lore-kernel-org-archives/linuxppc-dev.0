@@ -2,15 +2,14 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1B1F8DDDE7
+	by ozlabs.org (Postfix) with ESMTPS id 1D900DDDEC
 	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 12:37:10 +1100 (EST)
 Date: Mon, 20 Oct 2008 20:37:03 -0500 (CDT)
 From: Milton Miller <miltonm@bga.com>
 Sender: Milton Miller <miltonm@realtime.net>
+Message-id: <kexec-stale-props-t2@bga.com>
 To: linuxppc-dev@ozlabs.org
-Message-id: <of-spin-t2@bga.com>
-Subject: powerpc: pseries,
-	cell: use cpu_thread_in_core in smp_init for of_spin_map
+Subject: powerpc: find and destroy possible stale kernel added properties
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,90 +19,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We used to assume that even numbered threads were the primary
-threads, ie those that would be listed and started as a cpu from
-open firmware.  Replace a left over is even (% 2) check with a check
-for it being a primary thread and update the comments.
+64 bit powerpc requires the kexec user space tools avoid overwriting
+the static kernel image and translation hash table when choosing
+where to put memory image data because it copies the data into place
+using the kernels virtual memory system.  Kexec userspace determines
+these and other areas blocked by reading properties the kernel adds,
+but does not filter these properties when creating the device tree
+for the next kernel.
 
-Tested with a debug print on pseries, identical code found for cell.
+When the second kernel tries to add its values for these properties,
+the export via /proc/device-tree is hidden by the pre-existing but
+stale values from the flat tree.  Kexec userspace reads the old
+property, allocates the new kernel at the old kernel's end, and
+gets rejected by the overlap check.
+
+Search and remove these stale properties before adding the new values.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
-X-Patchwork-ID: 19578
-Resend of July 11 patch, changelog edited.
-Patch still applies to next-20081017.
+X-Patchwork-ID: 19579
+tested in July, compile tested on next-20081017
 
-Note: We assume the secondary threads are not spinning, but they are
-actually spinning if we start via kexec.  This means that we call rtas to
-spin up the secondary threads. If we get a bad return code from we skip
-bringing the cpu online, leaving the thread spinning on the paca.  We don't
-handle this case in kexec, and will leave the thread wild during another
-kexec.  (I'm not changing this behavior in this patch).
+While there is an override flag to tell kexec a minimum memory to use, that
+is a crude and manual workaround; this should be applied to stable.
+
 
 ---
-diff --git a/arch/powerpc/platforms/cell/smp.c b/arch/powerpc/platforms/cell/smp.c
-index efb3964..c0d86e1 100644
---- a/arch/powerpc/platforms/cell/smp.c
-+++ b/arch/powerpc/platforms/cell/smp.c
-@@ -54,8 +54,8 @@
- #endif
- 
- /*
-- * The primary thread of each non-boot processor is recorded here before
-- * smp init.
-+ * The Primary thread of each non-boot processor was started from the OF client
-+ * interface by prom_hold_cpus and is spinning on secondary_hold_spinloop.
-  */
- static cpumask_t of_spin_map;
- 
-@@ -208,11 +208,7 @@ void __init smp_init_cell(void)
- 	/* Mark threads which are still spinning in hold loops. */
- 	if (cpu_has_feature(CPU_FTR_SMT)) {
- 		for_each_present_cpu(i) {
--			if (i % 2 == 0)
--				/*
--				 * Even-numbered logical cpus correspond to
--				 * primary threads.
--				 */
-+			if (cpu_thread_in_core(i) == 0)
- 				cpu_set(i, of_spin_map);
- 		}
- 	} else {
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index 9d8f8c8..c9337c7 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -52,8 +52,8 @@
- 
- 
- /*
-- * The primary thread of each non-boot processor is recorded here before
-- * smp init.
-+ * The Primary thread of each non-boot processor was started from the OF client
-+ * interface by prom_hold_cpus and is spinning on secondary_hold_spinloop.
-  */
- static cpumask_t of_spin_map;
- 
-@@ -191,8 +191,7 @@ static void __devinit smp_pSeries_kick_cpu(int nr)
- static int smp_pSeries_cpu_bootable(unsigned int nr)
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index a168514..4bd8b4f 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -312,11 +312,24 @@ static struct property kernel_end_prop = {
+ static void __init export_htab_values(void)
  {
- 	/* Special case - we inhibit secondary thread startup
--	 * during boot if the user requests it.  Odd-numbered
--	 * cpus are assumed to be secondary threads.
-+	 * during boot if the user requests it.
- 	 */
- 	if (system_state < SYSTEM_RUNNING &&
- 	    cpu_has_feature(CPU_FTR_SMT) &&
-@@ -229,11 +228,7 @@ static void __init smp_init_pseries(void)
- 	/* Mark threads which are still spinning in hold loops. */
- 	if (cpu_has_feature(CPU_FTR_SMT)) {
- 		for_each_present_cpu(i) { 
--			if (i % 2 == 0)
--				/*
--				 * Even-numbered logical cpus correspond to
--				 * primary threads.
--				 */
-+			if (cpu_thread_in_core(i) == 0)
- 				cpu_set(i, of_spin_map);
- 		}
- 	} else {
+ 	struct device_node *node;
++	struct property *prop;
+ 
+ 	node = of_find_node_by_path("/chosen");
+ 	if (!node)
+ 		return;
+ 
++	/* remove any stale propertys so ours can be found */
++	prop = of_find_property(node, kernel_end_prop.name, NULL);
++	if (prop)
++		prom_remove_property(node, prop);
++	prop = of_find_property(node, htab_base_prop.name, NULL);
++	if (prop)
++		prom_remove_property(node, prop);
++	prop = of_find_property(node, htab_size_prop.name, NULL);
++	if (prop)
++		prom_remove_property(node, prop);
++
++	/* information needed by userspace when using default_machine_kexec */
+ 	kernel_end = __pa(_end);
+ 	prom_add_property(node, &kernel_end_prop);
+ 
