@@ -1,33 +1,30 @@
-Return-Path: <mohan@in.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BA5ACDDDEA
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 05:21:59 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9LILtEj019311
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 14:21:55 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9LILtXN135796
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 14:21:55 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9LILsu5004565
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 14:21:55 -0400
-Message-ID: <48FE1DBC.7030202@in.ibm.com>
-Date: Tue, 21 Oct 2008 23:51:48 +0530
-From: Mohan Kumar M <mohan@in.ibm.com>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] Support for relocatable kdump kernel
-References: <18684.5062.154465.668614@drongo.ozlabs.ibm.com>
-	<1224485038.9055.34.camel@localhost> <48FC5097.5090908@in.ibm.com>
-	<1224569019.8228.29.camel@localhost>
-In-Reply-To: <1224569019.8228.29.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	kexec <kexec@lists.infradead.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5C850474C1
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 05:23:57 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m9LINjTo003895
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 11:23:51 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m9LINikM006201
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 13:23:45 -0500 (CDT)
+Date: Tue, 21 Oct 2008 13:23:44 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/2] powerpc/83xx: add DS1339 RTC support for
+	MPC8349E-mITX boards
+Message-ID: <20081021182344.GA22232@ld0162-tx32.am.freescale.net>
+References: <20081017185659.GA30008@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081017185659.GA30008@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,29 +34,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
+On Fri, Oct 17, 2008 at 10:56:59PM +0400, Anton Vorontsov wrote:
+> diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> index 5cedf37..7fc5414 100644
+> --- a/arch/powerpc/boot/dts/mpc8349emitx.dts
+> +++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> @@ -83,6 +83,14 @@
+>  			interrupts = <15 0x8>;
+>  			interrupt-parent = <&ipic>;
+>  			dfsrr;
+> +
+> +			rtc@68 {
+> +				device_type = "rtc";
+> +				compatible = "dallas,ds1339";
+> +				reg = <0x68>;
+> +				interrupts = <18 0x8>;
+> +				interrupt-parent = <&ipic>;
+> +			};
 
-> Does it? I see CONFIG_CRASH_DUMP depending on PPC64, so there is no
-> 32-bit kdump possible. Or is someone working on it out-of-tree?
-> 
+Why are we adding more device_types?
 
-IIUC Anton Vorontsov is working on the 32-bit kdump kernel support.
-
->> Do you expect a function to do the checking in iommu.c?
-> 
-> You'd use the function in iommu.c, but it should be defined in some
-> header.
-> 
-Yeah, I will do that.
-
-> OK. Does old purgatory ensure that the register is 0? Otherwise I think
-> it's possible that a new kernel could get confused by cruft left in that
-> register by an old purgatory - causing the 2nd kernel to think it's a
-> kdump kernel when it shouldn't be.
-
-__kdump_flag is by default is 0 and old purgatory code even won't know 
-that it need to modify __kdump_flag. So unless __kdump_flag is 1, the 
-kernel will behave as a normal one.
-
-Regards,
-Mohan.
+-Scott
