@@ -1,22 +1,20 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp120.sbc.mail.sp1.yahoo.com (smtp120.sbc.mail.sp1.yahoo.com
-	[69.147.64.93]) by ozlabs.org (Postfix) with SMTP id C233FDDDE7
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 19:01:22 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: benh@kernel.crashing.org
-Subject: Re: Bug in "genirq: record trigger type"
-Date: Tue, 21 Oct 2008 01:01:19 -0700
-References: <200810202205.m9KM5une024759@hera.kernel.org>
-	<1224570730.7654.242.camel@pasglop>
-In-Reply-To: <1224570730.7654.242.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200810210101.19741.david-b@pacbell.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 82408DDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 19:13:35 +1100 (EST)
+Date: Tue, 21 Oct 2008 19:13:24 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: build failure on powerpc with current -git
+Message-Id: <20081021191324.d4810d40.sfr@canb.auug.org.au>
+In-Reply-To: <18685.27030.529655.761257@cargo.ozlabs.ibm.com>
+References: <48F8E86B.702@nortel.com>
+	<18685.27030.529655.761257@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__21_Oct_2008_19_13_24_+1100_yTaNXRAow3v+=FeB"
+Cc: Linux, kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 20 October 2008, Benjamin Herrenschmidt wrote:
-> This one is obviously broken and breaks booting on a whole bunch of
-> machines (including powermac's and thus my G5, it's never good when my
-> own machine breaks !).
-> 
-> Nice to see 3 SOB's and one Ack and nobody caught the obvious bug :-)
+--Signature=_Tue__21_Oct_2008_19_13_24_+1100_yTaNXRAow3v+=FeB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-As you saw, that one's fixed.  Chris' patch unfortunately didn't
-get integrated right away.
+Hi Paulus,
 
+On Tue, 21 Oct 2008 16:33:10 +1100 Paul Mackerras <paulus@samba.org> wrote:
+>
+> It's a bug in older versions of ld (including 2.16.1) that's fixed in
+> the current version (2.18).  However, this patch appears to work
+> around the problem - at least, it let me build a 32-bit kernel with a
+> cross-toolchain including a 2.16.1 ld.  Let me know if this gets it
+> working for you.
 
-I'm a bit more curious about another potential issue though ... as
-described in the patch comment:
+With that patch applied I got these errors for a powerpc ppc64_defconfig
+build (linux-next).
 
-     - Make set_irq_type() usage match request_irq() usage:
-        * IRQ_TYPE_NONE should be a NOP; succeed, so irq_chip methods
-          won't have to handle that case any more (many do it wrong).
+/usr/bin/objcopy: Warning: '/dev/null' is not an ordinary file
+make[2]: *** [arch/powerpc/boot/zImage.pmac] Error 1
+make[2]: *** Waiting for unfinished jobs....
+/usr/bin/objcopy: Warning: '/dev/null' is not an ordinary file
+make[2]: *** [arch/powerpc/boot/zImage.pseries] Error 1
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-It might be a bit more accurate to say irq_chip.set_type() methods
-are *inconsistent* in handling IRQ_TYPE_NONE.  Previously the
-set_irq_type() method would pass that down to irq_chip code. 
+--Signature=_Tue__21_Oct_2008_19_13_24_+1100_yTaNXRAow3v+=FeB
+Content-Type: application/pgp-signature
 
-I had observed two behaviors, but I thought I observed a third one
-in some of the PowerPC code:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
- (1) ignore it ... matching request_irq() usage
- (2) return an error ... nasty
- (3) assign some irq_chip-specific trigger mode
+iEYEARECAAYFAkj9jyQACgkQjjKRsyhoI8w9yACfWKeMDbrd+UnysP1+LceONeGj
+UxEAoLbraQzCB2HYZzYx2BX2EYytkenX
+=gnzE
+-----END PGP SIGNATURE-----
 
-That third behavior might cause a bit of trouble, but I think
-it was only used during platform init.  Someone more attuned
-to PowerPC might want to check ...
-
-- Dave
+--Signature=_Tue__21_Oct_2008_19_13_24_+1100_yTaNXRAow3v+=FeB--
