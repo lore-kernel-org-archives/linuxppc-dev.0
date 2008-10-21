@@ -1,18 +1,19 @@
-Return-Path: <wiseker@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id 962C1DDDD8
+Return-Path: <bms.monteiro@gmail.com>
+Received: from mail-gx0-f14.google.com (mail-gx0-f14.google.com
+	[209.85.217.14]) by ozlabs.org (Postfix) with ESMTP id 4199BDDDED
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 22 Oct 2008 01:09:25 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so393377yxg.39
+	Wed, 22 Oct 2008 01:40:56 +1100 (EST)
+Received: by gxk7 with SMTP id 7so7951475gxk.9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Oct 2008 07:09:23 -0700 (PDT)
-Message-ID: <3ec3b8250810210709g5fca6bbdtc9346cb6bc2c4979@mail.gmail.com>
-Date: Tue, 21 Oct 2008 22:09:23 +0800
-From: wiseker <wiseker@gmail.com>
+	Tue, 21 Oct 2008 07:40:54 -0700 (PDT)
+Message-ID: <d43ae5a00810210735k2e2068aew3e67e36bd079805@mail.gmail.com>
+Date: Tue, 21 Oct 2008 15:35:44 +0100
+From: "Bruno Monteiro" <bms.monteiro@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: [HELP]: Question about MPC8321E PCI configuration
+Subject: Compile program using XGpio
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/alternative;
+	boundary="----=_Part_10192_1171376.1224599744224"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,36 +24,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, every one.
+------=_Part_10192_1171376.1224599744224
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Now I want to port MPC8321E PCI support to linux2.4.20 from
-linux2.6.20. I have read the patch
-http://www.mail-archive.com/linuxppc-embedded@ozlabs.org/msg13903.html,
-but some problems also occured.
+Hi all,
 
-When the linux kernel PCI subsystem initialize, it can probe 2 PCI devices.
-Found 00:00 [1957/00a6] 000b20 00
-Found 00:50 [14e4/b624] 000280 00
+I'm working with a Virtex2p. I have a running system using:
 
-The first is the powerpc CPU (class PCI_CLASS_PROCESSOR_POWERPC,
-mpc8321e), and the second is BCM56624 chip. (In my opinion, the first
-one should be PCI_CLASS_BRIDGE_HOST, is this correct?)
+   - EDK 9.1
+   - Crosstool-ng (svn)
+   - linux-2.6-xlnx
+   - BusyBox 1.12.1
 
-When the kernel assign resources to each device, a problem occured,
-PCI: Failed to allocate resource 2(0-7fffffff) for 00:00.0
-PCI: Failed to allocate resource 4(0-ffffffff) for 00:00.0
-code: pcibios_assign_resources->pci_assign_resource
+Now, i'm trying to build a small program that turn off leds. I guess it
+should be something like this:
 
-and the code ignores the host bridge device:
-		if (!class || class == PCI_CLASS_BRIDGE_HOST)
-			continue;
+void main (void){
+    XGpio led;
+    XGpio_Initialize (&led, XPAR_LEDS_4BIT_DEVICE_ID);
+    XGpio_SetDataDirection(&led,1,0);
+    XGpio_DiscreteWrite(&led,1,0xf);
+}
 
-so it strength my idea that the device gives a wrong class (should be
-PCI_CLASS_BRIDGE_HOST, not PCI_CLASS_PROCESSOR_POWERPC).
 
-Can you tell me why this happen? Should I do some extra configurations?
+I want to know how to compile it (without EDK). Any suggestion?
 
-Any ideas or suggestions is welcome, thank you!!!
 
---
-wiseker
+Thanks,
+Bruno Monteiro
+
+------=_Part_10192_1171376.1224599744224
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi all,<br><br>I&#39;m working with a Virtex2p. I have a running system using:<br><ul><li>EDK 9.1<br></li><li>Crosstool-ng (svn)</li><li>linux-2.6-xlnx</li><li>BusyBox 1.12.1</li></ul>Now, i&#39;m trying to build a small program that turn off leds. I guess it should be something like this:<br>
+<br><div style="margin-left: 40px;">void main (void){<br>&nbsp;&nbsp;&nbsp; XGpio led;&nbsp;&nbsp;&nbsp; <br>&nbsp;&nbsp;&nbsp; XGpio_Initialize (&amp;led, XPAR_LEDS_4BIT_DEVICE_ID);<br>&nbsp;&nbsp;&nbsp; XGpio_SetDataDirection(&amp;led,1,0);<br>&nbsp;&nbsp;&nbsp; XGpio_DiscreteWrite(&amp;led,1,0xf);&nbsp;&nbsp;&nbsp; <br>
+}<br><br></div><br>I want to know how to compile it (without EDK). Any suggestion? <br><br><br>Thanks,<br>Bruno Monteiro <br><br>
+
+------=_Part_10192_1171376.1224599744224--
