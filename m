@@ -1,16 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 78066DDDED
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 11:23:19 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so342827ywh.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 17:23:17 -0700 (PDT)
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH] Add the of_find_i2c_device_by_node function.
-To: linuxppc-dev@ozlabs.org, avorontsov@ru.mvista.com
-Date: Mon, 20 Oct 2008 20:23:15 -0400
-Message-ID: <20081021002315.31817.7497.stgit@terra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <kim.phillips@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CDABDDDDE3
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 11:41:19 +1100 (EST)
+Date: Mon, 20 Oct 2008 19:50:09 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: "mike zheng" <mail4mz@gmail.com>
+Subject: Re: Kernel Oops when run ifconfig on MPC8360MDS board
+Message-Id: <20081020195009.6bf54d5a.kim.phillips@freescale.com>
+In-Reply-To: <5c9cd53b0810201500j1c86dfffxdbfc6f5c5ab9728c@mail.gmail.com>
+References: <5c9cd53b0810201500j1c86dfffxdbfc6f5c5ab9728c@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,56 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add the of_find_i2c_device_by_node function. This allows you to follow
-a reference in the device tree to an i2c device node and then locate
-the linux device instantiated by the device tree. Example use, an i2s
-codec controlled by i2c.
+On Mon, 20 Oct 2008 15:00:33 -0700
+"mike zheng" <mail4mz@gmail.com> wrote:
 
-Anton - this version is based off from your patches
+> I have following kernel Oops when I run ifconfig to setup the UEC0 of
+> MPC8360MDS board. There is no hardware problem, the UEC0 runs well
+> under Uboot.
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
----
- drivers/of/of_i2c.c    |   19 +++++++++++++++++++
- include/linux/of_i2c.h |    3 +++
- 2 files changed, 22 insertions(+), 0 deletions(-)
+does this occur on vanilla u-boot and kernel versions?  if so, which
+ones, and on what board revision?
 
-diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
-index e1b0ad6..fa65a2b 100644
---- a/drivers/of/of_i2c.c
-+++ b/drivers/of/of_i2c.c
-@@ -66,4 +66,23 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
- }
- EXPORT_SYMBOL(of_register_i2c_devices);
- 
-+static int of_dev_node_match(struct device *dev, void *data)
-+{
-+        return dev_archdata_get_node(&dev->archdata) == data;
-+}
-+
-+/* must call put_device() when done with returned i2c_client device */
-+struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
-+{
-+	struct device *dev;
-+
-+	dev = bus_find_device(&i2c_bus_type, NULL, node,
-+					 of_dev_node_match);
-+	if (!dev)
-+		return NULL;
-+
-+	return to_i2c_client(dev);
-+}
-+EXPORT_SYMBOL(of_find_i2c_device_by_node);
-+
- MODULE_LICENSE("GPL");
-diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
-index bd2a870..34974b5 100644
---- a/include/linux/of_i2c.h
-+++ b/include/linux/of_i2c.h
-@@ -17,4 +17,7 @@
- void of_register_i2c_devices(struct i2c_adapter *adap,
- 			     struct device_node *adap_node);
- 
-+/* must call put_device() when done with returned i2c_client device */
-+struct i2c_client *of_find_i2c_device_by_node(struct device_node *node);
-+
- #endif /* __LINUX_OF_I2C_H */
+> Call backtrace:
+> C0126890 C00D59D0 C00D761C C012F400 C0130DD4 C01746B4 C017712C
+> C0127770 C004D8B0 C0005ABC 00000000 10001214 100023C4 0FEC4E00
+> 00000000
+
+might want to turn on verbose debugging while you're at it.
+
+Kim
