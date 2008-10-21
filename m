@@ -1,33 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7EA78DDDF9
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 02:33:02 +1100 (EST)
-Message-ID: <48FDF611.5080703@freescale.com>
-Date: Tue, 21 Oct 2008 10:32:33 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-gx0-f14.google.com (mail-gx0-f14.google.com
+	[209.85.217.14]) by ozlabs.org (Postfix) with ESMTP id 564FBDDE1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 02:35:39 +1100 (EST)
+Received: by gxk7 with SMTP id 7so8098497gxk.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 08:35:37 -0700 (PDT)
+Message-ID: <ed82fe3e0810210835t13564230wc83697034c0979a0@mail.gmail.com>
+Date: Tue, 21 Oct 2008 10:35:37 -0500
+From: "Timur Tabi" <timur@freescale.com>
+Sender: timur.tabi@gmail.com
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: Please pull from 'for-2.6.28' branch
+In-Reply-To: <6A645055-3599-49DC-871C-2BC42199926F@kernel.crashing.org>
 MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH] powerpc: enable heap randomization for linkstations
-References: <20081013040703.GA11059@ime.usp.br>
-	<20081013045116.GA11637@ime.usp.br>
-	<Pine.LNX.4.64.0810132003350.9041@axis700.grange>
-	<20081013184443.GA20612@ld0162-tx32.am.freescale.net>
-	<20081019025323.GA7887@ime.usp.br>
-	<Pine.LNX.4.64.0810192147030.21665@axis700.grange>
-	<9e4733910810191432o58d204adw490cb8e4fcc390ac@mail.gmail.com>
-	<Pine.LNX.4.64.0810192347250.21665@axis700.grange>
-	<9e4733910810191505u3ec1db0dl25e87bf3b78c740d@mail.gmail.com>
-	<Pine.LNX.4.64.0810200022040.21665@axis700.grange>
-	<20081021151648.GA20757@ld0162-tx32.am.freescale.net>
-	<Pine.LNX.4.64.0810211723520.5867@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.0810211723520.5867@axis700.grange>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: =?UTF-8?B?Um9nw6lyaW8gQnJpdG8=?= <rbrito@ime.usp.br>,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <Pine.LNX.4.64.0810201304160.17086@blarg.am.freescale.net>
+	<20081020191731.GA26789@oksana.dev.rtsoft.ru>
+	<76F4ACB5-204A-46F7-BE4F-069CA58114B3@kernel.crashing.org>
+	<20081020204737.GA13189@oksana.dev.rtsoft.ru>
+	<20081021144110.GA7249@oksana.dev.rtsoft.ru>
+	<6A645055-3599-49DC-871C-2BC42199926F@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,28 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Guennadi Liakhovetski wrote:
-> static __initdata struct of_device_id storcenter_of_bus[] = {
->         { .name = "soc", },
->         {},
-> };
+On Tue, Oct 21, 2008 at 9:49 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
+> I understood, just haven't had time to look at these patches.  I don't know
+> if this is likely to make it into 2.6.28.
 
-Add .compatible = "simple-bus" to the list.
+I ack'd the QE library portions of these patches back in April.  Sure,
+a lot has changed since then, but what's the point of having a merge
+window if you don't actually merge the code?
 
-> static int __init storcenter_device_probe(void)
-> {
->         of_platform_bus_probe(NULL, storcenter_of_bus, NULL);
->         return 0;
-> }
-> machine_device_initcall(storcenter, storcenter_device_probe);
-> 
-> ? No, linkstation doesn't do that. Somehow, as this API has been 
-> introduced, linkstation has been left aside:-(
-
-This is almost as much of a FAQ as interrupt mapping...  I'm wondering 
-if we should have stuck with a default list, and added a call to 
-of_platform_bus_probe by common code that could be overridden by some 
-board flag if really necessary, rather than have a bunch of 
-duplication-with-mutation in the platform files.
-
--Scott
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
