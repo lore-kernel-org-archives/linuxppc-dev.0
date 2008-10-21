@@ -1,20 +1,18 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
-	by ozlabs.org (Postfix) with ESMTP id 18F76DDDE3
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 01:21:47 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so1071696qwb.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 07:21:45 -0700 (PDT)
-Message-ID: <48FDE56F.4050304@genesi-usa.com>
-Date: Tue, 21 Oct 2008 09:21:35 -0500
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <AymanE@tanisys.com>
+Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [206.127.28.197])
+	by ozlabs.org (Postfix) with ESMTP id 23609DDDEA
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 01:36:41 +1100 (EST)
 MIME-Version: 1.0
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: powerpc: find and destroy possible stale kernel added properties
-References: <kexec-stale-props-t2@bga.com>
-In-Reply-To: <kexec-stale-props-t2@bga.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [RFC/PATCH] pci: Workaround invalid P2P bridge bus numbers
+Date: Tue, 21 Oct 2008 09:36:38 -0500
+Message-ID: <16691A8B34B5D9458EA3A1C37A11555A0137F833@tanisys-ex2.Tanisys.Local>
+In-Reply-To: <20081020230717.2FD16DDDDB@ozlabs.org>
+References: <20081020230717.2FD16DDDDB@ozlabs.org>
+From: "Ayman El-Khashab" <AymanE@tanisys.com>
+To: <linuxppc-dev@ozlabs.org>
+Cc: linux-pci@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Benjamin Herrenschmidt wrote:
 
+>=20
+> Ayman, can you double check that this variant of the patch still
+> fixes your problem ? Thanks !
+>=20
 
-Milton Miller wrote:
->  
-> +	/* remove any stale propertys so ours can be found */
+I've tried it out and it is working correctly with my devices.  The
+subordinate bus numbers on all the ports are correct.
 
-s/propertys/properties
-
-?
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Best Regards,
+Ayman
