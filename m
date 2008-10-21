@@ -1,17 +1,16 @@
-Return-Path: <miltonm@sullivan.realtime.net>
-Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D6F2BDDE1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 12:37:24 +1100 (EST)
-Date: Mon, 20 Oct 2008 20:37:01 -0500 (CDT)
-From: Milton Miller <miltonm@bga.com>
-Sender: Milton Miller <miltonm@realtime.net>
-To: linuxppc-dev@ozlabs.org
-Message-id: <patch-ipi-2-v2@bga.com>
-In-Reply-To: <patch-ipi-2@bga.com>
-Subject: [PATCH 14/16 v2] powerpc: expand vs demux ipi actions per message
-Cc: Arnd Bergmann <arnd@arndb.de>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 21 Oct 2008 12:49:28 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Mike Ditto <mditto@consentry.com>
+Subject: Re: device tree variations
+Message-ID: <20081021014928.GB3058@yookeroo.seuss>
+References: <48F7E1E6.4040701@consentry.com>
+	<20081017012604.GA22213@yookeroo.seuss>
+	<48F9466D.8060603@consentry.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48F9466D.8060603@consentry.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,112 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With the new generic smp call function helpers, I noticed the code in
-smp_message_recv was a single function call in many cases.  While
-getting the message number from the ipi data is easy, we can reduce
-the path length by a function and data dependent switch by registering
-separate ipi actions for these simple calls.
+On Fri, Oct 17, 2008 at 07:14:05PM -0700, Mike Ditto wrote:
+> David Gibson wrote:
+> > Deleting the irrelevant parts or picking a device tree to pass to
+> > fdt_init() are both reasonable solutions.  libfdt which is included in
+> > the bootwrapper has functions for removing unwanted nodes: either
+> > fdt_nop_node() or fdt_del_node() will suffice.  There isn't currently
+> > a dt_ops hook to call though to those functions though.  You could
+> > either add one, or (knowing that your platform always has a flat dt)
+> > bypass the dt_ops hooks and call libfdt directly.
+> 
+> Thanks.  The fdt_del_node approach works pretty nicely.  I added a
+> dt_ops hook since fdt is static in libfdt-wrapper.c.
+> 
+> At first I tried fdt_nop_node, fearing that find_node_by_prop_value()
+> and fdt_del_node() would interact badly when deleting in
+> mid-traversal,
 
-Originally I left the ipi action array exposed, but then I realized the
-registration code should be common too.
+Ah, yes, it would.
 
-The three users each had their own name array, so I made a fourth
-to convert all users to use a common one.
+> but it turns out that fdt_nop_node() upsets find_node_by_prop_value()
+> anyway.
 
-Signed-off-by: Milton Miller <miltonm@bga.com>
----
-v2: fix arg reversal noted by Geert Uytterhoeven.   This order is most
-similar to request_irq and message in data field, but without casting.
+Oh... it shouldn't, I think that's a bug.  I'll try to look into that
+and fix it.
 
-Perhaps we should make the common code look like an ipi action handler
-and remove this last call?  Currently we still have to allocate a stack
-frame to load the return value.
+>  Plus, the kernel prints harmless but strange messages when
+> there are NOPs in the tree.
 
-Index: next.git/arch/powerpc/include/asm/smp.h
-===================================================================
---- next.git.orig/arch/powerpc/include/asm/smp.h	2008-10-05 00:08:36.000000000 -0500
-+++ next.git/arch/powerpc/include/asm/smp.h	2008-10-05 00:16:34.000000000 -0500
-@@ -81,6 +81,13 @@ extern int cpu_to_core_id(int cpu);
- #define PPC_MSG_CALL_FUNC_SINGLE	2
- #define PPC_MSG_DEBUGGER_BREAK  3
- 
-+/*
-+ * irq controllers that have dedicated ipis per message and don't
-+ * need additional code in the action handler may use this
-+ */
-+extern int smp_request_message_ipi(int virq, int message);
-+extern const char *smp_ipi_name[];
-+
- void smp_init_iSeries(void);
- void smp_init_pSeries(void);
- void smp_init_cell(void);
-Index: next.git/arch/powerpc/kernel/smp.c
-===================================================================
---- next.git.orig/arch/powerpc/kernel/smp.c	2008-10-05 00:08:38.000000000 -0500
-+++ next.git/arch/powerpc/kernel/smp.c	2008-10-05 00:19:12.000000000 -0500
-@@ -123,6 +123,65 @@ void smp_message_recv(int msg)
- 	}
- }
- 
-+static irqreturn_t call_function_action(int irq, void *data)
-+{
-+	generic_smp_call_function_interrupt();
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t reschedule_action(int irq, void *data)
-+{
-+	/* we just need the return path side effect of checking need_resched */
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t call_function_single_action(int irq, void *data)
-+{
-+	generic_smp_call_function_single_interrupt();
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t debug_ipi_action(int irq, void *data)
-+{
-+	smp_message_recv(PPC_MSG_DEBUGGER_BREAK);
-+	return IRQ_HANDLED;
-+}
-+
-+static irq_handler_t smp_ipi_action[] = {
-+	[PPC_MSG_CALL_FUNCTION] =  call_function_action,
-+	[PPC_MSG_RESCHEDULE] = reschedule_action,
-+	[PPC_MSG_CALL_FUNC_SINGLE] = call_function_single_action,
-+	[PPC_MSG_DEBUGGER_BREAK] = debug_ipi_action,
-+};
-+
-+const char *smp_ipi_name[] = {
-+	[PPC_MSG_CALL_FUNCTION] =  "ipi call function",
-+	[PPC_MSG_RESCHEDULE] = "ipi reschedule",
-+	[PPC_MSG_CALL_FUNC_SINGLE] = "ipi call function single",
-+	[PPC_MSG_DEBUGGER_BREAK] = "ipi debugger",
-+};
-+
-+/* optional function to request ipi, for controllers with >= 4 ipis */
-+int smp_request_message_ipi(int virq, int msg)
-+{
-+	int err;
-+
-+	if (msg < 0 || msg > PPC_MSG_DEBUGGER_BREAK) {
-+		return -EINVAL;
-+	}
-+#if !defined(CONFIG_DEBUGGER) && !defined(CONFIG_KEXEC)
-+	if (msg == PPC_MSG_DEBUGGER_BREAK) {
-+		return 1;
-+	}
-+#endif
-+	err = request_irq(virq, smp_ipi_action[msg], IRQF_DISABLED|IRQF_PERCPU,
-+			  smp_ipi_name[msg], 0);
-+	WARN(err < 0, "unable to request_irq %d for %s (rc %d)\n",
-+		virq, ipi_names[msg], err);
-+
-+	return err;
-+}
-+
- void smp_send_reschedule(int cpu)
- {
- 	if (likely(smp_ops))
+We should probably fix that too.
+
+>  So I use fdt_del_node() and rescan from
+> the top each time I delete a node and it works fine.
+
+Kind of ugly, but ok.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
