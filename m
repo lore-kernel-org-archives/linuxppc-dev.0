@@ -1,20 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C8EFCDDDF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 15:39:46 +1100 (EST)
-Message-Id: <63EC2F8B-20D2-44A9-90AF-1D518E0D3645@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20081017185659.GA30008@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 1/2] powerpc/83xx: add DS1339 RTC support for
-	MPC8349E-mITX boards
-Date: Mon, 20 Oct 2008 23:39:36 -0500
-References: <20081017185659.GA30008@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id C9593DDDEA
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 16:18:15 +1100 (EST)
+Message-ID: <48FD65F0.9070000@pobox.com>
+Date: Tue, 21 Oct 2008 01:17:36 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] ibm_newemac: Fix new MAL feature handling
+References: <20081015213337.a99a9595.akpm@linux-foundation.org>
+	<1224133010.8157.543.camel@pasglop>
+	<20081016143840.GA29805@yoda.jdub.homelinux.org>
+	<1224546221.7654.196.camel@pasglop>
+In-Reply-To: <1224546221.7654.196.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 17, 2008, at 1:56 PM, Anton Vorontsov wrote:
-
-> The RTC is sitting on the I2C2 bus at address 0x68. RTC interrupt  
-> signal
-> is connected to the IPIC's EXT2 interrupt line, the line is shared  
-> with
-> Vitesse 8201 Ethernet PHY.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Benjamin Herrenschmidt wrote:
+> On Thu, 2008-10-16 at 10:38 -0400, Josh Boyer wrote:
+>> On Thu, Oct 16, 2008 at 03:56:50PM +1100, Benjamin Herrenschmidt wrote:
+>>>> drivers/net/ibm_newemac/mal.c: In function 'mal_txeob':
+>>>> drivers/net/ibm_newemac/mal.c:284: error: implicit declaration of function 'mtdcri'
+>>>> drivers/net/ibm_newemac/mal.c:284: error: 'SDR0' undeclared (first use in this function)
+>>>> drivers/net/ibm_newemac/mal.c:284: error: (Each undeclared identifier is reported only once
+>>>> drivers/net/ibm_newemac/mal.c:284: error: for each function it appears in.)
+>>>> drivers/net/ibm_newemac/mal.c:285: error: implicit declaration of function 'mfdcri'
+>>>> drivers/net/ibm_newemac/mal.c: In function 'mal_rxeob':
+>>>> drivers/net/ibm_newemac/mal.c:302: error: 'SDR0' undeclared (first use in this function)
+>>> That's annoying, I'll have a look.
+>> Support for new features needed by the PPC 405EZ boards
+>> introduced some errors in the MAL and EMAC feature handling.
+>> This broke 'allmodconfig' builds as CONFIG_PPC_DCR_NATIVE is
+>> not set for those.
+>>
+>> This patch fixes these errors by wrapping the code in the
+>> appropriate #ifdefs.
+>>
+>> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > ---
-> arch/powerpc/boot/dts/mpc8349emitx.dts   |    8 ++++++++
-> arch/powerpc/boot/dts/mpc8349emitxgp.dts |    8 ++++++++
-> 2 files changed, 16 insertions(+), 0 deletions(-)
+> 
+> Jeff, this breaks build, I'll put it in powerpc.git for a merge today,
 
-applied
-
-- k
+ACK
