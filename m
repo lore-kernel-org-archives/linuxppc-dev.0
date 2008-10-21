@@ -1,16 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 21 Oct 2008 12:49:28 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Mike Ditto <mditto@consentry.com>
-Subject: Re: device tree variations
-Message-ID: <20081021014928.GB3058@yookeroo.seuss>
-References: <48F7E1E6.4040701@consentry.com>
-	<20081017012604.GA22213@yookeroo.seuss>
-	<48F9466D.8060603@consentry.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48F9466D.8060603@consentry.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D104BDDDE1
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 13:52:52 +1100 (EST)
+Subject: Re: [PATCH] Format string bug in drivers/of/of_i2c.c
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+In-Reply-To: <20081020121315.10428.10730.stgit@terra>
+References: <20081020121315.10428.10730.stgit@terra>
+Content-Type: text/plain
+Date: Tue, 21 Oct 2008 13:52:45 +1100
+Message-Id: <1224557565.7654.222.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,43 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 17, 2008 at 07:14:05PM -0700, Mike Ditto wrote:
-> David Gibson wrote:
-> > Deleting the irrelevant parts or picking a device tree to pass to
-> > fdt_init() are both reasonable solutions.  libfdt which is included in
-> > the bootwrapper has functions for removing unwanted nodes: either
-> > fdt_nop_node() or fdt_del_node() will suffice.  There isn't currently
-> > a dt_ops hook to call though to those functions though.  You could
-> > either add one, or (knowing that your platform always has a flat dt)
-> > bypass the dt_ops hooks and call libfdt directly.
+On Mon, 2008-10-20 at 08:13 -0400, Jon Smirl wrote:
+> Format string bug.  Not exploitable, as this is only writable by root,
+> but worth fixing all the same.
+
+Where is your signed-off-by ?
+
+Cheers,
+Ben.
+
+> See 326f6a5c9c9e1a62aec37bdc0c3f8d53adabe77b
+> ---
+>  drivers/of/of_i2c.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Thanks.  The fdt_del_node approach works pretty nicely.  I added a
-> dt_ops hook since fdt is static in libfdt-wrapper.c.
+> diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+> index 6a98dc8..24bbef7 100644
+> --- a/drivers/of/of_i2c.c
+> +++ b/drivers/of/of_i2c.c
+> @@ -41,7 +41,7 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+>  
+>  		info.addr = *addr;
+>  
+> -		request_module(info.type);
+> +		request_module("%s", info.type);
+>  
+>  		result = i2c_new_device(adap, &info);
+>  		if (result == NULL) {
 > 
-> At first I tried fdt_nop_node, fearing that find_node_by_prop_value()
-> and fdt_del_node() would interact badly when deleting in
-> mid-traversal,
-
-Ah, yes, it would.
-
-> but it turns out that fdt_nop_node() upsets find_node_by_prop_value()
-> anyway.
-
-Oh... it shouldn't, I think that's a bug.  I'll try to look into that
-and fix it.
-
->  Plus, the kernel prints harmless but strange messages when
-> there are NOPs in the tree.
-
-We should probably fix that too.
-
->  So I use fdt_del_node() and rescan from
-> the top each time I delete a node and it works fine.
-
-Kind of ugly, but ok.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
