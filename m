@@ -1,18 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3A436DDDD8
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 15:20:05 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m9L4K2Hj022871
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 23:20:02 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/85xx: Move mpc8572ds.dts to address-cells/size-cells
-	= <2>
-Date: Mon, 20 Oct 2008 23:20:02 -0500
-Message-Id: <1224562802-17416-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <mail4mz@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.190])
+	by ozlabs.org (Postfix) with ESMTP id 9B4FFDDDD8
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 15:23:29 +1100 (EST)
+Received: by fk-out-0910.google.com with SMTP id e30so2344550fke.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Oct 2008 21:23:28 -0700 (PDT)
+Message-ID: <5c9cd53b0810202123x32488ba7vb3c70daa8d09aef@mail.gmail.com>
+Date: Mon, 20 Oct 2008 21:23:28 -0700
+From: "mike zheng" <mail4mz@gmail.com>
+To: "Kim Phillips" <kim.phillips@freescale.com>
+Subject: Re: Kernel Oops when run ifconfig on MPC8360MDS board
+In-Reply-To: <20081020195009.6bf54d5a.kim.phillips@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <5c9cd53b0810201500j1c86dfffxdbfc6f5c5ab9728c@mail.gmail.com>
+	<20081020195009.6bf54d5a.kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,90 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Change the top-level #address-cells and #size-cells to <2> so the
-mpc8572ds.dts is easier to deal with both a true 32-bit physical
-or 36-bit physical address space.
+On 10/20/08, Kim Phillips <kim.phillips@freescale.com> wrote:
+> On Mon, 20 Oct 2008 15:00:33 -0700
+> "mike zheng" <mail4mz@gmail.com> wrote:
+>
+> > I have following kernel Oops when I run ifconfig to setup the UEC0 of
+> > MPC8360MDS board. There is no hardware problem, the UEC0 runs well
+> > under Uboot.
+>
+> does this occur on vanilla u-boot and kernel versions?  if so, which
+> ones, and on what board revision?
+>
+The kernel Oops happened under Linux when I try to use "ifconfig" to
+setup the eth0. Under Uboot, the UEC0 works fine. I am able to do
+ping, tftp via the ethernet port.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/boot/dts/mpc8572ds.dts |   27 +++++++++++++--------------
- 1 files changed, 13 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8572ds.dts b/arch/powerpc/boot/dts/mpc8572ds.dts
-index e124dd1..cadd465 100644
---- a/arch/powerpc/boot/dts/mpc8572ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8572ds.dts
-@@ -13,8 +13,8 @@
- / {
- 	model = "fsl,MPC8572DS";
- 	compatible = "fsl,MPC8572DS";
--	#address-cells = <1>;
--	#size-cells = <1>;
-+	#address-cells = <2>;
-+	#size-cells = <2>;
- 
- 	aliases {
- 		ethernet0 = &enet0;
-@@ -61,7 +61,6 @@
- 
- 	memory {
- 		device_type = "memory";
--		reg = <0x0 0x0>;	// Filled by U-Boot
- 	};
- 
- 	soc8572@ffe00000 {
-@@ -69,8 +68,8 @@
- 		#size-cells = <1>;
- 		device_type = "soc";
- 		compatible = "simple-bus";
--		ranges = <0x0 0xffe00000 0x100000>;
--		reg = <0xffe00000 0x1000>;	// CCSRBAR & soc regs, remove once parse code for immrbase fixed
-+		ranges = <0x0 0 0xffe00000 0x100000>;
-+		reg = <0 0xffe00000 0 0x1000>;	// CCSRBAR & soc regs, remove once parse code for immrbase fixed
- 		bus-frequency = <0>;		// Filled out by uboot.
- 
- 		memory-controller@2000 {
-@@ -351,10 +350,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xffe08000 0x1000>;
-+		reg = <0 0xffe08000 0 0x1000>;
- 		bus-range = <0 255>;
--		ranges = <0x2000000 0x0 0x80000000 0x80000000 0x0 0x20000000
--			  0x1000000 0x0 0x0 0xffc00000 0x0 0x10000>;
-+		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x00010000>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <24 2>;
-@@ -561,10 +560,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xffe09000 0x1000>;
-+		reg = <0 0xffe09000 0 0x1000>;
- 		bus-range = <0 255>;
--		ranges = <0x2000000 0x0 0xa0000000 0xa0000000 0x0 0x20000000
--			  0x1000000 0x0 0x0 0xffc10000 0x0 0x10000>;
-+		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x00010000>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <26 2>;
-@@ -598,10 +597,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xffe0a000 0x1000>;
-+		reg = <0 0xffe0a000 0 0x1000>;
- 		bus-range = <0 255>;
--		ranges = <0x2000000 0x0 0xc0000000 0xc0000000 0x0 0x20000000
--			  0x1000000 0x0 0x0 0xffc20000 0x0 0x10000>;
-+		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x00010000>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <27 2>;
--- 
-1.5.5.1
+> > Call backtrace:
+> > C0126890 C00D59D0 C00D761C C012F400 C0130DD4 C01746B4 C017712C
+> > C0127770 C004D8B0 C0005ABC 00000000 10001214 100023C4 0FEC4E00
+> > 00000000
+>
+> might want to turn on verbose debugging while you're at it.
+
+Which flag shall I turned on? I am not formaliar to the network driver. Thanks!
+>
+> Kim
+>
