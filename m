@@ -1,25 +1,33 @@
-Return-Path: <slightlyunconventional@gmail.com>
-Received: from mail-gx0-f14.google.com (mail-gx0-f14.google.com
-	[209.85.217.14]) by ozlabs.org (Postfix) with ESMTP id 7E3DB474C3
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 02:19:33 +1100 (EST)
-Received: by gxk7 with SMTP id 7so10540407gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 08:19:31 -0700 (PDT)
-Message-ID: <fb412d760810220819o1a15d47ej198f6e15c3e63f15@mail.gmail.com>
-Date: Wed, 22 Oct 2008 10:19:31 -0500
-From: "Hollis Blanchard" <hollis@penguinppc.org>
-Sender: slightlyunconventional@gmail.com
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: build failure on powerpc with current -git
-In-Reply-To: <18686.42209.47915.184451@cargo.ozlabs.ibm.com>
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 05030DDE0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 02:54:13 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9MFsA2v026161
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 11:54:10 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9MFsARI083476
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 11:54:10 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9MFs703003102
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 11:54:07 -0400
+Message-ID: <48FF4C89.60704@linux.vnet.ibm.com>
+Date: Wed, 22 Oct 2008 10:53:45 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_22050_946874.1224688771263"
-References: <48F8E86B.702@nortel.com>
-	<18685.27030.529655.761257@cargo.ozlabs.ibm.com>
-	<20081021191324.d4810d40.sfr@canb.auug.org.au>
-	<18686.42209.47915.184451@cargo.ozlabs.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Linux kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+To: benh@kernel.crashing.org
+Subject: [PATCHv3 1/1] powerpc: Update page in counter for CMM
+References: <200810210436.m9L4aepT056796@sullivan.realtime.net>
+	<48FE3B16.5050402@linux.vnet.ibm.com>
+	<1224634291.7654.287.camel@pasglop>
+In-Reply-To: <1224634291.7654.287.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,73 +37,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_22050_946874.1224688771263
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+A new field has been added to the VPA as a method for
+the client OS to communicate to firmware the number of
+page ins it is performing when running collaborative
+memory overcommit. The hypervisor will use this information
+to better determine if a partition is experiencing memory
+pressure and needs more memory allocated to it.
 
-On Tue, Oct 21, 2008 at 10:58 PM, Paul Mackerras <paulus@samba.org> wrote:
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
 
-> Stephen Rothwell writes:
->
-> > On Tue, 21 Oct 2008 16:33:10 +1100 Paul Mackerras <paulus@samba.org>
-> wrote:
-> > >
-> > > It's a bug in older versions of ld (including 2.16.1) that's fixed in
-> > > the current version (2.18).  However, this patch appears to work
-> > > around the problem - at least, it let me build a 32-bit kernel with a
-> > > cross-toolchain including a 2.16.1 ld.  Let me know if this gets it
-> > > working for you.
-> >
-> > With that patch applied I got these errors for a powerpc ppc64_defconfig
-> > build (linux-next).
-> >
-> > /usr/bin/objcopy: Warning: '/dev/null' is not an ordinary file
->
-> Hmmm, so do I, and in fact the arch/powerpc/boot/wrapper change now
-> seems to be unnecessary with my cross-compile setup (which has ld
-> 2.16.1), whereas yesterday I'm sure it got errors.  Weird.
->
-> Chris, could you try just the following change (my previous patch
-> without the arch/powerpc/boot/wrapper change) and let me know if it
-> fixes things with the ld you use?
->
+ arch/powerpc/include/asm/lppaca.h |    3 ++-
+ arch/powerpc/kernel/paca.c        |    1 +
+ arch/powerpc/mm/fault.c           |   12 ++++++++++--
+ 3 files changed, 13 insertions(+), 3 deletions(-)
 
-Works for me.
-
-binutils 2.16.1 is the most recent binutils that will build with crosstool,
-so IMHO it's worth supporting. :)
-
--Hollis
-
-------=_Part_22050_946874.1224688771263
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div dir="ltr">On Tue, Oct 21, 2008 at 10:58 PM, Paul Mackerras <span dir="ltr">&lt;<a href="mailto:paulus@samba.org">paulus@samba.org</a>&gt;</span> wrote:<br><div class="gmail_quote"><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<div class="Ih2E3d">Stephen Rothwell writes:<br>
-<br>
-&gt; On Tue, 21 Oct 2008 16:33:10 +1100 Paul Mackerras &lt;<a href="mailto:paulus@samba.org">paulus@samba.org</a>&gt; wrote:<br>
-&gt; &gt;<br>
-&gt; &gt; It&#39;s a bug in older versions of ld (including 2.16.1) that&#39;s fixed in<br>
-&gt; &gt; the current version (2.18). &nbsp;However, this patch appears to work<br>
-&gt; &gt; around the problem - at least, it let me build a 32-bit kernel with a<br>
-&gt; &gt; cross-toolchain including a 2.16.1 ld. &nbsp;Let me know if this gets it<br>
-&gt; &gt; working for you.<br>
-&gt;<br>
-&gt; With that patch applied I got these errors for a powerpc ppc64_defconfig<br>
-&gt; build (linux-next).<br>
-&gt;<br>
-&gt; /usr/bin/objcopy: Warning: &#39;/dev/null&#39; is not an ordinary file<br>
-<br>
-</div>Hmmm, so do I, and in fact the arch/powerpc/boot/wrapper change now<br>
-seems to be unnecessary with my cross-compile setup (which has ld<br>
-2.16.1), whereas yesterday I&#39;m sure it got errors. &nbsp;Weird.<br>
-<br>
-Chris, could you try just the following change (my previous patch<br>
-without the arch/powerpc/boot/wrapper change) and let me know if it<br>
-fixes things with the ld you use?<br>
-</blockquote><div><br>Works for me.<br><br>binutils 2.16.1 is the most recent binutils that will build with crosstool, so IMHO it&#39;s worth supporting. :)<br><br>-Hollis <br></div></div></div>
-
-------=_Part_22050_946874.1224688771263--
+diff -puN arch/powerpc/mm/fault.c~powerpc_vrm_mm_pressure arch/powerpc/mm/fault.c
+--- linux-2.6/arch/powerpc/mm/fault.c~powerpc_vrm_mm_pressure	2008-10-20 17:13:25.000000000 -0500
++++ linux-2.6-bjking1/arch/powerpc/mm/fault.c	2008-10-22 08:53:13.000000000 -0500
+@@ -30,6 +30,7 @@
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
+ 
++#include <asm/firmware.h>
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+ #include <asm/mmu.h>
+@@ -318,9 +319,16 @@ good_area:
+ 			goto do_sigbus;
+ 		BUG();
+ 	}
+-	if (ret & VM_FAULT_MAJOR)
++	if (ret & VM_FAULT_MAJOR) {
+ 		current->maj_flt++;
+-	else
++#ifdef CONFIG_PPC_SMLPAR
++		if (firmware_has_feature(FW_FEATURE_CMO)) {
++			preempt_disable();
++			get_lppaca()->page_ins++;
++			preempt_enable();
++		}
++#endif
++	} else
+ 		current->min_flt++;
+ 	up_read(&mm->mmap_sem);
+ 	return 0;
+diff -puN arch/powerpc/include/asm/lppaca.h~powerpc_vrm_mm_pressure arch/powerpc/include/asm/lppaca.h
+--- linux-2.6/arch/powerpc/include/asm/lppaca.h~powerpc_vrm_mm_pressure	2008-10-20 17:13:25.000000000 -0500
++++ linux-2.6-bjking1/arch/powerpc/include/asm/lppaca.h	2008-10-21 13:46:45.000000000 -0500
+@@ -133,7 +133,8 @@ struct lppaca {
+ //=============================================================================
+ // CACHE_LINE_4-5 0x0180 - 0x027F Contains PMC interrupt data
+ //=============================================================================
+-	u8	pmc_save_area[256];	// PMC interrupt Area           x00-xFF
++	u32	page_ins;			// CMO Hint - # page ins by OS  x00-x04
++	u8	pmc_save_area[252];	// PMC interrupt Area           x04-xFF
+ } __attribute__((__aligned__(0x400)));
+ 
+ extern struct lppaca lppaca[];
+diff -puN arch/powerpc/kernel/paca.c~powerpc_vrm_mm_pressure arch/powerpc/kernel/paca.c
+--- linux-2.6/arch/powerpc/kernel/paca.c~powerpc_vrm_mm_pressure	2008-10-20 17:13:25.000000000 -0500
++++ linux-2.6-bjking1/arch/powerpc/kernel/paca.c	2008-10-20 17:13:25.000000000 -0500
+@@ -37,6 +37,7 @@ struct lppaca lppaca[] = {
+ 		.end_of_quantum = 0xfffffffffffffffful,
+ 		.slb_count = 64,
+ 		.vmxregs_in_use = 0,
++		.page_ins = 0,
+ 	},
+ };
+ 
+_
