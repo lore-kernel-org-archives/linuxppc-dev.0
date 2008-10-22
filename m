@@ -1,24 +1,24 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 2B8F1DDE31
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 05:32:24 +1100 (EST)
-Date: Wed, 22 Oct 2008 22:32:18 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
-Message-ID: <20081022183218.GA19025@oksana.dev.rtsoft.ru>
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
-	<20081022014243.GA19362@oksana.dev.rtsoft.ru>
-	<1224642497.7654.319.camel@pasglop>
-	<200810212122.49121.david-b@pacbell.net>
-	<20081022103641.GB24757@oksana.dev.rtsoft.ru>
-	<20081022104606.GA510@oksana.dev.rtsoft.ru>
+Return-Path: <neko@genesi-usa.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id D88CADDE1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 05:40:53 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so556550ywh.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 11:40:52 -0700 (PDT)
+Message-ID: <48FF73B2.8040600@genesi-usa.com>
+Date: Wed, 22 Oct 2008 13:40:50 -0500
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081022104606.GA510@oksana.dev.rtsoft.ru>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
-	Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
-Reply-To: avorontsov@ru.mvista.com
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] powerpc: Remove device_type = "rtc" properties in .dts
+	files
+References: <20081021185844.GA31070@oksana.dev.rtsoft.ru>
+	<48FF2CBB.7060605@genesi-usa.com>
+	<20081022135046.GA30347@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081022135046.GA30347@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=windows-1251; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,165 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 22, 2008 at 02:46:06PM +0400, Anton Vorontsov wrote:
-> On Wed, Oct 22, 2008 at 02:36:41PM +0400, Anton Vorontsov wrote:
-> > On Tue, Oct 21, 2008 at 09:22:48PM -0700, David Brownell wrote:
-> > > On Tuesday 21 October 2008, Benjamin Herrenschmidt wrote:
-> > > > The notifier can be registered before the devices, though it's a little
-> > > > bit fishy and fragile.
-> > > > 
-> > > > Easier I suppose to just have OF specific hooks in the bus code.
-> > > 
-> > > Like what I suggested:  "chip-aware OF glue drivers".  The relevant
-> > > bus code being the "of_platform_bus_type" infrastructure.
-> > > 
-> > > Example:  instead of Anton's patch #6 modifying the existing pca953x
-> > > driver, an of_pca953x driver that knows how to poke around in the OF
-> > > device attributes to (a) create the pca953x_platform_data, (b) call
-> > > i2c_register_board_info() to make that available later, and then
-> > > finally (c) vanish, since it's not needed any longer.
-> > 
-> > Heh. You tell me my first approach:
-> > 
-> > http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056730.html (mmc_spi)
-> > 
-> > The OF people didn't like the patch which was used to support this
-> > approach:
-> > http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056728.html
+
+
+Anton Vorontsov wrote:
+> On Wed, Oct 22, 2008 at 08:38:03AM -0500, Matt Sealey wrote:
+>> I'm extremely troubled that it is "not used in the code", surely 
+>> device_type is checked as a legacy for Open Firmware (otherwise a lot of 
+>> devices may never be detected!),
 > 
-> Though, I think I'll able to persuade Grant that two registration paths
-> are inevitable (i.e. for simple devices we should use
-> drivers/of/of_{i2c,spi}.c and for complex cases we'll have to have
-> another method of registration).
-> 
-> > The board info has another problem though. We can't remove it, thus
-> > we can't implement module_exit() for the 'OF glue'.
-> 
-> And try to solve this problem... maybe then things will begin to
-> move forward.
+> Checked where? 
 
-There is another problem: board infos are scanned at the controller
-registration time only. So if we register the board infos after
-the controller registered, then nobody will probe the board infos.
+of_find_device_by_type() goes through it and 
+of_find_compatible_node() - while not directly, checks the 
+type field of the node which is filled in from device_type 
+BEFORE it checks the compatible property.
 
-This is all solvable by hacking the i2c core code though. I started
-it, but it turned out to be ugly. I'll finish it though, just to show
-it someday.
+This isn't specific CHRP/FDT platform code it's in the generic 
+tree scanning functions.
 
-But now I'm not sure if it worth the efforts. Maybe we could just
-modify the drivers to do something like this?
+> platforms, the CHRP is running real OF, so it is irrelevant if it
+> checks for device_type = "rtc" or not.)
 
-This is not exactly "transparently" to the drivers, but well..
+Except when there is no compatible property because the device 
+is adequately identified by device_type (for instance if you 
+are looking for every serial port on a system, device_type is 
+your only hope without checking for every different KIND of 
+serial port you may ever possibly encounter.. or if you are 
+checking for what kind of console OF attached you to (be it 
+display/keyboard combination or serial or something else).
 
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 01b4bbd..b1dfa7b 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -9,4 +9,7 @@ obj-$(CONFIG_GPIO_MAX732X)	+= max732x.o
- obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
- obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
- obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
-+ifeq ($(CONFIG_OF),y)
-+obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x_of.o
-+endif
- obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
-diff --git a/drivers/gpio/pcf857x.c b/drivers/gpio/pcf857x.c
-index 4bc2070..f8057d2 100644
---- a/drivers/gpio/pcf857x.c
-+++ b/drivers/gpio/pcf857x.c
-@@ -187,7 +187,7 @@ static int pcf857x_probe(struct i2c_client *client,
- 	struct pcf857x			*gpio;
- 	int				status;
- 
--	pdata = client->dev.platform_data;
-+	pdata = pcf857x_get_pdata(client);
- 	if (!pdata)
- 		return -ENODEV;
- 
-@@ -314,7 +314,7 @@ fail:
- 
- static int pcf857x_remove(struct i2c_client *client)
- {
--	struct pcf857x_platform_data	*pdata = client->dev.platform_data;
-+	struct pcf857x_platform_data	*pdata = pcf857x_get_pdata(client);
- 	struct pcf857x			*gpio = i2c_get_clientdata(client);
- 	int				status = 0;
- 
-@@ -334,6 +334,8 @@ static int pcf857x_remove(struct i2c_client *client)
- 		kfree(gpio);
- 	else
- 		dev_err(&client->dev, "%s --> %d\n", "remove", status);
-+
-+	pcf857x_put_pdata(client);
- 	return status;
- }
- 
-diff --git a/drivers/gpio/pcf857x_of.c b/drivers/gpio/pcf857x_of.c
-new file mode 100644
-index 0000000..414943b
---- /dev/null
-+++ b/drivers/gpio/pcf857x_of.c
-@@ -0,0 +1,36 @@
-+#include <linux/kernel.h>
-+#include <linux/slab.h>
-+#include <linux/i2c.h>
-+#include <linux/i2c/pcf857x.h>
-+#include <linux/gpio.h>
-+#include <linux/of.h>
-+#include <linux/of_gpio.h>
-+
-+struct pcf857x_platform_data *pcf857x_get_pdata(struct i2c_client *client)
-+{
-+	struct pcf857x_platform_data *pdata = client->dev.platform_data;
-+
-+	if (pdata)
-+		return pdata;
-+
-+	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
-+	if (!pdata)
-+		return NULL;
-+
-+	/*
-+	 * Do the OF-specific setup here.
-+	 */
-+
-+	client->dev.platform_data = pdata;
-+}
-+
-+void pcf857x_put_pdata(struct i2c_client *client)
-+{
-+	struct pcf857x_platform_data *pdata = client->dev.platform_data;
-+
-+	/*
-+	 * Do the OF-specific cleanup here.
-+	 */
-+
-+	kfree(pdata);
-+}
-diff --git a/include/linux/i2c/pcf857x.h b/include/linux/i2c/pcf857x.h
-index 0767a2a..bdc1aba 100644
---- a/include/linux/i2c/pcf857x.h
-+++ b/include/linux/i2c/pcf857x.h
-@@ -1,6 +1,8 @@
- #ifndef __LINUX_PCF857X_H
- #define __LINUX_PCF857X_H
- 
-+struct i2c_client;
-+
- /**
-  * struct pcf857x_platform_data - data to set up pcf857x driver
-  * @gpio_base: number of the chip's first GPIO
-@@ -41,4 +43,13 @@ struct pcf857x_platform_data {
- 	void		*context;
- };
- 
-+#ifdef CONFIG_OF
-+extern struct pcf857x_platform_data *
-+	pcf857x_get_pdata(struct i2c_client *client);
-+extern void pcf857x_put_pdata(struct i2c_client *client);
-+#else
-+#define pcf857x_get_pdata(client) ((client)->dev.platform_data)
-+#define pcf857x_put_pdata(client)
-+#endif
-+
- #endif /* __LINUX_PCF857X_H */
+It's a useful property that should be kept around, you never 
+know when it might be needed :D but of course since it's not 
+in ePAPR, no point in shoving it in when "compatible" 
+describes your board very very accurately anyway (except when 
+you have no need to be very very accurate and are just looking 
+for serial ports... :)
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
