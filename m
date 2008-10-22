@@ -1,11 +1,11 @@
 Return-Path: <neko@genesi-usa.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id 084AFDDE0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 01:20:00 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so519774yxg.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 07:19:58 -0700 (PDT)
-Message-ID: <48FF3685.5020504@genesi-usa.com>
-Date: Wed, 22 Oct 2008 09:19:49 -0500
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.228])
+	by ozlabs.org (Postfix) with ESMTP id 306F6DDE17
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 01:23:10 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id s6so1598159wxc.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 07:23:09 -0700 (PDT)
+Message-ID: <48FF3743.1000007@genesi-usa.com>
+Date: Wed, 22 Oct 2008 09:22:59 -0500
 From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
 To: Kumar Gala <galak@kernel.crashing.org>
@@ -32,31 +32,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Kumar Gala wrote:
 > 
-> On Oct 22, 2008, at 8:42 AM, Matt Sealey wrote:
->> So to confirm, XAEN support through Becky's patches does support the 
->> MPC8641D/e600 cores?
 > 
-> Yes, its the only part that has XAEN.
-
-Okay I saw a lot of e500/BookE support go past but nothing 
-specific :)
-
->> NOT supported because of the way the LAWs work, and also the alignment 
->> of the LAWs means it is not fine enough granularity to map between 2GB 
->> and 4GB into a window (you can have 2GB or 4GB but not some more 
->> arbitrary value?)
-> 
-> You can overlap LAWs because they have priority encoding.  The lower the 
-> LAW # the higher the priority.
-
-Hmm :)
-
 > Your bigger issue is if you can setup the DDR controller for the hole 
 > you want.
 
-Hmmmmm :)
+I just remembered;;
 
-Okay good to know. I'll go back to reading the docs.
+~~
+The CCSR window always takes precedence over all local access 
+windows. However, the CCSR window must not overlap an LAW that 
+maps to the DDR controller. Otherwise, undefined behavior occurs.
+~~
+
+So, it's not really possible to map 4GB of RAM in the lower 
+32-bit area, without interacting badly with the CCSR. This 
+means you're forced to select a 2GB LAW for DDR, then leave 
+2GB free, then map the rest above.. using more than 2Gb 
+therefore absolutely requires non-contiguous memory..?
 
 -- 
 Matt Sealey <matt@genesi-usa.com>
