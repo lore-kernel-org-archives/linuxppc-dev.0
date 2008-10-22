@@ -1,20 +1,17 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 77ED1DDE1E
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 02:59:38 +1100 (EST)
-Date: Wed, 22 Oct 2008 17:59:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
+Return-Path: <dhowells@redhat.com>
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id E36E9474C1
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 03:24:55 +1100 (EST)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20081012054634.GA12535@wotan.suse.de>
+References: <20081012054634.GA12535@wotan.suse.de>
 To: Nick Piggin <npiggin@suse.de>
 Subject: Re: [patch] mutex: optimise generic mutex implementations
-Message-ID: <20081022155923.GM23060@elte.hu>
-References: <20081012054634.GA12535@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081012054634.GA12535@wotan.suse.de>
+Date: Wed, 22 Oct 2008 17:24:28 +0100
+Message-ID: <22459.1224692668@redhat.com>
+Sender: dhowells@redhat.com
 Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,8 +21,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-* Nick Piggin <npiggin@suse.de> wrote:
+Nick Piggin <npiggin@suse.de> wrote:
 
 > Speed up generic mutex implementations.
 > 
@@ -43,9 +39,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 > 
 > Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-no objections here. Lets merge these two patches via the ppc tree, so 
-that it gets testing on real hardware as well?
+This seems to work on FRV which uses the mutex-dec generic algorithm, though
+you have to take that with a pinch of salt as I don't have SMP hardware for
+it.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+Acked-by: David Howells <dhowells@redhat.com>
