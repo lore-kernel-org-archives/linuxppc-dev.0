@@ -1,34 +1,28 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8C215DDDED
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 12:29:28 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id m9M1S8TB030850
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 12:28:08 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9M1TPCV4714510
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 12:29:25 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9M1TPoG031682
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 12:29:25 +1100
-Date: Wed, 22 Oct 2008 11:12:19 +1100
-From: David Gibson <dwg@au1.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id C1A12DDDED
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 12:42:44 +1100 (EST)
+Date: Wed, 22 Oct 2008 05:42:43 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: hugetlbfs for ppc440 - kernel BUG
-Message-ID: <20081022001219.GG8477@yookeroo.seuss>
-References: <acbcf3840707101138t24597799s6511f9326ed2243e@mail.gmail.com>
-	<1224622063.7654.265.camel@pasglop>
-	<acbcf3840810211546s1d72dac0kabcf1285358efbdf@mail.gmail.com>
-	<1224629593.7654.279.camel@pasglop>
+Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Message-ID: <20081022014243.GA19362@oksana.dev.rtsoft.ru>
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+	<200810171324.42650.david-b@pacbell.net>
+	<20081017212942.GA1919@oksana.dev.rtsoft.ru>
+	<200810200029.58312.david-b@pacbell.net>
+	<20081020154835.GA3234@oksana.dev.rtsoft.ru>
+	<1224635360.7654.294.camel@pasglop>
+	<20081022010347.GA7377@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1224629593.7654.279.camel@pasglop>
-Cc: kazutomo@mcs.anl.gov, linuxppc-dev@ozlabs.org, edi@linux.vnet.ibm.com,
-	Satya <satyakiran@gmail.com>
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <20081022010347.GA7377@oksana.dev.rtsoft.ru>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org,
+	David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org, Jean Delvare <khali@linux-fr.org>,
+	David Miller <davem@davemloft.net>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,21 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 22, 2008 at 09:53:13AM +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2008-10-21 at 15:46 -0700, Satya wrote:
-> > Ben,
-> > Look here: http://www-unix.mcs.anl.gov/zeptoos/hugepages/
+On Wed, Oct 22, 2008 at 05:03:47AM +0400, Anton Vorontsov wrote:
+> On Wed, Oct 22, 2008 at 11:29:20AM +1100, Benjamin Herrenschmidt wrote:
+> > 
+> > > But it doesn't work as a module (i.e. OF-specific bits should be
+> > > always in-kernel).
+> > 
+> > Why not ?
 > 
-> Thanks. What is the status ? Do they work fine ? Are they going to be
-> re-submitted for inclusion ?
+> If say "X" driver loads prior to bus-notifier module (where we fill
+> the platform data), then X.0 device will try to probe w/o platform
+> data and will fail. The only way to re-probe things is to rmmod X &&
+> insmod of_pdata_filler_X && insmod X. So things depend on the module
+> load order.
 
-Hrm.  Last I looked at the 440 hugepage patches they appeared to have
-several serious bugs (I was surprised they worked at all).  I had
-meant to fix them up and push, but I never quite got around to it.
-I'll have at this link later today.
+Thinking about it more, I started recalling other issues. The bus
+notifier chain doesn't replay previous events, so we also have to
+register the notifier before the _devices_ are registered. And this
+ruins the whole approach. :-/ Yeah, that's why I abandoned the bus
+notifier idea.
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
