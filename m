@@ -1,23 +1,27 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id D2385DDDFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 21:46:07 +1100 (EST)
-Date: Wed, 22 Oct 2008 14:46:06 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
-Message-ID: <20081022104606.GA510@oksana.dev.rtsoft.ru>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7A549DDE03
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 22:08:28 +1100 (EST)
+Date: Wed, 22 Oct 2008 13:07:48 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 2/7] i2c: add info->archdata field
+Message-ID: <20081022130748.57d4587a@hyperion.delvare>
+In-Reply-To: <20081022100813.GA24757@oksana.dev.rtsoft.ru>
 References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
-	<20081022014243.GA19362@oksana.dev.rtsoft.ru>
-	<1224642497.7654.319.camel@pasglop>
-	<200810212122.49121.david-b@pacbell.net>
-	<20081022103641.GB24757@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081022103641.GB24757@oksana.dev.rtsoft.ru>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
-	Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
-Reply-To: avorontsov@ru.mvista.com
+	<20081016171253.GB5515@oksana.dev.rtsoft.ru>
+	<20081017112125.1f2c9d94@hyperion.delvare>
+	<1224635254.7654.292.camel@pasglop>
+	<20081022085002.0698e2a8@hyperion.delvare>
+	<1224661075.7654.338.camel@pasglop>
+	<20081022100813.GA24757@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,43 +31,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 22, 2008 at 02:36:41PM +0400, Anton Vorontsov wrote:
-> On Tue, Oct 21, 2008 at 09:22:48PM -0700, David Brownell wrote:
-> > On Tuesday 21 October 2008, Benjamin Herrenschmidt wrote:
-> > > The notifier can be registered before the devices, though it's a little
-> > > bit fishy and fragile.
+On Wed, 22 Oct 2008 14:08:13 +0400, Anton Vorontsov wrote:
+> On Wed, Oct 22, 2008 at 06:37:55PM +1100, Benjamin Herrenschmidt wrote:
+> > On Wed, 2008-10-22 at 08:50 +0200, Jean Delvare wrote:
+> > > On Wed, 22 Oct 2008 11:27:34 +1100, Benjamin Herrenschmidt wrote:
+> > > > On Fri, 2008-10-17 at 11:21 +0200, Jean Delvare wrote:
+> > > > > Hi Anton,
+> > > > > 
+> > > > > On Thu, 16 Oct 2008 21:12:53 +0400, Anton Vorontsov wrote:
+> > > > > > If present the info->archdata is copied into the dev->archdata.
+> > > > > > Some (OpenFirmware) platforms need it.
+> > > > > > 
+> > > > > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > > > > > ---
+> > > > 
+> > > > So who's pushing this one ? Jean ?
 > > > 
-> > > Easier I suppose to just have OF specific hooks in the bus code.
+> > > As I wrote before, I'm happy to take this patch if you want me to, but
+> > > I also have no objection if the author of this patchset wants to push
+> > > it himself together with the rest of the set. Just let me know what you
+> > > expect from me (preferably in the next few hours, as I will be sending
+> > > my second and last round of i2c patches for kernel 2.6.28 to Linus
+> > > today.)
 > > 
-> > Like what I suggested:  "chip-aware OF glue drivers".  The relevant
-> > bus code being the "of_platform_bus_type" infrastructure.
-> > 
-> > Example:  instead of Anton's patch #6 modifying the existing pca953x
-> > driver, an of_pca953x driver that knows how to poke around in the OF
-> > device attributes to (a) create the pca953x_platform_data, (b) call
-> > i2c_register_board_info() to make that available later, and then
-> > finally (c) vanish, since it's not needed any longer.
+> > Anton, I've done my last batch for 2.6.28 before -rc1 so it might be
+> > better if it goes through Jean no ?
 > 
-> Heh. You tell me my first approach:
-> 
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056730.html (mmc_spi)
-> 
-> The OF people didn't like the patch which was used to support this
-> approach:
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056728.html
+> Sorry, I guess the "few hours" limit was done exactly when I was
+> sleeping. ;-) Anyway, I'm fine either way. Don't see any problem
+> if it goes i2c or powerpc tree.
 
-Though, I think I'll able to persuade Grant that two registration paths
-are inevitable (i.e. for simple devices we should use
-drivers/of/of_{i2c,spi}.c and for complex cases we'll have to have
-another method of registration).
-
-> The board info has another problem though. We can't remove it, thus
-> we can't implement module_exit() for the 'OF glue'.
-
-And try to solve this problem... maybe then things will begin to
-move forward.
+OK, then I'm taking the patch in my tree and it will go to Linus later
+today.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Jean Delvare
