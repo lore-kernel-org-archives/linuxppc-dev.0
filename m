@@ -1,21 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E02E8DDE04
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 00:09:10 +1100 (EST)
-Message-Id: <88C8EDEB-C9A5-4876-AF7D-55CBABBE111D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: =?ISO-8859-1?Q?R=E9gis_Odey=E9?= <regis.odeye@kontron.com>
-In-Reply-To: <48FF23C4.5030408@kontron.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: Extended Addressing Mode
-Date: Wed, 22 Oct 2008 08:08:42 -0500
-References: <48FEEB88.6050505@kontron.com>
-	<83735324-C37B-4C57-A50F-FFF0D133E4E3@kernel.crashing.org>
-	<48FF23C4.5030408@kontron.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <neko@genesi-usa.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.230])
+	by ozlabs.org (Postfix) with ESMTP id B6EB3DDE03
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 00:38:26 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id s6so1588126wxc.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 06:38:24 -0700 (PDT)
+Message-ID: <48FF2CBB.7060605@genesi-usa.com>
+Date: Wed, 22 Oct 2008 08:38:03 -0500
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] powerpc: Remove device_type = "rtc" properties in .dts
+	files
+References: <20081021185844.GA31070@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081021185844.GA31070@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +26,201 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I'm extremely troubled that it is "not used in the code", 
+surely device_type is checked as a legacy for Open Firmware 
+(otherwise a lot of devices may never be detected!), or does 
+device tree parsing/checking follow a different path for FDT?
 
-On Oct 22, 2008, at 7:59 AM, R=E9gis Odey=E9 wrote:
+(absolutely fine with it being removed from new DTS but, just 
+concerned about your comment and it's impact...)
 
-> Kumar Gala wrote:
->>
->> On Oct 22, 2008, at 3:59 AM, R=E9gis Odey=E9 wrote:
->>
->>> Hello Everyone,
->>> I'm looking for some information about the Extended Addressing =20
->>> Mode (XAEN bit of HID0 register) of PPC32 support in Linux.
->>> I do not see anything in the main kernel tree but there may be =20
->>> some patches available ?
->>> Any information will be appreciate.
->>> Regards.
->>
->> There are patches from Becky Bruce that are going into 2.6.28.  =20
->> What are you needing >32-bit for?  There are some SW IO MMU changes =20=
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
 
->> that are still pending to complete this work.
->>
->> - k
-> We are developing a board based on Freescale 8641D which can get 4GB =20=
-
-> of ram. So I need 4GB+IOs (~1GB) of physical addressing space.
-> My plan is to put a part of this ram above of 4GB to keep accesses =20
-> to the IOs below the 4GB limit. It means non-contiguous ram =20
-> addressing and XAEN features to be working.
-
-So we have XAEN support in the tree.. however non-contiguous is =20
-something you'll have to work on yourself.  Patches are welcome for this
-
->
-> Where can I glance through Becky patches ?
-
-This is the bulk:
-
-=
-http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcom=
-mitdiff;h=3D4ee7084eb11e00eb02dc8435fd18273a61ffa9bf
-
-- k=
+Anton Vorontsov wrote:
+> We don't want to encourage the device_type usage. It isn't used in the
+> code, so we can simply remove it from the dts files.
+> 
+> Suggested-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>  arch/powerpc/boot/dts/kuroboxHD.dts      |    1 -
+>  arch/powerpc/boot/dts/kuroboxHG.dts      |    1 -
+>  arch/powerpc/boot/dts/lite5200.dts       |    1 -
+>  arch/powerpc/boot/dts/lite5200b.dts      |    1 -
+>  arch/powerpc/boot/dts/motionpro.dts      |    1 -
+>  arch/powerpc/boot/dts/mpc8315erdb.dts    |    1 -
+>  arch/powerpc/boot/dts/mpc8349emitx.dts   |    1 -
+>  arch/powerpc/boot/dts/mpc8349emitxgp.dts |    1 -
+>  arch/powerpc/boot/dts/mpc8377_rdb.dts    |    1 -
+>  arch/powerpc/boot/dts/mpc8378_rdb.dts    |    1 -
+>  arch/powerpc/boot/dts/mpc8379_rdb.dts    |    1 -
+>  arch/powerpc/boot/dts/pcm030.dts         |    2 --
+>  arch/powerpc/boot/dts/tqm5200.dts        |    1 -
+>  13 files changed, 0 insertions(+), 14 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/kuroboxHD.dts b/arch/powerpc/boot/dts/kuroboxHD.dts
+> index 2e5a1a1..8d725d1 100644
+> --- a/arch/powerpc/boot/dts/kuroboxHD.dts
+> +++ b/arch/powerpc/boot/dts/kuroboxHD.dts
+> @@ -76,7 +76,6 @@ XXXX add flash parts, rtc, ??
+>  			interrupt-parent = <&mpic>;
+>  
+>  			rtc@32 {
+> -				device_type = "rtc";
+>  				compatible = "ricoh,rs5c372a";
+>  				reg = <0x32>;
+>  			};
+> diff --git a/arch/powerpc/boot/dts/kuroboxHG.dts b/arch/powerpc/boot/dts/kuroboxHG.dts
+> index e4916e6..b13a11e 100644
+> --- a/arch/powerpc/boot/dts/kuroboxHG.dts
+> +++ b/arch/powerpc/boot/dts/kuroboxHG.dts
+> @@ -76,7 +76,6 @@ XXXX add flash parts, rtc, ??
+>  			interrupt-parent = <&mpic>;
+>  
+>  			rtc@32 {
+> -				device_type = "rtc";
+>  				compatible = "ricoh,rs5c372a";
+>  				reg = <0x32>;
+>  			};
+> diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
+> index 2cf9a87..3f7a5dc 100644
+> --- a/arch/powerpc/boot/dts/lite5200.dts
+> +++ b/arch/powerpc/boot/dts/lite5200.dts
+> @@ -130,7 +130,6 @@
+>  
+>  		rtc@800 {	// Real time clock
+>  			compatible = "fsl,mpc5200-rtc";
+> -			device_type = "rtc";
+>  			reg = <0x800 0x100>;
+>  			interrupts = <1 5 0 1 6 0>;
+>  			interrupt-parent = <&mpc5200_pic>;
+> diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
+> index 7bd5b9c..63e3bb4 100644
+> --- a/arch/powerpc/boot/dts/lite5200b.dts
+> +++ b/arch/powerpc/boot/dts/lite5200b.dts
+> @@ -130,7 +130,6 @@
+>  
+>  		rtc@800 {	// Real time clock
+>  			compatible = "fsl,mpc5200b-rtc","fsl,mpc5200-rtc";
+> -			device_type = "rtc";
+>  			reg = <0x800 0x100>;
+>  			interrupts = <1 5 0 1 6 0>;
+>  			interrupt-parent = <&mpc5200_pic>;
+> diff --git a/arch/powerpc/boot/dts/motionpro.dts b/arch/powerpc/boot/dts/motionpro.dts
+> index 9e3c921..52ba6f9 100644
+> --- a/arch/powerpc/boot/dts/motionpro.dts
+> +++ b/arch/powerpc/boot/dts/motionpro.dts
+> @@ -248,7 +248,6 @@
+>  			fsl5200-clocking;
+>  
+>  			rtc@68 {
+> -				device_type = "rtc";
+>  				compatible = "dallas,ds1339";
+>  				reg = <0x68>;
+>  			};
+> diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
+> index 6b85067..d3d3097 100644
+> --- a/arch/powerpc/boot/dts/mpc8315erdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
+> @@ -117,7 +117,6 @@
+>  			interrupt-parent = <&ipic>;
+>  			dfsrr;
+>  			rtc@68 {
+> -				device_type = "rtc";
+>  				compatible = "dallas,ds1339";
+>  				reg = <0x68>;
+>  			};
+> diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> index 2c9d54a..d86c6a3 100644
+> --- a/arch/powerpc/boot/dts/mpc8349emitx.dts
+> +++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> @@ -85,7 +85,6 @@
+>  			dfsrr;
+>  
+>  			rtc@68 {
+> -				device_type = "rtc";
+>  				compatible = "dallas,ds1339";
+>  				reg = <0x68>;
+>  				interrupts = <18 0x8>;
+> diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+> index fa40647..fd4bbc4 100644
+> --- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+> +++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+> @@ -83,7 +83,6 @@
+>  			dfsrr;
+>  
+>  			rtc@68 {
+> -				device_type = "rtc";
+>  				compatible = "dallas,ds1339";
+>  				reg = <0x68>;
+>  				interrupts = <18 0x8>;
+> diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> index 435ef3d..9fe8e4c 100644
+> --- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> @@ -117,7 +117,6 @@
+>  			interrupt-parent = <&ipic>;
+>  			dfsrr;
+>  			rtc@68 {
+> -				device_type = "rtc";
+>  				compatible = "dallas,ds1339";
+>  				reg = <0x68>;
+>  			};
+> diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> index b11e68f..3a6d528 100644
+> --- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> @@ -117,7 +117,6 @@
+>  			interrupt-parent = <&ipic>;
+>  			dfsrr;
+>  			rtc@68 {
+> -				device_type = "rtc";
+>  				compatible = "dallas,ds1339";
+>  				reg = <0x68>;
+>  			};
+> diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> index 337af6e..ee64def 100644
+> --- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> @@ -117,7 +117,6 @@
+>  			interrupt-parent = <&ipic>;
+>  			dfsrr;
+>  			rtc@68 {
+> -				device_type = "rtc";
+>  				compatible = "dallas,ds1339";
+>  				reg = <0x68>;
+>  			};
+> diff --git a/arch/powerpc/boot/dts/pcm030.dts b/arch/powerpc/boot/dts/pcm030.dts
+> index 7c1bb95..be2c11c 100644
+> --- a/arch/powerpc/boot/dts/pcm030.dts
+> +++ b/arch/powerpc/boot/dts/pcm030.dts
+> @@ -143,7 +143,6 @@
+>  
+>  		rtc@800 {	// Real time clock
+>  			compatible = "fsl,mpc5200b-rtc","fsl,mpc5200-rtc";
+> -			device_type = "rtc";
+>  			reg = <0x800 0x100>;
+>  			interrupts = <0x1 0x5 0x0 0x1 0x6 0x0>;
+>  			interrupt-parent = <&mpc5200_pic>;
+> @@ -301,7 +300,6 @@
+>  			interrupt-parent = <&mpc5200_pic>;
+>  			fsl5200-clocking;
+>  			rtc@51 {
+> -				device_type = "rtc";
+>  				compatible = "nxp,pcf8563";
+>  				reg = <0x51>;
+>  			};
+> diff --git a/arch/powerpc/boot/dts/tqm5200.dts b/arch/powerpc/boot/dts/tqm5200.dts
+> index 3008bf8..906302e 100644
+> --- a/arch/powerpc/boot/dts/tqm5200.dts
+> +++ b/arch/powerpc/boot/dts/tqm5200.dts
+> @@ -181,7 +181,6 @@
+>  			fsl5200-clocking;
+>  
+>  			 rtc@68 {
+> -				device_type = "rtc";
+>  				compatible = "dallas,ds1307";
+>  				reg = <0x68>;
+>  			};
