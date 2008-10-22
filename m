@@ -1,22 +1,22 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from mail-gx0-f14.google.com (mail-gx0-f14.google.com
-	[209.85.217.14]) by ozlabs.org (Postfix) with ESMTP id 4B57CDDEED
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 09:21:13 +1100 (EST)
-Received: by gxk7 with SMTP id 7so440429gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 15:21:10 -0700 (PDT)
-Message-ID: <48FFA755.5050808@genesi-usa.com>
-Date: Wed, 22 Oct 2008 17:21:09 -0500
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id C94EDDDEE4
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 09:29:42 +1100 (EST)
+Date: Thu, 23 Oct 2008 02:29:40 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Message-ID: <20081022222940.GA14636@oksana.dev.rtsoft.ru>
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+	<200810221404.52798.david-b@pacbell.net>
+	<20081022212217.GA32378@oksana.dev.rtsoft.ru>
+	<200810221452.46786.david-b@pacbell.net>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: Extended Addressing Mode
-References: <48FEEB88.6050505@kontron.com>	<83735324-C37B-4C57-A50F-FFF0D133E4E3@kernel.crashing.org>	<48FF23C4.5030408@kontron.com>	<88C8EDEB-C9A5-4876-AF7D-55CBABBE111D@kernel.crashing.org>
-	<1224713506.7654.353.camel@pasglop>
-In-Reply-To: <1224713506.7654.353.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org,
-	=?ISO-8859-1?Q?R=E9gis_Odey=E9?= <regis.odeye@kontron.com>
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <200810221452.46786.david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+	Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,28 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-Benjamin Herrenschmidt wrote:
-> On Wed, 2008-10-22 at 08:08 -0500, Kumar Gala wrote:
->>> We are developing a board based on Freescale 8641D which can get
->> 4GB  
->>> of ram. So I need 4GB+IOs (~1GB) of physical addressing space.
->>> My plan is to put a part of this ram above of 4GB to keep accesses  
->>> to the IOs below the 4GB limit. It means non-contiguous ram  
->>> addressing and XAEN features to be working.
+On Wed, Oct 22, 2008 at 02:52:46PM -0700, David Brownell wrote:
+> On Wednesday 22 October 2008, Anton Vorontsov wrote:
+> > > 
+> > > > So if we register the board infos after 
+> > > > the controller registered, then nobody will probe the board infos.
+> > > 
+> > > See above.  If you're doing it right, there's no problem.
+> > > That is, scan the OF tables early.  Just like PNP tables
+> > > get scanned early, for example.
+> > 
+> > Heh. If we don't want to be able to make the OF-parsing code
+> > be a module then there is no problem at all. I can use the bus
+> > notifiers. And it is most straightforward solution then.
+> > 
+> > But I quite dislike to bloat the kernel image with
+> > maybe-never-used-on-this-board code.
 > 
-> Why would you put the IOs below the 4G point ? It's actually easier
-> to have the IOs up above, like a lot of 4xx do.
+> So have it live in the __init text section.  If you're
+> building a kernel with support for several boards, you
+> know it's necessarily going to be larger than it would
+> be if only one board were supported.  But you can shrink
+> kernel size by judicious use of __init sections..
 
-Because we're Genesi! And we have a firmware solution that 
-kind of has to keep 32-bit pointers in the unlikely event that 
-someone actually uses the client interface (besides yaboot!).
+Won't work, unfortunately. I2C devices are created by the
+i2c controllers, via drivers/of_i2c.c  of_register_i2c_devices().
 
-Having I/O in the 36-bit range could cause all sorts of 
-explosions, and we're running real-mode so trapping and faking 
-I/O accesses is REALLy difficult :}
+There is a good reason to do so, the code needs to know
+controller's OF node to walk down and register the child nodes
+(devices). See drivers/i2c/busses/i2c-mpc.c -- it calls
+of_register_i2c_devices() at the end of the probe().
+
+Since we can't call __init stuff from non-__init, the scheme
+you purpose won't work.
+
+The same is for SPI (drivers/of_spi.c of_register_spi_devices()).
+
+> > My aim was to make the 
+> > OF-parsing part be a module too. Because in the long run we
+> > need the OF-parsing stuff for _every_ driver that needs
+> > platform data. It's quite expensive to have it always built-in,
+> > don't you think?
+> 
+> If it's discarded early, after translating the data from
+> OF format into what the drivers need, there will be no
+> RAM footprint.
+
+There is also kernel image size that matters...
 
 -- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
