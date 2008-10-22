@@ -1,18 +1,21 @@
-Return-Path: <miltonm@bga.com>
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id D9B56477FC
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 07:44:08 +1100 (EST)
-In-Reply-To: <kexec-user-2@bga.com>
-References: <kexec-user-2@bga.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <85f28cc33f5eb349962712e541762b38@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 2/2 kexec-tools] ppc64: segemments are sorted
-Date: Wed, 22 Oct 2008 15:47:45 -0500
-To: Milton Miller <miltonm@bga.com>
-Cc: kexec@lists.infradead.org, Simon Horman <horms@verge.net.au>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <david-b@pacbell.net>
+Received: from smtp121.sbc.mail.sp1.yahoo.com (smtp121.sbc.mail.sp1.yahoo.com
+	[69.147.64.94]) by ozlabs.org (Postfix) with SMTP id 0B9ACDDE9E
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 08:04:55 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Date: Wed, 22 Oct 2008 14:04:52 -0700
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+	<20081022104606.GA510@oksana.dev.rtsoft.ru>
+	<20081022183218.GA19025@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081022183218.GA19025@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200810221404.52798.david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+	Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 22 October 2008, Anton Vorontsov wrote:
+> 
+> > > The board info has another problem though. We can't remove it, thus
+> > > we can't implement module_exit() for the 'OF glue'.
 
-On Oct 22, 2008, at 3:39 PM, Milton Miller wrote:
+That's not a problem.  Why would you want to remove it?
 
-> Every time add_segment is called, the segments are sorted.  If the 
-> first
-> hole in memory is not big enough for the kernel then something besides
-> the kernel may be at
 
-info->segment[0].
+> > And try to solve this problem... maybe then things will begin to
+> > move forward.
+> 
+> There is another problem: board infos are scanned at the controller
+> registration time only.
 
-> ---
-> Found during custom environment testing with several reserved blocks of
-> memory, not the usual case.
+Right.  Such board description data should be made available
+early in boot.  As a rule:  before arch_initcall() finishes,
+so that subsys_initcall() code can use the associated GPIOs.
 
-milton
+(It's fairly well acknowledged that init dependency handling
+has a lot of problems.  Until that's fixed ... for GPIOs, the
+general advice is to make sure everything is available by
+subsys_initcall time,  so the subsystems which rely on GPIOs
+to initialize -- power switches, resets, etc -- can initialize.
+That can require i2c adapter drivers to use subsys_initcall,
+for example.)
+
+
+> So if we register the board infos after 
+> the controller registered, then nobody will probe the board infos.
+
+See above.  If you're doing it right, there's no problem.
+That is, scan the OF tables early.  Just like PNP tables
+get scanned early, for example.
+
+- Dave
