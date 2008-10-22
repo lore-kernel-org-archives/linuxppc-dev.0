@@ -1,23 +1,33 @@
-Return-Path: <satyakiran@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.153])
-	by ozlabs.org (Postfix) with ESMTP id 174D6DDDEC
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 09:50:32 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so94334fga.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 15:50:31 -0700 (PDT)
-Message-ID: <acbcf3840810211550q34dac858je6c114a924067d65@mail.gmail.com>
-Date: Tue, 21 Oct 2008 15:50:30 -0700
-From: Satya <satyakiran@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: hugetlbfs for ppc440 - kernel BUG
-In-Reply-To: <acbcf3840810211546s1d72dac0kabcf1285358efbdf@mail.gmail.com>
+Return-Path: <kniht@us.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D0117DDDD4
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 12:27:41 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9M1RZcQ022123
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 21:27:35 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9M1RZpv100100
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 19:27:35 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9M1R6w7022386
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 19:27:06 -0600
+Received: from [9.12.243.33] ([9.12.243.33])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m9M1R5Li022367
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Oct 2008 19:27:06 -0600
+Message-ID: <48FE8188.8030706@us.ibm.com>
+Date: Tue, 21 Oct 2008 20:27:36 -0500
+From: Jon Tollefson <kniht@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_14642_15712182.1224629430993"
-References: <acbcf3840707101138t24597799s6511f9326ed2243e@mail.gmail.com>
-	<1224622063.7654.265.camel@pasglop>
-	<acbcf3840810211546s1d72dac0kabcf1285358efbdf@mail.gmail.com>
-Cc: kazutomo@mcs.anl.gov, linuxppc-dev@ozlabs.org, edi@linux.vnet.ibm.com,
-	david@gibson.dropbear.id.au
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Don't use a 16G page if beyond mem= limits
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Reply-To: kniht@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,88 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_14642_15712182.1224629430993
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+If mem= is used on the boot command line to limit memory then the memory block where a 16G page resides may not be available.
 
-On Tue, Oct 21, 2008 at 3:46 PM, Satya <satyakiran@gmail.com> wrote:
+Thanks to Michael Ellerman for finding the problem.
 
-> Ben,
-> Look here: http://www-unix.mcs.anl.gov/zeptoos/hugepages/
->
-> thanks,
-> ./satya
->
->
-> On Tue, Oct 21, 2008 at 1:47 PM, Benjamin Herrenschmidt <
-> benh@kernel.crashing.org> wrote:
->
->> On Tue, 2007-07-10 at 13:38 -0500, Satya wrote:
->> > hello,
->> > I am trying to implement hugetlbfs on the IBM Bluegene/L IO node
->> > (ppc440) and I have a big problem as well as a few questions to ask
->> > the group. I patched a 2.6.21.6 linux kernel (manually) with Edi
->> > Shmueli's hugetlbfs implementation (found here:
->> > http://patchwork.ozlabs.org/linuxppc/patch?id=8427) for this. I did
->> > have to make slight changes (described at the end) to make it work.
->> > My test program is a shortened version of a sys v shared memory
->> > example described in Documentation/vm/hugetlbpage.txt
->>
->> Hi !
->>
->> The patchwork link unfortunately didn't survive the transition to
->> patchwork 2.
->>
->> Do you know what's the status of Hugetlb support for 44x ? Is there any
->> plan to release that for upstream inclusion ?
->>
->> Cheers,
->> Ben.
->>
->>
->>
+Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+---
 
-whoops, sorry for top-posting. Here is a patch that worked at that time:
-http://www-unix.mcs.anl.gov/zeptoos/hugepages/hugetlbpage_44x.patch
+ arch/powerpc/mm/hash_utils_64.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-I didn't follow up after this to get it merged upstream. Also I don't know
-if hugetlb core has changed to deal with PTEs in high memory.
-
-./satya
-
-------=_Part_14642_15712182.1224629430993
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<br><br><div class="gmail_quote">On Tue, Oct 21, 2008 at 3:46 PM, Satya <span dir="ltr">&lt;<a href="mailto:satyakiran@gmail.com">satyakiran@gmail.com</a>&gt;</span> wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Ben,<br>Look here: <a href="http://www-unix.mcs.anl.gov/zeptoos/hugepages/" target="_blank">http://www-unix.mcs.anl.gov/zeptoos/hugepages/</a><br><br>thanks,<br><font color="#888888">./satya</font><div><div></div><div class="Wj3C7c">
-<br><br><div class="gmail_quote">On Tue, Oct 21, 2008 at 1:47 PM, Benjamin Herrenschmidt <span dir="ltr">&lt;<a href="mailto:benh@kernel.crashing.org" target="_blank">benh@kernel.crashing.org</a>&gt;</span> wrote:<br>
-<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div>On Tue, 2007-07-10 at 13:38 -0500, Satya wrote:<br>
-&gt; hello,<br>
-&gt; I am trying to implement hugetlbfs on the IBM Bluegene/L IO node<br>
-&gt; (ppc440) and I have a big problem as well as a few questions to ask<br>
-&gt; the group. I patched a <a href="http://2.6.21.6" target="_blank">2.6.21.6</a> linux kernel (manually) with Edi<br>
-&gt; Shmueli&#39;s hugetlbfs implementation (found here:<br>
-&gt; <a href="http://patchwork.ozlabs.org/linuxppc/patch?id=8427" target="_blank">http://patchwork.ozlabs.org/linuxppc/patch?id=8427</a>) for this. I did<br>
-&gt; have to make slight changes (described at the end) to make it work.<br>
-&gt; My test program is a shortened version of a sys v shared memory<br>
-&gt; example described in Documentation/vm/hugetlbpage.txt<br>
-<br>
-</div>Hi !<br>
-<br>
-The patchwork link unfortunately didn&#39;t survive the transition to<br>
-patchwork 2.<br>
-<br>
-Do you know what&#39;s the status of Hugetlb support for 44x ? Is there any<br>
-plan to release that for upstream inclusion ?<br>
-<br>
-Cheers,<br>
-Ben.<br>
-<br>
-<br>
-</blockquote></div></div></div></blockquote><div><br>&nbsp;</div></div>whoops, sorry for top-posting. Here is a patch that worked at that time:<br><a href="http://www-unix.mcs.anl.gov/zeptoos/hugepages/hugetlbpage_44x.patch">http://www-unix.mcs.anl.gov/zeptoos/hugepages/hugetlbpage_44x.patch</a><br>
-<br>I didn&#39;t follow up after this to get it merged upstream. Also I don&#39;t know if hugetlb core has changed to deal with PTEs in high memory.<br><br>./satya<br>
-
-------=_Part_14642_15712182.1224629430993--
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 5c64af1..8d5b475 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -382,8 +382,10 @@ static int __init htab_dt_scan_hugepage_blocks(unsigned long node,
+ 	printk(KERN_INFO "Huge page(16GB) memory: "
+ 			"addr = 0x%lX size = 0x%lX pages = %d\n",
+ 			phys_addr, block_size, expected_pages);
+-	lmb_reserve(phys_addr, block_size * expected_pages);
+-	add_gpage(phys_addr, block_size, expected_pages);
++	if (phys_addr + (16 * GB) <= lmb_end_of_DRAM()) {
++		lmb_reserve(phys_addr, block_size * expected_pages);
++		add_gpage(phys_addr, block_size, expected_pages);
++	}
+ 	return 0;
+ }
+ #endif /* CONFIG_HUGETLB_PAGE */
