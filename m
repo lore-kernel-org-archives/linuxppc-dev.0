@@ -1,19 +1,19 @@
-Return-Path: <Vejseli@web.de>
-Received: from fmmailgate04.web.de (fmmailgate04.web.de [217.72.192.242])
-	by ozlabs.org (Postfix) with ESMTP id 37DE0DDDFF
+Return-Path: <nyet@mrv.com>
+Received: from chmailsrv.int.mrv.com (ns1.mrv.com [66.43.110.3])
+	by ozlabs.org (Postfix) with ESMTP id 9E82CDDEE4
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 22 Oct 2008 23:10:16 +1100 (EST)
-Received: from web.de
-	by fmmailgate04.web.de (Postfix) with SMTP id E0F4A5F135CF
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 22 Oct 2008 14:10:13 +0200 (CEST)
-Date: Wed, 22 Oct 2008 14:10:12 +0200
-Message-Id: <1695261910@web.de>
+	Thu, 23 Oct 2008 08:36:41 +1100 (EST)
+Date: Wed, 22 Oct 2008 14:24:34 -0700
+From: Nye Liu <nyet@mrv.com>
+To: crossgcc@sourceware.org
+Subject: Re: powerpc 860 and glibc sysdeps/powerpc/power3/memset.S: CPU15
+	"dcbX"  errata
+Message-ID: <20081022212434.GA18508@mrv.com>
+References: <48FD7C30.1010505@mrv.com>
 MIME-Version: 1.0
-From: Mirsad Vejseli <Vejseli@web.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: virtex 4 linux driver bus error
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48FD7C30.1010505@mrv.com>
+Cc: "Nye Liu \(nyet.org\)" <nyet@nyet.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,78 +24,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hello at all,
+On Mon, Oct 20, 2008 at 11:52:32PM -0700, nyet wrote:
+> I am working on a powerpc 860 toolchain, but I am having problems  
+> convincing glibc to not emit code that uses the dcbz instruction (CPU15  
+> dcbX bug). The source of the problem is sysdeps/powerpc/power3/memset.S
+>
+> in crosstool, we had something like this:
+>
+> Index: crosstool.sh
+> ===================================================================
+> --- crosstool.sh	(.../vendor/crosstool/current)	(revision 6652)
+> +++ crosstool.sh	(.../trunk/tools/crosstool)	(revision 6652)
+> @@ -529,6 +529,11 @@
+> 	export libc_cv_forced_unwind libc_cv_c_cleanup
+>     fi
+>
+> +    case ${TARGET} in
+> +       # remove inline asm powerpc memset, which is broken for 8xx
+> +        powerpc-8* ) rm -f ${GLIBC_DIR}/sysdeps/powerpc/powerpc32/memset.S ;;
+> +    esac
+> +
+>     BUILD_CC=gcc CFLAGS="$TARGET_CFLAGS $EXTRA_TARGET_CFLAGS" CC="${TARGET}-gcc $GLIBC_EXTRA_CC_ARGS" \
+>     AR=${TARGET}-ar RANLIB=${TARGET}-ranlib \
+>         ${GLIBC_DIR}/configure --prefix=/usr \
+>
+> but i dont know what the proper place is to put the equivalent in crosstool-ng
+>
+> see also my crosstool patch here
+>
+> http://sourceware.org/ml/crossgcc/2006-12/msg00057.html
+>
+> and a discussion of the CPU15 errata here
+>
+> http://mlblog.osdir.com/linux.ports.ppc.embedded/2005-04/index.shtml
+>
+> It is worth noting that according to freescale, dcbi, dcibst, dcbf, and  
+> icbi are similarly affected, whch means  
+> sysdeps/powerpc/powerpc32/dl-machine.c might also cause problems, since  
+> it uses dcbst and icbi.
+>
+> the glibc maintainers seem aware of the problem, but don't seem to think  
+> anybody uses glibc with the 860 series. wolfgang denk is also apparently  
+> doing his own workarounds for the toolchains he builds for eldk.
+>
 
-at the moment I use development board ML410 with montavistalinux.=20
+This is what i ended up with. I have no idea if there is a better way;
+I'd rather fix this up in a glibc patch but the way sysdeps works is
+beyond my knowledge.
 
-I have a problem, please help me!=20
+Index: scripts/build/libc/glibc.sh
+===================================================================
+--- scripts/build/libc/glibc.sh	(revision 1113)
++++ scripts/build/libc/glibc.sh	(working copy)
+@@ -386,6 +386,15 @@
+         echo libc_cv_c_cleanup=yes
+     fi >config.cache
+ 
++    case ${CT_TARGET} in
++	# Remove inline asm powerpc memset, which is broken for FreeScale 8xx
++	# (CPU15 errata)
++	# http://sourceware.org/ml/crossgcc/2006-12/msg00057.html
++	# http://mlblog.osdir.com/linux.ports.ppc.embedded/2005-04/index.shtml
++	# http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016351.html
++        powerpc-8* ) rm -f ${CT_SRC_DIR}/${CT_LIBC_FILE}/sysdeps/powerpc/powerpc32/memset.S ;;
++    esac
++
+     # Configure with --prefix the way we want it on the target...
+     # There are a whole lot of settings here.  You'll probably want
+     # to read up on what they all mean, and customize a bit, possibly by setting GLIBC_EXTRA_CONFIG
 
-I try to write a linux-driver for writing or reading registers.
-I have a ace-file, which contents Linux and EDK-project with a component (=
-IP-wizard) which is added on a PLB-bus.
-I also have a driver-construct which I can register (insmod driver.ko) int=
-o the linux-Kernel only if i do not use functions to write or read the bus=
- (XIO=5Fout32() or XIO=5Fin32 ()  ). If I use this function after registering =
-the driver I got an error.
-If I try to insert the modul with Insmod driver.ko I get a bus error! =20
+-- 
+Nye Liu
+nliu@mrv.com
+(818) 772-6235x248
+(818) 772-0576 fax
 
-my driver is similar to http://ozlabs.org/pipermail/linuxppc-embedded/2006=
--January/021578.html
-=20
-
-her the two importent functions  of the driver:
-
-#define REG=5FBASE 	(u32) XPAR=5Fkomponente=5F0=5FBASEADDR // defined in xparamete=
-rs=5Fml41x.h=20
-#define REG=5FHIGH 	(u32) XPAR=5Fkomponente=5F0=5FHIGHADDR // defined in xparamete=
-rs=5Fml41x.h=20
-
-
-#define reg0=5Fupper	(u32) komponente=5FSLV=5FREG0=5FOFFSET // 32-bit register / d=
-efined in komponente.h
-#define reg1=5Fupper	(u32) komponente=5FSLV=5FREG1=5FOFFSET // 32-bit register / d=
-efined in komponente.h
-#define reg2=5Fupper	(u32) komponente=5FSLV=5FREG2=5FOFFSET // 32-bit register / d=
-efined in komponente.h
-
-const static long remap=5Fsize =3D REG=5FHIGH - REG=5FBASE + 1;
-
-static void read=5Fregister=5Fvalues(void)
-{
-	static u32 upper;
-=09
-
-	printk("%s:\n",DRIVERNAME);
-	printk("%s:                      |     upper         |\n",DRIVERNAME);
-	printk("%s:----------------------|-------------------|\n",DRIVERNAME);
-=09
-	upper =3D XIo=5FIn32(reg=5Fremapped=5Faddress + reg1=5Fupper);
-
-    printk("%s: Daten im Register 35 |%15X |\n", DRIVERNAME, upper );
-=09
-}
-
-
-static int =5F=5Finit meintreiber=5Finit(void)   =20
-reg=5Fremapped=5Faddress =3D (u32) ioremap(REG=5FBASE, remap=5Fsize);
-  =20
-    rtn =3D misc=5Fregister(&miscdev);
-    if (rtn)=20
-    {
-		printk("%s: %s error driver not reg. \n",DRIVERNAME, miscdev.name);
-        return rtn;
-    }
-
-	read2=5Fregister=5Fvalues();
-=09
-in the messeges log file i got the 3 printk lins and this line=20
-"upper =3D XIo=5FIn32(reg=5Fremapped=5Faddress + reg1=5Fupper);"
-creates a error
-
-=20
-
-
-Thank you very much for your kind help!=20
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F
-Schon geh=F6rt=3F Bei WEB.DE gibt' s viele kostenlose Spiele:
-http://games.entertainment.web.de/de/entertainment/games/free/index.html
+"Who would be stupid enough to quote a fictitious character?"
+	-- Don Quixote
