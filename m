@@ -2,20 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 813EBDDDD8
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 11:11:55 +1100 (EST)
-Subject: Re: [PATCHv2 1/1] powerpc: Update page in counter for CMM
+	by ozlabs.org (Postfix) with ESMTPS id 2EDF6DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 11:23:36 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Add del_node function to allow early boot
+	code to prune inapplicable devices.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Brian King <brking@linux.vnet.ibm.com>
-In-Reply-To: <48FE3B16.5050402@linux.vnet.ibm.com>
-References: <200810210436.m9L4aepT056796@sullivan.realtime.net>
-	<48FE3B16.5050402@linux.vnet.ibm.com>
+To: Mike Ditto <mditto@consentry.com>
+In-Reply-To: <20081021233306.GA2108@secretlab.ca>
+References: <48F7E1E6.4040701@consentry.com>
+	<20081017012604.GA22213@yookeroo.seuss> <48FE4A6D.5@consentry.com>
+	<20081021233306.GA2108@secretlab.ca>
 Content-Type: text/plain
-Date: Wed, 22 Oct 2008 11:11:31 +1100
-Message-Id: <1224634291.7654.287.camel@pasglop>
+Date: Wed, 22 Oct 2008 11:23:29 +1100
+Message-Id: <1224635009.7654.290.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Milton Miller <miltonm@bga.com>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,22 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2008-10-21 at 17:33 -0600, Grant Likely wrote:
+> On Tue, Oct 21, 2008 at 02:32:29PM -0700, Mike Ditto wrote:
+> > Reposting in proper format...
+> > 
+> > Some platforms have variants that can share most of a flat device tree but need
+> > a few devices selectively pruned at boot time.  This adds del_node() to ops.h
+> > to allow access to the existing fdt_del_node().
+> > 
+> > Signed-off-by: Mike Ditto <mditto@consentry.com>
+> 
+> Looks good to me.
+> 
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-> -	if (ret & VM_FAULT_MAJOR)
-> +	if (ret & VM_FAULT_MAJOR) {
->  		current->maj_flt++;
-> -	else
-> +		preempt_disable();
-> +		get_lppaca()->page_ins++;
-> +		preempt_enable();
-> +	} else
+little nit: The patch doesn't quite have the right form.
 
-That isn't going to work very well on 32-bit or non-pseries
-platforms :-)
+Patches to the kernel are expected to apply with -p1, so
+for example, the patch line contains:
 
-We need either something like a ppc_md. callback or at least a test for
-firmware feature... (which probably still needs an ifdef to build on
-32 bit).
+arch/powerpc/boot/ops.h
+
+It should be
+
+something/arch/powerpc/boot/ops.h
+
+I've fixed it up manually so no need to re-submit, but you'll know next
+time :-)
 
 Cheers,
 Ben.
