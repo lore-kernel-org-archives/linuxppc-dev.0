@@ -1,26 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 374F4DDDEC
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 18:40:19 +1100 (EST)
-Subject: Re: [PATCH 2/7] i2c: add info->archdata field
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <20081022085002.0698e2a8@hyperion.delvare>
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
-	<20081016171253.GB5515@oksana.dev.rtsoft.ru>
-	<20081017112125.1f2c9d94@hyperion.delvare>
-	<1224635254.7654.292.camel@pasglop>
-	<20081022085002.0698e2a8@hyperion.delvare>
-Content-Type: text/plain
-Date: Wed, 22 Oct 2008 18:37:55 +1100
-Message-Id: <1224661075.7654.338.camel@pasglop>
-Mime-Version: 1.0
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org, David Miller <davem@davemloft.net>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <Regis.Odeye@kontron.com>
+Received: from mail.kontron-modular.com (mail.kontron-modular.com
+	[213.179.130.140]) by ozlabs.org (Postfix) with ESMTP id 4A287DDDEC
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Oct 2008 20:12:03 +1100 (EST)
+Message-ID: <48FEEB88.6050505@kontron.com>
+Date: Wed, 22 Oct 2008 10:59:52 +0200
+From: =?ISO-8859-1?Q?R=E9gis_Odey=E9?= <regis.odeye@kontron.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Extended Addressing Mode
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,29 +18,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-10-22 at 08:50 +0200, Jean Delvare wrote:
-> On Wed, 22 Oct 2008 11:27:34 +1100, Benjamin Herrenschmidt wrote:
-> > On Fri, 2008-10-17 at 11:21 +0200, Jean Delvare wrote:
-> > > Hi Anton,
-> > > 
-> > > On Thu, 16 Oct 2008 21:12:53 +0400, Anton Vorontsov wrote:
-> > > > If present the info->archdata is copied into the dev->archdata.
-> > > > Some (OpenFirmware) platforms need it.
-> > > > 
-> > > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > > > ---
-> > 
-> > So who's pushing this one ? Jean ?
-> 
-> As I wrote before, I'm happy to take this patch if you want me to, but
-> I also have no objection if the author of this patchset wants to push
-> it himself together with the rest of the set. Just let me know what you
-> expect from me (preferably in the next few hours, as I will be sending
-> my second and last round of i2c patches for kernel 2.6.28 to Linus
-> today.)
+Hello Everyone,
+I'm looking for some information about the Extended Addressing Mode 
+(XAEN bit of HID0 register) of PPC32 support in Linux.
+I do not see anything in the main kernel tree but there may be some 
+patches available ?
+Any information will be appreciate.
+Regards.
 
-Anton, I've done my last batch for 2.6.28 before -rc1 so it might be
-better if it goes through Jean no ?
+-- 
+Régis ODEYE
 
-Cheers,
-Ben.
+Kontron Modular Computers SA
+150, rue M. Berthelot / ZI Toulon Est / BP 244 / Fr 83078 TOULON Cedex 9
+Phone: (33) 4 98 16 34 86           Fax: (33) 4 98 16 34 01
+E-mail: regis.odeye@kontron.com  Web : www.kontron.com
