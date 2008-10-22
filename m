@@ -1,17 +1,24 @@
-Return-Path: <sebastien.dugue@bull.net>
-Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id 5337BDDE19
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 01:36:47 +1100 (EST)
-Date: Wed, 22 Oct 2008 16:36:32 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: linux-ppc <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: XICS - fix getting the server number size
-Message-ID: <20081022163632.2c67a53d@bull.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Tim Chavez <tinytim@us.ibm.com>,
-	Jean Pierre Dion <jean-pierre.dion@bull.net>,
-	Milton Miller <miltonm@bga.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E0C39DDE0D
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 01:58:50 +1100 (EST)
+Message-Id: <EF781CC4-B321-4E6A-A376-ADDDC1BB2E7B@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Matt Sealey <matt@genesi-usa.com>
+In-Reply-To: <48FF3685.5020504@genesi-usa.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: Extended Addressing Mode
+Date: Wed, 22 Oct 2008 09:58:20 -0500
+References: <48FEEB88.6050505@kontron.com>	<83735324-C37B-4C57-A50F-FFF0D133E4E3@kernel.crashing.org>	<48FF23C4.5030408@kontron.com>
+	<88C8EDEB-C9A5-4876-AF7D-55CBABBE111D@kernel.crashing.org>
+	<48FF2DDE.9060301@genesi-usa.com>
+	<DC24FCF5-F410-47AB-8FC0-592EA0906568@kernel.crashing.org>
+	<48FF3685.5020504@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org,
+	=?ISO-8859-1?Q?R=E9gis_Odey=E9?= <regis.odeye@kontron.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,83 +29,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-  The 'ibm,interrupt-server#-size' properties are not cpu nodes properties,
-but rather live under the interrupt source controller nodes (compatible
-ibm,ppc-xics).
+On Oct 22, 2008, at 9:19 AM, Matt Sealey wrote:
 
-  Therefore, this patch moves the detection of this property outside of
-xics_update_irq_servers() and into xics_init_IRQ().
+>
+>
+> Kumar Gala wrote:
+>> On Oct 22, 2008, at 8:42 AM, Matt Sealey wrote:
+>>> So to confirm, XAEN support through Becky's patches does support  
+>>> the MPC8641D/e600 cores?
+>> Yes, its the only part that has XAEN.
+>
+> Okay I saw a lot of e500/BookE support go past but nothing specific :)
 
-  Also this adds a check for mismatched sizes across the interrupt source
-controller nodes. Not sure this is necessary as in this case the firmware
-might be seriously busted.
+The "XAEN" is specific to e600.  e500 has its own ability to do 36-bit  
+physical (not called XAEN).
 
-Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Milton Miller <miltonm@bga.com>
----
- arch/powerpc/platforms/pseries/xics.c |   28 ++++++++++++++++++++++------
- 1 files changed, 22 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
-index e190477..75a289b 100644
---- a/arch/powerpc/platforms/pseries/xics.c
-+++ b/arch/powerpc/platforms/pseries/xics.c
-@@ -579,7 +579,7 @@ static void xics_update_irq_servers(void)
- 	int i, j;
- 	struct device_node *np;
- 	u32 ilen;
--	const u32 *ireg, *isize;
-+	const u32 *ireg;
- 	u32 hcpuid;
- 
- 	/* Find the server numbers for the boot cpu. */
-@@ -607,11 +607,6 @@ static void xics_update_irq_servers(void)
- 		}
- 	}
- 
--	/* get the bit size of server numbers */
--	isize = of_get_property(np, "ibm,interrupt-server#-size", NULL);
--	if (isize)
--		interrupt_server_size = *isize;
--
- 	of_node_put(np);
- }
- 
-@@ -682,6 +677,7 @@ void __init xics_init_IRQ(void)
- 	struct device_node *np;
- 	u32 indx = 0;
- 	int found = 0;
-+	const u32 *isize;
- 
- 	ppc64_boot_msg(0x20, "XICS Init");
- 
-@@ -701,6 +697,26 @@ void __init xics_init_IRQ(void)
- 	if (found == 0)
- 		return;
- 
-+	/* get the bit size of server numbers */
-+	found = 0;
-+
-+	for_each_compatible_node(np, NULL, "ibm,ppc-xics") {
-+		isize = of_get_property(np, "ibm,interrupt-server#-size", NULL);
-+
-+		if (!isize)
-+			continue;
-+
-+		if (!found) {
-+			interrupt_server_size = *isize;
-+			found = 1;
-+		} else if (*isize != interrupt_server_size) {
-+			printk(KERN_WARNING "XICS: "
-+			       "mismatched ibm,interrupt-server#-size\n");
-+			interrupt_server_size = max(*isize,
-+						    interrupt_server_size);
-+		}
-+	}
-+
- 	xics_update_irq_servers();
- 	xics_init_host();
- 
--- 
-1.6.0.1.308.gede4c
+- k
