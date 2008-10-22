@@ -1,23 +1,28 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Date: Wed, 22 Oct 2008 23:28:05 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Return-Path: <becky.bruce@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CDA7CDDE28
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 07:00:00 +1100 (EST)
+Message-Id: <20EAA623-DD71-46E0-A47C-658DCEA7E607@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
 To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: [PATCH] powerpc: Remove device_type = "rtc" properties in .dts
-	files
-Message-ID: <20081022192805.GA8937@oksana.dev.rtsoft.ru>
-References: <20081021185844.GA31070@oksana.dev.rtsoft.ru>
-	<48FF2CBB.7060605@genesi-usa.com>
-	<20081022135046.GA30347@oksana.dev.rtsoft.ru>
-	<48FF73B2.8040600@genesi-usa.com>
-	<20081022185913.GA1828@oksana.dev.rtsoft.ru>
-	<48FF7A4D.4000506@genesi-usa.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <48FF7A4D.4000506@genesi-usa.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	devicetree-discuss@ozlabs.org,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Reply-To: avorontsov@ru.mvista.com
+In-Reply-To: <48FF6CEF.8050607@genesi-usa.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: Extended Addressing Mode
+Date: Wed, 22 Oct 2008 14:59:27 -0500
+References: <48FEEB88.6050505@kontron.com>	<83735324-C37B-4C57-A50F-FFF0D133E4E3@kernel.crashing.org>	<48FF23C4.5030408@kontron.com>
+	<88C8EDEB-C9A5-4876-AF7D-55CBABBE111D@kernel.crashing.org>
+	<48FF2DDE.9060301@genesi-usa.com>
+	<DC24FCF5-F410-47AB-8FC0-592EA0906568@kernel.crashing.org>
+	<48FF3685.5020504@genesi-usa.com>
+	<EF781CC4-B321-4E6A-A376-ADDDC1BB2E7B@kernel.crashing.org>
+	<48FF6CEF.8050607@genesi-usa.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	=?ISO-8859-1?Q?R=E9gis_Odey=E9?= <regis.odeye@kontron.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,51 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 22, 2008 at 02:09:01PM -0500, Matt Sealey wrote:
-> Anton Vorontsov wrote:
->> On Wed, Oct 22, 2008 at 01:40:50PM -0500, Matt Sealey wrote:
->>
->> I think I got it. ;-) You think that I'm not aware of that we _can_
->> use the device_type for matching the nodes. Well, I'm aware of it,
->> sure we can. ;-)
->
-> I'm sure you are aware, I am just a little jumpy regarding this as the 
-> whole ePAPR-is-official thing and the direction Linux is taking with 
-> regards to redefining part of the device tree specs, that this could have 
-> been something a little more serious :)
->
->> But we don't use it for the rtc nodes, and we don't want to encourage
->> the usage for the flat trees. And that's the point of this patch.
->
-> Would it not be prudent to, while not actively encouraging it, at least 
-> mention device_type in any specifications as a legacy item (for real Open 
-> Firmware only) and for if a device should be in the tree as a generic, 
-> IEEE 1275-style device (i.e. there would be a set of well-defined client 
-> interface methods for it in a real OF)?
->
-> My basic concerns are for input/output as reported by /chosen - in case 
-> it is important exactly what is being used, there is at least one 
-> out-of-driver code snippet which checks if stdin and stdout are of type 
-> "serial" (or "failsafe") and auto-directs console to that - it would be 
-> nice to keep this clean and not dump a million serial-device-compatibles 
-> in another list here if someone wants to automatically choose between 
-> console output on the DIU or PSC for MPC5121e/MPC8610 for example, or 
-> wants to restrict the amount of fancy stuff it does on a terminal if it's 
-> a slow serial device, or perhaps even automatically invoke netconsole if 
-> it's set to "network"?
->
-> I know U-Boot doesn't have the intelligence to output to anything but a 
-> serial port these days on those devices, but as they say, there is no 
-> fate but what we make .. we should make sure it doesn't turn up that code 
-> is never suggested or attempted because supporting it in Linux would be 
-> too big a jump or too messy a patch :)
 
-I don't feel competent to comment on "embedded-OF"/FDT design
-decisions...
+On Oct 22, 2008, at 1:11 PM, Matt Sealey wrote:
 
-Let's Cc devicetree-discuss@ozlabs.org ?
+>
+>
+> Kumar Gala wrote:
+>> On Oct 22, 2008, at 9:19 AM, Matt Sealey wrote:
+>>>
+>>>
+>>> Kumar Gala wrote:
+>>>> On Oct 22, 2008, at 8:42 AM, Matt Sealey wrote:
+>>>>> So to confirm, XAEN support through Becky's patches does support  
+>>>>> the MPC8641D/e600 cores?
+>>>> Yes, its the only part that has XAEN.
+>>>
+>>> Okay I saw a lot of e500/BookE support go past but nothing  
+>>> specific :)
+>> The "XAEN" is specific to e600.  e500 has its own ability to do 36- 
+>> bit physical (not called XAEN).
+>
+> You have to forgive me I was only half awake when I started :D
+>
+> Yeah so I saw BookE and e500 stuff go past but nothing specific for  
+> e600/XAEN. I mailed Becky and got no response. I'm glad to know it's  
+> in there though, somewhere.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Huh?  I have one mail from you, on Sep 1, to which I responded on Sep  
+2.  Was there another mail I missed, or did you not see my response?   
+Freescale's mail server is unreliable, and since I'm not in the habit  
+of ignoring emails, feel free to nag me anytime if you send me  
+something and don't get a response.
+
+>
+>
+> Just so it has been asked, do you know in a broad sense what it  
+> would take to add the non-contiguous memory mapping support? Doesn't  
+> ppc64 already have this?
+
+
+PPC64 has SPARSEMEM support, IIRC. It's non-trivial to add for 32-bit,  
+although I haven't scoped it out in any detail.
+
+Cheers,
+B
