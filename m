@@ -1,28 +1,18 @@
-Return-Path: <becky.bruce@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CDA7CDDE28
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 07:00:00 +1100 (EST)
-Message-Id: <20EAA623-DD71-46E0-A47C-658DCEA7E607@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-To: Matt Sealey <matt@genesi-usa.com>
-In-Reply-To: <48FF6CEF.8050607@genesi-usa.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: Extended Addressing Mode
-Date: Wed, 22 Oct 2008 14:59:27 -0500
-References: <48FEEB88.6050505@kontron.com>	<83735324-C37B-4C57-A50F-FFF0D133E4E3@kernel.crashing.org>	<48FF23C4.5030408@kontron.com>
-	<88C8EDEB-C9A5-4876-AF7D-55CBABBE111D@kernel.crashing.org>
-	<48FF2DDE.9060301@genesi-usa.com>
-	<DC24FCF5-F410-47AB-8FC0-592EA0906568@kernel.crashing.org>
-	<48FF3685.5020504@genesi-usa.com>
-	<EF781CC4-B321-4E6A-A376-ADDDC1BB2E7B@kernel.crashing.org>
-	<48FF6CEF.8050607@genesi-usa.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	=?ISO-8859-1?Q?R=E9gis_Odey=E9?= <regis.odeye@kontron.com>
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id BE809DDE02
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 07:31:54 +1100 (EST)
+In-Reply-To: <20081022163632.2c67a53d@bull.net>
+References: <20081022163632.2c67a53d@bull.net>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <42ab1a117d74e33d84cb037bfe79fae0@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] powerpc: XICS - fix getting the server number size
+Date: Wed, 22 Oct 2008 15:34:52 -0500
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>, Tim Chavez <tinytim@us.ibm.com>,
+	Jean Pierre Dion <jean-pierre.dion@bull.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,46 +23,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 22, 2008, at 1:11 PM, Matt Sealey wrote:
+On Oct 22, 2008, at 9:36 AM, Sebastien Dugue wrote:
 
 >
+>   The 'ibm,interrupt-server#-size' properties are not cpu nodes 
+> properties,
+> but rather live under the interrupt source controller nodes (compatible
+> ibm,ppc-xics).
 >
-> Kumar Gala wrote:
->> On Oct 22, 2008, at 9:19 AM, Matt Sealey wrote:
->>>
->>>
->>> Kumar Gala wrote:
->>>> On Oct 22, 2008, at 8:42 AM, Matt Sealey wrote:
->>>>> So to confirm, XAEN support through Becky's patches does support  
->>>>> the MPC8641D/e600 cores?
->>>> Yes, its the only part that has XAEN.
->>>
->>> Okay I saw a lot of e500/BookE support go past but nothing  
->>> specific :)
->> The "XAEN" is specific to e600.  e500 has its own ability to do 36- 
->> bit physical (not called XAEN).
+>   Therefore, this patch moves the detection of this property outside of
+> xics_update_irq_servers() and into xics_init_IRQ().
 >
-> You have to forgive me I was only half awake when I started :D
->
-> Yeah so I saw BookE and e500 stuff go past but nothing specific for  
-> e600/XAEN. I mailed Becky and got no response. I'm glad to know it's  
-> in there though, somewhere.
 
-Huh?  I have one mail from you, on Sep 1, to which I responded on Sep  
-2.  Was there another mail I missed, or did you not see my response?   
-Freescale's mail server is unreliable, and since I'm not in the habit  
-of ignoring emails, feel free to nag me anytime if you send me  
-something and don't get a response.
-
->
->
-> Just so it has been asked, do you know in a broad sense what it  
-> would take to add the non-contiguous memory mapping support? Doesn't  
-> ppc64 already have this?
+yes, PAPR says its on one of the interrupt nodes.   I am too tired to
+decipher if it on the presentation or source.
 
 
-PPC64 has SPARSEMEM support, IIRC. It's non-trivial to add for 32-bit,  
-although I haven't scoped it out in any detail.
+Acked-by: Milton Miller <miltonm@bga.com>
 
-Cheers,
-B
+>   Also this adds a check for mismatched sizes across the interrupt 
+> source
+> controller nodes. Not sure this is necessary as in this case the 
+> firmware
+> might be seriously busted.
+
+I am hoping you have tested this?  A POWER6 box?
+
+Last time I looked (POWER5 timeframe) firmware was ignoring the 
+parameter
+to set-indicator(gqirm) which is the only use of this property.
+
+milton
