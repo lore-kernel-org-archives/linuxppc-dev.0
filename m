@@ -2,14 +2,14 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CB072474C7
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 07:39:32 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 3DD8E474CF
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 07:39:33 +1100 (EST)
 Date: Wed, 22 Oct 2008 15:39:17 -0500 (CDT)
 From: Milton Miller <miltonm@bga.com>
 Sender: Milton Miller <miltonm@realtime.net>
 To: Simon Horman <horms@verge.net.au>
-Subject: [PATCH 1/2 kexec-tools] ppc64: new relocatble kernel activation ABI
-Message-id: <kexec-user-1@bga.com>
+Subject: [PATCH 2/2 kexec-tools] ppc64: segemments are sorted
+Message-id: <kexec-user-2@bga.com>
 In-Reply-To: <f90d4d7306443a720ca31adf513faf25@bga.com>
 Cc: linuxppc-dev@ozlabs.org, Simon Horman <horms@verge.net.au>,
 	kexec@lists.infradead.org, Paul Mackerras <paulus@samba.org>
@@ -22,125 +22,122 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-The updates kexec-tools to match the kernel after the patches
-
-"kexec exit should not use magic numbers" and 
-
-"better flag for running relocatable" are applied.
-
-
+Every time add_segment is called, the segments are sorted.  If the first
+hole in memory is not big enough for the kernel then something besides
+the kernel may be at 
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
-Still proposed change
+Found during custom environment testing with several reserved blocks of
+memory, not the usual case.
 
-Index: kexec-tools/purgatory/arch/ppc64/v2wrap.S
-===================================================================
---- kexec-tools.orig/purgatory/arch/ppc64/v2wrap.S	2008-10-22 06:14:44.000000000 -0500
-+++ kexec-tools/purgatory/arch/ppc64/v2wrap.S	2008-10-22 06:14:48.000000000 -0500
-@@ -45,11 +45,13 @@
- 	oris    rn,rn,name##@h;         \
- 	ori     rn,rn,name##@l
- 
--#define KDUMP_SIGNATURE 0xfeed1234
--
- 	.machine ppc64
- 	.globl purgatory_start
- purgatory_start:	b	master
-+	.org purgatory_start + 0x5c     # ABI: possible run_at_load flag at 0x5c
-+run_at_load:
-+	.long 0
-+	.size run_at_load, . - run_at_load
- 	.org purgatory_start + 0x60     # ABI: slaves start at 60 with r3=phys
- slave:	b $
- 	.org purgatory_start + 0x100    # ABI: end of copied region
-@@ -65,7 +67,6 @@ master:
- 	isync
- 	mr      17,3            # save cpu id to r17
- 	mr      15,4            # save physical address in reg15
--	mr      18,6            # save kdump flag in reg18
- 
- 	LOADADDR(6,my_toc)
- 	ld      2,0(6)          #setup toc
-@@ -96,14 +97,6 @@ master:
- 	mtctr	4		# prepare branch too
- 	mr      3,16            # restore dt address
- 
--	LOADADDR(6,KDUMP_SIGNATURE)
--	cmpd	18,6
--	bne	regular
--	li	7,1
--	std	7,24(4)		# mark kdump flag at kernel
--regular:
--	lwz	7,0(4)		# get the first instruction that we stole
--	stw	7,0(0)		# and put it in the slave loop at 0
- 				# skip cache flush, do we care?
- 
- 	bctr			# start kernel
-Index: kexec-tools/kexec/arch/ppc64/crashdump-ppc64.h
-===================================================================
---- kexec-tools.orig/kexec/arch/ppc64/crashdump-ppc64.h	2008-10-22 06:14:44.000000000 -0500
-+++ kexec-tools/kexec/arch/ppc64/crashdump-ppc64.h	2008-10-22 06:14:48.000000000 -0500
-@@ -23,6 +23,8 @@ void add_usable_mem_rgns(unsigned long l
- #define _ALIGN_UP(addr,size)	(((addr)+((size)-1))&(~((size)-1)))
- #define _ALIGN_DOWN(addr,size)	((addr)&(~((size)-1)))
- 
-+#define KERNEL_RUN_AT_ZERO_MAGIC 0x72756e30	/* "run0" */
-+
- extern uint64_t crash_base;
- extern uint64_t crash_size;
- extern unsigned int rtas_base;
 Index: kexec-tools/kexec/arch/ppc64/kexec-elf-ppc64.c
 ===================================================================
---- kexec-tools.orig/kexec/arch/ppc64/kexec-elf-ppc64.c	2008-10-22 06:14:44.000000000 -0500
-+++ kexec-tools/kexec/arch/ppc64/kexec-elf-ppc64.c	2008-10-22 06:14:48.000000000 -0500
-@@ -93,6 +93,7 @@ int elf_ppc64_load(int argc, char **argv
- 	uint64_t my_stack, my_backup_start;
- 	uint64_t toc_addr;
- 	unsigned int slave_code[256/sizeof (unsigned int)], master_entry;
-+	unsigned int run_at_load;
+--- kexec-tools.orig/kexec/arch/ppc64/kexec-elf-ppc64.c	2008-10-22 06:14:48.000000000 -0500
++++ kexec-tools/kexec/arch/ppc64/kexec-elf-ppc64.c	2008-10-22 06:14:54.000000000 -0500
+@@ -86,7 +86,7 @@ int elf_ppc64_load(int argc, char **argv
+ 	size_t size;
+ 	uint64_t *rsvmap_ptr;
+ 	struct bootblock *bb_ptr;
+-	unsigned int nr_segments, i;
++	unsigned int i;
+ 	int result, opt;
+ 	uint64_t my_kernel, my_dt_offset;
+ 	unsigned int my_panic_kernel;
+@@ -187,7 +187,7 @@ int elf_ppc64_load(int argc, char **argv
+ 	if (size > phdr->p_memsz)
+ 		size = phdr->p_memsz;
  
- #define OPT_APPEND     (OPT_ARCH_MAX+0)
- #define OPT_RAMDISK     (OPT_ARCH_MAX+1)
-@@ -307,6 +308,18 @@ int elf_ppc64_load(int argc, char **argv
- 		my_backup_start = info->backup_start;
- 		elf_rel_set_symbol(&info->rhdr, "backup_start",
- 				&my_backup_start, sizeof(my_backup_start));
-+
-+		/* Tell relocatable kernel to run at load address
-+		 * via word before slave code in purgatory
-+		 */
-+
-+		elf_rel_get_symbol(&info->rhdr, "run_at_load", &run_at_load,
-+				sizeof(run_at_load));
-+		if (run_at_load == KERNEL_RUN_AT_ZERO_MAGIC)
-+			run_at_load = 1;
-+			/* else it should be a fixed offset image */
-+		elf_rel_set_symbol(&info->rhdr, "run_at_load", &run_at_load,
-+				sizeof(run_at_load));
+-	hole_addr = (uint64_t)locate_hole(info, size, 0, 0,
++	my_kernel = hole_addr = (uint64_t)locate_hole(info, size, 0, 0,
+ 			max_addr, 1);
+ 	ehdr.e_phdr[0].p_paddr = hole_addr;
+ 	result = elf_exec_load(&ehdr, info);
+@@ -233,12 +233,10 @@ int elf_ppc64_load(int argc, char **argv
+ 			return -1;
+ 		}
+ 		seg_buf = (unsigned char *)slurp_file(ramdisk, &seg_size);
+-		add_buffer(info, seg_buf, seg_size, seg_size, 0, 0, max_addr, 1);
+-		hole_addr = (uintptr_t)
+-			info->segment[info->nr_segments-1].mem;
++		hole_addr = add_buffer(info, seg_buf, seg_size, seg_size,
++			0, 0, max_addr, 1);
+ 		initrd_base = hole_addr;
+-		initrd_size = (uint64_t)
+-			info->segment[info->nr_segments-1].memsz;
++		initrd_size = seg_size;
+ 	} /* ramdisk */
+ 
+ 	if (devicetreeblob) {
+@@ -248,16 +246,18 @@ int elf_ppc64_load(int argc, char **argv
+ 		/* Grab device tree from buffer */
+ 		blob_buf =
+ 			(unsigned char *)slurp_file(devicetreeblob, &blob_size);
+-		add_buffer(info, blob_buf, blob_size, blob_size, 0, 0,
+-				max_addr, -1);
++		my_dt_offset = add_buffer(info, blob_buf, blob_size, blob_size,
++				0, 0, max_addr, -1);
+ 
++		seg_buf = blob_buf;
++		seg_size = blob_size;
+ 	} else {
+ 		/* create from fs2dt */
+ 		seg_buf = NULL;
+ 		seg_size = 0;
+ 		create_flatten_tree(info, (unsigned char **)&seg_buf,
+ 				(unsigned long *)&seg_size,cmdline);
+-		add_buffer(info, seg_buf, seg_size, seg_size,
++		my_dt_offset = add_buffer(info, seg_buf, seg_size, seg_size,
+ 				0, 0, max_addr, -1);
  	}
  
- 	/* Set stack address */
-@@ -325,10 +338,13 @@ int elf_ppc64_load(int argc, char **argv
- 	my_backup_start = 0;
- 	my_stack = 0;
- 	toc_addr = 0;
-+	run_at_load = 0;
+@@ -265,27 +265,20 @@ int elf_ppc64_load(int argc, char **argv
+ 	 * find last entry (both 0) in the reserve mem list.  Assume DT
+ 	 * entry is before this one
+ 	 */
+-	bb_ptr = (struct bootblock *)(
+-		(unsigned char *)info->segment[(info->nr_segments)-1].buf);
+-	rsvmap_ptr = (uint64_t *)(
+-		(unsigned char *)info->segment[(info->nr_segments)-1].buf +
+-		bb_ptr->off_mem_rsvmap);
++	bb_ptr = (struct bootblock *)(seg_buf);
++	rsvmap_ptr = (uint64_t *)
++		(((char *)seg_buf) + bb_ptr->off_mem_rsvmap);
+ 	while (*rsvmap_ptr || *(rsvmap_ptr+1))
+ 		rsvmap_ptr += 2;
+ 	rsvmap_ptr -= 2;
+-	*rsvmap_ptr = (uintptr_t)(
+-		info->segment[(info->nr_segments)-1].mem);
++	*rsvmap_ptr = my_dt_offset;
+ 	rsvmap_ptr++;
+ 	*rsvmap_ptr = (uint64_t)bb_ptr->totalsize;
  
- 	elf_rel_get_symbol(&info->rhdr, "kernel", &my_kernel, sizeof(my_kernel));
- 	elf_rel_get_symbol(&info->rhdr, "dt_offset", &my_dt_offset,
+-	nr_segments = info->nr_segments;
+-
+ 	/* Set kernel */
+-	my_kernel = (uintptr_t)info->segment[0].mem;
+ 	elf_rel_set_symbol(&info->rhdr, "kernel", &my_kernel, sizeof(my_kernel));
+ 
+ 	/* Set dt_offset */
+-	my_dt_offset = (uintptr_t)info->segment[nr_segments-1].mem;
+ 	elf_rel_set_symbol(&info->rhdr, "dt_offset", &my_dt_offset,
  				sizeof(my_dt_offset));
-+	elf_rel_get_symbol(&info->rhdr, "run_at_load", &run_at_load,
-+				sizeof(run_at_load));
- 	elf_rel_get_symbol(&info->rhdr, "panic_kernel", &my_panic_kernel,
- 				sizeof(my_panic_kernel));
- 	elf_rel_get_symbol(&info->rhdr, "backup_start", &my_backup_start,
-@@ -341,6 +357,7 @@ int elf_ppc64_load(int argc, char **argv
- 	fprintf(stderr, "kernel is %llx\n", (unsigned long long)my_kernel);
- 	fprintf(stderr, "dt_offset is %llx\n",
- 		(unsigned long long)my_dt_offset);
-+	fprintf(stderr, "run_at_load flag is %x\n", run_at_load);
- 	fprintf(stderr, "panic_kernel is %x\n", my_panic_kernel);
- 	fprintf(stderr, "backup_start is %llx\n",
- 		(unsigned long long)my_backup_start);
+ 
+@@ -293,7 +286,7 @@ int elf_ppc64_load(int argc, char **argv
+ 	elf_rel_get_symbol(&info->rhdr, "purgatory_start", slave_code,
+ 			sizeof(slave_code));
+ 	master_entry = slave_code[0];
+-	memcpy(slave_code, info->segment[0].buf, sizeof(slave_code));
++	memcpy(slave_code, phdr->p_data, sizeof(slave_code));
+ 	slave_code[0] = master_entry;
+ 	elf_rel_set_symbol(&info->rhdr, "purgatory_start", slave_code,
+ 				sizeof(slave_code));
+@@ -366,7 +359,7 @@ int elf_ppc64_load(int argc, char **argv
+ 	fprintf(stderr, "purgatory size is %zu\n", purgatory_size);
+ #endif
+ 
+-	for (i = 0; i < nr_segments; i++)
++	for (i = 0; i < info->nr_segments; i++)
+ 		fprintf(stderr, "segment[%d].mem:%p memsz:%zu\n", i,
+ 			info->segment[i].mem, info->segment[i].memsz);
+ 
