@@ -1,24 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 21DDDDDEF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 15:48:16 +1100 (EST)
-Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Brownell <david-b@pacbell.net>
-In-Reply-To: <200810221404.52798.david-b@pacbell.net>
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
-	<20081022104606.GA510@oksana.dev.rtsoft.ru>
-	<20081022183218.GA19025@oksana.dev.rtsoft.ru>
-	<200810221404.52798.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Thu, 23 Oct 2008 15:45:45 +1100
-Message-Id: <1224737145.7654.387.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A3A5FDDF03
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 16:02:06 +1100 (EST)
+Date: Thu, 23 Oct 2008 15:52:28 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: linux-next: rr tree build failure
+Message-Id: <20081023155228.c8fa9da8.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
-	Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-next@vger.kernel.org, Mike Travis <travis@sgi.com>,
+	ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,19 +20,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-10-22 at 14:04 -0700, David Brownell wrote:
-> > So if we register the board infos after 
-> > the controller registered, then nobody will probe the board infos.
-> 
-> See above.  If you're doing it right, there's no problem.
-> That is, scan the OF tables early.  Just like PNP tables
-> get scanned early, for example.
+Hi Rusty,
 
-It's still pretty yucky in that case to scan the device-tree to convert
-it into some kind of fugly board info ... I'd rather have the end
-drivers that actually use those GPIOs scan the device-tree directly.
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
-But then, I'm not a believer in generic drivers for things like GPIOs,
-i2c devices, etc.. :-)
+arch/powerpc/platforms/cell/spu_base.c: In function 'mm_needs_global_tlbie':
+arch/powerpc/platforms/cell/spu_base.c:117: error: implicit declaration of function '__cpus_setall'
 
-Ben.
+Caused by commit 20ec1a8465bd6d2e7e68fa5a7b09309c920b4792
+("cpumask:add-struct-cpumask") which removed __cpus_setall from
+include/linux/cpumask.h.
+
+I applied the hack patch below (which is probably not what we want).
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 23 Oct 2008 15:36:21 +1100
+Subject: [PATCH] powerpc/spu: cpumask updates fallout.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/cell/spu_base.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
+index a5bdb89..a876904 100644
+--- a/arch/powerpc/platforms/cell/spu_base.c
++++ b/arch/powerpc/platforms/cell/spu_base.c
+@@ -111,10 +111,13 @@ void spu_flush_all_slbs(struct mm_struct *mm)
+  */
+ static inline void mm_needs_global_tlbie(struct mm_struct *mm)
+ {
+-	int nr = (NR_CPUS > 1) ? NR_CPUS : NR_CPUS + 1;
+-
+ 	/* Global TLBIE broadcast required with SPEs. */
+-	__cpus_setall(&mm->cpu_vm_mask, nr);
++	if (NR_CPUS > 1)
++		cpumask_setall(&mm->cpu_vm_mask);
++	else {
++		cpumask_set_cpu(0, &mm->cpu_vm_mask);
++		cpumask_set_cpu(1, &mm->cpu_vm_mask);
++	}
+ }
+ 
+ void spu_associate_mm(struct spu *spu, struct mm_struct *mm)
+-- 
+1.5.6.5
