@@ -1,21 +1,21 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
-	by ozlabs.org (Postfix) with ESMTP id 03132DDE08
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 10:05:20 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so228385qwb.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 16:05:18 -0700 (PDT)
-Message-ID: <4901032F.3090805@genesi-usa.com>
-Date: Thu, 23 Oct 2008 18:05:19 -0500
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 8EFB8DDE0A
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 10:05:57 +1100 (EST)
+Date: Fri, 24 Oct 2008 01:05:56 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Scott Wood <scottwood@freescale.com>,
+	Michael Weiser <michael@weiser.dinsnail.net>
+Subject: [PATCH] fix i2c on PPC linkstation / kurobox machines
+In-Reply-To: <20081023213309.GA19777@weiser.dinsnail.net>
+Message-ID: <Pine.LNX.4.64.0810240059170.9657@axis700.grange>
+References: <20081022191650.GA11406@weiser.dinsnail.net>
+	<Pine.LNX.4.64.0810232029380.9657@axis700.grange>
+	<20081023213309.GA19777@weiser.dinsnail.net>
 MIME-Version: 1.0
-To: Mitch Bradley <wmb@firmworks.com>
-Subject: Re: GPIO - marking individual pins (not) available in device tree
-References: <4900ED81.3040202@genesi-usa.com> <4900F90B.80703@firmworks.com>
-In-Reply-To: <4900F90B.80703@firmworks.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: =?UTF-8?B?Um9nw6lyaW8gQnJpdG8=?= <rbrito@ime.usp.br>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,112 +25,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+i2c is broken on linkstation / kurobox machines since at least 2.6.27. Fix 
+it. Also remove CONFIG_SERIAL_OF_PLATFORM, which, if enabled, breaks the 
+serial console after the "console handover: boot [udbg0] -> real [ttyS1]" 
+message.
 
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-Mitch Bradley wrote:
-[snip]
+---
 
-> You could adopt the convention that preassigned GPIOs must be 
-> represented by subordinate nodes, and any GPIO that is not covered by a 
-> subordinate node's "reg" property is implicitly available.  That's the 
-> way it works for other address spaces.
+No, I do not really understand why I have to remove 
+CONFIG_SERIAL_OF_PLATFORM now after adding a call to 
+of_platform_bus_probe(), but it works this way. It must have something to 
+do with the legacy serial driver... If accepted in this form, I'll also 
+forward it to stable.
 
-I like that idea except for the implicitly available bit.
-
-Just summarizing this in my head (also on the list), if we had 
-an "available" property in the node marked as a 
-gpio-controller, that would easily give gpiolib something to 
-parse so that it only gives out allocations for pins that are 
-really, really not being multiplexed for something else or 
-just not being connected.
-
-There's a GPIO spec in booting-without-of.txt which basically 
-defines a controller and a bank, and you can assign a bank of 
-GPIO to some other device. Assigning specific GPIO pins should 
-be possible.. umm..
-
-http://patchwork.ozlabs.org/patch/5478/
-
-With regards to this patch, how about device usage of pins 
-being defined as a range of pins (reusing the standard-ish 
-"ranges" property from PCI binding)? That way you have all the 
-information you could ever need for each device.
-
-1) where the controller sits ("gpio-controller" property)
-
-2) which pins are available for use (everything not in 
-"available" is therefore out of bounds)
-
-3) define banks of gpio for a specific function with "ranges" 
-(for instance pins 10, 11 and 15 would be encoded as <10 2> 
-and <15 1> and these encapsulate some kind of function be it 
-user definable gpio or some control function for a chip)
-
-4) assign "gpio" properties to other nodes which refer to 
-banks (see booting-without-of.txt section IX, at the end) 
-rather than individual pins.
-
-5) optionally a bank may contain gpio pin node which describes 
-EXACTLY what that pin function is (and any lovely properties 
-it may well have).
-
-At the moment it's encoded as:
-
-	gpios = <&controller-phandle pin-number pin-flags>
-
-Ad infinitum. Instead of a controller phandle you'd pass in a 
-bank (which is a subset of the controller's available pins) 
-and then you can give each pin it's little options.
-
-Actually I would also advocate allowing each pin to be 
-assigned a node of it's own and a compatible property - after 
-all if you have a board where gpios can move around (consider 
-an FPGA with a processor core, where positions of lines to use 
-are actually reflected by a read-only register or the device 
-tree is derived directly from the VHDL source or a constraints 
-script?) and don't want to rewrite your driver every time, it 
-would be good to be able to find exactly which pin controls 
-exactly which line on the peripheral chip?
-
-Therefore you'd get something like this in a DTS; please hit 
-me on the head if you think it's getting really unwieldy :D
-
-gpio_1: gpio-controller@1000 {
-	#gpio-cells = <2>;
-	compatible = "fsl,mpc5200b-gpio";
-	reg = <0x1000 0x4>;
-	gpio-controller;
-	available = <1 10 15 4 30 1>;
-
-	gpio_1_bank_1: gpio-bank {
-		\\ 5 pins for some nefarious purpose
-		compatible = "gpio-bank";
-		ranges = <1 5 0>; \\ start length flags
-
-		gpio_pin@2 {
-\\ I guess this address has to be
-\\ the global offset and not the offset into the range to make
-\\ it easier?
-			reg = <2 1>
-			compatible = "magic";
-		};
-	};
-}
-
-device@9000 {
-	compatible = "somedevice";
-	reg = <0x9000 0x18>;
-	gpios = <&gpio_1_bank_1>
-};
-
-Most implementations won't need the explicit pin definitions 
-but it would probably come in handy somewhere if you were 
-bitbanging some protocol (SPI, I2C or so) or driving a device 
-where you could change this stuff, or even dynamically work 
-out if a connector was inserted a certain way (I'm thinking of 
-maybe an expansion connector which can run line-reversed like 
-PCI Express.. but made out of GPIO. Am I nuts?)
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+diff --git a/arch/powerpc/configs/linkstation_defconfig b/arch/powerpc/configs/linkstation_defconfig
+index 6fc4c21..d0846ec 100644
+--- a/arch/powerpc/configs/linkstation_defconfig
++++ b/arch/powerpc/configs/linkstation_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.27-rc4
+-# Thu Aug 21 00:52:05 2008
++# Linux kernel version: 2.6.27
++# Fri Oct 24 00:42:39 2008
+ #
+ # CONFIG_PPC64 is not set
+ 
+@@ -934,7 +934,7 @@ CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+ CONFIG_SERIAL_CORE=y
+ CONFIG_SERIAL_CORE_CONSOLE=y
+ # CONFIG_SERIAL_JSM is not set
+-CONFIG_SERIAL_OF_PLATFORM=y
++# CONFIG_SERIAL_OF_PLATFORM is not set
+ CONFIG_UNIX98_PTYS=y
+ CONFIG_LEGACY_PTYS=y
+ CONFIG_LEGACY_PTY_COUNT=256
+@@ -1211,7 +1211,6 @@ CONFIG_USB_STORAGE=m
+ # CONFIG_USB_STORAGE_ALAUDA is not set
+ # CONFIG_USB_STORAGE_ONETOUCH is not set
+ # CONFIG_USB_STORAGE_KARMA is not set
+-# CONFIG_USB_STORAGE_SIERRA is not set
+ # CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
+ # CONFIG_USB_LIBUSUAL is not set
+ 
+diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
+index eb5d74e..2ca7be6 100644
+--- a/arch/powerpc/platforms/embedded6xx/linkstation.c
++++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
+@@ -13,6 +13,7 @@
+ #include <linux/kernel.h>
+ #include <linux/initrd.h>
+ #include <linux/mtd/physmap.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/time.h>
+ #include <asm/prom.h>
+@@ -54,6 +55,19 @@ static struct mtd_partition linkstation_physmap_partitions[] = {
+ 	},
+ };
+ 
++static __initdata struct of_device_id of_bus_ids[] = {
++	{ .type = "soc", },
++	{ .compatible = "simple-bus", },
++	{},
++};
++
++static int __init declare_of_platform_devices(void)
++{
++	of_platform_bus_probe(NULL, of_bus_ids, NULL);
++	return 0;
++}
++machine_device_initcall(linkstation, declare_of_platform_devices);
++
+ static int __init linkstation_add_bridge(struct device_node *dev)
+ {
+ #ifdef CONFIG_PCI
