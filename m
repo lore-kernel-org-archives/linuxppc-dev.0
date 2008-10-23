@@ -1,22 +1,23 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from lxorguk.ukuu.org.uk (earthlight.etchedpixels.co.uk
-	[81.2.110.250])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 731F2DDF09
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 18:34:22 +1100 (EST)
-Date: Thu, 23 Oct 2008 08:34:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
+	by ozlabs.org (Postfix) with ESMTPS id A61EBDDF09
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 18:36:17 +1100 (EST)
 Subject: Re: linux-next: ttydev tree build failure
-Message-ID: <20081023083406.671d4101@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081023172938.0460b191.sfr@canb.auug.org.au>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081023083406.671d4101@lxorguk.ukuu.org.uk>
 References: <20081023172938.0460b191.sfr@canb.auug.org.au>
+	<20081023083406.671d4101@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Thu, 23 Oct 2008 18:35:54 +1100
+Message-Id: <1224747354.7654.394.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-next@vger.kernel.org,
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
 	Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
 	ppc-dev <linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 23 Oct 2008 17:29:38 +1100
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On Thu, 2008-10-23 at 08:34 +0100, Alan Cox wrote:
+> 
+> Patch is correct.
+> 
+> Do the hvc patches have dependancies on the PPC tree as well as the
+> tty tree ?
 
-> Hi Alan,
-> 
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-> 
-> drivers/char/hvc_console.c: In function 'hvc_set_winsz':
-> drivers/char/hvc_console.c:532: warning: passing argument 2 of 'tty_do_resize' from incompatible pointer type
-> drivers/char/hvc_console.c:532: error: too many arguments to function 'tty_do_resize'
-> 
-> Caused by commit eb6ab2d361a49470ca9785c70482772c19e49bec
-> ("pty-simplify-resize") from the ttydev tree interacting with commit
-> febde3711992a64ea83a47a719f68a90c4b0927a ("hvc_console: Add support for
-> tty window resizing").
-> 
-> The former added another call to the function that the latter changed.
-> 
-> I applied the following patch
+Note that I have a serie of 5 hvc patches in the ppc tree...
 
-Patch is correct.
-
-Do the hvc patches have dependancies on the PPC tree as well as the tty
-tree ?
+Ben.
