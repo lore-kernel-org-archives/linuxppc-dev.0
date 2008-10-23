@@ -1,16 +1,18 @@
-Return-Path: <wmb@firmworks.com>
-Message-ID: <49011C42.2020101@firmworks.com>
-Date: Thu, 23 Oct 2008 14:52:18 -1000
-From: Mitch Bradley <wmb@firmworks.com>
-MIME-Version: 1.0
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: GPIO - marking individual pins (not) available in device tree
-References: <4900ED81.3040202@genesi-usa.com> <4900F90B.80703@firmworks.com>
-	<4901032F.3090805@genesi-usa.com>
-In-Reply-To: <4901032F.3090805@genesi-usa.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+Return-Path: <shemminger@vyatta.com>
+Received: from mail.vyatta.com (mail.vyatta.com [76.74.103.46])
+	by ozlabs.org (Postfix) with ESMTP id B1E28DDE03
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 10:19:18 +1100 (EST)
+Date: Thu, 23 Oct 2008 16:13:11 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [RFC v1] net: add PCINet driver
+Message-ID: <20081023161311.5e568972@extreme>
+In-Reply-To: <20081023224932.GA23441@ovro.caltech.edu>
+References: <20081023224932.GA23441@ovro.caltech.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,207 +22,734 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 23 Oct 2008 15:49:32 -0700
+Ira Snyder <iws@ovro.caltech.edu> wrote:
+
+> This adds support to Linux for a virtual ethernet interface which uses the
+> PCI bus as its transport mechanism. It creates a simple, familiar, and fast
+> method of communication for two devices connected by a PCI interface.
+> 
+> I have implemented client support for the Freescale MPC8349EMDS board,
+> which is capable of running in PCI Agent mode (It acts like a PCI card, but
+> is a complete PowerPC computer, running Linux). It is almost certainly
+> trivially ported to any MPC83xx system. It should be a relatively small
+> effort to port it to any chip that can generate PCI interrupts and has at
+> least one PCI accessible scratch register.
+> 
+> It was developed to work in a CompactPCI crate of computers, one of which
+> is a relatively standard x86 system (acting as the host) and many PowerPC
+> systems (acting as clients).
+> 
+> Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+> ---
+> 
+> This is my second posting of this driver. I posted it to the linux-netdev
+> list a week ago, but did not get any replies. Therefore, I'll post it for a
+> wider audience. :)
+> 
+> Hello everyone. This is my first network driver, so take it easy on me. :)
+> I'm quite sure it isn't ready for inclusion into mainline yet, but I think
+> it is in good enough shape for some review.
+> 
+> Through conversations on IRC, I have been led to believe that this has been
+> done before, but no implementations have been made public. My employer has
+> no problems with me making this public, so I thought it would be good to
+> post it. I don't know if something like this is even desired for mainline
+> inclusion, but I do know that even having an example driver to base this on
+> would have saved me some effort.
+> 
+> The major issues I see:
+> 1) The name wqt originally stood for "workqueue-test" and somewhat evolved
+> into this driver. I'm looking for suggestions. I'd like to have something
+> that is the same between the host and client drivers, since most of the
+> code is identical. It makes copy/paste easier. The only one I can come up
+> with is "bpc" for "Backplane Communications".
+> 2) In the Freescale client driver, I use the whole set of IMMR (board
+> control) registers. I only need a very small subset of them only during
+> startup. I used them the way I did so I could use the same pcinet_hw.h file
+> for both the client and server drivers.
+> 3) I just ioremap()ed the IMMR registers directly. (They're at 0xe0000000).
+> I just didn't know a better way to do this. I need them to set up the PCI
+> memory containing the buffer descriptors.
+> 4) I just hardcoded the address of the outbound PCI window into the DMA
+> transfer code. It is at 0x80000000. Suggestions are welcome.
+> 
+> Why I made some decisions:
+> 1) The PCINET_NET_REGISTERS_VALID bit: I want to be able to use this driver
+> from U-Boot to copy a kernel, etc. over the PCI backplane to boot up the
+> board. This meant that the memory that I used for the buffer descriptors
+> disappears while the machine is booting Linux. Suggestions are welcome.
+> 2) The buffer descriptors in client memory, rather than host memory: I
+> thought it seemed more logical. Also, in my application, the clients will
+> be transferring much more data to the host.
+> 3) Use of the Freescale (client) DMA controller to transfer all data: I
+> tried transferring all of the data using the CPU on each board. This turned
+> out to be extremely slow, as in 2-3 MB/sec max. Using the DMA controller, I
+> get ~40 MB/sec (tested with netperf).
+> 4) Use of a static 1GB window to access the host's memory (to copy skbs):
+> Maintaining the window while DMA's are in flight, and then changing them
+> seemed to be too much trouble. A static window just seemed easier. Also,
+> removing the overhead of moving the window from each skb transferred
+> actually gave a reasonable speedup. (I tested it.)
+> 5) The uart stuff: I needed a method to talk to the U-Boot bootloader on
+> these boards without plugging in a serial cable. When my project gets
+> going, I'll have 150 of them. Booting them one at a time is out of the
+> question. A virtual serial port was simple to implement using the same
+> hardware that I used for the network driver.
+> 
+> I'll post the U-Boot driver to their mailing list once this driver is
+> finalized.
+> 
+> Thanks,
+> Ira
+> 
+> 
+>  drivers/net/Kconfig       |   34 ++
+>  drivers/net/Makefile      |    3 +
+>  drivers/net/pcinet.h      |   77 +++
+>  drivers/net/pcinet_fsl.c  | 1360 +++++++++++++++++++++++++++++++++++++++++++
+>  drivers/net/pcinet_host.c | 1392 +++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/net/pcinet_hw.h   |   80 +++
+>  6 files changed, 2946 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/net/pcinet.h
+>  create mode 100644 drivers/net/pcinet_fsl.c
+>  create mode 100644 drivers/net/pcinet_host.c
+>  create mode 100644 drivers/net/pcinet_hw.h
+> 
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index 4a11296..9185803 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
+> @@ -2259,6 +2259,40 @@ config UGETH_TX_ON_DEMAND
+>  	bool "Transmit on Demand support"
+>  	depends on UCC_GETH
+>  
+> +config PCINET_FSL
+> +	tristate "PCINet Virtual Ethernet over PCI support (Freescale)"
+> +	depends on MPC834x_MDS && !PCI
+> +	select DMA_ENGINE
+> +	select FSL_DMA
+> +	help
+> +	  When running as a PCI Agent, this driver will create a virtual
+> +	  ethernet link running over the PCI bus, allowing simplified
+> +	  communication with the host system. The host system will need
+> +	  to use the corresponding driver.
+> +
+> +	  If in doubt, say N.
+> +
+> +config PCINET_HOST
+> +	tristate "PCINet Virtual Ethernet over PCI support (Host)"
+> +	depends on PCI
+> +	help
+> +	  This driver will let you communicate with a PCINet client device
+> +	  using a virtual ethernet link running over the PCI bus. This
+> +	  allows simplified communication with the client system.
+> +
+> +	  This is inteded for use in a system that has a crate full of
+> +	  computers running Linux, all connected by a PCI backplane.
+> +
+> +	  If in doubt, say N.
+> +
+> +config PCINET_DISABLE_CHECKSUM
+> +	bool "Disable packet checksumming"
+> +	depends on PCINET_FSL || PCINET_HOST
+> +	default n
+> +	help
+> +	  Disable packet checksumming on packets received by the PCINet
+> +	  driver. This gives a possible speed boost.
+> +
+>  config MV643XX_ETH
+>  	tristate "Marvell Discovery (643XX) and Orion ethernet support"
+>  	depends on MV64360 || MV64X60 || (PPC_MULTIPLATFORM && PPC32) || PLAT_ORION
+> diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+> index 7629c90..547c9d0 100644
+> --- a/drivers/net/Makefile
+> +++ b/drivers/net/Makefile
+> @@ -27,6 +27,9 @@ gianfar_driver-objs := gianfar.o \
+>  obj-$(CONFIG_UCC_GETH) += ucc_geth_driver.o
+>  ucc_geth_driver-objs := ucc_geth.o ucc_geth_mii.o ucc_geth_ethtool.o
+>  
+> +obj-$(CONFIG_PCINET_FSL) += pcinet_fsl.o
+> +obj-$(CONFIG_PCINET_HOST) += pcinet_host.o
+> +
+>  #
+>  # link order important here
+>  #
+> diff --git a/drivers/net/pcinet.h b/drivers/net/pcinet.h
+> new file mode 100644
+> index 0000000..3738904
+> --- /dev/null
+> +++ b/drivers/net/pcinet.h
+> @@ -0,0 +1,77 @@
+> +/*
+> + * Shared Definitions for the PCINet / PCISerial drivers
+> + *
+> + * Copyright (c) 2008 Ira W. Snyder <iws@ovro.caltech.edu>
+> + *
+> + * Heavily inspired by the drivers/net/fs_enet driver
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2. This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + */
+> +
+> +#ifndef PCINET_H
+> +#define PCINET_H
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/if_ether.h>
+> +
+> +/* Ring and Frame size -- these must match between the drivers */
+> +#define PH_RING_SIZE	(64)
+> +#define PH_MAX_FRSIZE	(64 * 1024)
+> +#define PH_MAX_MTU	(PH_MAX_FRSIZE - ETH_HLEN)
+> +
+> +struct circ_buf_desc {
+> +	__le32 sc;
+> +	__le32 len;
+> +	__le32 addr;
+> +} __attribute__((__packed__));
+> +typedef struct circ_buf_desc cbd_t;
+> +
+> +/* Buffer Descriptor Accessors */
+> +#define CBDW_SC(_cbd, _sc) iowrite32((_sc), &(_cbd)->sc)
+> +#define CBDW_LEN(_cbd, _len) iowrite32((_len), &(_cbd)->len)
+> +#define CBDW_ADDR(_cbd, _addr) iowrite32((_addr), &(_cbd)->addr)
+> +
+> +#define CBDR_SC(_cbd) ioread32(&(_cbd)->sc)
+> +#define CBDR_LEN(_cbd) ioread32(&(_cbd)->len)
+> +#define CBDR_ADDR(_cbd) ioread32(&(_cbd)->addr)
+> +
+> +/* Buffer Descriptor Registers */
+> +#define PCINET_TXBD_BASE	0x400
+> +#define PCINET_RXBD_BASE	0x800
+> +
+> +/* Buffer Descriptor Status */
+> +#define BD_MEM_READY		0x1
+> +#define BD_MEM_DIRTY		0x2
+> +#define BD_MEM_FREE		0x3
+> +
+> +/* IMMR Accessor Helpers */
+> +#define IMMR_R32(_off) ioread32(priv->immr+(_off))
+> +#define IMMR_W32(_off, _val) iowrite32((_val), priv->immr+(_off))
+> +#define IMMR_R32BE(_off) ioread32be(priv->immr+(_off))
+> +#define IMMR_W32BE(_off, _val) iowrite32be((_val), priv->immr+(_off))
+> +
+> +/* Status Register Bits */
+> +#define PCINET_UART_RX_ENABLED		(1<<0)
+> +#define PCINET_NET_STATUS_RUNNING	(1<<1)
+> +#define PCINET_NET_RXINT_OFF		(1<<2)
+> +#define PCINET_NET_REGISTERS_VALID	(1<<3)
+> +
+> +/* Driver State Bits */
+> +#define NET_STATE_STOPPED	0
+> +#define NET_STATE_RUNNING	1
+> +
+> +/* Doorbell Registers */
+> +#define UART_RX_READY_DBELL	(1<<0)
+> +#define UART_TX_EMPTY_DBELL	(1<<1)
+> +#define NET_RX_PACKET_DBELL	(1<<2)
+> +#define NET_TX_COMPLETE_DBELL	(1<<3)
+> +#define NET_START_REQ_DBELL	(1<<4)
+> +#define NET_START_ACK_DBELL	(1<<5)
+> +#define NET_STOP_REQ_DBELL	(1<<6)
+> +#define NET_STOP_ACK_DBELL	(1<<7)
+> +
+> +#endif /* PCINET_H */
+> +
+> +/* vim: set ts=8 sts=8 sw=8 noet tw=92: */
+
+Bah, don't add vim: cruft
+
+> diff --git a/drivers/net/pcinet_fsl.c b/drivers/net/pcinet_fsl.c
+> new file mode 100644
+> index 0000000..049d1ff
+> --- /dev/null
+> +++ b/drivers/net/pcinet_fsl.c
+> @@ -0,0 +1,1360 @@
+> +/*
+> + * PCINet and PCISerial Driver for Freescale MPC8349EMDS
+> + *
+> + * Copyright (c) 2008 Ira W. Snyder <iws@ovro.caltech.edu>
+> + *
+> + * Heavily inspired by the drivers/net/fs_enet driver
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2. This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/sched.h>
+> +#include <linux/wait.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/irqreturn.h>
+> +#include <linux/delay.h>
+> +#include <linux/io.h>
+> +#include <linux/serial.h>
+> +#include <linux/serial_core.h>
+> +#include <linux/etherdevice.h>
+> +#include <linux/mutex.h>
+> +#include <linux/dmaengine.h>
+> +
+> +#include "pcinet.h"
+> +#include "pcinet_hw.h"
+> +
+> +static const char driver_name[] = "wqt";
+> +
+> +static void wqtuart_rx_char(struct uart_port *port, const char ch);
+> +static void wqtuart_stop_tx(struct uart_port *port);
+> +
+> +struct wqt_dev;
+> +typedef void (*wqt_irqhandler_t)(struct wqt_dev *);
+> +
+> +struct wqt_irqhandlers {
+> +	wqt_irqhandler_t net_start_req_handler;
+> +	wqt_irqhandler_t net_start_ack_handler;
+> +	wqt_irqhandler_t net_stop_req_handler;
+> +	wqt_irqhandler_t net_stop_ack_handler;
+> +	wqt_irqhandler_t net_rx_packet_handler;
+> +	wqt_irqhandler_t net_tx_complete_handler;
+> +	wqt_irqhandler_t uart_rx_ready_handler;
+> +	wqt_irqhandler_t uart_tx_empty_handler;
+> +};
+> +
+> +struct wqt_dev {
+> +	/*--------------------------------------------------------------------*/
+> +	/* OpenFirmware Infrastructure                                        */
+> +	/*--------------------------------------------------------------------*/
+> +	struct of_device *op;
+> +	struct device *dev;
+> +	int irq;
+> +	void __iomem *immr;
+> +
+> +	struct mutex irq_mutex;
+> +	int interrupt_count;
+> +
+> +	spinlock_t irq_lock;
+> +	struct wqt_irqhandlers handlers;
+> +
+> +	/*--------------------------------------------------------------------*/
+> +	/* UART Device Infrastructure                                         */
+> +	/*--------------------------------------------------------------------*/
+> +	struct uart_port port;
+> +	bool uart_rx_enabled;
+> +	bool uart_open;
+> +
+> +	struct workqueue_struct *wq;
+> +	struct work_struct uart_tx_work;
+> +	wait_queue_head_t uart_tx_wait; /* sleep for uart_tx_ready */
+> +	bool uart_tx_ready; /* transmitter state */
+> +
+> +	/*--------------------------------------------------------------------*/
+> +	/* Ethernet Device Infrastructure                                     */
+> +	/*--------------------------------------------------------------------*/
+> +	struct net_device *ndev;
+> +	void __iomem *netregs;
+> +	dma_addr_t netregs_addr;
+> +
+> +	/* Outstanding SKB */
+> +	struct sk_buff *tx_skbs[PH_RING_SIZE];
+> +
+> +	/* Circular Buffer Descriptor base */
+> +	cbd_t __iomem *rx_base;
+> +	cbd_t __iomem *tx_base;
+> +
+> +	/* Current SKB index */
+> +	cbd_t __iomem *cur_rx;
+> +	cbd_t __iomem *cur_tx;
+> +	cbd_t __iomem *dirty_tx;
+> +	int tx_free;
+> +
+> +	struct tasklet_struct tx_complete_tasklet;
+> +	spinlock_t net_lock;
+> +
+> +	struct mutex net_mutex;
+> +	int net_state;
+> +	struct work_struct net_start_work;
+> +	struct work_struct net_stop_work;
+> +	struct completion net_start_completion;
+> +	struct completion net_stop_completion;
+> +	struct napi_struct napi;
+> +
+> +	struct dma_client client;
+> +	struct dma_chan *chan;
+> +};
+> +
+> +/*----------------------------------------------------------------------------*/
+> +/* Status Register Helper Operations                                          */
+> +/*----------------------------------------------------------------------------*/
+> +
+> +static DEFINE_SPINLOCK(status_lock);
+> +
+> +static void wqtstatus_setbit(struct wqt_dev *priv, u32 bit)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&status_lock, flags);
+> +	IMMR_W32(OMR1_OFFSET, IMMR_R32(OMR1_OFFSET) | bit);
+> +	spin_unlock_irqrestore(&status_lock, flags);
+> +}
+> +
+> +static void wqtstatus_clrbit(struct wqt_dev *priv, u32 bit)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&status_lock, flags);
+> +	IMMR_W32(OMR1_OFFSET, IMMR_R32(OMR1_OFFSET) & ~bit);
+> +	spin_unlock_irqrestore(&status_lock, flags);
+> +}
+> +
+> +static int wqtstatus_remote_testbit(struct wqt_dev *priv, u32 bit)
+> +{
+> +	return IMMR_R32(IMR1_OFFSET) & bit;
+> +}
+> +
+> +/*----------------------------------------------------------------------------*/
+> +/* Message Sending and Processing Operations                                  */
+> +/*----------------------------------------------------------------------------*/
+> +
+> +static irqreturn_t wqt_interrupt(int irq, void *dev_id)
+> +{
+> +	struct wqt_dev *priv = dev_id;
+> +	u32 imisr, idr;
+> +	unsigned long flags;
+> +
+> +	imisr = IMMR_R32(IMISR_OFFSET);
+> +	idr = IMMR_R32(IDR_OFFSET);
+> +
+> +	if (!(imisr & 0x8))
+> +		return IRQ_NONE;
+> +
+> +	/* Clear all of the interrupt sources, we'll handle them next */
+> +	IMMR_W32(IDR_OFFSET, idr);
+> +
+> +	/* Lock over all of the handlers, so they cannot get called when
+> +	 * the code doesn't expect them to be called */
+> +	spin_lock_irqsave(&priv->irq_lock, flags);
+> +
+> +	if (idr & UART_RX_READY_DBELL)
+> +		priv->handlers.uart_rx_ready_handler(priv);
+> +
+> +	if (idr & UART_TX_EMPTY_DBELL)
+> +		priv->handlers.uart_tx_empty_handler(priv);
+> +
+> +	if (idr & NET_RX_PACKET_DBELL)
+> +		priv->handlers.net_rx_packet_handler(priv);
+> +
+> +	if (idr & NET_TX_COMPLETE_DBELL)
+> +		priv->handlers.net_tx_complete_handler(priv);
+> +
+> +	if (idr & NET_START_REQ_DBELL)
+> +		priv->handlers.net_start_req_handler(priv);
+> +
+> +	if (idr & NET_START_ACK_DBELL)
+> +		priv->handlers.net_start_ack_handler(priv);
+> +
+> +	if (idr & NET_STOP_REQ_DBELL)
+> +		priv->handlers.net_stop_req_handler(priv);
+> +
+> +	if (idr & NET_STOP_ACK_DBELL)
+> +		priv->handlers.net_stop_ack_handler(priv);
+> +
+> +	spin_unlock_irqrestore(&priv->irq_lock, flags);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +/* Send a character through the mbox when it becomes available
+> + * Blocking, must not be called with any spinlocks held */
+> +static int do_send_message(struct wqt_dev *priv, const char ch)
+> +{
+> +	struct uart_port *port = &priv->port;
+> +	bool tmp;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&priv->irq_lock, flags);
+> +	while (priv->uart_tx_ready != true) {
+> +		spin_unlock_irqrestore(&priv->irq_lock, flags);
+> +		wait_event_timeout(priv->uart_tx_wait, priv->uart_tx_ready, HZ);
+> +
+> +		spin_lock_irqsave(&port->lock, flags);
+> +		tmp = priv->uart_open;
+> +		spin_unlock_irqrestore(&port->lock, flags);
+> +
+> +		if (!tmp)
+> +			return -EIO;
+> +
+> +		spin_lock_irqsave(&priv->irq_lock, flags);
+> +	}
+> +
+> +	/* Now the transmitter is free, send the message */
+> +	IMMR_W32(OMR0_OFFSET, ch);
+> +	IMMR_W32(ODR_OFFSET, UART_RX_READY_DBELL);
+> +
+> +	/* Mark the transmitter busy */
+> +	priv->uart_tx_ready = false;
+> +	spin_unlock_irqrestore(&priv->irq_lock, flags);
+> +	return 0;
+> +}
+> +
+> +/* Grab a character out of the uart tx buffer and send it */
+> +static void uart_tx_work_fn(struct work_struct *work)
+> +{
+> +	struct wqt_dev *priv = container_of(work, struct wqt_dev, uart_tx_work);
+> +	struct uart_port *port = &priv->port;
+> +	struct circ_buf *xmit = &port->info->xmit;
+> +	char ch;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&port->lock, flags);
+> +	while (true) {
+> +
+> +		/* Check for XON/XOFF (high priority) */
+> +		if (port->x_char) {
+> +			ch = port->x_char;
+> +			port->x_char = 0;
+> +			spin_unlock_irqrestore(&port->lock, flags);
+> +
+> +			if (do_send_message(priv, ch))
+> +				return;
+> +
+> +			spin_lock_irqsave(&port->lock, flags);
+> +			continue;
+> +		}
+> +
+> +		/* If we're out of chars or the port is stopped, we're done */
+> +		if (uart_circ_empty(xmit) || uart_tx_stopped(port)) {
+> +			wqtuart_stop_tx(port);
+> +			break;
+> +		}
+> +
+> +		/* Grab the next char out of the buffer and send it */
+> +		ch = xmit->buf[xmit->tail];
+> +		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
+> +		spin_unlock_irqrestore(&port->lock, flags);
+> +
+> +		if (do_send_message(priv, ch))
+> +			return;
+> +
+> +		spin_lock_irqsave(&port->lock, flags);
+> +	}
+> +
+> +	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
+> +		uart_write_wakeup(port);
+> +
+> +	if (uart_circ_empty(xmit))
+> +		wqtuart_stop_tx(port);
+> +
+> +	spin_unlock_irqrestore(&port->lock, flags);
+> +}
+> +
+> +/*----------------------------------------------------------------------------*/
+> +/* Interrupt Handlers                                                         */
+> +/*----------------------------------------------------------------------------*/
+> +
+> +/* NOTE: All handlers are called with priv->irq_lock held */
+> +
+> +static void empty_handler(struct wqt_dev *priv)
+> +{
+> +	/* Intentionally left empty */
+> +}
+> +
+> +static void net_start_req_handler(struct wqt_dev *priv)
+> +{
+> +	schedule_work(&priv->net_start_work);
+> +}
+> +
+> +static void net_start_ack_handler(struct wqt_dev *priv)
+> +{
+> +	complete(&priv->net_start_completion);
+> +}
+> +
+> +static void net_stop_req_handler(struct wqt_dev *priv)
+> +{
+> +	schedule_work(&priv->net_stop_work);
+> +}
+> +
+> +static void net_stop_ack_handler(struct wqt_dev *priv)
+> +{
+> +	complete(&priv->net_stop_completion);
+> +}
+> +
+> +static void net_tx_complete_handler(struct wqt_dev *priv)
+> +{
+> +	tasklet_schedule(&priv->tx_complete_tasklet);
+> +}
+> +
+> +static void net_rx_packet_handler(struct wqt_dev *priv)
+> +{
+> +	wqtstatus_setbit(priv, PCINET_NET_RXINT_OFF);
+> +	netif_rx_schedule(priv->ndev, &priv->napi);
+> +}
+> +
+> +static void uart_rx_ready_handler(struct wqt_dev *priv)
+> +{
+> +	wqtuart_rx_char(&priv->port, IMMR_R32(IMR0_OFFSET) & 0xff);
+> +	IMMR_W32(ODR_OFFSET, UART_TX_EMPTY_DBELL);
+> +}
+> +
+> +static void uart_tx_empty_handler(struct wqt_dev *priv)
+> +{
+> +	priv->uart_tx_ready = true;
+> +	wake_up(&priv->uart_tx_wait);
+> +}
+> +
+> +/*----------------------------------------------------------------------------*/
+> +/* Interrupt Request / Free Helpers                                           */
+> +/*----------------------------------------------------------------------------*/
+> +
+> +static void do_enable_net_startstop_handlers(struct wqt_dev *priv)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&priv->irq_lock, flags);
+> +	priv->handlers.net_start_req_handler = net_start_req_handler;
+> +	priv->handlers.net_start_ack_handler = net_start_ack_handler;
+> +	priv->handlers.net_stop_req_handler = net_stop_req_handler;
+> +	priv->handlers.net_stop_ack_handler = net_stop_ack_handler;
+> +	spin_unlock_irqrestore(&priv->irq_lock, flags);
+> +
+> +	wqtstatus_setbit(priv, PCINET_NET_STATUS_RUNNING);
+> +}
+> +
+> +static void do_disable_net_startstop_handlers(struct wqt_dev *priv)
+> +{
+> +	unsigned long flags;
+> +
+> +	wqtstatus_clrbit(priv, PCINET_NET_STATUS_RUNNING);
+> +
+> +	spin_lock_irqsave(&priv->irq_lock, flags);
+> +	priv->handlers.net_start_req_handler = empty_handler;
+> +	priv->handlers.net_start_ack_handler = empty_handler;
+> +	priv->handlers.net_stop_req_handler = empty_handler;
+> +	priv->handlers.net_stop_ack_handler = empty_handler;
+> +	spin_unlock_irqrestore(&priv->irq_lock, flags);
+> +}
+> +
+> +static void do_enable_net_rxtx_handlers(struct wqt_dev *priv)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&priv->irq_lock, flags);
+> +	priv->handlers.net_rx_packet_handler = net_rx_packet_handler;
+> +	priv->handlers.net_tx_complete_handler = net_tx_complete_handler;
+> +	spin_unlock_irqrestore(&priv->irq_lock, flags);
+> +}
+> +
+> +static void do_disable_net_rxtx_handlers(struct wqt_dev *priv)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&priv->irq_lock, flags);
+> +	priv->handlers.net_rx_packet_handler = empty_handler;
+> +	priv->handlers.net_tx_complete_handler = empty_handler;
+> +	spin_unlock_irqrestore(&priv->irq_lock, flags);
+> +}
+> +
+> +static void do_enable_uart_handlers(struct wqt_dev *priv)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&priv->irq_lock, flags);
+> +	priv->handlers.uart_rx_ready_handler = uart_rx_ready_handler;
+> +	priv->handlers.uart_tx_empty_handler = uart_tx_empty_handler;
+> +	spin_unlock_irqrestore(&priv->irq_lock, flags);
+> +}
+> +
+> +static void do_disable_uart_handlers(struct wqt_dev *priv)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&priv->irq_lock, flags);
+> +	priv->handlers.uart_rx_ready_handler = empty_handler;
+> +	priv->handlers.uart_tx_empty_handler = empty_handler;
+> +	spin_unlock_irqrestore(&priv->irq_lock, flags);
+> +}
+> +
+> +static int wqt_request_irq(struct wqt_dev *priv)
+> +{
+> +	int ret = 0;
+> +
+> +	mutex_lock(&priv->irq_mutex);
+> +
+> +	if (priv->interrupt_count > 0)
+> +		goto out_unlock;
+> +
+> +	/* Force all handlers to be disabled before attaching the handler */
+> +	do_disable_net_startstop_handlers(priv);
+> +	do_disable_net_rxtx_handlers(priv);
+> +	do_disable_uart_handlers(priv);
+> +
+> +	ret = request_irq(priv->irq,
+> +			  wqt_interrupt,
+> +			  IRQF_SHARED,
+> +			  driver_name,
+> +			  priv);
+
+If you use device name (dev->name) ie ethX, then irqbalance knows this is
+a network device and shouldn't move the irq around.
+
+> +out_unlock:
+> +	priv->interrupt_count++;
+> +	mutex_unlock(&priv->irq_mutex);
+> +
+> +	return ret;
+> +}
 >
->
-> Mitch Bradley wrote:
-> [snip]
->
->> You could adopt the convention that preassigned GPIOs must be 
->> represented by subordinate nodes, and any GPIO that is not covered by 
->> a subordinate node's "reg" property is implicitly available.  That's 
->> the way it works for other address spaces.
->
-> I like that idea except for the implicitly available bit.
->
-> Just summarizing this in my head (also on the list), if we had an 
-> "available" property in the node marked as a gpio-controller, that 
-> would easily give gpiolib something to parse so that it only gives out 
-> allocations for pins that are really, really not being multiplexed for 
-> something else or just not being connected.
->
-> There's a GPIO spec in booting-without-of.txt which basically defines 
-> a controller and a bank, and you can assign a bank of GPIO to some 
-> other device. Assigning specific GPIO pins should be possible.. umm..
->
-> http://patchwork.ozlabs.org/patch/5478/
->
-> With regards to this patch, how about device usage of pins being 
-> defined as a range of pins (reusing the standard-ish "ranges" property 
-> from PCI binding)?
 
 
-Okay, so it looks to me like your "bank" concept is sort of akin to a 
-"gpio-to-gpio bridge", with analogy to a pci-to-pci bridge.  Following 
-that model, the "name" of your "gpio-bank" would instead be 
-"gpio-controller", because its children are GPIO pin nodes that could 
-just as well be attached directly to the top-level gpio-controller 
-node.  The "compatible" property would be different, reflecting the fact 
-that it is a "gpio-to-gpio bridge" instead of an "io-to-gpio bridge" 
-(for example).
+> +MODULE_AUTHOR("Ira W. Snyder <iws@ovro.caltech.edu>");
+> +MODULE_DESCRIPTION("PCINet/PCISerial Driver for MPC8349EMDS");
+> +MODULE_LICENSE("GPL");
+> +
+> +module_init(wqt_init);
+> +module_exit(wqt_exit);
+> diff --git a/drivers/net/pcinet_host.c b/drivers/net/pcinet_host.c
+> new file mode 100644
+> index 0000000..dc36e0f
+> --- /dev/null
+> +++ b/drivers/net/pcinet_host.c
+> @@ -0,0 +1,1392 @@
+> +/*
+> + * PCINet and PCISerial Driver for Freescale MPC8349EMDS (Host side)
+> + *
+> + * Copyright (c) 2008 Ira W. Snyder <iws@ovro.caltech.edu>
+> + *
+> + * Heavily inspired by the drivers/net/fs_enet driver
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2. This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + */
 
-"ranges" is fully standard.  Its specification is tight enough to permit 
-generic address-translation code to walk up a tree and work out how to 
-translate addresses through multiple levels, even in the face of 
-different address representations at the various levels.  (But the 
-chained address spaces must be of the same general flavor, such as 
-memory mapped spaces translated through PCI nodes.)  Each "ranges" entry 
-defines a subrange of the child address space and the corresponding 
-subrange of the parent address space.
+> +static struct net_device_stats *wqt_get_stats(struct net_device *dev)
+> +{
+> +	return &dev->stats;
+> +}
 
-So to use "ranges" in the context of "gpio-to-gpio bridge" node, the 
-value would be a list of each entries each containing <child-start-pin# 
-parent-start-pin# size>.  You could choose whether or not to offset the 
-child and parent pin numbers.  If you wrote  <0 5 2>, that would mean 
-that child pins 0 and 1 would actually be parent pins 5 and 6 - the 
-child "reg" property would have to say, e.g. <0 2>.   If you wrote <5 5 
-2>, that would mean no offsetting from child to parent; the child "reg" 
-would be <5 2>.  Generic "ranges" handling code wouldn't care.
-
-That said, I'm not sure that the intermediate level ("banks" or "g2g 
-bridge", whatever you want to call it) is worth the effort.  There is a 
-very good reason for pci-to-pci bridge nodes - they exist in hardware 
-and impose a translation on the configuration addresses.  The "g2g" 
-intermediate nodes might make it slightly easier to move around chunks 
-of GPIO pins, but I'm not sure that it's really that much easier, 
-compared to just changing the values in the "reg" property of the 
-child.  If a child function requires a group of related GPIO pins, you 
-can list all the pins in its reg property, ordered according to their  
-purposes.  For example, the first reg entry might be for the "SCL" pin 
-and the second for the "SDA" pin.
-
-> That way you have all the information you could ever need for each 
-> device.
->
-> 1) where the controller sits ("gpio-controller" property)
->
-> 2) which pins are available for use (everything not in "available" is 
-> therefore out of bounds)
->
-> 3) define banks of gpio for a specific function with "ranges" (for 
-> instance pins 10, 11 and 15 would be encoded as <10 2> and <15 1> and 
-> these encapsulate some kind of function be it user definable gpio or 
-> some control function for a chip)
-
-As argued above, I think the grouping should be done directly in the 
-child node, listing the pins in the reg property.
-
->
-> 4) assign "gpio" properties to other nodes which refer to banks (see 
-> booting-without-of.txt section IX, at the end) rather than individual 
-> pins.
-
-I think that's an improvement over the "gpios" formulation in section 
-IX.  I'm concerned that the stipulated "gpios" format pushes a lot of 
-address-format complexity out into unrelated nodes. 
+unnecessary, this is the default.
 
 
->
-> 5) optionally a bank may contain gpio pin node which describes EXACTLY 
-> what that pin function is (and any lovely properties it may well have).
->
-> At the moment it's encoded as:
->
->     gpios = <&controller-phandle pin-number pin-flags>
->
-> Ad infinitum. Instead of a controller phandle you'd pass in a bank 
-> (which is a subset of the controller's available pins) and then you 
-> can give each pin it's little options.
+> diff --git a/drivers/net/pcinet_hw.h b/drivers/net/pcinet_hw.h
+> new file mode 100644
+> index 0000000..75703c7
+> --- /dev/null
+> +++ b/drivers/net/pcinet_hw.h
+> @@ -0,0 +1,80 @@
+> +/*
+> + * Register offsets for the MPC8349EMDS Message Unit from the IMMR base address
+> + *
+> + * Copyright (c) 2008 Ira W. Snyder <iws@ovro.caltech.edu>
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2. This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + */
 
-How about
-     gpios = <&controller-child-phandle0 &controller-child-phandle1 ...>
+> +/* vim: set ts=8 sts=8 sw=8 noet tw=92: */
 
-The flags, if any, should be properties of the child node.
-
-One might argue that the code to process the "new" gpios will need 
-additional complexity to deal with addressing issues at the target child 
-nodes.  I would counter that it is probably actually easier, because 
-instead of needing code to handle "#gpio-cells", you instead re-use 
-existing code to handle "#address-cells" in the child/parent context.
-
->
-> Actually I would also advocate allowing each pin to be assigned a node 
-> of it's own and a compatible property - after all if you have a board 
-> where gpios can move around (consider an FPGA with a processor core, 
-> where positions of lines to use are actually reflected by a read-only 
-> register or the device tree is derived directly from the VHDL source 
-> or a constraints script?) and don't want to rewrite your driver every 
-> time, it would be good to be able to find exactly which pin controls 
-> exactly which line on the peripheral chip?
-
-Yep.  The existing OFW addressing framework was designed to solve 
-exactly this sort of problem, with its abstraction of the notion of an 
-"address" and its ability to change the interpretation of "addresses" as 
-you move around in the tree.
-
-
->
-> Therefore you'd get something like this in a DTS; please hit me on the 
-> head if you think it's getting really unwieldy :D
->
-> gpio_1: gpio-controller@1000 {
->     #gpio-cells = <2>;
-
-"#gpio-cells" is unnecessary if the "gpios" property is just a list of 
-phandles.  But you do need "#address-cells = <1>" and "#size-cells = 
-<1>", because this node defines a proper subordinate address space.
-
->     compatible = "fsl,mpc5200b-gpio";
->     reg = <0x1000 0x4>;
->     gpio-controller;
->     available = <1 10 15 4 30 1>;
->
->     gpio_1_bank_1: gpio-bank {
->         \\ 5 pins for some nefarious purpose
->         compatible = "gpio-bank";
->         ranges = <1 5 0>; \\ start length flags
-
-As stated, I'd forego this intermediate level.
-
-
->
->         gpio_pin@2 {
-
-The name here should reflect the purpose of the pin, i.e. what it does 
-(perhaps "NAME,magic"), not the fact that is is GPIO pin.  By analogy, 
-an ethernet controller's node name is "ethernet", not "pci-card".  The 
-fact that the node represents one or more gpio pins is implicit and 
-obvious - all children of a gpio-controller node are gpio pin(s).  All 
-children of a scsi node are SCSI devices, ad nauseum.
-
-> \\ I guess this address has to be
-> \\ the global offset and not the offset into the range to make
-> \\ it easier?
-
-Eliminating the intermediate level moots this question.
-
->             reg = <2 1>
->             compatible = "magic";
->         };
->     };
-> }
->
-> device@9000 {
->     compatible = "somedevice";
->     reg = <0x9000 0x18>;
->     gpios = <&gpio_1_bank_1>
-
-gpios = <&NAME,magic>
-
-> };
->
-> Most implementations won't need the explicit pin definitions but it 
-> would probably come in handy somewhere if you were bitbanging some 
-> protocol (SPI, I2C or so) or driving a device where you could change 
-> this stuff, or even dynamically work out if a connector was inserted a 
-> certain way (I'm thinking of maybe an expansion connector which can 
-> run line-reversed like PCI Express.. but made out of GPIO. Am I nuts?)
-
-It has been my experience that full explicit descriptions are usually a 
-win in the long run.  (Which is not to say that I've always done the 
-right thing, but when I have it has often been worthwhile.)
-
-
->
-> -- 
-> Matt Sealey <matt@genesi-usa.com>
-> Genesi, Manager, Developer Relations
+NO magic editor config lines! 
