@@ -1,21 +1,17 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp115.sbc.mail.sp1.yahoo.com (smtp115.sbc.mail.sp1.yahoo.com
-	[69.147.64.88]) by ozlabs.org (Postfix) with SMTP id C8095DDEFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 17:15:29 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
-Date: Wed, 22 Oct 2008 23:15:26 -0700
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
-	<20081022104606.GA510@oksana.dev.rtsoft.ru>
-	<20081022183218.GA19025@oksana.dev.rtsoft.ru>
-In-Reply-To: <20081022183218.GA19025@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200810222315.26576.david-b@pacbell.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
-	Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id E2795DDF04
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 17:29:42 +1100 (EST)
+Date: Thu, 23 Oct 2008 17:29:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: linux-next: ttydev tree build failure
+Message-Id: <20081023172938.0460b191.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-next@vger.kernel.org,
+	Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+	ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 22 October 2008, Anton Vorontsov wrote:
-> --- a/drivers/gpio/pcf857x.c
-> +++ b/drivers/gpio/pcf857x.c
-> @@ -187,7 +187,7 @@ static int pcf857x_probe(struct i2c_client *client,
->         struct pcf857x                  *gpio;
->         int                             status;
->  
-> -       pdata = client->dev.platform_data;
-> +       pdata = pcf857x_get_pdata(client);
->         if (!pdata)
->                 return -ENODEV;
->  
+Hi Alan,
 
-I suppose that can work.  Regardless, some OF-specific code will
-need to map device tree state into a generic format that's fully
-decoupled from OF.  (And there's something to be said to having
-that mapping sit in the same directory as the driver needing it.)
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+
+drivers/char/hvc_console.c: In function 'hvc_set_winsz':
+drivers/char/hvc_console.c:532: warning: passing argument 2 of 'tty_do_resize' from incompatible pointer type
+drivers/char/hvc_console.c:532: error: too many arguments to function 'tty_do_resize'
+
+Caused by commit eb6ab2d361a49470ca9785c70482772c19e49bec
+("pty-simplify-resize") from the ttydev tree interacting with commit
+febde3711992a64ea83a47a719f68a90c4b0927a ("hvc_console: Add support for
+tty window resizing").
+
+The former added another call to the function that the latter changed.
+
+I applied the following patch.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 23 Oct 2008 17:26:51 +1100
+Subject: [PATCH] hvc_console: fallout from tty_do_resize change
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/char/hvc_console.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 5b819b1..65f88ef 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -529,7 +529,7 @@ static void hvc_set_winsz(struct work_struct *work)
+ 	tty = tty_kref_get(hp->tty);
+ 	spin_unlock_irqrestore(&hp->lock, hvc_flags);
+ 
+-	tty_do_resize(tty, tty, &ws);
++	tty_do_resize(tty, &ws);
+ 	tty_kref_put(tty);
+ }
+ 
+-- 
+1.5.6.5
