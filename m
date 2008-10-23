@@ -1,33 +1,14 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C7542DDED1
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 13:43:01 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id m9N2g1LC026864
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 13:42:01 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9N2gw3R289260
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 13:42:58 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9N2gv3t023506
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 13:42:58 +1100
-Date: Thu, 23 Oct 2008 13:42:47 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: Satya <satyakiran@gmail.com>
-Subject: Re: hugetlbfs for ppc440 - kernel BUG
-Message-ID: <20081023024247.GA25947@yookeroo.seuss>
-References: <acbcf3840707101138t24597799s6511f9326ed2243e@mail.gmail.com>
-	<1224622063.7654.265.camel@pasglop>
-	<acbcf3840810211546s1d72dac0kabcf1285358efbdf@mail.gmail.com>
-	<acbcf3840810211550q34dac858je6c114a924067d65@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <acbcf3840810211550q34dac858je6c114a924067d65@mail.gmail.com>
-Cc: kazutomo@mcs.anl.gov, edi@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 3/3] powerpc/ppc64/kdump: better flag for running
+	relocatable
+In-reply-to: <kexec-kern-2@bga.com> 
+References: <kexec-kern-2@bga.com>
+Date: Thu, 23 Oct 2008 14:23:27 +1100
+Message-ID: <25820.1224732207@neuling.org>
+Cc: Simon Horman <horms@verge.net.au>, kexec@lists.infradead.org,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,72 +18,123 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 21, 2008 at 03:50:30PM -0700, Satya wrote:
-> On Tue, Oct 21, 2008 at 3:46 PM, Satya <satyakiran@gmail.com> wrote:
+In message <kexec-kern-2@bga.com> you wrote:
+> The __kdump_flag ABI is overly constraining for future development.  
 > 
-> > Ben,
-> > Look here: http://www-unix.mcs.anl.gov/zeptoos/hugepages/
-> >
-> > thanks,
-> > ./satya
-> >
-> >
-> > On Tue, Oct 21, 2008 at 1:47 PM, Benjamin Herrenschmidt <
-> > benh@kernel.crashing.org> wrote:
-> >
-> >> On Tue, 2007-07-10 at 13:38 -0500, Satya wrote:
-> >> > hello,
-> >> > I am trying to implement hugetlbfs on the IBM Bluegene/L IO node
-> >> > (ppc440) and I have a big problem as well as a few questions to ask
-> >> > the group. I patched a 2.6.21.6 linux kernel (manually) with Edi
-> >> > Shmueli's hugetlbfs implementation (found here:
-> >> > http://patchwork.ozlabs.org/linuxppc/patch?id=8427) for this. I did
-> >> > have to make slight changes (described at the end) to make it work.
-> >> > My test program is a shortened version of a sys v shared memory
-> >> > example described in Documentation/vm/hugetlbpage.txt
-> >>
-> >> Hi !
-> >>
-> >> The patchwork link unfortunately didn't survive the transition to
-> >> patchwork 2.
-> >>
-> >> Do you know what's the status of Hugetlb support for 44x ? Is there any
-> >> plan to release that for upstream inclusion ?
-> >>
-> >> Cheers,
-> >> Ben.
-> >>
-> >>
-> >>
+> As of 2.6.27, the kernel entry point has 4 constraints:  Offset 0 is
+> the starting point for the master (boot) cpu (entered with r3 pointing
+> to the device tree structure), offset 0x60 is code for the slave cpus
+> (entered with r3 set to their device tree physical id), offset 0x20 is
+> used by the iseries hypervisor, and secondary cpus must be well behaved
+> when the first 256 bytes are copied to address 0.
 > 
-> whoops, sorry for top-posting. Here is a patch that worked at that time:
-> http://www-unix.mcs.anl.gov/zeptoos/hugepages/hugetlbpage_44x.patch
+> Placing the __kdump_flag at 0x18 is bad because:
 > 
-> I didn't follow up after this to get it merged upstream. Also I don't know
-> if hugetlb core has changed to deal with PTEs in high memory.
+> - It was taking the last 8 bytes before the iseries hypervisor data.  
+> - It was 8 bytes for a boolean flag
+> - It had no way of identifying that the flag was present
+> - It does leave any room for the master to add any additional code
+>   before branching, which hurts debug.
+> - It will be unnecessarily hard for 32 bit code to be common (8 bytes)
+> 
+> Now that we have eliminated the use of __kdump_flag in favor of
+> the standard is_kdump_kernel(), this flag only controls run without
+> relocating the kernel to PHYSICAL_START (0), so rename it __run_at_load.
+> 
+> Move the flag to 0x5c, 1 word before the secondary cpu entry point at
+> 0x60.  Use the copy at address 0 not the one in the base kernel image to
+> make it easier on kexec-tools.  Initialize it with "run0" to say it will
+> run at 0 unless it is set to 1.  It only exists if we are relocatable.
+> 
+> Signed-off-by: Milton Miller <miltonm@bga.com>
+> ---
+> I left it global so it appears that way in System.map, but it would
+> not need to be.
+> 
+> I kept the guards with CONFIG_CRASH_DUMP for now.  They could be relaxed
+> to just CONFIG_RELOCATABLE.
+> 
+> Tested with normal kexec (kernel moved to 0) and a custom boot-loader
+> (kernel stayed at loaded 16MB start).
+> 
+> Index: next.git/arch/powerpc/kernel/head_64.S
+> ===================================================================
+> --- next.git.orig/arch/powerpc/kernel/head_64.S	2008-10-22 04:30:08.000
+000000 -0500
+> +++ next.git/arch/powerpc/kernel/head_64.S	2008-10-22 04:59:55.000000000 -
+0500
+> @@ -97,12 +97,6 @@ __secondary_hold_spinloop:
+>  __secondary_hold_acknowledge:
+>  	.llong	0x0
+>  
+> -	/* This flag is set by purgatory if we should be a kdump kernel. */
+> -	/* Do not move this variable as purgatory knows about it. */
+> -	.globl	__kdump_flag
+> -__kdump_flag:
+> -	.llong	0x0
+> -
+>  #ifdef CONFIG_PPC_ISERIES
+>  	/*
+>  	 * At offset 0x20, there is a pointer to iSeries LPAR data.
+> @@ -112,6 +106,20 @@ __kdump_flag:
+>  	.llong hvReleaseData-KERNELBASE
+>  #endif /* CONFIG_PPC_ISERIES */
+>  
+> +#ifdef CONFIG_CRASH_DUMP
+> +	/* This flag is set to 1 by a loader if the kernel should run
+> +	 * at the loaded address instead of the linked address.  This
+> +	 * is used by kexec-tools to keep the the kdump kernel in the
+> +	 * crash_kernel region.  The loader is responsible for
+> +	 * observing the alignment requirement.
+> +	 */
+> +	/* Do not move this variable as kexec-tools knows about it. */
+> +	. = 0x5c
+> +	.globl	__run_at_load
+> +__run_at_load:
+> +	.long	0x72756e30	/* "run0" -- relocate to 0 by default */
+> +#endif
+> +
+>  	. = 0x60
+>  /*
+>   * The following code is used to hold secondary processors
+> @@ -1391,8 +1399,8 @@ _STATIC(__after_prom_start)
+>  	lis	r25,PAGE_OFFSET@highest	/* compute virtual base of kernel */
+>  	sldi	r25,r25,32
+>  #ifdef CONFIG_CRASH_DUMP
+> -	ld	r7,__kdump_flag-_stext(r26)
+> -	cmpldi	cr0,r7,1	/* kdump kernel ? - stay where we are */
+> +	lwz	r7,__run_at_load-_stext(0)
+> +	cmplwi	cr0,r7,1	/* kdump kernel ? - stay where we are */
 
-Ok, had a look at this.  It's had some tweaks since I last looked at
-the bluegene hugepage/440 patch.  It still has the rather ugly
-approach of storing the hugepage PTEs always at the bottom level, and
-duplicating them umpteen times (including pointing multiple PMDs at a
-single PTE page when the hugepage size exceeds the area mapped by a
-PMD).  It also has the most serious bug I remember from the old
-version - the DIRTY and ACCESSED handling is completely bogus, because
-it doesn't keep the copies of the bits in the many copies of the PTEs
-in sync.  Between the TLB miss rewrite that's happened in the meantime
-and my patch to handle these from hugetlb_fault() it's at least now
-easier to fix this bug.  Also the patch is arch/ppc based.
+Do we really want the flag to always be at 0x5c not 0x5c + kernel offset?
 
-I'll try to sort this out in the near future.  I guess the only big
-question is whether its important to support hugepage sizes < 2M.  For
-hugepage sizes >=2M (16M and 256M) we can just make PMD pointers into
-hugepage pointers with the addition of a suitable size field, as we do
-for 40x.  For page sizes <2M things get more complicated because we
-need some sort of second level hugepage tables (which may or may not
-be distinct from the ordinary second level tables).
+Also, comment "kdump kernel" needs to be updated to reflect the new
+name.  
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Other than that, the patch series works for me.
+
+Mikey
+
+>  	bne	1f
+>  	add	r25,r25,r26
+>  #endif
+> @@ -1416,11 +1424,11 @@ _STATIC(__after_prom_start)
+>  #ifdef CONFIG_CRASH_DUMP
+>  /*
+>   * Check if the kernel has to be running as relocatable kernel based on the
+> - * variable __kdump_flag, if it is set the kernel is treated as relocatable
+> + * variable __run_at_load, if it is set the kernel is treated as relocatable
+>   * kernel, otherwise it will be moved to PHYSICAL_START
+>   */
+> -	ld	r7,__kdump_flag-_stext(r26)
+> -	cmpldi	cr0,r7,1
+> +	lwz	r7,__run_at_load-_stext(0)
+> +	cmplwi	cr0,r7,1
+>  	bne	3f
+>  
+>  	li	r5,__end_interrupts - _stext	/* just copy interrupts */
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
