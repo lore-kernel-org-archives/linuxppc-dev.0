@@ -1,21 +1,30 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id 6D89EDDE0D
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 08:35:13 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so211990qwb.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 14:35:11 -0700 (PDT)
-Message-ID: <4900EE0F.3090105@genesi-usa.com>
-Date: Thu, 23 Oct 2008 16:35:11 -0500
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Specify GPIO number base for controller in DT
-References: <1224764850.4082.54.camel@galileo.recco.de>
-	<5535CAC8-11C4-4262-9B18-5F6416A51DE3@kernel.crashing.org>
-In-Reply-To: <5535CAC8-11C4-4262-9B18-5F6416A51DE3@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org, Wolfgang Ocker <weo@reccoware.de>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 83509DDE1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 08:46:12 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9NLk9g6011473
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 17:46:09 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9NLk95b117374
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 17:46:09 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9NLk9k2002924
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 17:46:09 -0400
+Date: Thu, 23 Oct 2008 17:46:06 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: odd change to drivers/net/ibm_newemac/core.c
+Message-ID: <20081023174606.555a65de@zod.rchland.ibm.com>
+In-Reply-To: <20081023214148.GA32322@lst.de>
+References: <20081023214148.GA32322@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 23 Oct 2008 23:41:48 +0200
+Christoph Hellwig <hch@lst.de> wrote:
 
-Kumar Gala wrote:
+> +#ifdef CONFIG_IBM_NEW_EMAC_NO_FLOW_CONTROL
+>                         dev->features |= EMAC_FTR_NO_FLOW_CONTROL_40x;
+> +#else
+> +                       printk(KERN_ERR "%s: Flow control not disabled!\n",
+> +					np->full_name);
+> +                       return -ENXIO;
+> +#endif
 > 
-> On Oct 23, 2008, at 7:27 AM, Wolfgang Ocker wrote:
-> 
->> The GPIOLIB allows the specification of a base gpio number for a
->> controller. That is not possible using OF. Instead, free gpio numbers
->> are assigned.
->>
->> In order to allow static, predefined gpio numbers, a base property in
->> the gpio controller node specifies the first gpio number.
+> What's this trying to do?  CONFIG_IBM_NEW_EMAC_NO_FLOW_CONTROL doesn't
+> exist anywhere, and it seems like an extremly strange idea for a config
 
-See my latest mail.
+Damnit.  Typo.  Should be CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL.  It's right
+elsewhere, I just fat-fingered the option with this particular change
+because I was rushing for a build fix.  I'll fix it with the brown
+paper bag of shame over my head shortly.
 
-I don't think it's enough to say which pin the GPIOs exposed 
-start at; you need some sort of mask, or array of applicable 
-GPIOs so that GPIOLIB can check which perhaps 3 pins out of a 
-possible 32 are allocated to a controller and usable (these 
-may be pin 5, pin 9 and pin 20, so a "base" of pin 5 would be 
-outrageously inadequate).
+> option.  And "Flow control not disabled" is not an extremly useful error
+> message for users either..
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Normal users aren't supposed to set it.  The option is selected by the
+4xx platform config options on boards that need the feature.  This is
+how other things are done in the EMAC driver.
+
+josh
