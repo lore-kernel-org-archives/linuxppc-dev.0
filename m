@@ -1,17 +1,26 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zcars04e.nortel.com (zcars04e.nortel.com [47.129.242.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 34B70DDDE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 06:59:48 +1100 (EST)
-Message-ID: <4900D794.5020807@nortel.com>
-Date: Thu, 23 Oct 2008 13:59:16 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-MIME-Version: 1.0
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux Network Development list <netdev@vger.kernel.org>
-Subject: [BUG] oops in net_rx_action on 64-bit powerpc
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E94B5DDDEC
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 08:31:15 +1100 (EST)
+Subject: Re: adding more machines to snd-aoa
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gabriel Paubert <paubert@iram.es>
+In-Reply-To: <20081023164302.GA29454@iram.es>
+References: <1224769461.6002.12.camel@johannes.berg>
+	<20081023153510.GA28277@iram.es>
+	<1224776462.6002.45.camel@johannes.berg>
+	<20081023164302.GA29454@iram.es>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 08:30:49 +1100
+Message-Id: <1224797449.7654.419.camel@pasglop>
+Mime-Version: 1.0
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Linux User #330250 <linuxuser330250@gmx.net>,
+	Sjoerd Simons <sjoerd@luon.net>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,101 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I tried booting a post 2.6.27 -git on a Motorola ATCA6101 (very similar to a 
-Maple board).  The first time I booted I got the first log below via the 
-serial console.  I rebooted and got as far as a login prompt.  I was able to 
-log in via the serial console, but then got an almost identical oops again, as 
-shown in the second log below.
+On Thu, 2008-10-23 at 18:43 +0200, Gabriel Paubert wrote:
+> 
+> Yes, on a pristine 2.6.27 kernel right now.
+> 
+> > Can you tell me which devices it has, like does it have line-in,
+> > microphone, headphones, ...?
+> 
+> I'm not an audio specialist, so the symbols used to
+> identify the ports look like hieroglyphs to me, but 
+> The documentation says that the two ports on the
+> back are for headphones and external stereo loudspeakers.
+> 
+> And the sound is definitely i2s given the OF entry:
+> 
+> /proc/device-tree/pci@f2000000/mac-io@17/i2s@10000/i2s-a@10000/sound/device-id
 
-I configed out the gigE drivers for the backplane so the only remaining 
-network link was the e100 link used for booting, but the problem remained.
+Best if you send a device-tree dump to Johannes.
 
-Anyone have any idea what might be causing this?
-
-Thanks,
-
-Chris
-
-
-Starting xinetd: [  OK  ]
-Starting cron: [  OK  ]
-Unable to handle kernel paging request for data at address 0x00100108
-Faulting instruction address: 0xc00000000028c1cc
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=2 Maple
-Modules linked in:
-NIP: c00000000028c1cc LR: c00000000028c13c CTR: 0000000000000000
-REGS: c00000000fff7b90 TRAP: 0300   Not tainted  (2.6.27-05329-g39076ba)
-MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 22ffff24  XER: 20000000
-DAR: 0000000000100108, DSISR: 000000000a000000
-TASK = c00000017a061080[0] 'swapper' THREAD: c00000017a078000 CPU: 1
-GPR00: 0000000000000000 c00000000fff7e10 c00000000059bfe0 0000000000000020
-GPR04: 0000000000000001 c000000178179800 c00000000027fda8 0000000000000000
-GPR08: 0000000000000000 0000000000200200 0000000000000001 0000000000100100
-GPR12: 0000000022ffff22 c0000000005bc500 0000000000000000 0000000000000000
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR20: 0000000000000000 000000000000000a 0000000000000001 0000000000000001
-GPR24: c0000000005a2280 c0000000005f5134 00000000fffd9bbe 00000000000000ec
-GPR28: c000000006e30c28 0000000000000020 c000000000543440 c00000017a279b40
-NIP [c00000000028c1cc] .net_rx_action+0x1e4/0x26c
-LR [c00000000028c13c] .net_rx_action+0x154/0x26c
-Call Trace:
-[c00000000fff7e10] [c00000000028c13c] .net_rx_action+0x154/0x26c (unreliable)
-[c00000000fff7ec0] [c000000000056938] .__do_softirq+0xf8/0x1f4
-[c00000000fff7f90] [c000000000024334] .call_do_softirq+0x14/0x24
-[c00000017a07b970] [c00000000000bcdc] .do_softirq+0xf0/0x104
-[c00000017a07ba10] [c000000000056ae8] .irq_exit+0x70/0x88
-[c00000017a07ba90] [c00000000000ba18] .do_IRQ+0x14c/0x244
-[c00000017a07bb30] [c000000000004710] hardware_interrupt_entry+0x18/0x1c
---- Exception: 501 at .raw_local_irq_restore+0x38/0x44
-      LR = .cpu_idle+0xd8/0x154
-[c00000017a07be20] [c000000000012068] .cpu_idle+0x118/0x154 (unreliable)
-[c00000017a07bec0] [c0000000003d4304] .start_secondary+0x310/0x3e8
-[c00000017a07bf90] [c0000000000072b4] .start_secondary_prolog+0x10/0x14
-Instruction dump:
-eb61ffd8 eb81ffe0 eba1ffe8 ebc1fff0 ebe1fff8 7c0803a6 4e800020 e81f0010
-7809ffe3 40820038 e93f0008 e97f0000 <f92b0008> f9690000 e95c0008 fb9f0000
-
-
-
-
-root@10:/root> uname -a
-Linux 10.41.18.77 2.6.27-05329-g39076ba #1 SMP Tue Oct 21 16:46:06 CST 2008
-ppc64 GNU/Linux
-root@10:/root> Unable to handle kernel paging request for data at address
-0x00100108
-Faulting instruction address: 0xc00000000028c1cc
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=2 Maple
-Modules linked in:
-NIP: c00000000028c1cc LR: c00000000028c13c CTR: 0000000000000000
-REGS: c00000000fff7b90 TRAP: 0300   Not tainted  (2.6.27-05329-g39076ba)
-MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 22ffff24  XER: 20000000
-DAR: 0000000000100108, DSISR: 000000000a000000
-TASK = c00000017a061080[0] 'swapper' THREAD: c00000017a078000 CPU: 1
-GPR00: 0000000000000000 c00000000fff7e10 c00000000059bfe0 0000000000000020
-GPR04: 0000000000000001 0000000000000001 c00000000027fda8 0000000000000000
-GPR08: 0000000000000000 0000000000200200 0000000000000001 0000000000100100
-GPR12: 0000000022ffff22 c0000000005bc500 0000000000000000 0000000000000000
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR20: 0000000000000000 000000000000000a 0000000000000001 0000000000000001
-GPR24: c0000000005a2280 c0000000005f5134 00000001000387ff 000000000000010c
-GPR28: c000000006e30c28 0000000000000020 c000000000543440 c00000017a2b0b40
-NIP [c00000000028c1cc] .net_rx_action+0x1e4/0x26c
-LR [c00000000028c13c] .net_rx_action+0x154/0x26c
-Call Trace:
-[c00000000fff7e10] [c00000000028c13c] .net_rx_action+0x154/0x26c (unreliable)
-[c00000000fff7ec0] [c000000000056938] .__do_softirq+0xf8/0x1f4
-[c00000000fff7f90] [c000000000024334] .call_do_softirq+0x14/0x24
-[c00000017a07b970] [c00000000000bcdc] .do_softirq+0xf0/0x104
-[c00000017a07ba10] [c000000000056ae8] .irq_exit+0x70/0x88
-[c00000017a07ba90] [c00000000000ba18] .do_IRQ+0x14c/0x244
-[c00000017a07bb30] [c000000000004710] hardware_interrupt_entry+0x18/0x1c
---- Exception: 501 at .cpu_idle+0xf0/0x154
-      LR = .cpu_idle+0xd8/0x154
-[c00000017a07be20] [c000000000012068] .cpu_idle+0x118/0x154 (unreliable)
-[c00000017a07bec0] [c0000000003d4304] .start_secondary+0x310/0x3e8
-[c00000017a07bf90] [c0000000000072b4] .start_secondary_prolog+0x10/0x14
-Instruction dump:
-eb61ffd8 eb81ffe0 eba1ffe8 ebc1fff0 ebe1fff8 7c0803a6 4e800020 e81f0010
-7809ffe3 40820038 e93f0008 e97f0000 <f92b0008> f9690000 e95c0008 fb9f0000
+Cheers,
+Ben.
