@@ -1,13 +1,19 @@
-Return-Path: <wmb@firmworks.com>
-Message-ID: <4900F90B.80703@firmworks.com>
-Date: Thu, 23 Oct 2008 12:22:03 -1000
-From: Mitch Bradley <wmb@firmworks.com>
+Return-Path: <neko@genesi-usa.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
+	by ozlabs.org (Postfix) with ESMTP id 03132DDE08
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 10:05:20 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so228385qwb.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 16:05:18 -0700 (PDT)
+Message-ID: <4901032F.3090805@genesi-usa.com>
+Date: Thu, 23 Oct 2008 18:05:19 -0500
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-To: Matt Sealey <matt@genesi-usa.com>
+To: Mitch Bradley <wmb@firmworks.com>
 Subject: Re: GPIO - marking individual pins (not) available in device tree
-References: <4900ED81.3040202@genesi-usa.com>
-In-Reply-To: <4900ED81.3040202@genesi-usa.com>
+References: <4900ED81.3040202@genesi-usa.com> <4900F90B.80703@firmworks.com>
+In-Reply-To: <4900F90B.80703@firmworks.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	devicetree-discuss list <devicetree-discuss@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,106 +25,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-You could have the gpio node define an "address space" where each 
-"address" is a GPIO pin number.
-
-The node would have one address cell and one size cell, and the 
-"decode-unit" and "encode-unit" methods would be the garden-variety 
-flavors that just convert integers between binary and ASCII.  Since this 
-is not a memory mapped address space, a "ranges" property wouldn't be 
-necessary or appropriate.
-
-The node could have an "available" property with address/size pairs 
-defining pins that can be freely used.  For example, if pins 4 and 7-9 
-were free, the available property would contain
-
-   000000004 00000001   \ 1 pin starting at #4
-   000000007 00000003   \ 3 pins starting at 7
-
-This is modeled on the /memory node's "available" property.
-
-Subordinate nodes could represent specific preassigned GPIO functions, 
-for example
-
-   /<whatever>/gpio/wakeup@12
-
-As an alternative to the "available" property, you could instead have 
-subordinate nodes for the user-assignable GPIOs, e.g.:
-
-  /<whatever>/gpio/usergpio@4
-  /<whatever>/gpio/usergpio@7
-  ...
-
-That last idea is probably a bit over-the-top, though, especially if 
-there are a lot of unassigned GPIOs.
-
-You could adopt the convention that preassigned GPIOs must be 
-represented by subordinate nodes, and any GPIO that is not covered by a 
-subordinate node's "reg" property is implicitly available.  That's the 
-way it works for other address spaces.
-
-Mitch Bradley
 
 
-> Hi guys,
->
-> I'm a little perplexed as to how I would define a GPIO controller in a 
-> device tree but mark off pins as available or not, so users can geek 
-> around in their own drivers without defining in a device tree exactly 
-> what they intend to use it for (especially if it's something really 
-> weird).
->
-> Easiest example - the Efika runs an MPC5200B has 3 GPIO pins on the 
-> board. It's not much, but they're there for use. All the other GPIOs 
-> are absolutely out of bounds, off limits and probably dangerous to 
-> touch, but since each GPIO block has a 32-bit register to handle them, 
-> you can twiddle any bit you like with impunity and cause all the 
-> damage you want. A simple thought comes to mind in that the gpiolib 
-> should not allow a request for one of these "bad" GPIO pins to succeed.
->
-> So, how do we define in a bank of GPIOs, which ones are free for use, 
-> without them being attached to a device and given as a "gpios" property?
->
-> Would we suggest a node;
->
-> gpio-header {
->     compatible = "bplan,efika-gpio";
->     gpios = <&gpio-standard 16 0 17 0>;
-> };
->
-> gpio-header2 {
->     compatible = "bplan,efika-gpio-wkup";
->     gpios = <&gpio-wkup 18 0>;
-> };
->
-> Which a driver can then look for? I would much rather I did not have 
-> to come up with a special compatible property though, after all, 
-> MPC5200B GPIO are not special and the Efika does not do fancy magic 
-> with them :)
->
-> My goal is basically to give an entry in the device tree whereby 
-> (using a forth script) you can pick between IrDA, GPIO, a Sleep Switch 
-> (for Sylvain's patch for Lite5200 and Efika from a year or two ago..), 
-> or whatever else you like. But a generic GPIO "geek port" is basically 
-> then undefined and left hanging.
->
-> By the way I did notice that none of the GPT timer entries in the 
-> lite5200b.dts have GPIO references and the GPT GPIO block is not 
-> defined. Is this because the timers are not exposed on the board for 
-> GPIO or just no need for it? Each timer has a pin it can sample, drive 
-> and do PWM on.. this leads me to wonder how the PWM driver framework 
-> as announced/proposed last week would work here, and if the device 
-> tree should specifically pick which operation works on which timer 
-> (after all if you have a PWM fan controller on a timer pin, you would 
-> want to advertise the fact, but having the full 8 timers as a 
-> "gpio-controller" and "pwm-controller" both at the same time, sharing 
-> the same reg property but supporting only a subset of that controller, 
-> needs addressing.
->
-> -- 
-> Matt Sealey <matt@genesi-usa.com>
-> Genesi, Manager, Developer Relations
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/devicetree-discuss
+Mitch Bradley wrote:
+[snip]
+
+> You could adopt the convention that preassigned GPIOs must be 
+> represented by subordinate nodes, and any GPIO that is not covered by a 
+> subordinate node's "reg" property is implicitly available.  That's the 
+> way it works for other address spaces.
+
+I like that idea except for the implicitly available bit.
+
+Just summarizing this in my head (also on the list), if we had 
+an "available" property in the node marked as a 
+gpio-controller, that would easily give gpiolib something to 
+parse so that it only gives out allocations for pins that are 
+really, really not being multiplexed for something else or 
+just not being connected.
+
+There's a GPIO spec in booting-without-of.txt which basically 
+defines a controller and a bank, and you can assign a bank of 
+GPIO to some other device. Assigning specific GPIO pins should 
+be possible.. umm..
+
+http://patchwork.ozlabs.org/patch/5478/
+
+With regards to this patch, how about device usage of pins 
+being defined as a range of pins (reusing the standard-ish 
+"ranges" property from PCI binding)? That way you have all the 
+information you could ever need for each device.
+
+1) where the controller sits ("gpio-controller" property)
+
+2) which pins are available for use (everything not in 
+"available" is therefore out of bounds)
+
+3) define banks of gpio for a specific function with "ranges" 
+(for instance pins 10, 11 and 15 would be encoded as <10 2> 
+and <15 1> and these encapsulate some kind of function be it 
+user definable gpio or some control function for a chip)
+
+4) assign "gpio" properties to other nodes which refer to 
+banks (see booting-without-of.txt section IX, at the end) 
+rather than individual pins.
+
+5) optionally a bank may contain gpio pin node which describes 
+EXACTLY what that pin function is (and any lovely properties 
+it may well have).
+
+At the moment it's encoded as:
+
+	gpios = <&controller-phandle pin-number pin-flags>
+
+Ad infinitum. Instead of a controller phandle you'd pass in a 
+bank (which is a subset of the controller's available pins) 
+and then you can give each pin it's little options.
+
+Actually I would also advocate allowing each pin to be 
+assigned a node of it's own and a compatible property - after 
+all if you have a board where gpios can move around (consider 
+an FPGA with a processor core, where positions of lines to use 
+are actually reflected by a read-only register or the device 
+tree is derived directly from the VHDL source or a constraints 
+script?) and don't want to rewrite your driver every time, it 
+would be good to be able to find exactly which pin controls 
+exactly which line on the peripheral chip?
+
+Therefore you'd get something like this in a DTS; please hit 
+me on the head if you think it's getting really unwieldy :D
+
+gpio_1: gpio-controller@1000 {
+	#gpio-cells = <2>;
+	compatible = "fsl,mpc5200b-gpio";
+	reg = <0x1000 0x4>;
+	gpio-controller;
+	available = <1 10 15 4 30 1>;
+
+	gpio_1_bank_1: gpio-bank {
+		\\ 5 pins for some nefarious purpose
+		compatible = "gpio-bank";
+		ranges = <1 5 0>; \\ start length flags
+
+		gpio_pin@2 {
+\\ I guess this address has to be
+\\ the global offset and not the offset into the range to make
+\\ it easier?
+			reg = <2 1>
+			compatible = "magic";
+		};
+	};
+}
+
+device@9000 {
+	compatible = "somedevice";
+	reg = <0x9000 0x18>;
+	gpios = <&gpio_1_bank_1>
+};
+
+Most implementations won't need the explicit pin definitions 
+but it would probably come in handy somewhere if you were 
+bitbanging some protocol (SPI, I2C or so) or driving a device 
+where you could change this stuff, or even dynamically work 
+out if a connector was inserted a certain way (I'm thinking of 
+maybe an expansion connector which can run line-reversed like 
+PCI Express.. but made out of GPIO. Am I nuts?)
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
