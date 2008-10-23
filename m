@@ -1,11 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: print physical_start for the relocatable kernel 
-In-reply-to: <31488.1224733437@neuling.org> 
-References: <31488.1224733437@neuling.org>
-Date: Thu, 23 Oct 2008 16:39:49 +1100
-Message-ID: <20047.1224740389@neuling.org>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp127.sbc.mail.sp1.yahoo.com (smtp127.sbc.mail.sp1.yahoo.com
+	[69.147.65.186]) by ozlabs.org (Postfix) with SMTP id 9D0A0DDEFB
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 17:06:09 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Date: Wed, 22 Oct 2008 23:06:01 -0700
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+	<200810221404.52798.david-b@pacbell.net>
+	<1224737145.7654.387.camel@pasglop>
+In-Reply-To: <1224737145.7654.387.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200810222306.01661.david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+	Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,32 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Print physical start address for the relocatable kernel.  
+On Wednesday 22 October 2008, Benjamin Herrenschmidt wrote:
+> On Wed, 2008-10-22 at 14:04 -0700, David Brownell wrote:
+> > > So if we register the board infos after 
+> > > the controller registered, then nobody will probe the board infos.
+> > 
+> > See above.  If you're doing it right, there's no problem.
+> > That is, scan the OF tables early.  Just like PNP tables
+> > get scanned early, for example.
+> 
+> It's still pretty yucky in that case to scan the device-tree to convert
+> it into some kind of fugly board info ... I'd rather have the end
+> drivers that actually use those GPIOs scan the device-tree directly.
 
-Also fixes this warning:
- arch/powerpc/kernel/setup_64.c:447:5: warning: "kernstart_addr" is not defin
+Keep in mind that these problems are not specific to GPIOs.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/kernel/setup_64.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+And, very important!!, most of the drivers run without OF...
 
-This fixes a small whitespace issue noticed by sfr.  
+Pretty much any little device that needs board-specific
+customization has the same class of problems:  drivers
+will need a variety of parameters that may are often not
+sharable with other devices, with idiosyncratic usage.
+And they hook up to other drivers in arbitrary ways.
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/setup_64.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/setup_64.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/setup_64.c
-@@ -444,9 +444,9 @@ void __init setup_system(void)
- 	if (htab_address)
- 		printk("htab_address                  = 0x%p\n", htab_address);
- 	printk("htab_hash_mask                = 0x%lx\n", htab_hash_mask);
--#if PHYSICAL_START > 0
--	printk("physical_start                = 0x%lx\n", PHYSICAL_START);
--#endif
-+	if (PHYSICAL_START > 0)
-+		printk("physical_start                = 0x%lx\n",
-+		       PHYSICAL_START);
- 	printk("-----------------------------------------------------\n");
+When PCs have such issues, ACPI hides them from Linux.
+
+If those parameters -- potentially including callbacks
+that escape to FORTH -- are stored in the OF device tree,
+so be it.  But "fugly" sounds like part of that problem
+domain, so it's no surprise that it maps onto the solution
+space too...
+
+
+Specifically with respect to GPIOs ... what do you mean
+by "end driver" though?  I previously pointed at one
+example (Davinci EVM) where one bank of GPIOs is used
+by about six different drivers ... none of which have
+any reason to know they're using a pcf8574a vs any other
+kind of GPIO.  Is the "end driver" the IDE/CF driver?
+The USB OTG driver?  The driver sitting the next layer
+above of one of those?  *Some* of the drivers need to
+touch the GPIOs.  Others don't.
+
  
- 	DBG(" <- setup_system()\n");
+> But then, I'm not a believer in generic drivers for things
+> like GPIOs, i2c devices, etc.. :-)
+
+I kind of like being able to re-use code myself.  ;)
+
+It's a win to have *one* pcf8574/5 driver that can be
+reused -- with a bit of care configuring it into the
+system -- instead of having every board contribute yet
+another board-specific hack in drivers/i2c/chips ...
+
+And I think such stuff can be done even with OF.
+
+- Dave
