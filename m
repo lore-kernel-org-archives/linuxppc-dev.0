@@ -1,18 +1,22 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from VA3EHSOBE006.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 5FA02DDEF1
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.237])
+	by ozlabs.org (Postfix) with ESMTP id D38EADDEF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Oct 2008 10:38:22 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Subject: RE: virtex 4 linux driver bus error
-Date: Wed, 22 Oct 2008 17:38:07 -0600
-In-Reply-To: <1695261910@web.de>
+	Thu, 23 Oct 2008 15:17:16 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so136621rvb.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 22 Oct 2008 21:17:15 -0700 (PDT)
+Date: Wed, 22 Oct 2008 22:17:13 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Mirsad Vejseli <Vejseli@web.de>
+Subject: Re: virtex 4 linux driver bus error
+Message-ID: <20081023041713.GA7165@secretlab.ca>
 References: <1695261910@web.de>
-From: John Linn <John.Linn@xilinx.com>
-To: "Mirsad Vejseli" <Vejseli@web.de>,
-	<linuxppc-embedded@ozlabs.org>
-Message-ID: <20081022233812.BCC92145805C@mail39-va3.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1695261910@web.de>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,144 +27,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-See the inline comments.
-
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org [mailto=
-:linuxppc-embedded-
-> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Mirsad Vejseli
-> Sent: Wednesday, October 22, 2008 6:10 AM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: virtex 4 linux driver bus error
-> =
-
+On Wed, Oct 22, 2008 at 02:10:12PM +0200, Mirsad Vejseli wrote:
 > hello at all,
-> =
-
-> at the moment I use development board ML410 with montavistalinux.
-> =
-
-> I have a problem, please help me!
-> =
-
+> 
+> at the moment I use development board ML410 with montavistalinux. 
+> 
+> I have a problem, please help me! 
+> 
 > I try to write a linux-driver for writing or reading registers.
-> I have a ace-file, which contents Linux and EDK-project with a component =
-(IP-wizard) which is added
-> on a PLB-bus.
-> I also have a driver-construct which I can register (insmod driver.ko) in=
-to the linux-Kernel only if
-> i do not use functions to write or read the bus (XIO_out32() or XIO_in32 =
-()  ). If I use this
-
-I don't know MontaVista Linux, but in general these are functions provided =
-by Xilinx for standalone (no RTOS) operation unless MontaVista has changed =
-them.  I would recommend that you go look at other Linux drivers to see the=
- pattern for I/O such as the uartlite serial driver or the xilinx_ps2.c dri=
-ver.  I realize each driver already in the mainline can be different but th=
-ey are working.
-
-I would also add some debug to print out the virtual address after the iore=
-map. You aren't checking the result of the ioremap to make sure it didn't f=
-ail. =
-
-
-Is the ioremap bad or the I/O operation is the question.
-
-> function after registering the driver I got an error.
-> If I try to insert the modul with Insmod driver.ko I get a bus error!
-> =
-
-> my driver is similar to http://ozlabs.org/pipermail/linuxppc-embedded/200=
-6-January/021578.html
-> =
-
-> =
-
+> I have a ace-file, which contents Linux and EDK-project with a component (IP-wizard) which is added on a PLB-bus.
+> I also have a driver-construct which I can register (insmod driver.ko) into the linux-Kernel only if i do not use functions to write or read the bus (XIO_out32() or XIO_in32 ()  ). If I use this function after registering the driver I got an error.
+> If I try to insert the modul with Insmod driver.ko I get a bus error!  
+> 
+> my driver is similar to http://ozlabs.org/pipermail/linuxppc-embedded/2006-January/021578.html
+>  
+> 
 > her the two importent functions  of the driver:
-> =
+> 
 
-> #define REG_BASE 	(u32) XPAR_komponente_0_BASEADDR // defined in xparamet=
-ers_ml41x.h
-> #define REG_HIGH 	(u32) XPAR_komponente_0_HIGHADDR // defined in xparamet=
-ers_ml41x.h
-> =
+Try something like this:
 
-> =
+#define REG_BASE 	(u32) XPAR_komponente_0_BASEADDR // defined in xparameters_ml41x.h 
+#define REG_HIGH 	(u32) XPAR_komponente_0_HIGHADDR // defined in xparameters_ml41x.h 
 
-> #define reg0_upper	(u32) komponente_SLV_REG0_OFFSET // 32-bit register / =
-defined in komponente.h
-> #define reg1_upper	(u32) komponente_SLV_REG1_OFFSET // 32-bit register / =
-defined in komponente.h
-> #define reg2_upper	(u32) komponente_SLV_REG2_OFFSET // 32-bit register / =
-defined in komponente.h
-> =
+#define reg0_upper	(u32) komponente_SLV_REG0_OFFSET // 32-bit register / defined in komponente.h
+#define reg1_upper	(u32) komponente_SLV_REG1_OFFSET // 32-bit register / defined in komponente.h
+#define reg2_upper	(u32) komponente_SLV_REG2_OFFSET // 32-bit register / defined in komponente.h
 
-> const static long remap_size =3D REG_HIGH - REG_BASE + 1;
-> =
+static int __init meintreiber_init(void)
+{
+	int rtn, upper;
 
-> static void read_register_values(void)
-> {
-> 	static u32 upper;
-> =
+	reg_remapped_address = (u32) ioremap(REG_BASE, REG_HIGH - REG_BASE + 1);
+	if (!reg_remapped_address) {
+		printk("error mapping registers\n");
+		return -ENOMEM;
+	}
 
-> =
+	upper = in_be32(reg_mapped_address + reg1_upper);
+	printk("Data in: %.8X\n", upper);
+	return 0;
+}
+ 
 
-> 	printk("%s:\n",DRIVERNAME);
-> 	printk("%s:                      |     upper         |\n",DRIVERNAME);
-> 	printk("%s:----------------------|-------------------|\n",DRIVERNAME);
-> =
-
-> 	upper =3D XIo_In32(reg_remapped_address + reg1_upper);
-> =
-
->     printk("%s: Daten im Register 35 |%15X |\n", DRIVERNAME, upper );
-> =
-
-> }
-> =
-
-> =
-
-> static int __init meintreiber_init(void)
-> reg_remapped_address =3D (u32) ioremap(REG_BASE, remap_size);
-> =
-
->     rtn =3D misc_register(&miscdev);
->     if (rtn)
->     {
-> 		printk("%s: %s error driver not reg. \n",DRIVERNAME, miscdev.name);
->         return rtn;
->     }
-> =
-
-> 	read2_register_values();
-> =
-
-> in the messeges log file i got the 3 printk lins and this line
-> "upper =3D XIo_In32(reg_remapped_address + reg1_upper);"
-> creates a error
-> =
-
-> =
-
-> =
-
-> =
-
-> Thank you very much for your kind help!
-> ________________________________________________________________________
-> Schon geh=F6rt? Bei WEB.DE gibt' s viele kostenlose Spiele:
-> http://games.entertainment.web.de/de/entertainment/games/free/index.html
-> =
-
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+g.
