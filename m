@@ -1,21 +1,25 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-gx0-f14.google.com (mail-gx0-f14.google.com
-	[209.85.217.14]) by ozlabs.org (Postfix) with ESMTP id 15AF0DDDE7
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 22:57:47 +1100 (EST)
-Received: by gxk7 with SMTP id 7so1592776gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 04:57:46 -0700 (PDT)
-Date: Thu, 23 Oct 2008 07:56:04 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org
-Subject: Re: [PATCH] powerpc: Fix error path in kernel_thread function
-Message-ID: <20081023115604.GA2206@yoda.jdub.homelinux.org>
-References: <20081007161003.GA5727@yoda.jdub.homelinux.org>
-	<18669.29473.856007.689260@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18669.29473.856007.689260@cargo.ozlabs.ibm.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, jpoimboe@us.ibm.com
+Return-Path: <weo@reccoware.de>
+Received: from bes.recconet.de (bes.recconet.de [87.106.167.58])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6B544DDDD4
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 23:27:37 +1100 (EST)
+Received: from trinity.recco.de (trinity.intern.recconet.de [192.168.11.241])
+	by bes.recconet.de (8.13.8/8.13.8/Recconet-2008030801) with ESMTP id
+	m9NCQONO023006
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 14:26:24 +0200
+Received: from [172.16.135.104] (galileo.recco.de [172.16.135.104])
+	(authenticated bits=0)
+	by trinity.recco.de (8.13.8/8.13.8/Reccoware-2008101201) with ESMTP id
+	m9NCRUhM024907
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 14:27:31 +0200
+Subject: [PATCH] powerpc: Specify GPIO number base for controller in DT
+From: Wolfgang Ocker <weo@reccoware.de>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 23 Oct 2008 14:27:30 +0200
+Message-Id: <1224764850.4082.54.camel@galileo.recco.de>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 09, 2008 at 01:57:37PM +1100, Paul Mackerras wrote:
->Josh Boyer writes:
->
->> From: Josh Poimboeuf <jpoimboe@us.ibm.com>
->> 
->> The powerpc 32-bit and 64-bit kernel_thread functions don't properly
->> propagate errors being returned by the clone syscall.  (In the case of
->> error, the syscall exit code returns a positive errno in r3 and sets
->> the CR0[SO] bit.)
->> 
->> This patch fixes that by negating r3 if CR0[SO] is set after the syscall.
->> 
->> Signed-off-by: Josh Poimboeuf <jpoimboe@us.ibm.com>
->> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
->
->Acked-by: Paul Mackerras <paulus@samba.org>
+The GPIOLIB allows the specification of a base gpio number for a
+controller. That is not possible using OF. Instead, free gpio numbers
+are assigned.
 
-Should we send this patch to -stable for 2.6.27?  Seems valid enough to
-do so.
+In order to allow static, predefined gpio numbers, a base property in
+the gpio controller node specifies the first gpio number.
 
-josh
+Signed-off-by: Wolfgang Ocker <weo@reccoware.de>
+---
+
+--- linux-2.6.27-rc7/drivers/of/gpio.c.of_gpiospecbase	2008-09-22 00:29:55.000000000 +0200
++++ linux-2.6.27-rc7/drivers/of/gpio.c	2008-09-29 13:50:28.000000000 +0200
+@@ -164,6 +164,8 @@
+ 	int ret = -ENOMEM;
+ 	struct of_gpio_chip *of_gc = &mm_gc->of_gc;
+ 	struct gpio_chip *gc = &of_gc->gc;
++	const int *basep;
++	int baselen;
+ 
+ 	gc->label = kstrdup(np->full_name, GFP_KERNEL);
+ 	if (!gc->label)
+@@ -173,7 +175,11 @@
+ 	if (!mm_gc->regs)
+ 		goto err1;
+ 
+-	gc->base = -1;
++	basep = of_get_property(np, "base", &baselen);
++	if (!basep || baselen != sizeof(*basep))
++		gc->base = -1;
++	else
++		gc->base = *basep;
+ 
+ 	if (!of_gc->xlate)
+ 		of_gc->xlate = of_gpio_simple_xlate;
+--- linux-2.6.27-rc7/Documentation/powerpc/booting-without-of.txt.spi_gpio_doc	2008-09-29 14:14:08.000000000 +0200
++++ linux-2.6.27-rc7/Documentation/powerpc/booting-without-of.txt	2008-09-29 14:24:26.000000000 +0200
+@@ -2586,6 +2588,7 @@
+ 		#gpio-cells = <2>;
+ 		compatible = "fsl,qe-pario-bank-a", "fsl,qe-pario-bank";
+ 		reg = <0x1400 0x18>;
++		base = < 0x20 >;
+ 		gpio-controller;
+ 	};
+ 
