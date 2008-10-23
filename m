@@ -1,11 +1,18 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org, paulus@samba.org
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Subject: [PATCH] powerpc: print physical_start for the relocatable kernel
-Date: Thu, 23 Oct 2008 14:43:57 +1100
-Message-ID: <31488.1224733437@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18687.62202.333736.269891@drongo.ozlabs.ibm.com>
+Date: Thu, 23 Oct 2008 14:43:54 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Milton Miller <miltonm@bga.com>,
+	Ben Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+	Michael Ellerman <michael@ellerman.id.au>, kexec@lists.infradead.org,
+	Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 3/3] powerpc/ppc64/kdump: better flag for running
+	relocatable
+In-Reply-To: <18687.61506.924500.411952@drongo.ozlabs.ibm.com>
+References: <f90d4d7306443a720ca31adf513faf25@bga.com> <kexec-kern-2@bga.com>
+	<18687.61506.924500.411952@drongo.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,33 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Print physical start address for the relocatable kernel.  
+Paul Mackerras writes:
+> Milton Miller writes:
+> 
+> > Move the flag to 0x5c, 1 word before the secondary cpu entry point at
+> > 0x60.  Use the copy at address 0 not the one in the base kernel image to
+> > make it easier on kexec-tools.
+> 
+> Why is it easier on kexec-tools?  Doesn't kexec-tools know where it
+> put the kernel?
+> 
+> I'd much rather keep the flag inside the kdump kernel image, rather
+> than having kexec/kdump start using random fixed locations outside the
+> new kernel image.
 
-Also fixes this warning:
- arch/powerpc/kernel/setup_64.c:447:5: warning: "kernstart_addr" is not defined
+In fact the cliching argument is that when the kernel is loaded by OF
+or yaboot, we have no way to tell what will be at location 0x5c,
+whereas we know that the word at offset 0x5c in the kernel image will
+have been initialized to 0.  So we had better put the flag inside the
+kernel image.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/kernel/setup_64.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-This is on top of Milton's patches kexec patches from here:
-  http://patchwork.ozlabs.org/patch/5382/
-
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/setup_64.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/setup_64.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/setup_64.c
-@@ -444,9 +444,9 @@ void __init setup_system(void)
- 	if (htab_address)
- 		printk("htab_address                  = 0x%p\n", htab_address);
- 	printk("htab_hash_mask                = 0x%lx\n", htab_hash_mask);
--#if PHYSICAL_START > 0
--	printk("physical_start                = 0x%lx\n", PHYSICAL_START);
--#endif
-+	if(PHYSICAL_START > 0)
-+		printk("physical_start                = 0x%lx\n",
-+		       PHYSICAL_START);
- 	printk("-----------------------------------------------------\n");
- 
- 	DBG(" <- setup_system()\n");
+Paul.
