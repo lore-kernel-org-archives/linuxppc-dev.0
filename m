@@ -1,16 +1,22 @@
-Return-Path: <arieswar24b@yahoo.de>
-Received: from web25808.mail.ukl.yahoo.com (web25808.mail.ukl.yahoo.com
-	[217.12.10.193]) by ozlabs.org (Postfix) with SMTP id 73AE6DDDD4
+Return-Path: <neko@genesi-usa.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
+	by ozlabs.org (Postfix) with ESMTP id EB061DDE09
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Oct 2008 00:06:51 +1100 (EST)
-Date: Thu, 23 Oct 2008 13:00:09 +0000 (GMT)
-From: Dave Best <arieswar24b@yahoo.de>
-Subject: Using Bestcomm API (DMA) on MPC5200b with Linux?
-To: linuxppc-embedded@ozlabs.org
+	Fri, 24 Oct 2008 09:28:03 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so221604qwb.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 23 Oct 2008 15:28:02 -0700 (PDT)
+Message-ID: <4900FA72.1040201@genesi-usa.com>
+Date: Thu, 23 Oct 2008 17:28:02 -0500
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-ID: <406316.49476.qm@web25808.mail.ukl.yahoo.com>
-Reply-To: arieswar24b@yahoo.de
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Using Bestcomm API (DMA) on MPC5200b with Linux?
+References: <406316.49476.qm@web25808.mail.ukl.yahoo.com>
+In-Reply-To: <406316.49476.qm@web25808.mail.ukl.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: arieswar24b@yahoo.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,23 +27,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am trying to connect a FPGA/FIFO with my MPC5200b on a phytec PCM 030 boa=
-rd  while running a 2.6.23.1 Linux.
+You need to write a task that does the DMA operation you want; 
+GenBD is actually pretty generic and lets you just copy from 
+one place to another.
 
-The Linux Kernel source contains an implementation for the Bestcomm API in =
-the form of a driver for ethernet (fec) and ATA.(situated in the arch-power=
-pc/sysdev/bestcomm path) I tried to make use of it but i've run into some p=
-roblems.
+The API is pretty simple; make sure genbd is compiled in, get 
+the task structure using bcom_gen_bd_[tr]x_init, and then.. 
+uhh.. this is where I always forget.
 
-So i tried to include the API in a module to utilize its functionality but =
-no luck till now.
+There is a way to submit a buffer descriptor and have the 
+engine basically perform that transfer. I think it's 
+bcom_prepare_next_buffer and then bcom_submit_next_buffer.
 
-Freescale supports the Bestcomm DMA API not on an OS level. So the problem =
-is adopting this API into a Linux environment, which distinguishes between =
-kernel space and user space while writing to the appropriate registers.
+Actually I can't even FIND those functions in the Linux tree 
+right now, but they have to be in there because the FEC driver 
+uses them..
 
-Further information is very hard to find for such a common task as starting=
- a DMA transfer.
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
 
-Dave
-=0A=0A=0A      
+Dave Best wrote:
+> I am trying to connect a FPGA/FIFO with my MPC5200b on a phytec PCM 030 board  while running a 2.6.23.1 Linux.
+> 
+> The Linux Kernel source contains an implementation for the Bestcomm API in the form of a driver for ethernet (fec) and ATA.(situated in the arch-powerpc/sysdev/bestcomm path) I tried to make use of it but i've run into some problems.
+> 
+> So i tried to include the API in a module to utilize its functionality but no luck till now.
+> 
+> Freescale supports the Bestcomm DMA API not on an OS level. So the problem is adopting this API into a Linux environment, which distinguishes between kernel space and user space while writing to the appropriate registers.
+> 
+> Further information is very hard to find for such a common task as starting a DMA transfer.
+> 
+> Dave
+> 
+> 
+> 
+>       
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
