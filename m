@@ -1,21 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 3FDBFDDEE7
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 10:18:41 +1100 (EST)
-Date: Fri, 24 Oct 2008 16:18:18 -0700 (PDT)
-Message-Id: <20081024.161818.256978293.davem@davemloft.net>
-To: galak@kernel.crashing.org
-Subject: Re: default IRQ affinity change in v2.6.27 (breaking several SMP
-	PPC based systems)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <36A821E7-7F37-42AF-9A05-7205FCBF89EE@kernel.crashing.org>
-References: <4E3CD4D5-FC1B-40BF-A776-C612B95806B8@kernel.crashing.org>
-	<4901E6FB.4070200@redhat.com>
-	<36A821E7-7F37-42AF-9A05-7205FCBF89EE@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, csnook@redhat.com,
-	linux-kernel@vger.kernel.org, maxk@qualcomm.com
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.236])
+	by ozlabs.org (Postfix) with ESMTP id AAF55DDE0F
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 10:32:53 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so1032004rvb.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 16:32:52 -0700 (PDT)
+Message-ID: <fa686aa40810241632j1382f76ah9cd3e66b747bf8c0@mail.gmail.com>
+Date: Fri, 24 Oct 2008 17:32:52 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Trent Piepho" <tpiepho@freescale.com>
+Subject: Re: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()
+In-Reply-To: <1224889741-4167-1-git-send-email-tpiepho@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
+	<1224889741-4167-1-git-send-email-tpiepho@freescale.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Richard Purdie <rpurdie@rpsys.net>,
+	Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +26,195 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Fri, 24 Oct 2008 10:39:05 -0500
+On Fri, Oct 24, 2008 at 5:08 PM, Trent Piepho <tpiepho@freescale.com> wrote:
+> The device binding spec for OF GPIOs defines a flags field, but there is
+> currently no way to get it.  This patch adds a parameter to of_get_gpio()
+> where the flags will be returned if non-NULL.  of_get_gpio() in turn passes
+> the parameter to the of_gpio_chip's xlate method, which can extract any
+> flags present from the gpio_spec.
+>
+> The default (and currently only) of_gpio_chip xlate method,
+> of_gpio_simple_xlate(), is modified to do this.
+>
+> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
 
-> As for making it ARCH specific, that doesn't really help since not
-> all PPC hw has the limitation I spoke of.  Not even all MPIC (in our
-> cases) have the limitation.
+This looks sane to me
 
-Since the PPC code knows exactly which MPICs have the problem the
-PPC code is where the constraining can occur.
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-I agree completely with the suggestion that the arch code has to
-interpret the cpumask as appropriate for the hardware, since the
-user can stick "illegal" values there anyways.
+> ---
+>  drivers/mtd/nand/fsl_upm.c              |    2 +-
+>  drivers/net/fs_enet/fs_enet-main.c      |    2 +-
+>  drivers/net/phy/mdio-ofgpio.c           |    4 ++--
+>  drivers/of/gpio.c                       |   13 ++++++++++---
+>  drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+>  include/linux/of_gpio.h                 |   17 +++++++++++++----
+>  6 files changed, 28 insertions(+), 12 deletions(-)
+>
+> diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
+> index 024e3ff..a25d962 100644
+> --- a/drivers/mtd/nand/fsl_upm.c
+> +++ b/drivers/mtd/nand/fsl_upm.c
+> @@ -218,7 +218,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
+>        }
+>        fun->upm_cmd_offset = *prop;
+>
+> -       fun->rnb_gpio = of_get_gpio(ofdev->node, 0);
+> +       fun->rnb_gpio = of_get_gpio(ofdev->node, 0, NULL);
+>        if (fun->rnb_gpio >= 0) {
+>                ret = gpio_request(fun->rnb_gpio, ofdev->dev.bus_id);
+>                if (ret) {
+> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+> index cb51c1f..5a3c7ee 100644
+> --- a/drivers/net/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -994,7 +994,7 @@ static int __devinit find_phy(struct device_node *np,
+>                goto out_put_phy;
+>        }
+>
+> -       bus_id = of_get_gpio(mdionode, 0);
+> +       bus_id = of_get_gpio(mdionode, 0, NULL);
+>        if (bus_id < 0) {
+>                struct resource res;
+>                ret = of_address_to_resource(mdionode, 0, &res);
+> diff --git a/drivers/net/phy/mdio-ofgpio.c b/drivers/net/phy/mdio-ofgpio.c
+> index 2ff9775..e3757c6 100644
+> --- a/drivers/net/phy/mdio-ofgpio.c
+> +++ b/drivers/net/phy/mdio-ofgpio.c
+> @@ -78,8 +78,8 @@ static int __devinit mdio_ofgpio_bitbang_init(struct mii_bus *bus,
+>  {
+>        struct mdio_gpio_info *bitbang = bus->priv;
+>
+> -       bitbang->mdc = of_get_gpio(np, 0);
+> -       bitbang->mdio = of_get_gpio(np, 1);
+> +       bitbang->mdc = of_get_gpio(np, 0, NULL);
+> +       bitbang->mdio = of_get_gpio(np, 1, NULL);
+>
+>        if (bitbang->mdc < 0 || bitbang->mdio < 0)
+>                return -ENODEV;
+> diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
+> index 7cd7301..2123517 100644
+> --- a/drivers/of/gpio.c
+> +++ b/drivers/of/gpio.c
+> @@ -22,11 +22,12 @@
+>  * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
+>  * @np:                device node to get GPIO from
+>  * @index:     index of the GPIO
+> + * @flags:     GPIO's flags are returned here if non-NULL
+>  *
+>  * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
+>  * value on the error condition.
+>  */
+> -int of_get_gpio(struct device_node *np, int index)
+> +int of_get_gpio(struct device_node *np, int index, unsigned int *flags)
+>  {
+>        int ret;
+>        struct device_node *gc;
+> @@ -59,7 +60,9 @@ int of_get_gpio(struct device_node *np, int index)
+>                goto err1;
+>        }
+>
+> -       ret = of_gc->xlate(of_gc, np, gpio_spec);
+> +       if (flags)
+> +               *flags = 0;
+> +       ret = of_gc->xlate(of_gc, np, gpio_spec, flags);
+>        if (ret < 0)
+>                goto err1;
+>
+> @@ -77,19 +80,23 @@ EXPORT_SYMBOL(of_get_gpio);
+>  * @of_gc:     pointer to the of_gpio_chip structure
+>  * @np:                device node of the GPIO chip
+>  * @gpio_spec: gpio specifier as found in the device tree
+> + * @flags:     if non-NUll flags are returned here
+>  *
+>  * This is simple translation function, suitable for the most 1:1 mapped
+>  * gpio chips. This function performs only one sanity check: whether gpio
+>  * is less than ngpios (that is specified in the gpio_chip).
+>  */
+>  int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
+> -                        const void *gpio_spec)
+> +                        const void *gpio_spec, unsigned int *flags)
+>  {
+>        const u32 *gpio = gpio_spec;
+>
+>        if (*gpio > of_gc->gc.ngpio)
+>                return -EINVAL;
+>
+> +       if (flags && of_gc->gpio_cells > 1)
+> +               *flags = gpio[1];
+> +
+>        return *gpio;
+>  }
+>  EXPORT_SYMBOL(of_gpio_simple_xlate);
+> diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+> index bde4b4b..7835cd4 100644
+> --- a/drivers/serial/cpm_uart/cpm_uart_core.c
+> +++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+> @@ -1094,7 +1094,7 @@ static int cpm_uart_init_port(struct device_node *np,
+>        }
+>
+>        for (i = 0; i < NUM_GPIOS; i++)
+> -               pinfo->gpios[i] = of_get_gpio(np, i);
+> +               pinfo->gpios[i] = of_get_gpio(np, i, NULL);
+>
+>        return cpm_uart_request_port(&pinfo->port);
+>
+> diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
+> index 67db101..0d332bf 100644
+> --- a/include/linux/of_gpio.h
+> +++ b/include/linux/of_gpio.h
+> @@ -26,7 +26,7 @@ struct of_gpio_chip {
+>        struct gpio_chip gc;
+>        int gpio_cells;
+>        int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
+> -                    const void *gpio_spec);
+> +                    const void *gpio_spec, unsigned int *flags);
+>  };
+>
+>  static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
+> @@ -35,6 +35,14 @@ static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
+>  }
+>
+>  /*
+> + * Flags as returned by OF GPIO chip's xlate function.
+> + * These do not need to be the same as the flags in the GPIO specifier in the
+> + * OF device tree, but it's convenient if they are.  The mm chip OF GPIO
+> + * driver works this way.
+> + */
+> +#define OF_GPIO_ACTIVE_LOW     1
+> +
+> +/*
+>  * OF GPIO chip for memory mapped banks
+>  */
+>  struct of_mm_gpio_chip {
+> @@ -50,16 +58,17 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
+>        return container_of(of_gc, struct of_mm_gpio_chip, of_gc);
+>  }
+>
+> -extern int of_get_gpio(struct device_node *np, int index);
+> +extern int of_get_gpio(struct device_node *np, int index, unsigned int *flags);
+>  extern int of_mm_gpiochip_add(struct device_node *np,
+>                              struct of_mm_gpio_chip *mm_gc);
+>  extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
+>                                struct device_node *np,
+> -                               const void *gpio_spec);
+> +                               const void *gpio_spec, unsigned int *flags);
+>  #else
+>
+>  /* Drivers may not strictly depend on the GPIO support, so let them link. */
+> -static inline int of_get_gpio(struct device_node *np, int index)
+> +static inline int of_get_gpio(struct device_node *np, int index,
+> +                             unsigned int *flags)
+>  {
+>        return -ENOSYS;
+>  }
+> --
+> 1.5.4.3
+>
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
