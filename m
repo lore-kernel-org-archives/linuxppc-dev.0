@@ -1,21 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.227])
-	by ozlabs.org (Postfix) with ESMTP id 18401DDDEC
+Return-Path: <Steve.Gray@peek-traffic.co.uk>
+Received: from uksv0008.peek.prv (mail.peek-traffic.co.uk [194.75.137.2])
+	by ozlabs.org (Postfix) with ESMTP id B09C5DDD01
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Oct 2008 13:26:47 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so597139rvb.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Oct 2008 19:26:46 -0700 (PDT)
-Date: Thu, 23 Oct 2008 20:26:42 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Laxmikant Rashinkar <lk.atwork@yahoo.com>
-Subject: Re: cuImage not building
-Message-ID: <20081024022641.GA21389@secretlab.ca>
-References: <423286.86157.qm@web46307.mail.sp1.yahoo.com>
+	Sat, 25 Oct 2008 00:05:09 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <423286.86157.qm@web46307.mail.sp1.yahoo.com>
-Sender: Grant Likely <glikely@secretlab.ca>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Ucode/BD conflict on PowerPC 860
+Date: Fri, 24 Oct 2008 14:03:42 +0100
+Message-ID: <85A8D9AB423A3A4ABD022AD90C989C4D01090C6F@uksv0008.peek.prv>
+In-Reply-To: <490098E4.6090908@freescale.com>
+References: <48A15FC3.3060008@vastech.co.za><20080812181138.BEF53248BF@gemini.denx.de>	<48A2A99C.5000309@vastech.co.za>
+	<85A8D9AB423A3A4ABD022AD90C989C4D010904A2@uksv0008.peek.prv>
+	<490098E4.6090908@freescale.com>
+From: "Gray, Steve - UK" <Steve.Gray@peek-traffic.co.uk>
+To: "Scott Wood" <scottwood@freescale.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,35 +26,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 23, 2008 at 07:05:20PM -0700, Laxmikant Rashinkar wrote:
-> Hi,
-> 
-> I have gotten our MPC8347 based board to work under Linux-2.6.27.1.
-> 
-> Since our board is similar to mpc834x_mds, I initially modified files relevant
-> to mpc834x_mds to get our board working.
-> 
-> Now I'm trying to rename files so that they reflect our board names.
-> 
-> After this renaming, uImage gets built ok, but cuImage build fails. 
-> I enabled make's verbose flag to see what was going on
-> and here are the error messages
-> 
-> + powerpc-unknown-linux-gnu-ld -m elf32ppc -T arch/powerpc/boot/zImage.lds -Ttext 0x400000 --defsym _start=0x400000 -o arch/ppc/boot/cuImage.snsp arch/powerpc/boot/cuboot-snsp.o ./zImage.15886.o arch/powerpc/boot/wrapper.a
-> powerpc-unknown-linux-gnu-ld: arch/powerpc/boot/cuboot-snsp.o: No such file: No such file or directory
-> 
-> Here is the build invocation with mpc834x_mds files.
-> 
-> + powerpc-unknown-linux-gnu-ld -m elf32ppc -T arch/powerpc/boot/zImage.lds -Ttext 0x400000 --defsym _start=0x400000 -o arch/ppc/boot/cuImage.mpc834x_mds arch/powerpc/boot/cuboot-83xx.o ./zImage.3158.o arch/powerpc/boot/wrapper.a
-> 
-> From the two invocations, not working code gets called with arch/powerpc/boot/cuboot-snsp.o
-> whereas working code gets called with arch/powerpc/boot/cuboot-83xx.o.
-> 
-> I have made relevant changes to appropriate Makefiles, but I still cant get cuImage to build.
+Hi Scott
+Thanks for the notes on modifying the data subnode.=20
+I am pleased to say this has fixed the problem and the console is
+working now.
 
-Look at Documentation/powerpc/bootwrapper.txt and
-arch/powerpc/boot/wrapper.  There is some magic stuff in the wrapper
-script which translates board names into the correct wrapper bits.  This
-is particularly important for cuboot targets.
 
-g.
+Kind Regards
+
+Stve
+
+-----Original Message-----
+From: Scott Wood [mailto:scottwood@freescale.com]=20
+Sent: 23 October 2008 16:32
+To: Gray, Steve - UK
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Ucode/BD conflict on PowerPC 860
+
+Gray, Steve - UK wrote:
+> I have tried a few things, including setting the range of muram to=20
+> ranges =3D <0x0 0x3000 0x1000>;
+>=20
+> Am I correct to assume this will push the muram above the microcode??
+
+No, that will confuse the kernel into thinking that muram starts at IMMR
+
+offset 0x3000.  You need to change the reg property of the data subnode=20
+to <0x1000 0xc00>, so that you restrict the allocation range without=20
+affecting the offset that is subtracted from the physical address to=20
+obtain the value given to the CPM.
+
+-Scott
