@@ -1,17 +1,20 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
-Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A8A6CDDDD4
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 16:52:46 +1100 (EST)
-Date: Fri, 24 Oct 2008 14:41:09 +0900
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: remove dead BIO_VMERGE_BOUNDARY definition
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+	by ozlabs.org (Postfix) with ESMTPS id 59EE8DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 18:52:30 +1100 (EST)
+Subject: Re: [PATCH] Allocate resources for PHB DLPAR add
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+In-Reply-To: <49014A41.6040700@austin.ibm.com>
+References: <49014A41.6040700@austin.ibm.com>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 18:51:35 +1100
+Message-Id: <1224834695.7654.435.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20081024144036K.fujita.tomonori@lab.ntt.co.jp>
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The block layer dropped the virtual merge feature
-(b8b3e16cfe6435d961f6aaebcfd52a1ff2a988c5). BIO_VMERGE_BOUNDARY
-definition is meaningless now (For POWER, BIO_VMERGE_BOUNDARY has been
-meaningless for a long time since POWER disables the virtual merge
-feature).
+On Thu, 2008-10-23 at 23:08 -0500, Nathan Fontenot wrote:
+> Resources for PHB's that are DLPAR added to a system are not acquired.
+> Not having these resources allocated causes an oops during DLPAR
+> remove of the PHB when we try to release non-existant resources.
+> 
+> The patch appears a bit messy, this is mainly due to moving everything
+> one tab to the left in the pcibios_allocate_bus_resources routine.  The
+> big functionality change in this routine is only that the 
+> list_for_each_entry() loop is pulled out and moved to the necessary
+> calling routine.
+> 
+> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+>  
+> ---
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/powerpc/include/asm/io.h |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
+Patch looks good.
 
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index 08266d2..494cd8b 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -713,13 +713,6 @@ static inline void * phys_to_virt(unsigned long address)
-  */
- #define page_to_phys(page)	((phys_addr_t)page_to_pfn(page) << PAGE_SHIFT)
- 
--/* We do NOT want virtual merging, it would put too much pressure on
-- * our iommu allocator. Instead, we want drivers to be smart enough
-- * to coalesce sglists that happen to have been mapped in a contiguous
-- * way by the iommu
-- */
--#define BIO_VMERGE_BOUNDARY	0
--
- /*
-  * 32 bits still uses virt_to_bus() for it's implementation of DMA
-  * mappings se we have to keep it defined here. We also have some old
--- 
-1.5.4.2
+I'll include it in the next batch hopefully along with a variant of
+another patch I'm working on to fix other issues I found with our PCI
+hotplug resource management. 
+
+Cheers,
+Ben.
