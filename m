@@ -1,18 +1,24 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Date: Fri, 24 Oct 2008 21:01:28 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: GPIO - marking individual pins (not) available in device tree
-Message-ID: <20081024170128.GA20577@oksana.dev.rtsoft.ru>
-References: <4900ED81.3040202@genesi-usa.com>
-	<20081024164120.GA14350@oksana.dev.rtsoft.ru>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.226])
+	by ozlabs.org (Postfix) with ESMTP id DA5F3DDDEF
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 04:12:28 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so900678rvb.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 10:12:26 -0700 (PDT)
+Message-ID: <fa686aa40810241012o57e85215i9778efc342250137@mail.gmail.com>
+Date: Fri, 24 Oct 2008 11:12:26 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH v3] powerpc: Specify GPIO number base for controller in DT
+In-Reply-To: <20081024165428.GC14350@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081024164120.GA14350@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1224764850.4082.54.camel@galileo.recco.de>
+	<D6AED5C1-6936-48BB-8D0F-98471C6841B0@kernel.crashing.org>
+	<1224773378.4082.64.camel@galileo.recco.de>
+	<200810232013.00539.sr@denx.de>
+	<20081024165428.GC14350@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	Wolfgang Ocker <weo@reccoware.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,40 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 24, 2008 at 08:41:20PM +0400, Anton Vorontsov wrote:
-[...]
-> > So, how do we define in a bank of GPIOs, which ones are free for use, 
-> > without them being attached to a device and given as a "gpios" property?
-> >
-> > Would we suggest a node;
-> >
-> > gpio-header {
-> > 	compatible = "bplan,efika-gpio";
-> > 	gpios = <&gpio-standard 16 0 17 0>;
-> > };
-> >
-> > gpio-header2 {
-> > 	compatible = "bplan,efika-gpio-wkup";
-> > 	gpios = <&gpio-wkup 18 0>;
-> > };
+On Fri, Oct 24, 2008 at 10:54 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Thu, Oct 23, 2008 at 08:13:00PM +0200, Stefan Roese wrote:
+>> On Thursday 23 October 2008, Wolfgang Ocker wrote:
+>> > The GPIOLIB allows the specification of a base gpio number for a
+>> > controller. That is not possible using OF. Instead, free gpio numbers
+>> > are assigned.
+>> >
+>> > In order to allow static, predefined gpio numbers, a base property in
+>> > the gpio controller node specifies the first gpio number.
+>> >
+>> > v2, v3: added/improved description of base property in doc
+>>
+>> These version descriptions are better placed below the "---" line. And you
+>> should remove the "Re: " from the subject line. Other than this:
+>>
+>> Acked-by: Stefan Roese <sr@denx.de>
 >
-> IMO this looks very reasonable. You properly describe the hardware:
-> physical device (header) and its resources.
+> Please-defer-this-patch-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>
+> Wolfgang, Stefan, see this comment:
+>
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-October/064505.html
+>
+> ..just tell me what are you trying to solve.
 
-If there are actually two headers, that is. If you use two nodes
-just to specify which gpio is wkup, that is's a bit ugly... Why not
+Yeah, I don't like this patch either.  GPIO numbering is a Linux
+internal detail and has no bearing on the hardware description.  If
+you need to know what a particular gpio number is then it should be
+resolved by finding the device tree node; not by trying to fix a GPIO
+controller to a particular number.
 
-gpio-header {
-	compatible = "bplan,<board>-gpio-header";
-	gpios = <&standard 16 0
-		 &standard 17 0
-		 &wakeup 18 0>;
-}
-
-And the driver whould know that on this particular <board>
-third gpio is the wakeup one?
+g.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
