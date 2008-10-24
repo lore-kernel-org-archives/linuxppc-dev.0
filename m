@@ -1,22 +1,15 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id EB061DDE09
+Return-Path: <lk.atwork@yahoo.com>
+Received: from n74a.bullet.mail.sp1.yahoo.com (n74a.bullet.mail.sp1.yahoo.com
+	[98.136.45.21]) by ozlabs.org (Postfix) with SMTP id 2552CDDE0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Oct 2008 09:28:03 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so221604qwb.15
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Oct 2008 15:28:02 -0700 (PDT)
-Message-ID: <4900FA72.1040201@genesi-usa.com>
-Date: Thu, 23 Oct 2008 17:28:02 -0500
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
+	Fri, 24 Oct 2008 13:11:44 +1100 (EST)
+Date: Thu, 23 Oct 2008 19:05:20 -0700 (PDT)
+From: Laxmikant Rashinkar <lk.atwork@yahoo.com>
+Subject: cuImage not building
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Using Bestcomm API (DMA) on MPC5200b with Linux?
-References: <406316.49476.qm@web25808.mail.ukl.yahoo.com>
-In-Reply-To: <406316.49476.qm@web25808.mail.ukl.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: arieswar24b@yahoo.de
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-981557971-1224813920=:86157"
+Message-ID: <423286.86157.qm@web46307.mail.sp1.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,43 +20,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-You need to write a task that does the DMA operation you want; 
-GenBD is actually pretty generic and lets you just copy from 
-one place to another.
+--0-981557971-1224813920=:86157
+Content-Type: text/plain; charset=us-ascii
 
-The API is pretty simple; make sure genbd is compiled in, get 
-the task structure using bcom_gen_bd_[tr]x_init, and then.. 
-uhh.. this is where I always forget.
+Hi,
 
-There is a way to submit a buffer descriptor and have the 
-engine basically perform that transfer. I think it's 
-bcom_prepare_next_buffer and then bcom_submit_next_buffer.
+I have gotten our MPC8347 based board to work under Linux-2.6.27.1.
 
-Actually I can't even FIND those functions in the Linux tree 
-right now, but they have to be in there because the FEC driver 
-uses them..
+Since our board is similar to mpc834x_mds, I initially modified files relevant
+to mpc834x_mds to get our board working.
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Now I'm trying to rename files so that they reflect our board names.
 
-Dave Best wrote:
-> I am trying to connect a FPGA/FIFO with my MPC5200b on a phytec PCM 030 board  while running a 2.6.23.1 Linux.
-> 
-> The Linux Kernel source contains an implementation for the Bestcomm API in the form of a driver for ethernet (fec) and ATA.(situated in the arch-powerpc/sysdev/bestcomm path) I tried to make use of it but i've run into some problems.
-> 
-> So i tried to include the API in a module to utilize its functionality but no luck till now.
-> 
-> Freescale supports the Bestcomm DMA API not on an OS level. So the problem is adopting this API into a Linux environment, which distinguishes between kernel space and user space while writing to the appropriate registers.
-> 
-> Further information is very hard to find for such a common task as starting a DMA transfer.
-> 
-> Dave
-> 
-> 
-> 
->       
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+After this renaming, uImage gets built ok, but cuImage build fails. 
+I enabled make's verbose flag to see what was going on
+and here are the error messages
+
++ powerpc-unknown-linux-gnu-ld -m elf32ppc -T arch/powerpc/boot/zImage.lds -Ttext 0x400000 --defsym _start=0x400000 -o arch/ppc/boot/cuImage.snsp arch/powerpc/boot/cuboot-snsp.o ./zImage.15886.o arch/powerpc/boot/wrapper.a
+powerpc-unknown-linux-gnu-ld: arch/powerpc/boot/cuboot-snsp.o: No such file: No such file or directory
+
+Here is the build invocation with mpc834x_mds files.
+
++ powerpc-unknown-linux-gnu-ld -m elf32ppc -T arch/powerpc/boot/zImage.lds -Ttext 0x400000 --defsym _start=0x400000 -o arch/ppc/boot/cuImage.mpc834x_mds arch/powerpc/boot/cuboot-83xx.o ./zImage.3158.o arch/powerpc/boot/wrapper.a
+
+>From the two invocations, not working code gets called with arch/powerpc/boot/cuboot-snsp.o
+whereas working code gets called with arch/powerpc/boot/cuboot-83xx.o.
+
+I have made relevant changes to appropriate Makefiles, but I still cant get cuImage to build.
+
+can someone help?
+thanks a lot
+LK
+
+
+      
+--0-981557971-1224813920=:86157
+Content-Type: text/html; charset=us-ascii
+
+<html><head><style type="text/css"><!-- DIV {margin:0px;} --></style></head><body><div style="font-family:times new roman, new york, times, serif;font-size:12pt"><div>Hi,<br><br>I have gotten our MPC8347 based board to work under Linux-2.6.27.1.<br><br>Since our board is similar to mpc834x_mds, I initially modified files relevant<br>to mpc834x_mds to get our board working.<br><br>Now I'm trying to rename files so that they reflect our board names.<br><br>After this renaming, uImage gets built ok, but cuImage build fails. <br>I enabled make's verbose flag to see what was going on<br>and here are the error messages<br><br>+ powerpc-unknown-linux-gnu-ld -m elf32ppc -T arch/powerpc/boot/zImage.lds -Ttext 0x400000 --defsym _start=0x400000 -o arch/ppc/boot/cuImage.snsp arch/powerpc/boot/cuboot-snsp.o ./zImage.15886.o arch/powerpc/boot/wrapper.a<br>powerpc-unknown-linux-gnu-ld: arch/powerpc/boot/cuboot-snsp.o: No such file: No such file or directory<br><br>Here
+ is the build invocation with mpc834x_mds files.<br><br>+ powerpc-unknown-linux-gnu-ld -m elf32ppc -T arch/powerpc/boot/zImage.lds -Ttext 0x400000 --defsym _start=0x400000 -o arch/ppc/boot/cuImage.mpc834x_mds arch/powerpc/boot/cuboot-83xx.o ./zImage.3158.o arch/powerpc/boot/wrapper.a<br><br>From the two invocations, not working code gets called with arch/powerpc/boot/cuboot-snsp.o<br>whereas working code gets called with arch/powerpc/boot/cuboot-83xx.o.<br><br>I have made relevant changes to appropriate Makefiles, but I still cant get cuImage to build.<br><br>can someone help?<br>thanks a lot<br>LK<br><br></div></div><br>
+
+      </body></html>
+--0-981557971-1224813920=:86157--
