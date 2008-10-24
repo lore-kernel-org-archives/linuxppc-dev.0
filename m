@@ -1,18 +1,25 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 20157DDE1A
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 11:16:38 +1100 (EST)
-Date: Thu, 23 Oct 2008 17:16:14 -0700 (PDT)
-Message-Id: <20081023.171614.72881694.davem@davemloft.net>
-To: jesse.brandeburg@intel.com
-Subject: Re: [BUG] oops in net_rx_action on 64-bit powerpc
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <F169D4F5E1F1974DBFAFABF47F60C10A069DFCEF@orsmsx507.amr.corp.intel.com>
-References: <4900D794.5020807@nortel.com>
-	<F169D4F5E1F1974DBFAFABF47F60C10A069DFCEF@orsmsx507.amr.corp.intel.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BD97DDDE07
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 11:20:01 +1100 (EST)
+Subject: Re: [PATCH] fix i2c on PPC linkstation / kurobox machines
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+In-Reply-To: <Pine.LNX.4.64.0810240059170.9657@axis700.grange>
+References: <20081022191650.GA11406@weiser.dinsnail.net>
+	<Pine.LNX.4.64.0810232029380.9657@axis700.grange>
+	<20081023213309.GA19777@weiser.dinsnail.net>
+	<Pine.LNX.4.64.0810240059170.9657@axis700.grange>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 11:19:40 +1100
+Message-Id: <1224807581.7654.424.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: Michael Weiser <michael@weiser.dinsnail.net>,
+	=?ISO-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>,
+	linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,34 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-Date: Thu, 23 Oct 2008 14:50:06 -0700
-
-> Chris Friesen wrote:
-> > I tried booting a post 2.6.27 -git on a Motorola ATCA6101 (very
-> > similar to a Maple board).  The first time I booted I got the first
-> > log below via the serial console.  I rebooted and got as far as a
-> > login prompt.  I was able to log in via the serial console, but then
-> > got an almost identical oops again, as shown in the second log below.
-> > 
-> > I configed out the gigE drivers for the backplane so the only
-> > remaining network link was the e100 link used for booting, but the
-> > problem remained. 
-> > 
-> > Anyone have any idea what might be causing this?
-> > 
-> > Thanks,
-> > 
-> > Chris
-> > 
-> > 
-> > Starting xinetd: [  OK  ]
-> > Starting cron: [  OK  ]
-> > Unable to handle kernel paging request for data at address 0x00100108
+On Fri, 2008-10-24 at 01:05 +0200, Guennadi Liakhovetski wrote:
+> i2c is broken on linkstation / kurobox machines since at least 2.6.27. Fix 
+> it. Also remove CONFIG_SERIAL_OF_PLATFORM, which, if enabled, breaks the 
+> serial console after the "console handover: boot [udbg0] -> real [ttyS1]" 
+> message.
 > 
-> that 00100108 pattern looks familiar, I'm not much help here, but I think that had something to do with the list management of the poll_list in a netdev struct.
-> 
-> so now you just have to figure out why someone's netdev struct is becoming NULL. :-)
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-Usually this is an indication of returning the wrong value from
-the driver's ->poll() routine.
+You may want to use udbg_printf() to track down what's up. There's some
+fishy code there indeed, what happens is that the legacy serial code
+creates a platform device at boot time. Then, the of_serial attaches to
+the device node for the same device and tries to register it. It's
+supposed to "detect" that it's the same device but yeah, it may be
+buggy, I've seen problems with it in the past, among others, I think it
+can lose some state.
+
+In the meantime, removing SERIAL_OF_PLATFORM is a good solution.
+
+Ben.
