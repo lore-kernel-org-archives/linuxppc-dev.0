@@ -1,24 +1,21 @@
-Return-Path: <weo@reccoware.de>
-Received: from bes.recconet.de (bes.recconet.de [87.106.167.58])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9272FDDDF3
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 05:00:20 +1100 (EST)
-Subject: Re: [PATCH v3] powerpc: Specify GPIO number base for controller in DT
-From: Wolfgang Ocker <weo@reccoware.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40810241012o57e85215i9778efc342250137@mail.gmail.com>
-References: <1224764850.4082.54.camel@galileo.recco.de>
-	<D6AED5C1-6936-48BB-8D0F-98471C6841B0@kernel.crashing.org>
-	<1224773378.4082.64.camel@galileo.recco.de>
-	<200810232013.00539.sr@denx.de>
-	<20081024165428.GC14350@oksana.dev.rtsoft.ru>
-	<fa686aa40810241012o57e85215i9778efc342250137@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 24 Oct 2008 20:00:12 +0200
-Message-Id: <1224871212.4039.6.camel@galileo.recco.de>
-Mime-Version: 1.0
-Cc: Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org
+Return-Path: <csnook@redhat.com>
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id 60B6A474C1
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 05:18:38 +1100 (EST)
+Message-ID: <4902116B.50509@redhat.com>
+Date: Fri, 24 Oct 2008 14:18:19 -0400
+From: Chris Snook <csnook@redhat.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: default IRQ affinity change in v2.6.27 (breaking several SMP
+	PPC	based systems)
+References: <4E3CD4D5-FC1B-40BF-A776-C612B95806B8@kernel.crashing.org>	<4901E6FB.4070200@redhat.com>	<36A821E7-7F37-42AF-9A05-7205FCBF89EE@kernel.crashing.org>	<4901F31E.9040007@redhat.com>
+	<5967704E-0117-46B8-8505-6A002502C38C@kernel.crashing.org>
+	<4902086E.6030900@freescale.com>
+In-Reply-To: <4902086E.6030900@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: LinuxPPC-dev list <linuxppc-dev@ozlabs.org>, tglx@linutronix.de,
+	maxk@qualcomm.com, linux-kernel Kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Scott Wood wrote:
+> Kumar Gala wrote:
+>> So why not just have x86 startup code set irq_default_affinity = 
+>> CPU_MASK_ALL than?
+> 
+> That doesn't really solve the problem, as a user could still manually 
+> set an invalid affinity.  The MPIC driver should reduce the affinity 
+> itself to what the hardware can handle.
 
-On Fri, 2008-10-24 at 11:12 -0600, Grant Likely wrote:
-> On Fri, Oct 24, 2008 at 10:54 AM, Anton Vorontsov
-> <avorontsov@ru.mvista.com> wrote:
-> > On Thu, Oct 23, 2008 at 08:13:00PM +0200, Stefan Roese wrote:
-> >> On Thursday 23 October 2008, Wolfgang Ocker wrote:
-> >> > The GPIOLIB allows the specification of a base gpio number for a
-> >> > controller. That is not possible using OF. Instead, free gpio numbers
-> >> > are assigned.
-> >> >
-> >> > In order to allow static, predefined gpio numbers, a base property in
-> >> > the gpio controller node specifies the first gpio number.
-> >> >
-> >> > v2, v3: added/improved description of base property in doc
-> >>
-> >> These version descriptions are better placed below the "---" line. And you
-> >> should remove the "Re: " from the subject line. Other than this:
-> >>
-> >> Acked-by: Stefan Roese <sr@denx.de>
+Does the MPIC code actually allow that to happen?  I can't quite tell, but I 
+noticed this:
 
-> Yeah, I don't like this patch either.  GPIO numbering is a Linux
-> internal detail and has no bearing on the hardware description.  If
-> you need to know what a particular gpio number is then it should be
-> resolved by finding the device tree node; not by trying to fix a GPIO
-> controller to a particular number.
+[csnook@bernoulli sysdev]$ fgrep '#ifdef CONFIG_' mpic.c | sort -u
+#ifdef CONFIG_IRQ_ALL_CPUS
+#ifdef CONFIG_MPIC_BROKEN_REGREAD
+#ifdef CONFIG_MPIC_U3_HT_IRQS
+#ifdef CONFIG_MPIC_WEIRD
+#ifdef CONFIG_PCI_MSI
+#ifdef CONFIG_PM
+#ifdef CONFIG_PPC32     /* XXX for now */
+#ifdef CONFIG_PPC_DCR
+#ifdef CONFIG_SMP
 
-Okay, now I think I understand.
+Do any of those config options (or combinations thereof) imply an MPIC that 
+can't handle an IRQ masked to multiple CPUs?  If so, this can be fixed rather 
+easily at build time, without having to muck around with arch-specific 
+initialization code.
 
-I'll try to solve the chip select pin addressing in the spi driver
-differently. Thank you guys!
-
-Wolfgang 
+-- Chris
