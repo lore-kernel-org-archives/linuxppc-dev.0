@@ -1,14 +1,35 @@
-Return-Path: <cel@us.ibm.com>
-Subject: [Cbe-oss-dev] [PATCH] Cell OProfile: Incorrect local array size in
-	activate spu profiling function
-From: Carl Love <cel@us.ibm.com>
-To: oprofile-list@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-	cel@linux.vnet.ibm.com, cbe-oss-dev@ozlabs.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
+Return-Path: <dave@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9DAFF474C1
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 05:56:02 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9OItuZn022592
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 14:55:56 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9OItfp6096774
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 14:55:41 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9OItaYV004750
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 14:55:37 -0400
+Subject: Re: [PATCH] ehea: Add hugepage detection
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Thomas Klein <tklein@de.ibm.com>
+In-Reply-To: <200810241307.31072.>
+References: <200810241307.31072.>
 Content-Type: text/plain
-Date: Fri, 24 Oct 2008 11:47:29 -0700
-Message-Id: <1224874049.20229.5.camel@carll-linux-desktop>
+Date: Fri, 24 Oct 2008 11:55:37 -0700
+Message-Id: <1224874537.12673.47.camel@nimitz>
 Mime-Version: 1.0
+Cc: badari@us.ibm.com, Jeff Garzik <jeff@garzik.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>, tollefso@us.ibm.com,
+	Hannes Hering <hering2@de.ibm.com>, haveblue@us.ibm.com,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,25 +39,123 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2008-10-24 at 13:07 +0200, Thomas Klein wrote:
+> 16GB hugepages may not be part of a memory region (firmware restriction). This patch
+> modifies the walk_memory_resource callback fn to filter hugepages and add only standard
+> memory to the busmap which is later on used for MR registration.
 
-The size of the pm_signal_local array should be equal to the
-number of SPUs being configured in the call.  Currently, the
-array is of size 4 (NR_PHYS_CTRS) but being indexed by a for 
-loop from 0 to 7 (NUM_SPUS_PER_NODE).  
+Does this support a case where a userspace app is reading network
+packets into a 16GB page backed area?  I think you need to elaborate on
+what kind of memory you need to have registered in these memory regions.
+It's hard to review what you've done here otherwise.
 
-Signed-off-by: Carl Love <carll@us.ibm.com>
+> --- linux-2.6.27/drivers/net/ehea/ehea_qmr.c	2008-10-24 09:29:19.000000000 +0200
+> +++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-10-24 09:45:15.000000000 +0200
+> @@ -636,6 +636,9 @@ static int ehea_update_busmap(unsigned l
+>  {
+>  	unsigned long i, start_section, end_section;
+> 
+> +	if (!pgnum)
+> +		return 0;
 
+This probably needs a comment.  It's not obvious what it is doing.
 
-Index: Cell_kernel_10_24_2008/arch/powerpc/oprofile/op_model_cell.c
-===================================================================
---- Cell_kernel_10_24_2008.orig/arch/powerpc/oprofile/op_model_cell.c
-+++ Cell_kernel_10_24_2008/arch/powerpc/oprofile/op_model_cell.c
-@@ -830,7 +830,7 @@ static int calculate_lfsr(int n)
- static int pm_rtas_activate_spu_profiling(u32 node)
- {
- 	int ret, i;
--	struct pm_signal pm_signal_local[NR_PHYS_CTRS];
-+	struct pm_signal pm_signal_local[NUM_SPUS_PER_NODE];
- 
- 	/*
- 	 * Set up the rtas call to configure the debug bus to
+>  	if (!ehea_bmap) {
+>  		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
+>  		if (!ehea_bmap)
+> @@ -692,10 +695,47 @@ int ehea_rem_sect_bmap(unsigned long pfn
+>  	return ret;
+>  }
+> 
+> -static int ehea_create_busmap_callback(unsigned long pfn,
+> -				       unsigned long nr_pages, void *arg)
+> +static int ehea_is_hugepage(unsigned long pfn)
+> +{
+> +	return ((((pfn << PAGE_SHIFT) & (EHEA_HUGEPAGE_SIZE - 1)) == 0)
+> +		&& (compound_order(pfn_to_page(pfn)) + PAGE_SHIFT
+> +		    == EHEA_HUGEPAGESHIFT) );
+> +}
+
+Whoa.  That's dense.  Can you actually read that in less than 5 minutes?
+Seriously.
+
+I'm not sure what else you use EHEA_HUGEPAGE_SIZE for or if this gets
+duplicated, but this would look nicer if you just had a:
+
+#define EHEA_HUGEPAGE_PFN_MASK ((EHEA_HUGEPAGE_SIZE - 1) >> PAGE_SHIFT)
+
+	if (pfn & EHEA_HUGEPAGE_PFN_MASK)
+		return 0;
+
+Or, with no new macro:
+
+	if ((pfn << PAGE_SHIFT) & (EHEA_HUGEPAGE_SIZE - 1) != 0)
+		return 0;
+
+	page_order = compound_order(pfn_to_page(pfn));
+	if (page_order + PAGE_SHIFT != EHEA_HUGEPAGESHIFT)
+		return 0;
+	return 1;
+}
+
+Please break that up into something that is truly readable.  gcc will
+generate the exact same code.
+
+> +static int ehea_create_busmap_callback(unsigned long initial_pfn,
+> +				       unsigned long total_nr_pages, void *arg)
+>  {
+> -	return ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
+> +	int ret;
+> +	unsigned long pfn, start_pfn, end_pfn, nr_pages;
+> +
+> +	if ((total_nr_pages * PAGE_SIZE) < EHEA_HUGEPAGE_SIZE)
+> +		return ehea_update_busmap(initial_pfn, total_nr_pages,
+> +					  EHEA_BUSMAP_ADD_SECT);
+> +
+> +	/* Given chunk is >= 16GB -> check for hugepages */
+> +	start_pfn = initial_pfn;
+> +	end_pfn = initial_pfn + total_nr_pages;
+> +	pfn = start_pfn;
+> +
+> +	while (pfn < end_pfn) {
+> +		if (ehea_is_hugepage(pfn)) {
+> +			/* Add mem found in front of the hugepage */
+> +			nr_pages = pfn - start_pfn;
+> +			ret = ehea_update_busmap(start_pfn, nr_pages,
+> +						 EHEA_BUSMAP_ADD_SECT);
+> +			if (ret)
+> +				return ret;
+> +
+> +			/* Skip the hugepage */
+> +			pfn += (EHEA_HUGEPAGE_SIZE / PAGE_SIZE);
+> +			start_pfn = pfn;
+> +		} else
+> +			pfn += (EHEA_SECTSIZE / PAGE_SIZE);
+> +	}
+> +
+> +	/* Add mem found behind the hugepage(s)  */
+> +	nr_pages = pfn - start_pfn;
+> +	return ehea_update_busmap(start_pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
+>  }
+> 
+>  int ehea_create_busmap(void)
+> diff -Nurp -X dontdiff linux-2.6.27/drivers/net/ehea/ehea_qmr.h patched_kernel/drivers/net/ehea/ehea_qmr.h
+> --- linux-2.6.27/drivers/net/ehea/ehea_qmr.h	2008-10-24 09:29:19.000000000 +0200
+> +++ patched_kernel/drivers/net/ehea/ehea_qmr.h	2008-10-24 09:45:15.000000000 +0200
+> @@ -40,6 +40,8 @@
+>  #define EHEA_PAGESIZE          (1UL << EHEA_PAGESHIFT)
+>  #define EHEA_SECTSIZE          (1UL << 24)
+>  #define EHEA_PAGES_PER_SECTION (EHEA_SECTSIZE >> EHEA_PAGESHIFT)
+> +#define EHEA_HUGEPAGESHIFT     34
+> +#define EHEA_HUGEPAGE_SIZE     (1UL << EHEA_HUGEPAGESHIFT)
+
+I'm a bit worried that you're basically duplicating hugetlb.h here.  Why
+not just use the existing 16GB page macros?  While you're at it please
+expand these to give some more useful macros so you don't have to do
+arithmetic on them in the code as much.
+
+#define EHEA_SECT_NR_PAGES (EHEA_SECTSIZE / PAGE_SIZE)
+
+for instance.
+
+-- Dave
