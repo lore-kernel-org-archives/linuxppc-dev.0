@@ -1,35 +1,16 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9DAFF474C1
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 05:56:02 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9OItuZn022592
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 14:55:56 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9OItfp6096774
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 14:55:41 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9OItaYV004750
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 14:55:37 -0400
-Subject: Re: [PATCH] ehea: Add hugepage detection
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Thomas Klein <tklein@de.ibm.com>
-In-Reply-To: <200810241307.31072.>
-References: <200810241307.31072.>
+Return-Path: <linnj@wolfgang-pc.public.xilinx.com>
+Received: from WA4EHSOBE005.bigfish.com (outbound-wa4.frontbridge.com
+	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id 348A4DDDF8
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 06:59:14 +1100 (EST)
+From: John Linn <john.linn@xilinx.com>
+To: jwboyer@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	grant.likely@secretlab.ca
+Subject: [PATCH] [powerpc] GPIO: Adding new Xilinx driver
+Date: Fri, 24 Oct 2008 12:59:00 -0700
+Message-ID: <20081024195908.7D1A1142806C@mail74-wa4.bigfish.com>
+MIME-Version: 1.0
 Content-Type: text/plain
-Date: Fri, 24 Oct 2008 11:55:37 -0700
-Message-Id: <1224874537.12673.47.camel@nimitz>
-Mime-Version: 1.0
-Cc: badari@us.ibm.com, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>, tollefso@us.ibm.com,
-	Hannes Hering <hering2@de.ibm.com>, haveblue@us.ibm.com,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>
+Cc: Kiran Sutariya <kirans@xilinx.com>, John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,123 +20,296 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-10-24 at 13:07 +0200, Thomas Klein wrote:
-> 16GB hugepages may not be part of a memory region (firmware restriction). This patch
-> modifies the walk_memory_resource callback fn to filter hugepages and add only standard
-> memory to the busmap which is later on used for MR registration.
+This driver supports the Xilinx XPS GPIO IP core which has the typical
+GPIO features.
 
-Does this support a case where a userspace app is reading network
-packets into a 16GB page backed area?  I think you need to elaborate on
-what kind of memory you need to have registered in these memory regions.
-It's hard to review what you've done here otherwise.
+Signed-off-by: Kiran Sutariya <kirans@xilinx.com>
+Signed-off-by: John Linn <john.linn@xilinx.com>
+---
+ drivers/gpio/Kconfig       |    8 ++
+ drivers/gpio/Makefile      |    1 +
+ drivers/gpio/xilinx_gpio.c |  240 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 249 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/gpio/xilinx_gpio.c
 
-> --- linux-2.6.27/drivers/net/ehea/ehea_qmr.c	2008-10-24 09:29:19.000000000 +0200
-> +++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-10-24 09:45:15.000000000 +0200
-> @@ -636,6 +636,9 @@ static int ehea_update_busmap(unsigned l
->  {
->  	unsigned long i, start_section, end_section;
-> 
-> +	if (!pgnum)
-> +		return 0;
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 7f2ee27..f6b0da8 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -65,6 +65,14 @@ config GPIO_SYSFS
+ 
+ # put expanders in the right section, in alphabetical order
+ 
++comment "Memory mapped GPIO expanders:"
++
++config GPIO_XILINX
++	bool "Xilinx GPIO support"
++	depends on OF
++	help
++	  Say yes here to support the Xilinx FPGA GPIO device
++
+ comment "I2C GPIO expanders:"
+ 
+ config GPIO_MAX732X
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index 6aafdeb..49ac64e 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -10,4 +10,5 @@ obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
+ obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
+ obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
+ obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
++obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
+ obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
+diff --git a/drivers/gpio/xilinx_gpio.c b/drivers/gpio/xilinx_gpio.c
+new file mode 100644
+index 0000000..224d0d5
+--- /dev/null
++++ b/drivers/gpio/xilinx_gpio.c
+@@ -0,0 +1,240 @@
++/*
++ * Xilinx gpio driver
++ *
++ * Copyright 2008 Xilinx, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/of_device.h>
++#include <linux/of_platform.h>
++#include <linux/of_gpio.h>
++#include <linux/io.h>
++#include <linux/gpio.h>
++
++/* Register Offset Definitions */
++#define XGPIO_DATA_OFFSET   (0x0)	/* Data register  */
++#define XGPIO_TRI_OFFSET    (0x4)	/* I/O direction register  */
++
++struct xgpio_instance {
++	struct of_mm_gpio_chip mmchip;
++	u32 gpio_state;		/* GPIO state shadow register */
++	u32 gpio_dir;		/* GPIO direction shadow register */
++	spinlock_t gpio_lock;	/* Lock used for synchronization */
++};
++
++/**
++ * xgpio_get - Read the specified signal of the GPIO device.
++ * @gc:     Pointer to gpio_chip device structure.
++ * @gpio:   GPIO signal number.
++ *
++ * This function reads the specified signal of the GPIO device. It returns 0 if
++ * the signal clear, 1 if signal is set or negative value on error.
++ */
++static int xgpio_get(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++
++	return (in_be32(mm_gc->regs + XGPIO_DATA_OFFSET) >> gpio) & 1;
++}
++
++/**
++ * xgpio_set - Write the specified signal of the GPIO device.
++ * @gc:     Pointer to gpio_chip device structure.
++ * @gpio:   GPIO signal number.
++ * @val:    Value to be written to specified signal.
++ *
++ * This function writes the specified value in to the specified signal of the
++ * GPIO device.
++ */
++static void xgpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	unsigned long flags;
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct xgpio_instance *chip =
++	    container_of(mm_gc, struct xgpio_instance, mmchip);
++
++	spin_lock_irqsave(&chip->gpio_lock, flags);
++
++	/* Write to GPIO signal and set its direction to output */
++	if (val)
++		chip->gpio_state |= 1 << gpio;
++	else
++		chip->gpio_state &= ~(1 << gpio);
++	out_be32(mm_gc->regs + XGPIO_DATA_OFFSET, chip->gpio_state);
++
++	spin_unlock_irqrestore(&chip->gpio_lock, flags);
++}
++
++/**
++ * xgpio_dir_in - Set the direction of the specified GPIO signal as input.
++ * @gc:     Pointer to gpio_chip device structure.
++ * @gpio:   GPIO signal number.
++ *
++ * This function sets the direction of specified GPIO signal as input.
++ * It returns 0 if direction of GPIO signals is set as input otherwise it
++ * returns negative error value.
++ */
++static int xgpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
++{
++	unsigned long flags;
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct xgpio_instance *chip =
++	    container_of(mm_gc, struct xgpio_instance, mmchip);
++
++	spin_lock_irqsave(&chip->gpio_lock, flags);
++
++	/* Set the GPIO bit in shadow register and set direction as input */
++	chip->gpio_dir |= (1 << gpio);
++	out_be32(mm_gc->regs + XGPIO_TRI_OFFSET, chip->gpio_dir);
++
++	spin_unlock_irqrestore(&chip->gpio_lock, flags);
++
++	return 0;
++}
++
++/**
++ * xgpio_dir_out - Set the direction of the specified GPIO signal as output.
++ * @gc:     Pointer to gpio_chip device structure.
++ * @gpio:   GPIO signal number.
++ * @val:    Value to be written to specified signal.
++ *
++ * This function sets the direction of specified GPIO signal as output. If all
++ * GPIO signals of GPIO chip is configured as input then it returns
++ * error otherwise it returns 0.
++ */
++static int xgpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	unsigned long flags;
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct xgpio_instance *chip =
++	    container_of(mm_gc, struct xgpio_instance, mmchip);
++
++	spin_lock_irqsave(&chip->gpio_lock, flags);
++
++	/* Write state of GPIO signal */
++	if (val)
++		chip->gpio_state |= 1 << gpio;
++	else
++		chip->gpio_state &= ~(1 << gpio);
++	out_be32(mm_gc->regs + XGPIO_DATA_OFFSET, chip->gpio_state);
++
++	/* Clear the GPIO bit in shadow register and set direction as output */
++	chip->gpio_dir &= (~(1 << gpio));
++	out_be32(mm_gc->regs + XGPIO_TRI_OFFSET, chip->gpio_dir);
++
++	spin_unlock_irqrestore(&chip->gpio_lock, flags);
++
++	return 0;
++}
++
++/**
++ * xgpio_of_probe - Probe method for the GPIO device.
++ * @of_dev: pointer to OF device structure.
++ * @match:  pointer to the structure used for matching a device.
++ *
++ * This function probes the GPIO device in the device tree. It initializes the
++ * driver data structure. It returns 0, if the driver is bound to the GPIO
++ * device, or a negative value if there is an error.
++ */
++static int __devinit xgpio_of_probe(struct of_device *ofdev,
++				    const struct of_device_id *match)
++{
++	struct xgpio_instance *chip;
++	struct of_gpio_chip *ofchip;
++	int status = 0;
++	const u32 *tree_info;
++
++	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
++	if (!chip)
++		return -ENOMEM;
++	ofchip = &chip->mmchip.of_gc;
++
++	/* Update GPIO state shadow register with default value */
++	tree_info = of_get_property(ofdev->node, "xlnx,dout-default", NULL);
++	if (tree_info)
++		chip->gpio_state = *tree_info;
++
++	/* Update GPIO direction shadow register with default value */
++	chip->gpio_dir = 0xFFFFFFFF; /* By default, all pins are inputs */
++	tree_info = of_get_property(ofdev->node, "xlnx,tri-default", NULL);
++	if (tree_info)
++		chip->gpio_dir = *tree_info;
++
++	/* Check device node and parent device node for device width */
++	ofchip->gc.ngpio = 32; /* By default assume full GPIO controller */
++	tree_info = of_get_property(ofdev->node, "xlnx,gpio-width", NULL);
++	if (!tree_info)
++		tree_info = of_get_property(ofdev->node->parent,
++					    "xlnx,gpio-width", NULL);
++	if (tree_info)
++		ofchip->gc.ngpio = *tree_info;
++
++	spin_lock_init(&chip->gpio_lock);
++
++	ofchip->gpio_cells = 2;
++	ofchip->gc.direction_input = xgpio_dir_in;
++	ofchip->gc.direction_output = xgpio_dir_out;
++	ofchip->gc.get = xgpio_get;
++	ofchip->gc.set = xgpio_set;
++
++	/* Call the OF gpio helper to setup and register the GPIO device */
++	status = of_mm_gpiochip_add(ofdev->node, &chip->mmchip);
++	if (status) {
++		kfree(chip);
++		dev_err(&ofdev->dev, "Error in probe function error value %d\n",
++			status);
++		return status;
++	}
++
++	/* Finally, write the initial state to the device */
++	out_be32(chip->mmchip.regs + XGPIO_DATA_OFFSET, chip->gpio_state);
++	out_be32(chip->mmchip.regs + XGPIO_TRI_OFFSET, chip->gpio_dir);
++
++	dev_info(&ofdev->dev, "registered Xilinx GPIO controller\n");
++	return 0;
++}
++
++/**
++ * xgpio_of_remove - Remove method for the GPIO device.
++ * @of_dev: pointer to OF device structure.
++ *
++ * This function returns a negative error as we cannot unregister GPIO chips.
++ */
++static int __devexit xgpio_of_remove(struct of_device *ofdev)
++{
++	return -EBUSY;
++}
++
++static struct of_device_id xgpio_of_match[] __devinitdata = {
++	{ .compatible = "xlnx,xps-gpio-1.00.a", },
++	{ /* end of list */ },
++};
++
++MODULE_DEVICE_TABLE(of, xgpio_of_match);
++
++static struct of_platform_driver xgpio_of_driver = {
++	.name = "xilinx_gpio",
++	.match_table = xgpio_of_match,
++	.probe = xgpio_of_probe,
++	.remove = __devexit_p(xgpio_of_remove),
++};
++
++static int __init xgpio_init(void)
++{
++	return of_register_platform_driver(&xgpio_of_driver);
++}
++
++/* Make sure we get initialized before anyone else tries to use us */
++subsys_initcall(xgpio_init);
++/* No exit call at the moment as we cannot unregister of GPIO chips */
++
++MODULE_AUTHOR("Xilinx, Inc.");
++MODULE_DESCRIPTION("Xilinx GPIO driver");
++MODULE_LICENSE("GPL");
+-- 
+1.5.2.1
 
-This probably needs a comment.  It's not obvious what it is doing.
 
->  	if (!ehea_bmap) {
->  		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
->  		if (!ehea_bmap)
-> @@ -692,10 +695,47 @@ int ehea_rem_sect_bmap(unsigned long pfn
->  	return ret;
->  }
-> 
-> -static int ehea_create_busmap_callback(unsigned long pfn,
-> -				       unsigned long nr_pages, void *arg)
-> +static int ehea_is_hugepage(unsigned long pfn)
-> +{
-> +	return ((((pfn << PAGE_SHIFT) & (EHEA_HUGEPAGE_SIZE - 1)) == 0)
-> +		&& (compound_order(pfn_to_page(pfn)) + PAGE_SHIFT
-> +		    == EHEA_HUGEPAGESHIFT) );
-> +}
 
-Whoa.  That's dense.  Can you actually read that in less than 5 minutes?
-Seriously.
-
-I'm not sure what else you use EHEA_HUGEPAGE_SIZE for or if this gets
-duplicated, but this would look nicer if you just had a:
-
-#define EHEA_HUGEPAGE_PFN_MASK ((EHEA_HUGEPAGE_SIZE - 1) >> PAGE_SHIFT)
-
-	if (pfn & EHEA_HUGEPAGE_PFN_MASK)
-		return 0;
-
-Or, with no new macro:
-
-	if ((pfn << PAGE_SHIFT) & (EHEA_HUGEPAGE_SIZE - 1) != 0)
-		return 0;
-
-	page_order = compound_order(pfn_to_page(pfn));
-	if (page_order + PAGE_SHIFT != EHEA_HUGEPAGESHIFT)
-		return 0;
-	return 1;
-}
-
-Please break that up into something that is truly readable.  gcc will
-generate the exact same code.
-
-> +static int ehea_create_busmap_callback(unsigned long initial_pfn,
-> +				       unsigned long total_nr_pages, void *arg)
->  {
-> -	return ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
-> +	int ret;
-> +	unsigned long pfn, start_pfn, end_pfn, nr_pages;
-> +
-> +	if ((total_nr_pages * PAGE_SIZE) < EHEA_HUGEPAGE_SIZE)
-> +		return ehea_update_busmap(initial_pfn, total_nr_pages,
-> +					  EHEA_BUSMAP_ADD_SECT);
-> +
-> +	/* Given chunk is >= 16GB -> check for hugepages */
-> +	start_pfn = initial_pfn;
-> +	end_pfn = initial_pfn + total_nr_pages;
-> +	pfn = start_pfn;
-> +
-> +	while (pfn < end_pfn) {
-> +		if (ehea_is_hugepage(pfn)) {
-> +			/* Add mem found in front of the hugepage */
-> +			nr_pages = pfn - start_pfn;
-> +			ret = ehea_update_busmap(start_pfn, nr_pages,
-> +						 EHEA_BUSMAP_ADD_SECT);
-> +			if (ret)
-> +				return ret;
-> +
-> +			/* Skip the hugepage */
-> +			pfn += (EHEA_HUGEPAGE_SIZE / PAGE_SIZE);
-> +			start_pfn = pfn;
-> +		} else
-> +			pfn += (EHEA_SECTSIZE / PAGE_SIZE);
-> +	}
-> +
-> +	/* Add mem found behind the hugepage(s)  */
-> +	nr_pages = pfn - start_pfn;
-> +	return ehea_update_busmap(start_pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
->  }
-> 
->  int ehea_create_busmap(void)
-> diff -Nurp -X dontdiff linux-2.6.27/drivers/net/ehea/ehea_qmr.h patched_kernel/drivers/net/ehea/ehea_qmr.h
-> --- linux-2.6.27/drivers/net/ehea/ehea_qmr.h	2008-10-24 09:29:19.000000000 +0200
-> +++ patched_kernel/drivers/net/ehea/ehea_qmr.h	2008-10-24 09:45:15.000000000 +0200
-> @@ -40,6 +40,8 @@
->  #define EHEA_PAGESIZE          (1UL << EHEA_PAGESHIFT)
->  #define EHEA_SECTSIZE          (1UL << 24)
->  #define EHEA_PAGES_PER_SECTION (EHEA_SECTSIZE >> EHEA_PAGESHIFT)
-> +#define EHEA_HUGEPAGESHIFT     34
-> +#define EHEA_HUGEPAGE_SIZE     (1UL << EHEA_HUGEPAGESHIFT)
-
-I'm a bit worried that you're basically duplicating hugetlb.h here.  Why
-not just use the existing 16GB page macros?  While you're at it please
-expand these to give some more useful macros so you don't have to do
-arithmetic on them in the code as much.
-
-#define EHEA_SECT_NR_PAGES (EHEA_SECTSIZE / PAGE_SIZE)
-
-for instance.
-
--- Dave
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
