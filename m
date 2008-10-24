@@ -1,17 +1,32 @@
-Return-Path: <wmb@firmworks.com>
-Message-ID: <49025DE0.6070403@firmworks.com>
-Date: Fri, 24 Oct 2008 13:44:32 -1000
-From: Mitch Bradley <wmb@firmworks.com>
-MIME-Version: 1.0
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: GPIO - marking individual pins (not) available in device tree
-References: <4900ED81.3040202@genesi-usa.com> <4900F90B.80703@firmworks.com>
-	<4901032F.3090805@genesi-usa.com> <49011C42.2020101@firmworks.com>
-	<49024646.3050300@genesi-usa.com>
-In-Reply-To: <49024646.3050300@genesi-usa.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 937ECDDE0A
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 10:48:28 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id m9ONm9Jt032149
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 17:48:09 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9ONmPtD107262
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 17:48:25 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9ONmPSU018093
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 17:48:25 -0600
+Date: Fri, 24 Oct 2008 19:48:22 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Niklaus Giger <niklaus.giger@member.fsf.org>
+Subject: Re: [PATCH] powerpc/40x: Don't enable HCU4 board by default
+Message-ID: <20081024194822.64f9551d@zod.rchland.ibm.com>
+In-Reply-To: <200810242354.24984.niklaus.giger@member.fsf.org>
+References: <20081024143158.GA13766@yoda.jdub.homelinux.org>
+	<200810242354.24984.niklaus.giger@member.fsf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +36,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Right. I had a similar discussion about this the other day with Anton (I
-> think he forwarded it here but I wasn't subscribed at that point..). The
-> current ideology for device trees is to get rid of device_type for new
-> trees that aren't OF-based. I think it's relevant to give nodes fancy
-> names (i.e. not "timer" or even "ethernet") since the name property is
-> entirely descriptive in nature. I also think it's relevant that 
-> device_type
-> still exists because since the name is totally irrelevant except from a
-> user-friendliness point of view, marking a device as a generic type is
-> quite important (device_type = serial, ethernet, rtc, keyboard) where
-> compatible properties are usually wildly over-specific.
+On Fri, 24 Oct 2008 23:54:24 +0200
+Niklaus Giger <niklaus.giger@member.fsf.org> wrote:
 
-I don't use device_type much, if at all, anymore.  Generic name + compatible
-just works better than device_type + specific name.  When I write code that
-has to find a node that is suitable for a given purpose, I look for the 
-existence
-of suitable methods and perhaps other properties.  I was just too hard to
-keep the list of device_type values properly synchronized with all the 
-possible
-things that you might want to infer from that set of names.
+> Am Freitag 24 Oktober 2008 16.31:58 schrieb Josh Boyer:
+> > Fix the HCU4 Kconfig option to 'default n'.  We don't want the
+> > board to always be enabled for other board defconfigs.
+> Sorry, for this silly mistake. Thanks for your fix.
 
-device_type is one of those things that seemed like a good idea at the time,
-but didn't work out as well as I had hoped.
+You don't need to apologize.  Have you noticed that I have "fixed" the
+EMAC driver 3 times this merge window already, all for my own stupid
+mistakes? :)
+
+> My board compiles and runs fine using Linus 2.6.28-rc1.
+
+Thanks for testing!
+
+josh
