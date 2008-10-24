@@ -1,23 +1,24 @@
-Return-Path: <weo@reccoware.de>
-Received: from bes.recconet.de (bes.recconet.de [87.106.167.58])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C22BA474C3
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 03:10:34 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Specify GPIO number base for controller in DT
-From: Wolfgang Ocker <weo@reccoware.de>
-To: Matt Sealey <matt@genesi-usa.com>
-In-Reply-To: <4900EE0F.3090105@genesi-usa.com>
-References: <1224764850.4082.54.camel@galileo.recco.de>
-	<5535CAC8-11C4-4262-9B18-5F6416A51DE3@kernel.crashing.org>
-	<4900EE0F.3090105@genesi-usa.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-9w//7usHrRpFUj+VAyNL"
-Date: Fri, 24 Oct 2008 18:10:19 +0200
-Message-Id: <1224864619.4355.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 8A290DDDD4
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 03:36:54 +1100 (EST)
+Message-Id: <5967704E-0117-46B8-8505-6A002502C38C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Chris Snook <csnook@redhat.com>
+In-Reply-To: <4901F31E.9040007@redhat.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: default IRQ affinity change in v2.6.27 (breaking several SMP PPC
+	based systems)
+Date: Fri, 24 Oct 2008 11:36:42 -0500
+References: <4E3CD4D5-FC1B-40BF-A776-C612B95806B8@kernel.crashing.org>
+	<4901E6FB.4070200@redhat.com>
+	<36A821E7-7F37-42AF-9A05-7205FCBF89EE@kernel.crashing.org>
+	<4901F31E.9040007@redhat.com>
+Cc: LinuxPPC-dev list <linuxppc-dev@ozlabs.org>, tglx@linutronix.de,
+	linux-kernel Kernel <linux-kernel@vger.kernel.org>, maxk@qualcomm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,46 +29,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-9w//7usHrRpFUj+VAyNL
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Oct 24, 2008, at 11:09 AM, Chris Snook wrote:
 
-On Thu, 2008-10-23 at 16:35 -0500, Matt Sealey wrote:
-> > On Oct 23, 2008, at 7:27 AM, Wolfgang Ocker wrote:=20
-> >> The GPIOLIB allows the specification of a base gpio number for a
-> >> controller. That is not possible using OF. Instead, free gpio numbers
-> >> are assigned.
-> >>
-> >> In order to allow static, predefined gpio numbers, a base property in
-> >> the gpio controller node specifies the first gpio number.
->=20
-> See my latest mail.
->=20
-> I don't think it's enough to say which pin the GPIOs exposed=20
-> start at; you need some sort of mask, or array of applicable=20
-> GPIOs so that GPIOLIB can check which perhaps 3 pins out of a=20
-> possible 32 are allocated to a controller and usable (these=20
-> may be pin 5, pin 9 and pin 20, so a "base" of pin 5 would be=20
-> outrageously inadequate).
+> Kumar Gala wrote:
+>> On Oct 24, 2008, at 10:17 AM, Chris Snook wrote:
+>>> Kumar Gala wrote:
+>>>> It appears the default IRQ affinity changes from being just cpu 0  
+>>>> to all cpu's.  This breaks several PPC SMP systems in which only  
+>>>> a single processor is allowed to be selected as the destination  
+>>>> of the IRQ.
+>>>> What is the right answer in fixing this?  Should we:
+>>>>   cpumask_t irq_default_affinity = 1;
+>>>> instead of
+>>>>   cpumask_t irq_default_affinity = CPU_MASK_ALL?
+>>>
+>>> On those systems, perhaps, but not universally.  There's plenty of  
+>>> hardware where the physical topology of the machine is abstracted  
+>>> away from the OS, and you need to leave the mask wide open and let  
+>>> the APIC figure out where to map the IRQs.  Ideally, we should  
+>>> probably make this decision based on the APIC, but if there's no  
+>>> PPC hardware that uses this technique, then it would suffice to  
+>>> make this arch-specific.
+>> What did those systems do before this patch?  Its one thing to  
+>> expose a mask in the ability to change the default mask in /proc/ 
+>> irq/default_smp_affinity.  Its another (and a regression in my  
+>> opinion) to change the mask value itself.
+>
+> Before the patch they took an extremely long time to boot if they  
+> had storage attached to each node of a multi-chassis system,  
+> performed poorly unless special irqbalance hackery or manual  
+> assignment was used, and imposed artificial restrictions on the  
+> granularity of hardware partitioning to ensure that CPU 0 would  
+> always be a CPU that could service all interrupts necessary to boot  
+> the OS.
+>
+>> As for making it ARCH specific, that doesn't really help since not  
+>> all PPC hw has the limitation I spoke of.  Not even all MPIC (in  
+>> our cases) have the limitation.
+>
+> What did those systems do before this patch? :)
+>
+> Making it arch-specific is an extremely simple way to solve your  
+> problem without making trouble for the people who wanted this patch  
+> in the first place.  If PPC needs further refinement to handle  
+> particular *PICs, you can implement that without touching any arch- 
+> generic code.
 
-I'm not sure what you mean. That "base" is used in gpiochip_add() when
-registering the gpio controller. There is no magic with a mask or so.
 
-What do I miss?
+So why not just have x86 startup code set irq_default_affinity =  
+CPU_MASK_ALL than?
 
-Thanks,
-Wolfgang
-
---=-9w//7usHrRpFUj+VAyNL
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBJAfNrfNTKEAPl+KoRAiwyAJ4+kVpFOA/zgnjqKiJ8+//SvTOOPwCfYJ+l
-Zzxyo3wWB5ghGBp9n5yz3Kk=
-=wSgM
------END PGP SIGNATURE-----
-
---=-9w//7usHrRpFUj+VAyNL--
+- k
