@@ -2,8 +2,8 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8B8DFDDDE3
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 23:31:37 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id A0CA5DDDE6
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 23:44:28 +1100 (EST)
 Subject: Re: adding more machines to snd-aoa
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Gabriel Paubert <paubert@iram.es>
@@ -14,11 +14,9 @@ References: <1224769461.6002.12.camel@johannes.berg>
 	<20081023164302.GA29454@iram.es>
 	<1224837623.6002.84.camel@johannes.berg>
 	<20081024122616.GA19424@iram.es>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-gZqPgE/+bCkHFTW+v0ev"
-Date: Fri, 24 Oct 2008 14:30:19 +0200
-Message-Id: <1224851419.611.5.camel@johannes.berg>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 14:43:11 +0200
+Message-Id: <1224852191.611.8.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Linux User #330250 <linuxuser330250@gmx.net>,
@@ -32,62 +30,175 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Here's a patch that actually applies against 2.6.27.
 
---=-gZqPgE/+bCkHFTW+v0ev
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+---
+ sound/aoa/fabrics/snd-aoa-fabric-layout.c |   73 +++++++++++++++++++++++-------
+ sound/aoa/soundbus/i2sbus/i2sbus-core.c   |   16 ++++--
+ 2 files changed, 68 insertions(+), 21 deletions(-)
 
-On Fri, 2008-10-24 at 14:26 +0200, Gabriel Paubert wrote:
-
-> > Right. I'll assume it has a microphone too, built-in.=20
->=20
-> I doubt it:=20
-> - no mention found in the doc
-> - it seems to be output-only (#-inputs in the device tree is 0,
-> #-outputs is 3).
-
-Yeah, I've disabled it in the patch I sent you.
-
-> I could also send you the device tree of my PowerBook G3: it does
-> have the device-id property with a value of 10, but the parent
-> node is called davbus instead of i2s. That one definitely has
-> a microphone...
-
-No, I don't really care about davbus at this point. TBH, I don't care
-much about the other machines either, and there are lots... I'll have to
-find a way to map the #-inputs and #-outputs to the information
-otherwise I'll have to dig out all the manuals or something...
-
-> > Could you try the
-> > patch below, enable all snd-aoa modules and see what happens?
-> >=20
->=20
-> I won't have time in the next few days, sorry.=20
-
-No worries, let me know when you can.
-
-johannes
-
---=-gZqPgE/+bCkHFTW+v0ev
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJAb/XAAoJEKVg1VMiehFYmvUP/ikVLzc+9bdAd5dkxeIPtLAJ
-K6V9YwjdyO6g2dOCBI44OQIIiFOeLKV8iqnRNALFCKv8l6n/JIKuwoubY7NQs+Dy
-m9kx+o1jOQEHASrP6Tc4HJkWeYcdAdZn8l6wtFkrhrWbbd6Ng00kLaorCfP9/ie5
-axLUWHLS2uAqBv3WUIscOqRj+yE9Yzc/6xtPy6xt3nnYT3nS4UBOu8OIyQUyHL75
-nU7BigziMAsqCwvsvBXKl6odd2njxb+t49wvDG8/78CKAZhg16m9W7PRKiud9CT9
-ZNW8SyejmJu27X5tnU1gUTmrxdlYflBD5TLv+KlFSvE/LB9Vdzi4Q6feErcZlwDt
-DonYQiMRzPxY7v4gxLv9dd9Nn2pF2YlwEBamLYhO9nHiWDezpqoOY93bTohRGZc+
-5PUk+WftdYjnkPOAP/YU/aqXfq4x9tz1dGbSH/ppYVnFxbb322MT2Ht4FkeGjwUF
-xfBduxAY22dFUEbbZhZmayEC7I3NodJtdqRxV6c3bX83YEtjBNLZJQGMjuTh0U5R
-NnFrHmBs2jKMWgfP3sPrLZfhL/1Sreqj2BIbsuXZ6NvHQuMi3u/iv496CmrYdnmF
-Egau8kPmOn9uNEq0xzV7+oxTo3RPrfw4DVh6uDd6fnHvrtk6EagHbI3lJAYfgQ81
-1iSGlkVlBisVm3RlUOE0
-=wUpF
------END PGP SIGNATURE-----
-
---=-gZqPgE/+bCkHFTW+v0ev--
+--- everything.orig/sound/aoa/fabrics/snd-aoa-fabric-layout.c	2008-10-24 13:35:00.000000000 +0200
++++ everything/sound/aoa/fabrics/snd-aoa-fabric-layout.c	2008-10-24 14:42:32.000000000 +0200
+@@ -1,16 +1,14 @@
+ /*
+- * Apple Onboard Audio driver -- layout fabric
++ * Apple Onboard Audio driver -- layout/machine id fabric
+  *
+- * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
++ * Copyright 2006, 2008 Johannes Berg <johannes@sipsolutions.net>
+  *
+  * GPL v2, can be found in COPYING.
+  *
+  *
+- * This fabric module looks for sound codecs
+- * based on the layout-id property in the device tree.
+- *
++ * This fabric module looks for sound codecs based on the
++ * layout-id or device-id property in the device tree.
+  */
+-
+ #include <asm/prom.h>
+ #include <linux/list.h>
+ #include <linux/module.h>
+@@ -63,7 +61,7 @@ struct codec_connect_info {
+ #define LAYOUT_FLAG_COMBO_LINEOUT_SPDIF	(1<<0)
+ 
+ struct layout {
+-	unsigned int layout_id;
++	unsigned int layout_id, device_id;
+ 	struct codec_connect_info codecs[MAX_CODECS_PER_BUS];
+ 	int flags;
+ 	
+@@ -111,6 +109,10 @@ MODULE_ALIAS("sound-layout-96");
+ MODULE_ALIAS("sound-layout-98");
+ MODULE_ALIAS("sound-layout-100");
+ 
++MODULE_ALIAS("aoa-device-id-14");
++MODULE_ALIAS("aoa-device-id-22");
++MODULE_ALIAS("aoa-device-id-35");
++
+ /* onyx with all but microphone connected */
+ static struct codec_connection onyx_connections_nomic[] = {
+ 	{
+@@ -518,6 +520,27 @@ static struct layout layouts[] = {
+ 		.connections = onyx_connections_noheadphones,
+ 	  },
+ 	},
++	/* PowerMac3,4 */
++	{ .device_id = 14,
++	  .codecs[0] = {
++		.name = "tas",
++		.connections = tas_connections_noline,
++	  },
++	},
++	/* PowerMac3,6 */
++	{ .device_id = 22,
++	  .codecs[0] = {
++		.name = "tas",
++		.connections = tas_connections_all,
++	  },
++	},
++	/* PowerBook5,2 */
++	{ .device_id = 35,
++	  .codecs[0] = {
++		.name = "tas",
++		.connections = tas_connections_all,
++	  },
++	},
+ 	{}
+ };
+ 
+@@ -526,7 +549,7 @@ static struct layout *find_layout_by_id(
+ 	struct layout *l;
+ 
+ 	l = layouts;
+-	while (l->layout_id) {
++	while (l->codecs[0].name) {
+ 		if (l->layout_id == id)
+ 			return l;
+ 		l++;
+@@ -534,6 +557,19 @@ static struct layout *find_layout_by_id(
+ 	return NULL;
+ }
+ 
++static struct layout *find_layout_by_device(unsigned int id)
++{
++	struct layout *l;
++
++	l = layouts;
++	while (l->codecs[0].name) {
++		if (l->device_id == id)
++			return l;
++		l++;
++	}
++	return NULL;
++}
++
+ static void use_layout(struct layout *l)
+ {
+ 	int i;
+@@ -938,8 +974,8 @@ static struct aoa_fabric layout_fabric =
+ static int aoa_fabric_layout_probe(struct soundbus_dev *sdev)
+ {
+ 	struct device_node *sound = NULL;
+-	const unsigned int *layout_id;
+-	struct layout *layout;
++	const unsigned int *id;
++	struct layout *layout = NULL;
+ 	struct layout_dev *ldev = NULL;
+ 	int err;
+ 
+@@ -952,15 +988,18 @@ static int aoa_fabric_layout_probe(struc
+ 		if (sound->type && strcasecmp(sound->type, "soundchip") == 0)
+ 			break;
+ 	}
+-	if (!sound) return -ENODEV;
++	if (!sound)
++		return -ENODEV;
+ 
+-	layout_id = of_get_property(sound, "layout-id", NULL);
+-	if (!layout_id)
+-		goto outnodev;
+-	printk(KERN_INFO "snd-aoa-fabric-layout: found bus with layout %d\n",
+-	       *layout_id);
++	id = of_get_property(sound, "layout-id", NULL);
++	if (id) {
++		layout = find_layout_by_id(*id);
++	} else {
++		id = of_get_property(sound, "device-id", NULL);
++		if (id)
++			layout = find_layout_by_device(*id);
++	}
+ 
+-	layout = find_layout_by_id(*layout_id);
+ 	if (!layout) {
+ 		printk(KERN_ERR "snd-aoa-fabric-layout: unknown layout\n");
+ 		goto outnodev;
+--- everything.orig/sound/aoa/soundbus/i2sbus/i2sbus-core.c	2008-10-24 14:01:15.000000000 +0200
++++ everything/sound/aoa/soundbus/i2sbus/i2sbus-core.c	2008-10-24 14:42:32.000000000 +0200
+@@ -186,13 +186,21 @@ static int i2sbus_add_dev(struct macio_d
+ 		}
+ 	}
+ 	if (i == 1) {
+-		const u32 *layout_id =
+-			of_get_property(sound, "layout-id", NULL);
+-		if (layout_id) {
+-			layout = *layout_id;
++		const u32 *id = of_get_property(sound, "layout-id", NULL);
++
++		if (id) {
++			layout = *id;
+ 			snprintf(dev->sound.modalias, 32,
+ 				 "sound-layout-%d", layout);
+ 			force = 1;
++		} else {
++			id = of_get_property(sound, "device-id", NULL);
++			if (id) {
++				snprintf(dev->sound.modalias, 32,
++					 "aoa-device-id-%d", *id);
++				force = 1;
++				layout = -1;
++			}
+ 		}
+ 	}
+ 	/* for the time being, until we can handle non-layout-id
