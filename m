@@ -1,12 +1,35 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 24 Oct 2008 14:54:34 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: benh@yookeroo.seuss, Paul Mackerras <paulus@samba.org>
-Subject: powerpc: udbg based backend for hvc_console
-Message-ID: <20081024035434.GF4267@yookeroo.seuss>
+Return-Path: <nfont@austin.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 411EDDDE17
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 15:08:43 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id m9O47k8K002089
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 22:07:46 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9O48Z6f126372
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 22:08:37 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9O48YBY006129
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 22:08:34 -0600
+Received: from austin.ibm.com (netmail2.austin.ibm.com [9.41.248.176])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m9O48Yaj006124
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 22:08:34 -0600
+Received: from [9.65.67.19] (sig-9-65-67-19.mts.ibm.com [9.65.67.19])
+	by austin.ibm.com (8.13.8/8.12.10) with ESMTP id m9O48XJA058516
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Oct 2008 23:08:33 -0500
+Message-ID: <49014A41.6040700@austin.ibm.com>
+Date: Thu, 23 Oct 2008 23:08:33 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Allocate resources for PHB DLPAR add
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,154 +39,189 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a new backend for the hvc console based on the
-low-level udbg callbacks.  This effectively implements a working
-runtime console in terms of the simple udbg primitives.  This is kind
-of a hack - since udbg isn't something you really want to be using
-routinely - but it's really useful during bringup.
+Resources for PHB's that are DLPAR added to a system are not acquired.
+Not having these resources allocated causes an oops during DLPAR
+remove of the PHB when we try to release non-existant resources.
 
-This can be used to quickly implement a userspace usable console while
-you're working on a proper driver for whatever console I/O device the
-hardware has.  Or, it can be used to avoid writing a full blown
-tty/console driver entirely for quick-and-dirty I/O hardware that will
-later be replaced by something else.
+The patch appears a bit messy, this is mainly due to moving everything
+one tab to the left in the pcibios_allocate_bus_resources routine.  The
+big functionality change in this routine is only that the 
+list_for_each_entry() loop is pulled out and moved to the necessary
+calling routine.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-
-Index: working-2.6/drivers/char/Kconfig
-===================================================================
---- working-2.6.orig/drivers/char/Kconfig	2008-10-22 16:01:39.000000000 +1100
-+++ working-2.6/drivers/char/Kconfig	2008-10-24 14:22:59.000000000 +1100
-@@ -631,6 +631,12 @@ config HVC_XEN
- 	help
- 	  Xen virtual console device driver
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
  
-+config HVC_UDBG
-+       bool "udbg based fake hypervisor console"
-+       depends on EXPERIMENTAL
-+       select HVC_DRIVER
-+       default n
-+
- config VIRTIO_CONSOLE
- 	tristate "Virtio console"
- 	depends on VIRTIO
-Index: working-2.6/drivers/char/Makefile
+---
+Index: linux-2.6/arch/powerpc/kernel/pci-common.c
 ===================================================================
---- working-2.6.orig/drivers/char/Makefile	2008-10-22 15:50:59.000000000 +1100
-+++ working-2.6/drivers/char/Makefile	2008-10-24 14:22:59.000000000 +1100
-@@ -50,6 +50,7 @@ obj-$(CONFIG_HVC_BEAT)		+= hvc_beat.o
- obj-$(CONFIG_HVC_DRIVER)	+= hvc_console.o
- obj-$(CONFIG_HVC_IRQ)		+= hvc_irq.o
- obj-$(CONFIG_HVC_XEN)		+= hvc_xen.o
-+obj-$(CONFIG_HVC_UDBG)		+= hvc_udbg.o
- obj-$(CONFIG_VIRTIO_CONSOLE)	+= virtio_console.o
- obj-$(CONFIG_RAW_DRIVER)	+= raw.o
- obj-$(CONFIG_SGI_SNSC)		+= snsc.o snsc_event.o
-Index: working-2.6/drivers/char/hvc_udbg.c
+--- linux-2.6.orig/arch/powerpc/kernel/pci-common.c	2008-10-21 21:26:18.000000000 -0500
++++ linux-2.6/arch/powerpc/kernel/pci-common.c	2008-10-21 22:16:54.000000000 -0500
+@@ -986,69 +986,66 @@
+  *	    as well.
+  */
+ 
+-static void __init pcibios_allocate_bus_resources(struct list_head *bus_list)
++void pcibios_allocate_bus_resources(struct pci_bus *bus)
+ {
+-	struct pci_bus *bus;
++	struct pci_bus *b;
+ 	int i;
+ 	struct resource *res, *pr;
+ 
+-	/* Depth-First Search on bus tree */
+-	list_for_each_entry(bus, bus_list, node) {
+-		for (i = 0; i < PCI_BUS_NUM_RESOURCES; ++i) {
+-			if ((res = bus->resource[i]) == NULL || !res->flags
+-			    || res->start > res->end)
+-				continue;
+-			if (bus->parent == NULL)
+-				pr = (res->flags & IORESOURCE_IO) ?
+-					&ioport_resource : &iomem_resource;
+-			else {
+-				/* Don't bother with non-root busses when
+-				 * re-assigning all resources. We clear the
+-				 * resource flags as if they were colliding
+-				 * and as such ensure proper re-allocation
+-				 * later.
++	for (i = 0; i < PCI_BUS_NUM_RESOURCES; ++i) {
++		if ((res = bus->resource[i]) == NULL || !res->flags
++		    || res->start > res->end)
++			continue;
++		if (bus->parent == NULL)
++			pr = (res->flags & IORESOURCE_IO) ?
++				&ioport_resource : &iomem_resource;
++		else {
++			/* Don't bother with non-root busses when
++			 * re-assigning all resources. We clear the
++			 * resource flags as if they were colliding
++			 * and as such ensure proper re-allocation
++			 * later.
++			 */
++			if (ppc_pci_flags & PPC_PCI_REASSIGN_ALL_RSRC)
++				goto clear_resource;
++			pr = pci_find_parent_resource(bus->self, res);
++			if (pr == res) {
++				/* this happens when the generic PCI
++				 * code (wrongly) decides that this
++				 * bridge is transparent  -- paulus
+ 				 */
+-				if (ppc_pci_flags & PPC_PCI_REASSIGN_ALL_RSRC)
+-					goto clear_resource;
+-				pr = pci_find_parent_resource(bus->self, res);
+-				if (pr == res) {
+-					/* this happens when the generic PCI
+-					 * code (wrongly) decides that this
+-					 * bridge is transparent  -- paulus
+-					 */
+-					continue;
+-				}
++				continue;
+ 			}
++		}
+ 
+-			DBG("PCI: %s (bus %d) bridge rsrc %d: %016llx-%016llx "
+-			    "[0x%x], parent %p (%s)\n",
+-			    bus->self ? pci_name(bus->self) : "PHB",
+-			    bus->number, i,
+-			    (unsigned long long)res->start,
+-			    (unsigned long long)res->end,
+-			    (unsigned int)res->flags,
+-			    pr, (pr && pr->name) ? pr->name : "nil");
+-
+-			if (pr && !(pr->flags & IORESOURCE_UNSET)) {
+-				if (request_resource(pr, res) == 0)
+-					continue;
+-				/*
+-				 * Must be a conflict with an existing entry.
+-				 * Move that entry (or entries) under the
+-				 * bridge resource and try again.
+-				 */
+-				if (reparent_resources(pr, res) == 0)
+-					continue;
+-			}
+-			printk(KERN_WARNING
+-			       "PCI: Cannot allocate resource region "
+-			       "%d of PCI bridge %d, will remap\n",
+-			       i, bus->number);
+-clear_resource:
+-			res->flags = 0;
++		DBG("PCI: %s (bus %d) bridge rsrc %d: %016llx-%016llx "
++		    "[0x%x], parent %p (%s)\n",
++		    bus->self ? pci_name(bus->self) : "PHB",
++		    bus->number, i,
++		    (unsigned long long)res->start,
++		    (unsigned long long)res->end,
++		    (unsigned int)res->flags,
++		    pr, (pr && pr->name) ? pr->name : "nil");
++
++		if (pr && !(pr->flags & IORESOURCE_UNSET)) {
++			if (request_resource(pr, res) == 0)
++				continue;
++			/*
++			 * Must be a conflict with an existing entry.
++			 * Move that entry (or entries) under the
++			 * bridge resource and try again.
++			 */
++			if (reparent_resources(pr, res) == 0)
++				continue;
+ 		}
+-		pcibios_allocate_bus_resources(&bus->children);
++		printk(KERN_WARNING "PCI: Cannot allocate resource region "
++		       "%d of PCI bridge %d, will remap\n", i, bus->number);
++clear_resource:
++		res->flags = 0;
+ 	}
++
++	list_for_each_entry(b, &bus->children, node)
++		pcibios_allocate_bus_resources(b);
+ }
+ 
+ static inline void __devinit alloc_resource(struct pci_dev *dev, int idx)
+@@ -1119,10 +1116,13 @@
+ 
+ void __init pcibios_resource_survey(void)
+ {
++	struct pci_bus *b;
++
+ 	/* Allocate and assign resources. If we re-assign everything, then
+ 	 * we skip the allocate phase
+ 	 */
+-	pcibios_allocate_bus_resources(&pci_root_buses);
++	list_for_each_entry(b, &pci_root_buses, node)
++		pcibios_allocate_bus_resources(b);
+ 
+ 	if (!(ppc_pci_flags & PPC_PCI_REASSIGN_ALL_RSRC)) {
+ 		pcibios_allocate_resources(0);
+Index: linux-2.6/arch/powerpc/include/asm/pci.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/drivers/char/hvc_udbg.c	2008-10-24 14:38:55.000000000 +1100
-@@ -0,0 +1,96 @@
-+/*
-+ * udbg interface to hvc_console.c
-+ *
-+ * (C) Copyright David Gibson, IBM Corporation 2008.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
+--- linux-2.6.orig/arch/powerpc/include/asm/pci.h	2008-10-21 21:26:18.000000000 -0500
++++ linux-2.6/arch/powerpc/include/asm/pci.h	2008-10-21 22:15:03.000000000 -0500
+@@ -196,6 +196,8 @@
+ 
+ extern void pcibios_claim_one_bus(struct pci_bus *b);
+ 
++extern void pcibios_allocate_bus_resources(struct pci_bus *bus);
 +
-+#include <linux/console.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/moduleparam.h>
-+#include <linux/types.h>
-+#include <linux/irq.h>
-+
-+#include <asm/udbg.h>
-+
-+#include "hvc_console.h"
-+
-+struct hvc_struct *hvc_udbg_dev;
-+
-+static int hvc_udbg_put(uint32_t vtermno, const char *buf, int count)
-+{
-+	int i;
-+
-+	for (i = 0; i < count; i++)
-+		udbg_putc(buf[i]);
-+
-+	return i;
-+}
-+
-+static int hvc_udbg_get(uint32_t vtermno, char *buf, int count)
-+{
-+	int i, c;
-+
-+	if (!udbg_getc_poll)
-+		return 0;
-+
-+	for (i = 0; i < count; i++) {
-+		if ((c = udbg_getc_poll()) == -1)
-+			break;
-+		buf[i] = c;
-+	}
-+
-+	return i;
-+}
-+
-+static struct hv_ops hvc_udbg_ops = {
-+	.get_chars = hvc_udbg_get,
-+	.put_chars = hvc_udbg_put,
-+};
-+
-+static int __init hvc_udbg_init(void)
-+{
-+	struct hvc_struct *hp;
-+
-+	BUG_ON(hvc_udbg_dev);
-+
-+	hp = hvc_alloc(0, NO_IRQ, &hvc_udbg_ops, 16);
-+	if (IS_ERR(hp))
-+		return PTR_ERR(hp);
-+
-+	hvc_udbg_dev = hp;
-+
-+	return 0;
-+}
-+module_init(hvc_udbg_init);
-+
-+static void __exit hvc_udbg_exit(void)
-+{
-+	if (hvc_udbg_dev)
-+		hvc_remove(hvc_udbg_dev);
-+}
-+module_exit(hvc_udbg_exit);
-+
-+static int __init hvc_udbg_console_init(void)
-+{
-+	hvc_instantiate(0, 0, &hvc_udbg_ops);
-+	add_preferred_console("hvc", 0, NULL);
-+
-+	return 0;
-+}
-+console_initcall(hvc_udbg_console_init);
-
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ extern void pcibios_resource_survey(void);
+ 
+ extern struct pci_controller *init_phb_dynamic(struct device_node *dn);
+Index: linux-2.6/arch/powerpc/platforms/pseries/pci_dlpar.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/pseries/pci_dlpar.c	2008-10-21 21:26:18.000000000 -0500
++++ linux-2.6/arch/powerpc/platforms/pseries/pci_dlpar.c	2008-10-21 22:16:37.000000000 -0500
+@@ -189,6 +189,7 @@
+ {
+ 	struct pci_controller *phb;
+ 	int primary;
++	struct pci_bus *b;
+ 
+ 	primary = list_empty(&hose_list);
+ 	phb = pcibios_alloc_controller(dn);
+@@ -203,6 +204,7 @@
+ 		eeh_add_device_tree_early(dn);
+ 
+ 	scan_phb(phb);
++	pcibios_allocate_bus_resources(phb->bus);
+ 	pcibios_fixup_new_pci_devices(phb->bus);
+ 	pci_bus_add_devices(phb->bus);
+ 	eeh_add_device_tree_late(phb->bus);
