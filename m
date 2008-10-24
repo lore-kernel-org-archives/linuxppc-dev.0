@@ -1,16 +1,12 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 24 Oct 2008 14:29:44 +1100
+Date: Fri, 24 Oct 2008 14:54:34 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Mitch Bradley <wmb@firmworks.com>
-Subject: Re: GPIO - marking individual pins (not) available in device tree
-Message-ID: <20081024032944.GE4267@yookeroo.seuss>
-References: <4900ED81.3040202@genesi-usa.com> <4900F90B.80703@firmworks.com>
-	<4901032F.3090805@genesi-usa.com> <49011C42.2020101@firmworks.com>
+To: benh@yookeroo.seuss, Paul Mackerras <paulus@samba.org>
+Subject: powerpc: udbg based backend for hvc_console
+Message-ID: <20081024035434.GF4267@yookeroo.seuss>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <49011C42.2020101@firmworks.com>
-Cc: devicetree-discuss list <devicetree-discuss@ozlabs.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,50 +16,151 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 23, 2008 at 02:52:18PM -1000, Mitch Bradley wrote:
->>
->>
->> Mitch Bradley wrote:
->> [snip]
->>
->>> You could adopt the convention that preassigned GPIOs must be  
->>> represented by subordinate nodes, and any GPIO that is not covered by 
->>> a subordinate node's "reg" property is implicitly available.  That's  
->>> the way it works for other address spaces.
->>
->> I like that idea except for the implicitly available bit.
->>
->> Just summarizing this in my head (also on the list), if we had an  
->> "available" property in the node marked as a gpio-controller, that  
->> would easily give gpiolib something to parse so that it only gives out  
->> allocations for pins that are really, really not being multiplexed for  
->> something else or just not being connected.
->>
->> There's a GPIO spec in booting-without-of.txt which basically defines  
->> a controller and a bank, and you can assign a bank of GPIO to some  
->> other device. Assigning specific GPIO pins should be possible.. umm..
->>
->> http://patchwork.ozlabs.org/patch/5478/
->>
->> With regards to this patch, how about device usage of pins being  
->> defined as a range of pins (reusing the standard-ish "ranges" property  
->> from PCI binding)?
->
->
-> Okay, so it looks to me like your "bank" concept is sort of akin to a  
-> "gpio-to-gpio bridge", with analogy to a pci-to-pci bridge.  Following  
-> that model, the "name" of your "gpio-bank" would instead be  
-> "gpio-controller", because its children are GPIO pin nodes that could  
-> just as well be attached directly to the top-level gpio-controller node.  
-> The "compatible" property would be different, reflecting the fact that it 
-> is a "gpio-to-gpio bridge" instead of an "io-to-gpio bridge" (for 
-> example).
+This patch adds a new backend for the hvc console based on the
+low-level udbg callbacks.  This effectively implements a working
+runtime console in terms of the simple udbg primitives.  This is kind
+of a hack - since udbg isn't something you really want to be using
+routinely - but it's really useful during bringup.
 
-No, no, no, no, no.  Making complex multi-level representations of
-nested things for gpios is just insanity.  Just use the same encoded
-format as we already use for gpio descriptors in 'gpios' properties
-(which is gpio controller specific, with length defined by
-#gpio-cells).
+This can be used to quickly implement a userspace usable console while
+you're working on a proper driver for whatever console I/O device the
+hardware has.  Or, it can be used to avoid writing a full blown
+tty/console driver entirely for quick-and-dirty I/O hardware that will
+later be replaced by something else.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Index: working-2.6/drivers/char/Kconfig
+===================================================================
+--- working-2.6.orig/drivers/char/Kconfig	2008-10-22 16:01:39.000000000 +1100
++++ working-2.6/drivers/char/Kconfig	2008-10-24 14:22:59.000000000 +1100
+@@ -631,6 +631,12 @@ config HVC_XEN
+ 	help
+ 	  Xen virtual console device driver
+ 
++config HVC_UDBG
++       bool "udbg based fake hypervisor console"
++       depends on EXPERIMENTAL
++       select HVC_DRIVER
++       default n
++
+ config VIRTIO_CONSOLE
+ 	tristate "Virtio console"
+ 	depends on VIRTIO
+Index: working-2.6/drivers/char/Makefile
+===================================================================
+--- working-2.6.orig/drivers/char/Makefile	2008-10-22 15:50:59.000000000 +1100
++++ working-2.6/drivers/char/Makefile	2008-10-24 14:22:59.000000000 +1100
+@@ -50,6 +50,7 @@ obj-$(CONFIG_HVC_BEAT)		+= hvc_beat.o
+ obj-$(CONFIG_HVC_DRIVER)	+= hvc_console.o
+ obj-$(CONFIG_HVC_IRQ)		+= hvc_irq.o
+ obj-$(CONFIG_HVC_XEN)		+= hvc_xen.o
++obj-$(CONFIG_HVC_UDBG)		+= hvc_udbg.o
+ obj-$(CONFIG_VIRTIO_CONSOLE)	+= virtio_console.o
+ obj-$(CONFIG_RAW_DRIVER)	+= raw.o
+ obj-$(CONFIG_SGI_SNSC)		+= snsc.o snsc_event.o
+Index: working-2.6/drivers/char/hvc_udbg.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/drivers/char/hvc_udbg.c	2008-10-24 14:38:55.000000000 +1100
+@@ -0,0 +1,96 @@
++/*
++ * udbg interface to hvc_console.c
++ *
++ * (C) Copyright David Gibson, IBM Corporation 2008.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
++
++#include <linux/console.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/moduleparam.h>
++#include <linux/types.h>
++#include <linux/irq.h>
++
++#include <asm/udbg.h>
++
++#include "hvc_console.h"
++
++struct hvc_struct *hvc_udbg_dev;
++
++static int hvc_udbg_put(uint32_t vtermno, const char *buf, int count)
++{
++	int i;
++
++	for (i = 0; i < count; i++)
++		udbg_putc(buf[i]);
++
++	return i;
++}
++
++static int hvc_udbg_get(uint32_t vtermno, char *buf, int count)
++{
++	int i, c;
++
++	if (!udbg_getc_poll)
++		return 0;
++
++	for (i = 0; i < count; i++) {
++		if ((c = udbg_getc_poll()) == -1)
++			break;
++		buf[i] = c;
++	}
++
++	return i;
++}
++
++static struct hv_ops hvc_udbg_ops = {
++	.get_chars = hvc_udbg_get,
++	.put_chars = hvc_udbg_put,
++};
++
++static int __init hvc_udbg_init(void)
++{
++	struct hvc_struct *hp;
++
++	BUG_ON(hvc_udbg_dev);
++
++	hp = hvc_alloc(0, NO_IRQ, &hvc_udbg_ops, 16);
++	if (IS_ERR(hp))
++		return PTR_ERR(hp);
++
++	hvc_udbg_dev = hp;
++
++	return 0;
++}
++module_init(hvc_udbg_init);
++
++static void __exit hvc_udbg_exit(void)
++{
++	if (hvc_udbg_dev)
++		hvc_remove(hvc_udbg_dev);
++}
++module_exit(hvc_udbg_exit);
++
++static int __init hvc_udbg_console_init(void)
++{
++	hvc_instantiate(0, 0, &hvc_udbg_ops);
++	add_preferred_console("hvc", 0, NULL);
++
++	return 0;
++}
++console_initcall(hvc_udbg_console_init);
+
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
