@@ -1,23 +1,24 @@
-Return-Path: <csnook@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id CD469DDDE0
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 04:51:23 +1100 (EST)
-Message-ID: <49020B39.6080805@redhat.com>
-Date: Fri, 24 Oct 2008 13:51:53 -0400
-From: Chris Snook <csnook@redhat.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: default IRQ affinity change in v2.6.27 (breaking several SMP
-	PPC based systems)
-References: <4E3CD4D5-FC1B-40BF-A776-C612B95806B8@kernel.crashing.org>
-	<4901E6FB.4070200@redhat.com>
-	<36A821E7-7F37-42AF-9A05-7205FCBF89EE@kernel.crashing.org>
-	<4901F31E.9040007@redhat.com>
-	<5967704E-0117-46B8-8505-6A002502C38C@kernel.crashing.org>
-In-Reply-To: <5967704E-0117-46B8-8505-6A002502C38C@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: LinuxPPC-dev list <linuxppc-dev@ozlabs.org>, tglx@linutronix.de,
-	linux-kernel Kernel <linux-kernel@vger.kernel.org>, maxk@qualcomm.com
+Return-Path: <weo@reccoware.de>
+Received: from bes.recconet.de (bes.recconet.de [87.106.167.58])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9272FDDDF3
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 05:00:20 +1100 (EST)
+Subject: Re: [PATCH v3] powerpc: Specify GPIO number base for controller in DT
+From: Wolfgang Ocker <weo@reccoware.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40810241012o57e85215i9778efc342250137@mail.gmail.com>
+References: <1224764850.4082.54.camel@galileo.recco.de>
+	<D6AED5C1-6936-48BB-8D0F-98471C6841B0@kernel.crashing.org>
+	<1224773378.4082.64.camel@galileo.recco.de>
+	<200810232013.00539.sr@denx.de>
+	<20081024165428.GC14350@oksana.dev.rtsoft.ru>
+	<fa686aa40810241012o57e85215i9778efc342250137@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 20:00:12 +0200
+Message-Id: <1224871212.4039.6.camel@galileo.recco.de>
+Mime-Version: 1.0
+Cc: Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,57 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Oct 24, 2008, at 11:09 AM, Chris Snook wrote:
-> 
->> Kumar Gala wrote:
->>> On Oct 24, 2008, at 10:17 AM, Chris Snook wrote:
->>>> Kumar Gala wrote:
->>>>> It appears the default IRQ affinity changes from being just cpu 0 
->>>>> to all cpu's.  This breaks several PPC SMP systems in which only a 
->>>>> single processor is allowed to be selected as the destination of 
->>>>> the IRQ.
->>>>> What is the right answer in fixing this?  Should we:
->>>>>   cpumask_t irq_default_affinity = 1;
->>>>> instead of
->>>>>   cpumask_t irq_default_affinity = CPU_MASK_ALL?
->>>>
->>>> On those systems, perhaps, but not universally.  There's plenty of 
->>>> hardware where the physical topology of the machine is abstracted 
->>>> away from the OS, and you need to leave the mask wide open and let 
->>>> the APIC figure out where to map the IRQs.  Ideally, we should 
->>>> probably make this decision based on the APIC, but if there's no PPC 
->>>> hardware that uses this technique, then it would suffice to make 
->>>> this arch-specific.
->>> What did those systems do before this patch?  Its one thing to expose 
->>> a mask in the ability to change the default mask in 
->>> /proc/irq/default_smp_affinity.  Its another (and a regression in my 
->>> opinion) to change the mask value itself.
->>
->> Before the patch they took an extremely long time to boot if they had 
->> storage attached to each node of a multi-chassis system, performed 
->> poorly unless special irqbalance hackery or manual assignment was 
->> used, and imposed artificial restrictions on the granularity of 
->> hardware partitioning to ensure that CPU 0 would always be a CPU that 
->> could service all interrupts necessary to boot the OS.
->>
->>> As for making it ARCH specific, that doesn't really help since not 
->>> all PPC hw has the limitation I spoke of.  Not even all MPIC (in our 
->>> cases) have the limitation.
->>
->> What did those systems do before this patch? :)
->>
->> Making it arch-specific is an extremely simple way to solve your 
->> problem without making trouble for the people who wanted this patch in 
->> the first place.  If PPC needs further refinement to handle particular 
->> *PICs, you can implement that without touching any arch-generic code.
-> 
-> 
-> So why not just have x86 startup code set irq_default_affinity = 
-> CPU_MASK_ALL than?
 
-It's an issue on Itanium as well, and potentially any SMP architecture with a 
-non-trivial interconnect.
+On Fri, 2008-10-24 at 11:12 -0600, Grant Likely wrote:
+> On Fri, Oct 24, 2008 at 10:54 AM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > On Thu, Oct 23, 2008 at 08:13:00PM +0200, Stefan Roese wrote:
+> >> On Thursday 23 October 2008, Wolfgang Ocker wrote:
+> >> > The GPIOLIB allows the specification of a base gpio number for a
+> >> > controller. That is not possible using OF. Instead, free gpio numbers
+> >> > are assigned.
+> >> >
+> >> > In order to allow static, predefined gpio numbers, a base property in
+> >> > the gpio controller node specifies the first gpio number.
+> >> >
+> >> > v2, v3: added/improved description of base property in doc
+> >>
+> >> These version descriptions are better placed below the "---" line. And you
+> >> should remove the "Re: " from the subject line. Other than this:
+> >>
+> >> Acked-by: Stefan Roese <sr@denx.de>
 
--- Chris
+> Yeah, I don't like this patch either.  GPIO numbering is a Linux
+> internal detail and has no bearing on the hardware description.  If
+> you need to know what a particular gpio number is then it should be
+> resolved by finding the device tree node; not by trying to fix a GPIO
+> controller to a particular number.
+
+Okay, now I think I understand.
+
+I'll try to solve the chip select pin addressing in the spi driver
+differently. Thank you guys!
+
+Wolfgang 
