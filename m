@@ -4,17 +4,18 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 07A55DDDFA
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 10:05:51 +1100 (EST)
-Date: Fri, 24 Oct 2008 16:04:57 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTPS id 9E103DDDED
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 10:09:14 +1100 (EST)
 From: Trent Piepho <tpiepho@freescale.com>
 To: linux-kernel@vger.kernel.org
-Subject: OpenFirmware GPIO LED driver
-Message-ID: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()
+Date: Fri, 24 Oct 2008 16:08:58 -0700
+Message-Id: <1224889741-4167-1-git-send-email-tpiepho@freescale.com>
+In-Reply-To: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
 Cc: linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
-	Sean MacLennan <smaclennan@pikatech.com>
+	Sean MacLennan <smaclennan@pikatech.com>,
+	Trent Piepho <tpiepho@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +25,181 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This series of patches adds support for OpenFirmware bindings for GPIO based
-LEDs.
+The device binding spec for OF GPIOs defines a flags field, but there is
+currently no way to get it.  This patch adds a parameter to of_get_gpio()
+where the flags will be returned if non-NULL.  of_get_gpio() in turn passes
+the parameter to the of_gpio_chip's xlate method, which can extract any
+flags present from the gpio_spec.
 
-I last posted a version of this in July but discussion of the OF binding
-details didn't seem to be going anywhere.
+The default (and currently only) of_gpio_chip xlate method,
+of_gpio_simple_xlate(), is modified to do this.
 
-I've since been contacted by some people who are actually using the previous
-patches and have been motivated to try again.
+Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+---
+ drivers/mtd/nand/fsl_upm.c              |    2 +-
+ drivers/net/fs_enet/fs_enet-main.c      |    2 +-
+ drivers/net/phy/mdio-ofgpio.c           |    4 ++--
+ drivers/of/gpio.c                       |   13 ++++++++++---
+ drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+ include/linux/of_gpio.h                 |   17 +++++++++++++----
+ 6 files changed, 28 insertions(+), 12 deletions(-)
 
-All the users of this code are satisfied with the current version and it does
-everything they need it to do.
-
-The first patch extends the of_get_gpio() function to provide the gpio flags.
-
-The way this already works (i.e., this is not something I'm adding, it's
-what's already there) is that the OF gpio specifier is an opaque sequence of
-words.  The GPIO controller driver (of which only one currently exists)
-provides an ->xlate() method that turns this into a Linux gpiolib gpio number. 
-All current gpio controllers have flags in their gpio specifier, but there is
-no way to get them.  So I extend the xlate method to also produce the flags in
-a Linux format, the same way it produces a Linux gpio number.
-
-The second patch adds OF bindings to the gpio-leds driver.  The existing code
-is refactored so that almost all of the common code is shared between the two
-binding methods.  Either or both bindings can be selected via Kconfig.  The
-bindings do have one "linux," property, but no one has been able to come up
-with something close to workable that avoids this and still satisfies the
-*requirement* that the default trigger be settable from the OF bindings.
-
-The second and third patches add some additional capabilities for gpio leds
-that some users need.
-
-One is to have a LED start in the on state when it's made known to Linux. 
-There is already a "default-on" trigger that does this, but it produces a
-glitch where an LED that is already on will turn off then back on.  My (tiny)
-patch avoids this problem.
-
-The next lets an LED stay, without glitches, in whatever state it was already
-in when it's made known to Linux.  It may have been put into this state by the
-BIOS, firmware, bootloader, or the hardware itself.
+diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
+index 024e3ff..a25d962 100644
+--- a/drivers/mtd/nand/fsl_upm.c
++++ b/drivers/mtd/nand/fsl_upm.c
+@@ -218,7 +218,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 	}
+ 	fun->upm_cmd_offset = *prop;
+ 
+-	fun->rnb_gpio = of_get_gpio(ofdev->node, 0);
++	fun->rnb_gpio = of_get_gpio(ofdev->node, 0, NULL);
+ 	if (fun->rnb_gpio >= 0) {
+ 		ret = gpio_request(fun->rnb_gpio, ofdev->dev.bus_id);
+ 		if (ret) {
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index cb51c1f..5a3c7ee 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -994,7 +994,7 @@ static int __devinit find_phy(struct device_node *np,
+ 		goto out_put_phy;
+ 	}
+ 
+-	bus_id = of_get_gpio(mdionode, 0);
++	bus_id = of_get_gpio(mdionode, 0, NULL);
+ 	if (bus_id < 0) {
+ 		struct resource res;
+ 		ret = of_address_to_resource(mdionode, 0, &res);
+diff --git a/drivers/net/phy/mdio-ofgpio.c b/drivers/net/phy/mdio-ofgpio.c
+index 2ff9775..e3757c6 100644
+--- a/drivers/net/phy/mdio-ofgpio.c
++++ b/drivers/net/phy/mdio-ofgpio.c
+@@ -78,8 +78,8 @@ static int __devinit mdio_ofgpio_bitbang_init(struct mii_bus *bus,
+ {
+ 	struct mdio_gpio_info *bitbang = bus->priv;
+ 
+-	bitbang->mdc = of_get_gpio(np, 0);
+-	bitbang->mdio = of_get_gpio(np, 1);
++	bitbang->mdc = of_get_gpio(np, 0, NULL);
++	bitbang->mdio = of_get_gpio(np, 1, NULL);
+ 
+ 	if (bitbang->mdc < 0 || bitbang->mdio < 0)
+ 		return -ENODEV;
+diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
+index 7cd7301..2123517 100644
+--- a/drivers/of/gpio.c
++++ b/drivers/of/gpio.c
+@@ -22,11 +22,12 @@
+  * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
+  * @np:		device node to get GPIO from
+  * @index:	index of the GPIO
++ * @flags:	GPIO's flags are returned here if non-NULL
+  *
+  * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
+  * value on the error condition.
+  */
+-int of_get_gpio(struct device_node *np, int index)
++int of_get_gpio(struct device_node *np, int index, unsigned int *flags)
+ {
+ 	int ret;
+ 	struct device_node *gc;
+@@ -59,7 +60,9 @@ int of_get_gpio(struct device_node *np, int index)
+ 		goto err1;
+ 	}
+ 
+-	ret = of_gc->xlate(of_gc, np, gpio_spec);
++	if (flags)
++		*flags = 0;
++	ret = of_gc->xlate(of_gc, np, gpio_spec, flags);
+ 	if (ret < 0)
+ 		goto err1;
+ 
+@@ -77,19 +80,23 @@ EXPORT_SYMBOL(of_get_gpio);
+  * @of_gc:	pointer to the of_gpio_chip structure
+  * @np:		device node of the GPIO chip
+  * @gpio_spec:	gpio specifier as found in the device tree
++ * @flags:	if non-NUll flags are returned here
+  *
+  * This is simple translation function, suitable for the most 1:1 mapped
+  * gpio chips. This function performs only one sanity check: whether gpio
+  * is less than ngpios (that is specified in the gpio_chip).
+  */
+ int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
+-			 const void *gpio_spec)
++			 const void *gpio_spec, unsigned int *flags)
+ {
+ 	const u32 *gpio = gpio_spec;
+ 
+ 	if (*gpio > of_gc->gc.ngpio)
+ 		return -EINVAL;
+ 
++	if (flags && of_gc->gpio_cells > 1)
++		*flags = gpio[1];
++
+ 	return *gpio;
+ }
+ EXPORT_SYMBOL(of_gpio_simple_xlate);
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index bde4b4b..7835cd4 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -1094,7 +1094,7 @@ static int cpm_uart_init_port(struct device_node *np,
+ 	}
+ 
+ 	for (i = 0; i < NUM_GPIOS; i++)
+-		pinfo->gpios[i] = of_get_gpio(np, i);
++		pinfo->gpios[i] = of_get_gpio(np, i, NULL);
+ 
+ 	return cpm_uart_request_port(&pinfo->port);
+ 
+diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
+index 67db101..0d332bf 100644
+--- a/include/linux/of_gpio.h
++++ b/include/linux/of_gpio.h
+@@ -26,7 +26,7 @@ struct of_gpio_chip {
+ 	struct gpio_chip gc;
+ 	int gpio_cells;
+ 	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
+-		     const void *gpio_spec);
++		     const void *gpio_spec, unsigned int *flags);
+ };
+ 
+ static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
+@@ -35,6 +35,14 @@ static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
+ }
+ 
+ /*
++ * Flags as returned by OF GPIO chip's xlate function.
++ * These do not need to be the same as the flags in the GPIO specifier in the
++ * OF device tree, but it's convenient if they are.  The mm chip OF GPIO
++ * driver works this way.
++ */
++#define OF_GPIO_ACTIVE_LOW	1
++
++/*
+  * OF GPIO chip for memory mapped banks
+  */
+ struct of_mm_gpio_chip {
+@@ -50,16 +58,17 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
+ 	return container_of(of_gc, struct of_mm_gpio_chip, of_gc);
+ }
+ 
+-extern int of_get_gpio(struct device_node *np, int index);
++extern int of_get_gpio(struct device_node *np, int index, unsigned int *flags);
+ extern int of_mm_gpiochip_add(struct device_node *np,
+ 			      struct of_mm_gpio_chip *mm_gc);
+ extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
+ 				struct device_node *np,
+-				const void *gpio_spec);
++				const void *gpio_spec, unsigned int *flags);
+ #else
+ 
+ /* Drivers may not strictly depend on the GPIO support, so let them link. */
+-static inline int of_get_gpio(struct device_node *np, int index)
++static inline int of_get_gpio(struct device_node *np, int index,
++			      unsigned int *flags)
+ {
+ 	return -ENOSYS;
+ }
+-- 
+1.5.4.3
