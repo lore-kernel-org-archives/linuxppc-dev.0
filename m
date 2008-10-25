@@ -1,22 +1,34 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.229])
-	by ozlabs.org (Postfix) with ESMTP id C5036DDE06
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 10:59:41 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so1040365rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 16:59:40 -0700 (PDT)
-Message-ID: <fa686aa40810241659n7aa71870x6da2819b308ee5af@mail.gmail.com>
-Date: Fri, 24 Oct 2008 17:59:40 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Trent Piepho" <tpiepho@freescale.com>
-Subject: Re: [PATCH 3/4] leds: Add option to have GPIO LEDs start on
-In-Reply-To: <1224889741-4167-3-git-send-email-tpiepho@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
-	<1224889741-4167-3-git-send-email-tpiepho@freescale.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Richard Purdie <rpurdie@rpsys.net>,
-	Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <pbadari@gmail.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B2A3CDDE0D
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 11:01:46 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e8.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id m9ONwQm0023170
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 19:58:26 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9P01h83088598
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 20:01:43 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9P01dF9021215
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 20:01:39 -0400
+Subject: Re: 2.6.27-git7 compile error (ppc)
+From: Badari Pulavarty <pbadari@gmail.com>
+To: Chris Friesen <cfriesen@nortel.com>
+In-Reply-To: <49025275.4050102@nortel.com>
+References: <1224265634.15582.3.camel@badari-desktop>
+	<1224267073.15582.8.camel@badari-desktop>
+	<FEFFA236-AA3B-49F1-AED2-E42950B87BD7@kernel.crashing.org>
+	<200810250054.05849.rjw@sisk.pl>  <49025275.4050102@nortel.com>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 17:02:29 -0700
+Message-Id: <1224892949.16003.30.camel@badari-desktop>
+Mime-Version: 1.0
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,113 +38,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 24, 2008 at 5:09 PM, Trent Piepho <tpiepho@freescale.com> wrote:
-> Yes, there is the "default-on" trigger but there are problems with that.
-[...]
-> The platform device binding gains a field in the platform data "default_state"
-> that controls this.  The OpenFirmware binding uses a property named
-> "default-state" that can be set to "on" or "off".  The default the property
-> isn't present is off.
+On Fri, 2008-10-24 at 16:55 -0600, Chris Friesen wrote:
+> Rafael J. Wysocki wrote:
+> > On Friday, 17 of October 2008, Kumar Gala wrote:
+> 
+> >> I've got a patch that seems to address this for me building w/ 
+> >> CONFIG_RELOCATABLE on ppc32/85xx.
+> > 
+> > Has that been fixed in 2.6.27 and/or current mainline?
+> 
+> I think CONFIG_RELOCATABLE was introduced post 2.6.27, so shouldn't be a 
+> problem in that version.
+> 
+> Chris
 
-This look much preferred to setting the the default-on trigger.  Why
-not remove the default-on trigger entirely from the binding
-documentation so there is no confusion?
+Not quite true. CONFIG_RELOCATABLE is present in 2.6.27, but the changes
+to types.h happend post 2.6.27 - so there is no problem with 2.6.27.
 
-Also, my preference would be an empty "led-default-on" property
-instead of "default-state" with a value that needs to be parsed, but
-I'm not concerned about it enough to argue.
+2.6.27-git11 compiles fine.
 
-Otherwise:
-
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-
->
-> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> ---
->  Documentation/powerpc/dts-bindings/gpio/led.txt |    7 +++++++
->  drivers/leds/leds-gpio.c                        |    8 ++++++--
->  include/linux/leds.h                            |    1 +
->  3 files changed, 14 insertions(+), 2 deletions(-)
->
-> diff --git a/Documentation/powerpc/dts-bindings/gpio/led.txt b/Documentation/powerpc/dts-bindings/gpio/led.txt
-> index 9f969c2..544ded7 100644
-> --- a/Documentation/powerpc/dts-bindings/gpio/led.txt
-> +++ b/Documentation/powerpc/dts-bindings/gpio/led.txt
-> @@ -20,6 +20,11 @@ LED sub-node properties:
->     "heartbeat" - LED "double" flashes at a load average based rate
->     "ide-disk" - LED indicates disk activity
->     "timer" - LED flashes at a fixed, configurable rate
-> +- default-state:  (optional) The initial state of the LED.  Valid
-> +  values are "on" and "off".  If the LED is already on or off and the
-> +  default-state property is set the to same value, then no glitch
-> +  should be produced where the LED momentarily turns off (or on).
-> +  The default is off if this property is not present.
->
->  Examples:
->
-> @@ -36,8 +41,10 @@ run-control {
->        compatible = "gpio-leds";
->        red {
->                gpios = <&mpc8572 6 0>;
-> +               default-state = "off";
->        };
->        green {
->                gpios = <&mpc8572 7 0>;
-> +               default-state = "on";
->        };
->  }
-> diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
-> index f41b841..0dbad87 100644
-> --- a/drivers/leds/leds-gpio.c
-> +++ b/drivers/leds/leds-gpio.c
-> @@ -92,9 +92,10 @@ static int __devinit create_gpio_led(const struct gpio_led *template,
->                led_dat->cdev.blink_set = gpio_blink_set;
->        }
->        led_dat->cdev.brightness_set = gpio_led_set;
-> -       led_dat->cdev.brightness = LED_OFF;
-> +       led_dat->cdev.brightness = template->default_state ? LED_FULL : LED_OFF;
->
-> -       gpio_direction_output(led_dat->gpio, led_dat->active_low);
-> +       gpio_direction_output(led_dat->gpio,
-> +                             led_dat->active_low ^ template->default_state);
->
->        INIT_WORK(&led_dat->work, gpio_led_work);
->
-> @@ -256,12 +257,15 @@ static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
->        memset(&led, 0, sizeof(led));
->        for_each_child_of_node(np, child) {
->                unsigned int flags;
-> +               const char *state;
->
->                led.gpio = of_get_gpio(child, 0, &flags);
->                led.active_low = flags & OF_GPIO_ACTIVE_LOW;
->                led.name = of_get_property(child, "label", NULL) ? : child->name;
->                led.default_trigger =
->                        of_get_property(child, "linux,default-trigger", NULL);
-> +               state = of_get_property(child, "default-state", NULL);
-> +               led.default_state = state && !strcmp(state, "on");
->
->                ret = create_gpio_led(&led, &pdata->led_data[pdata->num_leds++],
->                                      &ofdev->dev, NULL);
-> diff --git a/include/linux/leds.h b/include/linux/leds.h
-> index d3a73f5..caa3987 100644
-> --- a/include/linux/leds.h
-> +++ b/include/linux/leds.h
-> @@ -138,6 +138,7 @@ struct gpio_led {
->        const char *default_trigger;
->        unsigned        gpio;
->        u8              active_low;
-> +       u8              default_state;
->  };
->
->  struct gpio_led_platform_data {
-> --
-> 1.5.4.3
->
->
-
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Thanks,
+Badari
