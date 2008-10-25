@@ -1,22 +1,21 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zrtps0kn.nortel.com (zrtps0kn.nortel.com [47.140.192.55])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id B207BDDDE6
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 16:43:33 +1100 (EST)
-Message-ID: <4902B1D8.8070800@nortel.com>
-Date: Fri, 24 Oct 2008 23:42:48 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from po-out-1718.google.com (po-out-1718.google.com [72.14.252.159])
+	by ozlabs.org (Postfix) with ESMTP id 8E571DDDE0
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 17:07:08 +1100 (EST)
+Received: by po-out-1718.google.com with SMTP id c31so1249367poi.4
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 23:07:07 -0700 (PDT)
+Message-ID: <fa686aa40810242307o31bdd128x4ea38627f504aa6e@mail.gmail.com>
+Date: Sat, 25 Oct 2008 00:07:06 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] [powerpc] GPIO: Adding new Xilinx driver
+In-Reply-To: <20081024214159.GA15204@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: [BUG] oops in net_rx_action on 64-bit powerpc
-References: <F169D4F5E1F1974DBFAFABF47F60C10A069DFCEF@orsmsx507.amr.corp.intel.com>
-	<20081023.171614.72881694.davem@davemloft.net>	<49025C94.60406@nortel.com>
-	<20081024.164128.113131091.davem@davemloft.net>
-In-Reply-To: <20081024.164128.113131091.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, romieu@fr.zoreil.com, jesse.brandeburg@intel.com,
-	netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20081024195908.7D1A1142806C@mail74-wa4.bigfish.com>
+	<20081024214159.GA15204@oksana.dev.rtsoft.ru>
+Cc: Kiran Sutariya <kirans@xilinx.com>, linuxppc-dev@ozlabs.org,
+	John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Miller wrote:
-> From: "Chris Friesen" <cfriesen@nortel.com>
-> Date: Fri, 24 Oct 2008 17:39:00 -0600
-> 
->> So...it would appear that the NAPI code is somehow buggy, and
->> 6ba33ac should probably be reverted until the problem is found and
->> fixed.
-> 
-> No I think the problem is simple enough that someone should study the
-> ->poll() routine quickly and audit it's return values.
+On Fri, Oct 24, 2008 at 3:41 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Fri, Oct 24, 2008 at 12:59:00PM -0700, John Linn wrote:
+>> diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+>> index 7f2ee27..f6b0da8 100644
+>> --- a/drivers/gpio/Kconfig
+>> +++ b/drivers/gpio/Kconfig
+>> @@ -65,6 +65,14 @@ config GPIO_SYSFS
+>>
+>>  # put expanders in the right section, in alphabetical order
+>>
+>> +comment "Memory mapped GPIO expanders:"
+>> +
+>> +config GPIO_XILINX
+>> +     bool "Xilinx GPIO support"
+>> +     depends on OF
+>
+> I persume that the driver wasn't build-tested on SPARC, so I'd recommend
+> to change the depends to PPC_OF. Plus, the driver should also select
+> GENERIC_GPIO and ARCH_REQUIRE_GPIOLIB. (Later we'll switch to
+> ARCH_WANT_OPTIONAL_GPIOLIB for whole PPC.)
 
-Assuming that amd8111e_rx_poll() is the proper routine, there is only one exit 
-point, and it returns "num_rx_pkt".  This variable is initialized to zero and 
-increments for each packet sent up the stack.
+ARCH_WANT_OPTIONAL_GPIOLIB seems to already be set for all of powerpc
+(arch/powerpc/Kconfig, line 113).
 
-Chris
+But, since this is a cross-arch driver living in drivers/gpio the
+dependencies work the other way around.  This driver cannot be
+selected unless GPIOLIB is turned on.
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
