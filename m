@@ -1,21 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from po-out-1718.google.com (po-out-1718.google.com [72.14.252.159])
-	by ozlabs.org (Postfix) with ESMTP id 8E571DDDE0
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 17:07:08 +1100 (EST)
-Received: by po-out-1718.google.com with SMTP id c31so1249367poi.4
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Oct 2008 23:07:07 -0700 (PDT)
-Message-ID: <fa686aa40810242307o31bdd128x4ea38627f504aa6e@mail.gmail.com>
-Date: Sat, 25 Oct 2008 00:07:06 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] [powerpc] GPIO: Adding new Xilinx driver
-In-Reply-To: <20081024214159.GA15204@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20081024195908.7D1A1142806C@mail74-wa4.bigfish.com>
-	<20081024214159.GA15204@oksana.dev.rtsoft.ru>
-Cc: Kiran Sutariya <kirans@xilinx.com>, linuxppc-dev@ozlabs.org,
-	John Linn <john.linn@xilinx.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id DC7DCDDDE7
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 18:17:26 +1100 (EST)
+Date: Sat, 25 Oct 2008 00:17:03 -0700 (PDT)
+Message-Id: <20081025.001703.261277154.davem@davemloft.net>
+To: cfriesen@nortel.com
+Subject: Re: [BUG] oops in net_rx_action on 64-bit powerpc
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4902B1D8.8070800@nortel.com>
+References: <49025C94.60406@nortel.com>
+	<20081024.164128.113131091.davem@davemloft.net>
+	<4902B1D8.8070800@nortel.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jesse.brandeburg@intel.com,
+	romieu@fr.zoreil.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 24, 2008 at 3:41 PM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> On Fri, Oct 24, 2008 at 12:59:00PM -0700, John Linn wrote:
->> diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
->> index 7f2ee27..f6b0da8 100644
->> --- a/drivers/gpio/Kconfig
->> +++ b/drivers/gpio/Kconfig
->> @@ -65,6 +65,14 @@ config GPIO_SYSFS
->>
->>  # put expanders in the right section, in alphabetical order
->>
->> +comment "Memory mapped GPIO expanders:"
->> +
->> +config GPIO_XILINX
->> +     bool "Xilinx GPIO support"
->> +     depends on OF
+From: "Chris Friesen" <cfriesen@nortel.com>
+Date: Fri, 24 Oct 2008 23:42:48 -0600
+
+> David Miller wrote:
+> > From: "Chris Friesen" <cfriesen@nortel.com>
+> > Date: Fri, 24 Oct 2008 17:39:00 -0600
+> > 
+> >> So...it would appear that the NAPI code is somehow buggy, and
+> >> 6ba33ac should probably be reverted until the problem is found and
+> >> fixed.
+> > No I think the problem is simple enough that someone should study the
+> > ->poll() routine quickly and audit it's return values.
 >
-> I persume that the driver wasn't build-tested on SPARC, so I'd recommend
-> to change the depends to PPC_OF. Plus, the driver should also select
-> GENERIC_GPIO and ARCH_REQUIRE_GPIOLIB. (Later we'll switch to
-> ARCH_WANT_OPTIONAL_GPIOLIB for whole PPC.)
+> Assuming that amd8111e_rx_poll() is the proper routine, there is
+> only one exit point, and it returns "num_rx_pkt".  This variable is
+> initialized to zero and increments for each packet sent up the
+> stack.
 
-ARCH_WANT_OPTIONAL_GPIOLIB seems to already be set for all of powerpc
-(arch/powerpc/Kconfig, line 113).
+The problematic case in this routine seem to be when the driver
+processes exactly "budget" number of packets.
 
-But, since this is a cross-arch driver living in drivers/gpio the
-dependencies work the other way around.  This driver cannot be
-selected unless GPIOLIB is turned on.
+In this case it should not call __netif_rx_complete(), it should instead
+use the rx_not_empty label.
 
-g.
+Probably the simplest fix is to get rid of the rx_not_empty label and
+protect the entire:
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+	/* Receive descriptor is empty now */
+	spin_lock_irqsave(&lp->lock, flags);
+	__netif_rx_complete(dev, napi);
+	writel(VAL0|RINTEN0, mmio + INTEN0);
+	writel(VAL2 | RDMD0, mmio + CMD0);
+	spin_unlock_irqrestore(&lp->lock, flags);
+
+code block with a test such as:
+
+	if (rx_pkt_limit > 0)
+
+(yes, greater than zero, not >= 0)
+
+then replace the rx_not_empty goto with a simple break.
