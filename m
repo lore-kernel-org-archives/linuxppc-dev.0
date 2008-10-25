@@ -1,20 +1,22 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id CCA4ADDDEF
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Oct 2008 05:13:11 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Wolfgang Ocker <weo@reccoware.de>
-Subject: Re: [PATCH v2] spi: Add PPC4xx SPI driver
-Date: Sat, 25 Oct 2008 20:12:51 +0200
-References: <1224909004-18756-1-git-send-email-sr@denx.de>
-	<20081025113944.GA11828@zod.rchland.ibm.com>
-	<1224936384.4879.13.camel@galileo.recco.de>
-In-Reply-To: <1224936384.4879.13.camel@galileo.recco.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200810252012.51920.sr@denx.de>
-Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 77EFBDDD0C
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Oct 2008 08:34:04 +1100 (EST)
+Subject: Re: [PATCH] genirq: Set initial default irq affinity to just CPU0
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20081024.161813.193686281.davem@davemloft.net>
+References: <1224863858-7933-1-git-send-email-galak@kernel.crashing.org>
+	<20081024.161813.193686281.davem@davemloft.net>
+Content-Type: text/plain
+Date: Sun, 26 Oct 2008 08:33:09 +1100
+Message-Id: <1224970389.7654.473.camel@pasglop>
+Mime-Version: 1.0
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	torvalds@osdl.org, maxk@qualcomm.com, tglx@linutronix.de
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 25 October 2008, Wolfgang Ocker wrote:
-> > >> This adds a SPI driver for the SPI controller found in the IBM/AMCC
-> > >> 4xx PowerPC's.
-> > >>
-> > >> Signed-off-by: Stefan Roese <sr@denx.de>
-> > >
-> > >Signed-off-by: Wolfgang Ocker <weo@reccoware.de>
-> >
-> > Unless you actually wrote code or it's going through a git
-> > tree of yours or you sent the patch out for someone, I think
-> > you mean Acked-by.
->
-> I contributed code.
+On Fri, 2008-10-24 at 16:18 -0700, David Miller wrote:
+> From: Kumar Gala <galak@kernel.crashing.org>
+> Date: Fri, 24 Oct 2008 10:57:38 -0500
+> 
+> > Commit 18404756765c713a0be4eb1082920c04822ce588 introduced a regression
+> > on a subset of SMP based PPC systems whose interrupt controller only
+> > allow setting an irq to a single processor.  The previous behavior
+> > was only CPU0 was initially setup to get interrupts.  Revert back
+> > to that behavior.
+> > 
+> > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> 
+> I really don't remember getting all of my interrupts only on cpu 0
+> on sparc64 before any of these changes.  I therefore find all of
+> this quite mysterious. :-)
 
-Yes. I probably should have communicated better with Wolfgang and added his 
-SOB line before sending it to the list.
+Well, I don't know how you do it but on powerpc, we explicitely fill the
+affinity masks at boot time when we can spread interrupts... Maybe we
+should change it the other way around and limit the mask when we can't ?
+It's hard to tell for sure at this stage.
 
-Best regards,
-Stefan
+Ben.
