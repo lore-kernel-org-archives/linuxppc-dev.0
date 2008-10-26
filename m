@@ -1,21 +1,20 @@
-Return-Path: <kevdig@hypersurf.com>
-Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
-	by ozlabs.org (Postfix) with ESMTP id 9C330DDDFF
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Oct 2008 09:57:22 +1100 (EST)
-Received: from [192.168.1.37] (66-81-71-32.bayarea.dialup.o1.com [66.81.71.32])
-	(authenticated bits=0)
-	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id m9PMtsrh081794
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Oct 2008 15:57:14 -0700 (PDT)
-Message-ID: <4903A37A.50607@hypersurf.com>
-Date: Sat, 25 Oct 2008 15:53:46 -0700
-From: Kevin Diggs <kevdig@hypersurf.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 88C6CDDDFF
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Oct 2008 15:04:36 +1100 (EST)
+Date: Sat, 25 Oct 2008 21:04:12 -0700 (PDT)
+Message-Id: <20081025.210412.206011121.davem@davemloft.net>
+To: benh@kernel.crashing.org
 Subject: Re: [PATCH] genirq: Set initial default irq affinity to just CPU0
-References: <1224863858-7933-1-git-send-email-galak@kernel.crashing.org>	<20081024.161813.193686281.davem@davemloft.net>
-	<1224970389.7654.473.camel@pasglop>
+From: David Miller <davem@davemloft.net>
 In-Reply-To: <1224970389.7654.473.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <1224863858-7933-1-git-send-email-galak@kernel.crashing.org>
+	<20081024.161813.193686281.davem@davemloft.net>
+	<1224970389.7654.473.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	torvalds@osdl.org, maxk@qualcomm.com, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Fri, 2008-10-24 at 16:18 -0700, David Miller wrote:
-> 
->>From: Kumar Gala <galak@kernel.crashing.org>
->>Date: Fri, 24 Oct 2008 10:57:38 -0500
->>
->>
->>>Commit 18404756765c713a0be4eb1082920c04822ce588 introduced a regression
->>>on a subset of SMP based PPC systems whose interrupt controller only
->>>allow setting an irq to a single processor.  The previous behavior
->>>was only CPU0 was initially setup to get interrupts.  Revert back
->>>to that behavior.
->>>
->>>Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->>
->>I really don't remember getting all of my interrupts only on cpu 0
->>on sparc64 before any of these changes.  I therefore find all of
->>this quite mysterious. :-)
-> 
-> 
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Sun, 26 Oct 2008 08:33:09 +1100
+
 > Well, I don't know how you do it but on powerpc, we explicitely fill the
 > affinity masks at boot time when we can spread interrupts... Maybe we
 > should change it the other way around and limit the mask when we can't ?
 > It's hard to tell for sure at this stage.
-> 
-> Ben.
-> 
-What does this all mean to my GigE (dual 1.1 GHz 7455s)? Is this
-thing supposed to be able to spread irq between its cpus?
 
-kevin
+On sparc64 we look at the cpu mask configured for the interrupt and do
+one of two things:
+
+1) If all bits are set, we round robin assign a cpu at IRQ enable time.
+
+2) Else we pick the first bit set in the mask.
+
+One modification I want to make is to make case #1 NUMA aware.
+
+But back to my original wonder, since I've always tipped off of this
+generic IRQ layer cpu mask, when was it ever defaulting to zero
+and causing the behvaior your powerpc guys actually want? :-)
