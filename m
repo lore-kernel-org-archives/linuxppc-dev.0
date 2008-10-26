@@ -1,22 +1,24 @@
 Return-Path: <neko@genesi-usa.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.236])
-	by ozlabs.org (Postfix) with ESMTP id D6D86DDE09
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 08:20:16 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id c48so436301wra.1
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Oct 2008 14:20:15 -0700 (PDT)
-Message-ID: <4904DD76.7070706@genesi-usa.com>
-Date: Sun, 26 Oct 2008 16:13:26 -0500
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id 39250DDD04
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 08:39:24 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so458342ywh.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Oct 2008 14:39:23 -0700 (PDT)
+Message-ID: <4904E38A.9070005@genesi-usa.com>
+Date: Sun, 26 Oct 2008 16:39:22 -0500
 From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-To: Mitch Bradley <wmb@firmworks.com>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Subject: Re: GPIO - marking individual pins (not) available in device tree
-References: <4900ED81.3040202@genesi-usa.com> <4900F90B.80703@firmworks.com>
-	<4901032F.3090805@genesi-usa.com> <49011C42.2020101@firmworks.com>
-	<49024646.3050300@genesi-usa.com> <49025DE0.6070403@firmworks.com>
-In-Reply-To: <49025DE0.6070403@firmworks.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <4900ED81.3040202@genesi-usa.com>
+	<4900F90B.80703@firmworks.com><4901032F.3090805@genesi-usa.com>
+	<49011C42.2020101@firmworks.com> <49024646.3050300@genesi-usa.com>
+	<20081024222059.1835015F004D@mail181-va3.bigfish.com>
+In-Reply-To: <20081024222059.1835015F004D@mail181-va3.bigfish.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+Cc: Mitch Bradley <wmb@firmworks.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	devicetree-discuss list <devicetree-discuss@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,62 +31,84 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 
-Mitch Bradley wrote:
+Stephen Neuendorffer wrote:
+>> One thing I had a crazy dream about was a GUI-based device tree
+>> builder for platforms.
 > 
-> I don't use device_type much, if at all, anymore.  Generic name + 
-> compatible just works better than device_type + specific name.  When
- > I write code that has to find a node that is suitable for a given purpose,
- > I look for the existence of suitable methods and perhaps other properties.
- > I was just too hard to keep the list of device_type values properly
- > synchronized with all the possible things that you might want to infer
- > from that set of names.
+> Why is this crazy?  This is essentially what we do today with PowerPC
+> and Microblaze processors in Xilinx FPGAs.  Even for ASIC SOCs, there
+> are several commercial 'connect-your-IP on the bus' tools that could (if
+> SOC providers thought it was important) generate the 'canonical' device
+> tree automagically.
 
-The simple problem comes when you define a device_type for everything,
-I do agree it's best not to add any *MORE* that aren't in the IEEE1275
-or CHRP etc. bindings, but for those that still exist and are well
-defined (serial port probably the best, but network devices too) I
-think we should keep using them where possible and where relevant.
+Indeed I have to sit in front of Quartus all day at the moment and the
+BDF window, pin planner etc. and the constraints scripts for the megacores
+just seemed to me to be a great way to spit out a device tree without
+doing any real work.
 
-> device_type is one of those things that seemed like a good idea at the 
-> time, but didn't work out as well as I had hoped.
+> I think the real question is: if part of the device tree describes
+> 'hardware' (either in the SOC or on the board that, more or less,
+> doesn't change) and part represents 'hardware configuration' (e.g. My
+> board has my one-off hardware hanging off the gpio bank connected to the
+> 40 pin header), then how do we separate the two so that the hardware can
+> be in a canonical form separate from the configuration.
 
-I can imagine a scenario where you would want to perhaps have a serial
-port, where you want to say a) that is is a serial port, b) that it is
-for a specific purpose without creating some new standard or proprietary
-property set and c) tell the world what kind of serial port it is.
+Personally, I think that goes against the whole point of the device
+tree specification anyway. Or at least the greatest benefit - which is
+to allow hardware designers to present to software developers a
+reasonable description of what can and usually is an esoteric design
+decision (which port goes where and what undetectable hardware is
+used for X and Y) without exposing the software developer to the
+programming model of each individual device (contrast any other system
+where you might have a huge list of registers and positions, and use
+a rom monitor to manually poke at certain registers, and need the
+board schematics to get anywhere you can't read a chip name off the
+board to use)
 
-How about name = "debug" or "modem" or something else, which gives you
-a pretty name for what the port is for (and maybe matches the markings
-on the outside of a case) but the device_type would always be "serial",
-and compatible would give you "mpc5200b-psc-uart" or so. You can find
-all the serial ports, you can find the serial port that is assigned to
-the modem or debug (this may actually allow the driver to be informed
-not to do anything crazy - if you've ever connected a modem to a port
-that gets set up to output firmware debug data or whatever, you'll know
-sometimes it's kind of difficult to bring the modem back out of it's
-funk from being hammered with data for the duration of boot), and you
-know which driver to attach to it.
+The definition of the binding defines what every peripheral should
+look like if it's present - if the peripheral is multiplexed inside
+the chip, then you can just copy-paste one feature and not use the
+other. A difference in PHY for something is one thing you just can't
+detect sometimes; on different boards, this will be different, but
+it is all part of the hardware configuration, and not much to do with
+the hardware itself (if you have 12 serial controllers but USB and
+ethernet usage means you lose 5 of them to multiplexing, or a SerDes
+shared between PCI Express, SATA or RapidIO but only one can be
+active.. or a configurable clock module for internal devices which
+would have the same quirks as an interrupt controller.. or even an
+interrupt controller configured to cascade or slaved to something
+else)
 
-I personally think while deprecate and shouldn't be used for new
-definitions, the old ones work really well for devices it encompasses.
-On the MPC8641D board I have here there are 4 network ports; in the
-device tree they're all called ethernet, device_type "network",
-compatible "gianfar" and have a model "TSEC" - in a real OF
-implementation you shouldn't have to check for a "ping" method to
-make sure it's ACTUALLY a network device :D
+> there are even three device tree fragments: one provided by an SOC
+> provider, one by a board provider, and one by the user, which can all be
+> nicely separated once the great device tree update happens... :)
 
-(I'd advocate all those ports being renamed to eTSEC{n} since that
-matches the board documentation, for example, and while cell-index
-tells you which port is is on the back of the board, this is not
-user friendly (a simple "boot eTSEC0 tftpboot/kernel" is more
-intuitive than cd /boot/ethernet@24000, .properties, backing out
-if it wasn't the one you were looking for.. or assuming that the
-lowest numbered "reg" is the first port on the back of the chassis
-and finding out that is not how it's connected :)
+If you have an SoC provider device tree fragment does it entertain
+every possibility in the chip, or just the most common? Does the
+board provider dt fragment then allow "disable" certain features in
+the previous fragments? See examples above where defining 12 serial ports
+on the SoC dts AND usb and ethernet functionality, just can't work,
+and the board configuration of these devices is entirely relevant.
 
-I'm really big on descriptive device trees that I can just browse
-and know what I am looking at without delving. There is already
-too much needless cross-referencing in Linux as it is.
+Updating a device tree at the user end is very useful but I do not
+think that there is any fundamental difference between the hardware
+itself and the board configuration from a DT point of view, except
+that you need a binding or an example (but not a canonical device
+tree excerpt) to base your final tree from. What is inside the SoC
+rarely matches what is escaped from the chip, so a premade
+fragment you could just load becomes rather redundant. Just a
+useful reference would be better and that's what we have already.
+
+As for user fragments we have that on OpenFirmware already* and
+the idea that we may actually standardize on this kind of stuff
+sort of excites me as it validates the point to remove all the
+device tree fixups from Pegasos and Efika in prom_init.c and use
+something a little less of the order of "you have to recompile
+your kernel every time". Be it a dtb fragment for U-Boot or a
+Forth script for real OF, this is such a great idea, I don't
+know why it's not already there :)
+
+* http://www.powerdeveloper.org/platforms/efika/devicetree
 
 -- 
 Matt Sealey <matt@genesi-usa.com>
