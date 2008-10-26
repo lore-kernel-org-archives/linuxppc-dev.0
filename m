@@ -2,22 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6E69ADDDF8
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Oct 2008 17:34:00 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 2EB06DDDE0
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Oct 2008 17:48:58 +1100 (EST)
 Subject: Re: [PATCH] genirq: Set initial default irq affinity to just CPU0
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20081025.210412.206011121.davem@davemloft.net>
+To: Kevin Diggs <kevdig@hypersurf.com>
+In-Reply-To: <4903A37A.50607@hypersurf.com>
 References: <1224863858-7933-1-git-send-email-galak@kernel.crashing.org>
 	<20081024.161813.193686281.davem@davemloft.net>
-	<1224970389.7654.473.camel@pasglop>
-	<20081025.210412.206011121.davem@davemloft.net>
+	<1224970389.7654.473.camel@pasglop>  <4903A37A.50607@hypersurf.com>
 Content-Type: text/plain
-Date: Sun, 26 Oct 2008 17:33:35 +1100
-Message-Id: <1225002815.7654.487.camel@pasglop>
+Date: Sun, 26 Oct 2008 17:48:43 +1100
+Message-Id: <1225003723.7654.490.camel@pasglop>
 Mime-Version: 1.0
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	torvalds@osdl.org, maxk@qualcomm.com, tglx@linutronix.de
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -28,44 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2008-10-25 at 21:04 -0700, David Miller wrote:
-> But back to my original wonder, since I've always tipped off of this
-> generic IRQ layer cpu mask, when was it ever defaulting to zero
-> and causing the behvaior your powerpc guys actually want? :-)
 
-Well, I'm not sure what Kumar wants. Most powerpc SMP setups actually
-want to spread interrupts to all CPUs, and those who can't tend to just
-not implement set_affinity... So Kumar must have a special case of MPIC
-usage here on FSL platforms.
+> What does this all mean to my GigE (dual 1.1 GHz 7455s)? Is this
+> thing supposed to be able to spread irq between its cpus?
 
-In any case, the platform limitations should be dealt with there or the
-user could break it by manipulating affinity via /proc anyway.
+Depends on the interrupt controller. I don't know that machine
+but for example the Apple Dual G5's use an MPIC that can spread
+based on an internal HW round robin scheme. This isn't always
+the best idea tho for cache reasons... depends if an at what level
+your caches are shared between CPUs.
 
-By yeah, I do expect default affinity to be all CPUs and in fact, I even
-have an -OLD- comment in the code that says
-
- 	/* let the mpic know we want intrs. default affinitya is 0xffffffff ...
-
-Now, I've tried to track that down but it's hard because the generic code
-seem to have changed in many ways around affinity handling...
-
-So it looks like nowadays, the generic setup_irq() will call
-irq_select_affinity() when an interrupt is first requested. Unless
-you set CONFIG_AUTO_IRQ_AFFINITY and implement your own
-irq_select_affinity(), thus, you will get the default one which copies
-the content of this global irq_default_affinity to the interrupt.
-
-However it does that _after_ your IRQ startup() has been called
-(yes, this is very fishy), and so after you did your irq_choose_cpu()...
-
-This is all very messy, along with hooks for balancing and other confusing
-stuff that I suspect keeps changing. I'll have to spend more time next
-week to sort out what exactly is happening on powerpc and whether we
-get our interrupts spread or not...
-
-That's the downside of having more generic irq code I suppose: now people
-keep rewriting half of the generic code with x86 exclusively in mind and
-we have to be extra careful :-)
-
-Cheers,
 Ben.
