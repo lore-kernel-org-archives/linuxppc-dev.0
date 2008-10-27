@@ -2,26 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6ED8DDDDEE
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 07:46:57 +1100 (EST)
-Message-Id: <4CC6D7AE-2970-47AE-8473-9013A613F837@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 933C2DDE1D
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 07:47:02 +1100 (EST)
+Message-Id: <6F732DEE-4F04-4A9C-A607-56F47B1F96C0@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1225139236.8004.21.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20081027.124922.116478297.davem@davemloft.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
 Subject: Re: [PATCH] genirq: Set initial default irq affinity to just CPU0
-Date: Mon, 27 Oct 2008 15:45:59 -0500
-References: <1224863858-7933-1-git-send-email-galak@kernel.crashing.org>
-	<20081024.161813.193686281.davem@davemloft.net>
-	<1224970389.7654.473.camel@pasglop>
-	<20081025.210412.206011121.davem@davemloft.net>
-	<1225002815.7654.487.camel@pasglop>
-	<8440180C-A3B1-4436-9CDF-C6BA9A01F8CD@kernel.crashing.org>
-	<1225139236.8004.21.camel@pasglop>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	torvalds@osdl.org, maxk@qualcomm.com, tglx@linutronix.de,
-	David Miller <davem@davemloft.net>
+Date: Mon, 27 Oct 2008 15:46:49 -0500
+References: <4905FC15.3020702@nortel.com>
+	<20081027.112823.178324048.davem@davemloft.net>
+	<B6F01D86-7B36-40E8-9440-CA371B08B1C8@kernel.crashing.org>
+	<20081027.124922.116478297.davem@davemloft.net>
+Cc: kevdig@hypersurf.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,16 +27,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 27, 2008, at 3:27 PM, Benjamin Herrenschmidt wrote:
+On Oct 27, 2008, at 2:49 PM, David Miller wrote:
 
-> On Mon, 2008-10-27 at 08:43 -0500, Kumar Gala wrote:
->>
->> While we have the comment the code appears not to really follow it.
->> We appear to write 1 << hard_smp_processor_id().
+> From: Kumar Gala <galak@kernel.crashing.org>
+> Date: Mon, 27 Oct 2008 14:43:29 -0500
 >
-> That code is called by each CPU that gets onlined and OR's it's
-> bit in the mask.
+>> I haven't been following the netdev patches, but what about HW that  
+>> does flow separation w/o multiple interrupts?
+>>
+>> We (Freescale) are working on such a device:
+>>
+>> http://www.freescale.com/webapp/sps/site/prod_summary.jsp?fastpreview=1&code=P4080
+>
+> It could probably tie into the software based flow seperation support.
 
-ahh, I see now.
+Will have to look at the code.. we might be able to fit in the HW irq  
+scheme.  We effective have a way of getting a per cpu interrupt for  
+the flow.
 
 - k
