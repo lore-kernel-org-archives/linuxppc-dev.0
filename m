@@ -2,22 +2,18 @@ Return-Path: <jeff@garzik.org>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7C336DDDF6
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 05:52:43 +1100 (EST)
-Message-ID: <49060DF0.6040607@garzik.org>
-Date: Mon, 27 Oct 2008 14:52:32 -0400
+	by ozlabs.org (Postfix) with ESMTPS id 28CD4DDDF6
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 05:52:51 +1100 (EST)
+Message-ID: <49060DFA.7090901@garzik.org>
+Date: Mon, 27 Oct 2008 14:52:42 -0400
 From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Thomas Klein <tklein@de.ibm.com>
-Subject: Re: [PATCH] ehea: Add hugepage detection
-References: <200810271038.46825.tklein@de.ibm.com>
-In-Reply-To: <200810271038.46825.tklein@de.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ibm_newemac: Fix typo in flow control config option
+References: <20081024135314.GA2299@yoda.jdub.homelinux.org>
+In-Reply-To: <20081024135314.GA2299@yoda.jdub.homelinux.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: badari@us.ibm.com, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>, tollefso@us.ibm.com,
-	Hannes Hering <hering2@de.ibm.com>, haveblue@us.ibm.com,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>
+Cc: netdev@vger.kernel.org, hch@lst.de, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,15 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thomas Klein wrote:
-> All kernel memory which is used for kernel/hardware data transfer must be registered
-> with firmware using "memory regions". 16GB hugepages may not be part of a memory region
-> due to firmware restrictions.
-> This patch modifies the walk_memory_resource callback fn to filter hugepages and add
-> only standard memory to the busmap which is later on used for MR registration.
+Josh Boyer wrote:
+> The recent build fix for ibm_newemac has a typo in the config
+> option #ifdef used for disabling flow control.  This corrects
+> it to the proper Kconfig option name.
 > 
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+> Reported-by: Christoph Hellwig <hch@lst.de>
+> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> 
 > ---
-> This reworked patch accounts for comments I got. It's based on davem's net-2.6.git.
+> 
+> diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+> index 2ee2622..901212a 100644
+> --- a/drivers/net/ibm_newemac/core.c
+> +++ b/drivers/net/ibm_newemac/core.c
+> @@ -2605,7 +2605,7 @@ static int __devinit emac_init_config(struct emac_instance *dev)
+>  		    of_device_is_compatible(np, "ibm,emac-440gr"))
+>  			dev->features |= EMAC_FTR_440EP_PHY_CLK_FIX;
+>  		if (of_device_is_compatible(np, "ibm,emac-405ez")) {
+> -#ifdef CONFIG_IBM_NEW_EMAC_NO_FLOW_CONTROL
+> +#ifdef CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL
+>  			dev->features |= EMAC_FTR_NO_FLOW_CONTROL_40x;
+>  #else
+>  			printk(KERN_ERR "%s: Flow control not disabled!\n",
 
 applied
