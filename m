@@ -1,19 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 27 Oct 2008 10:53:03 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: GPIO - marking individual pins (not) available in device tree
-Message-ID: <20081026235303.GE22339@yookeroo.seuss>
-References: <4900ED81.3040202@genesi-usa.com> <4900F90B.80703@firmworks.com>
-	<4901032F.3090805@genesi-usa.com> <49011C42.2020101@firmworks.com>
-	<49024646.3050300@genesi-usa.com> <49025DE0.6070403@firmworks.com>
-	<4904DD76.7070706@genesi-usa.com>
+Return-Path: <kevdig@hypersurf.com>
+Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
+	by ozlabs.org (Postfix) with ESMTP id 3A00CDDE11
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 12:33:21 +1100 (EST)
+Message-ID: <490527CF.80908@hypersurf.com>
+Date: Sun, 26 Oct 2008 18:30:39 -0800
+From: Kevin Diggs <kevdig@hypersurf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4904DD76.7070706@genesi-usa.com>
-Cc: Mitch Bradley <wmb@firmworks.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] genirq: Set initial default irq affinity to just CPU0
+References: <1224863858-7933-1-git-send-email-galak@kernel.crashing.org>	<20081024.161813.193686281.davem@davemloft.net>	<1224970389.7654.473.camel@pasglop>
+	<4903A37A.50607@hypersurf.com> <1225003723.7654.490.camel@pasglop>
+In-Reply-To: <1225003723.7654.490.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,46 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Oct 26, 2008 at 04:13:26PM -0500, Matt Sealey wrote:
->
->
-> Mitch Bradley wrote:
->>
->> I don't use device_type much, if at all, anymore.  Generic name +  
->> compatible just works better than device_type + specific name.  When
-> > I write code that has to find a node that is suitable for a given purpose,
-> > I look for the existence of suitable methods and perhaps other properties.
-> > I was just too hard to keep the list of device_type values properly
-> > synchronized with all the possible things that you might want to infer
-> > from that set of names.
->
-> The simple problem comes when you define a device_type for everything,
-> I do agree it's best not to add any *MORE* that aren't in the IEEE1275
-> or CHRP etc. bindings, but for those that still exist and are well
-> defined (serial port probably the best, but network devices too) I
-> think we should keep using them where possible and where relevant.
+Benjamin Herrenschmidt wrote:
+>>What does this all mean to my GigE (dual 1.1 GHz 7455s)? Is this
+>>thing supposed to be able to spread irq between its cpus?
+> 
+> 
+> Depends on the interrupt controller. I don't know that machine
+> but for example the Apple Dual G5's use an MPIC that can spread
+> based on an internal HW round robin scheme. This isn't always
+> the best idea tho for cache reasons... depends if an at what level
+> your caches are shared between CPUs.
+> 
+> Ben.
+> 
+Sorry. I thought GigE was a common name for the machine. It is a dual
+450 MHz G4 powermac with a gigabit ethernet and AGP. It now has a
+PowerLogix dual 1.1 GHz 7455 in it. I think the L3 caches are
+seperate? Not sure about the original cpu card. Can the OS tell?
 
-device_type in 1275 defines the runtime method interface.  It's *not*
-for declaring the general class of the device, although it often
-matches that in practice.  Drivers which attempt to use it this way
-are buggy.
+The reason I asked is that I seem to remember a config option that
+would restrict the irqs to cpu 0? Help suggested it was needed for
+certain PowerMacs. Didn't provide any help as to which ones. My GigE
+currently spreads them between the two. I have not noticed any
+additional holes in the space time contiuum.
 
-So, in the  case of a real OF implementation,  yes, you should include
-device_type values as specified by 1275.  Assuming of course that your
-implementation  really  does  implement  the OF  method  binding  that
-matches the stated device_type.  However, flattened trees clearly
-can't provide the method interface, and so shouldn't declare the
-device_type.
-
-In practice, we do suggest including device_type in certain, limited,
-circumstances precisely because there are a whole bunch of buggy
-drivers out there which match (at least partly) on device_type.  We
-don't want to break these gratuitously, but neither do we want to
-encourage any further spread of using device_type incorrectly for
-driver matching.  Hence the current policy.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+kevin
