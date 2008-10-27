@@ -1,35 +1,38 @@
-Return-Path: <tklein@de.ibm.com>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+Return-Path: <markn@au1.ibm.com>
+Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 61CDCDDDDB
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 20:39:36 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id m9R9dUr9076286
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 09:39:30 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id m9R9dUcJ3203250
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 10:39:30 +0100
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m9R9dTSi018983
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 10:39:30 +0100
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] ehea: Add hugepage detection
-From: Thomas Klein <tklein@de.ibm.com>
-Date: Mon, 27 Oct 2008 10:38:46 +0100
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9B6BEDDDDB
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 21:42:56 +1100 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id m9RAfXm3011020
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 21:41:34 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9RAgp8W249664
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 21:42:51 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9RAgpJ8006006
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 21:42:51 +1100
+Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.190.163.12])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m9RAgpmP006003
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 21:42:51 +1100
+Received: from wecm00-9-185-92-166.au.ibm.com (WECM00-9-185-92-166.au.ibm.com
+	[9.185.92.166])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.au.ibm.com (Postfix) with ESMTP id 44D8F73744
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 21:42:48 +1100 (EST)
+From: Mark Nelson <markn@au1.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc: Add new CPU feature: CPU_FTR_UNALIGNED_LD_STD
+Date: Mon, 27 Oct 2008 21:43:02 +1100
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200810271038.46825.tklein@de.ibm.com>
-Cc: badari@us.ibm.com, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>, tollefso@us.ibm.com,
-	Hannes Hering <hering2@de.ibm.com>, haveblue@us.ibm.com,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>
+  charset="us-ascii"
+Message-Id: <200810272143.02144.markn@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,124 +42,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All kernel memory which is used for kernel/hardware data transfer must be registered
-with firmware using "memory regions". 16GB hugepages may not be part of a memory region
-due to firmware restrictions.
-This patch modifies the walk_memory_resource callback fn to filter hugepages and add
-only standard memory to the busmap which is later on used for MR registration.
+Add a new CPU feature bit, CPU_FTR_UNALIGNED_LD_STD, to be added
+to the 64bit powerpc chips that can do unaligned load double and
+store double (and not take a performance hit from it).
 
-Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+This is added to Power6 and Cell and will be used in an upcoming
+patch to do the alignment in memcpy() only on CPUs that require
+it.
+
+Signed-off-by: Mark Nelson <markn@au1.ibm.com>
 ---
-This reworked patch accounts for comments I got. It's based on davem's net-2.6.git.
+ arch/powerpc/include/asm/cputable.h |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-
-diff -Nurp -X dontdiff linux-2.6.27/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
---- linux-2.6.27/drivers/net/ehea/ehea.h	2008-10-24 09:29:19.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea.h	2008-10-27 09:27:46.000000000 +0100
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
-
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0094"
-+#define DRV_VERSION	"EHEA_0095"
-
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-diff -Nurp -X dontdiff linux-2.6.27/drivers/net/ehea/ehea_qmr.c patched_kernel/drivers/net/ehea/ehea_qmr.c
---- linux-2.6.27/drivers/net/ehea/ehea_qmr.c	2008-10-24 09:29:19.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-10-27 09:27:46.000000000 +0100
-@@ -632,10 +632,13 @@ static void ehea_rebuild_busmap(void)
- 	}
- }
-
--static int ehea_update_busmap(unsigned long pfn, unsigned long pgnum, int add)
-+static int ehea_update_busmap(unsigned long pfn, unsigned long nr_pages, int add)
- {
- 	unsigned long i, start_section, end_section;
-
-+	if (!nr_pages)
-+		return 0;
-+
- 	if (!ehea_bmap) {
- 		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
- 		if (!ehea_bmap)
-@@ -643,7 +646,7 @@ static int ehea_update_busmap(unsigned l
- 	}
-
- 	start_section = (pfn * PAGE_SIZE) / EHEA_SECTSIZE;
--	end_section = start_section + ((pgnum * PAGE_SIZE) / EHEA_SECTSIZE);
-+	end_section = start_section + ((nr_pages * PAGE_SIZE) / EHEA_SECTSIZE);
- 	/* Mark entries as valid or invalid only; address is assigned later */
- 	for (i = start_section; i < end_section; i++) {
- 		u64 flag;
-@@ -692,10 +695,54 @@ int ehea_rem_sect_bmap(unsigned long pfn
- 	return ret;
- }
-
--static int ehea_create_busmap_callback(unsigned long pfn,
--				       unsigned long nr_pages, void *arg)
-+static int ehea_is_hugepage(unsigned long pfn)
-+{
-+	int page_order;
-+
-+	if (pfn & EHEA_HUGEPAGE_PFN_MASK)
-+		return 0;
-+
-+	page_order = compound_order(pfn_to_page(pfn));
-+	if (page_order + PAGE_SHIFT != EHEA_HUGEPAGESHIFT)
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static int ehea_create_busmap_callback(unsigned long initial_pfn,
-+				       unsigned long total_nr_pages, void *arg)
- {
--	return ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
-+	int ret;
-+	unsigned long pfn, start_pfn, end_pfn, nr_pages;
-+
-+	if ((total_nr_pages * PAGE_SIZE) < EHEA_HUGEPAGE_SIZE)
-+		return ehea_update_busmap(initial_pfn, total_nr_pages,
-+					  EHEA_BUSMAP_ADD_SECT);
-+
-+	/* Given chunk is >= 16GB -> check for hugepages */
-+	start_pfn = initial_pfn;
-+	end_pfn = initial_pfn + total_nr_pages;
-+	pfn = start_pfn;
-+
-+	while (pfn < end_pfn) {
-+		if (ehea_is_hugepage(pfn)) {
-+			/* Add mem found in front of the hugepage */
-+			nr_pages = pfn - start_pfn;
-+			ret = ehea_update_busmap(start_pfn, nr_pages,
-+						 EHEA_BUSMAP_ADD_SECT);
-+			if (ret)
-+				return ret;
-+
-+			/* Skip the hugepage */
-+			pfn += (EHEA_HUGEPAGE_SIZE / PAGE_SIZE);
-+			start_pfn = pfn;
-+		} else
-+			pfn += (EHEA_SECTSIZE / PAGE_SIZE);
-+	}
-+
-+	/* Add mem found behind the hugepage(s)  */
-+	nr_pages = pfn - start_pfn;
-+	return ehea_update_busmap(start_pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
- }
-
- int ehea_create_busmap(void)
-diff -Nurp -X dontdiff linux-2.6.27/drivers/net/ehea/ehea_qmr.h patched_kernel/drivers/net/ehea/ehea_qmr.h
---- linux-2.6.27/drivers/net/ehea/ehea_qmr.h	2008-10-24 09:29:19.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea_qmr.h	2008-10-27 09:27:46.000000000 +0100
-@@ -40,6 +40,9 @@
- #define EHEA_PAGESIZE          (1UL << EHEA_PAGESHIFT)
- #define EHEA_SECTSIZE          (1UL << 24)
- #define EHEA_PAGES_PER_SECTION (EHEA_SECTSIZE >> EHEA_PAGESHIFT)
-+#define EHEA_HUGEPAGESHIFT     34
-+#define EHEA_HUGEPAGE_SIZE     (1UL << EHEA_HUGEPAGESHIFT)
-+#define EHEA_HUGEPAGE_PFN_MASK ((EHEA_HUGEPAGE_SIZE - 1) >> PAGE_SHIFT)
-
- #if ((1UL << SECTION_SIZE_BITS) < EHEA_SECTSIZE)
- #error eHEA module cannot work if kernel sectionsize < ehea sectionsize
+Index: upstream/arch/powerpc/include/asm/cputable.h
+===================================================================
+--- upstream.orig/arch/powerpc/include/asm/cputable.h
++++ upstream/arch/powerpc/include/asm/cputable.h
+@@ -194,6 +194,7 @@ extern const char *powerpc_base_platform
+ #define CPU_FTR_VSX			LONG_ASM_CONST(0x0010000000000000)
+ #define CPU_FTR_SAO			LONG_ASM_CONST(0x0020000000000000)
+ #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
++#define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0080000000000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -404,7 +405,7 @@ extern const char *powerpc_base_platform
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+ 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+-	    CPU_FTR_DSCR)
++	    CPU_FTR_DSCR | CPU_FTR_UNALIGNED_LD_STD)
+ #define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+@@ -415,7 +416,8 @@ extern const char *powerpc_base_platform
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE | \
+-	    CPU_FTR_CELL_TB_BUG | CPU_FTR_CP_USE_DCBTZ)
++	    CPU_FTR_CELL_TB_BUG | CPU_FTR_CP_USE_DCBTZ | \
++	    CPU_FTR_UNALIGNED_LD_STD)
+ #define CPU_FTRS_PA6T (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CI_LARGE_PAGE | \
