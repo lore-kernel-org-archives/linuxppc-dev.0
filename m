@@ -1,19 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 23311DDDE7
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 05:32:06 +1100 (EST)
-Date: Mon, 27 Oct 2008 13:31:49 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH][for 2.6.28] powerpc/mpic: Add support for MPICs that only
-	support a single CPU destination
-Message-ID: <Pine.LNX.4.64.0810271327170.4693@blarg.am.freescale.net>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id BE5E8DDDEF
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 05:34:44 +1100 (EST)
+Date: Mon, 27 Oct 2008 21:34:21 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: GPIO - marking individual pins (not) available in device tree
+Message-ID: <20081027183421.GA1009@oksana.dev.rtsoft.ru>
+References: <4900ED81.3040202@genesi-usa.com> <4900F90B.80703@firmworks.com>
+	<4901032F.3090805@genesi-usa.com> <49011C42.2020101@firmworks.com>
+	<20081024032944.GE4267@yookeroo.seuss>
+	<49014C69.8020408@firmworks.com>
+	<20081024044511.GI4267@yookeroo.seuss>
+	<490248C2.9020104@genesi-usa.com>
+	<20081026234747.GD22339@yookeroo.seuss>
+	<4905E0DC.104@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, csnook@redhat.com,
-	linux-kernel@vger.kernel.org, davem@davemloft.net
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <4905E0DC.104@genesi-usa.com>
+Cc: Mitch Bradley <wmb@firmworks.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,115 +31,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->From 20a2290553a1921a13449f9b7c597bcc76ec2c03 Mon Sep 17 00:00:00 2001
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Mon, 27 Oct 2008 09:08:11 -0500
-Subject: [PATCH] powerpc/mpic: Add support for MPICs that only support a single CPU destination
+On Mon, Oct 27, 2008 at 10:40:12AM -0500, Matt Sealey wrote:
+>
+>
+> David Gibson wrote:
+>
+>> Um.. I can't actually follow what you're getting at there, sorry.
+>
+> Imagine in your head that you have a GPIO controller that has a
+> 32-bit register potentially controlling 32 pins on the chip.
+>
+> Imagine that rather than being able to allocate 6 GPIO pins
+> *right next to each other* in the register and saying that
+> you start at "pin" 15 and use the next 6 "pins", you have to
+> spread it around and use pin 1, pin 8, pin 9, pin 11, pin 15,
+> pin 30, to make up this peripheral.
 
-The Freescale implementation of MPIC only allows a single CPU destination
-for non-IPI interrupts.  We add a flag to the mpic_init to distinquish
-these variants of MPIC.  Additionally, we will flag a warning if the
-user tries to set the affinity on such an interrupts to more than one
-CPU.
+Isn't this some implementation detail of a gpio controller?
 
-This is to deal with the fact that the default smp affinity was
-changed by commit 18404756765c713a0be4eb1082920c04822ce588.
+gpio: gpio-controller@... {
+	#gpio-cells = <2>;
+	compatible = "gpio-bank-with-funny-mapping"; <- notice this
+	reg = <123 4>;
+	gpio-controller;
+}
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+device {
+	gpios = <&gpio 0 0 &gpio 1 0 &gpio 2 0>;
+}
 
-Ben, please review and see if this is an acceptable solution to the fact
-that FSL mpic's can't deal with more than one CPU destination bit being
-set.  If so please queue up and forward onto linus for 2.6.28.
+^^ Three gpios, 0, 1, 2. Based on a compatible entry Linux can
+   translate them in any way.
 
-- k
+   For example GPIO0 - bit 15, GPIO1 - bit 20, GPIO2 - bit 1.
 
- arch/powerpc/include/asm/mpic.h          |    2 ++
- arch/powerpc/platforms/85xx/mpc85xx_ds.c |    3 ++-
- arch/powerpc/platforms/86xx/pic.c        |    3 ++-
- arch/powerpc/sysdev/mpic.c               |   15 +++++++++++++++
- 4 files changed, 21 insertions(+), 2 deletions(-)
+> As far as I can tell there is no way at all to specify a set of
+> GPIO pins which are NOT consecutive because the current GPIO
+> spec stops after specifying a controller bank (the 32-bit
+> register).
 
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index 34d9ac4..c2ccca5 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -355,6 +355,8 @@ struct mpic
- #define MPIC_NO_BIAS			0x00000400
- /* Ignore NIRQS as reported by FRR */
- #define MPIC_BROKEN_FRR_NIRQS		0x00000800
-+/* Destination only supports a single CPU at a time */
-+#define MPIC_SINGLE_DEST_CPU		0x00001000
+The GPIO spec doesn't specify a controller bank. It says
 
- /* MPIC HW modification ID */
- #define MPIC_REGSET_MASK		0xf0000000
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 483b65c..613bf8c 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -78,7 +78,8 @@ void __init mpc85xx_ds_pic_init(void)
+- - - -
+gpio-specifier may encode: bank, pin position inside the bank,
+whether pin is open-drain and whether pin is logically inverted.
+- - - -
 
- 	mpic = mpic_alloc(np, r.start,
- 			  MPIC_PRIMARY | MPIC_WANTS_RESET |
--			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
-+			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
-+			  MPIC_SINGLE_DEST_CPU,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
- 	of_node_put(np);
-diff --git a/arch/powerpc/platforms/86xx/pic.c b/arch/powerpc/platforms/86xx/pic.c
-index 8881c5d..668275d 100644
---- a/arch/powerpc/platforms/86xx/pic.c
-+++ b/arch/powerpc/platforms/86xx/pic.c
-@@ -44,7 +44,8 @@ void __init mpc86xx_init_irq(void)
+May encode. Or may not encode. FYI, for most (all) SOC GPIO
+controllers we don't use "bank" encoding in the gpio-specifier.
 
- 	mpic = mpic_alloc(np, res.start,
- 			MPIC_PRIMARY | MPIC_WANTS_RESET |
--			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
-+			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
-+			MPIC_SINGLE_DEST_CPU,
- 			0, 256, " MPIC     ");
- 	of_node_put(np);
- 	BUG_ON(mpic == NULL);
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 8e3478c..b91a736 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -781,6 +781,16 @@ void mpic_set_affinity(unsigned int irq, cpumask_t cpumask)
-
- 	cpus_and(tmp, cpumask, cpu_online_map);
-
-+	if ((mpic->flags & MPIC_SINGLE_DEST_CPU) && (cpus_weight(tmp) != 1)) {
-+		int first_cpu = first_cpu(tmp);
-+
-+		printk(KERN_WARNING "mpic: attempting to set cpu affinity to "
-+			"more than one cpu, setting to CPU %d\n", first_cpu);
-+		cpus_clear(tmp);
-+		cpu_set(first_cpu, tmp);
-+		irq_desc[irq].affinity = tmp;
-+	}
-+
- 	mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION),
- 		       mpic_physmask(cpus_addr(tmp)[0]));
- }
-@@ -920,6 +930,8 @@ static int mpic_host_map(struct irq_host *h, unsigned int virq,
- 					 handle_percpu_irq);
- 		return 0;
- 	}
-+	if (mpic->flags & MPIC_SINGLE_DEST_CPU)
-+		irq_set_affinity(virq, irq_default_affinity);
- #endif /* CONFIG_SMP */
-
- 	if (hw >= mpic->irq_count)
-@@ -1037,6 +1049,9 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- #ifdef CONFIG_SMP
- 	mpic->hc_ipi = mpic_ipi_chip;
- 	mpic->hc_ipi.typename = name;
-+
-+	if (flags & MPIC_SINGLE_DEST_CPU)
-+		irq_default_affinity = CPU_MASK_CPU0;
- #endif /* CONFIG_SMP */
-
- 	mpic->flags = flags;
 -- 
-1.5.5.1
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
