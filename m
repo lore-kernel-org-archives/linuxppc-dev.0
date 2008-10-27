@@ -1,19 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2E42FDDE98
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 00:45:37 +1100 (EST)
-Message-Id: <1D4ED273-13FB-4D2F-82B1-89D2F6F0B9A1@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Mike Ditto <mditto@consentry.com>
-In-Reply-To: <49027044.90509@consentry.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v2] powerpc: Add missing irq free in fs_enet error path.
-Date: Mon, 27 Oct 2008 08:45:27 -0500
-References: <49027044.90509@consentry.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <neko@genesi-usa.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
+	by ozlabs.org (Postfix) with ESMTP id 4B2BADDDD4
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 02:40:10 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so1623120qwb.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 08:40:08 -0700 (PDT)
+Message-ID: <4905E0DC.104@genesi-usa.com>
+Date: Mon, 27 Oct 2008 10:40:12 -0500
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Matt Sealey <matt@genesi-usa.com>, Mitch Bradley <wmb@firmworks.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+Subject: Re: GPIO - marking individual pins (not) available in device tree
+References: <4900ED81.3040202@genesi-usa.com> <4900F90B.80703@firmworks.com>
+	<4901032F.3090805@genesi-usa.com> <49011C42.2020101@firmworks.com>
+	<20081024032944.GE4267@yookeroo.seuss>
+	<49014C69.8020408@firmworks.com>
+	<20081024044511.GI4267@yookeroo.seuss>
+	<490248C2.9020104@genesi-usa.com>
+	<20081026234747.GD22339@yookeroo.seuss>
+In-Reply-To: <20081026234747.GD22339@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +32,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 24, 2008, at 8:03 PM, Mike Ditto wrote:
 
-> If something goes wrong attaching to phy driver, we weren't freeing  
-> the IRQ.
->
-> Signed-off-by: Mike Ditto <mditto@consentry.com>
-> ---
-> I just noticed this file has already been touched in -rc1 so here is  
-> the
-> patch again, adjusted accordingly.
->
-> diff -r -upN 2.6.28-rc1/drivers/net/fs_enet/fs_enet-main.c NEW/ 
-> drivers/net/fs_enet/fs_enet-main.c
-> --- 2.6.28-rc1/drivers/net/fs_enet/fs_enet-main.c       2008-10-24  
-> 17:54:31.000000000 -0700
-> +++ NEW/drivers/net/fs_enet/fs_enet-main.c      2008-10-24  
-> 17:57:03.000000000 -0700
-> @@ -795,6 +795,7 @@ static int fs_enet_open(struct net_devic
->
->        err = fs_init_phy(dev);
->        if (err) {
-> +               free_irq(fep->interrupt, dev);
->                if (fep->fpi->use_napi)
->                        napi_disable(&fep->napi);
->                return err;
+David Gibson wrote:
 
-Please copy Jeff Garizk and the netdev list as such patches normally  
-go though that path.
+> Um.. I can't actually follow what you're getting at there, sorry.
 
-- k
+Imagine in your head that you have a GPIO controller that has a
+32-bit register potentially controlling 32 pins on the chip.
+
+Imagine that rather than being able to allocate 6 GPIO pins
+*right next to each other* in the register and saying that
+you start at "pin" 15 and use the next 6 "pins", you have to
+spread it around and use pin 1, pin 8, pin 9, pin 11, pin 15,
+pin 30, to make up this peripheral.
+
+As far as I can tell there is no way at all to specify a set of
+GPIO pins which are NOT consecutive because the current GPIO
+spec stops after specifying a controller bank (the 32-bit
+register).
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
