@@ -1,20 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Message-ID: <4905EDBE.8020105@freescale.com>
-Date: Mon, 27 Oct 2008 11:35:10 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <linnj@wolfgang-pc.public.xilinx.com>
+Received: from IE1EHSOBE004.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id 80BD8DDDEE
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 03:39:18 +1100 (EST)
+From: John Linn <john.linn@xilinx.com>
+To: grant.likely@secretlab.ca, jwboyer@linux.vnet.ibm.com,
+	avorontsov@ru.mvista.com, linuxppc-dev@ozlabs.org
+Subject: [PATCH][V2] [powerpc] GPIO: Adding new Xilinx driver
+Date: Mon, 27 Oct 2008 09:39:07 -0700
+Message-ID: <20081027163908.0E79F5C8057@mail75-dub.bigfish.com>
 MIME-Version: 1.0
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: GPIO - marking individual pins (not) available in device tree
-References: <4900ED81.3040202@genesi-usa.com>
-	<4900F90B.80703@firmworks.com>	<4901032F.3090805@genesi-usa.com>
-	<49011C42.2020101@firmworks.com>	<49024646.3050300@genesi-usa.com>
-	<49025DE0.6070403@firmworks.com>	<4904DD76.7070706@genesi-usa.com>	<20081026235303.GE22339@yookeroo.seuss>
-	<4905E857.6040206@genesi-usa.com>
-In-Reply-To: <4905E857.6040206@genesi-usa.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Mitch Bradley <wmb@firmworks.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+Content-Type: text/plain
+Cc: Kiran Sutariya <kirans@xilinx.com>, John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,61 +20,307 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Matt Sealey wrote:
-> I'm all for it being legacy and optional but marking ethernet ports as
-> network, and serial ports as serial, is a wonderfully good idea especially
-> if they were used in ANY firmware environment to bring up the console,
-> drag in the boot files, or provide a framebuffer display.
+This driver supports the Xilinx XPS GPIO IP core which has the typical
+GPIO features.
 
-Nobody is saying that device_type should not be used in real OF when an 
-appropriate method interface exists.  What we're saying is that flat 
-device trees, which are incapable of providing a method interface, 
-should not lie and claim that they have one.
+Signed-off-by: Kiran Sutariya <kirans@xilinx.com>
+Signed-off-by: John Linn <john.linn@xilinx.com>
+---
+V2 - Updated based on Anton's comments
 
-As for "ANY firmware environment", I'd suggest that any new method 
-interfaces, where backwards compatibility isn't an issue, use some 
-relevant compatible rather than device_type, so that multiple supported 
-interfaces can be listed.  What do you have against vendor namespaces 
-(don't make the device binding guess which firmware type it's on) and 
-multiple interfaces per node?
+ drivers/gpio/Kconfig       |   15 ++--
+ drivers/gpio/Makefile      |    1 +
+ drivers/gpio/xilinx_gpio.c |  235 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 244 insertions(+), 7 deletions(-)
+ create mode 100644 drivers/gpio/xilinx_gpio.c
 
->> matches the stated device_type.  However, flattened trees clearly
->> can't provide the method interface, and so shouldn't declare the
->> device_type.
-> 
-> Even if they are used in the firmware environment for console, booting
-> or probing? :D
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 7f2ee27..12a8006 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -65,6 +65,14 @@ config GPIO_SYSFS
+ 
+ # put expanders in the right section, in alphabetical order
+ 
++comment "Memory mapped GPIO expanders:"
++
++config GPIO_XILINX
++	bool "Xilinx GPIO support"
++	depends on PPC_OF
++	help
++	  Say yes here to support the Xilinx FPGA GPIO device
++
+ comment "I2C GPIO expanders:"
+ 
+ config GPIO_MAX732X
+@@ -127,13 +135,6 @@ config GPIO_PCF857X
+ 	  This driver provides an in-kernel interface to those GPIOs using
+ 	  platform-neutral GPIO calls.
+ 
+-config GPIO_TWL4030
+-	tristate "TWL4030, TWL5030, and TPS659x0 GPIOs"
+-	depends on TWL4030_CORE
+-	help
+-	  Say yes here to access the GPIO signals of various multi-function
+-	  power management chips from Texas Instruments.
+-
+ comment "PCI GPIO expanders:"
+ 
+ config GPIO_BT8XX
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index 6aafdeb..49ac64e 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -10,4 +10,5 @@ obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
+ obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
+ obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
+ obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
++obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
+ obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
+diff --git a/drivers/gpio/xilinx_gpio.c b/drivers/gpio/xilinx_gpio.c
+new file mode 100644
+index 0000000..3c1177a
+--- /dev/null
++++ b/drivers/gpio/xilinx_gpio.c
+@@ -0,0 +1,235 @@
++/*
++ * Xilinx gpio driver
++ *
++ * Copyright 2008 Xilinx, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/of_device.h>
++#include <linux/of_platform.h>
++#include <linux/of_gpio.h>
++#include <linux/io.h>
++#include <linux/gpio.h>
++
++/* Register Offset Definitions */
++#define XGPIO_DATA_OFFSET   (0x0)	/* Data register  */
++#define XGPIO_TRI_OFFSET    (0x4)	/* I/O direction register  */
++
++struct xgpio_instance {
++	struct of_mm_gpio_chip mmchip;
++	u32 gpio_state;		/* GPIO state shadow register */
++	u32 gpio_dir;		/* GPIO direction shadow register */
++	spinlock_t gpio_lock;	/* Lock used for synchronization */
++};
++
++/**
++ * xgpio_get - Read the specified signal of the GPIO device.
++ * @gc:     Pointer to gpio_chip device structure.
++ * @gpio:   GPIO signal number.
++ *
++ * This function reads the specified signal of the GPIO device. It returns 0 if
++ * the signal clear, 1 if signal is set or negative value on error.
++ */
++static int xgpio_get(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++
++	return (in_be32(mm_gc->regs + XGPIO_DATA_OFFSET) >> gpio) & 1;
++}
++
++/**
++ * xgpio_set - Write the specified signal of the GPIO device.
++ * @gc:     Pointer to gpio_chip device structure.
++ * @gpio:   GPIO signal number.
++ * @val:    Value to be written to specified signal.
++ *
++ * This function writes the specified value in to the specified signal of the
++ * GPIO device.
++ */
++static void xgpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	unsigned long flags;
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct xgpio_instance *chip =
++	    container_of(mm_gc, struct xgpio_instance, mmchip);
++
++	spin_lock_irqsave(&chip->gpio_lock, flags);
++
++	/* Write to GPIO signal and set its direction to output */
++	if (val)
++		chip->gpio_state |= 1 << gpio;
++	else
++		chip->gpio_state &= ~(1 << gpio);
++	out_be32(mm_gc->regs + XGPIO_DATA_OFFSET, chip->gpio_state);
++
++	spin_unlock_irqrestore(&chip->gpio_lock, flags);
++}
++
++/**
++ * xgpio_dir_in - Set the direction of the specified GPIO signal as input.
++ * @gc:     Pointer to gpio_chip device structure.
++ * @gpio:   GPIO signal number.
++ *
++ * This function sets the direction of specified GPIO signal as input.
++ * It returns 0 if direction of GPIO signals is set as input otherwise it
++ * returns negative error value.
++ */
++static int xgpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
++{
++	unsigned long flags;
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct xgpio_instance *chip =
++	    container_of(mm_gc, struct xgpio_instance, mmchip);
++
++	spin_lock_irqsave(&chip->gpio_lock, flags);
++
++	/* Set the GPIO bit in shadow register and set direction as input */
++	chip->gpio_dir |= (1 << gpio);
++	out_be32(mm_gc->regs + XGPIO_TRI_OFFSET, chip->gpio_dir);
++
++	spin_unlock_irqrestore(&chip->gpio_lock, flags);
++
++	return 0;
++}
++
++/**
++ * xgpio_dir_out - Set the direction of the specified GPIO signal as output.
++ * @gc:     Pointer to gpio_chip device structure.
++ * @gpio:   GPIO signal number.
++ * @val:    Value to be written to specified signal.
++ *
++ * This function sets the direction of specified GPIO signal as output. If all
++ * GPIO signals of GPIO chip is configured as input then it returns
++ * error otherwise it returns 0.
++ */
++static int xgpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	unsigned long flags;
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct xgpio_instance *chip =
++	    container_of(mm_gc, struct xgpio_instance, mmchip);
++
++	spin_lock_irqsave(&chip->gpio_lock, flags);
++
++	/* Write state of GPIO signal */
++	if (val)
++		chip->gpio_state |= 1 << gpio;
++	else
++		chip->gpio_state &= ~(1 << gpio);
++	out_be32(mm_gc->regs + XGPIO_DATA_OFFSET, chip->gpio_state);
++
++	/* Clear the GPIO bit in shadow register and set direction as output */
++	chip->gpio_dir &= (~(1 << gpio));
++	out_be32(mm_gc->regs + XGPIO_TRI_OFFSET, chip->gpio_dir);
++
++	spin_unlock_irqrestore(&chip->gpio_lock, flags);
++
++	return 0;
++}
++
++/**
++ * xgpio_save_regs - Set initial values of GPIO pins
++ * @mm_gc: pointer to memory mapped GPIO chip structure
++ */
++static void xgpio_save_regs(struct of_mm_gpio_chip *mm_gc)
++{
++	struct xgpio_instance *chip =
++	    container_of(mm_gc, struct xgpio_instance, mmchip);
++
++	out_be32(mm_gc->regs + XGPIO_DATA_OFFSET, chip->gpio_state);
++	out_be32(mm_gc->regs + XGPIO_TRI_OFFSET, chip->gpio_dir);
++}
++
++/**
++ * xgpio_of_probe - Probe method for the GPIO device.
++ * @np: pointer to device tree node
++ *
++ * This function probes the GPIO device in the device tree. It initializes the
++ * driver data structure. It returns 0, if the driver is bound to the GPIO
++ * device, or a negative value if there is an error.
++ */
++static int __devinit xgpio_of_probe(struct device_node *np)
++{
++	struct xgpio_instance *chip;
++	struct of_gpio_chip *ofchip;
++	int status = 0;
++	const u32 *tree_info;
++
++	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
++	if (!chip)
++		return -ENOMEM;
++	ofchip = &chip->mmchip.of_gc;
++
++	/* Update GPIO state shadow register with default value */
++	tree_info = of_get_property(np, "xlnx,dout-default", NULL);
++	if (tree_info)
++		chip->gpio_state = *tree_info;
++
++	/* Update GPIO direction shadow register with default value */
++	chip->gpio_dir = 0xFFFFFFFF; /* By default, all pins are inputs */
++	tree_info = of_get_property(np, "xlnx,tri-default", NULL);
++	if (tree_info)
++		chip->gpio_dir = *tree_info;
++
++	/* Check device node and parent device node for device width */
++	ofchip->gc.ngpio = 32; /* By default assume full GPIO controller */
++	tree_info = of_get_property(np, "xlnx,gpio-width", NULL);
++	if (!tree_info)
++		tree_info = of_get_property(np->parent,
++					    "xlnx,gpio-width", NULL);
++	if (tree_info)
++		ofchip->gc.ngpio = *tree_info;
++
++	spin_lock_init(&chip->gpio_lock);
++
++	ofchip->gpio_cells = 2;
++	ofchip->gc.direction_input = xgpio_dir_in;
++	ofchip->gc.direction_output = xgpio_dir_out;
++	ofchip->gc.get = xgpio_get;
++	ofchip->gc.set = xgpio_set;
++
++	chip->mmchip.save_regs = xgpio_save_regs;
++
++	/* Call the OF gpio helper to setup and register the GPIO device */
++	status = of_mm_gpiochip_add(np, &chip->mmchip);
++	if (status) {
++		kfree(chip);
++		pr_err("%s: error in probe function with status %d\n",
++		       np->full_name, status);
++		return status;
++	}
++	pr_info("XGpio: %s: registered\n", np->full_name);
++	return 0;
++}
++
++static struct of_device_id xgpio_of_match[] __devinitdata = {
++	{ .compatible = "xlnx,xps-gpio-1.00.a", },
++	{ /* end of list */ },
++};
++
++static int __init xgpio_init(void)
++{
++	struct device_node *np;
++
++	for_each_matching_node(np, xgpio_of_match)
++		xgpio_of_probe(np);
++
++	return 0;
++}
++
++/* Make sure we get initialized before anyone else tries to use us */
++subsys_initcall(xgpio_init);
++/* No exit call at the moment as we cannot unregister of GPIO chips */
++
++MODULE_AUTHOR("Xilinx, Inc.");
++MODULE_DESCRIPTION("Xilinx GPIO driver");
++MODULE_LICENSE("GPL");
+-- 
+1.5.2.1
 
-Define "they", "used", and "firmware environment".  Obviously u-boot may 
-use the serial port for its console, but there's no method interface 
-defined by the device tree, nor is there any firmware resident at all 
-after starting the kernel.
 
->> In practice, we do suggest including device_type in certain, limited,
->> circumstances precisely because there are a whole bunch of buggy
->> drivers out there which match (at least partly) on device_type.
->  > We don't want to break these gratuitously,
-> 
-> Oh that's rich. If you were that concerned you'd rip the device_type
-> out and fix all the drivers in a huge patch, like everyone else does
-> when they change the ABI.
 
-This isn't internal ABI, it's an external interface with firmware.
-
->> driver matching.  Hence the current policy.
-> 
-> I might say that the policy on device trees has changed by the month
-> for the last 2 years and ePAPR didn't fix down a single concern that
-> wasn't already documented in the original IEEE 1275 specification.
-
-It fixes three primary concerns:
-
-1. The 1275 documentation is scattered in many places, some of which are 
-not easily accessible to the general public (just look at the i2c mess).
-
-2. 1275 did not appear to be actively maintained and updated.
-
-3. It standardized the flattened device tree interface, which did not 
-exist in 1275.
-
--Scott
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
