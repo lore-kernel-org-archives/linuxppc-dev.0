@@ -1,21 +1,21 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 28 Oct 2008 11:34:52 +1100
+Date: Tue, 28 Oct 2008 11:38:47 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Matt Sealey <matt@genesi-usa.com>
+To: Scott Wood <scottwood@freescale.com>
 Subject: Re: GPIO - marking individual pins (not) available in device tree
-Message-ID: <20081028003452.GE26424@yookeroo.seuss>
-References: <4900ED81.3040202@genesi-usa.com> <4900F90B.80703@firmworks.com>
-	<4901032F.3090805@genesi-usa.com> <49011C42.2020101@firmworks.com>
-	<49024646.3050300@genesi-usa.com> <49025DE0.6070403@firmworks.com>
+Message-ID: <20081028003847.GF26424@yookeroo.seuss>
+References: <49024646.3050300@genesi-usa.com> <49025DE0.6070403@firmworks.com>
 	<4904DD76.7070706@genesi-usa.com>
 	<20081026235303.GE22339@yookeroo.seuss>
-	<4905E857.6040206@genesi-usa.com>
+	<4905E857.6040206@genesi-usa.com> <4905EDBE.8020105@freescale.com>
+	<4905F4C4.4000309@genesi-usa.com>
+	<4905F97B.60705@freescale.com> <4905FF2B.10007@genesi-usa.com>
+	<49060047.2010809@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4905E857.6040206@genesi-usa.com>
-Cc: Mitch Bradley <wmb@firmworks.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+In-Reply-To: <49060047.2010809@freescale.com>
+Cc: devicetree-discuss list <devicetree-discuss@ozlabs.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 27, 2008 at 11:12:07AM -0500, Matt Sealey wrote:
->
->
-> David Gibson wrote:
->> On Sun, Oct 26, 2008 at 04:13:26PM -0500, Matt Sealey wrote:
->>>
->>> Mitch Bradley wrote:
+On Mon, Oct 27, 2008 at 12:54:15PM -0500, Scott Wood wrote:
+> Matt Sealey wrote:
+>> Scott Wood wrote:
+>>> It's deprecated *in the context of flat device trees*.  Anything not  
+>>> using flat device trees is out-of-scope with respect to ePAPR.
 >>
->> device_type in 1275 defines the runtime method interface.  It's *not*
->> for declaring the general class of the device, although it often
->> matches that in practice.
+>> Isn't the beauty of a device tree that every firmware no matter what
+>> type can present it in whatever form it chooses, but still be describing
+>> the same hardware in the same way?
 >
-> It *is* for declaring the general class of the device, even if it's
-> purpose is to make it known that it implements all the required
-> methods and therefore acts in a certain predefined way when those
-> methods are used; it's not a necessary property but it is a USEFUL
-> property:
+> When run-time services are not involved, yes.  device_type was used by  
+> 1275 in the context of run-time services, which we don't have, so we  
+> didn't copy that property over (except for memory and cpu, to avoid  
+> gratuitous divergence).
+>
+>> I'm curious, is it the remit of the ePAPR TSC to publish and act as
+>> a registration authority for device tree bindings for specific SoCs
+>> or is that devolved to the SoC maker itself (be they a member of
+>> Power.org or not) and, more prudent, two other questions; where are
+>> Freescale and IBM publishing these if it is their responsibility,
+>> are things like the mysterious i2c binding going to be published
+>> under this TSC?
+>
+> There has been talk about setting up such a repository, but I'm not sure  
+> what the status of it is.
 
-No, it's really not.  There are only two ways device class information
-can be useful:
-	- for human readability.  For this purpose the node name with
-the generic names convention suffices.
-	- for manipulating the device without having a driver specific
-to the device.  This works *only* if there is a class-defined protocol
-for doing this manipulation.  Clearly, this can't exist unless the
-firmware provides some sort of runtime service to abstract away
-differences between devices.  Flat trees cannot of themselves provide
-such a thing, and so should not advertise that they can with
-device_type.
+Progressing intermittently when people get small packets of time to
+actually do something about it.  We do really want this, it's just
+no-one's yet had the spare cycles to make it happen.
 
-Even if a firmware did provide run time services, but they weren't in
-the form of the OF defined method interface, they should not use
-device_type, but some other property to advertise their own particular
-brand of runtime service interface.
+At the moment things are published in the kernel documentation
+(booting-without-of.txt, although I think it's now been split up into
+multiple files), which is far from ideal, but better than nothing.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
