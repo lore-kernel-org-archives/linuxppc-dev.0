@@ -1,24 +1,19 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8FE45DDF70
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 02:17:04 +1100 (EST)
-Date: Tue, 28 Oct 2008 18:16:59 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()
-Message-ID: <20081028151659.GA26444@oksana.dev.rtsoft.ru>
-References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
-	<1224889741-4167-1-git-send-email-tpiepho@freescale.com>
-	<20081028143933.GA18453@oksana.dev.rtsoft.ru>
-	<fa686aa40810280753lc555683y5d32da678384438@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <fa686aa40810280753lc555683y5d32da678384438@mail.gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Richard Purdie <rpurdie@rpsys.net>,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	Trent Piepho <tpiepho@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <cel@us.ibm.com>
+Subject: [UDATED PATCH] Cell OProfile: Incorrect local array size in
+	activate spu profiling function
+From: Carl Love <cel@us.ibm.com>
+To: michael@ellerman.id.au, Hannsj_uhl <Hannsj_uhl@de.ibm.com>,
+	acjohnso <acjohnso@us.ibm.com>
+In-Reply-To: <1224909595.16090.5.camel@localhost>
+References: <1224874049.20229.5.camel@carll-linux-desktop>
+	<1224909595.16090.5.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 28 Oct 2008 08:17:59 -0700
+Message-Id: <1225207079.20229.32.camel@carll-linux-desktop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, cel@linux.vnet.ibm.com, cbe-oss-dev@ozlabs.org,
+	oprofile-list@lists.sourceforge.net,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,52 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 28, 2008 at 08:53:11AM -0600, Grant Likely wrote:
-> On Tue, Oct 28, 2008 at 8:39 AM, Anton Vorontsov
-> <avorontsov@ru.mvista.com> wrote:
-> > Can you repost a fixed version with my Ack and Cc: Andrew Morton,
-> > Benjamin Herrenschmidt?
-> >
-> > I think this change should go into the 2.6.28, so that we can
-> > write new code on top of new API. Otherwise this change will cause
-> > issues in the next merge window.
-> 
-> While I like this series, it should not be pushed for .28.  The window
-> is closed and we are in bug-fix-only mode.
+Updated the patch to address comments by Michael Ellerman.  
+Specifically, changed upper limit in for loop to 
+ARRAY_SIZE() macro and added a check to make sure the 
+number of events specified by the user, which is used as
+the max for indexing various arrays, is no bigger then the
+declared size of the arrays.
 
-IIRC, we approve API changes in the early -rcs, exactly to avoid build
-break issues for the new code (though the API changes themselves are
-discouraged).
+The size of the pm_signal_local array should be equal to the
+number of SPUs being configured in the array.  Currently, the
+array is of size 4 (NR_PHYS_CTRS) but being indexed by a for 
+loop from 0 to 7 (NUM_SPUS_PER_NODE).  
 
-> Focus on getting it into Ben's -next tree instead.
+Signed-off-by: Carl Love <carll@us.ibm.com>
 
-Would Benjamin apply the USB FHCI driver then? I doubt it.
 
-So, there are options:
-
-1. Either this patch go in into the .28;
-
-2. Or this patch go in _after_ USB FHCI driver, and Trent takes care
-   to convert it to the new API. (I'm trying to push the driver since
-   2007, I think. Firstly it has GPIO framework dependency, QE GPIO,
-   QE Pinmux, FSL GTM dependency, bindings, e.t.c. And now that.
-   No, no deal. I quite tired of the dependencies for this driver.)
-
-3. Or we apply my original patch that won't break the API.
-   http://lkml.org/lkml/2008/7/25/236
-   I still like it better than Trent's patch, exactly because it
-   can't break anything.
-
-> That will deal with any merge window
-> conflicts.
-
-This won't deal with build breakage because of API changes, which
-means I can't submit FHCI driver to Greg, I have to wait for the
-API changes applied.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Index: Cell_kernel_10_24_2008/arch/powerpc/oprofile/op_model_cell.c
+===================================================================
+--- Cell_kernel_10_24_2008.orig/arch/powerpc/oprofile/op_model_cell.c
++++ Cell_kernel_10_24_2008/arch/powerpc/oprofile/op_model_cell.c
+@@ -582,6 +582,13 @@ static int cell_reg_setup(struct op_coun
+ 
+ 	num_counters = num_ctrs;
+ 
++	if (unlikely(num_ctrs > NR_PHYS_CTRS)) {
++		printk(KERN_ERR
++		       "%s: Oprofile, number of specified events " \
++		       "exceeds number of physical counters\n",
++		       __func__);
++		return -EIO;
++	}
+ 	pm_regs.group_control = 0;
+ 	pm_regs.debug_bus_control = 0;
+ 
+@@ -830,13 +837,13 @@ static int calculate_lfsr(int n)
+ static int pm_rtas_activate_spu_profiling(u32 node)
+ {
+ 	int ret, i;
+-	struct pm_signal pm_signal_local[NR_PHYS_CTRS];
++	struct pm_signal pm_signal_local[NUM_SPUS_PER_NODE];
+ 
+ 	/*
+ 	 * Set up the rtas call to configure the debug bus to
+ 	 * route the SPU PCs.  Setup the pm_signal for each SPU
+ 	 */
+-	for (i = 0; i < NUM_SPUS_PER_NODE; i++) {
++	for (i = 0; i < ARRAY_SIZE(pm_signal_local); i++) {
+ 		pm_signal_local[i].cpu = node;
+ 		pm_signal_local[i].signal_group = 41;
+ 		/* spu i on word (i/2) */
