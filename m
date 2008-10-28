@@ -1,19 +1,26 @@
-Return-Path: <cel@us.ibm.com>
-Subject: [UDATED PATCH] Cell OProfile: Incorrect local array size in
-	activate spu profiling function
-From: Carl Love <cel@us.ibm.com>
-To: michael@ellerman.id.au, Hannsj_uhl <Hannsj_uhl@de.ibm.com>,
-	acjohnso <acjohnso@us.ibm.com>
-In-Reply-To: <1224909595.16090.5.camel@localhost>
-References: <1224874049.20229.5.camel@carll-linux-desktop>
-	<1224909595.16090.5.camel@localhost>
-Content-Type: text/plain
-Date: Tue, 28 Oct 2008 08:17:59 -0700
-Message-Id: <1225207079.20229.32.camel@carll-linux-desktop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cel@linux.vnet.ibm.com, cbe-oss-dev@ozlabs.org,
-	oprofile-list@lists.sourceforge.net,
-	linux-kernel <linux-kernel@vger.kernel.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.227])
+	by ozlabs.org (Postfix) with ESMTP id CE886DDE11
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 02:42:37 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so2579738rvb.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 08:42:36 -0700 (PDT)
+Message-ID: <fa686aa40810280842t36da3998j5f7ad22acf9f582c@mail.gmail.com>
+Date: Tue, 28 Oct 2008 09:42:36 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()
+In-Reply-To: <20081028151659.GA26444@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
+	<1224889741-4167-1-git-send-email-tpiepho@freescale.com>
+	<20081028143933.GA18453@oksana.dev.rtsoft.ru>
+	<fa686aa40810280753lc555683y5d32da678384438@mail.gmail.com>
+	<20081028151659.GA26444@oksana.dev.rtsoft.ru>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Richard Purdie <rpurdie@rpsys.net>,
+	Sean MacLennan <smaclennan@pikatech.com>,
+	Trent Piepho <tpiepho@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,52 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Updated the patch to address comments by Michael Ellerman.  
-Specifically, changed upper limit in for loop to 
-ARRAY_SIZE() macro and added a check to make sure the 
-number of events specified by the user, which is used as
-the max for indexing various arrays, is no bigger then the
-declared size of the arrays.
+On Tue, Oct 28, 2008 at 9:16 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Tue, Oct 28, 2008 at 08:53:11AM -0600, Grant Likely wrote:
+>> That will deal with any merge window
+>> conflicts.
+>
+> This won't deal with build breakage because of API changes, which
+> means I can't submit FHCI driver to Greg, I have to wait for the
+> API changes applied.
 
-The size of the pm_signal_local array should be equal to the
-number of SPUs being configured in the array.  Currently, the
-array is of size 4 (NR_PHYS_CTRS) but being indexed by a for 
-loop from 0 to 7 (NUM_SPUS_PER_NODE).  
+Then we coordinate with Greg and make sure the fixup gets put in place
+before the window opens; either by bringing the patch in Ben's tree or
+by getting Greg to pull Ben's tree into -next.  This API change should
+not block Greg picking up the FHCI driver.  This is not an
+insurmountable problem.
 
-Signed-off-by: Carl Love <carll@us.ibm.com>
+g.
 
-
-Index: Cell_kernel_10_24_2008/arch/powerpc/oprofile/op_model_cell.c
-===================================================================
---- Cell_kernel_10_24_2008.orig/arch/powerpc/oprofile/op_model_cell.c
-+++ Cell_kernel_10_24_2008/arch/powerpc/oprofile/op_model_cell.c
-@@ -582,6 +582,13 @@ static int cell_reg_setup(struct op_coun
- 
- 	num_counters = num_ctrs;
- 
-+	if (unlikely(num_ctrs > NR_PHYS_CTRS)) {
-+		printk(KERN_ERR
-+		       "%s: Oprofile, number of specified events " \
-+		       "exceeds number of physical counters\n",
-+		       __func__);
-+		return -EIO;
-+	}
- 	pm_regs.group_control = 0;
- 	pm_regs.debug_bus_control = 0;
- 
-@@ -830,13 +837,13 @@ static int calculate_lfsr(int n)
- static int pm_rtas_activate_spu_profiling(u32 node)
- {
- 	int ret, i;
--	struct pm_signal pm_signal_local[NR_PHYS_CTRS];
-+	struct pm_signal pm_signal_local[NUM_SPUS_PER_NODE];
- 
- 	/*
- 	 * Set up the rtas call to configure the debug bus to
- 	 * route the SPU PCs.  Setup the pm_signal for each SPU
- 	 */
--	for (i = 0; i < NUM_SPUS_PER_NODE; i++) {
-+	for (i = 0; i < ARRAY_SIZE(pm_signal_local); i++) {
- 		pm_signal_local[i].cpu = node;
- 		pm_signal_local[i].signal_group = 41;
- 		/* spu i on word (i/2) */
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
