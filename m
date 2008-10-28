@@ -4,25 +4,26 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EB97DDDED9
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 14:57:34 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 5D7F4DDEE2
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 14:57:39 +1100 (EST)
 Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
 	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m9S3vSKG026125
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 20:57:28 -0700 (MST)
+	m9S3vWHb026149
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 20:57:32 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m9S3vIg5014573
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 22:57:25 -0500 (CDT)
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m9S3vIg7014573
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Oct 2008 22:57:29 -0500 (CDT)
 From: Liu Yu <yu.liu@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/4] math-emu: Remove redundant 'ret'
-Date: Tue, 28 Oct 2008 11:50:20 +0800
-Message-Id: <1225165821-15998-4-git-send-email-yu.liu@freescale.com>
-In-Reply-To: <1225165821-15998-3-git-send-email-yu.liu@freescale.com>
+Subject: [PATCH 4/4] Add SPE/EFP math emulation for E500v1/v2 processors.
+Date: Tue, 28 Oct 2008 11:50:21 +0800
+Message-Id: <1225165821-15998-5-git-send-email-yu.liu@freescale.com>
+In-Reply-To: <1225165821-15998-4-git-send-email-yu.liu@freescale.com>
 References: <1225165821-15998-1-git-send-email-yu.liu@freescale.com>
 	<1225165821-15998-2-git-send-email-yu.liu@freescale.com>
 	<1225165821-15998-3-git-send-email-yu.liu@freescale.com>
+	<1225165821-15998-4-git-send-email-yu.liu@freescale.com>
 Cc: kumar.gala@freescale.com, Liu Yu <yu.liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -33,508 +34,970 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-FP_DECL_EX is already used, so ret is redundant.
-And FP_SET_EXCEPTION will add status into return value.
+This patch add the handlers of SPE/EFP exceptions.
+The code is used to emulate float point arithmetic,
+when MSR(SPE) is enabled and receive EFP data interrupt or EFP round interrupt.
+
+This patch has no conflict with or dependence on FP math-emu.
+
+The code has been tested by TestFloat.
+
+Now the code doesn't support SPE/EFP instructions emulation
+(it won't be called when receive program interrupt),
+but it could be easily added.
 
 Signed-off-by: Liu Yu <yu.liu@freescale.com>
 ---
- arch/powerpc/math-emu/fadd.c    |    1 -
- arch/powerpc/math-emu/fcmpo.c   |    5 ++---
- arch/powerpc/math-emu/fdiv.c    |    9 ++++-----
- arch/powerpc/math-emu/fdivs.c   |    9 ++++-----
- arch/powerpc/math-emu/fmadd.c   |    5 ++---
- arch/powerpc/math-emu/fmadds.c  |    5 ++---
- arch/powerpc/math-emu/fmsub.c   |    5 ++---
- arch/powerpc/math-emu/fmsubs.c  |    5 ++---
- arch/powerpc/math-emu/fmul.c    |    3 +--
- arch/powerpc/math-emu/fmuls.c   |    3 +--
- arch/powerpc/math-emu/fnmadd.c  |    5 ++---
- arch/powerpc/math-emu/fnmadds.c |    5 ++---
- arch/powerpc/math-emu/fnmsub.c  |    5 ++---
- arch/powerpc/math-emu/fnmsubs.c |    5 ++---
- arch/powerpc/math-emu/fsqrt.c   |    5 ++---
- arch/powerpc/math-emu/fsqrts.c  |    5 ++---
- arch/powerpc/math-emu/fsub.c    |    3 +--
- arch/powerpc/math-emu/fsubs.c   |    3 +--
- 18 files changed, 34 insertions(+), 52 deletions(-)
+ arch/powerpc/include/asm/processor.h   |    6 +
+ arch/powerpc/include/asm/sfp-machine.h |   36 ++-
+ arch/powerpc/kernel/head_fsl_booke.S   |    7 +-
+ arch/powerpc/kernel/traps.c            |   62 +++-
+ arch/powerpc/math-emu/Makefile         |    2 +
+ arch/powerpc/math-emu/math_efp.c       |  720 ++++++++++++++++++++++++++++++++
+ 6 files changed, 813 insertions(+), 20 deletions(-)
+ create mode 100644 arch/powerpc/math-emu/math_efp.c
 
-diff --git a/arch/powerpc/math-emu/fadd.c b/arch/powerpc/math-emu/fadd.c
-index 04d3b4a..0158a16 100644
---- a/arch/powerpc/math-emu/fadd.c
-+++ b/arch/powerpc/math-emu/fadd.c
-@@ -13,7 +13,6 @@ fadd(void *frD, void *frA, void *frB)
- 	FP_DECL_D(B);
- 	FP_DECL_D(R);
- 	FP_DECL_EX;
--	int ret = 0;
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 101ed87..cd7a478 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -207,6 +207,11 @@ struct thread_struct {
+ #define INIT_SP_LIMIT \
+ 	(_ALIGN_UP(sizeof(init_thread_info), 16) + (unsigned long) &init_stack)
  
- #ifdef DEBUG
- 	printk("%s: %p %p %p\n", __func__, frD, frA, frB);
-diff --git a/arch/powerpc/math-emu/fcmpo.c b/arch/powerpc/math-emu/fcmpo.c
-index b5dc449..5bce011 100644
---- a/arch/powerpc/math-emu/fcmpo.c
-+++ b/arch/powerpc/math-emu/fcmpo.c
-@@ -14,7 +14,6 @@ fcmpo(u32 *ccr, int crfD, void *frA, void *frB)
- 	FP_DECL_EX;
- 	int code[4] = { (1 << 3), (1 << 1), (1 << 2), (1 << 0) };
- 	long cmp;
--	int ret = 0;
++#ifdef CONFIG_SPE
++#define SPEFSCR_INIT .spefscr = SPEFSCR_FINVE | SPEFSCR_FDBZE | SPEFSCR_FUNFE | SPEFSCR_FOVFE,
++#else
++#define SPEFSCR_INIT
++#endif
  
- #ifdef DEBUG
- 	printk("%s: %p (%08x) %d %p %p\n", __func__, ccr, *ccr, crfD, frA, frB);
-@@ -29,7 +28,7 @@ fcmpo(u32 *ccr, int crfD, void *frA, void *frB)
- #endif
- 
- 	if (A_c == FP_CLS_NAN || B_c == FP_CLS_NAN)
--		ret |= EFLAG_VXVC;
-+		FP_SET_EXCEPTION(EFLAG_VXVC);
- 
- 	FP_CMP_D(cmp, A, B, 2);
- 	cmp = code[(cmp + 1) & 3];
-@@ -44,5 +43,5 @@ fcmpo(u32 *ccr, int crfD, void *frA, void *frB)
- 	printk("CR: %08x\n", *ccr);
- #endif
- 
--	return ret;
-+	return FP_CUR_EXCEPTIONS;
+ #ifdef CONFIG_PPC32
+ #define INIT_THREAD { \
+@@ -215,6 +220,7 @@ struct thread_struct {
+ 	.fs = KERNEL_DS, \
+ 	.pgdir = swapper_pg_dir, \
+ 	.fpexc_mode = MSR_FE0 | MSR_FE1, \
++	SPEFSCR_INIT \
  }
-diff --git a/arch/powerpc/math-emu/fdiv.c b/arch/powerpc/math-emu/fdiv.c
-index 2db1509..a29239c 100644
---- a/arch/powerpc/math-emu/fdiv.c
-+++ b/arch/powerpc/math-emu/fdiv.c
-@@ -13,7 +13,6 @@ fdiv(void *frD, void *frA, void *frB)
- 	FP_DECL_D(B);
- 	FP_DECL_D(R);
- 	FP_DECL_EX;
--	int ret = 0;
+ #else
+ #define INIT_THREAD  { \
+diff --git a/arch/powerpc/include/asm/sfp-machine.h b/arch/powerpc/include/asm/sfp-machine.h
+index 88af036..3d9f831 100644
+--- a/arch/powerpc/include/asm/sfp-machine.h
++++ b/arch/powerpc/include/asm/sfp-machine.h
+@@ -97,6 +97,20 @@
  
- #ifdef DEBUG
- 	printk("%s: %p %p %p\n", __func__, frD, frA, frB);
-@@ -28,22 +27,22 @@ fdiv(void *frD, void *frA, void *frB)
- #endif
+ #define _FP_KEEPNANFRACP 1
  
- 	if (A_c == FP_CLS_ZERO && B_c == FP_CLS_ZERO) {
--		ret |= EFLAG_VXZDZ;
-+		FP_SET_EXCEPTION(EFLAG_VXZDZ);
- #ifdef DEBUG
- 		printk("%s: FPSCR_VXZDZ raised\n", __func__);
- #endif
++#ifdef FP_EX_BOOKE_E500_SPE
++#define FP_EX_INEXACT		(1 << 21)
++#define FP_EX_INVALID		(1 << 20)
++#define FP_EX_DIVZERO		(1 << 19)
++#define FP_EX_UNDERFLOW		(1 << 18)
++#define FP_EX_OVERFLOW		(1 << 17)
++#define FP_INHIBIT_RESULTS	0
++
++#define __FPU_FPSCR	(current->thread.spefscr)
++#define __FPU_ENABLED_EXC		\
++({					\
++	(__FPU_FPSCR >> 2) & 0x1f;	\
++})
++#else
+ /* Exception flags.  We use the bit positions of the appropriate bits
+    in the FPSCR, which also correspond to the FE_* bits.  This makes
+    everything easier ;-).  */
+@@ -111,6 +125,18 @@
+ #define FP_EX_DIVZERO         (1 << (31 - 5))
+ #define FP_EX_INEXACT         (1 << (31 - 6))
+ 
++#define __FPU_FPSCR	(current->thread.fpscr.val)
++
++/* We only actually write to the destination register
++ * if exceptions signalled (if any) will not trap.
++ */
++#define __FPU_ENABLED_EXC \
++({						\
++	(__FPU_FPSCR >> 3) & 0x1f;	\
++})
++
++#endif
++
+ /*
+  * If one NaN is signaling and the other is not,
+  * we choose that one, otherwise we choose X.
+@@ -135,16 +161,6 @@
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ 
+-#define __FPU_FPSCR	(current->thread.fpscr.val)
+-
+-/* We only actually write to the destination register
+- * if exceptions signalled (if any) will not trap.
+- */
+-#define __FPU_ENABLED_EXC \
+-({						\
+-	(__FPU_FPSCR >> 3) & 0x1f;	\
+-})
+-
+ #define __FPU_TRAP_P(bits) \
+ 	((__FPU_ENABLED_EXC & (bits)) != 0)
+ 
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 1751882..8075afb 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -1027,12 +1027,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_BIG_PHYS)
+ 	/* SPE Floating Point Data */
+ #ifdef CONFIG_SPE
+ 	EXCEPTION(0x2030, SPEFloatingPointData, SPEFloatingPointException, EXC_XFER_EE);
+-#else
+-	EXCEPTION(0x2040, SPEFloatingPointData, unknown_exception, EXC_XFER_EE)
+-#endif /* CONFIG_SPE */
+ 
+ 	/* SPE Floating Point Round */
++	EXCEPTION(0x2050, SPEFloatingPointRound, SPEFloatingPointRoundException, EXC_XFER_EE)
++#else
++	EXCEPTION(0x2040, SPEFloatingPointData, unknown_exception, EXC_XFER_EE)
+ 	EXCEPTION(0x2050, SPEFloatingPointRound, unknown_exception, EXC_XFER_EE)
++#endif /* CONFIG_SPE */
+ 
+ 	/* Performance Monitor */
+ 	EXCEPTION(0x2060, PerformanceMonitor, performance_monitor_exception, EXC_XFER_STD)
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 81ccb8d..cab88aa 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1161,37 +1161,85 @@ void CacheLockingException(struct pt_regs *regs, unsigned long address,
+ #ifdef CONFIG_SPE
+ void SPEFloatingPointException(struct pt_regs *regs)
+ {
++	extern int do_spe_mathemu(struct pt_regs *regs);
+ 	unsigned long spefscr;
+ 	int fpexc_mode;
+ 	int code = 0;
++	int err;
++
++	preempt_disable();
++	if (regs->msr & MSR_SPE)
++		giveup_spe(current);
++	preempt_enable();
+ 
+ 	spefscr = current->thread.spefscr;
+ 	fpexc_mode = current->thread.fpexc_mode;
+ 
+-	/* Hardware does not neccessarily set sticky
+-	 * underflow/overflow/invalid flags */
+ 	if ((spefscr & SPEFSCR_FOVF) && (fpexc_mode & PR_FP_EXC_OVF)) {
+ 		code = FPE_FLTOVF;
+-		spefscr |= SPEFSCR_FOVFS;
  	}
- 	if (A_c == FP_CLS_INF && B_c == FP_CLS_INF) {
--		ret |= EFLAG_VXIDI;
-+		FP_SET_EXCEPTION(EFLAG_VXIDI);
- #ifdef DEBUG
- 		printk("%s: FPSCR_VXIDI raised\n", __func__);
- #endif
+ 	else if ((spefscr & SPEFSCR_FUNF) && (fpexc_mode & PR_FP_EXC_UND)) {
+ 		code = FPE_FLTUND;
+-		spefscr |= SPEFSCR_FUNFS;
  	}
- 
- 	if (B_c == FP_CLS_ZERO && A_c != FP_CLS_ZERO) {
--		ret |= EFLAG_DIVZERO;
-+		FP_SET_EXCEPTION(EFLAG_DIVZERO);
- 		if (__FPU_TRAP_P(EFLAG_DIVZERO))
--			return ret;
-+			return FP_CUR_EXCEPTIONS;
+ 	else if ((spefscr & SPEFSCR_FDBZ) && (fpexc_mode & PR_FP_EXC_DIV))
+ 		code = FPE_FLTDIV;
+ 	else if ((spefscr & SPEFSCR_FINV) && (fpexc_mode & PR_FP_EXC_INV)) {
+ 		code = FPE_FLTINV;
+-		spefscr |= SPEFSCR_FINVS;
  	}
- 	FP_DIV_D(R, A, B);
+ 	else if ((spefscr & (SPEFSCR_FG | SPEFSCR_FX)) && (fpexc_mode & PR_FP_EXC_RES))
+ 		code = FPE_FLTRES;
  
-diff --git a/arch/powerpc/math-emu/fdivs.c b/arch/powerpc/math-emu/fdivs.c
-index 797f6a9..526bc26 100644
---- a/arch/powerpc/math-emu/fdivs.c
-+++ b/arch/powerpc/math-emu/fdivs.c
-@@ -14,7 +14,6 @@ fdivs(void *frD, void *frA, void *frB)
- 	FP_DECL_D(B);
- 	FP_DECL_D(R);
- 	FP_DECL_EX;
--	int ret = 0;
+-	current->thread.spefscr = spefscr;
++	err = do_spe_mathemu(regs);
++	if (err == 0) {
++		regs->nip += 4;		/* skip emulated instruction */
++		emulate_single_step(regs);
++		return;
++	}
++
++	if (err == -EFAULT) {
++		/* got an error reading the instruction */
++		_exception(SIGSEGV, regs, SEGV_ACCERR, regs->nip);
++	} else if (err == -EINVAL) {
++		/* didn't recognize the instruction */
++		printk(KERN_ERR "unrecognized spe instruction "
++		       "in %s at %lx\n", current->comm, regs->nip);
++	} else {
++		_exception(SIGFPE, regs, code, regs->nip);
++	}
  
- #ifdef DEBUG
- 	printk("%s: %p %p %p\n", __func__, frD, frA, frB);
-@@ -29,22 +28,22 @@ fdivs(void *frD, void *frA, void *frB)
+-	_exception(SIGFPE, regs, code, regs->nip);
+ 	return;
+ }
++
++void SPEFloatingPointRoundException(struct pt_regs *regs)
++{
++	extern int speround_handler(struct pt_regs *regs);
++	int err;
++
++	preempt_disable();
++	if (regs->msr & MSR_SPE)
++		giveup_spe(current);
++	preempt_enable();
++
++	regs->nip -= 4;
++	err = speround_handler(regs);
++	if (err == 0) {
++		regs->nip += 4;		/* skip emulated instruction */
++		emulate_single_step(regs);
++		return;
++	}
++
++	if (err == -EFAULT) {
++		/* got an error reading the instruction */
++		_exception(SIGSEGV, regs, SEGV_ACCERR, regs->nip);
++	} else if (err == -EINVAL) {
++		/* didn't recognize the instruction */
++		printk(KERN_ERR "unrecognized spe instruction "
++		       "in %s at %lx\n", current->comm, regs->nip);
++	} else {
++		_exception(SIGFPE, regs, 0, regs->nip);
++		return;
++	}
++}
  #endif
  
- 	if (A_c == FP_CLS_ZERO && B_c == FP_CLS_ZERO) {
--		ret |= EFLAG_VXZDZ;
-+		FP_SET_EXCEPTION(EFLAG_VXZDZ);
- #ifdef DEBUG
- 		printk("%s: FPSCR_VXZDZ raised\n", __func__);
- #endif
- 	}
- 	if (A_c == FP_CLS_INF && B_c == FP_CLS_INF) {
--		ret |= EFLAG_VXIDI;
-+		FP_SET_EXCEPTION(EFLAG_VXIDI);
- #ifdef DEBUG
- 		printk("%s: FPSCR_VXIDI raised\n", __func__);
- #endif
- 	}
- 
- 	if (B_c == FP_CLS_ZERO && A_c != FP_CLS_ZERO) {
--		ret |= EFLAG_DIVZERO;
-+		FP_SET_EXCEPTION(EFLAG_DIVZERO);
- 		if (__FPU_TRAP_P(EFLAG_DIVZERO))
--			return ret;
-+			return FP_CUR_EXCEPTIONS;
- 	}
- 
- 	FP_DIV_D(R, A, B);
-diff --git a/arch/powerpc/math-emu/fmadd.c b/arch/powerpc/math-emu/fmadd.c
-index 925313a..8c3f20a 100644
---- a/arch/powerpc/math-emu/fmadd.c
-+++ b/arch/powerpc/math-emu/fmadd.c
-@@ -15,7 +15,6 @@ fmadd(void *frD, void *frA, void *frB, void *frC)
- 	FP_DECL_D(C);
- 	FP_DECL_D(T);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p %p\n", __func__, frD, frA, frB, frC);
-@@ -33,12 +32,12 @@ fmadd(void *frD, void *frA, void *frB, void *frC)
- 
- 	if ((A_c == FP_CLS_INF && C_c == FP_CLS_ZERO) ||
- 	    (A_c == FP_CLS_ZERO && C_c == FP_CLS_INF))
--                ret |= EFLAG_VXIMZ;
-+                FP_SET_EXCEPTION(EFLAG_VXIMZ);
- 
- 	FP_MUL_D(T, A, C);
- 
- 	if (T_s != B_s && T_c == FP_CLS_INF && B_c == FP_CLS_INF)
--		ret |= EFLAG_VXISI;
-+		FP_SET_EXCEPTION(EFLAG_VXISI);
- 
- 	FP_ADD_D(R, T, B);
- 
-diff --git a/arch/powerpc/math-emu/fmadds.c b/arch/powerpc/math-emu/fmadds.c
-index aea80ef..794fb31 100644
---- a/arch/powerpc/math-emu/fmadds.c
-+++ b/arch/powerpc/math-emu/fmadds.c
-@@ -16,7 +16,6 @@ fmadds(void *frD, void *frA, void *frB, void *frC)
- 	FP_DECL_D(C);
- 	FP_DECL_D(T);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p %p\n", __func__, frD, frA, frB, frC);
-@@ -34,12 +33,12 @@ fmadds(void *frD, void *frA, void *frB, void *frC)
- 
- 	if ((A_c == FP_CLS_INF && C_c == FP_CLS_ZERO) ||
- 	    (A_c == FP_CLS_ZERO && C_c == FP_CLS_INF))
--                ret |= EFLAG_VXIMZ;
-+                FP_SET_EXCEPTION(EFLAG_VXIMZ);
- 
- 	FP_MUL_D(T, A, C);
- 
- 	if (T_s != B_s && T_c == FP_CLS_INF && B_c == FP_CLS_INF)
--		ret |= EFLAG_VXISI;
-+		FP_SET_EXCEPTION(EFLAG_VXISI);
- 
- 	FP_ADD_D(R, T, B);
- 
-diff --git a/arch/powerpc/math-emu/fmsub.c b/arch/powerpc/math-emu/fmsub.c
-index a644d52..626f6fe 100644
---- a/arch/powerpc/math-emu/fmsub.c
-+++ b/arch/powerpc/math-emu/fmsub.c
-@@ -15,7 +15,6 @@ fmsub(void *frD, void *frA, void *frB, void *frC)
- 	FP_DECL_D(C);
- 	FP_DECL_D(T);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p %p\n", __func__, frD, frA, frB, frC);
-@@ -33,7 +32,7 @@ fmsub(void *frD, void *frA, void *frB, void *frC)
- 
- 	if ((A_c == FP_CLS_INF && C_c == FP_CLS_ZERO) ||
- 	    (A_c == FP_CLS_ZERO && C_c == FP_CLS_INF))
--		ret |= EFLAG_VXIMZ;
-+		FP_SET_EXCEPTION(EFLAG_VXIMZ);
- 
- 	FP_MUL_D(T, A, C);
- 
-@@ -41,7 +40,7 @@ fmsub(void *frD, void *frA, void *frB, void *frC)
- 		B_s ^= 1;
- 
- 	if (T_s != B_s && T_c == FP_CLS_INF && B_c == FP_CLS_INF)
--		ret |= EFLAG_VXISI;
-+		FP_SET_EXCEPTION(EFLAG_VXISI);
- 
- 	FP_ADD_D(R, T, B);
- 
-diff --git a/arch/powerpc/math-emu/fmsubs.c b/arch/powerpc/math-emu/fmsubs.c
-index 2fdeeb9..3425bc8 100644
---- a/arch/powerpc/math-emu/fmsubs.c
-+++ b/arch/powerpc/math-emu/fmsubs.c
-@@ -16,7 +16,6 @@ fmsubs(void *frD, void *frA, void *frB, void *frC)
- 	FP_DECL_D(C);
- 	FP_DECL_D(T);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p %p\n", __func__, frD, frA, frB, frC);
-@@ -34,7 +33,7 @@ fmsubs(void *frD, void *frA, void *frB, void *frC)
- 
- 	if ((A_c == FP_CLS_INF && C_c == FP_CLS_ZERO) ||
- 	    (A_c == FP_CLS_ZERO && C_c == FP_CLS_INF))
--		ret |= EFLAG_VXIMZ;
-+		FP_SET_EXCEPTION(EFLAG_VXIMZ);
- 
- 	FP_MUL_D(T, A, C);
- 
-@@ -42,7 +41,7 @@ fmsubs(void *frD, void *frA, void *frB, void *frC)
- 		B_s ^= 1;
- 
- 	if (T_s != B_s && T_c == FP_CLS_INF && B_c == FP_CLS_INF)
--		ret |= EFLAG_VXISI;
-+		FP_SET_EXCEPTION(EFLAG_VXISI);
- 
- 	FP_ADD_D(R, T, B);
- 
-diff --git a/arch/powerpc/math-emu/fmul.c b/arch/powerpc/math-emu/fmul.c
-index 391fd17..2c19297 100644
---- a/arch/powerpc/math-emu/fmul.c
-+++ b/arch/powerpc/math-emu/fmul.c
-@@ -13,7 +13,6 @@ fmul(void *frD, void *frA, void *frB)
- 	FP_DECL_D(B);
- 	FP_DECL_D(R);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p\n", __func__, frD, frA, frB);
-@@ -31,7 +30,7 @@ fmul(void *frD, void *frA, void *frB)
- 
- 	if ((A_c == FP_CLS_INF && B_c == FP_CLS_ZERO) ||
- 	    (A_c == FP_CLS_ZERO && B_c == FP_CLS_INF))
--		ret |= EFLAG_VXIMZ;
-+		FP_SET_EXCEPTION(EFLAG_VXIMZ);
- 
- 	FP_MUL_D(R, A, B);
- 
-diff --git a/arch/powerpc/math-emu/fmuls.c b/arch/powerpc/math-emu/fmuls.c
-index 2d3ec5f..f5ad5c9 100644
---- a/arch/powerpc/math-emu/fmuls.c
-+++ b/arch/powerpc/math-emu/fmuls.c
-@@ -14,7 +14,6 @@ fmuls(void *frD, void *frA, void *frB)
- 	FP_DECL_D(B);
- 	FP_DECL_D(R);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p\n", __func__, frD, frA, frB);
-@@ -32,7 +31,7 @@ fmuls(void *frD, void *frA, void *frB)
- 
- 	if ((A_c == FP_CLS_INF && B_c == FP_CLS_ZERO) ||
- 	    (A_c == FP_CLS_ZERO && B_c == FP_CLS_INF))
--		ret |= EFLAG_VXIMZ;
-+		FP_SET_EXCEPTION(EFLAG_VXIMZ);
- 
- 	FP_MUL_D(R, A, B);
- 
-diff --git a/arch/powerpc/math-emu/fnmadd.c b/arch/powerpc/math-emu/fnmadd.c
-index 2497b86..e817bc5 100644
---- a/arch/powerpc/math-emu/fnmadd.c
-+++ b/arch/powerpc/math-emu/fnmadd.c
-@@ -15,7 +15,6 @@ fnmadd(void *frD, void *frA, void *frB, void *frC)
- 	FP_DECL_D(C);
- 	FP_DECL_D(T);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p %p\n", __func__, frD, frA, frB, frC);
-@@ -33,12 +32,12 @@ fnmadd(void *frD, void *frA, void *frB, void *frC)
- 
- 	if ((A_c == FP_CLS_INF && C_c == FP_CLS_ZERO) ||
- 	    (A_c == FP_CLS_ZERO && C_c == FP_CLS_INF))
--                ret |= EFLAG_VXIMZ;
-+                FP_SET_EXCEPTION(EFLAG_VXIMZ);
- 
- 	FP_MUL_D(T, A, C);
- 
- 	if (T_s != B_s && T_c == FP_CLS_INF && B_c == FP_CLS_INF)
--		ret |= EFLAG_VXISI;
-+		FP_SET_EXCEPTION(EFLAG_VXISI);
- 
- 	FP_ADD_D(R, T, B);
- 
-diff --git a/arch/powerpc/math-emu/fnmadds.c b/arch/powerpc/math-emu/fnmadds.c
-index ee9d71e..4db4b7d 100644
---- a/arch/powerpc/math-emu/fnmadds.c
-+++ b/arch/powerpc/math-emu/fnmadds.c
-@@ -16,7 +16,6 @@ fnmadds(void *frD, void *frA, void *frB, void *frC)
- 	FP_DECL_D(C);
- 	FP_DECL_D(T);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p %p\n", __func__, frD, frA, frB, frC);
-@@ -34,12 +33,12 @@ fnmadds(void *frD, void *frA, void *frB, void *frC)
- 
- 	if ((A_c == FP_CLS_INF && C_c == FP_CLS_ZERO) ||
- 	    (A_c == FP_CLS_ZERO && C_c == FP_CLS_INF))
--                ret |= EFLAG_VXIMZ;
-+                FP_SET_EXCEPTION(EFLAG_VXIMZ);
- 
- 	FP_MUL_D(T, A, C);
- 
- 	if (T_s != B_s && T_c == FP_CLS_INF && B_c == FP_CLS_INF)
--		ret |= EFLAG_VXISI;
-+		FP_SET_EXCEPTION(EFLAG_VXISI);
- 
- 	FP_ADD_D(R, T, B);
- 
-diff --git a/arch/powerpc/math-emu/fnmsub.c b/arch/powerpc/math-emu/fnmsub.c
-index 3885a77..f65979f 100644
---- a/arch/powerpc/math-emu/fnmsub.c
-+++ b/arch/powerpc/math-emu/fnmsub.c
-@@ -15,7 +15,6 @@ fnmsub(void *frD, void *frA, void *frB, void *frC)
- 	FP_DECL_D(C);
- 	FP_DECL_D(T);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p %p\n", __func__, frD, frA, frB, frC);
-@@ -33,7 +32,7 @@ fnmsub(void *frD, void *frA, void *frB, void *frC)
- 
- 	if ((A_c == FP_CLS_INF && C_c == FP_CLS_ZERO) ||
- 	    (A_c == FP_CLS_ZERO && C_c == FP_CLS_INF))
--		ret |= EFLAG_VXIMZ;
-+		FP_SET_EXCEPTION(EFLAG_VXIMZ);
- 
- 	FP_MUL_D(T, A, C);
- 
-@@ -41,7 +40,7 @@ fnmsub(void *frD, void *frA, void *frB, void *frC)
- 		B_s ^= 1;
- 
- 	if (T_s != B_s && T_c == FP_CLS_INF && B_c == FP_CLS_INF)
--		ret |= EFLAG_VXISI;
-+		FP_SET_EXCEPTION(EFLAG_VXISI);
- 
- 	FP_ADD_D(R, T, B);
- 
-diff --git a/arch/powerpc/math-emu/fnmsubs.c b/arch/powerpc/math-emu/fnmsubs.c
-index f835dfe..9021dac 100644
---- a/arch/powerpc/math-emu/fnmsubs.c
-+++ b/arch/powerpc/math-emu/fnmsubs.c
-@@ -16,7 +16,6 @@ fnmsubs(void *frD, void *frA, void *frB, void *frC)
- 	FP_DECL_D(C);
- 	FP_DECL_D(T);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p %p\n", __func__, frD, frA, frB, frC);
-@@ -34,7 +33,7 @@ fnmsubs(void *frD, void *frA, void *frB, void *frC)
- 
- 	if ((A_c == FP_CLS_INF && C_c == FP_CLS_ZERO) ||
- 	    (A_c == FP_CLS_ZERO && C_c == FP_CLS_INF))
--		ret |= EFLAG_VXIMZ;
-+		FP_SET_EXCEPTION(EFLAG_VXIMZ);
- 
- 	FP_MUL_D(T, A, C);
- 
-@@ -42,7 +41,7 @@ fnmsubs(void *frD, void *frA, void *frB, void *frC)
- 		B_s ^= 1;
- 
- 	if (T_s != B_s && T_c == FP_CLS_INF && B_c == FP_CLS_INF)
--		ret |= EFLAG_VXISI;
-+		FP_SET_EXCEPTION(EFLAG_VXISI);
- 
- 	FP_ADD_D(R, T, B);
- 
-diff --git a/arch/powerpc/math-emu/fsqrt.c b/arch/powerpc/math-emu/fsqrt.c
-index 3e90072..a55fc7d 100644
---- a/arch/powerpc/math-emu/fsqrt.c
-+++ b/arch/powerpc/math-emu/fsqrt.c
-@@ -12,7 +12,6 @@ fsqrt(void *frD, void *frB)
- 	FP_DECL_D(B);
- 	FP_DECL_D(R);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p %p\n", __func__, frD, frB);
-@@ -25,9 +24,9 @@ fsqrt(void *frD, void *frB)
- #endif
- 
- 	if (B_s && B_c != FP_CLS_ZERO)
--		ret |= EFLAG_VXSQRT;
-+		FP_SET_EXCEPTION(EFLAG_VXSQRT);
- 	if (B_c == FP_CLS_NAN)
--		ret |= EFLAG_VXSNAN;
-+		FP_SET_EXCEPTION(EFLAG_VXSNAN);
- 
- 	FP_SQRT_D(R, B);
- 
-diff --git a/arch/powerpc/math-emu/fsqrts.c b/arch/powerpc/math-emu/fsqrts.c
-index 2843be9..31dccbf 100644
---- a/arch/powerpc/math-emu/fsqrts.c
-+++ b/arch/powerpc/math-emu/fsqrts.c
-@@ -13,7 +13,6 @@ fsqrts(void *frD, void *frB)
- 	FP_DECL_D(B);
- 	FP_DECL_D(R);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p %p\n", __func__, frD, frB);
-@@ -26,9 +25,9 @@ fsqrts(void *frD, void *frB)
- #endif
- 
- 	if (B_s && B_c != FP_CLS_ZERO)
--		ret |= EFLAG_VXSQRT;
-+		FP_SET_EXCEPTION(EFLAG_VXSQRT);
- 	if (B_c == FP_CLS_NAN)
--		ret |= EFLAG_VXSNAN;
-+		FP_SET_EXCEPTION(EFLAG_VXSNAN);
- 
- 	FP_SQRT_D(R, B);
- 
-diff --git a/arch/powerpc/math-emu/fsub.c b/arch/powerpc/math-emu/fsub.c
-index 78b0944..02c5dff 100644
---- a/arch/powerpc/math-emu/fsub.c
-+++ b/arch/powerpc/math-emu/fsub.c
-@@ -13,7 +13,6 @@ fsub(void *frD, void *frA, void *frB)
- 	FP_DECL_D(B);
- 	FP_DECL_D(R);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p\n", __func__, frD, frA, frB);
-@@ -31,7 +30,7 @@ fsub(void *frD, void *frA, void *frB)
- 		B_s ^= 1;
- 
- 	if (A_s != B_s && A_c == FP_CLS_INF && B_c == FP_CLS_INF)
--		ret |= EFLAG_VXISI;
-+		FP_SET_EXCEPTION(EFLAG_VXISI);
- 
- 	FP_ADD_D(R, A, B);
- 
-diff --git a/arch/powerpc/math-emu/fsubs.c b/arch/powerpc/math-emu/fsubs.c
-index d3bf908..5d9b18c 100644
---- a/arch/powerpc/math-emu/fsubs.c
-+++ b/arch/powerpc/math-emu/fsubs.c
-@@ -14,7 +14,6 @@ fsubs(void *frD, void *frA, void *frB)
- 	FP_DECL_D(B);
- 	FP_DECL_D(R);
- 	FP_DECL_EX;
--	int ret = 0;
- 
- #ifdef DEBUG
- 	printk("%s: %p %p %p\n", __func__, frD, frA, frB);
-@@ -32,7 +31,7 @@ fsubs(void *frD, void *frA, void *frB)
- 		B_s ^= 1;
- 
- 	if (A_s != B_s && A_c == FP_CLS_INF && B_c == FP_CLS_INF)
--		ret |= EFLAG_VXISI;
-+		FP_SET_EXCEPTION(EFLAG_VXISI);
- 
- 	FP_ADD_D(R, A, B);
- 
+ /*
+diff --git a/arch/powerpc/math-emu/Makefile b/arch/powerpc/math-emu/Makefile
+index 03aa98d..f9e506a 100644
+--- a/arch/powerpc/math-emu/Makefile
++++ b/arch/powerpc/math-emu/Makefile
+@@ -11,6 +11,8 @@ obj-$(CONFIG_MATH_EMULATION)	+= fabs.o fadd.o fadds.o fcmpo.o fcmpu.o \
+ 					mcrfs.o mffs.o mtfsb0.o mtfsb1.o \
+ 					mtfsf.o mtfsfi.o stfiwx.o stfs.o
+ 
++obj-$(CONFIG_SPE)		+= math_efp.o
++
+ CFLAGS_fabs.o = -fno-builtin-fabs
+ CFLAGS_math.o = -fno-builtin-fabs
+ 
+diff --git a/arch/powerpc/math-emu/math_efp.c b/arch/powerpc/math-emu/math_efp.c
+new file mode 100644
+index 0000000..0c50301
+--- /dev/null
++++ b/arch/powerpc/math-emu/math_efp.c
+@@ -0,0 +1,720 @@
++/*
++ * arch/powerpc/math-emu/math_efp.c
++ *
++ * Copyright (C) 2006-2008 Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * Author: Ebony Zhu,	<ebony.zhu@freescale.com>
++ *         Yu Liu,	<yu.liu@freescale.com>
++ *
++ * Derived from arch/alpha/math-emu/math.c
++ *              arch/powerpc/math-emu/math.c
++ *
++ * Description:
++ * This file is the exception handler to make E500 SPE instructions
++ * fully comply with IEEE-754 floating point standard.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/types.h>
++
++#include <asm/uaccess.h>
++#include <asm/reg.h>
++
++#define FP_EX_BOOKE_E500_SPE
++#include <asm/sfp-machine.h>
++
++#include <math-emu/soft-fp.h>
++#include <math-emu/single.h>
++#include <math-emu/double.h>
++
++#define EFAPU		0x4
++
++#define VCT		0x4
++#define SPFP		0x6
++#define DPFP		0x7
++
++#define EFSADD		0x2c0
++#define EFSSUB		0x2c1
++#define EFSABS		0x2c4
++#define EFSNABS		0x2c5
++#define EFSNEG		0x2c6
++#define EFSMUL		0x2c8
++#define EFSDIV		0x2c9
++#define EFSCMPGT	0x2cc
++#define EFSCMPLT	0x2cd
++#define EFSCMPEQ	0x2ce
++#define EFSCFD		0x2cf
++#define EFSCFSI		0x2d1
++#define EFSCTUI		0x2d4
++#define EFSCTSI		0x2d5
++#define EFSCTUF		0x2d6
++#define EFSCTSF		0x2d7
++#define EFSCTUIZ	0x2d8
++#define EFSCTSIZ	0x2da
++
++#define EVFSADD		0x280
++#define EVFSSUB		0x281
++#define EVFSABS		0x284
++#define EVFSNABS	0x285
++#define EVFSNEG		0x286
++#define EVFSMUL		0x288
++#define EVFSDIV		0x289
++#define EVFSCMPGT	0x28c
++#define EVFSCMPLT	0x28d
++#define EVFSCMPEQ	0x28e
++#define EVFSCTUI	0x294
++#define EVFSCTSI	0x295
++#define EVFSCTUF	0x296
++#define EVFSCTSF	0x297
++#define EVFSCTUIZ	0x298
++#define EVFSCTSIZ	0x29a
++
++#define EFDADD		0x2e0
++#define EFDSUB		0x2e1
++#define EFDABS		0x2e4
++#define EFDNABS		0x2e5
++#define EFDNEG		0x2e6
++#define EFDMUL		0x2e8
++#define EFDDIV		0x2e9
++#define EFDCTUIDZ	0x2ea
++#define EFDCTSIDZ	0x2eb
++#define EFDCMPGT	0x2ec
++#define EFDCMPLT	0x2ed
++#define EFDCMPEQ	0x2ee
++#define EFDCFS		0x2ef
++#define EFDCTUI		0x2f4
++#define EFDCTSI		0x2f5
++#define EFDCTUF		0x2f6
++#define EFDCTSF		0x2f7
++#define EFDCTUIZ	0x2f8
++#define EFDCTSIZ	0x2fa
++
++#define AB	2
++#define XA	3
++#define XB	4
++#define XCR	5
++#define NOTYPE	0
++
++#define SIGN_BIT_S	(1UL << 31)
++#define SIGN_BIT_D	(1ULL << 63)
++#define FP_EX_MASK	(FP_EX_INEXACT | FP_EX_INVALID | FP_EX_DIVZERO | \
++			FP_EX_UNDERFLOW | FP_EX_OVERFLOW)
++
++union dw_union {
++	u64 dp[1];
++	u32 wp[2];
++};
++
++static unsigned long insn_type(unsigned long speinsn)
++{
++	unsigned long ret = NOTYPE;
++
++	switch (speinsn & 0x7ff) {
++	case EFSABS:	ret = XA;	break;
++	case EFSADD:	ret = AB;	break;
++	case EFSCFD:	ret = XB;	break;
++	case EFSCMPEQ:	ret = XCR;	break;
++	case EFSCMPGT:	ret = XCR;	break;
++	case EFSCMPLT:	ret = XCR;	break;
++	case EFSCTSF:	ret = XB;	break;
++	case EFSCTSI:	ret = XB;	break;
++	case EFSCTSIZ:	ret = XB;	break;
++	case EFSCTUF:	ret = XB;	break;
++	case EFSCTUI:	ret = XB;	break;
++	case EFSCTUIZ:	ret = XB;	break;
++	case EFSDIV:	ret = AB;	break;
++	case EFSMUL:	ret = AB;	break;
++	case EFSNABS:	ret = XA;	break;
++	case EFSNEG:	ret = XA;	break;
++	case EFSSUB:	ret = AB;	break;
++	case EFSCFSI:	ret = XB;	break;
++
++	case EVFSABS:	ret = XA;	break;
++	case EVFSADD:	ret = AB;	break;
++	case EVFSCMPEQ:	ret = XCR;	break;
++	case EVFSCMPGT:	ret = XCR;	break;
++	case EVFSCMPLT:	ret = XCR;	break;
++	case EVFSCTSF:	ret = XB;	break;
++	case EVFSCTSI:	ret = XB;	break;
++	case EVFSCTSIZ:	ret = XB;	break;
++	case EVFSCTUF:	ret = XB;	break;
++	case EVFSCTUI:	ret = XB;	break;
++	case EVFSCTUIZ:	ret = XB;	break;
++	case EVFSDIV:	ret = AB;	break;
++	case EVFSMUL:	ret = AB;	break;
++	case EVFSNABS:	ret = XA;	break;
++	case EVFSNEG:	ret = XA;	break;
++	case EVFSSUB:	ret = AB;	break;
++
++	case EFDABS:	ret = XA;	break;
++	case EFDADD:	ret = AB;	break;
++	case EFDCFS:	ret = XB;	break;
++	case EFDCMPEQ:	ret = XCR;	break;
++	case EFDCMPGT:	ret = XCR;	break;
++	case EFDCMPLT:	ret = XCR;	break;
++	case EFDCTSF:	ret = XB;	break;
++	case EFDCTSI:	ret = XB;	break;
++	case EFDCTSIDZ:	ret = XB;	break;
++	case EFDCTSIZ:	ret = XB;	break;
++	case EFDCTUF:	ret = XB;	break;
++	case EFDCTUI:	ret = XB;	break;
++	case EFDCTUIDZ:	ret = XB;	break;
++	case EFDCTUIZ:	ret = XB;	break;
++	case EFDDIV:	ret = AB;	break;
++	case EFDMUL:	ret = AB;	break;
++	case EFDNABS:	ret = XA;	break;
++	case EFDNEG:	ret = XA;	break;
++	case EFDSUB:	ret = AB;	break;
++
++	default:
++		printk(KERN_ERR "\nOoops! SPE instruction no type found.");
++		printk(KERN_ERR "\ninst code: %08lx\n", speinsn);
++	}
++
++	return ret;
++}
++
++int do_spe_mathemu(struct pt_regs *regs)
++{
++	FP_DECL_EX;
++	int IR, cmp;
++
++	unsigned long type, func, fc, fa, fb, src, speinsn;
++	union dw_union vc, va, vb;
++
++	if (get_user(speinsn, (unsigned int __user *) regs->nip))
++		return -EFAULT;
++	if ((speinsn >> 26) != EFAPU)
++		return -EINVAL;         /* not an spe instruction */
++
++	type = insn_type(speinsn);
++	if (type == NOTYPE)
++		return -ENOSYS;
++
++	func = speinsn & 0x7ff;
++	fc = (speinsn >> 21) & 0x1f;
++	fa = (speinsn >> 16) & 0x1f;
++	fb = (speinsn >> 11) & 0x1f;
++	src = (speinsn >> 5) & 0x7;
++
++	vc.wp[0] = current->thread.evr[fc];
++	vc.wp[1] = regs->gpr[fc];
++	va.wp[0] = current->thread.evr[fa];
++	va.wp[1] = regs->gpr[fa];
++	vb.wp[0] = current->thread.evr[fb];
++	vb.wp[1] = regs->gpr[fb];
++
++	__FPU_FPSCR = mfspr(SPRN_SPEFSCR);
++
++#ifdef DEBUG
++	printk("speinsn:%08lx spefscr:%08lx\n", speinsn, __FPU_FPSCR);
++	printk("vc: %08x  %08x\n", vc.wp[0], vc.wp[1]);
++	printk("va: %08x  %08x\n", va.wp[0], va.wp[1]);
++	printk("vb: %08x  %08x\n", vb.wp[0], vb.wp[1]);
++#endif
++
++	switch (src) {
++	case SPFP: {
++		FP_DECL_S(SA); FP_DECL_S(SB); FP_DECL_S(SR);
++
++		switch (type) {
++		case AB:
++		case XCR:
++			FP_UNPACK_SP(SA, va.wp + 1);
++		case XB:
++			FP_UNPACK_SP(SB, vb.wp + 1);
++			break;
++		case XA:
++			FP_UNPACK_SP(SA, va.wp + 1);
++			break;
++		}
++
++#ifdef DEBUG
++		printk("SA: %ld %08lx %ld (%ld)\n", SA_s, SA_f, SA_e, SA_c);
++		printk("SB: %ld %08lx %ld (%ld)\n", SB_s, SB_f, SB_e, SB_c);
++#endif
++
++		switch (func) {
++		case EFSABS:
++			vc.wp[1] = va.wp[1] & ~SIGN_BIT_S;
++			goto update_regs;
++
++		case EFSNABS:
++			vc.wp[1] = va.wp[1] | SIGN_BIT_S;
++			goto update_regs;
++
++		case EFSNEG:
++			vc.wp[1] = va.wp[1] ^ SIGN_BIT_S;
++			goto update_regs;
++
++		case EFSADD:
++			FP_ADD_S(SR, SA, SB);
++			goto pack_s;
++
++		case EFSSUB:
++			FP_SUB_S(SR, SA, SB);
++			goto pack_s;
++
++		case EFSMUL:
++			FP_MUL_S(SR, SA, SB);
++			goto pack_s;
++
++		case EFSDIV:
++			FP_DIV_S(SR, SA, SB);
++			goto pack_s;
++
++		case EFSCMPEQ:
++			cmp = 0;
++			goto cmp_s;
++
++		case EFSCMPGT:
++			cmp = 1;
++			goto cmp_s;
++
++		case EFSCMPLT:
++			cmp = -1;
++			goto cmp_s;
++
++		case EFSCTSF:
++		case EFSCTUF:
++			if (!((vb.wp[1] >> 23) == 0xff && ((vb.wp[1] & 0x7fffff) > 0))) {
++				/* NaN */
++				if (((vb.wp[1] >> 23) & 0xff) == 0) {
++					/* denorm */
++					vc.wp[1] = 0x0;
++				} else if ((vb.wp[1] >> 31) == 0) {
++					/* positive normal */
++					vc.wp[1] = (func == EFSCTSF) ?
++						0x7fffffff : 0xffffffff;
++				} else { /* negative normal */
++					vc.wp[1] = (func == EFSCTSF) ?
++						0x80000000 : 0x0;
++				}
++			} else { /* rB is NaN */
++				vc.wp[1] = 0x0;
++			}
++			goto update_regs;
++
++		case EFSCFD: {
++			FP_DECL_D(DB);
++			FP_CLEAR_EXCEPTIONS;
++			FP_UNPACK_DP(DB, vb.dp);
++#ifdef DEBUG
++			printk("DB: %ld %08lx %08lx %ld (%ld)\n",
++					DB_s, DB_f1, DB_f0, DB_e, DB_c);
++#endif
++			FP_CONV(S, D, 1, 2, SR, DB);
++			goto pack_s;
++		}
++
++		case EFSCTSI:
++		case EFSCTSIZ:
++		case EFSCTUI:
++		case EFSCTUIZ:
++			if (func & 0x4) {
++				_FP_ROUND(1, SB);
++			} else {
++				_FP_ROUND_ZERO(1, SB);
++			}
++			FP_TO_INT_S(vc.wp[1], SB, 32, ((func & 0x3) != 0));
++			goto update_regs;
++
++		default:
++			goto illegal;
++		}
++		break;
++
++pack_s:
++#ifdef DEBUG
++		printk("SR: %ld %08lx %ld (%ld)\n", SR_s, SR_f, SR_e, SR_c);
++#endif
++		FP_PACK_SP(vc.wp + 1, SR);
++		goto update_regs;
++
++cmp_s:
++		FP_CMP_S(IR, SA, SB, 3);
++		if (IR == 3 && (FP_ISSIGNAN_S(SA) || FP_ISSIGNAN_S(SB)))
++			FP_SET_EXCEPTION(FP_EX_INVALID);
++		if (IR == cmp) {
++			IR = 0x4;
++		} else {
++			IR = 0;
++		}
++		goto update_ccr;
++	}
++
++	case DPFP: {
++		FP_DECL_D(DA); FP_DECL_D(DB); FP_DECL_D(DR);
++
++		switch (type) {
++		case AB:
++		case XCR:
++			FP_UNPACK_DP(DA, va.dp);
++		case XB:
++			FP_UNPACK_DP(DB, vb.dp);
++			break;
++		case XA:
++			FP_UNPACK_DP(DA, va.dp);
++			break;
++		}
++
++#ifdef DEBUG
++		printk("DA: %ld %08lx %08lx %ld (%ld)\n",
++				DA_s, DA_f1, DA_f0, DA_e, DA_c);
++		printk("DB: %ld %08lx %08lx %ld (%ld)\n",
++				DB_s, DB_f1, DB_f0, DB_e, DB_c);
++#endif
++
++		switch (func) {
++		case EFDABS:
++			vc.dp[0] = va.dp[0] & ~SIGN_BIT_D;
++			goto update_regs;
++
++		case EFDNABS:
++			vc.dp[0] = va.dp[0] | SIGN_BIT_D;
++			goto update_regs;
++
++		case EFDNEG:
++			vc.dp[0] = va.dp[0] ^ SIGN_BIT_D;
++			goto update_regs;
++
++		case EFDADD:
++			FP_ADD_D(DR, DA, DB);
++			goto pack_d;
++
++		case EFDSUB:
++			FP_SUB_D(DR, DA, DB);
++			goto pack_d;
++
++		case EFDMUL:
++			FP_MUL_D(DR, DA, DB);
++			goto pack_d;
++
++		case EFDDIV:
++			FP_DIV_D(DR, DA, DB);
++			goto pack_d;
++
++		case EFDCMPEQ:
++			cmp = 0;
++			goto cmp_d;
++
++		case EFDCMPGT:
++			cmp = 1;
++			goto cmp_d;
++
++		case EFDCMPLT:
++			cmp = -1;
++			goto cmp_d;
++
++		case EFDCTSF:
++		case EFDCTUF:
++			if (!((vb.wp[0] >> 20) == 0x7ff &&
++			   ((vb.wp[0] & 0xfffff) > 0 || (vb.wp[1] > 0)))) {
++				/* not a NaN */
++				if (((vb.wp[0] >> 20) & 0x7ff) == 0) {
++					/* denorm */
++					vc.wp[1] = 0x0;
++				} else if ((vb.wp[0] >> 31) == 0) {
++					/* positive normal */
++					vc.wp[1] = (func == EFDCTSF) ?
++						0x7fffffff : 0xffffffff;
++				} else { /* negative normal */
++					vc.wp[1] = (func == EFDCTSF) ?
++						0x80000000 : 0x0;
++				}
++			} else { /* NaN */
++				vc.wp[1] = 0x0;
++			}
++			goto update_regs;
++
++		case EFDCFS: {
++			FP_DECL_S(SB);
++			FP_CLEAR_EXCEPTIONS;
++			FP_UNPACK_SP(SB, vb.wp + 1);
++#ifdef DEBUG
++			printk("SB: %ld %08lx %ld (%ld)\n",
++					SB_s, SB_f, SB_e, SB_c);
++#endif
++			FP_CONV(D, S, 2, 1, DR, SB);
++			goto pack_d;
++		}
++
++		case EFDCTUIDZ:
++		case EFDCTSIDZ:
++			_FP_ROUND_ZERO(2, DB);
++			FP_TO_INT_D(vc.dp[0], DB, 64, ((func & 0x1) == 0));
++			goto update_regs;
++
++		case EFDCTUI:
++		case EFDCTSI:
++		case EFDCTUIZ:
++		case EFDCTSIZ:
++			if (func & 0x4) {
++				_FP_ROUND(2, DB);
++			} else {
++				_FP_ROUND_ZERO(2, DB);
++			}
++			FP_TO_INT_D(vc.wp[1], DB, 32, ((func & 0x3) != 0));
++			goto update_regs;
++
++		default:
++			goto illegal;
++		}
++		break;
++
++pack_d:
++#ifdef DEBUG
++		printk("DR: %ld %08lx %08lx %ld (%ld)\n",
++				DR_s, DR_f1, DR_f0, DR_e, DR_c);
++#endif
++		FP_PACK_DP(vc.dp, DR);
++		goto update_regs;
++
++cmp_d:
++		FP_CMP_D(IR, DA, DB, 3);
++		if (IR == 3 && (FP_ISSIGNAN_D(DA) || FP_ISSIGNAN_D(DB)))
++			FP_SET_EXCEPTION(FP_EX_INVALID);
++		if (IR == cmp) {
++			IR = 0x4;
++		} else {
++			IR = 0;
++		}
++		goto update_ccr;
++
++	}
++
++	case VCT: {
++		FP_DECL_S(SA0); FP_DECL_S(SB0); FP_DECL_S(SR0);
++		FP_DECL_S(SA1); FP_DECL_S(SB1); FP_DECL_S(SR1);
++		int IR0, IR1;
++
++		switch (type) {
++		case AB:
++		case XCR:
++			FP_UNPACK_SP(SA0, va.wp);
++			FP_UNPACK_SP(SA1, va.wp + 1);
++		case XB:
++			FP_UNPACK_SP(SB0, vb.wp);
++			FP_UNPACK_SP(SB1, vb.wp + 1);
++			break;
++		case XA:
++			FP_UNPACK_SP(SA0, va.wp);
++			FP_UNPACK_SP(SA1, va.wp + 1);
++			break;
++		}
++
++#ifdef DEBUG
++		printk("SA0: %ld %08lx %ld (%ld)\n", SA0_s, SA0_f, SA0_e, SA0_c);
++		printk("SA1: %ld %08lx %ld (%ld)\n", SA1_s, SA1_f, SA1_e, SA1_c);
++		printk("SB0: %ld %08lx %ld (%ld)\n", SB0_s, SB0_f, SB0_e, SB0_c);
++		printk("SB1: %ld %08lx %ld (%ld)\n", SB1_s, SB1_f, SB1_e, SB1_c);
++#endif
++
++		switch (func) {
++		case EVFSABS:
++			vc.wp[0] = va.wp[0] & ~SIGN_BIT_S;
++			vc.wp[1] = va.wp[1] & ~SIGN_BIT_S;
++			goto update_regs;
++
++		case EVFSNABS:
++			vc.wp[0] = va.wp[0] | SIGN_BIT_S;
++			vc.wp[1] = va.wp[1] | SIGN_BIT_S;
++			goto update_regs;
++
++		case EVFSNEG:
++			vc.wp[0] = va.wp[0] ^ SIGN_BIT_S;
++			vc.wp[1] = va.wp[1] ^ SIGN_BIT_S;
++			goto update_regs;
++
++		case EVFSADD:
++			FP_ADD_S(SR0, SA0, SB0);
++			FP_ADD_S(SR1, SA1, SB1);
++			goto pack_vs;
++
++		case EVFSSUB:
++			FP_SUB_S(SR0, SA0, SB0);
++			FP_SUB_S(SR1, SA1, SB1);
++			goto pack_vs;
++
++		case EVFSMUL:
++			FP_MUL_S(SR0, SA0, SB0);
++			FP_MUL_S(SR1, SA1, SB1);
++			goto pack_vs;
++
++		case EVFSDIV:
++			FP_DIV_S(SR0, SA0, SB0);
++			FP_DIV_S(SR1, SA1, SB1);
++			goto pack_vs;
++
++		case EVFSCMPEQ:
++			cmp = 0;
++			goto cmp_vs;
++
++		case EVFSCMPGT:
++			cmp = 1;
++			goto cmp_vs;
++
++		case EVFSCMPLT:
++			cmp = -1;
++			goto cmp_vs;
++
++		case EVFSCTSF:
++			__asm__ __volatile__ ("mtspr 512, %4\n"
++				"efsctsf %0, %2\n"
++				"efsctsf %1, %3\n"
++				: "=r" (vc.wp[0]), "=r" (vc.wp[1])
++				: "r" (vb.wp[0]), "r" (vb.wp[1]), "r" (0));
++			goto update_regs;
++
++		case EVFSCTUF:
++			__asm__ __volatile__ ("mtspr 512, %4\n"
++				"efsctuf %0, %2\n"
++				"efsctuf %1, %3\n"
++				: "=r" (vc.wp[0]), "=r" (vc.wp[1])
++				: "r" (vb.wp[0]), "r" (vb.wp[1]), "r" (0));
++			goto update_regs;
++
++		case EVFSCTUI:
++		case EVFSCTSI:
++		case EVFSCTUIZ:
++		case EVFSCTSIZ:
++			if (func & 0x4) {
++				_FP_ROUND(1, SB0);
++				_FP_ROUND(1, SB1);
++			} else {
++				_FP_ROUND_ZERO(1, SB0);
++				_FP_ROUND_ZERO(1, SB1);
++			}
++			FP_TO_INT_S(vc.wp[0], SB0, 32, ((func & 0x3) != 0));
++			FP_TO_INT_S(vc.wp[1], SB1, 32, ((func & 0x3) != 0));
++			goto update_regs;
++
++		default:
++			goto illegal;
++		}
++		break;
++
++pack_vs:
++#ifdef DEBUG
++		printk("SR0: %ld %08lx %ld (%ld)\n", SR0_s, SR0_f, SR0_e, SR0_c);
++		printk("SR1: %ld %08lx %ld (%ld)\n", SR1_s, SR1_f, SR1_e, SR1_c);
++#endif
++		FP_PACK_SP(vc.wp, SR0);
++		FP_PACK_SP(vc.wp + 1, SR1);
++		goto update_regs;
++
++cmp_vs:
++		{
++			int ch, cl;
++
++			FP_CMP_S(IR0, SA0, SB0, 3);
++			FP_CMP_S(IR1, SA1, SB1, 3);
++			if (IR0 == 3 && (FP_ISSIGNAN_S(SA0) || FP_ISSIGNAN_S(SB0)))
++				FP_SET_EXCEPTION(FP_EX_INVALID);
++			if (IR1 == 3 && (FP_ISSIGNAN_S(SA1) || FP_ISSIGNAN_S(SB1)))
++				FP_SET_EXCEPTION(FP_EX_INVALID);
++			ch = (IR0 == cmp) ? 1 : 0;
++			cl = (IR1 == cmp) ? 1 : 0;
++			IR = (ch << 3) | (cl << 2) | ((ch | cl) << 1) |
++				((ch & cl) << 0);
++			goto update_ccr;
++		}
++	}
++	default:
++		return -EINVAL;
++	}
++
++update_ccr:
++	regs->ccr &= ~(15 << ((7 - ((speinsn >> 23) & 0x7)) << 2));
++	regs->ccr |= (IR << ((7 - ((speinsn >> 23) & 0x7)) << 2));
++
++update_regs:
++	__FPU_FPSCR &= ~FP_EX_MASK;
++	__FPU_FPSCR |= (FP_CUR_EXCEPTIONS & FP_EX_MASK);
++	mtspr(SPRN_SPEFSCR, __FPU_FPSCR);
++
++	current->thread.evr[fc] = vc.wp[0];
++	regs->gpr[fc] = vc.wp[1];
++
++#ifdef DEBUG
++	printk("ccr = %08lx\n", regs->ccr);
++	printk("cur exceptions = %08x spefscr = %08lx\n",
++			FP_CUR_EXCEPTIONS, __FPU_FPSCR);
++	printk("vc: %08x  %08x\n", vc.wp[0], vc.wp[1]);
++	printk("va: %08x  %08x\n", va.wp[0], va.wp[1]);
++	printk("vb: %08x  %08x\n", vb.wp[0], vb.wp[1]);
++#endif
++
++	return 0;
++
++illegal:
++	printk(KERN_ERR "\nOoops! IEEE-754 compliance handler encountered un-supported instruction.\ninst code: %08lx\n", speinsn);
++	return -ENOSYS;
++}
++
++int speround_handler(struct pt_regs *regs)
++{
++	union dw_union fgpr;
++	int s_lo, s_hi;
++	unsigned long speinsn, type, fc;
++
++	if (get_user(speinsn, (unsigned int __user *) regs->nip))
++		return -EFAULT;
++	if ((speinsn >> 26) != 4)
++		return -EINVAL;         /* not an spe instruction */
++
++	type = insn_type(speinsn & 0x7ff);
++	if (type == XCR) return -ENOSYS;
++
++	fc = (speinsn >> 21) & 0x1f;
++	s_lo = regs->gpr[fc] & SIGN_BIT_S;
++	s_hi = current->thread.evr[fc] & SIGN_BIT_S;
++	fgpr.wp[0] = current->thread.evr[fc];
++	fgpr.wp[1] = regs->gpr[fc];
++
++	__FPU_FPSCR = mfspr(SPRN_SPEFSCR);
++
++	switch ((speinsn >> 5) & 0x7) {
++	/* Since SPE instructions on E500 core can handle round to nearest
++	 * and round toward zero with IEEE-754 complied, we just need
++	 * to handle round toward +Inf and round toward -Inf by software.
++	 */
++	case SPFP:
++		if ((FP_ROUNDMODE) == FP_RND_PINF) {
++			if (!s_lo) fgpr.wp[1]++; /* Z > 0, choose Z1 */
++		} else { /* round to -Inf */
++			if (s_lo) fgpr.wp[1]++; /* Z < 0, choose Z2 */
++		}
++		break;
++
++	case DPFP:
++		if (FP_ROUNDMODE == FP_RND_PINF) {
++			if (!s_hi) fgpr.dp[0]++; /* Z > 0, choose Z1 */
++		} else { /* round to -Inf */
++			if (s_hi) fgpr.dp[0]++; /* Z < 0, choose Z2 */
++		}
++		break;
++
++	case VCT:
++		if (FP_ROUNDMODE == FP_RND_PINF) {
++			if (!s_lo) fgpr.wp[1]++; /* Z_low > 0, choose Z1 */
++			if (!s_hi) fgpr.wp[0]++; /* Z_high word > 0, choose Z1 */
++		} else { /* round to -Inf */
++			if (s_lo) fgpr.wp[1]++; /* Z_low < 0, choose Z2 */
++			if (s_hi) fgpr.wp[0]++; /* Z_high < 0, choose Z2 */
++		}
++		break;
++
++	default:
++		return -EINVAL;
++	}
++
++	current->thread.evr[fc] = fgpr.wp[0];
++	regs->gpr[fc] = fgpr.wp[1];
++
++	return 0;
++}
 -- 
 1.5.4
