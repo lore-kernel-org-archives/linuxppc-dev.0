@@ -1,20 +1,18 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 28 Oct 2008 11:15:11 +1100
+Date: Tue, 28 Oct 2008 11:34:52 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Matt Sealey <matt@genesi-usa.com>
 Subject: Re: GPIO - marking individual pins (not) available in device tree
-Message-ID: <20081028001511.GD26424@yookeroo.seuss>
+Message-ID: <20081028003452.GE26424@yookeroo.seuss>
 References: <4900ED81.3040202@genesi-usa.com> <4900F90B.80703@firmworks.com>
 	<4901032F.3090805@genesi-usa.com> <49011C42.2020101@firmworks.com>
-	<20081024032944.GE4267@yookeroo.seuss>
-	<49014C69.8020408@firmworks.com>
-	<20081024044511.GI4267@yookeroo.seuss>
-	<490248C2.9020104@genesi-usa.com>
-	<20081026234747.GD22339@yookeroo.seuss>
-	<4905E0DC.104@genesi-usa.com>
+	<49024646.3050300@genesi-usa.com> <49025DE0.6070403@firmworks.com>
+	<4904DD76.7070706@genesi-usa.com>
+	<20081026235303.GE22339@yookeroo.seuss>
+	<4905E857.6040206@genesi-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4905E0DC.104@genesi-usa.com>
+In-Reply-To: <4905E857.6040206@genesi-usa.com>
 Cc: Mitch Bradley <wmb@firmworks.com>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	devicetree-discuss list <devicetree-discuss@ozlabs.org>
@@ -27,35 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 27, 2008 at 10:40:12AM -0500, Matt Sealey wrote:
+On Mon, Oct 27, 2008 at 11:12:07AM -0500, Matt Sealey wrote:
 >
 >
 > David Gibson wrote:
+>> On Sun, Oct 26, 2008 at 04:13:26PM -0500, Matt Sealey wrote:
+>>>
+>>> Mitch Bradley wrote:
+>>
+>> device_type in 1275 defines the runtime method interface.  It's *not*
+>> for declaring the general class of the device, although it often
+>> matches that in practice.
 >
->> Um.. I can't actually follow what you're getting at there, sorry.
->
-> Imagine in your head that you have a GPIO controller that has a
-> 32-bit register potentially controlling 32 pins on the chip.
->
-> Imagine that rather than being able to allocate 6 GPIO pins
-> *right next to each other* in the register and saying that
-> you start at "pin" 15 and use the next 6 "pins", you have to
-> spread it around and use pin 1, pin 8, pin 9, pin 11, pin 15,
-> pin 30, to make up this peripheral.
->
-> As far as I can tell there is no way at all to specify a set of
-> GPIO pins which are NOT consecutive because the current GPIO
-> spec stops after specifying a controller bank (the 32-bit
-> register).
+> It *is* for declaring the general class of the device, even if it's
+> purpose is to make it known that it implements all the required
+> methods and therefore acts in a certain predefined way when those
+> methods are used; it's not a necessary property but it is a USEFUL
+> property:
 
-Uh.. no.  The gpio specifier has a format that's gpio controller
-specific, but it must include the actual pin number, although exactly
-how it's encoded might vary.
+No, it's really not.  There are only two ways device class information
+can be useful:
+	- for human readability.  For this purpose the node name with
+the generic names convention suffices.
+	- for manipulating the device without having a driver specific
+to the device.  This works *only* if there is a class-defined protocol
+for doing this manipulation.  Clearly, this can't exist unless the
+firmware provides some sort of runtime service to abstract away
+differences between devices.  Flat trees cannot of themselves provide
+such a thing, and so should not advertise that they can with
+device_type.
 
-So, you use
-	gpios = <&controller pin1-specifier &controller pin8-specifier
-		 &controller pin9-specifier &controller pin11-specifier
-		 &controller pin15-specifier &controller pin30-specifier>;
+Even if a firmware did provide run time services, but they weren't in
+the form of the OF defined method interface, they should not use
+device_type, but some other property to advertise their own particular
+brand of runtime service interface.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
