@@ -1,28 +1,11 @@
-Return-Path: <markn@au1.ibm.com>
-Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E2BB0DDE09
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 17:45:06 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id m9S6qIhV092270
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 17:52:18 +1100
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9S6bV5P277630
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 17:37:32 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9S6bUT2005486
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 17:37:31 +1100
-From: Mark Nelson <markn@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] powerpc: Remove map_/unmap_single() from dma_mapping_ops
-Date: Tue, 28 Oct 2008 17:38:14 +1100
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200810281738.14104.markn@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18694.57779.303903.837617@cargo.ozlabs.ibm.com>
+Date: Tue, 28 Oct 2008 20:56:03 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Improve resolution of VDSO clock_gettime
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,99 +15,538 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that all of the remaining dma_mapping_ops have had their map_/unmap_single
-functions updated to become map/unmap_page functions, there is no need to have
-the map_/unmap_single function pointers in the dma_mapping_ops.
+Currently the clock_gettime implementation in the VDSO produces a
+result with microsecond resolution for the cases that are handled
+without a system call, i.e. CLOCK_REALTIME and CLOCK_MONOTONIC.  The
+nanoseconds field of the result is obtained by computing a
+microseconds value and multiplying by 1000.
 
-So, take this opportunity to remove them and also remove the code that does
-the checking for which set of functions to use.
+This changes the code in the VDSO to do the computation for
+clock_gettime with nanosecond resolution.  That means that the
+resolution of the result will ultimately depend on the timebase
+frequency.
 
-Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+Because the timestamp in the VDSO datapage (stamp_xsec, the real time
+corresponding to the timebase count in tb_orig_stamp) is in units of
+2^-20 seconds, it doesn't have sufficient resolution for computing a
+result with nanosecond resolution.  Therefore this adds a copy of
+xtime to the VDSO datapage and updates it in update_gtod() along with
+the other time-related fields.
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
-This is just a cleanup so can wait for 2.6.29
-
- arch/powerpc/include/asm/dma-mapping.h |   36 ++++-----------------------------
- 1 file changed, 5 insertions(+), 31 deletions(-)
-
-Index: upstream/arch/powerpc/include/asm/dma-mapping.h
-===================================================================
---- upstream.orig/arch/powerpc/include/asm/dma-mapping.h
-+++ upstream/arch/powerpc/include/asm/dma-mapping.h
-@@ -60,12 +60,6 @@ struct dma_mapping_ops {
- 				dma_addr_t *dma_handle, gfp_t flag);
- 	void		(*free_coherent)(struct device *dev, size_t size,
- 				void *vaddr, dma_addr_t dma_handle);
--	dma_addr_t	(*map_single)(struct device *dev, void *ptr,
--				size_t size, enum dma_data_direction direction,
--				struct dma_attrs *attrs);
--	void		(*unmap_single)(struct device *dev, dma_addr_t dma_addr,
--				size_t size, enum dma_data_direction direction,
--				struct dma_attrs *attrs);
- 	int		(*map_sg)(struct device *dev, struct scatterlist *sg,
- 				int nents, enum dma_data_direction direction,
- 				struct dma_attrs *attrs);
-@@ -149,10 +143,9 @@ static inline int dma_set_mask(struct de
- }
+diff --git a/arch/powerpc/include/asm/vdso_datapage.h b/arch/powerpc/include/asm/vdso_datapage.h
+index f013932..13c2c28 100644
+--- a/arch/powerpc/include/asm/vdso_datapage.h
++++ b/arch/powerpc/include/asm/vdso_datapage.h
+@@ -39,6 +39,7 @@
+ #ifndef __ASSEMBLY__
  
+ #include <linux/unistd.h>
++#include <linux/time.h>
+ 
+ #define SYSCALL_MAP_SIZE      ((__NR_syscalls + 31) / 32)
+ 
+@@ -83,6 +84,7 @@ struct vdso_data {
+ 	__u32 icache_log_block_size;		/* L1 i-cache log block size */
+ 	__s32 wtom_clock_sec;			/* Wall to monotonic clock */
+ 	__s32 wtom_clock_nsec;
++	struct timespec stamp_xtime;	/* xtime as at tb_orig_stamp */
+    	__u32 syscall_map_64[SYSCALL_MAP_SIZE]; /* map of syscalls  */
+    	__u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
+ };
+@@ -102,6 +104,7 @@ struct vdso_data {
+ 	__u32 tz_dsttime;		/* Type of dst correction	0x5C */
+ 	__s32 wtom_clock_sec;			/* Wall to monotonic clock */
+ 	__s32 wtom_clock_nsec;
++	struct timespec stamp_xtime;	/* xtime as at tb_orig_stamp */
+    	__u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
+ 	__u32 dcache_block_size;	/* L1 d-cache block size     */
+ 	__u32 icache_block_size;	/* L1 i-cache block size     */
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 75c5dd0..050abfd 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -306,6 +306,7 @@ int main(void)
+ 	DEFINE(CFG_SYSCALL_MAP32, offsetof(struct vdso_data, syscall_map_32));
+ 	DEFINE(WTOM_CLOCK_SEC, offsetof(struct vdso_data, wtom_clock_sec));
+ 	DEFINE(WTOM_CLOCK_NSEC, offsetof(struct vdso_data, wtom_clock_nsec));
++	DEFINE(STAMP_XTIME, offsetof(struct vdso_data, stamp_xtime));
+ 	DEFINE(CFG_ICACHE_BLOCKSZ, offsetof(struct vdso_data, icache_block_size));
+ 	DEFINE(CFG_DCACHE_BLOCKSZ, offsetof(struct vdso_data, dcache_block_size));
+ 	DEFINE(CFG_ICACHE_LOGBLOCKSZ, offsetof(struct vdso_data, icache_log_block_size));
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index e2ee66b..8389c5b 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -456,6 +456,7 @@ static inline void update_gtod(u64 new_tb_stamp, u64 new_stamp_xsec,
+ 	vdso_data->tb_to_xs = new_tb_to_xs;
+ 	vdso_data->wtom_clock_sec = wall_to_monotonic.tv_sec;
+ 	vdso_data->wtom_clock_nsec = wall_to_monotonic.tv_nsec;
++	vdso_data->stamp_xtime = xtime;
+ 	smp_wmb();
+ 	++(vdso_data->tb_update_count);
+ }
+diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
+index 72ca26d..ee038d4 100644
+--- a/arch/powerpc/kernel/vdso32/gettimeofday.S
++++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
+@@ -16,6 +16,13 @@
+ #include <asm/asm-offsets.h>
+ #include <asm/unistd.h>
+ 
++/* Offset for the low 32-bit part of a field of long type */
++#ifdef CONFIG_PPC64
++#define LOPART	4
++#else
++#define LOPART	0
++#endif
++
+ 	.text
  /*
-- * TODO: map_/unmap_single will ideally go away, to be completely
-- * replaced by map/unmap_page.   Until then, we allow dma_ops to have
-- * one or the other, or both by checking to see if the specific
-- * function requested exists; and if not, falling back on the other set.
-+ * map_/unmap_single actually call through to map/unmap_page now that all the
-+ * dma_mapping_ops have been converted over. We just have to get the page and
-+ * offset to pass through to map_page
-  */
- static inline dma_addr_t dma_map_single_attrs(struct device *dev,
- 					      void *cpu_addr,
-@@ -164,10 +157,6 @@ static inline dma_addr_t dma_map_single_
+  * Exact prototype of gettimeofday
+@@ -90,101 +97,53 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
  
- 	BUG_ON(!dma_ops);
- 
--	if (dma_ops->map_single)
--		return dma_ops->map_single(dev, cpu_addr, size, direction,
--					   attrs);
+ 	mflr	r12			/* r12 saves lr */
+   .cfi_register lr,r12
+-	mr	r10,r3			/* r10 saves id */
+ 	mr	r11,r4			/* r11 saves tp */
+ 	bl	__get_datapage@local	/* get data page */
+ 	mr	r9,r3			/* datapage ptr in r9 */
+-	beq	cr1,50f			/* if monotonic -> jump there */
 -
- 	return dma_ops->map_page(dev, virt_to_page(cpu_addr),
- 				 (unsigned long)cpu_addr % PAGE_SIZE, size,
- 				 direction, attrs);
-@@ -183,11 +172,6 @@ static inline void dma_unmap_single_attr
- 
- 	BUG_ON(!dma_ops);
- 
--	if (dma_ops->unmap_single) {
--		dma_ops->unmap_single(dev, dma_addr, size, direction, attrs);
--		return;
--	}
+-	/*
+-	 * CLOCK_REALTIME
+-	 */
 -
- 	dma_ops->unmap_page(dev, dma_addr, size, direction, attrs);
- }
- 
-@@ -201,12 +185,7 @@ static inline dma_addr_t dma_map_page_at
- 
- 	BUG_ON(!dma_ops);
- 
--	if (dma_ops->map_page)
--		return dma_ops->map_page(dev, page, offset, size, direction,
--					 attrs);
+-	bl	__do_get_xsec@local	/* get xsec from tb & kernel */
+-	bne-	98f			/* out of line -> do syscall */
 -
--	return dma_ops->map_single(dev, page_address(page) + offset, size,
--				   direction, attrs);
-+	return dma_ops->map_page(dev, page, offset, size, direction, attrs);
- }
+-	/* seconds are xsec >> 20 */
+-	rlwinm	r5,r4,12,20,31
+-	rlwimi	r5,r3,12,0,19
+-	stw	r5,TSPC32_TV_SEC(r11)
  
- static inline void dma_unmap_page_attrs(struct device *dev,
-@@ -219,12 +198,7 @@ static inline void dma_unmap_page_attrs(
+-	/* get remaining xsec and convert to nsec. we scale
+-	 * up remaining xsec by 12 bits and get the top 32 bits
+-	 * of the multiplication, then we multiply by 1000
+-	 */
+-	rlwinm	r5,r4,12,0,19
+-	lis	r6,1000000@h
+-	ori	r6,r6,1000000@l
+-	mulhwu	r5,r5,r6
+-	mulli	r5,r5,1000
+-	stw	r5,TSPC32_TV_NSEC(r11)
+-	mtlr	r12
+-	crclr	cr0*4+so
+-	li	r3,0
+-	blr
++50:	bl	__do_get_tspec@local	/* get sec/nsec from tb & kernel */
++	bne	cr1,80f			/* not monotonic -> all done */
  
- 	BUG_ON(!dma_ops);
+ 	/*
+ 	 * CLOCK_MONOTONIC
+ 	 */
  
--	if (dma_ops->unmap_page) {
--		dma_ops->unmap_page(dev, dma_address, size, direction, attrs);
--		return;
--	}
+-50:	bl	__do_get_xsec@local	/* get xsec from tb & kernel */
+-	bne-	98f			/* out of line -> do syscall */
 -
--	dma_ops->unmap_single(dev, dma_address, size, direction, attrs);
-+	dma_ops->unmap_page(dev, dma_address, size, direction, attrs);
- }
+-	/* seconds are xsec >> 20 */
+-	rlwinm	r6,r4,12,20,31
+-	rlwimi	r6,r3,12,0,19
+-
+-	/* get remaining xsec and convert to nsec. we scale
+-	 * up remaining xsec by 12 bits and get the top 32 bits
+-	 * of the multiplication, then we multiply by 1000
+-	 */
+-	rlwinm	r7,r4,12,0,19
+-	lis	r5,1000000@h
+-	ori	r5,r5,1000000@l
+-	mulhwu	r7,r7,r5
+-	mulli	r7,r7,1000
+-
+ 	/* now we must fixup using wall to monotonic. We need to snapshot
+ 	 * that value and do the counter trick again. Fortunately, we still
+ 	 * have the counter value in r8 that was returned by __do_get_xsec.
+-	 * At this point, r6,r7 contain our sec/nsec values, r3,r4 and r5
+-	 * can be used
++	 * At this point, r3,r4 contain our sec/nsec values, r5 and r6
++	 * can be used, r7 contains NSEC_PER_SEC.
+ 	 */
  
- static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
+-	lwz	r3,WTOM_CLOCK_SEC(r9)
+-	lwz	r4,WTOM_CLOCK_NSEC(r9)
++	lwz	r5,WTOM_CLOCK_SEC(r9)
++	lwz	r6,WTOM_CLOCK_NSEC(r9)
+ 
+-	/* We now have our result in r3,r4. We create a fake dependency
+-	 * on that result and re-check the counter
++	/* We now have our offset in r5,r6. We create a fake dependency
++	 * on that value and re-check the counter
+ 	 */
+-	or	r5,r4,r3
+-	xor	r0,r5,r5
++	or	r0,r6,r5
++	xor	r0,r0,r0
+ 	add	r9,r9,r0
+-#ifdef CONFIG_PPC64
+-	lwz	r0,(CFG_TB_UPDATE_COUNT+4)(r9)
+-#else
+-	lwz	r0,(CFG_TB_UPDATE_COUNT)(r9)
+-#endif
++	lwz	r0,(CFG_TB_UPDATE_COUNT+LOPART)(r9)
+         cmpl    cr0,r8,r0		/* check if updated */
+ 	bne-	50b
+ 
+-	/* Calculate and store result. Note that this mimmics the C code,
++	/* Calculate and store result. Note that this mimics the C code,
+ 	 * which may cause funny results if nsec goes negative... is that
+ 	 * possible at all ?
+ 	 */
+-	add	r3,r3,r6
+-	add	r4,r4,r7
+-	lis	r5,NSEC_PER_SEC@h
+-	ori	r5,r5,NSEC_PER_SEC@l
+-	cmpl	cr0,r4,r5
+-	cmpli	cr1,r4,0
++	add	r3,r3,r5
++	add	r4,r4,r6
++	cmpw	cr0,r4,r7
++	cmpwi	cr1,r4,0
+ 	blt	1f
+-	subf	r4,r5,r4
++	subf	r4,r7,r4
+ 	addi	r3,r3,1
+-1:	bge	cr1,1f
++1:	bge	cr1,80f
+ 	addi	r3,r3,-1
+-	add	r4,r4,r5
+-1:	stw	r3,TSPC32_TV_SEC(r11)
++	add	r4,r4,r7
++
++80:	stw	r3,TSPC32_TV_SEC(r11)
+ 	stw	r4,TSPC32_TV_NSEC(r11)
+ 
+ 	mtlr	r12
+@@ -195,10 +154,6 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 	/*
+ 	 * syscall fallback
+ 	 */
+-98:
+-	mtlr	r12
+-	mr	r3,r10
+-	mr	r4,r11
+ 99:
+ 	li	r0,__NR_clock_gettime
+ 	sc
+@@ -254,11 +209,7 @@ __do_get_xsec:
+ 	/* Check for update count & load values. We use the low
+ 	 * order 32 bits of the update count
+ 	 */
+-#ifdef CONFIG_PPC64
+-1:	lwz	r8,(CFG_TB_UPDATE_COUNT+4)(r9)
+-#else
+-1:	lwz	r8,(CFG_TB_UPDATE_COUNT)(r9)
+-#endif
++1:	lwz	r8,(CFG_TB_UPDATE_COUNT+LOPART)(r9)
+ 	andi.	r0,r8,1			/* pending update ? loop */
+ 	bne-	1b
+ 	xor	r0,r8,r8		/* create dependency */
+@@ -305,11 +256,7 @@ __do_get_xsec:
+ 	or	r6,r4,r3
+ 	xor	r0,r6,r6
+ 	add	r9,r9,r0
+-#ifdef CONFIG_PPC64
+-	lwz	r0,(CFG_TB_UPDATE_COUNT+4)(r9)
+-#else
+-	lwz	r0,(CFG_TB_UPDATE_COUNT)(r9)
+-#endif
++	lwz	r0,(CFG_TB_UPDATE_COUNT+LOPART)(r9)
+         cmpl    cr0,r8,r0		/* check if updated */
+ 	bne-	1b
+ 
+@@ -322,3 +269,98 @@ __do_get_xsec:
+ 	 */
+ 3:	blr
+   .cfi_endproc
++
++/*
++ * This is the core of clock_gettime(), it returns the current
++ * time in seconds and nanoseconds in r3 and r4.
++ * It expects the datapage ptr in r9 and doesn't clobber it.
++ * It clobbers r0, r5, r6, r10 and returns NSEC_PER_SEC in r7.
++ * On return, r8 contains the counter value that can be reused.
++ * This clobbers cr0 but not any other cr field.
++ */
++__do_get_tspec:
++  .cfi_startproc
++	/* Check for update count & load values. We use the low
++	 * order 32 bits of the update count
++	 */
++1:	lwz	r8,(CFG_TB_UPDATE_COUNT+LOPART)(r9)
++	andi.	r0,r8,1			/* pending update ? loop */
++	bne-	1b
++	xor	r0,r8,r8		/* create dependency */
++	add	r9,r9,r0
++
++	/* Load orig stamp (offset to TB) */
++	lwz	r5,CFG_TB_ORIG_STAMP(r9)
++	lwz	r6,(CFG_TB_ORIG_STAMP+4)(r9)
++
++	/* Get a stable TB value */
++2:	mftbu	r3
++	mftbl	r4
++	mftbu	r0
++	cmpl	cr0,r3,r0
++	bne-	2b
++
++	/* Subtract tb orig stamp and shift left 12 bits.
++	 */
++	subfc	r7,r6,r4
++	subfe	r0,r5,r3
++	slwi	r0,r0,12
++	rlwimi.	r0,r7,12,20,31
++	slwi	r7,r7,12
++
++	/* Load scale factor & do multiplication */
++	lwz	r5,CFG_TB_TO_XS(r9)	/* load values */
++	lwz	r6,(CFG_TB_TO_XS+4)(r9)
++	mulhwu	r3,r7,r6
++	mullw	r10,r7,r5
++	mulhwu	r4,r7,r5
++	addc	r10,r3,r10
++	li	r3,0
++
++	beq+	4f			/* skip high part computation if 0 */
++	mulhwu	r3,r0,r5
++	mullw	r7,r0,r5
++	mulhwu	r5,r0,r6
++	mullw	r6,r0,r6
++	adde	r4,r4,r7
++	addze	r3,r3
++	addc	r4,r4,r5
++	addze	r3,r3
++	addc	r10,r10,r6
++
++4:	addze	r4,r4			/* add in carry */
++	lis	r7,NSEC_PER_SEC@h
++	ori	r7,r7,NSEC_PER_SEC@l
++	mulhwu	r4,r4,r7		/* convert to nanoseconds */
++
++	/* At this point, we have seconds & nanoseconds since the xtime
++	 * stamp in r3+CA and r4.  Load & add the xtime stamp.
++	 */
++#ifdef CONFIG_PPC64
++	lwz	r5,STAMP_XTIME+TSPC64_TV_SEC+LOPART(r9)
++	lwz	r6,STAMP_XTIME+TSPC64_TV_NSEC+LOPART(r9)
++#else
++	lwz	r5,STAMP_XTIME+TSPC32_TV_SEC(r9)
++	lwz	r6,STAMP_XTIME+TSPC32_TV_NSEC(r9)
++#endif
++	add	r4,r4,r6
++	adde	r3,r3,r5
++
++	/* We now have our result in r3,r4. We create a fake dependency
++	 * on that result and re-check the counter
++	 */
++	or	r6,r4,r3
++	xor	r0,r6,r6
++	add	r9,r9,r0
++	lwz	r0,(CFG_TB_UPDATE_COUNT+LOPART)(r9)
++        cmpl    cr0,r8,r0		/* check if updated */
++	bne-	1b
++
++	/* check for nanosecond overflow and adjust if necessary */
++	cmpw	r4,r7
++	bltlr				/* all done if no overflow */
++	subf	r4,r7,r4		/* adjust if overflow */
++	addi	r3,r3,1
++
++	blr
++  .cfi_endproc
+diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
+index c6401f9..262cd58 100644
+--- a/arch/powerpc/kernel/vdso64/gettimeofday.S
++++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
+@@ -75,90 +75,49 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 
+ 	mflr	r12			/* r12 saves lr */
+   .cfi_register lr,r12
+-	mr	r10,r3			/* r10 saves id */
+ 	mr	r11,r4			/* r11 saves tp */
+ 	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
+-	beq	cr1,50f			/* if monotonic -> jump there */
+-
+-	/*
+-	 * CLOCK_REALTIME
+-	 */
+-
+-	bl	V_LOCAL_FUNC(__do_get_xsec)	/* get xsec from tb & kernel */
+-
+-	lis     r7,15			/* r7 = 1000000 = USEC_PER_SEC */
+-	ori     r7,r7,16960
+-	rldicl  r5,r4,44,20		/* r5 = sec = xsec / XSEC_PER_SEC */
+-	rldicr  r6,r5,20,43		/* r6 = sec * XSEC_PER_SEC */
+-	std	r5,TSPC64_TV_SEC(r11)	/* store sec in tv */
+-	subf	r0,r6,r4		/* r0 = xsec = (xsec - r6) */
+-	mulld   r0,r0,r7		/* usec = (xsec * USEC_PER_SEC) /
+-					 * XSEC_PER_SEC
+-					 */
+-	rldicl  r0,r0,44,20
+-	mulli	r0,r0,1000		/* nsec = usec * 1000 */
+-	std	r0,TSPC64_TV_NSEC(r11)	/* store nsec in tp */
+-
+-	mtlr	r12
+-	crclr	cr0*4+so
+-	li	r3,0
+-	blr
++50:	bl	V_LOCAL_FUNC(__do_get_tspec)	/* get time from tb & kernel */
++	bne	cr1,80f			/* if not monotonic, all done */
+ 
+ 	/*
+ 	 * CLOCK_MONOTONIC
+ 	 */
+ 
+-50:	bl	V_LOCAL_FUNC(__do_get_xsec)	/* get xsec from tb & kernel */
+-
+-	lis     r7,15			/* r7 = 1000000 = USEC_PER_SEC */
+-	ori     r7,r7,16960
+-	rldicl  r5,r4,44,20		/* r5 = sec = xsec / XSEC_PER_SEC */
+-	rldicr  r6,r5,20,43		/* r6 = sec * XSEC_PER_SEC */
+-	subf	r0,r6,r4		/* r0 = xsec = (xsec - r6) */
+-	mulld   r0,r0,r7		/* usec = (xsec * USEC_PER_SEC) /
+-					 * XSEC_PER_SEC
+-					 */
+-	rldicl  r6,r0,44,20
+-	mulli	r6,r6,1000		/* nsec = usec * 1000 */
+-
+ 	/* now we must fixup using wall to monotonic. We need to snapshot
+ 	 * that value and do the counter trick again. Fortunately, we still
+-	 * have the counter value in r8 that was returned by __do_get_xsec.
+-	 * At this point, r5,r6 contain our sec/nsec values.
+-	 * can be used
++	 * have the counter value in r8 that was returned by __do_get_tspec.
++	 * At this point, r4,r5 contain our sec/nsec values.
+ 	 */
+ 
+-	lwa	r4,WTOM_CLOCK_SEC(r3)
+-	lwa	r7,WTOM_CLOCK_NSEC(r3)
++	lwa	r6,WTOM_CLOCK_SEC(r3)
++	lwa	r9,WTOM_CLOCK_NSEC(r3)
+ 
+-	/* We now have our result in r4,r7. We create a fake dependency
++	/* We now have our result in r6,r9. We create a fake dependency
+ 	 * on that result and re-check the counter
+ 	 */
+-	or	r9,r4,r7
+-	xor	r0,r9,r9
++	or	r0,r6,r9
++	xor	r0,r0,r0
+ 	add	r3,r3,r0
+ 	ld	r0,CFG_TB_UPDATE_COUNT(r3)
+         cmpld   cr0,r0,r8		/* check if updated */
+ 	bne-	50b
+ 
+-	/* Calculate and store result. Note that this mimmics the C code,
+-	 * which may cause funny results if nsec goes negative... is that
+-	 * possible at all ?
++	/* Add wall->monotonic offset and check for overflow or underflow.
+ 	 */
+-	add	r4,r4,r5
+-	add	r7,r7,r6
+-	lis	r9,NSEC_PER_SEC@h
+-	ori	r9,r9,NSEC_PER_SEC@l
+-	cmpl	cr0,r7,r9
+-	cmpli	cr1,r7,0
++	add	r4,r4,r6
++	add	r5,r5,r9
++	cmpd	cr0,r5,r7
++	cmpdi	cr1,r5,0
+ 	blt	1f
+-	subf	r7,r9,r7
++	subf	r5,r7,r5
+ 	addi	r4,r4,1
+-1:	bge	cr1,1f
++1:	bge	cr1,80f
+ 	addi	r4,r4,-1
+-	add	r7,r7,r9
+-1:	std	r4,TSPC64_TV_SEC(r11)
+-	std	r7,TSPC64_TV_NSEC(r11)
++	add	r5,r5,r7
++
++80:	std	r4,TSPC64_TV_SEC(r11)
++	std	r5,TSPC64_TV_NSEC(r11)
+ 
+ 	mtlr	r12
+ 	crclr	cr0*4+so
+@@ -168,10 +127,6 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 	/*
+ 	 * syscall fallback
+ 	 */
+-98:
+-	mtlr	r12
+-	mr	r3,r10
+-	mr	r4,r11
+ 99:
+ 	li	r0,__NR_clock_gettime
+ 	sc
+@@ -253,3 +208,59 @@ V_FUNCTION_BEGIN(__do_get_xsec)
+ 	blr
+   .cfi_endproc
+ V_FUNCTION_END(__do_get_xsec)
++
++/*
++ * This is the core of clock_gettime(), it returns the current
++ * time in seconds and nanoseconds in r4 and r5.
++ * It expects the datapage ptr in r3 and doesn't clobber it.
++ * It clobbers r0 and r6 and returns NSEC_PER_SEC in r7.
++ * On return, r8 contains the counter value that can be reused.
++ * This clobbers cr0 but not any other cr field.
++ */
++V_FUNCTION_BEGIN(__do_get_tspec)
++  .cfi_startproc
++	/* check for update count & load values */
++1:	ld	r8,CFG_TB_UPDATE_COUNT(r3)
++	andi.	r0,r8,1			/* pending update ? loop */
++	bne-	1b
++	xor	r0,r8,r8		/* create dependency */
++	add	r3,r3,r0
++
++	/* Get TB & offset it. We use the MFTB macro which will generate
++	 * workaround code for Cell.
++	 */
++	MFTB(r7)
++	ld	r9,CFG_TB_ORIG_STAMP(r3)
++	subf	r7,r9,r7
++
++	/* Scale result */
++	ld	r5,CFG_TB_TO_XS(r3)
++	sldi	r7,r7,12		/* compute time since stamp_xtime */
++	mulhdu	r6,r7,r5		/* in units of 2^-32 seconds */
++
++	/* Add stamp since epoch */
++	ld	r4,STAMP_XTIME+TSPC64_TV_SEC(r3)
++	ld	r5,STAMP_XTIME+TSPC64_TV_NSEC(r3)
++	or	r0,r4,r5
++	or	r0,r0,r6
++	xor	r0,r0,r0
++	add	r3,r3,r0
++	ld	r0,CFG_TB_UPDATE_COUNT(r3)
++	cmpld   r0,r8			/* check if updated */
++	bne-	1b			/* reload if so */
++
++	/* convert to seconds & nanoseconds and add to stamp */
++	lis	r7,NSEC_PER_SEC@h
++	ori	r7,r7,NSEC_PER_SEC@l
++	mulhwu	r0,r6,r7		/* compute nanoseconds and */
++	srdi	r6,r6,32		/* seconds since stamp_xtime */
++	clrldi	r0,r0,32
++	add	r5,r5,r0		/* add nanoseconds together */
++	cmpd	r5,r7			/* overflow? */
++	add	r4,r4,r6
++	bltlr				/* all done if no overflow */
++	subf	r5,r7,r5		/* if overflow, adjust */
++	addi	r4,r4,1
++	blr
++  .cfi_endproc
++V_FUNCTION_END(__do_get_tspec)
