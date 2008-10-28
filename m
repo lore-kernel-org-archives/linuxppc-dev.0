@@ -1,28 +1,26 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.228])
-	by ozlabs.org (Postfix) with ESMTP id 158A5DDEE1
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 04:40:55 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so2630324rvb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 10:40:54 -0700 (PDT)
-Message-ID: <fa686aa40810281040s376557f7ucdaa4ae094611bf1@mail.gmail.com>
-Date: Tue, 28 Oct 2008 11:40:54 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()
-In-Reply-To: <20081028165623.GA6686@oksana.dev.rtsoft.ru>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B4609DDDFB
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 04:45:34 +1100 (EST)
+Date: Tue, 28 Oct 2008 20:45:32 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>,
+	David Brownell <david-b@pacbell.net>
+Subject: [PATCH 0/6 RFC] OF-glue devices for I2C/SPI   (was: Re: [PATCH
+	4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Message-ID: <20081028174532.GA23834@oksana.dev.rtsoft.ru>
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+	<20081022014243.GA19362@oksana.dev.rtsoft.ru>
+	<1224642497.7654.319.camel@pasglop>
+	<200810212122.49121.david-b@pacbell.net>
+	<20081022103641.GB24757@oksana.dev.rtsoft.ru>
+	<20081022104606.GA510@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
-	<1224889741-4167-1-git-send-email-tpiepho@freescale.com>
-	<20081028143933.GA18453@oksana.dev.rtsoft.ru>
-	<fa686aa40810280753lc555683y5d32da678384438@mail.gmail.com>
-	<20081028151659.GA26444@oksana.dev.rtsoft.ru>
-	<fa686aa40810280842t36da3998j5f7ad22acf9f582c@mail.gmail.com>
-	<20081028165623.GA6686@oksana.dev.rtsoft.ru>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Richard Purdie <rpurdie@rpsys.net>,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	Trent Piepho <tpiepho@freescale.com>
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <20081022104606.GA510@oksana.dev.rtsoft.ru>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+	i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,24 +30,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 28, 2008 at 10:56 AM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> On Tue, Oct 28, 2008 at 09:42:36AM -0600, Grant Likely wrote:
->> Then we coordinate with Greg and make sure the fixup gets put in place
->> before the window opens; either by bringing the patch in Ben's tree or
->> by getting Greg to pull Ben's tree into -next.  This API change should
->> not block Greg picking up the FHCI driver.  This is not an
->> insurmountable problem.
->
-> Sounds complicated.
->
-> Ok, but if something will go wrong with the FHCI vs. of_get_gpio()
-> change, I'll just attribute the blame to you. :-))
+On Wed, Oct 22, 2008 at 02:46:06PM +0400, Anton Vorontsov wrote:
+[...]
+> > > Like what I suggested:  "chip-aware OF glue drivers".  The relevant
+> > > bus code being the "of_platform_bus_type" infrastructure.
+> > > 
+> > > Example:  instead of Anton's patch #6 modifying the existing pca953x
+> > > driver, an of_pca953x driver that knows how to poke around in the OF
+> > > device attributes to (a) create the pca953x_platform_data, (b) call
+> > > i2c_register_board_info() to make that available later, and then
+> > > finally (c) vanish, since it's not needed any longer.
+> > 
+> > Heh. You tell me my first approach:
+> > 
+> > http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056730.html (mmc_spi)
+> > 
+> > The OF people didn't like the patch which was used to support this
+> > approach:
+> > http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056728.html
+> 
+> Though, I think I'll able to persuade Grant that two registration paths
+> are inevitable (i.e. for simple devices we should use
+> drivers/of/of_{i2c,spi}.c and for complex cases we'll have to have
+> another method of registration).
 
-Bring it on.  :-)
+Ok, here it is.
 
-g.
+I don't like this approach because:
+
+1. It feels like an overhead to create an of_device for each i2c
+   device that needs platform data.
+
+2. We have to do ugly of_should_create_pdev() in the i2c code,
+   and duplicate lists of supported devices.
+
+Could anybody convince me that this isn't a big deal? ;-)
+
+Otherwise I'll stick with this approach:
+http://lkml.org/lkml/2008/10/22/471
+
+Thanks,
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
