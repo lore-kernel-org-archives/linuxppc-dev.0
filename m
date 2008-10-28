@@ -1,23 +1,21 @@
-Return-Path: <mannivelle@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id A1BA5DDE2A
+Return-Path: <mike.dyer@provision-comm.com>
+Received: from smtp1.betherenow.co.uk (smtp1.betherenow.co.uk [87.194.0.68])
+	by ozlabs.org (Postfix) with SMTP id 4AC1BDDDFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Oct 2008 23:54:06 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id 17so246645ugm.14
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Oct 2008 05:54:03 -0700 (PDT)
-Message-ID: <f451b120810280554k10044f01o930d4ec0f5e7282d@mail.gmail.com>
-Date: Tue, 28 Oct 2008 13:54:03 +0100
-From: "florent manni" <mannivelle@gmail.com>
-Subject: Re: linux automatic logging and automatic script execution
+	Wed, 29 Oct 2008 02:55:59 +1100 (EST)
+Subject: Re: MPC8313E RDB: Badness at fs/sysfs/dir.c:463
+From: Mike Dyer <mike.dyer@provision-comm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1224065185.457.31.camel@mike-linux.provision-comm.com>
+References: <48F49D7D.5070107@provision-comm.com>
+	<48F4A8CD.6000101@provision-comm.com>
+	<22A97B63-36D5-44BA-8F49-BAF5870FA08A@kernel.crashing.org>
+	<1224065185.457.31.camel@mike-linux.provision-comm.com>
+Content-Type: text/plain
+Date: Tue, 28 Oct 2008 15:53:53 +0000
+Message-Id: <1225209233.937.6.camel@mike-linux.provision-comm.com>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
-In-Reply-To: <f451b120810280553g1889098ei1c5e8139b175535c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_87602_11739467.1225198443703"
-References: <f451b120810280106n3c495202i87878008d4102833@mail.gmail.com>
-	<Pine.LNX.4.62.0810281124310.9397@chara.vm.bytemark.co.uk>
-	<f451b120810280553g1889098ei1c5e8139b175535c@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,86 +26,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_87602_11739467.1225198443703
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi,
 
-2008/10/28 florent manni <mannivelle@gmail.com>
+On Wed, 2008-10-15 at 11:06 +0100, Mike Dyer wrote:
+> Hi Kumar,
+> 
+> On Tue, 2008-10-14 at 09:35 -0500, Kumar Gala wrote: 
+> > On Oct 14, 2008, at 9:12 AM, Mike Dyer wrote:
+> > 
+> > > Hi All,
+> > >
+> > > Apologies for the bad formatting of the previous message...
+> > >
+> > > I've just pulled the 2.6.27 kernel from git and am trying it out on  
+> > > my MPC8313E RDB dev kit.  I get the following badness during boot  
+> > > (the complete boot record is attached later) :
+> > 
+> > can you enable kernel symbols in your build (CONFIG_KALLSYMS)
+> 
+> I can, but it no longer boots...  Will keep trying.
+> 
+> I've gone through my system.map and pulled out the call stack, if that
+> helps.  I put a printk in sysfs_add_one, and it appears it is being
+> called with sd->s_name = 'e00082a8.dma'
 
-> thanks a lots for the answer indeed that was inittab (my mistake for initrd
-> twice).
->
-> Now (thaks to you) I know exactly where to set up things (as busybox
-> doesn't support runlevel by default I'll try to write something in inittab).
->
-> thanks a lot
->
-> florent
->
->
->
-> 2008/10/28 Chris Skepper <skepper@ukf.net>
->
-> On Tue, 28 Oct 2008, florent manni wrote:
->>
->>  I try to make my embedded linux auto-logging and auto-executing a program
->>> after kernel loads thus I haven't got to use the terminal to logging and
->>> start my embedded program.
->>>
->>> does anyone has got a clue where I should look to set this option (I
->>> think
->>> it might be around /etc/initrd but I'm not sure).
->>>
->>
->> Hi Florent,
->>
->> You might be thinking of the file /etc/inittab or /etc/init.d/.  These
->> file(s) control what process are started by /sbin/init in different
->> run-levels.  Look at "man init" on a Linux system for more info, or read the
->> documentation for the version of init on the system.  That should enable you
->> to start whatever you want on bootup.
->>
->> If init is too heavyweight you can start any other application with the
->> the init= kernel parameter, but that's probably not recommended unless you
->> know what you are doing.
->>
->> Chris.
->>
->
->
+I believe the DMA is being added twice, because it occurs twice within the mpc8313erdb.dts device tree.  Once by itself, and once within a sleep-nexus.
 
-------=_Part_87602_11739467.1225198443703
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Is that right / normal ?
 
-<br><br><div class="gmail_quote">2008/10/28 florent manni <span dir="ltr">&lt;<a href="mailto:mannivelle@gmail.com">mannivelle@gmail.com</a>&gt;</span><br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-thanks a lots for the answer indeed that was inittab (my mistake for initrd twice).<br><br>Now (thaks to you) I know exactly where to set up things (as busybox doesn&#39;t support runlevel by default I&#39;ll try to write something in inittab).<br>
+> > ------------[ cut here ]------------
+> > Badness at c00c5b50 [verbose debug info unavailable]
+> > NIP: c00c5b50 LR: c00c5b38 CTR: 00000000
+> > REGS: c7827d90 TRAP: 0700   Not tainted  (2.6.27)
+> > MSR: 00029032 <EE,ME,IR,DR>  CR: 22022042  XER: 20000000
+> > TASK = c7816400[1] 'swapper' THREAD: c7826000
+> > GPR00: c00c5b38 c7827e40 c7816400 ffffffef c7800e5c c7800b7c c7811570 00000000 
+> > GPR08: 000001a0 c0370000 00000048 00000000 82044048 100b224c 07ffb000 00000000 
+> > GPR16: 07ff09e0 07ff94c8 00000000 00000000 00000000 c035a76c c035a740 c7ace610 
+> > GPR24: 00000000 00000000 00000000 00000001 c7811570 fffffffe c7acdc00 c7827e58 
+> > Call Trace:
+> > [c7827e40] [c00c5b38] 0xc00c5b38 (unreliable) sysfs_add_one
+> > [c7827e50] [c00c6dc0] 0xc00c6dc0              sysfs_do_create_link
+> > [c7827e80] [c0182d40] 0xc0182d40              bus_add_device
+> > [c7827ea0] [c018153c] 0xc018153c              device_add
+> > [c7827ef0] [c0213a14] 0xc0213a14              of_device_register
+> > [c7827f00] [c0009818] 0xc0009818              of_platform_device_create
+> > [c7827f10] [c00098c0] 0xc00098c0              of_platform_bus_create
+> > [c7827f30] [c0009a30] 0xc0009a30              of_platform_bus_probe
+> > [c7827f50] [c03281d4] 0xc03281d4              __machine_initcall_mpc831x_rdb_declare_of_platform_devices
+> > [c7827f60] [c0003874] 0xc0003874              do_one_initcall
+> > [c7827fd0] [c031317c] 0xc031317c              kernel_init
+> > [c7827ff0] [c001216c] 0xc001216c              kernel_thread
+> 
+> > 
+> > - k
+> 
+> Cheers,
+> Mike
+> 
 
-<br>thanks a lot<br><br>florent<br><br><br><br><div class="gmail_quote">2008/10/28 Chris Skepper <span dir="ltr">&lt;<a href="mailto:skepper@ukf.net" target="_blank">skepper@ukf.net</a>&gt;</span><div><div></div><div class="Wj3C7c">
-<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<div>On Tue, 28 Oct 2008, florent manni wrote:<br>
-<br>
-<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-I try to make my embedded linux auto-logging and auto-executing a program<br>
-after kernel loads thus I haven&#39;t got to use the terminal to logging and<br>
-start my embedded program.<br>
-<br>
-does anyone has got a clue where I should look to set this option (I think<br>
-it might be around /etc/initrd but I&#39;m not sure).<br>
-</blockquote>
-<br></div>
-Hi Florent,<br>
-<br>
-You might be thinking of the file /etc/inittab or /etc/init.d/. &nbsp;These file(s) control what process are started by /sbin/init in different run-levels. &nbsp;Look at &quot;man init&quot; on a Linux system for more info, or read the documentation for the version of init on the system. &nbsp;That should enable you to start whatever you want on bootup.<br>
-
-
-<br>
-If init is too heavyweight you can start any other application with the the init= kernel parameter, but that&#39;s probably not recommended unless you know what you are doing.<br><font color="#888888">
-<br>
-Chris.<br>
-</font></blockquote></div></div></div><br>
-</blockquote></div><br>
-
-------=_Part_87602_11739467.1225198443703--
+Cheers,
+Mike
