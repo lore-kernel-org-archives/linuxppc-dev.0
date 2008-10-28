@@ -1,14 +1,21 @@
-Return-Path: <markos@codex.gr>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: GPIO - marking individual pins (not) available in device tree
-MIME-Version: 1.0
-Date: Tue, 28 Oct 2008 14:31:29 +0100
-From: Konstantinos Margaritis <markos@codex.gr>
-Message-ID: <7b6eafc46f644dea59fbf0af17dbc005@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Mitch Bradley <wmb@firmworks.com>,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 77C20DDE1C
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 00:58:56 +1100 (EST)
+Message-Id: <FF9EE100-B6AD-40DC-8F88-8F1C4245D8CE@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+In-Reply-To: <20081013040703.GA11059@ime.usp.br>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: compile kernel for linkstations optimized for
+	size
+Date: Tue, 28 Oct 2008 08:58:42 -0500
+References: <20081013040703.GA11059@ime.usp.br>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,43 +26,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Pardon my intrusion in the conversation, but I just couldn't not comment on
-this:
+On Oct 12, 2008, at 11:07 PM, Rog=E9rio Brito wrote:
 
-On Tue, 28 Oct 2008 12:50:03 +1100, David Gibson
-<david@gibson.dropbear.id.au> wrote:
->> So now my qualm is back to the beginning of the discussion. How do
->> we encode the purpose of those pins reliably and within some
->> standard framework, without getting *driver* specific?
+> From: Rog=E9rio Brito <rbrito@ime.usp.br>
 >
-> Um.. I fail to see how the purpose of a pin can be not driver
-> specific.
+> Since Linkstations and Kuroboxes often have *very* little memory (as
+> they are embedded systems), it is desirable to get their kernels
+> compiled optimized for size.
+>
+> Signed-off-by: Rog=E9rio Brito <rbrito@ime.usp.br>
+>
+> ---
 
-GPIO stands for _General_ Purpose IO. The driver should just expose that
-info to user space and it should be up to the userspace application to
-decide what to do with that. The programmer should require absolutely
-no other intervention to the driver whatsoever.
-Anyone that has worked on data mining scientific equipment -eg.
-particle/photon scanners on VME boards with lots of GPIO pins- will tell
-you that meddling with kernel coding is totally unneeded, in fact it's
-stupid to require the student to do so. Usually some Windows API is given
-and the students write the programs on Windows to collect the data and
-control the device. I guess GPIOLIB and the new framework would have
-similar application in Linux -ie, requiring the programmer to write only
-a userspace to access the GPIO pins. From my understanding of the
-conversation, there are some people who fail to see the necessity of
-doing extra work to abstract this information away from the driver. A walk
-to a nearby experimental physicists lab with students working on such
-devices will convince you of the right way to do it actually.
+applied to merge.
 
-PS. I am of physics background myself, though a theoritical one and not 
-experimental. But I did have many friends experimentalists, in
-particular I remember two that did exactly what I described. Neither did
-have any particular kernel/driver knowledge and neither did have to do
-anything extremely low-level to acquire the data. Both used windows 
-user-level programming, though that was ~8years ago so don't expect me
-to remember the exact VME boards or APIs used...
-
-Konstantinos Margaritis
-Codex
-http://www.codex.gr
+- k=
