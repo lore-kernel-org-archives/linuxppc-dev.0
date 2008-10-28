@@ -1,26 +1,18 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.231])
-	by ozlabs.org (Postfix) with ESMTP id 80C6CDDE21
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 01:06:19 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so2535834rvb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 07:06:18 -0700 (PDT)
-Message-ID: <9e4733910810280706n17bd94d7g7395b4e8beaa149a@mail.gmail.com>
-Date: Tue, 28 Oct 2008 10:06:18 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: [PATCH] fix i2c on PPC linkstation / kurobox machines
-In-Reply-To: <ED4FCA66-6032-4F4A-958C-8FD7DDB7CBE9@kernel.crashing.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Date: Tue, 28 Oct 2008 17:11:58 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Konstantinos Margaritis <markos@codex.gr>
+Subject: Re: GPIO - marking individual pins (not) available in device tree
+Message-ID: <20081028141158.GA9650@oksana.dev.rtsoft.ru>
+References: <7b6eafc46f644dea59fbf0af17dbc005@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20081022191650.GA11406@weiser.dinsnail.net>
-	<Pine.LNX.4.64.0810232029380.9657@axis700.grange>
-	<20081023213309.GA19777@weiser.dinsnail.net>
-	<Pine.LNX.4.64.0810240059170.9657@axis700.grange>
-	<ED4FCA66-6032-4F4A-958C-8FD7DDB7CBE9@kernel.crashing.org>
-Cc: Michael Weiser <michael@weiser.dinsnail.net>,
-	=?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>,
-	linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <7b6eafc46f644dea59fbf0af17dbc005@localhost>
+Cc: Mitch Bradley <wmb@firmworks.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,39 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 28, 2008 at 9:58 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
->
-> On Oct 23, 2008, at 6:05 PM, Guennadi Liakhovetski wrote:
->
->> i2c is broken on linkstation / kurobox machines since at least 2.6.27. Fix
->> it. Also remove CONFIG_SERIAL_OF_PLATFORM, which, if enabled, breaks the
->> serial console after the "console handover: boot [udbg0] -> real [ttyS1]"
->> message.
->>
->> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
->>
->> ---
->>
->> No, I do not really understand why I have to remove
->> CONFIG_SERIAL_OF_PLATFORM now after adding a call to
->> of_platform_bus_probe(), but it works this way. It must have something to
->> do with the legacy serial driver... If accepted in this form, I'll also
->> forward it to stable.
->>
->> diff --git
->
->
-> applied to merge.
+On Tue, Oct 28, 2008 at 02:31:29PM +0100, Konstantinos Margaritis wrote:
+> 
+> Pardon my intrusion in the conversation, but I just couldn't not comment on
+> this:
+> 
+> On Tue, 28 Oct 2008 12:50:03 +1100, David Gibson
+> <david@gibson.dropbear.id.au> wrote:
+> >> So now my qualm is back to the beginning of the discussion. How do
+> >> we encode the purpose of those pins reliably and within some
+> >> standard framework, without getting *driver* specific?
+> >
+> > Um.. I fail to see how the purpose of a pin can be not driver
+> > specific.
+> 
+> GPIO stands for _General_ Purpose IO. The driver should just expose that
+> info to user space and it should be up to the userspace application to
+> decide what to do with that. The programmer should require absolutely
+> no other intervention to the driver whatsoever.
+> Anyone that has worked on data mining scientific equipment -eg.
+> particle/photon scanners on VME boards with lots of GPIO pins- will tell
+> you that meddling with kernel coding is totally unneeded, in fact it's
+> stupid to require the student to do so. Usually some Windows API is given
+> and the students write the programs on Windows to collect the data and
+> control the device. I guess GPIOLIB and the new framework would have
+> similar application in Linux -ie, requiring the programmer to write only
+> a userspace to access the GPIO pins. From my understanding of the
+> conversation, there are some people who fail to see the necessity of
+> doing extra work to abstract this information away from the driver.
 
-Did you change the comment? I2C wasn't broken, the bus definition was broken.
+Heh. You _have_ the API to work with the GPIOs. In-kernel and userland
+APIs. What you don't have in the _device tree_ is:
 
+1. The mapping of invalid GPIOs. Though again, this can be easily
+   implemented, just nobody bothers with it since there are million
+   of other ways to do bad things with the hardware resources.
 
->
-> - k
->
+2. The mapping of board's external pins to gpio-controller's GPIOs. This
+   is also can be trivially implemented. Sometimes this mapping could
+   make some sense, and could be useful. You just need describe the
+   board's headers in the device tree. You don't even need the driver
+   for this, your userspace application can just look into the
+   /proc/device-tree directly, and find out which GPIOs are wired
+   to the board's headers.
 
-
+See? You _can_ use the GPIOs. If you don't believe me, just find
+some PPC board for which we support some GPIO controller, and compile
+the kernel with CONFIG_GPIO_SYSFS=y, then look into the
+/sys/class/gpio/. ;-)
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
