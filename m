@@ -1,21 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E7F4ADDE2A
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 00:21:35 +1100 (EST)
-Message-Id: <A112398F-5B9B-4E05-976D-8B7FC932FC8B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18694.33816.996886.431170@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 1/2] powerpc: Add new CPU feature: CPU_FTR_UNALIGNED_LD_STD
-Date: Tue, 28 Oct 2008 08:21:21 -0500
-References: <200810272143.02144.markn@au1.ibm.com>
-	<349712B7-EA3A-4BAA-9DB8-8A5FDD0AA060@kernel.crashing.org>
-	<18694.33816.996886.431170@cargo.ozlabs.ibm.com>
-Cc: Mark Nelson <markn@au1.ibm.com>, linuxppc-dev@ozlabs.org
+Return-Path: <markos@codex.gr>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: GPIO - marking individual pins (not) available in device tree
+MIME-Version: 1.0
+Date: Tue, 28 Oct 2008 14:31:29 +0100
+From: Konstantinos Margaritis <markos@codex.gr>
+Message-ID: <7b6eafc46f644dea59fbf0af17dbc005@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Mitch Bradley <wmb@firmworks.com>,
+	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +19,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 27, 2008, at 10:16 PM, Paul Mackerras wrote:
+Pardon my intrusion in the conversation, but I just couldn't not comment on
+this:
 
-> Kumar Gala writes:
+On Tue, 28 Oct 2008 12:50:03 +1100, David Gibson
+<david@gibson.dropbear.id.au> wrote:
+>> So now my qualm is back to the beginning of the discussion. How do
+>> we encode the purpose of those pins reliably and within some
+>> standard framework, without getting *driver* specific?
 >
->> not that I have anything against this patch but is there anything we
->> can do about the CPU_FTR_ usage for one of things like this?
->
-> <blinks>
->
-> Can you express that a little more coherently for us, please? :)
+> Um.. I fail to see how the purpose of a pin can be not driver
+> specific.
 
-I'm asking if we can come up with a better solution than using  
-CPU_FTR_ bits for extremely specific uses like this.
+GPIO stands for _General_ Purpose IO. The driver should just expose that
+info to user space and it should be up to the userspace application to
+decide what to do with that. The programmer should require absolutely
+no other intervention to the driver whatsoever.
+Anyone that has worked on data mining scientific equipment -eg.
+particle/photon scanners on VME boards with lots of GPIO pins- will tell
+you that meddling with kernel coding is totally unneeded, in fact it's
+stupid to require the student to do so. Usually some Windows API is given
+and the students write the programs on Windows to collect the data and
+control the device. I guess GPIOLIB and the new framework would have
+similar application in Linux -ie, requiring the programmer to write only
+a userspace to access the GPIO pins. From my understanding of the
+conversation, there are some people who fail to see the necessity of
+doing extra work to abstract this information away from the driver. A walk
+to a nearby experimental physicists lab with students working on such
+devices will convince you of the right way to do it actually.
 
-- k
+PS. I am of physics background myself, though a theoritical one and not 
+experimental. But I did have many friends experimentalists, in
+particular I remember two that did exactly what I described. Neither did
+have any particular kernel/driver knowledge and neither did have to do
+anything extremely low-level to acquire the data. Both used windows 
+user-level programming, though that was ~8years ago so don't expect me
+to remember the exact VME boards or APIs used...
+
+Konstantinos Margaritis
+Codex
+http://www.codex.gr
