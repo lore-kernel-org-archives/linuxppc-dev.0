@@ -1,11 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 28 Oct 2008 16:48:44 +1100
-Subject: [PATCH 7/10] powerpc/pci: Make pcibios_allocate_bus_resources more
-	robust
+Date: Tue, 28 Oct 2008 16:48:47 +1100
+Subject: [PATCH 8/10] powerpc/pci: Fix unmapping of IO space on 64-bit
 In-Reply-To: <1225172895.217185.958686212130.qpush@grosgo>
-Message-Id: <20081028054944.77073DDF6D@ozlabs.org>
+Message-Id: <20081028054949.2125EDE0CC@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,34 +14,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-To properly fix PCI hotplug, it's useful to be able to make
-the fixup passes on all devices whether they were just hot
-plugged or already there.
+A typo/thinko made us pass the wrong argument to __flush_hash_table_range
+when unplugging bridges, thus not flushing all the translations for
+the IO space on unplug.
 
-However, pcibios_allocate_bus_resources() wouldn't cope well
-with being called twice for a given bus. This patch makes it
-ignore resources that have already been allocated, along with
-adding a bit of debug output.
+This causes the hypervisor to refuse unplugging slots.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/kernel/pci-common.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/pci_64.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-work.orig/arch/powerpc/kernel/pci-common.c	2008-10-28 14:04:45.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/pci-common.c	2008-10-28 14:04:57.000000000 +1100
-@@ -1245,9 +1245,12 @@ static void pcibios_allocate_bus_resourc
- 	int i;
- 	struct resource *res, *pr;
+--- linux-work.orig/arch/powerpc/kernel/pci_64.c	2008-10-28 16:33:48.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci_64.c	2008-10-28 16:38:45.000000000 +1100
+@@ -426,7 +426,7 @@ int pcibios_unmap_io_space(struct pci_bu
+ 			 pci_name(bus->self));
  
-+	pr_debug("PCI: Allocating bus resources for %04x:%02x...\n",
-+		 pci_domain_nr(bus), bus->number);
-+
- 	for (i = 0; i < PCI_BUS_NUM_RESOURCES; ++i) {
- 		if ((res = bus->resource[i]) == NULL || !res->flags
--		    || res->start > res->end)
-+		    || res->start > res->end || res->parent)
- 			continue;
- 		if (bus->parent == NULL)
- 			pr = (res->flags & IORESOURCE_IO) ?
+ 		__flush_hash_table_range(&init_mm, res->start + _IO_BASE,
+-					 res->end - res->start + 1);
++					 res->end + _IO_BASE + 1);
+ 		return 0;
+ 	}
+ 
