@@ -1,17 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18695.36029.801856.699780@cargo.ozlabs.ibm.com>
-Date: Wed, 29 Oct 2008 09:05:49 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc: Add new CPU feature: CPU_FTR_UNALIGNED_LD_STD
-In-Reply-To: <A112398F-5B9B-4E05-976D-8B7FC932FC8B@kernel.crashing.org>
-References: <200810272143.02144.markn@au1.ibm.com>
-	<349712B7-EA3A-4BAA-9DB8-8A5FDD0AA060@kernel.crashing.org>
-	<18694.33816.996886.431170@cargo.ozlabs.ibm.com>
-	<A112398F-5B9B-4E05-976D-8B7FC932FC8B@kernel.crashing.org>
-Cc: Mark Nelson <markn@au1.ibm.com>, linuxppc-dev@ozlabs.org
+Return-Path: <gerickson@nuovations.com>
+Received: from relay02.pair.com (relay02.pair.com [209.68.5.16])
+	by ozlabs.org (Postfix) with SMTP id A226BDDE00
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 09:48:08 +1100 (EST)
+Date: Tue, 28 Oct 2008 15:41:11 -0700
+Subject: Reserving Early RAM Regions and Porting Denx's CONFIG_LOGBUFFER to
+	arch/powerpc
+From: Grant Erickson <gerickson@nuovations.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Message-ID: <C52CE317.12884%gerickson@nuovations.com>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+I am working on attempting to migrate the Denx CONFIG_LOGBUFFER feature from
+arch/ppc:
 
-> I'm asking if we can come up with a better solution than using  
-> CPU_FTR_ bits for extremely specific uses like this.
+http://git.denx.de/?p=linux-2.6-denx.git;a=blob_plain;f=arch/ppc/mm/init.c;h
+b=3df65660bbfa769b10b141351b0ea10427b0b709
+http://git.denx.de/?p=linux-2.6-denx.git;a=blob_plain;f=kernel/printk.c;hb=3
+df65660bbfa769b10b141351b0ea10427b0b709
 
-I haven't been able to think of an alternative that doesn't amount to
-an ad-hoc reimplementation of the CPU feature mechanism.  Do you have
-a suggestion?
+In the historical implementation, basically, u-boot (if so configured)
+allocates 16 KiB + 4 KiB of memory at the end of physical RAM to store log
+messages that are compatible with the Linux kernel's printk. When Linux (if
+so configured with CONFIG_LOGBUFFER) starts up, it redirects the normal
+log_buf to this "external log buffer" and appends any existing printk
+messages to those already pushed by u-boot. Future printk messages are then
+sent off to this new "external log buffer".
 
-We have code here that needs to know about the characteristics of the
-processor we're running, and is somewhat performance-critical (and
-__copy_tofrom_user, which Mark is working on next, will also use these
-bits and is definitely performance-critical).  So it is natural to use
-the CPU feature mechanism, which is there precisely to provide this
-kind of information.
+What is the preferred method for hiding/reserving chunks of memory such as
+this during early boot? The device tree? The 'mem=' parameter? Adding an
+lmb_reserve() in prom.c:early_reserve_mem()? Twiddling things auto-magically
+such as the historical implementation? Some combination thereof?
 
-I assume you're worried about running out of feature bits.  The bit
-Mark is adding is in the 64-bit section of the kernel feature mask,
-so it doesn't affect 32-bit processors at all.  Anyway, we still have
-8 free bits there after Mark's patch.  It's the user feature mask
-where we're getting tight, since it's limited to 32 bits and we only
-have 4 bits free.
+The arch/ppc historical implementation simply twiddled total_memory and
+total_lowmem and then ioremap'd the 20 KiB off the end of memory.
 
-Paul.
+However, such an approach in arch/powerpc falters because an attempt to
+prematurely reduce total_lowmem results in mapin_ram(), via mmu_mapin_ram(),
+only covering part of the total, say 128 MiB or 256 MiB, RAM with 16 MiB and
+4 MiB large pages, leaving a residual, of say 4 MiB, to cover with smaller 4
+KiB map_page() pages.
+
+However, when map_page() runs, it eventually calls lmb_alloc_base() which
+returns a page in that 4 MiB "tail" unmapped region. This then explodes due
+to a page fault when clear_page() is called on the page in unmapped RAM at
+the dcbz instruction in clear_pages().
+
+Regards,
+
+Grant
