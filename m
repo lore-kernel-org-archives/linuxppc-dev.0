@@ -1,21 +1,23 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zcars04f.nortel.com (zcars04f.nortel.com [47.129.242.57])
-	by ozlabs.org (Postfix) with ESMTP id C8169DDDD4
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Oct 2008 11:14:10 +1100 (EST)
-Message-ID: <49065942.4040300@nortel.com>
-Date: Mon, 27 Oct 2008 18:13:54 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 28 Oct 2008 11:15:11 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: GPIO - marking individual pins (not) available in device tree
+Message-ID: <20081028001511.GD26424@yookeroo.seuss>
+References: <4900ED81.3040202@genesi-usa.com> <4900F90B.80703@firmworks.com>
+	<4901032F.3090805@genesi-usa.com> <49011C42.2020101@firmworks.com>
+	<20081024032944.GE4267@yookeroo.seuss>
+	<49014C69.8020408@firmworks.com>
+	<20081024044511.GI4267@yookeroo.seuss>
+	<490248C2.9020104@genesi-usa.com>
+	<20081026234747.GD22339@yookeroo.seuss>
+	<4905E0DC.104@genesi-usa.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: [BUG] oops in net_rx_action on 64-bit powerpc
-References: <49025C94.60406@nortel.com>
-	<20081024.164128.113131091.davem@davemloft.net>
-	<4902B1D8.8070800@nortel.com>
-	<20081025.001703.261277154.davem@davemloft.net>
-In-Reply-To: <20081025.001703.261277154.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jesse.brandeburg@intel.com,
-	romieu@fr.zoreil.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4905E0DC.104@genesi-usa.com>
+Cc: Mitch Bradley <wmb@firmworks.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	devicetree-discuss list <devicetree-discuss@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,72 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Miller wrote:
+On Mon, Oct 27, 2008 at 10:40:12AM -0500, Matt Sealey wrote:
+>
+>
+> David Gibson wrote:
+>
+>> Um.. I can't actually follow what you're getting at there, sorry.
+>
+> Imagine in your head that you have a GPIO controller that has a
+> 32-bit register potentially controlling 32 pins on the chip.
+>
+> Imagine that rather than being able to allocate 6 GPIO pins
+> *right next to each other* in the register and saying that
+> you start at "pin" 15 and use the next 6 "pins", you have to
+> spread it around and use pin 1, pin 8, pin 9, pin 11, pin 15,
+> pin 30, to make up this peripheral.
+>
+> As far as I can tell there is no way at all to specify a set of
+> GPIO pins which are NOT consecutive because the current GPIO
+> spec stops after specifying a controller bank (the 32-bit
+> register).
 
+Uh.. no.  The gpio specifier has a format that's gpio controller
+specific, but it must include the actual pin number, although exactly
+how it's encoded might vary.
 
- > Probably the simplest fix is to get rid of the rx_not_empty label and
- > protect the entire:
- >
- > 	/* Receive descriptor is empty now */
- > 	spin_lock_irqsave(&lp->lock, flags);
- > 	__netif_rx_complete(dev, napi);
- > 	writel(VAL0|RINTEN0, mmio + INTEN0);
- > 	writel(VAL2 | RDMD0, mmio + CMD0);
- > 	spin_unlock_irqrestore(&lp->lock, flags);
- >
- > code block with a test such as:
- >
- > 	if (rx_pkt_limit > 0)
- >
- > (yes, greater than zero, not >= 0)
- >
- > then replace the rx_not_empty goto with a simple break.
+So, you use
+	gpios = <&controller pin1-specifier &controller pin8-specifier
+		 &controller pin9-specifier &controller pin11-specifier
+		 &controller pin15-specifier &controller pin30-specifier>;
 
-
-Are you sure about that?  Doing that, if we "--rx_pkt_limit < 0" we'll only 
-break out of the inner while loop.  We then check then interrupt status 
-register and potentially loop through the do/while loop again (maybe 
-decrementing rx_pkt_limit again) even though we've used up our budget.
-
-If I leave the label and jump and just add the "rx_pkt_limit > 0" test, it 
-seems to work.
-
-Chris
-
-
-From: Chris Friesen    <cfriesen@nortel.com>
-Subject: [PATCH] fix amd8111e rx return code
-
-The amd8111e rx poll routine currently mishandles the case when we process
-exactly the number of packets specified in the budget.
-
-This patch is basically as suggested by David Miller.
-
-Signed-off-by: Chris Friesen <cfriesen@nortel.com>
-
-diff --git a/drivers/net/amd8111e.c b/drivers/net/amd8111e.c
-index c54967f..ba1be0b 100644
---- a/drivers/net/amd8111e.c
-+++ b/drivers/net/amd8111e.c
-@@ -833,12 +833,14 @@ static int amd8111e_rx_poll(struct napi_struct *napi, 
-int budget)
-
-  	} while(intr0 & RINT0);
-
--	/* Receive descriptor is empty now */
--	spin_lock_irqsave(&lp->lock, flags);
--	__netif_rx_complete(dev, napi);
--	writel(VAL0|RINTEN0, mmio + INTEN0);
--	writel(VAL2 | RDMD0, mmio + CMD0);
--	spin_unlock_irqrestore(&lp->lock, flags);
-+	if (rx_pkt_limit > 0) {
-+		/* Receive descriptor is empty now */
-+		spin_lock_irqsave(&lp->lock, flags);
-+		__netif_rx_complete(dev, napi);
-+		writel(VAL0|RINTEN0, mmio + INTEN0);
-+		writel(VAL2 | RDMD0, mmio + CMD0);
-+		spin_unlock_irqrestore(&lp->lock, flags);
-+	}
-
-  rx_not_empty:
-  	return num_rx_pkt;
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
