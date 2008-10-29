@@ -1,21 +1,18 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 49F1FDDEF1
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 08:13:15 +1100 (EST)
-Date: Wed, 29 Oct 2008 14:13:12 -0700
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH RFC v2] net: add PCINet driver
-Message-ID: <20081029211312.GJ12879@ovro.caltech.edu>
-References: <20081029202027.GH12879@ovro.caltech.edu>
-	<20081029132506.55b93555@extreme>
-	<20081029205002.GI12879@ovro.caltech.edu>
-	<4908CD96.300@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4908CD96.300@freescale.com>
-Cc: netdev@vger.kernel.org, Stephen Hemminger <shemminger@vyatta.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EF26DDDF7C
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 08:19:02 +1100 (EST)
+Message-Id: <200810292118.m9TLIU7J018621@imap1.linux-foundation.org>
+Subject: [patch 1/1] powerpc: hugetlb pgtable cache access cleanup
+To: paulus@samba.org
+From: akpm@linux-foundation.org
+Date: Wed, 29 Oct 2008 14:18:30 -0700
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	kniht@linux.vnet.ibm.com, nickpiggin@yahoo.com.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +22,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 29, 2008 at 03:54:46PM -0500, Scott Wood wrote:
-> Ira Snyder wrote:
->> I know about this. I was following the example set forth in
->> drivers/net/fs_enet. 
->
-> I recommend against that. :-)
+From: Jon Tollefson <kniht@linux.vnet.ibm.com>
 
-Great, now you tell me :)
+Cleaned up use of macro.  We now reference the pgtable_cache array
+directly instead of using a macro.
 
-I'll go ahead change the typedef to a struct. Hopefully some of the
-other inspiration I took wasn't too bad. I'm totally open to suggestions
-on improvements for this driver.
+Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-Ira
+ arch/powerpc/mm/hugetlbpage.c |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+diff -puN arch/powerpc/mm/hugetlbpage.c~powerpc-hugetlb-pgtable-cache-access-cleanup arch/powerpc/mm/hugetlbpage.c
+--- a/arch/powerpc/mm/hugetlbpage.c~powerpc-hugetlb-pgtable-cache-access-cleanup
++++ a/arch/powerpc/mm/hugetlbpage.c
+@@ -53,8 +53,7 @@ unsigned int mmu_huge_psizes[MMU_PAGE_CO
+ 
+ /* Subtract one from array size because we don't need a cache for 4K since
+  * is not a huge page size */
+-#define huge_pgtable_cache(psize)	(pgtable_cache[HUGEPTE_CACHE_NUM \
+-							+ psize-1])
++#define HUGE_PGTABLE_INDEX(psize)	(HUGEPTE_CACHE_NUM + psize - 1)
+ #define HUGEPTE_CACHE_NAME(psize)	(huge_pgtable_cache_name[psize])
+ 
+ static const char *huge_pgtable_cache_name[MMU_PAGE_COUNT] = {
+@@ -113,7 +112,7 @@ static inline pte_t *hugepte_offset(huge
+ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+ 			   unsigned long address, unsigned int psize)
+ {
+-	pte_t *new = kmem_cache_zalloc(huge_pgtable_cache(psize),
++	pte_t *new = kmem_cache_zalloc(pgtable_cache[HUGE_PGTABLE_INDEX(psize)],
+ 				      GFP_KERNEL|__GFP_REPEAT);
+ 
+ 	if (! new)
+@@ -121,7 +120,7 @@ static int __hugepte_alloc(struct mm_str
+ 
+ 	spin_lock(&mm->page_table_lock);
+ 	if (!hugepd_none(*hpdp))
+-		kmem_cache_free(huge_pgtable_cache(psize), new);
++		kmem_cache_free(pgtable_cache[HUGE_PGTABLE_INDEX(psize)], new);
+ 	else
+ 		hpdp->pd = (unsigned long)new | HUGEPD_OK;
+ 	spin_unlock(&mm->page_table_lock);
+@@ -760,13 +759,14 @@ static int __init hugetlbpage_init(void)
+ 
+ 	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
+ 		if (mmu_huge_psizes[psize]) {
+-			huge_pgtable_cache(psize) = kmem_cache_create(
+-						HUGEPTE_CACHE_NAME(psize),
+-						HUGEPTE_TABLE_SIZE(psize),
+-						HUGEPTE_TABLE_SIZE(psize),
+-						0,
+-						NULL);
+-			if (!huge_pgtable_cache(psize))
++			pgtable_cache[HUGE_PGTABLE_INDEX(psize)] =
++				kmem_cache_create(
++					HUGEPTE_CACHE_NAME(psize),
++					HUGEPTE_TABLE_SIZE(psize),
++					HUGEPTE_TABLE_SIZE(psize),
++					0,
++					NULL);
++			if (!pgtable_cache[HUGE_PGTABLE_INDEX(psize)])
+ 				panic("hugetlbpage_init(): could not create %s"\
+ 				      "\n", HUGEPTE_CACHE_NAME(psize));
+ 		}
+_
