@@ -1,21 +1,16 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 9F1C7DDE04
+Return-Path: <mike.dyer@provision-comm.com>
+Received: from smtp1.betherenow.co.uk (smtp1.betherenow.co.uk [87.194.0.68])
+	by ozlabs.org (Postfix) with SMTP id 11683DDDD8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Oct 2008 11:00:10 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KuyTm-00069p-P0
-	for linuxppc-embedded@ozlabs.org; Tue, 28 Oct 2008 17:00:06 -0700
-Message-ID: <20218592.post@talk.nabble.com>
-Date: Tue, 28 Oct 2008 17:00:06 -0700 (PDT)
-From: saadia <saadia_dhouib@yahoo.fr>
+	Wed, 29 Oct 2008 21:10:26 +1100 (EST)
+Subject: [PATCH] [MPC8313ERDB] Remove duplicate DMA entry from device tree
+From: Mike Dyer <mike.dyer@provision-comm.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: needhelp to install linux 2.6 on ppc405 of a virtex II pro
-In-Reply-To: <883498565@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <883498565@web.de>
+Content-Type: text/plain
+Date: Wed, 29 Oct 2008 10:10:06 +0000
+Message-Id: <1225275006.8152.16.camel@mike-linux.provision-comm.com>
+Mime-Version: 1.0
+Cc: scottwood@freescale.com, Joaquin.Luna@jdsu.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,17 +22,58 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi
-I want to install linux 2.6 on a ppc405 of a virtex II pro, and then patch
-it with rtai or xenomai. Is there some tutorial explaining the installation
-procedure (where to find sources, drivers etc).
-I have found this link:
-http://users.telenet.be/steven.kauffmann/installation/index.htm 
-but it concerns linux 2.4;
-Can anyone help me to find useful links or documents to install the 2.6
-kernel whith a real time extension?
-Thanks
+Signed-off-by: Mike Dyer <mike.dyer@provision-comm.com>
+---
+arch/powerpc/boot/dts/mpc8313erdb.dts |   39 ---------------------------------
+ 1 files changed, 0 insertions(+), 39 deletions(-)
 
--- 
-View this message in context: http://www.nabble.com/use-xilinx-gpio-from-linux-on-a-ppc405-tp18507061p20218592.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+index 747f276..5030317 100644
+--- a/arch/powerpc/boot/dts/mpc8313erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+@@ -164,45 +164,6 @@
+ 			mode = "cpu";
+ 		};
+ 
+-		dma@82a8 {
+-			#address-cells = <1>;
+-			#size-cells = <1>;
+-			compatible = "fsl,mpc8313-dma", "fsl,elo-dma";
+-			reg = <0x82a8 4>;
+-			ranges = <0 0x8100 0x1a8>;
+-			interrupt-parent = <&ipic>;
+-			interrupts = <71 8>;
+-			cell-index = <0>;
+-			dma-channel@0 {
+-				compatible = "fsl,mpc8313-dma-channel", "fsl,elo-dma-channel";
+-				reg = <0 0x80>;
+-				cell-index = <0>;
+-				interrupt-parent = <&ipic>;
+-				interrupts = <71 8>;
+-			};
+-			dma-channel@80 {
+-				compatible = "fsl,mpc8313-dma-channel", "fsl,elo-dma-channel";
+-				reg = <0x80 0x80>;
+-				cell-index = <1>;
+-				interrupt-parent = <&ipic>;
+-				interrupts = <71 8>;
+-			};
+-			dma-channel@100 {
+-				compatible = "fsl,mpc8313-dma-channel", "fsl,elo-dma-channel";
+-				reg = <0x100 0x80>;
+-				cell-index = <2>;
+-				interrupt-parent = <&ipic>;
+-				interrupts = <71 8>;
+-			};
+-			dma-channel@180 {
+-				compatible = "fsl,mpc8313-dma-channel", "fsl,elo-dma-channel";
+-				reg = <0x180 0x28>;
+-				cell-index = <3>;
+-				interrupt-parent = <&ipic>;
+-				interrupts = <71 8>;
+-			};
+-		};
+-
+ 		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
+ 		usb@23000 {
+ 			compatible = "fsl-usb2-dr";
