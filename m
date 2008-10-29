@@ -1,21 +1,22 @@
-Return-Path: <cel@us.ibm.com>
-Subject: Re: [UPDATED PATCH VER2] Cell OProfile: Incorrect local array size
-	in activate spu profiling function
-From: Carl Love <cel@us.ibm.com>
-To: michael@ellerman.id.au
-In-Reply-To: <1225241514.7799.2.camel@localhost>
-References: <1224874049.20229.5.camel@carll-linux-desktop>
-	<1224909595.16090.5.camel@localhost>
-	<1225207079.20229.32.camel@carll-linux-desktop>
-	<1225241514.7799.2.camel@localhost>
-Content-Type: text/plain
-Date: Wed, 29 Oct 2008 08:06:45 -0700
-Message-Id: <1225292805.20229.52.camel@carll-linux-desktop>
-Mime-Version: 1.0
-Cc: acjohnso <acjohnso@us.ibm.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-	Hannsj_uhl <Hannsj_uhl@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	oprofile-list@lists.sourceforge.net, cel@linux.vnet.ibm.com,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <neko@genesi-usa.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
+	by ozlabs.org (Postfix) with ESMTP id 87884DDDE0
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 02:34:22 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so47778qwb.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 08:34:21 -0700 (PDT)
+Message-ID: <4908827C.1080002@genesi-usa.com>
+Date: Wed, 29 Oct 2008 10:34:20 -0500
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH]: [MPC5200] Add ATA DMA support
+References: <DD39B5C3F4963040ADC9768BE7E430CB03203A7B@is-hdq-exchange.marel.net>	<792f5f410808120730j7b4be4f2n7a40de880178ccca@mail.gmail.com>	<DD39B5C3F4963040ADC9768BE7E430CB03203ADC@is-hdq-exchange.marel.net>	<792f5f410808120830v311e0446kc8fddfb97d0b9ea6@mail.gmail.com>	<DD39B5C3F4963040ADC9768BE7E430CB03203B75@is-hdq-exchange.marel.net>	<792f5f410808122257t3711eb2lfc1e02bacade16a3@mail.gmail.com>	<fa686aa40808122302g197a8e90idc721796aa35ff05@mail.gmail.com>	<792f5f410808122306u478b3ere8167016ef892323@mail.gmail.com>	<20080813061135.GH17587@secretlab.ca>	<792f5f410808130207t6ef3c3ddxeff0ad0debb39242@mail.gmail.com>
+	<fa686aa40809142254m68eaf3e8n614564a74667fcdf@mail.gmail.com>
+In-Reply-To: <fa686aa40809142254m68eaf3e8n614564a74667fcdf@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: Tim Yamin <plasm@roo.me.uk>, linuxppc-dev@ozlabs.org, "Bienert,
+	Shawn" <Shawn.Bienert@gdcanada.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,61 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Updated the patch to address comments by Michael Ellerman.  
-Specifically, changed upper limit in for loop to 
-ARRAY_SIZE() macro and added a check to make sure the 
-number of events specified by the user, which is used as
-the max for indexing various arrays, is no bigger then the
-declared size of the arrays.
-
-The size of the pm_signal_local array should be equal to the
-number of SPUs being configured in the array.  Currently, the
-array is of size 4 (NR_PHYS_CTRS) but being indexed by a for 
-loop from 0 to 7 (NUM_SPUS_PER_NODE).  
-
-Signed-off-by: Carl Love <carll@us.ibm.com>
 
 
-Index: Cell_kernel_10_24_2008/arch/powerpc/oprofile/op_model_cell.c
-===================================================================
---- Cell_kernel_10_24_2008.orig/arch/powerpc/oprofile/op_model_cell.c
-+++ Cell_kernel_10_24_2008/arch/powerpc/oprofile/op_model_cell.c
-@@ -582,6 +582,13 @@ static int cell_reg_setup(struct op_coun
- 
- 	num_counters = num_ctrs;
- 
-+	if (unlikely(num_ctrs > NR_PHYS_CTRS)) {
-+		printk(KERN_ERR
-+		       "%s: Oprofile, number of specified events " \
-+		       "exceeds number of physical counters\n",
-+		       __func__);
-+		return -EIO;
-+	}
- 	pm_regs.group_control = 0;
- 	pm_regs.debug_bus_control = 0;
- 
-@@ -830,13 +837,13 @@ static int calculate_lfsr(int n)
- static int pm_rtas_activate_spu_profiling(u32 node)
- {
- 	int ret, i;
--	struct pm_signal pm_signal_local[NR_PHYS_CTRS];
-+	struct pm_signal pm_signal_local[NUM_SPUS_PER_NODE];
- 
- 	/*
- 	 * Set up the rtas call to configure the debug bus to
- 	 * route the SPU PCs.  Setup the pm_signal for each SPU
- 	 */
--	for (i = 0; i < NUM_SPUS_PER_NODE; i++) {
-+	for (i = 0; i < ARRAY_SIZE(pm_signal_local); i++) {
- 		pm_signal_local[i].cpu = node;
- 		pm_signal_local[i].signal_group = 41;
- 		/* spu i on word (i/2) */
-@@ -848,7 +855,7 @@ static int pm_rtas_activate_spu_profilin
- 
- 	ret = rtas_ibm_cbe_perftools(SUBFUNC_ACTIVATE,
- 				     PASSTHRU_ENABLE, pm_signal_local,
--				     (NUM_SPUS_PER_NODE
-+				     (ARRAY_SIZE(pm_signal_local)
- 				      * sizeof(struct pm_signal)));
- 
- 	if (unlikely(ret)) {
+Grant Likely wrote:
+> On Wed, Aug 13, 2008 at 3:07 AM, Tim Yamin <plasm@roo.me.uk> wrote:
+>> On Wed, Aug 13, 2008 at 7:11 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+>>> Sounds good to me.  You will get more testers that way.  I can pick it
+>>> up for -next if everything else looks good.
+>> Here are the new patches; tested against 2.6.27-rc3.
+> 
+> Hi Tim,
+> 
+> I finally got a chance to try out your patches on my lite5200 board.
+> Unfortunately, I wasn't able to get it to work easily.  I'm very early
+> in the debugging this issue, but I thought I'd send you my results in
+> case you've seen it before.  I've tried this with both an STEC 1GB CF
+> and a Transcend Ultra industrial 1GB CF card.
+
+[snip]
+
+Grant, Tim,
+
+Any chance of this being picked up even though it "doesn't work"?
+
+I'm going to be rolling a couple kernels this weekend (2.6.27.4
+for Efika, ADS512101, 8610HPCN and 8641DHPCD) and I'll patch this
+in and see what happens and give some more test data (since my
+Efika is nice and trashed it won't matter if I trash it some
+more).
+
+We at Genesi still hold by the fact that ATA DMA is irrevocably
+broken but hold some bittersweet hope that Freescale might fix
+it after the fact in some useless future revision, the biggest
+problem is that if nobody writes a driver for it, nobody experiences
+the problem!
+
+Once the patch is in maybe someone will be willing to use the
+BestComm-assisted PIO idea as implemented in the bplan 2.6.19
+kernel and compare results?
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
