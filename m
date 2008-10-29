@@ -1,29 +1,22 @@
-Return-Path: <kniht@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <sebastien.chretien.enseirb@gmail.com>
+Received: from plan.enseirb.fr (plan.enseirb.fr [147.210.18.60])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 18714DDEE9
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 07:57:38 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9TKuxO7005098
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 16:57:01 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9TKuxkK136986
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 16:56:59 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9TKuxLU012615
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 16:56:59 -0400
-Message-ID: <4908CE18.3030205@linux.vnet.ibm.com>
-Date: Wed, 29 Oct 2008 15:56:56 -0500
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 298F6DDEF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 08:04:22 +1100 (EST)
+Message-ID: <4908CFC7.5030306@gmail.com>
+Date: Wed, 29 Oct 2008 22:04:07 +0100
+From: =?ISO-8859-1?Q?S=E9bastien_Chr=E9tien?=
+	<sebastien.chretien.enseirb@gmail.com>
 MIME-Version: 1.0
-To: stable@kernel.org
-Subject: 16G related patches for stable kernel 2.6.27
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: Device Tree
+References: <48E07490.9020805@enseirb.fr>
+	<48E09108.4020400@ru.mvista.com>		<48E2444D.1050301@genesi-usa.com>		<eee4c0020809301530w20d6d1e4sd2e3542366cc595d@mail.gmail.com>		<48E2B16C.6030501@genesi-usa.com>	<1222831495.12264.2.camel@pasglop>
+	<48E3767F.907@genesi-usa.com>
+In-Reply-To: <48E3767F.907@genesi-usa.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "SÃ©bastien C"@ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,19 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please consider the following patches for the 2.6.27 stable tree.
+Thank for your answers.
+Sébastien
 
-The first two allow a powerpc machine with more then 2 numa nodes
-to boot when 16G pages are enabled.  The third one allows a powerpc
-machine to boot if using 16G pages and the mem= boot param.
-
-thanks,
-Jon
-
-
-powerpc: Reserve in bootmem lmb reserved regions that cross NUMA nodes
-    commit 8f64e1f2d1e09267ac926e15090fd505c1c0cbcb
-powerpc/numa: Make memory reserve code more robust
-    commit e81703724a966120ace6504c993bda9e084cbf3e
-powerpc: Don't use a 16G page if beyond mem= limits
-    commit 4792adbac9eb41cea77a45ab76258ea10d411173
+Matt Sealey a écrit :
+> Benjamin Herrenschmidt wrote:
+>> On Tue, 2008-09-30 at 18:08 -0500, Matt Sealey wrote:
+>>> It's far more common than people might think at first glance. With x86
+>>> I am sure it would benefit the platform a little more if the OF support
+>>> was in-line with the shared code between PPC and SPARC (and now I 
+>>> guess,
+>>> ARM) but nevertheless it's an Open Firmware platform and something that
+>>> appeared not too long ago.
+>>>
+>>> OF is still a going concern; if you want a nice flexible firmware, why
+>>> not use it? Most of the implementations are open source (FirmWorks and
+>>> CodeGen trees, and the Sun reference design) too.
+>>
+>> And SLOF :-)
+>
+> I guess OpenBIOS counts too :)
+>
