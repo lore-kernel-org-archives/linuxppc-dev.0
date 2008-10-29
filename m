@@ -1,18 +1,19 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
-	by ozlabs.org (Postfix) with ESMTP id EB774DDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 05:35:26 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so130519qwb.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 11:35:24 -0700 (PDT)
-Message-ID: <4908ACEB.7020505@genesi-usa.com>
-Date: Wed, 29 Oct 2008 13:35:23 -0500
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.231])
+	by ozlabs.org (Postfix) with ESMTP id 644EFDDDF6
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 05:35:31 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so130212rvb.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 11:35:29 -0700 (PDT)
+Message-ID: <fa686aa40810291135i2533f6bk7aeb78ec39e35061@mail.gmail.com>
+Date: Wed, 29 Oct 2008 12:35:29 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "=?ISO-8859-1?Q?Ren=E9_B=FCrgel?=" <r.buergel@unicontrol.de>
+Subject: Re: [PATCH] mpc52xx_uart: report serial errors to users
+In-Reply-To: <49089BD3.9090705@unicontrol.de>
 MIME-Version: 1.0
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: defconfig doesn't work with MPC8610HPCD
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: Peter Czanik <pczanik@genesi-usa.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <49089BD3.9090705@unicontrol.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Missing patch?
 
-We just tied building a 2.6.27.4 vanilla kernel using the MPC8610
-defconfig (for the specific board) and got a zero result from
-booting it - complete lack of output on the serial port and no
-apparent activity.
+On Wed, Oct 29, 2008 at 11:22 AM, Ren=E9 B=FCrgel <r.buergel@unicontrol.de>=
+ wrote:
+> Hi! This patch adds the capability to the mpc52xx-uart to report framing
+> errors, parity errors, breaks and overruns to userspace. These values may=
+ be
+> requested in userspace by using the ioctl TIOCGICOUNT.
+>
+> Signed-off-by: Ren=E9 B=FCrgel <r.buergel@unicontrol.de>
+>
+> Kind regards, Ren=E9 B=FCrgel
+>
+> --
+> Ren=E9 B=FCrgel
+> Software Engineer
+> Unicontrol Systemtechnik GmbH
+> OT Dittersbach
+> Sachsenburger Weg 34
+> 09669 Frankenberg
+>
+> Tel.: 03 72 06/ 88 73 - 19
+> Fax: 03 72 06/ 88 73 - 60
+> E-Mail: r.buergel@unicontrol.de
+> Internet: www.unicontrol.de
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-We're running U-Boot 1.3.0 and creating the device tree with
-something like .
 
-dtc -f -b 0 -I dts -O dtb -R 8 -S 0x3000 -o mpc8610_hpcd.dtb mpc8610_hpcd.dts
 
-(I have no idea what those arguments are for but they were passed to
-us by John Rigby for the MPC5121e board. In any case, making a dtb
-with just -I dts -O dtb -o blah.dtb blah.dts gives us exactly the
-same result so I don't think it is any fault of that).
-
-Any clues why we would get this?
-
-I've had the same problem with my MPC8641D but since I broke it
-last week I've not had a chance to actually test it since.
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
