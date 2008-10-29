@@ -1,24 +1,34 @@
-Return-Path: <jhsiao@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7A8FCDDDF0
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 04:03:54 +1100 (EST)
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E628FDDDF6
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 04:10:40 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9THAYTr001862
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 13:10:34 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9THAYtB084582
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 13:10:34 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9THARbi029644
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 13:10:27 -0400
+Date: Wed, 29 Oct 2008 13:10:32 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: jhsiao@amcc.com
 Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v2]
-From: James Hsiao <jhsiao@amcc.com>
-To: Kim Phillips <kim.phillips@freescale.com>
-In-Reply-To: <20081029105413.895d5cdb.kim.phillips@freescale.com>
+Message-ID: <20081029131032.07a3be35@zod.rchland.ibm.com>
+In-Reply-To: <1225299899.4841.7.camel@jhsiao-usb>
 References: <1225237276.1850.13.camel@jhsiao-usb>
 	<20081028205132.255e674d@zod.rchland.ibm.com>
 	<1225246700.1850.61.camel@jhsiao-usb>
 	<20081029105413.895d5cdb.kim.phillips@freescale.com>
-Content-Type: text/plain
-Date: Wed, 29 Oct 2008 10:04:59 -0700
-Message-Id: <1225299899.4841.7.camel@jhsiao-usb>
+	<1225299899.4841.7.camel@jhsiao-usb>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: jhsiao@amcc.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,56 +38,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kim,
-
-Thanks for comments.
-Please see inline.
-
-James
-On Wed, 2008-10-29 at 10:54 -0500, Kim Phillips wrote:
-> On Tue, 28 Oct 2008 19:18:20 -0700
-> James Hsiao <jhsiao@amcc.com> wrote:
-> 
-> > On Tue, 2008-10-28 at 20:51 -0400, Josh Boyer wrote:
-> > > - The question on ABLKCIPHER kconfig was ignored
-> > Is ABLKCIPHER a sub set of BLKCIPHER? So, if BLKCIPHER is selected then
-> > if ABLKCIPHER is present, it will use ABLKCIPHER otherwise using
-> > BLKCIPHER algorithm? Correct?
-> 
-> this is my bad, commit 653ebd9c8510a7d647ed23e66e1338f848ebdbab
-> "blkcipher: Merge ablkcipher and blkcipher into one option/module"
-> renders CRYPTO_ABLKCIPHER obsolete in favour of CRYPTO_BLKCIPHER.
-> 
-Ok. 
-
-> > > - Marking functions static
-> > We have more than one file, that is why some of the function are not
-> > static.
-> 
-> have one file then?
-
-This is our first round of patch. We will support many more algorithms
-and it will have much more files. I am afraid one file will be way too
-big.
-
-> 
-> > > - Global lsec_core variable which doesn't allow for more than one
-> > > device
-> > We only support single incidence of device.
-> 
-> it's also a matter of unnecessarily polluting global namespace.
-> 
-
-I look into modify this.
-
-> > > - Complete lack of locking code, how do you enforce mutually exclusive
-> > > access to the device?
+On Wed, 29 Oct 2008 10:04:59 -0700
+James Hsiao <jhsiao@amcc.com> wrote:
+> > > > - Complete lack of locking code, how do you enforce mutually exclusive
+> > > > access to the device?
+> > > 
+> > > The crypto engine have couple bits 'command ready' and 'packet done',
+> > > which servers as semaphore here. So, software don't need extra locking.
 > > 
-> > The crypto engine have couple bits 'command ready' and 'packet done',
-> > which servers as semaphore here. So, software don't need extra locking.
+> > know if it's applicable at all, but I imagine it's not SMP safe.
 > 
-> know if it's applicable at all, but I imagine it's not SMP safe.
+> No, it's not SMP safe. This driver only support single core processors.
 
-No, it's not SMP safe. This driver only support single core processors.
-> 
-> Kim
+What about preemption?  You do not have to be a multi-core CPU to have
+SMP-like problems.
+
+josh
