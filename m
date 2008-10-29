@@ -1,19 +1,22 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 233A1DDDD4
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 07:50:05 +1100 (EST)
-Date: Wed, 29 Oct 2008 13:50:02 -0700
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [PATCH RFC v2] net: add PCINet driver
-Message-ID: <20081029205002.GI12879@ovro.caltech.edu>
-References: <20081029202027.GH12879@ovro.caltech.edu>
-	<20081029132506.55b93555@extreme>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 39917DDEE4
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 07:55:33 +1100 (EST)
+Message-ID: <4908CD96.300@freescale.com>
+Date: Wed, 29 Oct 2008 15:54:46 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081029132506.55b93555@extreme>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+To: Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC v2] net: add PCINet driver
+References: <20081029202027.GH12879@ovro.caltech.edu>	<20081029132506.55b93555@extreme>
+	<20081029205002.GI12879@ovro.caltech.edu>
+In-Reply-To: <20081029205002.GI12879@ovro.caltech.edu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,68 +26,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 29, 2008 at 01:25:06PM -0700, Stephen Hemminger wrote:
-> On Wed, 29 Oct 2008 13:20:27 -0700
-> Ira Snyder <iws@ovro.caltech.edu> wrote:
+Ira Snyder wrote:
+> I know about this. I was following the example set forth in
+> drivers/net/fs_enet. 
 
-Big snip...
+I recommend against that. :-)
 
-> > diff --git a/drivers/net/pcinet.h b/drivers/net/pcinet.h
-> > new file mode 100644
-> > index 0000000..66d2cba
-> > --- /dev/null
-> > +++ b/drivers/net/pcinet.h
-> > @@ -0,0 +1,75 @@
-> > +/*
-> > + * Shared Definitions for the PCINet / PCISerial drivers
-> > + *
-> > + * Copyright (c) 2008 Ira W. Snyder <iws@ovro.caltech.edu>
-> > + *
-> > + * Heavily inspired by the drivers/net/fs_enet driver
-> > + *
-> > + * This file is licensed under the terms of the GNU General Public License
-> > + * version 2. This program is licensed "as is" without any warranty of any
-> > + * kind, whether express or implied.
-> > + */
-> > +
-> > +#ifndef PCINET_H
-> > +#define PCINET_H
-> > +
-> > +#include <linux/kernel.h>
-> > +#include <linux/if_ether.h>
-> > +
-> > +/* Ring and Frame size -- these must match between the drivers */
-> > +#define PH_RING_SIZE	(64)
-> > +#define PH_MAX_FRSIZE	(64 * 1024)
-> > +#define PH_MAX_MTU	(PH_MAX_FRSIZE - ETH_HLEN)
-> > +
-> > +struct circ_buf_desc {
-> > +	__le32 sc;
-> > +	__le32 len;
-> > +	__le32 addr;
-> > +} __attribute__((__packed__));
-> > +typedef struct circ_buf_desc cbd_t;
-> 
-> Don't use typedef. See chapter 5 of Documentation/CodingStyle
-> 
-
-I know about this. I was following the example set forth in
-drivers/net/fs_enet. I tried to make this driver somewhat similar to
-that driver, but I'm not against changing this to a struct everywhere.
-
-> Do you really need packed here, sometime gcc generates much worse code
-> on needlessly packed structures?
-
-I'm pretty sure I do. I share this structure between both devices over
-the PCI bus. This is where the physical addresses of the skb's go so
-that the DMA controller can transfer them.
-
-As an example, let's say I have a machine that places 32bit values on
-64bit boundaries. AFAIK, the Freescale places 32bit values on 32bit
-boundaries. Now the two of them disagree about where the fields of the
-buffer descriptor are.
-
-Of course, I may be wrong. :) Comments?
-
-Thanks for the review,
-Ira
+-Scott
