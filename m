@@ -1,22 +1,17 @@
-Return-Path: <jhsiao@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 423EEDDE01
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 13:17:13 +1100 (EST)
-Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v2]
-From: James Hsiao <jhsiao@amcc.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20081028205132.255e674d@zod.rchland.ibm.com>
-References: <1225237276.1850.13.camel@jhsiao-usb>
-	<20081028205132.255e674d@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Tue, 28 Oct 2008 19:18:20 -0700
-Message-Id: <1225246700.1850.61.camel@jhsiao-usb>
-Mime-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DD51BDDDFD
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 14:11:14 +1100 (EST)
+Date: Tue, 28 Oct 2008 22:11:04 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull from 'merge' branch
+Message-ID: <Pine.LNX.4.64.0810282210560.5379@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="330304082-1098012754-1225249850=:5379"
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: jhsiao@amcc.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,69 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Josh,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Yes, I did miss couple of Kim's comments.
-Also, I did not include the message when I submit the V2 patch to Kim.
-That patch have format problem so nobody except Kim recieved it.
- 
-Please see inline.
+--330304082-1098012754-1225249850=:5379
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-Thanks
-James
-On Tue, 2008-10-28 at 20:51 -0400, Josh Boyer wrote:
-> On Tue, 28 Oct 2008 16:41:16 -0700
-> James Hsiao <jhsiao@amcc.com> wrote:
-> 
-> > Hi Josh,
-> > 
-> > I am reposting this patch. Thanks Kim Phillips for pointing out format
-> > of my patch. 
-> > 
-> > Again this patch was already reviewed by Kim Phillips on linux-crypyo.
-> 
-> Kim did a really good review and you only fixed a handful of easy
-> things.
-> 
-> > Kim suggest us submit to linuxppc-dev for review.
-> 
-> Yeah, that's fine.  But generally you reply to all the
-> questions/comments from the original review.  I see several unanswered
-> comments that still apply to this version.  Things like:
-> 
-> - The device_type wasn't removed in the DTS change
-Ok, I will remove it in V3 patch.
+Please pull from 'merge' branch of
 
-> - The question on ABLKCIPHER kconfig was ignored
-Is ABLKCIPHER a sub set of BLKCIPHER? So, if BLKCIPHER is selected then
-if ABLKCIPHER is present, it will use ABLKCIPHER otherwise using
-BLKCIPHER algorithm? Correct?
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
+to receive the following updates:
 
-> - Just returning -ENOMEM instead of using a goto for simple error cases
-Yes, I miss that one.
+ arch/powerpc/configs/linkstation_defconfig       |   11 +++++------
+ arch/powerpc/platforms/embedded6xx/linkstation.c |   14 ++++++++++++++
+ 2 files changed, 19 insertions(+), 6 deletions(-)
 
+Guennadi Liakhovetski (1):
+      powerpc: fix i2c on PPC linkstation / kurobox machines
 
-> - Marking functions static
-We have more than one file, that is why some of the function are not
-static.
+Rogério Brito (2):
+      powerpc: compile kernel for linkstations optimized for size
+      powerpc: enable heap randomization for linkstations
 
-> - Global lsec_core variable which doesn't allow for more than one
-> device
-We only support single incidence of device.
-
-> - Complete lack of locking code, how do you enforce mutually exclusive
-> access to the device?
-
-The crypto engine have couple bits 'command ready' and 'packet done',
-which servers as semaphore here. So, software don't need extra locking.
-
-> 
-> I'll do a full review tomorrow because I see really odd things in here
-> in addition to the above, but I'd like to know why those comments from
-> Kim's review weren't answered.
-> 
-> josh
-> 
-
- 
+--330304082-1098012754-1225249850=:5379--
