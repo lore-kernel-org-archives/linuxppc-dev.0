@@ -1,24 +1,17 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1511CDDDEC
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 23:13:08 +1100 (EST)
-Subject: Re: [PATCH] uninorth agp: don't mark module parameter __devinit
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-In-Reply-To: <1225282185.3546.376.camel@thor.sulgenrain.local>
-	(sfid-20081029_130954_908818_BCA53077)
-References: <1225246284.1369.31.camel@johannes.berg>
-	<1225282185.3546.376.camel@thor.sulgenrain.local>
-	(sfid-20081029_130954_908818_BCA53077)
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-rmY5DiQT9dBKTNalAMzd"
-Date: Wed, 29 Oct 2008 13:12:59 +0100
-Message-Id: <1225282379.5439.11.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <henk.stegeman@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.155])
+	by ozlabs.org (Postfix) with ESMTP id 043D5DDDE6
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 00:43:34 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so39633fga.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 06:43:32 -0700 (PDT)
+Message-ID: <ae4f76fd0810290643o27c357d7k2ccde459d9e52a7b@mail.gmail.com>
+Date: Wed, 29 Oct 2008 14:43:32 +0100
+From: "Henk Stegeman" <henk.stegeman@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Chipselect in SPI binding with mpc5200-psc-spi
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_3744_27396951.1225287812684"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,48 +21,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+------=_Part_3744_27396951.1225287812684
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
---=-rmY5DiQT9dBKTNalAMzd
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+..
+..
+In my dts
 
-On Wed, 2008-10-29 at 13:09 +0100, Michel D=C3=A4nzer wrote:
-> On Wed, 2008-10-29 at 03:11 +0100, Johannes Berg wrote:
-> > A module parameter can possibly be shown via sysfs, which isn't a good
-> > idea if the section has been removed, so remove the __devinit
-> > annotation.
->=20
-> Under what circumstances could it be shown in sysfs?
+I have my chipselect defined as follows:
 
-Sorry, my mistake, I overlooked that it had 0 permission:
-module_param(aperture, charp, 0);
+        gpt4: timer@640 {    // General Purpose Timer GPT4 in GPIO mode for
+SMC4000IO chip select.
+            compatible = "fsl,mpc5200b-gpt-gpio","fsl,mpc5200-gpt-gpio";
+            cell-index = <4>;
+            reg = <0x640 0x10>;
+            interrupts = <1 13 0>;
+            interrupt-parent = <&mpc5200_pic>;
+            gpio-controller;
+            #gpio-cells = <2>;
+        };
 
-otherwise it would of course be in sysfs.
+I found the gpio in
+# cat /sys/class/gpio/gpiochip215/label
+/soc5200@f0000000/timer@640
 
-Can uninorth_fetch_size be marked __devinit then?
+The spi controller is defined like this:
 
-johannes
+        spi@2400 {
+            device_type = "spi";
+            #address-cells = <1>;
+            #size-cells = <0>;
+            compatible = "fsl,mpc5200-psc-spi","fsl,mpc5200b-psc-spi";
+            cell-index = <2>;
+            reg = <2400 100>;
+            interrupts = <2 3 0>;
+            interrupt-parent = <&mpc5200_pic>;
+            gpios = <&gpt4 0 0>;
 
---=-rmY5DiQT9dBKTNalAMzd
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+            io-controller@0 {
+                compatible = "microkey,smc4000io";
+                spi-max-frequency = <1000000>;
+                reg = <0>;
+            };
+        };
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+At bootup linux (2.6.27) reports:
 
-iQIcBAABAgAGBQJJCFNHAAoJEKVg1VMiehFYgRcP+wY7iAIu47wOivBh5HYyUx2s
-S5FRNIgQ4Belt25BcibrGVDfyfiehRVkhK3WPVOFCzcloAKYTzCF+23Civ/lbYYu
-PfC6pN59g8i4zy3PtbBHUnrZ0IRRCGxk3pRtZSY9GIIkVefdk40qKEIIN88xyHMN
-furuk/aJFv4DvHGTxo2xqOLx1/Dfchkdp42OXM/j/KXd+z0T2rD5UHGDgdSc2KYK
-07muiDYEHJ1vRG7dh1t7Ux7GveQUeQiTTi6RsDbqGW+ie7KXlzbIPJQUKL4NPyVi
-VzC7+lttWZgr0G3nO9txXHtX6RygBxIos7w8M7mGusrh/s7wt0GUqKU3FuDlY4Yr
-Am3J/XBs+qT+wAGOys2fLktRQhe3Jh8IfxrrO5dd5t4b9Gh6mFZgBvgbHUb2rwmB
-KpWgFrNwaz2JchhqE4l5+ojMWs+bOIOo7QaDx4nBdeJ2ffcfJuVNptjut36zDvCU
-nB7QScDQEghcuavn6EXPPIeR7wkvnVRaFfdTljuFySd2K1SgRJAl/LzBpQVp3Syw
-oNMt77w4KlmoeFtuVi2LZtzNT1691qx+BZlpP2BaEHQOj8MoZqCMNa7bxbGS6khw
-06QH5v2ln7e3zM4Cast3LcUaKH3oDNBjlbnB0WN2/AlOI904D6Z+qtiJSifajgkr
-5KE2eYSQb116/bvmJ2oL
-=E4b5
------END PGP SIGNATURE-----
+mpc52xx-psc-spi f0000960.spi: probe called without platform data, no
+(de)activate_cs function will be called.
 
---=-rmY5DiQT9dBKTNalAMzd--
+Is my assumption wrong that the gpios property is the way to map chipselects
+to the spi driver?
+
+Thanks in advance.
+Henk.
+
+------=_Part_3744_27396951.1225287812684
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+..<br>..<br>In my dts<br><br>I have my chipselect defined as follows:<br><br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; gpt4: timer@640 {&nbsp;&nbsp;&nbsp; // General Purpose Timer GPT4 in GPIO mode for SMC4000IO chip select.<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; compatible = &quot;fsl,mpc5200b-gpt-gpio&quot;,&quot;fsl,mpc5200-gpt-gpio&quot;;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; cell-index = &lt;4&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; reg = &lt;0x640 0x10&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; interrupts = &lt;1 13 0&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; interrupt-parent = &lt;&amp;mpc5200_pic&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; gpio-controller;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; #gpio-cells = &lt;2&gt;;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; };<br><br>I found the gpio in<br>
+# cat /sys/class/gpio/gpiochip215/label<br>
+/soc5200@f0000000/timer@640<br>
+<br>The spi controller is defined like this:<br><br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; spi@2400 {<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; device_type = &quot;spi&quot;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; #address-cells = &lt;1&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; #size-cells = &lt;0&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; compatible = &quot;fsl,mpc5200-psc-spi&quot;,&quot;fsl,mpc5200b-psc-spi&quot;;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; cell-index = &lt;2&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; reg = &lt;2400 100&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; interrupts = &lt;2 3 0&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; interrupt-parent = &lt;&amp;mpc5200_pic&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; gpios = &lt;&amp;gpt4 0 0&gt;;<br>
+<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; io-controller@0 {<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; compatible = &quot;microkey,smc4000io&quot;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; spi-max-frequency = &lt;1000000&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; reg = &lt;0&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; };<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; };<br>
+<br>At bootup linux (2.6.27) reports:<br><br>mpc52xx-psc-spi f0000960.spi: probe called without platform data, no (de)activate_cs function will be called.<br><br>Is my assumption wrong that the gpios property is the way to map chipselects to the spi driver?<br>
+<br>Thanks in advance.<br>Henk.<br><br><br>
+
+------=_Part_3744_27396951.1225287812684--
