@@ -1,22 +1,23 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id 87884DDDE0
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 02:34:22 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so47778qwb.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 08:34:21 -0700 (PDT)
-Message-ID: <4908827C.1080002@genesi-usa.com>
-Date: Wed, 29 Oct 2008 10:34:20 -0500
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH]: [MPC5200] Add ATA DMA support
-References: <DD39B5C3F4963040ADC9768BE7E430CB03203A7B@is-hdq-exchange.marel.net>	<792f5f410808120730j7b4be4f2n7a40de880178ccca@mail.gmail.com>	<DD39B5C3F4963040ADC9768BE7E430CB03203ADC@is-hdq-exchange.marel.net>	<792f5f410808120830v311e0446kc8fddfb97d0b9ea6@mail.gmail.com>	<DD39B5C3F4963040ADC9768BE7E430CB03203B75@is-hdq-exchange.marel.net>	<792f5f410808122257t3711eb2lfc1e02bacade16a3@mail.gmail.com>	<fa686aa40808122302g197a8e90idc721796aa35ff05@mail.gmail.com>	<792f5f410808122306u478b3ere8167016ef892323@mail.gmail.com>	<20080813061135.GH17587@secretlab.ca>	<792f5f410808130207t6ef3c3ddxeff0ad0debb39242@mail.gmail.com>
-	<fa686aa40809142254m68eaf3e8n614564a74667fcdf@mail.gmail.com>
-In-Reply-To: <fa686aa40809142254m68eaf3e8n614564a74667fcdf@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: Tim Yamin <plasm@roo.me.uk>, linuxppc-dev@ozlabs.org, "Bienert,
-	Shawn" <Shawn.Bienert@gdcanada.com>
+Return-Path: <kim.phillips@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0EF41DDDFA
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 02:44:25 +1100 (EST)
+Date: Wed, 29 Oct 2008 10:54:13 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: jhsiao@amcc.com
+Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v2]
+Message-Id: <20081029105413.895d5cdb.kim.phillips@freescale.com>
+In-Reply-To: <1225246700.1850.61.camel@jhsiao-usb>
+References: <1225237276.1850.13.camel@jhsiao-usb>
+	<20081028205132.255e674d@zod.rchland.ibm.com>
+	<1225246700.1850.61.camel@jhsiao-usb>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,45 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 28 Oct 2008 19:18:20 -0700
+James Hsiao <jhsiao@amcc.com> wrote:
 
+> On Tue, 2008-10-28 at 20:51 -0400, Josh Boyer wrote:
+> > - The question on ABLKCIPHER kconfig was ignored
+> Is ABLKCIPHER a sub set of BLKCIPHER? So, if BLKCIPHER is selected then
+> if ABLKCIPHER is present, it will use ABLKCIPHER otherwise using
+> BLKCIPHER algorithm? Correct?
 
-Grant Likely wrote:
-> On Wed, Aug 13, 2008 at 3:07 AM, Tim Yamin <plasm@roo.me.uk> wrote:
->> On Wed, Aug 13, 2008 at 7:11 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
->>> Sounds good to me.  You will get more testers that way.  I can pick it
->>> up for -next if everything else looks good.
->> Here are the new patches; tested against 2.6.27-rc3.
+this is my bad, commit 653ebd9c8510a7d647ed23e66e1338f848ebdbab
+"blkcipher: Merge ablkcipher and blkcipher into one option/module"
+renders CRYPTO_ABLKCIPHER obsolete in favour of CRYPTO_BLKCIPHER.
+
+> > - Marking functions static
+> We have more than one file, that is why some of the function are not
+> static.
+
+have one file then?
+
+> > - Global lsec_core variable which doesn't allow for more than one
+> > device
+> We only support single incidence of device.
+
+it's also a matter of unnecessarily polluting global namespace.
+
+> > - Complete lack of locking code, how do you enforce mutually exclusive
+> > access to the device?
 > 
-> Hi Tim,
-> 
-> I finally got a chance to try out your patches on my lite5200 board.
-> Unfortunately, I wasn't able to get it to work easily.  I'm very early
-> in the debugging this issue, but I thought I'd send you my results in
-> case you've seen it before.  I've tried this with both an STEC 1GB CF
-> and a Transcend Ultra industrial 1GB CF card.
+> The crypto engine have couple bits 'command ready' and 'packet done',
+> which servers as semaphore here. So, software don't need extra locking.
 
-[snip]
+know if it's applicable at all, but I imagine it's not SMP safe.
 
-Grant, Tim,
-
-Any chance of this being picked up even though it "doesn't work"?
-
-I'm going to be rolling a couple kernels this weekend (2.6.27.4
-for Efika, ADS512101, 8610HPCN and 8641DHPCD) and I'll patch this
-in and see what happens and give some more test data (since my
-Efika is nice and trashed it won't matter if I trash it some
-more).
-
-We at Genesi still hold by the fact that ATA DMA is irrevocably
-broken but hold some bittersweet hope that Freescale might fix
-it after the fact in some useless future revision, the biggest
-problem is that if nobody writes a driver for it, nobody experiences
-the problem!
-
-Once the patch is in maybe someone will be willing to use the
-BestComm-assisted PIO idea as implemented in the bplan 2.6.19
-kernel and compare results?
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Kim
