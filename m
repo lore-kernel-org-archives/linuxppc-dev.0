@@ -1,18 +1,12 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EF26DDDF7C
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 08:19:02 +1100 (EST)
-Message-Id: <200810292118.m9TLIU7J018621@imap1.linux-foundation.org>
-Subject: [patch 1/1] powerpc: hugetlb pgtable cache access cleanup
-To: paulus@samba.org
-From: akpm@linux-foundation.org
-Date: Wed, 29 Oct 2008 14:18:30 -0700
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	kniht@linux.vnet.ibm.com, nickpiggin@yahoo.com.au
+Return-Path: <gerickson@nuovations.com>
+Received: from relay00.pair.com (relay00.pair.com [209.68.5.9])
+	by ozlabs.org (Postfix) with SMTP id C4B25DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 08:41:18 +1100 (EST)
+From: Grant Erickson <gerickson@nuovations.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] PPC40x: Limit Allocable RAM During Early Mapping
+Date: Wed, 29 Oct 2008 14:41:14 -0700
+Message-Id: <1225316474-29035-1-git-send-email-gerickson@nuovations.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,72 +16,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
+If the size of RAM is not an exact power of two, we may not have
+covered RAM in its entirety with large 16 and 4 MiB
+pages. Consequently, restrict the top end of RAM currently allocable
+by updating '__initial_memory_limit_addr' so that calls to the LMB to
+allocate PTEs for "tail" coverage with normal-sized pages (or other
+reasons) do not attempt to allocate outside the allowed range.
 
-Cleaned up use of macro.  We now reference the pgtable_cache array
-directly instead of using a macro.
-
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Grant Erickson <gerickson@nuovations.com>
 ---
 
- arch/powerpc/mm/hugetlbpage.c |   22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+This bug was discovered in the course of working on CONFIG_LOGBUFFER support
+(see http://ozlabs.org/pipermail/linuxppc-dev/2008-October/064685.html).
+However, the bug is triggered quite easily independent of that feature
+by placing a memory limit via the 'mem=' kernel command line that results in
+a memory size that is not equal to an exact power of two.
 
-diff -puN arch/powerpc/mm/hugetlbpage.c~powerpc-hugetlb-pgtable-cache-access-cleanup arch/powerpc/mm/hugetlbpage.c
---- a/arch/powerpc/mm/hugetlbpage.c~powerpc-hugetlb-pgtable-cache-access-cleanup
-+++ a/arch/powerpc/mm/hugetlbpage.c
-@@ -53,8 +53,7 @@ unsigned int mmu_huge_psizes[MMU_PAGE_CO
+For example, on the AMCC PowerPC 405EXr "Haleakala" board with 256 MiB
+of RAM, mmu_mapin_ram() normally covers RAM with precisely 16 16 MiB
+large pages. However, if a memory limit of 256 MiB - 20 KiB (as might
+be the case for CONFIG_LOGBUFFER) is put in place with
+"mem=268414976", then large pages only cover (16 MiB * 15) + (4 MiB *
+3) = 252 MiB with a 4 MiB - 20 KiB "tail" to cover with normal, 4 KiB
+pages via map_page().
+
+Unfortunately, if __initial_memory_limit_addr is not updated from its
+initial value of 0x1000 0000 (256 MiB) to reflect what was actually
+mapped via mmu_mapin_ram(), the following happens during the "tail"
+mapping when the first PTE is allocated at 0xFFF A000 (rather than the
+desired 0xFBF F000):
+
+    mapin_ram
+        mmu_mapin_ram
+        map_page
+            pte_alloc_kernel
+                pte_alloc_one_kernel
+                    early_get_page
+                        lmb_alloc_base
+                    clear_page
+                        clear_pages
+                            dcbz    0,page  <-- BOOM!
+
+a non-recoverable page fault.
+
+ arch/powerpc/mm/40x_mmu.c |   16 ++++++++++++++--
+ 1 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/40x_mmu.c
+index cecbbc7..29954dc 100644
+--- a/arch/powerpc/mm/40x_mmu.c
++++ b/arch/powerpc/mm/40x_mmu.c
+@@ -93,7 +93,7 @@ void __init MMU_init_hw(void)
  
- /* Subtract one from array size because we don't need a cache for 4K since
-  * is not a huge page size */
--#define huge_pgtable_cache(psize)	(pgtable_cache[HUGEPTE_CACHE_NUM \
--							+ psize-1])
-+#define HUGE_PGTABLE_INDEX(psize)	(HUGEPTE_CACHE_NUM + psize - 1)
- #define HUGEPTE_CACHE_NAME(psize)	(huge_pgtable_cache_name[psize])
- 
- static const char *huge_pgtable_cache_name[MMU_PAGE_COUNT] = {
-@@ -113,7 +112,7 @@ static inline pte_t *hugepte_offset(huge
- static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
- 			   unsigned long address, unsigned int psize)
+ unsigned long __init mmu_mapin_ram(void)
  {
--	pte_t *new = kmem_cache_zalloc(huge_pgtable_cache(psize),
-+	pte_t *new = kmem_cache_zalloc(pgtable_cache[HUGE_PGTABLE_INDEX(psize)],
- 				      GFP_KERNEL|__GFP_REPEAT);
+-	unsigned long v, s;
++	unsigned long v, s, mapped;
+ 	phys_addr_t p;
  
- 	if (! new)
-@@ -121,7 +120,7 @@ static int __hugepte_alloc(struct mm_str
+ 	v = KERNELBASE;
+@@ -130,5 +130,17 @@ unsigned long __init mmu_mapin_ram(void)
+ 		s -= LARGE_PAGE_SIZE_4M;
+ 	}
  
- 	spin_lock(&mm->page_table_lock);
- 	if (!hugepd_none(*hpdp))
--		kmem_cache_free(huge_pgtable_cache(psize), new);
-+		kmem_cache_free(pgtable_cache[HUGE_PGTABLE_INDEX(psize)], new);
- 	else
- 		hpdp->pd = (unsigned long)new | HUGEPD_OK;
- 	spin_unlock(&mm->page_table_lock);
-@@ -760,13 +759,14 @@ static int __init hugetlbpage_init(void)
- 
- 	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
- 		if (mmu_huge_psizes[psize]) {
--			huge_pgtable_cache(psize) = kmem_cache_create(
--						HUGEPTE_CACHE_NAME(psize),
--						HUGEPTE_TABLE_SIZE(psize),
--						HUGEPTE_TABLE_SIZE(psize),
--						0,
--						NULL);
--			if (!huge_pgtable_cache(psize))
-+			pgtable_cache[HUGE_PGTABLE_INDEX(psize)] =
-+				kmem_cache_create(
-+					HUGEPTE_CACHE_NAME(psize),
-+					HUGEPTE_TABLE_SIZE(psize),
-+					HUGEPTE_TABLE_SIZE(psize),
-+					0,
-+					NULL);
-+			if (!pgtable_cache[HUGE_PGTABLE_INDEX(psize)])
- 				panic("hugetlbpage_init(): could not create %s"\
- 				      "\n", HUGEPTE_CACHE_NAME(psize));
- 		}
-_
+-	return total_lowmem - s;
++	mapped = total_lowmem - s;
++
++	/* If the size of RAM is not an exact power of two, we may not
++	 * have covered RAM in its entirety with 16 and 4 MiB
++	 * pages. Consequently, restrict the top end of RAM currently
++	 * allocable so that calls to the LMB to allocate PTEs for "tail"
++	 * coverage with normal-sized pages (or other reasons) do not
++	 * attempt to allocate outside the allowed range.
++	 */
++
++	__initial_memory_limit_addr = memstart_addr + mapped;
++
++	return mapped;
+ }
+-- 
+1.6.0.1
