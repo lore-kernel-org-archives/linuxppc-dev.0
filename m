@@ -1,22 +1,24 @@
-Return-Path: <michel@tungstengraphics.com>
-Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.182])
-	by ozlabs.org (Postfix) with ESMTP id D1734DDDEE
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 03:34:10 +1100 (EST)
-Received: by ik-out-1112.google.com with SMTP id c28so87217ika.1
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Oct 2008 09:34:08 -0700 (PDT)
-Subject: Re: [PATCH] uninorth agp: don't mark module parameter __devinit
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1225282379.5439.11.camel@johannes.berg>
-References: <1225246284.1369.31.camel@johannes.berg>
-	<1225282185.3546.376.camel@thor.sulgenrain.local>
-	(sfid-20081029_130954_908818_BCA53077)
-	<1225282379.5439.11.camel@johannes.berg>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 29 Oct 2008 17:34:04 +0100
-Message-Id: <1225298044.3546.414.camel@thor.sulgenrain.local>
+Return-Path: <jhsiao@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 7A8FCDDDF0
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 04:03:54 +1100 (EST)
+Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v2]
+From: James Hsiao <jhsiao@amcc.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+In-Reply-To: <20081029105413.895d5cdb.kim.phillips@freescale.com>
+References: <1225237276.1850.13.camel@jhsiao-usb>
+	<20081028205132.255e674d@zod.rchland.ibm.com>
+	<1225246700.1850.61.camel@jhsiao-usb>
+	<20081029105413.895d5cdb.kim.phillips@freescale.com>
+Content-Type: text/plain
+Date: Wed, 29 Oct 2008 10:04:59 -0700
+Message-Id: <1225299899.4841.7.camel@jhsiao-usb>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: jhsiao@amcc.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +28,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-10-29 at 13:12 +0100, Johannes Berg wrote:
-> On Wed, 2008-10-29 at 13:09 +0100, Michel Dänzer wrote:
-> > On Wed, 2008-10-29 at 03:11 +0100, Johannes Berg wrote:
-> > > A module parameter can possibly be shown via sysfs, which isn't a good
-> > > idea if the section has been removed, so remove the __devinit
-> > > annotation.
+Hi Kim,
+
+Thanks for comments.
+Please see inline.
+
+James
+On Wed, 2008-10-29 at 10:54 -0500, Kim Phillips wrote:
+> On Tue, 28 Oct 2008 19:18:20 -0700
+> James Hsiao <jhsiao@amcc.com> wrote:
+> 
+> > On Tue, 2008-10-28 at 20:51 -0400, Josh Boyer wrote:
+> > > - The question on ABLKCIPHER kconfig was ignored
+> > Is ABLKCIPHER a sub set of BLKCIPHER? So, if BLKCIPHER is selected then
+> > if ABLKCIPHER is present, it will use ABLKCIPHER otherwise using
+> > BLKCIPHER algorithm? Correct?
+> 
+> this is my bad, commit 653ebd9c8510a7d647ed23e66e1338f848ebdbab
+> "blkcipher: Merge ablkcipher and blkcipher into one option/module"
+> renders CRYPTO_ABLKCIPHER obsolete in favour of CRYPTO_BLKCIPHER.
+> 
+Ok. 
+
+> > > - Marking functions static
+> > We have more than one file, that is why some of the function are not
+> > static.
+> 
+> have one file then?
+
+This is our first round of patch. We will support many more algorithms
+and it will have much more files. I am afraid one file will be way too
+big.
+
+> 
+> > > - Global lsec_core variable which doesn't allow for more than one
+> > > device
+> > We only support single incidence of device.
+> 
+> it's also a matter of unnecessarily polluting global namespace.
+> 
+
+I look into modify this.
+
+> > > - Complete lack of locking code, how do you enforce mutually exclusive
+> > > access to the device?
 > > 
-> > Under what circumstances could it be shown in sysfs?
+> > The crypto engine have couple bits 'command ready' and 'packet done',
+> > which servers as semaphore here. So, software don't need extra locking.
 > 
-> Sorry, my mistake, I overlooked that it had 0 permission:
-> module_param(aperture, charp, 0);
+> know if it's applicable at all, but I imagine it's not SMP safe.
+
+No, it's not SMP safe. This driver only support single core processors.
 > 
-> otherwise it would of course be in sysfs.
-> 
-> Can uninorth_fetch_size be marked __devinit then?
-
-I'm not sure, and none of the other AGP backend drivers seems to do
-so...
-
-
--- 
-Earthling Michel Dänzer           |          http://tungstengraphics.com
-Libre software enthusiast         |          Debian, X and DRI developer
+> Kim
