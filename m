@@ -1,15 +1,28 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 63894DDDF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 17:08:23 +1100 (EST)
-Date: Thu, 30 Oct 2008 02:08:19 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linux-mtd@lists.infradead.org
-Subject: [PATCH] ndfc driver
-Message-ID: <20081030020819.5d1ada01@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, dwmw2@infradead.org
+Return-Path: <r.buergel@unicontrol.de>
+Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.161])
+	by ozlabs.org (Postfix) with ESMTP id 79025DDDE7
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 17:24:15 +1100 (EST)
+Received: from obelix.unicontrol.de
+	(pd907c61f.dip0.t-ipconnect.de [217.7.198.31])
+	by post.webmailer.de (fruni mo58) (RZmta 17.14)
+	with ESMTP id p002a7k9U0Tt3U for <linuxppc-dev@ozlabs.org>;
+	Thu, 30 Oct 2008 07:24:13 +0100 (MET)
+	(envelope-from: <r.buergel@unicontrol.de>)
+Received: from localhost (localhost [127.0.0.1])
+	by obelix.unicontrol.de (Postfix on SuSE Linux 8.1 (i386)) with ESMTP
+	id 3C08617DFC
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 07:22:50 +0100 (CET)
+Received: from [192.168.1.55] (arkturus.unicontrol.de [192.168.1.55])
+	by obelix.unicontrol.de (Postfix on SuSE Linux 8.1 (i386)) with ESMTP
+	id 5618B17DFB
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 07:22:46 +0100 (CET)
+Message-ID: <490950AF.1000303@unicontrol.de>
+Date: Thu, 30 Oct 2008 07:14:07 +0100
+From: =?ISO-8859-15?Q?Ren=E9_B=FCrgel?= <r.buergel@unicontrol.de>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] mpc52xx_uart: report serial errors to users
+Content-Type: multipart/mixed; boundary="------------010201030106060407010806"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,433 +32,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The current ndfc driver only compiles under arch/ppc. This arch was
-merged with arch/powerpc and then removed from the kernel. I notice the
-entry for the ndfc in Kconfig has been removed in 2.6.28.
+This is a multi-part message in MIME format.
+--------------010201030106060407010806
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
 
-This patch converts the ndfc to a proper OF (OpenFirmware) driver. I
-can give a working example of the DTS if needed.
+Hi! This patch adds the capability to the mpc52xx-uart to report framing 
+errors, parity errors, breaks and overruns to userspace. These values 
+may be requested in userspace by using the ioctl TIOCGICOUNT.
 
-The patch has been in production use on the PIKA Warp Appliance. The
-Warp basically boots from NAND, so the ndfc driver is very important to
-us.
+Signed-off-by: René Bürgel <r.buergel@unicontrol.de>
 
-Cheers,
-  Sean MacLennan
+Kind regards, René Bürgel
 
-Port of the ndfc driver to an of platform driver.
+-- 
+René Bürgel
+Software Engineer
+Unicontrol Systemtechnik GmbH
+OT Dittersbach
+Sachsenburger Weg 34
+09669 Frankenberg
+ 
+Tel.: 03 72 06/ 88 73 - 19
+Fax: 03 72 06/ 88 73 - 60
+E-Mail: r.buergel@unicontrol.de
+Internet: www.unicontrol.de
 
-Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
----
-diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
-index 1c2e945..5705f85 100644
---- a/drivers/mtd/nand/Kconfig
-+++ b/drivers/mtd/nand/Kconfig
-@@ -163,6 +163,13 @@ config MTD_NAND_S3C2410_HWECC
- 	  incorrect ECC generation, and if using these, the default of
- 	  software ECC is preferable.
+
+
+--------------010201030106060407010806
+Content-Type: text/plain;
+ name="121-mpc52xx_serial_icounter.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="121-mpc52xx_serial_icounter.patch"
+
+--- drivers/serial/mpc52xx_uart.c	2008-08-07 15:55:43.000000000 +0200
++++ drivers/serial/mpc52xx_uart_orig.c	2008-09-11 13:19:12.000000000 +0200
+@@ -752,10 +752,17 @@
+ 			if (status & MPC52xx_PSC_SR_RB) {
+ 				flag = TTY_BREAK;
+ 				uart_handle_break(port);
++				port->icount.brk++;
+ 			} else if (status & MPC52xx_PSC_SR_PE)
++			{
+ 				flag = TTY_PARITY;
++				port->icount.parity++;
++			}
+ 			else if (status & MPC52xx_PSC_SR_FE)
++			{
+ 				flag = TTY_FRAME;
++				port->icount.frame++;
++			}
  
-+config MTD_NAND_NDFC
-+	tristate "NDFC NanD Flash Controller"
-+	depends on 4xx
-+	select MTD_NAND_ECC_SMC
-+	help
-+	 NDFC Nand Flash Controllers are integrated in IBM/AMCC's 4xx SoCs
-+
- config MTD_NAND_S3C2410_CLKSTOP
- 	bool "S3C2410 NAND IDLE clock stop"
- 	depends on MTD_NAND_S3C2410
-diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
-index 955959e..0352d5c 100644
---- a/drivers/mtd/nand/ndfc.c
-+++ b/drivers/mtd/nand/ndfc.c
-@@ -5,9 +5,13 @@
-  *   Platform independend driver for NDFC (NanD Flash Controller)
-  *   integrated into EP440 cores
-  *
-+ *   Ported to an OF platform driver by Sean MacLennan
-+ *
-  *  Author: Thomas Gleixner
-  *
-  *  Copyright 2006 IBM
-+ *  Copyright 2008 PIKA Technologies
-+ *    Sean MacLennan <smaclennan@pikatech.com>
-  *
-  *  This program is free software; you can redistribute	 it and/or modify it
-  *  under  the terms of	 the GNU General  Public License as published by the
-@@ -21,27 +25,17 @@
- #include <linux/mtd/partitions.h>
- #include <linux/mtd/ndfc.h>
- #include <linux/mtd/mtd.h>
--#include <linux/platform_device.h>
--
-+#include <linux/of_platform.h>
- #include <asm/io.h>
--#ifdef CONFIG_40x
--#include <asm/ibm405.h>
--#else
--#include <asm/ibm44x.h>
--#endif
--
--struct ndfc_nand_mtd {
--	struct mtd_info			mtd;
--	struct nand_chip		chip;
--	struct platform_nand_chip	*pl_chip;
--};
- 
--static struct ndfc_nand_mtd ndfc_mtd[NDFC_MAX_BANKS];
- 
- struct ndfc_controller {
--	void __iomem		*ndfcbase;
--	struct nand_hw_control	ndfc_control;
--	atomic_t		childs_active;
-+	struct of_device *ofdev;
-+	void __iomem *ndfcbase;
-+	struct mtd_info mtd;
-+	struct nand_chip chip;
-+	int chip_select;
-+	struct nand_hw_control ndfc_control;
- };
- 
- static struct ndfc_controller ndfc_ctrl;
-@@ -50,17 +44,14 @@ static void ndfc_select_chip(struct mtd_info *mtd, int chip)
- {
- 	uint32_t ccr;
- 	struct ndfc_controller *ndfc = &ndfc_ctrl;
--	struct nand_chip *nandchip = mtd->priv;
--	struct ndfc_nand_mtd *nandmtd = nandchip->priv;
--	struct platform_nand_chip *pchip = nandmtd->pl_chip;
- 
--	ccr = __raw_readl(ndfc->ndfcbase + NDFC_CCR);
-+	ccr = in_be32(ndfc->ndfcbase + NDFC_CCR);
- 	if (chip >= 0) {
- 		ccr &= ~NDFC_CCR_BS_MASK;
--		ccr |= NDFC_CCR_BS(chip + pchip->chip_offset);
-+		ccr |= NDFC_CCR_BS(chip + ndfc->chip_select);
- 	} else
- 		ccr |= NDFC_CCR_RESET_CE;
--	__raw_writel(ccr, ndfc->ndfcbase + NDFC_CCR);
-+	out_be32(ndfc->ndfcbase + NDFC_CCR, ccr);
- }
- 
- static void ndfc_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
-@@ -80,7 +71,7 @@ static int ndfc_ready(struct mtd_info *mtd)
- {
- 	struct ndfc_controller *ndfc = &ndfc_ctrl;
- 
--	return __raw_readl(ndfc->ndfcbase + NDFC_STAT) & NDFC_STAT_IS_READY;
-+	return in_be32(ndfc->ndfcbase + NDFC_STAT) & NDFC_STAT_IS_READY;
- }
- 
- static void ndfc_enable_hwecc(struct mtd_info *mtd, int mode)
-@@ -88,9 +79,9 @@ static void ndfc_enable_hwecc(struct mtd_info *mtd, int mode)
- 	uint32_t ccr;
- 	struct ndfc_controller *ndfc = &ndfc_ctrl;
- 
--	ccr = __raw_readl(ndfc->ndfcbase + NDFC_CCR);
-+	ccr = in_be32(ndfc->ndfcbase + NDFC_CCR);
- 	ccr |= NDFC_CCR_RESET_ECC;
--	__raw_writel(ccr, ndfc->ndfcbase + NDFC_CCR);
-+	out_be32(ndfc->ndfcbase + NDFC_CCR, ccr);
- 	wmb();
- }
- 
-@@ -102,9 +93,10 @@ static int ndfc_calculate_ecc(struct mtd_info *mtd,
- 	uint8_t *p = (uint8_t *)&ecc;
- 
- 	wmb();
--	ecc = __raw_readl(ndfc->ndfcbase + NDFC_ECC);
--	ecc_code[0] = p[1];
--	ecc_code[1] = p[2];
-+	ecc = in_be32(ndfc->ndfcbase + NDFC_ECC);
-+	/* The NDFC uses Smart Media (SMC) bytes order */
-+	ecc_code[0] = p[2];
-+	ecc_code[1] = p[1];
- 	ecc_code[2] = p[3];
- 
- 	return 0;
-@@ -123,7 +115,7 @@ static void ndfc_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
- 	uint32_t *p = (uint32_t *) buf;
- 
- 	for(;len > 0; len -= 4)
--		*p++ = __raw_readl(ndfc->ndfcbase + NDFC_DATA);
-+		*p++ = in_be32(ndfc->ndfcbase + NDFC_DATA);
- }
- 
- static void ndfc_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
-@@ -132,7 +124,7 @@ static void ndfc_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
- 	uint32_t *p = (uint32_t *) buf;
- 
- 	for(;len > 0; len -= 4)
--		__raw_writel(*p++, ndfc->ndfcbase + NDFC_DATA);
-+		out_be32(ndfc->ndfcbase + NDFC_DATA, *p++);
- }
- 
- static int ndfc_verify_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
-@@ -141,7 +133,7 @@ static int ndfc_verify_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
- 	uint32_t *p = (uint32_t *) buf;
- 
- 	for(;len > 0; len -= 4)
--		if (*p++ != __raw_readl(ndfc->ndfcbase + NDFC_DATA))
-+		if (*p++ != in_be32(ndfc->ndfcbase + NDFC_DATA))
- 			return -EFAULT;
- 	return 0;
- }
-@@ -149,10 +141,19 @@ static int ndfc_verify_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
- /*
-  * Initialize chip structure
-  */
--static void ndfc_chip_init(struct ndfc_nand_mtd *mtd)
-+static int ndfc_chip_init(struct ndfc_controller *ndfc,
-+			  struct device_node *node)
- {
--	struct ndfc_controller *ndfc = &ndfc_ctrl;
--	struct nand_chip *chip = &mtd->chip;
-+#ifdef CONFIG_MTD_PARTITIONS
-+#ifdef CONFIG_MTD_CMDLINE_PARTS
-+	static const char *part_types[] = { "cmdlinepart", NULL };
-+#else
-+	static const char *part_types[] = { NULL };
-+#endif
-+	struct mtd_partition *parts;
-+#endif
-+	struct nand_chip *chip = &ndfc->chip;
-+	int ret;
- 
- 	chip->IO_ADDR_R = ndfc->ndfcbase + NDFC_DATA;
- 	chip->IO_ADDR_W = ndfc->ndfcbase + NDFC_DATA;
-@@ -160,8 +161,6 @@ static void ndfc_chip_init(struct ndfc_nand_mtd *mtd)
- 	chip->dev_ready = ndfc_ready;
- 	chip->select_chip = ndfc_select_chip;
- 	chip->chip_delay = 50;
--	chip->priv = mtd;
--	chip->options = mtd->pl_chip->options;
- 	chip->controller = &ndfc->ndfc_control;
- 	chip->read_buf = ndfc_read_buf;
- 	chip->write_buf = ndfc_write_buf;
-@@ -172,143 +171,120 @@ static void ndfc_chip_init(struct ndfc_nand_mtd *mtd)
- 	chip->ecc.mode = NAND_ECC_HW;
- 	chip->ecc.size = 256;
- 	chip->ecc.bytes = 3;
--	chip->ecclayout = chip->ecc.layout = mtd->pl_chip->ecclayout;
--	mtd->mtd.priv = chip;
--	mtd->mtd.owner = THIS_MODULE;
--}
--
--static int ndfc_chip_probe(struct platform_device *pdev)
--{
--	struct platform_nand_chip *nc = pdev->dev.platform_data;
--	struct ndfc_chip_settings *settings = nc->priv;
--	struct ndfc_controller *ndfc = &ndfc_ctrl;
--	struct ndfc_nand_mtd *nandmtd;
--
--	if (nc->chip_offset >= NDFC_MAX_BANKS || nc->nr_chips > NDFC_MAX_BANKS)
--		return -EINVAL;
- 
--	/* Set the bank settings */
--	__raw_writel(settings->bank_settings,
--		     ndfc->ndfcbase + NDFC_BCFG0 + (nc->chip_offset << 2));
-+	ndfc->mtd.priv = chip;
-+	ndfc->mtd.owner = THIS_MODULE;
- 
--	nandmtd = &ndfc_mtd[pdev->id];
--	if (nandmtd->pl_chip)
--		return -EBUSY;
-+	ret = nand_scan(&ndfc->mtd, 1);
-+	if (ret)
-+		return ret;
- 
--	nandmtd->pl_chip = nc;
--	ndfc_chip_init(nandmtd);
--
--	/* Scan for chips */
--	if (nand_scan(&nandmtd->mtd, nc->nr_chips)) {
--		nandmtd->pl_chip = NULL;
--		return -ENODEV;
--	}
-+	ndfc->mtd.name = ndfc->ofdev->dev.bus_id;
- 
- #ifdef CONFIG_MTD_PARTITIONS
--	printk("Number of partitions %d\n", nc->nr_partitions);
--	if (nc->nr_partitions) {
--		/* Add the full device, so complete dumps can be made */
--		add_mtd_device(&nandmtd->mtd);
--		add_mtd_partitions(&nandmtd->mtd, nc->partitions,
--				   nc->nr_partitions);
--
--	} else
--#else
--		add_mtd_device(&nandmtd->mtd);
-+	ret = parse_mtd_partitions(&ndfc->mtd, part_types, &parts, 0);
-+	if (ret < 0)
-+		return ret;
-+
-+#ifdef CONFIG_MTD_OF_PARTS
-+	if (ret == 0) {
-+		ret = of_mtd_parse_partitions(&ndfc->ofdev->dev, node, &parts);
-+		if (ret < 0)
-+			return ret;
-+	}
- #endif
- 
--	atomic_inc(&ndfc->childs_active);
--	return 0;
--}
-+	if (ret > 0)
-+		return add_mtd_partitions(&ndfc->mtd, parts, ret);
-+#endif
- 
--static int ndfc_chip_remove(struct platform_device *pdev)
--{
--	return 0;
-+	return add_mtd_device(&ndfc->mtd);
- }
- 
--static int ndfc_nand_probe(struct platform_device *pdev)
-+static int __devinit ndfc_probe(struct of_device *ofdev,
-+				const struct of_device_id *match)
- {
--	struct platform_nand_ctrl *nc = pdev->dev.platform_data;
--	struct ndfc_controller_settings *settings = nc->priv;
--	struct resource *res = pdev->resource;
- 	struct ndfc_controller *ndfc = &ndfc_ctrl;
--	unsigned long long phys = settings->ndfc_erpn | res->start;
-+	const u32 *reg;
-+	u32 ccr;
-+	int err, len;
- 
--#ifndef CONFIG_PHYS_64BIT
--	ndfc->ndfcbase = ioremap((phys_addr_t)phys, res->end - res->start + 1);
--#else
--	ndfc->ndfcbase = ioremap64(phys, res->end - res->start + 1);
--#endif
-+	spin_lock_init(&ndfc->ndfc_control.lock);
-+	init_waitqueue_head(&ndfc->ndfc_control.wq);
-+	ndfc->ofdev = ofdev;
-+	dev_set_drvdata(&ofdev->dev, ndfc);
-+
-+	/* Read the reg property to get the chip select */
-+	reg = of_get_property(ofdev->node, "reg", &len);
-+	if (reg == NULL || len != 12) {
-+		dev_err(&ofdev->dev, "unable read reg property (%d)\n", len);
-+		return -ENOENT;
-+	}
-+	ndfc->chip_select = reg[0];
-+
-+	ndfc->ndfcbase = of_iomap(ofdev->node, 0);
- 	if (!ndfc->ndfcbase) {
--		printk(KERN_ERR "NDFC: ioremap failed\n");
-+		dev_err(&ofdev->dev, "failed to get memory\n");
- 		return -EIO;
+ 			/* Clear error condition */
+ 			out_8(&PSC(port)->command, MPC52xx_PSC_RST_ERR_STAT);
+@@ -769,6 +776,7 @@
+ 			 * affect the current character
+ 			 */
+ 			tty_insert_flip_char(tty, 0, TTY_OVERRUN);
++			port->icount.overrun++;
+ 		}
  	}
  
--	__raw_writel(settings->ccr_settings, ndfc->ndfcbase + NDFC_CCR);
-+	ccr = NDFC_CCR_BS(ndfc->chip_select);
- 
--	spin_lock_init(&ndfc->ndfc_control.lock);
--	init_waitqueue_head(&ndfc->ndfc_control.wq);
-+	/* It is ok if ccr does not exist - just default to 0 */
-+	reg = of_get_property(ofdev->node, "ccr", NULL);
-+	if (reg)
-+		ccr |= *reg;
-+
-+	out_be32(ndfc->ndfcbase + NDFC_CCR, ccr);
- 
--	platform_set_drvdata(pdev, ndfc);
-+	/* Set the bank settings if given */
-+	reg = of_get_property(ofdev->node, "bank-settings", NULL);
-+	if (reg) {
-+		int offset = NDFC_BCFG0 + (ndfc->chip_select << 2);
-+		out_be32(ndfc->ndfcbase + offset, *reg);
-+	}
- 
--	printk("NDFC NAND Driver initialized. Chip-Rev: 0x%08x\n",
--	       __raw_readl(ndfc->ndfcbase + NDFC_REVID));
-+	err = ndfc_chip_init(ndfc, ofdev->node);
-+	if (err) {
-+		iounmap(ndfc->ndfcbase);
-+		return err;
-+	}
- 
- 	return 0;
- }
- 
--static int ndfc_nand_remove(struct platform_device *pdev)
-+static int __devexit ndfc_remove(struct of_device *ofdev)
- {
--	struct ndfc_controller *ndfc = platform_get_drvdata(pdev);
-+	struct ndfc_controller *ndfc = dev_get_drvdata(&ofdev->dev);
- 
--	if (atomic_read(&ndfc->childs_active))
--		return -EBUSY;
-+	nand_release(&ndfc->mtd);
- 
--	if (ndfc) {
--		platform_set_drvdata(pdev, NULL);
--		iounmap(ndfc_ctrl.ndfcbase);
--		ndfc_ctrl.ndfcbase = NULL;
--	}
- 	return 0;
- }
- 
--/* driver device registration */
--
--static struct platform_driver ndfc_chip_driver = {
--	.probe		= ndfc_chip_probe,
--	.remove		= ndfc_chip_remove,
--	.driver		= {
--		.name	= "ndfc-chip",
--		.owner	= THIS_MODULE,
--	},
-+static const struct of_device_id ndfc_match[] = {
-+	{ .compatible = "amcc,ndfc", },
-+	{}
- };
-+MODULE_DEVICE_TABLE(of, ndfc_match);
- 
--static struct platform_driver ndfc_nand_driver = {
--	.probe		= ndfc_nand_probe,
--	.remove		= ndfc_nand_remove,
--	.driver		= {
--		.name	= "ndfc-nand",
--		.owner	= THIS_MODULE,
-+static struct of_platform_driver ndfc_driver = {
-+	.driver = {
-+		.name	= "ndfc",
- 	},
-+	.match_table = ndfc_match,
-+	.probe = ndfc_probe,
-+	.remove = __devexit_p(ndfc_remove),
- };
- 
- static int __init ndfc_nand_init(void)
- {
--	int ret;
--
--	spin_lock_init(&ndfc_ctrl.ndfc_control.lock);
--	init_waitqueue_head(&ndfc_ctrl.ndfc_control.wq);
--
--	ret = platform_driver_register(&ndfc_nand_driver);
--	if (!ret)
--		ret = platform_driver_register(&ndfc_chip_driver);
--	return ret;
-+	return of_register_platform_driver(&ndfc_driver);
- }
- 
- static void __exit ndfc_nand_exit(void)
- {
--	platform_driver_unregister(&ndfc_chip_driver);
--	platform_driver_unregister(&ndfc_nand_driver);
-+	of_unregister_platform_driver(&ndfc_driver);
- }
- 
- module_init(ndfc_nand_init);
-@@ -316,6 +292,4 @@ module_exit(ndfc_nand_exit);
- 
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Thomas Gleixner <tglx@linutronix.de>");
--MODULE_DESCRIPTION("Platform driver for NDFC");
--MODULE_ALIAS("platform:ndfc-chip");
--MODULE_ALIAS("platform:ndfc-nand");
-+MODULE_DESCRIPTION("OF Platform driver for NDFC");
+
+--------------010201030106060407010806--
