@@ -1,23 +1,23 @@
-Return-Path: <michel@tungstengraphics.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.191])
-	by ozlabs.org (Postfix) with ESMTP id 49D8EDDDF6
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 19:50:10 +1100 (EST)
-Received: by fk-out-0910.google.com with SMTP id e30so263076fke.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 01:50:07 -0700 (PDT)
-Subject: Re: [PATCH] uninorth agp: don't mark module parameter __devinit
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <4bd87c33b7df6b3726a9526f15b87aa2.squirrel@secure.sipsolutions.net>
-References: <1225246284.1369.31.camel@johannes.berg>
-	<1225282185.3546.376.camel@thor.sulgenrain.local>
-	<1225282379.5439.11.camel@johannes.berg>
-	<1225298044.3546.414.camel@thor.sulgenrain.local>
-	<4bd87c33b7df6b3726a9526f15b87aa2.squirrel@secure.sipsolutions.net>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 30 Oct 2008 09:50:03 +0100
-Message-Id: <1225356603.3546.473.camel@thor.sulgenrain.local>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E86A9DDDFD
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 19:58:57 +1100 (EST)
+Date: Thu, 30 Oct 2008 01:58:32 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: [v5] powerpc: gpio driver for mpc8349/8572/8610 and compatible
+In-Reply-To: <8763najzl1.fsf@macbook.be.48ers.dk>
+Message-ID: <Pine.LNX.4.64.0810300123500.3943@t2.domain.actdsltmp>
+References: <1222184138-6151-1-git-send-email-jacmet@sunsite.dk>
+	<Pine.LNX.4.64.0810291718350.25957@t2.domain.actdsltmp>
+	<8763najzl1.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +27,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-10-30 at 09:45 +0100, Johannes Berg wrote:
-> Michel Dänzer wrote:
-> 
-> >> Can uninorth_fetch_size be marked __devinit then?
-> >
-> > I'm not sure, and none of the other AGP backend drivers seems to do
-> > so...
-> 
-> Well, either it can, or marking "aperture" is wrong, no?
+On Thu, 30 Oct 2008, Peter Korsgaard wrote:
+>>>>>> "Trent" == Trent Piepho <tpiepho@freescale.com> writes:
+> Trent> On Tue, 23 Sep 2008, Peter Korsgaard wrote:
+> >> +- compatible : "fsl,<CHIP>-gpio" followed by "fsl,mpc8349-gpio" for
+> >> +  83xx, "fsl,mpc8572-gpio" for 85xx and "fsl,mpc8610-gpio" for 86xx.
+>
+> Trent> Why have the three different compatible settings when the code
+> Trent> doesn't do anything different?
+>
+> Purely for cosmetics / ease of use - As requested by Kumar:
+>
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-September/062934.html
 
-Makes sense, but I'm not sure about all the conditions and implications
-involved.
+Though I see Scott didn't agree.
 
+> >> +#define MPC8XXX_GPIO_PINS	32
+>
+> Trent> 8572 has eight GPIOs.
+>
+> Doesn't matter - It's register interface is compatible. Most real
+> world design with the other SoCs also don't have all 32 gpio pins
+> available because of pin multiplexing.
 
--- 
-Earthling Michel Dänzer           |          http://tungstengraphics.com
-Libre software enthusiast         |          Debian, X and DRI developer
+Doesn't it seem flawed that 32 gpios will show up under debugfs and via the
+sysfs interface, when it's known that there are only 8?
+
+Since there is an 8572 compat property, it's not like it's not solvable.
+
+> Trent> I wrote an MPC8572 GPIO driver back in March, and posted it
+> Trent> internally at Freescale on June 2nd.  But it was just
+> Trent> ignored...  I wonder what your secret is to get Kumar to apply
+> Trent> your patches?  It's too bad this work keeps getting
+> Trent> duplicated.
+>
+> Did you try bribing? ;) No, seriously, why didn't you post it to
+> linuxppc-dev, so the rest of the world would know about it?
+
+Well, I get totally ignored posting to an internal Freescale list, it doesn't
+seem like it will be any better posting to an external list.
+
+> Trent> But, I'm using the GPIOs to bit-bang a JTAG bus in the 20-30
+> Trent> MHz range.  The obvious GPIO driver is *much* too slow for
+> Trent> that.  I got less than 3 MHz, and your driver looks like it
+> Trent> might be slightly slower than my initial driver.
+>
+> I would write a dedicated driver for something like that instead of
+> using gpiolib.
+
+But the JTAG bus only uses four GPIOs, the other four get used for other
+things with gpiolib, like gpio leds for example.  I also found it very handy
+to be able to see and modify all the gpio lines, even the ones the JTAG driver
+is using, via a sysfs interface to gpiolib.
+
+> Gpiolib has quite some overhead compared to the actual work for
+> changing a SoC gpio pin, but it also has some very nice
+
+Certainly is does, but there are ways to make it faster.
+
+> Trent> So I went to a lot of effort to speed it up and managed to
+> Trent> increase GPIO performance by nearly a factor of 10.  Trying to
+> Trent> commit my driver at this point is probably hopeless and I
+> Trent> doubt anyone else cares about gpio speed.  But at least the
+> Trent> number of gpios for 8572 can be fixed.
+>
+> Sure, going dedicated always can improve performance. I recently did
+> some work in u-boot talking directly to the mpc83xx spi controller and
+> got ~5x throughput compared to the Linux driver.
+
+It's not dedicated though.  The gpiolib interface is still used.
