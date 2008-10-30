@@ -1,32 +1,18 @@
-Return-Path: <kniht@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5392EDDDF6
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 09:04:00 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id m9UM3EkX000576
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 16:03:14 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9UM3tLH121942
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 16:03:55 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9UM3sbj001024
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 16:03:55 -0600
-Message-ID: <490A2F4D.7030908@linux.vnet.ibm.com>
-Date: Thu, 30 Oct 2008 17:03:57 -0500
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id 5AFCFDDDFF
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 09:28:31 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so363941ywh.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 15:28:30 -0700 (PDT)
+Date: Thu, 30 Oct 2008 18:26:42 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+Subject: Please pull 'merge' branch of 4xx tree
+Message-ID: <20081030222642.GA6690@yoda.jdub.homelinux.org>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/1 v2] powerpc: hugetlb pgtable cache access cleanup
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-	Jon Tollefson <kniht@linux.vnet.ibm.com>, David Gibson <dwg@au1.ibm.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,74 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It was suggested by Andrew that using a macro that made an array
-look like a function call made it harder to understand the code.
-Cleaned up use of macro.  We now reference the pgtable_cache array
-directly instead of using a macro.  
+Hi Paul,
 
+Please pull the changes below as updates for 2.6.28.  There is one small
+Kconfig fix, and the normal defconfig updates we do every release.
 
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
----
+thx,
+josh
 
- arch/powerpc/mm/hugetlbpage.c |   22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+The following changes since commit 0173a3265b228da319ceb9c1ec6a5682fd1b2d92:
+  Linus Torvalds (1):
+        Linux 2.6.28-rc2
 
-diff -puN arch/powerpc/mm/hugetlbpage.c~powerpc-hugetlb-pgtable-cache-access-cleanup arch/powerpc/mm/hugetlbpage.c
---- a/arch/powerpc/mm/hugetlbpage.c~powerpc-hugetlb-pgtable-cache-access-cleanup
-+++ a/arch/powerpc/mm/hugetlbpage.c
-@@ -53,8 +53,7 @@ unsigned int mmu_huge_psizes[MMU_PAGE_CO
+are available in the git repository at:
 
- /* Subtract one from array size because we don't need a cache for 4K since
-  * is not a huge page size */
--#define huge_pgtable_cache(psize)	(pgtable_cache[HUGEPTE_CACHE_NUM \
--							+ psize-1])
-+#define HUGE_PGTABLE_INDEX(psize)	(HUGEPTE_CACHE_NUM + psize - 1)
- #define HUGEPTE_CACHE_NAME(psize)	(huge_pgtable_cache_name[psize])
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git merge
 
- static const char *huge_pgtable_cache_name[MMU_PAGE_COUNT] = {
-@@ -113,7 +112,7 @@ static inline pte_t *hugepte_offset(huge
- static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
- 			   unsigned long address, unsigned int psize)
- {
--	pte_t *new = kmem_cache_zalloc(huge_pgtable_cache(psize),
-+	pte_t *new = kmem_cache_zalloc(pgtable_cache[HUGE_PGTABLE_INDEX(psize)],
- 				      GFP_KERNEL|__GFP_REPEAT);
+Josh Boyer (3):
+      powerpc/40x: Don't enable HCU4 board by default
+      powerpc/40x: Update 40x defconfigs
+      powerpc/44x: Update 44x defconfigs
 
- 	if (! new)
-@@ -121,7 +120,7 @@ static int __hugepte_alloc(struct mm_str
-
- 	spin_lock(&mm->page_table_lock);
- 	if (!hugepd_none(*hpdp))
--		kmem_cache_free(huge_pgtable_cache(psize), new);
-+		kmem_cache_free(pgtable_cache[HUGE_PGTABLE_INDEX(psize)], new);
- 	else
- 		hpdp->pd = (unsigned long)new | HUGEPD_OK;
- 	spin_unlock(&mm->page_table_lock);
-@@ -760,13 +759,14 @@ static int __init hugetlbpage_init(void)
-
- 	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
- 		if (mmu_huge_psizes[psize]) {
--			huge_pgtable_cache(psize) = kmem_cache_create(
--						HUGEPTE_CACHE_NAME(psize),
--						HUGEPTE_TABLE_SIZE(psize),
--						HUGEPTE_TABLE_SIZE(psize),
--						0,
--						NULL);
--			if (!huge_pgtable_cache(psize))
-+			pgtable_cache[HUGE_PGTABLE_INDEX(psize)] =
-+				kmem_cache_create(
-+					HUGEPTE_CACHE_NAME(psize),
-+					HUGEPTE_TABLE_SIZE(psize),
-+					HUGEPTE_TABLE_SIZE(psize),
-+					0,
-+					NULL);
-+			if (!pgtable_cache[HUGE_PGTABLE_INDEX(psize)])
- 				panic("hugetlbpage_init(): could not create %s"\
- 				      "\n", HUGEPTE_CACHE_NAME(psize));
- 		}
-_
+ arch/powerpc/configs/40x/acadia_defconfig      |   59 ++++++++----
+ arch/powerpc/configs/40x/ep405_defconfig       |   83 +++++++++++-----
+ arch/powerpc/configs/40x/hcu4_defconfig        |  125 +++++++++++++++++-------
+ arch/powerpc/configs/40x/kilauea_defconfig     |   69 +++++++++----
+ arch/powerpc/configs/40x/makalu_defconfig      |   69 +++++++++----
+ arch/powerpc/configs/40x/walnut_defconfig      |   77 +++++++++++----
+ arch/powerpc/configs/44x/arches_defconfig      |   51 ++++++----
+ arch/powerpc/configs/44x/bamboo_defconfig      |   77 +++++++++++----
+ arch/powerpc/configs/44x/canyonlands_defconfig |   61 ++++++++----
+ arch/powerpc/configs/44x/ebony_defconfig       |   77 +++++++++++----
+ arch/powerpc/configs/44x/katmai_defconfig      |   77 +++++++++++----
+ arch/powerpc/configs/44x/rainier_defconfig     |   73 ++++++++++----
+ arch/powerpc/configs/44x/sam440ep_defconfig    |  110 +++++++++++++++------
+ arch/powerpc/configs/44x/sequoia_defconfig     |   78 +++++++++++----
+ arch/powerpc/configs/44x/taishan_defconfig     |   77 +++++++++++----
+ arch/powerpc/configs/44x/warp_defconfig        |   82 +++++++++++-----
+ arch/powerpc/configs/ppc40x_defconfig          |  106 ++++++++++++++++----
+ arch/powerpc/configs/ppc44x_defconfig          |  125 ++++++++++++++++++------
+ arch/powerpc/platforms/40x/Kconfig             |    2 +-
+ 19 files changed, 1053 insertions(+), 425 deletions(-)
