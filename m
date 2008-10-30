@@ -1,18 +1,22 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B8612DDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 22:03:27 +1100 (EST)
-Date: Thu, 30 Oct 2008 14:03:24 +0300
+	by ozlabs.org (Postfix) with ESMTP id 43620DDDE7
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 22:15:02 +1100 (EST)
+Date: Thu, 30 Oct 2008 14:15:00 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH] NAND: fsl_upm: fix build problem with 2.6.28-rc2
-Message-ID: <20081030110324.GA22008@oksana.dev.rtsoft.ru>
-References: <49099022.40908@grandegger.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()A
+Message-ID: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
+References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
+	<1224889741-4167-1-git-send-email-tpiepho@freescale.com>
+	<20081028143933.GA18453@oksana.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0810291857110.25957@t2.domain.actdsltmp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <49099022.40908@grandegger.com>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <Pine.LNX.4.64.0810291857110.25957@t2.domain.actdsltmp>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Richard Purdie <rpurdie@rpsys.net>,
+	Sean MacLennan <smaclennan@pikatech.com>
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,44 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 30, 2008 at 11:44:50AM +0100, Wolfgang Grandegger wrote:
-> This patch fixes a problem with building the 2.6.28-rc2 kernel with
-> FSL UPM NAND support for the TQM8548 modules. For some reason
-> of_mtd_parse_partitions() requires on argument less in the meantime.
-> Furthermore, the return value is checks properly.
+On Wed, Oct 29, 2008 at 07:21:24PM -0700, Trent Piepho wrote:
+[...]
+> > Can you repost a fixed version with my Ack and Cc: Andrew Morton,
+> > Benjamin Herrenschmidt?
+> >
+> > I think this change should go into the 2.6.28, so that we can
+> > write new code on top of new API. Otherwise this change will cause
+> > issues in the next merge window.
+> 
+> If you can get your patch into Ben's -next tree before the high .28-RCs come
+> out,
 
-This is becase of this commit:
+I can't, that's the point. Big USB patches don't go through the
+powerpc tree. ;-)
 
-commit 69fd3a8d098faf41a04930afa83757c0555ee360
-Author: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Date:   Sun Oct 12 16:18:36 2008 +0200
+> I can just rebase my patch to that tree and make the changes to any new
+> callers of of_get_gpio() that are there.
 
-    [MTD] remove unused mtd parameter in of_mtd_parse_partitions()
-
-
-> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-
-Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-
-> diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
-> index 024e3ff..a83192f 100644
-> --- a/drivers/mtd/nand/fsl_upm.c
-> +++ b/drivers/mtd/nand/fsl_upm.c
-> @@ -163,9 +163,11 @@ static int __devinit fun_chip_init(struct fsl_upm_nand *fun,
->  	ret = parse_mtd_partitions(&fun->mtd, part_types, &fun->parts, 0);
->  
->  #ifdef CONFIG_MTD_OF_PARTS
-> -	if (ret == 0)
-> -		ret = of_mtd_parse_partitions(fun->dev, &fun->mtd,
-> -					      flash_np, &fun->parts);
-> +	if (ret == 0) {
-> +		ret = of_mtd_parse_partitions(fun->dev, flash_np, &fun->parts);
-> +		if (ret < 0)
-> +			goto err;
-> +	}
->  #endif
->  	if (ret > 0)
->  		ret = add_mtd_partitions(&fun->mtd, fun->parts, ret);
+Never mind, just make sure your patch goes into the powerpc-next
+early, thus we could start using the new API.
 
 Thanks,
 
