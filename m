@@ -1,32 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 92DA0DDE00
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 07:37:11 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9UKdhQh032594
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 16:39:43 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9UKal2T103614
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 16:36:47 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9UKadaB023300
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 16:36:40 -0400
-Date: Thu, 30 Oct 2008 16:36:45 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: 44x _tlbie() ME/CE/DE disabling unnecessary?
-Message-ID: <20081030163645.4385a67c@zod.rchland.ibm.com>
-In-Reply-To: <1225397640.8004.171.camel@pasglop>
-References: <fb412d760810301104s228a6036s50adba8605a13a98@mail.gmail.com>
-	<1225397640.8004.171.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, David, Gibson <david@gibson.dropbear.id.au>,
-	Hollis Blanchard <hollis@penguinppc.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.227])
+	by ozlabs.org (Postfix) with ESMTP id 07BFE47615
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 07:37:33 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so775788rvb.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 13:37:31 -0700 (PDT)
+Message-ID: <fa686aa40810301337p21ac8785gb74b12904bbd08e7@mail.gmail.com>
+Date: Thu, 30 Oct 2008 14:37:31 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Anton Vorontsov" <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/3] powerpc: Add mmc-spi-slot bindings
+In-Reply-To: <20081030195630.GA13640@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
+	<20081030195630.GA13640@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,31 +25,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 31 Oct 2008 07:14:00 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Thu, Oct 30, 2008 at 1:56 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> The bindings describes a case where MMC/SD/SDIO slot directly connected
+> to a SPI bus. Such setups are widely used on embedded PowerPC boards.
+>
+> The patch also adds the mmc-spi-slot entry to the OpenFirmware modalias
+> table.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-> On Thu, 2008-10-30 at 13:04 -0500, Hollis Blanchard wrote:
-> > 
-> > I don't think it's necessary at all to disable ME/CE/DE inside
-> > _tlbie() on 440, because the interrupt handlers for those types save
-> > and restore MMUCR (they're all the same code path; see
-> > mcheck_transfer_to_handler in entry_32.S).
-> 
-> This was written before the saving of MMUCR was added I think.
+Mostly looks good to me.  A few comments below.
 
-I was thinking that but git was being annoying.
+> ---
+>  .../powerpc/dts-bindings/mmc-spi-slot.txt          |   23 ++++++++++++++++++++
+>  drivers/of/base.c                                  |    1 +
+>  2 files changed, 24 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/powerpc/dts-bindings/mmc-spi-slot.txt
+>
+> diff --git a/Documentation/powerpc/dts-bindings/mmc-spi-slot.txt b/Documentation/powerpc/dts-bindings/mmc-spi-slot.txt
+> new file mode 100644
+> index 0000000..c39ac28
+> --- /dev/null
+> +++ b/Documentation/powerpc/dts-bindings/mmc-spi-slot.txt
+> @@ -0,0 +1,23 @@
+> +MMC/SD/SDIO slot directly connected to a SPI bus
+> +
+> +Required properties:
+> +- compatible : should be "mmc-spi-slot".
+> +- reg : should specify SPI address (chip-select number).
+> +- spi-max-frequency : maximum frequency for this device (Hz).
+> +- voltage-ranges : two cells are required, first cell specifies minimum
+> +  slot voltage (mV), second cell specifies maximum slot voltage (mV).
+> +  Several ranges could be specified.
+> +- gpios : (optional) may specify GPIOs in this order: Card-Detect GPIO,
+> +  Write-Protect GPIO.
 
-> > However, I think EE does need to be disabled, since the normal EE
-> > handler doesn't deal with MMUCR. So instead of all these MSR
-> > manipulations, I think a simple wrteei 0/1 pair should do the trick?
-> > Or maybe mfmsr/wrteei/wrtee, in case _tlbie() happens to be called
-> > with interrupts disabled already.
-> 
-> Yes.
+I wonder if we're following the example of irq mappings too closely
+for the gpios property.  I like the layout of the property
+(<controller> <specifier>), but I think the 'gpios' name is getting
+too overloaded.  In this case a single property 'gpios' is being used
+to encode 2 unrelated bits of information; the write protect pin and
+the card detect pins.
 
-Agreed.  Hollis and I had this discussion on IRC and I pointed out that
-the patch originally just started with wrteei's.
+In this particular case I think it is better to use 2 properties in
+this case; something like 'spi-writeprotect-gpio' and
+'spi-carddetect-gpio' using the same specifier format.  Doing so adds
+a bit more clarity to the purpose of the properties.
 
-(And aren't you supposed to be on vacation...)
+I my mind I differentiate this from other examples (for instance a
+series of CS pins) based on how closely related the pin functions are.
+ So I would say for the following examples...
+1) GPIO data bus (SPI, MDIO and I2C are great examples); all pins must
+be present - single gpio property
+2) This MMC case (pins are optional and unrelated); separate gpio properties
+3) LCD with backlight and contrast control pins; one gpio property for
+backlight pins, one for constrast pins.
 
-josh
+Thoughts?
+
+> +
+> +Example:
+> +
+> +       mmc-slot@0 {
+> +               compatible = "fsl,mpc8323rdb-mmc-slot",
+> +                            "mmc-spi-slot";
+> +               reg = <0>;
+> +               gpios = <&qe_pio_d 14 1
+> +                        &qe_pio_d 15 0>;
+> +               voltage-ranges = <3300 3300>;
+> +               spi-max-frequency = <50000000>;
+> +       };
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index 7c79e94..c6797ca 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -411,6 +411,7 @@ struct of_modalias_table {
+>  };
+>  static struct of_modalias_table of_modalias_table[] = {
+>        { "fsl,mcu-mpc8349emitx", "mcu-mpc8349emitx" },
+> +       { "mmc-spi-slot", "mmc_spi" },
+>  };
+>
+>  /**
+> --
+> 1.5.6.3
+>
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
