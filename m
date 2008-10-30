@@ -1,18 +1,15 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 18053474DE
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 06:56:38 +1100 (EST)
-Date: Thu, 30 Oct 2008 22:56:36 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] mmc_spi: Add support for OpenFirmware bindings
-Message-ID: <20081030195636.GC13640@oksana.dev.rtsoft.ru>
-References: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Pierre Ossman <drzeus-mmc@drzeus.cx>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: 44x _tlbie() ME/CE/DE disabling unnecessary?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hollis Blanchard <hollis@penguinppc.org>
+In-Reply-To: <fb412d760810301104s228a6036s50adba8605a13a98@mail.gmail.com>
+References: <fb412d760810301104s228a6036s50adba8605a13a98@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 31 Oct 2008 07:14:00 +1100
+Message-Id: <1225397640.8004.171.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,232 +19,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The support is implemented via platform data accessors, new module
-(of_mmc_spi) will be created automatically when the driver compiles
-on OpenFirmware platforms. Link-time dependency will load the module
-automatically.
+On Thu, 2008-10-30 at 13:04 -0500, Hollis Blanchard wrote:
+> 
+> I don't think it's necessary at all to disable ME/CE/DE inside
+> _tlbie() on 440, because the interrupt handlers for those types save
+> and restore MMUCR (they're all the same code path; see
+> mcheck_transfer_to_handler in entry_32.S).
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/mmc/host/Makefile     |    3 +
- drivers/mmc/host/mmc_spi.c    |    4 +-
- drivers/mmc/host/of_mmc_spi.c |  147 +++++++++++++++++++++++++++++++++++++++++
- include/linux/spi/mmc_spi.h   |    8 ++
- 4 files changed, 161 insertions(+), 1 deletions(-)
- create mode 100644 drivers/mmc/host/of_mmc_spi.c
+This was written before the saving of MMUCR was added I think.
 
-diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
-index c794cc5..f485328 100644
---- a/drivers/mmc/host/Makefile
-+++ b/drivers/mmc/host/Makefile
-@@ -19,6 +19,9 @@ obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
- obj-$(CONFIG_MMC_ATMELMCI)	+= atmel-mci.o
- obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
- obj-$(CONFIG_MMC_SPI)		+= mmc_spi.o
-+ifeq ($(CONFIG_OF),y)
-+obj-$(CONFIG_MMC_SPI)		+= of_mmc_spi.o
-+endif
- obj-$(CONFIG_MMC_S3C)   	+= s3cmci.o
- obj-$(CONFIG_MMC_SDRICOH_CS)	+= sdricoh_cs.o
- obj-$(CONFIG_MMC_TMIO)		+= tmio_mmc.o
-diff --git a/drivers/mmc/host/mmc_spi.c b/drivers/mmc/host/mmc_spi.c
-index 07faf54..416a0e3 100644
---- a/drivers/mmc/host/mmc_spi.c
-+++ b/drivers/mmc/host/mmc_spi.c
-@@ -1285,7 +1285,7 @@ static int mmc_spi_probe(struct spi_device *spi)
- 	/* Platform data is used to hook up things like card sensing
- 	 * and power switching gpios.
- 	 */
--	host->pdata = spi->dev.platform_data;
-+	host->pdata = mmc_spi_get_pdata(spi);
- 	if (host->pdata)
- 		mmc->ocr_avail = host->pdata->ocr_mask;
- 	if (!mmc->ocr_avail) {
-@@ -1368,6 +1368,7 @@ fail_glue_init:
- 
- fail_nobuf1:
- 	mmc_free_host(mmc);
-+	mmc_spi_put_pdata(spi);
- 	dev_set_drvdata(&spi->dev, NULL);
- 
- nomem:
-@@ -1402,6 +1403,7 @@ static int __devexit mmc_spi_remove(struct spi_device *spi)
- 
- 		spi->max_speed_hz = mmc->f_max;
- 		mmc_free_host(mmc);
-+		mmc_spi_put_pdata(spi);
- 		dev_set_drvdata(&spi->dev, NULL);
- 	}
- 	return 0;
-diff --git a/drivers/mmc/host/of_mmc_spi.c b/drivers/mmc/host/of_mmc_spi.c
-new file mode 100644
-index 0000000..b5e5555
---- /dev/null
-+++ b/drivers/mmc/host/of_mmc_spi.c
-@@ -0,0 +1,147 @@
-+/*
-+ * OpenFirmware bindings for the MMC-over-SPI driver
-+ *
-+ * Copyright (c) MontaVista Software, Inc. 2008.
-+ *
-+ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/gpio.h>
-+#include <linux/of.h>
-+#include <linux/of_gpio.h>
-+#include <linux/spi/spi.h>
-+#include <linux/spi/mmc_spi.h>
-+#include <linux/mmc/core.h>
-+#include <linux/mmc/host.h>
-+
-+enum {
-+	CD_GPIO = 0,
-+	WP_GPIO,
-+	NUM_GPIOS,
-+};
-+
-+struct of_mmc_spi {
-+	int gpios[NUM_GPIOS];
-+	bool alow_gpios[NUM_GPIOS];
-+	struct mmc_spi_platform_data pdata;
-+};
-+
-+static struct of_mmc_spi *to_of_mmc_spi(struct device *dev)
-+{
-+	return container_of(dev->platform_data, struct of_mmc_spi, pdata);
-+}
-+
-+static int of_mmc_spi_read_gpio(struct device *dev, int gpio_num)
-+{
-+	struct of_mmc_spi *oms = to_of_mmc_spi(dev);
-+	const bool active_low = oms->alow_gpios[gpio_num];
-+	const bool value = gpio_get_value(oms->gpios[gpio_num]);
-+
-+	return active_low ^ value;
-+}
-+
-+static int of_mmc_spi_get_cd(struct device *dev)
-+{
-+	return of_mmc_spi_read_gpio(dev, CD_GPIO);
-+}
-+
-+static int of_mmc_spi_get_ro(struct device *dev)
-+{
-+	return of_mmc_spi_read_gpio(dev, WP_GPIO);
-+}
-+
-+struct mmc_spi_platform_data *mmc_spi_get_pdata(struct spi_device *spi)
-+{
-+	struct device *dev = &spi->dev;
-+	struct device_node *np = dev_archdata_get_node(&dev->archdata);
-+	struct of_mmc_spi *oms;
-+	const u32 *voltage_ranges;
-+	int num_ranges;
-+	int i;
-+	int ret = -EINVAL;
-+
-+	if (dev->platform_data || !np)
-+		return dev->platform_data;
-+
-+	oms = kzalloc(sizeof(*oms), GFP_KERNEL);
-+	if (!oms)
-+		return NULL;
-+
-+	voltage_ranges = of_get_property(np, "voltage-ranges", &num_ranges);
-+	num_ranges = num_ranges / sizeof(*voltage_ranges) / 2;
-+	if (!voltage_ranges || !num_ranges) {
-+		dev_err(dev, "OF: voltage-ranges unspecified\n");
-+		goto err_ocr;
-+	}
-+
-+	for (i = 0; i < num_ranges; i++) {
-+		const int j = i * 2;
-+
-+		ret = mmc_vddrange_to_ocrmask(voltage_ranges[j],
-+					      voltage_ranges[j + 1],
-+					      &oms->pdata.ocr_mask);
-+		if (ret) {
-+			dev_err(dev, "OF: voltage-range #%d is invalid\n", i);
-+			goto err_ocr;
-+		}
-+	}
-+
-+	for (i = 0; i < ARRAY_SIZE(oms->gpios); i++) {
-+		enum of_gpio_flags gpio_flags;
-+
-+		oms->gpios[i] = of_get_gpio(np, i, &gpio_flags);
-+		if (!gpio_is_valid(oms->gpios[i]))
-+			continue;
-+
-+		ret = gpio_request(oms->gpios[i], dev->bus_id);
-+		if (ret < 0) {
-+			oms->gpios[i] = -EINVAL;
-+			continue;
-+		}
-+
-+		if (gpio_flags & OF_GPIO_ACTIVE_LOW)
-+			oms->alow_gpios[i] = true;
-+	}
-+
-+	if (gpio_is_valid(oms->gpios[CD_GPIO]))
-+		oms->pdata.get_cd = of_mmc_spi_get_cd;
-+	if (gpio_is_valid(oms->gpios[CD_GPIO]))
-+		oms->pdata.get_ro = of_mmc_spi_get_ro;
-+
-+	/* We don't support interrupts yet, let's poll. */
-+	oms->pdata.caps |= MMC_CAP_NEEDS_POLL;
-+
-+	dev->platform_data = &oms->pdata;
-+	return dev->platform_data;
-+err_ocr:
-+	kfree(oms);
-+	return NULL;
-+}
-+EXPORT_SYMBOL(mmc_spi_get_pdata);
-+
-+void mmc_spi_put_pdata(struct spi_device *spi)
-+{
-+	struct device *dev = &spi->dev;
-+	struct device_node *np = dev_archdata_get_node(&dev->archdata);
-+	struct of_mmc_spi *oms = to_of_mmc_spi(dev);
-+	int i;
-+
-+	if (!dev->platform_data || !np)
-+		return;
-+
-+	for (i = 0; i < ARRAY_SIZE(oms->gpios); i++) {
-+		if (gpio_is_valid(oms->gpios[i]))
-+			gpio_free(oms->gpios[i]);
-+	}
-+	kfree(oms);
-+	dev->platform_data = NULL;
-+}
-+EXPORT_SYMBOL(mmc_spi_put_pdata);
-diff --git a/include/linux/spi/mmc_spi.h b/include/linux/spi/mmc_spi.h
-index a3626ae..87ee555 100644
---- a/include/linux/spi/mmc_spi.h
-+++ b/include/linux/spi/mmc_spi.h
-@@ -41,4 +41,12 @@ struct mmc_spi_platform_data {
- 	void (*setpower)(struct device *, unsigned int maskval);
- };
- 
-+#ifdef CONFIG_OF
-+extern struct mmc_spi_platform_data *mmc_spi_get_pdata(struct spi_device *spi);
-+extern void mmc_spi_put_pdata(struct spi_device *spi);
-+#else
-+#define mmc_spi_get_pdata(spi) ((spi)->dev.platform_data)
-+#define mmc_spi_put_pdata(spi)
-+#endif /* CONFIG_OF */
-+
- #endif /* __LINUX_SPI_MMC_SPI_H */
--- 
-1.5.6.3
+> However, I think EE does need to be disabled, since the normal EE
+> handler doesn't deal with MMUCR. So instead of all these MSR
+> manipulations, I think a simple wrteei 0/1 pair should do the trick?
+> Or maybe mfmsr/wrteei/wrtee, in case _tlbie() happens to be called
+> with interrupts disabled already.
+
+Yes.
+
+Ben.
