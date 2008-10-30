@@ -1,19 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 285A5DDE19
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 05:04:39 +1100 (EST)
-Date: Thu, 30 Oct 2008 21:04:36 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Trent Piepho <tpiepho@freescale.com>
-Subject: Re: [v5] powerpc: gpio driver for mpc8349/8572/8610 and compatible
-Message-ID: <20081030180436.GA4975@oksana.dev.rtsoft.ru>
-References: <1222184138-6151-1-git-send-email-jacmet@sunsite.dk>
-	<Pine.LNX.4.64.0810291718350.25957@t2.domain.actdsltmp>
+Return-Path: <slightlyunconventional@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id B68FBDDE3A
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 05:05:08 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so285365ywh.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 11:05:04 -0700 (PDT)
+Message-ID: <fb412d760810301104s228a6036s50adba8605a13a98@mail.gmail.com>
+Date: Thu, 30 Oct 2008 13:04:51 -0500
+From: "Hollis Blanchard" <hollis@penguinppc.org>
+Sender: slightlyunconventional@gmail.com
+To: linuxppc-dev@ozlabs.org
+Subject: 44x _tlbie() ME/CE/DE disabling unnecessary?
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <Pine.LNX.4.64.0810291718350.25957@t2.domain.actdsltmp>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +22,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 29, 2008 at 06:07:47PM -0700, Trent Piepho wrote:
-[...]
-> But, I'm using the GPIOs to bit-bang a JTAG bus in the 20-30 MHz range.  The
-> obvious GPIO driver is *much* too slow for that.  I got less than 3 MHz, and
-> your driver looks like it might be slightly slower than my initial driver.
+Regarding this patch:
 
-You can implement rapid (inlined) SOC-specific versions of
-gpio_{get,set}_value() functions. And they can co-exist with the
-gpiolib. It is quite easy to do.
+commit aa1cf632bd6f998cb4567ccf1a9d2e5daaa9fb44
+Author: David Gibson <david@gibson.dropbear.id.au>
+Date:   Tue Aug 7 14:20:50 2007 +1000
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+    [POWERPC] Fix small race in 44x tlbie function
+
+    The 440 family of processors don't have a tlbie instruction.  So, we
+    implement TLB invalidates by explicitly searching the TLB with tlbsx.,
+    then clobbering the relevant entry, if any.  Unfortunately the PID for
+    the search needs to be stored in the MMUCR register, which is also
+    used by the TLB miss handler.  Interrupts were enabled in _tlbie(), so
+    an interrupt between loading the MMUCR and the tlbsx could cause
+    incorrect search results, and thus a failure to invalide TLB entries
+    which needed to be invalidated.
+
+    This fixes the problem in both arch/ppc and arch/powerpc by inhibiting
+    interrupts (even critical and debug interrupts) across the relevant
+    instructions.
+
+    Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+    Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index e708ab7..8533de5 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -301,9 +301,19 @@ _GLOBAL(_tlbie)
+ 	mfspr	r4,SPRN_MMUCR
+ 	mfspr	r5,SPRN_PID			/* Get PID */
+ 	rlwimi	r4,r5,0,24,31			/* Set TID */
+-	mtspr	SPRN_MMUCR,r4
+
++	/* We have to run the search with interrupts disabled, even critical
++	 * and debug interrupts (in fact the only critical exceptions we have
++	 * are debug and machine check).  Otherwise  an interrupt which causes
++	 * a TLB miss can clobber the MMUCR between the mtspr and the tlbsx. */
++	mfmsr	r5
++	lis	r6,(MSR_EE|MSR_CE|MSR_ME|MSR_DE)@ha
++	addi	r6,r6,(MSR_EE|MSR_CE|MSR_ME|MSR_DE)@l
++	andc	r6,r5,r6
++	mtmsr	r6
++	mtspr	SPRN_MMUCR,r4
+ 	tlbsx.	r3, 0, r3
++	mtmsr	r5
+ 	bne	10f
+ 	sync
+ 	/* There are only 64 TLB entries, so r3 < 64,
+diff --git a/arch/ppc/kernel/misc.S b/arch/ppc/kernel/misc.S
+index 0da5536..a22e1f4 100644
+--- a/arch/ppc/kernel/misc.S
++++ b/arch/ppc/kernel/misc.S
+@@ -237,9 +237,19 @@ _GLOBAL(_tlbie)
+ 	mfspr	r4,SPRN_MMUCR
+ 	mfspr	r5,SPRN_PID			/* Get PID */
+ 	rlwimi	r4,r5,0,24,31			/* Set TID */
+-	mtspr	SPRN_MMUCR,r4
+
++	/* We have to run the search with interrupts disabled, even critical
++	 * and debug interrupts (in fact the only critical exceptions we have
++	 * are debug and machine check).  Otherwise  an interrupt which causes
++	 * a TLB miss can clobber the MMUCR between the mtspr and the tlbsx. */
++	mfmsr	r5
++	lis	r6,(MSR_EE|MSR_CE|MSR_ME|MSR_DE)@ha
++	addi	r6,r6,(MSR_EE|MSR_CE|MSR_ME|MSR_DE)@l
++	andc	r6,r5,r6
++	mtmsr	r6
++	mtspr	SPRN_MMUCR,r4
+ 	tlbsx.	r3, 0, r3
++	mtmsr	r5
+ 	bne	10f
+ 	sync
+ 	/* There are only 64 TLB entries, so r3 < 64,
+
+I don't think it's necessary at all to disable ME/CE/DE inside
+_tlbie() on 440, because the interrupt handlers for those types save
+and restore MMUCR (they're all the same code path; see
+mcheck_transfer_to_handler in entry_32.S).
+
+However, I think EE does need to be disabled, since the normal EE
+handler doesn't deal with MMUCR. So instead of all these MSR
+manipulations, I think a simple wrteei 0/1 pair should do the trick?
+Or maybe mfmsr/wrteei/wrtee, in case _tlbie() happens to be called
+with interrupts disabled already.
+
+-Hollis
