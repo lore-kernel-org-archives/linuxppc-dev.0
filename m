@@ -1,23 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AEEE9DDE01
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 08:20:49 +1100 (EST)
-Message-Id: <F3F36034-3349-4E7C-8C60-4391D332F153@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20081030163645.4385a67c@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: 44x _tlbie() ME/CE/DE disabling unnecessary?
-Date: Thu, 30 Oct 2008 16:20:36 -0500
-References: <fb412d760810301104s228a6036s50adba8605a13a98@mail.gmail.com>
-	<1225397640.8004.171.camel@pasglop>
-	<20081030163645.4385a67c@zod.rchland.ibm.com>
-Cc: Hollis Blanchard <hollis@penguinppc.org>,
-	Gibson <david@gibson.dropbear.id.au>, David@ozlabs.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18698.10295.463071.212141@cargo.ozlabs.ibm.com>
+Date: Fri, 31 Oct 2008 08:33:43 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: relocatable kernel vs. yaboot
+In-Reply-To: <1225322811.5280.5.camel@johannes.berg>
+References: <1225322811.5280.5.camel@johannes.berg>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,12 +18,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Johannes Berg writes:
 
-On Oct 30, 2008, at 3:36 PM, Josh Boyer wrote:
+> Sorry if this has been discussed before, but I just found that yaboot
+> rejects relocatable kernels claiming they are an invalid ELF file.
 
->
-> (And aren't you supposed to be on vacation...)
+Yes, yaboot needs to be fixed.
 
-There is no vacation from the community.. you will be assimilated. :)
+> In the patch adding relocatable kernel support, I found
+> 
+> +# The iseries hypervisor won't take an ET_DYN executable, so this
+> +# changes the type (byte 17) in the file to ET_EXEC (2).
+>  $(obj)/zImage.iseries: vmlinux
+>         $(STRIP) -s -R .comment $< -o $@
+> +       printf "\x02" | dd of=$@ conv=notrunc bs=1 seek=17
+> 
+> 
+> Modifying the vmlinux in the same way as above makes yaboot take it, and
+> I can easily make this part of my installation procedure, but I wonder
+> if it should be done automatically? Or maybe only documented in the
+> Kconfig help text? I probably wouldn't have enabled it and then wondered
+> why it doesn't work if it had warned me about breaking yaboot ;)
 
-- k
+Yes, we could add something to the help text.  Until yaboot gets
+fixed, you could either boot the zImage with yaboot or use that
+iseries hack.
+
+Why did you enable it?  Just to try it out?  The main reason for
+having it turned on is if you want to have a single kernel image that
+can be used both as a normal kernel and a kdump kernel.
+
+Paul.
