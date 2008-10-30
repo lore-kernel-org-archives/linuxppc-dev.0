@@ -1,18 +1,18 @@
-Return-Path: <slightlyunconventional@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id B68FBDDE3A
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 05:05:08 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so285365ywh.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 11:05:04 -0700 (PDT)
-Message-ID: <fb412d760810301104s228a6036s50adba8605a13a98@mail.gmail.com>
-Date: Thu, 30 Oct 2008 13:04:51 -0500
-From: "Hollis Blanchard" <hollis@penguinppc.org>
-Sender: slightlyunconventional@gmail.com
-To: linuxppc-dev@ozlabs.org
-Subject: 44x _tlbie() ME/CE/DE disabling unnecessary?
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from VA3EHSOBE003.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id E3A68DDDFA
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 05:13:07 +1100 (EST)
+Message-ID: <4909F92A.5080204@am.sony.com>
+Date: Thu, 30 Oct 2008 11:12:58 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [patch] powerpc/ps3: Replace the flip_ctl logic in ps3av and ps3fb
+	by a mutex
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, Vivien Chappelier <vivien.chappelier@free.fr>,
+	Jim Paris <jim@jtan.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,91 +22,174 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Regarding this patch:
 
-commit aa1cf632bd6f998cb4567ccf1a9d2e5daaa9fb44
-Author: David Gibson <david@gibson.dropbear.id.au>
-Date:   Tue Aug 7 14:20:50 2007 +1000
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-    [POWERPC] Fix small race in 44x tlbie function
+Introduce ps3_gpu_mutex to synchronizes GPU-related operations, like:
+  - invoking the L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT command using the
+    lv1_gpu_context_attribute() hypervisor call,
+  - handling the PS3AV_CID_AVB_PARAM packet in the PS3 A/V Settings driver.
 
-    The 440 family of processors don't have a tlbie instruction.  So, we
-    implement TLB invalidates by explicitly searching the TLB with tlbsx.,
-    then clobbering the relevant entry, if any.  Unfortunately the PID for
-    the search needs to be stored in the MMUCR register, which is also
-    used by the TLB miss handler.  Interrupts were enabled in _tlbie(), so
-    an interrupt between loading the MMUCR and the tlbsx could cause
-    incorrect search results, and thus a failure to invalide TLB entries
-    which needed to be invalidated.
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+This was submitted to the linux-fbdev-devel and cbe-oss-dev MLs
+for review some time ago with no comments so far.
 
-    This fixes the problem in both arch/ppc and arch/powerpc by inhibiting
-    interrupts (even critical and debug interrupts) across the relevant
-    instructions.
+Please consider for 2.6.29.
 
-    Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-    Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+-Geoff
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index e708ab7..8533de5 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -301,9 +301,19 @@ _GLOBAL(_tlbie)
- 	mfspr	r4,SPRN_MMUCR
- 	mfspr	r5,SPRN_PID			/* Get PID */
- 	rlwimi	r4,r5,0,24,31			/* Set TID */
--	mtspr	SPRN_MMUCR,r4
+ arch/powerpc/include/asm/ps3.h     |    3 +++
+ arch/powerpc/include/asm/ps3av.h   |    4 ----
+ arch/powerpc/platforms/ps3/setup.c |    4 ++++
+ drivers/ps3/ps3av.c                |   20 --------------------
+ drivers/ps3/ps3av_cmd.c            |    4 ++--
+ drivers/video/ps3fb.c              |   17 +++++------------
+ 6 files changed, 14 insertions(+), 38 deletions(-)
 
-+	/* We have to run the search with interrupts disabled, even critical
-+	 * and debug interrupts (in fact the only critical exceptions we have
-+	 * are debug and machine check).  Otherwise  an interrupt which causes
-+	 * a TLB miss can clobber the MMUCR between the mtspr and the tlbsx. */
-+	mfmsr	r5
-+	lis	r6,(MSR_EE|MSR_CE|MSR_ME|MSR_DE)@ha
-+	addi	r6,r6,(MSR_EE|MSR_CE|MSR_ME|MSR_DE)@l
-+	andc	r6,r5,r6
-+	mtmsr	r6
-+	mtspr	SPRN_MMUCR,r4
- 	tlbsx.	r3, 0, r3
-+	mtmsr	r5
- 	bne	10f
- 	sync
- 	/* There are only 64 TLB entries, so r3 < 64,
-diff --git a/arch/ppc/kernel/misc.S b/arch/ppc/kernel/misc.S
-index 0da5536..a22e1f4 100644
---- a/arch/ppc/kernel/misc.S
-+++ b/arch/ppc/kernel/misc.S
-@@ -237,9 +237,19 @@ _GLOBAL(_tlbie)
- 	mfspr	r4,SPRN_MMUCR
- 	mfspr	r5,SPRN_PID			/* Get PID */
- 	rlwimi	r4,r5,0,24,31			/* Set TID */
--	mtspr	SPRN_MMUCR,r4
-
-+	/* We have to run the search with interrupts disabled, even critical
-+	 * and debug interrupts (in fact the only critical exceptions we have
-+	 * are debug and machine check).  Otherwise  an interrupt which causes
-+	 * a TLB miss can clobber the MMUCR between the mtspr and the tlbsx. */
-+	mfmsr	r5
-+	lis	r6,(MSR_EE|MSR_CE|MSR_ME|MSR_DE)@ha
-+	addi	r6,r6,(MSR_EE|MSR_CE|MSR_ME|MSR_DE)@l
-+	andc	r6,r5,r6
-+	mtmsr	r6
-+	mtspr	SPRN_MMUCR,r4
- 	tlbsx.	r3, 0, r3
-+	mtmsr	r5
- 	bne	10f
- 	sync
- 	/* There are only 64 TLB entries, so r3 < 64,
-
-I don't think it's necessary at all to disable ME/CE/DE inside
-_tlbie() on 440, because the interrupt handlers for those types save
-and restore MMUCR (they're all the same code path; see
-mcheck_transfer_to_handler in entry_32.S).
-
-However, I think EE does need to be disabled, since the normal EE
-handler doesn't deal with MMUCR. So instead of all these MSR
-manipulations, I think a simple wrteei 0/1 pair should do the trick?
-Or maybe mfmsr/wrteei/wrtee, in case _tlbie() happens to be called
-with interrupts disabled already.
-
--Hollis
+--- a/arch/powerpc/include/asm/ps3.h
++++ b/arch/powerpc/include/asm/ps3.h
+@@ -516,4 +516,7 @@ void ps3_sync_irq(int node);
+ u32 ps3_get_hw_thread_id(int cpu);
+ u64 ps3_get_spe_id(void *arg);
+ 
++/* mutex synchronizing GPU accesses and video mode changes */
++extern struct mutex ps3_gpu_mutex;
++
+ #endif
+--- a/arch/powerpc/include/asm/ps3av.h
++++ b/arch/powerpc/include/asm/ps3av.h
+@@ -740,8 +740,4 @@ extern int ps3av_audio_mute(int);
+ extern int ps3av_audio_mute_analog(int);
+ extern int ps3av_dev_open(void);
+ extern int ps3av_dev_close(void);
+-extern void ps3av_register_flip_ctl(void (*flip_ctl)(int on, void *data),
+-				    void *flip_data);
+-extern void ps3av_flip_ctl(int on);
+-
+ #endif	/* _ASM_POWERPC_PS3AV_H_ */
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -42,6 +42,10 @@
+ #define DBG pr_debug
+ #endif
+ 
++/* mutex synchronizing GPU accesses and video mode changes */
++DEFINE_MUTEX(ps3_gpu_mutex);
++EXPORT_SYMBOL_GPL(ps3_gpu_mutex);
++
+ #if !defined(CONFIG_SMP)
+ static void smp_send_stop(void) {}
+ #endif
+--- a/drivers/ps3/ps3av.c
++++ b/drivers/ps3/ps3av.c
+@@ -59,8 +59,6 @@ static struct ps3av {
+ 		struct ps3av_reply_hdr reply_hdr;
+ 		u8 raw[PS3AV_BUF_SIZE];
+ 	} recv_buf;
+-	void (*flip_ctl)(int on, void *data);
+-	void *flip_data;
+ } *ps3av;
+ 
+ /* color space */
+@@ -939,24 +937,6 @@ int ps3av_audio_mute(int mute)
+ 
+ EXPORT_SYMBOL_GPL(ps3av_audio_mute);
+ 
+-void ps3av_register_flip_ctl(void (*flip_ctl)(int on, void *data),
+-			     void *flip_data)
+-{
+-	mutex_lock(&ps3av->mutex);
+-	ps3av->flip_ctl = flip_ctl;
+-	ps3av->flip_data = flip_data;
+-	mutex_unlock(&ps3av->mutex);
+-}
+-EXPORT_SYMBOL_GPL(ps3av_register_flip_ctl);
+-
+-void ps3av_flip_ctl(int on)
+-{
+-	mutex_lock(&ps3av->mutex);
+-	if (ps3av->flip_ctl)
+-		ps3av->flip_ctl(on, ps3av->flip_data);
+-	mutex_unlock(&ps3av->mutex);
+-}
+-
+ static int ps3av_probe(struct ps3_system_bus_device *dev)
+ {
+ 	int res;
+--- a/drivers/ps3/ps3av_cmd.c
++++ b/drivers/ps3/ps3av_cmd.c
+@@ -864,7 +864,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
+ {
+ 	int res;
+ 
+-	ps3av_flip_ctl(0);	/* flip off */
++	mutex_lock(&ps3_gpu_mutex);
+ 
+ 	/* avb packet */
+ 	res = ps3av_do_pkt(PS3AV_CID_AVB_PARAM, send_len, sizeof(*avb),
+@@ -878,7 +878,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
+ 			 res);
+ 
+       out:
+-	ps3av_flip_ctl(1);	/* flip on */
++	mutex_unlock(&ps3_gpu_mutex);
+ 	return res;
+ }
+ 
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -460,12 +460,16 @@ static void ps3fb_sync_image(struct devi
+ 		line_length |= (u64)src_line_length << 32;
+ 
+ 	src_offset += GPU_FB_START;
++
++	mutex_lock(&ps3_gpu_mutex);
+ 	status = lv1_gpu_context_attribute(ps3fb.context_handle,
+ 					   L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT,
+ 					   dst_offset, GPU_IOIF + src_offset,
+ 					   L1GPU_FB_BLIT_WAIT_FOR_COMPLETION |
+ 					   (width << 16) | height,
+ 					   line_length);
++	mutex_unlock(&ps3_gpu_mutex);
++
+ 	if (status)
+ 		dev_err(dev,
+ 			"%s: lv1_gpu_context_attribute FB_BLIT failed: %d\n",
+@@ -784,15 +788,6 @@ static int ps3fb_wait_for_vsync(u32 crtc
+ 	return 0;
+ }
+ 
+-static void ps3fb_flip_ctl(int on, void *data)
+-{
+-	struct ps3fb_priv *priv = data;
+-	if (on)
+-		atomic_dec_if_positive(&priv->ext_flip);
+-	else
+-		atomic_inc(&priv->ext_flip);
+-}
+-
+ 
+     /*
+      * ioctl
+@@ -1228,7 +1223,6 @@ static int __devinit ps3fb_probe(struct 
+ 	}
+ 
+ 	ps3fb.task = task;
+-	ps3av_register_flip_ctl(ps3fb_flip_ctl, &ps3fb);
+ 
+ 	return 0;
+ 
+@@ -1258,10 +1252,9 @@ static int ps3fb_shutdown(struct ps3_sys
+ 
+ 	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
+ 
+-	ps3fb_flip_ctl(0, &ps3fb);	/* flip off */
++	atomic_inc(&ps3fb.ext_flip);	/* flip off */
+ 	ps3fb.dinfo->irq.mask = 0;
+ 
+-	ps3av_register_flip_ctl(NULL, NULL);
+ 	if (ps3fb.task) {
+ 		struct task_struct *task = ps3fb.task;
+ 		ps3fb.task = NULL;
