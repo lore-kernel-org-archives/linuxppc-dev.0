@@ -1,18 +1,21 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id 5AFCFDDDFF
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 09:28:31 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so363941ywh.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Oct 2008 15:28:30 -0700 (PDT)
-Date: Thu, 30 Oct 2008 18:26:42 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: paulus@samba.org
-Subject: Please pull 'merge' branch of 4xx tree
-Message-ID: <20081030222642.GA6690@yoda.jdub.homelinux.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id BC6EADDDEA
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 10:02:55 +1100 (EST)
+Date: Fri, 31 Oct 2008 02:02:53 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/3] powerpc: Add mmc-spi-slot bindings
+Message-ID: <20081030230253.GA11765@oksana.dev.rtsoft.ru>
+References: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
+	<20081030195630.GA13640@oksana.dev.rtsoft.ru>
+	<fa686aa40810301337p21ac8785gb74b12904bbd08e7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <fa686aa40810301337p21ac8785gb74b12904bbd08e7@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, Pierre Ossman <drzeus-mmc@drzeus.cx>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,44 +25,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+On Thu, Oct 30, 2008 at 02:37:31PM -0600, Grant Likely wrote:
+[...]
+> > +- gpios : (optional) may specify GPIOs in this order: Card-Detect GPIO,
+> > +  Write-Protect GPIO.
+> 
+> I wonder if we're following the example of irq mappings too closely
+> for the gpios property.  I like the layout of the property
+> (<controller> <specifier>), but I think the 'gpios' name is getting
+> too overloaded.  In this case a single property 'gpios' is being used
+> to encode 2 unrelated bits of information; the write protect pin and
+> the card detect pins.
+> 
+> In this particular case I think it is better to use 2 properties in
+> this case; something like 'spi-writeprotect-gpio' and
+> 'spi-carddetect-gpio' using the same specifier format.  Doing so adds
+> a bit more clarity to the purpose of the properties.
+> 
+> I my mind I differentiate this from other examples (for instance a
+> series of CS pins) based on how closely related the pin functions are.
+>  So I would say for the following examples...
+> 1) GPIO data bus (SPI, MDIO and I2C are great examples); all pins must
+> be present - single gpio property
+> 2) This MMC case (pins are optional and unrelated); separate gpio properties
+> 3) LCD with backlight and contrast control pins; one gpio property for
+> backlight pins, one for constrast pins.
+> 
+> Thoughts?
 
-Please pull the changes below as updates for 2.6.28.  There is one small
-Kconfig fix, and the normal defconfig updates we do every release.
+It's pretty trivial to implement (of_get_named_gpio() -- could be just
+factored out of of_get_gpio()).
 
-thx,
-josh
+Though,
 
-The following changes since commit 0173a3265b228da319ceb9c1ec6a5682fd1b2d92:
-  Linus Torvalds (1):
-        Linux 2.6.28-rc2
+1. The idea is quite extreme. It needs discussion, and furthermore,
+   we need to define when do we use gpios = <> and when something-gpio =
+   <>; We need to be consistent, and to be consistent, the rules should
+   be clear and written.
 
-are available in the git repository at:
+2. We should think about it very very carefully. Do we want to lose the
+   track of gpios? For example, there are quite defined rules when (and
+   in what properties) you may encounter memory addresses, when and
+   where you can encounter interrupt specifiers. We do the same for
+   gpios, and so far it works great. We need to think about any possible
+   drawbacks of the scheme you purpose (we would never know where to
+   expect gpios - it isn't a problem per se, but maybe it could lead
+   to some problem in future? I don't know.)
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git merge
+Quite honestly I don't like the idea... maybe I just used to
+interrupts = <>, reg = <>, ranges = <>, interrupt-map = <> and so
+forth, and now my subconsciousness tells me "it's wrong to do
+something-interrupt = <> stuff." ;-)
 
-Josh Boyer (3):
-      powerpc/40x: Don't enable HCU4 board by default
-      powerpc/40x: Update 40x defconfigs
-      powerpc/44x: Update 44x defconfigs
+Anyway, your proposal is forward and backward compatible with the
+existing scheme, and can even coexist. Thus I'd prefer to stay with
+the today's gpios = <>. We can always start use the new scheme when
+it will be thought out enough.
 
- arch/powerpc/configs/40x/acadia_defconfig      |   59 ++++++++----
- arch/powerpc/configs/40x/ep405_defconfig       |   83 +++++++++++-----
- arch/powerpc/configs/40x/hcu4_defconfig        |  125 +++++++++++++++++-------
- arch/powerpc/configs/40x/kilauea_defconfig     |   69 +++++++++----
- arch/powerpc/configs/40x/makalu_defconfig      |   69 +++++++++----
- arch/powerpc/configs/40x/walnut_defconfig      |   77 +++++++++++----
- arch/powerpc/configs/44x/arches_defconfig      |   51 ++++++----
- arch/powerpc/configs/44x/bamboo_defconfig      |   77 +++++++++++----
- arch/powerpc/configs/44x/canyonlands_defconfig |   61 ++++++++----
- arch/powerpc/configs/44x/ebony_defconfig       |   77 +++++++++++----
- arch/powerpc/configs/44x/katmai_defconfig      |   77 +++++++++++----
- arch/powerpc/configs/44x/rainier_defconfig     |   73 ++++++++++----
- arch/powerpc/configs/44x/sam440ep_defconfig    |  110 +++++++++++++++------
- arch/powerpc/configs/44x/sequoia_defconfig     |   78 +++++++++++----
- arch/powerpc/configs/44x/taishan_defconfig     |   77 +++++++++++----
- arch/powerpc/configs/44x/warp_defconfig        |   82 +++++++++++-----
- arch/powerpc/configs/ppc40x_defconfig          |  106 ++++++++++++++++----
- arch/powerpc/configs/ppc44x_defconfig          |  125 ++++++++++++++++++------
- arch/powerpc/platforms/40x/Kconfig             |    2 +-
- 19 files changed, 1053 insertions(+), 425 deletions(-)
+Thanks,
+
+p.s. I'd prefer a new thread for this discussion, somewhere
+in devicetree-discuss@ozlabs.org, so that it won't relate to this
+particular patch.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
