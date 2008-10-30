@@ -1,18 +1,15 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from VA3EHSOBE003.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id E3A68DDDFA
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 05:13:07 +1100 (EST)
-Message-ID: <4909F92A.5080204@am.sony.com>
-Date: Thu, 30 Oct 2008 11:12:58 -0700
+Received: from VA3EHSOBE005.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 6204FDDF65
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 05:17:26 +1100 (EST)
+Message-ID: <4909FA2E.80202@am.sony.com>
+Date: Thu, 30 Oct 2008 11:17:18 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch] powerpc/ps3: Replace the flip_ctl logic in ps3av and ps3fb
-	by a mutex
+Subject: [patch] powerpc/ps3: Fix memory leak in device init
 Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, Vivien Chappelier <vivien.chappelier@free.fr>,
-	Jim Paris <jim@jtan.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,173 +20,76 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+From: Masakazu Mokuno <mokuno@sm.sony.co.jp>
 
-Introduce ps3_gpu_mutex to synchronizes GPU-related operations, like:
-  - invoking the L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT command using the
-    lv1_gpu_context_attribute() hypervisor call,
-  - handling the PS3AV_CID_AVB_PARAM packet in the PS3 A/V Settings driver.
+Free dynamically allocated device data structures when device registration
+fails.  This fixes memory leakage when the registration fails.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Masakazu Mokuno <mokuno@sm.sony.co.jp>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
-This was submitted to the linux-fbdev-devel and cbe-oss-dev MLs
-for review some time ago with no comments so far.
+ arch/powerpc/platforms/ps3/device-init.c |   29 ++++++++++++++++++++++++-----
+ 1 file changed, 24 insertions(+), 5 deletions(-)
 
-Please consider for 2.6.29.
-
--Geoff
-
- arch/powerpc/include/asm/ps3.h     |    3 +++
- arch/powerpc/include/asm/ps3av.h   |    4 ----
- arch/powerpc/platforms/ps3/setup.c |    4 ++++
- drivers/ps3/ps3av.c                |   20 --------------------
- drivers/ps3/ps3av_cmd.c            |    4 ++--
- drivers/video/ps3fb.c              |   17 +++++------------
- 6 files changed, 14 insertions(+), 38 deletions(-)
-
---- a/arch/powerpc/include/asm/ps3.h
-+++ b/arch/powerpc/include/asm/ps3.h
-@@ -516,4 +516,7 @@ void ps3_sync_irq(int node);
- u32 ps3_get_hw_thread_id(int cpu);
- u64 ps3_get_spe_id(void *arg);
+--- a/arch/powerpc/platforms/ps3/device-init.c
++++ b/arch/powerpc/platforms/ps3/device-init.c
+@@ -314,11 +314,17 @@ static int __init ps3_setup_vuart_device
  
-+/* mutex synchronizing GPU accesses and video mode changes */
-+extern struct mutex ps3_gpu_mutex;
+ 	result = ps3_system_bus_device_register(&p->dev);
+ 
+-	if (result)
++	if (result) {
+ 		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+ 			__func__, __LINE__);
+-
++		goto fail_device_register;
++	}
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return 0;
 +
- #endif
---- a/arch/powerpc/include/asm/ps3av.h
-+++ b/arch/powerpc/include/asm/ps3av.h
-@@ -740,8 +740,4 @@ extern int ps3av_audio_mute(int);
- extern int ps3av_audio_mute_analog(int);
- extern int ps3av_dev_open(void);
- extern int ps3av_dev_close(void);
--extern void ps3av_register_flip_ctl(void (*flip_ctl)(int on, void *data),
--				    void *flip_data);
--extern void ps3av_flip_ctl(int on);
--
- #endif	/* _ASM_POWERPC_PS3AV_H_ */
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -42,6 +42,10 @@
- #define DBG pr_debug
- #endif
- 
-+/* mutex synchronizing GPU accesses and video mode changes */
-+DEFINE_MUTEX(ps3_gpu_mutex);
-+EXPORT_SYMBOL_GPL(ps3_gpu_mutex);
-+
- #if !defined(CONFIG_SMP)
- static void smp_send_stop(void) {}
- #endif
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -59,8 +59,6 @@ static struct ps3av {
- 		struct ps3av_reply_hdr reply_hdr;
- 		u8 raw[PS3AV_BUF_SIZE];
- 	} recv_buf;
--	void (*flip_ctl)(int on, void *data);
--	void *flip_data;
- } *ps3av;
- 
- /* color space */
-@@ -939,24 +937,6 @@ int ps3av_audio_mute(int mute)
- 
- EXPORT_SYMBOL_GPL(ps3av_audio_mute);
- 
--void ps3av_register_flip_ctl(void (*flip_ctl)(int on, void *data),
--			     void *flip_data)
--{
--	mutex_lock(&ps3av->mutex);
--	ps3av->flip_ctl = flip_ctl;
--	ps3av->flip_data = flip_data;
--	mutex_unlock(&ps3av->mutex);
--}
--EXPORT_SYMBOL_GPL(ps3av_register_flip_ctl);
--
--void ps3av_flip_ctl(int on)
--{
--	mutex_lock(&ps3av->mutex);
--	if (ps3av->flip_ctl)
--		ps3av->flip_ctl(on, ps3av->flip_data);
--	mutex_unlock(&ps3av->mutex);
--}
--
- static int ps3av_probe(struct ps3_system_bus_device *dev)
- {
- 	int res;
---- a/drivers/ps3/ps3av_cmd.c
-+++ b/drivers/ps3/ps3av_cmd.c
-@@ -864,7 +864,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
- {
- 	int res;
- 
--	ps3av_flip_ctl(0);	/* flip off */
-+	mutex_lock(&ps3_gpu_mutex);
- 
- 	/* avb packet */
- 	res = ps3av_do_pkt(PS3AV_CID_AVB_PARAM, send_len, sizeof(*avb),
-@@ -878,7 +878,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
- 			 res);
- 
-       out:
--	ps3av_flip_ctl(1);	/* flip on */
-+	mutex_unlock(&ps3_gpu_mutex);
- 	return res;
++fail_device_register:
++	kfree(p);
++	pr_debug(" <- %s:%d fail\n", __func__, __LINE__);
+ 	return result;
  }
  
---- a/drivers/video/ps3fb.c
-+++ b/drivers/video/ps3fb.c
-@@ -460,12 +460,16 @@ static void ps3fb_sync_image(struct devi
- 		line_length |= (u64)src_line_length << 32;
+@@ -463,11 +469,17 @@ static int __init ps3_register_sound_dev
  
- 	src_offset += GPU_FB_START;
+ 	result = ps3_system_bus_device_register(&p->dev);
+ 
+-	if (result)
++	if (result) {
+ 		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+ 			__func__, __LINE__);
+-
++		goto fail_device_register;
++	}
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return 0;
 +
-+	mutex_lock(&ps3_gpu_mutex);
- 	status = lv1_gpu_context_attribute(ps3fb.context_handle,
- 					   L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT,
- 					   dst_offset, GPU_IOIF + src_offset,
- 					   L1GPU_FB_BLIT_WAIT_FOR_COMPLETION |
- 					   (width << 16) | height,
- 					   line_length);
-+	mutex_unlock(&ps3_gpu_mutex);
-+
- 	if (status)
- 		dev_err(dev,
- 			"%s: lv1_gpu_context_attribute FB_BLIT failed: %d\n",
-@@ -784,15 +788,6 @@ static int ps3fb_wait_for_vsync(u32 crtc
- 	return 0;
++fail_device_register:
++	kfree(p);
++	pr_debug(" <- %s:%d failed\n", __func__, __LINE__);
+ 	return result;
  }
  
--static void ps3fb_flip_ctl(int on, void *data)
--{
--	struct ps3fb_priv *priv = data;
--	if (on)
--		atomic_dec_if_positive(&priv->ext_flip);
--	else
--		atomic_inc(&priv->ext_flip);
--}
--
+@@ -491,11 +503,18 @@ static int __init ps3_register_graphics_
  
-     /*
-      * ioctl
-@@ -1228,7 +1223,6 @@ static int __devinit ps3fb_probe(struct 
- 	}
+ 	result = ps3_system_bus_device_register(&p->dev);
  
- 	ps3fb.task = task;
--	ps3av_register_flip_ctl(ps3fb_flip_ctl, &ps3fb);
+-	if (result)
++	if (result) {
+ 		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+ 			__func__, __LINE__);
++		goto fail_device_register;
++	}
  
- 	return 0;
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return 0;
++
++fail_device_register:
++	kfree(p);
++	pr_debug(" <- %s:%d failed\n", __func__, __LINE__);
+ 	return result;
+ }
  
-@@ -1258,10 +1252,9 @@ static int ps3fb_shutdown(struct ps3_sys
- 
- 	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
- 
--	ps3fb_flip_ctl(0, &ps3fb);	/* flip off */
-+	atomic_inc(&ps3fb.ext_flip);	/* flip off */
- 	ps3fb.dinfo->irq.mask = 0;
- 
--	ps3av_register_flip_ctl(NULL, NULL);
- 	if (ps3fb.task) {
- 		struct task_struct *task = ps3fb.task;
- 		ps3fb.task = NULL;
