@@ -1,26 +1,28 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+Return-Path: <hollisb@us.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2BC92DDD01
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Nov 2008 05:37:06 +1100 (EST)
-Date: Fri, 31 Oct 2008 18:36:58 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: 2.6.28-rc1: NVRAM being corrupted on ppc64 preventing boot
-	(bisected)
-Message-ID: <20081031183658.GC6817@csn.ul.ie>
-References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
-	<20081030142632.GA15645@csn.ul.ie>
-	<18698.7794.500191.189515@cargo.ozlabs.ibm.com>
-	<20081031103646.GA24395@csn.ul.ie>
-	<18698.59327.927555.732608@cargo.ozlabs.ibm.com>
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 95245DDDFD
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Nov 2008 06:03:21 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9VJ3G5W019929
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 15:03:16 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	m9VJ3G4J117454
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 15:03:16 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m9VJ37NU032157
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 15:03:08 -0400
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <18698.59327.927555.732608@cargo.ozlabs.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/44x: declare tlb_44x_index for use in C code
+Message-Id: <59bd162a744af080479f.1225479792@localhost.localdomain>
+Date: Fri, 31 Oct 2008 14:03:12 -0500
+From: Hollis Blanchard <hollisb@us.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,71 +32,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 31, 2008 at 10:10:55PM +1100, Paul Mackerras wrote:
-> Mel Gorman writes:
-> 
-> > Yaboot in my case and I've heard it affected a DVD installation. I don't
-> > know for sure if it affects netboot but as I think it's something the
-> > kernel is doing, it probably doesn't matter how it gets loaded?
-> 
-> What changed in that commit was the contents of a couple of structures
-> that the firmware looks at to see what the kernel wants from
-> firmware.  Specifically the change was to say that the kernel (or
-> really the zImage wrapper) would like the firmware to be based at the
-> 32MB point (which is what AIX uses) rather than 12MB (which was the
-> default on older machines).
-> 
-> So, as I understand it, it's not anything the kernel is actively
-> doing, it's how the firmware is reacting to what the kernel says it
-> wants.  And since we are requesting the same value as AIX (as far as I
-> know) I'm really surprised it caused problems.
-> 
-> We can revert that commit, but I still need to solve the problem that
-> the distros are facing, namely that their installer kernel + initramfs
-> images are now bigger than 12MB and can't be loaded if the firmware is
-> based at 12MB.  That's why I really want to understand the problem in
-> more detail.
-> 
-> > It's been pointed out that it can be "fixed" by upgrading the firmware but
-> > surely we can avoid breaking the machine in the first place?
-> 
-> Have you upgraded the firmware on the machine you saw this problem on?
-> If not, would you be willing to run some tests for me?
-> 
+# HG changeset patch
+# User Hollis Blanchard <hollisb@us.ibm.com>
+# Date 1225479768 18000
+# Node ID 59bd162a744af080479fedffa97d01e26dceee6a
+# Parent  635f3f74befc230d93f79dc3198c509394247ee8
+powerpc/44x: declare tlb_44x_index for use in C code
 
-As per an off-line suggestion, I was able to get past the NVRAM problem
-using the following patch. The machine still fails to fully boot but it's
-due to some modules problem and unrelated to this issue.
+KVM currently ignores the host's round robin TLB eviction selection, instead
+maintaining its own TLB state and its own round robin index. However, by
+participating in the normal 44x TLB selection, we can drop the alternate TLB
+processing in KVM. This results in a significant performance improvement,
+since that processing currently must be done on *every* guest exit.
 
->From 7e54016ce29eb80026d7ff9a8310cf9c3a7e17a9 Mon Sep 17 00:00:00 2001
-From: Mel Gorman <mel@csn.ul.ie>
-Date: Fri, 31 Oct 2008 17:12:46 +0000
-Subject: [PATCH] Partial revert of 91a00302, set new_mem_def back to 0
+Accordingly, KVM needs to be able to access and increment tlb_44x_index.
+(KVM on 440 cannot be a module, so there is no need to export this symbol.)
 
-On the suggestion of Paul McKerras, I tried the following patch. It partially
-reverts a change made by commit 91a00302 by setting new_mem_def back to 0.
-Once applied, IBM pSeries with old firmware do not corrupt their NVRAM early
-in boot.
+Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
 
-I do not know why this change fixes the problem. A structure like this is
-also in arch/powerpc/boot/addnote.c but it's not clear if it needs to be
-similarly changed or not. Paul?
+---
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- arch/powerpc/kernel/prom_init.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Josh, can I get your ack? I'll submit through the KVM tree as usual.
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 23e0db2..d6c8128 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -719,7 +719,7 @@ static struct fake_elf {
- 			.max_pft_size = 46,	/* 2^46 bytes max PFT size */
- 			.splpar = 1,
- 			.min_load = ~0U,
--			.new_mem_def = 1
-+			.new_mem_def = 0
- 		}
- 	}
- };
+diff --git a/arch/powerpc/include/asm/mmu-44x.h b/arch/powerpc/include/asm/mmu-44x.h
+--- a/arch/powerpc/include/asm/mmu-44x.h
++++ b/arch/powerpc/include/asm/mmu-44x.h
+@@ -54,6 +54,7 @@
+ #ifndef __ASSEMBLY__
+ 
+ extern unsigned int tlb_44x_hwater;
++extern unsigned int tlb_44x_index;
+ 
+ typedef struct {
+ 	unsigned long id;
