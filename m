@@ -1,27 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 36AE3DDDF6
+	by ozlabs.org (Postfix) with ESMTPS id 05031DDDEE
 	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 22:32:15 +1100 (EST)
+Date: Fri, 31 Oct 2008 11:32:02 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Paul Mackerras <paulus@samba.org>
 Subject: Re: 2.6.28-rc1: NVRAM being corrupted on ppc64 preventing boot
 	(bisected)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18698.59790.393775.139313@cargo.ozlabs.ibm.com>
+Message-ID: <20081031113202.GB9872@csn.ul.ie>
 References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
 	<20081030142632.GA15645@csn.ul.ie>
 	<18698.7794.500191.189515@cargo.ozlabs.ibm.com>
 	<20081031103646.GA24395@csn.ul.ie>
 	<18698.59790.393775.139313@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Fri, 31 Oct 2008 22:31:37 +1100
-Message-Id: <1225452697.8004.211.camel@pasglop>
-Mime-Version: 1.0
-Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-To: benh@kernel.crashing.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <18698.59790.393775.139313@cargo.ozlabs.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,7 +30,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-10-31 at 22:18 +1100, Paul Mackerras wrote:
+On Fri, Oct 31, 2008 at 10:18:38PM +1100, Paul Mackerras wrote:
 > Mel Gorman writes:
 > 
 > > Yaboot in my case and I've heard it affected a DVD installation. I don't
@@ -45,12 +44,11 @@ On Fri, 2008-10-31 at 22:18 +1100, Paul Mackerras wrote:
 > argument to a call to firmware.  If you were loading a vmlinux with
 > yaboot when you saw the corruption occur then that narrows things down
 > a bit.
+> 
 
-Unless missed something, I think it's narrowed already. When loaded from
-yaboot, there is no relevant difference between zImage and vmlinux here.
-IE. yaboot parses the ELF header of the zImage itself and ignores the
-special notes anyway so only the CAS firmware call is relevant in both
-cases, no ?
+It's the vmlinux file I am seeing problems with.
 
-Cheers,
-Ben.
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
