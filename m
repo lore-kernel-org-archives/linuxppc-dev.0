@@ -1,12 +1,12 @@
 Return-Path: <mditto@consentry.com>
 Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
-	by ozlabs.org (Postfix) with ESMTP id 67685DDE00
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 15:09:33 +1100 (EST)
-Message-ID: <490A84F8.20403@consentry.com>
-Date: Thu, 30 Oct 2008 21:09:28 -0700
+	by ozlabs.org (Postfix) with ESMTP id 98980DDDF6
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 15:13:36 +1100 (EST)
+Message-ID: <490A85EF.5060008@consentry.com>
+Date: Thu, 30 Oct 2008 21:13:35 -0700
 From: Mike Ditto <mditto@consentry.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, jochen@scram.de
+To: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org, jochen@scram.de
 Subject: [PATCH] i2c-cpm: Add flexibility for I2C clock frequency and filter.
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,6 +25,7 @@ properties.
 
 Signed-off-by:  Mike Ditto <mditto@consentry.com>
 ---
+Resending to moved i2c mailing list.
 This patch is against 2.6.27.
 
 To use the full range of I2C clock frequencies supported by the
