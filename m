@@ -1,19 +1,24 @@
-Return-Path: <mditto@consentry.com>
-Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
-	by ozlabs.org (Postfix) with ESMTP id 4D8A7DDDEF
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Nov 2008 08:22:36 +1100 (EST)
-Message-ID: <490B771B.2080901@consentry.com>
-Date: Fri, 31 Oct 2008 14:22:35 -0700
-From: Mike Ditto <mditto@consentry.com>
+Return-Path: <slightlyunconventional@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id B0F87DDDFF
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Nov 2008 10:23:30 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so614820ywh.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 16:23:29 -0700 (PDT)
+Message-ID: <fb412d760810311623i2b0f93a3r5aa0eb297e154b4a@mail.gmail.com>
+Date: Fri, 31 Oct 2008 18:23:28 -0500
+From: "Hollis Blanchard" <hollis@penguinppc.org>
+Sender: slightlyunconventional@gmail.com
+To: "Christian Ehrhardt" <ehrhardt@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc: add 16K/64K pages support for the 44x PPC32
+	architectures.
+In-Reply-To: <48FF3889.2030304@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] i2c-cpm: Add flexibility for I2C clock frequency and
-	filter.
-References: <490A84F8.20403@consentry.com> <490AEEBF.9000707@scram.de>
-In-Reply-To: <490AEEBF.9000707@scram.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
-	David Gibson <david@gibson.dropbear.id.au>
+References: <1224123753-20907-1-git-send-email-yanok@emcraft.com>
+	<1224123753-20907-2-git-send-email-yanok@emcraft.com>
+	<48FF3889.2030304@linux.vnet.ibm.com>
+Cc: Hollis Blanchard <hollisb@us.ibm.com>, dzu@denx.de, linuxppc-dev@ozlabs.org,
+	pvr@emcraft.com, Ilya Yanok <yanok@emcraft.com>, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[redirecting again to the new i2c mailing list]
+On Wed, Oct 22, 2008 at 9:28 AM, Christian Ehrhardt
+<ehrhardt@linux.vnet.ibm.com> wrote:
+> Hi Ilya,
+> I just tried your patch on my 440 board because it would help us in our
+> environment.
+> Unfortunately I run into a bug on early boot (mark_bootmem).
+>
+> A log can be found in this mail, this is the bug when running with 64k page
+> size.
+> I tried this with and without your 2/2 265k patch and also with page size
+> configured to 16k, the error is the same in all cases.
+>
+> I used an earlier version of your patch in the past and it worked fine.
+> Applying this old patch causes the same problem.
+> Therefore I expect that there was some other code changed that breaks with
+> page size != 4k.
 
-Jochen Friedrich wrote:
-> What needs to be done though is to document this change in
-> Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/i2c.txt.
+This patch seems to solve the problem for me, but I have to run and
+haven't yet worked out if it's the right fix.
 
-How about the below?
+diff --git a/mm/bootmem.c b/mm/bootmem.c
+--- a/mm/bootmem.c
++++ b/mm/bootmem.c
+@@ -300,7 +300,7 @@ static int __init mark_bootmem(unsigned
+                unsigned long max;
 
-I'll wait for David to comment on the property name and for any suggestions
-on the documentation below, then I'll submit a new patch.
+                if (pos < bdata->node_min_pfn ||
+-                   pos >= bdata->node_low_pfn) {
++                   pos > bdata->node_low_pfn) {
+                        BUG_ON(pos != start);
+                        continue;
+                }
+@@ -399,7 +399,7 @@ int __init reserve_bootmem(unsigned long
+        unsigned long start, end;
 
-					-=] Mike [=-
+        start = PFN_DOWN(addr);
+-       end = PFN_UP(addr + size);
++       end = PFN_DOWN(addr + size);
 
---- linux/Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/i2c.txt	11 Oct 2008 02:49:31 -0000	1.1.1.1
-+++ linux/Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/i2c.txt	31 Oct 2008 21:15:06 -0000
-@@ -10,8 +10,12 @@
- - #address-cells : Should be one. The cell is the i2c device address with
-   the r/w bit set to zero.
- - #size-cells : Should be zero.
--- clock-frequency : Can be used to set the i2c clock frequency. If
--  unspecified, a default frequency of 60kHz is being used.
-+- clock-frequency : Can be used to set the desired i2c clock frequency (in Hz).
-+  If unspecified, a default of 60 kHz is being used.  The actual frequency may
-+  be somewhat higher than this value, depending on how the BRG_CLK and dividers
-+  work out.
-+- clock-filter : boolean; if defined, indicates that this controller
-+  should enable the SCL digital filter.
- The following two properties are deprecated. They are only used by legacy
- i2c drivers to find the bus to probe:
- - linux,i2c-index : Can be used to hard code an i2c bus number. By default,
+        return mark_bootmem(start, end, 1, flags);
+ }
+
+Looks like the breakage may have been accidentally introduced by
+Johannes Weiner <hannes@saeurebad.de> on Jul 24 (post 2.6.26).
+
+FWIW, the boards Christian and I are hitting the problem on are
+Sequoias with 256MB of RAM. cuImage is reporting only 0xffff000 bytes
+of RAM though, which may be exacerbating the situation.
+
+-Hollis
