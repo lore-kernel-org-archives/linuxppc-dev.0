@@ -1,14 +1,21 @@
-Return-Path: <mditto@consentry.com>
-Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
-	by ozlabs.org (Postfix) with ESMTP id 98980DDDF6
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 15:13:36 +1100 (EST)
-Message-ID: <490A85EF.5060008@consentry.com>
-Date: Thu, 30 Oct 2008 21:13:35 -0700
-From: Mike Ditto <mditto@consentry.com>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 78F65DDE01
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 16:00:19 +1100 (EST)
+Message-ID: <490A90D9.1080406@garzik.org>
+Date: Fri, 31 Oct 2008 01:00:09 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org, jochen@scram.de
-Subject: [PATCH] i2c-cpm: Add flexibility for I2C clock frequency and filter.
-Content-Type: text/plain; charset=ISO-8859-1
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH 1/2] gianfar: Fix race in TBI/SerDes configuration
+References: <Pine.LNX.4.64.0810301738020.3943@t2.domain.actdsltmp>
+	<1225415827-8167-1-git-send-email-tpiepho@freescale.com>
+In-Reply-To: <1225415827-8167-1-git-send-email-tpiepho@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, Nate Case <ncase@xes-inc.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,155 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds the ability to enable the digital filter in the device
-tree (with the "clock-filter" boolean property) and automates the
-predivider selection according to the clock-frequency and clock-filter
-properties.
+Trent Piepho wrote:
+> The init_phy() function attaches to the PHY, then configures the
+> SerDes<->TBI link (in SGMII mode).  The TBI is on the MDIO bus with the PHY
+> (sort of) and is accessed via the gianfar's MDIO registers, using the
+> functions gfar_local_mdio_read/write(), which don't do any locking.
+> 
+> The previously attached PHY will start a work-queue on a timer, and
+> probably an irq handler as well, which will talk to the PHY and thus use
+> the MDIO bus.  This uses phy_read/write(), which have locking, but not
+> against the gfar_local_mdio versions.
+> 
+> The result is that PHY code will try to use the MDIO bus at the same time
+> as the SerDes setup code, corrupting the transfers.
+> 
+> Setting up the SerDes before attaching to the PHY will insure that there is
+> no race between the SerDes code and *our* PHY, but doesn't fix everything.
+> Typically the PHYs for all gianfar devices are on the same MDIO bus, which
+> is associated with the first gianfar device.  This means that the first
+> gianfar's SerDes code could corrupt the MDIO transfers for a different
+> gianfar's PHY.
+> 
+> The lock used by phy_read/write() is contained in the mii_bus structure,
+> which is pointed to by the PHY.  This is difficult to access from the
+> gianfar drivers, as there is no link between a gianfar device and the
+> mii_bus which shares the same MDIO registers.  As far as the device layer
+> and drivers are concerned they are two unrelated devices (which happen to
+> share registers).
+> 
+> Generally all gianfar devices' PHYs will be on the bus associated with the
+> first gianfar.  But this might not be the case, so simply locking the
+> gianfar's PHY's mii bus might not lock the mii bus that the SerDes setup
+> code is going to use.
+> 
+> We solve this by having the code that creates the gianfar platform device
+> look in the device tree for an mdio device that shares the gianfar's
+> registers.  If one is found the ID of its platform device is saved in the
+> gianfar's platform data.
+> 
+> A new function in the gianfar mii code, gfar_get_miibus(), can use the bus
+> ID to search through the platform devices for a gianfar_mdio device with
+> the right ID.  The platform device's driver data is the mii_bus structure,
+> which the SerDes setup code can use to lock the current bus.
+> 
+> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+> CC: Andy Fleming <afleming@freescale.com>
+> ---
+>  arch/powerpc/sysdev/fsl_soc.c |   26 ++++++++++++++++++++++++++
+>  drivers/net/gianfar.c         |    7 +++++++
+>  drivers/net/gianfar_mii.c     |   21 +++++++++++++++++++++
+>  drivers/net/gianfar_mii.h     |    3 +++
+>  include/linux/fsl_devices.h   |    3 ++-
+>  5 files changed, 59 insertions(+), 1 deletions(-)
 
-Signed-off-by:  Mike Ditto <mditto@consentry.com>
----
-Resending to moved i2c mailing list.
-This patch is against 2.6.27.
-
-To use the full range of I2C clock frequencies supported by the
-Freescale CPM I2C controller, it is necessary to choose an appropriate
-predivider value.  The choice is affected by whether the SCL signal
-digital filter is enabled.
-
-The existing code computes the final divider (i2brg) but always uses
-a predivider of 32.  This can set illegal values in i2brg - for example
-on a machine with 25 MHz BRG_CLK, when selecting I2C clock-frequency
-97656 Hz, the code was loading i2brg with the value 1, which does not
-work (the CPM requires a minimum value of 3 when the digital filter is
-not enabled).  Additionally, the calculation did not work when the
-filter is enabled (and the driver did not provide a way to enable it).
-
-And by the way, thanks to Jochen Friedrich for integrating this driver
-on the very day that I went looking for it.  :-)
-
-Index: linux/drivers/i2c/busses/i2c-cpm.c
-===================================================================
-RCS file: /n/home2/mditto/ws/myrepo/kernel/linux/drivers/i2c/busses/i2c-cpm.c,v
-retrieving revision 1.1.1.1
-diff -u -p -r1.1.1.1 i2c-cpm.c
---- linux/drivers/i2c/busses/i2c-cpm.c	11 Oct 2008 02:53:07 -0000	1.1.1.1
-+++ linux/drivers/i2c/busses/i2c-cpm.c	31 Oct 2008 04:05:41 -0000
-@@ -87,6 +87,11 @@ struct i2c_ram {
- #define I2CER_TXB	0x02
- #define I2CER_RXB	0x01
- #define I2MOD_EN	0x01
-+#define I2MOD_PDIV_32	0x00	/* BRGCLK/32 */
-+#define I2MOD_PDIV_16	0x02	/* BRGCLK/16 */
-+#define I2MOD_PDIV_8	0x04	/* BRGCLK/8 */
-+#define I2MOD_PDIV_4	0x06	/* BRGCLK/4 */
-+#define I2MOD_FLT	0x08
-
- /* I2C Registers */
- struct i2c_reg {
-@@ -111,7 +116,6 @@ struct cpm_i2c {
- 	int version; /* CPM1=1, CPM2=2 */
- 	int irq;
- 	int cp_command;
--	int freq;
- 	struct i2c_reg __iomem *i2c_reg;
- 	struct i2c_ram __iomem *i2c_ram;
- 	u16 i2c_addr;
-@@ -434,7 +438,8 @@ static int __devinit cpm_i2c_setup(struc
- 	void __iomem *i2c_base;
- 	cbd_t __iomem *tbdf;
- 	cbd_t __iomem *rbdf;
--	unsigned char brg;
-+	uint freq, maxfreq, prediv;
-+	unsigned char mod, brg;
-
- 	dev_dbg(&cpm->ofdev->dev, "cpm_i2c_setup()\n");
-
-@@ -508,9 +513,15 @@ static int __devinit cpm_i2c_setup(struc
-
- 	data = of_get_property(ofdev->node, "clock-frequency", &len);
- 	if (data && len == 4)
--		cpm->freq = *data;
-+		freq = *data;
- 	else
--		cpm->freq = 60000; /* use 60kHz i2c clock by default */
-+		freq = 60000;	/* use 60kHz I2C clock by default */
-+
-+	data = of_get_property(ofdev->node, "clock-filter", &len);
-+	if (data && len == 0)
-+		mod = I2MOD_FLT;
-+	else
-+		mod = 0;
-
- 	/*
- 	 * Allocate space for CPM_MAXBD transmit and receive buffer
-@@ -552,8 +563,8 @@ static int __devinit cpm_i2c_setup(struc
-
- 	cpm_reset_i2c_params(cpm);
-
--	dev_dbg(&cpm->ofdev->dev, "i2c_ram 0x%p, i2c_addr 0x%04x, freq %d\n",
--		cpm->i2c_ram, cpm->i2c_addr, cpm->freq);
-+	dev_dbg(&cpm->ofdev->dev, "i2c_ram 0x%p, i2c_addr 0x%04x, freq %u\n",
-+		cpm->i2c_ram, cpm->i2c_addr, freq);
- 	dev_dbg(&cpm->ofdev->dev, "tbase 0x%04x, rbase 0x%04x\n",
- 		(u8 __iomem *)cpm->tbase - DPRAM_BASE,
- 		(u8 __iomem *)cpm->rbase - DPRAM_BASE);
-@@ -566,20 +577,53 @@ static int __devinit cpm_i2c_setup(struc
- 	out_8(&cpm->i2c_reg->i2add, 0x7f << 1);
-
- 	/*
--	 * PDIV is set to 00 in i2mod, so brgclk/32 is used as input to the
--	 * i2c baud rate generator. This is divided by 2 x (DIV + 3) to get
--	 * the actual i2c bus frequency.
-+	 * Compute the clock predivider and final divider to generate something
-+	 * close to the desired I2C clock frequency.  Use the largest predivider
-+	 * possible.  i2brg must be >= 6 when using I2MOD_FLT, otherwise >= 3.
-+	 * So compute the highest frequency that will work with I2MOD_PDIV_32;
-+	 * if that isn't high enough, see if we can use I2MOD_PDIV_16, etc.
-+	 * Then choose a final divider that will generate at least the desired
-+	 * clock frequency.  Note the "at least" -- this rounds upward, not
-+	 * toward the nearest available frequency.
-+	 *
-+	 * I2C frequency for a given predivider and i2brg value is:
-+	 *   i2cfreq = brgfreq / prediv / 2 / (i2brg + 3 + 2 * flt)
-+	 * i2brg value for a given predivider and I2C frequency is:
-+	 *   i2brg = (brgfreq / prediv / 2 / i2cfreq) - 3 - 2 * flt
-+	 * minimum allowed i2brg is (3 + 3 * flt).
-+	 * maximum freq possible for a given predivider is:
-+	 *   maxfreq = brgfreq / prediv / 2 / (3 + 3 + 5 * flt)
- 	 */
--	brg = get_brgfreq() / (32 * 2 * cpm->freq) - 3;
--	out_8(&cpm->i2c_reg->i2brg, brg);
-+	maxfreq = get_brgfreq() / 64 / ((mod & I2MOD_FLT) ? 11 : 6);
-+	if (freq <= maxfreq) {		/* Works with predivider 32? */
-+		mod |= I2MOD_PDIV_32;
-+		prediv = 32;
-+	} else if (freq <= maxfreq*2) {	/* How about 16? */
-+		mod |= I2MOD_PDIV_16;
-+		prediv = 16;
-+	} else if (freq <= maxfreq*4) {	/* How about 8? */
-+		mod |= I2MOD_PDIV_8;
-+		prediv = 8;
-+	} else {			/* 4 is last resort. */
-+		if (freq > maxfreq*8)
-+			/* Impossibly high clock-frequency requested. */
-+			freq = maxfreq*8;
-+		mod |= I2MOD_PDIV_4;
-+		prediv = 4;
-+	}
-+	brg = get_brgfreq() / prediv / 2 / freq - ((mod & I2MOD_FLT) ? 5 : 3);
-
--	out_8(&cpm->i2c_reg->i2mod, 0x00);
-+	out_8(&cpm->i2c_reg->i2brg, brg);
-+	out_8(&cpm->i2c_reg->i2mod, mod);
- 	out_8(&cpm->i2c_reg->i2com, I2COM_MASTER);	/* Master mode */
-
- 	/* Disable interrupts. */
- 	out_8(&cpm->i2c_reg->i2cmr, 0);
- 	out_8(&cpm->i2c_reg->i2cer, 0xff);
-
-+	freq = get_brgfreq() / prediv / 2 / (brg + ((mod & I2MOD_FLT) ? 5 : 3));
-+	dev_dbg(&cpm->ofdev->dev, "i2mod 0x%02x, i2brg %u, actual freq %u\n",
-+		mod, brg, freq);
- 	return 0;
-
- out_muram:
+applied 1-2
