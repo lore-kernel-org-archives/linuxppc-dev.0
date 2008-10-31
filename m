@@ -1,24 +1,13 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3BE80DDE07
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 21:36:54 +1100 (EST)
-Date: Fri, 31 Oct 2008 10:36:46 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: 2.6.28-rc1: NVRAM being corrupted on ppc64 preventing boot
-	(bisected)
-Message-ID: <20081031103646.GA24395@csn.ul.ie>
-References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
-	<20081030142632.GA15645@csn.ul.ie>
-	<18698.7794.500191.189515@cargo.ozlabs.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <18698.7794.500191.189515@cargo.ozlabs.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <18698.58333.886594.707909@cargo.ozlabs.ibm.com>
+Date: Fri, 31 Oct 2008 21:54:21 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,47 +17,148 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 31, 2008 at 07:52:02AM +1100, Paul Mackerras wrote:
-> Mel Gorman writes:
-> 
-> > On some ppc64 machines, NVRAM is being corrupted very early in boot (before
-> > console is initialised). The machine reboots and then fails to find yaboot
-> > printing the error "PReP-BOOT: Unable to load PRep image".  It's nowhere near
-> > as serious as the ftrace+e1000 problem as the machine is not bricked but it's
-> > fairly scary looking, the machine cannot boot and the fix is non-obvious. To
-> > "fix" the machine;
-> > 
-> > 1. Go to OpenFirmware prompt
-> > 2. type dev nvram
-> > 3. type wipe-nvram
-> > 
-> > The machine will reboot, reconstruct the NVRAM using some magic and yaboot
-> > work again allowing an older kernel to be used. I bisected the problem down
-> > to this commit.
-> 
-> Eek!
-> 
-> Which ppc64 machines has this been seen on, and how were they being
-> booted (netboot, yaboot, etc.)?
-> 
+Linus,
 
-Yaboot in my case and I've heard it affected a DVD installation. I don't
-know for sure if it affects netboot but as I think it's something the
-kernel is doing, it probably doesn't matter how it gets loaded?
+Please pull from the 'merge' branch of
 
-> Is it just the Powerstations with their SLOF-based firmware, or is it
-> IBM pSeries machines as well?
-> 
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-To be honest, I haven't been brave enough to try this on a Powerstation yet
-as I only have the one and I don't know if it's a) affected or b) fixable
-with the same workaround. It was an IBM pSeries that was affected in my case
-and a few people have hit the problem on pSeries AFARIK.
+to get a collection of fixes for various regressions, compile failures
+and oops-causing bugs on powerpc, plus some defconfig updates (which
+form the bulk of the lines changed).
 
-It's been pointed out that it can be "fixed" by upgrading the firmware but
-surely we can avoid breaking the machine in the first place?
+The 3 commits from Milton Miller partially revert some changes we did
+since 2.6.27 to the way the kernel is invoked and the way it invokes a
+kexec/kdump kernel, and subsequently decided was a bad idea.  I put
+them in so that we didn't end up having one kernel release with odd
+interface conventions.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+I'm sending this pull request rather than Ben because Ben's wife just
+had a baby and Ben is otherwise occupied. :)
+
+Thanks,
+Paul.
+
+ arch/powerpc/boot/dts/mpc8313erdb.dts            |   39 -------
+ arch/powerpc/boot/libfdt/fdt_ro.c                |    9 +-
+ arch/powerpc/boot/main.c                         |    2=20
+ arch/powerpc/configs/40x/acadia_defconfig        |   59 +++++++---
+ arch/powerpc/configs/40x/ep405_defconfig         |   83 ++++++++++----=
+-
+ arch/powerpc/configs/40x/hcu4_defconfig          |  125 ++++++++++++++=
+++------
+ arch/powerpc/configs/40x/kilauea_defconfig       |   69 ++++++++----
+ arch/powerpc/configs/40x/makalu_defconfig        |   69 ++++++++----
+ arch/powerpc/configs/40x/walnut_defconfig        |   77 ++++++++++----=
+
+ arch/powerpc/configs/44x/arches_defconfig        |   51 ++++++---
+ arch/powerpc/configs/44x/bamboo_defconfig        |   77 ++++++++++----=
+
+ arch/powerpc/configs/44x/canyonlands_defconfig   |   61 +++++++----
+ arch/powerpc/configs/44x/ebony_defconfig         |   77 ++++++++++----=
+
+ arch/powerpc/configs/44x/katmai_defconfig        |   77 ++++++++++----=
+
+ arch/powerpc/configs/44x/rainier_defconfig       |   73 +++++++++----
+ arch/powerpc/configs/44x/sam440ep_defconfig      |  110 ++++++++++++++=
+-----
+ arch/powerpc/configs/44x/sequoia_defconfig       |   78 ++++++++++----=
+
+ arch/powerpc/configs/44x/taishan_defconfig       |   77 ++++++++++----=
+
+ arch/powerpc/configs/44x/warp_defconfig          |   82 ++++++++++----=
+
+ arch/powerpc/configs/linkstation_defconfig       |   11 +-
+ arch/powerpc/configs/ppc40x_defconfig            |  106 ++++++++++++++=
++----
+ arch/powerpc/configs/ppc44x_defconfig            |  125 ++++++++++++++=
++++-----
+ arch/powerpc/include/asm/iommu.h                 |   15 +--
+ arch/powerpc/include/asm/kdump.h                 |    8 -
+ arch/powerpc/include/asm/mpic.h                  |    2=20
+ arch/powerpc/include/asm/pci.h                   |    2=20
+ arch/powerpc/kernel/dma-iommu.c                  |   34 +++---
+ arch/powerpc/kernel/head_64.S                    |   30 +++--
+ arch/powerpc/kernel/ibmebus.c                    |   27 ++---
+ arch/powerpc/kernel/iommu.c                      |   25 ++--
+ arch/powerpc/kernel/machine_kexec_64.c           |    9 --
+ arch/powerpc/kernel/misc_64.S                    |    9 +-
+ arch/powerpc/kernel/of_device.c                  |    1=20
+ arch/powerpc/kernel/pci-common.c                 |  110 ++++++++++----=
+-----
+ arch/powerpc/kernel/pci_64.c                     |    2=20
+ arch/powerpc/kernel/setup_64.c                   |    6 +
+ arch/powerpc/kernel/signal_32.c                  |   36 +++---
+ arch/powerpc/kernel/signal_64.c                  |   33 +++---
+ arch/powerpc/kernel/vio.c                        |   25 ++--
+ arch/powerpc/kernel/vmlinux.lds.S                |    2=20
+ arch/powerpc/oprofile/op_model_cell.c            |   13 ++
+ arch/powerpc/platforms/40x/Kconfig               |    2=20
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c         |    3 -
+ arch/powerpc/platforms/86xx/pic.c                |    3 -
+ arch/powerpc/platforms/cell/iommu.c              |   37 +++----
+ arch/powerpc/platforms/cell/ras.c                |    6 +
+ arch/powerpc/platforms/embedded6xx/linkstation.c |   14 ++
+ arch/powerpc/platforms/iseries/iommu.c           |    7 +
+ arch/powerpc/platforms/ps3/system-bus.c          |   36 +++---
+ arch/powerpc/platforms/pseries/iommu.c           |    4 -
+ arch/powerpc/platforms/pseries/pci_dlpar.c       |    2=20
+ arch/powerpc/sysdev/mpic.c                       |   59 ++++++++++
+ arch/powerpc/xmon/xmon.c                         |    2=20
+ drivers/of/device.c                              |   11 ++
+ 54 files changed, 1392 insertions(+), 720 deletions(-)
+
+Benjamin Herrenschmidt (1):
+      powerpc/pci: Fix unmapping of IO space on 64-bit
+
+Carl Love (1):
+      powerpc/cell/OProfile: Fix on-stack array size in activate spu pr=
+ofiling function
+
+David Gibson (1):
+      powerpc: Fix bug in kernel copy of libfdt's fdt_subnode_offset_na=
+melen()
+
+Guennadi Liakhovetski (1):
+      powerpc: fix i2c on PPC linkstation / kurobox machines
+
+Jeremy Kerr (1):
+      OF-device: Don't overwrite numa_node in device registration
+
+Jon Smirl (1):
+      powerpc: Fix format string warning in arch/powerpc/boot/main.c
+
+Josh Boyer (3):
+      powerpc/40x: Don't enable HCU4 board by default
+      powerpc/40x: Update 40x defconfigs
+      powerpc/44x: Update 44x defconfigs
+
+Kumar Gala (1):
+      powerpc/mpic: Fix regression caused by change of default IRQ affi=
+nity
+
+Mark Nelson (1):
+      powerpc: Update remaining dma_mapping_ops to use map/unmap_page
+
+Michael Neuling (2):
+      powerpc: Fix compiler warning for the relocatable kernel
+      powerpc: Fix swapcontext system for VSX + old ucontext size
+
+Mike Dyer (1):
+      powerpc: Remove duplicate DMA entry from mpc8313erdb device tree
+
+Milton Miller (3):
+      powerpc: Kexec exit should not use magic numbers
+      powerpc: Use is_kdump_kernel()
+      powerpc/ppc64/kdump: Better flag for running relocatable
+
+Nathan Fontenot (1):
+      powerpc/pci: Properly allocate bus resources for hotplug PHBs
+
+Paul Mackerras (2):
+      powerpc: Work around ld bug in older binutils
+      powerpc: Fix compile errors with CONFIG_BUG=3Dn
+
+Rog=E9rio Brito (2):
+      powerpc: compile kernel for linkstations optimized for size
+      powerpc: enable heap randomization for linkstations
