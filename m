@@ -1,8 +1,8 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18698.59327.927555.732608@cargo.ozlabs.ibm.com>
-Date: Fri, 31 Oct 2008 22:10:55 +1100
+Message-ID: <18698.59790.393775.139313@cargo.ozlabs.ibm.com>
+Date: Fri, 31 Oct 2008 22:18:38 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Mel Gorman <mel@csn.ul.ie>
 Subject: Re: 2.6.28-rc1: NVRAM being corrupted on ppc64 preventing boot
@@ -30,28 +30,12 @@ Mel Gorman writes:
 > know for sure if it affects netboot but as I think it's something the
 > kernel is doing, it probably doesn't matter how it gets loaded?
 
-What changed in that commit was the contents of a couple of structures
-that the firmware looks at to see what the kernel wants from
-firmware.  Specifically the change was to say that the kernel (or
-really the zImage wrapper) would like the firmware to be based at the
-32MB point (which is what AIX uses) rather than 12MB (which was the
-default on older machines).
-
-So, as I understand it, it's not anything the kernel is actively
-doing, it's how the firmware is reacting to what the kernel says it
-wants.  And since we are requesting the same value as AIX (as far as I
-know) I'm really surprised it caused problems.
-
-We can revert that commit, but I still need to solve the problem that
-the distros are facing, namely that their installer kernel + initramfs
-images are now bigger than 12MB and can't be loaded if the firmware is
-based at 12MB.  That's why I really want to understand the problem in
-more detail.
-
-> It's been pointed out that it can be "fixed" by upgrading the firmware but
-> surely we can avoid breaking the machine in the first place?
-
-Have you upgraded the firmware on the machine you saw this problem on?
-If not, would you be willing to run some tests for me?
+I do need to know whether it was the vmlinux or the zImage.pseries
+that you were loading with yaboot.  That commit you identified affects
+the contents of an ELF note in the zImage.pseries that firmware looks
+at, as well as a structure in the kernel itself that gets passed as an
+argument to a call to firmware.  If you were loading a vmlinux with
+yaboot when you saw the corruption occur then that narrows things down
+a bit.
 
 Paul.
