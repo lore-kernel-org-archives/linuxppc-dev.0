@@ -1,14 +1,14 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 31 Oct 2008 13:55:22 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH V2] Fix format string warning in arch/powerpc/boot/main.c
-Message-ID: <20081031025522.GA18097@yookeroo.seuss>
-References: <20081031025131.26406.41818.stgit@terra>
+Return-Path: <mditto@consentry.com>
+Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
+	by ozlabs.org (Postfix) with ESMTP id 67685DDE00
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 15:09:33 +1100 (EST)
+Message-ID: <490A84F8.20403@consentry.com>
+Date: Thu, 30 Oct 2008 21:09:28 -0700
+From: Mike Ditto <mditto@consentry.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081031025131.26406.41818.stgit@terra>
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, jochen@scram.de
+Subject: [PATCH] i2c-cpm: Add flexibility for I2C clock frequency and filter.
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,19 +18,154 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 30, 2008 at 10:51:32PM -0400, Jon Smirl wrote:
-> Fix format string warning in arch/powerpc/boot/main.c
-> 
->  BOOTCC  arch/powerpc/boot/main.o
-> arch/powerpc/boot/main.c: In function 'prep_kernel':
-> arch/powerpc/boot/main.c:65: warning: format '%08x' expects type
-> 'unsigned int', but argument 3 has type 'long unsigned int'
-> 
-> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
+This patch adds the ability to enable the digital filter in the device
+tree (with the "clock-filter" boolean property) and automates the
+predivider selection according to the clock-frequency and clock-filter
+properties.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Signed-off-by:  Mike Ditto <mditto@consentry.com>
+---
+This patch is against 2.6.27.
+
+To use the full range of I2C clock frequencies supported by the
+Freescale CPM I2C controller, it is necessary to choose an appropriate
+predivider value.  The choice is affected by whether the SCL signal
+digital filter is enabled.
+
+The existing code computes the final divider (i2brg) but always uses
+a predivider of 32.  This can set illegal values in i2brg - for example
+on a machine with 25 MHz BRG_CLK, when selecting I2C clock-frequency
+97656 Hz, the code was loading i2brg with the value 1, which does not
+work (the CPM requires a minimum value of 3 when the digital filter is
+not enabled).  Additionally, the calculation did not work when the
+filter is enabled (and the driver did not provide a way to enable it).
+
+And by the way, thanks to Jochen Friedrich for integrating this driver
+on the very day that I went looking for it.  :-)
+
+Index: linux/drivers/i2c/busses/i2c-cpm.c
+===================================================================
+RCS file: /n/home2/mditto/ws/myrepo/kernel/linux/drivers/i2c/busses/i2c-cpm.c,v
+retrieving revision 1.1.1.1
+diff -u -p -r1.1.1.1 i2c-cpm.c
+--- linux/drivers/i2c/busses/i2c-cpm.c	11 Oct 2008 02:53:07 -0000	1.1.1.1
++++ linux/drivers/i2c/busses/i2c-cpm.c	31 Oct 2008 04:05:41 -0000
+@@ -87,6 +87,11 @@ struct i2c_ram {
+ #define I2CER_TXB	0x02
+ #define I2CER_RXB	0x01
+ #define I2MOD_EN	0x01
++#define I2MOD_PDIV_32	0x00	/* BRGCLK/32 */
++#define I2MOD_PDIV_16	0x02	/* BRGCLK/16 */
++#define I2MOD_PDIV_8	0x04	/* BRGCLK/8 */
++#define I2MOD_PDIV_4	0x06	/* BRGCLK/4 */
++#define I2MOD_FLT	0x08
+
+ /* I2C Registers */
+ struct i2c_reg {
+@@ -111,7 +116,6 @@ struct cpm_i2c {
+ 	int version; /* CPM1=1, CPM2=2 */
+ 	int irq;
+ 	int cp_command;
+-	int freq;
+ 	struct i2c_reg __iomem *i2c_reg;
+ 	struct i2c_ram __iomem *i2c_ram;
+ 	u16 i2c_addr;
+@@ -434,7 +438,8 @@ static int __devinit cpm_i2c_setup(struc
+ 	void __iomem *i2c_base;
+ 	cbd_t __iomem *tbdf;
+ 	cbd_t __iomem *rbdf;
+-	unsigned char brg;
++	uint freq, maxfreq, prediv;
++	unsigned char mod, brg;
+
+ 	dev_dbg(&cpm->ofdev->dev, "cpm_i2c_setup()\n");
+
+@@ -508,9 +513,15 @@ static int __devinit cpm_i2c_setup(struc
+
+ 	data = of_get_property(ofdev->node, "clock-frequency", &len);
+ 	if (data && len == 4)
+-		cpm->freq = *data;
++		freq = *data;
+ 	else
+-		cpm->freq = 60000; /* use 60kHz i2c clock by default */
++		freq = 60000;	/* use 60kHz I2C clock by default */
++
++	data = of_get_property(ofdev->node, "clock-filter", &len);
++	if (data && len == 0)
++		mod = I2MOD_FLT;
++	else
++		mod = 0;
+
+ 	/*
+ 	 * Allocate space for CPM_MAXBD transmit and receive buffer
+@@ -552,8 +563,8 @@ static int __devinit cpm_i2c_setup(struc
+
+ 	cpm_reset_i2c_params(cpm);
+
+-	dev_dbg(&cpm->ofdev->dev, "i2c_ram 0x%p, i2c_addr 0x%04x, freq %d\n",
+-		cpm->i2c_ram, cpm->i2c_addr, cpm->freq);
++	dev_dbg(&cpm->ofdev->dev, "i2c_ram 0x%p, i2c_addr 0x%04x, freq %u\n",
++		cpm->i2c_ram, cpm->i2c_addr, freq);
+ 	dev_dbg(&cpm->ofdev->dev, "tbase 0x%04x, rbase 0x%04x\n",
+ 		(u8 __iomem *)cpm->tbase - DPRAM_BASE,
+ 		(u8 __iomem *)cpm->rbase - DPRAM_BASE);
+@@ -566,20 +577,53 @@ static int __devinit cpm_i2c_setup(struc
+ 	out_8(&cpm->i2c_reg->i2add, 0x7f << 1);
+
+ 	/*
+-	 * PDIV is set to 00 in i2mod, so brgclk/32 is used as input to the
+-	 * i2c baud rate generator. This is divided by 2 x (DIV + 3) to get
+-	 * the actual i2c bus frequency.
++	 * Compute the clock predivider and final divider to generate something
++	 * close to the desired I2C clock frequency.  Use the largest predivider
++	 * possible.  i2brg must be >= 6 when using I2MOD_FLT, otherwise >= 3.
++	 * So compute the highest frequency that will work with I2MOD_PDIV_32;
++	 * if that isn't high enough, see if we can use I2MOD_PDIV_16, etc.
++	 * Then choose a final divider that will generate at least the desired
++	 * clock frequency.  Note the "at least" -- this rounds upward, not
++	 * toward the nearest available frequency.
++	 *
++	 * I2C frequency for a given predivider and i2brg value is:
++	 *   i2cfreq = brgfreq / prediv / 2 / (i2brg + 3 + 2 * flt)
++	 * i2brg value for a given predivider and I2C frequency is:
++	 *   i2brg = (brgfreq / prediv / 2 / i2cfreq) - 3 - 2 * flt
++	 * minimum allowed i2brg is (3 + 3 * flt).
++	 * maximum freq possible for a given predivider is:
++	 *   maxfreq = brgfreq / prediv / 2 / (3 + 3 + 5 * flt)
+ 	 */
+-	brg = get_brgfreq() / (32 * 2 * cpm->freq) - 3;
+-	out_8(&cpm->i2c_reg->i2brg, brg);
++	maxfreq = get_brgfreq() / 64 / ((mod & I2MOD_FLT) ? 11 : 6);
++	if (freq <= maxfreq) {		/* Works with predivider 32? */
++		mod |= I2MOD_PDIV_32;
++		prediv = 32;
++	} else if (freq <= maxfreq*2) {	/* How about 16? */
++		mod |= I2MOD_PDIV_16;
++		prediv = 16;
++	} else if (freq <= maxfreq*4) {	/* How about 8? */
++		mod |= I2MOD_PDIV_8;
++		prediv = 8;
++	} else {			/* 4 is last resort. */
++		if (freq > maxfreq*8)
++			/* Impossibly high clock-frequency requested. */
++			freq = maxfreq*8;
++		mod |= I2MOD_PDIV_4;
++		prediv = 4;
++	}
++	brg = get_brgfreq() / prediv / 2 / freq - ((mod & I2MOD_FLT) ? 5 : 3);
+
+-	out_8(&cpm->i2c_reg->i2mod, 0x00);
++	out_8(&cpm->i2c_reg->i2brg, brg);
++	out_8(&cpm->i2c_reg->i2mod, mod);
+ 	out_8(&cpm->i2c_reg->i2com, I2COM_MASTER);	/* Master mode */
+
+ 	/* Disable interrupts. */
+ 	out_8(&cpm->i2c_reg->i2cmr, 0);
+ 	out_8(&cpm->i2c_reg->i2cer, 0xff);
+
++	freq = get_brgfreq() / prediv / 2 / (brg + ((mod & I2MOD_FLT) ? 5 : 3));
++	dev_dbg(&cpm->ofdev->dev, "i2mod 0x%02x, i2brg %u, actual freq %u\n",
++		mod, brg, freq);
+ 	return 0;
+
+ out_muram:
