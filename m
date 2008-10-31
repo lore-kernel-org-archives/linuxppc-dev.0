@@ -1,28 +1,19 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 95245DDDFD
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Nov 2008 06:03:21 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m9VJ3G5W019929
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 15:03:16 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	m9VJ3G4J117454
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 15:03:16 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m9VJ37NU032157
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 15:03:08 -0400
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <mditto@consentry.com>
+Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
+	by ozlabs.org (Postfix) with ESMTP id CFE6DDDDEF
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Nov 2008 08:19:48 +1100 (EST)
+Message-ID: <490B7672.3040904@consentry.com>
+Date: Fri, 31 Oct 2008 14:19:46 -0700
+From: Mike Ditto <mditto@consentry.com>
 MIME-Version: 1.0
-Subject: [PATCH] powerpc/44x: declare tlb_44x_index for use in C code
-Message-Id: <59bd162a744af080479f.1225479792@localhost.localdomain>
-Date: Fri, 31 Oct 2008 14:03:12 -0500
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH] i2c-cpm: Add flexibility for I2C clock frequency and
+	filter.
+References: <490A84F8.20403@consentry.com> <490AEEBF.9000707@scram.de>
+In-Reply-To: <490AEEBF.9000707@scram.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,36 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-# HG changeset patch
-# User Hollis Blanchard <hollisb@us.ibm.com>
-# Date 1225479768 18000
-# Node ID 59bd162a744af080479fedffa97d01e26dceee6a
-# Parent  635f3f74befc230d93f79dc3198c509394247ee8
-powerpc/44x: declare tlb_44x_index for use in C code
+Jochen Friedrich wrote:
+> What needs to be done though is to document this change in
+> Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/i2c.txt.
 
-KVM currently ignores the host's round robin TLB eviction selection, instead
-maintaining its own TLB state and its own round robin index. However, by
-participating in the normal 44x TLB selection, we can drop the alternate TLB
-processing in KVM. This results in a significant performance improvement,
-since that processing currently must be done on *every* guest exit.
+How about the below?
 
-Accordingly, KVM needs to be able to access and increment tlb_44x_index.
-(KVM on 440 cannot be a module, so there is no need to export this symbol.)
+I'll wait for David to comment on the property name and for any suggestions
+on the documentation below, then I'll submit a new patch.
 
-Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
 
----
-
-Josh, can I get your ack? I'll submit through the KVM tree as usual.
-
-diff --git a/arch/powerpc/include/asm/mmu-44x.h b/arch/powerpc/include/asm/mmu-44x.h
---- a/arch/powerpc/include/asm/mmu-44x.h
-+++ b/arch/powerpc/include/asm/mmu-44x.h
-@@ -54,6 +54,7 @@
- #ifndef __ASSEMBLY__
- 
- extern unsigned int tlb_44x_hwater;
-+extern unsigned int tlb_44x_index;
- 
- typedef struct {
- 	unsigned long id;
+--- linux/Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/i2c.txt	11 Oct 2008 02:49:31 -0000	1.1.1.1
++++ linux/Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/i2c.txt	31 Oct 2008 21:15:06 -0000
+@@ -10,8 +10,12 @@
+ - #address-cells : Should be one. The cell is the i2c device address with
+   the r/w bit set to zero.
+ - #size-cells : Should be zero.
+-- clock-frequency : Can be used to set the i2c clock frequency. If
+-  unspecified, a default frequency of 60kHz is being used.
++- clock-frequency : Can be used to set the desired i2c clock frequency (in Hz).
++  If unspecified, a default of 60 kHz is being used.  The actual frequency may
++  be somewhat higher than this value, depending on how the BRG_CLK and dividers
++  work out.
++- clock-filter : boolean; if defined, indicates that this controller
++  should enable the SCL digital filter.
+ The following two properties are deprecated. They are only used by legacy
+ i2c drivers to find the bus to probe:
+ - linux,i2c-index : Can be used to hard code an i2c bus number. By default,
