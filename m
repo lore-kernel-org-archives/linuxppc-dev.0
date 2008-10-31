@@ -1,19 +1,19 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C8685DDE01
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 13:04:13 +1100 (EST)
-From: Trent Piepho <tpiepho@freescale.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2] of_gpio: Return GPIO flags from of_get_gpio()
-Date: Thu, 30 Oct 2008 19:03:09 -0700
-Message-Id: <1225418589-8545-1-git-send-email-tpiepho@freescale.com>
-In-Reply-To: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
-References: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Trent Piepho <tpiepho@freescale.com>
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+	by ozlabs.org (Postfix) with ESMTP id 46235DDDDB
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 13:29:07 +1100 (EST)
+Date: Fri, 31 Oct 2008 13:29:06 +1100
+From: Simon Horman <horms@verge.net.au>
+To: Maxim Uvarov <muvarov@gmail.com>
+Subject: Re: [PATCH] kexec memory ranges dynamic allocation
+Message-ID: <20081031022902.GH27118@verge.net.au>
+References: <572af9170810140811v446a6874pd67cb77753a9e32d@mail.gmail.com>
+	<20081015031818.GC27243@verge.net.au>
+	<572af9170810150146p58c599fvabb41338ffd4e033@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <572af9170810150146p58c599fvabb41338ffd4e033@mail.gmail.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,190 +23,249 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The device binding spec for OF GPIOs defines a flags field, but there is
-currently no way to get it.  This patch adds a parameter to of_get_gpio()
-where the flags will be returned if non-NULL.  of_get_gpio() in turn passes
-the parameter to the of_gpio_chip's xlate method, which can extract any
-flags present from the gpio_spec.
+Hi,
 
-The default (and currently only) of_gpio_chip xlate method,
-of_gpio_simple_xlate(), is modified to do this.
+Could someone please comment on the satus of this patch?
 
-Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-Since this patch changes an API, it would be nice to get it into powerpc-next
-soon so that people who have new patches that use this API, like Anton, can
-base off it.
+On Wed, Oct 15, 2008 at 12:46:24PM +0400, Maxim Uvarov wrote:
+> Patch corrected. ( git_kexec_powerpc_v2.patch is attached.)
+> 
+> I tested it on ppc64 pasemi electra board. Both kexec -l and kexec -p works.
+> 
+> Maxim.
+> 
+> 
+> 
+> 2008/10/15 Simon Horman <horms@verge.net.au>
+> 
+> > On Tue, Oct 14, 2008 at 07:11:19PM +0400, Maxim Uvarov wrote:
+> > > Hello all,
+> > >
+> > > As you all know it is not easy to count exact value of memory ranges from
+> > > device tree on powerpc.
+> > > It very depends on how dts file was written. What do you think about
+> > really
+> > > dynamic allocation buffers
+> > > for this buffers?
+> >
+> > Conceptually I have no objections to the change,
+> > though I would like to get some review from ppc people.
+> > (linuxppc-dev@ozlabs.org CCed)
+> >
+> > > Patch is attached.
+> >
+> > This patch doesn't seem to compile for me.
+> >
+> > # powerpc64-unknown-linux-gnu-gcc --version
+> > powerpc64-unknown-linux-gnu-gcc (GCC) 4.1.1
+> > Copyright (C) 2006 Free Software Foundation, Inc.
+> > This is free software; see the source for copying conditions.  There is NO
+> > warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> >
+> > #make
+> > [snip]
+> > kexec/arch/ppc64/kexec-ppc64.c:100: warning: function declaration isn't a
+> > prototype
+> > kexec/arch/ppc64/kexec-ppc64.c: In function 'realloc_memory_ranges':
+> > kexec/arch/ppc64/kexec-ppc64.c:107: warning: passing argument 1 of
+> > 'realloc' makes pointer from integer without a cast
+> > kexec/arch/ppc64/kexec-ppc64.c:107: error: too few arguments to function
+> > 'realloc'
+> > kexec/arch/ppc64/kexec-ppc64.c:102: warning: unused variable 'tmp'
+> >
+> > --
+> > Simon Horman
+> >  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
+> >  H: www.vergenet.net/~horms/ <http://www.vergenet.net/%7Ehorms/>
+> >   W: www.valinux.co.jp/en
+> >
+> >
+> 
+> 
+> -- 
+> Best regards,
+> Maxim Uvarov
 
- drivers/mtd/nand/fsl_upm.c              |    2 +-
- drivers/net/fs_enet/fs_enet-main.c      |    2 +-
- drivers/net/phy/mdio-ofgpio.c           |    4 ++--
- drivers/of/gpio.c                       |   13 ++++++++++---
- drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
- include/linux/of_gpio.h                 |   21 +++++++++++++++++----
- 6 files changed, 32 insertions(+), 12 deletions(-)
+> diff --git a/kexec/arch/ppc64/kexec-ppc64.c b/kexec/arch/ppc64/kexec-ppc64.c
+> index 069a9fc..0ad40fa 100644
+> --- a/kexec/arch/ppc64/kexec-ppc64.c
+> +++ b/kexec/arch/ppc64/kexec-ppc64.c
+> @@ -96,96 +96,46 @@ err1:
+>  
+>  }
+>  
+> -static int count_dyn_reconf_memory_ranges(void)
+> +static int realloc_memory_ranges()
+>  {
+> -	char device_tree[] = "/proc/device-tree/";
+> -	char fname[128];
+> -	char buf[32];
+> -	FILE *file;
+> -
+> -	strcpy(fname, device_tree);
+> -	strcat(fname, "ibm,dynamic-reconfiguration-memory/ibm,lmb-size");
+> -	if ((file = fopen(fname, "r")) == NULL) {
+> -		perror(fname);
+> -		return -1;
+> -	}
+> +	size_t memory_range_len;
+>  
+> -	if (fread(buf, 1, 8, file) < 0) {
+> -		perror(fname);
+> -		fclose(file);
+> -		return -1;
+> -	}
+> -
+> -	lmb_size = ((uint64_t *)buf)[0];
+> -	fclose(file);
+> +	max_memory_ranges++;
+> +	memory_range_len = sizeof(struct memory_range) * max_memory_ranges;
+>  
+> -	/* Get number of lmbs from ibm,dynamic-memory */
+> -	strcpy(fname, device_tree);
+> -	strcat(fname, "ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory");
+> -	if ((file = fopen(fname, "r")) == NULL) {
+> -		perror(fname);
+> -		return -1;
+> -	}
+> -	/*
+> -	 * first 4 bytes provide number of entries(lmbs)
+> -	 */
+> -	if (fread(buf, 1, 4, file) < 0) {
+> -		perror(fname);
+> -		fclose(file);
+> -		return -1;
+> -	}
+> -	num_of_lmbs = ((unsigned int *)buf)[0];
+> -	max_memory_ranges += num_of_lmbs;
+> -	fclose(file);
+> +	memory_range = (struct memory_range *) realloc(memory_range, memory_range_len);
+> +	if (!memory_range)
+> +		goto err;
+>  
+> -	return 0;
+> -}
+> +	base_memory_range = (struct memory_range *) realloc(memory_range, memory_range_len);
+> +	if (!base_memory_range)
+> +		goto err;
+>  
+> -/*
+> - * Count the memory nodes under /proc/device-tree and populate the
+> - * max_memory_ranges variable. This variable replaces MAX_MEMORY_RANGES
+> - * macro used earlier.
+> - */
+> -static int count_memory_ranges(void)
+> -{
+> -	char device_tree[256] = "/proc/device-tree/";
+> -	struct dirent *dentry;
+> -	DIR *dir;
+> +	exclude_range = (struct memory_range *) realloc(exclude_range, memory_range_len);
+> +	if (!exclude_range)
+> +		goto err;
+>  
+> -	if ((dir = opendir(device_tree)) == NULL) {
+> -		perror(device_tree);
+> -		return -1;
+> -	}
+> +	usablemem_rgns.ranges = (struct memory_range *)
+> +				realloc(usablemem_rgns.ranges, memory_range_len);
+> +	if (!(usablemem_rgns.ranges))
+> +		goto err;
+>  
+> -	while ((dentry = readdir(dir)) != NULL) {
+> -		if (!strncmp(dentry->d_name,
+> -				"ibm,dynamic-reconfiguration-memory", 35)){
+> -			if (count_dyn_reconf_memory_ranges() != 0)
+> -				return -1;
+> -			continue;
+> -		}
+> +	return 0;
+>  
+> -		if (strncmp(dentry->d_name, "memory@", 7) &&
+> -			strcmp(dentry->d_name, "memory") &&
+> -			strncmp(dentry->d_name, "pci@", 4))
+> -			continue;
+> -		max_memory_ranges++;
+> -	}
+> -	/* need to add extra region for retained initrd */
+> -	if (reuse_initrd) {
+> -		max_memory_ranges++;
+> -	}
+> +err:
+> +	fprintf(stderr, "memory range structure re-allocation failure\n");
+> +	return -1;
+> +}
+>  
+> -	closedir(dir);
+>  
+> -	return 0;
+> -}
+>  static void add_base_memory_range(uint64_t start, uint64_t end)
+>  {
+>  	base_memory_range[nr_memory_ranges].start = start;
+>  	base_memory_range[nr_memory_ranges].end  = end;
+>  	base_memory_range[nr_memory_ranges].type = RANGE_RAM;
+>  	nr_memory_ranges++;
+> +	if (nr_memory_ranges >= max_memory_ranges) 
+> +		realloc_memory_ranges(); 
+>  
+>  	dbgprintf("%016llx-%016llx : %x\n",
+>  		base_memory_range[nr_memory_ranges-1].start,
+> @@ -300,8 +250,8 @@ static int get_base_ranges(void)
+>  				return -1;
+>  			}
+>  			if (nr_memory_ranges >= max_memory_ranges) {
+> -				fclose(file);
+> -				break;
+> +				if (realloc_memory_ranges() < 0)
+> +					break;
+>  			}
+>  			start = ((uint64_t *)buf)[0];
+>  			end = start + ((uint64_t *)buf)[1];
+> @@ -396,6 +346,8 @@ static int get_devtree_details(unsigned long kexec_flags)
+>  			exclude_range[i].start = 0x0UL;
+>  			exclude_range[i].end = kernel_end;
+>  			i++;
+> +			if (i >= max_memory_ranges)
+> +				realloc_memory_ranges();
+>  
+>  			if (kexec_flags & KEXEC_ON_CRASH) {
+>  				memset(fname, 0, sizeof(fname));
+> @@ -470,6 +422,8 @@ static int get_devtree_details(unsigned long kexec_flags)
+>  			exclude_range[i].start = htab_base;
+>  			exclude_range[i].end = htab_base + htab_size;
+>  			i++;
+> +			if (i >= max_memory_ranges)
+> +				realloc_memory_ranges();
+>  
+>  			/* reserve the initrd_start and end locations. */
+>  			if (reuse_initrd) {
+> @@ -545,6 +499,8 @@ static int get_devtree_details(unsigned long kexec_flags)
+>  			exclude_range[i].start = rtas_base;
+>  			exclude_range[i].end = rtas_base + rtas_size;
+>  			i++;
+> +			if (i >= max_memory_ranges)
+> +				realloc_memory_ranges();
+>  			if (kexec_flags & KEXEC_ON_CRASH)
+>  				add_usable_mem_rgns(rtas_base, rtas_size);
+>  		} /* rtas */
+> @@ -740,9 +696,10 @@ out:
+>  /* Return a list of valid memory ranges */
+>  int get_memory_ranges(struct memory_range **range, int *ranges,
+>  			unsigned long kexec_flags)
+> -{
+> -	if (count_memory_ranges())
+> -		return -1;
+> +{	
+> +        /* allocate memory_range dynamically */
+> +        max_memory_ranges = 1;
+> +
+>  	if (alloc_memory_ranges())
+>  		return -1;
+>  	if (setup_memory_ranges(kexec_flags))
 
-diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
-index 024e3ff..a25d962 100644
---- a/drivers/mtd/nand/fsl_upm.c
-+++ b/drivers/mtd/nand/fsl_upm.c
-@@ -218,7 +218,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
- 	}
- 	fun->upm_cmd_offset = *prop;
- 
--	fun->rnb_gpio = of_get_gpio(ofdev->node, 0);
-+	fun->rnb_gpio = of_get_gpio(ofdev->node, 0, NULL);
- 	if (fun->rnb_gpio >= 0) {
- 		ret = gpio_request(fun->rnb_gpio, ofdev->dev.bus_id);
- 		if (ret) {
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index cb51c1f..5a3c7ee 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -994,7 +994,7 @@ static int __devinit find_phy(struct device_node *np,
- 		goto out_put_phy;
- 	}
- 
--	bus_id = of_get_gpio(mdionode, 0);
-+	bus_id = of_get_gpio(mdionode, 0, NULL);
- 	if (bus_id < 0) {
- 		struct resource res;
- 		ret = of_address_to_resource(mdionode, 0, &res);
-diff --git a/drivers/net/phy/mdio-ofgpio.c b/drivers/net/phy/mdio-ofgpio.c
-index 2ff9775..e3757c6 100644
---- a/drivers/net/phy/mdio-ofgpio.c
-+++ b/drivers/net/phy/mdio-ofgpio.c
-@@ -78,8 +78,8 @@ static int __devinit mdio_ofgpio_bitbang_init(struct mii_bus *bus,
- {
- 	struct mdio_gpio_info *bitbang = bus->priv;
- 
--	bitbang->mdc = of_get_gpio(np, 0);
--	bitbang->mdio = of_get_gpio(np, 1);
-+	bitbang->mdc = of_get_gpio(np, 0, NULL);
-+	bitbang->mdio = of_get_gpio(np, 1, NULL);
- 
- 	if (bitbang->mdc < 0 || bitbang->mdio < 0)
- 		return -ENODEV;
-diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
-index 7cd7301..ae14215 100644
---- a/drivers/of/gpio.c
-+++ b/drivers/of/gpio.c
-@@ -22,11 +22,12 @@
-  * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
-  * @np:		device node to get GPIO from
-  * @index:	index of the GPIO
-+ * @flags:	GPIO's flags are returned here if non-NULL
-  *
-  * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
-  * value on the error condition.
-  */
--int of_get_gpio(struct device_node *np, int index)
-+int of_get_gpio(struct device_node *np, int index, enum of_gpio_flags *flags)
- {
- 	int ret;
- 	struct device_node *gc;
-@@ -59,7 +60,9 @@ int of_get_gpio(struct device_node *np, int index)
- 		goto err1;
- 	}
- 
--	ret = of_gc->xlate(of_gc, np, gpio_spec);
-+	if (flags)
-+		*flags = 0;
-+	ret = of_gc->xlate(of_gc, np, gpio_spec, flags);
- 	if (ret < 0)
- 		goto err1;
- 
-@@ -77,19 +80,23 @@ EXPORT_SYMBOL(of_get_gpio);
-  * @of_gc:	pointer to the of_gpio_chip structure
-  * @np:		device node of the GPIO chip
-  * @gpio_spec:	gpio specifier as found in the device tree
-+ * @flags:	if non-NULL flags are returned here
-  *
-  * This is simple translation function, suitable for the most 1:1 mapped
-  * gpio chips. This function performs only one sanity check: whether gpio
-  * is less than ngpios (that is specified in the gpio_chip).
-  */
- int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
--			 const void *gpio_spec)
-+			 const void *gpio_spec, enum of_gpio_flags *flags)
- {
- 	const u32 *gpio = gpio_spec;
- 
- 	if (*gpio > of_gc->gc.ngpio)
- 		return -EINVAL;
- 
-+	if (flags && of_gc->gpio_cells > 1)
-+		*flags = gpio[1];
-+
- 	return *gpio;
- }
- EXPORT_SYMBOL(of_gpio_simple_xlate);
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index bde4b4b..7835cd4 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -1094,7 +1094,7 @@ static int cpm_uart_init_port(struct device_node *np,
- 	}
- 
- 	for (i = 0; i < NUM_GPIOS; i++)
--		pinfo->gpios[i] = of_get_gpio(np, i);
-+		pinfo->gpios[i] = of_get_gpio(np, i, NULL);
- 
- 	return cpm_uart_request_port(&pinfo->port);
- 
-diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
-index 67db101..d611746 100644
---- a/include/linux/of_gpio.h
-+++ b/include/linux/of_gpio.h
-@@ -20,13 +20,23 @@
- #ifdef CONFIG_OF_GPIO
- 
- /*
-+ * Flags as returned by OF GPIO chip's xlate method.
-+ * The GPIO specifier in the OF device tree does not need to use this
-+ * same format for its flags, but it's convenient if it does.  For
-+ * example, the of_mm_gpio_chip driver works this way.
-+ */
-+enum of_gpio_flags {
-+	OF_GPIO_ACTIVE_LOW = 1,
-+};
-+
-+/*
-  * Generic OF GPIO chip
-  */
- struct of_gpio_chip {
- 	struct gpio_chip gc;
- 	int gpio_cells;
- 	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
--		     const void *gpio_spec);
-+		     const void *gpio_spec, enum of_gpio_flags *flags);
- };
- 
- static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
-@@ -50,16 +60,19 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
- 	return container_of(of_gc, struct of_mm_gpio_chip, of_gc);
- }
- 
--extern int of_get_gpio(struct device_node *np, int index);
-+extern int of_get_gpio(struct device_node *np, int index,
-+		       enum of_gpio_flags *flags);
- extern int of_mm_gpiochip_add(struct device_node *np,
- 			      struct of_mm_gpio_chip *mm_gc);
- extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
- 				struct device_node *np,
--				const void *gpio_spec);
-+				const void *gpio_spec,
-+				enum of_gpio_flags *flags);
- #else
- 
- /* Drivers may not strictly depend on the GPIO support, so let them link. */
--static inline int of_get_gpio(struct device_node *np, int index)
-+static inline int of_get_gpio(struct device_node *np, int index,
-+			      enum of_gpio_flags *flags)
- {
- 	return -ENOSYS;
- }
+
 -- 
-1.5.4.3
+Simon Horman
+  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
+  H: www.vergenet.net/~horms/             W: www.valinux.co.jp/en
