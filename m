@@ -1,9 +1,9 @@
 Return-Path: <mditto@consentry.com>
 Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
-	by ozlabs.org (Postfix) with ESMTP id CFE6DDDDEF
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Nov 2008 08:19:48 +1100 (EST)
-Message-ID: <490B7672.3040904@consentry.com>
-Date: Fri, 31 Oct 2008 14:19:46 -0700
+	by ozlabs.org (Postfix) with ESMTP id 4D8A7DDDEF
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Nov 2008 08:22:36 +1100 (EST)
+Message-ID: <490B771B.2080901@consentry.com>
+Date: Fri, 31 Oct 2008 14:22:35 -0700
 From: Mike Ditto <mditto@consentry.com>
 MIME-Version: 1.0
 To: Jochen Friedrich <jochen@scram.de>
@@ -12,7 +12,7 @@ Subject: Re: [PATCH] i2c-cpm: Add flexibility for I2C clock frequency and
 References: <490A84F8.20403@consentry.com> <490AEEBF.9000707@scram.de>
 In-Reply-To: <490AEEBF.9000707@scram.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
 	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,6 +23,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+[redirecting again to the new i2c mailing list]
+
 Jochen Friedrich wrote:
 > What needs to be done though is to document this change in
 > Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/i2c.txt.
@@ -32,6 +34,7 @@ How about the below?
 I'll wait for David to comment on the property name and for any suggestions
 on the documentation below, then I'll submit a new patch.
 
+					-=] Mike [=-
 
 --- linux/Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/i2c.txt	11 Oct 2008 02:49:31 -0000	1.1.1.1
 +++ linux/Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/i2c.txt	31 Oct 2008 21:15:06 -0000
