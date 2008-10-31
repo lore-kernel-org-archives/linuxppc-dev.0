@@ -1,18 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 31 Oct 2008 10:24:52 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/3] powerpc: Add mmc-spi-slot bindings
-Message-ID: <20081030232452.GA15089@yookeroo.seuss>
-References: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
-	<20081030195630.GA13640@oksana.dev.rtsoft.ru>
-	<fa686aa40810301337p21ac8785gb74b12904bbd08e7@mail.gmail.com>
-	<20081030230253.GA11765@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081030230253.GA11765@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, Pierre Ossman <drzeus-mmc@drzeus.cx>
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C8685DDE01
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 13:04:13 +1100 (EST)
+From: Trent Piepho <tpiepho@freescale.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] of_gpio: Return GPIO flags from of_get_gpio()
+Date: Thu, 30 Oct 2008 19:03:09 -0700
+Message-Id: <1225418589-8545-1-git-send-email-tpiepho@freescale.com>
+In-Reply-To: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
+References: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, Trent Piepho <tpiepho@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,66 +23,190 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 31, 2008 at 02:02:53AM +0300, Anton Vorontsov wrote:
-> On Thu, Oct 30, 2008 at 02:37:31PM -0600, Grant Likely wrote:
-> [...]
-> > > +- gpios : (optional) may specify GPIOs in this order: Card-Detect GPIO,
-> > > +  Write-Protect GPIO.
-> > 
-> > I wonder if we're following the example of irq mappings too closely
-> > for the gpios property.  I like the layout of the property
-> > (<controller> <specifier>), but I think the 'gpios' name is getting
-> > too overloaded.  In this case a single property 'gpios' is being used
-> > to encode 2 unrelated bits of information; the write protect pin and
-> > the card detect pins.
-> > 
-> > In this particular case I think it is better to use 2 properties in
-> > this case; something like 'spi-writeprotect-gpio' and
-> > 'spi-carddetect-gpio' using the same specifier format.  Doing so adds
-> > a bit more clarity to the purpose of the properties.
-> > 
-> > I my mind I differentiate this from other examples (for instance a
-> > series of CS pins) based on how closely related the pin functions are.
-> >  So I would say for the following examples...
-> > 1) GPIO data bus (SPI, MDIO and I2C are great examples); all pins must
-> > be present - single gpio property
-> > 2) This MMC case (pins are optional and unrelated); separate gpio properties
-> > 3) LCD with backlight and contrast control pins; one gpio property for
-> > backlight pins, one for constrast pins.
-> > 
-> > Thoughts?
-> 
-> It's pretty trivial to implement (of_get_named_gpio() -- could be just
-> factored out of of_get_gpio()).
-> 
-> Though,
-> 
-> 1. The idea is quite extreme. It needs discussion, and furthermore,
->    we need to define when do we use gpios = <> and when something-gpio =
->    <>; We need to be consistent, and to be consistent, the rules should
->    be clear and written.
-> 
-> 2. We should think about it very very carefully. Do we want to lose the
->    track of gpios? For example, there are quite defined rules when (and
->    in what properties) you may encounter memory addresses, when and
->    where you can encounter interrupt specifiers. We do the same for
->    gpios, and so far it works great. We need to think about any possible
->    drawbacks of the scheme you purpose (we would never know where to
->    expect gpios - it isn't a problem per se, but maybe it could lead
->    to some problem in future? I don't know.)
-> 
-> Quite honestly I don't like the idea... maybe I just used to
-> interrupts = <>, reg = <>, ranges = <>, interrupt-map = <> and so
-> forth, and now my subconsciousness tells me "it's wrong to do
-> something-interrupt = <> stuff." ;-)
+The device binding spec for OF GPIOs defines a flags field, but there is
+currently no way to get it.  This patch adds a parameter to of_get_gpio()
+where the flags will be returned if non-NULL.  of_get_gpio() in turn passes
+the parameter to the of_gpio_chip's xlate method, which can extract any
+flags present from the gpio_spec.
 
-Fwiw, I agree.  The current scheme works, adding new places to look
-for gpio specifiers will just complexify things.  Long lists of gpios
-may be somewhat awkward to work with, but I don't think it's
-sufficiently bad to warrant another scheme.
+The default (and currently only) of_gpio_chip xlate method,
+of_gpio_simple_xlate(), is modified to do this.
 
+Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+Since this patch changes an API, it would be nice to get it into powerpc-next
+soon so that people who have new patches that use this API, like Anton, can
+base off it.
+
+ drivers/mtd/nand/fsl_upm.c              |    2 +-
+ drivers/net/fs_enet/fs_enet-main.c      |    2 +-
+ drivers/net/phy/mdio-ofgpio.c           |    4 ++--
+ drivers/of/gpio.c                       |   13 ++++++++++---
+ drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+ include/linux/of_gpio.h                 |   21 +++++++++++++++++----
+ 6 files changed, 32 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
+index 024e3ff..a25d962 100644
+--- a/drivers/mtd/nand/fsl_upm.c
++++ b/drivers/mtd/nand/fsl_upm.c
+@@ -218,7 +218,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 	}
+ 	fun->upm_cmd_offset = *prop;
+ 
+-	fun->rnb_gpio = of_get_gpio(ofdev->node, 0);
++	fun->rnb_gpio = of_get_gpio(ofdev->node, 0, NULL);
+ 	if (fun->rnb_gpio >= 0) {
+ 		ret = gpio_request(fun->rnb_gpio, ofdev->dev.bus_id);
+ 		if (ret) {
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index cb51c1f..5a3c7ee 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -994,7 +994,7 @@ static int __devinit find_phy(struct device_node *np,
+ 		goto out_put_phy;
+ 	}
+ 
+-	bus_id = of_get_gpio(mdionode, 0);
++	bus_id = of_get_gpio(mdionode, 0, NULL);
+ 	if (bus_id < 0) {
+ 		struct resource res;
+ 		ret = of_address_to_resource(mdionode, 0, &res);
+diff --git a/drivers/net/phy/mdio-ofgpio.c b/drivers/net/phy/mdio-ofgpio.c
+index 2ff9775..e3757c6 100644
+--- a/drivers/net/phy/mdio-ofgpio.c
++++ b/drivers/net/phy/mdio-ofgpio.c
+@@ -78,8 +78,8 @@ static int __devinit mdio_ofgpio_bitbang_init(struct mii_bus *bus,
+ {
+ 	struct mdio_gpio_info *bitbang = bus->priv;
+ 
+-	bitbang->mdc = of_get_gpio(np, 0);
+-	bitbang->mdio = of_get_gpio(np, 1);
++	bitbang->mdc = of_get_gpio(np, 0, NULL);
++	bitbang->mdio = of_get_gpio(np, 1, NULL);
+ 
+ 	if (bitbang->mdc < 0 || bitbang->mdio < 0)
+ 		return -ENODEV;
+diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
+index 7cd7301..ae14215 100644
+--- a/drivers/of/gpio.c
++++ b/drivers/of/gpio.c
+@@ -22,11 +22,12 @@
+  * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
+  * @np:		device node to get GPIO from
+  * @index:	index of the GPIO
++ * @flags:	GPIO's flags are returned here if non-NULL
+  *
+  * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
+  * value on the error condition.
+  */
+-int of_get_gpio(struct device_node *np, int index)
++int of_get_gpio(struct device_node *np, int index, enum of_gpio_flags *flags)
+ {
+ 	int ret;
+ 	struct device_node *gc;
+@@ -59,7 +60,9 @@ int of_get_gpio(struct device_node *np, int index)
+ 		goto err1;
+ 	}
+ 
+-	ret = of_gc->xlate(of_gc, np, gpio_spec);
++	if (flags)
++		*flags = 0;
++	ret = of_gc->xlate(of_gc, np, gpio_spec, flags);
+ 	if (ret < 0)
+ 		goto err1;
+ 
+@@ -77,19 +80,23 @@ EXPORT_SYMBOL(of_get_gpio);
+  * @of_gc:	pointer to the of_gpio_chip structure
+  * @np:		device node of the GPIO chip
+  * @gpio_spec:	gpio specifier as found in the device tree
++ * @flags:	if non-NULL flags are returned here
+  *
+  * This is simple translation function, suitable for the most 1:1 mapped
+  * gpio chips. This function performs only one sanity check: whether gpio
+  * is less than ngpios (that is specified in the gpio_chip).
+  */
+ int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
+-			 const void *gpio_spec)
++			 const void *gpio_spec, enum of_gpio_flags *flags)
+ {
+ 	const u32 *gpio = gpio_spec;
+ 
+ 	if (*gpio > of_gc->gc.ngpio)
+ 		return -EINVAL;
+ 
++	if (flags && of_gc->gpio_cells > 1)
++		*flags = gpio[1];
++
+ 	return *gpio;
+ }
+ EXPORT_SYMBOL(of_gpio_simple_xlate);
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index bde4b4b..7835cd4 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -1094,7 +1094,7 @@ static int cpm_uart_init_port(struct device_node *np,
+ 	}
+ 
+ 	for (i = 0; i < NUM_GPIOS; i++)
+-		pinfo->gpios[i] = of_get_gpio(np, i);
++		pinfo->gpios[i] = of_get_gpio(np, i, NULL);
+ 
+ 	return cpm_uart_request_port(&pinfo->port);
+ 
+diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
+index 67db101..d611746 100644
+--- a/include/linux/of_gpio.h
++++ b/include/linux/of_gpio.h
+@@ -20,13 +20,23 @@
+ #ifdef CONFIG_OF_GPIO
+ 
+ /*
++ * Flags as returned by OF GPIO chip's xlate method.
++ * The GPIO specifier in the OF device tree does not need to use this
++ * same format for its flags, but it's convenient if it does.  For
++ * example, the of_mm_gpio_chip driver works this way.
++ */
++enum of_gpio_flags {
++	OF_GPIO_ACTIVE_LOW = 1,
++};
++
++/*
+  * Generic OF GPIO chip
+  */
+ struct of_gpio_chip {
+ 	struct gpio_chip gc;
+ 	int gpio_cells;
+ 	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
+-		     const void *gpio_spec);
++		     const void *gpio_spec, enum of_gpio_flags *flags);
+ };
+ 
+ static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
+@@ -50,16 +60,19 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
+ 	return container_of(of_gc, struct of_mm_gpio_chip, of_gc);
+ }
+ 
+-extern int of_get_gpio(struct device_node *np, int index);
++extern int of_get_gpio(struct device_node *np, int index,
++		       enum of_gpio_flags *flags);
+ extern int of_mm_gpiochip_add(struct device_node *np,
+ 			      struct of_mm_gpio_chip *mm_gc);
+ extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
+ 				struct device_node *np,
+-				const void *gpio_spec);
++				const void *gpio_spec,
++				enum of_gpio_flags *flags);
+ #else
+ 
+ /* Drivers may not strictly depend on the GPIO support, so let them link. */
+-static inline int of_get_gpio(struct device_node *np, int index)
++static inline int of_get_gpio(struct device_node *np, int index,
++			      enum of_gpio_flags *flags)
+ {
+ 	return -ENOSYS;
+ }
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.5.4.3
