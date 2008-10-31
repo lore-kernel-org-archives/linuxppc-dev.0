@@ -1,22 +1,18 @@
-Return-Path: <robert.richter@amd.com>
-Date: Fri, 31 Oct 2008 16:14:13 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Carl Love <cel@us.ibm.com>
-Subject: Re: [UPDATED PATCH VER2] Cell OProfile: Incorrect local array size
-	in activate spu profiling function
-Message-ID: <20081031151413.GE9785@erda.amd.com>
-References: <1224874049.20229.5.camel@carll-linux-desktop>
-	<1224909595.16090.5.camel@localhost>
-	<1225207079.20229.32.camel@carll-linux-desktop>
-	<1225241514.7799.2.camel@localhost>
-	<1225292805.20229.52.camel@carll-linux-desktop>
+Return-Path: <Sergej.Stepanov@ids.de>
+Received: from ares.ids.de (ares.ids.de [213.144.29.131])
+	by ozlabs.org (Postfix) with SMTP id 5B0AADDF43
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Nov 2008 02:16:55 +1100 (EST)
+From: "Stepanov, Sergej" <Sergej.Stepanov@ids.de>
+To: "avorontsov@ru.mvista.com" <avorontsov@ru.mvista.com>
+Date: Fri, 31 Oct 2008 16:16:51 +0100
+Subject: AW: mmc_spi with GPIO_MODE_3
+Message-ID: <4206182445660643B9AEB8D4E55BBD0A17724C80@HERMES2>
+References: <4206182445660643B9AEB8D4E55BBD0A17724C7E@HERMES2>,
+	<20081031134542.GA4875@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081031134542.GA4875@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1225292805.20229.52.camel@carll-linux-desktop>
-Cc: acjohnso <acjohnso@us.ibm.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-	Hannsj_uhl <Hannsj_uhl@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	oprofile-list@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
-	cel@linux.vnet.ibm.com, cbe-oss-dev@ozlabs.org
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +22,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 29.10.08 08:06:45, Carl Love wrote:
-> Updated the patch to address comments by Michael Ellerman.  
-> Specifically, changed upper limit in for loop to 
-> ARRAY_SIZE() macro and added a check to make sure the 
-> number of events specified by the user, which is used as
-> the max for indexing various arrays, is no bigger then the
-> declared size of the arrays.
-> 
-> The size of the pm_signal_local array should be equal to the
-> number of SPUs being configured in the array.  Currently, the
-> array is of size 4 (NR_PHYS_CTRS) but being indexed by a for 
-> loop from 0 to 7 (NUM_SPUS_PER_NODE).  
-> 
-> Signed-off-by: Carl Love <carll@us.ibm.com>
+Thanks for answer
 
-I applied your patch to oprofile/oprofile-for-tip. Thanks Carl.
+somewhere i have seen:
+"For a while it seemed like MMC cards worked OK but not SD cards!"
 
--Robert
+Hm...
+I have a SD card: Transcend, 512Mb... may it be the problem?..
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+Sergej.
+________________________________________
+Von: Anton Vorontsov [avorontsov@ru.mvista.com]
+Gesendet: Freitag, 31. Oktober 2008 14:45
+An: Stepanov, Sergej
+Cc: linuxppc-dev@ozlabs.org
+Betreff: Re: mmc_spi with GPIO_MODE_3
+
+On Fri, Oct 31, 2008 at 01:49:31PM +0100, Stepanov, Sergej wrote:
+> Hello Anton,
+>
+> could you say me please, would the mmc_spi-driver function with GPIO_MODE=
+_3?
+
+You mean SPI_MODE_3? Well, it should work, or even better it shouldn't
+matter if it is 3 or 0. See Pierre's answer:
+http://www.mail-archive.com/spi-devel-general@lists.sourceforge.net/msg0016=
+0.html
+
+But in reality MODE_0 works better.
+
+http://www.mail-archive.com/spi-devel-general@lists.sourceforge.net/msg0015=
+5.html
+http://www.mail-archive.com/spi-devel-general@lists.sourceforge.net/msg0023=
+1.html
+
+IIRC nobody knows why exactly this happens, or better, nobody bothered
+to investigate, since MODE_0 works OK. ;-)
+
+> I have seen in mmc_spi_probe() this spi->mode =3D SPI_MODE_0.
+> What should come back if i have CI and CP other then in SPI_MODE_0?
+
+Something like this I suppose:
+
+http://www.mail-archive.com/spi-devel-general@lists.sourceforge.net/msg0015=
+3.html
+
+--
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
