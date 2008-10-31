@@ -1,12 +1,20 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id B4CF3DDE04
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Oct 2008 22:11:51 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/4xx: Add GPIO, SPI and MMC suport to the Arches
-Date: Fri, 31 Oct 2008 12:11:46 +0100
-Message-Id: <1225451506-24727-1-git-send-email-sr@denx.de>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18698.59327.927555.732608@cargo.ozlabs.ibm.com>
+Date: Fri, 31 Oct 2008 22:10:55 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: 2.6.28-rc1: NVRAM being corrupted on ppc64 preventing boot
+	(bisected)
+In-Reply-To: <20081031103646.GA24395@csn.ul.ie>
+References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
+	<20081030142632.GA15645@csn.ul.ie>
+	<18698.7794.500191.189515@cargo.ozlabs.ibm.com>
+	<20081031103646.GA24395@csn.ul.ie>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,56 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds GPIO, SPI & MMC (for onboard uSD) support to the
-Arches dts
+Mel Gorman writes:
 
-Signed-off-by: Stefan Roese <sr@denx.de>
----
- arch/powerpc/boot/dts/arches.dts |   32 ++++++++++++++++++++++++++++++++
- 1 files changed, 32 insertions(+), 0 deletions(-)
+> Yaboot in my case and I've heard it affected a DVD installation. I don't
+> know for sure if it affects netboot but as I think it's something the
+> kernel is doing, it probably doesn't matter how it gets loaded?
 
-diff --git a/arch/powerpc/boot/dts/arches.dts b/arch/powerpc/boot/dts/arches.dts
-index d9113b1..c568095 100644
---- a/arch/powerpc/boot/dts/arches.dts
-+++ b/arch/powerpc/boot/dts/arches.dts
-@@ -195,6 +195,38 @@
- 				interrupts = <0x3 0x4>;
- 			};
- 
-+			SPI0: spi@ef600900 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				device_type = "spi";
-+				compatible = "ibm,spi-460gt", "ibm,ppc4xx-spi";
-+				reg = <0xef600900 7>;
-+				interrupt-parent = <&UIC1>;
-+				interrupts = <2 4>;
-+
-+				/* gpio(s) representing chip select(s) */
-+				gpios = <&GPIO1 11 0>;
-+
-+				mmc-slot@0 {
-+					compatible = "linux,mmc-spi", "mmc-spi";
-+					reg = <0>;
-+					spi-max-frequency = <10000000>;
-+					voltage-range = <3300 3300>;
-+				};
-+			};
-+
-+			GPIO0: gpio@ef600b00 {
-+				#gpio-cells = <2>;
-+				compatible = "ibm,460gt-gpio","ibm,ppc4xx-gpio";
-+				reg = <0xef600b00 38>;
-+			};
-+
-+			GPIO1: gpio@ef600c00 {
-+				#gpio-cells = <2>;
-+				compatible = "ibm,460gt-gpio","ibm,ppc4xx-gpio";
-+				reg = <0xef600c00 38>;
-+			};
-+
- 			TAH0: emac-tah@ef601350 {
- 				compatible = "ibm,tah-460gt", "ibm,tah";
- 				reg = <0xef601350 0x00000030>;
--- 
-1.6.0.3
+What changed in that commit was the contents of a couple of structures
+that the firmware looks at to see what the kernel wants from
+firmware.  Specifically the change was to say that the kernel (or
+really the zImage wrapper) would like the firmware to be based at the
+32MB point (which is what AIX uses) rather than 12MB (which was the
+default on older machines).
+
+So, as I understand it, it's not anything the kernel is actively
+doing, it's how the firmware is reacting to what the kernel says it
+wants.  And since we are requesting the same value as AIX (as far as I
+know) I'm really surprised it caused problems.
+
+We can revert that commit, but I still need to solve the problem that
+the distros are facing, namely that their installer kernel + initramfs
+images are now bigger than 12MB and can't be loaded if the firmware is
+based at 12MB.  That's why I really want to understand the problem in
+more detail.
+
+> It's been pointed out that it can be "fixed" by upgrading the firmware but
+> surely we can avoid breaking the machine in the first place?
+
+Have you upgraded the firmware on the machine you saw this problem on?
+If not, would you be willing to run some tests for me?
+
+Paul.
