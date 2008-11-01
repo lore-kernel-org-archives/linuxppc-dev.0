@@ -1,25 +1,17 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id DB2E2DDDF3
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Nov 2008 22:30:27 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so665819ywh.39
-	for <linuxppc-dev@ozlabs.org>; Sat, 01 Nov 2008 04:30:26 -0700 (PDT)
-Date: Sat, 1 Nov 2008 07:30:18 -0400
-From: Josh Boyer <jwboyer@gmail.com>
-To: Hollis Blanchard <hollis@penguinppc.org>
-Subject: Re: [PATCH 1/2] powerpc: add 16K/64K pages support for the 44x
-	PPC32 architectures.
-Message-ID: <20081101113018.GA13646@zod.rchland.ibm.com>
-References: <1224123753-20907-1-git-send-email-yanok@emcraft.com>
-	<1224123753-20907-2-git-send-email-yanok@emcraft.com>
-	<48FF3889.2030304@linux.vnet.ibm.com>
-	<fb412d760810311623i2b0f93a3r5aa0eb297e154b4a@mail.gmail.com>
-MIME-Version: 1.0
+Return-Path: <npiggin@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E0703DDDEA
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Nov 2008 23:33:45 +1100 (EST)
+Date: Sat, 1 Nov 2008 13:33:39 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: paulus@samba.org, benh@kernel.crashing.org,
+	Anton Blanchard <anton@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [patch] powerpc: smp_wmb lwsync optimisation fix
+Message-ID: <20081101123339.GA32055@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fb412d760810311623i2b0f93a3r5aa0eb297e154b4a@mail.gmail.com>
-Cc: dzu@denx.de, Ilya Yanok <yanok@emcraft.com>, linuxppc-dev@ozlabs.org,
-	Hollis Blanchard <hollisb@us.ibm.com>, pvr@emcraft.com,
-	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,58 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 31, 2008 at 06:23:28PM -0500, Hollis Blanchard wrote:
->On Wed, Oct 22, 2008 at 9:28 AM, Christian Ehrhardt
-><ehrhardt@linux.vnet.ibm.com> wrote:
->> Hi Ilya,
->> I just tried your patch on my 440 board because it would help us in our
->> environment.
->> Unfortunately I run into a bug on early boot (mark_bootmem).
->>
->> A log can be found in this mail, this is the bug when running with 64k page
->> size.
->> I tried this with and without your 2/2 265k patch and also with page size
->> configured to 16k, the error is the same in all cases.
->>
->> I used an earlier version of your patch in the past and it worked fine.
->> Applying this old patch causes the same problem.
->> Therefore I expect that there was some other code changed that breaks with
->> page size != 4k.
->
->This patch seems to solve the problem for me, but I have to run and
->haven't yet worked out if it's the right fix.
->
->diff --git a/mm/bootmem.c b/mm/bootmem.c
->--- a/mm/bootmem.c
->+++ b/mm/bootmem.c
->@@ -300,7 +300,7 @@ static int __init mark_bootmem(unsigned
->                unsigned long max;
->
->                if (pos < bdata->node_min_pfn ||
->-                   pos >= bdata->node_low_pfn) {
->+                   pos > bdata->node_low_pfn) {
->                        BUG_ON(pos != start);
->                        continue;
->                }
->@@ -399,7 +399,7 @@ int __init reserve_bootmem(unsigned long
->        unsigned long start, end;
->
->        start = PFN_DOWN(addr);
->-       end = PFN_UP(addr + size);
->+       end = PFN_DOWN(addr + size);
->
->        return mark_bootmem(start, end, 1, flags);
-> }
->
->Looks like the breakage may have been accidentally introduced by
->Johannes Weiner <hannes@saeurebad.de> on Jul 24 (post 2.6.26).
->
->FWIW, the boards Christian and I are hitting the problem on are
->Sequoias with 256MB of RAM. cuImage is reporting only 0xffff000 bytes
->of RAM though, which may be exacerbating the situation.
+A previous change removed __SUBARCH_HAS_LWSYNC define, and replaced it
+with __powerpc64__. smp_wmb() seems to be the last place not updated.
 
-That is on purpose.  The chip has an errata that causes badness if
-you use the last XX bytes of DRAM.  I forget exactly what XX is, but
-we just remove the last page.
-
-josh
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+Index: linux-2.6/arch/powerpc/include/asm/system.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/system.h	2008-11-01 20:31:51.000000000 +1100
++++ linux-2.6/arch/powerpc/include/asm/system.h	2008-11-01 20:32:33.000000000 +1100
+@@ -44,7 +44,7 @@
+ #define AT_VECTOR_SIZE_ARCH 6 /* entries in ARCH_DLINFO */
+ #ifdef CONFIG_SMP
+ 
+-#ifdef __SUBARCH_HAS_LWSYNC
++#if defined(__powerpc64__)
+ #    define SMPWMB      lwsync
+ #else
+ #    define SMPWMB      eieio
