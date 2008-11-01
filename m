@@ -1,25 +1,16 @@
-Return-Path: <bigeasy@www.tglx.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8B896DDD0C
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Nov 2008 07:02:42 +1100 (EST)
-Date: Sat, 1 Nov 2008 21:00:56 +0100
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH] powerpc/boot: allocate more memory for dtb
-Message-ID: <20081101200056.GA23385@www.tglx.de>
-References: <20080923203857.GB10935@www.tglx.de>
-	<200809240146.m8O1kIpZ077447@sullivan.realtime.net>
-	<20080925214357.GA2929@www.tglx.de>
-	<1223611088.8157.144.camel@pasglop>
-	<20081013091526.GA9925@www.tglx.de>
-	<20081014015753.GD20620@yookeroo.seuss>
-	<20081014020004.GE20620@yookeroo.seuss>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20081014020004.GE20620@yookeroo.seuss>
-Cc: Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org
+Return-Path: <vgallardo@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id DD597DDD0C
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Nov 2008 08:03:25 +1100 (EST)
+From: Victor Gallardo <vgallardo@amcc.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ibm_newemac: Add support for Arches CPU0 SGMII0 to CPU1 SGMII0
+Date: Sat,  1 Nov 2008 14:03:22 -0700
+Message-Id: <1225573402-28113-1-git-send-email-vgallardo@amcc.com>
+Cc: Victor Gallardo <vgallardo@amcc.com>, Feng Kan <fkan@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,38 +20,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* David Gibson | 2008-10-14 13:00:04 [+1100]:
+On Arches, SGMII0 Rx/Tx on CPU0 is wired to SGMII0 Tx/Rx on CPU1.
+Add GPCS as a phy type to allow for this.
 
->Oh, one other thing.  Since we are now unconditionally copying the dtb
->into a malloc()ed buffer, possibly it would be sensible to add a
->little padding to the buffer at that point, so that further device
->tree manipulations won't need to reallocate it.
-
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Victor Gallardo <vgallardo@amcc.com>
 ---
-Haven't notice earlier that the other patch went mainline.
-EXPAND_GRANULARITY is 1KiB and it is used in expand_buf() if the buffer
-has to be increased. I hope that is okay.
+ arch/powerpc/boot/dts/arches.dts |    3 ++-
+ drivers/net/ibm_newemac/core.c   |    5 ++++-
+ drivers/net/ibm_newemac/phy.c    |   29 +++++++++++++++++++++++++++++
+ 3 files changed, 35 insertions(+), 2 deletions(-)
 
-All other platforms except prpmc2800 are passing the dtb to fdt_init().
-prpmc2800 is reallocating the dtb to a malloced area. I thing I can
-remove that part since fdt_init() is doing this anyway.
-
- arch/powerpc/boot/libfdt-wrapper.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/boot/libfdt-wrapper.c b/arch/powerpc/boot/libfdt-wrapper.c
-index 1daa73f..0085930 100644
---- a/arch/powerpc/boot/libfdt-wrapper.c
-+++ b/arch/powerpc/boot/libfdt-wrapper.c
-@@ -179,7 +179,7 @@ void fdt_init(void *blob)
+diff --git a/arch/powerpc/boot/dts/arches.dts b/arch/powerpc/boot/dts/arches.dts
+index d9113b1..a5f1597 100644
+--- a/arch/powerpc/boot/dts/arches.dts
++++ b/arch/powerpc/boot/dts/arches.dts
+@@ -225,7 +225,8 @@
+ 				rx-fifo-size = <4096>;
+ 				tx-fifo-size = <2048>;
+ 				phy-mode = "sgmii";
+-				phy-map = <0xffffffff>;
++				phy-map = <0x00000400>;
++				phy-address = <0x0000000a>;
+ 				gpcs-address = <0x0000000a>;
+ 				tah-device = <&TAH0>;
+ 				tah-channel = <0>;
+diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+index 2ee2622..9b62741 100644
+--- a/drivers/net/ibm_newemac/core.c
++++ b/drivers/net/ibm_newemac/core.c
+@@ -2814,7 +2814,10 @@ static int __devinit emac_probe(struct of_device *ofdev,
+ 		goto err_detach_rgmii;
  
- 	/* Make sure the dt blob is the right version and so forth */
- 	fdt = blob;
--	bufsize = fdt_totalsize(fdt) + 4;
-+	bufsize = fdt_totalsize(fdt) + EXPAND_GRANULARITY;
- 	buf = malloc(bufsize);
- 	if(!buf)
- 		fatal("malloc failed. can't relocate the device tree\n\r");
+ 	/* Set some link defaults before we can find out real parameters */
+-	dev->phy.speed = SPEED_100;
++	if (emac_phy_gpcs(dev->phy_mode))
++		dev->phy.speed = SPEED_1000;
++	else
++		dev->phy.speed = SPEED_100;
+ 	dev->phy.duplex = DUPLEX_FULL;
+ 	dev->phy.autoneg = AUTONEG_DISABLE;
+ 	dev->phy.pause = dev->phy.asym_pause = 0;
+diff --git a/drivers/net/ibm_newemac/phy.c b/drivers/net/ibm_newemac/phy.c
+index c40cd8d..84e6e45 100644
+--- a/drivers/net/ibm_newemac/phy.c
++++ b/drivers/net/ibm_newemac/phy.c
+@@ -400,6 +400,18 @@ static int m88e1112_init(struct mii_phy *phy)
+ 	return  0;
+ }
+ 
++static int gpcs_init(struct mii_phy *phy)
++{
++	if (phy->mode == PHY_MODE_SGMII) {
++		/* Configure GPCS interface to recommended setting for SGMII */
++		phy_write(phy, 0x04, 0x8120); /* AsymPause, FDX */
++		phy_write(phy, 0x07, 0x2801); /* msg_pg, toggle */
++		phy_write(phy, 0x00, 0x0140); /* 1Gbps, FDX     */
++	}
++
++	return 0;
++}
++
+ static int et1011c_init(struct mii_phy *phy)
+ {
+ 	u16 reg_short;
+@@ -467,12 +479,29 @@ static struct mii_phy_def m88e1112_phy_def = {
+ 	.ops		= &m88e1112_phy_ops,
+ };
+ 
++static struct mii_phy_ops gpcs_phy_ops = {
++	.init		= gpcs_init,
++	.setup_aneg	= genmii_setup_aneg,
++	.setup_forced	= genmii_setup_forced,
++	.poll_link	= genmii_poll_link,
++	.read_link	= genmii_read_link
++};
++
++static struct mii_phy_def gpcs_phy_def = {
++	.phy_id		= 0xf6d5eeef,
++	.phy_id_mask	= 0xffffffff,
++	.features	= SUPPORTED_1000baseT_Full,
++	.name		= "Internal GPCS",
++	.ops		= &gpcs_phy_ops,
++};
++
+ static struct mii_phy_def *mii_phy_table[] = {
+ 	&et1011c_phy_def,
+ 	&cis8201_phy_def,
+ 	&bcm5248_phy_def,
+ 	&m88e1111_phy_def,
+ 	&m88e1112_phy_def,
++	&gpcs_phy_def,
+ 	&genmii_phy_def,
+ 	NULL
+ };
 -- 
-1.5.6.5
+1.5.5
