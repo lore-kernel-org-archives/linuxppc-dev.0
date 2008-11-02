@@ -1,27 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (ns1.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4822ADDDDB
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Nov 2008 08:55:25 +1100 (EST)
-Subject: Re: [PATCH 1/2] powerpc: add 16K/64K pages support for the 44x
-	PPC32 architectures.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@gmail.com>
-In-Reply-To: <20081101113018.GA13646@zod.rchland.ibm.com>
-References: <1224123753-20907-1-git-send-email-yanok@emcraft.com>
-	<1224123753-20907-2-git-send-email-yanok@emcraft.com>
-	<48FF3889.2030304@linux.vnet.ibm.com>
-	<fb412d760810311623i2b0f93a3r5aa0eb297e154b4a@mail.gmail.com>
-	<20081101113018.GA13646@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Sun, 02 Nov 2008 08:55:02 +1100
-Message-Id: <1225576502.8004.222.camel@pasglop>
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7E075DDDEF
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Nov 2008 12:42:30 +1100 (EST)
+Date: Sun, 2 Nov 2008 02:42:21 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [patch] powerpc: smp_wmb lwsync optimisation fix
+Message-ID: <20081102014221.GA13758@wotan.suse.de>
+References: <20081101123339.GA32055@wotan.suse.de>
+	<02812037-F4FA-4257-8A8A-5D0E400D1FF1@kernel.crashing.org>
 Mime-Version: 1.0
-Cc: Wolfgang Denk <wd@denx.de>, Ilya Yanok <yanok@emcraft.com>,
-	Hollis Blanchard <hollisb@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	pvr@emcraft.com, dzu@denx.de, Hollis Blanchard <hollis@penguinppc.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <02812037-F4FA-4257-8A8A-5D0E400D1FF1@kernel.crashing.org>
+Cc: paulus@samba.org, Anton Blanchard <anton@samba.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,13 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2008-11-01 at 07:30 -0400, Josh Boyer wrote:
+On Sat, Nov 01, 2008 at 11:47:58AM -0500, Kumar Gala wrote:
 > 
-> That is on purpose.  The chip has an errata that causes badness if
-> you use the last XX bytes of DRAM.  I forget exactly what XX is, but
-> we just remove the last page.
+> On Nov 1, 2008, at 7:33 AM, Nick Piggin wrote:
+> 
+> >A previous change removed __SUBARCH_HAS_LWSYNC define, and replaced it
+> >with __powerpc64__. smp_wmb() seems to be the last place not updated.
+> 
+> Uugh... no.. I missed the patch that removed __SUBARCH_HAS_LWSYNC, but  
+> thats no good.  We have LWSYNC on non-powerpc64 machines.  Will go  
+> figure out who forgets we have ppc32 machines :)
 
-Doing that from the device-tree is very hairy tho... you end up with
-informations in there that aren't aligned etc... oh well.
+I think it may have been you :)
 
-Ben.
+But actually, SMPWMB would need more massaging before it is suitable,
+by the looks of your LWSYNC define in synch.h.
+
+I don't mind, so much, about how this gets fixed. But it would be
+nice to fix it somehow. After the smp_rmb and smp_wmb patches, there
+are practically no sync instructions left in mm/ :)
+
+> 
+> - k
+> 
+> >
+> >
+> >Signed-off-by: Nick Piggin <npiggin@suse.de>
+> >---
+> >Index: linux-2.6/arch/powerpc/include/asm/system.h
+> >===================================================================
+> >--- linux-2.6.orig/arch/powerpc/include/asm/system.h	2008-11-01  
+> >20:31:51.000000000 +1100
+> >+++ linux-2.6/arch/powerpc/include/asm/system.h	2008-11-01  
+> >20:32:33.000000000 +1100
+> >@@ -44,7 +44,7 @@
+> >#define AT_VECTOR_SIZE_ARCH 6 /* entries in ARCH_DLINFO */
+> >#ifdef CONFIG_SMP
+> >
+> >-#ifdef __SUBARCH_HAS_LWSYNC
+> >+#if defined(__powerpc64__)
+> >#    define SMPWMB      lwsync
+> >#else
+> >#    define SMPWMB      eieio
+> >_______________________________________________
+> >Linuxppc-dev mailing list
+> >Linuxppc-dev@ozlabs.org
+> >https://ozlabs.org/mailman/listinfo/linuxppc-dev
