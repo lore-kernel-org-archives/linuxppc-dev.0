@@ -1,15 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18702.36070.59703.535800@cargo.ozlabs.ibm.com>
-Date: Mon, 3 Nov 2008 16:32:22 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: [rfc][patch] powerpc: replace isync with lwsync
-In-Reply-To: <20081101130715.GC32055@wotan.suse.de>
-References: <20081101123339.GA32055@wotan.suse.de>
-	<20081101130715.GC32055@wotan.suse.de>
-Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id AEC51DDDEE
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Nov 2008 18:07:16 +1100 (EST)
+Date: Mon, 3 Nov 2008 18:07:12 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: pauus@samba.org
+Subject: [PATCH] powerpc: remove unused variable from pci_dlpar.c
+Message-Id: <20081103180712.0494af2b.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,25 +19,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nick Piggin writes:
+And get rid of this build warning:
 
-> This is an interesting one for me. AFAIKS it is possible to use lwsync for
-> a full barrier after a successful ll/sc operation, right? (or stop me here
-> if I'm wrong).
+arch/powerpc/platforms/pseries/pci_dlpar.c: In function 'init_phb_dynamic':
+arch/powerpc/platforms/pseries/pci_dlpar.c:192: warning: unused variable 'b'
 
-An lwsync would order subsequent loads after the lwarx/ldarx, and
-subsequent stores after the stcwx./stcdx., which should be good
-enough.
+This is one of the very few warnings left in a ppc64_defconfig build and
+getting rid of it will make it easier to see future introduced ones (in
+fact this was introduced very recently).
 
-> isync followed by a branch I guess does something like puts a bubble
-> into the pipeline until the branch retires? So it is probably always
-> going to cost some cycles.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/pseries/pci_dlpar.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-I don't know about "retires", but isync is going to stop following
-instructions from executing until the outcome of the branch is known.
+This patch is against Linus' tree and so could go into 2.6.28 if you
+think it should.  This is also fixed by one of Ben's ominbus patches
+(http://patchwork.ozlabs.org/patch/6041/) but this is more suitable for
+upstream merge.
 
-On machines that don't have lwsync we will still want to use isync
-(since the other alternative would be the full heavyweight sync).
-Your patch doesn't seem to do that.
+diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
+index 31481dc..7190493 100644
+--- a/arch/powerpc/platforms/pseries/pci_dlpar.c
++++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
+@@ -189,7 +189,6 @@ struct pci_controller * __devinit init_phb_dynamic(struct device_node *dn)
+ {
+ 	struct pci_controller *phb;
+ 	int primary;
+-	struct pci_bus *b;
+ 
+ 	primary = list_empty(&hose_list);
+ 	phb = pcibios_alloc_controller(dn);
+-- 
+1.5.6.5
 
-Paul.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
