@@ -1,24 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.235])
-	by ozlabs.org (Postfix) with ESMTP id B5B73DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Nov 2008 09:55:20 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so2660528rvb.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 03 Nov 2008 14:55:19 -0800 (PST)
-Message-ID: <fa686aa40811031455l184ce184w529bf2f36c23cd9e@mail.gmail.com>
-Date: Mon, 3 Nov 2008 15:55:19 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Wolfram Sang" <w.sang@pengutronix.de>
-Subject: Re: [PATCH] workaround for mpc52xx erratum #364 (serial may not be
-	reset in break state)
-In-Reply-To: <20081103221546.GA16244@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <490F51E7.3020309@unicontrol.de>
-	<fa686aa40811031255w3d9a065dgb0eb7ad4b26c9651@mail.gmail.com>
-	<490F73B5.6010004@genesi-usa.com>
-	<20081103221546.GA16244@pengutronix.de>
-Cc: =?ISO-8859-1?Q?Ren=E9_B=FCrgel?= <r.buergel@unicontrol.de>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <ncase@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9EFE1DDE03
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Nov 2008 10:54:52 +1100 (EST)
+Received: from [10.52.0.27] (natec.xes-mad.com [10.52.0.27])
+	by xes-mad.com (8.13.8/8.13.8) with ESMTP id mA3Nsktn021067
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Nov 2008 17:54:46 -0600
+Subject: Passing I2C platform_data from device tree to i2c driver
+From: Nate Case <ncase@xes-inc.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Mon, 03 Nov 2008 17:54:46 -0600
+Message-Id: <1225756486.27415.258.camel@localhost.localdomain>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,31 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 3, 2008 at 3:15 PM, Wolfram Sang <w.sang@pengutronix.de> wrote:
-> On Mon, Nov 03, 2008 at 03:57:09PM -0600, Matt Sealey wrote:
->
->> > Optionally you can further
->>> reduce impact by checking if CONFIG_PPC_MPC5200_BUGFIX is defined.
->>
->> I would much prefer this.
->
-> I submitted a patch to enable pipelining on a MPC5200B recently. It was
-> disabled because of a bug in the MPC5200. The first version of this
-> patch used MPC5200_BUGFIX and it was mentioned, that some people might
-> want to run the same kernel on both kind of processors. So, the patch
-> that went mainline checks for the PVR. Maybe we should stick to this
-> here, too?
+Is there a plan for providing a way to set pdata for an I2C chip in a
+way that could be shared across all OF platforms?
 
-Of the two solutions:
-1. Run-time selection must be done.
-2. Compile-time removal of the bug fix path can also be done to lessen
-runtime impact for kernels never run on older chips
+For example, the pca953x I2C GPIO driver requires that pdata != NULL so
+it can get the gpio_base field.  It can also take in a default 'invert'
+value to initialize a chip register with.  Currently, there's no obvious
+way to get this to work on PowerPC without hardcoding things in the
+arch/powerpc/platforms/*.c file.
 
-My view is that #1 is non-negotiable.  #2 is a nice to have, but if it
-doesn't incur any cost when disabled at runtime then I don't care.
+On ARM platforms, they currently handle this by declaring
+I2C_BOARD_INFO() in their board-specific files.  For OF platforms, I
+think the obvious choice would be to specify platform data in the device
+tree.  We already register I2C devices automatically as found in the
+device tree (see drivers/of/of_i2c.c), but this registration method does
+not provide any way to set platform_data.
 
-g.
+Of course, I could put some code in my board specific file to parse the
+device tree properties and set pdata accordingly, but this hardly seems
+ideal.  After all, the device tree bindings -> pdata translation itself
+does not have to be board-specific.
+
+Basically, I think we need to have some common code somewhere that does
+the task of populating platform_data for a specific I2C chip based on a
+device tree node -- similarly to how we register the I2C devices
+already.  Is anyone working on this?  Did anyone have anything else in
+mind?
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Nate Case <ncase@xes-inc.com>
