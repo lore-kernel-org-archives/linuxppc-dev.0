@@ -1,31 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ben@fluff.org.uk>
+Received: from kira.home.fluff.org (aeryn.fluff.org.uk [87.194.8.8])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 539BBDDDE3
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Nov 2008 11:44:11 +1100 (EST)
-Subject: Re: [PATCH 1/2] powerpc: add 16K/64K pages support for the 44x
-	PPC32 architectures.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20081102193307.32d17e62@zod.rchland.ibm.com>
-References: <1224123753-20907-1-git-send-email-yanok@emcraft.com>
-	<1224123753-20907-2-git-send-email-yanok@emcraft.com>
-	<48FF3889.2030304@linux.vnet.ibm.com>
-	<fb412d760810311623i2b0f93a3r5aa0eb297e154b4a@mail.gmail.com>
-	<20081101113018.GA13646@zod.rchland.ibm.com>
-	<1225576502.8004.222.camel@pasglop>
-	<20081102134153.GA1029@zod.rchland.ibm.com>
-	<1225661596.8004.226.camel@pasglop>
-	<20081102193307.32d17e62@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Mon, 03 Nov 2008 11:43:54 +1100
-Message-Id: <1225673034.8004.239.camel@pasglop>
-Mime-Version: 1.0
-Cc: Wolfgang Denk <wd@denx.de>, Ilya Yanok <yanok@emcraft.com>,
-	Hollis Blanchard <hollisb@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	pvr@emcraft.com, dzu@denx.de, Hollis Blanchard <hollis@penguinppc.org>
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id 73709DDDF3
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Nov 2008 12:08:52 +1100 (EST)
+Date: Mon, 3 Nov 2008 00:23:28 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Mike Ditto <mditto@consentry.com>
+Subject: Re: [PATCH] i2c-cpm: Detect and report NAK right away instead of
+	timing out.
+Message-ID: <20081103002328.GC30438@fluff.org.uk>
+References: <490BA2E5.8010309@consentry.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <490BA2E5.8010309@consentry.com>
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,15 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> Cropping the size of the memory node.  That was simplest to do from the
-> cuboot wrapper at the time.  If marking it reserved via a reserve map
-> is more elegant and correct, we could do that.
+On Fri, Oct 31, 2008 at 05:29:25PM -0700, Mike Ditto wrote:
+> Make the driver report an ENXIO error immediately upon NAK instead of
+> waiting for another interrupt and getting a timeout.
 > 
-> But I will still like to know what about the other way is hairy please.
+> Signed-off-by: Mike Ditto <mditto@consentry.com>
+> ---
+> When reading from a device that is not present or declines to respond
+> to, e.g., a non-existent register address, CPM immediately reports a
+> NAK condition in the TxBD, but the driver kept waiting until a timeout,
+> which takes 1 second and causes an ugly console error message.
 
-I don't like it :-) Bad feeling ... don't like having a memory
-node entry that isn't aligned to some large power of two typically.
+hmm, that block of text could probably go into the patch description.
 
-Cheers,
-Ben.
+It looks ok, I'll merge and push out to linus with the s3c fixes.
+ 
+> Index: linux/drivers/i2c/busses/i2c-cpm.c
+> ===================================================================
+> retrieving revision 1.3
+> diff -u -p -r1.3 i2c-cpm.c
+> --- linux/drivers/i2c/busses/i2c-cpm.c	31 Oct 2008 06:36:08 -0000	1.3
+> +++ linux/drivers/i2c/busses/i2c-cpm.c	1 Nov 2008 00:12:45 -0000
+> @@ -369,6 +369,7 @@ static int cpm_i2c_xfer(struct i2c_adapt
+>  		pmsg = &msgs[tptr];
+>  		if (pmsg->flags & I2C_M_RD)
+>  			ret = wait_event_interruptible_timeout(cpm->i2c_wait,
+> +				(in_be16(&tbdf[tptr].cbd_sc) & BD_SC_NAK) ||
+>  				!(in_be16(&rbdf[rptr].cbd_sc) & BD_SC_EMPTY),
+>  				1 * HZ);
+>  		else
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-i2c" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
