@@ -1,16 +1,22 @@
-Return-Path: <AymanE@tanisys.com>
-Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [206.127.28.197])
-	by ozlabs.org (Postfix) with ESMTP id 30C13DDDF3
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 14A3FDDE1C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Nov 2008 04:50:02 +1100 (EST)
-Subject: Trouble booting a v1 device tree on canyonlands
+	Tue,  4 Nov 2008 05:27:35 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1Kx49C-0000aB-OV
+	for linuxppc-embedded@ozlabs.org; Mon, 03 Nov 2008 10:27:30 -0800
+Message-ID: <20307909.post@talk.nabble.com>
+Date: Mon, 3 Nov 2008 10:27:30 -0800 (PST)
+From: saadia dhouib <saadia_dhouib@yahoo.fr>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: linux 2.6 boot failure with rfs installed in the flash disk
+	(xupv2p + ppc)
+In-Reply-To: <20306038.post@talk.nabble.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C93DDC.97D52661"
-Date: Mon, 3 Nov 2008 11:50:00 -0600
-Message-ID: <16691A8B34B5D9458EA3A1C37A11555A0137F850@tanisys-ex2.Tanisys.Local>
-From: "Ayman El-Khashab" <AymanE@tanisys.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+References: <20306038.post@talk.nabble.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,90 +27,103 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C93DDC.97D52661
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Finally I created a node for ttyUL0 in /dev
+mknod /dev/ttyUL0 c 5 0
+mknod /dev/console c 5 1
 
-I am having trouble booting the canyonlands with the recent (10/31) denx
-kernel tree and dts file.  I have mostly ruled out the kernel being
-incorrect as it does work fine with the same uImage but an older version
-(non-v1) device tree.  I pulled down the new code to get the new version
-device tree, canyonlands.dts.  It compiles fine with a recent (11/1)
-version of dtc but when the board goes to boot it gets to Loading
-ramdisk ..OK and then hangs.  If I do nothing more than put an older
-version of the device tree in (a pre v1), then it works fine. I do not
-have anything attached to the board other than ethernet and a serial
-port. =20
-=20
-Is there something special about the new version of the device tree file
-that I need to massage to get this to work?  Do I need to install a
-newer u-boot into the flash to handle this version of device tree?
-=20
-Thanks,
-- ame
+Then I modified /etc/inittab (from klingauf mkrootfs), I replaced the line
+:12345:respawn:/sbin/getty 9600 tts/0
+by 
+ttyUL0:12345:respawn:/sbin/getty -L ttyUL0 9600 vt100
+
+Then I rebooted the kernel, and there were errors:
+
+zImage starting: loaded at 0x00400000 (sp: 0x0059eefc)
+Allocating 0x377124 bytes for kernel ...
+gunzipping (0x00000000 <- 0x0040c000:0x0059d133)...done 0x3545e8 bytes
+
+Linux/PowerPC load: console=ttyUL0,9600 root=/dev/xsa3 rw
+Finalizing device tree... flat tree at 0x40ae18
+Using Xilinx Virtex machine description
+Linux version 2.6.27-rc9 (dhouib@lo-lester-030) (gcc version 3.4.5) #29
+PREEMPT Mon Nov 3 16:23:09 CET 2008
+Zone PFN ranges:
+  DMA      0x00000000 -> 0x00010000
+  Normal   0x00010000 -> 0x00010000
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0: 0x00000000 -> 0x00010000
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 65024
+Kernel command line: console=ttyUL0,9600 root=/dev/xsa3 rw
+Xilinx intc at 0x41200000 mapped to 0xfdfff000
+PID hash table entries: 1024 (order: 10, 4096 bytes)
+clocksource: timebase mult[d55555] shift[22] registered
+Console: colour dummy device 80x25
+console [ttyUL0] enabled
+Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
+Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
+Memory: 256000k/262144k available (3256k kernel code, 5832k reserved, 128k
+data, 136k bss, 160k init)
+Calibrating delay loop... 598.01 BogoMIPS (lpj=1196032)
+Mount-cache hash table entries: 512
+net_namespace: 756 bytes
+NET: Registered protocol family 16
+PCI: Probing PCI hardware
+NET: Registered protocol family 2
+IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
+TCP established hash table entries: 8192 (order: 4, 65536 bytes)
+TCP bind hash table entries: 8192 (order: 3, 32768 bytes)
+TCP: Hash tables configured (established 8192 bind 8192)
+TCP reno registered
+NET: Registered protocol family 1
+Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+msgmni has been set to 500
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered
+io scheduler cfq registered (default)
+Serial: 8250/16550 driver4 ports, IRQ sharing disabled
+40600000.serial: ttyUL0 at MMIO 0x40600003 (irq = 16) is a uartlite
+brd: module loaded
+loop: module loaded
+xsysace 41800000.sysace: Xilinx SystemACE revision 1.0.12
+xsysace 41800000.sysace: capacity: 3940272 sectors
+ xsa: xsa1 xsa2 xsa3
+Xilinx SystemACE device driver, major=254
+mice: PS/2 mouse device common for all mice
+i2c /dev entries driver
+TCP cubic registered
+NET: Registered protocol family 17
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module.
+EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 160k init
+xsysace 41800000.sysace: kicking stalled fsm; state=8 task=2 iter=12 dc=128
+xsysace 41800000.sysace: kicking stalled fsm; state=8 task=2 iter=12 dc=128
+xsysace 41800000.sysace: transfer failure
+xsysace 41800000.sysace:     ctrl:  0000038a  seccnt/cmd: 0308      ver:100c
+    status:0017e31a  mpu_lba:001f91e5  busmode:   1
+    error: 00000014  cfg_lba:00000000  fatstat:0000
+xsysace 41800000.sysace: transfer failure
+xsysace 41800000.sysace:     ctrl:  0000038a  seccnt/cmd: 0308      ver:100c
+    status:0017e31a  mpu_lba:001f91e5  busmode:   1
+    error: 00000014  cfg_lba:00000000  fatstat:0000
+xsysace 41800000.sysace: kicking stalled fsm; state=8 task=2 iter=12 dc=128
+xsysace 41800000.sysace: kicking stalled fsm; state=8 task=2 iter=12 dc=128
+xsysace 41800000.sysace: kicking stalled fsm; state=8 task=2 iter=12 dc=128
+xsysace 41800000.sysace: kicking stalled fsm; state=8 task=2 iter=12 dc=128
+xsysace 41800000.sysace: kicking stalled fsm; state=8 task=2 iter=12 dc=128
+xsysace 41800000.sysace: kicking stalled fsm; state=8 task=2 iter=12 dc=128
+xsysace 41800000.sysace: kicking stalled fsm; state=8 task=2 iter=12 dc=128
 
 
 
-------_=_NextPart_001_01C93DDC.97D52661
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Could someone help me please?
+Thanks
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.6000.16735" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial><FONT size=3D2>I am having trouble booting the =
-canyonlands=20
-with the recent<SPAN class=3D463034717-03112008> (10/31)</SPAN><SPAN=20
-class=3D463034717-03112008>&nbsp;</SPAN>denx kernel tree and dts =
-file.&nbsp; I=20
-have mostly ruled out the<SPAN class=3D463034717-03112008> </SPAN>kernel =
-being=20
-incorrect as it does work fine with the same<SPAN =
-class=3D463034717-03112008>=20
-</SPAN>uImage but an older<SPAN class=3D463034717-03112008>=20
-version</SPAN>&nbsp;<SPAN class=3D463034717-03112008>(non-v1) =
-</SPAN>device=20
-tree.&nbsp; I pulled down the new code<SPAN class=3D463034717-03112008> =
-</SPAN>to=20
-get the new version device tree, canyonlands.dts.&nbsp; It<SPAN=20
-class=3D463034717-03112008> </SPAN>compiles fine with a recent (<SPAN=20
-class=3D463034717-03112008>11/1</SPAN>) version of dtc but<SPAN=20
-class=3D463034717-03112008> </SPAN>when the board goes to boot it gets =
-to Loading=20
-ramdisk ..OK<SPAN class=3D463034717-03112008> </SPAN>and then =
-hangs.&nbsp; If I do=20
-nothing more than put an older<SPAN class=3D463034717-03112008> =
-</SPAN>version of=20
-the device tree in<SPAN class=3D463034717-03112008> (a pre v1)</SPAN>, =
-then it=20
-works fine. I<SPAN class=3D463034717-03112008> </SPAN>do not<SPAN=20
-class=3D463034717-03112008> </SPAN>have anything attached to the board =
-other than=20
-ethernet and<SPAN class=3D463034717-03112008> </SPAN>a serial port.<SPAN =
 
-class=3D463034717-03112008>&nbsp; </SPAN></FONT></FONT></DIV>
-<DIV><FONT size=3D2><SPAN =
-class=3D463034717-03112008></SPAN></FONT>&nbsp;</DIV>
-<DIV><SPAN class=3D463034717-03112008><FONT face=3DArial size=3D2>Is =
-there something=20
-special about the new version of the device tree file that I need to =
-massage to=20
-get this to work?&nbsp; Do I need to install a newer u-boot into the =
-flash to=20
-handle this version of device tree?</FONT></SPAN></DIV>
-<DIV><SPAN class=3D463034717-03112008></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D463034717-03112008><FONT face=3DArial=20
-size=3D2>Thanks,</FONT></SPAN></DIV>
-<DIV><SPAN class=3D463034717-03112008><FONT face=3DArial size=3D2>-=20
-ame</FONT></SPAN></DIV>
-<DIV><FONT face=3DArial><BR><FONT =
-size=3D2></FONT></FONT></DIV></BODY></HTML>
-
-------_=_NextPart_001_01C93DDC.97D52661--
+-- 
+View this message in context: http://www.nabble.com/linux-2.6-boot-failure-with-rfs-installed-in-the-flash-disk-%28xupv2p-%2B-ppc%29-tp20306038p20307909.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
