@@ -1,19 +1,15 @@
-Return-Path: <mditto@consentry.com>
-Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
-	by ozlabs.org (Postfix) with ESMTP id E5E63DDDEA
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Nov 2008 14:50:29 +1100 (EST)
-Message-ID: <490E74FC.4060106@consentry.com>
-Date: Sun, 02 Nov 2008 19:50:20 -0800
-From: Mike Ditto <mditto@consentry.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [PATCH] i2c-cpm: Detect and report NAK right away instead of
-	timing out.
-References: <490BA2E5.8010309@consentry.com>
-	<20081103002328.GC30438@fluff.org.uk>
-In-Reply-To: <20081103002328.GC30438@fluff.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18702.36070.59703.535800@cargo.ozlabs.ibm.com>
+Date: Mon, 3 Nov 2008 16:32:22 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: [rfc][patch] powerpc: replace isync with lwsync
+In-Reply-To: <20081101130715.GC32055@wotan.suse.de>
+References: <20081101123339.GA32055@wotan.suse.de>
+	<20081101130715.GC32055@wotan.suse.de>
+Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ben Dooks wrote:
->> When reading from a device that is not present or declines to respond
->> to, e.g., a non-existent register address, CPM immediately reports a
->> NAK condition in the TxBD, but the driver kept waiting until a timeout,
->> which takes 1 second and causes an ugly console error message.
-> 
-> hmm, that block of text could probably go into the patch description.
+Nick Piggin writes:
 
-It's certainly fine with me if you want to include it.  I was just
-trying, perhaps inappropriately, to separate the "bug report" from the
-"description of the change".
+> This is an interesting one for me. AFAIKS it is possible to use lwsync for
+> a full barrier after a successful ll/sc operation, right? (or stop me here
+> if I'm wrong).
 
-					-=] Mike [=-
+An lwsync would order subsequent loads after the lwarx/ldarx, and
+subsequent stores after the stcwx./stcdx., which should be good
+enough.
+
+> isync followed by a branch I guess does something like puts a bubble
+> into the pipeline until the branch retires? So it is probably always
+> going to cost some cycles.
+
+I don't know about "retires", but isync is going to stop following
+instructions from executing until the outcome of the branch is known.
+
+On machines that don't have lwsync we will still want to use isync
+(since the other alternative would be the full heavyweight sync).
+Your patch doesn't seem to do that.
+
+Paul.
