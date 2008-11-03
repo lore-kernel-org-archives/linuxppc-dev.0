@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id AEC51DDDEE
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Nov 2008 18:07:16 +1100 (EST)
-Date: Mon, 3 Nov 2008 18:07:12 +1100
+	by ozlabs.org (Postfix) with ESMTP id DBF15DDDE3
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Nov 2008 18:18:29 +1100 (EST)
+Date: Mon, 3 Nov 2008 18:18:24 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: pauus@samba.org
+To: paulus@samba.org
 Subject: [PATCH] powerpc: remove unused variable from pci_dlpar.c
-Message-Id: <20081103180712.0494af2b.sfr@canb.auug.org.au>
+Message-Id: <20081103181824.9f68e19a.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -32,6 +32,8 @@ Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
  arch/powerpc/platforms/pseries/pci_dlpar.c |    1 -
  1 files changed, 0 insertions(+), 1 deletions(-)
+
+[Resent to get Paul's address right and add cc to Ben]
 
 This patch is against Linus' tree and so could go into 2.6.28 if you
 think it should.  This is also fixed by one of Ben's ominbus patches
