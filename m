@@ -1,18 +1,17 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 46DE9DDDF6
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Nov 2008 20:12:04 +1100 (EST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-To: benh@kernel.crashing.org
-Subject: Re: Connecting to "PCI command write" interrupt on 4xx platforms
-Date: Mon, 3 Nov 2008 10:10:33 +0100
-References: <200810301158.46686.matthias.fuchs@esd-electronics.com>
-	<1225397712.8004.173.camel@pasglop>
-In-Reply-To: <1225397712.8004.173.camel@pasglop>
+Return-Path: <r.buergel@unicontrol.de>
+Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.161])
+	by ozlabs.org (Postfix) with ESMTP id 789DFDDDEA
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Nov 2008 20:36:23 +1100 (EST)
+Message-ID: <490EC5EF.50609@unicontrol.de>
+Date: Mon, 03 Nov 2008 10:35:43 +0100
+From: =?ISO-8859-1?Q?Ren=E9_B=FCrgel?= <r.buergel@unicontrol.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200811031010.33250.matthias.fuchs@esd-electronics.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] mpc52xx_uart: report serial errors to users v2
+References: <490950AF.1000303@unicontrol.de>
+	<fa686aa40810300819w265c375euff3f46d7bb0a9176@mail.gmail.com>
+In-Reply-To: <fa686aa40810300819w265c375euff3f46d7bb0a9176@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="------------050607070203060600000806"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,42 +22,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Ben,
+This is a multi-part message in MIME format.
+--------------050607070203060600000806
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Thursday 30 October 2008 21:15, Benjamin Herrenschmidt wrote:
-> On Thu, 2008-10-30 at 11:58 +0100, Matthias Fuchs wrote:
-> > I need to connect to the "PCI command write" interrupt on a 440EPx
-> > platform. This is UIC0/int#5.
-> > 
-> > Where should I add this interrupt in the DT? To the PCI node? In this
-> > case it will collide with the 
-> > PCI interrupts.
-> > 
-> > My application is a 440EPx on a PCI addon card. So the PCI node is
-> > disabled in the DT.
-> > 
-> > Is there a way to get an interrupt number for request_irq() without
-> > querying the DT?
-> 
-> What is this interrupt precisely ? What emits it ? If it's coming from
-The interrupt is emitted by the pci bridge when someone writes to the 
-PCI_COMMAND register. We use it on PCI adapter hardware where the CPU is 
-not the system CPU. In this case a "host" driver writes to the adapter's
-PCI_COMMAND register to trigger a remote interrupt that is handled by a 
-special pci communication driver.
+I regenerated the patch with respect to your comments.
 
-Adding this interrupt to the PCI node would make (logical) sense. But
-on PCI adapter (add-in cards) designs we typically disable the PCI node
-of the DT to disable PCI PnP. This should not prevent us from adding the
-interrupt to the node but it looks a little bit weird to take an interrupt
-from a disabled node, right?
-> the actual PCI bridge, then you can stick an interrupts property in the
-> PCI host bridge node in the DT just fine.
-The PCI node already contains the interrupt-map for the PCI interrupts.
-Doesn't adding a further interrupt property cause some trouble with the PCI interrupts?
+Grant Likely wrote:
+> On Thu, Oct 30, 2008 at 12:14 AM, René Bürgel <r.buergel@unicontrol.de> wrote:
+>   
+>> Hi! This patch adds the capability to the mpc52xx-uart to report framing
+>> errors, parity errors, breaks and overruns to userspace. These values may be
+>> requested in userspace by using the ioctl TIOCGICOUNT.
+>>
+>> Signed-off-by: René Bürgel <r.buergel@unicontrol.de>
+>>     
+>
+> Looks mostly good.  A few comments below.  Make sure you CC: me when
+> you send the next version (which goes for all 5xxx patches).
+>
+> g.
+>   
+-- 
+René Bürgel
+Software Engineer
+Unicontrol Systemtechnik GmbH
+OT Dittersbach
+Sachsenburger Weg 34
+09669 Frankenberg
+ 
+Tel.: 03 72 06/ 88 73 - 19
+Fax: 03 72 06/ 88 73 - 60
+E-Mail: r.buergel@unicontrol.de
+Internet: www.unicontrol.de
+ 
+Unicontrol Systemtechnik GmbH
+Geschäftsführer: Dipl.-Ing. Siegfried Heinze
+Sitz der Gesellschaft: Frankenberg
+Registergericht: Amtsgericht Chemnitz, HRB 15 475
 
-Matthias
-> 
-> Cheers,
-> Ben.
-> 
+
+--------------050607070203060600000806
+Content-Type: text/plain;
+ name="121-mpc52xx_serial_icounter.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="121-mpc52xx_serial_icounter.patch"
+
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index 6117d3d..2669aec 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -752,10 +752,15 @@ mpc52xx_uart_int_rx_chars(struct uart_port *port)
+ 			if (status & MPC52xx_PSC_SR_RB) {
+ 				flag = TTY_BREAK;
+ 				uart_handle_break(port);
+-			} else if (status & MPC52xx_PSC_SR_PE)
++				port->icount.brk++;
++			} else if (status & MPC52xx_PSC_SR_PE) {
+ 				flag = TTY_PARITY;
+-			else if (status & MPC52xx_PSC_SR_FE)
++				port->icount.parity++;
++			}
++			else if (status & MPC52xx_PSC_SR_FE) {
+ 				flag = TTY_FRAME;
++				port->icount.frame++;
++			}
+ 
+ 			/* Clear error condition */
+ 			out_8(&PSC(port)->command, MPC52xx_PSC_RST_ERR_STAT);
+@@ -769,6 +774,7 @@ mpc52xx_uart_int_rx_chars(struct uart_port *port)
+ 			 * affect the current character
+ 			 */
+ 			tty_insert_flip_char(tty, 0, TTY_OVERRUN);
++			port->icount.overrun++;
+ 		}
+ 	}
+ 
+
+--------------050607070203060600000806--
