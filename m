@@ -1,21 +1,19 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx1.suse.de (ns1.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7C599DDDF8
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Nov 2008 19:31:29 +1100 (EST)
-Date: Mon, 3 Nov 2008 09:31:19 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [rfc][patch] powerpc: replace isync with lwsync
-Message-ID: <20081103083119.GA28262@wotan.suse.de>
-References: <20081101123339.GA32055@wotan.suse.de>
-	<20081101130715.GC32055@wotan.suse.de>
-	<18702.36070.59703.535800@cargo.ozlabs.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] cell: fix ras.c compilation
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <Pine.LNX.4.64.0811030920310.11062@vixen.sonytel.be>
+References: <20081102202157.GA11316@x200.localdomain>
+	<Pine.LNX.4.64.0811030920310.11062@vixen.sonytel.be>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-9n5F+S7EloQEELspF+Gu"
+Date: Mon, 03 Nov 2008 19:40:02 +1100
+Message-Id: <1225701602.3303.1.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18702.36070.59703.535800@cargo.ozlabs.ibm.com>
-Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Alexey Dobriyan <adobriyan@gmail.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 03, 2008 at 04:32:22PM +1100, Paul Mackerras wrote:
-> Nick Piggin writes:
-> 
-> > This is an interesting one for me. AFAIKS it is possible to use lwsync for
-> > a full barrier after a successful ll/sc operation, right? (or stop me here
-> > if I'm wrong).
-> 
-> An lwsync would order subsequent loads after the lwarx/ldarx, and
-> subsequent stores after the stcwx./stcdx., which should be good
-> enough.
 
-OK, thanks for confirmation.
- 
+--=-9n5F+S7EloQEELspF+Gu
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> > isync followed by a branch I guess does something like puts a bubble
-> > into the pipeline until the branch retires? So it is probably always
-> > going to cost some cycles.
-> 
-> I don't know about "retires", but isync is going to stop following
-> instructions from executing until the outcome of the branch is known.
+On Mon, 2008-11-03 at 09:20 +0100, Geert Uytterhoeven wrote:
+> On Sun, 2 Nov 2008, Alexey Dobriyan wrote:
+> > arch/powerpc/platforms/cell/ras.c:299: error: implicit declaration of f=
+unction 'crash_shutdown_register'
+> >=20
+> > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> > ---
+> >=20
+> >  arch/powerpc/platforms/cell/ras.c |    1 +
+> >  1 file changed, 1 insertion(+)
+> >=20
+> > --- a/arch/powerpc/platforms/cell/ras.c
+> > +++ b/arch/powerpc/platforms/cell/ras.c
+> > @@ -16,6 +16,7 @@
+> >  #include <linux/kexec.h>
+> >  #include <linux/crash_dump.h>
+> > =20
+> > +#include <asm/kexec.h>
+>=20
+> #include <linux/kexec.h>?
 
-OK, I probably don't use the right terminology. I assume the branch
-retires when its outcome is known and the CPU starts executing the
-result.
+That struck me too. But the generic header only includes the arch one if
+CONFIG_KEXEC=3Dy, and this code needs things from asm/kexec.h even when it
+=3Dn. So I think this is the best fix.
 
+cheers
 
-> On machines that don't have lwsync we will still want to use isync
-> (since the other alternative would be the full heavyweight sync).
-> Your patch doesn't seem to do that.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-No, it's just a quick hack at the moment. I think your reply gets it
-past the not-totally-broken stage :) But at this point I can't justify
-sending such a change upstream based on a small improvement on G5. I
-would like to know about newer POWER CPUs, and even unreleased ones.
-If there is some reason lwsync gets relatively more constraining or
-difficult to execute than isync, then maybe this change is not useful.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-Thanks,
-Nick
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-9n5F+S7EloQEELspF+Gu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkkOuOIACgkQdSjSd0sB4dIFvACgq+U2fHxz40Kpb5Xo1nDEeRdq
+mRoAnRYPndJzt5KMUOvrmYNRSCafyFaM
+=BZ//
+-----END PGP SIGNATURE-----
+
+--=-9n5F+S7EloQEELspF+Gu--
