@@ -1,16 +1,24 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910811030821w489856bbs1de65d9181d56a6f@mail.gmail.com>
-Date: Mon, 3 Nov 2008 11:21:20 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: USB support on mpc5200 broken
-In-Reply-To: <fa686aa40811030741o4d9490a3o3b23b9d69201c26a@mail.gmail.com>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E66B0DDEE2
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Nov 2008 03:29:35 +1100 (EST)
+Message-ID: <490F26C7.1000109@freescale.com>
+Date: Mon, 03 Nov 2008 10:28:55 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
+To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Subject: Re: [PATCH V2] powerpc: Fix Book-E watchdog timer interval setting
+References: <200808071448.06183.matthias.fuchs@esd-electronics.com>
+	<200809231704.56449.matthias.fuchs@esd-electronics.com>
+	<ed82fe3e0809230931h10101b3csdc0187c19bac1529@mail.gmail.com>
+	<200811030956.37948.matthias.fuchs@esd-electronics.com>
+In-Reply-To: <200811030956.37948.matthias.fuchs@esd-electronics.com>
 Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
-	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
-	<fa686aa40811030741o4d9490a3o3b23b9d69201c26a@mail.gmail.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,35 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 3, 2008 at 10:41 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Wed, Sep 24, 2008 at 6:09 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
->> On Wed, Sep 24, 2008 at 5:51 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
->>> USB is not working my hardware, so I booted my Efika and it's not
->>> working there either.  This is with linus' current git.
->>>
->>> Can anyone verify this? Or know what happened to USB?
->>> USB is loading but it is not finding anything plugged in.
->>> lsusb doesn't show anything.
->>>
->>> Last time I noticed it was working was about ten days ago. I don't use
->>> it everyday.
->>
->> Efika is broken because of this:
->>
->> ohci-ppc-of.c...
->>        is_bigendian =
->>                of_device_is_compatible(dn, "ohci-bigendian") ||
->>                of_device_is_compatible(dn, "ohci-be");
->>
->> Efika doesn't have either of those in it's compatible string.
->
-> I finally got my Efika out and booted again.  I do not see this issue.
->
-> My efika shows compatible = "ohci-bigendian", "ohci-be",
-> "mpc5200-ohci", "mpc5200-usb";
+Matthias Fuchs wrote:
+> Timur,
+> 
+> I missed you posting. But you are right. My patch is ok for 4xx CPUs and touching 
+> the CONFIG_FSL_BOOKE path was not my intention.
+> 
+> So for CONFIG_FSL_BOOKE WDTP_MASK should be WDTP(0). There is still a slightly difference
+> between WDTP(0)="(3 << 30) | (0x3c << 15)" and "(3 << 30) | (15 << 15)". 
+> Can you check that please and I will resend my patch.
 
-It's been too long and I've lost track of what happened.
+Yes, I think WDTP(0) is correct for Book E.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Timur Tabi
+Linux kernel developer at Freescale
