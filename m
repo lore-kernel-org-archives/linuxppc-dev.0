@@ -1,20 +1,19 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 1922ADDDDB
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Nov 2008 00:48:13 +1100 (EST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-To: benh@kernel.crashing.org
-Subject: Re: Connecting to "PCI command write" interrupt on 4xx platforms
-Date: Mon, 3 Nov 2008 14:45:00 +0100
-References: <200810301158.46686.matthias.fuchs@esd-electronics.com>
-	<200811031010.33250.matthias.fuchs@esd-electronics.com>
-	<1225709863.8004.252.camel@pasglop>
-In-Reply-To: <1225709863.8004.252.camel@pasglop>
+Return-Path: <stern+49051fc8@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+	by ozlabs.org (Postfix) with SMTP id B3A03DDE17
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Nov 2008 01:51:59 +1100 (EST)
+Date: Mon, 3 Nov 2008 09:51:55 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [USB] powerpc: Workaround for the PPC440EPX USBH_23 errata [take
+	3]
+In-Reply-To: <20081103010620.46454456@vitb-lp>
+Message-ID: <Pine.LNX.4.44L0.0811030951001.2454-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200811031445.00963.matthias.fuchs@esd-electronics.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Stefan Roese <sr@denx.de>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	linux-usb@vger.kernel.org, Mark Miesfeld <mmiesfeld@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 03 November 2008 11:57, Benjamin Herrenschmidt wrote:
-> On Mon, 2008-11-03 at 10:10 +0100, Matthias Fuchs wrote:
-> > 
-> > Adding this interrupt to the PCI node would make (logical) sense. But
-> > on PCI adapter (add-in cards) designs we typically disable the PCI node
-> > of the DT to disable PCI PnP. This should not prevent us from adding the
-> > interrupt to the node but it looks a little bit weird to take an interrupt
-> > from a disabled node, right?
-> 
-> You can make a pci-endpoint node that isn't detected as a host bridge.
-> In fact, I think we have some way to even tell in the DT not to activate
-> host bridge function on 44x nowadays no ? I dont remember for sure but
-> it's easy enough to add.
-We have endpoint support for PCIe and the possibility to disable PCI through the status
-attribute.
-> 
-> > > the actual PCI bridge, then you can stick an interrupts property in the
-> > > PCI host bridge node in the DT just fine.
-> > The PCI node already contains the interrupt-map for the PCI interrupts.
-> 
-> Only relevant for master, not endpoint.
-> 
-> > Doesn't adding a further interrupt property cause some trouble with the PCI interrupts?
-> 
-> Not for endpoint.
-I see.
+On Mon, 3 Nov 2008, Vitaly Bordug wrote:
 
-I will try to add endpoint support for PCI as well. I would like to have a single PCI node and
-let the device_type attribute decide if we are running in hostbridge or endpoint mode.
+> A published errata for ppc440epx states, that when running Linux with both
+> EHCI and OHCI modules loaded, the EHCI module experiences a fatal error
+> when a high-speed device is connected to the USB2.0, and functions normally
+> if OHCI module is not loaded.
+> 
+> There used to be recommendation to use only hi-speed or full-speed
+> devices with specific conditions, when respective module was unloaded.
+> Later, it was observed that ohci suspend is enough to keep things
+> going, and it was turned into workaround, as explained below.
 
-Matthias
+Please fix this patch so that it does not cause a build error on
+non-PowerPC architectures.
+
+Alan Stern
