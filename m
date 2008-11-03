@@ -1,18 +1,21 @@
-Return-Path: <AymanE@tanisys.com>
-Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [206.127.28.197])
-	by ozlabs.org (Postfix) with ESMTP id 4043FDDD0B
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DE993DDD0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Nov 2008 08:31:58 +1100 (EST)
-Subject: RE: Accessing PCI-E resources on 460EX
+	Tue,  4 Nov 2008 09:53:53 +1100 (EST)
+Message-ID: <490F80E1.1060909@embedded-sol.com>
+Date: Tue, 04 Nov 2008 00:53:21 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Mon, 3 Nov 2008 15:31:56 -0600
-Message-ID: <16691A8B34B5D9458EA3A1C37A11555A0137F852@tanisys-ex2.Tanisys.Local>
-In-Reply-To: <490F6882.6050101@embedded-sol.com>
+To: Ayman El-Khashab <AymanE@tanisys.com>
+Subject: Re: Accessing PCI-E resources on 460EX
 References: <490F6882.6050101@embedded-sol.com>
-From: "Ayman El-Khashab" <AymanE@tanisys.com>
-To: "Felix Radensky" <felix@embedded-sol.com>, <linuxppc-embedded@ozlabs.org>
+	<16691A8B34B5D9458EA3A1C37A11555A0137F852@tanisys-ex2.Tanisys.Local>
+In-Reply-To: <16691A8B34B5D9458EA3A1C37A11555A0137F852@tanisys-ex2.Tanisys.Local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,24 +26,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-linuxppc-embedded-bounces+aymane=3Dtanisys.com@ozlabs.org <> said on :
+Ayman El-Khashab wrote:
+>
+> What works for me is using the mmap64 as in the following example to
+> map the physical address, fd is the file descriptor for /dev/mem
+>
+> off64_t offset = static_cast<off64_t>(your physical address);
+> void * const p =
+> mmap64(0,256,PROT_WRITE|PROT_READ,MAP_SHARED,fd,offset);
+>
+> The only thing to note is that the address you pass should be aligned 
+> to the page boundry even though some devices are not.
+>   
 
-> I'm currently struggling with some application that tries to
-> access PCI-E memory by mmaping address found in
-> /sys/bus/pci/devices/<device>/resource
->=20
-> mmap() fails with "invalid argument" error, apparently
-> because on 460EX PCI addresses are 36-bit.
->=20
-> What is the correct way of accessing PCI-E from userspace on this
-> platform.=20
+Thanks, Ayman. I've tried that, but I'm still getting the same error.
+My physical address is 0xe80000000, length is 0x100000.
 
-What works for me is using the mmap64 as in the following example to
-map the physical address, fd is the file descriptor for /dev/mem
-
-off64_t offset =3D static_cast<off64_t>(your physical address);
-void * const p =3D
-mmap64(0,256,PROT_WRITE|PROT_READ,MAP_SHARED,fd,offset);
-
-The only thing to note is that the address you pass should be aligned=20
-to the page boundry even though some devices are not.
+Felix.
