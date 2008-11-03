@@ -1,22 +1,20 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 19133DDDEF
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Nov 2008 19:55:35 +1100 (EST)
-Date: Mon, 3 Nov 2008 09:55:33 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] cell: fix ras.c compilation
-In-Reply-To: <1225701602.3303.1.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0811030951570.11062@vixen.sonytel.be>
-References: <20081102202157.GA11316@x200.localdomain>
-	<Pine.LNX.4.64.0811030920310.11062@vixen.sonytel.be>
-	<1225701602.3303.1.camel@localhost>
+Return-Path: <matthias.fuchs@esd-electronics.com>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 1A147DDDEF
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Nov 2008 20:00:09 +1100 (EST)
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+To: "Timur Tabi" <timur@freescale.com>
+Subject: Re: [PATCH V2] powerpc: Fix Book-E watchdog timer interval setting
+Date: Mon, 3 Nov 2008 09:56:37 +0100
+References: <200808071448.06183.matthias.fuchs@esd-electronics.com>
+	<200809231704.56449.matthias.fuchs@esd-electronics.com>
+	<ed82fe3e0809230931h10101b3csdc0187c19bac1529@mail.gmail.com>
+In-Reply-To: <ed82fe3e0809230931h10101b3csdc0187c19bac1529@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-488624277-1225702533=:11062"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Alexey Dobriyan <adobriyan@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200811030956.37948.matthias.fuchs@esd-electronics.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,61 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Timur,
 
----584349381-488624277-1225702533=:11062
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+I missed you posting. But you are right. My patch is ok for 4xx CPUs and touching 
+the CONFIG_FSL_BOOKE path was not my intention.
 
-On Mon, 3 Nov 2008, Michael Ellerman wrote:
-> On Mon, 2008-11-03 at 09:20 +0100, Geert Uytterhoeven wrote:
-> > On Sun, 2 Nov 2008, Alexey Dobriyan wrote:
-> > > arch/powerpc/platforms/cell/ras.c:299: error: implicit declaration of function 'crash_shutdown_register'
-> > > 
-> > > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> > > ---
-> > > 
-> > >  arch/powerpc/platforms/cell/ras.c |    1 +
-> > >  1 file changed, 1 insertion(+)
-> > > 
-> > > --- a/arch/powerpc/platforms/cell/ras.c
-> > > +++ b/arch/powerpc/platforms/cell/ras.c
-> > > @@ -16,6 +16,7 @@
-> > >  #include <linux/kexec.h>
-> > >  #include <linux/crash_dump.h>
-> > >  
-> > > +#include <asm/kexec.h>
-> > 
-> > #include <linux/kexec.h>?
+So for CONFIG_FSL_BOOKE WDTP_MASK should be WDTP(0). There is still a slightly difference
+between WDTP(0)="(3 << 30) | (0x3c << 15)" and "(3 << 30) | (15 << 15)". 
+Can you check that please and I will resend my patch.
+
+Thanks for pointing that out.
+
+Matthias
+
+On Tuesday 23 September 2008 18:31, Timur Tabi wrote:
+> On Tue, Sep 23, 2008 at 10:04 AM, Matthias Fuchs
+> <matthias.fuchs@esd-electronics.com> wrote:
+> >  #ifdef CONFIG_FSL_BOOKE
+> >  #define WDTP(x)                ((((63-x)&0x3)<<30)|(((63-x)&0x3c)<<15))
+> > +#define WDTP_MASK      (WDTP(63))
 > 
-> That struck me too. But the generic header only includes the arch one if
-> CONFIG_KEXEC=y, and this code needs things from asm/kexec.h even when it
-> =n. So I think this is the best fix.
-
-IC.
-
-The real crash_shutdown_register() in arch/powerpc/kernel/crash.c only exists
-if CONFIG_KEXEC. So arch/powerpc/include/asm/kexec.h has a dummy one if
-!CONFIG_KEXEC.
-
-But as you point out you don't get to see asm/kexec.h if !CONFIG_KEXEC, so the
-dummy one doesn't help much...
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-488624277-1225702533=:11062--
+> WDTP(63) is "((((63-63)&0x3)<<30)|(((63-63)&0x3c)<<15))", which is
+> equal to 0.  Shouldn't WDTP_MASK be equal to "(3 << 30) | (15 << 15)"?
+> 
