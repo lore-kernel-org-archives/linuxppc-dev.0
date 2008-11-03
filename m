@@ -1,19 +1,15 @@
-Return-Path: <stern+49051fc8@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
-	by ozlabs.org (Postfix) with SMTP id B3A03DDE17
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Nov 2008 01:51:59 +1100 (EST)
-Date: Mon, 3 Nov 2008 09:51:55 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [USB] powerpc: Workaround for the PPC440EPX USBH_23 errata [take
-	3]
-In-Reply-To: <20081103010620.46454456@vitb-lp>
-Message-ID: <Pine.LNX.4.44L0.0811030951001.2454-100000@iolanthe.rowland.org>
+Return-Path: <glikely@secretlab.ca>
+Message-ID: <fa686aa40811030741o4d9490a3o3b23b9d69201c26a@mail.gmail.com>
+Date: Mon, 3 Nov 2008 08:41:43 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: USB support on mpc5200 broken
+In-Reply-To: <9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stefan Roese <sr@denx.de>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	linux-usb@vger.kernel.org, Mark Miesfeld <mmiesfeld@amcc.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910809241451x7492d2a9s56b4cb4ee0fe0244@mail.gmail.com>
+	<9e4733910809241809r58bddc2ax4759b70c3f07f6cf@mail.gmail.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 3 Nov 2008, Vitaly Bordug wrote:
+On Wed, Sep 24, 2008 at 6:09 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On Wed, Sep 24, 2008 at 5:51 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+>> USB is not working my hardware, so I booted my Efika and it's not
+>> working there either.  This is with linus' current git.
+>>
+>> Can anyone verify this? Or know what happened to USB?
+>> USB is loading but it is not finding anything plugged in.
+>> lsusb doesn't show anything.
+>>
+>> Last time I noticed it was working was about ten days ago. I don't use
+>> it everyday.
+>
+> Efika is broken because of this:
+>
+> ohci-ppc-of.c...
+>        is_bigendian =
+>                of_device_is_compatible(dn, "ohci-bigendian") ||
+>                of_device_is_compatible(dn, "ohci-be");
+>
+> Efika doesn't have either of those in it's compatible string.
 
-> A published errata for ppc440epx states, that when running Linux with both
-> EHCI and OHCI modules loaded, the EHCI module experiences a fatal error
-> when a high-speed device is connected to the USB2.0, and functions normally
-> if OHCI module is not loaded.
-> 
-> There used to be recommendation to use only hi-speed or full-speed
-> devices with specific conditions, when respective module was unloaded.
-> Later, it was observed that ohci suspend is enough to keep things
-> going, and it was turned into workaround, as explained below.
+I finally got my Efika out and booted again.  I do not see this issue.
 
-Please fix this patch so that it does not cause a build error on
-non-PowerPC architectures.
+My efika shows compatible = "ohci-bigendian", "ohci-be",
+"mpc5200-ohci", "mpc5200-usb";
 
-Alan Stern
+I'm running stock firmware without any forth scripts.
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
