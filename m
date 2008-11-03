@@ -1,23 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 661CADDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Nov 2008 07:19:40 +1100 (EST)
-Subject: Re: Connecting to "PCI command write" interrupt on 4xx platforms
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-In-Reply-To: <200811031445.00963.matthias.fuchs@esd-electronics.com>
-References: <200810301158.46686.matthias.fuchs@esd-electronics.com>
-	<200811031010.33250.matthias.fuchs@esd-electronics.com>
-	<1225709863.8004.252.camel@pasglop>
-	<200811031445.00963.matthias.fuchs@esd-electronics.com>
-Content-Type: text/plain
-Date: Tue, 04 Nov 2008 07:19:14 +1100
-Message-Id: <1225743554.8004.257.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 90706DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Nov 2008 07:38:29 +1100 (EST)
+Message-Id: <5F0C4A97-EA35-4235-9457-FC44D4906E2D@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: Nate Case <ncase@xes-inc.com>
+In-Reply-To: <1225738532.27415.237.camel@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] gianfar: Omit TBI auto-negotiation based on device tree
+Date: Mon, 3 Nov 2008 14:38:15 -0600
+References: <1225234382-23050-1-git-send-email-ncase@xes-inc.com>
+	<Pine.LNX.4.64.0810301738020.3943@t2.domain.actdsltmp>
+	<1225738532.27415.237.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Andy Fleming <afleming@freescale.com>,
+	Trent Piepho <tpiepho@freescale.com>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,11 +29,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> I will try to add endpoint support for PCI as well. I would like to have a single PCI node and
-> let the device_type attribute decide if we are running in hostbridge or endpoint mode.
+On Nov 3, 2008, at 12:55 PM, Nate Case wrote:
 
-Don't use device_type. Do the same we do for PCI-E (whatever it is, I
-don't have the source code at hand right now).
+> On Thu, 2008-10-30 at 18:07 -0700, Trent Piepho wrote:
+>> But more relevant to your serdes problem, I also have a patch that
+>> prevents
+>> restarting serdes auto-negotiation if the serdes link is already up.
+>> My SGMII
+>> PHY will auto-negotiate, but it takes about 3 seconds.  Avoiding an
+>> unnecessary 3 second auto-negotiation when the gianfar device is
+>> opened lets
+>> me cut my power-on to DHCP completion time in half.
+>>
+>> I wonder if this would also fix your problem, without needing to add
+>> the extra
+>> workaround?
+>
+> I just verified that your patch solves my problem without the need for
+> my workaround.  So at this point, it looks like we can drop this patch
+> ("Omit TBI auto-negotiation based on device tree").
+>
+> I tested when booting the kernel in U-Boot both via both TFTP and  
+> flash
+> (I was worried that your patch may only fix things for the TFTP boot
+> case, but that wasn't the case fortunately).
+>
+> Thanks for the patch!
 
-Cheers,
-Ben.
+Ok, marked Nate's patch as superseded in patchworks.
+
+- k
