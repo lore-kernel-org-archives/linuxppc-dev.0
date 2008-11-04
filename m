@@ -1,20 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40811040829r4b68fb4axde8612cc3d06cca@mail.gmail.com>
-Date: Tue, 4 Nov 2008 09:29:09 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Sebastian Siewior" <linuxppc-embedded@ml.breakpoint.cc>
-Subject: Re: Device tree configuration for I2C eeprom
-In-Reply-To: <fa686aa40811040828y23d0d65bsebc3f542c57291a@mail.gmail.com>
+Return-Path: <felix@embedded-sol.com>
+Message-ID: <49107C46.8060205@embedded-sol.com>
+Date: Tue, 04 Nov 2008 18:45:58 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <16691A8B34B5D9458EA3A1C37A11555A0137F7B6@tanisys-ex2.Tanisys.Local>
-	<20080918221335.GA6420@Chamillionaire.breakpoint.cc>
-	<9e4733910809181521r3cd74119tfedd36567e3b5394@mail.gmail.com>
-	<20080919050441.GD25528@secretlab.ca>
-	<20080919071238.GA8773@Chamillionaire.breakpoint.cc>
-	<fa686aa40811040828y23d0d65bsebc3f542c57291a@mail.gmail.com>
-Cc: Ayman El-Khashab <AymanE@tanisys.com>, devicetree-discuss@ozlabs.org,
-	Linuxppc-embedded@ozlabs.org
+To: Ayman El-Khashab <AymanE@tanisys.com>
+Subject: Re: Device tree configuration for I2C eeprom
+References: <9e4733910809181521r3cd74119tfedd36567e3b5394@mail.gmail.com>	<20080919050441.GD25528@secretlab.ca>
+	<16691A8B34B5D9458EA3A1C37A11555A0137F857@tanisys-ex2.Tanisys.Local>
+In-Reply-To: <16691A8B34B5D9458EA3A1C37A11555A0137F857@tanisys-ex2.Tanisys.Local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,28 +20,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 4, 2008 at 9:28 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Fri, Sep 19, 2008 at 12:12 AM, Sebastian Siewior
-> <linuxppc-embedded@ml.breakpoint.cc> wrote:
->> * Grant Likely | 2008-09-18 22:04:41 [-0700]:
->>
->>>No, don't use the generic chip names.  Device tree convention is to be
->>>specific and prefix the part number with the vendor name.  ie. You should
->>>be using "at,at24c64", not "24c64".
->>
->> What about the i2c drivers which don't have any prefix like the m41t80?
->> Prior commit 0d1cde2 aka "powerpc/i2c: Convert i2c-mpc into an
->> of_platform driver" the ids were converted.
+Ayman El-Khashab wrote:
 >
-> That is the *driver* not the device tree description.  The OF i2c code
-> is still converts the name.  By default it does this by simply
-> stripping off the manufacturer prefix, but the match table does still
-> exist when the default behavior needs to be overridden.
+> Ok, here is what I used.  I see the nodes created in /sys/bus/i2c/... 
+> but I see four of them at address 0x50,0x51,0x52,0x53.  That surprised
+> me since I only have 3 of them in the device tree.  However, in any case
+> I did not see a way to read or write them.  In one case I was able to
+> cat the file "eeprom", but it was only 256 bytes and did not exist for
+> the other 3 devices.  Here is the section of my device tree ... I do 
+> see the controller being initialized in dmesg, it is just the read and
+> write that is eluding me.
+>
+> One question I did have was within another sample device tree, there was
+> a comment that "this makes address 0x50 and 0x51"?  Does that mean that
+> large eeproms are spread over several nodes?  I searched around but
+> could
+> not find an example of how to use this at24 to access my E2 from
+> userspace.
+>
+> Thanks
+> Ayman
+>
+>
+>                         IIC0: i2c@ef600700 {
+>                                 compatible = "ibm,iic-460ex", "ibm,iic";
+>                                 reg = <0xef600700 0x00000014>;
+>                                 interrupt-parent = <&UIC0>;
+>                                 interrupts = <0x2 0x4>;
+>                                 #address-cells = <1>;
+>                                 #size-cells = <0>;
+>
+>                                 at24@50 {
+>                                         compatible = "at24,at24c128";
+>                                         reg = <0x50>;
+>                                 };
+>                                 at24@52 {
+>                                         compatible = "at24,at24c128";
+>                                         reg = <0x52>;
+>                                 };
+>                                 at24@53 {
+>                                         compatible = "at24,at24c128";
+>                                         reg = <0x53>;
+>                                 };
+> 				}
+>
+>
+>   
+If you're using Denx kernel, you should add your  at24 device to 
+i2c_devices[]
+in drivers/i2c/busses/i2c-ibm_of.c This will pass your device tree data 
+to at24 driver.
 
-Oops, I already replied to this one.  Sorry for the duplicate response.
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Felix.
