@@ -1,19 +1,20 @@
-Return-Path: <ncase@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9EFE1DDE03
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Nov 2008 10:54:52 +1100 (EST)
-Received: from [10.52.0.27] (natec.xes-mad.com [10.52.0.27])
-	by xes-mad.com (8.13.8/8.13.8) with ESMTP id mA3Nsktn021067
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Nov 2008 17:54:46 -0600
-Subject: Passing I2C platform_data from device tree to i2c driver
-From: Nate Case <ncase@xes-inc.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Mon, 03 Nov 2008 17:54:46 -0600
-Message-Id: <1225756486.27415.258.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 387B8DDDE3
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Nov 2008 16:19:25 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org,
+ benh@kernel.crashing.org
+Subject: Re: Connecting to "PCI command write" interrupt on 4xx platforms
+Date: Tue, 4 Nov 2008 06:19:13 +0100
+References: <200810301158.46686.matthias.fuchs@esd-electronics.com>
+	<200811031445.00963.matthias.fuchs@esd-electronics.com>
+	<1225743554.8004.257.camel@pasglop>
+In-Reply-To: <1225743554.8004.257.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200811040619.13820.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Is there a plan for providing a way to set pdata for an I2C chip in a
-way that could be shared across all OF platforms?
+On Monday 03 November 2008, Benjamin Herrenschmidt wrote:
+> > I will try to add endpoint support for PCI as well. I would like to have
+> > a single PCI node and let the device_type attribute decide if we are
+> > running in hostbridge or endpoint mode.
+>
+> Don't use device_type. Do the same we do for PCI-E (whatever it is, I
+> don't have the source code at hand right now).
 
-For example, the pca953x I2C GPIO driver requires that pdata != NULL so
-it can get the gpio_base field.  It can also take in a default 'invert'
-value to initialize a chip register with.  Currently, there's no obvious
-way to get this to work on PowerPC without hardcoding things in the
-arch/powerpc/platforms/*.c file.
+It is device_type for PCIe right now, I'm afraid. This was what we agreed 
+upon. Here a code sniplet from the patch:
 
-On ARM platforms, they currently handle this by declaring
-I2C_BOARD_INFO() in their board-specific files.  For OF platforms, I
-think the obvious choice would be to specify platform data in the device
-tree.  We already register I2C devices automatically as found in the
-device tree (see drivers/of/of_i2c.c), but this registration method does
-not provide any way to set platform_data.
+	/* Check if device_type property is set to "pci" or "pci-endpoint".
+	 * Resulting from this setup this PCIe port will be configured
+	 * as root-complex or as endpoint.
+	 */
+	val = of_get_property(port->node, "device_type", NULL);
+	if (!strcmp(val, "pci-endpoint")) {
+		port->endpoint = 1;
+	} else if (!strcmp(val, "pci")) {
+		port->endpoint = 0;
+	} else {
+		printk(KERN_ERR "PCIE: missing or incorrect device_type for %s\n",
+		       np->full_name);
+		return;
+	}
 
-Of course, I could put some code in my board specific file to parse the
-device tree properties and set pdata accordingly, but this hardly seems
-ideal.  After all, the device tree bindings -> pdata translation itself
-does not have to be board-specific.
-
-Basically, I think we need to have some common code somewhere that does
-the task of populating platform_data for a specific I2C chip based on a
-device tree node -- similarly to how we register the I2C devices
-already.  Is anyone working on this?  Did anyone have anything else in
-mind?
-
--- 
-Nate Case <ncase@xes-inc.com>
+Best regards,
+Stefan
