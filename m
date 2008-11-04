@@ -1,20 +1,13 @@
-Return-Path: <r.buergel@unicontrol.de>
-Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.161])
-	by ozlabs.org (Postfix) with ESMTP id 09E47DDE17
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Nov 2008 06:40:19 +1100 (EST)
-Message-ID: <4910A519.3030701@unicontrol.de>
-Date: Tue, 04 Nov 2008 20:40:09 +0100
-From: =?ISO-8859-15?Q?Ren=E9_B=FCrgel?= <r.buergel@unicontrol.de>
+Return-Path: <tmorrison@empirix.com>
 MIME-Version: 1.0
-To: Wolfram Sang <w.sang@pengutronix.de>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH V3] workaround for mpc52xx erratum #364 (serial may not
-	be reset in break state)
-References: <490F51E7.3020309@unicontrol.de>
-	<fa686aa40811031255w3d9a065dgb0eb7ad4b26c9651@mail.gmail.com>
-	<4910274E.5030305@unicontrol.de>
-	<20081104111545.GB17864@pengutronix.de>
-In-Reply-To: <20081104111545.GB17864@pengutronix.de>
-Content-Type: multipart/mixed; boundary="------------020606040600000400020507"
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C93EB7.9CFC32C3"
+Subject: PCI Express between MPC8572 & PLX8616
+Date: Tue, 4 Nov 2008 14:59:39 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010EE4CF2A@EMPBEDEX.empirix.com>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <linuxppc-dev@ozlabs.org>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,154 +18,396 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------020606040600000400020507
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
 
-Hey, folks
-
-This is v3 of my patch to work around erratum #364 of the MPC5200(B). I 
-removed most "magic" looking numbers, documenting the rest. As mentioned 
-before, the previous patches weren't working for low baudrates (<9600). 
-This should be fixed now.
-
-But there's still one thing, that bothers me a bit - if there is REALLY 
-a break on the line, closing the driver may take until it's gone. I 
-don't know whether this is really satisfying, but i think it's better 
-than the alternative: no serial connection until the next reboot.
-
--- 
-René Bürgel
-Software Engineer
-Unicontrol Systemtechnik GmbH
-OT Dittersbach
-Sachsenburger Weg 34
-09669 Frankenberg
- 
-Tel.: 03 72 06/ 88 73 - 19
-Fax: 03 72 06/ 88 73 - 60
-E-Mail: r.buergel@unicontrol.de
-Internet: www.unicontrol.de
- 
-Unicontrol Systemtechnik GmbH
-Geschäftsführer: Dipl.-Ing. Siegfried Heinze
-Sitz der Gesellschaft: Frankenberg
-Registergericht: Amtsgericht Chemnitz, HRB 15 475
-
-
-
---------------020606040600000400020507
+------_=_NextPart_001_01C93EB7.9CFC32C3
 Content-Type: text/plain;
- name="130-mpc52xx_erratum_364.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="130-mpc52xx_erratum_364.patch"
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-index 6117d3d..a2bb4d9 100644
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -496,6 +496,59 @@ mpc52xx_uart_break_ctl(struct uart_port *port, int ctl)
- 	spin_unlock_irqrestore(&port->lock, flags);
- }
- 
-+/*
-+ * This is a workaround for processor bug #364 described in MPC5200 (L25R) Errata.
-+ * The bug is still present in MPC5200B, but currently not listed in its errata sheet
-+ *
-+ * The workaround resets the baudrate to the slowest possible,
-+ * waits for a stable state and resets break state repeatedly if necessary.
-+ * Optionally it can release the lock while waiting.
-+ *
-+ * That baudrate is roughly port->uartclk / (1000 * 1000)
-+ * The minimum wait time for the first try has to include the time to wait for stop-bits and a character,
-+ * we wait for 2 chars to be sure
-+ * Consecutive waits must just receive one character.
-+ */
-+
-+static void mpc52xx_uart_reset_rx(struct uart_port *port, bool unlock, unsigned long flags)
-+{
-+#ifdef CONFIG_PPC_MPC52xx
-+	void reset_errors_and_wait(struct uart_port *port, bool unlock, unsigned long flags, unsigned int delay)
-+	{
-+		struct mpc52xx_psc __iomem *psc = PSC(port);
-+		out_8(&psc->command,MPC52xx_PSC_RST_ERR_STAT);
-+		if (unlock) {
-+			disable_irq(port->irq);
-+			spin_unlock_irqrestore(&port->lock, flags);
-+		}
-+		mdelay( delay );
-+		if (unlock) {
-+			spin_lock_irqsave(&port->lock, flags);
-+			enable_irq(port->irq);
-+		}
-+	}
-+
-+
-+	struct mpc52xx_psc __iomem *psc = PSC(port);
-+
-+	// One character on the serial port may consist of up to 12 bits.
-+	// So the time to receive one char is 12 /*bits*/ / (port->uartclk / (1000 * 1000) /*MHz -> Hz*/) * 1000 /*s -> ms*/,
-+	// but we'll wait 50% longer just to make sure
-+	unsigned int one_char_receive_duration = (12 * 1000) / (port->uartclk / (1000 * 1000) );
-+
-+	/* CT=0xFFFF sets the serial line to the minimal possible baudrate depending on the uartclk. */
-+	out_8(&psc->ctur, 0xFF);
-+	out_8(&psc->ctlr, 0xFF);
-+
-+	reset_errors_and_wait( port, unlock, flags, one_char_receive_duration * 2 );
-+
-+	while ((in_be16(&psc->mpc52xx_psc_status)) & MPC52xx_PSC_SR_RB) {
-+		reset_errors_and_wait( port, unlock, flags, one_char_receive_duration );
-+	}
-+#endif
-+	out_8(&psc->command,MPC52xx_PSC_RST_RX);
-+}
-+
- static int
- mpc52xx_uart_startup(struct uart_port *port)
- {
-@@ -510,7 +563,7 @@ mpc52xx_uart_startup(struct uart_port *port)
- 		return ret;
- 
- 	/* Reset/activate the port, clear and enable interrupts */
--	out_8(&psc->command, MPC52xx_PSC_RST_RX);
-+	mpc52xx_uart_reset_rx(port, false, 0);
- 	out_8(&psc->command, MPC52xx_PSC_RST_TX);
- 
- 	out_be32(&psc->sicr, 0);	/* UART mode DCD ignored */
-@@ -529,7 +582,7 @@ mpc52xx_uart_shutdown(struct uart_port *port)
- 	struct mpc52xx_psc __iomem *psc = PSC(port);
- 
- 	/* Shut down the port.  Leave TX active if on a console port */
--	out_8(&psc->command, MPC52xx_PSC_RST_RX);
-+	mpc52xx_uart_reset_rx(port, false, 0);
- 	if (!uart_console(port))
- 		out_8(&psc->command, MPC52xx_PSC_RST_TX);
- 
-@@ -588,9 +641,6 @@ mpc52xx_uart_set_termios(struct uart_port *port, struct ktermios *new,
- 	/* Get the lock */
- 	spin_lock_irqsave(&port->lock, flags);
- 
--	/* Update the per-port timeout */
--	uart_update_timeout(port, new->c_cflag, baud);
--
- 	/* Do our best to flush TX & RX, so we don't loose anything */
- 	/* But we don't wait indefinitly ! */
- 	j = 5000000;	/* Maximum wait */
-@@ -607,9 +657,12 @@ mpc52xx_uart_set_termios(struct uart_port *port, struct ktermios *new,
- 			"Some chars may have been lost.\n");
- 
- 	/* Reset the TX & RX */
--	out_8(&psc->command, MPC52xx_PSC_RST_RX);
-+	mpc52xx_uart_reset_rx(port, true, flags);
- 	out_8(&psc->command, MPC52xx_PSC_RST_TX);
- 
-+	/* Update the per-port timeout */
-+	uart_update_timeout(port, new->c_cflag, baud);
-+
- 	/* Send new mode settings */
- 	out_8(&psc->command, MPC52xx_PSC_SEL_MODE_REG_1);
- 	out_8(&psc->mode, mr1);
+Has anybody every used this chip in their design??
 
---------------020606040600000400020507--
+=20
+
+FYI, we have a custom board that I am bringing up right now that has a=20
+
+MPC8572E that has its PCIE1 connected to the subject line PLX8616=20
+
+PCI Express Switch...
+
+=20
+
+As part of the boot, we successfully discover config the internal bridge
+
+
+(its in root complex mode) inside the MPC8572E, and from 'many'=20
+
+view points (hardware LED's and status registers) - there seems to=20
+
+be 4 lanes in between the Switch and the CPU...
+
+=20
+
+But, at the first external config cycle - something goes very wrong -=20
+
+the response (or lack of that =3D=3D> 0xffff) is returned, as well as=20
+
+and the associated CCSR's PCIE1 interface is completely=20
+
+reset (we implement and attempt to recover this interface=20
+
+via Freescale's CPU Errata #4) - but beyond that - it=20
+
+never recovers and re-sync's these 4 lanes up....
+
+=20
+
+=20
+
+=20
+
+Has anybody had anything similar to this happen to them=20
+
+in this type of situation...
+
+=20
+
+We are grasping at straws, and yet to get any further than this...
+
+=20
+
+Thanks in advance...
+
+=20
+
+Tom Morrison
+Principal Software Engineer
+
+EMPIRIX=20
+20 Crosby Drive - Bedford, MA  01730
+p: 781.266.3567 f: 781.266.3670=20
+email: tmorrison@empirix.com <mailto:tmorrison@empirix.com> =20
+www.empirix.com <http://www.empirix.com/>=20
+
+
+
+
+=20
+
+
+------_=_NextPart_001_01C93EB7.9CFC32C3
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"PostalCode"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"State"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"City"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"place"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"Street"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"address"/>
+<!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:Verdana;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Has anybody every used this chip in their =
+design??<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>FYI, we have a custom board that I am bringing up =
+right now
+that has a <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>MPC8572E that has its PCIE1 connected to the subject =
+line
+PLX8616 <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>PCI Express =
+Switch&#8230;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>As part of the boot, we successfully discover config =
+the
+internal bridge <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>(its in root complex mode) inside the MPC8572E, and =
+from &#8216;many&#8217;
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>view points (hardware LED&#8217;s and status =
+registers) &#8211;
+there seems to <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>be 4 lanes in between the Switch and the =
+CPU&#8230;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>But, at the first external config cycle &#8211; =
+something goes
+very wrong &#8211; <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>the response (or lack of that </span></font><font =
+size=3D2
+face=3DWingdings><span =
+style=3D'font-size:10.0pt;font-family:Wingdings'>&egrave;</span></font><f=
+ont
+size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'> 0xffff) is returned,
+as well as <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>and the associated CCSR&#8217;s PCIE1 interface is =
+completely
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>reset (we implement and attempt to recover this =
+interface <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>via Freescale&#8217;s CPU Errata #4) &#8211; but =
+beyond that
+&#8211; it <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>never recovers and re-sync&#8217;s these 4 lanes =
+up&#8230;.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Has anybody had anything similar to this happen to =
+them <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>in this type of =
+situation&#8230;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>We are grasping at straws, and yet to get any further =
+than
+this&#8230;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanks in advance&#8230;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p style=3D'margin-bottom:12.0pt'><strong><b><font size=3D2 color=3Dnavy
+face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;color:navy'>Tom
+Morrison</span></font></b></strong><font size=3D2 color=3Dnavy =
+face=3DVerdana><span
+style=3D'font-size:10.0pt;font-family:Verdana;color:navy'><br>
+</span></font><font color=3Dnavy><span style=3D'color:navy'>Principal =
+Software
+Engineer</span></font><o:p></o:p></p>
+
+<p style=3D'margin-bottom:12.0pt'><strong><b><font size=3D2 color=3Dnavy
+face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;color:navy'>EMPIRIX</span><=
+/font></b></strong><font
+size=3D2 color=3Dnavy face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;
+color:navy'> </span></font><font color=3Dnavy><span =
+style=3D'color:navy'><br>
+<u1:Street u2:st=3D"on"><u1:address u2:st=3D"on"><st1:Street =
+w:st=3D"on"><st1:address
+ w:st=3D"on">20 Crosby =
+Drive</u1:address></u1:Street></st1:address></st1:Street> =
+</span></font><b><font
+color=3D"#ff6600"><span =
+style=3D'color:#FF6600;font-weight:bold'>-</span></font></b><font
+size=3D2 color=3Dnavy face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;
+color:navy'> <u1:place u2:st=3D"on"><u1:City u2:st=3D"on"><st1:place =
+w:st=3D"on"><st1:City
+ w:st=3D"on">Bedford</u1:City></st1:City>, <u1:State =
+u2:st=3D"on"><st1:State w:st=3D"on">MA</u1:State></st1:State><b><font
+ size=3D3 color=3Dblack face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;
+ font-family:"Times New =
+Roman";color:black;font-weight:bold'>&nbsp;</span></font></b><font
+ size=3D3 color=3Dblack face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;
+ font-family:"Times New Roman";color:black'>&nbsp;<u1:PostalCode =
+u2:st=3D"on"></span></font><st1:PostalCode
+ =
+w:st=3D"on">01730</u1:PostalCode></u1:place></st1:PostalCode></st1:place>=
+</span></font><br>
+<b><font color=3D"#ff6600"><span =
+style=3D'color:#FF6600;font-weight:bold'>p:</span></font></b><font
+color=3D"#ff6600"><span style=3D'color:#FF6600'> </span></font><font =
+size=3D2
+color=3Dnavy face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;
+color:navy'>781.266.3567 </span></font><b><font size=3D2 =
+color=3D"#ff6600"
+face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;color:#FF6600;
+font-weight:bold'>f:</span></font></b> <font size=3D2 color=3Dnavy =
+face=3DVerdana><span
+style=3D'font-size:10.0pt;font-family:Verdana;color:navy'>781.266.3670 =
+</span></font><b><span
+style=3D'font-weight:bold'><br>
+</span></b><b><font size=3D2 color=3D"#ff6600" face=3DVerdana><span =
+style=3D'font-size:
+10.0pt;font-family:Verdana;color:#FF6600;font-weight:bold'>email:</span><=
+/font></b>
+<u><font size=3D2 color=3Dblue face=3DVerdana><span =
+style=3D'font-size:10.0pt;
+font-family:Verdana;color:blue'><a =
+href=3D"mailto:tmorrison@empirix.com"><font
+size=3D3><span =
+style=3D'font-size:12.0pt'>tmorrison@empirix.com</span></font></a></span>=
+</font></u><font
+size=3D2 color=3Dnavy face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;
+color:navy'> </span></font><font size=3D2 color=3D"#ff6600" =
+face=3DVerdana><span
+style=3D'font-size:10.0pt;font-family:Verdana;color:#FF6600'><br>
+<a href=3D"http://www.empirix.com/"><font size=3D3><span =
+style=3D'font-size:12.0pt'>www.empirix.com</span></font></a></span></font=
+><font
+size=3D2 color=3Dnavy face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;
+color:navy'><br>
+<br>
+<br>
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C93EB7.9CFC32C3--
