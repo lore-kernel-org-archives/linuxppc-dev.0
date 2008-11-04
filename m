@@ -1,16 +1,34 @@
-Return-Path: <AymanE@tanisys.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Device tree configuration for I2C eeprom
-Date: Tue, 4 Nov 2008 15:00:03 -0600
-Message-ID: <16691A8B34B5D9458EA3A1C37A11555A0137F85B@tanisys-ex2.Tanisys.Local>
-In-Reply-To: <4910AAC4.2090303@embedded-sol.com>
-References: <9e4733910809181521r3cd74119tfedd36567e3b5394@mail.gmail.com>	<20080919050441.GD25528@secretlab.ca>	<16691A8B34B5D9458EA3A1C37A11555A0137F857@tanisys-ex2.Tanisys.Local>	<49107C46.8060205@embedded-sol.com>
-	<16691A8B34B5D9458EA3A1C37A11555A0137F85A@tanisys-ex2.Tanisys.Local>
-	<4910AAC4.2090303@embedded-sol.com>
-From: "Ayman El-Khashab" <AymanE@tanisys.com>
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <mcrane@fusionio.com>
+Received: from mx1.fusionio.com (mx1.fusionio.com [64.244.102.30])
+	by ozlabs.org (Postfix) with ESMTP id 21479DDE0A
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  5 Nov 2008 05:50:36 +1100 (EST)
+Received: from zim.fusionio.com (localhost [127.0.0.1])
+	by mx1.fusionio.com (Spam Firewall) with ESMTP id 380C156434
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  4 Nov 2008 11:32:22 -0700 (MST)
+Received: from zim.fusionio.com ([10.101.1.182]) by mx1.fusionio.com with
+	ESMTP id E9VHHi1HgXGGIh3H for <linuxppc-embedded@ozlabs.org>;
+	Tue, 04 Nov 2008 11:32:22 -0700 (MST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by zim.fusionio.com (Postfix) with ESMTP id 3D45B4500002
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  4 Nov 2008 11:32:22 -0700 (MST)
+Received: from zim.fusionio.com ([127.0.0.1])
+	by localhost (zim.fusionio.com [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id EtX-ip7pT4Gf for <linuxppc-embedded@ozlabs.org>;
+	Tue,  4 Nov 2008 11:32:14 -0700 (MST)
+Received: from mcrane.int.fusionio.com (unknown [64.244.102.2])
+	by zim.fusionio.com (Postfix) with ESMTP id E00104500001
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  4 Nov 2008 11:32:14 -0700 (MST)
+Message-Id: <385918C0-E800-4DA0-92F3-2755BCEB7434@fusionio.com>
+From: Mitch Crane <mcrane@fusionio.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: booting 32 bit kernel on G5
+Date: Tue, 4 Nov 2008 11:32:10 -0700
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,38 +39,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Felix,
+Hi all,
 
-Thanks, below is what I finally did that works ...
+First off, I apologize for not searching the archives, I'm afraid the  
+link is broken: http://lists.linuxppc.org/rules.html
 
-Felix Radensky <mailto:felix@embedded-sol.com> said on Tuesday, November
-04, 2008 2:04 PM:
->>=20
-> The first entry in the table matches "compatible" property in device
-> tree, the second one - i2c driver name, and the third one - i2c
-> device name in the driver id table (see at24_ids[] in at24.c). So in
-> your case it should look like this:
->=20
-> {"atmel,at24c128",  "at24",   "24c128"}
-> {"spd,at24c02",       "at24",   "spd"}
+My AMCC Katmai is on order.  In the meantime I'd like to try building  
+and running my driver on my Mac G5 PPC64, running in 32 bit mode.  I  
+have a recent YDL distro installed, and can rebuild the kernel,  
+switching off 64 bit in the kernel build config.  However, when I try  
+to boot the 32 bit kernel it hangs in the open firmware "release keys  
+to continue" screen.  Can someone please lend a hand here?  Has anyone  
+accomplished a 32 bit boot on a Mac G5 with a 2.6 kernel?
 
-Then I modified my device tree to read, per an example I found
-elsewhere.  The combination
-of these two changes made everything work.  Again, thanks!
+thank you!
+Mitch.
 
-                                at24@50 {
-                                        compatible =3D "at,24c128";
-                                        reg =3D <0x50>;
-                                };
-                                spd@51 {
-                                        compatible =3D "spd,24c02";
-                                        reg =3D <0x51>;
-                                };
-                                at24@52 {
-                                        compatible =3D "at,24c128";
-                                        reg =3D <0x52>;
-                                };
-                                at24@53 {
-                                        compatible =3D "at,24c128";
-                                        reg =3D <0x53>;
-                                };
+
+CONFIDENTIAL
+
+This document and attachments contain information from Fusion-io, Inc. which is confidential and/or legally privileged. 
+The information is intended only for the use of the individual or entity named on this transmission. 
+If you are not the intended recipient, you are hereby notified that any disclosure, copying, distribution or taking of any 
+action in reliance on the contents of this emailed information is strictly prohibited, and that the documents should be returned to Fusion-io, Inc. immediately. 
+In this regard, if you have received this email in error, please notify us by return email immediately.
