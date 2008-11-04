@@ -1,22 +1,24 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C3E8EDE067
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Nov 2008 08:33:07 +1100 (EST)
-Date: Tue, 4 Nov 2008 13:32:31 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1 v2] powerpc: hugetlb pgtable cache access cleanup
-Message-Id: <20081104133231.fb224e68.akpm@linux-foundation.org>
-In-Reply-To: <490A2F4D.7030908@linux.vnet.ibm.com>
-References: <490A2F4D.7030908@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: nickpiggin@yahoo.com.au, kniht@linux.vnet.ibm.com, dwg@au1.ibm.com,
-	linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-2.cisco.com (sj-iport-2.cisco.com [171.71.176.71])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-2.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 09970DDF90
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Nov 2008 08:37:22 +1100 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Subject: Re: [PATCH] IB/ehca: remove reference to the QP in case of port
+	activation failure
+References: <200811041554.45560.ossrosch@linux.vnet.ibm.com>
+Date: Tue, 04 Nov 2008 13:37:08 -0800
+In-Reply-To: <200811041554.45560.ossrosch@linux.vnet.ibm.com> (Stefan
+	Roscher's message of "Tue, 4 Nov 2008 15:54:43 +0100")
+Message-ID: <adawsfjrx4r.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: fenkes@de.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+	OF-EWG <ewg@lists.openfabrics.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
+	alexschm@de.ibm.com, stefan.roscher@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +28,4 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 30 Oct 2008 17:03:57 -0500
-Jon Tollefson <kniht@linux.vnet.ibm.com> wrote:
-
-> It was suggested by Andrew that using a macro that made an array
-> look like a function call made it harder to understand the code.
-> Cleaned up use of macro.  We now reference the pgtable_cache array
-> directly instead of using a macro.  
-
-I felt compelled to apply this.  See http://en.wikipedia.org/wiki/Sunk_costs
-to see why I am an irrational actor.
+thanks, applied
