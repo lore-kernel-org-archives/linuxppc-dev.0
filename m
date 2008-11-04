@@ -1,13 +1,22 @@
-Return-Path: <tmorrison@empirix.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id E7AE6DDF72
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Nov 2008 07:23:20 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH RFC v2] net: add PCINet driver
+Date: Tue, 4 Nov 2008 21:23:03 +0100
+References: <20081029202027.GH12879@ovro.caltech.edu>
+	<200811041309.25869.arnd@arndb.de>
+	<20081104173414.GB4641@ovro.caltech.edu>
+In-Reply-To: <20081104173414.GB4641@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C93EB7.9CFC32C3"
-Subject: PCI Express between MPC8572 & PLX8616
-Date: Tue, 4 Nov 2008 14:59:39 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010EE4CF2A@EMPBEDEX.empirix.com>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: <linuxppc-dev@ozlabs.org>,
-	<linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200811042123.03819.arnd@arndb.de>
+Cc: netdev@vger.kernel.org, Stephen Hemminger <shemminger@vyatta.com>,
+	Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	linux-kernel@vger.kernel.org, Ira Snyder <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,397 +26,248 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C93EB7.9CFC32C3
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-Has anybody every used this chip in their design??
-
-=20
-
-FYI, we have a custom board that I am bringing up right now that has a=20
-
-MPC8572E that has its PCIE1 connected to the subject line PLX8616=20
-
-PCI Express Switch...
-
-=20
-
-As part of the boot, we successfully discover config the internal bridge
-
-
-(its in root complex mode) inside the MPC8572E, and from 'many'=20
-
-view points (hardware LED's and status registers) - there seems to=20
-
-be 4 lanes in between the Switch and the CPU...
-
-=20
-
-But, at the first external config cycle - something goes very wrong -=20
-
-the response (or lack of that =3D=3D> 0xffff) is returned, as well as=20
-
-and the associated CCSR's PCIE1 interface is completely=20
-
-reset (we implement and attempt to recover this interface=20
-
-via Freescale's CPU Errata #4) - but beyond that - it=20
-
-never recovers and re-sync's these 4 lanes up....
-
-=20
-
-=20
-
-=20
-
-Has anybody had anything similar to this happen to them=20
-
-in this type of situation...
-
-=20
-
-We are grasping at straws, and yet to get any further than this...
-
-=20
-
-Thanks in advance...
-
-=20
-
-Tom Morrison
-Principal Software Engineer
-
-EMPIRIX=20
-20 Crosby Drive - Bedford, MA  01730
-p: 781.266.3567 f: 781.266.3670=20
-email: tmorrison@empirix.com <mailto:tmorrison@empirix.com> =20
-www.empirix.com <http://www.empirix.com/>=20
-
-
-
-
-=20
-
-
-------_=_NextPart_001_01C93EB7.9CFC32C3
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"PostalCode"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"State"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"City"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"place"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"Street"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"address"/>
-<!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Wingdings;
-	panose-1:5 0 0 0 0 0 0 0 0 0;}
-@font-face
-	{font-family:Verdana;
-	panose-1:2 11 6 4 3 5 4 4 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-p
-	{mso-margin-top-alt:auto;
-	margin-right:0in;
-	mso-margin-bottom-alt:auto;
-	margin-left:0in;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Has anybody every used this chip in their =
-design??<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>FYI, we have a custom board that I am bringing up =
-right now
-that has a <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>MPC8572E that has its PCIE1 connected to the subject =
-line
-PLX8616 <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>PCI Express =
-Switch&#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>As part of the boot, we successfully discover config =
-the
-internal bridge <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>(its in root complex mode) inside the MPC8572E, and =
-from &#8216;many&#8217;
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>view points (hardware LED&#8217;s and status =
-registers) &#8211;
-there seems to <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>be 4 lanes in between the Switch and the =
-CPU&#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>But, at the first external config cycle &#8211; =
-something goes
-very wrong &#8211; <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>the response (or lack of that </span></font><font =
-size=3D2
-face=3DWingdings><span =
-style=3D'font-size:10.0pt;font-family:Wingdings'>&egrave;</span></font><f=
-ont
-size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'> 0xffff) is returned,
-as well as <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>and the associated CCSR&#8217;s PCIE1 interface is =
-completely
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>reset (we implement and attempt to recover this =
-interface <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>via Freescale&#8217;s CPU Errata #4) &#8211; but =
-beyond that
-&#8211; it <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>never recovers and re-sync&#8217;s these 4 lanes =
-up&#8230;.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Has anybody had anything similar to this happen to =
-them <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>in this type of =
-situation&#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>We are grasping at straws, and yet to get any further =
-than
-this&#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks in advance&#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p style=3D'margin-bottom:12.0pt'><strong><b><font size=3D2 color=3Dnavy
-face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;color:navy'>Tom
-Morrison</span></font></b></strong><font size=3D2 color=3Dnavy =
-face=3DVerdana><span
-style=3D'font-size:10.0pt;font-family:Verdana;color:navy'><br>
-</span></font><font color=3Dnavy><span style=3D'color:navy'>Principal =
-Software
-Engineer</span></font><o:p></o:p></p>
-
-<p style=3D'margin-bottom:12.0pt'><strong><b><font size=3D2 color=3Dnavy
-face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;color:navy'>EMPIRIX</span><=
-/font></b></strong><font
-size=3D2 color=3Dnavy face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;
-color:navy'> </span></font><font color=3Dnavy><span =
-style=3D'color:navy'><br>
-<u1:Street u2:st=3D"on"><u1:address u2:st=3D"on"><st1:Street =
-w:st=3D"on"><st1:address
- w:st=3D"on">20 Crosby =
-Drive</u1:address></u1:Street></st1:address></st1:Street> =
-</span></font><b><font
-color=3D"#ff6600"><span =
-style=3D'color:#FF6600;font-weight:bold'>-</span></font></b><font
-size=3D2 color=3Dnavy face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;
-color:navy'> <u1:place u2:st=3D"on"><u1:City u2:st=3D"on"><st1:place =
-w:st=3D"on"><st1:City
- w:st=3D"on">Bedford</u1:City></st1:City>, <u1:State =
-u2:st=3D"on"><st1:State w:st=3D"on">MA</u1:State></st1:State><b><font
- size=3D3 color=3Dblack face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt;
- font-family:"Times New =
-Roman";color:black;font-weight:bold'>&nbsp;</span></font></b><font
- size=3D3 color=3Dblack face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt;
- font-family:"Times New Roman";color:black'>&nbsp;<u1:PostalCode =
-u2:st=3D"on"></span></font><st1:PostalCode
- =
-w:st=3D"on">01730</u1:PostalCode></u1:place></st1:PostalCode></st1:place>=
-</span></font><br>
-<b><font color=3D"#ff6600"><span =
-style=3D'color:#FF6600;font-weight:bold'>p:</span></font></b><font
-color=3D"#ff6600"><span style=3D'color:#FF6600'> </span></font><font =
-size=3D2
-color=3Dnavy face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;
-color:navy'>781.266.3567 </span></font><b><font size=3D2 =
-color=3D"#ff6600"
-face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;color:#FF6600;
-font-weight:bold'>f:</span></font></b> <font size=3D2 color=3Dnavy =
-face=3DVerdana><span
-style=3D'font-size:10.0pt;font-family:Verdana;color:navy'>781.266.3670 =
-</span></font><b><span
-style=3D'font-weight:bold'><br>
-</span></b><b><font size=3D2 color=3D"#ff6600" face=3DVerdana><span =
-style=3D'font-size:
-10.0pt;font-family:Verdana;color:#FF6600;font-weight:bold'>email:</span><=
-/font></b>
-<u><font size=3D2 color=3Dblue face=3DVerdana><span =
-style=3D'font-size:10.0pt;
-font-family:Verdana;color:blue'><a =
-href=3D"mailto:tmorrison@empirix.com"><font
-size=3D3><span =
-style=3D'font-size:12.0pt'>tmorrison@empirix.com</span></font></a></span>=
-</font></u><font
-size=3D2 color=3Dnavy face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;
-color:navy'> </span></font><font size=3D2 color=3D"#ff6600" =
-face=3DVerdana><span
-style=3D'font-size:10.0pt;font-family:Verdana;color:#FF6600'><br>
-<a href=3D"http://www.empirix.com/"><font size=3D3><span =
-style=3D'font-size:12.0pt'>www.empirix.com</span></font></a></span></font=
-><font
-size=3D2 color=3Dnavy face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;
-color:navy'><br>
-<br>
-<br>
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C93EB7.9CFC32C3--
+On Tuesday 04 November 2008, Ira Snyder wrote:
+> On Tue, Nov 04, 2008 at 01:09:25PM +0100, Arnd Bergmann wrote:
+> >
+> > Why 'depends on !PCI'? This means that you cannot build a kernel that
+> > is able to run both as host and endpoint for PCInet, right?
+> > 
+> 
+> Yes, that is correct. I did this because the Linux PCI code does some
+> relatively nasty things in agent mode. One thing that consistently
+> crashed my box was running through the quirks list and trying to
+> re-initialize an e100 that was in my box.
+> 
+> Remember, this is a PCI agent. It shouldn't be re-initializing the other
+> hardware on the PCI bus.
+
+Yes, that makes sense. However, you should still be able to have the
+PCI code built into the kernel, as long as you prevent it from scanning
+the bus on the machine that is in agent/endpoint mode.
+
+This should be made clear in the device tree. On the QS22 machine, we
+remove the "pci" device from the device tree, and add a "pcie-ep"
+device.
+
+> I left it optional so I could turn it on and off easily. I have no
+> strong feelings on keeping it optional.
+> 
+> Does the PCI bus reliably transfer data? I'm not sure. I left it there
+> so that we could at least turn on checksumming if there was a problem.
+
+Yes, PCI guarantees reliable transfers.
+ 
+> > > +struct circ_buf_desc {
+> > > +	__le32 sc;
+> > > +	__le32 len;
+> > > +	__le32 addr;
+> > > +} __attribute__((__packed__));
+> > 
+> > It would be useful to always force aligning the desciptors to the whole
+> > 32 bit and avoid the packing here. Unaligned accesses are inefficient on
+> > many systems.
+> > 
+> 
+> I don't really know how to do that. I got a warning here from sparse
+> telling me something about expensive pointer subtraction. Adding a dummy
+> 32bit padding variable got rid of the warning, but I didn't change the
+> driver.
+
+Ok, I see. However, adding the packed attribute makes it more expensive
+to use.
+
+> > > +typedef struct circ_buf_desc cbd_t;
+> > 
+> > Also, don't pass structures by value if they don't fit into one or
+> > two registers.
+> > 
+> 
+> These are only used for pointers to the buffer descriptors (in RAM on
+> the Freescale) that hold packet information. I never copy them directly.
+
+Ok, then you should not have a typedef.
+
+> > > +/* Buffer Descriptor Accessors */
+> > > +#define CBDW_SC(_cbd, _sc) iowrite32((_sc), &(_cbd)->sc)
+> > > +#define CBDW_LEN(_cbd, _len) iowrite32((_len), &(_cbd)->len)
+> > > +#define CBDW_ADDR(_cbd, _addr) iowrite32((_addr), &(_cbd)->addr)
+> > > +
+> > > +#define CBDR_SC(_cbd) ioread32(&(_cbd)->sc)
+> > > +#define CBDR_LEN(_cbd) ioread32(&(_cbd)->len)
+> > > +#define CBDR_ADDR(_cbd) ioread32(&(_cbd)->addr)
+> > 
+> > We have found that accessing remote descriptors using mmio read is
+> > rather slow, and changed the code to always do local reads and
+> > remote writes.
+> > 
+> Interesting. I don't know how you would get network speed doing this.
+> X86 systems don't have a DMA conttroller. The entire purpose of making
+> the Freescale do all the copying was to use its DMA controller.
+> 
+> Using the DMA controller to transfer all of the data took my transfer
+> speed from ~3MB/sec to ~45MB/sec. While that is a good increase, it
+> could be better. I should be able to hit close to 133MB/sec (the limit
+> of PCI)
+
+Then I think I misunderstood something about this driver. Are these
+descriptors accessed by the DMA engine, or by software? If it's the
+DMA engine accessing them, can you put the descriptors on both sides
+of the bus rather than just on one side?
+
+Which side allocates them anyway? Since you use ioread32/iowrite32
+on the ppc side, it looks like they are on the PCI host, which does
+not seem to make much sense, because the ppc memory is much closer
+to the DMA engine?
+
+Obviously, you want the DMA engine to do the data transfers, but here, you
+use ioread32 for mmio transfers to the descriptors, which is slow.
+
+> Correct. This was done to make both sides as identical as possible. The
+> Freescale exports the entire 1MB block of IMMR registers at PCI BAR0. So
+> I have to use the offsets on the host side.
+> 
+> From the client side, I could just map what I need, but that would make
+> the two drivers diverge. I was trying to keep them the same.
+
+Ah, I see. We had the same problem on Axon, and I'm still looking for a
+good solution. The best option is probably to abstract the immr access
+in some way and provide a driver that implements them on top of PCI.
+> 
+> > > +static void wqtuart_rx_char(struct uart_port *port, const char ch);
+> > > +static void wqtuart_stop_tx(struct uart_port *port);
+> > 
+> > You should try to avoid forward declarations for static functions.
+> > If you order the function implementation correctly, that will
+> > also give you the expected reading order in the driver.
+> > 
+> 
+> Yep, I tried to do this. I couldn't figure out a sane ordering that
+> would work. I tried to keep the network and uart as seperate as possible
+> in the code.
+
+I'd suggest splitting the uart code into a separate driver then.
+
+> > > +struct wqt_dev {
+> > > +	/*--------------------------------------------------------------------*/
+> > > +	/* OpenFirmware Infrastructure                                        */
+> > > +	/*--------------------------------------------------------------------*/
+> > > +	struct of_device *op;
+> > > +	struct device *dev;
+> > 
+> > Why the dev? You can always get that from the of_device, right?
+> > 
+> 
+> Yes. I stored it there to make it identical to the host driver. By doing
+> this, both drivers have code that says "dev_debug(priv->dev, ...)"
+> rather than:
+> 
+> Host:
+> dev_debug(&priv->pdev->dev, ...)
+> 
+> Freescale:
+> dev_debug(&priv->op->dev, ...)
+
+Ok. You can just store the dev pointer then, and leave out the op pointer.
+You can always do a container_of() to get back to it.
+ 
+> Yes, I agree. How do you make two Linux drivers that can be loaded for
+> the same hardware at the same time? :) AFAIK, you cannot.
+> 
+> I NEED two functions accessible at the same time, network (to transfer
+> data) and uart (to control my bootloader).
+> 
+> I use the uart to interact with the bootloader (U-Boot) and tell it
+> where to tftp a kernel. I use the network to transfer the kernel.
+> 
+> So you see, I really do need them both at the same time. If you know a
+> better way to do this, please let me know!
+> 
+> It was possible to write seperate U-Boot drivers, but only by being
+> careful to not conflict in my usage of the hardware.
+
+Ok, I see. I fear any nice solution would make the u-boot drivers much
+more complex.
+ 
+> > > +	struct workqueue_struct *wq;
+> > 
+> > A per-device pointer to a workqueue_struct is unusual. What are you doing
+> > this for? How about using the system work queue?
+> > 
+> 
+> Look through the code carefully, especially at uart_tx_work_fn(), which
+> calls do_send_message().
+> 
+> do_send_message() can sleep for a long time. If I use the shared
+> workqueue, I block ALL OTHER USERS of the queue for the time I am
+> asleep. They cannot run.
+
+ok.
+
+> The LDD3 book says not to use the shared workqueue if you are going to
+> sleep for long periods. I followed their advice.
+
+ok.
+
+> > > +	/*--------------------------------------------------------------------*/
+> > > +	/* Ethernet Device Infrastructure                                     */
+> > > +	/*--------------------------------------------------------------------*/
+> > > +	struct net_device *ndev;
+> > 
+> > Why make this a separate structure? If you have one of these per net_device,
+> > you should embed the net_device into your own structure.
+> > 
+> 
+> This structure is embedded in struct net_device! Look at how
+> alloc_etherdev() works. You pass it the size of your private data
+> structure and it allocates the space for you.
+
+right, I remember now. Unfortunately, alloc_etherdev is a little bit
+different from many other kernel interfaces.
+
+> > > +	struct tasklet_struct tx_complete_tasklet;
+> > 
+> > Using a tasklet for tx processing sounds fishy because most of the
+> > network code already runs at softirq time. You do not gain anything
+> > by another softirq context.
+> > 
+> 
+> I didn't want to run the TX cleanup routine at hard irq time, because it
+> can potentially take some time to run. I would rather run it with hard
+> interrupts enabled.
+
+sure.
+
+> This DOES NOT do TX processing, it only frees skbs that have been
+> transferred. I used the network stack to do as much as possible, of
+> course.
+
+Most drivers now do that from the *rx* poll function, and call
+netif_rx_schedule when they get a tx interrupt.
+
+> > If this is in an interrupt handler, why disable the interrupts again?
+> > The same comment applies to many of the other places where you
+> > use spin_lock_irqsave rather than spin_lock or spin_lock_irq.
+> > 
+> 
+> I tried to make the locking do only what was needed. I just couldn't get
+> it correct unless I used spin_lock_irqsave(). I was able to get the
+> system to deadlock otherwise. This is why I posted the driver for
+> review, I could use some help here.
+> 
+> It isn't critical anyway. You can always use spin_lock_irqsave(), it is
+> just a little slower, but it will always work :)
+
+I like the documenting character of the spinlock functions. E.g. if you
+use spin_lock_irq() in a function, it is obvious that interrupts are enabled,
+and if you use spin_lock() on a lock that requires disabling interrupts,
+you know that interrupts are already off.
+ 
+> Thanks so much for the review! I hope we can work together to get
+> something that can be merged into mainline Linux. I'm willing to write
+> code, I just need some direction from more experienced kernel
+> developers.
+
+Great, I can certainly help with that. Please CC me on anything related
+to this driver.
+
+	Arnd <><
