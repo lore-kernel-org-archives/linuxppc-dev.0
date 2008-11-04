@@ -1,21 +1,20 @@
-Return-Path: <linuxppc-embedded@ml.breakpoint.cc>
-Date: Tue, 4 Nov 2008 18:17:01 +0100
-From: Sebastian Andrzej Siewior <linuxppc-embedded@ml.breakpoint.cc>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Device tree configuration for I2C eeprom
-Message-ID: <20081104171701.GA8946@Chamillionaire.breakpoint.cc>
-References: <16691A8B34B5D9458EA3A1C37A11555A0137F7B6@tanisys-ex2.Tanisys.Local>
-	<20080918221335.GA6420@Chamillionaire.breakpoint.cc>
-	<9e4733910809181521r3cd74119tfedd36567e3b5394@mail.gmail.com>
-	<20080919050441.GD25528@secretlab.ca>
-	<20080919071238.GA8773@Chamillionaire.breakpoint.cc>
-	<fa686aa40811040828y23d0d65bsebc3f542c57291a@mail.gmail.com>
-	<fa686aa40811040829r4b68fb4axde8612cc3d06cca@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <fa686aa40811040829r4b68fb4axde8612cc3d06cca@mail.gmail.com>
-Cc: Ayman El-Khashab <AymanE@tanisys.com>, devicetree-discuss@ozlabs.org,
-	Linuxppc-embedded@ozlabs.org
+Return-Path: <hbausley@deltatau.com>
+Received: from mail.deltatau.com (smtp.deltatau.com [64.60.44.211])
+	by ozlabs.org (Postfix) with ESMTP id 5F5D3DDE24
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  5 Nov 2008 06:10:41 +1100 (EST)
+Subject: Re: Accessing PCI-E resources on 460EX
+From: Henry Bausley <hbausley@deltatau.com>
+To: Felix Radensky <felix@embedded-sol.com>
+In-Reply-To: <490F80E1.1060909@embedded-sol.com>
+References: <490F6882.6050101@embedded-sol.com>
+	<16691A8B34B5D9458EA3A1C37A11555A0137F852@tanisys-ex2.Tanisys.Local>
+	<490F80E1.1060909@embedded-sol.com>
+Content-Type: text/plain
+Date: Tue, 04 Nov 2008 10:40:22 -0800
+Message-Id: <1225824022.12185.11.camel@lt-linuxhenry>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,12 +25,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-* Grant Likely | 2008-11-04 09:29:09 [-0700]:
+Did you try mmap2.  It probable is not in glibc so you will have to call
+it using syscall.
 
->Oops, I already replied to this one.  Sorry for the duplicate response.
+#include <sys/syscall.h>
 
-No worries. You haven't been that detailed like the last time :)
+unsigned *pdata  = (unsigned *)syscall(__NR_mmap2,0,0x100000,PROT_READ|
+PROT_WRITE,MAP_SHARED,fd, 0xe80000 );
 
->g.
+The address is in page offsets that why the address is 0xe80000.
 
-Sebastian
+
+On Tue, 2008-11-04 at 00:53 +0200, Felix Radensky wrote:
+> Ayman El-Khashab wrote:
+> >
+> > What works for me is using the mmap64 as in the following example to
+> > map the physical address, fd is the file descriptor for /dev/mem
+> >
+> > off64_t offset = static_cast<off64_t>(your physical address);
+> > void * const p =
+> > mmap64(0,256,PROT_WRITE|PROT_READ,MAP_SHARED,fd,offset);
+> >
+> > The only thing to note is that the address you pass should be aligned 
+> > to the page boundry even though some devices are not.
+> >   
+> 
+> Thanks, Ayman. I've tried that, but I'm still getting the same error.
+> My physical address is 0xe80000000, length is 0x100000.
+> 
+> Felix.
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
