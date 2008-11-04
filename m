@@ -1,21 +1,34 @@
-Return-Path: <r.buergel@unicontrol.de>
-Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.161])
-	by ozlabs.org (Postfix) with ESMTP id 64214DDDEC
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Nov 2008 01:14:36 +1100 (EST)
-Message-ID: <491058A3.9040807@unicontrol.de>
-Date: Tue, 04 Nov 2008 15:13:55 +0100
-From: =?ISO-8859-15?Q?Ren=E9_B=FCrgel?= <r.buergel@unicontrol.de>
+Return-Path: <ossrosch@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 92F19DDE07
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Nov 2008 01:56:08 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e38.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mA4EtGFK014951
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Nov 2008 07:55:16 -0700
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mA4Etvkt062516
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Nov 2008 07:56:01 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mA4EtqAZ007773
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Nov 2008 07:55:52 -0700
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	Roland Dreier <rolandd@cisco.com>, LKML <linux-kernel@vger.kernel.org>,
+	"OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH] IB/ehca: remove reference to the QP in case of port
+	activation failure
+Date: Tue, 4 Nov 2008 15:54:43 +0100
 MIME-Version: 1.0
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH V2] workaround for mpc52xx erratum #364 (serial may not
-	be reset in break state)
-References: <490F51E7.3020309@unicontrol.de>
-	<fa686aa40811031255w3d9a065dgb0eb7ad4b26c9651@mail.gmail.com>
-	<4910274E.5030305@unicontrol.de>
-	<20081104111545.GB17864@pengutronix.de>
-In-Reply-To: <20081104111545.GB17864@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200811041554.45560.ossrosch@linux.vnet.ibm.com>
+Cc: fenkes@de.ibm.com, stefan.roscher@de.ibm.com, alexschm@de.ibm.com,
+	raisch@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,64 +38,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfram Sang schrieb:
-> Hello Rene,
->
-> I haven't actually applied the patch, just a few comments from a
-> glimpse:
->   
-> Major nit: Please add to the comment that this bug is still present on
-> the MPC5200B, although it is not in its errata sheet. Thils will avoid
-> later confusion. (Out of interest, did you contact Freescale about this
-> bug?)
->   
-Comment added, contacting Freescale is still on my to-do-list :)
->   
->> + *
->> + * The workaround resets the baudrate to 4800, waits for a stable state and resets break state repeatedly if necessary.
->> + * Optionally it can release the lock while waiting.
->> + * 1 character at 4800 baud takes 2ms, 3ms should be enough for 1 character at higher speed and 1 char at lowest
->> + * works only with longer delays
->>     
->
-> Did I get it right that there are cases where the workaround won't work?
->   
-Yes, currently it doesn't work when receiving with less than 4800 baud. 
-I'll try to fix this.
->   
->> +{
->> +	struct mpc52xx_psc __iomem *psc = PSC(port);
->> +#ifdef CONFIG_PPC_MPC52xx
->> +	out_8(&psc->ctur,0x01);
->> +	out_8(&psc->ctlr,0xae);
->>     
->
-> Those are magic values. If you can't build them using defined
-> constants, at least document them, please.
->   
-The magic numbers will hopefully vanish after generalizing the patch to 
-work with every baudrate.
-> Thanks!
->
->    Wolfram Sang
->
->   
-Thanks for your suggestions
+If the initialization of a special QP (e.g. AQP1) fails due to a software timeout,
+we have to remove the reference to that special QP struct from the port struct
+preventing the driver to access the QP, since it will be/has been destroyed
+by the caller, ie in this case ib_mad.
+This patch will apply cleanly on top of 2.6.28 git tree.
 
+Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
+---
+ drivers/infiniband/hw/ehca/ehca_irq.c |    7 +++++--
+ drivers/infiniband/hw/ehca/ehca_qp.c  |    5 +++++
+ 2 files changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
+index cb55be0..9e43459 100644
+--- a/drivers/infiniband/hw/ehca/ehca_irq.c
++++ b/drivers/infiniband/hw/ehca/ehca_irq.c
+@@ -370,6 +370,10 @@ static void parse_ec(struct ehca_shca *shca, u64 eqe)
+ 	switch (ec) {
+ 	case 0x30: /* port availability change */
+ 		if (EHCA_BMASK_GET(NEQE_PORT_AVAILABILITY, eqe)) {
++			/* only for autodetect mode important */
++			if (ehca_nr_ports >= 0)
++				break;
++
+ 			int suppress_event;
+ 			/* replay modify_qp for sqps */
+ 			spin_lock_irqsave(&sport->mod_sqp_lock, flags);
+@@ -387,8 +391,7 @@ static void parse_ec(struct ehca_shca *shca, u64 eqe)
+ 			sport->port_state = IB_PORT_ACTIVE;
+ 			dispatch_port_event(shca, port, IB_EVENT_PORT_ACTIVE,
+ 					    "is active");
+-			ehca_query_sma_attr(shca, port,
+-					    &sport->saved_attr);
++			ehca_query_sma_attr(shca, port, &sport->saved_attr);
+ 		} else {
+ 			sport->port_state = IB_PORT_DOWN;
+ 			dispatch_port_event(shca, port, IB_EVENT_PORT_ERR,
+diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
+index 4d54b9f..9e05ee2 100644
+--- a/drivers/infiniband/hw/ehca/ehca_qp.c
++++ b/drivers/infiniband/hw/ehca/ehca_qp.c
+@@ -860,6 +860,11 @@ static struct ehca_qp *internal_create_qp(
+ 	if (qp_type == IB_QPT_GSI) {
+ 		h_ret = ehca_define_sqp(shca, my_qp, init_attr);
+ 		if (h_ret != H_SUCCESS) {
++			kfree(my_qp->mod_qp_parm);
++			my_qp->mod_qp_parm = NULL;
++			/* the QP pointer is no longer valid */
++			shca->sport[init_attr->port_num - 1].ibqp_sqp[qp_type] =
++				NULL;
+ 			ret = ehca2ib_return_code(h_ret);
+ 			goto create_qp_exit6;
+ 		}
 -- 
-René Bürgel
-Software Engineer
-Unicontrol Systemtechnik GmbH
-OT Dittersbach
-Sachsenburger Weg 34
-09669 Frankenberg
- 
-Tel.: 03 72 06/ 88 73 - 19
-Fax: 03 72 06/ 88 73 - 60
-E-Mail: r.buergel@unicontrol.de
-Internet: www.unicontrol.de
- 
-Unicontrol Systemtechnik GmbH
-Geschäftsführer: Dipl.-Ing. Siegfried Heinze
-Sitz der Gesellschaft: Frankenberg
-Registergericht: Amtsgericht Chemnitz, HRB 15 475
+1.5.5
