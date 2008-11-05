@@ -1,33 +1,17 @@
-Return-Path: <hannes.hering@linux.vnet.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 91426DDDF6
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Nov 2008 23:19:23 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id mA5CIMJ2318368
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Nov 2008 12:18:22 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id mA5CIMGL2703516
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Nov 2008 13:18:22 +0100
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id mA5CIMT6027905
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Nov 2008 13:18:22 +0100
-From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] ehea: Fix some whitespace issues
-Date: Wed, 5 Nov 2008 13:18:21 +0100
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BDF4DDDDF6
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Nov 2008 23:31:05 +1100 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix msr check in compat_sys_swapcontext
+Date: Wed, 05 Nov 2008 13:30:57 +0100
+Message-ID: <jeprlabbi6.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200811051318.21579.hannes.hering@linux.vnet.ibm.com>
-Cc: themann@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	raisch@de.ibm.com, ossrosch@linux.vnet.ibm.com,
-	linuxppc-dev@ozlabs.org, ossthema@de.ibm.com, osstklei@de.ibm.com
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,62 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch removes some trailing whitespaces and spaces before tabs.
+The new context may not be 16-byte aligned, so the real address of the
+mcontext structure should be read from the uc_regs pointer instead of
+directly using the (unaligned) uc_mcontext field.
 
-Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+Signed-off-by: Andreas Schwab <schwab@suse.de>
+
 ---
-diff -Nurp -X dontdiff linux-2.6.28-rc3/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
---- linux-2.6.28-rc3/drivers/net/ehea/ehea.h	2008-11-02 23:17:19.000000000 +0100
-+++ patched_kernel/drivers/net/ehea/ehea.h	2008-11-05 10:10:14.563107976 +0100
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index a6a4310..dc10720 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -941,9 +941,17 @@ long sys_swapcontext(struct ucontext __user *old_ctx,
+ #ifdef CONFIG_PPC64
+ 	unsigned long new_msr = 0;
  
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0095"
-+#define DRV_VERSION	"EHEA_0096"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-diff -Nurp -X dontdiff linux-2.6.28-rc3/drivers/net/ehea/ehea_qmr.c patched_kernel/drivers/net/ehea/ehea_qmr.c
---- linux-2.6.28-rc3/drivers/net/ehea/ehea_qmr.c	2008-11-02 23:17:19.000000000 +0100
-+++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-11-05 10:10:14.563107976 +0100
-@@ -653,7 +653,7 @@ static int ehea_update_busmap(unsigned l
- 		int top = ehea_calc_index(i, EHEA_TOP_INDEX_SHIFT);
- 		int dir = ehea_calc_index(i, EHEA_DIR_INDEX_SHIFT);
- 		int idx = i & EHEA_INDEX_MASK;
--		
+-	if (new_ctx &&
+-	    get_user(new_msr, &new_ctx->uc_mcontext.mc_gregs[PT_MSR]))
+-		return -EFAULT;
++	if (new_ctx) {
++		struct mcontext __user *mcp;
++		u32 cmcp;
 +
- 		if (add) {
- 			int ret = ehea_init_bmap(ehea_bmap, top, dir);
- 			if (ret)
-@@ -780,7 +780,7 @@ void ehea_destroy_busmap(void)
- 
- 	kfree(ehea_bmap);
- 	ehea_bmap = NULL;
--out_destroy:	
-+out_destroy:
- 	mutex_unlock(&ehea_busmap_mutex);
- }
- 
-@@ -858,10 +858,10 @@ static u64 ehea_reg_mr_sections(int top,
- 	for (idx = 0; idx < EHEA_MAP_ENTRIES; idx++) {
- 		if (!ehea_bmap->top[top]->dir[dir]->ent[idx])
- 			continue;
--		
-+
- 		hret = ehea_reg_mr_section(top, dir, idx, pt, adapter, mr);
- 		if ((hret != H_SUCCESS) && (hret != H_PAGE_REGISTERED))
--			    	return hret;
-+			return hret;
- 	}
- 	return hret;
- }
-@@ -879,7 +879,7 @@ static u64 ehea_reg_mr_dir_sections(int 
- 
- 		hret = ehea_reg_mr_sections(top, dir, pt, adapter, mr);
- 		if ((hret != H_SUCCESS) && (hret != H_PAGE_REGISTERED))
--			    	return hret;
-+			return hret;
- 	}
- 	return hret;
- }
++		/* Get pointer to the real mcontext. */
++		if (__get_user(cmcp, &new_ctx->uc_regs))
++			return -EFAULT;
++		mcp = (struct mcontext __user *)(u64)cmcp;
++		if (__get_user(new_msr, &mcp->mc_gregs[PT_MSR]))
++			return -EFAULT;
++	}
+ 	/*
+ 	 * Check that the context is not smaller than the original
+ 	 * size (with VMX but without VSX)
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
