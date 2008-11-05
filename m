@@ -1,14 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <linuxppc-dev@ml.breakpoint.cc>
+Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
+	[85.10.199.196])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id ED215DDDEE
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Nov 2008 19:16:46 +1100 (EST)
+Date: Wed, 5 Nov 2008 09:16:39 +0100
+From: Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: "Introduce local (non-broadcast) forms of tlb invalidates"
+	causes BUG()
+Message-ID: <20081105081639.GA25005@Chamillionaire.breakpoint.cc>
+References: <20081102151902.GA11120@Chamillionaire.breakpoint.cc>
+	<Pine.LNX.4.64.0811041507320.8751@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18705.9955.2582.373653@cargo.ozlabs.ibm.com>
-Date: Wed, 5 Nov 2008 15:53:55 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: powerpc: udbg based backend for hvc_console
-In-Reply-To: <20081024035434.GF4267@yookeroo.seuss>
-References: <20081024035434.GF4267@yookeroo.seuss>
-Cc: benh@yookeroo.seuss, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <Pine.LNX.4.64.0811041507320.8751@blarg.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,21 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson writes:
+* Kumar Gala | 2008-11-04 15:10:42 [-0600]:
 
-> This patch adds a new backend for the hvc console based on the
-> low-level udbg callbacks.  This effectively implements a working
-> runtime console in terms of the simple udbg primitives.  This is kind
-> of a hack - since udbg isn't something you really want to be using
-> routinely - but it's really useful during bringup.
-> 
-> This can be used to quickly implement a userspace usable console while
-> you're working on a proper driver for whatever console I/O device the
-> hardware has.  Or, it can be used to avoid writing a full blown
-> tty/console driver entirely for quick-and-dirty I/O hardware that will
-> later be replaced by something else.
+>Can you try this fix and let me know if it works for you:
+>
+>---
+> arch/powerpc/kernel/misc_32.S |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
+>
+>diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+>index 6a9b4bf..5953232 100644
+>--- a/arch/powerpc/kernel/misc_32.S
+>+++ b/arch/powerpc/kernel/misc_32.S
+>@@ -470,6 +470,7 @@ _GLOBAL(_tlbil_pid)
+> 	mfspr	r3,SPRN_MMUCSR0
+> 	andi.	r3,r3,MMUCSR0_TLBFI@l
+> 	bne	1b
+>+	msync
+> 	blr
+>
+> /*
 
-Since only powerpc has udbg, shouldn't the Kconfig option depend on
-PPC?
+Yep, it helps. Thx Kumar.
 
-Paul.
+Sebastian
