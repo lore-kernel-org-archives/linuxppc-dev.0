@@ -1,15 +1,15 @@
 Return-Path: <lk.atwork@yahoo.com>
-Received: from n9.bullet.mail.mud.yahoo.com (n9.bullet.mail.mud.yahoo.com
-	[209.191.86.157]) by ozlabs.org (Postfix) with SMTP id 09A14DDDEC
+Received: from n63.bullet.mail.sp1.yahoo.com (n63.bullet.mail.sp1.yahoo.com
+	[98.136.44.33]) by ozlabs.org (Postfix) with SMTP id 9D3B8DDDE6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Nov 2008 14:36:59 +1100 (EST)
-Date: Tue, 4 Nov 2008 19:30:12 -0800 (PST)
+	Wed,  5 Nov 2008 14:38:13 +1100 (EST)
+Date: Tue, 4 Nov 2008 19:38:11 -0800 (PST)
 From: Laxmikant Rashinkar <lk.atwork@yahoo.com>
-Subject: i2c driver's probe routine not getting called
+Subject: request_irq issue
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-534835965-1225855812=:51430"
-Message-ID: <131123.51430.qm@web46312.mail.sp1.yahoo.com>
+Content-Type: multipart/alternative; boundary="0-2045709385-1225856291=:58773"
+Message-ID: <681154.58773.qm@web46308.mail.sp1.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -20,59 +20,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-534835965-1225855812=:51430
+--0-2045709385-1225856291=:58773
 Content-Type: text/plain; charset=us-ascii
 
 Hi,
 
-I have linux-2.6.27.1 running on a MPC8347 based board.
+I have a MPC8347 based board that runs linux-2.6.15.4 and 2.6.27.1.
 
-When my freescale I2C driver is insmoded, it calls platform_driver_register() successfully, but the probe routine doesn't get called. AFAIK, this only happens if the device is not known. I could call platform_device_register() to make the device known, but it seems to be the wrong approach. Shouldn't the definitions in my device tree be doing that? Here is the i2c section of my device tree:
+With the older Linux, my driver is able to successfully request_irq() interrupts 17, 18, 19, 20, 21, 22, 23 & 48.
 
-                i2c@3000 {
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                        cell-index = <0>;
-                        compatible = "fsl-i2c";
-                        reg = <0x3000 0x100>;
-                        interrupts = <14 0x8>;
-                        interrupt-parent = <&ipic>;
-                        dfsrr;
+But with the newer linux, request_irq() works only for 17, 18 & 19. cat /proc/interrupts shows that none of the interrupts above are in use.
+Any pointers on why request_irq() is behaving thus?
 
-                        rtc@68 {
-                                compatible = "dallas,ds1374";
-                                reg = <0x68>;
-                        };
-                };
-
-                i2c@3100 {
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                        cell-index = <1>;
-                        compatible = "fsl-i2c";
-                        reg = <0x3100 0x100>;
-                        interrupts = <15 0x8>;
-                        interrupt-parent = <&ipic>;
-                        dfsrr;
-                };
-
-Could something be wrong here? Note that the same drivers works fine under linux-2.6.15.4
-
-all help appreciated
-thanks
+thanks for your help
 LK
 
 
+
       
---0-534835965-1225855812=:51430
+--0-2045709385-1225856291=:58773
 Content-Type: text/html; charset=us-ascii
 
-<html><head><style type="text/css"><!-- DIV {margin:0px;} --></style></head><body><div style="font-family:times new roman,new york,times,serif;font-size:12pt"><div>Hi,<br><br>I have linux-2.6.27.1 running on a MPC8347 based board.<br><br>When my freescale I2C driver is insmoded, it calls platform_driver_register() successfully, but the probe routine doesn't get called. AFAIK, this only happens if the device is not known. I could call platform_device_register() to make the device known, but it seems to be the wrong approach. Shouldn't the definitions in my device tree be doing that? Here is the i2c section of my device tree:<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i2c@3000 {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #address-cells =
- &lt;1&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #size-cells = &lt;0&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cell-index = &lt;0&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible = "fsl-i2c";<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg = &lt;0x3000 0x100&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts = &lt;14
- 0x8&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent = &lt;&amp;ipic&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dfsrr;<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rtc@68 {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible = "dallas,ds1374";<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =
- &lt;0x68&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i2c@3100 {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #address-cells = &lt;1&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #size-cells = &lt;0&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cell-index =
- &lt;1&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible = "fsl-i2c";<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg = &lt;0x3100 0x100&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts = &lt;15 0x8&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent = &lt;&amp;ipic&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dfsrr;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<br><br>Could something
- be wrong here? Note that the same drivers works fine under linux-2.6.15.4<br><br>all help appreciated<br>thanks<br>LK<br><br></div></div><br>
+<html><head><style type="text/css"><!-- DIV {margin:0px;} --></style></head><body><div style="font-family:times new roman,new york,times,serif;font-size:12pt"><div>Hi,<br><br>I have a MPC8347 based board that runs linux-2.6.15.4 and 2.6.27.1.<br><br>With the older Linux, my driver is able to successfully request_irq() interrupts 17, 18, 19, 20, 21, 22, 23 &amp; 48.<br><br>But with the newer linux, request_irq() works only for 17, 18 &amp; 19. cat /proc/interrupts shows that none of the interrupts above are in use.<br>Any pointers on why request_irq() is behaving thus?<br><br>thanks for your help<br>LK<br></div></div><br>
 
       </body></html>
---0-534835965-1225855812=:51430--
+--0-2045709385-1225856291=:58773--
