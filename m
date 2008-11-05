@@ -1,20 +1,22 @@
-Return-Path: <linuxppc-dev@ml.breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 21173DDDE6
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Nov 2008 23:37:23 +1100 (EST)
-Received: id: bigeasy by Chamillionaire.breakpoint.cc with local
-	(easymta 1.00 BETA 1) id 1KxhdL-0007l4-TU
-	for linuxppc-dev@ozlabs.org; Wed, 05 Nov 2008 13:37:15 +0100
-Date: Wed, 5 Nov 2008 13:37:15 +0100
-From: Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>
-To: linuxppc-dev@ozlabs.org
-Subject: Rebooting the mpc8544
-Message-ID: <20081105123715.GA29574@Chamillionaire.breakpoint.cc>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 8F31ADDDDB
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 00:20:05 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [PATCH RFC v2] net: add PCINet driver
+Date: Wed, 5 Nov 2008 14:19:52 +0100
+References: <20081029202027.GH12879@ovro.caltech.edu>
+	<200811042123.03819.arnd@arndb.de>
+	<20081104222927.GE4641@ovro.caltech.edu>
+In-Reply-To: <20081104222927.GE4641@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200811051419.53194.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Stephen Hemminger <shemminger@vyatta.com>,
+	Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm trying to reboot the mpc8544 and pass the reason of the reboot (two
-bits would be enough). I've been told the a PowerPC cpu has usually a
-few registers which will survive a soft reset.
-The "normal" reboot is done via the HRESET_REQ line which is handeled
-by externel HW and does a power cycle.
-The e500 watchdog also uses the HRESET_REQ line.
-Other way would be use the Debug Control Register 0 (DBCR0) and set the
-reset bit. The manual says here that it does a hard reset so none of
-my registers will survive, right? There is a Most recent reset (MRR) bit
-in the Debug Status Register (DBSR) but that one should be always set
-since the last reset was a hard reset.
-Right now I'm thinking about stealing a page and put the information
-there since the memory controller isn't re-initialized.
-Does someone have a better idea?
+On Tuesday 04 November 2008, Ira Snyder wrote:
 
-Sebastian
+> So, since interrupts are disabled while my interrupt handler is running,
+> I think I should be able to use spin_lock() and spin_unlock(), correct?
+
+yes.
+
+> But sparse gives me the following warning:
+> wqt.c:185:9: warning: context imbalance in 'wqt_interrupt': wrong count at exit
+> wqt.c:185:9:    context 'lock': wanted 0, got 1
+> 
+> If I'm using spin_lock_irqsave() and spin_lock_irqrestore() I do not get
+> the same warnings. Therefore I must have some misunderstanding :)
+
+
+I've seen something like that before, I think it was a bug either in
+sparse or in the powerpc platform code. Try updating both the kernel
+and sparse and see if it still happens.
+
+	Arnd <><
