@@ -1,17 +1,20 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <linuxppc-dev@ml.breakpoint.cc>
+Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
+	[85.10.199.196])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BDF4DDDDF6
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Nov 2008 23:31:05 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 21173DDDE6
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Nov 2008 23:37:23 +1100 (EST)
+Received: id: bigeasy by Chamillionaire.breakpoint.cc with local
+	(easymta 1.00 BETA 1) id 1KxhdL-0007l4-TU
+	for linuxppc-dev@ozlabs.org; Wed, 05 Nov 2008 13:37:15 +0100
+Date: Wed, 5 Nov 2008 13:37:15 +0100
+From: Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix msr check in compat_sys_swapcontext
-Date: Wed, 05 Nov 2008 13:30:57 +0100
-Message-ID: <jeprlabbi6.fsf@sykes.suse.de>
+Subject: Rebooting the mpc8544
+Message-ID: <20081105123715.GA29574@Chamillionaire.breakpoint.cc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,41 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The new context may not be 16-byte aligned, so the real address of the
-mcontext structure should be read from the uc_regs pointer instead of
-directly using the (unaligned) uc_mcontext field.
+I'm trying to reboot the mpc8544 and pass the reason of the reboot (two
+bits would be enough). I've been told the a PowerPC cpu has usually a
+few registers which will survive a soft reset.
+The "normal" reboot is done via the HRESET_REQ line which is handeled
+by externel HW and does a power cycle.
+The e500 watchdog also uses the HRESET_REQ line.
+Other way would be use the Debug Control Register 0 (DBCR0) and set the
+reset bit. The manual says here that it does a hard reset so none of
+my registers will survive, right? There is a Most recent reset (MRR) bit
+in the Debug Status Register (DBSR) but that one should be always set
+since the last reset was a hard reset.
+Right now I'm thinking about stealing a page and put the information
+there since the memory controller isn't re-initialized.
+Does someone have a better idea?
 
-Signed-off-by: Andreas Schwab <schwab@suse.de>
-
----
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index a6a4310..dc10720 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -941,9 +941,17 @@ long sys_swapcontext(struct ucontext __user *old_ctx,
- #ifdef CONFIG_PPC64
- 	unsigned long new_msr = 0;
- 
--	if (new_ctx &&
--	    get_user(new_msr, &new_ctx->uc_mcontext.mc_gregs[PT_MSR]))
--		return -EFAULT;
-+	if (new_ctx) {
-+		struct mcontext __user *mcp;
-+		u32 cmcp;
-+
-+		/* Get pointer to the real mcontext. */
-+		if (__get_user(cmcp, &new_ctx->uc_regs))
-+			return -EFAULT;
-+		mcp = (struct mcontext __user *)(u64)cmcp;
-+		if (__get_user(new_msr, &mcp->mc_gregs[PT_MSR]))
-+			return -EFAULT;
-+	}
- 	/*
- 	 * Check that the context is not smaller than the original
- 	 * size (with VMX but without VSX)
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Sebastian
