@@ -1,19 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EB26ADDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 10:34:00 +1100 (EST)
-Message-Id: <289FAE78-B927-4DA9-A952-C949BDAD71A1@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Ron Madrid <ron_madrid@sbcglobal.net>
-In-Reply-To: <1225926686-5891-1-git-send-email-ron_madrid@sbcglobal.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] Add support for Marvell 88E1118 PHY
-Date: Wed, 5 Nov 2008 17:33:55 -0600
-References: <1225926686-5891-1-git-send-email-ron_madrid@sbcglobal.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 6 Nov 2008 10:36:17 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH] i2c-cpm: Add flexibility for I2C clock frequency and
+	filter.
+Message-ID: <20081105233617.GC28465@yookeroo.seuss>
+References: <490A84F8.20403@consentry.com> <490AEEBF.9000707@scram.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <490AEEBF.9000707@scram.de>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+	Mike Ditto <mditto@consentry.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Oct 31, 2008 at 12:40:47PM +0100, Jochen Friedrich wrote:
+> Hi Mike,
+> 
+> > This patch adds the ability to enable the digital filter in the device
+> > tree (with the "clock-filter" boolean property) and automates the
+> > predivider selection according to the clock-frequency and clock-filter
+> > properties.
+> 
+> looks good.
+> 
+> David, is "clock-filter" an appropriate dts property for this purpose or
+> would you prefer a different name?
 
-On Nov 5, 2008, at 5:11 PM, Ron Madrid wrote:
+Hrm, well the name seems fine, but then, device-specific properties
+are device-specific so it's pretty much up to the device binding to
+pick a name.
 
-> This patch will add support for the Marvell 88E1118 PHY which  
-> supports gigabit ethernet among other things.
->
-> Signed-off-by: Ron Madrid <ron_madrid@sbcglobal.net>
-> ---
-> drivers/net/phy/marvell.c |   66 ++++++++++++++++++++++++++++++++++++ 
-> +++++++++
-> 1 files changed, 66 insertions(+), 0 deletions(-)
+What does worry me, however, is the description says it's about
+whether the driver "should" enable the filter.  Generally the device
+tree doesn't attempt to say what users "should" do with the hardware,
+just what the characteristics of the hardware are.
 
-This patch should be sent to the netdev list.
+What's the underlying difference here that affects the driver's choice
+to enable the filter or not?
 
-- k
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
