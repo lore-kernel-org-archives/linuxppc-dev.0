@@ -1,20 +1,13 @@
-Return-Path: <alessandro.zummo@towertech.it>
-Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
-	by ozlabs.org (Postfix) with SMTP id 41908DDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 10:15:04 +1100 (EST)
-Date: Thu, 6 Nov 2008 00:14:59 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Subject: Re: [rtc-linux] Re: rtc-ppc
-Message-ID: <20081106001459.7eba302f@i1501.lan.towertech.it>
-In-Reply-To: <20081105230825.GA28465@yookeroo.seuss>
-References: <20081105021901.49dffc3e@i1501.lan.towertech.it>
-	<1225923526.3882.3.camel@macbook.infradead.org>
-	<20081105230825.GA28465@yookeroo.seuss>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
-	david@gibson.dropbear.id.au
+Return-Path: <ron_madrid@sbcglobal.net>
+Received: from smtp123.sbc.mail.sp1.yahoo.com (smtp123.sbc.mail.sp1.yahoo.com
+	[69.147.64.96]) by ozlabs.org (Postfix) with SMTP id 232E0DDE9F
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 10:15:30 +1100 (EST)
+From: Ron Madrid <ron_madrid@sbcglobal.net>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Add support for Marvell 88E1118 PHY
+Date: Wed,  5 Nov 2008 15:11:26 -0800
+Message-Id: <1225926686-5891-1-git-send-email-ron_madrid@sbcglobal.net>
+Cc: Ron Madrid <ron_madrid@sbcglobal.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +17,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 6 Nov 2008 10:08:25 +1100
-David Gibson <david@gibson.dropbear.id.au> wrote:
+This patch will add support for the Marvell 88E1118 PHY which supports gigabit ethernet among other things.
 
-> > I think we're waiting until the RTC class works with NTP before we can
-> > contemplate that, though.  
-> 
-> Yeah, I tried writing some ppc_md hooks which backended onto the rtc
-> class drivers as an interim measure, but the hooks are called from
-> places the rtc class stuff can't safely be called (too early, IIRC,
-> but it's a while since I checked).
+Signed-off-by: Ron Madrid <ron_madrid@sbcglobal.net>
+---
+ drivers/net/phy/marvell.c |   66 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 66 insertions(+), 0 deletions(-)
 
- I think the rtc drivers are too heterogeneous to have a valid
- ntp strategy. 
-
+diff --git a/drivers/net/phy/marvell.c b/drivers/net/phy/marvell.c
+index 4aa5479..eb6411c 100644
+--- a/drivers/net/phy/marvell.c
++++ b/drivers/net/phy/marvell.c
+@@ -227,6 +227,59 @@ static int m88e1111_config_init(struct phy_device *phydev)
+ 	return 0;
+ }
+ 
++static int m88e1118_config_aneg(struct phy_device *phydev)
++{
++	int err;
++
++	err = phy_write(phydev, MII_BMCR, BMCR_RESET);
++	if (err < 0)
++		return err;
++
++	err = phy_write(phydev, MII_M1011_PHY_SCR,
++			MII_M1011_PHY_SCR_AUTO_CROSS);
++	if (err < 0)
++		return err;
++
++	err = genphy_config_aneg(phydev);
++	return 0;
++}
++
++static int m88e1118_config_init(struct phy_device *phydev)
++{
++	int err;
++
++	/* Change address */
++	err = phy_write(phydev, 0x16, 0x0002);
++	if (err < 0)
++		return err;
++
++	/* Enable 1000 Mbit */
++	err = phy_write(phydev, 0x15, 0x1070);
++	if (err < 0)
++		return err;
++
++	/* Change address */
++	err = phy_write(phydev, 0x16, 0x0003);
++	if (err < 0)
++		return err;
++
++	/* Adjust LED Control */
++	err = phy_write(phydev, 0x10, 0x021e);
++	if (err < 0)
++		return err;
++
++	/* Reset address */
++	err = phy_write(phydev, 0x16, 0x0);
++	if (err < 0)
++		return err;
++
++	err = phy_write(phydev, MII_BMCR, BMCR_RESET);
++	if (err < 0)
++		return err;
++
++	return 0;
++}
++
+ static int m88e1145_config_init(struct phy_device *phydev)
+ {
+ 	int err;
+@@ -416,6 +469,19 @@ static struct phy_driver marvell_drivers[] = {
+ 		.driver = { .owner = THIS_MODULE },
+ 	},
+ 	{
++		.phy_id = 0x01410e10,
++		.phy_id_mask = 0xfffffff0,
++		.name = "Marvell 88E1118",
++		.features = PHY_GBIT_FEATURES,
++		.flags = PHY_HAS_INTERRUPT,
++		.config_init = &m88e1118_config_init,
++		.config_aneg = &m88e1118_config_aneg,
++		.read_status = &genphy_read_status,
++		.ack_interrupt = &marvell_ack_interrupt,
++		.config_intr = &marvell_config_intr,
++		.driver = {.owner = THIS_MODULE,},
++	},
++	{
+ 		.phy_id = 0x01410cd0,
+ 		.phy_id_mask = 0xfffffff0,
+ 		.name = "Marvell 88E1145",
 -- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
+1.5.5.1
