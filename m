@@ -1,18 +1,17 @@
-Return-Path: <SRS0+a7d93ed5023a180b967e+1900+infradead.org+dwmw2@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 54C84DDDE0
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 09:18:51 +1100 (EST)
+Return-Path: <alessandro.zummo@towertech.it>
+Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
+	by ozlabs.org (Postfix) with SMTP id 4FD7CDDED1
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 10:06:42 +1100 (EST)
+Date: Wed, 5 Nov 2008 23:59:55 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: David Woodhouse <dwmw2@infradead.org>
 Subject: Re: rtc-ppc
-From: David Woodhouse <dwmw2@infradead.org>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-In-Reply-To: <20081105021901.49dffc3e@i1501.lan.towertech.it>
+Message-ID: <20081105235955.28436136@i1501.lan.towertech.it>
+In-Reply-To: <1225923526.3882.3.camel@macbook.infradead.org>
 References: <20081105021901.49dffc3e@i1501.lan.towertech.it>
-Content-Type: text/plain
-Date: Wed, 05 Nov 2008 23:18:46 +0100
-Message-Id: <1225923526.3882.3.camel@macbook.infradead.org>
+	<1225923526.3882.3.camel@macbook.infradead.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, rtc-linux@googlegroups.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,21 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-11-05 at 02:19 +0100, Alessandro Zummo wrote:
->   I was checking a few drivers for compliance and noticed that
->  the rtc-ppc driver registers a platform device instead of
->  a platform driver.
-> 
->   Wouldn't be possible to have the ppc arch doing the device
->  thing and cleanup the driver?
+On Wed, 05 Nov 2008 23:18:46 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-It would be possible, yes -- but it would be better to have the various
-PPC platforms just register RTC-class devices _directly_, and ditch the
-RTC bits from ppc_md altogether.
+> It would be possible, yes -- but it would be better to have the various
+> PPC platforms just register RTC-class devices _directly_, and ditch the
+> RTC bits from ppc_md altogether.
 
-I think we're waiting until the RTC class works with NTP before we can
-contemplate that, though.
+ That would be real fine :)
+
+> I think we're waiting until the RTC class works with NTP before we can
+> contemplate that, though.
+
+ That will be a long wait, I don't think anyone volunteered for
+ the ntp code. I've been told some platforms are already using the class.
+
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
