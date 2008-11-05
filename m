@@ -1,19 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 1B105DDDF0
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DC456DDDFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Nov 2008 01:10:07 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: request_irq issue
-Date: Wed, 5 Nov 2008 15:10:01 +0100
-References: <681154.58773.qm@web46308.mail.sp1.yahoo.com>
-In-Reply-To: <681154.58773.qm@web46308.mail.sp1.yahoo.com>
+	Thu,  6 Nov 2008 03:15:34 +1100 (EST)
+Message-ID: <4911C695.4070401@freescale.com>
+Date: Wed, 05 Nov 2008 10:15:17 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200811051510.01617.arnd@arndb.de>
-Cc: Laxmikant Rashinkar <lk.atwork@yahoo.com>
+To: Laxmikant Rashinkar <lk.atwork@yahoo.com>
+Subject: Re: i2c driver's probe routine not getting called
+References: <131123.51430.qm@web46312.mail.sp1.yahoo.com>
+In-Reply-To: <131123.51430.qm@web46312.mail.sp1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,12 +27,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 05 November 2008, Laxmikant Rashinkar wrote:
-> But with the newer linux, request_irq() works only for 17, 18 & 19. cat /proc/interrupts shows that none of the interrupts above are in use.
-> Any pointers on why request_irq() is behaving thus?
+Laxmikant Rashinkar wrote:
+> I have linux-2.6.27.1 running on a MPC8347 based board.
+> 
+> When my freescale I2C driver is insmoded, it calls 
+> platform_driver_register() successfully, but the probe routine doesn't 
+> get called. 
 
-Note that you need to get the raw IRQ number from the device tree now,
-and map it to a virtual IRQ number using irq_of_parse_and_map.
-That is the number you pass to request_irq().
+Is "your" freescale I2C driver different from "the" freescale I2C driver 
+in drivers/i2c/busses/i2c-mpc.c?  If so, you'll need to update it to be 
+an of_platform driver like the in-tree driver is (or, just switch to the 
+in-tree driver).
 
-	Arnd <><
+-Scott
