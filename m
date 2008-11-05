@@ -1,20 +1,33 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
-	[151.189.21.44])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AC7BDDDE1A
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 07:54:05 +1100 (EST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH V3] powerpc: Fix Book-E watchdog timer interval setting
-Date: Wed, 5 Nov 2008 21:53:56 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200811052153.57292.matthias.fuchs@esd-electronics.com>
-Cc: Timur Tabi <timur@freescale.com>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6A0CCDDE0E
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 08:16:06 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e36.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mA5LFUEL001341
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Nov 2008 14:15:30 -0700
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mA5LFqdl149712
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Nov 2008 14:15:59 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mA5LFlNO013017
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Nov 2008 14:15:48 -0700
+Date: Wed, 5 Nov 2008 16:15:38 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: What is the maximum memory linux support for powerpc 4xx?
+Message-ID: <20081105161538.4840614d@zod.rchland.ibm.com>
+In-Reply-To: <C332CE14-BA70-4527-BF91-ACEF8F6B6612@kernel.crashing.org>
+References: <0CA0A16855646F4FA96D25A158E299D60546CA64@SDCEXCHANGE01.ad.amcc.com>
+	<0CA0A16855646F4FA96D25A158E299D602C813A9@SDCEXCHANGE01.ad.amcc.com>
+	<C332CE14-BA70-4527-BF91-ACEF8F6B6612@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Victor Gallardo <vgallardo@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes the setting of the Book-E watchdog timer interval setup
-on initialization and by ioctl().
+On Wed, 5 Nov 2008 10:34:32 -0600
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-On initialization the period bits have to be masked before setting
-a new period.
+> 
+> On Nov 5, 2008, at 9:14 AM, Victor Gallardo wrote:
+> 
+> > Hello,
+> >
+> > How can I figure out the and/or what is the maximum memory linux  
+> > support for powerpc 4xx?
+> 
+> I'd expect the amount of memory supported to be a bit under 4G at this  
+> point.  There is generic work that has been going on to allow ALL  
+> ppc32's that have HW support for 36-bit physical to support >4G of  
+> memory.. however that code is likely in 2.6.29.
 
-In WDIOC_SETTIMEOUT ioctl we have to use the correct mask.
+In 4xx-specific terms, it depends on the memory controller as well.
+The older SoCs only supported 2GiB in hardware I think.  The Denali
+memory controller can do 16GiB in hardware from my recollection.
 
-Signed-off-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
----
- drivers/watchdog/booke_wdt.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+But you probably already knew that.
 
-diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
-index c3b78a7..225398f 100644
---- a/drivers/watchdog/booke_wdt.c
-+++ b/drivers/watchdog/booke_wdt.c
-@@ -42,8 +42,10 @@ u32 booke_wdt_period = WDT_PERIOD_DEFAULT;
- 
- #ifdef	CONFIG_FSL_BOOKE
- #define WDTP(x)		((((63-x)&0x3)<<30)|(((63-x)&0x3c)<<15))
-+#define WDTP_MASK	(WDTP(0))
- #else
- #define WDTP(x)		(TCR_WP(x))
-+#define WDTP_MASK	(TCR_WP_MASK)
- #endif
- 
- static DEFINE_SPINLOCK(booke_wdt_lock);
-@@ -65,6 +67,7 @@ static void __booke_wdt_enable(void *data)
- 	/* clear status before enabling watchdog */
- 	__booke_wdt_ping(NULL);
- 	val = mfspr(SPRN_TCR);
-+	val &= ~WDTP_MASK;
- 	val |= (TCR_WIE|TCR_WRC(WRC_CHIP)|WDTP(booke_wdt_period));
- 
- 	mtspr(SPRN_TCR, val);
-@@ -114,7 +117,7 @@ static long booke_wdt_ioctl(struct file *file,
- 	case WDIOC_SETTIMEOUT:
- 		if (get_user(booke_wdt_period, p))
- 			return -EFAULT;
--		mtspr(SPRN_TCR, (mfspr(SPRN_TCR) & ~WDTP(0)) |
-+		mtspr(SPRN_TCR, (mfspr(SPRN_TCR) & ~WDTP_MASK) |
- 						WDTP(booke_wdt_period));
- 		return 0;
- 	case WDIOC_GETTIMEOUT:
--- 
-1.5.3
+josh
