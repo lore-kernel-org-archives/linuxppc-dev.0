@@ -1,13 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18706.21588.724885.947504@cargo.ozlabs.ibm.com>
-Date: Thu, 6 Nov 2008 13:20:04 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 58907DDDFB
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 14:45:31 +1100 (EST)
+Subject: Re: Commits pushed to powerpc.git next branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18706.22388.866402.123514@cargo.ozlabs.ibm.com>
+References: <18706.22388.866402.123514@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Thu, 06 Nov 2008 14:45:16 +1100
+Message-Id: <1225943116.13603.38.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,26 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Thu, 2008-11-06 at 13:33 +1100, Paul Mackerras wrote:
+>       powerpc: Fix domain numbers in /proc on 64-bit
 
-Please pull from the 'merge' branch of
+This can cause problems apparently on some POWER3's which is why
+I didn't include it in the previous merge window, though it's not
+a huge deal. Basically, POWER3 used to have unique bus numbers and
+thus didn't need domain numbers, and the old code that used buid would
+basically do that.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+With the patch, all pSeries will get domain numbers for all busses
+except domain 0 (which is pretty arbitrary, whichever is found first in
+the device-tree basically).
 
-to get three small commits that fix compile errors and a warning on
-powerpc.
+So that means X -might- break on some POWER3's.
 
-Thanks,
-Paul.
+Now, rather than backing that one out, I think we can fix on top of it,
+though I yet have to convince myself of what the right solution here is,
+and that is provided we care about those old pre-libpciaccess X servers
+on POWER3.
 
- arch/powerpc/platforms/cell/ras.c          |    1 +
- arch/powerpc/platforms/pseries/pci_dlpar.c |    1 -
- drivers/ps3/ps3-lpm.c                      |    1 +
- 3 files changed, 2 insertions(+), 1 deletions(-)
-
-Alexey Dobriyan (2):
-      powerpc/ps3: Fix compile error in ps3-lpm.c
-      powerpc/cell: Fix compile error in ras.c
-
-Stephen Rothwell (1):
-      powerpc: Fix "unused variable" warning in pci_dlpar.c
+Ben.
