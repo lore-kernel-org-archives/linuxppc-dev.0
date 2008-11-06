@@ -1,15 +1,12 @@
-Return-Path: <ron_madrid@sbcglobal.net>
-Received: from web83503.mail.sp1.yahoo.com (web83503.mail.sp1.yahoo.com
-	[216.252.120.159]) by ozlabs.org (Postfix) with SMTP id E50FADDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 13:22:43 +1100 (EST)
-Date: Wed, 5 Nov 2008 18:16:02 -0800 (PST)
-From: Ron Madrid <ron_madrid@sbcglobal.net>
-Subject: Re: [PATCH] Add support for Marvell 88E1118 PHY
-To: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <308664.9693.qm@web83503.mail.sp1.yahoo.com>
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <18706.22388.866402.123514@cargo.ozlabs.ibm.com>
+Date: Thu, 6 Nov 2008 13:33:24 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Commits pushed to powerpc.git next branch
+Cc: sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +16,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thank you.  I will send it to the netdev list.
+I have just pushed the following commits to the "next" branch of my
+powerpc.git repository.  The "next" branch is what I'll push to Linus
+when the 2.6.29 merge window opens.
 
-Ron Madrid
+I'm now using a new "next" branch rather than the "powerpc-next"
+branch at Stephen Rothwell's request, since the "powerpc-" part was
+redundant.  (Stephen, please include the "next" branch in linux-next
+rather than "powerpc-next".)
 
+The "master" branch in powerpc.git is currently following "next".
 
+Paul.
 
------ Original Message ----
-> From: Kumar Gala <galak@kernel.crashing.org>
-> To: Ron Madrid <ron_madrid@sbcglobal.net>
-> Cc: linuxppc-dev@ozlabs.org
-> Sent: Wednesday, November 5, 2008 3:33:55 PM
-> Subject: Re: [PATCH] Add support for Marvell 88E1118 PHY
-> 
-> 
-> On Nov 5, 2008, at 5:11 PM, Ron Madrid wrote:
-> 
-> > This patch will add support for the Marvell 88E1118 PHY which  
-> > supports gigabit ethernet among other things.
-> >
-> > Signed-off-by: Ron Madrid 
-> > ---
-> > drivers/net/phy/marvell.c |   66 ++++++++++++++++++++++++++++++++++++ 
-> > +++++++++
-> > 1 files changed, 66 insertions(+), 0 deletions(-)
-> 
-> This patch should be sent to the netdev list.
-> 
-> - k
+Anton Vorontsov (1):
+      powerpc: Remove device_type = "rtc" properties in .dts files
+
+Benjamin Herrenschmidt (10):
+      powerpc: Fix domain numbers in /proc on 64-bit
+      powerpc: Silence software timebase sync
+      powerpc/pci: Cleanup debug printk's
+      powerpc/pci: Use common PHB resource hookup
+      powerpc/pci: Remove pcibios_do_bus_setup()
+      powerpc/pci: Split pcibios_fixup_bus() into bus setup and device setup
+      powerpc/eeh: Make EEH device add/remove more robust
+      powerpc/pci: Make pcibios_allocate_bus_resources more robust
+      powerpc/pci: Fix various pseries PCI hotplug issues
+      powerpc/pci: Cosmetic cleanups of pci-common.c
+
+Brian King (1):
+      powerpc: Update page-in counter for CMM
+
+Harvey Harrison (1):
+      powerpc: Use the new byteorder headers
+
+Jon Tollefson (1):
+      powerpc: Hugetlb pgtable cache access cleanup
+
+Mark Nelson (3):
+      powerpc: Add new CPU feature: CPU_FTR_UNALIGNED_LD_STD
+      powerpc: Update 64bit memcpy() using CPU_FTR_UNALIGNED_LD_STD
+      powerpc: Remove map_/unmap_single() from dma_mapping_ops
+
+Masakazu Mokuno (1):
+      powerpc/ps3: Fix memory leak in device init
+
+Paul Mackerras (2):
+      powerpc: Improve resolution of VDSO clock_gettime
+      powerpc: Eliminate unused do_gtod variable
+
+Sebastian Siewior (1):
+      powerpc/boot: Allocate more memory for dtb
+
+Sebastien Dugue (1):
+      powerpc/pseries: Fix getting the server number size
