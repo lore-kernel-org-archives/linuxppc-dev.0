@@ -1,22 +1,22 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 010CBDDDE7
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 03F40DDF36
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Nov 2008 13:44:47 +1100 (EST)
-Received: from edison2.selinc.com (edison2.selinc.com [12.110.71.8])
-	by tesla.selinc.com (8.12.11.20060308/8.12.11) with ESMTP id
-	mA627NdI002247
-	for <linuxppc-embedded@ozlabs.org>; Wed, 5 Nov 2008 18:07:29 -0800
-To: linuxppc-embedded@ozlabs.org
-Subject: Using DMA
+	Fri,  7 Nov 2008 05:30:44 +1100 (EST)
+Message-ID: <49133792.9080000@freescale.com>
+Date: Thu, 06 Nov 2008 12:29:38 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Message-ID: <OF1BC63DE0.D024D14C-ON882574F9.000ABAA9-882574F9.000BA2A1@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Wed, 5 Nov 2008 18:07:20 -0800
-Content-Type: text/plain; charset="US-ASCII"
+To: Bruce_Leonard@selinc.com
+Subject: Re: Using DMA
+References: <OF1BC63DE0.D024D14C-ON882574F9.000ABAA9-882574F9.000BA2A1@selinc.com>
+In-Reply-To: <OF1BC63DE0.D024D14C-ON882574F9.000ABAA9-882574F9.000BA2A1@selinc.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,31 +27,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This may be the wrong forum for this question.  If so I apologize, and 
-could someone please tell me the appropriate place to ask?
+Bruce_Leonard@selinc.com wrote:
+> In the Cafe driver, Linux Device Drivers 3rd Edition, and DMA-mapping.txt 
+> everyone talks about how to allocate buffers using 
+> dma/pci_alloc_coherent(), but no one talks about how to actually use it. 
+> I'm pretty sure (even in my ignorance) that just allocating a DMA coherent 
+> buffer and then copying in and out of it does NOT actually engage the 
+> underlying hardware and perform a DMA transfer.
 
-Assuming this is the right place, I'm working with the 2.6.27 (stable) 
-kernel and an MPC8347E processor.  I'm using a custom NAND controller and 
-a custom driver to talk with that controller.  I'm now to the point where 
-I'm trying to optimize/improve performance and something I'd like to do is 
-set up the driver to use DMA transfers to the controller.  (As an 
-additional bit of info, I modeled my driver on the Cafe driver.)  However, 
-no one here has ever had to set up DMA from scratch before, it's always 
-been done by an existing driver or the kernel, so I'm in uncharted 
-teritory.
+Generally, you program the device itself to peform the transfer.  I'm 
+assuming that your custom NAND controller can't do DMA by itself, though.
 
-In the Cafe driver, Linux Device Drivers 3rd Edition, and DMA-mapping.txt 
-everyone talks about how to allocate buffers using 
-dma/pci_alloc_coherent(), but no one talks about how to actually use it. 
-I'm pretty sure (even in my ignorance) that just allocating a DMA coherent 
-buffer and then copying in and out of it does NOT actually engage the 
-underlying hardware and perform a DMA transfer.
+> With some digging I've found the Freescale Elo/Elo Plus DMA driver which 
+> supports my processor.  What I'm not clear on is how to actually make use 
+> of it.  How do I tie my NAND driver to the Freescale DMA driver and 
+> actually get the hardware to work?  Any pointers are greatly appreciated.
 
-With some digging I've found the Freescale Elo/Elo Plus DMA driver which 
-supports my processor.  What I'm not clear on is how to actually make use 
-of it.  How do I tie my NAND driver to the Freescale DMA driver and 
-actually get the hardware to work?  Any pointers are greatly appreciated.
+Tell the DMA controller where to move data from, and where to move it to.
 
-Thanks.
-
-Bruce
+-Scott
