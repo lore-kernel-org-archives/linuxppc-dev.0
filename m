@@ -1,22 +1,23 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 00F68DDF6A
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Nov 2008 08:35:54 +1100 (EST)
-Date: Thu, 6 Nov 2008 13:35:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/1] irq: Maintain user set affinity
-Message-Id: <20081106133524.75588d96.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0811041030520.25054@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0811041030520.25054@blarg.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <neko@genesi-usa.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
+	by ozlabs.org (Postfix) with ESMTP id 4F145DDE04
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Nov 2008 09:41:08 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so503724qwb.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 06 Nov 2008 14:41:07 -0800 (PST)
+Message-ID: <49137283.6040300@genesi-usa.com>
+Date: Thu, 06 Nov 2008 16:41:07 -0600
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Ren=E9_B=FCrgel?= <r.buergel@unicontrol.de>
+Subject: Re: [PATCH V2] workaround for mpc52xx erratum #364 (serial may not
+	be reset in break state)
+References: <490F51E7.3020309@unicontrol.de>	<fa686aa40811031255w3d9a065dgb0eb7ad4b26c9651@mail.gmail.com>
+	<4910274E.5030305@unicontrol.de> <49109323.2040603@genesi-usa.com>
+	<491322DC.30208@unicontrol.de>
+In-Reply-To: <491322DC.30208@unicontrol.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,59 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 4 Nov 2008 10:31:05 -0600 (CST)
-Kumar Gala <galak@kernel.crashing.org> wrote:
 
-> >From 819ad3ed4660f4238e053728a8b5aa93d22b13d7 Mon Sep 17 00:00:00 2001
-> From: Kumar Gala <galak@kernel.crashing.org>
-> Date: Tue, 4 Nov 2008 10:13:53 -0600
-> Subject: [PATCH 1/1] irq: Maintain user set affinity
-> 
-> This addresses a regression in that if a user specified an affinity
-> for an interrupt that affinity information would get reset between
-> a request_irq(), free_irq() and request_irq() for the same irq.
-> 
-> On example of this is bringing up an ethernet interface, taking
-> it down and bringing it back up again.
-> 
-> Instead of always using the irq_default_affinity we use the
-> previous setting of the IRQs affinity with the assumption that
-> at boot the IRQs affinity will be set to irq_default_affinity.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
->  kernel/irq/manage.c |    7 +++++--
->  1 files changed, 5 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index c498a1b..ea7d11b 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -115,9 +115,12 @@ int irq_select_affinity(unsigned int irq)
->  	if (!irq_can_set_affinity(irq))
->  		return 0;
-> 
-> -	cpus_and(mask, cpu_online_map, irq_default_affinity);
-> -
->  	desc = irq_to_desc(irq);
-> +
-> +	mask = desc->affinity;
-> +
-> +	cpus_and(mask, cpu_online_map, mask);
-> +
->  	desc->affinity = mask;
->  	desc->chip->set_affinity(irq, mask);
-> 
 
-Are you able to identify when this regression occurred?  It isn't
-immediately obvious to me.
+René Bürgel wrote:
+> Matt Sealey schrieb:
+> 
+> Alternativly, if you have more control over your serial device, just 
+> send breaks continuously, open and close the serial port. Open it again 
+> and receiving data fails, if the bug is present.
 
-If the regression is present in 2.6.27 or earlier, do you think we
-should backport the fix?  If so, a different patch would be needed due
-to the presence of
+Well I have a couple systems I can write data from here, a little app to
+send data really isn't that hard to come up with.
 
-commit 08678b0841267c1d00d771fe01548d86043d065e
-Author: Yinghai Lu <yhlu.kernel@gmail.com>
-Date:   Tue Aug 19 20:50:05 2008 -0700
+> Just btw: if USB is not working, did you miss the initialisation of the 
+> USB-controller in your bootloader? I had similar problems getting from 
+> 2.6.22 to 2.6.25 with my mpc5200.
 
-    generic: sparse irqs: use irq_desc() together with dyn_array, instead of irq_desc[]
+Actually it's more to do with the fact that the patches to get USB working
+(along with On The Go support) in the LTIB are quite intrusive, and written
+for 2.6.24 - since then the USB cores seem to have been reshuffled so it
+is far from a clean patch.
+
+Someday I will get bored and port it to 2.6.28 :)
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
