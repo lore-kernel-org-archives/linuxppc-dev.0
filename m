@@ -1,19 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 49AA1DDE08
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Nov 2008 02:20:31 +1100 (EST)
-Date: Thu, 6 Nov 2008 18:20:29 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: Re: [PATCH v2] powerpc: Basic GPIO support for GE Fanuc SBC610
-Message-ID: <20081106152029.GA23685@oksana.dev.rtsoft.ru>
-References: <20081106120828.8273.44887.stgit@ubuntu8041.localdomain>
-	<20081106151723.GA20504@oksana.dev.rtsoft.ru>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A0C89DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Nov 2008 03:36:53 +1100 (EST)
+Message-ID: <49131D15.5080001@freescale.com>
+Date: Thu, 06 Nov 2008 10:36:37 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081106151723.GA20504@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: avorontsov@ru.mvista.com
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH V3] powerpc: Fix Book-E watchdog timer interval setting
+References: <200811052153.57292.matthias.fuchs@esd-electronics.com>
+In-Reply-To: <200811052153.57292.matthias.fuchs@esd-electronics.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,8 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 06, 2008 at 06:17:23PM +0300, Anton Vorontsov wrote:
-[...]
-> There is point in doing the of_platform_driver for this GPIO
+Matthias Fuchs wrote:
+> This patch fixes the setting of the Book-E watchdog timer interval setup
+> on initialization and by ioctl().
+> 
+> On initialization the period bits have to be masked before setting
+> a new period.
+> 
+> In WDIOC_SETTIMEOUT ioctl we have to use the correct mask.
+> 
+> Signed-off-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
 
-Please read as 'There is no point..'
+Acked-by: Timur Tabi <timur@freescale.com>
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
