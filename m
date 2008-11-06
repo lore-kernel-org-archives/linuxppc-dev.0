@@ -1,23 +1,21 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns1.suse.de [195.135.220.2])
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 808FADDDEC
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 21:49:06 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Fix msr check in compat_sys_swapcontext
-References: <jeprlabbi6.fsf@sykes.suse.de>
-	<18706.16317.759662.855430@cargo.ozlabs.ibm.com>
-	<jey6zx9piz.fsf@sykes.suse.de>
-	<18706.51381.987014.370948@cargo.ozlabs.ibm.com>
-Date: Thu, 06 Nov 2008 11:49:00 +0100
-In-Reply-To: <18706.51381.987014.370948@cargo.ozlabs.ibm.com> (Paul
-	Mackerras's message of "Thu, 6 Nov 2008 21:36:37 +1100")
-Message-ID: <jek5bh9lk3.fsf@sykes.suse.de>
+	(Client CN "mail.scram.de",
+	Issuer "StartCom Class 1 Primary Intermediate Server CA" (not
+	verified)) by ozlabs.org (Postfix) with ESMTPS id B2A7CDDDEF
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 22:28:19 +1100 (EST)
+Message-ID: <4912D4B1.7020503@scram.de>
+Date: Thu, 06 Nov 2008 12:27:45 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: Mike Ditto <mditto@consentry.com>
+Subject: Re: [PATCH] i2c-cpm: Add flexibility for I2C clock frequency and
+	filter.
+References: <49124EAD.8090508@consentry.com>
+In-Reply-To: <49124EAD.8090508@consentry.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,56 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+Mike Ditto schrieb:
+> This patch adds the ability to enable the digital filter in the device
+> tree (with the "clock-filter" boolean property) and automates the
+> predivider selection according to the clock-frequency and clock-filter
+> properties.  This allows use of a wider range of I2C bus frequencies.
+> 
+> Signed-off-by:  Mike Ditto <mditto@consentry.com>
 
-> Andreas Schwab writes:
->
->> Paul Mackerras <paulus@samba.org> writes:
->> 
->> > we need to use get_user, not __get_user, since we haven't done an
->> > access_ok() check on the address.
->> 
->> The address is always ok since its a compat pointer, see do_setcontext.
->
-> OK, since it's inside a CONFIG_PPC64 block.  I'll add a paragraph to
-> the patch description pointing that out.
-
-How about this:
-
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index a6a4310..b13abf3 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -941,9 +941,21 @@ long sys_swapcontext(struct ucontext __user *old_ctx,
- #ifdef CONFIG_PPC64
- 	unsigned long new_msr = 0;
- 
--	if (new_ctx &&
--	    get_user(new_msr, &new_ctx->uc_mcontext.mc_gregs[PT_MSR]))
--		return -EFAULT;
-+	if (new_ctx) {
-+		struct mcontext __user *mcp;
-+		u32 cmcp;
-+
-+		/*
-+		 * Get pointer to the real mcontext.  No need for
-+		 * access_ok since we are dealing with compat
-+		 * pointers.
-+		 */
-+		if (__get_user(cmcp, &new_ctx->uc_regs))
-+			return -EFAULT;
-+		mcp = (struct mcontext __user *)(u64)cmcp;
-+		if (__get_user(new_msr, &mcp->mc_gregs[PT_MSR]))
-+			return -EFAULT;
-+	}
- 	/*
- 	 * Check that the context is not smaller than the original
- 	 * size (with VMX but without VSX)
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Acked-by: Jochen Friedrich <jochen@scram.de>
