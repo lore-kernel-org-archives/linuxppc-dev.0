@@ -1,26 +1,26 @@
 Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-cn0ut-8.online-age.net (Ext-cn0ut-8.online-age.net
-	[63.210.253.238])
+Received: from ext-nj2ut-5.online-age.net (ext-nj2ut-5.online-age.net
+	[64.14.54.234])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-cn0ut.online-age.net",
+	(Client CN "ext-nj2ut.online-age.net",
 	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 646B4DDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 23:04:04 +1100 (EST)
-Received: from int-cn0ut-6.online-age.net (int-cn0ut-6.online-age.net
-	[3.159.252.75])
-	by ext-cn0ut-8.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id mA6C31P0018302
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Nov 2008 07:03:02 -0500
-Received: from alpmlip01.e2k.ad.ge.com (int-cn0ut-6.online-age.net
-	[3.159.252.75])
-	by int-cn0ut-6.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id mA6C3xrK001057
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Nov 2008 07:03:59 -0500
+	by ozlabs.org (Postfix) with ESMTPS id 06AAADDE04
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 23:10:44 +1100 (EST)
+Received: from int-nj2ut-3.online-age.net (int-nj2ut-3.online-age.net
+	[3.159.237.72])
+	by ext-nj2ut-5.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id mA6CAc6r004406
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Nov 2008 07:10:38 -0500
+Received: from cinmlip01.e2k.ad.ge.com (int-nj2ut-3.online-age.net
+	[3.159.237.72])
+	by int-nj2ut-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id mA6CAc2B015670
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Nov 2008 07:10:38 -0500
 From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH] powerpc: Basic GPIO support for GE Fanuc SBC610
+Subject: [PATCH v2] powerpc: Basic GPIO support for GE Fanuc SBC610
 To: linuxppc-dev@ozlabs.org
-Date: Thu, 06 Nov 2008 12:03:53 +0000
-Message-ID: <20081106120353.8134.54609.stgit@ubuntu8041.localdomain>
+Date: Thu, 06 Nov 2008 12:10:33 +0000
+Message-ID: <20081106120828.8273.44887.stgit@ubuntu8041.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: paulus@samba.org
@@ -46,6 +46,9 @@ The interrupt capabilites of the GPIO lines is also not currently supported.
 
 Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
 ---
+
+Sorry for the quick jump to version 2 - A stray "i" crept in to the previous 
+version as I was editing the email for submission.
 
  arch/powerpc/boot/dts/gef_sbc610.dts   |    6 +
  arch/powerpc/platforms/86xx/Kconfig    |    2 
@@ -97,7 +100,7 @@ index 4a56ff6..31e540c 100644
 +obj-$(CONFIG_GEF_SBC610)	+= gef_sbc610.o gef_pic.o $(gef-gpio-y)
 diff --git a/arch/powerpc/platforms/86xx/gef_gpio.c b/arch/powerpc/platforms/86xx/gef_gpio.c
 new file mode 100644
-index 0000000..2c935b6
+index 0000000..aafff1b
 --- /dev/null
 +++ b/arch/powerpc/platforms/86xx/gef_gpio.c
 @@ -0,0 +1,185 @@
@@ -278,7 +281,7 @@ index 0000000..2c935b6
 +static __init int gef_gpio_init(void)
 +{
 +	DBG("gef_gpio_init()\n");
-+i	return of_register_platform_driver(&gef_gpio_driver);
++	return of_register_platform_driver(&gef_gpio_driver);
 +}
 +subsys_initcall(gef_gpio_init);
 +
