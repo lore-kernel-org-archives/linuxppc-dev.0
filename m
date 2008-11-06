@@ -1,29 +1,17 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-nj2ut-5.online-age.net (ext-nj2ut-5.online-age.net
-	[64.14.54.234])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-nj2ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 06AAADDE04
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Nov 2008 23:10:44 +1100 (EST)
-Received: from int-nj2ut-3.online-age.net (int-nj2ut-3.online-age.net
-	[3.159.237.72])
-	by ext-nj2ut-5.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id mA6CAc6r004406
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Nov 2008 07:10:38 -0500
-Received: from cinmlip01.e2k.ad.ge.com (int-nj2ut-3.online-age.net
-	[3.159.237.72])
-	by int-nj2ut-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id mA6CAc2B015670
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Nov 2008 07:10:38 -0500
-From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH v2] powerpc: Basic GPIO support for GE Fanuc SBC610
-To: linuxppc-dev@ozlabs.org
-Date: Thu, 06 Nov 2008 12:10:33 +0000
-Message-ID: <20081106120828.8273.44887.stgit@ubuntu8041.localdomain>
+Return-Path: <tmorrison@empirix.com>
+Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
+	by ozlabs.org (Postfix) with ESMTP id C14F4DDDFB
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Nov 2008 00:56:03 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: paulus@samba.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Patch to fix problem? was: PCI Express between MPC8572 & PLX8616
+Date: Thu, 6 Nov 2008 08:55:56 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010EEBF5E1@EMPBEDEX.empirix.com>
+References: <16691A8B34B5D9458EA3A1C37A11555A0137F866@tanisys-ex2.Tanisys.Local>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <galak@kernel.crashing.org>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,275 +21,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Basic support for the GPIO available on the SBC610 VPX Single Board Computer
-from GE Fanuc (PowerPC MPC8641D).
+Sorry for such a wide query...but I did some searching of the linux =
+trees...
+and I am at a loss to find what the below email refers to in terms of a =
+fix=20
+for pci express....and I am having a hard time finding it in all of the =
+commits?
+=20
+any pointers to the right tree and/or the specific fix would be greatly =
+appreciated!
 
-This patch adds basic support for the GPIO in the devices I/O FPGA, the GPIO
-functionality is exposed through the AFIX pins on the backplane, unless used
-by an AFIX card.
+________________________________
 
-This code currently does not support switching between totem-pole and
-open-drain outputs (when used as outputs, GPIOs default to totem-pole).
-The interrupt capabilites of the GPIO lines is also not currently supported.
+=20
+=3D=3D> a friend respond to the original subjectline..
+=20
+> Has anybody every used this chip in their design??
 
-Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
----
+No, but I have 2 other PLX PCI-E switches that would not behave.
 
-Sorry for the quick jump to version 2 - A stray "i" crept in to the previous 
-version as I was editing the email for submission.
+> FYI, we have a custom board that I am bringing up right now
+> that has a
+> MPC8572E that has its PCIE1 connected to the subject line PLX8616
+> PCI Express Switch...
 
- arch/powerpc/boot/dts/gef_sbc610.dts   |    6 +
- arch/powerpc/platforms/86xx/Kconfig    |    2 
- arch/powerpc/platforms/86xx/Makefile   |    3 -
- arch/powerpc/platforms/86xx/gef_gpio.c |  185 ++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/86xx/gef_gpio.h |   10 ++
- 5 files changed, 205 insertions(+), 1 deletions(-)
+So you have the cpu as root-complex attached to the PLX upstream port
+and the PLX downstream ports going somewhere else.
 
-diff --git a/arch/powerpc/boot/dts/gef_sbc610.dts b/arch/powerpc/boot/dts/gef_sbc610.dts
-index 6ed6083..963dd5b 100644
---- a/arch/powerpc/boot/dts/gef_sbc610.dts
-+++ b/arch/powerpc/boot/dts/gef_sbc610.dts
-@@ -98,6 +98,12 @@
- 			interrupt-parent = <&mpic>;
- 
- 		};
-+		gef_gpio: gpio@7,14000 {
-+			#gpio-cells = <1>;
-+			compatible = "gef,fpga-gpio";
-+			reg = <0x7 0x14000 0x24>;
-+			gpio-controller;
-+		};
- 	};
- 
- 	soc@fef00000 {
-diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
-index 77dd797..8e56939 100644
---- a/arch/powerpc/platforms/86xx/Kconfig
-+++ b/arch/powerpc/platforms/86xx/Kconfig
-@@ -34,6 +34,8 @@ config MPC8610_HPCD
- config GEF_SBC610
- 	bool "GE Fanuc SBC610"
- 	select DEFAULT_UIMAGE
-+	select GENERIC_GPIO
-+	select ARCH_REQUIRE_GPIOLIB
- 	select HAS_RAPIDIO
- 	help
- 	  This option enables support for GE Fanuc's SBC610.
-diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
-index 4a56ff6..31e540c 100644
---- a/arch/powerpc/platforms/86xx/Makefile
-+++ b/arch/powerpc/platforms/86xx/Makefile
-@@ -7,4 +7,5 @@ obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
- obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
- obj-$(CONFIG_SBC8641D)		+= sbc8641d.o
- obj-$(CONFIG_MPC8610_HPCD)	+= mpc8610_hpcd.o
--obj-$(CONFIG_GEF_SBC610)	+= gef_sbc610.o gef_pic.o
-+gef-gpio-$(CONFIG_GPIOLIB)	+= gef_gpio.o
-+obj-$(CONFIG_GEF_SBC610)	+= gef_sbc610.o gef_pic.o $(gef-gpio-y)
-diff --git a/arch/powerpc/platforms/86xx/gef_gpio.c b/arch/powerpc/platforms/86xx/gef_gpio.c
-new file mode 100644
-index 0000000..aafff1b
---- /dev/null
-+++ b/arch/powerpc/platforms/86xx/gef_gpio.c
-@@ -0,0 +1,185 @@
-+/*
-+ * Driver for GE Fanuc's FPGA based GPIO pins
-+ *
-+ * Author: Martyn Welch <martyn.welch@gefanuc.com>
-+ *
-+ * 2008 (c) GE Fanuc Intelligent Platforms Embedded Systems, Inc.
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2.  This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+/* TODO
-+ *
-+ * Configuration of output modes (totem-pole/open-drain)
-+ * Interrupt configuration - interrupts are always generated the FPGA relies on
-+ * 	the I/O interrupt controllers mask to stop them propergating
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_gpio.h>
-+#include <linux/gpio.h>
-+
-+#include "gef_gpio.h"
-+
-+#define DEBUG
-+#undef DEBUG
-+
-+#ifdef DEBUG
-+#define DBG(fmt...) do { printk(KERN_DEBUG "gef_gpio: " fmt); } while (0)
-+#else
-+#define DBG(fmt...) do { } while (0)
-+#endif
-+
-+#define NUM_GPIO 19
-+
-+/* Let's create a common inlined function to commonise the code and so we don't
-+ * have to resolve the chip structure multiple times.
-+ */
-+inline void _gef_gpio_set(void __iomem *reg, unsigned int offset, int value)
-+{
-+	unsigned int data;
-+
-+	data = ioread32be(reg);
-+	/* value: 0=low; 1=high */
-+	DBG("Output Set, Pre:0x%8.8x, ", data);
-+	if (value & 0x1) {
-+		data = data | (0x1 << offset);
-+		DBG("OR Mask:0x%8.8x, Post:0x%8.8x\n", (0x1 << offset), data);
-+	} else {
-+		data = data & ~(0x1 << offset);
-+		DBG("AND Mask:0x%8.8x, Post:0x%8.8x\n", ~(0x1 << offset), data);
-+	}
-+	iowrite32be(data, reg);
-+}
-+
-+
-+static int gef_gpio_dir_in(struct gpio_chip *chip, unsigned offset)
-+{
-+	struct of_mm_gpio_chip *mmchip;
-+	unsigned int data;
-+
-+	/* Find memory mapped gpio chip structure from gpio_chip, this contains
-+	 * the mapped location of the GPIO controller */
-+	mmchip = to_of_mm_gpio_chip(chip);
-+
-+	data = ioread32be(mmchip->regs + GEF_GPIO_DIRECT);
-+	DBG("Direction In, Pre:0x%8.8x, ", data);
-+	data = data | (0x1 << offset);
-+	DBG("OR Mask:0x%8.8x, Post:0x%8.8x\n", (0x1 << offset), data);
-+	iowrite32be(data, mmchip->regs + GEF_GPIO_DIRECT);
-+
-+	return 0;
-+}
-+
-+static int gef_gpio_dir_out(struct gpio_chip *chip, unsigned offset, int value)
-+{
-+	struct of_mm_gpio_chip *mmchip;
-+	unsigned int data;
-+
-+	/* Find memory mapped gpio chip structure from gpio_chip, this contains
-+	 * the mapped location of the GPIO controller */
-+	mmchip = to_of_mm_gpio_chip(chip);
-+
-+	/* Set direction before switching to input */
-+	_gef_gpio_set(mmchip->regs + GEF_GPIO_OUT, offset, value);
-+
-+	data = ioread32be(mmchip->regs + GEF_GPIO_DIRECT);
-+	DBG("Direction Out, Pre:0x%8.8x, ", data);
-+	data = data & ~(0x1 << offset);
-+	DBG("AND Mask:0x%8.8x, Post:0x%8.8x\n", ~(0x1 << offset), data);
-+	iowrite32be(data, mmchip->regs + GEF_GPIO_DIRECT);
-+
-+	return 0;
-+}
-+
-+static int gef_gpio_get(struct gpio_chip *chip, unsigned offset)
-+{
-+	struct of_mm_gpio_chip *mmchip;
-+	unsigned int data;
-+	int state = 0;
-+
-+	/* Find memory mapped gpio chip structure from gpio_chip, this contains
-+	 * the mapped location of the GPIO controller */
-+	mmchip = to_of_mm_gpio_chip(chip);
-+
-+	data = ioread32be(mmchip->regs + GEF_GPIO_IN);
-+	state = (int)((data >> offset) & 0x1);
-+	DBG("Get Input, Data:0x%8.8x\n", data);
-+
-+	return state;
-+}
-+
-+static void gef_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
-+{
-+	struct of_mm_gpio_chip *mmchip;
-+
-+	/* Find memory mapped gpio chip structure from gpio_chip, this contains
-+	 * the mapped location of the GPIO controller */
-+	mmchip = to_of_mm_gpio_chip(chip);
-+
-+	_gef_gpio_set(mmchip->regs + GEF_GPIO_OUT, offset, value);
-+
-+}
-+
-+static int __devinit gef_gpio_probe(struct of_device *dev,
-+	const struct of_device_id *match)
-+{
-+	int retval;
-+	struct of_mm_gpio_chip *gef_gpio_chip;
-+
-+	DBG("gef_gpio_probe() called for %s\n", dev->node->full_name);
-+
-+	/* Allocate chip structure */
-+	gef_gpio_chip = kzalloc(sizeof(*gef_gpio_chip), GFP_KERNEL);
-+	if (!gef_gpio_chip) {
-+		DBG("Unable to allocate GEF GPIO structure\n");
-+		return -ENOMEM;
-+	}
-+
-+	/* Setup pointers to chip functions */
-+	gef_gpio_chip->of_gc.gpio_cells			= 1;
-+	gef_gpio_chip->of_gc.gc.ngpio			= NUM_GPIO;
-+	gef_gpio_chip->of_gc.gc.direction_input		= gef_gpio_dir_in;
-+	gef_gpio_chip->of_gc.gc.direction_output	= gef_gpio_dir_out;
-+	gef_gpio_chip->of_gc.gc.get			= gef_gpio_get;
-+	gef_gpio_chip->of_gc.gc.set			= gef_gpio_set;
-+
-+	/* This function adds a memory mapped GPIO chip */
-+	retval = of_mm_gpiochip_add(dev->node, gef_gpio_chip);
-+	if (retval)
-+		return retval;
-+
-+	return 0;
-+};
-+
-+static const struct of_device_id gef_gpio_ids[] = {
-+	{
-+		.compatible = "gef,fpga-gpio",
-+	},
-+	{},
-+};
-+
-+static struct of_platform_driver gef_gpio_driver = {
-+	.name = "gef-of-gpio",
-+	.match_table = gef_gpio_ids,
-+	.probe = gef_gpio_probe,
-+};
-+
-+static __init int gef_gpio_init(void)
-+{
-+	DBG("gef_gpio_init()\n");
-+	return of_register_platform_driver(&gef_gpio_driver);
-+}
-+subsys_initcall(gef_gpio_init);
-+
-+MODULE_DESCRIPTION("GE Fanuc I/O FPGA GPIO driver");
-+MODULE_AUTHOR("Martyn Welch <martyn.welch@gefanuc.com");
-+MODULE_LICENSE("GPL");
-+
-diff --git a/arch/powerpc/platforms/86xx/gef_gpio.h b/arch/powerpc/platforms/86xx/gef_gpio.h
-new file mode 100755
-index 0000000..5f76a7c
---- /dev/null
-+++ b/arch/powerpc/platforms/86xx/gef_gpio.h
-@@ -0,0 +1,10 @@
-+#define GEF_GPIO_DIRECT		0x00
-+#define GEF_GPIO_IN		0x04
-+#define GEF_GPIO_OUT		0x08
-+#define GEF_GPIO_TRIG		0x0C
-+#define GEF_GPIO_POLAR_A	0x10
-+#define GEF_GPIO_POLAR_B	0x14
-+#define GEF_GPIO_INT_STAT	0x18
-+#define GEF_GPIO_OVERRUN	0x1C
-+#define GEF_GPIO_MODE		0x20
-+
+> As part of the boot, we successfully discover config the
+> internal bridge
+> (its in root complex mode) inside the MPC8572E, and from 'many'
+> view points (hardware LED's and status registers) - there seems to
+> be 4 lanes in between the Switch and the CPU...
+
+Are you doing this by using a PCI-E analyzer, or by what you see U-boot
+doing.  BTW, in my case, the LEDs always worked but nothing else did.
+So the lane good LEDs would light up, but the whole interface was
+hopelessly broken.
+
+> But, at the first external config cycle - something goes very wrong -
+> the response (or lack of that =E8 0xffff) is returned, as well as
+> and the associated CCSR's PCIE1 interface is completely
+> reset (we implement and attempt to recover this interface
+> via Freescale's CPU Errata #4) - but beyond that - it
+> never recovers and re-sync's these 4 lanes up....
+
+By external configuration cycle, do you mean when the cpu goes out to
+configure the items on the secondary bus side of the plx switch?  or
+the secondary side of the internal pci-e bridge.  In either case, this
+could be the same problem I just went through.  A workaround was =
+recently
+(like maybe 2 weeks ago) put into the kernel to address this on powerpc
+systems, so you might try pulling down a recent kernel via git and see
+if that helps.  I would have copied the mailing list, but for some
+reason it is rejecting my mail at the moment.
+
+I can say that I tested this fix and it definately fixed all the
+secondary ports on my system.  I used a pci-e analyzer so it was a
+little easier to see what was going on, but in the end it was clear that
+there was something wrong in the powerpc ports, b/c I did not see this
+with the same parts on an x86 host.
+
+
+
+=20
