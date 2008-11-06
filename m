@@ -1,17 +1,11 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18706.28132.850598.687949@cargo.ozlabs.ibm.com>
-Date: Thu, 6 Nov 2008 15:09:08 +1100
+Message-ID: <18706.29951.370276.543442@cargo.ozlabs.ibm.com>
+Date: Thu, 6 Nov 2008 15:39:27 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: [patch] powerpc: implement optimised mutex fastpaths
-In-Reply-To: <20081013011827.GA1299@wotan.suse.de>
-References: <20081012054634.GA12535@wotan.suse.de>
-	<20081012054732.GB12535@wotan.suse.de>
-	<20081013011827.GA1299@wotan.suse.de>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Ingo Molnar <mingo@elte.hu>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Tell gcc when we clobber the carry in inline asm
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,32 +15,133 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nick Piggin writes:
+We have several instances of inline assembly code that use the addic
+or addic. instructions, which set the carry bit, but don't include XER
+in the list of clobbers (the carry bit is in the XER register).
 
-> On Sun, Oct 12, 2008 at 07:47:32AM +0200, Nick Piggin wrote:
-> > 
-> > Implement a more optimal mutex fastpath for powerpc, making use of acquire
-> > and release barrier semantics. This takes the mutex lock+unlock benchmark
-> > from 203 to 173 cycles on a G5.
-> > 
-> > +static inline int
-> > +__mutex_fastpath_trylock(atomic_t *count, int (*fail_fn)(atomic_t *))
-> > +{
-> > +	if (likely(__mutex_cmpxchg_lock(count, 1, 0) == 1))
-> > +		return 1;
-> 
-> Oops, I must have sent the wrong version. This needs a return 0 here.
+This adds "xer" to the list of clobbers for those inline asm
+statements that use addic or addic. and didn't already have it.
 
-Are you going to send the right version?  (or did you send it and I
-missed it?)
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
 
-Also I note that the comment you added just before that routine says:
-
-+ * Change the count from 1 to a value lower than 1, and return 0 (failure)
-+ * if it wasn't 1 originally, or return 1 (success) otherwise. This function
-+ * MUST leave the value lower than 1 even when the "1" assertion wasn't true.
-
-yet just doing a __mutex_cmpxchg_lock isn't going to do that.  So
-please fix either the comment or the code (or both :).
-
-Paul.
+diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
+index f3fc733..499be5b 100644
+--- a/arch/powerpc/include/asm/atomic.h
++++ b/arch/powerpc/include/asm/atomic.h
+@@ -111,7 +111,7 @@ static __inline__ void atomic_inc(atomic_t *v)
+ 	bne-	1b"
+ 	: "=&r" (t), "+m" (v->counter)
+ 	: "r" (&v->counter)
+-	: "cc");
++	: "cc", "xer");
+ }
+ 
+ static __inline__ int atomic_inc_return(atomic_t *v)
+@@ -128,7 +128,7 @@ static __inline__ int atomic_inc_return(atomic_t *v)
+ 	ISYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (&v->counter)
+-	: "cc", "memory");
++	: "cc", "xer", "memory");
+ 
+ 	return t;
+ }
+@@ -155,7 +155,7 @@ static __inline__ void atomic_dec(atomic_t *v)
+ 	bne-	1b"
+ 	: "=&r" (t), "+m" (v->counter)
+ 	: "r" (&v->counter)
+-	: "cc");
++	: "cc", "xer");
+ }
+ 
+ static __inline__ int atomic_dec_return(atomic_t *v)
+@@ -172,7 +172,7 @@ static __inline__ int atomic_dec_return(atomic_t *v)
+ 	ISYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (&v->counter)
+-	: "cc", "memory");
++	: "cc", "xer", "memory");
+ 
+ 	return t;
+ }
+@@ -346,7 +346,7 @@ static __inline__ void atomic64_inc(atomic64_t *v)
+ 	bne-	1b"
+ 	: "=&r" (t), "+m" (v->counter)
+ 	: "r" (&v->counter)
+-	: "cc");
++	: "cc", "xer");
+ }
+ 
+ static __inline__ long atomic64_inc_return(atomic64_t *v)
+@@ -362,7 +362,7 @@ static __inline__ long atomic64_inc_return(atomic64_t *v)
+ 	ISYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (&v->counter)
+-	: "cc", "memory");
++	: "cc", "xer", "memory");
+ 
+ 	return t;
+ }
+@@ -388,7 +388,7 @@ static __inline__ void atomic64_dec(atomic64_t *v)
+ 	bne-	1b"
+ 	: "=&r" (t), "+m" (v->counter)
+ 	: "r" (&v->counter)
+-	: "cc");
++	: "cc", "xer");
+ }
+ 
+ static __inline__ long atomic64_dec_return(atomic64_t *v)
+@@ -404,7 +404,7 @@ static __inline__ long atomic64_dec_return(atomic64_t *v)
+ 	ISYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (&v->counter)
+-	: "cc", "memory");
++	: "cc", "xer", "memory");
+ 
+ 	return t;
+ }
+@@ -431,7 +431,7 @@ static __inline__ long atomic64_dec_if_positive(atomic64_t *v)
+ 	"\n\
+ 2:"	: "=&r" (t)
+ 	: "r" (&v->counter)
+-	: "cc", "memory");
++	: "cc", "xer", "memory");
+ 
+ 	return t;
+ }
+diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/local.h
+index 612d832..84b457a 100644
+--- a/arch/powerpc/include/asm/local.h
++++ b/arch/powerpc/include/asm/local.h
+@@ -67,7 +67,7 @@ static __inline__ long local_inc_return(local_t *l)
+ 	bne-	1b"
+ 	: "=&r" (t)
+ 	: "r" (&(l->a.counter))
+-	: "cc", "memory");
++	: "cc", "xer", "memory");
+ 
+ 	return t;
+ }
+@@ -94,7 +94,7 @@ static __inline__ long local_dec_return(local_t *l)
+ 	bne-	1b"
+ 	: "=&r" (t)
+ 	: "r" (&(l->a.counter))
+-	: "cc", "memory");
++	: "cc", "xer", "memory");
+ 
+ 	return t;
+ }
+diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
+index f56a843..3686436 100644
+--- a/arch/powerpc/include/asm/spinlock.h
++++ b/arch/powerpc/include/asm/spinlock.h
+@@ -277,7 +277,7 @@ static inline void __raw_read_unlock(raw_rwlock_t *rw)
+ 	bne-		1b"
+ 	: "=&r"(tmp)
+ 	: "r"(&rw->lock)
+-	: "cr0", "memory");
++	: "cr0", "xer", "memory");
+ }
+ 
+ static inline void __raw_write_unlock(raw_rwlock_t *rw)
