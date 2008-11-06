@@ -1,18 +1,22 @@
-Return-Path: <lk.atwork@yahoo.com>
-Received: from n26.bullet.mail.mud.yahoo.com (n26.bullet.mail.mud.yahoo.com
-	[68.142.206.221]) by ozlabs.org (Postfix) with SMTP id ACC58DDE98
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 010CBDDDE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Nov 2008 06:22:37 +1100 (EST)
-References: <131123.51430.qm@web46312.mail.sp1.yahoo.com>
-	<4911C695.4070401@freescale.com>
-Date: Wed, 5 Nov 2008 11:22:35 -0800 (PST)
-From: Laxmikant Rashinkar <lk.atwork@yahoo.com>
-Subject: Re: i2c driver's probe routine not getting called
-To: Scott Wood <scottwood@freescale.com>
+	Thu,  6 Nov 2008 13:44:47 +1100 (EST)
+Received: from edison2.selinc.com (edison2.selinc.com [12.110.71.8])
+	by tesla.selinc.com (8.12.11.20060308/8.12.11) with ESMTP id
+	mA627NdI002247
+	for <linuxppc-embedded@ozlabs.org>; Wed, 5 Nov 2008 18:07:29 -0800
+To: linuxppc-embedded@ozlabs.org
+Subject: Using DMA
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1496673244-1225912955=:15414"
-Message-ID: <789886.15414.qm@web46310.mail.sp1.yahoo.com>
-Cc: linuxppc-embedded@ozlabs.org
+Message-ID: <OF1BC63DE0.D024D14C-ON882574F9.000ABAA9-882574F9.000BA2A1@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Wed, 5 Nov 2008 18:07:20 -0800
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,44 +27,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1496673244-1225912955=:15414
-Content-Type: text/plain; charset=us-ascii
+This may be the wrong forum for this question.  If so I apologize, and 
+could someone please tell me the appropriate place to ask?
 
-I actually tried using the in tree i2c-mpc driver before sending out my email. This driver would silently reset the system when i2c accesses took place.
+Assuming this is the right place, I'm working with the 2.6.27 (stable) 
+kernel and an MPC8347E processor.  I'm using a custom NAND controller and 
+a custom driver to talk with that controller.  I'm now to the point where 
+I'm trying to optimize/improve performance and something I'd like to do is 
+set up the driver to use DMA transfers to the controller.  (As an 
+additional bit of info, I modeled my driver on the Cafe driver.)  However, 
+no one here has ever had to set up DMA from scratch before, it's always 
+been done by an existing driver or the kernel, so I'm in uncharted 
+teritory.
 
-So I guess I'll try to modify the old driver to support new OF interface.
+In the Cafe driver, Linux Device Drivers 3rd Edition, and DMA-mapping.txt 
+everyone talks about how to allocate buffers using 
+dma/pci_alloc_coherent(), but no one talks about how to actually use it. 
+I'm pretty sure (even in my ignorance) that just allocating a DMA coherent 
+buffer and then copying in and out of it does NOT actually engage the 
+underlying hardware and perform a DMA transfer.
 
-thanks
-LK
+With some digging I've found the Freescale Elo/Elo Plus DMA driver which 
+supports my processor.  What I'm not clear on is how to actually make use 
+of it.  How do I tie my NAND driver to the Freescale DMA driver and 
+actually get the hardware to work?  Any pointers are greatly appreciated.
 
+Thanks.
 
-
-
-________________________________
-From: Scott Wood <scottwood@freescale.com>
-To: Laxmikant Rashinkar <lk.atwork@yahoo.com>
-Cc: linuxppc-embedded@ozlabs.org
-Sent: Wednesday, November 5, 2008 8:15:17 AM
-Subject: Re: i2c driver's probe routine not getting called
-
-Laxmikant Rashinkar wrote:
-> I have linux-2.6.27.1 running on a MPC8347 based board.
-> 
-> When my freescale I2C driver is insmoded, it calls platform_driver_register() successfully, but the probe routine doesn't get called. 
-
-Is "your" freescale I2C driver different from "the" freescale I2C driver in drivers/i2c/busses/i2c-mpc.c?  If so, you'll need to update it to be an of_platform driver like the in-tree driver is (or, just switch to the in-tree driver).
-
--Scott
-
-
-
-      
---0-1496673244-1225912955=:15414
-Content-Type: text/html; charset=us-ascii
-
-<html><head><style type="text/css"><!-- DIV {margin:0px;} --></style></head><body><div style="font-family:times new roman,new york,times,serif;font-size:12pt"><div>I actually tried using the in tree i2c-mpc driver before sending out my email. This driver would silently reset the system when i2c accesses took place.<br><br>So I guess I'll try to modify the old driver to support new OF interface.<br><br>thanks<br>LK<br></div><div style="font-family: times new roman,new york,times,serif; font-size: 12pt;"><br><div style="font-family: arial,helvetica,sans-serif; font-size: 12pt;"><font face="Tahoma" size="2"><hr size="1"><b><span style="font-weight: bold;">From:</span></b> Scott Wood &lt;scottwood@freescale.com&gt;<br><b><span style="font-weight: bold;">To:</span></b> Laxmikant Rashinkar &lt;lk.atwork@yahoo.com&gt;<br><b><span style="font-weight: bold;">Cc:</span></b> linuxppc-embedded@ozlabs.org<br><b><span style="font-weight: bold;">Sent:</span></b>
- Wednesday, November 5, 2008 8:15:17 AM<br><b><span style="font-weight: bold;">Subject:</span></b> Re: i2c driver's probe routine not getting called<br></font><br>
-Laxmikant Rashinkar wrote:<br>&gt; I have linux-2.6.27.1 running on a MPC8347 based board.<br>&gt; <br>&gt; When my freescale I2C driver is insmoded, it calls platform_driver_register() successfully, but the probe routine doesn't get called. <br><br>Is "your" freescale I2C driver different from "the" freescale I2C driver in drivers/i2c/busses/i2c-mpc.c?&nbsp; If so, you'll need to update it to be an of_platform driver like the in-tree driver is (or, just switch to the in-tree driver).<br><br>-Scott<br></div></div></div><br>
-
-      </body></html>
---0-1496673244-1225912955=:15414--
+Bruce
