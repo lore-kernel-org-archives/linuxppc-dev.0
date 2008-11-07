@@ -1,23 +1,20 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-gx0-f18.google.com (mail-gx0-f18.google.com
-	[209.85.217.18]) by ozlabs.org (Postfix) with ESMTP id E17CADDEF5
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A95A0DDF09
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Nov 2008 08:53:48 +1100 (EST)
-Received: by gxk11 with SMTP id 11so360617gxk.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 07 Nov 2008 13:53:47 -0800 (PST)
-Message-ID: <ed82fe3e0811071346u291fa477s2147affcc0f8ef42@mail.gmail.com>
-Date: Fri, 7 Nov 2008 15:46:42 -0600
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
-To: Bruce_Leonard@selinc.com
+	Sat,  8 Nov 2008 09:13:40 +1100 (EST)
+In-Reply-To: <ed82fe3e0811071346u291fa477s2147affcc0f8ef42@mail.gmail.com>
+To: "Timur Tabi" <timur@freescale.com>
 Subject: Re: Using DMA
-In-Reply-To: <OFDAB4AD6D.6B393411-ON882574FA.007560E7-882574FA.007634F1@selinc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <ed82fe3e0811070743l1e0f7430o6bbb2b3d5e5a446f@mail.gmail.com>
-	<OFDAB4AD6D.6B393411-ON882574FA.007560E7-882574FA.007634F1@selinc.com>
-Cc: linuxppc-embedded@ozlabs.org
+Message-ID: <OF36982726.7A11F196-ON882574FA.00798551-882574FA.0079F330@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Fri, 7 Nov 2008 14:12:16 -0800
+Content-Type: text/plain; charset="US-ASCII"
+Cc: timur.tabi@gmail.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,39 +25,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 7, 2008 at 3:31 PM,  <Bruce_Leonard@selinc.com> wrote:
+timur.tabi@gmail.com wrote on 11/07/2008 01:46:42 PM:
 
-> I'm not sure if I need something as complicated as sound/soc/fsl/fsl_dma.c
-> or not.  Maybe you can offer an opinion.  The NAND flash in our product is
-> our backing storage, i.e., our hard drive.  We know that we're going to be
-> storing away system status at about a 1 second rate and in the future
-> we'll probably end up storing collected data at a very high rate, so we're
-> potentially going to be doing a LOT of data movement to the NAND.  I'm
-> still not clear on the adma stuff, so I'm not sure if a "single-shot
-> one-way transfer" is appropriate or not.  Seems like I'd waste a lot of
-> time setting up and tearing down the DMA channel.
->
-> So, do I need something complicated?
+> 
+> Whether or not using async dma is worth the effort can only be
+> determined by profiling the code.  Either it's better, or it's not.
+> There's no real way to tell in advance.
+> 
 
-The Async DMA code is very much like an "offload memcpy".  The Elo
-control will handle the memcpy while the host CPU can do something
-else.  Keep in mind that while the Elo is transferring data, the
-memory bus will be saturated.
+Pretty much the answer I expected :), I was just hoping that "wiser and 
+more experienced" minds would say "oh, well to do what you want you should 
+go in this direction".  Ah well, such is the life of a kernel hacker.
 
-Whether or not using async dma is worth the effort can only be
-determined by profiling the code.  Either it's better, or it's not.
-There's no real way to tell in advance.
+So it sounds like the async dma is the way to go, since I want to off load 
+as much as possible from the core.  As you say, though, it's new and not 
+in LDD3.  Is .../drivers/dma/dmaengine.c what everyone is refering to as 
+async dma?  If not, what is?  And what in the kernel is already using it 
+so I can look at some example code.
 
-The advantage of using async DMA over memcpy is that you don't have to
-worry about large memcpy operations blocking the CPU and causing apps
-the kernel and apps to stall while your driver is copying data.  So
-even if overall performance drops, latency will improve and
-the system will appear to be faster.  The drawback is that async dma
-is more complicated than plain old memcpy.  Since the dma is
-asynchronous, you'll need to register a callback function which gets
-notified when the Elo has completed the DMA transfer.  That's a very
-different design than memcpy.
+Thanks very much for the pointers Timur.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Bruce
