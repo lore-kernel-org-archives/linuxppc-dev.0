@@ -1,30 +1,29 @@
 Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-nj2ut-13.online-age.net (ext-nj2ut-13.online-age.net
-	[64.14.54.246])
+Received: from ext-nj2ut-9.online-age.net (ext-nj2ut-9.online-age.net
+	[64.14.54.239])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "ext-nj2ut.online-age.net",
 	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0429DDDED1
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Nov 2008 02:12:53 +1100 (EST)
-Received: from int-nj2ut-7.online-age.net (int-nj2ut-7.online-age.net
-	[3.159.237.76])
-	by ext-nj2ut-13.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id mA7FClTk005297
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Nov 2008 10:12:48 -0500
-Received: from alpmlip01.e2k.ad.ge.com (int-nj2ut-7.online-age.net
-	[3.159.237.76])
-	by int-nj2ut-7.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id mA7FClfP032238
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Nov 2008 10:12:47 -0500
-Date: Fri, 7 Nov 2008 15:13:16 +0000
+	by ozlabs.org (Postfix) with ESMTPS id 5C87ADDF37
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Nov 2008 02:16:00 +1100 (EST)
+Received: from int-nj2ut-3.online-age.net (int-nj2ut-3.online-age.net
+	[3.159.237.72])
+	by ext-nj2ut-9.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id mA7FFkO7023474
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Nov 2008 10:15:46 -0500
+Received: from cinmlip01.e2k.ad.ge.com (int-nj2ut-3.online-age.net
+	[3.159.237.72])
+	by int-nj2ut-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id mA7FFkHm013383
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Nov 2008 10:15:46 -0500
+Date: Fri, 7 Nov 2008 15:16:14 +0000
 From: Martyn Welch <martyn.welch@gefanuc.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/86xx: Correct SOC bus-frequency in GE Fanuc
-	SBC610 DTS
-Message-Id: <20081107151316.90e05968.martyn.welch@gefanuc.com>
-In-Reply-To: <01A072FA-4E81-4C96-96F8-0BF2BE2977C9@kernel.crashing.org>
-References: <20081107134343.7844.77855.stgit@ubuntu8041.localdomain>
-	<01A072FA-4E81-4C96-96F8-0BF2BE2977C9@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Watchdog timer support for GE Fanuc SBC610
+Message-Id: <20081107151614.534d4607.martyn.welch@gefanuc.com>
+In-Reply-To: <6A6D7DCB-067A-4891-B922-536765D6E6FB@kernel.crashing.org>
+References: <20081107143818.9129.47899.stgit@ubuntu8041.localdomain>
+	<6A6D7DCB-067A-4891-B922-536765D6E6FB@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
@@ -37,39 +36,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 7 Nov 2008 08:45:11 -0600
+On Fri, 7 Nov 2008 08:44:45 -0600
 Kumar Gala <galak@kernel.crashing.org> wrote:
 > 
-> On Nov 7, 2008, at 7:43 AM, Martyn Welch wrote:
+> On Nov 7, 2008, at 8:38 AM, Martyn Welch wrote:
 > 
-> > This patch corrects the bus-frequency value provided in the SBC610's  
-> > dts.
+> > Support for the SBC610 VPX Single Baord Computer from GE Fanuc  
+> > (PowerPC
+> > MPC8641D).
+> >
+> > This patch adds support for the watchdog timer in the devices main  
+> > FPGA.
+> > There are two identical watchdog timers at different offsets in the  
+> > main
+> > FPGA, this driver is capable of supporting one of them. The watchdog  
+> > timers
+> > are also capable of generating interrupts at a user-configurable  
+> > threshold,
+> > though support for this operation is currently not supported by the  
+> > driver.
 > >
 > > Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
 > > ---
 > >
-> > arch/powerpc/boot/dts/gef_sbc610.dts |    2 +-
-> > 1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/arch/powerpc/boot/dts/gef_sbc610.dts b/arch/powerpc/ 
-> > boot/dts/gef_sbc610.dts
-> > index fd2b606..1f7833c 100644
-> > --- a/arch/powerpc/boot/dts/gef_sbc610.dts
-> > +++ b/arch/powerpc/boot/dts/gef_sbc610.dts
-> > @@ -114,7 +114,7 @@
-> > 		compatible = "simple-bus";
-> > 		ranges = <0x0 0xfef00000 0x00100000>;
-> > 		reg = <0xfef00000 0x100000>;	// CCSRBAR 1M
-> > -		bus-frequency = <0>;
-> > +		bus-frequency = <33333333>;
-> >
-> > 		i2c1: i2c@3000 {
-> > 			#address-cells = <1>;
+> > arch/powerpc/boot/dts/gef_sbc610.dts           |   19 +
+> > arch/powerpc/configs/86xx/gef_sbc610_defconfig |    1
+> > drivers/watchdog/Kconfig                       |    6
+> > drivers/watchdog/Makefile                      |    1
+> > drivers/watchdog/gef_wdt.c                     |  333 +++++++++++++++ 
+> > +++++++++
+> > 5 files changed, 360 insertions(+), 0 deletions(-)
 > 
-> are we not fixing this up in u-boot?
+> Can you break this into two patches.  One for the driver and one for  
+> the arch/powerpc stuff.  the driver should go via the watchdog  
+> maintainer (and CC that list).
 > 
 
-The SBC610 has uboot 1.2.0, which doesn't seem to be changing this.
+Yeah - sorry, didn't think about that.
+
+Thinking about it, the driver is specific to GEF Fanuc boards, should this be 
+going into drivers/watchdog/ or would it be better for me to move it to 
+arch/powerpc?
+
+Martyn
 
 > - k
 
