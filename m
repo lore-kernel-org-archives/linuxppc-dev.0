@@ -1,21 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <sonny@us.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 18421DDDFA
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Nov 2008 10:24:18 +1100 (EST)
-Message-Id: <E490ECD9-DC1C-4BF6-A4FA-2EA4E80EB8D9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20081106133524.75588d96.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 1/1] irq: Maintain user set affinity
-Date: Thu, 6 Nov 2008 17:23:51 -0600
-References: <Pine.LNX.4.64.0811041030520.25054@blarg.am.freescale.net>
-	<20081106133524.75588d96.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 240A3DDE23
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Nov 2008 11:38:44 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mA70cISk008752
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Nov 2008 17:38:18 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mA70cgdE145724
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Nov 2008 17:38:42 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mA70cCXq006422
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Nov 2008 17:38:13 -0700
+Date: Thu, 6 Nov 2008 18:38:41 -0600
+From: Sonny Rao <sonnyrao@us.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix BSR to allow mmap of small BSR on 64k kernel
+Message-ID: <20081107003841.GE7533@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,71 +33,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Fix the BSR driver to allow small BSR devices, which are limited to a
+single 4k space, on a 64k page kernel.  Previously the driver would
+reject the mmap since the size was smaller than PAGESIZE (or because
+the size was greater than the size of the device).  Now, we check for
+this case use remap_4k_pfn(). Also, take out code to set vm_flags,
+as the remap_pfn functions will do this for us.
 
-On Nov 6, 2008, at 3:35 PM, Andrew Morton wrote:
 
-> On Tue, 4 Nov 2008 10:31:05 -0600 (CST)
-> Kumar Gala <galak@kernel.crashing.org> wrote:
->
->>> From 819ad3ed4660f4238e053728a8b5aa93d22b13d7 Mon Sep 17 00:00:00  
->>> 2001
->> From: Kumar Gala <galak@kernel.crashing.org>
->> Date: Tue, 4 Nov 2008 10:13:53 -0600
->> Subject: [PATCH 1/1] irq: Maintain user set affinity
->>
->> This addresses a regression in that if a user specified an affinity
->> for an interrupt that affinity information would get reset between
->> a request_irq(), free_irq() and request_irq() for the same irq.
->>
->> On example of this is bringing up an ethernet interface, taking
->> it down and bringing it back up again.
->>
->> Instead of always using the irq_default_affinity we use the
->> previous setting of the IRQs affinity with the assumption that
->> at boot the IRQs affinity will be set to irq_default_affinity.
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->> kernel/irq/manage.c |    7 +++++--
->> 1 files changed, 5 insertions(+), 2 deletions(-)
->>
->> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
->> index c498a1b..ea7d11b 100644
->> --- a/kernel/irq/manage.c
->> +++ b/kernel/irq/manage.c
->> @@ -115,9 +115,12 @@ int irq_select_affinity(unsigned int irq)
->> 	if (!irq_can_set_affinity(irq))
->> 		return 0;
->>
->> -	cpus_and(mask, cpu_online_map, irq_default_affinity);
->> -
->> 	desc = irq_to_desc(irq);
->> +
->> +	mask = desc->affinity;
->> +
->> +	cpus_and(mask, cpu_online_map, mask);
->> +
->> 	desc->affinity = mask;
->> 	desc->chip->set_affinity(irq, mask);
->>
->
-> Are you able to identify when this regression occurred?  It isn't
-> immediately obvious to me.
->
-> If the regression is present in 2.6.27 or earlier, do you think we
-> should backport the fix?  If so, a different patch would be needed due
-> to the presence of
->
-> commit 08678b0841267c1d00d771fe01548d86043d065e
-> Author: Yinghai Lu <yhlu.kernel@gmail.com>
-> Date:   Tue Aug 19 20:50:05 2008 -0700
->
->    generic: sparse irqs: use irq_desc() together with dyn_array,  
-> instead of irq_desc[]
+Signed-off-by: Sonny Rao <sonnyrao@us.ibm.com>
 
-It didn't creep in during 2.6.27.  I will back port a patch to  
-2.6.27.  Thomas has provided me a better patch that handles a few  
-critical issues that mine doesn't.  I'll be testing it this evening  
-and will backport to 2.6.27 if it works out.
-
-- k
+Index: common/drivers/char/bsr.c
+===================================================================
+--- common.orig/drivers/char/bsr.c	2008-11-06 16:43:58.000000000 -0600
++++ common/drivers/char/bsr.c	2008-11-06 18:30:41.000000000 -0600
+@@ -27,6 +27,7 @@
+ #include <linux/cdev.h>
+ #include <linux/list.h>
+ #include <linux/mm.h>
++#include <asm/pgtable.h>
+ #include <asm/io.h>
+ 
+ /*
+@@ -115,15 +116,23 @@
+ {
+ 	unsigned long size   = vma->vm_end - vma->vm_start;
+ 	struct bsr_dev *dev = filp->private_data;
++	int ret;
+ 
+-	if (size > dev->bsr_len || (size & (PAGE_SIZE-1)))
+-		return -EINVAL;
++	/* This is legal where we have a BSR on a 4k page but a 64k kernel */
++	if (size > dev->bsr_len)
++		size = dev->bsr_len;
+ 
+-	vma->vm_flags |= (VM_IO | VM_DONTEXPAND);
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 
+-	if (io_remap_pfn_range(vma, vma->vm_start, dev->bsr_addr >> PAGE_SHIFT,
+-			       size, vma->vm_page_prot))
++	if (dev->bsr_len < PAGE_SIZE)
++		ret = remap_4k_pfn(vma, vma->vm_start, dev->bsr_addr >> 12,
++				   vma->vm_page_prot);
++	else
++		ret = io_remap_pfn_range(vma, vma->vm_start,
++					 dev->bsr_addr >> PAGE_SHIFT,
++					 size, vma->vm_page_prot);
++
++	if (ret)
+ 		return -EAGAIN;
+ 
+ 	return 0;
