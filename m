@@ -1,21 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 31279DDF57
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C627FDDEF8
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Nov 2008 09:28:27 +1100 (EST)
-Message-ID: <4914C0FB.60101@freescale.com>
-Date: Fri, 07 Nov 2008 16:28:11 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Bruce_Leonard@selinc.com
+	Sat,  8 Nov 2008 09:37:38 +1100 (EST)
+In-Reply-To: <4914C0FB.60101@freescale.com>
+To: Timur Tabi <timur@freescale.com>
 Subject: Re: Using DMA
-References: <OF36982726.7A11F196-ON882574FA.00798551-882574FA.0079F330@selinc.com>
-In-Reply-To: <OF36982726.7A11F196-ON882574FA.00798551-882574FA.0079F330@selinc.com>
-Content-Type: text/plain; charset=ISO-8859-1
+MIME-Version: 1.0
+Message-ID: <OF2FC25006.EFC05820-ON882574FA.007C35D8-882574FA.007C3C11@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Fri, 7 Nov 2008 14:37:13 -0800
+Content-Type: text/plain; charset="US-ASCII"
 Cc: timur.tabi@gmail.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,24 +25,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Bruce_Leonard@selinc.com wrote:
+> 
+> There's some network stuff that uses it for optimization.  If 
+> CONFIG_NET_DMA is
+> enabled, that will turn on some kind of TCP/IP offloading.  I don't 
+> really know
+> much about that.  There's also a dmatest.c testing driver.
+> 
+> It would definitely be nice to see a third client driver.
+> 
 
-> So it sounds like the async dma is the way to go, since I want to off load 
-> as much as possible from the core.  As you say, though, it's new and not 
-> in LDD3.  Is .../drivers/dma/dmaengine.c what everyone is refering to as 
-> async dma?
+I'll see what I can do :).  Thanks for the help.
 
-Yes.
-
->  If not, what is?  And what in the kernel is already using it
-> so I can look at some example code.
-
-There's some network stuff that uses it for optimization.  If CONFIG_NET_DMA is
-enabled, that will turn on some kind of TCP/IP offloading.  I don't really know
-much about that.  There's also a dmatest.c testing driver.
-
-It would definitely be nice to see a third client driver.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Bruce
