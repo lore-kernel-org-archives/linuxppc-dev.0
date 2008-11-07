@@ -1,21 +1,21 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.189])
-	by ozlabs.org (Postfix) with ESMTP id 7228FDDF7D
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 98CE3DDDFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Nov 2008 02:43:21 +1100 (EST)
-Received: by rn-out-0910.google.com with SMTP id j40so1043794rnf.16
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 07 Nov 2008 07:43:20 -0800 (PST)
-Message-ID: <ed82fe3e0811070743l1e0f7430o6bbb2b3d5e5a446f@mail.gmail.com>
-Date: Fri, 7 Nov 2008 09:43:18 -0600
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
-To: Bruce_Leonard@selinc.com
-Subject: Re: Using DMA
-In-Reply-To: <OF1BC63DE0.D024D14C-ON882574F9.000ABAA9-882574F9.000BA2A1@selinc.com>
+	Sat,  8 Nov 2008 04:33:15 +1100 (EST)
+Message-ID: <49147B8E.4060600@freescale.com>
+Date: Fri, 07 Nov 2008 11:31:58 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <OF1BC63DE0.D024D14C-ON882574F9.000ABAA9-882574F9.000BA2A1@selinc.com>
+To: wael showair <showair2003@yahoo.com>
+Subject: Re: How to register an interrupt under linux?
+References: <20376306.post@talk.nabble.com>
+In-Reply-To: <20376306.post@talk.nabble.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,47 +27,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 5, 2008 at 8:07 PM,  <Bruce_Leonard@selinc.com> wrote:
-> This may be the wrong forum for this question.  If so I apologize, and
-> could someone please tell me the appropriate place to ask?
+wael showair wrote:
+> Dear all,
+> First here is the setup i've:
+> 1. The board is SPTWIMAX-CC1E board 
+> 2. The processor is MPC8555 i found it in the powerpc family NOT ppc family.
+> Also the board contains DSP core.
+> 3. Linux Kernel 2.6.19-rc5 running on the MPC8555 processor side.
 
-You're in the right place.
+That's rather old...
 
-> In the Cafe driver, Linux Device Drivers 3rd Edition, and DMA-mapping.txt
-> everyone talks about how to allocate buffers using
-> dma/pci_alloc_coherent(), but no one talks about how to actually use it.
+> I aim to let the DSP processor interrupts the MPC8555 processor so i think
+> the first step is to register an interrupt handler for an interrupt number.
+> i found this in the linux API request_irq. so 
+> 
+> i make a simple module & write in it
+> request_irq(4,my_handler,SA_INTERRUPT,"DSP",NULL); but unfortunately it
+> returns -ENOSYS.
 
-That's because allocating a DMA buffer is a task common to all DMA
-operations.  Everything else about DMA is device- and/or
-architecture-specific.
+If we had a FAQ, this would be entry #1.  request_irq() takes virtual 
+IRQ numbers, not hardware numbers of some specific PIC.  You need to 
+create a mapping, typically via the device tree.  Google should be able 
+to provide more details.
 
-DMA buffers typically have special requirements with respect to
-contiguousness and caching.
+> i have tracked the error & i found this is because the
+> irq_chip structure was not set.
+> 
+> so i added the API of set_irq_chip as follows:
+> 
+> irqChip.enable = NULL;
+> irqChip.disable = NULL;
+> irqChip.startup = NULL;
+> irqChip.shutdown = NULL;
 
-> I'm pretty sure (even in my ignorance) that just allocating a DMA coherent
-> buffer and then copying in and out of it does NOT actually engage the
-> underlying hardware and perform a DMA transfer.
+That's kind of like commenting out every line with an error until the 
+code builds. :-P
 
-That is correct.  A DMA buffer, once allocated, generally acts very
-much like any other piece of memory allocated by kmalloc(). The buffer
-is typically allocated from main memory, so there's no way to make it
-do anything special.
+>  but unfortunately when i tried to insert my module i got a segmentation
+> fault.
 
-> With some digging I've found the Freescale Elo/Elo Plus DMA driver which
-> supports my processor.  What I'm not clear on is how to actually make use
-> of it.  How do I tie my NAND driver to the Freescale DMA driver and
-> actually get the hardware to work?  Any pointers are greatly appreciated.
+That tends to happen if you tell the kernel to call a NULL pointer.
 
-The Elo device driver is an async DMA back-end driver.  That is, you
-don't communicate with that driver directly, you communicate with the
-async library (which is new - so you won't find it in LDD3).
+  i have tracked it & i found this is because of the unmask function of
+> my interrupt irq_chip was not set.
+> so do i have to implement it
 
-Please note that the async DMA stuff is intended for single-shot
-one-way transfers only between two memory regions.  It has a very
-specific usage.  If you need something more complicated, you'll need
-to write your own DMA driver.  You can find an example of that in
-sound/soc/fsl/fsl_dma.c.
+No, it's already implemented in the MPIC driver.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+-Scott
