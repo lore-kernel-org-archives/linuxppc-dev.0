@@ -1,17 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <drzeus-mmc@drzeus.cx>
+Received: from smtp.drzeus.cx (server.drzeus.cx [85.8.24.28])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C9866DDDE3
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Nov 2008 05:44:50 +1100 (EST)
-Date: Sat, 8 Nov 2008 12:44:45 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'merge' branch (for 2.6.28)
-Message-ID: <Pine.LNX.4.64.0811081242540.3455@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 4D6A6DDE00
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Nov 2008 07:56:20 +1100 (EST)
+Date: Sat, 8 Nov 2008 21:50:56 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 0/3 RFC] MMC SPI support for OpenFirmware platforms
+Message-ID: <20081108215056.5ad2abe7@mjolnir.drzeus.cx>
+In-Reply-To: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
+References: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,84 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'merge' branch of
+On Thu, 30 Oct 2008 22:55:46 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
+> 
+> Pierre, the approach is somewhat similar to this one:
+> http://lkml.org/lkml/2008/5/26/135
+> Posted few months ago.
+> 
+> I know you don't like it, but I ask you to reconsider it. The
+> I2C and SPI cases are similar, and recently we tried to write
+> bindings for some I2C GPIO controllers.
+> 
 
-to receive the following updates:
+This new version is a bit better in that you've generalised thing more.
+I'd still prefer if we can have an interface where the driver doesn't
+have to know that it is on an ACPI/OF/EFI/whatnot host, but I can live
+with this model for now.
 
- arch/powerpc/boot/dts/gef_sbc610.dts              |    2
- arch/powerpc/configs/83xx/asp8347_defconfig       |  121 +++++----
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |  158 +++++++-----
- arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  158 +++++++-----
- arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |  125 +++++----
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |  136 ++++++----
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |  171 +++++++++----
- arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |  121 +++++----
- arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |  123 +++++----
- arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |  126 +++++----
- arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |  119 +++++----
- arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |  123 +++++----
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |  155 +++++++-----
- arch/powerpc/configs/83xx/sbc834x_defconfig       |  119 +++++----
- arch/powerpc/configs/85xx/ksi8560_defconfig       |   87 ++++--
- arch/powerpc/configs/85xx/mpc8536_ds_defconfig    |  143 +++++++++--
- arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   74 ++++-
- arch/powerpc/configs/85xx/mpc8544_ds_defconfig    |  143 +++++++++--
- arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   90 +++++--
- arch/powerpc/configs/85xx/mpc8568mds_defconfig    |   93 +++++--
- arch/powerpc/configs/85xx/mpc8572_ds_defconfig    |  143 +++++++++--
- arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   91 +++++--
- arch/powerpc/configs/85xx/sbc8548_defconfig       |   75 ++++-
- arch/powerpc/configs/85xx/sbc8560_defconfig       |   78 ++++--
- arch/powerpc/configs/85xx/stx_gp3_defconfig       |  115 ++++++---
- arch/powerpc/configs/85xx/tqm8540_defconfig       |   91 +++++--
- arch/powerpc/configs/85xx/tqm8541_defconfig       |   96 +++++--
- arch/powerpc/configs/85xx/tqm8548_defconfig       |   98 +++++--
- arch/powerpc/configs/85xx/tqm8555_defconfig       |   96 +++++--
- arch/powerpc/configs/85xx/tqm8560_defconfig       |   96 +++++--
- arch/powerpc/configs/86xx/gef_sbc610_defconfig    |  281 ++++++++++++++++------
- arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |  177 +++++++++----
- arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |  175 +++++++++----
- arch/powerpc/configs/86xx/sbc8641d_defconfig      |  152 +++++++----
- arch/powerpc/configs/adder875_defconfig           |   69 +++--
- arch/powerpc/configs/c2k_defconfig                |  179 ++++++++------
- arch/powerpc/configs/ep8248e_defconfig            |  113 +++++---
- arch/powerpc/configs/ep88xc_defconfig             |   67 +++--
- arch/powerpc/configs/linkstation_defconfig        |  122 +++++++--
- arch/powerpc/configs/mgcoge_defconfig             |  234 ++++++++++++++----
- arch/powerpc/configs/mgsuvd_defconfig             |  107 +++++---
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |   78 ++++--
- arch/powerpc/configs/mpc8272_ads_defconfig        |  113 +++++---
- arch/powerpc/configs/mpc83xx_defconfig            |  156 +++++++-----
- arch/powerpc/configs/mpc85xx_defconfig            |  145 +++++++++--
- arch/powerpc/configs/mpc866_ads_defconfig         |   77 ++++--
- arch/powerpc/configs/mpc86xx_defconfig            |  144 +++++++++--
- arch/powerpc/configs/mpc885_ads_defconfig         |   67 +++--
- arch/powerpc/configs/pq2fads_defconfig            |  137 ++++++----
- arch/powerpc/configs/prpmc2800_defconfig          |  126 +++++++--
- arch/powerpc/configs/storcenter_defconfig         |   83 ++++--
- arch/powerpc/include/asm/immap_cpm2.h             |    9
- arch/powerpc/include/asm/immap_qe.h               |    5
- arch/powerpc/kernel/misc_32.S                     |    4
- drivers/watchdog/booke_wdt.c                      |    5
- 55 files changed, 4247 insertions(+), 1944 deletions(-)
+Rgds
+-- 
+     -- Pierre Ossman
 
-Kumar Gala (2):
-      powerpc/fsl-booke: Fix synchronization bug w/local tlb invalidates
-      powerpc: Updated Freescale PPC related defconfigs
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-Li Yang (1):
-      powerpc: Update QE/CPM2 usb_ctlr structures for USB support
-
-Martyn Welch (1):
-      powerpc/86xx: Correct SOC bus-frequency in GE Fanuc SBC610 DTS
-
-Matthias Fuchs (1):
-      powerpc: Fix Book-E watchdog timer interval setting
-
-The majority of this is defconfig updates, but the other patches are
-either compile files (Li Yang) or regressions/bug fixes (Kumar/tlb
-invalidate, Martyn, Matthais).  Please pick this up and forward to Linus.
-
-- k
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
