@@ -1,20 +1,21 @@
-Return-Path: <drzeus-mmc@drzeus.cx>
-Received: from smtp.drzeus.cx (server.drzeus.cx [85.8.24.28])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B0AC8DDDD8
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Nov 2008 08:01:01 +1100 (EST)
-Date: Sat, 8 Nov 2008 21:55:37 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 2/3] mmc: Add mmc_vddrange_to_ocrmask() helper function
-Message-ID: <20081108215537.12cdf5f6@mjolnir.drzeus.cx>
-In-Reply-To: <20081030195632.GB13640@oksana.dev.rtsoft.ru>
-References: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
-	<20081030195632.GB13640@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+Return-Path: <yhlu.kernel@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.238])
+	by ozlabs.org (Postfix) with ESMTP id 5A6EFDDDE7
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Nov 2008 09:12:31 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so1682661rvb.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 08 Nov 2008 14:12:28 -0800 (PST)
+Message-ID: <86802c440811081412u6d54beaam143801ce83225f40@mail.gmail.com>
+Date: Sat, 8 Nov 2008 14:12:28 -0800
+From: "Yinghai Lu" <yinghai@kernel.org>
+Sender: yhlu.kernel@gmail.com
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/1] irq: Maintain user set affinity
+In-Reply-To: <Pine.LNX.4.64.0811041030520.25054@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <Pine.LNX.4.64.0811041030520.25054@blarg.am.freescale.net>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Linus Torvalds <torvalds@osdl.org>, tglx@linutronix.de,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,36 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 30 Oct 2008 22:56:32 +0300
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+On Tue, Nov 4, 2008 at 8:31 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
+> From 819ad3ed4660f4238e053728a8b5aa93d22b13d7 Mon Sep 17 00:00:00 2001
+> From: Kumar Gala <galak@kernel.crashing.org>
+> Date: Tue, 4 Nov 2008 10:13:53 -0600
+> Subject: [PATCH 1/1] irq: Maintain user set affinity
+>
+> This addresses a regression in that if a user specified an affinity
+> for an interrupt that affinity information would get reset between
+> a request_irq(), free_irq() and request_irq() for the same irq.
+>
+> On example of this is bringing up an ethernet interface, taking
+> it down and bringing it back up again.
+>
+> Instead of always using the irq_default_affinity we use the
+> previous setting of the IRQs affinity with the assumption that
+> at boot the IRQs affinity will be set to irq_default_affinity.
 
-> +/**
-> + * mmc_vddrange_to_ocrmask - Convert a voltage range to the OCR mask
-> + * @vdd_min:	minimum voltage value (mV)
-> + * @vdd_max:	maximum voltage value (mV)
-> + * @mask:	pointer to the mask
-> + *
+why ?, the default_affinity is expected behavior...
 
-Why the pointer? Why not let the caller handle the aggregation? That
-would be a lot safer.
+for example: when MSI is used, second driver could get same irq if
+first driver is unloaded.
 
-> +	/* fill the mask, from max bit to min bit */
-> +	while (vdd_max >= vdd_min)
-> +		*mask |= 1 << vdd_max--;
-> +	return 0;
-
-Many cards get a bit uppity with a single bit set. If possible, try to
-make this function set two bits when the voltage is right on the
-boundary (e.g. 3.3V).
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+YH
