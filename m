@@ -1,13 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E5110DDDFF
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Nov 2008 04:51:37 +1100 (EST)
-Date: Sat, 8 Nov 2008 20:51:34 +0300
+	by ozlabs.org (Postfix) with ESMTP id 86121DDE06
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Nov 2008 04:51:49 +1100 (EST)
+Date: Sat, 8 Nov 2008 20:51:48 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH 1/2] powerpc: Update QE/CPM2 usb_ctlr structures for USB
-	support
-Message-ID: <20081108175134.GA6010@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/2] usb/fsl_qe_udc: Check for muram allocation errors
+Message-ID: <20081108175148.GB6010@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
 Cc: Greg Kroah-Hartman <greg@kroah.com>, Li Yang <leoli@freescale.com>,
@@ -21,76 +20,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Li Yang <leoli@freescale.com>
+The QE UDC doesn't check for cpm_muram_alloc() return values, this
+might cause all sorts of misbehaviour when cpm_muram_alloc() failed
+to allocate the muram memory.
 
-Fixes following build error:
+While at at, change few dev_dbg() calls to dev_err(), so that the
+driver would not die silently.
 
-  CC      drivers/usb/gadget/fsl_qe_udc.o
-drivers/usb/gadget/fsl_qe_udc.c: In function 'qe_eprx_stall_change':
-drivers/usb/gadget/fsl_qe_udc.c:156: error: 'struct usb_ctlr' has no member named 'usb_usep'
-drivers/usb/gadget/fsl_qe_udc.c:163: error: 'struct usb_ctlr' has no member named 'usb_usep'
-drivers/usb/gadget/fsl_qe_udc.c: In function 'qe_eptx_stall_change':
-drivers/usb/gadget/fsl_qe_udc.c:173: error: 'struct usb_ctlr' has no member named 'usb_usep'
-drivers/usb/gadget/fsl_qe_udc.c:180: error: 'struct usb_ctlr' has no member named 'usb_usep'
-drivers/usb/gadget/fsl_qe_udc.c: In function 'qe_eprx_nack':
-drivers/usb/gadget/fsl_qe_udc.c:201: error: 'struct usb_ctlr' has no member named 'usb_usep'
-drivers/usb/gadget/fsl_qe_udc.c:201: error: 'struct usb_ctlr' has no member named 'usb_usep'
-drivers/usb/gadget/fsl_qe_udc.c: In function 'qe_eprx_normal':
-drivers/usb/gadget/fsl_qe_udc.c:218: error: 'struct usb_ctlr' has no member named 'usb_usep'
-drivers/usb/gadget/fsl_qe_udc.c:218: error: 'struct usb_ctlr' has no member named 'usb_usep'
-drivers/usb/gadget/fsl_qe_udc.c: In function 'qe_ep_reset':
-drivers/usb/gadget/fsl_qe_udc.c:325: error: 'struct usb_ctlr' has no member named 'usb_usep'
-drivers/usb/gadget/fsl_qe_udc.c:342: error: 'struct usb_ctlr' has no member named 'usb_usep'
-drivers/usb/gadget/fsl_qe_udc.c: In function 'qe_ep_register_init':
-drivers/usb/gadget/fsl_qe_udc.c:515: error: 'struct usb_ctlr' has no member named 'usb_usep'
-drivers/usb/gadget/fsl_qe_udc.c: In function 'ch9getstatus':
-drivers/usb/gadget/fsl_qe_udc.c:1981: error: 'struct usb_ctlr' has no member named 'usb_usep'
-make[2]: *** [drivers/usb/gadget/fsl_qe_udc.o] Error 1
-
-Signed-off-by: Li Yang <leoli@freescale.com>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/include/asm/immap_cpm2.h |    9 +++------
- arch/powerpc/include/asm/immap_qe.h   |    5 +----
- 2 files changed, 4 insertions(+), 10 deletions(-)
+ drivers/usb/gadget/fsl_qe_udc.c |   12 +++++++++---
+ 1 files changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/immap_cpm2.h b/arch/powerpc/include/asm/immap_cpm2.h
-index 4080bab..d4f069b 100644
---- a/arch/powerpc/include/asm/immap_cpm2.h
-+++ b/arch/powerpc/include/asm/immap_cpm2.h
-@@ -554,14 +554,11 @@ typedef struct usb_ctlr {
- 	u8	usb_usadr;
- 	u8	usb_uscom;
- 	u8	res1[1];
--	u16	usb_usep1;
--	u16	usb_usep2;
--	u16	usb_usep3;
--	u16	usb_usep4;
-+	__be16  usb_usep[4];
- 	u8	res2[4];
--	u16	usb_usber;
-+	__be16  usb_usber;
- 	u8	res3[2];
--	u16	usb_usbmr;
-+	__be16  usb_usbmr;
- 	u8	usb_usbs;
- 	u8	res4[7];
- } usb_cpm2_t;
-diff --git a/arch/powerpc/include/asm/immap_qe.h b/arch/powerpc/include/asm/immap_qe.h
-index 3c2fced..c346d0b 100644
---- a/arch/powerpc/include/asm/immap_qe.h
-+++ b/arch/powerpc/include/asm/immap_qe.h
-@@ -215,10 +215,7 @@ struct usb_ctlr {
- 	u8	usb_usadr;
- 	u8	usb_uscom;
- 	u8	res1[1];
--	__be16	usb_usep1;
--	__be16	usb_usep2;
--	__be16	usb_usep3;
--	__be16	usb_usep4;
-+	__be16  usb_usep[4];
- 	u8	res2[4];
- 	__be16	usb_usber;
- 	u8	res3[2];
+diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
+index 1fe8b44..94c38e4 100644
+--- a/drivers/usb/gadget/fsl_qe_udc.c
++++ b/drivers/usb/gadget/fsl_qe_udc.c
+@@ -26,6 +26,7 @@
+ #include <linux/ioport.h>
+ #include <linux/types.h>
+ #include <linux/errno.h>
++#include <linux/err.h>
+ #include <linux/slab.h>
+ #include <linux/list.h>
+ #include <linux/interrupt.h>
+@@ -370,6 +371,9 @@ static int qe_ep_bd_init(struct qe_udc *udc, unsigned char pipe_num)
+ 	/* alloc multi-ram for BD rings and set the ep parameters */
+ 	tmp_addr = cpm_muram_alloc(sizeof(struct qe_bd) * (bdring_len +
+ 				USB_BDRING_LEN_TX), QE_ALIGNMENT_OF_BD);
++	if (IS_ERR_VALUE(tmp_addr))
++		return -ENOMEM;
++
+ 	out_be16(&epparam->rbase, (u16)tmp_addr);
+ 	out_be16(&epparam->tbase, (u16)(tmp_addr +
+ 				(sizeof(struct qe_bd) * bdring_len)));
+@@ -689,7 +693,7 @@ en_done2:
+ en_done1:
+ 	spin_unlock_irqrestore(&udc->lock, flags);
+ en_done:
+-	dev_dbg(udc->dev, "failed to initialize %s\n", ep->ep.name);
++	dev_err(udc->dev, "failed to initialize %s\n", ep->ep.name);
+ 	return -ENODEV;
+ }
+ 
+@@ -2405,6 +2409,8 @@ static struct qe_udc __devinit *qe_udc_config(struct of_device *ofdev)
+ 	tmp_addr = cpm_muram_alloc((USB_MAX_ENDPOINTS *
+ 					sizeof(struct usb_ep_para)),
+ 					   USB_EP_PARA_ALIGNMENT);
++	if (IS_ERR_VALUE(tmp_addr))
++		goto cleanup;
+ 
+ 	for (i = 0; i < USB_MAX_ENDPOINTS; i++) {
+ 		out_be16(&usbpram->epptr[i], (u16)tmp_addr);
+@@ -2510,7 +2516,7 @@ static int __devinit qe_udc_probe(struct of_device *ofdev,
+ 	/* Initialize the udc structure including QH member and other member */
+ 	udc_controller = qe_udc_config(ofdev);
+ 	if (!udc_controller) {
+-		dev_dbg(&ofdev->dev, "udc_controll is NULL\n");
++		dev_err(&ofdev->dev, "failed to initialize\n");
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -2565,7 +2571,7 @@ static int __devinit qe_udc_probe(struct of_device *ofdev,
+ 	/* create a buf for ZLP send, need to remain zeroed */
+ 	udc_controller->nullbuf = kzalloc(256, GFP_KERNEL);
+ 	if (udc_controller->nullbuf == NULL) {
+-		dev_dbg(udc_controller->dev, "cannot alloc nullbuf\n");
++		dev_err(udc_controller->dev, "cannot alloc nullbuf\n");
+ 		ret = -ENOMEM;
+ 		goto err3;
+ 	}
 -- 
 1.5.6.3
