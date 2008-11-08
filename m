@@ -1,17 +1,17 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [204.133.123.27])
-	by ozlabs.org (Postfix) with ESMTP id 09570DDDFF
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Nov 2008 23:41:15 +1100 (EST)
-Message-ID: <491586E3.4090709@mlbassoc.com>
-Date: Sat, 08 Nov 2008 05:32:35 -0700
-From: Gary Thomas <gary@mlbassoc.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id E5110DDDFF
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Nov 2008 04:51:37 +1100 (EST)
+Date: Sat, 8 Nov 2008 20:51:34 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <dbrownell@users.sourceforge.net>
+Subject: [PATCH 1/2] powerpc: Update QE/CPM2 usb_ctlr structures for USB
+	support
+Message-ID: <20081108175134.GA6010@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Nick <ndroogh@rogers.com>
-Subject: Re: MPC5200B and the CAN interface
-References: <390471.16163.qm@web88105.mail.re2.yahoo.com>
-In-Reply-To: <390471.16163.qm@web88105.mail.re2.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Li Yang <leoli@freescale.com>,
+	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +21,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nick wrote:
-> Hi Everyone,
-> 
-> I am looking for information on how to use the CAN driver for the MPC5200b.  I have built the kernel (2.6.27) with the MPC5200b can bus drivers and I see them being initialized on start up.
-> 
-> [   37.122041] can: controller area network core (rev 20071116 abi 8)
-> [   37.128687] NET: Registered protocol family 29
-> [   37.133379] can: raw protocol (rev 20071116)
-> [   37.137807] can: broadcast manager protocol (rev 20080415)
+From: Li Yang <leoli@freescale.com>
 
-I'm pretty sure this is just the SocketCAN interface.
+Fixes following build error:
 
-You still need a hardware driver (and one which is SocketCAN compatible).
-I don't see such a driver for the MSCAN (the hardware on the MPC5200) in
-the stock 2.6.27 tree.
+  CC      drivers/usb/gadget/fsl_qe_udc.o
+drivers/usb/gadget/fsl_qe_udc.c: In function 'qe_eprx_stall_change':
+drivers/usb/gadget/fsl_qe_udc.c:156: error: 'struct usb_ctlr' has no member named 'usb_usep'
+drivers/usb/gadget/fsl_qe_udc.c:163: error: 'struct usb_ctlr' has no member named 'usb_usep'
+drivers/usb/gadget/fsl_qe_udc.c: In function 'qe_eptx_stall_change':
+drivers/usb/gadget/fsl_qe_udc.c:173: error: 'struct usb_ctlr' has no member named 'usb_usep'
+drivers/usb/gadget/fsl_qe_udc.c:180: error: 'struct usb_ctlr' has no member named 'usb_usep'
+drivers/usb/gadget/fsl_qe_udc.c: In function 'qe_eprx_nack':
+drivers/usb/gadget/fsl_qe_udc.c:201: error: 'struct usb_ctlr' has no member named 'usb_usep'
+drivers/usb/gadget/fsl_qe_udc.c:201: error: 'struct usb_ctlr' has no member named 'usb_usep'
+drivers/usb/gadget/fsl_qe_udc.c: In function 'qe_eprx_normal':
+drivers/usb/gadget/fsl_qe_udc.c:218: error: 'struct usb_ctlr' has no member named 'usb_usep'
+drivers/usb/gadget/fsl_qe_udc.c:218: error: 'struct usb_ctlr' has no member named 'usb_usep'
+drivers/usb/gadget/fsl_qe_udc.c: In function 'qe_ep_reset':
+drivers/usb/gadget/fsl_qe_udc.c:325: error: 'struct usb_ctlr' has no member named 'usb_usep'
+drivers/usb/gadget/fsl_qe_udc.c:342: error: 'struct usb_ctlr' has no member named 'usb_usep'
+drivers/usb/gadget/fsl_qe_udc.c: In function 'qe_ep_register_init':
+drivers/usb/gadget/fsl_qe_udc.c:515: error: 'struct usb_ctlr' has no member named 'usb_usep'
+drivers/usb/gadget/fsl_qe_udc.c: In function 'ch9getstatus':
+drivers/usb/gadget/fsl_qe_udc.c:1981: error: 'struct usb_ctlr' has no member named 'usb_usep'
+make[2]: *** [drivers/usb/gadget/fsl_qe_udc.o] Error 1
 
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/include/asm/immap_cpm2.h |    9 +++------
+ arch/powerpc/include/asm/immap_qe.h   |    5 +----
+ 2 files changed, 4 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/immap_cpm2.h b/arch/powerpc/include/asm/immap_cpm2.h
+index 4080bab..d4f069b 100644
+--- a/arch/powerpc/include/asm/immap_cpm2.h
++++ b/arch/powerpc/include/asm/immap_cpm2.h
+@@ -554,14 +554,11 @@ typedef struct usb_ctlr {
+ 	u8	usb_usadr;
+ 	u8	usb_uscom;
+ 	u8	res1[1];
+-	u16	usb_usep1;
+-	u16	usb_usep2;
+-	u16	usb_usep3;
+-	u16	usb_usep4;
++	__be16  usb_usep[4];
+ 	u8	res2[4];
+-	u16	usb_usber;
++	__be16  usb_usber;
+ 	u8	res3[2];
+-	u16	usb_usbmr;
++	__be16  usb_usbmr;
+ 	u8	usb_usbs;
+ 	u8	res4[7];
+ } usb_cpm2_t;
+diff --git a/arch/powerpc/include/asm/immap_qe.h b/arch/powerpc/include/asm/immap_qe.h
+index 3c2fced..c346d0b 100644
+--- a/arch/powerpc/include/asm/immap_qe.h
++++ b/arch/powerpc/include/asm/immap_qe.h
+@@ -215,10 +215,7 @@ struct usb_ctlr {
+ 	u8	usb_usadr;
+ 	u8	usb_uscom;
+ 	u8	res1[1];
+-	__be16	usb_usep1;
+-	__be16	usb_usep2;
+-	__be16	usb_usep3;
+-	__be16	usb_usep4;
++	__be16  usb_usep[4];
+ 	u8	res2[4];
+ 	__be16	usb_usber;
+ 	u8	res3[2];
 -- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+1.5.6.3
