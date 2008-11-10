@@ -1,21 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AD04DDDE03
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DAA73DDE1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Nov 2008 02:02:13 +1100 (EST)
-Message-ID: <491846A9.8080709@freescale.com>
-Date: Mon, 10 Nov 2008 08:35:21 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Bruce_Leonard@selinc.com
+	Tue, 11 Nov 2008 04:59:25 +1100 (EST)
+In-Reply-To: <491846A9.8080709@freescale.com>
+To: Timur Tabi <timur@freescale.com>
 Subject: Re: Using DMA
-References: <OFA76D8B60.24A9D6A0-ON882574FC.0082F8AB-882574FD.0000DE16@selinc.com>
-In-Reply-To: <OFA76D8B60.24A9D6A0-ON882574FC.0082F8AB-882574FD.0000DE16@selinc.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+MIME-Version: 1.0
+Message-ID: <OF23CBF910.0133035A-ON882574FD.0061E950-882574FD.0062B6DE@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Mon, 10 Nov 2008 09:58:36 -0800
+Content-Type: text/plain; charset="US-ASCII"
 Cc: timur.tabi@gmail.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,26 +25,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Bruce_Leonard@selinc.com wrote:
+Timur Tabi <timur@freescale.com> wrote on 11/10/2008 06:35:21 AM:
 
-> Is there something else I need to do?  Or is there something wrong with my 
-> device tree (always a possibility :)  ).  Any help is appreciated.
+> Bruce_Leonard@selinc.com wrote:
+> 
+> > Is there something else I need to do?  Or is there something wrong 
+with my 
+> > device tree (always a possibility :)  ).  Any help is appreciated.
+> 
+> You might need to add something like this:
+> 
+> static struct of_device_id __initdata mpc8610_ids[] = {
+>          { .compatible = "fsl,mpc8610-immr", },
+>          { .compatible = "simple-bus", },
+>          {}
+> };
+> static int __init mpc8610_declare_of_platform_devices(void)
+> {
+>          /* Without this call, the SSI device driver won't get probed. 
+*/
+>          of_platform_bus_probe(NULL, mpc8610_ids, NULL);
+>          return 0;
+> }
+> machine_device_initcall(mpc86xx_hpcd, 
+mpc8610_declare_of_platform_devices);
+> 
+> -- 
+> Timur Tabi
+> Linux Kernel Developer @ Freescale
 
-You might need to add something like this:
+Something like that already exists in 
+/arch/powerpc/platforms/83xx/mpc834x_itx.c, which I'm using.  Only real 
+difference is the first compatible flag is:
 
-static struct of_device_id __initdata mpc8610_ids[] = {
-         { .compatible = "fsl,mpc8610-immr", },
-         { .compatible = "simple-bus", },
-         {}
-};
-static int __init mpc8610_declare_of_platform_devices(void)
-{
-         /* Without this call, the SSI device driver won't get probed. */
-         of_platform_bus_probe(NULL, mpc8610_ids, NULL);
-         return 0;
-}
-machine_device_initcall(mpc86xx_hpcd, mpc8610_declare_of_platform_devices);
+.compatible = "fsl,pq2pro-localbus"
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Which I presume is correct since other drivers load and work correctly 
+based on what's in the device tree.
+
+Bruce
