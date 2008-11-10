@@ -1,17 +1,21 @@
-Return-Path: <a.zummo@towertech.it>
-Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
-	by ozlabs.org (Postfix) with SMTP id AB7A2DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 02:47:21 +1100 (EST)
-From: Alessandro Zummo <a.zummo@towertech.it>
-Subject: [RFC PATCH] rtc: add rtc_systohc for ntp use
-To: rtc-linux@googlegroups.com
-Date: Mon, 10 Nov 2008 16:40:27 +0100
-Message-ID: <20081110154026.21405.47457.stgit@i1501.lan.towertech.it>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 18ADBDDE23
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 10:19:25 +1100 (EST)
+Message-ID: <4918C138.9040701@freescale.com>
+Date: Mon, 10 Nov 2008 17:18:16 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	Paul Mundt <lethal@linux-sh.org>, David Woodhouse <dwmw2@infradead.org>,
-	Alessandro Zummo <a.zummo@towertech.it>
+To: wael showair <showair2003@yahoo.com>
+Subject: Re: How to add my device node in the device tree
+References: <20389723.post@talk.nabble.com>
+In-Reply-To: <20389723.post@talk.nabble.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,112 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adds in-kernel hctosys functionality that can
-be used by ntp sync code.
+wael showair wrote:
+> i want to add a node for the DMA in this tree. the PIC PDF tells me that DMA
+> channel 0 is connected to Internal interrupt number 4 so i add the following
+> node just before the pic node & after the serial node:
+> 
+> ******************************************
+> 
+> 		DMA@21100 {
+> 			reg = <21100 44>;
+> 			interrupts = <4 2>;  
+> 			interrupt-parent = <40000>;		
+> 		};
+> ******************************************
 
-This is an RFC and has not been tested, I just want
-to check if something similar could solve the problems
-of those who want the NTP sync mode.
+Copy the dma (eloplus) node in one of the existing device trees, rather 
+than make up a new binding.  BTW, internal interrupts on the MPIC have 
+to have 16 added to the interrupt number.
 
-Signed-off-by: Alessandro Zummo <a.zummo@towertech.it>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: David Brownell <david-b@pacbell.net>
-Cc: David Woodhouse <dwmw2@infradead.org>
----
+> but when i called the of_find_node_by_name(NULL, "DMA");
+> unfortunately it returns NULL & i cant the a node with such a name.
+> i have checked this by printing all of the nodes in my tree which are:
+> cpus
+> PowerPC,8555
+> memory
+> soc8555
+> i2c
+> mdio
+> ...
+> serial
+> pic
+> choosen
+> choosen
+> 
+> without a node of name DMA for sure.
+> so what else should i do to create this node?
+> thanks in advance for your help.
 
- drivers/rtc/Kconfig   |   19 ++++++++++++++++++-
- drivers/rtc/Makefile  |    1 +
- drivers/rtc/systohc.c |   35 +++++++++++++++++++++++++++++++++++
- 3 files changed, 54 insertions(+), 1 deletions(-)
- create mode 100644 drivers/rtc/systohc.c
+Not sure, are you sure you properly rebuilt the device tree, and are 
+using the new blob rather than the old one?
 
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 8abbb20..1ff9427 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -30,7 +30,7 @@ config RTC_HCTOSYS
- 	  unnecessary fsck runs at boot time, and to network better.
- 
- config RTC_HCTOSYS_DEVICE
--	string "RTC used to set the system time"
-+	string "RTC used to set the system time on startup and resume"
- 	depends on RTC_HCTOSYS = y
- 	default "rtc0"
- 	help
-@@ -52,6 +52,23 @@ config RTC_HCTOSYS_DEVICE
- 	  sleep states. Do not specify an RTC here unless it stays powered
- 	  during all this system's supported sleep states.
- 
-+config RTC_SYSTOHC
-+	bool "Set RTC from system time in NTP sync mode"
-+	depends on RTC_CLASS = y
-+	default y
-+	help
-+	  If you say yes here, the system time (wall clock) will be written
-+	  to the hardware clock every 11 minutes, if the kernel is in NTP
-+	  mode and your platforms supports it.
-+
-+config RTC_SYSTOHC_DEVICE
-+	string "RTC used to save the system time in NTP sync mode"
-+	depends on RTC_SYSTOHC = y
-+	default "rtc0"
-+	help
-+	  The RTC device that will get written with the system time
-+	  in NTP mode.
-+
- config RTC_DEBUG
- 	bool "RTC debug support"
- 	depends on RTC_CLASS = y
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index e9e8474..6d1c519 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -8,6 +8,7 @@ endif
- 
- obj-$(CONFIG_RTC_LIB)		+= rtc-lib.o
- obj-$(CONFIG_RTC_HCTOSYS)	+= hctosys.o
-+obj-$(CONFIG_RTC_SYSTOHC)	+= systohc.o
- obj-$(CONFIG_RTC_CLASS)		+= rtc-core.o
- rtc-core-y			:= class.o interface.o
- 
-diff --git a/drivers/rtc/systohc.c b/drivers/rtc/systohc.c
-new file mode 100644
-index 0000000..41ec77b
---- /dev/null
-+++ b/drivers/rtc/systohc.c
-@@ -0,0 +1,35 @@
-+/*
-+ * RTC subsystem, systohc for ntp use
-+ *
-+ * Copyright (C) 2008 Tower Technologies
-+ * Author: Alessandro Zummo <a.zummo@towertech.it>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+*/
-+
-+#include <linux/rtc.h>
-+
-+static int rtc_systohc(struct rtc_time *tm)
-+{
-+	int err;
-+	struct rtc_time tm;
-+	struct rtc_device *rtc = rtc_class_open(CONFIG_RTC_SYSTOHC_DEVICE);
-+
-+	if (rtc == NULL) {
-+		printk("%s: unable to open rtc device (%s)\n",
-+			__FILE__, CONFIG_RTC_SYSTOHC_DEVICE);
-+		return -ENODEV;
-+	}
-+
-+	err = rtc_set_time(rtc, tm);
-+	if (err != 0)
-+		dev_err(rtc->dev.parent,
-+			"systohc: unable to set the hardware clock\n");
-+
-+	rtc_class_close(rtc);
-+
-+	return err;
-+}
-+EXPORT_SYMBOL(rtc_systohc);
+-Scott
