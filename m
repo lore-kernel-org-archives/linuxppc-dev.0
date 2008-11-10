@@ -1,19 +1,28 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <sonny@us.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CA761474C1
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Nov 2008 05:48:24 +1100 (EST)
-Date: Sun, 9 Nov 2008 19:43:30 +0100
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: linux-usb@vger.kernel.org
-Subject: [USB] powerpc: Workaround for the PPC440EPX USBH_23 errata [take 3]
-Message-ID: <20081109194330.45af0c0c@vitb-lp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Stefan Roese <sr@denx.de>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Mark Miesfeld <mmiesfeld@amcc.com>, Alan Stern <stern@rowland.harvard.edu>
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3A0FEDDDF9
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Nov 2008 11:15:18 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id mAA0FClV020574
+	for <linuxppc-dev@ozlabs.org>; Sun, 9 Nov 2008 19:15:12 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mAA0FCuJ144452
+	for <linuxppc-dev@ozlabs.org>; Sun, 9 Nov 2008 19:15:12 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mAA0FBNp009308
+	for <linuxppc-dev@ozlabs.org>; Sun, 9 Nov 2008 19:15:12 -0500
+Date: Sun, 9 Nov 2008 18:15:11 -0600
+From: Sonny Rao <sonnyrao@us.ibm.com>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: BSR: support multiple OF-node description of BSR
+Message-ID: <20081110001511.GI16240@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,273 +32,204 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A published errata for ppc440epx states, that when running Linux with
-both EHCI and OHCI modules loaded, the EHCI module experiences a fatal
-error when a high-speed device is connected to the USB2.0, and
-functions normally if OHCI module is not loaded.
+Add support for multiple BSR nodes in the device tree.
 
-There used to be recommendation to use only hi-speed or full-speed
-devices with specific conditions, when respective module was unloaded.
-Later, it was observed that ohci suspend is enough to keep things
-going, and it was turned into workaround, as explained below.
+Previously, the BSR driver only supported a single OF node describing
+a BSR.  Apparently when an LPAR is set to use "all system resources"
+the BSR appears as a single node, but when it is handed out in pieces,
+each 8 byte piece gets its own node.  So, keep a list of bsr devices
+instead of the array and include all nodes.
 
-Quote from original descriprion:
+Also, be more inclusive of what BSR devices we accept by only checking
+compatibility and not the device name property (which might change in 
+the future versions of BSR).
 
-The 440EPx USB 2.0 Host controller is an EHCI compliant controller.  In
-USB 2.0 Host controllers, each EHCI controller has one or more companion
-controllers, which may be OHCI or UHCI.  An USB 2.0 Host controller will
-contain one or more ports.  For each port, only one of the controllers
-is connected at any one time. In the 440EPx, there is only one OHCI
-companion controller, and only one USB 2.0 Host port.
-All ports on an USB 2.0 controller default to the companion
-controller.  If you load only an ohci driver, it will have control of
-the ports and any deviceplugged in will operate, although high speed
-devices will be forced to operate at full speed.  When an ehci driver
-is loaded, it explicitly takes control of the ports.  If there is a
-device connected, and / or every time there is a new device connected,
-the ehci driver determines if the device is high speed or not.  If it
-is high speed, the driver retains control of the port.  If it is not,
-the driver explicitly gives the companion controller control of the
-port.
+Signed-off-by: Sonny Rao <sonnyrao@us.ibm.com>
 
-The is a software workaround that uses
-Initial version of the software workaround was posted to
-linux-usb-devel:
-
-http://www.mail-archive.com/linux-usb-devel@lists.sourceforge.net/msg54019.html
-
-and later available from amcc.com:
-http://www.amcc.com/Embedded/Downloads/download.html?cat=1&family=15&ins=2
-
-The patch below is generally based on the latter, but reworked to
-powerpc/of_device USB drivers, and uses a few devicetree inquiries to
-get rid of (some) hardcoded defines.
-
-Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-Signed-off-by: Stefan Roese <sr@denx.de>
----
-
- arch/powerpc/boot/dts/sequoia.dts |    2 +-
- drivers/usb/host/ehci-hub.c       |    9 +++++++
- drivers/usb/host/ehci-ppc-of.c    |   45 ++++++++++++++++++++++++++++++++++++-
- drivers/usb/host/ehci.h           |   33 +++++++++++++++++++++++++++
- drivers/usb/host/ohci-ppc-of.c    |   25 +++++++++++++++++++++
- 5 files changed, 111 insertions(+), 3 deletions(-)
-
-
-diff --git a/arch/powerpc/boot/dts/sequoia.dts b/arch/powerpc/boot/dts/sequoia.dts
-index 3b295e8..43cc68b 100644
---- a/arch/powerpc/boot/dts/sequoia.dts
-+++ b/arch/powerpc/boot/dts/sequoia.dts
-@@ -134,7 +134,7 @@
- 		};
+Index: common/drivers/char/bsr.c
+===================================================================
+--- common.orig/drivers/char/bsr.c	2008-11-09 17:21:47.000000000 -0600
++++ common/drivers/char/bsr.c	2008-11-09 17:36:22.000000000 -0600
+@@ -61,6 +61,8 @@
+ 	unsigned bsr_num;      /* bsr id number for its type */
+ 	int      bsr_minor;
  
- 		USB1: usb@e0000400 {
--			compatible = "ohci-be";
-+			compatible = "ibm,usb-ohci-440epx", "ohci-be";
- 			reg = <0x00000000 0xe0000400 0x00000060>;
- 			interrupt-parent = <&UIC0>;
- 			interrupts = <0x15 0x8>;
-diff --git a/drivers/usb/host/ehci-hub.c b/drivers/usb/host/ehci-hub.c
-index 218f966..cd822a0 100644
---- a/drivers/usb/host/ehci-hub.c
-+++ b/drivers/usb/host/ehci-hub.c
-@@ -422,8 +422,15 @@ static int check_reset_complete (
- 		port_status &= ~PORT_RWC_BITS;
- 		ehci_writel(ehci, port_status, status_reg);
- 
--	} else
-+		/* ensure 440EPX ohci controller state is operational */
-+		if (ehci->has_amcc_usb23)
-+			set_ohci_hcfs(ehci, 1);
-+	} else {
- 		ehci_dbg (ehci, "port %d high speed\n", index + 1);
-+		/* ensure 440EPx ohci controller state is suspended */
-+		if (ehci->has_amcc_usb23)
-+			set_ohci_hcfs(ehci, 0);
-+	}
- 
- 	return port_status;
- }
-diff --git a/drivers/usb/host/ehci-ppc-of.c b/drivers/usb/host/ehci-ppc-of.c
-index b018dee..ef732b7 100644
---- a/drivers/usb/host/ehci-ppc-of.c
-+++ b/drivers/usb/host/ehci-ppc-of.c
-@@ -107,11 +107,13 @@ ehci_hcd_ppc_of_probe(struct of_device *op, const struct of_device_id *match)
- {
- 	struct device_node *dn = op->node;
- 	struct usb_hcd *hcd;
--	struct ehci_hcd	*ehci;
-+	struct ehci_hcd	*ehci = NULL;
- 	struct resource res;
- 	int irq;
- 	int rv;
- 
-+	struct device_node *np;
++	struct list_head bsr_list;
 +
- 	if (usb_disabled())
- 		return -ENODEV;
+ 	dev_t    bsr_dev;
+ 	struct cdev bsr_cdev;
+ 	struct device *bsr_device;
+@@ -68,8 +70,8 @@
  
-@@ -149,6 +151,20 @@ ehci_hcd_ppc_of_probe(struct of_device *op, const struct of_device_id *match)
+ };
+ 
+-static unsigned num_bsr_devs;
+-static struct bsr_dev *bsr_devs;
++static unsigned total_bsr_devs;
++static struct list_head bsr_devs = LIST_HEAD_INIT(bsr_devs);
+ static struct class *bsr_class;
+ static int bsr_major;
+ 
+@@ -155,24 +157,25 @@
+ 
+ static void bsr_cleanup_devs(void)
+ {
+-	int i;
+-	for (i=0 ; i < num_bsr_devs; i++) {
+-		struct bsr_dev *cur = bsr_devs + i;
++	struct bsr_dev *cur, *n;
++
++	list_for_each_entry_safe(cur, n, &bsr_devs, bsr_list) {
+ 		if (cur->bsr_device) {
+ 			cdev_del(&cur->bsr_cdev);
+ 			device_del(cur->bsr_device);
+ 		}
++		list_del(&cur->bsr_list);
++		kfree(cur);
+ 	}
+-
+-	kfree(bsr_devs);
+ }
+ 
+-static int bsr_create_devs(struct device_node *bn)
++static int bsr_add_node(struct device_node *bn)
+ {
+-	int bsr_stride_len, bsr_bytes_len;
++	int bsr_stride_len, bsr_bytes_len, num_bsr_devs;
+ 	const u32 *bsr_stride;
+ 	const u32 *bsr_bytes;
+ 	unsigned i;
++	int ret = -ENODEV;
+ 
+ 	bsr_stride = of_get_property(bn, "ibm,lock-stride", &bsr_stride_len);
+ 	bsr_bytes  = of_get_property(bn, "ibm,#lock-bytes", &bsr_bytes_len);
+@@ -180,35 +183,36 @@
+ 	if (!bsr_stride || !bsr_bytes ||
+ 	    (bsr_stride_len != bsr_bytes_len)) {
+ 		printk(KERN_ERR "bsr of-node has missing/incorrect property\n");
+-		return -ENODEV;
++		return ret;
  	}
  
- 	ehci = hcd_to_ehci(hcd);
-+	np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
-+	if (np != NULL) {
-+		/* claim we really affected by usb23 erratum */
-+		if (!of_address_to_resource(np, 0, &res))
-+			ehci->ohci_hcctrl_reg = ioremap(res.start +
-+					OHCI_HCCTRL_OFFSET, OHCI_HCCTRL_LEN);
-+		else
-+			pr_debug(__FILE__ ": no ohci offset in fdt\n");
-+		if (!ehci->ohci_hcctrl_reg) {
-+			pr_debug(__FILE__ ": ioremap for ohci hcctrl failed\n");
-+		} else {
-+			ehci->has_amcc_usb23 = 1;
-+		}
-+	}
+ 	num_bsr_devs = bsr_bytes_len / sizeof(u32);
  
- 	if (of_get_property(dn, "big-endian", NULL)) {
- 		ehci->big_endian_mmio = 1;
-@@ -181,6 +197,9 @@ err_ioremap:
- 	irq_dispose_mapping(irq);
- err_irq:
- 	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+
-+	if (ehci->has_amcc_usb23)
-+		iounmap(ehci->ohci_hcctrl_reg);
- err_rmr:
- 	usb_put_hcd(hcd);
+-	/* only a warning, its informational since we'll fail and exit */
+-	WARN_ON(num_bsr_devs > BSR_MAX_DEVS);
+-
+-	bsr_devs = kzalloc(sizeof(struct bsr_dev) * num_bsr_devs, GFP_KERNEL);
+-	if (!bsr_devs)
+-		return -ENOMEM;
+-
+ 	for (i = 0 ; i < num_bsr_devs; i++) {
+-		struct bsr_dev *cur = bsr_devs + i;
++		struct bsr_dev *cur = kzalloc(sizeof(struct bsr_dev),
++					      GFP_KERNEL);
+ 		struct resource res;
+ 		int result;
  
-@@ -191,6 +210,11 @@ err_rmr:
- static int ehci_hcd_ppc_of_remove(struct of_device *op)
- {
- 	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
-+	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
-+
-+	struct device_node *np;
-+	struct resource res;
-+
- 	dev_set_drvdata(&op->dev, NULL);
- 
- 	dev_dbg(&op->dev, "stopping PPC-OF USB Controller\n");
-@@ -201,6 +225,25 @@ static int ehci_hcd_ppc_of_remove(struct of_device *op)
- 	irq_dispose_mapping(hcd->irq);
- 	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
- 
-+	/* use request_mem_region to test if the ohci driver is loaded.  if so
-+	 * ensure the ohci core is operational.
-+	 */
-+	if (ehci->has_amcc_usb23) {
-+		np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
-+		if (np != NULL) {
-+			if (!of_address_to_resource(np, 0, &res))
-+				if (!request_mem_region(res.start,
-+							    0x4, hcd_name))
-+					set_ohci_hcfs(ehci, 1);
-+				else
-+					release_mem_region(res.start, 0x4);
-+			else
-+				pr_debug(__FILE__ ": no ohci offset in fdt\n");
-+			of_node_put(np);
++		if (!cur) {
++			printk(KERN_ERR "Unable to alloc bsr dev\n");
++			ret = -ENOMEM;
++			goto out_err;
 +		}
 +
-+		iounmap(ehci->ohci_hcctrl_reg);
-+	}
- 	usb_put_hcd(hcd);
+ 		result = of_address_to_resource(bn, i, &res);
+ 		if (result < 0) {
+-			printk(KERN_ERR "bsr of-node has invalid reg property\n");
+-			goto out_err;
++			printk(KERN_ERR "bsr of-node has invalid reg property, skipping\n");
++			kfree(cur);
++			continue;
+ 		}
  
+-		cur->bsr_minor  = i;
++		cur->bsr_minor  = i + total_bsr_devs;
+ 		cur->bsr_addr   = res.start;
+ 		cur->bsr_len    = res.end - res.start + 1;
+ 		cur->bsr_bytes  = bsr_bytes[i];
+ 		cur->bsr_stride = bsr_stride[i];
+-		cur->bsr_dev    = MKDEV(bsr_major, i);
++		cur->bsr_dev    = MKDEV(bsr_major, i + total_bsr_devs);
+ 
+ 		switch(cur->bsr_bytes) {
+ 		case 8:
+@@ -229,14 +233,15 @@
+ 		}
+ 
+ 		cur->bsr_num = bsr_types[cur->bsr_type];
+-		bsr_types[cur->bsr_type] = cur->bsr_num + 1;
+ 		snprintf(cur->bsr_name, 32, "bsr%d_%d",
+ 			 cur->bsr_bytes, cur->bsr_num);
+ 
+ 		cdev_init(&cur->bsr_cdev, &bsr_fops);
+ 		result = cdev_add(&cur->bsr_cdev, cur->bsr_dev, 1);
+-		if (result)
++		if (result) {
++			kfree(cur);
+ 			goto out_err;
++		}
+ 
+ 		cur->bsr_device = device_create_drvdata(bsr_class, NULL,
+ 							cur->bsr_dev,
+@@ -245,16 +250,37 @@
+ 			printk(KERN_ERR "device_create failed for %s\n",
+ 			       cur->bsr_name);
+ 			cdev_del(&cur->bsr_cdev);
++			kfree(cur);
+ 			goto out_err;
+ 		}
++
++		bsr_types[cur->bsr_type] = cur->bsr_num + 1;
++		list_add_tail(&cur->bsr_list, &bsr_devs);
+ 	}
+ 
++	total_bsr_devs += num_bsr_devs;
++
  	return 0;
-diff --git a/drivers/usb/host/ehci.h b/drivers/usb/host/ehci.h
-index b11798d..0b33ec3 100644
---- a/drivers/usb/host/ehci.h
-+++ b/drivers/usb/host/ehci.h
-@@ -120,6 +120,16 @@ struct ehci_hcd {			/* one per controller */
- 	unsigned		has_fsl_port_bug:1; /* FreeScale */
- 	unsigned		big_endian_mmio:1;
- 	unsigned		big_endian_desc:1;
-+	unsigned		has_amcc_usb23:1;
-+
-+	/* required for usb32 quirk */
-+	#define OHCI_CTRL_HCFS          (3 << 6)
-+	#define OHCI_USB_OPER           (2 << 6)
-+	#define OHCI_USB_SUSPEND        (3 << 6)
-+
-+	#define OHCI_HCCTRL_OFFSET      0x4
-+	#define OHCI_HCCTRL_LEN         0x4
-+	__hc32			*ohci_hcctrl_reg;
  
- 	u8			sbrn;		/* packed release number */
+  out_err:
  
-@@ -638,6 +648,29 @@ static inline void ehci_writel(const struct ehci_hcd *ehci,
- #endif
+ 	bsr_cleanup_devs();
+-	return -ENODEV;
++	return ret;
++}
++
++static int bsr_create_devs(struct device_node *bn)
++{
++	int ret;
++
++	while (bn) {
++		ret = bsr_add_node(bn);
++		if (ret) {
++			of_node_put(bn);
++			return ret;
++		}
++		bn = of_find_compatible_node(bn, NULL, "ibm,bsr");
++	}
++	return 0;
  }
  
-+/*
-+ * On certain ppc-44x SoC there is a HW issue, that could only worked around with
-+ * explicit suspend/operate of OHCI. This function hereby makes sense only on that arch.
-+ * Other common bits are dependant on has_amcc_usb23 quirk flag.
-+ */
-+#ifdef CONFIG_44x
-+static inline void set_ohci_hcfs(struct ehci_hcd *ehci, int operational)
-+{
-+	u32 hc_control;
-+
-+	hc_control = (readl_be(ehci->ohci_hcctrl_reg) & ~OHCI_CTRL_HCFS);
-+	if (operational)
-+		hc_control |= OHCI_USB_OPER;
-+	else
-+		hc_control |= OHCI_USB_SUSPEND;
-+
-+	writel_be(hc_control, ehci->ohci_hcctrl_reg);
-+	(void) readl_be(ehci->ohci_hcctrl_reg);
-+}
-+#else
-+#define set_ohci_hcfs(a,b) do {} while (0)
-+#endif
-+
- /*-------------------------------------------------------------------------*/
+ static int __init bsr_init(void)
+@@ -264,7 +290,7 @@
+ 	int ret = -ENODEV;
+ 	int result;
  
- /*
-diff --git a/drivers/usb/host/ohci-ppc-of.c b/drivers/usb/host/ohci-ppc-of.c
-index 7ac5326..68a3017 100644
---- a/drivers/usb/host/ohci-ppc-of.c
-+++ b/drivers/usb/host/ohci-ppc-of.c
-@@ -91,6 +91,7 @@ ohci_hcd_ppc_of_probe(struct of_device *op, const struct of_device_id *match)
+-	np = of_find_compatible_node(NULL, "ibm,bsr", "ibm,bsr");
++	np = of_find_compatible_node(NULL, NULL, "ibm,bsr");
+ 	if (!np)
+ 		goto out_err;
  
- 	int rv;
- 	int is_bigendian;
-+	struct device_node *np;
+@@ -282,10 +308,10 @@
+ 		goto out_err_2;
+ 	}
  
- 	if (usb_disabled())
- 		return -ENODEV;
-@@ -147,6 +148,30 @@ ohci_hcd_ppc_of_probe(struct of_device *op, const struct of_device_id *match)
- 	if (rv == 0)
- 		return 0;
- 
-+	/* by now, 440epx is known to show usb_23 erratum */
-+	np = of_find_compatible_node(NULL, NULL, "ibm,usb-ehci-440epx");
-+
-+	/* Work around - At this point ohci_run has executed, the
-+	* controller is running, everything, the root ports, etc., is
-+	* set up.  If the ehci driver is loaded, put the ohci core in
-+	* the suspended state.  The ehci driver will bring it out of
-+	* suspended state when / if a non-high speed USB device is
-+	* attached to the USB Host port.  If the ehci driver is not
-+	* loaded, do nothing. request_mem_region is used to test if
-+	* the ehci driver is loaded.
-+	*/
-+	if (np !=  NULL) {
-+		if (!of_address_to_resource(np, 0, &res)) {
-+			if (!request_mem_region(res.start, 0x4, hcd_name)) {
-+				writel_be((readl_be(&ohci->regs->control) |
-+					OHCI_USB_SUSPEND), &ohci->regs->control);
-+					(void) readl_be(&ohci->regs->control);
-+			} else
-+				release_mem_region(res.start, 0x4);
-+		} else
-+		    pr_debug(__FILE__ ": cannot get ehci offset from fdt\n");
+-	if ((ret = bsr_create_devs(np)) < 0)
++	if ((ret = bsr_create_devs(np)) < 0) {
++		np = NULL;
+ 		goto out_err_3;
+-
+-	of_node_put(np);
 +	}
-+
- 	iounmap(hcd->regs);
- err_ioremap:
- 	irq_dispose_mapping(irq);
+ 
+ 	return 0;
+ 
