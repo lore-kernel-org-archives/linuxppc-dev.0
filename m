@@ -1,22 +1,20 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2FECCDDDFB
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 319C0DDDF9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  9 Nov 2008 14:26:54 +1100 (EST)
-Message-ID: <4916587C.3010108@billgatliff.com>
-Date: Sat, 08 Nov 2008 21:26:52 -0600
-From: Bill Gatliff <bgat@billgatliff.com>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
+	Mon, 10 Nov 2008 11:10:00 +1100 (EST)
+In-Reply-To: <ed82fe3e0811070743l1e0f7430o6bbb2b3d5e5a446f@mail.gmail.com>
+To: "Timur Tabi" <timur@freescale.com>
 Subject: Re: Using DMA
-References: <OF36982726.7A11F196-ON882574FA.00798551-882574FA.0079F330@selinc.com>
-	<4914C0FB.60101@freescale.com>
-In-Reply-To: <4914C0FB.60101@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: timur.tabi@gmail.com, Bruce_Leonard@selinc.com,
-	linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Message-ID: <OFA76D8B60.24A9D6A0-ON882574FC.0082F8AB-882574FD.0000DE16@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Sun, 9 Nov 2008 16:09:51 -0800
+Content-Type: text/plain; charset="US-ASCII"
+Cc: timur.tabi@gmail.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,31 +25,77 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Bruce_Leonard@selinc.com wrote:
 > 
->> So it sounds like the async dma is the way to go, since I want to off load 
->> as much as possible from the core.  As you say, though, it's new and not 
->> in LDD3.  Is .../drivers/dma/dmaengine.c what everyone is refering to as 
->> async dma?
+> The Elo device driver is an async DMA back-end driver.  That is, you
+> don't communicate with that driver directly, you communicate with the
+> async library (which is new - so you won't find it in LDD3).
 > 
-> Yes.
-> 
->>  If not, what is?  And what in the kernel is already using it
->> so I can look at some example code.
-> 
-> There's some network stuff that uses it for optimization.  If CONFIG_NET_DMA is
-> enabled, that will turn on some kind of TCP/IP offloading.  I don't really know
-> much about that.  There's also a dmatest.c testing driver.
 
-I think some md (RAID) stuff uses it, too.
+Okay, has anyone actually _used_ the Elo driver?  I can't get the probe 
+function to run.  I get into of_fsl_dma_init(), but of_fsl_dma_probe() 
+never executes.  I have CONFIG_DMADEVICES and CONFIG_FSL_DMA set in my 
+.config, obviously since the init function runs.  Here's the relevant SOC 
+portion of my device tree:
 
-> It would definitely be nice to see a third client driver.
+        soc8349@e0000000 {
+                #address-cells = <1>;
+                #size-cells = <1>;
+                #interrupt-cells = <2>;
+                device_type = "soc";
+                ranges = <0 e0000000 00100000>;
+                reg = <e0000000 00000200>;
+                bus-frequency = <0>;                    // from bootloader
 
-Why stop at three?  :)
+<<<<<<<<<<<<<<< snip >>>>>>>>>>>>>>>>>>>
 
+                dma@82a8 {
+                        #address-cells = <1>;
+                        #size-cells = <1>;
+                        compatible = "fsl,mpc8349-dma", "fsl,elo-dma";
+                        reg = <82a8 4>;
+                        ranges = <0 8100 1a8>;
+                        interrupt-parent = <&ipic>;
+                        interrupts = <71 8>;
+                        cell-index = <0>;
+                        dma-channel@0 {
+                                compatible = "fsl,mpc8349-dma-channel", 
+"fsl,elo-dma-channel";
+                                reg = <0 80>;
+                                cell-index = <0>;
+                                interrupt-parent = <&ipic>;
+                                interrupts = <71 8>;
+                        };
+                        dma-channel@80 {
+                                compatible = "fsl,mpc8349-dma-channel", 
+"fsl,elo-dma-channel";
+                                reg = <80 80>;
+                                cell-index = <1>;
+                                interrupt-parent = <&ipic>;
+                                interrupts = <71 8>;
+                        };
+                        dma-channel@100 {
+                                compatible = "fsl,mpc8349-dma-channel", 
+"fsl,elo-dma-channel";
+                                reg = <100 80>;
+                                cell-index = <2>;
+                                interrupt-parent = <&ipic>;
+                                interrupts = <71 8>;
+                        };
+                        dma-channel@180 {
+                                compatible = "fsl,mpc8349-dma-channel", 
+"fsl,elo-dma-channel";
+                                reg = <180 28>;
+                                cell-index = <3>;
+                                interrupt-parent = <&ipic>;
+                                interrupts = <71 8>;
+                        };
+                };
+<<<<<<<<<<<<<< snip >>>>>>>>>>>>>>>>>>>>
+        };
 
-b.g.
--- 
-Bill Gatliff
-bgat@billgatliff.com
+Is there something else I need to do?  Or is there something wrong with my 
+device tree (always a possibility :)  ).  Any help is appreciated.
+
+Thanks.
+
+Bruce
