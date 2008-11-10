@@ -1,19 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3AAAFDDECA
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 08:18:51 +1100 (EST)
-Message-Id: <F0EE8017-D08B-4520-9017-ED99B54C6703@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Trent Piepho <tpiepho@freescale.com>
-In-Reply-To: <1226351361-27115-1-git-send-email-tpiepho@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc: Repair device bindings documentation
-Date: Mon, 10 Nov 2008 15:18:12 -0600
-References: <1226351361-27115-1-git-send-email-tpiepho@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id ED1CEDDEF8
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 08:40:55 +1100 (EST)
+Subject: RE: [PATCH] ibm_newemac: Add support for Arches CPU0 SGMII0 to
+	CPU1 SGMII0
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Victor Gallardo <vgallardo@amcc.com>
+In-Reply-To: <0CA0A16855646F4FA96D25A158E299D605505DDC@SDCEXCHANGE01.ad.amcc.com>
+References: <0CA0A16855646F4FA96D25A158E299D605505DDC@SDCEXCHANGE01.ad.amcc.com>
+Content-Type: text/plain
+Date: Tue, 11 Nov 2008 08:40:32 +1100
+Message-Id: <1226353232.7530.7.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2008-11-10 at 10:07 -0800, Victor Gallardo wrote:
+> Hello Josh and Ben,
+> 
+> Who should I ask to get this patch integrated into the Linux tree?
+> 	http://ozlabs.org/pipermail/linuxppc-dev/2008-November/064834.html
 
-On Nov 10, 2008, at 3:09 PM, Trent Piepho wrote:
+Either, I've been off for a couple of weeks (new baby) which is why I
+didn't get a chance to review it yet, still going through backlog.
 
-> Commit d0fc2eaaf4c56a95f5ed29b6bfb609e19714fc16 "powerpc/fsl: Refactor
-> device bindings" split out a number of device bindings from
-> booting-without-of.txt into separate files.  Having them all in one  
-> file
-> was a frequent source of merge conflicts.
->
-> However, in the next merge,  
-> 49997d75152b3d23c53b0fa730599f2f74c92c65, there
-> was another conflict.  Some of the bindings removed from
-> booting-without-of.txt were mistakenly added back in and the copies in
-> dts-bindings were kept as well.
->
-> This patch re-removes "Freescale Display Interface" and "Freescale  
-> on board
-> FPGA" and fixes the table of contents.
->
-> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> Acked-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
->
-> Maybe this should go in 2.6.28, since it fixes a doc bug and before
-> anyone modifies the version of the docs that should have been deleted.
->
-> Documentation/powerpc/booting-without-of.txt |   65 +++ 
-> +----------------------
-> 1 files changed, 10 insertions(+), 55 deletions(-)
-
-applied to merge
-
-- k
+Cheers,
+Ben.
