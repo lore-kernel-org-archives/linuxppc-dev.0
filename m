@@ -2,14 +2,13 @@ Return-Path: <martyn.welch@gefanuc.com>
 Received: from welchma.Radstone.Local (unknown [193.130.116.241])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 128ECDDE04
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Nov 2008 23:48:17 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id E5517474D6
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Nov 2008 23:48:21 +1100 (EST)
 From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH 1/2] watchdog: Basic support for GE Fanuc's FPGA based
-	watchdog timer
+Subject: [PATCH 2/2] powerpc: Enable watchdog timer on GE Fanuc's SBC610
 To: linuxppc-dev@ozlabs.org
-Date: Mon, 10 Nov 2008 12:29:17 +0000
-Message-ID: <20081110122912.10813.13414.stgit@welchma.Radstone.Local>
+Date: Mon, 10 Nov 2008 12:29:33 +0000
+Message-ID: <20081110122927.10813.36124.stgit@welchma.Radstone.Local>
 In-Reply-To: <20081110122356.10813.29954.stgit@welchma.Radstone.Local>
 References: <20081110122356.10813.29954.stgit@welchma.Radstone.Local>
 MIME-Version: 1.0
@@ -24,14 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-GE Fanuc SBC610
+Support for the FPGA based watchdog timer on GE Fanuc's SBC610.
 
-Support for the FPGA based watchdog timer as found on GE Fanuc's SBC310,
-SBC610 and PPC9A Single Board Computers.
+This patch enables one of the watchdog timers found on the SBC610. There are
+two identical watchdog timers at different offsets in the above mentioned
+boards, however the current driver is only capable of supporting one of them.
 
-This patch adds support for the watchdog timer found in one of the devices
-FPGAs. There are two identical watchdog timers at different offsets in the
-above mentioned boards, this driver is capable of supporting one of them.
 The watchdog timers are also capable of generating interrupts at a
 user-configurable threshold, though support for this operation is currently
 not supported by the driver.
@@ -39,378 +36,46 @@ not supported by the driver.
 Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
 ---
 
- drivers/watchdog/Kconfig   |    6 +
- drivers/watchdog/Makefile  |    1 
- drivers/watchdog/gef_wdt.c |  333 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 340 insertions(+), 0 deletions(-)
- create mode 100644 drivers/watchdog/gef_wdt.c
+ arch/powerpc/boot/dts/gef_sbc610.dts           |   15 +++++++++++++++
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig |    1 +
+ 2 files changed, 16 insertions(+), 0 deletions(-)
 
 
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 1a22fe7..df91e88 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -778,6 +778,12 @@ config BOOKE_WDT
- 	  Please see Documentation/watchdog/watchdog-api.txt for
- 	  more information.
+diff --git a/arch/powerpc/boot/dts/gef_sbc610.dts b/arch/powerpc/boot/dts/gef_sbc610.dts
+index 1f7833c..2458690 100644
+--- a/arch/powerpc/boot/dts/gef_sbc610.dts
++++ b/arch/powerpc/boot/dts/gef_sbc610.dts
+@@ -88,6 +88,21 @@
+ 			compatible = "gef,fpga-regs";
+ 			reg = <0x4 0x0 0x40>;
+ 		};
++
++		wdt@4,2000 {
++			compatible = "gef,fpga-wdt";
++			reg = <0x4 0x2000 0x8>;
++			interrupts = <0x1a 0x4>;
++			interrupt-parent = <&gef_pic>;
++		};
++		/* Second watchdog available, driver currently supports one.
++		wdt@4,2010 {
++			compatible = "gef,fpga-wdt";
++			reg = <0x4 0x2010 0x8>;
++			interrupts = <0x1b 0x4>;
++			interrupt-parent = <&gef_pic>;
++		};
++		*/
+ 		gef_pic: pic@4,4000 {
+ 			#interrupt-cells = <1>;
+ 			interrupt-controller;
+diff --git a/arch/powerpc/configs/86xx/gef_sbc610_defconfig b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
+index 312d7af..99fe882 100644
+--- a/arch/powerpc/configs/86xx/gef_sbc610_defconfig
++++ b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
+@@ -1109,6 +1109,7 @@ CONFIG_WATCHDOG=y
+ # Watchdog Device Drivers
+ #
+ # CONFIG_SOFT_WATCHDOG is not set
++CONFIG_GEF_WDT=y
  
-+config GEF_WDT
-+	tristate "GE Fanuc Watchdog Timer"
-+	depends on GEF_SBC610
-+	---help---
-+	  Watchdog timer found in a number of GE Fanuc single board computers.
-+
- # PPC64 Architecture
- 
- config WATCHDOG_RTAS
-diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index e352bbb..be7e1d3 100644
---- a/drivers/watchdog/Makefile
-+++ b/drivers/watchdog/Makefile
-@@ -114,6 +114,7 @@ obj-$(CONFIG_MPC5200_WDT) += mpc5200_wdt.o
- obj-$(CONFIG_8xxx_WDT) += mpc8xxx_wdt.o
- obj-$(CONFIG_MV64X60_WDT) += mv64x60_wdt.o
- obj-$(CONFIG_BOOKE_WDT) += booke_wdt.o
-+obj-$(CONFIG_GEF_WDT) += gef_wdt.o
- 
- # PPC64 Architecture
- obj-$(CONFIG_WATCHDOG_RTAS) += wdrtas.o
-diff --git a/drivers/watchdog/gef_wdt.c b/drivers/watchdog/gef_wdt.c
-new file mode 100644
-index 0000000..f82ef9c
---- /dev/null
-+++ b/drivers/watchdog/gef_wdt.c
-@@ -0,0 +1,333 @@
-+/*
-+ * GE Fanuc watchdog userspace interface
-+ *
-+ * Author:  Martyn Welch <martyn.welch@gefanuc.com>
-+ *
-+ * Copyright 2008 GE Fanuc Intelligent Platforms Embedded Systems, Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ *
-+ * Based on: mv64x60_wdt.c (MV64X60 watchdog userspace interface)
-+ *   Author: James Chapman <jchapman@katalix.com>
-+ */
-+
-+/* TODO:
-+ * This driver does not provide support for the hardwares capability of sending
-+ * an interrupt at a programmable threshold.
-+ *
-+ * This driver currently can only support 1 watchdog - there are 2 in the
-+ * hardware that this driver supports. Thus one could be configured as a
-+ * process-based watchdog (via /dev/watchdog), the second (using the interrupt
-+ * capabilities) a kernel-based watchdog.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/compiler.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/miscdevice.h>
-+#include <linux/watchdog.h>
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/io.h>
-+#include <linux/uaccess.h>
-+
-+#include <sysdev/fsl_soc.h>
-+
-+/*
-+ * The watchdog configuration register contains a pair of 2-bit fields,
-+ *   1.  a reload field, bits 27-26, which triggers a reload of
-+ *       the countdown register, and
-+ *   2.  an enable field, bits 25-24, which toggles between
-+ *       enabling and disabling the watchdog timer.
-+ * Bit 31 is a read-only field which indicates whether the
-+ * watchdog timer is currently enabled.
-+ *
-+ * The low 24 bits contain the timer reload value.
-+ */
-+#define GEF_WDC_ENABLE_SHIFT	24
-+#define GEF_WDC_SERVICE_SHIFT	26
-+#define GEF_WDC_ENABLED_SHIFT	31
-+
-+#define GEF_WDC_ENABLED_TRUE	1
-+#define GEF_WDC_ENABLED_FALSE	0
-+
-+/* Flags bits */
-+#define GEF_WDOG_FLAG_OPENED	0
-+
-+static unsigned long wdt_flags;
-+static int wdt_status;
-+static void __iomem *gef_wdt_regs;
-+static int gef_wdt_timeout;
-+static int gef_wdt_count;
-+static unsigned int bus_clk;
-+static char expect_close;
-+static DEFINE_SPINLOCK(gef_wdt_spinlock);
-+
-+static int nowayout = WATCHDOG_NOWAYOUT;
-+module_param(nowayout, int, 0);
-+MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
-+	__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+
-+
-+static int gef_wdt_toggle_wdc(int enabled_predicate, int field_shift)
-+{
-+	u32 data;
-+	u32 enabled;
-+	int ret = 0;
-+
-+	spin_lock(&gef_wdt_spinlock);
-+	data = ioread32be(gef_wdt_regs);
-+	enabled = (data >> GEF_WDC_ENABLED_SHIFT) & 1;
-+
-+	/* only toggle the requested field if enabled state matches predicate */
-+	if ((enabled ^ enabled_predicate) == 0) {
-+		/* We write a 1, then a 2 -- to the appropriate field */
-+		data = (1 << field_shift) | gef_wdt_count;
-+		iowrite32be(data, gef_wdt_regs);
-+
-+		data = (2 << field_shift) | gef_wdt_count;
-+		iowrite32be(data, gef_wdt_regs);
-+		ret = 1;
-+	}
-+	spin_unlock(&gef_wdt_spinlock);
-+
-+	return ret;
-+}
-+
-+static void gef_wdt_service(void)
-+{
-+	gef_wdt_toggle_wdc(GEF_WDC_ENABLED_TRUE,
-+		GEF_WDC_SERVICE_SHIFT);
-+}
-+
-+static void gef_wdt_handler_enable(void)
-+{
-+	if (gef_wdt_toggle_wdc(GEF_WDC_ENABLED_FALSE,
-+				   GEF_WDC_ENABLE_SHIFT)) {
-+		gef_wdt_service();
-+		printk(KERN_NOTICE "gef_wdt: watchdog activated\n");
-+	}
-+}
-+
-+static void gef_wdt_handler_disable(void)
-+{
-+	if (gef_wdt_toggle_wdc(GEF_WDC_ENABLED_TRUE,
-+				   GEF_WDC_ENABLE_SHIFT))
-+		printk(KERN_NOTICE "gef_wdt: watchdog deactivated\n");
-+}
-+
-+static void gef_wdt_set_timeout(unsigned int timeout)
-+{
-+	/* maximum bus cycle count is 0xFFFFFFFF */
-+	if (timeout > 0xFFFFFFFF / bus_clk)
-+		timeout = 0xFFFFFFFF / bus_clk;
-+
-+	/* Register only holds upper 24 bits, bit shifted into lower 24 */
-+	gef_wdt_count = (timeout * bus_clk) >> 8;
-+	gef_wdt_timeout = timeout;
-+}
-+
-+
-+static ssize_t gef_wdt_write(struct file *file, const char __user *data,
-+				 size_t len, loff_t *ppos)
-+{
-+	if (len) {
-+		if (!nowayout) {
-+			size_t i;
-+
-+			expect_close = 0;
-+
-+			for (i = 0; i != len; i++) {
-+				char c;
-+				if (get_user(c, data + i))
-+					return -EFAULT;
-+				if (c == 'V')
-+					expect_close = 42;
-+			}
-+		}
-+		gef_wdt_service();
-+	}
-+
-+	return len;
-+}
-+
-+static int gef_wdt_ioctl(struct inode *inode, struct file *file,
-+			     unsigned int cmd, unsigned long arg)
-+{
-+	int timeout;
-+	int options;
-+	void __user *argp = (void __user *)arg;
-+	static struct watchdog_info info = {
-+		.options =	WDIOF_SETTIMEOUT | WDIOF_MAGICCLOSE |
-+				WDIOF_KEEPALIVEPING,
-+		.firmware_version = 0,
-+		.identity = "GE Fanuc watchdog",
-+	};
-+
-+	switch (cmd) {
-+	case WDIOC_GETSUPPORT:
-+		if (copy_to_user(argp, &info, sizeof(info)))
-+			return -EFAULT;
-+		break;
-+
-+	case WDIOC_GETSTATUS:
-+	case WDIOC_GETBOOTSTATUS:
-+		if (put_user(wdt_status, (int __user *)argp))
-+			return -EFAULT;
-+		wdt_status &= ~WDIOF_KEEPALIVEPING;
-+		break;
-+
-+	case WDIOC_GETTEMP:
-+		return -EOPNOTSUPP;
-+
-+	case WDIOC_SETOPTIONS:
-+		if (get_user(options, (int __user *)argp))
-+			return -EFAULT;
-+
-+		if (options & WDIOS_DISABLECARD)
-+			gef_wdt_handler_disable();
-+
-+		if (options & WDIOS_ENABLECARD)
-+			gef_wdt_handler_enable();
-+		break;
-+
-+	case WDIOC_KEEPALIVE:
-+		gef_wdt_service();
-+		wdt_status |= WDIOF_KEEPALIVEPING;
-+		break;
-+
-+	case WDIOC_SETTIMEOUT:
-+		if (get_user(timeout, (int __user *)argp))
-+			return -EFAULT;
-+		gef_wdt_set_timeout(timeout);
-+		/* Fall through */
-+
-+	case WDIOC_GETTIMEOUT:
-+		if (put_user(gef_wdt_timeout, (int __user *)argp))
-+			return -EFAULT;
-+		break;
-+
-+	default:
-+		return -ENOTTY;
-+	}
-+
-+	return 0;
-+}
-+
-+static int gef_wdt_open(struct inode *inode, struct file *file)
-+{
-+	if (test_and_set_bit(GEF_WDOG_FLAG_OPENED, &wdt_flags))
-+		return -EBUSY;
-+
-+	if (nowayout)
-+		__module_get(THIS_MODULE);
-+
-+	gef_wdt_handler_enable();
-+
-+	return nonseekable_open(inode, file);
-+}
-+
-+static int gef_wdt_release(struct inode *inode, struct file *file)
-+{
-+	if (expect_close == 42)
-+		gef_wdt_handler_disable();
-+	else {
-+		printk(KERN_CRIT
-+		       "gef_wdt: unexpected close, not stopping timer!\n");
-+		gef_wdt_service();
-+	}
-+	expect_close = 0;
-+
-+	clear_bit(GEF_WDOG_FLAG_OPENED, &wdt_flags);
-+
-+	return 0;
-+}
-+
-+static const struct file_operations gef_wdt_fops = {
-+	.owner = THIS_MODULE,
-+	.llseek = no_llseek,
-+	.write = gef_wdt_write,
-+	.ioctl = gef_wdt_ioctl,
-+	.open = gef_wdt_open,
-+	.release = gef_wdt_release,
-+};
-+
-+static struct miscdevice gef_wdt_miscdev = {
-+	.minor = WATCHDOG_MINOR,
-+	.name = "watchdog",
-+	.fops = &gef_wdt_fops,
-+};
-+
-+
-+static int __devinit gef_wdt_probe(struct of_device *dev,
-+	const struct of_device_id *match)
-+{
-+	int timeout = 10;
-+	u32 freq;
-+
-+	bus_clk = 133; /* in MHz */
-+
-+	freq = fsl_get_sys_freq();
-+	if (freq > 0)
-+		bus_clk = freq;
-+
-+	/* Map devices registers into memory */
-+	gef_wdt_regs = of_iomap(dev->node, 0);
-+	if (gef_wdt_regs == NULL)
-+		return -ENOMEM;
-+
-+	gef_wdt_set_timeout(timeout);
-+
-+	gef_wdt_handler_disable();	/* in case timer was already running */
-+
-+	return misc_register(&gef_wdt_miscdev);
-+}
-+
-+static int __devexit gef_wdt_remove(struct platform_device *dev)
-+{
-+	misc_deregister(&gef_wdt_miscdev);
-+
-+	gef_wdt_handler_disable();
-+
-+	iounmap(gef_wdt_regs);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id gef_wdt_ids[] = {
-+	{
-+		.compatible = "gef,fpga-wdt",
-+	},
-+	{},
-+};
-+
-+static struct of_platform_driver gef_wdt_driver = {
-+	.owner		= THIS_MODULE,
-+	.name		= "gef_wdt",
-+	.match_table	= gef_wdt_ids,
-+	.probe		= gef_wdt_probe,
-+};
-+
-+static int __init gef_wdt_init(void)
-+{
-+	printk(KERN_INFO "GE Fanuc watchdog driver\n");
-+	return of_register_platform_driver(&gef_wdt_driver);
-+}
-+
-+static void __exit gef_wdt_exit(void)
-+{
-+	of_unregister_platform_driver(&gef_wdt_driver);
-+}
-+
-+module_init(gef_wdt_init);
-+module_exit(gef_wdt_exit);
-+
-+MODULE_AUTHOR("Martyn Welch <martyn.welch@gefanuc.com>");
-+MODULE_DESCRIPTION("GE Fanuc watchdog driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
-+MODULE_ALIAS("platform: gef_wdt");
+ #
+ # PCI-based Watchdog Cards
