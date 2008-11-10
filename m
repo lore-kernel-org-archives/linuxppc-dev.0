@@ -1,18 +1,17 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id D2127DDE04
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Nov 2008 09:53:02 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KyaCI-0007gW-0a
-	for linuxppc-dev@ozlabs.org; Fri, 07 Nov 2008 14:52:58 -0800
-Message-ID: <20389723.post@talk.nabble.com>
-Date: Fri, 7 Nov 2008 14:52:58 -0800 (PST)
-From: wael showair <showair2003@yahoo.com>
-To: linuxppc-dev@ozlabs.org
-Subject: How to add my device node in the device tree
+Return-Path: <a.zummo@towertech.it>
+Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
+	by ozlabs.org (Postfix) with SMTP id AB7A2DDD01
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 02:47:21 +1100 (EST)
+From: Alessandro Zummo <a.zummo@towertech.it>
+Subject: [RFC PATCH] rtc: add rtc_systohc for ntp use
+To: rtc-linux@googlegroups.com
+Date: Mon, 10 Nov 2008 16:40:27 +0100
+Message-ID: <20081110154026.21405.47457.stgit@i1501.lan.towertech.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	Paul Mundt <lethal@linux-sh.org>, David Woodhouse <dwmw2@infradead.org>,
+	Alessandro Zummo <a.zummo@towertech.it>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,184 +21,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Adds in-kernel hctosys functionality that can
+be used by ntp sync code.
 
-Hi all,
-My board processor is MPC8555, it is an AMC board.
-i want to add a node for my device to the device tree.
+This is an RFC and has not been tested, I just want
+to check if something similar could solve the problems
+of those who want the NTP sync mode.
 
-simply here is the old device tree :
-***************************************
-/ {
-	model = "MPC8555AMC";
-	compatible = "mpc85xx";
-	#address-cells = <1>;
-	#size-cells = <1>;
+Signed-off-by: Alessandro Zummo <a.zummo@towertech.it>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: David Brownell <david-b@pacbell.net>
+Cc: David Woodhouse <dwmw2@infradead.org>
+---
 
-	cpus {
-		#cpus = <1>;
-		#address-cells = <1>;
-		#size-cells = <0>;
+ drivers/rtc/Kconfig   |   19 ++++++++++++++++++-
+ drivers/rtc/Makefile  |    1 +
+ drivers/rtc/systohc.c |   35 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 54 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/rtc/systohc.c
 
-		PowerPC,8555@0 {
-			device_type = "cpu";
-			reg = <0>;
-			d-cache-line-size = <20>;	// 32 bytes
-			i-cache-line-size = <20>;	// 32 bytes
-			d-cache-size = <8000>;		// L1, 32K
-			i-cache-size = <8000>;		// L1, 32K
-			timebase-frequency = <0>;	// 33 MHz, from uboot
-			bus-frequency = <0>;		// From uboot
-			clock-frequency = <0>;		// From uboot
-			32-bit;
-			linux,boot-cpu;
-		};
-	};
-
-	memory {
-		device_type = "memory";
-		reg = <00000000 20000000>;	
-	};
-
-	soc8555@e0000000 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		#interrupt-cells = <2>;
-		device_type = "soc";
-		ranges = <0 e0000000 00100000>;
-		reg = <e0000000 00100000>;	// CCSRBAR 1M
-		bus-frequency = <0>;
-
-		i2c@3000 {
-			device_type = "i2c";
-			compatible = "fsl-i2c";
-			reg = <3000 100>;
-			interrupts = <1b 2>;
-			interrupt-parent = <40000>;
-			dfsrr;
-		};
-
-		mdio@24520 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			device_type = "mdio";
-			compatible = "gianfar";
-			reg = <24520 20>;
-			linux,phandle = <24520>;
-			ethernet-phy@10 {
-				linux,phandle = <2452010>;
-				interrupt-parent = <40000>;
-				interrupts = <30 1>;
-				reg = <10>;
-				device_type = "ethernet-phy";
-			};
-			ethernet-phy@11 {
-				linux,phandle = <2452011>;
-				interrupt-parent = <40000>;
-				interrupts = <30 1>;
-				reg = <11>;
-				device_type = "ethernet-phy";
-			};
-		};
-
-		ethernet@24000 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			device_type = "network";
-			model = "TSEC";
-			compatible = "gianfar";
-			reg = <24000 1000>;
-			mac-address = [ 00 E0 0C 00 73 00 ];
-			interrupts = <d 2 e 2 12 2>;
-			interrupt-parent = <40000>;
-			phy-handle = <2452010>;
-		};
-
-		ethernet@25000 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			device_type = "network";
-			model = "TSEC";
-			compatible = "gianfar";
-			reg = <25000 1000>;
-			mac-address = [ 00 E0 0C 00 73 01 ];
-			interrupts = <13 2 14 2 18 2>;
-			interrupt-parent = <40000>;
-			phy-handle = <2452011>;
-		};
-		
-		serial@4500 {
-			device_type = "serial";
-			compatible = "ns16550";
-			reg = <4500 100>;
-			clock-frequency = <0>;
-			interrupts = <1a 2>;
-			interrupt-parent = <40000>;
-		};
-
-		pic@40000 {
-			linux,phandle = <40000>;
-			clock-frequency = <0>;
-			interrupt-controller;
-			#address-cells = <0>;
-			#interrupt-cells = <2>;
-			reg = <40000 40000>;
-			built-in;
-			compatible = "chrp,open-pic";
-			device_type = "open-pic";
-                        big-endian;
-			interrupts = <
-				0 2 1 2 2 2 3 2
-				4 2 5 2 6 2 7 2
-				8 2 9 2 a 2 b 2
-				c 2 d 2 e 2 f 2
-				10 2 11 2 12 2 13 2
-				14 2 15 2 16 2 17 2
-				18 2 19 2 1a 2 1b 2
-				1c 2 1d 2 1e 2 1f 2
-				20 2 21 2 22 2 23 2
-				24 2 25 2 26 2 27 2
-				28 2 29 2 2a 2 2b 2
-				2c 2 2d 2 2e 2 2f 2
-				30 1
-				>;
-			interrupt-parent = <40000>;
-		};
-	};
-};
-****************************************
-
-i want to add a node for the DMA in this tree. the PIC PDF tells me that DMA
-channel 0 is connected to Internal interrupt number 4 so i add the following
-node just before the pic node & after the serial node:
-
-******************************************
-
-		DMA@21100 {
-			reg = <21100 44>;
-			interrupts = <4 2>;  
-			interrupt-parent = <40000>;		
-		};
-******************************************
-
-but when i called the of_find_node_by_name(NULL, "DMA");
-unfortunately it returns NULL & i cant the a node with such a name.
-i have checked this by printing all of the nodes in my tree which are:
-cpus
-PowerPC,8555
-memory
-soc8555
-i2c
-mdio
-...
-serial
-pic
-choosen
-choosen
-
-without a node of name DMA for sure.
-so what else should i do to create this node?
-thanks in advance for your help.
-
--- 
-View this message in context: http://www.nabble.com/How-to-add-my-device-node-in-the-device-tree-tp20389723p20389723.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 8abbb20..1ff9427 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -30,7 +30,7 @@ config RTC_HCTOSYS
+ 	  unnecessary fsck runs at boot time, and to network better.
+ 
+ config RTC_HCTOSYS_DEVICE
+-	string "RTC used to set the system time"
++	string "RTC used to set the system time on startup and resume"
+ 	depends on RTC_HCTOSYS = y
+ 	default "rtc0"
+ 	help
+@@ -52,6 +52,23 @@ config RTC_HCTOSYS_DEVICE
+ 	  sleep states. Do not specify an RTC here unless it stays powered
+ 	  during all this system's supported sleep states.
+ 
++config RTC_SYSTOHC
++	bool "Set RTC from system time in NTP sync mode"
++	depends on RTC_CLASS = y
++	default y
++	help
++	  If you say yes here, the system time (wall clock) will be written
++	  to the hardware clock every 11 minutes, if the kernel is in NTP
++	  mode and your platforms supports it.
++
++config RTC_SYSTOHC_DEVICE
++	string "RTC used to save the system time in NTP sync mode"
++	depends on RTC_SYSTOHC = y
++	default "rtc0"
++	help
++	  The RTC device that will get written with the system time
++	  in NTP mode.
++
+ config RTC_DEBUG
+ 	bool "RTC debug support"
+ 	depends on RTC_CLASS = y
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index e9e8474..6d1c519 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -8,6 +8,7 @@ endif
+ 
+ obj-$(CONFIG_RTC_LIB)		+= rtc-lib.o
+ obj-$(CONFIG_RTC_HCTOSYS)	+= hctosys.o
++obj-$(CONFIG_RTC_SYSTOHC)	+= systohc.o
+ obj-$(CONFIG_RTC_CLASS)		+= rtc-core.o
+ rtc-core-y			:= class.o interface.o
+ 
+diff --git a/drivers/rtc/systohc.c b/drivers/rtc/systohc.c
+new file mode 100644
+index 0000000..41ec77b
+--- /dev/null
++++ b/drivers/rtc/systohc.c
+@@ -0,0 +1,35 @@
++/*
++ * RTC subsystem, systohc for ntp use
++ *
++ * Copyright (C) 2008 Tower Technologies
++ * Author: Alessandro Zummo <a.zummo@towertech.it>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++*/
++
++#include <linux/rtc.h>
++
++static int rtc_systohc(struct rtc_time *tm)
++{
++	int err;
++	struct rtc_time tm;
++	struct rtc_device *rtc = rtc_class_open(CONFIG_RTC_SYSTOHC_DEVICE);
++
++	if (rtc == NULL) {
++		printk("%s: unable to open rtc device (%s)\n",
++			__FILE__, CONFIG_RTC_SYSTOHC_DEVICE);
++		return -ENODEV;
++	}
++
++	err = rtc_set_time(rtc, tm);
++	if (err != 0)
++		dev_err(rtc->dev.parent,
++			"systohc: unable to set the hardware clock\n");
++
++	rtc_class_close(rtc);
++
++	return err;
++}
++EXPORT_SYMBOL(rtc_systohc);
