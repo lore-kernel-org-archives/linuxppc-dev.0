@@ -1,29 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BC608DDEE4
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 05:16:48 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	mAAIGcSf008382
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Nov 2008 11:16:44 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id mAAIGbQd019339
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Nov 2008 12:16:37 -0600 (CST)
-Date: Mon, 10 Nov 2008 12:16:37 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] powerpc/qe: Select QE_USB with USB_GADGET_FSL_QE
-Message-ID: <20081110181637.GA17507@ld0162-tx32.am.freescale.net>
-References: <20081108175254.GA6444@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3.cisco.com [171.71.176.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-3.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 7A5B9DDE1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 07:36:29 +1100 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Subject: Re: [PATCH] IB/ehca: Fix suppression of port activation events
+References: <200806061835.43802.fenkes@de.ibm.com>
+	<48499C11.7030504@gmail.com> <200811071742.51867.fenkes@de.ibm.com>
+Date: Mon, 10 Nov 2008 12:36:23 -0800
+In-Reply-To: <200811071742.51867.fenkes@de.ibm.com> (Joachim Fenkes's message
+	of "Fri, 7 Nov 2008 17:42:51 +0100")
+Message-ID: <adaod0nqpx4.fsf@cisco.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081108175254.GA6444@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	OF-General <general@lists.openfabrics.org>,
+	Alexander Schmidt <alexschm@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,15 +30,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Nov 08, 2008 at 08:52:54PM +0300, Anton Vorontsov wrote:
-> Boards should know when QE_USB is used, so that they can configure USB
-> clocks and pins.
-> 
-> Another option would be to add 'select QE_USB' into USB_GADGET_FSL_QE,
-> but selects are evil since they don't support dependencies.
+ > A previous fix introduced a regression where port activation events were
+ > dropped unconditionally if port autodetection was not enabled. Fixed.
 
-Can anyone explain *why* select ignores dependencies, rather than
-recursively enabling the dependencies (and giving an error if it can't,
-or if a dependency has an || in it and is unmet)?
+Is this a fix to "IB/ehca: Remove reference to special QP in case of
+port activation failure"?  Because if so I can roll it into that patch,
+since Linus hasn't pulled it yet.
 
--Scott
+ - R.
