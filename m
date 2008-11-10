@@ -2,19 +2,21 @@ Return-Path: <yanok@emcraft.com>
 Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 90AD2DDE01
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 03:24:59 +1100 (EST)
-Message-ID: <49186028.8010505@emcraft.com>
-Date: Mon, 10 Nov 2008 19:24:08 +0300
+	by ozlabs.org (Postfix) with ESMTPS id 04CF9DDE0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 03:51:34 +1100 (EST)
+Message-ID: <4918665C.2060100@emcraft.com>
+Date: Mon, 10 Nov 2008 19:50:36 +0300
 From: Ilya Yanok <yanok@emcraft.com>
 MIME-Version: 1.0
 To: Milton Miller <miltonm@bga.com>
-Subject: Re: [2/2] powerpc: support for 256K pages on PPC 44x
-References: <d02415a31b89736f070f290be89013d4@bga.com>
-In-Reply-To: <d02415a31b89736f070f290be89013d4@bga.com>
+Subject: Re: [1/2] powerpc: add 16K/64K pages support for the 44x PPC32
+	architectures
+References: <4516e17f1d199c21b1398be053e2dada@bga.com>
+In-Reply-To: <4516e17f1d199c21b1398be053e2dada@bga.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>, Vladimir Panfilov <pvr@emcraft.com>,
-	Wolfgang Denk <wd@denx.de>, dzu@denx.de
+Cc: Wolfgang Denk <wd@denx.de>, dzu@denx.de,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Vladimir Panfilov <pvr@emcraft.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,126 +29,167 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Hello Milton,
 
 Milton Miller wrote:
->> This patch adds support for 256K pages on PPC 44x along with
->> some hacks needed for this.
+> I started out looking at the too minimal decription of patch 2/2, and
+> that morphed into talking about both patches.
 >
-> This description is insufficient, it describes neither the hacks nor
-> why they are required.
-
-Ok. Actually there is only one hack -- increasing kernel stack size. We
-do this because with 256K pages we get division by zero in kernel/fork.c:
-
-        /*
-         * The default maximum number of threads is set to a safe
-         * value: the thread structures can take up at most half
-         * of memory.
-         */
-        max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
-
-so setting THREAD_SIZE to bigger value we can avoid this. I don't think
-it's very clean solution but at least we stay powerpc-specific.
-
 >> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 9627cfd..7df5528 100644
+>> index 587da5e..9627cfd 100644
 >> --- a/arch/powerpc/Kconfig
 >> +++ b/arch/powerpc/Kconfig
->> @@ -425,6 +425,14 @@  config PPC_64K_PAGES
->>         bool "64k page size" if 44x || PPC64
->>         select PPC_HAS_HASH_64K if PPC64
+>> @@ -402,16 +402,30 @@  config PPC_HAS_HASH_64K
+>>         depends on PPC64
+>>         default n
 >>
->> +config PPC_256K_PAGES
->> +       bool "256k page size" if 44x
->> +       depends on BROKEN
->
-> I know it was not your original choice, but I feel BROKEN is too
-> strong.  It should be under embedded, and maybe a second choice "I am
-> using standard binutils" that defaults to yes and is set to no (so
-> that all yes config does not enable it by accident), but I feel
-> labeling this BROKEN for an external dependency is wrong.
-
-Hm... maybe you are right. I'm looking forward for additional comments
-on this.
-
->> +       help
->> +         ELF standard supports only page sizes up to 64K so you need
->> a patched
->> +         binutils in order to use 256K pages. Chose it only if you
->> know what
->> +         you are doing.
+>> -config PPC_64K_PAGES
+>> -       bool "64k page size"
+>> -       depends on PPC64
+>> -       select PPC_HAS_HASH_64K
+>> +choice
+>> +       prompt "Page size"
+>> +       default PPC_4K_PAGES
+>>         help
+>> -         This option changes the kernel logical page size to 64k. On
+>> machines
+>> +         The PAGE_SIZE definition. Increasing the page size may
+>> +         improve the system performance in some dedicated cases like
+>> software
+>> +         RAID with accelerated calculations. In PPC64 case on machines
+>>           without processor support for 64k pages, the kernel will
+>> simulate
+>>           them by loading each individual 4k page on demand
+>> transparently,
+>>           while on hardware with such support, it will be used to map
+>>           normal application pages.
+>> +         If unsure, set it to 4 KB.
 >> +
->>  endchoice
+>
+> This is less understandable (more hacker jargon) and too application
+> specific.  (Josh, since this is cross-sub-platform we need to make
+> sure this fragment gets proper review).
+>
+> Also, we need to check the help placement, as I seem to remember the
+> config programs looking at the first choice instead of the choice
+> tag.  Or should the help be split by option?
+
+Help at the choice tag works properly.
+
+> Lets try this
+>
+> Select the kernel logical page size.   Increasing the page size will
+> reduce software overhead at each page boundary, allow hardware
+> prefetch mechanisms to be more effective, and allow larger dma
+> transfers increasing IO efficiency and reducing overhead.  However the
+> utilization of memory will increase.  For example, each cached file
+> will using a multiple of the page size to hold its contents and the
+> difference between the end of file and the end of page is wasted.
+>
+> Some dedicated systems, such as software raid serving with accelerated
+> calculations, have shown significant increases.
+>
+> If you configure a 64 bit kernel for 64k pages but the processor does
+> not support them, then the kernel will simulate them with 4k pages,
+> loading them on demand, but with the reduced software overhead and
+> larger internal fragmentation.  For the 32 bit kernel, a large page
+> option will not be offered unless it is supported by the configured
+> processor.
+>
+> If unsure, choose 4K_PAGES.
+
+This looks much better for me. I'll include this help message in updated
+patch.
+
+>> +config PPC_4K_PAGES
+>> +       bool "4k page size"
+>> +
+>> +config PPC_16K_PAGES
+>> +       bool "16k page size" if 44x
+>> +
+>> +config PPC_64K_PAGES
+>> +       bool "64k page size" if 44x || PPC64
+>> +       select PPC_HAS_HASH_64K if PPC64
+>> +
+>> +endchoice
 >>
->>  config FORCE_MAX_ZONEORDER
+>
+>
 >> diff --git a/arch/powerpc/include/asm/highmem.h
 >> b/arch/powerpc/include/asm/highmem.h
->> index dc1132c..0b4ac6a 100644
+>> index 5d99b64..dc1132c 100644
 >> --- a/arch/powerpc/include/asm/highmem.h
 >> +++ b/arch/powerpc/include/asm/highmem.h
->> @@ -38,7 +38,8 @@  extern pte_t *pkmap_page_table;
+>> @@ -38,9 +38,15 @@  extern pte_t *pkmap_page_table;
 >>   * easily, subsequent pte tables have to be allocated in one physical
 >>   * chunk of RAM.
 >>   */
->> -#if defined(CONFIG_PPC_64K_PAGES) && !defined(CONFIG_PPC64)
->> +#if defined(CONFIG_PPC_256K_PAGES) || \
->> +       (defined(CONFIG_PPC_64K_PAGES) && !defined(CONFIG_PPC64))
+>> +#if defined(CONFIG_PPC_64K_PAGES) && !defined(CONFIG_PPC64)
 >
-> Just because 256K pages is not selectable on PPC64 doesn't mean that
-> this is the right grouping.   However, as I said on the previous
-> patch, this file is never included on PPC64 so the clause should be
-> removed.
+> In patch 2/2 I was going to comment about the precedence of PPC64 vs
+> 64K_PAGES, but then I realized this file is only included when
+> CONFIG_HIGHMEM is set and that depends on PPC32 , so it will never be
+> set.   Please remove the additional noise && !defined(CONFIG_PPC64).
 
 Ok.
 
->> diff --git a/arch/powerpc/include/asm/page_32.h
->> b/arch/powerpc/include/asm/page_32.h
->> index ebfae53..273369a 100644
->> --- a/arch/powerpc/include/asm/page_32.h
->> +++ b/arch/powerpc/include/asm/page_32.h
->> @@ -20,7 +20,11 @@
->>   */
->>  #ifdef CONFIG_PTE_64BIT
->>  typedef unsigned long long pte_basic_t;
->> +#ifdef CONFIG_PPC_256K_PAGES
->> +#define PTE_SHIFT       (PAGE_SHIFT - 7)
+>> +#define PKMAP_ORDER    (27 - PAGE_SHIFT)
+> where did the value 27 come from?
+
+Hm... It's pretty much experimental. There is the range of values which
+gives us a proper virtual memory map (VMALLOC_BEGIN < VMALLOC_END) and I
+have no clean idea which one we should use.
+
+>> +#define LAST_PKMAP     (1 << PKMAP_ORDER)
+>> +#define PKMAP_BASE     (FIXADDR_START - PAGE_SIZE*(LAST_PKMAP + 1))
+>> +#else
+>>  #define LAST_PKMAP     (1 << PTE_SHIFT)
+>> -#define LAST_PKMAP_MASK (LAST_PKMAP-1)
+>>  #define PKMAP_BASE     ((FIXADDR_START - PAGE_SIZE*(LAST_PKMAP + 1))
+>> & PMD_MASK)
+>> +#endif
+>> +#define LAST_PKMAP_MASK        (LAST_PKMAP-1)
 >
-> This seems to be missing the comment on how many ptes are actually in
-> the page that are in the other if and else cases.
+> and why not set PKMAP_ORDER on both sides of the else, keepign
+> LAST_PKMAP common?
 
-Ok. I'll fix this. Actually it's another hack: we don't use full page
-for PTE table because we need to reserve something for PGD
+We can do this but I can't see much sense here... We still need to
+define PKMAP_BASE differently.
 
->> +#else
->>  #define PTE_SHIFT      (PAGE_SHIFT - 3)        /* 512 ptes per page */
->> +#endif
->>  #else
->>  typedef unsigned long pte_basic_t;
->>  #define PTE_SHIFT      (PAGE_SHIFT - 2)        /* 1024 ptes per page */
->> diff --git a/arch/powerpc/include/asm/thread_info.h
->> b/arch/powerpc/include/asm/thread_info.h
->> index 9665a26..3c8bbab 100644
->> --- a/arch/powerpc/include/asm/thread_info.h
->> +++ b/arch/powerpc/include/asm/thread_info.h
->> @@ -15,8 +15,12 @@
->>  #ifdef CONFIG_PPC64
->>  #define THREAD_SHIFT           14
->>  #else
->> +#ifdef CONFIG_PPC_256K_PAGES
->> +#define THREAD_SHIFT           15
->> +#else
->>  #define THREAD_SHIFT           13
->>  #endif
->> +#endif
+>>  #define PKMAP_NR(virt)  ((virt-PKMAP_BASE) >> PAGE_SHIFT)
+>>  #define PKMAP_ADDR(nr)  (PKMAP_BASE + ((nr) << PAGE_SHIFT))
 >>
->>  #define THREAD_SIZE            (1 << THREAD_SHIFT)
+>>
 >
 >
-> So this appears to be the one hack.  For some unknown reason, you are
-> increasing the kernel stack from 8k to 32k when selecting 256k
-> pages.   What data structure is ballooning in size so much that you
-> need the additional kernel stack space on 256k pages but not on 64k
-> pages?  Is this really tied to 256k base page size?
+>> diff --git a/arch/powerpc/include/asm/pgtable.h
+>> b/arch/powerpc/include/asm/pgtable.h
+>> index dbb8ca1..0d447fb 100644
+>> --- a/arch/powerpc/include/asm/pgtable.h
+>> +++ b/arch/powerpc/include/asm/pgtable.h
+>> @@ -39,6 +39,9 @@  extern void paging_init(void);
+>>
+>>  #include <asm-generic/pgtable.h>
+>>
+>> +#define PGD_T_LOG2     (__builtin_ffs(sizeof(pgd_t)) - 1)
+>> +#define PMD_T_LOG2     (__builtin_ffs(sizeof(pmd_t)) - 1)
+>> +#define PTE_T_LOG2     (__builtin_ffs(sizeof(pte_t)) - 1)
+>>
+>
+>> diff --git a/arch/powerpc/include/asm/mmu-44x.h
+>> b/arch/powerpc/include/asm/mmu-44x.h
+>> index a825524..2ca18e8 100644
+>> --- a/arch/powerpc/include/asm/mmu-44x.h
+>> +++ b/arch/powerpc/include/asm/mmu-44x.h
+>
+>> +#define PPC44x_PGD_OFF_SHIFT   (32 - PMD_SHIFT + 2)
+>> +#define PPC44x_PGD_OFF_MASK    (PMD_SHIFT - 2)
+>> +#define PPC44x_PTE_ADD_SHIFT   (32 - PMD_SHIFT + PTE_SHIFT + 3)
+>> +#define PPC44x_PTE_ADD_MASK    (32 - 3 - PTE_SHIFT)
+>> +#define PPC44x_RPN_MASK                (31 - PAGE_SHIFT)
+>> +
+>
+> Are the values 2 and 3 related to the new defines PG*_T_LOG2 ?
 
-We don't really need additional stack space. Just trying to avoid
-division by zero.
+Looks like you are right.
+
+Thanks for your comments.
 
 Regards, Ilya.
