@@ -1,12 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 77916474E1
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 03:03:49 +1100 (EST)
-Date: Tue, 11 Nov 2008 19:03:44 +0300
+	by ozlabs.org (Postfix) with ESMTP id 5A6C7474DA
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 03:03:38 +1100 (EST)
+Date: Tue, 11 Nov 2008 19:03:27 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH 6/6] usb/fsl_qe_udc: Fix stalled TX requests bug
-Message-ID: <20081111160344.GF24699@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/6] usb/fsl_qe_udc: Fix recursive locking bug in
+	ch9getstatus()
+Message-ID: <20081111160327.GB24699@oksana.dev.rtsoft.ru>
 References: <20081111160153.GA12783@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -22,32 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-While disabling an endpoint the driver nuking any pending requests,
-thus completing them with -ESHUTDOWN status. But the driver doesn't
-clear the tx_req, which means that a next TX request (after
-ep_enable), might get stalled, since the driver won't queue the new
-reqests.
+The call chain is this:
 
-This fixes a bug I'm observing with ethernet gadget while playing
-with ifconfig usb0 up/down (the up/down sequence disables and
-enables `in' and `out' endpoints).
+qe_udc_irq() <- grabs the udc->lock spinlock
+rx_irq()
+qe_ep0_rx()
+ep0_setup_handle()
+setup_received_handle()
+ch9getstatus()
+qe_ep_queue() <- tries to grab the udc->lock again
+
+It seems unsafe to temporarily drop the lock in the ch9getstatus(),
+so to fix that bug the __qe_ep_queue() function implemented and used
+by the ch9getstatus().
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/usb/gadget/fsl_qe_udc.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/usb/gadget/fsl_qe_udc.c |   24 +++++++++++++++++-------
+ 1 files changed, 17 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
-index cb47337..37c8575 100644
+index 60b9279..abcb35d 100644
 --- a/drivers/usb/gadget/fsl_qe_udc.c
 +++ b/drivers/usb/gadget/fsl_qe_udc.c
-@@ -1622,6 +1622,7 @@ static int qe_ep_disable(struct usb_ep *_ep)
- 	nuke(ep, -ESHUTDOWN);
- 	ep->desc = NULL;
- 	ep->stopped = 1;
-+	ep->tx_req = NULL;
- 	qe_ep_reset(udc, ep->epnum);
- 	spin_unlock_irqrestore(&udc->lock, flags);
+@@ -1681,14 +1681,13 @@ static void qe_free_request(struct usb_ep *_ep, struct usb_request *_req)
+ 		kfree(req);
+ }
  
+-/* queues (submits) an I/O request to an endpoint */
+-static int qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
+-				gfp_t gfp_flags)
++static int __qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
++			 gfp_t gfp_flags, spinlock_t *lock)
+ {
+ 	struct qe_ep *ep = container_of(_ep, struct qe_ep, ep);
+ 	struct qe_req *req = container_of(_req, struct qe_req, req);
+ 	struct qe_udc *udc;
+-	unsigned long flags;
++	unsigned long flags = 0; /* shut up gcc */
+ 	int reval;
+ 
+ 	udc = ep->udc;
+@@ -1732,7 +1731,8 @@ static int qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
+ 	list_add_tail(&req->queue, &ep->queue);
+ 	dev_vdbg(udc->dev, "gadget have request in %s! %d\n",
+ 			ep->name, req->req.length);
+-	spin_lock_irqsave(&udc->lock, flags);
++	if (lock)
++		spin_lock_irqsave(lock, flags);
+ 	/* push the request to device */
+ 	if (ep_is_in(ep))
+ 		reval = ep_req_send(ep, req);
+@@ -1748,11 +1748,21 @@ static int qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
+ 	if (ep->dir == USB_DIR_OUT)
+ 		reval = ep_req_receive(ep, req);
+ 
+-	spin_unlock_irqrestore(&udc->lock, flags);
++	if (lock)
++		spin_unlock_irqrestore(lock, flags);
+ 
+ 	return 0;
+ }
+ 
++/* queues (submits) an I/O request to an endpoint */
++static int qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
++		       gfp_t gfp_flags)
++{
++	struct qe_ep *ep = container_of(_ep, struct qe_ep, ep);
++
++	return __qe_ep_queue(_ep, _req, gfp_flags, &ep->udc->lock);
++}
++
+ /* dequeues (cancels, unlinks) an I/O request from an endpoint */
+ static int qe_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
+ {
+@@ -2008,7 +2018,7 @@ static void ch9getstatus(struct qe_udc *udc, u8 request_type, u16 value,
+ 	udc->ep0_dir = USB_DIR_IN;
+ 
+ 	/* data phase */
+-	status = qe_ep_queue(&ep->ep, &req->req, GFP_ATOMIC);
++	status = __qe_ep_queue(&ep->ep, &req->req, GFP_ATOMIC, NULL);
+ 
+ 	if (status == 0)
+ 		return;
 -- 
 1.5.6.3
