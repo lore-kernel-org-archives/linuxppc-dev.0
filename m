@@ -1,37 +1,29 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0070CDDF53
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 02:00:55 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mABF0Ivs016953
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 08:00:18 -0700
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mABF0ag3049544
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 08:00:37 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mABF0YGM010144
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 08:00:36 -0700
-Subject: Re: [PATCH 1/2] powerpc: add 16K/64K pages support for the 44x
-	PPC32 architectures.
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20081111131937.GA2875@yoda.jdub.homelinux.org>
-References: <1224123753-20907-1-git-send-email-yanok@emcraft.com>
-	<1224123753-20907-2-git-send-email-yanok@emcraft.com>
-	<48FF3889.2030304@linux.vnet.ibm.com>
-	<fb412d760810311623i2b0f93a3r5aa0eb297e154b4a@mail.gmail.com>
-	<20081111131937.GA2875@yoda.jdub.homelinux.org>
-Content-Type: text/plain
-Date: Tue, 11 Nov 2008 09:00:23 -0600
-Message-Id: <1226415623.458.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Wolfgang Denk <wd@denx.de>, Ilya Yanok <yanok@emcraft.com>,
-	linuxppc-dev@ozlabs.org, pvr@emcraft.com, dzu@denx.de
+Return-Path: <hans.lehmann@ritter-elektronik.de>
+Received: from mail5.oerlikon.com (mail5.oerlikon.com [193.158.88.212])
+	by ozlabs.org (Postfix) with ESMTP id 73908474C1
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 02:04:49 +1100 (EST)
+Received: from anetcsgv210.dom03.net (localhost.localdomain [127.0.0.1])
+	by anetcsgv210.dom03.net (Postfix) with ESMTP id 4306C2E97BA
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 16:04:45 +0100 (CET)
+Received: from anetcsgv202.dom03.net (anetcsgv202.dom03.net [193.158.88.254])
+	by anetcsgv210.dom03.net (Postfix) with ESMTP id 137792E97B1
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 16:04:45 +0100 (CET)
+Received: from SRVWWP01.sts.saurer.vpn (unknown [10.33.20.167])
+	by anetcsgv202.dom03.net (postfix-1) with ESMTP id D414192
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 16:04:44 +0100 (CET)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: AW: [PATCH]: [MPC5200] Add ATA DMA support
+Date: Tue, 11 Nov 2008 16:04:44 +0100
+Message-ID: <633A55242A59C7488FAAF5A6850929984B8136@SRVEXC01.sts.saurer.vpn>
+In-Reply-To: <49199847.5090505@genesi-usa.com>
+References: <20080813061135.GH17587@secretlab.ca>	<792f5f410808130207t6ef3c3ddxeff0ad0debb39242@mail.gmail.com>
+	<633A55242A59C7488FAAF5A6850929984B8133@SRVEXC01.sts.saurer.vpn>
+	<49199847.5090505@genesi-usa.com>
+From: "Lehmann, Hans (Ritter Elektronik)" <hans.lehmann@ritter-elektronik.de>
+To: "Matt Sealey" <matt@genesi-usa.com>
+Cc: Tim Yamin <plasm@roo.me.uk>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,57 +33,129 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-11-11 at 08:19 -0500, Josh Boyer wrote:
-> On Fri, Oct 31, 2008 at 06:23:28PM -0500, Hollis Blanchard wrote:
-> >On Wed, Oct 22, 2008 at 9:28 AM, Christian Ehrhardt
-> ><ehrhardt@linux.vnet.ibm.com> wrote:
-> >> Hi Ilya,
-> >> I just tried your patch on my 440 board because it would help us in our
-> >> environment.
-> >> Unfortunately I run into a bug on early boot (mark_bootmem).
-> >>
-> >> A log can be found in this mail, this is the bug when running with 64k page
-> >> size.
-> >> I tried this with and without your 2/2 265k patch and also with page size
-> >> configured to 16k, the error is the same in all cases.
-> >>
-> >> I used an earlier version of your patch in the past and it worked fine.
-> >> Applying this old patch causes the same problem.
-> >> Therefore I expect that there was some other code changed that breaks with
-> >> page size != 4k.
-> >
-> >This patch seems to solve the problem for me, but I have to run and
-> >haven't yet worked out if it's the right fix.
-> >
-> >diff --git a/mm/bootmem.c b/mm/bootmem.c
-> >--- a/mm/bootmem.c
-> >+++ b/mm/bootmem.c
-> >@@ -300,7 +300,7 @@ static int __init mark_bootmem(unsigned
-> >                unsigned long max;
-> >
-> >                if (pos < bdata->node_min_pfn ||
-> >-                   pos >= bdata->node_low_pfn) {
-> >+                   pos > bdata->node_low_pfn) {
-> >                        BUG_ON(pos != start);
-> >                        continue;
-> >                }
-> >@@ -399,7 +399,7 @@ int __init reserve_bootmem(unsigned long
-> >        unsigned long start, end;
-> >
-> >        start = PFN_DOWN(addr);
-> >-       end = PFN_UP(addr + size);
-> >+       end = PFN_DOWN(addr + size);
-> >
-> >        return mark_bootmem(start, end, 1, flags);
-> > }
-> 
-> 
-> Hollis,  if I'm understanding things correctly this patch is no
-> longer needed if we do the memory reserve in the boot wrapper for
-> the errata.  Correct?
+We take a vanilla kernel with rt11 patches from Ingo Mollnar.
 
-Correct.
+Here are the section of my boot messages
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+ata: MPC52xx IDE/ATA libata driver
+scsi0 : mpc52xx_ata
+ata1: PATA max UDMA/33 ata_regs 0xf0003a00 irq 135
+ata1.00: ATA-0: ELITE PRO CF CARD 1GB, 20070131, max MWDMA2
+ata1.00: 2031120 sectors, multi 0: LBA
+ata1.00: configured for MWDMA2
+ata1.00: configured for MWDMA2
+ata1: EH complete
+scsi 0:0:0:0: Direct-Access     ATA      ELITE PRO CF CAR 2007 PQ: 0 =
+ANSI: 5
+sd 0:0:0:0: [sda] 2031120 512-byte hardware sectors (1040 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't =
+support DPO or FUA
+sd 0:0:0:0: [sda] 2031120 512-byte hardware sectors (1040 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't =
+support DPO or FUA
+ sda: sda1=20
+
+Greetings
+
+Mit freundlichen Gr=FC=DFen
+
+Hans Lehmann
+Softwareentwicklung
+
+Telefon	+49 (0)2191-67-2520
+Fax 	+49 (0)2191-67-703408
+e-mail 	hans.lehmann@ritter-elektronik.de
+
+
+
+Ritter Elektronik GmbH
+Leverkuser Stra=DFe 65
+D-42897 Remscheid
+www.ritter-elektronik.de
+
+Gesch=E4ftsf=FChrer: Manfred A. Wagner, Dr. Uwe Baader
+Sitz der Gesellschaft: Oberhausen
+HRB 17168 Duisburg  /  USt-ID DE 814009849
+
+
+-----Urspr=FCngliche Nachricht-----
+Von: Matt Sealey [mailto:neko@genesi-usa.com] Im Auftrag von Matt Sealey
+Gesendet: Dienstag, 11. November 2008 15:36
+An: Lehmann, Hans (Ritter Elektronik)
+Cc: Tim Yamin; Grant Likely; linuxppc-dev@ozlabs.org
+Betreff: Re: [PATCH]: [MPC5200] Add ATA DMA support
+
+Oddly I built 2.6.27.2 with the patch and the Efika "waited" for a disk =
+to appear and didn't get anywhere. If I set libata.dma=3D0 then it =
+complained about missing symbols (but not with it enabled!).
+
+This was a clean SUSE kernel from Factory, with only the ATA patch =
+applied with a few hand-merges (pata_mpc52xx.c has had a line of =
+whitespace removed at some point, but otherwise identical).
+
+Lehmann, Hans (Ritter Elektronik) wrote:
+> Tim, Grant,
+>=20
+> I have tested the patch on our MPC5200B based board with Kingston =
+Elite Pro CF-card and it worked fine with DMA2. I have port the patch =
+back to 2.6.24.7 Kernel and I can't detect problems our errors, even =
+with big files (40 mB) over FEC wich I save to card . We get performance =
+up to 10,5mB/s which is near to the max. speed.
+>=20
+> Greetings
+>=20
+>=20
+>=20
+>=20
+> Mit freundlichen Gr=FC=DFen
+>=20
+> Hans Lehmann
+> Softwareentwicklung
+>=20
+> Telefon	+49 (0)2191-67-2520
+> Fax 	+49 (0)2191-67-703408
+> e-mail 	hans.lehmann@ritter-elektronik.de
+>=20
+>=20
+>=20
+> Ritter Elektronik GmbH
+> Leverkuser Stra=DFe 65
+> D-42897 Remscheid
+> www.ritter-elektronik.de
+>=20
+> Gesch=E4ftsf=FChrer: Manfred A. Wagner, Dr. Uwe Baader Sitz der=20
+> Gesellschaft: Oberhausen HRB 17168 Duisburg  /  USt-ID DE 814009849
+>=20
+>=20
+> -----Urspr=FCngliche Nachricht-----
+> Von: =
+linuxppc-dev-bounces+hans.lehmann=3Dritter-elektronik.de@ozlabs.org=20
+> =
+[mailto:linuxppc-dev-bounces+hans.lehmann=3Dritter-elektronik.de@ozlabs.
+> org] Im Auftrag von Tim Yamin
+> Gesendet: Mittwoch, 13. August 2008 11:07
+> An: Grant Likely
+> Cc: linuxppc-dev@ozlabs.org
+> Betreff: [WW Spam: medium] Re: [PATCH]: [MPC5200] Add ATA DMA support
+>=20
+> On Wed, Aug 13, 2008 at 7:11 AM, Grant Likely =
+<grant.likely@secretlab.ca> wrote:
+>> Sounds good to me.  You will get more testers that way.  I can pick=20
+>> it up for -next if everything else looks good.
+>=20
+> Here are the new patches; tested against 2.6.27-rc3.
+>=20
+> Thanks,
+>=20
+> Tim
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+--
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
