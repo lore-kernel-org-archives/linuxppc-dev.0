@@ -1,26 +1,20 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id 8A6A3DDDE0
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 00:21:52 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so1056030yxg.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 05:21:45 -0800 (PST)
-Date: Tue, 11 Nov 2008 08:19:37 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Hollis Blanchard <hollis@penguinppc.org>
-Subject: Re: [PATCH 1/2] powerpc: add 16K/64K pages support for the 44x
-	PPC32 architectures.
-Message-ID: <20081111131937.GA2875@yoda.jdub.homelinux.org>
-References: <1224123753-20907-1-git-send-email-yanok@emcraft.com>
-	<1224123753-20907-2-git-send-email-yanok@emcraft.com>
-	<48FF3889.2030304@linux.vnet.ibm.com>
-	<fb412d760810311623i2b0f93a3r5aa0eb297e154b4a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fb412d760810311623i2b0f93a3r5aa0eb297e154b4a@mail.gmail.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: dzu@denx.de, Ilya Yanok <yanok@emcraft.com>, linuxppc-dev@ozlabs.org,
-	Hollis Blanchard <hollisb@us.ibm.com>, pvr@emcraft.com,
-	Wolfgang Denk <wd@denx.de>
+Return-Path: <SRS0+3e43fe3c9f4e6f5295c0+1906+infradead.org+dwmw2@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 78FF3DDDE6
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 01:10:47 +1100 (EST)
+Subject: Re: [RFC PATCH] rtc: add rtc_systohc for ntp use
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alessandro Zummo <a.zummo@towertech.it>
+In-Reply-To: <20081110154026.21405.47457.stgit@i1501.lan.towertech.it>
+References: <20081110154026.21405.47457.stgit@i1501.lan.towertech.it>
+Content-Type: text/plain
+Date: Tue, 11 Nov 2008 14:10:39 +0000
+Message-Id: <1226412639.4367.256.camel@macbook.infradead.org>
+Mime-Version: 1.0
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	Paul Mundt <lethal@linux-sh.org>, rtc-linux@googlegroups.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,52 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 31, 2008 at 06:23:28PM -0500, Hollis Blanchard wrote:
->On Wed, Oct 22, 2008 at 9:28 AM, Christian Ehrhardt
-><ehrhardt@linux.vnet.ibm.com> wrote:
->> Hi Ilya,
->> I just tried your patch on my 440 board because it would help us in our
->> environment.
->> Unfortunately I run into a bug on early boot (mark_bootmem).
->>
->> A log can be found in this mail, this is the bug when running with 64k page
->> size.
->> I tried this with and without your 2/2 265k patch and also with page size
->> configured to 16k, the error is the same in all cases.
->>
->> I used an earlier version of your patch in the past and it worked fine.
->> Applying this old patch causes the same problem.
->> Therefore I expect that there was some other code changed that breaks with
->> page size != 4k.
->
->This patch seems to solve the problem for me, but I have to run and
->haven't yet worked out if it's the right fix.
->
->diff --git a/mm/bootmem.c b/mm/bootmem.c
->--- a/mm/bootmem.c
->+++ b/mm/bootmem.c
->@@ -300,7 +300,7 @@ static int __init mark_bootmem(unsigned
->                unsigned long max;
->
->                if (pos < bdata->node_min_pfn ||
->-                   pos >= bdata->node_low_pfn) {
->+                   pos > bdata->node_low_pfn) {
->                        BUG_ON(pos != start);
->                        continue;
->                }
->@@ -399,7 +399,7 @@ int __init reserve_bootmem(unsigned long
->        unsigned long start, end;
->
->        start = PFN_DOWN(addr);
->-       end = PFN_UP(addr + size);
->+       end = PFN_DOWN(addr + size);
->
->        return mark_bootmem(start, end, 1, flags);
-> }
+On Mon, 2008-11-10 at 16:40 +0100, Alessandro Zummo wrote:
+> Adds in-kernel hctosys functionality that can
+> be used by ntp sync code.
+> 
+> This is an RFC and has not been tested, I just want
+> to check if something similar could solve the problems
+> of those who want the NTP sync mode.
 
+You might do better to open the device once and keep it open, rather
+than taking the mutex and opening it again _during_ each call? You're
+going to be perturbing the timing by doing that.
 
-Hollis,  if I'm understanding things correctly this patch is no
-longer needed if we do the memory reserve in the boot wrapper for
-the errata.  Correct?
+I believe you were also concerned that some device wouldn't want the
+behaviour given by the existing sync_cmos_clock() function and workqueue
+stuff in kernel/ntp.c, where we update the clock precisely half-way
+through the second?
 
-josh
+We should probably rip that code out of ntp.c (or just disable it ifdef
+CONFIG_RTC_CLASS), and provide our own version of notify_cmos_timer().
+
+The workqueue stuff to trigger at half-past the second could be kept as
+a library function which most RTC devices would use, but they'd have the
+option to use their own instead.
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
