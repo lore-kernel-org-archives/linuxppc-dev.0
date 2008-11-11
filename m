@@ -2,18 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 309B3DDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 13:09:34 +1100 (EST)
-Subject: Re: [PATCH] powerpc: remove WARN_ON() from dma-noncoherent.c
+	by ozlabs.org (Postfix) with ESMTPS id 35060DDEF0
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 13:18:03 +1100 (EST)
+Subject: Re: [RFC PATCH] Support for big page sizes on 44x (Updated)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hollis Blanchard <hollisb@us.ibm.com>
-In-Reply-To: <2094bb9371fc6b6c228b.1226363616@localhost.localdomain>
-References: <2094bb9371fc6b6c228b.1226363616@localhost.localdomain>
+To: Ilya Yanok <yanok@emcraft.com>
+In-Reply-To: <1224123753-20907-1-git-send-email-yanok@emcraft.com>
+References: <1224123753-20907-1-git-send-email-yanok@emcraft.com>
 Content-Type: text/plain
-Date: Tue, 11 Nov 2008 13:09:04 +1100
-Message-Id: <1226369344.7530.51.camel@pasglop>
+Date: Tue, 11 Nov 2008 13:17:48 +1100
+Message-Id: <1226369868.7530.60.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, pvr@emcraft.com, dzu@denx.de, wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-11-10 at 18:33 -0600, Hollis Blanchard wrote:
-> I can't tell why this WARN_ON exists, and there's no comment explaining it.
-> Whether the pmd is present or not, pte_alloc_kernel() seems to handle both
-> cases.
+On Thu, 2008-10-16 at 06:22 +0400, Ilya Yanok wrote:
+> These patches add support for selecting page size on PPC 44x.
+> First one adds support for 16K/64K pages while second one adds support
+> for 256K pages along with some hacks.
 > 
-> Booting a 440 kernel with 64K PAGE_SIZE triggers the warning, but boot
-> successfully completes and I see no problems beyond that.
-> 
-> Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+> However there are still number of problems:
+> 1. We can't use default PKMAP_BASE definition with 64KB/256KB pages so
+> we change it. Not sure that it's optimal. Then redefined PKMAP_BASE is
+> not aligned on (1<<PMD_SHIFT), don't know if it is really bad.
 
-I can't see any reason neither off hand, so
+Well, the main thing is the implementation of kmap and kmap_atomic.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+They both basically assumes that all the reserved PTEs for kmap and
+kmap_atomic are in a single PTE page since it uses a simple addition
+(substraction for _atomic really but heh, that's about the same).
 
+Note that PKMAP (kmap) and FIXMAP (kmap_atomic) can be in two different
+PTE pages. But it's important that the whole PKMAP is entirely contained
+within a PTE page. It doesn't have to -start- on a PTE page boundary
+though. 
+
+> 2. with 16KB/64KB/256KB pages WARN_ON(!pmd_none(*pmd)) is triggered
+> inside dma_alloc_init() function. Not sure if it is really bad.
+
+I think that's a bogus WARN_ON.
+
+> 3. with 256KB pages ENTRIES_PER_PAGEPAGE in mm/shem.c become zero.
+
+Yeah well, I'd like to keep that 256K page separate for now, let's focus
+on merging 16K/64K support first.
+
+> 4. We use asm-offsets mechanism to make PTE_SHIFT/PMD_SHIFT available in
+> assembler but we don't really need the power of asm-offsets here. Maybe
+> it will be more convinient to just take these defines out of #ifndef
+> __ASSEMBLY__? But this would change asm-generic...
+
+We sure should do that. I don't think of a reason why those need to
+be protected by __ASSEMBLY__.
+
+Cheers,
 Ben.
-> ---
-> 
-> Large page support is critical for improving KVM performance, so I'd like this
-> apparently unnecessary warning to be removed to make way for Ilya's patch.
-> 
-> Vitaly, this code was added by you in Feb 2007. Any thoughts?
-> 
-> diff --git a/arch/powerpc/lib/dma-noncoherent.c b/arch/powerpc/lib/dma-noncoherent.c
-> --- a/arch/powerpc/lib/dma-noncoherent.c
-> +++ b/arch/powerpc/lib/dma-noncoherent.c
-> @@ -320,7 +320,6 @@ static int __init dma_alloc_init(void)
->  			ret = -ENOMEM;
->  			break;
->  		}
-> -		WARN_ON(!pmd_none(*pmd));
->  
->  		pte = pte_alloc_kernel(pmd, CONSISTENT_BASE);
->  		if (!pte) {
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
