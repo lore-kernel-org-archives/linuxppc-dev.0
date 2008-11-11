@@ -1,17 +1,19 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id 5C079DE031
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 04:30:02 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so1114976yxg.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 09:30:00 -0800 (PST)
-Message-ID: <4919C115.8040107@genesi-usa.com>
-Date: Tue, 11 Nov 2008 11:29:57 -0600
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Building dtc etc. for packaging
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
+Return-Path: <ncase@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 874A9DE061
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 05:00:44 +1100 (EST)
+Subject: Re: Building dtc etc. for packaging
+From: Nate Case <ncase@xes-inc.com>
+To: Matt Sealey <matt@genesi-usa.com>
+In-Reply-To: <4919C115.8040107@genesi-usa.com>
+References: <4919C115.8040107@genesi-usa.com>
+Content-Type: text/plain
+Date: Tue, 11 Nov 2008 12:00:37 -0600
+Message-Id: <1226426437.27415.379.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For some of what we're doing with SUSE now I've determined we should really
-be packaging the device tree compiler (and libfdt) so that we can install and
-script it, along with some other stuff from U-Boot (not for this mail).
+On Tue, 2008-11-11 at 11:29 -0600, Matt Sealey wrote:
+> (the other tool we need is mkimage from U-Boot, I noticed Debian uses
+> this
+> same command name inside jigdo etc. too, sigh.. also you can't build
+> the
+> tools without the rest of U-Boot which is hard to envision doing just
+> to
+> get one command out of it - "make tools/mkimage" doesn't work and I
+> got
+> tired of reverse engineering the chickenscratch..)
 
-I was wondering if the recommended way would be to use the dtc found in
-the kernel-source or to use the git repo at git.jdl.com to grab it and
-build it. The one in the kernel is seemingly impossible to build without
-some tweaking around (I can't find a target for make that does it) so
-I also wonder about a hint here on what to do to create it from the
-kernel source so we can pull it out for a local system install.
+This is a bit off-topic, but here is my ugly hack to compile a
+statically linked 'mkimage' from the U-Boot tree:
 
-(the other tool we need is mkimage from U-Boot, I noticed Debian uses this
-same command name inside jigdo etc. too, sigh.. also you can't build the
-tools without the rest of U-Boot which is hard to envision doing just to
-get one command out of it - "make tools/mkimage" doesn't work and I got
-tired of reverse engineering the chickenscratch..)
+Place this file, 'Makefile.mkimage' in u-boot/tools/
+---[snip]---
+CFLAGS = -O2 -static -I../include -DUSE_HOSTCC -I.
+ASMDIR = ../include/asm
+
+CFILES = ../lib_generic/crc32.c ../libfdt/fdt_strerror.c \
+         ../lib_generic/sha1.c ../lib_generic/md5.c ../common/image.c \
+         ../libfdt/fdt_wip.c ../libfdt/fdt.c ../libfdt/fdt_ro.c \
+         ../libfdt/fdt_rw.c
+
+mkimage: mkimage.c
+        mv $(ASMDIR) $(ASMDIR).back
+        ln -s $(ASMDIR)-i386 $(ASMDIR)
+        gcc $(CFLAGS) $(CFILES) mkimage.c -o mkimage
+        rm -f $(ASMDIR)
+        mv $(ASMDIR).back $(ASMDIR)
+        strip mkimage
+
+default: mkimage
+---[snip]---
+
+Then just run 'make -f Makefile.mkimage' from within tools/.  Of course
+this uses some nasty tricks that will only work on i386 host.  I don't
+think I'm the first person to have this need, so others here may have
+better solutions.
 
 -- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Nate Case <ncase@xes-inc.com>
