@@ -1,15 +1,17 @@
-Return-Path: <jdl@freescale.com>
+Return-Path: <Simon.Richter@kleinhenz.com>
+Received: from kleinhenz.com (static.88-198-202-190.clients.your-server.de
+	[88.198.202.190]) by ozlabs.org (Postfix) with ESMTP id 9E447DDDFF
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 08:02:24 +1100 (EST)
+Date: Tue, 11 Nov 2008 21:32:33 +0100
+From: Simon Richter <sjr@debian.org>
+To: Matt Sealey <matt@genesi-usa.com>
 Subject: Re: Building dtc etc. for packaging
-From: Jon Loeliger <jdl@freescale.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20081111223903.GB16405@yookeroo.seuss>
+Message-ID: <20081111203232.GA13635@richter>
 References: <4919C115.8040107@genesi-usa.com>
-	<20081111223903.GB16405@yookeroo.seuss>
-Content-Type: text/plain
-Date: Tue, 11 Nov 2008 17:10:56 -0600
-Message-Id: <1226445056.17232.2.camel@ld0161-tx32>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4919C115.8040107@genesi-usa.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,11 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-11-12 at 09:39 +1100, David Gibson wrote:
+Hi,
 
-> Use the tree from jdl.org.  Either the git tree if you really need an
-> up-to-date snahpshot, or one of the actual release tarballs.
+On Tue, Nov 11, 2008 at 11:29:57AM -0600, Matt Sealey wrote:
 
-The tree from jdl.com will work better. :-)
+> (the other tool we need is mkimage from U-Boot, I noticed Debian uses this
+> same command name inside jigdo etc. too, sigh.. also you can't build the
+> tools without the rest of U-Boot which is hard to envision doing just to
+> get one command out of it - "make tools/mkimage" doesn't work and I got
+> tired of reverse engineering the chickenscratch..)
 
-jdl
+I have a Debian package that basically just builds the tools into one binary
+package, and the source tarball into another.
+
+Didn't upload it back then, but I can see if I can find the time to get it
+up to date.
+
+   Simon
