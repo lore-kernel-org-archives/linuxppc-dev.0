@@ -1,19 +1,37 @@
-Return-Path: <miltonm@bga.com>
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 3E64FDDF29
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 01:55:01 +1100 (EST)
-In-Reply-To: <49186028.8010505@emcraft.com>
-References: <d02415a31b89736f070f290be89013d4@bga.com>
-	<49186028.8010505@emcraft.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f6812adbe26a68b0545f5fd25b6d9d6a@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [2/2] powerpc: support for 256K pages on PPC 44x
-Date: Tue, 11 Nov 2008 08:59:24 -0600
-To: Ilya Yanok <yanok@emcraft.com>
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>, Vladimir Panfilov <pvr@emcraft.com>,
-	Wolfgang Denk <wd@denx.de>, dzu@denx.de
+Return-Path: <hollisb@us.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0070CDDF53
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 02:00:55 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mABF0Ivs016953
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 08:00:18 -0700
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mABF0ag3049544
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 08:00:37 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mABF0YGM010144
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 08:00:36 -0700
+Subject: Re: [PATCH 1/2] powerpc: add 16K/64K pages support for the 44x
+	PPC32 architectures.
+From: Hollis Blanchard <hollisb@us.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20081111131937.GA2875@yoda.jdub.homelinux.org>
+References: <1224123753-20907-1-git-send-email-yanok@emcraft.com>
+	<1224123753-20907-2-git-send-email-yanok@emcraft.com>
+	<48FF3889.2030304@linux.vnet.ibm.com>
+	<fb412d760810311623i2b0f93a3r5aa0eb297e154b4a@mail.gmail.com>
+	<20081111131937.GA2875@yoda.jdub.homelinux.org>
+Content-Type: text/plain
+Date: Tue, 11 Nov 2008 09:00:23 -0600
+Message-Id: <1226415623.458.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Wolfgang Denk <wd@denx.de>, Ilya Yanok <yanok@emcraft.com>,
+	linuxppc-dev@ozlabs.org, pvr@emcraft.com, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,195 +41,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sorry for the slow reply, but my shell account is broken and I had to 
-post from home.
+On Tue, 2008-11-11 at 08:19 -0500, Josh Boyer wrote:
+> On Fri, Oct 31, 2008 at 06:23:28PM -0500, Hollis Blanchard wrote:
+> >On Wed, Oct 22, 2008 at 9:28 AM, Christian Ehrhardt
+> ><ehrhardt@linux.vnet.ibm.com> wrote:
+> >> Hi Ilya,
+> >> I just tried your patch on my 440 board because it would help us in our
+> >> environment.
+> >> Unfortunately I run into a bug on early boot (mark_bootmem).
+> >>
+> >> A log can be found in this mail, this is the bug when running with 64k page
+> >> size.
+> >> I tried this with and without your 2/2 265k patch and also with page size
+> >> configured to 16k, the error is the same in all cases.
+> >>
+> >> I used an earlier version of your patch in the past and it worked fine.
+> >> Applying this old patch causes the same problem.
+> >> Therefore I expect that there was some other code changed that breaks with
+> >> page size != 4k.
+> >
+> >This patch seems to solve the problem for me, but I have to run and
+> >haven't yet worked out if it's the right fix.
+> >
+> >diff --git a/mm/bootmem.c b/mm/bootmem.c
+> >--- a/mm/bootmem.c
+> >+++ b/mm/bootmem.c
+> >@@ -300,7 +300,7 @@ static int __init mark_bootmem(unsigned
+> >                unsigned long max;
+> >
+> >                if (pos < bdata->node_min_pfn ||
+> >-                   pos >= bdata->node_low_pfn) {
+> >+                   pos > bdata->node_low_pfn) {
+> >                        BUG_ON(pos != start);
+> >                        continue;
+> >                }
+> >@@ -399,7 +399,7 @@ int __init reserve_bootmem(unsigned long
+> >        unsigned long start, end;
+> >
+> >        start = PFN_DOWN(addr);
+> >-       end = PFN_UP(addr + size);
+> >+       end = PFN_DOWN(addr + size);
+> >
+> >        return mark_bootmem(start, end, 1, flags);
+> > }
+> 
+> 
+> Hollis,  if I'm understanding things correctly this patch is no
+> longer needed if we do the memory reserve in the boot wrapper for
+> the errata.  Correct?
 
-On Nov 10, 2008, at 10:24 AM, Ilya Yanok wrote:
->>> This patch adds support for 256K pages on PPC 44x along with
->>> some hacks needed for this.
->>
->> This description is insufficient, it describes neither the hacks nor
->> why they are required.
->
-> Ok. Actually there is only one hack -- increasing kernel stack size. We
-> do this because with 256K pages we get division by zero in 
-> kernel/fork.c:
->
->         /*
->          * The default maximum number of threads is set to a safe
->          * value: the thread structures can take up at most half
->          * of memory.
->          */
->         max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
->
-> so setting THREAD_SIZE to bigger value we can avoid this. I don't think
-> it's very clean solution but at least we stay powerpc-specific.
+Correct.
 
-And why is keeping a line of code intact, which doesn't even match its 
-comment, by creating a hack workaround that increases memory 
-consumption, that is triggered by enabling an option that already 
-increases memory pressure, just to stay architecture specific anything 
-like sanity?
-
-No.  Submit a patch to address the division by zero instead.
-
-Btw, I did some research for you (all are from torvalds/old-2.6-bkcvs,
-and the last patch has been edited for relevance along with one of
-the descriptions):
-
-
-v2.6.10-rc2-g63f96a6
-commit 63f96a6d9c1a54875f3bd07a6337993bc5180ecb
-Author: torvalds <torvalds>
-Commit: torvalds <torvalds>
-
-    Merge bk://linux-mtd.bkbits.net/mtd-bugsonly-2.6
-    into ppc970.osdl.org:/home/torvalds/v2.6/linux
-       2004/11/16 17:29:15-08:00 dhowells
-    [PATCH] Fork fix fix
-       The attached patch fixes the fork fix to avoid the divide-by-zero 
-error I'd
-    previously fixed, but without using any sort of conditional.
-       Signed-off-by: David Howells <dhowells@redhat.com>
-    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-    ...
-       BKrev: 419aaa45h5IsCw4CAYMVTOWK9oVaBA
-
-diff --git a/kernel/fork.c b/kernel/fork.c
-index f5fba87..f157ad6 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -118,10 +118,7 @@ void __init fork_init(unsigned long mempages)
-	 * value: the thread structures can take up at most half
-	 * of memory.
-	 */
--	if (THREAD_SIZE >= PAGE_SIZE)
--		max_threads = mempages / (THREAD_SIZE/PAGE_SIZE) / 8;
--	else
--		max_threads = mempages / 8;
-+	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
-	/*
-	 * we need to allow at least 20 threads to boot a system
-
-v2.6.10-rc1-g368b064
-commit 368b06415c11e286f6ab3fe7c52bdd5b9b6f3008
-Author: dhowells <dhowells>
-Commit: dhowells <dhowells>
-
-    [PATCH] fix page size assumption in fork()
-       The attached patch fixes fork to get rid of the assumption that 
-THREAD_SIZE
-    >= PAGE_SIZE (on the FR-V the smallest available page size is 16KB).
-       Signed-Off-By: David Howells <dhowells@redhat.com>
-    Signed-off-by: Andrew Morton <akpm@osdl.org>
-    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-       BKrev: 4193db17ZJRaaVNEGezHMBUmByER4A
-
-diff --git a/kernel/fork.c b/kernel/fork.c
-index eb689d9..f5fba87 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -118,7 +118,11 @@ void __init fork_init(unsigned long mempages)
-	 * value: the thread structures can take up at most half
-	 * of memory.
-	 */
--	max_threads = mempages / (THREAD_SIZE/PAGE_SIZE) / 8;
-+	if (THREAD_SIZE >= PAGE_SIZE)
-+		max_threads = mempages / (THREAD_SIZE/PAGE_SIZE) / 8;
-+	else
-+		max_threads = mempages / 8;
-+
-	/*
-	 * we need to allow at least 20 threads to boot a system
-	 */
-
-v2.4.0-g4214e42
-commit 4214e42f96d4051cb77b1b7c2b041715db84ffd9
-Author: torvalds <torvalds>
-Commit: torvalds <torvalds>
-
-    v2.4.9.11 -> v2.4.9.12
-         - Alan Cox: much more merging
-      - Pete Zaitcev: ymfpci race fixes
-      - Andrea Arkangeli: VM race fix and OOM tweak.
-      - Arjan Van de Ven: merge RH kernel fixes
-      - Andi Kleen: use more readable 'likely()/unlikely()' instead of 
-__builtin_expect()
-      - Keith Owens: fix 64-bit ELF types
-      - Gerd Knorr: mark more broken PCI bridges, update btaudio driver
-      - Paul Mackerras: powermac driver update
-      - me: clean up PTRACE_DETACH to use common infrastructure
-       BKrev: 3c603e338Tv2BTX9tkeBFGWLdI-r4Q
-
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 9179e23..91aeda9 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -72,7 +72,7 @@ void __init fork_init(unsigned long mempages)
-	 * value: the thread structures can take up at most half
-	 * of memory.
-	 */
--	max_threads = mempages / (THREAD_SIZE/PAGE_SIZE) / 16;
-+	max_threads = mempages / (THREAD_SIZE/PAGE_SIZE) / 8;
-	init_task.rlim[RLIMIT_NPROC].rlim_cur = max_threads/2;
-	init_task.rlim[RLIMIT_NPROC].rlim_max = max_threads/2;
-
-v2.4.0-gcaeb6d6
-commit caeb6d68179ecd9dfeac8fa17daa7150163fa318
-Author: torvalds <torvalds>
-Commit: torvalds <torvalds>
-
-    v2.4.9.10 -> v2.4.9.11
-         - Neil Brown: md cleanups/fixes
-      - Andrew Morton: console locking merge
-      - Andrea Arkangeli: major VM merge
-       BKrev: 3c603e2fnBNvsVsBbJrGD3fFs4xTFg
-
-diff --git a/kernel/fork.c b/kernel/fork.c
-index ebfbf2b..9179e23 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -72,7 +72,7 @@ void __init fork_init(unsigned long mempages)
-	 * value: the thread structures can take up at most half
-	 * of memory.
-	 */
--	max_threads = mempages / (THREAD_SIZE/PAGE_SIZE) / 2;
-+	max_threads = mempages / (THREAD_SIZE/PAGE_SIZE) / 16;
-	init_task.rlim[RLIMIT_NPROC].rlim_cur = max_threads/2;
-	init_task.rlim[RLIMIT_NPROC].rlim_max = max_threads/2;
-
-
-So the comment has been wrong since 2.4.9.11, and has been changed 
-several times since then.   It can be changed.  And if you fix the 
-comment you might even get bonus points.   Thinking about it though, 
-the minimum divide should be at least 2 (a partial page for a stack and 
-a page for a flat or omagic binary).
-
-
->>>
->>>  #ifdef CONFIG_PTE_64BIT
->>>  typedef unsigned long long pte_basic_t;
->>> +#ifdef CONFIG_PPC_256K_PAGES
->>> +#define PTE_SHIFT       (PAGE_SHIFT - 7)
->>
->> This seems to be missing the comment on how many ptes are actually in
->> the page that are in the other if and else cases.
->
-> Ok. I'll fix this. Actually it's another hack: we don't use full page
-> for PTE table because we need to reserve something for PGD
-
-I don't understand "we need to reserve something for PGD".   Do you 
-mean that you would not require a second page for the PGD because the 
-full pagetable could fit in one page?   My first reaction was to say 
-then create pgtable-nopgd.h like the other two.  The page walkers 
-support this with the advent of gigantic pages.  Then I realized that 
-might not be optimal:  while the page table might fit in one page, it 
-would mean you always allocate the pte space to cover the full address 
-space.   Even if your processes spread out over the 3G of address space 
-allocated to them (32 bit kernel), you will allocate space for 4G, 
-wasting 1/4 of the pte space.
-That does imply you want to allocate the pte page from a slab instead 
-of pgalloc.  Is that covered?
-
-
-milton
+-- 
+Hollis Blanchard
+IBM Linux Technology Center
