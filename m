@@ -1,39 +1,13 @@
-Return-Path: <FENKES@de.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4B96EDDDEF
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 20:04:51 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id mAB945wW259754
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 09:04:05 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id mAB945YS3244184
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 10:04:05 +0100
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id mAB944DS027719
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 10:04:05 +0100
-In-Reply-To: <adaod0nqpx4.fsf@cisco.com>
-References: <200806061835.43802.fenkes@de.ibm.com>	<48499C11.7030504@gmail.com>
-	<200811071742.51867.fenkes@de.ibm.com> <adaod0nqpx4.fsf@cisco.com>
-To: Roland Dreier <rdreier@cisco.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Subject: Re: [PATCH] IB/ehca: Fix suppression of port activation events
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OFA167ACE2.B60DCF5C-ONC12574FE.00319074-C12574FE.0031CE5F@de.ibm.com>
-Date: Tue, 11 Nov 2008 10:04:04 +0100
-Content-Type: text/plain; charset="US-ASCII"
-Cc: OF-EWG <ewg@lists.openfabrics.org>, LKML <linux-kernel@vger.kernel.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <RAISCH@de.ibm.com>,
-	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Alexander Schmidt1 <ALEXSCHM@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18713.23791.466776.67008@cargo.ozlabs.ibm.com>
+Date: Tue, 11 Nov 2008 21:22:39 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,17 +17,104 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Roland Dreier <rdreier@cisco.com> wrote on 10.11.2008 21:36:23:
+Linus,
 
->  > A previous fix introduced a regression where port activation events 
-were
->  > dropped unconditionally if port autodetection was not enabled. Fixed.
-> 
-> Is this a fix to "IB/ehca: Remove reference to special QP in case of
-> port activation failure"?  Because if so I can roll it into that patch,
-> since Linus hasn't pulled it yet.
+Please pull from the 'merge' branch of
 
-Yes, that would be splendid, thank you!
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-Cheers,
-  Joachim
+It's mostly defconfig updates, but there are also fixes for a few
+regressions, oopses, serious bugs, and documentation errors on
+powerpc.
+
+Thanks,
+Paul.
+
+ Documentation/powerpc/booting-without-of.txt      |   65 +----
+ arch/powerpc/boot/dts/gef_sbc610.dts              |    2 
+ arch/powerpc/configs/83xx/asp8347_defconfig       |  121 +++++----
+ arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |  158 +++++++-----
+ arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  158 +++++++-----
+ arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |  125 +++++----
+ arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |  136 ++++++----
+ arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |  171 +++++++++----
+ arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |  121 +++++----
+ arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |  123 +++++----
+ arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |  126 +++++----
+ arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |  119 +++++----
+ arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |  123 +++++----
+ arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |  155 +++++++----
+ arch/powerpc/configs/83xx/sbc834x_defconfig       |  119 +++++----
+ arch/powerpc/configs/85xx/ksi8560_defconfig       |   87 ++++--
+ arch/powerpc/configs/85xx/mpc8536_ds_defconfig    |  143 +++++++++--
+ arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   74 ++++-
+ arch/powerpc/configs/85xx/mpc8544_ds_defconfig    |  143 +++++++++--
+ arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   90 +++++--
+ arch/powerpc/configs/85xx/mpc8568mds_defconfig    |   93 +++++--
+ arch/powerpc/configs/85xx/mpc8572_ds_defconfig    |  143 +++++++++--
+ arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   91 +++++--
+ arch/powerpc/configs/85xx/sbc8548_defconfig       |   75 ++++--
+ arch/powerpc/configs/85xx/sbc8560_defconfig       |   78 ++++--
+ arch/powerpc/configs/85xx/stx_gp3_defconfig       |  115 ++++++--
+ arch/powerpc/configs/85xx/tqm8540_defconfig       |   91 +++++--
+ arch/powerpc/configs/85xx/tqm8541_defconfig       |   96 +++++--
+ arch/powerpc/configs/85xx/tqm8548_defconfig       |   98 +++++--
+ arch/powerpc/configs/85xx/tqm8555_defconfig       |   96 +++++--
+ arch/powerpc/configs/85xx/tqm8560_defconfig       |   96 +++++--
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig    |  281 +++++++++++++++------
+ arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |  177 +++++++++----
+ arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |  175 +++++++++----
+ arch/powerpc/configs/86xx/sbc8641d_defconfig      |  152 +++++++----
+ arch/powerpc/configs/adder875_defconfig           |   69 +++--
+ arch/powerpc/configs/c2k_defconfig                |  179 ++++++++-----
+ arch/powerpc/configs/chrp32_defconfig             |  159 +++++++++---
+ arch/powerpc/configs/ep8248e_defconfig            |  113 +++++---
+ arch/powerpc/configs/ep88xc_defconfig             |   67 +++--
+ arch/powerpc/configs/g5_defconfig                 |  142 ++++++++--
+ arch/powerpc/configs/iseries_defconfig            |  114 ++++++--
+ arch/powerpc/configs/linkstation_defconfig        |  122 +++++++--
+ arch/powerpc/configs/maple_defconfig              |  142 ++++++++--
+ arch/powerpc/configs/mgcoge_defconfig             |  234 ++++++++++++++---
+ arch/powerpc/configs/mgsuvd_defconfig             |  107 +++++---
+ arch/powerpc/configs/mpc7448_hpc2_defconfig       |   78 ++++--
+ arch/powerpc/configs/mpc8272_ads_defconfig        |  113 +++++---
+ arch/powerpc/configs/mpc83xx_defconfig            |  156 +++++++----
+ arch/powerpc/configs/mpc85xx_defconfig            |  145 +++++++++--
+ arch/powerpc/configs/mpc866_ads_defconfig         |   77 ++++--
+ arch/powerpc/configs/mpc86xx_defconfig            |  144 +++++++++--
+ arch/powerpc/configs/mpc885_ads_defconfig         |   67 +++--
+ arch/powerpc/configs/pmac32_defconfig             |  160 +++++++++---
+ arch/powerpc/configs/ppc64_defconfig              |  174 ++++++++++---
+ arch/powerpc/configs/ppc6xx_defconfig             |  286 +++++++++++++++------
+ arch/powerpc/configs/pq2fads_defconfig            |  137 ++++++----
+ arch/powerpc/configs/prpmc2800_defconfig          |  126 +++++++--
+ arch/powerpc/configs/pseries_defconfig            |  169 ++++++++++--
+ arch/powerpc/configs/storcenter_defconfig         |   83 ++++--
+ arch/powerpc/include/asm/immap_cpm2.h             |    9 -
+ arch/powerpc/include/asm/immap_qe.h               |    5 
+ arch/powerpc/kernel/misc_32.S                     |    4 
+ arch/powerpc/kernel/signal_32.c                   |   18 +
+ drivers/watchdog/booke_wdt.c                      |    5 
+ 65 files changed, 5305 insertions(+), 2315 deletions(-)
+
+Andreas Schwab (1):
+      powerpc: Fix msr check in compat_sys_swapcontext
+
+Kumar Gala (2):
+      powerpc/fsl-booke: Fix synchronization bug w/local tlb invalidates
+      powerpc: Updated Freescale PPC related defconfigs
+
+Li Yang (1):
+      powerpc: Update QE/CPM2 usb_ctlr structures for USB support
+
+Martyn Welch (1):
+      powerpc/86xx: Correct SOC bus-frequency in GE Fanuc SBC610 DTS
+
+Matthias Fuchs (1):
+      powerpc: Fix Book-E watchdog timer interval setting
+
+Paul Mackerras (1):
+      powerpc: Update desktop/server defconfigs
+
+Trent Piepho (1):
+      powerpc: Repair device bindings documentation
