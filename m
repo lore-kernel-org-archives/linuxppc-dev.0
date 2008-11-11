@@ -1,20 +1,14 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp120.sbc.mail.sp1.yahoo.com (smtp120.sbc.mail.sp1.yahoo.com
-	[69.147.64.93]) by ozlabs.org (Postfix) with SMTP id 42042DDDF0
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 07:59:07 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [RFC PATCH] rtc: add rtc_systohc for ntp use
-Date: Tue, 11 Nov 2008 12:58:59 -0800
-References: <20081110154026.21405.47457.stgit@i1501.lan.towertech.it>
-	<1226412639.4367.256.camel@macbook.infradead.org>
-In-Reply-To: <1226412639.4367.256.camel@macbook.infradead.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 12 Nov 2008 09:39:03 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: Building dtc etc. for packaging
+Message-ID: <20081111223903.GB16405@yookeroo.seuss>
+References: <4919C115.8040107@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200811111258.59874.david-b@pacbell.net>
-Cc: Alessandro Zummo <a.zummo@towertech.it>, Paul Mundt <lethal@linux-sh.org>,
-	rtc-linux@googlegroups.com, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4919C115.8040107@genesi-usa.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +18,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 11 November 2008, David Woodhouse wrote:
-> I believe you were also concerned that some device wouldn't want the
-> behaviour given by the existing sync_cmos_clock() function and workqueue
-> stuff in kernel/ntp.c, where we update the clock precisely half-way
-> through the second?
+On Tue, Nov 11, 2008 at 11:29:57AM -0600, Matt Sealey wrote:
+> For some of what we're doing with SUSE now I've determined we should really
+> be packaging the device tree compiler (and libfdt) so that we can install and
+> script it, along with some other stuff from U-Boot (not for this mail).
+>
+> I was wondering if the recommended way would be to use the dtc found in
+> the kernel-source or to use the git repo at git.jdl.com to grab it and
+> build it. The one in the kernel is seemingly impossible to build without
+> some tweaking around (I can't find a target for make that does it) so
+> I also wonder about a hint here on what to do to create it from the
+> kernel source so we can pull it out for a local system install.
 
-That's a problem, yes.  I've never heard of any RTC that wants
-such delays ... except for the PC's "CMOS" RTC.
+Use the tree from jdl.org.  Either the git tree if you really need an
+up-to-date snahpshot, or one of the actual release tarballs.
 
-There was some discussion about how to expose that knowledge to
-userspace too.  The "hwclock" utility always imposes that delay,
-and it shouldn't (except when talking to a PC RTC).
+Apart from being the official upstream version, the tree there has
+make install targets, the full testsuite and other conveniences which
+will help for packaging.
 
-> We should probably rip that code out of ntp.c (or just disable it ifdef
-> CONFIG_RTC_CLASS), and provide our own version of notify_cmos_timer().
-
-My suggestion for in-kernel code is that "struct rtc_device" just
-grow a field like "unsigned settime_delay_msec" which would never
-be initialized except by rtc-cmos (which uses 500) ... and the NTP
-sync code would use that value.
-
-For out-of-kernel use, that value could be extracted with an ioctl(),
-and used similarly.
-
-
-> The workqueue stuff to trigger at half-past the second could be kept as
-> a library function which most RTC devices would use, but they'd have the
-> option to use their own instead.
-
-I thought the workqueue stuff was primarily there to make sure
-that RTC was always updated in task context -- so it can grab the
-relevant mutex -- and the half-second delay was legacy PC code ...
-
-- Dave
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
