@@ -1,13 +1,39 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <markn@au1.ibm.com>
+Received: from ausmtp05.au.ibm.com (ausmtp05.au.ibm.com [202.81.18.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ausmtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CA802DDDDB
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 21:59:33 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by ausmtp05.au.ibm.com (8.13.8/8.13.8) with ESMTP id mABAxBlb3817554
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 21:59:11 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mABArD211822730
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 21:53:14 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mABAr5an001555
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 21:53:05 +1100
+Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.190.163.12])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	mABAr520001552
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 21:53:05 +1100
+Received: from wecm01-9-185-116-31.au.ibm.com (WECM01-9-185-116-31.au.ibm.com
+	[9.185.116.31])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.au.ibm.com (Postfix) with ESMTP id AC998735F7
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Nov 2008 21:52:55 +1100 (EST)
+From: Mark Nelson <markn@au1.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Update 64bit __copy_tofrom_user() using
+	CPU_FTR_UNALIGNED_LD_STD
+Date: Tue, 11 Nov 2008 21:53:34 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18713.23791.466776.67008@cargo.ozlabs.ibm.com>
-Date: Tue, 11 Nov 2008 21:22:39 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200811112153.34133.markn@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,104 +43,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+In exactly the same way that we updated memcpy() with new feature sections
+in commit 25d6e2d7c58ddc4a3b614fc5381591c0cfe66556 we do the same thing
+here for __copy_tofrom_user(). Once again this is purely a performance
+tweak for Cell and Power6 - this has no effect on all the other 64bit
+powerpc chips.
 
-Please pull from the 'merge' branch of
+We can make these same changes to __copy_tofrom_user() because the basic
+copy algorithm is the same as in memcpy() - this version just has all the
+exception handling logic needed when copying to or from userspace as well
+as a special case for copying whole 4K pages that are page aligned.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+CPU_FTR_UNALIGNED_LD_STD CPU was added in commit
+4ec577a28980a0790df3c3dfe9c81f6e2222acfb
 
-It's mostly defconfig updates, but there are also fixes for a few
-regressions, oopses, serious bugs, and documentation errors on
-powerpc.
+We also make the same simple one line change from cmpldi r1,... to cmpldi
+cr1,... for consistency.
 
-Thanks,
-Paul.
+Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+---
+ arch/powerpc/lib/copyuser_64.S |   17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
 
- Documentation/powerpc/booting-without-of.txt      |   65 +----
- arch/powerpc/boot/dts/gef_sbc610.dts              |    2 
- arch/powerpc/configs/83xx/asp8347_defconfig       |  121 +++++----
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |  158 +++++++-----
- arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  158 +++++++-----
- arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |  125 +++++----
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |  136 ++++++----
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |  171 +++++++++----
- arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |  121 +++++----
- arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |  123 +++++----
- arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |  126 +++++----
- arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |  119 +++++----
- arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |  123 +++++----
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |  155 +++++++----
- arch/powerpc/configs/83xx/sbc834x_defconfig       |  119 +++++----
- arch/powerpc/configs/85xx/ksi8560_defconfig       |   87 ++++--
- arch/powerpc/configs/85xx/mpc8536_ds_defconfig    |  143 +++++++++--
- arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   74 ++++-
- arch/powerpc/configs/85xx/mpc8544_ds_defconfig    |  143 +++++++++--
- arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   90 +++++--
- arch/powerpc/configs/85xx/mpc8568mds_defconfig    |   93 +++++--
- arch/powerpc/configs/85xx/mpc8572_ds_defconfig    |  143 +++++++++--
- arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   91 +++++--
- arch/powerpc/configs/85xx/sbc8548_defconfig       |   75 ++++--
- arch/powerpc/configs/85xx/sbc8560_defconfig       |   78 ++++--
- arch/powerpc/configs/85xx/stx_gp3_defconfig       |  115 ++++++--
- arch/powerpc/configs/85xx/tqm8540_defconfig       |   91 +++++--
- arch/powerpc/configs/85xx/tqm8541_defconfig       |   96 +++++--
- arch/powerpc/configs/85xx/tqm8548_defconfig       |   98 +++++--
- arch/powerpc/configs/85xx/tqm8555_defconfig       |   96 +++++--
- arch/powerpc/configs/85xx/tqm8560_defconfig       |   96 +++++--
- arch/powerpc/configs/86xx/gef_sbc610_defconfig    |  281 +++++++++++++++------
- arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |  177 +++++++++----
- arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |  175 +++++++++----
- arch/powerpc/configs/86xx/sbc8641d_defconfig      |  152 +++++++----
- arch/powerpc/configs/adder875_defconfig           |   69 +++--
- arch/powerpc/configs/c2k_defconfig                |  179 ++++++++-----
- arch/powerpc/configs/chrp32_defconfig             |  159 +++++++++---
- arch/powerpc/configs/ep8248e_defconfig            |  113 +++++---
- arch/powerpc/configs/ep88xc_defconfig             |   67 +++--
- arch/powerpc/configs/g5_defconfig                 |  142 ++++++++--
- arch/powerpc/configs/iseries_defconfig            |  114 ++++++--
- arch/powerpc/configs/linkstation_defconfig        |  122 +++++++--
- arch/powerpc/configs/maple_defconfig              |  142 ++++++++--
- arch/powerpc/configs/mgcoge_defconfig             |  234 ++++++++++++++---
- arch/powerpc/configs/mgsuvd_defconfig             |  107 +++++---
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |   78 ++++--
- arch/powerpc/configs/mpc8272_ads_defconfig        |  113 +++++---
- arch/powerpc/configs/mpc83xx_defconfig            |  156 +++++++----
- arch/powerpc/configs/mpc85xx_defconfig            |  145 +++++++++--
- arch/powerpc/configs/mpc866_ads_defconfig         |   77 ++++--
- arch/powerpc/configs/mpc86xx_defconfig            |  144 +++++++++--
- arch/powerpc/configs/mpc885_ads_defconfig         |   67 +++--
- arch/powerpc/configs/pmac32_defconfig             |  160 +++++++++---
- arch/powerpc/configs/ppc64_defconfig              |  174 ++++++++++---
- arch/powerpc/configs/ppc6xx_defconfig             |  286 +++++++++++++++------
- arch/powerpc/configs/pq2fads_defconfig            |  137 ++++++----
- arch/powerpc/configs/prpmc2800_defconfig          |  126 +++++++--
- arch/powerpc/configs/pseries_defconfig            |  169 ++++++++++--
- arch/powerpc/configs/storcenter_defconfig         |   83 ++++--
- arch/powerpc/include/asm/immap_cpm2.h             |    9 -
- arch/powerpc/include/asm/immap_qe.h               |    5 
- arch/powerpc/kernel/misc_32.S                     |    4 
- arch/powerpc/kernel/signal_32.c                   |   18 +
- drivers/watchdog/booke_wdt.c                      |    5 
- 65 files changed, 5305 insertions(+), 2315 deletions(-)
-
-Andreas Schwab (1):
-      powerpc: Fix msr check in compat_sys_swapcontext
-
-Kumar Gala (2):
-      powerpc/fsl-booke: Fix synchronization bug w/local tlb invalidates
-      powerpc: Updated Freescale PPC related defconfigs
-
-Li Yang (1):
-      powerpc: Update QE/CPM2 usb_ctlr structures for USB support
-
-Martyn Welch (1):
-      powerpc/86xx: Correct SOC bus-frequency in GE Fanuc SBC610 DTS
-
-Matthias Fuchs (1):
-      powerpc: Fix Book-E watchdog timer interval setting
-
-Paul Mackerras (1):
-      powerpc: Update desktop/server defconfigs
-
-Trent Piepho (1):
-      powerpc: Repair device bindings documentation
+Index: upstream/arch/powerpc/lib/copyuser_64.S
+===================================================================
+--- upstream.orig/arch/powerpc/lib/copyuser_64.S
++++ upstream/arch/powerpc/lib/copyuser_64.S
+@@ -26,11 +26,24 @@ _GLOBAL(__copy_tofrom_user)
+ 	andi.	r6,r6,7
+ 	PPC_MTOCRF	0x01,r5
+ 	blt	cr1,.Lshort_copy
++/* Below we want to nop out the bne if we're on a CPU that has the
++ * CPU_FTR_UNALIGNED_LD_STD bit set and the CPU_FTR_CP_USE_DCBTZ bit
++ * cleared.
++ * At the time of writing the only CPU that has this combination of bits
++ * set is Power6.
++ */
++BEGIN_FTR_SECTION
++	nop
++FTR_SECTION_ELSE
+ 	bne	.Ldst_unaligned
++ALT_FTR_SECTION_END(CPU_FTR_UNALIGNED_LD_STD | CPU_FTR_CP_USE_DCBTZ, \
++		    CPU_FTR_UNALIGNED_LD_STD)
+ .Ldst_aligned:
+-	andi.	r0,r4,7
+ 	addi	r3,r3,-16
++BEGIN_FTR_SECTION
++	andi.	r0,r4,7
+ 	bne	.Lsrc_unaligned
++END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_LD_STD)
+ 	srdi	r7,r5,4
+ 20:	ld	r9,0(r4)
+ 	addi	r4,r4,-8
+@@ -138,7 +151,7 @@ _GLOBAL(__copy_tofrom_user)
+ 	PPC_MTOCRF	0x01,r6		/* put #bytes to 8B bdry into cr7 */
+ 	subf	r5,r6,r5
+ 	li	r7,0
+-	cmpldi	r1,r5,16
++	cmpldi	cr1,r5,16
+ 	bf	cr7*4+3,1f
+ 35:	lbz	r0,0(r4)
+ 81:	stb	r0,0(r3)
