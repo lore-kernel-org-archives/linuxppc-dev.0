@@ -1,19 +1,21 @@
-Return-Path: <ncase@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 874A9DE061
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 05:00:44 +1100 (EST)
-Subject: Re: Building dtc etc. for packaging
-From: Nate Case <ncase@xes-inc.com>
-To: Matt Sealey <matt@genesi-usa.com>
-In-Reply-To: <4919C115.8040107@genesi-usa.com>
-References: <4919C115.8040107@genesi-usa.com>
-Content-Type: text/plain
-Date: Tue, 11 Nov 2008 12:00:37 -0600
-Message-Id: <1226426437.27415.379.camel@localhost.localdomain>
+Return-Path: <alessandro.zummo@towertech.it>
+Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
+	by ozlabs.org (Postfix) with SMTP id 0E1E1DDDEE
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 05:12:10 +1100 (EST)
+Date: Tue, 11 Nov 2008 19:11:55 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Subject: Re: [rtc-linux] Re: [RFC PATCH] rtc: add rtc_systohc for ntp use
+Message-ID: <20081111191155.2dca397a@i1501.lan.towertech.it>
+In-Reply-To: <1226412639.4367.256.camel@macbook.infradead.org>
+References: <20081110154026.21405.47457.stgit@i1501.lan.towertech.it>
+	<1226412639.4367.256.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: David Brownell <david-b@pacbell.net>,
+	Alessandro Zummo <a.zummo@towertech.it>,
+	Paul Mundt <lethal@linux-sh.org>, dwmw2@infradead.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,45 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-11-11 at 11:29 -0600, Matt Sealey wrote:
-> (the other tool we need is mkimage from U-Boot, I noticed Debian uses
-> this
-> same command name inside jigdo etc. too, sigh.. also you can't build
-> the
-> tools without the rest of U-Boot which is hard to envision doing just
-> to
-> get one command out of it - "make tools/mkimage" doesn't work and I
-> got
-> tired of reverse engineering the chickenscratch..)
+On Tue, 11 Nov 2008 14:10:39 +0000
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-This is a bit off-topic, but here is my ugly hack to compile a
-statically linked 'mkimage' from the U-Boot tree:
+> You might do better to open the device once and keep it open, rather
+> than taking the mutex and opening it again _during_ each call? You're
+> going to be perturbing the timing by doing that.
 
-Place this file, 'Makefile.mkimage' in u-boot/tools/
----[snip]---
-CFLAGS = -O2 -static -I../include -DUSE_HOSTCC -I.
-ASMDIR = ../include/asm
+ If you keep it open no other in-kernel user would be able to
+ use it.
 
-CFILES = ../lib_generic/crc32.c ../libfdt/fdt_strerror.c \
-         ../lib_generic/sha1.c ../lib_generic/md5.c ../common/image.c \
-         ../libfdt/fdt_wip.c ../libfdt/fdt.c ../libfdt/fdt_ro.c \
-         ../libfdt/fdt_rw.c
+> I believe you were also concerned that some device wouldn't want the
+> behaviour given by the existing sync_cmos_clock() function and workqueue
+> stuff in kernel/ntp.c, where we update the clock precisely half-way
+> through the second?
+> 
+> We should probably rip that code out of ntp.c (or just disable it ifdef
+> CONFIG_RTC_CLASS), and provide our own version of notify_cmos_timer().
+> 
+> The workqueue stuff to trigger at half-past the second could be kept as
+> a library function which most RTC devices would use, but they'd have the
+> option to use their own instead.
 
-mkimage: mkimage.c
-        mv $(ASMDIR) $(ASMDIR).back
-        ln -s $(ASMDIR)-i386 $(ASMDIR)
-        gcc $(CFLAGS) $(CFILES) mkimage.c -o mkimage
-        rm -f $(ASMDIR)
-        mv $(ASMDIR).back $(ASMDIR)
-        strip mkimage
-
-default: mkimage
----[snip]---
-
-Then just run 'make -f Makefile.mkimage' from within tools/.  Of course
-this uses some nasty tricks that will only work on i386 host.  I don't
-think I'm the first person to have this need, so others here may have
-better solutions.
+ I'll give it a look.
 
 -- 
-Nate Case <ncase@xes-inc.com>
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
