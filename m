@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8EFD0DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 15:38:18 +1100 (EST)
-Subject: Re: [PATCH] [v3] powerpc/4xx: work around CHIP11 errata in a more
-	PAGE_SIZE-friendly way
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hollis Blanchard <hollisb@us.ibm.com>
-In-Reply-To: <700c59731cf97778d3a4.1226448406@localhost.localdomain>
-References: <700c59731cf97778d3a4.1226448406@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 12 Nov 2008 15:37:43 +1100
-Message-Id: <1226464663.13515.1.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, yanok@emcraft.com, kvm-ppc@vger.kernel.org,
-	dwg@au1.ibm.com
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 6D72CDDD04
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 19:05:44 +1100 (EST)
+Date: Wed, 12 Nov 2008 09:05:38 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC PATCH] rtc: add rtc_systohc for ntp use
+Message-ID: <20081112080538.GA2711@iram.es>
+References: <20081110154026.21405.47457.stgit@i1501.lan.towertech.it>
+	<1226412639.4367.256.camel@macbook.infradead.org>
+	<200811111258.59874.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200811111258.59874.david-b@pacbell.net>
+Cc: Alessandro Zummo <a.zummo@towertech.it>, Paul Mundt <lethal@linux-sh.org>,
+	David Woodhouse <dwmw2@infradead.org>,
+	rtc-linux@googlegroups.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-11-11 at 18:06 -0600, Hollis Blanchard wrote:
-> The current CHIP11 errata truncates the device tree memory node, and subtracts
-> (hardcoded) 4096 bytes. This breaks kernels with larger PAGE_SIZE, since the
-> bootmem allocator assumes that total memory is a multiple of PAGE_SIZE.
+On Tue, Nov 11, 2008 at 12:58:59PM -0800, David Brownell wrote:
+> On Tuesday 11 November 2008, David Woodhouse wrote:
+> > I believe you were also concerned that some device wouldn't want the
+> > behaviour given by the existing sync_cmos_clock() function and workqueue
+> > stuff in kernel/ntp.c, where we update the clock precisely half-way
+> > through the second?
 > 
-> Instead, use a device tree memory reservation to reserve only the 256 bytes
-> actually affected by the errata, leaving the total memory size unaltered.
+> That's a problem, yes.  I've never heard of any RTC that wants
+> such delays ... except for the PC's "CMOS" RTC.
+
+Indeed, they are the oddball, although very frequent. Could it be
+made a constant (500msec on x86, 0 on all other architectures) ?
+
 > 
-> Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+> There was some discussion about how to expose that knowledge to
+> userspace too.  The "hwclock" utility always imposes that delay,
+> and it shouldn't (except when talking to a PC RTC).
+> 
+> > We should probably rip that code out of ntp.c (or just disable it ifdef
+> > CONFIG_RTC_CLASS), and provide our own version of notify_cmos_timer().
+> 
+> My suggestion for in-kernel code is that "struct rtc_device" just
+> grow a field like "unsigned settime_delay_msec" which would never
+> be initialized except by rtc-cmos (which uses 500) ... and the NTP
+> sync code would use that value.
 
-While I prefer this approach, won't it break kexec ?
+Hmm, I believed that most internal interfaces are now using nanoseconds
+for subsecond fields and values; 500000000 also fits in 32 bits and may 
+avoid some unnecessary arithmetic. It is obviously overkill with 32768Hz 
+crystals but consistency is nice. 
 
-I don't understand why we don't just have a bit of code in the kernel
-itself that reserve that page on 44x at boot time and be done with it.
+> 
+> For out-of-kernel use, that value could be extracted with an ioctl(),
+> and used similarly.
+> 
+> 
+> > The workqueue stuff to trigger at half-past the second could be kept as
+> > a library function which most RTC devices would use, but they'd have the
+> > option to use their own instead.
+> 
+> I thought the workqueue stuff was primarily there to make sure
+> that RTC was always updated in task context -- so it can grab the
+> relevant mutex -- and the half-second delay was legacy PC code ...
 
-It's like we are trying to be too smart and over-engineer the solution.
+Please allow configs that only use RTC internally without exposing
+the driver to userspace. 
 
-Cheers,
-Ben.
+At least that's how I use the RTC, I have some messages on shutdown telling
+me that the clock could not be accessed but I don't care since all these 
+machines have ntp and the RTC is completely useless for anything else than 
+setting the time quite precisely on reboot (on some of the boards I have, 
+the RTC interrupt is not even wired, so no alarm, no periodic interrupt).
+
+	Gabriel
