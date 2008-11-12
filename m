@@ -1,31 +1,16 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F0616DDDED
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 11:09:36 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id mAC08lfr018918
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 11:08:47 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mAC09gtD4112384
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 11:09:42 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mAC09XYt023335
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 11:09:33 +1100
-Date: Wed, 12 Nov 2008 11:09:30 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: Re: [PATCH] [v3] powerpc/4xx: work around CHIP11 errata in a more
-	PAGE_SIZE-friendly way
-Message-ID: <20081112000930.GB17193@yookeroo.seuss>
-References: <700c59731cf97778d3a4.1226448406@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <700c59731cf97778d3a4.1226448406@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, yanok@emcraft.com, kvm-ppc@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 370E5DDDED
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 11:10:58 +1100 (EST)
+Date: Wed, 12 Nov 2008 11:10:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Theodore Ts'o" <tytso@mit.edu>, <adilger@sun.com>
+Subject: [PATCH] ext4: fix some s64 printing warnings
+Message-Id: <20081112111049.68c604ff.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-ext4@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,22 +20,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 11, 2008 at 06:06:46PM -0600, Hollis Blanchard wrote:
-> The current CHIP11 errata truncates the device tree memory node, and subtracts
-> (hardcoded) 4096 bytes. This breaks kernels with larger PAGE_SIZE, since the
-> bootmem allocator assumes that total memory is a multiple of PAGE_SIZE.
-> 
-> Instead, use a device tree memory reservation to reserve only the 256 bytes
-> actually affected by the errata, leaving the total memory size unaltered.
-> 
-> Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+A powerpc ppc64_defconfig build of Linus' current tree produces these
+warnings:
 
-libfdt usage changes look fine to me.
+fs/ext4/balloc.c: In function 'ext4_has_free_blocks':
+fs/ext4/balloc.c:617: warning: format '%lld' expects type 'long long int', but argument 2 has type 's64'
+fs/ext4/inode.c: In function 'ext4_print_free_blocks':
+fs/ext4/inode.c:1833: warning: format '%lld' expects type 'long long int', but argument 2 has type 's64'
+fs/ext4/inode.c:1835: warning: format '%lld' expects type 'long long int', but argument 2 has type 's64'
 
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
+Fix them up with the usual casts.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ fs/ext4/balloc.c |    2 +-
+ fs/ext4/inode.c  |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
+index d2003cd..9ce2fcd 100644
+--- a/fs/ext4/balloc.c
++++ b/fs/ext4/balloc.c
+@@ -614,7 +614,7 @@ int ext4_has_free_blocks(struct ext4_sb_info *sbi, s64 nblocks)
+ 		if (dirty_blocks < 0) {
+ 			printk(KERN_CRIT "Dirty block accounting "
+ 					"went wrong %lld\n",
+-					dirty_blocks);
++					(long long)dirty_blocks);
+ 		}
+ 	}
+ 	/* Check whether we have space after
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index be21a5a..2a3804e 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1830,9 +1830,9 @@ static void ext4_print_free_blocks(struct inode *inode)
+ 			ext4_count_free_blocks(inode->i_sb));
+ 	printk(KERN_EMERG "Free/Dirty block details\n");
+ 	printk(KERN_EMERG "free_blocks=%lld\n",
+-			percpu_counter_sum(&sbi->s_freeblocks_counter));
++			(long long)percpu_counter_sum(&sbi->s_freeblocks_counter));
+ 	printk(KERN_EMERG "dirty_blocks=%lld\n",
+-			percpu_counter_sum(&sbi->s_dirtyblocks_counter));
++			(long long)percpu_counter_sum(&sbi->s_dirtyblocks_counter));
+ 	printk(KERN_EMERG "Block reservation details\n");
+ 	printk(KERN_EMERG "i_reserved_data_blocks=%lu\n",
+ 			EXT4_I(inode)->i_reserved_data_blocks);
+-- 
+1.5.6.5
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
