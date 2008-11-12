@@ -1,33 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2844CDDDEE
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 22:31:59 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id mACBYYDt019832
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 06:34:34 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mACBVZWb123468
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 06:31:35 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mACBVZtB006004
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 06:31:35 -0500
-Date: Wed, 12 Nov 2008 06:31:29 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] [v3] powerpc/4xx: work around CHIP11 errata in a more
-	PAGE_SIZE-friendly way
-Message-ID: <20081112063129.4d3ae18b@zod.rchland.ibm.com>
-In-Reply-To: <1226464663.13515.1.camel@pasglop>
-References: <700c59731cf97778d3a4.1226448406@localhost.localdomain>
-	<1226464663.13515.1.camel@pasglop>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3D3E8DDDE7
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 22:50:51 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Fix 460EX/460GT machine check handling
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20081112062737.19a01a22@zod.rchland.ibm.com>
+References: <20081112020409.4FFBCDDDDB@ozlabs.org>
+	<20081112062737.19a01a22@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Wed, 12 Nov 2008 22:50:44 +1100
+Message-Id: <1226490644.7154.14.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, yanok@emcraft.com, kvm-ppc@vger.kernel.org,
-	Hollis Blanchard <hollisb@us.ibm.com>, dwg@au1.ibm.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,34 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 12 Nov 2008 15:37:43 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Tue, 2008-11-11 at 18:06 -0600, Hollis Blanchard wrote:
-> > The current CHIP11 errata truncates the device tree memory node, and subtracts
-> > (hardcoded) 4096 bytes. This breaks kernels with larger PAGE_SIZE, since the
-> > bootmem allocator assumes that total memory is a multiple of PAGE_SIZE.
-> > 
-> > Instead, use a device tree memory reservation to reserve only the 256 bytes
-> > actually affected by the errata, leaving the total memory size unaltered.
-> > 
-> > Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+On Wed, 2008-11-12 at 06:27 -0500, Josh Boyer wrote:
+> On Wed, 12 Nov 2008 13:02:43 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> While I prefer this approach, won't it break kexec ?
-
-Break it how?  Particularly given that kexec doesn't work on 4xx (yet).
-
-> I don't understand why we don't just have a bit of code in the kernel
-> itself that reserve that page on 44x at boot time and be done with it.
+> > Those cores use the 440A type machine check (ie, they have
+> > MCSRR0/MCSRR1). They thus need to call the appropriate fixup
+> > function to hook the right variant of the exception.
+> > 
+> > Without this, all machine checks become fatal due to loss
+> > of context when entering the exception handler.
 > 
-> It's like we are trying to be too smart and over-engineer the solution.
+> Looks fine to me.  However, what machine checks were you getting that
+> caused you to see this that aren't fatal anyway?
 
-I don't think that's it.  I think it's more that we're opportunistic and
-the wrapper is the easiest place to do this, given that U-Boot itself
-will be doing the reserve for platforms that don't require the
-wrapper.
+PCI aborts from userspace when toying with video card POSTing &
+x86emu :-)
 
-So we could do the fixup in-kernel, but how do you do that
-deterministically given that U-Boot might have already done it?
-
-josh
+Cheers,
+Ben.
