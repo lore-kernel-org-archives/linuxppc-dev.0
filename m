@@ -1,9 +1,16 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 12 Nov 2008 14:45:52 +1100
-Subject: [RFC/PATCH] powerpc: Reserve legacy regions on PCI
-Message-Id: <20081112034717.7C899DDDE3@ozlabs.org>
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (mail.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 159B7DDDEA
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 14:50:56 +1100 (EST)
+Date: Wed, 12 Nov 2008 04:50:48 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [patch 1/3] powerpc: optimise smp_wmb
+Message-ID: <20081112035048.GF26053@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,134 +20,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There's a problem on some embedded platforms when we re-assign
-everything on PCI, such as 44x. The generic code tries to avoid
-assigning devices to addresses overlapping the low legacy
-addresses such as VGA hard decoded areas using constants that
-are unfortunately no good for us, as they don't take into account
-the address translation we do to access PCI busses.
+Hi,
 
-Thus we end up allocating things like IO BARs to 0, which is
-technically legal, but will shadow hard decoded ports for use
-by things like VGA cards.
+OK, another go at submitting these 3 memory ordering improvement patches.
+I've tested on my G5, but I'd like to especially get confirmation as to
+whether the __SUBARCH_HAS_LWSYNC thing works on E500MC.
 
-This works around it by attempting to reserve legacy regions
-before we try to assign addresses.
+--
 
-NOTE: This may have nasty side effects in cases I haven't tested
-yet:
+Change 2d1b2027626d5151fff8ef7c06ca8e7876a1a510 removed __SUBARCH_HAS_LWSYNC,
+causing smp_wmb to revert back to eieio for all CPUs. Restore the behaviour
+intorduced in 74f0609526afddd88bef40b651da24f3167b10b2.
 
- - We try to use FW mappings (ie. powermac) and the FW has allocated
-a conflicting address over those legacy regions. This will typically
-happen. I would expect the new code to just fail with an informative
-message without harm but I haven't had a chance to test that scenario
-yet.
-
- - A device with fixed BARs overlapping those legacy addresses such
-as an IDE controller in legacy mode is in the system. I don't know
-for sure yet what will happen there, I have to test :-)
-
-Ideally, we should change PCIBIOS_MIN_IO/MIN_MEM accross the board
-to take a bus pointer so they can provide appropriate per-bus translated
-values to the generic code but that's a more invasive patch.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 ---
-
- arch/powerpc/kernel/pci-common.c |   71 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 70 insertions(+), 1 deletion(-)
-
---- linux-work.orig/arch/powerpc/kernel/pci-common.c	2008-11-12 10:12:58.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/pci-common.c	2008-11-12 10:14:36.000000000 +1100
-@@ -16,7 +16,7 @@
-  * 2 of the License, or (at your option) any later version.
-  */
+Index: linux-2.6/arch/powerpc/include/asm/synch.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/synch.h	2008-11-12 12:26:15.000000000 +1100
++++ linux-2.6/arch/powerpc/include/asm/synch.h	2008-11-12 12:33:10.000000000 +1100
+@@ -5,6 +5,10 @@
+ #include <linux/stringify.h>
+ #include <asm/feature-fixups.h>
  
--#undef DEBUG
-+#define DEBUG
++#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
++#define __SUBARCH_HAS_LWSYNC
++#endif
++
+ #ifndef __ASSEMBLY__
+ extern unsigned int __start___lwsync_fixup, __stop___lwsync_fixup;
+ extern void do_lwsync_fixups(unsigned long value, void *fixup_start,
+Index: linux-2.6/arch/powerpc/include/asm/system.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/system.h	2008-11-12 12:26:46.000000000 +1100
++++ linux-2.6/arch/powerpc/include/asm/system.h	2008-11-12 12:28:57.000000000 +1100
+@@ -45,14 +45,14 @@
+ #ifdef CONFIG_SMP
  
- #include <linux/kernel.h>
- #include <linux/pci.h>
-@@ -1364,6 +1364,63 @@ static void __init pcibios_allocate_reso
- 	}
- }
+ #ifdef __SUBARCH_HAS_LWSYNC
+-#    define SMPWMB      lwsync
++#    define SMPWMB      LWSYNC
+ #else
+ #    define SMPWMB      eieio
+ #endif
  
-+static void __init pcibios_reserve_legacy_regions(struct pci_bus *bus)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+	resource_size_t	offset;
-+	struct resource *res, *pres;
-+	int i;
-+
-+	pr_debug("Reserving legacy ranges for domain %04x\n", pci_domain_nr(bus));
-+
-+	/* Check for IO */
-+	if (!(hose->io_resource.flags & IORESOURCE_IO))
-+		goto no_io;
-+	offset = (unsigned long)hose->io_base_virt - _IO_BASE;
-+	res = kzalloc(sizeof(struct resource), GFP_KERNEL);
-+	BUG_ON(res == NULL);
-+	res->name = "Legacy IO";
-+	res->flags = IORESOURCE_IO;
-+	res->start = offset;
-+	res->end = (offset + 0xfff) & 0xfffffffful;
-+	pr_debug("Candidate legacy IO: %pR\n", res);
-+	if (request_resource(&hose->io_resource, res)) {
-+		printk(KERN_DEBUG
-+		       "PCI %04x:%02x Cannot reserve Legacy IO %pR\n",
-+		       pci_domain_nr(bus), bus->number, res);
-+		kfree(res);
-+	}
-+
-+ no_io:
-+	/* Check for memory */
-+	offset = hose->pci_mem_offset;
-+	pr_debug("hose mem offset: %016llx\n", (unsigned long long)offset);
-+	for (i = 0; i < 3; i++) {
-+		pres = &hose->mem_resources[i];
-+		if (!(pres->flags & IORESOURCE_MEM))
-+			continue;
-+		pr_debug("hose mem res: %pR\n", pres);
-+		if ((pres->start - offset) <= 0xa0000 &&
-+		    (pres->end - offset) >= 0xbffff)
-+			break;
-+	}
-+	if (i >= 3)
-+		return;
-+	res = kzalloc(sizeof(struct resource), GFP_KERNEL);
-+	BUG_ON(res == NULL);
-+	res->name = "Legacy VGA memory";
-+	res->flags = IORESOURCE_MEM;
-+	res->start = 0xa0000 + offset;
-+	res->end = 0xbffff + offset;
-+	pr_debug("Candidate VGA memory: %pR\n", res);
-+	if (request_resource(pres, res)) {
-+		printk(KERN_DEBUG
-+		       "PCI %04x:%02x Cannot reserve VGA memory %pR\n",
-+		       pci_domain_nr(bus), bus->number, res);
-+		kfree(res);
-+	}
-+}
-+
- void __init pcibios_resource_survey(void)
- {
- 	struct pci_bus *b;
-@@ -1379,6 +1436,18 @@ void __init pcibios_resource_survey(void
- 		pcibios_allocate_resources(1);
- 	}
- 
-+	/* Before we start assigning unassigned resource, we try to reserve
-+	 * the low IO area and the VGA memory area if they intersect the
-+	 * bus available resources to avoid allocating things on top of them
-+	 */
-+	if (!(ppc_pci_flags & PPC_PCI_PROBE_ONLY)) {
-+		list_for_each_entry(b, &pci_root_buses, node)
-+			pcibios_reserve_legacy_regions(b);
-+	}
-+
-+	/* Now, if the platform didn't decide to blindly trust the firmware,
-+	 * we proceed to assigning things that were left unassigned
-+	 */
- 	if (!(ppc_pci_flags & PPC_PCI_PROBE_ONLY)) {
- 		pr_debug("PCI: Assigning unassigned resouces...\n");
- 		pci_assign_unassigned_resources();
+ #define smp_mb()	mb()
+ #define smp_rmb()	rmb()
+-#define smp_wmb()	__asm__ __volatile__ (__stringify(SMPWMB) : : :"memory")
++#define smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
+ #define smp_read_barrier_depends()	read_barrier_depends()
+ #else
+ #define smp_mb()	barrier()
