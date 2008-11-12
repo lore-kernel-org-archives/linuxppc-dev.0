@@ -1,17 +1,18 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 7CCF7474C1
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 06:59:19 +1100 (EST)
-Date: Wed, 12 Nov 2008 22:59:16 +0300
+	by ozlabs.org (Postfix) with ESMTP id 0A37E474C1
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 07:12:19 +1100 (EST)
+Date: Wed, 12 Nov 2008 23:12:18 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] usb/fsl_qe_udc: Report disconnect before unbinding
-Message-ID: <20081112195916.GA31938@oksana.dev.rtsoft.ru>
+Message-ID: <20081112201218.GA5870@oksana.dev.rtsoft.ru>
 References: <20081112185627.GA17699@oksana.dev.rtsoft.ru>
 	<Pine.LNX.4.44L0.0811121435310.16854-100000@iolanthe.rowland.org>
+	<20081112195916.GA31938@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <Pine.LNX.4.44L0.0811121435310.16854-100000@iolanthe.rowland.org>
+In-Reply-To: <20081112195916.GA31938@oksana.dev.rtsoft.ru>
 Cc: Greg Kroah-Hartman <greg@kroah.com>,
 	David Brownell <dbrownell@users.sourceforge.net>,
 	Li Yang <leoli@freescale.com>, linux-usb@vger.kernel.org,
@@ -26,65 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 12, 2008 at 02:38:02PM -0500, Alan Stern wrote:
-> On Wed, 12 Nov 2008, Anton Vorontsov wrote:
+On Wed, Nov 12, 2008 at 10:59:16PM +0300, Anton Vorontsov wrote:
+[...]
+> > And wouldn't it be better to _skip_ doing this if the gadget wasn't 
+> > connected before?
 > 
-> > Gadgets disable endpoints in their disconnect callbacks, so
-> > we must call disconnect before unbinding. This also fixes
-> > muram memory leak, since we free muram in the qe_ep_disable().
+> Composite framework handles this. If there were no connections,
+> then the disconnect() is a nop (except the spin lock/unlock pair).
 > 
-> > --- a/drivers/usb/gadget/fsl_qe_udc.c
-> > +++ b/drivers/usb/gadget/fsl_qe_udc.c
-> > @@ -2382,6 +2382,9 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
-> >  		nuke(loop_ep, -ESHUTDOWN);
-> >  	spin_unlock_irqrestore(&udc_controller->lock, flags);
-> >  
-> > +	/* report disconnect; the driver is already quiesced */
-> > +	driver->disconnect(&udc_controller->gadget);
-> > +
-> >  	/* unbind gadget and unhook driver. */
-> >  	driver->unbind(&udc_controller->gadget);
-> >  	udc_controller->gadget.dev.driver = NULL;
-> 
-> Wouldn't it be better to do this before nuking the existing requests?  
-> The comment is wrong; the gadget driver is _not_ quiesced at this
-> point.  In fact the disconnect call is what quiesces the driver!
+> I'm not sure how the controller driver could tell if there
+> was a connection or not: it doesn't operate these terms.
+> What the udc controller knows is: how to report bus reset
+> and how to receive or transmit the data...
 
-composite_unbind() says:
+It seems I lied. Did you mean something like this patch?
 
-        /* composite_disconnect() must already have been called
-         * by the underlying peripheral controller driver!
-         * so there's no i/o concurrency that could affect the
-         * state protected by cdev->lock.
-         */
-
-Which I read as "at disconnect time the controller should
-already be disabled, no further i/o can happen". Which means
-that we should nuke all pending requests and stop the
-controller.
-
-In this comment:
-"/* report disconnect; the driver is already quiesced */"
-"the driver" means "the udc driver", not the gadget driver.
-
-FWIW, the PXA27x UDC controller also stops all activity and
-completely disables the controller before calling the
-disconnect().
-
-> And wouldn't it be better to _skip_ doing this if the gadget wasn't 
-> connected before?
-
-Composite framework handles this. If there were no connections,
-then the disconnect() is a nop (except the spin lock/unlock pair).
-
-I'm not sure how the controller driver could tell if there
-was a connection or not: it doesn't operate these terms.
-What the udc controller knows is: how to report bus reset
-and how to receive or transmit the data...
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
+index c7de671..fd44cf4 100644
+--- a/drivers/usb/gadget/fsl_qe_udc.c
++++ b/drivers/usb/gadget/fsl_qe_udc.c
+@@ -2368,6 +2368,9 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
+ 	/* stop usb controller, disable intr */
+ 	qe_usb_disable();
+ 
++	if (udc->usb_state == USB_STATE_DEFAULT)
++		goto skip_quiesce;
++
+ 	/* in fact, no needed */
+ 	udc_controller->usb_state = USB_STATE_ATTACHED;
+ 	udc_controller->ep0_state = WAIT_FOR_SETUP;
+@@ -2385,6 +2388,7 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
+ 	/* report disconnect; the driver is already quiesced */
+ 	driver->disconnect(&udc_controller->gadget);
+ 
++skip_quiesce:
+ 	/* unbind gadget and unhook driver. */
+ 	driver->unbind(&udc_controller->gadget);
+ 	udc_controller->gadget.dev.driver = NULL;
