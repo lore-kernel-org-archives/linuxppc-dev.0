@@ -1,20 +1,30 @@
-Return-Path: <jbe@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 82B0EDDDE7
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 21:52:01 +1100 (EST)
-Received: from themisto.extern.pengutronix.de ([83.236.181.29]
-	helo=jupiter.intranet.kreuzholzen.de)
-	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
-	(envelope-from <jbe@pengutronix.de>) id 1L0DK7-0003gv-4r
-	for linuxppc-dev@ozlabs.org; Wed, 12 Nov 2008 11:51:52 +0100
-From: Juergen Beisert <jbe@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Date: Wed, 12 Nov 2008 11:51:44 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200811121151.45208.jbe@pengutronix.de>
-Subject: Using gpiolib to power off my system
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D0ACCDDDE7
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 22:27:48 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id mACBRiXj003027
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 06:27:44 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mACBRind116498
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 06:27:44 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mACBRTxD019823
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 06:27:29 -0500
+Date: Wed, 12 Nov 2008 06:27:37 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix 460EX/460GT machine check handling
+Message-ID: <20081112062737.19a01a22@zod.rchland.ibm.com>
+In-Reply-To: <20081112020409.4FFBCDDDDB@ozlabs.org>
+References: <20081112020409.4FFBCDDDDB@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi list,
+On Wed, 12 Nov 2008 13:02:43 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-I want to use the gpiolib API in a routine that should poweroff the system=
-=20
-(MPC5200B). I register my poweroff routine in the define_machine() macro as:
+> Those cores use the 440A type machine check (ie, they have
+> MCSRR0/MCSRR1). They thus need to call the appropriate fixup
+> function to hook the right variant of the exception.
+> 
+> Without this, all machine checks become fatal due to loss
+> of context when entering the exception handler.
 
-[...]
-=2Epower_off	=3D my_power_off,
-[...]
+Looks fine to me.  However, what machine checks were you getting that
+caused you to see this that aren't fatal anyway?
 
-In this routine I'm using gpio_request(...), gpio_direction_output(...) and=
-=20
-gpio_set_value(...) ---- but nothing happens.
+josh
 
-When I set the GPIOs in the hard way (ioremap() + playing with the register=
-s)=20
-the system switches off as expected.
-
-How to get some useful debug output at this late system state (printk does =
-not=20
-work anymore)?
-
-Regards,
-Juergen
-=2D-=20
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
-=A0Pengutronix - Linux Solutions for Science and Industry
-=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
-=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+>  arch/powerpc/kernel/cpu_setup_44x.S |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> --- linux-work.orig/arch/powerpc/kernel/cpu_setup_44x.S	2008-11-12 12:51:24.000000000 +1100
+> +++ linux-work/arch/powerpc/kernel/cpu_setup_44x.S	2008-11-12 13:01:03.000000000 +1100
+> @@ -34,7 +34,12 @@ _GLOBAL(__setup_cpu_440grx)
+>  	blr
+>  _GLOBAL(__setup_cpu_460ex)
+>  _GLOBAL(__setup_cpu_460gt)
+> -	b	__init_fpu_44x
+> +	mflr	r4
+> +	bl	__init_fpu_44x
+> +	bl	__fixup_440A_mcheck
+> +	mtlr	r4
+> +	blr
+> +
+>  _GLOBAL(__setup_cpu_440gx)
+>  _GLOBAL(__setup_cpu_440spe)
+>  	b	__fixup_440A_mcheck
