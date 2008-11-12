@@ -1,37 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E1008474C1
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 07:53:13 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id mACKrA2O021853
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 15:53:10 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mACKrAnF166398
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 15:53:10 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mACKr9n5010605
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 15:53:10 -0500
-Date: Wed, 12 Nov 2008 15:53:02 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] [v3] powerpc/4xx: work around CHIP11 errata in a more
-	PAGE_SIZE-friendly way
-Message-ID: <20081112155302.36af6034@zod.rchland.ibm.com>
-In-Reply-To: <1226522696.7154.28.camel@pasglop>
-References: <700c59731cf97778d3a4.1226448406@localhost.localdomain>
-	<1226464663.13515.1.camel@pasglop>
-	<20081112063129.4d3ae18b@zod.rchland.ibm.com>
-	<1226490730.7154.16.camel@pasglop>
-	<1226502685.19156.2.camel@localhost.localdomain>
-	<1226522696.7154.28.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, yanok@emcraft.com, kvm-ppc@vger.kernel.org,
-	Hollis Blanchard <hollisb@us.ibm.com>, dwg@au1.ibm.com
+Return-Path: <stern+49051fc8@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+	by ozlabs.org (Postfix) with SMTP id 82AF6DDDE3
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 08:12:37 +1100 (EST)
+Date: Wed, 12 Nov 2008 16:12:33 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] usb/fsl_qe_udc: Report disconnect before unbinding
+In-Reply-To: <20081112202017.GA5161@oksana.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.44L0.0811121606280.17105-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Greg Kroah-Hartman <greg@kroah.com>,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	Li Yang <leoli@freescale.com>, linux-usb@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,41 +23,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 13 Nov 2008 07:44:56 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Wed, 12 Nov 2008, Anton Vorontsov wrote:
 
-> On Wed, 2008-11-12 at 09:11 -0600, Hollis Blanchard wrote:
-> > Forget pages. The errata is about the last 256 bytes of physical
-> > memory.
+> On Wed, Nov 12, 2008 at 11:12:18PM +0300, Anton Vorontsov wrote:
+> > On Wed, Nov 12, 2008 at 10:59:16PM +0300, Anton Vorontsov wrote:
+> > [...]
+> > > > And wouldn't it be better to _skip_ doing this if the gadget wasn't 
+> > > > connected before?
+> > > 
+> > > Composite framework handles this. If there were no connections,
+> > > then the disconnect() is a nop (except the spin lock/unlock pair).
+> > > 
+> > > I'm not sure how the controller driver could tell if there
+> > > was a connection or not: it doesn't operate these terms.
+> > > What the udc controller knows is: how to report bus reset
+> > > and how to receive or transmit the data...
 > > 
-> > > I still find it a bit tricky to have memory nodes not aligned on
-> > nice
-> > > fat big boundaries tho.
+> > It seems I lied. Did you mean something like this patch?
 > > 
-> > I don't know what you're referring to. The patch I sent doesn't touch
-> > memory nodes, so they are indeed still aligned on nice fat big
-> > boundaries.
+> > diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
+> > index c7de671..fd44cf4 100644
+> > --- a/drivers/usb/gadget/fsl_qe_udc.c
+> > +++ b/drivers/usb/gadget/fsl_qe_udc.c
+> > @@ -2368,6 +2368,9 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
+> >  	/* stop usb controller, disable intr */
+> >  	qe_usb_disable();
+> >  
+> > +	if (udc->usb_state == USB_STATE_DEFAULT)
 > 
-> My last comment was about the approach of modifying the memory node.
+> Should be also || usb_state == USB_STATE_ATTACHED, since
+> this is the initial value after the usb_gadget_register_driver().
 > 
-> > I don't think this is overengineering at all. We can't touch the last
-> > 256 bytes, so we mark it reserved, and then we won't. Altering memory
-> > nodes is far more complicated and error-prone.
-> 
-> But your approach is going to be painful for kexec which will have to
-> duplicate that logic.
-> 
-> Again, why can't we just stick something in the kernel code that
-> reserves the last page ? It could be in prom.c or it could be called by
-> affected 4xx platforms by the platform code, whatever, but the reserve
-> map isn't really meant for that and will not be passed over from kernel
-> to kernel by kexec.
+> And the _DEFAULT state is "we're just after the bus reset" (also
+> means that we already called the disconnect()).
 
-Again, because newer U-Boot is doing the fixup on memsize for us
-already.  This is why it was done in the wrapper to begin with, since
-it depends on the version of U-Boot that you happen to be using.
+That sounds right.  Although come to think of it, I guess there really 
+is no harm in calling the disconnect method twice in a row.  But it's 
+better to do what the other UDC drivers do.
 
-If you have a good idea on how to figure that out in-kernel, do the
-fixup when needed, and not make people's eyes bleed, I'm all for it.
+> > +		goto skip_quiesce;
+> > +
+> >  	/* in fact, no needed */
+> >  	udc_controller->usb_state = USB_STATE_ATTACHED;
+> >  	udc_controller->ep0_state = WAIT_FOR_SETUP;
+> > @@ -2385,6 +2388,7 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
+> >  	/* report disconnect; the driver is already quiesced */
+> >  	driver->disconnect(&udc_controller->gadget);
 
-josh
+I would update this last comment slightly.  The word "driver" is
+ambiguous, and since this function is named
+usb_gadget_unregister_driver(), it looks like you're talking about the
+gadget driver.
+
+> > +skip_quiesce:
+> >  	/* unbind gadget and unhook driver. */
+> >  	driver->unbind(&udc_controller->gadget);
+> >  	udc_controller->gadget.dev.driver = NULL;
+
+Alan Stern
