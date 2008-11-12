@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 071DA474C2
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 05:56:30 +1100 (EST)
-Date: Wed, 12 Nov 2008 21:56:27 +0300
+	by ozlabs.org (Postfix) with ESMTP id E7A68DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 06:29:54 +1100 (EST)
+Date: Wed, 12 Nov 2008 22:29:53 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH] usb/fsl_qe_udc: Report disconnect before unbinding
-Message-ID: <20081112185627.GA17699@oksana.dev.rtsoft.ru>
+Subject: [PATCH] usb/fsl_usb2_udc: Report disconnect before unbinding
+Message-ID: <20081112192953.GA25565@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
 Cc: Greg Kroah-Hartman <greg@kroah.com>, Li Yang <leoli@freescale.com>,
@@ -21,48 +21,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Gadgets disable endpoints in their disconnect callbacks, so
-we must call disconnect before unbinding. This also fixes
-muram memory leak, since we free muram in the qe_ep_disable().
+we must call disconnect before unbinding.
 
-But mainly the patch fixes following badness:
+The patch fixes following badness:
 
-root@b1:~# insmod fsl_qe_udc.ko
-fsl_qe_udc: Freescale QE/CPM USB Device Controller driver, 1.0
-fsl_qe_udc e01006c0.usb: QE USB controller initialized as device
+root@b1:~# insmod fsl_usb2_udc.ko
+Freescale High-Speed USB SOC Device Controller driver (Apr 20, 2007)
 root@b1:~# insmod g_ether.ko
 g_ether gadget: using random self ethernet address
 g_ether gadget: using random host ethernet address
-usb0: MAC be:2d:3c:fa:be:f0
-usb0: HOST MAC 62:b8:6a:df:38:66
+usb0: MAC 26:07:ba:c0:44:33
+usb0: HOST MAC 96:81:0c:05:4d:e3
 g_ether gadget: Ethernet Gadget, version: Memorial Day 2008
 g_ether gadget: g_ether ready
-fsl_qe_udc e01006c0.usb: fsl_qe_udc bind to driver g_ether
+fsl-usb2-udc: bind to driver g_ether
 g_ether gadget: high speed config #1: CDC Ethernet (ECM)
 root@b1:~# rmmod g_ether.ko
 ------------[ cut here ]------------
 Badness at drivers/usb/gadget/composite.c:871
 [...]
-NIP [d10c1374] composite_unbind+0x24/0x15c [g_ether]
-LR [d10a82f4] usb_gadget_unregister_driver+0x128/0x168 [fsl_qe_udc]
+NIP [e10c3454] composite_unbind+0x24/0x15c [g_ether]
+LR [e10aa454] usb_gadget_unregister_driver+0x13c/0x164 [fsl_usb2_udc]
 Call Trace:
-[cfb93e80] [cfb1f3a0] 0xcfb1f3a0 (unreliable)
-[cfb93eb0] [d10a82f4] usb_gadget_unregister_driver+0x128/0x168 [fsl_qe_udc]
-[cfb93ed0] [d10c2a3c] usb_composite_unregister+0x3c/0x4c [g_ether]
-[cfb93ee0] [c006bde0] sys_delete_module+0x130/0x19c
-[cfb93f40] [c00142d8] ret_from_syscall+0x0/0x38
+[df145e80] [ffffff94] 0xffffff94 (unreliable)
+[df145eb0] [e10aa454] usb_gadget_unregister_driver+0x13c/0x164 [fsl_usb2_udc]
+[df145ed0] [e10c4c40] usb_composite_unregister+0x3c/0x4c [g_ether]
+[df145ee0] [c006bcc0] sys_delete_module+0x130/0x19c
+[df145f40] [c00142d8] ret_from_syscall+0x0/0x38
 [...]
-fsl_qe_udc e01006c0.usb: unregistered gadget driver 'g_ether'
+unregistered gadget driver 'g_ether'
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/usb/gadget/fsl_qe_udc.c |    3 +++
+
+This is not a duplicate email, this patch is for other driver. ;-)
+
+ drivers/usb/gadget/fsl_usb2_udc.c |    3 +++
  1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
-index 37c8575..c7de671 100644
---- a/drivers/usb/gadget/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/fsl_qe_udc.c
-@@ -2382,6 +2382,9 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
+diff --git a/drivers/usb/gadget/fsl_usb2_udc.c b/drivers/usb/gadget/fsl_usb2_udc.c
+index 091bb55..b4cd017 100644
+--- a/drivers/usb/gadget/fsl_usb2_udc.c
++++ b/drivers/usb/gadget/fsl_usb2_udc.c
+@@ -1836,6 +1836,9 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
  		nuke(loop_ep, -ESHUTDOWN);
  	spin_unlock_irqrestore(&udc_controller->lock, flags);
  
