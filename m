@@ -1,18 +1,21 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A8C43DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 14:54:31 +1100 (EST)
-Date: Wed, 12 Nov 2008 04:54:15 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [patch 3/3] powerpc: optimise mutex
-Message-ID: <20081112035415.GH26053@wotan.suse.de>
-References: <20081112035048.GF26053@wotan.suse.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8EFD0DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Nov 2008 15:38:18 +1100 (EST)
+Subject: Re: [PATCH] [v3] powerpc/4xx: work around CHIP11 errata in a more
+	PAGE_SIZE-friendly way
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+In-Reply-To: <700c59731cf97778d3a4.1226448406@localhost.localdomain>
+References: <700c59731cf97778d3a4.1226448406@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 12 Nov 2008 15:37:43 +1100
+Message-Id: <1226464663.13515.1.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081112035048.GF26053@wotan.suse.de>
+Cc: linuxppc-dev@ozlabs.org, yanok@emcraft.com, kvm-ppc@vger.kernel.org,
+	dwg@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,154 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2008-11-11 at 18:06 -0600, Hollis Blanchard wrote:
+> The current CHIP11 errata truncates the device tree memory node, and subtracts
+> (hardcoded) 4096 bytes. This breaks kernels with larger PAGE_SIZE, since the
+> bootmem allocator assumes that total memory is a multiple of PAGE_SIZE.
+> 
+> Instead, use a device tree memory reservation to reserve only the 256 bytes
+> actually affected by the errata, leaving the total memory size unaltered.
+> 
+> Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
 
-Implement a more optimal mutex fastpath for powerpc, making use of acquire
-and release barrier semantics. This takes the mutex lock+unlock benchmark
-from 203 to 173 cycles on a G5.
+While I prefer this approach, won't it break kexec ?
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
-Index: linux-2.6/arch/powerpc/include/asm/mutex.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/mutex.h	2008-11-12 12:50:06.000000000 +1100
-+++ linux-2.6/arch/powerpc/include/asm/mutex.h	2008-11-12 13:41:24.000000000 +1100
-@@ -1,9 +1,134 @@
- /*
-- * Pull in the generic implementation for the mutex fastpath.
-+ * Optimised mutex implementation of include/asm-generic/mutex-dec.h algorithm
-+ */
-+#ifndef _ASM_POWERPC_MUTEX_H
-+#define _ASM_POWERPC_MUTEX_H
-+
-+static inline int __mutex_cmpxchg_lock(atomic_t *v, int old, int new)
-+{
-+	int t;
-+
-+	__asm__ __volatile__ (
-+"1:	lwarx	%0,0,%1		# mutex trylock\n\
-+	cmpw	0,%0,%2\n\
-+	bne-	2f\n"
-+	PPC405_ERR77(0,%1)
-+"	stwcx.	%3,0,%1\n\
-+	bne-	1b"
-+	ISYNC_ON_SMP
-+	"\n\
-+2:"
-+	: "=&r" (t)
-+	: "r" (&v->counter), "r" (old), "r" (new)
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+static inline int __mutex_dec_return_lock(atomic_t *v)
-+{
-+	int t;
-+
-+	__asm__ __volatile__(
-+"1:	lwarx	%0,0,%1		# mutex lock\n\
-+	addic	%0,%0,-1\n"
-+	PPC405_ERR77(0,%1)
-+"	stwcx.	%0,0,%1\n\
-+	bne-	1b"
-+	ISYNC_ON_SMP
-+	: "=&r" (t)
-+	: "r" (&v->counter)
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+static inline int __mutex_inc_return_unlock(atomic_t *v)
-+{
-+	int t;
-+
-+	__asm__ __volatile__(
-+	LWSYNC_ON_SMP
-+"1:	lwarx	%0,0,%1		# mutex unlock\n\
-+	addic	%0,%0,1\n"
-+	PPC405_ERR77(0,%1)
-+"	stwcx.	%0,0,%1 \n\
-+	bne-	1b"
-+	: "=&r" (t)
-+	: "r" (&v->counter)
-+	: "cc", "memory");
-+
-+	return t;
-+}
-+
-+/**
-+ *  __mutex_fastpath_lock - try to take the lock by moving the count
-+ *                          from 1 to a 0 value
-+ *  @count: pointer of type atomic_t
-+ *  @fail_fn: function to call if the original value was not 1
-+ *
-+ * Change the count from 1 to a value lower than 1, and call <fail_fn> if
-+ * it wasn't 1 originally. This function MUST leave the value lower than
-+ * 1 even when the "1" assertion wasn't true.
-+ */
-+static inline void
-+__mutex_fastpath_lock(atomic_t *count, void (*fail_fn)(atomic_t *))
-+{
-+	if (unlikely(__mutex_dec_return_lock(count) < 0))
-+		fail_fn(count);
-+}
-+
-+/**
-+ *  __mutex_fastpath_lock_retval - try to take the lock by moving the count
-+ *                                 from 1 to a 0 value
-+ *  @count: pointer of type atomic_t
-+ *  @fail_fn: function to call if the original value was not 1
-+ *
-+ * Change the count from 1 to a value lower than 1, and call <fail_fn> if
-+ * it wasn't 1 originally. This function returns 0 if the fastpath succeeds,
-+ * or anything the slow path function returns.
-+ */
-+static inline int
-+__mutex_fastpath_lock_retval(atomic_t *count, int (*fail_fn)(atomic_t *))
-+{
-+	if (unlikely(__mutex_dec_return_lock(count) < 0))
-+		return fail_fn(count);
-+	return 0;
-+}
-+
-+/**
-+ *  __mutex_fastpath_unlock - try to promote the count from 0 to 1
-+ *  @count: pointer of type atomic_t
-+ *  @fail_fn: function to call if the original value was not 0
-+ *
-+ * Try to promote the count from 0 to 1. If it wasn't 0, call <fail_fn>.
-+ * In the failure case, this function is allowed to either set the value to
-+ * 1, or to set it to a value lower than 1.
-+ */
-+static inline void
-+__mutex_fastpath_unlock(atomic_t *count, void (*fail_fn)(atomic_t *))
-+{
-+	if (unlikely(__mutex_inc_return_unlock(count) <= 0))
-+		fail_fn(count);
-+}
-+
-+#define __mutex_slowpath_needs_to_unlock()		1
-+
-+/**
-+ * __mutex_fastpath_trylock - try to acquire the mutex, without waiting
-+ *
-+ *  @count: pointer of type atomic_t
-+ *  @fail_fn: fallback function
-  *
-- * TODO: implement optimized primitives instead, or leave the generic
-- * implementation in place, or pick the atomic_xchg() based generic
-- * implementation. (see asm-generic/mutex-xchg.h for details)
-+ * Change the count from 1 to 0, and return 1 (success), or if the count
-+ * was not 1, then return 0 (failure).
-  */
-+static inline int
-+__mutex_fastpath_trylock(atomic_t *count, int (*fail_fn)(atomic_t *))
-+{
-+	if (likely(__mutex_cmpxchg_lock(count, 1, 0) == 1))
-+		return 1;
-+	return 0;
-+}
- 
--#include <asm-generic/mutex-dec.h>
-+#endif
+I don't understand why we don't just have a bit of code in the kernel
+itself that reserve that page on 44x at boot time and be done with it.
+
+It's like we are trying to be too smart and over-engineer the solution.
+
+Cheers,
+Ben.
