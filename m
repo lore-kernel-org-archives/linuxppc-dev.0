@@ -1,10 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <2743c30c538d24a0befee055bd6e0fcd746d0e82.1226550015.git.michael@ellerman.id.au>
+Message-Id: <4ccd209b3cc7e9a3b05686843509ea3fa6843a37.1226550015.git.michael@ellerman.id.au>
+In-Reply-To: <2743c30c538d24a0befee055bd6e0fcd746d0e82.1226550015.git.michael@ellerman.id.au>
+References: <2743c30c538d24a0befee055bd6e0fcd746d0e82.1226550015.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/4] Add helpers for finding a device node which as a certain
-	property
-Date: Thu, 13 Nov 2008 15:20:35 +1100 (EST)
+Subject: [PATCH 2/4] Use for_each_node_with_property() in of_irq_map_init()
+Date: Thu, 13 Nov 2008 15:20:37 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,80 +15,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This commit adds a routine for finding a device node which has a certain
-property, the contents of the property are not taken into account,
-merely the presence or absence of the property.
-
-Based on that routine, we add a for_each_ macro for iterating over all
-nodes that have a certain property.
-
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- drivers/of/base.c  |   34 ++++++++++++++++++++++++++++++++++
- include/linux/of.h |    6 ++++++
- 2 files changed, 40 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/prom_parse.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 7c79e94..0c3dcd0 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -329,6 +329,40 @@ struct device_node *of_find_compatible_node(struct device_node *from,
- EXPORT_SYMBOL(of_find_compatible_node);
+diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
+index bc1fb27..2a1c02c 100644
+--- a/arch/powerpc/kernel/prom_parse.c
++++ b/arch/powerpc/kernel/prom_parse.c
+@@ -731,10 +731,7 @@ void of_irq_map_init(unsigned int flags)
+ 	if (flags & OF_IMAP_NO_PHANDLE) {
+ 		struct device_node *np;
  
- /**
-+ *	of_find_node_with_property - Find a node which has a property with
-+ *                                   the given name.
-+ *	@from:		The node to start searching from or NULL, the node
-+ *			you pass will not be searched, only the next one
-+ *			will; typically, you pass what the previous call
-+ *			returned. of_node_put() will be called on it
-+ *	@prop_name:	The name of the property to look for.
-+ *
-+ *	Returns a node pointer with refcount incremented, use
-+ *	of_node_put() on it when done.
-+ */
-+struct device_node *of_find_node_with_property(struct device_node *from,
-+	const char *prop_name)
-+{
-+	struct device_node *np;
-+	struct property *pp;
-+
-+	read_lock(&devtree_lock);
-+	np = from ? from->allnext : allnodes;
-+	for (; np; np = np->allnext) {
-+		for (pp = np->properties; pp != 0; pp = pp->next) {
-+			if (of_prop_cmp(pp->name, prop_name) == 0) {
-+				goto out;
-+			}
-+		}
-+	}
-+out:
-+	of_node_put(from);
-+	read_unlock(&devtree_lock);
-+	return np;
-+}
-+EXPORT_SYMBOL(of_find_node_with_property);
-+
-+/**
-  * of_match_node - Tell if an device_node has a matching of_match structure
-  *	@matches:	array of of device match structures to search in
-  *	@node:		the of device structure to match against
-diff --git a/include/linux/of.h b/include/linux/of.h
-index e2488f5..6a7efa2 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -57,6 +57,12 @@ extern struct device_node *of_get_next_child(const struct device_node *node,
- 	for (child = of_get_next_child(parent, NULL); child != NULL; \
- 	     child = of_get_next_child(parent, child))
- 
-+extern struct device_node *of_find_node_with_property(
-+	struct device_node *from, const char *prop_name);
-+#define for_each_node_with_property(dn, prop_name) \
-+	for (dn = of_find_node_with_property(NULL, prop_name); dn; \
-+	     dn = of_find_node_with_property(dn, prop_name))
-+
- extern struct property *of_find_property(const struct device_node *np,
- 					 const char *name,
- 					 int *lenp);
+-		for(np = NULL; (np = of_find_all_nodes(np)) != NULL;) {
+-			if (of_get_property(np, "interrupt-controller", NULL)
+-			    == NULL)
+-				continue;
++		for_each_node_with_property(np, "interrupt-controller") {
+ 			/* Skip /chosen/interrupt-controller */
+ 			if (strcmp(np->name, "chosen") == 0)
+ 				continue;
 -- 
 1.5.5
