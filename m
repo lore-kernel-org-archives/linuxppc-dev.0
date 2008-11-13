@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2BC7DDDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 20:27:38 +1100 (EST)
-Subject: Re: [PATCH 4/4] Use of_find_node_with_property() in pmac_setup_arch()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <cf9d9fddba10efbfd006706d6c5e2e201ff80c67.1226550015.git.michael@ellerman.id.au>
-References: <2743c30c538d24a0befee055bd6e0fcd746d0e82.1226550015.git.michael@ellerman.id.au>
-	<cf9d9fddba10efbfd006706d6c5e2e201ff80c67.1226550015.git.michael@ellerman.id.au>
-Content-Type: text/plain
-Date: Thu, 13 Nov 2008 20:27:25 +1100
-Message-Id: <1226568445.7178.47.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1B00DDDDED
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 21:21:37 +1100 (EST)
+Date: Thu, 13 Nov 2008 21:21:21 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH] xsysace: use resource_size_t instead of unsigned long
+Message-Id: <20081113212121.e7a9f5fe.sfr@canb.auug.org.au>
+In-Reply-To: <200811131143.17752.yur@emcraft.com>
+References: <200811131143.17752.yur@emcraft.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__13_Nov_2008_21_21_21_+1100_Vnx4uizXowUDlsiM"
+Cc: Ilya Yanok <yanok@emcraft.com>, Detlev Zundel <dzu@denx.de>, Wolfgang,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-11-13 at 15:20 +1100, Michael Ellerman wrote:
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+--Signature=_Thu__13_Nov_2008_21_21_21_+1100_Vnx4uizXowUDlsiM
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Hi Yuri,
 
-> ---
->  arch/powerpc/platforms/powermac/setup.c |    4 +---
->  1 files changed, 1 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-> index 82c14d2..1293772 100644
-> --- a/arch/powerpc/platforms/powermac/setup.c
-> +++ b/arch/powerpc/platforms/powermac/setup.c
-> @@ -310,9 +310,7 @@ static void __init pmac_setup_arch(void)
->  	}
->  
->  	/* See if newworld or oldworld */
-> -	for (ic = NULL; (ic = of_find_all_nodes(ic)) != NULL; )
-> -		if (of_get_property(ic, "interrupt-controller", NULL))
-> -			break;
-> +	ic = of_find_node_with_property(NULL, "interrupt-controller");
->  	if (ic) {
->  		pmac_newworld = 1;
->  		of_node_put(ic);
+On Thu, 13 Nov 2008 11:43:17 +0300 Yuri Tikhonov <yur@emcraft.com> wrote:
+>
+> -	dev_dbg(ace->dev, "physaddr=3D0x%lx irq=3D%i\n", ace->physaddr, ace->ir=
+q);
+> +	dev_dbg(ace->dev, "physaddr=3D0x%llx irq=3D%i\n", (u64)ace->physaddr, a=
+ce->irq);
+
+You should cast the physaddr to "unsigned long long" as "u64" is
+"unsigned long" on some architectures.  The same is needed in other
+places as well.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__13_Nov_2008_21_21_21_+1100_Vnx4uizXowUDlsiM
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkb/6EACgkQjjKRsyhoI8wiTgCePjrm9Y10duP0TWuRfNLCJZJr
+iCQAnjxvR/sTUu2/GrgcESdm1jeRONVB
+=4C8A
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__13_Nov_2008_21_21_21_+1100_Vnx4uizXowUDlsiM--
