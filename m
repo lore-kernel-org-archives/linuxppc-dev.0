@@ -1,35 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2FFCCDDE07
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 04:55:13 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mADHsGiD000403
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 10:54:16 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mADHt0D3120032
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 10:55:01 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mADHsU83021340
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 10:54:31 -0700
-Date: Thu, 13 Nov 2008 12:54:51 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Ilya Yanok <yanok@emcraft.com>
-Subject: Re: [PATCH 11/11] ppc440spe-adma: ADMA driver for PPC440SP(e) systems
-Message-ID: <20081113125451.4a7bd7d9@zod.rchland.ibm.com>
-In-Reply-To: <491C68F3.3030102@emcraft.com>
-References: <1226589364-5619-1-git-send-email-yanok@emcraft.com>
-	<1226589364-5619-12-git-send-email-yanok@emcraft.com>
-	<20081113160307.GB2299@yoda.jdub.homelinux.org>
-	<491C68F3.3030102@emcraft.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, wd@denx.de,
-	dzu@denx.de
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 8BFE8DDDF6
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 05:26:29 +1100 (EST)
+Date: Thu, 13 Nov 2008 21:26:27 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Subject: [PATCH] net/ucc_geth: Fix oops in uec_get_ethtool_stats()
+Message-ID: <20081113182627.GA5104@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Li Yang <leoli@freescale.com>, David Miller <davem@davemloft.net>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,43 +21,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 13 Nov 2008 20:50:43 +0300
-Ilya Yanok <yanok@emcraft.com> wrote:
+p_{tx,rx}_fw_statistics_pram are special: they're available only when
+a device is open. If the device is closed, we should just fill the data
+with zeroes.
 
-> Josh Boyer wrote:
-> > On Thu, Nov 13, 2008 at 06:16:04PM +0300, Ilya Yanok wrote:
-> >   
-> >> Adds the platform device definitions and the architecture specific support
-> >> routines for the ppc440spe adma driver.
-> >>
-> >> Any board equipped with PPC440SP(e) controller may utilize this driver.
-> >>
-> >> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-> >> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
-> >>     
-> >
-> > Before I really dig into reviewing this driver, I'm going to ask you as simple
-> > question.  This looks like a 1/2 completed port of an arch/ppc driver that uses
-> > the device tree (incorrectly) to get the interrupt resources and that's about it.
-> > Otherwise, it's just a straight up platform device driver.  Is that correct?
-> >   
-> 
-> Yep, that's correct.
+Fixes the following oops:
 
-OK.
+root@b1:~# ifconfig eth1 down
+root@b1:~# ethtool -S eth1
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xc01e1dcc
+Oops: Kernel access of bad area, sig: 11 [#1]
+[...]
+NIP [c01e1dcc] uec_get_ethtool_stats+0x98/0x124
+LR [c0287cc8] ethtool_get_stats+0xfc/0x23c
+Call Trace:
+[cfaadde0] [c0287ca8] ethtool_get_stats+0xdc/0x23c (unreliable)
+[cfaade20] [c0288340] dev_ethtool+0x2fc/0x588
+[cfaade50] [c0285648] dev_ioctl+0x290/0x33c
+[cfaadea0] [c0272238] sock_ioctl+0x80/0x2ec
+[cfaadec0] [c00b5ae4] vfs_ioctl+0x40/0xc0
+[cfaadee0] [c00b5fa8] do_vfs_ioctl+0x78/0x20c
+[cfaadf10] [c00b617c] sys_ioctl+0x40/0x74
+[cfaadf40] [c00142d8] ret_from_syscall+0x0/0x38
+[...]
+---[ end trace b941007b2dfb9759 ]---
+Segmentation fault
 
-> > If that is the case, I think the driver needs more work before it can be merged.
-> > It should get the DCR and MMIO resources from the device tree as well.  It should
-> > be binding on compatible properties and not based on device tree paths.  And it
-> > should probably be an of_platform device driver.
-> >   
-> 
-> Surely, you're right. I agree with you in that this driver isn't ready
-> for merging. But it works so we'd like to publish it so interested
-> people could use it and test it.
+p.s. While at it, also remove u64 casts, they aren't needed.
 
-And that's fine.  I just wanted to see where you were headed with this
-one for now.  I'll try to do a review in the next few days.  Thanks for
-posting.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/ucc_geth_ethtool.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-josh
+diff --git a/drivers/net/ucc_geth_ethtool.c b/drivers/net/ucc_geth_ethtool.c
+index cfbbfee..7ed1638 100644
+--- a/drivers/net/ucc_geth_ethtool.c
++++ b/drivers/net/ucc_geth_ethtool.c
+@@ -324,17 +324,17 @@ static void uec_get_ethtool_stats(struct net_device *netdev,
+ 	if (stats_mode & UCC_GETH_STATISTICS_GATHERING_MODE_HARDWARE) {
+ 		base = (u32 __iomem *)&ugeth->ug_regs->tx64;
+ 		for (i = 0; i < UEC_HW_STATS_LEN; i++)
+-			data[j++] = (u64)in_be32(&base[i]);
++			data[j++] = in_be32(&base[i]);
+ 	}
+ 	if (stats_mode & UCC_GETH_STATISTICS_GATHERING_MODE_FIRMWARE_TX) {
+ 		base = (u32 __iomem *)ugeth->p_tx_fw_statistics_pram;
+ 		for (i = 0; i < UEC_TX_FW_STATS_LEN; i++)
+-			data[j++] = (u64)in_be32(&base[i]);
++			data[j++] = base ? in_be32(&base[i]) : 0;
+ 	}
+ 	if (stats_mode & UCC_GETH_STATISTICS_GATHERING_MODE_FIRMWARE_RX) {
+ 		base = (u32 __iomem *)ugeth->p_rx_fw_statistics_pram;
+ 		for (i = 0; i < UEC_RX_FW_STATS_LEN; i++)
+-			data[j++] = (u64)in_be32(&base[i]);
++			data[j++] = base ? in_be32(&base[i]) : 0;
+ 	}
+ }
+ 
+-- 
+1.5.6.3
