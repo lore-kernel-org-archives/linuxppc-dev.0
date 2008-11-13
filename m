@@ -1,32 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 823ABDDE01
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 22:45:47 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mADBjFYj013197
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 04:45:15 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mADBjf7K148968
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 04:45:41 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mADBjC76009576
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 04:45:12 -0700
-Date: Thu, 13 Nov 2008 06:45:33 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Yuri Tikhonov <yur@emcraft.com>
-Subject: Re: [PATCH] katmai.dts: extend DMA ranges; add dma/sysace nodes
-Message-ID: <20081113064533.77eccc1b@zod.rchland.ibm.com>
-In-Reply-To: <200811131149.14715.yur@emcraft.com>
-References: <200811131149.14715.yur@emcraft.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>,
-	Wolfgang Denk <wd@denx.de>, Ilya Yanok <yanok@emcraft.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 05DB5DDDEE
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 22:57:22 +1100 (EST)
+Date: Thu, 13 Nov 2008 14:57:20 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <dbrownell@users.sourceforge.net>
+Subject: [PATCH v2] usb/fsl_qe_udc: Report disconnect before unbinding
+Message-ID: <20081113115720.GA28276@oksana.dev.rtsoft.ru>
+References: <20081112185627.GA17699@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20081112185627.GA17699@oksana.dev.rtsoft.ru>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Li Yang <leoli@freescale.com>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,62 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 13 Nov 2008 11:49:14 +0300
-Yuri Tikhonov <yur@emcraft.com> wrote:
+Gadgets disable endpoints in their disconnect callbacks, so
+we must call disconnect before unbinding. This also fixes
+muram memory leak, since we free muram in the qe_ep_disable().
 
-> Hello,
-> 
-> This patch extends DMA ranges for PCI(X) to 4GB, so that it could
-> work on Katmais with 4GB RAM installed.
-> 
-> Add new nodes for the PPC440SPe DMA, XOR engines to
-> be used in the PPC440SPe ADMA driver, and the SysACE
-> controller, which connects Compact Flash to Katmai.
-> 
-> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
-> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-> ---
-> +		DMA0: dma0 {
-> +			interrupt-parent = <&DMA0>;
-> +			interrupts = <0 1>;
-> +			#interrupt-cells = <1>;
-> +			#address-cells = <0>;
-> +			#size-cells = <0>;
-> +			interrupt-map = <
-> +				0 &UIC0 0x14 4
-> +				1 &UIC1 0x16 4>;
-> +		};
-> +		DMA1: dma1 {
-> +			interrupt-parent = <&DMA1>;
-> +			interrupts = <0 1>;
-> +			#interrupt-cells = <1>;
-> +			#address-cells = <0>;
-> +			#size-cells = <0>;
-> +			interrupt-map = <
-> +				0 &UIC0 0x16 4
-> +				1 &UIC1 0x16 4>;
-> +		};
-> +		xor {
-> +			interrupt-parent = <&UIC1>;
-> +			interrupts = <0x1f 4>;
-> +		};
+But mainly the patch fixes following badness:
 
-You have no compatible property in these 3 nodes.  How are drivers
-supposed to bind to them?
+root@b1:~# insmod fsl_qe_udc.ko
+fsl_qe_udc: Freescale QE/CPM USB Device Controller driver, 1.0
+fsl_qe_udc e01006c0.usb: QE USB controller initialized as device
+root@b1:~# insmod g_ether.ko
+g_ether gadget: using random self ethernet address
+g_ether gadget: using random host ethernet address
+usb0: MAC be:2d:3c:fa:be:f0
+usb0: HOST MAC 62:b8:6a:df:38:66
+g_ether gadget: Ethernet Gadget, version: Memorial Day 2008
+g_ether gadget: g_ether ready
+fsl_qe_udc e01006c0.usb: fsl_qe_udc bind to driver g_ether
+g_ether gadget: high speed config #1: CDC Ethernet (ECM)
+root@b1:~# rmmod g_ether.ko
+------------[ cut here ]------------
+Badness at drivers/usb/gadget/composite.c:871
+[...]
+NIP [d10c1374] composite_unbind+0x24/0x15c [g_ether]
+LR [d10a82f4] usb_gadget_unregister_driver+0x128/0x168 [fsl_qe_udc]
+Call Trace:
+[cfb93e80] [cfb1f3a0] 0xcfb1f3a0 (unreliable)
+[cfb93eb0] [d10a82f4] usb_gadget_unregister_driver+0x128/0x168 [fsl_qe_udc]
+[cfb93ed0] [d10c2a3c] usb_composite_unregister+0x3c/0x4c [g_ether]
+[cfb93ee0] [c006bde0] sys_delete_module+0x130/0x19c
+[cfb93f40] [c00142d8] ret_from_syscall+0x0/0x38
+[...]
+fsl_qe_udc e01006c0.usb: unregistered gadget driver 'g_ether'
 
-You also have no reg or dcr-reg properties.  What exactly are these
-nodes for?
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
-> +		sysacecf@4fe000000 {
-> +			compatible = "xlnx,opb-sysace-1.00.b";
+v2:
+- Comment update per Alan Stern review.
 
-Odd.  This isn't a xilinx board by any means.  This should probably
-look something like:
+replaces
+usb.current/usb-fsl_qe_udc-report-disconnect-before-unbinding-fixing-oopses.patch
 
-	compatible = "amcc,sysace-440spe", "xlnx,opb-sysace-1.00.b";
+ drivers/usb/gadget/fsl_qe_udc.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-Though I'm curious about it in general.  The xilinx bindings have the
-versioning numbers on them to match particular bit-streams in the FPGAs
-if I remember correctly.  Does that really apply here?
-
-josh
+diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
+index 37c8575..3d6c956 100644
+--- a/drivers/usb/gadget/fsl_qe_udc.c
++++ b/drivers/usb/gadget/fsl_qe_udc.c
+@@ -2382,6 +2382,9 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
+ 		nuke(loop_ep, -ESHUTDOWN);
+ 	spin_unlock_irqrestore(&udc_controller->lock, flags);
+ 
++	/* report disconnect; the controller is already quiesced */
++	driver->disconnect(&udc_controller->gadget);
++
+ 	/* unbind gadget and unhook driver. */
+ 	driver->unbind(&udc_controller->gadget);
+ 	udc_controller->gadget.dev.driver = NULL;
+-- 
+1.5.6.3
