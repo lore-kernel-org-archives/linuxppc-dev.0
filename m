@@ -1,19 +1,20 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 803F3DDDF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 20:24:50 +1100 (EST)
-From: Yuri Tikhonov <yur@emcraft.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] xsysace: use resource_size_t instead of unsigned long
-Date: Thu, 13 Nov 2008 11:43:17 +0300
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200811131143.17752.yur@emcraft.com>
-Cc: Ilya Yanok <yanok@emcraft.com>, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>, linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 524E4DDDF0
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 20:26:07 +1100 (EST)
+Subject: Re: [PATCH] katmai.dts: extend DMA ranges; add dma/sysace nodes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Yuri Tikhonov <yur@emcraft.com>
+In-Reply-To: <200811131149.14715.yur@emcraft.com>
+References: <200811131149.14715.yur@emcraft.com>
+Content-Type: text/plain
+Date: Thu, 13 Nov 2008 20:25:52 +1100
+Message-Id: <1226568352.7178.44.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>,
+	Wolfgang Denk <wd@denx.de>, Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,92 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Thu, 2008-11-13 at 11:49 +0300, Yuri Tikhonov wrote:
+> Hello,
+> 
+> This patch extends DMA ranges for PCI(X) to 4GB, so that it could
+> work on Katmais with 4GB RAM installed.
 
-This patch adds using resource_size_t for physical address of SystemACE
-chip. This makes the driver workable on 32 bit systems with 64-bit resources
-(e.g. PPC440SPe).
+And where do you put MMIO ?
 
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
----
- drivers/block/xsysace.c |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
+The 32 bit part of the PCI space need to be split between MMIO and DMA. 
 
-diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
-index ecab9e6..f847305 100644
---- a/drivers/block/xsysace.c
-+++ b/drivers/block/xsysace.c
-@@ -194,7 +194,7 @@ struct ace_device {
- 	int in_irq;
- 
- 	/* Details of hardware device */
--	unsigned long physaddr;
-+	resource_size_t physaddr;
- 	void __iomem *baseaddr;
- 	int irq;
- 	int bus_width;		/* 0 := 8 bit; 1 := 16 bit */
-@@ -935,7 +935,7 @@ static int __devinit ace_setup(struct ace_device *ace)
- 	int rc;
- 
- 	dev_dbg(ace->dev, "ace_setup(ace=0x%p)\n", ace);
--	dev_dbg(ace->dev, "physaddr=0x%lx irq=%i\n", ace->physaddr, ace->irq);
-+	dev_dbg(ace->dev, "physaddr=0x%llx irq=%i\n", (u64)ace->physaddr, ace->irq);
- 
- 	spin_lock_init(&ace->lock);
- 	init_completion(&ace->id_completion);
-@@ -1017,8 +1017,8 @@ static int __devinit ace_setup(struct ace_device *ace)
- 	/* Print the identification */
- 	dev_info(ace->dev, "Xilinx SystemACE revision %i.%i.%i\n",
- 		 (version >> 12) & 0xf, (version >> 8) & 0x0f, version & 0xff);
--	dev_dbg(ace->dev, "physaddr 0x%lx, mapped to 0x%p, irq=%i\n",
--		ace->physaddr, ace->baseaddr, ace->irq);
-+	dev_dbg(ace->dev, "physaddr 0x%llx, mapped to 0x%p, irq=%i\n",
-+		(u64)ace->physaddr, ace->baseaddr, ace->irq);
- 
- 	ace->media_change = 1;
- 	ace_revalidate_disk(ace->gd);
-@@ -1035,8 +1035,8 @@ err_alloc_disk:
- err_blk_initq:
- 	iounmap(ace->baseaddr);
- err_ioremap:
--	dev_info(ace->dev, "xsysace: error initializing device at 0x%lx\n",
--	       ace->physaddr);
-+	dev_info(ace->dev, "xsysace: error initializing device at 0x%llx\n",
-+	       (u64)ace->physaddr);
- 	return -ENOMEM;
- }
- 
-@@ -1059,7 +1059,7 @@ static void __devexit ace_teardown(struct ace_device *ace)
- }
- 
- static int __devinit
--ace_alloc(struct device *dev, int id, unsigned long physaddr,
-+ace_alloc(struct device *dev, int id, resource_size_t physaddr,
- 	  int irq, int bus_width)
- {
- 	struct ace_device *ace;
-@@ -1119,7 +1119,7 @@ static void __devexit ace_free(struct device *dev)
- 
- static int __devinit ace_probe(struct platform_device *dev)
- {
--	unsigned long physaddr = 0;
-+	resource_size_t physaddr = 0;
- 	int bus_width = ACE_BUS_WIDTH_16; /* FIXME: should not be hard coded */
- 	int id = dev->id;
- 	int irq = NO_IRQ;
-@@ -1165,7 +1165,7 @@ static int __devinit
- ace_of_probe(struct of_device *op, const struct of_device_id *match)
- {
- 	struct resource res;
--	unsigned long physaddr;
-+	resource_size_t physaddr;
- 	const u32 *id;
- 	int irq, bus_width, rc;
- 
--- 
-1.5.6.1
+Ideally, for 64-bit capable DMA, device, we should create a second DMA
+range mapping the whole memory at something like 1T or so on PCI, and
+keep a smaller (ie. 2G) DMA range for 32-bit only devices backed with
+swiotlb.
 
--- 
-Yuri Tikhonov, Senior Software Engineer
-Emcraft Systems, www.emcraft.com
+Cheers,
+Ben.
