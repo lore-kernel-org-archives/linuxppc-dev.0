@@ -1,18 +1,22 @@
-Return-Path: <yanok@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+Return-Path: <michael.barkowski@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 02815DDF4E
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 02:16:59 +1100 (EST)
-From: Ilya Yanok <yanok@emcraft.com>
-To: linux-raid@vger.kernel.org
-Subject: [PATCH 09/11] md: change handle_stripe6 to work asynchronously
-Date: Thu, 13 Nov 2008 18:16:02 +0300
-Message-Id: <1226589364-5619-10-git-send-email-yanok@emcraft.com>
-In-Reply-To: <1226589364-5619-1-git-send-email-yanok@emcraft.com>
-References: <1226589364-5619-1-git-send-email-yanok@emcraft.com>
-Cc: linuxppc-dev@ozlabs.org, dzu@denx.de, wd@denx.de,
-	Ilya Yanok <yanok@emcraft.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0D4E9DE714
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 02:18:39 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	mADFIYBP005224
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 08:18:35 -0700 (MST)
+Message-ID: <491C4544.7020707@freescale.com>
+Date: Thu, 13 Nov 2008 10:18:28 -0500
+From: Michael Barkowski <michael.barkowski@freescale.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] mpc832x_rdb: fix swapped ethernet ids
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,214 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-handle_stripe6 function is changed to do things asynchronously.
+ethernet0 (called FSL UEC0 in U-Boot) should be enet1 (UCC3/eth1), and
+ethernet1 should be enet0 (UCC2/eth0), to be consistent with U-Boot so
+that the interfaces do not swap addresses when control passes from
+U-Boot to the kernel.
 
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+Signed-off-by: Michael Barkowski <michael.barkowski@freescale.com>
+Acked-by: Kim Phillips <kim.phillips@freescale.com>
 ---
- drivers/md/raid5.c |  130 ++++++++++++++++++++++++++++++++++++----------------
- 1 files changed, 90 insertions(+), 40 deletions(-)
+Cheat sheet:
+| *Nickname* | WAN port | LAN switch |
+| *MAC address* | ethaddr | eth1addr |
+| *U-Boot name* | FSL UEC0 | FSL UEC1 |
+| *Linux name* | eth1 | eth0 |
+| *Phy ID* | 4 | 0 |
+| *QE Device* | UCC3@2200 | UCC2@3000 |
 
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index 963bc4b..79e8c74 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -3119,9 +3119,10 @@ static bool handle_stripe6(struct stripe_head *sh, struct page *tmp_page)
- 
- 	r6s.qd_idx = raid6_next_disk(pd_idx, disks);
- 	pr_debug("handling stripe %llu, state=%#lx cnt=%d, "
--		"pd_idx=%d, qd_idx=%d\n",
-+		"pd_idx=%d, qd_idx=%d\n, check:%d, reconstruct:%d\n",
- 	       (unsigned long long)sh->sector, sh->state,
--	       atomic_read(&sh->count), pd_idx, r6s.qd_idx);
-+	       atomic_read(&sh->count), pd_idx, r6s.qd_idx,
-+	       sh->check_state, sh->reconstruct_state);
- 	memset(&s, 0, sizeof(s));
- 
- 	spin_lock(&sh->lock);
-@@ -3141,35 +3142,24 @@ static bool handle_stripe6(struct stripe_head *sh, struct page *tmp_page)
- 
- 		pr_debug("check %d: state 0x%lx read %p write %p written %p\n",
- 			i, dev->flags, dev->toread, dev->towrite, dev->written);
--		/* maybe we can reply to a read */
--		if (test_bit(R5_UPTODATE, &dev->flags) && dev->toread) {
--			struct bio *rbi, *rbi2;
--			pr_debug("Return read for disc %d\n", i);
--			spin_lock_irq(&conf->device_lock);
--			rbi = dev->toread;
--			dev->toread = NULL;
--			if (test_and_clear_bit(R5_Overlap, &dev->flags))
--				wake_up(&conf->wait_for_overlap);
--			spin_unlock_irq(&conf->device_lock);
--			while (rbi && rbi->bi_sector < dev->sector + STRIPE_SECTORS) {
--				copy_data(0, rbi, dev->page, dev->sector);
--				rbi2 = r5_next_bio(rbi, dev->sector);
--				spin_lock_irq(&conf->device_lock);
--				if (!raid5_dec_bi_phys_segments(rbi)) {
--					rbi->bi_next = return_bi;
--					return_bi = rbi;
--				}
--				spin_unlock_irq(&conf->device_lock);
--				rbi = rbi2;
--			}
--		}
-+		/* maybe we can reply to a read
-+		 *
-+		 * new wantfill requests are only permitted while
-+		 * ops_complete_biofill is guaranteed to be inactive
-+		 */
-+		if (test_bit(R5_UPTODATE, &dev->flags) && dev->toread &&
-+		    !test_bit(STRIPE_BIOFILL_RUN, &sh->state))
-+			set_bit(R5_Wantfill, &dev->flags);
- 
- 		/* now count some things */
- 		if (test_bit(R5_LOCKED, &dev->flags)) s.locked++;
- 		if (test_bit(R5_UPTODATE, &dev->flags)) s.uptodate++;
-+		if (test_bit(R5_Wantcompute, &dev->flags))
-+			BUG_ON(++s.compute > 2);
- 
--
--		if (dev->toread)
-+		if (test_bit(R5_Wantfill, &dev->flags)) {
-+			s.to_fill++;
-+		} else if (dev->toread)
- 			s.to_read++;
- 		if (dev->towrite) {
- 			s.to_write++;
-@@ -3210,6 +3200,11 @@ static bool handle_stripe6(struct stripe_head *sh, struct page *tmp_page)
- 		blocked_rdev = NULL;
- 	}
- 
-+	if (s.to_fill && !test_bit(STRIPE_BIOFILL_RUN, &sh->state)) {
-+		set_bit(STRIPE_OP_BIOFILL, &s.ops_request);
-+		set_bit(STRIPE_BIOFILL_RUN, &sh->state);
-+	}
-+
- 	pr_debug("locked=%d uptodate=%d to_read=%d"
- 	       " to_write=%d failed=%d failed_num=%d,%d\n",
- 	       s.locked, s.uptodate, s.to_read, s.to_write, s.failed,
-@@ -3250,18 +3245,62 @@ static bool handle_stripe6(struct stripe_head *sh, struct page *tmp_page)
- 	 * or to load a block that is being partially written.
- 	 */
- 	if (s.to_read || s.non_overwrite || (s.to_write && s.failed) ||
--	    (s.syncing && (s.uptodate < disks)) || s.expanding)
-+	    (s.syncing && (s.uptodate + s.compute < disks)) || s.expanding)
- 		handle_stripe_fill6(sh, &s, &r6s, disks);
- 
--	/* now to consider writing and what else, if anything should be read */
--	if (s.to_write)
-+	/* Now we check to see if any write operations have recently
-+	 * completed
-+	 */
-+	if (sh->reconstruct_state == reconstruct_state_drain_result) {
-+		int qd_idx = raid6_next_disk(sh->pd_idx,
-+					     conf->raid_disks);
-+
-+		sh->reconstruct_state = reconstruct_state_idle;
-+		/* All the 'written' buffers and the parity blocks are ready to
-+		 * be written back to disk
-+		 */
-+		BUG_ON(!test_bit(R5_UPTODATE, &sh->dev[sh->pd_idx].flags));
-+		BUG_ON(!test_bit(R5_UPTODATE, &sh->dev[qd_idx].flags));
-+		for (i = disks; i--; ) {
-+			dev = &sh->dev[i];
-+			if (test_bit(R5_LOCKED, &dev->flags) &&
-+			    (i == sh->pd_idx || i == qd_idx ||
-+			     dev->written)) {
-+				pr_debug("Writing block %d\n", i);
-+				BUG_ON(!test_bit(R5_UPTODATE, &dev->flags));
-+				set_bit(R5_Wantwrite, &dev->flags);
-+				if (!test_bit(R5_Insync, &dev->flags) ||
-+				    ((i == sh->pd_idx || i == qd_idx) &&
-+				      s.failed == 0))
-+					set_bit(STRIPE_INSYNC, &sh->state);
-+			}
-+		}
-+		if (test_and_clear_bit(STRIPE_PREREAD_ACTIVE, &sh->state)) {
-+			atomic_dec(&conf->preread_active_stripes);
-+			if (atomic_read(&conf->preread_active_stripes) <
-+				IO_THRESHOLD)
-+				md_wakeup_thread(conf->mddev->thread);
-+		}
-+	}
-+
-+	/* Now to consider new write requests and what else, if anything
-+	 * should be read.  We do not handle new writes when:
-+	 * 1/ A 'write' operation (copy+xor) is already in flight.
-+	 * 2/ A 'check' operation is in flight, as it may clobber the parity
-+	 *    block.
-+	 */
-+	if (s.to_write && !sh->reconstruct_state && !sh->check_state)
- 		handle_stripe_dirtying6(conf, sh, &s, &r6s, disks);
- 
- 	/* maybe we need to check and possibly fix the parity for this stripe
- 	 * Any reads will already have been scheduled, so we just see if enough
--	 * data is available
-+	 * data is available.  The parity check is held off while parity
-+	 * dependent operations are in flight.
- 	 */
--	if (s.syncing && s.locked == 0 && !test_bit(STRIPE_INSYNC, &sh->state))
-+	if (sh->check_state ||
-+	    (s.syncing && s.locked == 0 &&
-+	     !test_bit(STRIPE_COMPUTE_RUN, &sh->state) &&
-+	     !test_bit(STRIPE_INSYNC, &sh->state)))
- 		handle_parity_checks6(conf, sh, &s, &r6s, tmp_page, disks);
- 
- 	if (s.syncing && s.locked == 0 && test_bit(STRIPE_INSYNC, &sh->state)) {
-@@ -3283,27 +3322,35 @@ static bool handle_stripe6(struct stripe_head *sh, struct page *tmp_page)
- 					set_bit(R5_Wantwrite, &dev->flags);
- 					set_bit(R5_ReWrite, &dev->flags);
- 					set_bit(R5_LOCKED, &dev->flags);
-+					s.locked++;
- 				} else {
- 					/* let's read it back */
- 					set_bit(R5_Wantread, &dev->flags);
- 					set_bit(R5_LOCKED, &dev->flags);
-+					s.locked++;
- 				}
- 			}
- 		}
- 
--	if (s.expanded && test_bit(STRIPE_EXPANDING, &sh->state)) {
-+	/* Finish reconstruct operations initiated by the expansion process */
-+	if (sh->reconstruct_state == reconstruct_state_result) {
-+		sh->reconstruct_state = reconstruct_state_idle;
-+		clear_bit(STRIPE_EXPANDING, &sh->state);
-+		for (i = conf->raid_disks; i--; ) {
-+			set_bit(R5_Wantwrite, &sh->dev[i].flags);
-+			set_bit(R5_LOCKED, &sh->dev[i].flags);
-+			s.locked++;
-+		}
-+	}
-+
-+	if (s.expanded && test_bit(STRIPE_EXPANDING, &sh->state) &&
-+	    !sh->reconstruct_state) {
- 		/* Need to write out all blocks after computing P&Q */
- 		sh->disks = conf->raid_disks;
- 		sh->pd_idx = stripe_to_pdidx(sh->sector, conf,
- 					     conf->raid_disks);
--		compute_parity6(sh, RECONSTRUCT_WRITE);
--		for (i = conf->raid_disks ; i-- ;  ) {
--			set_bit(R5_LOCKED, &sh->dev[i].flags);
--			s.locked++;
--			set_bit(R5_Wantwrite, &sh->dev[i].flags);
--		}
--		clear_bit(STRIPE_EXPANDING, &sh->state);
--	} else if (s.expanded) {
-+		schedule_reconstruction(sh, &s, 1, 1);
-+	} else if (s.expanded && !sh->reconstruct_state && s.locked == 0) {
- 		clear_bit(STRIPE_EXPAND_READY, &sh->state);
- 		atomic_dec(&conf->reshape_stripes);
- 		wake_up(&conf->wait_for_overlap);
-@@ -3321,6 +3368,9 @@ static bool handle_stripe6(struct stripe_head *sh, struct page *tmp_page)
- 	if (unlikely(blocked_rdev))
- 		md_wait_for_blocked_rdev(blocked_rdev, conf->mddev);
- 
-+	if (s.ops_request)
-+		raid_run_ops(sh, s.ops_request);
-+
- 	ops_run_io(sh, &s);
- 
- 	return_io(return_bi);
+arch/powerpc/boot/dts/mpc832x_rdb.dts |    4 ++--
+1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+index 226ff06..dea3091 100644
+--- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+@@ -18,8 +18,8 @@
+	#size-cells = <1>;
+
+	aliases {
+-		ethernet0 = &enet0;
+-		ethernet1 = &enet1;
++		ethernet0 = &enet1;
++		ethernet1 = &enet0;
+		serial0 = &serial0;
+		serial1 = &serial1;
+		pci0 = &pci0;
 -- 
-1.5.6.1
+1.5.4.3
