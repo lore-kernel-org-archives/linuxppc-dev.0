@@ -2,18 +2,18 @@ Return-Path: <yur@emcraft.com>
 Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9E2DBDDDF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 19:56:47 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 803F3DDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 20:24:50 +1100 (EST)
 From: Yuri Tikhonov <yur@emcraft.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] katmai.dts: extend DMA ranges; add dma/sysace nodes
-Date: Thu, 13 Nov 2008 11:49:14 +0300
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] xsysace: use resource_size_t instead of unsigned long
+Date: Thu, 13 Nov 2008 11:43:17 +0300
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200811131149.14715.yur@emcraft.com>
+Message-Id: <200811131143.17752.yur@emcraft.com>
 Cc: Ilya Yanok <yanok@emcraft.com>, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>
+	Detlev Zundel <dzu@denx.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,107 +25,89 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hello,
 
-This patch extends DMA ranges for PCI(X) to 4GB, so that it could
-work on Katmais with 4GB RAM installed.
+This patch adds using resource_size_t for physical address of SystemACE
+chip. This makes the driver workable on 32 bit systems with 64-bit resources
+(e.g. PPC440SPe).
 
-Add new nodes for the PPC440SPe DMA, XOR engines to
-be used in the PPC440SPe ADMA driver, and the SysACE
-controller, which connects Compact Flash to Katmai.
-
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
 Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
 ---
- arch/powerpc/boot/dts/katmai.dts |   46 +++++++++++++++++++++++++++++++------
- 1 files changed, 38 insertions(+), 8 deletions(-)
+ drivers/block/xsysace.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
-index 077819b..7749478 100644
---- a/arch/powerpc/boot/dts/katmai.dts
-+++ b/arch/powerpc/boot/dts/katmai.dts
-@@ -245,8 +245,8 @@
- 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000d 0x80000000 0x00000000 0x80000000
- 				  0x01000000 0x00000000 0x00000000 0x0000000c 0x08000000 0x00000000 0x00010000>;
+diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
+index ecab9e6..f847305 100644
+--- a/drivers/block/xsysace.c
++++ b/drivers/block/xsysace.c
+@@ -194,7 +194,7 @@ struct ace_device {
+ 	int in_irq;
  
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+			/* Inbound 4GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x1 0x00000000>;
+ 	/* Details of hardware device */
+-	unsigned long physaddr;
++	resource_size_t physaddr;
+ 	void __iomem *baseaddr;
+ 	int irq;
+ 	int bus_width;		/* 0 := 8 bit; 1 := 16 bit */
+@@ -935,7 +935,7 @@ static int __devinit ace_setup(struct ace_device *ace)
+ 	int rc;
  
- 			/* This drives busses 0 to 0xf */
- 			bus-range = <0x0 0xf>;
-@@ -289,8 +289,8 @@
- 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000e 0x00000000 0x00000000 0x80000000
- 				  0x01000000 0x00000000 0x00000000 0x0000000f 0x80000000 0x00000000 0x00010000>;
+ 	dev_dbg(ace->dev, "ace_setup(ace=0x%p)\n", ace);
+-	dev_dbg(ace->dev, "physaddr=0x%lx irq=%i\n", ace->physaddr, ace->irq);
++	dev_dbg(ace->dev, "physaddr=0x%llx irq=%i\n", (u64)ace->physaddr, ace->irq);
  
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+			/* Inbound 4GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x1 0x00000000>;
+ 	spin_lock_init(&ace->lock);
+ 	init_completion(&ace->id_completion);
+@@ -1017,8 +1017,8 @@ static int __devinit ace_setup(struct ace_device *ace)
+ 	/* Print the identification */
+ 	dev_info(ace->dev, "Xilinx SystemACE revision %i.%i.%i\n",
+ 		 (version >> 12) & 0xf, (version >> 8) & 0x0f, version & 0xff);
+-	dev_dbg(ace->dev, "physaddr 0x%lx, mapped to 0x%p, irq=%i\n",
+-		ace->physaddr, ace->baseaddr, ace->irq);
++	dev_dbg(ace->dev, "physaddr 0x%llx, mapped to 0x%p, irq=%i\n",
++		(u64)ace->physaddr, ace->baseaddr, ace->irq);
  
- 			/* This drives busses 10 to 0x1f */
- 			bus-range = <0x10 0x1f>;
-@@ -330,8 +330,8 @@
- 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000e 0x80000000 0x00000000 0x80000000
- 				  0x01000000 0x00000000 0x00000000 0x0000000f 0x80010000 0x00000000 0x00010000>;
+ 	ace->media_change = 1;
+ 	ace_revalidate_disk(ace->gd);
+@@ -1035,8 +1035,8 @@ err_alloc_disk:
+ err_blk_initq:
+ 	iounmap(ace->baseaddr);
+ err_ioremap:
+-	dev_info(ace->dev, "xsysace: error initializing device at 0x%lx\n",
+-	       ace->physaddr);
++	dev_info(ace->dev, "xsysace: error initializing device at 0x%llx\n",
++	       (u64)ace->physaddr);
+ 	return -ENOMEM;
+ }
  
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+			/* Inbound 4GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x1 0x00000000>;
+@@ -1059,7 +1059,7 @@ static void __devexit ace_teardown(struct ace_device *ace)
+ }
  
- 			/* This drives busses 10 to 0x1f */
- 			bus-range = <0x20 0x2f>;
-@@ -371,8 +371,8 @@
- 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000f 0x00000000 0x00000000 0x80000000
- 				  0x01000000 0x00000000 0x00000000 0x0000000f 0x80020000 0x00000000 0x00010000>;
+ static int __devinit
+-ace_alloc(struct device *dev, int id, unsigned long physaddr,
++ace_alloc(struct device *dev, int id, resource_size_t physaddr,
+ 	  int irq, int bus_width)
+ {
+ 	struct ace_device *ace;
+@@ -1119,7 +1119,7 @@ static void __devexit ace_free(struct device *dev)
  
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+			/* Inbound 4GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x1 0x00000000>;
+ static int __devinit ace_probe(struct platform_device *dev)
+ {
+-	unsigned long physaddr = 0;
++	resource_size_t physaddr = 0;
+ 	int bus_width = ACE_BUS_WIDTH_16; /* FIXME: should not be hard coded */
+ 	int id = dev->id;
+ 	int irq = NO_IRQ;
+@@ -1165,7 +1165,7 @@ static int __devinit
+ ace_of_probe(struct of_device *op, const struct of_device_id *match)
+ {
+ 	struct resource res;
+-	unsigned long physaddr;
++	resource_size_t physaddr;
+ 	const u32 *id;
+ 	int irq, bus_width, rc;
  
- 			/* This drives busses 10 to 0x1f */
- 			bus-range = <0x30 0x3f>;
-@@ -392,6 +392,36 @@
- 				0x0 0x0 0x0 0x3 &UIC3 0xa 0x4 /* swizzled int C */
- 				0x0 0x0 0x0 0x4 &UIC3 0xb 0x4 /* swizzled int D */>;
- 		};
-+		DMA0: dma0 {
-+			interrupt-parent = <&DMA0>;
-+			interrupts = <0 1>;
-+			#interrupt-cells = <1>;
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			interrupt-map = <
-+				0 &UIC0 0x14 4
-+				1 &UIC1 0x16 4>;
-+		};
-+		DMA1: dma1 {
-+			interrupt-parent = <&DMA1>;
-+			interrupts = <0 1>;
-+			#interrupt-cells = <1>;
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			interrupt-map = <
-+				0 &UIC0 0x16 4
-+				1 &UIC1 0x16 4>;
-+		};
-+		xor {
-+			interrupt-parent = <&UIC1>;
-+			interrupts = <0x1f 4>;
-+		};
-+		sysacecf@4fe000000 {
-+			compatible = "xlnx,opb-sysace-1.00.b";
-+			interrupt-parent = <&UIC2>;
-+			interrupts = <0x19 4>;
-+			reg = <0x00000004 0xfe000000 0x100>;
-+		};
- 	};
- 
- 	chosen {
 -- 
 1.5.6.1
-
 
 -- 
 Yuri Tikhonov, Senior Software Engineer
