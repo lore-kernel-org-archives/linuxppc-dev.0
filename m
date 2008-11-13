@@ -1,11 +1,12 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <4ccd209b3cc7e9a3b05686843509ea3fa6843a37.1226550015.git.michael@ellerman.id.au>
+Message-Id: <ee954714b1cd2d8bed2e52b79adf89805acd45bf.1226550015.git.michael@ellerman.id.au>
 In-Reply-To: <2743c30c538d24a0befee055bd6e0fcd746d0e82.1226550015.git.michael@ellerman.id.au>
 References: <2743c30c538d24a0befee055bd6e0fcd746d0e82.1226550015.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 2/4] Use for_each_node_with_property() in of_irq_map_init()
-Date: Thu, 13 Nov 2008 15:20:37 +1100 (EST)
+Subject: [PATCH 3/4] Use of_find_node_with_property() in
+	cell_iommu_fixed_mapping_init()
+Date: Thu, 13 Nov 2008 15:20:40 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,24 +18,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom_parse.c |    5 +----
+ arch/powerpc/platforms/cell/iommu.c |    5 +----
  1 files changed, 1 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
-index bc1fb27..2a1c02c 100644
---- a/arch/powerpc/kernel/prom_parse.c
-+++ b/arch/powerpc/kernel/prom_parse.c
-@@ -731,10 +731,7 @@ void of_irq_map_init(unsigned int flags)
- 	if (flags & OF_IMAP_NO_PHANDLE) {
- 		struct device_node *np;
+diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+index 3168272..86db4dd 100644
+--- a/arch/powerpc/platforms/cell/iommu.c
++++ b/arch/powerpc/platforms/cell/iommu.c
+@@ -1053,10 +1053,7 @@ static int __init cell_iommu_fixed_mapping_init(void)
+ 	}
  
--		for(np = NULL; (np = of_find_all_nodes(np)) != NULL;) {
--			if (of_get_property(np, "interrupt-controller", NULL)
--			    == NULL)
--				continue;
-+		for_each_node_with_property(np, "interrupt-controller") {
- 			/* Skip /chosen/interrupt-controller */
- 			if (strcmp(np->name, "chosen") == 0)
- 				continue;
+ 	/* We must have dma-ranges properties for fixed mapping to work */
+-	for (np = NULL; (np = of_find_all_nodes(np));) {
+-		if (of_find_property(np, "dma-ranges", NULL))
+-			break;
+-	}
++	np = of_find_node_with_property(NULL, "dma-ranges");
+ 	of_node_put(np);
+ 
+ 	if (!np) {
 -- 
 1.5.5
