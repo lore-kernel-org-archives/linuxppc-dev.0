@@ -1,22 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.238])
-	by ozlabs.org (Postfix) with ESMTP id 3AF89DDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 16:00:06 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so1260418rvb.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 21:00:04 -0800 (PST)
-Date: Thu, 13 Nov 2008 22:00:01 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4AC63DDDDB
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 16:21:49 +1100 (EST)
+Date: Fri, 14 Nov 2008 08:21:15 +0300
+From: Yuri Tikhonov <yur@emcraft.com>
+Message-ID: <314426140.20081114082115@emcraft.com>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] katmai.dts: extend DMA ranges; add dma/sysace nodes
-Message-ID: <20081114050001.GA15181@secretlab.ca>
+Subject: Re[2]: [PATCH] katmai.dts: extend DMA ranges; add dma/sysace nodes
+In-Reply-To: <20081113064533.77eccc1b@zod.rchland.ibm.com>
 References: <200811131149.14715.yur@emcraft.com>
 	<20081113064533.77eccc1b@zod.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081113064533.77eccc1b@zod.rchland.ibm.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, Ilya Yanok <yanok@emcraft.com>,
-	Detlev Zundel <dzu@denx.de>, Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=windows-1251
+Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>,
+	Wolfgang Denk <wd@denx.de>, Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 13, 2008 at 06:45:33AM -0500, Josh Boyer wrote:
-> On Thu, 13 Nov 2008 11:49:14 +0300
-> Yuri Tikhonov <yur@emcraft.com> wrote:
-> > +		sysacecf@4fe000000 {
-> > +			compatible = "xlnx,opb-sysace-1.00.b";
-> 
+=0D=0A Hello Josh,
+
+On Thursday, November 13, 2008 you wrote:
+
+[snip]
+
+> You have no compatible property in these 3 nodes.  How are drivers
+> supposed to bind to them?
+
+> You also have no reg or dcr-reg properties.  What exactly are these
+> nodes for?
+
+ Probably we (me and Ilya) overdone with posting katmai.dts-related=20
+changes to ML, and duplicated the same patches in different posts.=20
+Sorry for the confusion. These nodes are necessary for the ppc440spe=20
+ADMA driver:
+
+http://www.nabble.com/-PATCH-11-11--ppc440spe-adma:-ADMA-driver-for-PPC440S=
+P(e)-td20488049.html
+
+>> +             sysacecf@4fe000000 {
+>> +                     compatible =3D "xlnx,opb-sysace-1.00.b";
+
 > Odd.  This isn't a xilinx board by any means.  This should probably
 > look something like:
-> 
-> 	compatible = "amcc,sysace-440spe", "xlnx,opb-sysace-1.00.b";
 
-Actually, if there is a sysace, it is definitely a xilinx part.  It
-won't be on the SoC.  However, compatible = "xlnx,opb-sysace-1.00.b"
-isn't really accurate.  It should really be compatible = "xlnx,sysace"
-and the driver modified to accept this string.  "xlnx,opb-sysace-1.00.b"
-is an FPGA block used to interface to the system ace which is
-definitely not in use here.
+>         compatible =3D "amcc,sysace-440spe", "xlnx,opb-sysace-1.00.b";
 
-So while it does get things to work, it is not a clean description of
-the hardware.
+> Though I'm curious about it in general.  The xilinx bindings have the
+> versioning numbers on them to match particular bit-streams in the FPGAs
+> if I remember correctly.  Does that really apply here?
 
-g.
+ No, we just selected the description which looked more appropriate=20
+for our case: SysAce is connected to the External Bus Controller of=20
+440SPe, which in turns is attached as a slave to OPB (on-chip=20
+peripheral).
+
+ Regards, Yuri
+
+ --
+ Yuri Tikhonov, Senior Software Engineer
+ Emcraft Systems, www.emcraft.com
