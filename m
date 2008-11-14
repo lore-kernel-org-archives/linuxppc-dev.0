@@ -1,18 +1,16 @@
-Return-Path: <miltonm@bga.com>
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 4CF35DDDD8
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Nov 2008 04:25:07 +1100 (EST)
-In-Reply-To: <4b6790c7a989dce8c200000687275224@bga.com>
-References: <4b6790c7a989dce8c200000687275224@bga.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <84e16946c1ed4b782568f6492931512a@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] [v3] powerpc/4xx: work around CHIP11 errata in a more
-	PAGE_SIZE-friendly way
-Date: Fri, 14 Nov 2008 11:29:35 -0600
-To: Ben Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>, Hollis Blanchard <hollisb@us.ibm.com>
+Return-Path: <peerlessdeepaks@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.172])
+	by ozlabs.org (Postfix) with ESMTP id ECDB5DDDD4
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Nov 2008 05:33:41 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so1574733wfg.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 10:33:40 -0800 (PST)
+Message-ID: <cbaa36330811141033y305285f9r97489ad5f85dd002@mail.gmail.com>
+Date: Sat, 15 Nov 2008 00:03:40 +0530
+From: "Deepak Pandian" <peerlessdeepaks@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Canyonlands PCIE Interrupt Handler
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,87 +20,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Resend with correct reply threading.
+Hi,
 
-On Fri Nov 14 at 06:54:15 EST in 2008, Hollis Blanchard wrote:
-> On Thu, 2008-11-13 at 07:44 +1100, Benjamin Herrenschmidt wrote:
->> Again, why can't we just stick something in the kernel code that
->> reserves the last page ? It could be in prom.c or it could be called 
->> by
->> affected 4xx platforms by the platform code, whatever, but the reserve
->> map isn't really meant for that and will not be passed over from 
->> kernel
->> to kernel by kexec.
->
-> Reserving a page is overkill; only the last 256 bytes are affected. We
-> need to intercept at the LMB level, because allocations are already 
-> done
-> there, so by the time we hit bootmem it's way too late.
+I am trying to implement a platform driver for msi.  Whenever I write
+in to the PCIE-IH space, the kernel stops abruptly and the system is
+reset.
 
-I agree with Ben we need to have something in the tree to tell kexec 
-and or the kernel of this errata, unless we adapt the kernel to not 
-require the memory node be page size aligned.
+ Below is the part of the code which lead me to the brick wall!
 
-I instigated a discussion with Josh and Hollis on irc.
+I am getting the PCIEIH base addr  from dts .
+          if (of_address_to_resource(dn, 0,&pcieih_reg)) {
 
-> I simply don't see a good place to do this in the kernel. It would have
-> to be before the first lmb_alloc() call, which for safety would put it
-> inside early_init_devtree() -- along with the other lmb_reserve()
-> calls.[1]
->
-> [1] This is exactly where flat device tree reservations are done, and
-> that's why the patch I submitted works.
+                printk(KERN_ERR "%s: Can't get PCIEIH Resource !",
+
+                       dn->full_name);
+
+                return -1;
+
+       	 }
+
+	
+        pcieih_base = ioremap(pcieih_reg.start, pcieih_reg.end + 1 -
+pcieih_reg.start);
+        out_be32(pcieih_base + PEIH_TERMADL, PPC4XX_PCIE_MSI_LADDR)
+
+       Whenever I try to access the registers in PCIE-IH space the
+device gets restarted.
 
 
-> However, ppc_md.probe() hasn't even been called yet, so there's no way
-> of knowing if we're on an affected system, unless you want to add a
-> special of_scan_flat_dt() call here.
+I have one more clarification to be made. The datasheet says that the
+PCIE-IH  registers are implemented at EF62 0000. But the SDR registers
+- PESDRn_PEIHS1 and PESDRn_PEIHS2 reset value is c00100000.
 
-I think we decided a property is the right way to go, but am not sure 
-we decided if it should be a specific property in the /cpus/cpu@* nodes 
-or a general property that describes a base and length ... in which 
-case it is either a property in /memory (cpus nodes are not part of the 
-system address space, with an independent size 0 address space).   It 
-was also noted if we go the property route. that kexec tools would need 
-to know about it since it allocates destination pages based on reading 
-/memory reg ranges, although it also has a hardcoded 768M limit which 
-might hide this.
+When I read the SDR registers I am getting only 000000 instead of the
+specified reset value.
 
-> I'm open to suggestions, but I don't see a better way than what I
-> already sent. I think the important part is to call lmb_add() for all
-> memory, but lmb_reserve() the last 256 bytes before lmb_alloc() 
-> happens.
->
-> It sounds like kexec must have some knowledge of the platform and 
-> device
-> tree already, so is this really a big deal? At any rate, this
-> conversation is somewhat academic, since there is no kexec on 44x... so
-> maybe this can be re-addressed when that becomes a real issue.
+ sdrbase = of_get_property(dn, "sdr-base", NULL);
 
-As discussed, kexec userspace has some ideas of platforms, but its very 
-general and should not have lists of which cpus have an errata but 
-should base all its decisions off the device tree.
+        if (sdrbase == NULL) {
 
-Alternatives to adding a property include just trimming the memory node 
-(and fixing the kernel to handle memory size not being page aligned), 
-and adding an additional node that says this memory is in use.  We 
-should handle the memory size not some big power of 2 anyways, and if 
-we just create a new node it should not overlap the memory node 
-anyways.  Although we did note that due to current kexec implementation 
-we can name a node starting with /rtas and use linux,rtas-base and 
-rtas-size to reserve any 32 bit chunk of memory even to kexec, although 
-that is considered beyond acceptable for this errata fix (some else 
-might want to join me in using that to reserve memory for log buffers 
-across boot).
+                printk(KERN_ERR "PCIEIH-msi: missing sdr-base for %s\n",
 
-It has been described to me that the bug affects any access to the 256 
-bytes, so it would be accurate to describe the memory as not existing 
-or as this cpu has an errata tnd the dram is really here.  I just say 
-it needs to be described in the device tree.  Trimming the memory node 
-has the advantage that kexec userspace will not need a patch, adding 
-the cpu has errata property would only require a patch for platofrms 
-with <768MB (or manual override of the usable memory size via the 
-command line).
+                       dn->full_name);
 
+                return -1;
 
-milton
+        }
+
+        sdr_base = *sdrbase;
+
+	printk("SDR_BASE :%08x \n", sdr_base);	
+
+	mtdcri(SDR0,sdr_base + PESDRn_PEIHS1, baseaddrhi);
+
+    	mtdcri(SDR0,sdr_base + PESDRn_PEIHS2, baseaddrlow);
+
+   I have tried both with ef62 0000 and c00100000 but both didnt help.
+Expecting your guidance to proceed further!
+
+--
+With Regards,
+Deepak Pandian
+"Time is precious,One day we will find that we have less than what we
+think" -RandyPausch
