@@ -1,19 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.184])
-	by ozlabs.org (Postfix) with ESMTP id 437E4DDDE0
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Nov 2008 06:20:28 +1100 (EST)
-Received: by rn-out-0910.google.com with SMTP id j40so1377463rnf.16
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 11:20:26 -0800 (PST)
-Message-ID: <fa686aa40811141120o2c0394daja732184aefaec901@mail.gmail.com>
-Date: Fri, 14 Nov 2008 12:20:25 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Paul Mackerras" <paulus@samba.org>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Please pull linux-2.6-mpc52xx.git
+Return-Path: <rcjenn@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0966CDDDF3
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Nov 2008 09:07:40 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mAEM78Ll023505
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 15:07:08 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mAEM7Zh9131308
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 15:07:35 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mAEM7Y7K031144
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 15:07:35 -0700
+Date: Fri, 14 Nov 2008 16:07:34 -0600
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: Correct page-in counter for CMM
+Message-ID: <20081114220734.GA26013@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+	Andrew Theurer <habanero@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,54 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Ben and Paulus.
+Linux will report the number of page-ins so that the hypervisor can
+better determine partition memory pressure.  The hardware page size and
+the OS page size can be different.  In the case where the hardware page
+size is 4k and the OS is running with 64k pages the prior patch would
+under-report the number of pages. This patch uses PAGE_FACTOR to correct
+the reporting to the hypervisor.
 
-Please pull the 'merge' branch of my MPC5200 tree (url below).  I've
-got mpc5200 bug fixes, virtex bug fixes and defconfig updates in it.
-This all needs to go into 2.6.28.  This branch does have both mpc5200
-and Xilinx Virtex 4xx changes.  I've cleared it with Josh that it is
-okay to push the 4xx changes out to my tree rather than having him
-pull it first.
+Reported-by: Andrew Theurer <habanero@linux.vnet.ibm.com>
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-The following changes since commit 58e20d8d344b0ee083febb18c2b021d2427e56ca:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../jbarnes/pci-2.6
+---
+ arch/powerpc/mm/fault.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx merge
-
-Grant Likely (4):
-      powerpc/mpc5200: fix bestcomm Kconfig dependencies
-      powerpc/virtex: fix various format/casting printk mismatches
-      powerpc/52xx: update defconfigs
-      powerpc/virtex: Update defconfigs
-
-Yuri Tikhonov (1):
-      xsysace: Fix driver to use resource_size_t instead of unsigned long
-
- arch/powerpc/configs/40x/virtex_defconfig     | 1176 +++++++++++++++++++++++++
- arch/powerpc/configs/44x/virtex5_defconfig    |  234 +++---
- arch/powerpc/configs/52xx/cm5200_defconfig    |  169 +++-
- arch/powerpc/configs/52xx/lite5200b_defconfig |  206 ++++--
- arch/powerpc/configs/52xx/motionpro_defconfig |  168 +++-
- arch/powerpc/configs/52xx/pcm030_defconfig    |  182 +++--
- arch/powerpc/configs/52xx/tqm5200_defconfig   |  180 +++-
- arch/powerpc/configs/mpc5200_defconfig        |  573 +++++++++---
- arch/powerpc/configs/ppc40x_defconfig         |   92 ++-
- arch/powerpc/configs/ppc44x_defconfig         |   92 ++-
- arch/powerpc/sysdev/bestcomm/Kconfig          |    9 +-
- arch/powerpc/sysdev/xilinx_intc.c             |    4 +-
- drivers/block/xsysace.c                       |   23 +-
- drivers/char/xilinx_hwicap/xilinx_hwicap.c    |    9 +-
- drivers/net/Kconfig                           |    3 +-
- drivers/serial/uartlite.c                     |    4 +-
- drivers/video/xilinxfb.c                      |    5 +-
- sound/soc/fsl/Kconfig                         |    3 +-
- 18 files changed, 2617 insertions(+), 515 deletions(-)
- create mode 100644 arch/powerpc/configs/40x/virtex_defconfig
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Index: b/arch/powerpc/mm/fault.c
+===================================================================
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -324,7 +324,7 @@ good_area:
+ #ifdef CONFIG_PPC_SMLPAR
+ 		if (firmware_has_feature(FW_FEATURE_CMO)) {
+ 			preempt_disable();
+-			get_lppaca()->page_ins++;
++			get_lppaca()->page_ins += (1 << PAGE_FACTOR);
+ 			preempt_enable();
+ 		}
+ #endif
