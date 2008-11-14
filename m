@@ -1,23 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id C2E33DDDDB
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 16:31:02 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so553999ywh.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 21:31:00 -0800 (PST)
-Message-ID: <fa686aa40811132130h4c87c91fp47e1763c4a751b2a@mail.gmail.com>
-Date: Thu, 13 Nov 2008 22:30:59 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Yuri Tikhonov" <yur@emcraft.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E7103DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 16:41:44 +1100 (EST)
 Subject: Re: Re[2]: [PATCH] katmai.dts: extend DMA ranges; add dma/sysace nodes
-In-Reply-To: <919499964.20081114082725@emcraft.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Yuri Tikhonov <yur@emcraft.com>
+In-Reply-To: <1102187680.20081114074513@emcraft.com>
 References: <200811131149.14715.yur@emcraft.com>
-	<20081113064533.77eccc1b@zod.rchland.ibm.com>
-	<20081114050001.GA15181@secretlab.ca>
-	<919499964.20081114082725@emcraft.com>
-Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>, Ilya Yanok <yanok@emcraft.com>
+	<1226568352.7178.44.camel@pasglop>
+	<1102187680.20081114074513@emcraft.com>
+Content-Type: text/plain
+Date: Fri, 14 Nov 2008 16:41:29 +1100
+Message-Id: <1226641289.7178.117.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>,
+	Wolfgang Denk <wd@denx.de>, Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +26,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 13, 2008 at 10:27 PM, Yuri Tikhonov <yur@emcraft.com> wrote:
->
-> Hello Grant,
->
-> On Friday, November 14, 2008 you wrote:
->
->> On Thu, Nov 13, 2008 at 06:45:33AM -0500, Josh Boyer wrote:
->>> On Thu, 13 Nov 2008 11:49:14 +0300
->>> Yuri Tikhonov <yur@emcraft.com> wrote:
->>> > +           sysacecf@4fe000000 {
->>> > +                   compatible = "xlnx,opb-sysace-1.00.b";
->>>
->>> Odd.  This isn't a xilinx board by any means.  This should probably
->>> look something like:
->>>
->>>       compatible = "amcc,sysace-440spe", "xlnx,opb-sysace-1.00.b";
->
->> Actually, if there is a sysace, it is definitely a xilinx part.  It
->> won't be on the SoC.  However, compatible = "xlnx,opb-sysace-1.00.b"
->> isn't really accurate.  It should really be compatible = "xlnx,sysace"
->> and the driver modified to accept this string.
->
->  OK, we'll do this, and then re-post together with the cleaned-up
-> "[PATCH] xsysace: use resource_size_t instead of unsigned long" patch.
+>  My understanding was that the dma-ranges property is responsible for 
+> setting up the inbound ranges of RAM's physical addresses, where PCI 
+> could DMA to/from. As regarding the outbound property, this patch 
+> doesn't change this, and there we have the PCI space split (2 GB of 
+> memory, and 64K of I/O spaces mapped from the 64-bit physical 
+> addresses into 32-bit PCI address space). Am I missing something ?
 
-Please cc: me on the next version of the xsysace patch.
+The PCI memory space doesn't differenciate inbound and outbound.
 
-g.
+For example, if you take the example of a PCI 2.0 or PCI-X setup (I'm
+leaving PCI-E alone in the discussion because it's a bit special in that
+area, but the problem is fundamentally the same), and you have on the
+PCI bus of that thing a device X configured to respond to MMIO at
+address, for example, 0x80000000.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Now, what happens if another device, let's call it Y, tries to DMA to
+that same address ? Who will pick up the memory write at address
+0x80000000 ? The host controller or device X ? 
+
+There is no concept of "inbound" here.. it's just a memory cycle to
+address A that gets decoded by whoever tries to decode it on that bus
+segment.
+
+Thus DMA ranges must -not- overlap areas of memory used for MMIO, it
+just won't work.
+
+>  With the default 2GB dma-ranges we just get the following on Katmai 
+> with 4GB of SDRAM installed:
+
+Because that is simply not supported at the moment unless we add what
+I've talked about earlier, ie basically, swiotlb support (which Becky is
+working on at the moment).
+
+You might be able to work around it somewhat if your PCI device supports
+64-bit BARs in which case you can set your outbound regions above the
+32-bit space. Note that I haven't verified whether the 32-bit linux
+kernel supports that tho. There used to be issues with >32-bit PCI BARs
+on 32-bit kernel, at least it wouldn't assign them but that may have
+been fixed.
+
+Another option you can try if you device only does 32-bit BARs but
+supports 64-bit DMA, is to move the DMA window away from the 32-bit MMIO
+space. Stick it at 1T or so in PCI space. You might need a little bit of
+kernel tweaking to make the dma-ops pick that up properly but that
+shouldnt be too hard.
+
+If you really need 32-bit DMA support, you'll have to wait for swiotlb
+from Becky or work with her in bringing it to powerpc so that we can do
+bounce buffering for those devices.
+
+Ben.
