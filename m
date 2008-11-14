@@ -1,21 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9C31DDDDFA
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 12:00:38 +1100 (EST)
-Subject: Re: pmac_zilog debugging ...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kevin Diggs <kevdig@hypersurf.com>
-In-Reply-To: <491CAA32.20307@hypersurf.com>
-References: <4914B549.9010805@hypersurf.com>
-	<1226096603.13603.74.camel@pasglop> <491C11B2.1060909@hypersurf.com>
-	<1226612654.7178.84.camel@pasglop>  <491CAA32.20307@hypersurf.com>
-Content-Type: text/plain
-Date: Fri, 14 Nov 2008 12:00:29 +1100
-Message-Id: <1226624429.7178.105.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 09254DDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 15:33:25 +1100 (EST)
+Date: Fri, 14 Nov 2008 07:32:49 +0300
+From: Yuri Tikhonov <yur@emcraft.com>
+Message-ID: <828133638.20081114073249@emcraft.com>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re[2]: [2/2] powerpc: support for 256K pages on PPC 44x
+In-Reply-To: <f6812adbe26a68b0545f5fd25b6d9d6a@bga.com>
+References: <d02415a31b89736f070f290be89013d4@bga.com>
+	<49186028.8010505@emcraft.com>
+	<f6812adbe26a68b0545f5fd25b6d9d6a@bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>, dzu@denx.de,
+	Vladimir Panfilov <pvr@emcraft.com>,
+	Ilya Yanok <yanok@emcraft.com>, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,57 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-11-13 at 14:29 -0800, Kevin Diggs wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Thu, 2008-11-13 at 03:38 -0800, Kevin Diggs wrote:
-> > 
-> > 
-> >>12,206 PowerMac Zilog interrupts
-> >>
-> >>Interrupt load is higher without the DMA support.
-> >>
-> >>Is it possible that this hardware was not meant to be used without the
-> >>DMA (i.e. it does not work quite right?)?
-> > 
-> > 
-> > Well, the HW Rx buffer is only 3 bytes so if you have high interrupt
-> > latencies you are more likely to loose data...
-> > 
-> These are not real 8530s any more, right? How certain are we of this?
-> Is it possible that there is a larger buffer when used with the DMA
-> capability ... somehow?
+Hello Milton,
 
-Well, the main thing is that when using DMA, it doesn't need to wait for
-the kernel to come fetch the bytes, and thus the only latency that
-matters if the DMA list is appropriately provisioned is the bus latency,
-which is much less likely to be an issue even with a small buffer.
+On Tuesday, November 11, 2008 Milton Miller wrote:
 
-It's definitely not a "basic" 8530, it's an ESCC but I don't think the
-base rx buffer in polled mode is any bigger (I may be wrong).
+[snip]
 
-> I tried to put some debug statements where the flow lines are managed. I
-> could have goofed it up. They never produce any output. The latest
-> attempt used nortscts which should have disabled flow control. That
-> coupled with the fact that a 250 MHz 750GX is talking to a 486dx4 at
-> 1200 - 9600 baud I would have thought would reduce the chance the PowerMac
-> would fall behind?
+>>>>
+>>>>  #ifdef CONFIG_PTE_64BIT
+>>>>  typedef unsigned long long pte_basic_t;
+>>>> +#ifdef CONFIG_PPC_256K_PAGES
+>>>> +#define PTE_SHIFT       (PAGE_SHIFT - 7)
+>>>
+>>> This seems to be missing the comment on how many ptes are actually in
+>>> the page that are in the other if and else cases.
+>>
+>> Ok. I'll fix this. Actually it's another hack: we don't use full page
+>> for PTE table because we need to reserve something for PGD
 
-Have you disabled flow control both with the old macserial -and-
-pmac_zilog and still experiencing the same problems ? (ie one works and
-the other one doesn't ?)
+> I don't understand "we need to reserve something for PGD".   Do you=20
+> mean that you would not require a second page for the PGD because the=20
+> full pagetable could fit in one page?   My first reaction was to say=20
+> then create pgtable-nopgd.h like the other two.  The page walkers=20
+> support this with the advent of gigantic pages.  Then I realized that=20
+> might not be optimal:  while the page table might fit in one page, it=20
+> would mean you always allocate the pte space to cover the full address
+> space.   Even if your processes spread out over the 3G of address space
+> allocated to them (32 bit kernel), you will allocate space for 4G,=20
+> wasting 1/4 of the pte space.
+> That does imply you want to allocate the pte page from a slab instead=20
+> of pgalloc.  Is that covered?
 
-> You would need to explain to me the advantage of doing DMA in this case???
+ Well, in case of 256K PAGE_SIZE we do not need the PGD level indeed
+(18 bits are used for offset, and remaining 14 bits are for PTE index=20
+inside the PTE table). Even the full 256K PTE page isn't necessary to=20
+cover the full range: only half of it would be enough (with 14 bits we=20
+can address only 16K PTEs).
 
-Well, if I setup for example 128 DMA descriptors for 1 byte each, then
-the chip will be able to DMA up to 128 bytes without CPU intervention,
-thus is a -lot- less likely to overflow it's fifo. It's essentially a
-way to have the DMA engine operate as an external FIFO. As the CPU
-fetches the bytes, it can recycle the descriptors at the end of the list
-effectively acting as some kind of ring buffer.
+ But the head_44x.S code is essentially based on the assumption of=20
+2-level page addressing. Also, I may guess that eliminating of the
+PGD level won't be as easy as just a re-implementation of the TLB-miss=20
+handlers in head_44x.S. So, the current approach for 256K-pages=20
+support was just a compromise between the required for the project=20
+functionality, and the effort necessary to achieve it.
 
-We can more easily do DMA for Tx but while this can improve performances
-and lower interrupt usage, it is not a correctness issue in the sense
-that Tx isn't -losing- data today, it's Rx that is a potential problem.
+ Regards, Yuri
 
-Cheers,
-Ben.
+ --
+ Yuri Tikhonov, Senior Software Engineer
+ Emcraft Systems, www.emcraft.com
