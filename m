@@ -1,22 +1,22 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C8FE0DDDEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 15:57:35 +1100 (EST)
-Date: Fri, 14 Nov 2008 07:57:27 +0300
-From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <1124454405.20081114075727@emcraft.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re[2]: [PATCH] xsysace: use resource_size_t instead of unsigned long
-In-Reply-To: <20081113212121.e7a9f5fe.sfr@canb.auug.org.au>
-References: <200811131143.17752.yur@emcraft.com>
-	<20081113212121.e7a9f5fe.sfr@canb.auug.org.au>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.238])
+	by ozlabs.org (Postfix) with ESMTP id 3AF89DDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 16:00:06 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so1260418rvb.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 21:00:04 -0800 (PST)
+Date: Thu, 13 Nov 2008 22:00:01 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] katmai.dts: extend DMA ranges; add dma/sysace nodes
+Message-ID: <20081114050001.GA15181@secretlab.ca>
+References: <200811131149.14715.yur@emcraft.com>
+	<20081113064533.77eccc1b@zod.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>,
-	linux-kernel@vger.kernel.org, Ilya Yanok <yanok@emcraft.com>,
-	Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081113064533.77eccc1b@zod.rchland.ibm.com>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, Ilya Yanok <yanok@emcraft.com>,
+	Detlev Zundel <dzu@denx.de>, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=0D=0AHello Stephen,
+On Thu, Nov 13, 2008 at 06:45:33AM -0500, Josh Boyer wrote:
+> On Thu, 13 Nov 2008 11:49:14 +0300
+> Yuri Tikhonov <yur@emcraft.com> wrote:
+> > +		sysacecf@4fe000000 {
+> > +			compatible = "xlnx,opb-sysace-1.00.b";
+> 
+> Odd.  This isn't a xilinx board by any means.  This should probably
+> look something like:
+> 
+> 	compatible = "amcc,sysace-440spe", "xlnx,opb-sysace-1.00.b";
 
-On Thursday, November 13, 2008 you wrote:
+Actually, if there is a sysace, it is definitely a xilinx part.  It
+won't be on the SoC.  However, compatible = "xlnx,opb-sysace-1.00.b"
+isn't really accurate.  It should really be compatible = "xlnx,sysace"
+and the driver modified to accept this string.  "xlnx,opb-sysace-1.00.b"
+is an FPGA block used to interface to the system ace which is
+definitely not in use here.
 
-> Hi Yuri,
+So while it does get things to work, it is not a clean description of
+the hardware.
 
-> On Thu, 13 Nov 2008 11:43:17 +0300 Yuri Tikhonov <yur@emcraft.com> wrote:
->>
->> -     dev_dbg(ace->dev, "physaddr=3D0x%lx irq=3D%i\n", ace->physaddr, ac=
-e->irq);
->> +     dev_dbg(ace->dev, "physaddr=3D0x%llx irq=3D%i\n", (u64)ace->physad=
-dr, ace->irq);
-
-> You should cast the physaddr to "unsigned long long" as "u64" is
-> "unsigned long" on some architectures.  The same is needed in other
-> places as well.
-
- Thanks for your comment. We'll fix this.
-
- Regards, Yuri
-
- --
- Yuri Tikhonov, Senior Software Engineer
- Emcraft Systems, www.emcraft.com
+g.
