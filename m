@@ -1,26 +1,19 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id B0B1DDDD04
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Nov 2008 06:09:55 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so666916ywh.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 11:09:53 -0800 (PST)
-Message-ID: <fa686aa40811141109v2892236fj5f8f85a64537cbb3@mail.gmail.com>
-Date: Fri, 14 Nov 2008 12:09:53 -0700
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.184])
+	by ozlabs.org (Postfix) with ESMTP id 437E4DDDE0
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Nov 2008 06:20:28 +1100 (EST)
+Received: by rn-out-0910.google.com with SMTP id j40so1377463rnf.16
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 11:20:26 -0800 (PST)
+Message-ID: <fa686aa40811141120o2c0394daja732184aefaec901@mail.gmail.com>
+Date: Fri, 14 Nov 2008 12:20:25 -0700
 From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "=?ISO-8859-1?Q?Ren=E9_B=FCrgel?=" <r.buergel@unicontrol.de>
-Subject: Re: [PATCH V4] workaround for mpc52xx erratum #364 (serial may not be
-	reset in break state)
-In-Reply-To: <4912A69B.6020707@unicontrol.de>
+To: "Paul Mackerras" <paulus@samba.org>,
+	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Please pull linux-2.6-mpc52xx.git
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <490F51E7.3020309@unicontrol.de>
-	<fa686aa40811031255w3d9a065dgb0eb7ad4b26c9651@mail.gmail.com>
-	<4910274E.5030305@unicontrol.de>
-	<20081104111545.GB17864@pengutronix.de>
-	<4910A519.3030701@unicontrol.de>
-	<20081104212152.GC28064@pengutronix.de>
-	<4912A69B.6020707@unicontrol.de>
-Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,46 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 6, 2008 at 1:11 AM, Ren=E9 B=FCrgel <r.buergel@unicontrol.de> w=
-rote:
-> This patch is a workaround for bug #364 found in the MPC52xx processor.
-> The errata document can be found under
-> http://www.freescale.com/files/32bit/doc/errata/MPC5200E.pdf?fpsp=3D1&WT_=
-TYPE=3DErrata&WT_VENDOR=3DFREESCALE&WT_FILE_FORMAT=3Dpdf&WT_ASSET=3DDocumen=
-tation
->
-> When a device with a low baudrate is connected to the serial port, but th=
-e
-> processor "listens" on a higher baudrate, it might falsely receive breaks
-> from the controller. During a break, the serial controller may not be res=
-et.
-> The appended patch provides a workaround for that situation by lowering t=
-he
-> baudrate without resetting the controller and waiting until no break is
-> received anymore.
->
+Hi Ben and Paulus.
 
-I'm still don't like the state of this patch for two reasons:
-1. It is enabled/disabled by a #ifdef.  It is quite possible that we
-will eventually be able to build a multiplaform kernel that boots on
-both mpc5200 and mpc5121.  The workaround needs to be detected and
-enabled at runtime based on the data in the device tree (ie. if the
-compatible property is "fsl,mpc5200-psc-uart").
+Please pull the 'merge' branch of my MPC5200 tree (url below).  I've
+got mpc5200 bug fixes, virtex bug fixes and defconfig updates in it.
+This all needs to go into 2.6.28.  This branch does have both mpc5200
+and Xilinx Virtex 4xx changes.  I've cleared it with Josh that it is
+okay to push the 4xx changes out to my tree rather than having him
+pull it first.
 
-2. I'm do not like the mdelay() busywait loop.  The long busy wait
-just wastes CPU time.  Doing it with IRQs off means that irq latencies
-become unbounded while this is happening.  This needs to be reworked
-to use a workqueue or something similar.
+The following changes since commit 58e20d8d344b0ee083febb18c2b021d2427e56ca:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../jbarnes/pci-2.6
 
-Also, I'm not convinced that this is the best fix.  It doesn't
-actually solve the problem, it just makes it less likely to occur.
-What happens if you instead manipulate portconfig to change the PSC
-pins to GPIO?  I wonder if that will disconnect the RX pin from the
-PSC entirely.  If it does, then that might be a suitable method to
-eliminate the break condition entirely.
+are available in the git repository at:
 
-g.
+  git://git.secretlab.ca/git/linux-2.6-mpc52xx merge
 
---=20
+Grant Likely (4):
+      powerpc/mpc5200: fix bestcomm Kconfig dependencies
+      powerpc/virtex: fix various format/casting printk mismatches
+      powerpc/52xx: update defconfigs
+      powerpc/virtex: Update defconfigs
+
+Yuri Tikhonov (1):
+      xsysace: Fix driver to use resource_size_t instead of unsigned long
+
+ arch/powerpc/configs/40x/virtex_defconfig     | 1176 +++++++++++++++++++++++++
+ arch/powerpc/configs/44x/virtex5_defconfig    |  234 +++---
+ arch/powerpc/configs/52xx/cm5200_defconfig    |  169 +++-
+ arch/powerpc/configs/52xx/lite5200b_defconfig |  206 ++++--
+ arch/powerpc/configs/52xx/motionpro_defconfig |  168 +++-
+ arch/powerpc/configs/52xx/pcm030_defconfig    |  182 +++--
+ arch/powerpc/configs/52xx/tqm5200_defconfig   |  180 +++-
+ arch/powerpc/configs/mpc5200_defconfig        |  573 +++++++++---
+ arch/powerpc/configs/ppc40x_defconfig         |   92 ++-
+ arch/powerpc/configs/ppc44x_defconfig         |   92 ++-
+ arch/powerpc/sysdev/bestcomm/Kconfig          |    9 +-
+ arch/powerpc/sysdev/xilinx_intc.c             |    4 +-
+ drivers/block/xsysace.c                       |   23 +-
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c    |    9 +-
+ drivers/net/Kconfig                           |    3 +-
+ drivers/serial/uartlite.c                     |    4 +-
+ drivers/video/xilinxfb.c                      |    5 +-
+ sound/soc/fsl/Kconfig                         |    3 +-
+ 18 files changed, 2617 insertions(+), 515 deletions(-)
+ create mode 100644 arch/powerpc/configs/40x/virtex_defconfig
+
+
+-- 
 Grant Likely, B.Sc., P.Eng.
 Secret Lab Technologies Ltd.
