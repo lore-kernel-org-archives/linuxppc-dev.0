@@ -1,21 +1,17 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F4081DDDE3
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 15:45:18 +1100 (EST)
-Date: Fri, 14 Nov 2008 07:45:13 +0300
-From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <1102187680.20081114074513@emcraft.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re[2]: [PATCH] katmai.dts: extend DMA ranges; add dma/sysace nodes
-In-Reply-To: <1226568352.7178.44.camel@pasglop>
-References: <200811131149.14715.yur@emcraft.com>
-	<1226568352.7178.44.camel@pasglop>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.231])
+	by ozlabs.org (Postfix) with ESMTP id 6C594DDDE6
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 15:53:09 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so1257403rvb.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Nov 2008 20:53:07 -0800 (PST)
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] powerpc/virtex: fix various format/casting printk mismatches
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, jwboyer@gmail.com
+Date: Thu, 13 Nov 2008 21:53:04 -0700
+Message-ID: <20081114045304.15077.72430.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>,
-	Wolfgang Denk <wd@denx.de>, Ilya Yanok <yanok@emcraft.com>
+Content-Type: text/plain; charset="utf-8"
+Sender: Grant Likely <glikely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,73 +21,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=0D=0A Hello Ben,
+From: Grant Likely <grant.likely@secretlab.ca>
 
-On Thursday, November 13, 2008 you wrote:
+Various printk format string in code used by the Xilinx Virtex platform
+are not 32-bit/64-bit safe.  Add correct casting to fix the bugs.
 
-> On Thu, 2008-11-13 at 11:49 +0300, Yuri Tikhonov wrote:
->> Hello,
->>=20
->> This patch extends DMA ranges for PCI(X) to 4GB, so that it could
->> work on Katmais with 4GB RAM installed.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-> And where do you put MMIO ?
-
-> The 32 bit part of the PCI space need to be split between MMIO and DMA.
-
- My understanding was that the dma-ranges property is responsible for=20
-setting up the inbound ranges of RAM's physical addresses, where PCI=20
-could DMA to/from. As regarding the outbound property, this patch=20
-doesn't change this, and there we have the PCI space split (2 GB of=20
-memory, and 64K of I/O spaces mapped from the 64-bit physical=20
-addresses into 32-bit PCI address space). Am I missing something ?
-
- With the default 2GB dma-ranges we just get the following on Katmai=20
-with 4GB of SDRAM installed:
-
-...
-PCIE0: Checking link...
-PCIE0: Device detected, waiting for link...
-PCIE0: link is up !
-PCI host bridge /plb/pciex@d00000000 (primary) ranges:
- MEM 0x0000000e00000000..0x0000000e7fffffff -> 0x0000000080000000=20
-  IO 0x0000000f80000000..0x0000000f8000ffff -> 0x0000000000000000
-/plb/pciex@d00000000: dma-ranges too small (size=3D80000000 total_memory=3D=
-100000000)
-PCIE1: Checking link...
-PCIE1: Device detected, waiting for link...
-PCIE1: link is up !
-PCI host bridge /plb/pciex@d20000000 (primary) ranges:
- MEM 0x0000000e80000000..0x0000000effffffff -> 0x0000000080000000=20
-  IO 0x0000000f80010000..0x0000000f8001ffff -> 0x0000000000000000
-/plb/pciex@d20000000: dma-ranges too small (size=3D80000000 total_memory=3D=
-100000000)
-PCIE2: Checking link...
-PCIE2: Device detected, waiting for link...
-PCIE2: link is up !
-PCI host bridge /plb/pciex@d40000000 (primary) ranges:
- MEM 0x0000000f00000000..0x0000000f7fffffff -> 0x0000000080000000=20
-  IO 0x0000000f80020000..0x0000000f8002ffff -> 0x0000000000000000
-/plb/pciex@d40000000: dma-ranges too small (size=3D80000000 total_memory=3D=
-100000000)
-PCI host bridge /plb/pci@c0ec00000 (primary) ranges:
- MEM 0x0000000d80000000..0x0000000dffffffff -> 0x0000000080000000=20
-  IO 0x0000000c08000000..0x0000000c0800ffff -> 0x0000000000000000
-/plb/pci@c0ec00000: dma-ranges too small (size=3D80000000 total_memory=3D10=
-0000000)
-...
+ arch/powerpc/sysdev/xilinx_intc.c          |    4 ++--
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c |    9 +++++----
+ drivers/serial/uartlite.c                  |    4 ++--
+ drivers/video/xilinxfb.c                   |    5 +++--
+ 4 files changed, 12 insertions(+), 10 deletions(-)
 
 
-> Ideally, for 64-bit capable DMA, device, we should create a second DMA
-> range mapping the whole memory at something like 1T or so on PCI, and
-> keep a smaller (ie. 2G) DMA range for 32-bit only devices backed with
-> swiotlb.
-
-> Cheers,
-> Ben.
-
- Regards, Yuri
-
- --
- Yuri Tikhonov, Senior Software Engineer
- Emcraft Systems, www.emcraft.com
+diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
+index b7aefd0..a22e1a2 100644
+--- a/arch/powerpc/sysdev/xilinx_intc.c
++++ b/arch/powerpc/sysdev/xilinx_intc.c
+@@ -107,8 +107,8 @@ xilinx_intc_init(struct device_node *np)
+ 	}
+ 	regs = ioremap(res.start, 32);
+ 
+-	printk(KERN_INFO "Xilinx intc at 0x%08LX mapped to 0x%p\n",
+-		res.start, regs);
++	printk(KERN_INFO "Xilinx intc at 0x%08llx mapped to 0x%p\n",
++		(unsigned long long) res.start, regs);
+ 
+ 	/* Setup interrupt controller */
+ 	out_be32(regs + XINTC_IER, 0); /* disable all irqs */
+diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+index ed132fe..d161319 100644
+--- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
++++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+@@ -626,7 +626,7 @@ static int __devinit hwicap_setup(struct device *dev, int id,
+ 	if (!request_mem_region(drvdata->mem_start,
+ 					drvdata->mem_size, DRIVER_NAME)) {
+ 		dev_err(dev, "Couldn't lock memory region at %Lx\n",
+-			regs_res->start);
++			(unsigned long long) regs_res->start);
+ 		retval = -EBUSY;
+ 		goto failed1;
+ 	}
+@@ -645,9 +645,10 @@ static int __devinit hwicap_setup(struct device *dev, int id,
+ 	mutex_init(&drvdata->sem);
+ 	drvdata->is_open = 0;
+ 
+-	dev_info(dev, "ioremap %lx to %p with size %Lx\n",
+-		 (unsigned long int)drvdata->mem_start,
+-			drvdata->base_address, drvdata->mem_size);
++	dev_info(dev, "ioremap %llx to %p with size %llx\n",
++		 (unsigned long long) drvdata->mem_start,
++		 drvdata->base_address,
++		 (unsigned long long) drvdata->mem_size);
+ 
+ 	cdev_init(&drvdata->cdev, &hwicap_fops);
+ 	drvdata->cdev.owner = THIS_MODULE;
+diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
+index 6a3f8fb..3317148 100644
+--- a/drivers/serial/uartlite.c
++++ b/drivers/serial/uartlite.c
+@@ -286,8 +286,8 @@ static void ulite_release_port(struct uart_port *port)
+ 
+ static int ulite_request_port(struct uart_port *port)
+ {
+-	pr_debug("ulite console: port=%p; port->mapbase=%x\n",
+-		 port, port->mapbase);
++	pr_debug("ulite console: port=%p; port->mapbase=%llx\n",
++		 port, (unsigned long long) port->mapbase);
+ 
+ 	if (!request_mem_region(port->mapbase, ULITE_REGION, "uartlite")) {
+ 		dev_err(port->dev, "Memory region busy\n");
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 5da3d24..40a3a2a 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -298,8 +298,9 @@ static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
+ 
+ 	/* Put a banner in the log (for DEBUG) */
+ 	dev_dbg(dev, "regs: phys=%lx, virt=%p\n", physaddr, drvdata->regs);
+-	dev_dbg(dev, "fb: phys=%p, virt=%p, size=%x\n",
+-		(void*)drvdata->fb_phys, drvdata->fb_virt, fbsize);
++	dev_dbg(dev, "fb: phys=%llx, virt=%p, size=%x\n",
++		(unsigned long long) drvdata->fb_phys, drvdata->fb_virt,
++		fbsize);
+ 
+ 	return 0;	/* success */
+ 
