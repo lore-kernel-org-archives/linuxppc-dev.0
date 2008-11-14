@@ -1,21 +1,15 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
-	by ozlabs.org (Postfix) with ESMTP id 95098DDDF5
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Nov 2008 02:08:33 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so870911qwb.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Nov 2008 07:08:31 -0800 (PST)
-Date: Fri, 14 Nov 2008 10:08:20 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] powerpc/virtex: fix various format/casting printk
-	mismatches
-Message-ID: <20081114150820.GA20645@yoda.jdub.homelinux.org>
-References: <20081114045304.15077.72430.stgit@localhost.localdomain>
+Return-Path: <michael.barkowski@freescale.com>
+Message-ID: <491D9643.4010204@freescale.com>
+Date: Fri, 14 Nov 2008 10:16:19 -0500
+From: Michael Barkowski <michael.barkowski@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081114045304.15077.72430.stgit@localhost.localdomain>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH] mpc832x_rdb: fix swapped ethernet ids
+References: <491C4544.7020707@freescale.com>
+	<20081113234507.GB32024@yookeroo.seuss>
+In-Reply-To: <20081113234507.GB32024@yookeroo.seuss>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +19,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 13, 2008 at 09:53:04PM -0700, Grant Likely wrote:
->From: Grant Likely <grant.likely@secretlab.ca>
->
->Various printk format string in code used by the Xilinx Virtex platform
->are not 32-bit/64-bit safe.  Add correct casting to fix the bugs.
->
->Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+David Gibson wrote:
+> On Thu, Nov 13, 2008 at 10:18:28AM -0500, Michael Barkowski wrote:
+>> ethernet0 (called FSL UEC0 in U-Boot) should be enet1 (UCC3/eth1), and
+>> ethernet1 should be enet0 (UCC2/eth0), to be consistent with U-Boot so
+>> that the interfaces do not swap addresses when control passes from
+>> U-Boot to the kernel.
+> 
+> Um.. why is just swapping the aliases, rather than the enet labels the
+> right approach here?
 
-This fixes the warnings I have been seeing on the ppc40x_defconfig, so:
+Kim suggested it was better to localize the port ordering as a property of the board rather than that of the QE, and I agreed.
 
-Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-
-josh
+-- 
+Michael
