@@ -1,18 +1,18 @@
 Return-Path: <miltonm@bga.com>
 Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 0F742DDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Nov 2008 04:21:10 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 4CF35DDDD8
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Nov 2008 04:25:07 +1100 (EST)
+In-Reply-To: <4b6790c7a989dce8c200000687275224@bga.com>
+References: <4b6790c7a989dce8c200000687275224@bga.com>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4b6790c7a989dce8c200000687275224@bga.com>
+Message-Id: <84e16946c1ed4b782568f6492931512a@bga.com>
 From: Milton Miller <miltonm@bga.com>
 Subject: Re: [PATCH] [v3] powerpc/4xx: work around CHIP11 errata in a more
 	PAGE_SIZE-friendly way
-Date: Fri, 14 Nov 2008 11:25:38 -0600
-To: Ben Herrenschmidt <benh@kernel.crashing.org>,
-	Hollis Blanchard <hollisb@us.ibm.com>,
-	Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>
+Date: Fri, 14 Nov 2008 11:29:35 -0600
+To: Ben Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>, Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,8 +22,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In-Reply-To: <1226606055.5339.31.camel@localhost.localdomain>
-
+Resend with correct reply threading.
 
 On Fri Nov 14 at 06:54:15 EST in 2008, Hollis Blanchard wrote:
 > On Thu, 2008-11-13 at 07:44 +1100, Benjamin Herrenschmidt wrote:
