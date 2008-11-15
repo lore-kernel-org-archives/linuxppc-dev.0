@@ -1,18 +1,14 @@
-Return-Path: <srostedt@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id 095A5DDE0F
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Nov 2008 05:10:22 +1100 (EST)
-Message-ID: <491F107E.4070702@redhat.com>
-Date: Sat, 15 Nov 2008 13:10:06 -0500
-From: Steven Rostedt <srostedt@redhat.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH][for 2.6.28] Remove -mno-spe flags as they dont belong
-References: <1226772154-6109-1-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1226772154-6109-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id A7378DDDCA
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Nov 2008 06:42:47 +1100 (EST)
+Date: Sat, 15 Nov 2008 14:42:43 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: USB problems in 2.6.28-rc*
+Message-ID: <20081115144243.02ec88d0@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,51 +18,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> For some unknown reason at Steven Rostedt added in disabling of the SPE
-> instruction generation for e500 based PPC cores in commit
-> 6ec562328fda585be2d7f472cfac99d3b44d362a.
->   
+Anybody else seeing USB problems in the 2.6.28 kernels? The warp has a
+USB 1.1 port off the 440EP processor. 
 
-The unknown reason was that my PPC64 failed to compile without it ;-) It 
-was unknown because I forgot to mention that in the change log (my bad).
+In 2.6.26 we had some problems with certain USB keys, but 2.6.27 fixed
+it. However, the 2.6.28 stream broke it again before rc1. We get this
+twice when you try to use the usb key:
 
-On Monday, I'll apply this patch and make sure that my PPC64 still compiles.
+sd 0:0:0:0: [sda] 990865 512-byte hardware sectors: (507 MB/483 MiB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Assuming drive cache: write through
+ sda: sda1
+sd 0:0:0:0: [sda] Attached SCSI removable disk
+usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
+usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
+usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
+usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
+usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
+usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
+usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
+usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
+sd 0:0:0:0: timing out command, waited 60s
 
--- Steve
+It then seems to work. I haven't looked into it too much since we
+aren't switching to 2.6.28 anytime soon (it breaks our Secure Digital
+card driver).
 
-> We are removing it because:
->
-> 1. It generates e500 kernels that don't work
-> 2. its not the correct set of flags to do this
-> 3. we handle this in the arch/powerpc/Makefile already
-> 4. its unknown in talking to Steven why he did this
->
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
->  kernel/Makefile |    4 +---
->  1 files changed, 1 insertions(+), 3 deletions(-)
->
-> diff --git a/kernel/Makefile b/kernel/Makefile
-> index 9a3ec66..19fad00 100644
-> --- a/kernel/Makefile
-> +++ b/kernel/Makefile
-> @@ -11,8 +11,6 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o \
->  	    hrtimer.o rwsem.o nsproxy.o srcu.o semaphore.o \
->  	    notifier.o ksysfs.o pm_qos_params.o sched_clock.o
->  
-> -CFLAGS_REMOVE_sched.o = -mno-spe
-> -
->  ifdef CONFIG_FUNCTION_TRACER
->  # Do not trace debug files and internal ftrace files
->  CFLAGS_REMOVE_lockdep.o = -pg
-> @@ -21,7 +19,7 @@ CFLAGS_REMOVE_mutex-debug.o = -pg
->  CFLAGS_REMOVE_rtmutex-debug.o = -pg
->  CFLAGS_REMOVE_cgroup-debug.o = -pg
->  CFLAGS_REMOVE_sched_clock.o = -pg
-> -CFLAGS_REMOVE_sched.o = -mno-spe -pg
-> +CFLAGS_REMOVE_sched.o = -pg
->  endif
->  
->  obj-$(CONFIG_FREEZER) += freezer.o
->   
+But I am hoping somebody might know a quick fix... something like "have
+you got CONFIG_x set" type answer ;)
+
+Cheers,
+   Sean
