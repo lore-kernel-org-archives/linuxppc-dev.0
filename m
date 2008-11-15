@@ -1,16 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 03E9CDDE0F
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Nov 2008 05:02:44 +1100 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH][for 2.6.28] Remove -mno-spe flags as they dont belong
-Date: Sat, 15 Nov 2008 12:02:34 -0600
-Message-Id: <1226772154-6109-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <srostedt@redhat.com>
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id 095A5DDE0F
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Nov 2008 05:10:22 +1100 (EST)
+Message-ID: <491F107E.4070702@redhat.com>
+Date: Sat, 15 Nov 2008 13:10:06 -0500
+From: Steven Rostedt <srostedt@redhat.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH][for 2.6.28] Remove -mno-spe flags as they dont belong
+References: <1226772154-6109-1-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1226772154-6109-1-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Linus Torvalds <torvalds@osdl.org>, srostedt@redhat.com
+	Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,43 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For some unknown reason at Steven Rostedt added in disabling of the SPE
-instruction generation for e500 based PPC cores in commit
-6ec562328fda585be2d7f472cfac99d3b44d362a.
+Kumar Gala wrote:
+> For some unknown reason at Steven Rostedt added in disabling of the SPE
+> instruction generation for e500 based PPC cores in commit
+> 6ec562328fda585be2d7f472cfac99d3b44d362a.
+>   
 
-We are removing it because:
+The unknown reason was that my PPC64 failed to compile without it ;-) It 
+was unknown because I forgot to mention that in the change log (my bad).
 
-1. It generates e500 kernels that don't work
-2. its not the correct set of flags to do this
-3. we handle this in the arch/powerpc/Makefile already
-4. its unknown in talking to Steven why he did this
+On Monday, I'll apply this patch and make sure that my PPC64 still compiles.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- kernel/Makefile |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+-- Steve
 
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 9a3ec66..19fad00 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -11,8 +11,6 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o \
- 	    hrtimer.o rwsem.o nsproxy.o srcu.o semaphore.o \
- 	    notifier.o ksysfs.o pm_qos_params.o sched_clock.o
- 
--CFLAGS_REMOVE_sched.o = -mno-spe
--
- ifdef CONFIG_FUNCTION_TRACER
- # Do not trace debug files and internal ftrace files
- CFLAGS_REMOVE_lockdep.o = -pg
-@@ -21,7 +19,7 @@ CFLAGS_REMOVE_mutex-debug.o = -pg
- CFLAGS_REMOVE_rtmutex-debug.o = -pg
- CFLAGS_REMOVE_cgroup-debug.o = -pg
- CFLAGS_REMOVE_sched_clock.o = -pg
--CFLAGS_REMOVE_sched.o = -mno-spe -pg
-+CFLAGS_REMOVE_sched.o = -pg
- endif
- 
- obj-$(CONFIG_FREEZER) += freezer.o
--- 
-1.5.6.5
+> We are removing it because:
+>
+> 1. It generates e500 kernels that don't work
+> 2. its not the correct set of flags to do this
+> 3. we handle this in the arch/powerpc/Makefile already
+> 4. its unknown in talking to Steven why he did this
+>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+>  kernel/Makefile |    4 +---
+>  1 files changed, 1 insertions(+), 3 deletions(-)
+>
+> diff --git a/kernel/Makefile b/kernel/Makefile
+> index 9a3ec66..19fad00 100644
+> --- a/kernel/Makefile
+> +++ b/kernel/Makefile
+> @@ -11,8 +11,6 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o \
+>  	    hrtimer.o rwsem.o nsproxy.o srcu.o semaphore.o \
+>  	    notifier.o ksysfs.o pm_qos_params.o sched_clock.o
+>  
+> -CFLAGS_REMOVE_sched.o = -mno-spe
+> -
+>  ifdef CONFIG_FUNCTION_TRACER
+>  # Do not trace debug files and internal ftrace files
+>  CFLAGS_REMOVE_lockdep.o = -pg
+> @@ -21,7 +19,7 @@ CFLAGS_REMOVE_mutex-debug.o = -pg
+>  CFLAGS_REMOVE_rtmutex-debug.o = -pg
+>  CFLAGS_REMOVE_cgroup-debug.o = -pg
+>  CFLAGS_REMOVE_sched_clock.o = -pg
+> -CFLAGS_REMOVE_sched.o = -mno-spe -pg
+> +CFLAGS_REMOVE_sched.o = -pg
+>  endif
+>  
+>  obj-$(CONFIG_FREEZER) += freezer.o
+>   
