@@ -1,17 +1,19 @@
-Return-Path: <s104259@yahoo.it>
-Received: from web23105.mail.ird.yahoo.com (web23105.mail.ird.yahoo.com
-	[217.146.189.45]) by ozlabs.org (Postfix) with SMTP id 1D65EDDD0C
+Return-Path: <cristian.axenie@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.186])
+	by ozlabs.org (Postfix) with ESMTP id AE784DDDEC
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Nov 2008 09:12:43 +1100 (EST)
-Date: Thu, 13 Nov 2008 22:12:41 +0000 (GMT)
-From: Angelo <s104259@yahoo.it>
-Subject: R: Serial console on board based on Lite5200b
+	Sat, 15 Nov 2008 12:05:41 +1100 (EST)
+Received: by fk-out-0910.google.com with SMTP id e30so1715860fke.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 14 Nov 2008 17:05:38 -0800 (PST)
+Message-ID: <9c789a000811141705k245e4447k8a9be8e4f180c3f8@mail.gmail.com>
+Date: Sat, 15 Nov 2008 03:05:38 +0200
+From: "Cristian Axenie" <cristian.axenie@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <31090.73221.qm@web23104.mail.ird.yahoo.com>
+Subject: USB Flash rootfs prep!
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <335718.75634.qm@web23105.mail.ird.yahoo.com>
-Reply-To: s104259@yahoo.it
+Content-Type: multipart/alternative;
+	boundary="----=_Part_14098_2881481.1226711138129"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -22,88 +24,76 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Ok i solved my problems, but ...
+------=_Part_14098_2881481.1226711138129
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-The file /driver/serial/mpc52xx_uart.c in function mpc52xx_uart_of_enumerat=
-e(void) try to keep find the device number with:
-...
-/* Is a particular device number requested? */
-devno =3D get_property(np, "port-number", NULL);
-...
+Hello all !
+I'm porting a former Control application from x86 (Linux+RTAI+Comedi) to
+PowerPC (Xenomai+Comedi for RTDM). I've choosed for my development the ELDK
+tool and a MPC8315ERDB platform. So I 've properly patched and build my
+kernel with the Xenomai support and I get some errors when running a latency
+test app. I've managed to spot the problem , that consists in an
+incompatibility between the shared libraries used on the target (ver 2.5)
+and the standard libraries used (and with which were compiled the kernel and
+the Xenomai addon) version 2.6, and so ld screams and a SegFault appears.
+Now I,ve creted an ext2.img rootfs with the rootfs.tar.gz from
+/eldk/ppc_6xx/images and I've added in the rootfs some libs and other useful
+stuff for Xenomai for elliminating the need for an NFS mount.
+My primary concern is now to write the new FS to a USB Flash Stick so that I
+can test if the latency tests works now when the libs are compatible (ver
+2.6).
+So resuming I want to now what are the corect steps to do this, because I've
+tried to write the generated ext2.img to my USB flash stick (formated as
+ext2) and added to the uBoot bootargs to the following :
 
-I set the device tree in order to use PSC4 in uart mode enabling:
-serial@2600 {=09// PSC4
-=09device_type =3D "serial";
-=09compatible =3D "mpc5200b-psc-uart\0mpc5200-psc-uart";
-=09port-number =3D <3>; // Logical port assignment=09=09=09
-=09cell-index =3D <3>;
-=09reg =3D <2600 100>;
-=09interrupts =3D <2 b 0>;
-=09interrupt-parent =3D <&mpc5200_pic>;
-};
+setenv usbstick_args setenv bootargs root=/dev/sdb1 ro rootdelay=10
+rootfstype=ext2 console=$consoledev,$baudrate;
+setenv usbstick 'run usbstick_args;bootm fe500000 - fe700000'
+setenv bootcmd run usbstick
 
-But port-number =3D <3> seems less!
-Any idea??
+As a result I get the following output :
 
---- Ven 7/11/08, Angelo <s104259@yahoo.it> ha scritto:
+Waiting 10sec before mounting root device...
+scsi 2:0:0:0: Direct-Access     SanDisk  Cruzer Micro     0.1  PQ: 0 ANSI: 2
+sd 2:0:0:0: [sdb] 2001888 512-byte hardware sectors (1025 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Assuming drive cache: write through
+sd 2:0:0:0: [sdb] 2001888 512-byte hardware sectors (1025 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 2:0:0:0: [sdb] Attached SCSI removable disk
+sd 2:0:0:0: Attached scsi generic sg1 type 0
+VFS: Mounted root (ext2 filesystem) readonly.
+Freeing unused kernel memory: 156k init
+Warning: unable to open an initial console.
+Failed to execute /bin/busybox.  Attempting defaults...
+Kernel panic - not syncing: No init found.  Try passing init= option to
+kernel.
+Rebooting in 180 seconds..
 
-> Da: Angelo <s104259@yahoo.it>
-> Oggetto: Serial console on board based on Lite5200b
-> A: linuxppc-embedded@ozlabs.org
-> Data: Venerd=EC 7 novembre 2008, 13:10
-> Hi, I have a board based on the Lite5200b, except that the
-> serial console is on PSC4 instead of PSC1.=20
->=20
-> Using the a custom U-boot (1.2.0) and kernel 2.6.21
-> (compiled for powerpc), I managed to get U-boot to output on
-> the console on PSC4, but the kernel
-> does not.
->=20
-> I had just modified lite5200b.dts in some points:
->=20
-> 1- My memory is 128Mb
-> 2- I don't need eth,mdio,ata so I had commented
-> 3- Enable PSC4
-> 4- Added the chosen node:
->=20
-> chosen {
->       linux,stdout-path =3D
-> "/soc5200@f0000000/serial@2600";
->       bootargs =3D "console=3DttyPSC4,115200";=20
-> };
->=20
-> Debugging my board i notified that u-boot read & modify
-> the device tree blob adding the chosen node:
-> chosen{                                                   =20
->               =20
->   name =3D "chosen";                              =20
->                        =20
->   bootargs =3D "console=3DttyPSC3";
->   linux,platform =3D <600>;
->   linux,initrd-start =3D <7e2e000>;
->   linux,initrd-end =3D <7f0fbf2>;
->   linux,stdout-path =3D
-> "/soc5200@f0000000/serial@2600";
-> };=20
->=20
-> I follow step by step the kernel start procedure.. and I
-> notify that in setup_arch funtion is called
-> find_legacy_serial_ports, but when is done
-> if(legacy_serial_console >=3D 0)=20
-> legacy_serial_console is equal to -1.
->=20
-> However, it is not sufficient.  What am I missing?
->=20
-> Thank you!
->=20
->=20
->=20
->       Unisciti alla community di Io fotografo e video, il
-> nuovo corso di fotografia di Gazzetta dello sport:
-> http://www.flickr.com/groups/iofotografoevideo
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded=0A=0A=0A      Unisc=
-iti alla community di Io fotografo e video, il nuovo corso di fotografia di=
- Gazzetta dello sport:=0Ahttp://www.flickr.com/groups/iofotografoevideo
+Shall I explicitly give the init ? What should be ... init=/sbin/init,
+init=/bin/busybox ????
+
+Thanks in advance !!!
+
+Best regards ,
+Cristian
+
+------=_Part_14098_2881481.1226711138129
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hello all !<br>I&#39;m porting a former Control application from x86 (Linux+RTAI+Comedi) to PowerPC (Xenomai+Comedi for RTDM). I&#39;ve choosed for my development the ELDK tool and a MPC8315ERDB platform. So I &#39;ve properly patched and build my kernel with the Xenomai support and I get some errors when running a latency test app. I&#39;ve managed to spot the problem , that consists in an incompatibility between the shared libraries used on the target (ver 2.5) and the standard libraries used (and with which were compiled the kernel and the Xenomai addon) version 2.6, and so ld screams and a SegFault appears. Now I,ve creted an ext2.img rootfs with the rootfs.tar.gz from /eldk/ppc_6xx/images and I&#39;ve added in the rootfs some libs and other useful stuff for Xenomai for elliminating the need for an NFS mount. <br>
+My primary concern is now to write the new FS to a USB Flash Stick so that I can test if the latency tests works now when the libs are compatible (ver 2.6).<br>So resuming I want to now what are the corect steps to do this, because I&#39;ve tried to write the generated ext2.img to my USB flash stick (formated as ext2) and added to the uBoot bootargs to the following :<br>
+<br>setenv usbstick_args setenv bootargs root=/dev/sdb1 ro rootdelay=10 rootfstype=ext2 console=$consoledev,$baudrate;<br>setenv usbstick &#39;run usbstick_args;bootm fe500000 - fe700000&#39;<br>setenv bootcmd run usbstick<br>
+<br>As a result I get the following output :<br><br>Waiting 10sec before mounting root device...<br>scsi 2:0:0:0: Direct-Access&nbsp;&nbsp;&nbsp;&nbsp; SanDisk&nbsp; Cruzer Micro&nbsp;&nbsp;&nbsp;&nbsp; 0.1&nbsp; PQ: 0 ANSI: 2<br>sd 2:0:0:0: [sdb] 2001888 512-byte hardware sectors (1025 MB)<br>
+sd 2:0:0:0: [sdb] Write Protect is off<br>sd 2:0:0:0: [sdb] Assuming drive cache: write through<br>sd 2:0:0:0: [sdb] 2001888 512-byte hardware sectors (1025 MB)<br>sd 2:0:0:0: [sdb] Write Protect is off<br>sd 2:0:0:0: [sdb] Assuming drive cache: write through<br>
+&nbsp;sdb: sdb1<br>sd 2:0:0:0: [sdb] Attached SCSI removable disk<br>sd 2:0:0:0: Attached scsi generic sg1 type 0<br>VFS: Mounted root (ext2 filesystem) readonly.<br>Freeing unused kernel memory: 156k init<br>Warning: unable to open an initial console.<br>
+Failed to execute /bin/busybox.&nbsp; Attempting defaults...<br>Kernel panic - not syncing: No init found.&nbsp; Try passing init= option to kernel.<br>Rebooting in 180 seconds..<br><br>Shall I explicitly give the init ? What should be ... init=/sbin/init, init=/bin/busybox ????<br>
+<br>Thanks in advance !!!<br><br>Best regards ,<br>Cristian<br>
+
+------=_Part_14098_2881481.1226711138129--
