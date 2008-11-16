@@ -1,13 +1,13 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 83889DDE07
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 7DA28DDE04
 	for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2008 08:25:17 +1100 (EST)
-Message-Id: <20081116212515.531244472@goodmis.org>
+Message-Id: <20081116212515.331278109@goodmis.org>
 References: <20081116212428.938752312@goodmis.org>
-Date: Sun, 16 Nov 2008 16:24:31 -0500
+Date: Sun, 16 Nov 2008 16:24:30 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/7] ftrace: powerpc mcount record port
+Subject: [PATCH 2/7] ftrace, ppc: convert to new dynamic ftrace arch API
 Cc: Andrew Morton <akpm@linux-foundation.org>,
 	Peter Zijlstra <peterz@infradead.org>,
 	Rusty Russell <rusty@rustcorp.com.au>,
@@ -25,90 +25,138 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Impact: enable PowerPC for dynamic ftrace
+Impact: change PPC to use new ftrace arch API
 
-This patch converts PowerPC to use the mcount location section.
-
-Currently, modules will be ignored by the converter.
+This patch converts PPC to use the new dynamic ftrace arch API.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/powerpc/Kconfig    |    2 ++
- scripts/recordmcount.pl |   13 +++++++++++--
- 2 files changed, 13 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/ftrace.h |   14 ++++++++-
+ arch/powerpc/kernel/ftrace.c      |   60 +++++++++++++++++++++++++++++++++---
+ 2 files changed, 68 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index adb23ea..99d9500 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -108,6 +108,8 @@ config ARCH_NO_VIRT_TO_BUS
- config PPC
- 	bool
- 	default y
-+	select HAVE_FTRACE_MCOUNT_RECORD if PPC64
-+	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_FUNCTION_TRACER
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select HAVE_IDE
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index eeac71c..7acbe17 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -130,6 +130,7 @@ my %weak;		# List of weak functions
- my %convert;		# List of local functions used that needs conversion
+diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+index b298f7a..17efecc 100644
+--- a/arch/powerpc/include/asm/ftrace.h
++++ b/arch/powerpc/include/asm/ftrace.h
+@@ -7,7 +7,19 @@
  
- my $type;
-+my $nm_regex;		# Find the local functions (return function)
- my $section_regex;	# Find the start of a section
- my $function_regex;	# Find the name of a function
- 			#    (return offset and func name)
-@@ -145,6 +146,7 @@ if ($arch eq "x86") {
+ #ifndef __ASSEMBLY__
+ extern void _mcount(void);
+-#endif
++
++#ifdef CONFIG_DYNAMIC_FTRACE
++static inline unsigned long ftrace_call_adjust(unsigned long addr)
++{
++       /* reloction of mcount call site is the same as the address */
++       return addr;
++}
++
++struct dyn_arch_ftrace {
++	/* nothing yet */
++};
++#endif /*  CONFIG_DYNAMIC_FTRACE */
++#endif /* __ASSEMBLY__ */
+ 
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index f4b006e..aa5d0b2 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -33,12 +33,12 @@ static unsigned int ftrace_calc_offset(long ip, long addr)
+ 	return (int)(addr - ip);
  }
  
- if ($arch eq "x86_64") {
-+    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
-     $section_regex = "Disassembly of section\\s+(\\S+):";
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount([+-]0x[0-9a-zA-Z]+)?\$";
-@@ -158,6 +160,7 @@ if ($arch eq "x86_64") {
-     $cc .= " -m64";
- 
- } elsif ($arch eq "i386") {
-+    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
-     $section_regex = "Disassembly of section\\s+(\\S+):";
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
-@@ -170,6 +173,12 @@ if ($arch eq "x86_64") {
-     $objcopy .= " -O elf32-i386";
-     $cc .= " -m32";
- 
-+} elsif ($arch eq "powerpc") {
-+    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
-+    $section_regex = "Disassembly of section\\s+(\\S+):";
-+    $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?.*?)>:";
-+    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s\\.?_mcount\$";
-+    $type = ".quad";
- } else {
-     die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
+-unsigned char *ftrace_nop_replace(void)
++static unsigned char *ftrace_nop_replace(void)
+ {
+ 	return (char *)&ftrace_nop;
  }
-@@ -239,7 +248,7 @@ if (!$found_version) {
- #
- open (IN, "$nm $inputfile|") || die "error running $nm";
- while (<IN>) {
--    if (/^[0-9a-fA-F]+\s+t\s+(\S+)/) {
-+    if (/$nm_regex/) {
- 	$locals{$1} = 1;
-     } elsif (/^[0-9a-fA-F]+\s+([wW])\s+(\S+)/) {
- 	$weak{$2} = $1;
-@@ -291,7 +300,7 @@ sub update_funcs
- 	    open(FILE, ">$mcount_s") || die "can't create $mcount_s\n";
- 	    $opened = 1;
- 	    print FILE "\t.section $mcount_section,\"a\",\@progbits\n";
--	    print FILE "\t.align $alignment\n";
-+	    print FILE "\t.align $alignment\n" if (defined($alignment));
- 	}
- 	printf FILE "\t%s %s + %d\n", $type, $ref_func, $offsets[$i] - $offset;
-     }
+ 
+-unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
++static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+ {
+ 	static unsigned int op;
+ 
+@@ -68,7 +68,7 @@ unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+ # define _ASM_PTR	" .long "
+ #endif
+ 
+-int
++static int
+ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 		   unsigned char *new_code)
+ {
+@@ -113,6 +113,55 @@ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 	return faulted;
+ }
+ 
++static int test_24bit_addr(unsigned long ip, unsigned long addr)
++{
++	unsigned long diff;
++
++	/* can we get to addr from ip in 24 bits? */
++	diff = ip > addr ? ip - addr : addr - ip;
++
++	return !(diff & ((unsigned long)-1 << 24));
++}
++
++int ftrace_make_nop(struct module *mod,
++		    struct dyn_ftrace *rec, unsigned long addr)
++{
++	unsigned char *old, *new;
++
++	/*
++	 * If the calling address is more that 24 bits away,
++	 * then we had to use a trampoline to make the call.
++	 * Otherwise just update the call site.
++	 */
++	if (test_24bit_addr(rec->ip, addr)) {
++		/* within range */
++		old = ftrace_call_replace(rec->ip, addr);
++		new = ftrace_nop_replace();
++		return ftrace_modify_code(rec->ip, old, new);
++	}
++
++	return 0;
++}
++
++int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
++{
++	unsigned char *old, *new;
++
++	/*
++	 * If the calling address is more that 24 bits away,
++	 * then we had to use a trampoline to make the call.
++	 * Otherwise just update the call site.
++	 */
++	if (test_24bit_addr(rec->ip, addr)) {
++		/* within range */
++		old = ftrace_nop_replace();
++		new = ftrace_call_replace(rec->ip, addr);
++		return ftrace_modify_code(rec->ip, old, new);
++	}
++
++	return 0;
++}
++
+ int ftrace_update_ftrace_func(ftrace_func_t func)
+ {
+ 	unsigned long ip = (unsigned long)(&ftrace_call);
+@@ -128,9 +177,10 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
+ 
+ int __init ftrace_dyn_arch_init(void *data)
+ {
+-	/* This is running in kstop_machine */
++	/* caller expects data to be zero */
++	unsigned long *p = data;
+ 
+-	ftrace_mcount_set(data);
++	*p = 0;
+ 
+ 	return 0;
+ }
 -- 
 1.5.6.5
 
