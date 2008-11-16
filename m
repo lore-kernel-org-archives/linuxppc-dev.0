@@ -1,21 +1,20 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 6A67DDDE24
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2008 08:25:18 +1100 (EST)
-Message-Id: <20081116212516.000516128@goodmis.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18720.42209.880409.297291@cargo.ozlabs.ibm.com>
+Date: Mon, 17 Nov 2008 09:55:29 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 0/7] Porting dynmaic ftrace to PowerPC
+In-Reply-To: <20081116212428.938752312@goodmis.org>
 References: <20081116212428.938752312@goodmis.org>
-Date: Sun, 16 Nov 2008 16:24:33 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 5/7] ftrace, PPC64: handle module trampolines for dyn ftrace
 Cc: Andrew Morton <akpm@linux-foundation.org>,
 	Peter Zijlstra <peterz@infradead.org>,
 	Rusty Russell <rusty@rustcorp.com.au>,
-	Pekka Paalanen <pq@iki.fi>, David Miller <davem@davemloft.net>,
-	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>
+	Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	Paul Mundt <lethal@linux-sh.org>, Frederic Weisbecker <fweisbec@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,362 +24,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Impact: Implement PPC64 module trampolines for dyn ftrace
+Steven Rostedt writes:
 
-This adds code to handle the PPC64 module trampolines, and allows for
-PPC64 to use dynamic ftrace.
+> The following patches are for my work on porting the new dynamic ftrace
+> framework to PowerPC.  The issue I had with both PPC64 and PPC32 is
+> that the calls to mcount are 24 bit jumps. Since the modules are
+> loaded in vmalloc address space, the call to mcount is farther than
+> what a 24 bit jump can make. The way PPC solves this is with the use
+> of trampolines. The trampoline is a memory space allocated within the
+> 24 bit region of the module. The code in the trampoline that the
+> jump is made to does a far jump to the core kernel code.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- arch/powerpc/include/asm/ftrace.h |    3 +-
- arch/powerpc/include/asm/module.h |   11 ++
- arch/powerpc/kernel/ftrace.c      |  202 +++++++++++++++++++++++++++++++++++--
- arch/powerpc/kernel/module_64.c   |   13 +++
- 4 files changed, 220 insertions(+), 9 deletions(-)
+Thanks for doing this work.  I'll go through the patches in detail
+today, but first I'd like to clear up a couple of things for you.  The
+first is that unconditional branches on PowerPC effectively have a
+26-bit sign-extended offset, not 24-bit.  The offset field in the
+instruction is 24 bits long, but because all instructions are 4 bytes
+long, two extra 0 bits get appended to the offset field, giving a
+26-bit offset and a range of +/- 32MB from the branch instruction.
 
-diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-index 17efecc..d57f5bc 100644
---- a/arch/powerpc/include/asm/ftrace.h
-+++ b/arch/powerpc/include/asm/ftrace.h
-@@ -16,7 +16,8 @@ static inline unsigned long ftrace_call_adjust(unsigned long addr)
- }
- 
- struct dyn_arch_ftrace {
--	/* nothing yet */
-+	struct module *mod;
-+	unsigned long tramp;
- };
- #endif /*  CONFIG_DYNAMIC_FTRACE */
- #endif /* __ASSEMBLY__ */
-diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
-index e5f14b1..340bc69 100644
---- a/arch/powerpc/include/asm/module.h
-+++ b/arch/powerpc/include/asm/module.h
-@@ -34,6 +34,11 @@ struct mod_arch_specific {
- #ifdef __powerpc64__
- 	unsigned int stubs_section;	/* Index of stubs section in module */
- 	unsigned int toc_section;	/* What section is the TOC? */
-+#ifdef CONFIG_DYNAMIC_FTRACE
-+	unsigned long toc;
-+	unsigned long tramp;
-+#endif
-+
- #else
- 	/* Indices of PLT sections within module. */
- 	unsigned int core_plt_section;
-@@ -68,6 +73,12 @@ struct mod_arch_specific {
- #    endif	/* MODULE */
- #endif
- 
-+#ifdef CONFIG_DYNAMIC_FTRACE
-+#    ifdef MODULE
-+	asm(".section .ftrace.tramp,\"ax\",@nobits; .align 3; .previous");
-+#    endif	/* MODULE */
-+#endif
-+
- 
- struct exception_table_entry;
- void sort_ex_table(struct exception_table_entry *start,
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 3852919..acbec66 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -10,22 +10,29 @@
- #include <linux/spinlock.h>
- #include <linux/hardirq.h>
- #include <linux/uaccess.h>
-+#include <linux/module.h>
- #include <linux/ftrace.h>
- #include <linux/percpu.h>
- #include <linux/init.h>
- #include <linux/list.h>
- 
- #include <asm/cacheflush.h>
-+#include <asm/code-patching.h>
- #include <asm/ftrace.h>
- 
-+#if 0
-+#define DEBUGP printk
-+#else
-+#define DEBUGP(fmt , ...)	do { } while (0)
-+#endif
- 
--static unsigned int ftrace_nop = 0x60000000;
-+static unsigned int ftrace_nop = PPC_NOP_INSTR;
- 
- #ifdef CONFIG_PPC32
- # define GET_ADDR(addr) addr
- #else
- /* PowerPC64's functions are data that points to the functions */
--# define GET_ADDR(addr) *(unsigned long *)addr
-+# define GET_ADDR(addr) (*(unsigned long *)addr)
- #endif
- 
- 
-@@ -115,40 +122,219 @@ static int test_24bit_addr(unsigned long ip, unsigned long addr)
- int ftrace_make_nop(struct module *mod,
- 		    struct dyn_ftrace *rec, unsigned long addr)
- {
-+	unsigned char replaced[MCOUNT_INSN_SIZE * 2];
-+	unsigned int *op = (unsigned *)&replaced;
-+	unsigned char jmp[8];
-+	unsigned long *ptr = (unsigned long *)&jmp;
- 	unsigned char *old, *new;
-+	unsigned long ip = rec->ip;
-+	unsigned long tramp;
-+	int offset;
- 
- 	/*
- 	 * If the calling address is more that 24 bits away,
- 	 * then we had to use a trampoline to make the call.
- 	 * Otherwise just update the call site.
- 	 */
--	if (test_24bit_addr(rec->ip, addr)) {
-+	if (test_24bit_addr(ip, addr)) {
- 		/* within range */
--		old = ftrace_call_replace(rec->ip, addr);
-+		old = ftrace_call_replace(ip, addr);
- 		new = ftrace_nop_replace();
--		return ftrace_modify_code(rec->ip, old, new);
-+		return ftrace_modify_code(ip, old, new);
- 	}
- 
-+#ifndef CONFIG_PPC64
-+	/* only supported for PPC64 for now */
- 	return 0;
-+#else
-+
-+	/*
-+	 * Out of range jumps are called from modules.
-+	 * We should either already have a pointer to the module
-+	 * or it has been passed in.
-+	 */
-+	if (!rec->arch.mod) {
-+		if (!mod) {
-+			printk(KERN_ERR "No module loaded addr=%lx\n",
-+			       addr);
-+			return -EFAULT;
-+		}
-+		rec->arch.mod = mod;
-+	} else if (mod) {
-+		printk(KERN_ERR
-+		       "Record mod %p not equal to passed in mod %p\n",
-+		       rec->arch.mod, mod);
-+		return -EINVAL;
-+	} else
-+		mod = rec->arch.mod;
-+
-+	/* read where this goes */
-+	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
-+		return -EFAULT;
-+
-+	/* Make sure that that this is still a 24bit jump */
-+	if ((*op & 0xff000000) != 0x48000000) {
-+		printk(KERN_ERR "Not expected bl: opcode is %x\n", *op);
-+		return -EINVAL;
-+	}
-+
-+	/* lets find where the pointer goes */
-+	offset = (*op & 0x03fffffc);
-+	/* make it signed */
-+	if (offset & 0x02000000)
-+		offset |= 0xfe000000;
-+
-+	tramp = ip + (long)offset;
-+
-+	/*
-+	 * On PPC64 the trampoline looks like:
-+	 * 0x3d, 0x82, 0x00, 0x00,    addis   r12,r2, <high>
-+	 * 0x39, 0x8c, 0x00, 0x00,    addi    r12,r12, <low>
-+	 *   Where the bytes 2,3,6 and 7 make up the 32bit offset
-+	 *   to the TOC that holds the pointer.
-+	 *   to jump to.
-+	 * 0xf8, 0x41, 0x00, 0x28,    std     r2,40(r1)
-+	 * 0xe9, 0x6c, 0x00, 0x20,    ld      r11,32(r12)
-+	 *   The actually address is 32 bytes from the offset
-+	 *   into the TOC.
-+	 * 0xe8, 0x4c, 0x00, 0x28,    ld      r2,40(r12)
-+	 */
-+
-+	DEBUGP("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
-+
-+	/* Find where the trampoline jumps to */
-+	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
-+		printk(KERN_ERR "Failed to read %lx\n", tramp);
-+		return -EFAULT;
-+	}
-+
-+	DEBUGP(" %08x %08x",
-+	       (unsigned)(*ptr >> 32),
-+	       (unsigned)*ptr);
-+
-+	offset = (unsigned)jmp[2] << 24 |
-+		(unsigned)jmp[3] << 16 |
-+		(unsigned)jmp[6] << 8 |
-+		(unsigned)jmp[7];
-+
-+	DEBUGP(" %x ", offset);
-+
-+	/* get the address this jumps too */
-+	tramp = mod->arch.toc + offset + 32;
-+	DEBUGP("toc: %lx", tramp);
-+
-+	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
-+		printk(KERN_ERR "Failed to read %lx\n", tramp);
-+		return -EFAULT;
-+	}
-+
-+	DEBUGP(" %08x %08x\n",
-+	       (unsigned)(*ptr >> 32),
-+	       (unsigned)*ptr);
-+
-+	/* This should match what was called */
-+	if (*ptr != GET_ADDR(addr)) {
-+		printk(KERN_ERR "addr does not match %lx\n", *ptr);
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * We want to nop the line, but the next line is
-+	 *  0xe8, 0x41, 0x00, 0x28   ld r2,40(r1)
-+	 * This needs to be turned to a nop too.
-+	 */
-+	if (probe_kernel_read(replaced, (void *)(ip+4), MCOUNT_INSN_SIZE))
-+		return -EFAULT;
-+
-+	if (*op != 0xe8410028) {
-+		printk(KERN_ERR "Next line is not ld! (%08x)\n", *op);
-+		return -EINVAL;
-+	}
-+
-+	op[0] = PPC_NOP_INSTR;
-+	op[1] = PPC_NOP_INSTR;
-+
-+	if (probe_kernel_write((void *)ip, replaced, MCOUNT_INSN_SIZE * 2))
-+		return -EPERM;
-+
-+	return 0;
-+#endif /* CONFIG_PPC64 */
- }
- 
- int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- {
-+	unsigned char replaced[MCOUNT_INSN_SIZE * 2];
-+	unsigned int *op = (unsigned *)&replaced;
- 	unsigned char *old, *new;
-+	unsigned long ip = rec->ip;
-+	unsigned long offset;
- 
- 	/*
- 	 * If the calling address is more that 24 bits away,
- 	 * then we had to use a trampoline to make the call.
- 	 * Otherwise just update the call site.
- 	 */
--	if (test_24bit_addr(rec->ip, addr)) {
-+	if (test_24bit_addr(ip, addr)) {
- 		/* within range */
- 		old = ftrace_nop_replace();
--		new = ftrace_call_replace(rec->ip, addr);
--		return ftrace_modify_code(rec->ip, old, new);
-+		new = ftrace_call_replace(ip, addr);
-+		return ftrace_modify_code(ip, old, new);
- 	}
- 
-+#ifndef CONFIG_PPC64
-+	/* only supported for PPC64 for now */
-+	return 0;
-+#else
-+
-+	/*
-+	 * Out of range jumps are called from modules.
-+	 * Being that we are converting from nop, it had better
-+	 * already have a module defined.
-+	 */
-+	if (!rec->arch.mod) {
-+		printk(KERN_ERR "No module loaded\n");
-+		return -EINVAL;
-+	}
-+
-+	/* read where this goes */
-+	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE * 2))
-+		return -EFAULT;
-+
-+	/* It should be pointing to two nops */
-+	if ((op[0] != PPC_NOP_INSTR) ||
-+	    (op[1] != PPC_NOP_INSTR)) {
-+		printk(KERN_ERR "Expected NOPs but have %x %x\n", op[0], op[1]);
-+		return -EINVAL;
-+	}
-+
-+	/* If we never set up a trampoline to ftrace_caller, then bail */
-+	if (!rec->arch.mod->arch.tramp) {
-+		printk(KERN_ERR "No ftrace trampoline\n");
-+		return -EINVAL;
-+	}
-+
-+	/* now calculate a jump to the ftrace caller trampoline */
-+	offset = rec->arch.mod->arch.tramp - ip;
-+
-+	if (offset + 0x2000000 > 0x3ffffff || (offset & 3) != 0) {
-+		printk(KERN_ERR "REL24 %li out of range!\n",
-+		       (long int)offset);
-+		return -EINVAL;
-+	}
-+
-+
-+	/* Set to "bl addr" */
-+	op[0] = 0x48000001 | (offset & 0x03fffffc);
-+	/* ld r2,40(r1) */
-+	op[1] = 0xe8410028;
-+
-+	DEBUGP("write to %lx\n", rec->ip);
-+
-+	if (probe_kernel_write((void *)ip, replaced, MCOUNT_INSN_SIZE * 2))
-+		return -EPERM;
-+
- 	return 0;
-+#endif /* CONFIG_PPC64 */
- }
- 
- int ftrace_update_ftrace_func(ftrace_func_t func)
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 1af2377..8992b03 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -20,6 +20,7 @@
- #include <linux/moduleloader.h>
- #include <linux/err.h>
- #include <linux/vmalloc.h>
-+#include <linux/ftrace.h>
- #include <linux/bug.h>
- #include <asm/module.h>
- #include <asm/firmware.h>
-@@ -163,6 +164,11 @@ static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
- 		}
- 	}
- 
-+#ifdef CONFIG_DYNAMIC_FTRACE
-+	/* make the trampoline to the ftrace_caller */
-+	relocs++;
-+#endif
-+
- 	DEBUGP("Looks like a total of %lu stubs, max\n", relocs);
- 	return relocs * sizeof(struct ppc64_stub_entry);
- }
-@@ -441,5 +447,12 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
- 		}
- 	}
- 
-+#ifdef CONFIG_DYNAMIC_FTRACE
-+	me->arch.toc = my_r2(sechdrs, me);
-+	me->arch.tramp = stub_for_addr(sechdrs,
-+				       (unsigned long)ftrace_caller,
-+				       me);
-+#endif
-+
- 	return 0;
- }
--- 
-1.5.6.5
+> PPC64, although works with 64 bit registers, the op codes are still
+> 32 bit in length.  PPC64 uses table of contents (TOC) fields
+> to make their calls to functions. A function name is really a pointer
+> into the TOC table that stores the actual address of the function
+> along with the TOC of that function. The r2 register plays as the
+> TOC pointer. The actual name of the function is the function name
+> with a dot '.' prefix.  The reference name "schedule" is really
+> to the TOC entry, which calls the actual code with the reference
+> name ".schedule". This also explains why the list of available filter
+> functions on PPC64 all have a dot prefix.
 
--- 
+A little more detail: the TOC mainly stores addresses and other
+constants.  Functions have a descriptor that is stored in a .opd
+section (not the TOC, though the TOC may contain pointers to procedure
+descriptors).  Each descriptor has the address of the code, the
+address of the TOC for the function, and a static chain pointer (not
+used for C, but can used for other languages).  As you note, the
+symbol for a function will be the address of the descriptor rather
+than the address of the function code.
+
+> When a funtion is called, it uses the 'bl' command which is a 24
+> bit function jump (saving the return address in the link register).
+> The next operation after all 'bl' calls is a nop. What the module
+> load code does when one of these 'bl' calls is farther than 24 bits
+> can handle, it creates a entry in the TOC and has the 'bl' call to
+
+The module loader allocates some memory for these trampolines, but
+that's a distinct area from the TOC and the OPD section.
+
+> that entry. The entry in the TOC will save the r2 register on the
+> stack "40(r1)" load the actually function into the ctrl register
+
+"counter" register, actually, not "ctrl".
+
+> The work for PPC32 is very much the same as the PPC64 code but the 32
+> version does not need to deal with TOCS. This makes the code much
+> simpler. Pretty much everything as PPC64 is done, except it does not
+> need to index a TOC.
+
+Right.
+
+> I've tested the following patches on both PPC64 and PPC32. I will
+> admit that the PPC64 does not seem that stable, but neither does the
+> code when all this is not enabled ;-)  I'll debug it more to see if
+> I can find the cause of my crashes, which may or may not be related
+> to the dynamic ftrace code. But the use of TOCS in PPC64 make me
+> a bit nervious that I did not do this correctly. Any help in reviewing
+> my code for mistakes would be greatly appreciated.
+
+Hmmm.  What sort of crashes are you seeing?
+
+Regards,
+Paul.
