@@ -1,15 +1,19 @@
-Return-Path: <miltonm@bga.com>
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id E6243DDED6
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Nov 2008 21:21:08 +1100 (EST)
-Date: Sun, 16 Nov 2008 15:44:42 -0600
-From: Milton Miller <miltonm@bga.com>
-To: paulus@samba.org,
-Subject: [PATCH] hide attr_smt_snooze_delay reference with CONFIG_PPC64
-Message-Id: <3122687188274b0dc514.424238335.miltonm@bga.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 57BDBDDDF5
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2008 07:26:25 +1100 (EST)
+Subject: Re: [PATCH] ppc32: remove secondary_ti
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <31226871825643c98694.1714636915.miltonm@bga.com>
+References: <31226871825643c98694.1714636915.miltonm@bga.com>
+Content-Type: text/plain
+Date: Mon, 17 Nov 2008 07:26:01 +1100
+Message-Id: <1226867161.7178.167.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,26 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-YXR0cl9zbXRfc25vb3plX2RlbGF5IGlzIGRlZmluZWQgZm9yIENPTkZJR19QUEM2NCwgc28gcHJv
-dGVjdCB0aGUgYXR0cmlidXRlDQpyZW1vdmFsIHdpdGggdGhlIHNhbWUgY29uZGl0aW9uLg0KDQov
-ZGF0YS9ob21lL21pbHRvbm0vbmV4dC5naXQvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jOiBJ
-biBmdW5jdGlvbiDigJh1bnJlZ2lzdGVyX2NwdV9vbmxpbmXigJk6DQovZGF0YS9ob21lL21pbHRv
-bm0vbmV4dC5naXQvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jOjcyMjogZXJyb3I6IOKAmGF0
-dHJfc210X3Nub296ZV9kZWxheeKAmSB1bmRlY2xhcmVkIChmaXJzdCB1c2UgaW4gdGhpcyBmdW5j
-dGlvbikNCi9kYXRhL2hvbWUvbWlsdG9ubS9uZXh0LmdpdC9hcmNoL3Bvd2VycGMva2VybmVsL3N5
-c2ZzLmM6NzIyOiBlcnJvcjogKEVhY2ggdW5kZWNsYXJlZCBpZGVudGlmaWVyIGlzIHJlcG9ydGVk
-IG9ubHkgb25jZQ0KL2RhdGEvaG9tZS9taWx0b25tL25leHQuZ2l0L2FyY2gvcG93ZXJwYy9rZXJu
-ZWwvc3lzZnMuYzo3MjI6IGVycm9yOiBmb3IgZWFjaCBmdW5jdGlvbiBpdCBhcHBlYXJzIGluLikN
-Cg0KLS0tDQpmb3VuZCB3aXRoIHR1cm5pbmcgb24gU01QIG9uIHBwYzZ4eF9kZWZjb25maWcgaW4g
-bmV4dC0yMDA3MTEwNywNCndoaWNoIGVuZGVkIHVwIENPTkZJR19IT1RQTFVHX0NQVT15DQoNCg0K
-SW5kZXg6IG5leHQuZ2l0L2FyY2gvcG93ZXJwYy9rZXJuZWwvc3lzZnMuYw0KPT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0K
-LS0tIG5leHQuZ2l0Lm9yaWcvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jCTIwMDgtMTEtMTYg
-MDE6NDg6MzIuMDAwMDAwMDAwIC0wNjAwDQorKysgbmV4dC5naXQvYXJjaC9wb3dlcnBjL2tlcm5l
-bC9zeXNmcy5jCTIwMDgtMTEtMTYgMDE6NDk6MTUuMDAwMDAwMDAwIC0wNjAwDQpAQCAtNzE3LDkg
-KzcxNywxMSBAQCBzdGF0aWMgdm9pZCB1bnJlZ2lzdGVyX2NwdV9vbmxpbmUodW5zaWduDQogDQog
-CUJVR19PTighYy0+aG90cGx1Z2dhYmxlKTsNCiANCisjaWZkZWYgQ09ORklHX1BQQzY0DQogCWlm
-ICghZmlybXdhcmVfaGFzX2ZlYXR1cmUoRldfRkVBVFVSRV9JU0VSSUVTKSAmJg0KIAkJCWNwdV9o
-YXNfZmVhdHVyZShDUFVfRlRSX1NNVCkpDQogCQlzeXNkZXZfcmVtb3ZlX2ZpbGUocywgJmF0dHJf
-c210X3Nub296ZV9kZWxheSk7DQorI2VuZGlmDQogDQogCS8qIFBNQyBzdHVmZiAqLw0KIAlzd2l0
-Y2ggKGN1cl9jcHVfc3BlYy0+cG1jX3R5cGUpIHsNCg0K
+On Sun, 2008-11-16 at 15:43 -0600, Milton Miller wrote:
+> Instead of copying current_set[cpu] to secondary_ti, directly index into
+> current_set by the cpu number like head_64.S.  In addition to removing
+> the variable, a slow to respond cpu will not clobber another cpus
+> stack.
+
+Except that we don't know our CPU number at this stage do we ? IE. r24
+is our HW number, is it guaranteed to be what we want to index
+current_set ?
+
+Ben.
