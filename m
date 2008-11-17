@@ -1,26 +1,21 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D0012DDDEA
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 08:43:28 +1100 (EST)
-Date: Mon, 17 Nov 2008 13:42:35 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Large stack usage in fs code (especially for PPC64)
-In-Reply-To: <20081117133137.616cf287.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0811171337400.18283@nehalem.linux-foundation.org>
-References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-	<20081117130856.92e41cd3.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0811171320330.18283@nehalem.linux-foundation.org>
-	<20081117133137.616cf287.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, mingo@elte.hu,
-	tglx@linutronix.de
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8D43CDDDE7
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 09:01:00 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	mAHM0uIf021082
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2008 15:00:56 -0700 (MST)
+From: Trent Piepho <tpiepho@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Silence timebase sync code
+Date: Mon, 17 Nov 2008 13:58:31 -0800
+Message-Id: <1226959111-11221-1-git-send-email-tpiepho@freescale.com>
+Cc: Trent Piepho <tpiepho@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,28 +25,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+It's over a dozen lines of output and doesn't appear to provide any useful
+information.  Even after looking at the code, I'm in the dark about what
+"score 299, offset 250" means.
 
+Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+---
+ arch/powerpc/kernel/smp-tbsync.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
 
-On Mon, 17 Nov 2008, Andrew Morton wrote:
-> 
-> Yup.  That being said, the younger me did assert that "this is a neater
-> implementation anyway".  If we can implement those loops without
-> needing those on-stack temporary arrays then things probably are better
-> overall.
-
-Sure, if it actually ends up being nicer, I'll not argue with it. But from 
-an L1 I$ standpoint (and I$ is often very important, especially for kernel 
-loads where loops are fairly rare), it's often _much_ better to do two 
-"tight" loops over two subsystems (filesystem and block layer) than it is 
-to do one bigger loop that contains both. If the L1 can fit both subsystem 
-paths, you're fine - but if not, you may get a lot more misses.
-
-So it's often nice if you can "stage" things so that you do a cluster of 
-calls to one area, followed by a cluster of calls to another, rather than 
-mix it up. 
-
-But numbers talk. And code cleanliness. If somebody has numbers that the 
-code size actually goes down for example, or the code is just more 
-readable, micro-optimizing cache patterns isn't worth it.
-
-			Linus
+diff --git a/arch/powerpc/kernel/smp-tbsync.c b/arch/powerpc/kernel/smp-tbsync.c
+index bc892e6..b590135 100644
+--- a/arch/powerpc/kernel/smp-tbsync.c
++++ b/arch/powerpc/kernel/smp-tbsync.c
+@@ -113,7 +113,7 @@ void __devinit smp_generic_give_timebase(void)
+ {
+ 	int i, score, score2, old, min=0, max=5000, offset=1000;
+ 
+-	printk("Synchronizing timebase\n");
++	pr_info("Synchronizing timebase\n");
+ 
+ 	/* if this fails then this kernel won't work anyway... */
+ 	tbsync = kzalloc( sizeof(*tbsync), GFP_KERNEL );
+@@ -123,14 +123,10 @@ void __devinit smp_generic_give_timebase(void)
+ 	while (!tbsync->ack)
+ 		barrier();
+ 
+-	printk("Got ack\n");
+-
+ 	/* binary search */
+ 	for (old = -1; old != offset ; offset = (min+max) / 2) {
+ 		score = start_contest(kSetAndTest, offset, NUM_ITER);
+ 
+-		printk("score %d, offset %d\n", score, offset );
+-
+ 		if( score > 0 )
+ 			max = offset;
+ 		else
+@@ -140,8 +136,8 @@ void __devinit smp_generic_give_timebase(void)
+ 	score = start_contest(kSetAndTest, min, NUM_ITER);
+ 	score2 = start_contest(kSetAndTest, max, NUM_ITER);
+ 
+-	printk("Min %d (score %d), Max %d (score %d)\n",
+-	       min, score, max, score2);
++	pr_debug("Min %d (score %d), Max %d (score %d)\n",
++		 min, score, max, score2);
+ 	score = abs(score);
+ 	score2 = abs(score2);
+ 	offset = (score < score2) ? min : max;
+@@ -155,7 +151,7 @@ void __devinit smp_generic_give_timebase(void)
+ 		if (score2 <= score || score2 < 20)
+ 			break;
+ 	}
+-	printk("Final offset: %d (%d/%d)\n", offset, score2, NUM_ITER );
++	pr_debug("Final offset: %d (%d/%d)\n", offset, score2, NUM_ITER);
+ 
+ 	/* exiting */
+ 	tbsync->cmd = kExit;
+-- 
+1.5.4.1
