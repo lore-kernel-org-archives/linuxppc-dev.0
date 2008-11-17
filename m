@@ -1,37 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 13ED3DDE1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 10:22:21 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mAHNLmRj029012
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2008 16:21:48 -0700
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mAHNMHgI039186
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2008 16:22:17 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mAHNMGbZ006683
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2008 16:22:17 -0700
-Date: Mon, 17 Nov 2008 18:22:04 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Large stack usage in fs code (especially for PPC64)
-Message-ID: <20081117182204.0940d3a8@zod.rchland.ibm.com>
-In-Reply-To: <1226963596.7178.254.camel@pasglop>
-References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-	<alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
-	<1226963596.7178.254.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Silence timebase sync code
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Trent Piepho <tpiepho@freescale.com>
+In-Reply-To: <Pine.LNX.4.64.0811171421090.11673@t2.domain.actdsltmp>
+References: <1226959111-11221-1-git-send-email-tpiepho@freescale.com>
+	<49889E01-9433-41BE-A6F1-66127856D482@kernel.crashing.org>
+	<Pine.LNX.4.64.0811171421090.11673@t2.domain.actdsltmp>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-wLIBcTf49bjRzraCBDu3"
+Date: Tue, 18 Nov 2008 10:28:21 +1100
+Message-Id: <1226964501.8537.3.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,36 +23,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 18 Nov 2008 10:13:16 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> 
-> > Well, it's not unacceptable on good CPU's with 4kB blocks (just an 8-entry 
-> > array), but as you say:
-> > 
-> > > On PPC64 I'm told that the page size is 64K, which makes the above equal 
-> > > to: 64K / 512 = 128  multiply that by 8 byte words, we have 1024 bytes.
-> > 
-> > Yeah. Not good. I think 64kB pages are insane. In fact, I think 32kB 
-> > pages are insane, and 16kB pages are borderline. I've told people so.
-> > 
-> > The ppc people run databases, and they don't care about sane people 
-> > telling them the big pages suck.
-> 
-> Hehe :-)
-> 
-> Guess who is pushing for larger page sizes nowadays ? Embedded
-> people :-) In fact, we have patches submited on the list to offer the
-> option for ... 256K pages on some 44x embedded CPUs :-)
+--=-wLIBcTf49bjRzraCBDu3
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-For clarification, that workload is very precise.  Namely embedded 44x
-CPUs used in RAID cards.  I'm not entirely convinced bringing 256K
-pages into mainline is a good thing yet anyway.
+On Mon, 2008-11-17 at 14:22 -0800, Trent Piepho wrote:
+> On Mon, 17 Nov 2008, Kumar Gala wrote:
+> > On Nov 17, 2008, at 3:58 PM, Trent Piepho wrote:
+> >
+> >> It's over a dozen lines of output and doesn't appear to provide any us=
+eful
+> >> information.  Even after looking at the code, I'm in the dark about wh=
+at
+> >> "score 299, offset 250" means.
+> >>=20
+> >> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+> >> ---
+> >> arch/powerpc/kernel/smp-tbsync.c |   12 ++++--------
+> >> 1 files changed, 4 insertions(+), 8 deletions(-)
+> >>=20
+> >> diff --git a/arch/powerpc/kernel/smp-tbsync.c=20
+> >> b/arch/powerpc/kernel/smp-tbsync.c
+> >> index bc892e6..b590135 100644
+> >> --- a/arch/powerpc/kernel/smp-tbsync.c
+> >> +++ b/arch/powerpc/kernel/smp-tbsync.c
+> >> @@ -113,7 +113,7 @@ void __devinit smp_generic_give_timebase(void)
+> >> {
+> >>  int i, score, score2, old, min=3D0, max=3D5000, offset=3D1000;
+> >>=20
+> >> -	printk("Synchronizing timebase\n");
+> >> +	pr_info("Synchronizing timebase\n");
+> >
+> > I think its useful to leave this as a printk.
+>=20
+> #define pr_info(fmt, arg...) \
+>          printk(KERN_INFO fmt, ##arg)
+>=20
+> Isn't printk with no level tag the same as KERN_INFO?
 
-64K pages, while seemingly insane for embedded boards that typically
-have less than 512 MiB of DRAM, help for a bit larger set of
-workloads.  As a KVM host is the primary winner at the moment.  But
-given the small number of TLB entries on these CPUs, it can pay off
-elsewhere as well.
+Stuff like this should IMHO be printk(KERN_DEBUG ..)
 
-josh
+That way it will show up in the log as long as you boot with 'debug' on
+your command line, it doesn't require a kernel recompile to turn on. And
+at the same time it doesn't spam the boot log for a normal boot.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-wLIBcTf49bjRzraCBDu3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkkh/hUACgkQdSjSd0sB4dLRxgCffr9tFyH1+FwOr5JE8hFqoa+s
+TgoAn059UtTgrm9WsskYOzfLal/1hLPN
+=AB3V
+-----END PGP SIGNATURE-----
+
+--=-wLIBcTf49bjRzraCBDu3--
