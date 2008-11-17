@@ -1,24 +1,21 @@
-Return-Path: <kevdig@hypersurf.com>
-Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
-	by ozlabs.org (Postfix) with ESMTP id 15DC3DDDEE
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2008 21:22:26 +1100 (EST)
-Received: from [192.168.1.37] (66-81-70-236.bayarea.dialup.o1.com
-	[66.81.70.236]) (authenticated bits=0)
-	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id mAHAM8EE042925
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2008 02:22:21 -0800 (PST)
-Message-ID: <492145BB.7080904@hypersurf.com>
-Date: Mon, 17 Nov 2008 02:21:47 -0800
-From: Kevin Diggs <kevdig@hypersurf.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: pmac_zilog debugging ...
-References: <4914B549.9010805@hypersurf.com>	<1226096603.13603.74.camel@pasglop>
-	<491C11B2.1060909@hypersurf.com>	<1226612654.7178.84.camel@pasglop>
-	<491CAA32.20307@hypersurf.com>	<1226624429.7178.105.camel@pasglop>
-	<49212D61.3080305@hypersurf.com>
-	<1226912422.7178.228.camel@pasglop>
-In-Reply-To: <1226912422.7178.228.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D5D9FDDDE7
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 01:31:39 +1100 (EST)
+Message-Id: <7D365ECF-C4B1-445C-85F9-36D4C9808E44@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <491F107E.4070702@redhat.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH][for 2.6.28] Remove -mno-spe flags as they dont belong
+Date: Mon, 17 Nov 2008 08:31:30 -0600
+References: <1226772154-6109-1-git-send-email-galak@kernel.crashing.org>
+	<491F107E.4070702@redhat.com>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,42 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
->  
-> 
-> That's definitely strange. I would expect the kernel to be able to get
-> interrupts fast enough to service a 1200 bauds serial port. Maybe
-> there's something else wrong, or an other driver causing undue interrupt
-> latencies.... 
-> 
-As far as I can see the system is NOT busy. I see no evidence of excessive
-interrupt loading. It does have an Adaptec 2940 u2w SCSI card, an ATI video card,
-and a USB/firewire card. The SCSI card has some disks on it. The other two cards
-are unused. I guess, in theory, something in my 2.6.27 kernel could be causing one
-of the two unused cards to throw spurious interrupts?
 
-I still think the hardware is mis-behaving.
+On Nov 15, 2008, at 12:10 PM, Steven Rostedt wrote:
 
-> Out of curiosity, check that IDE properly unmasks interrupts (hdparm
-> -u1 /dev/hda).
-> 
-This is an 8600. It is SCSI only (the onboard controller is the MESH).
-> 
->> So, I'm on board with this approach. Since I don't really know what I am
->>doing, how do you recommend I proceed?
-> 
-> 
-> Google for a document called MacTech.pdf which contains various
-> documentations for bits of the ancestor of the IO chip in your machine,
-> along with a description of the DBDMA engine :-) Something else you can
-> do is to look at how it's properly used by other drivers such as bmac
-> and look at some of the darwin source code for reference on how the HW
-> works.
-> 
-where might one find older Darwin source?
+> Kumar Gala wrote:
+>> For some unknown reason at Steven Rostedt added in disabling of the  
+>> SPE
+>> instruction generation for e500 based PPC cores in commit
+>> 6ec562328fda585be2d7f472cfac99d3b44d362a.
+>>
+>
+> The unknown reason was that my PPC64 failed to compile without  
+> it ;-) It was unknown because I forgot to mention that in the change  
+> log (my bad).
+>
+> On Monday, I'll apply this patch and make sure that my PPC64 still  
+> compiles.
+>
+> -- Steve
 
-> Cheers,
-> Ben.
-> 
-> _______________________________________________
-> 
+Thanks, if you can Ack the patch today if it works for you that would  
+be great.
+
+- k
+
+>
+>
+>> We are removing it because:
+>>
+>> 1. It generates e500 kernels that don't work
+>> 2. its not the correct set of flags to do this
+>> 3. we handle this in the arch/powerpc/Makefile already
+>> 4. its unknown in talking to Steven why he did this
+>>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>> kernel/Makefile |    4 +---
+>> 1 files changed, 1 insertions(+), 3 deletions(-)
+>
