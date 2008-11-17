@@ -1,23 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9650DDDDF8
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 07:13:08 +1100 (EST)
-Subject: Re: pmac_zilog debugging ...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kevin Diggs <kevdig@hypersurf.com>
-In-Reply-To: <492145BB.7080904@hypersurf.com>
-References: <4914B549.9010805@hypersurf.com>
-	<1226096603.13603.74.camel@pasglop> <491C11B2.1060909@hypersurf.com>
-	<1226612654.7178.84.camel@pasglop> <491CAA32.20307@hypersurf.com>
-	<1226624429.7178.105.camel@pasglop> <49212D61.3080305@hypersurf.com>
-	<1226912422.7178.228.camel@pasglop>  <492145BB.7080904@hypersurf.com>
-Content-Type: text/plain
-Date: Mon, 17 Nov 2008 22:40:18 +1100
-Message-Id: <1226922018.7178.237.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <timur.tabi@gmail.com>
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.188])
+	by ozlabs.org (Postfix) with ESMTP id 65512DDDEE
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 07:18:34 +1100 (EST)
+Received: by rn-out-0910.google.com with SMTP id j40so2234443rnf.16
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Nov 2008 12:18:31 -0800 (PST)
+Message-ID: <ed82fe3e0811171218n2030535ena8bad87abd6149f@mail.gmail.com>
+Date: Mon, 17 Nov 2008 14:18:31 -0600
+From: "Timur Tabi" <timur@freescale.com>
+Sender: timur.tabi@gmail.com
+To: "Paul Mackerras" <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: Re: powerpc: udbg based backend for hvc_console
+In-Reply-To: <20081024035434.GF4267@yookeroo.seuss>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20081024035434.GF4267@yookeroo.seuss>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,61 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-11-17 at 02:21 -0800, Kevin Diggs wrote:
-> Benjamin Herrenschmidt wrote:
-> >  
-> > 
-> > That's definitely strange. I would expect the kernel to be able to get
-> > interrupts fast enough to service a 1200 bauds serial port. Maybe
-> > there's something else wrong, or an other driver causing undue interrupt
-> > latencies.... 
-> > 
-> As far as I can see the system is NOT busy. I see no evidence of excessive
-> interrupt loading. It does have an Adaptec 2940 u2w SCSI card, an ATI video card,
-> and a USB/firewire card. The SCSI card has some disks on it. The other two cards
-> are unused. I guess, in theory, something in my 2.6.27 kernel could be causing one
-> of the two unused cards to throw spurious interrupts?
-> 
-> I still think the hardware is mis-behaving.
+On Thu, Oct 23, 2008 at 9:54 PM, David Gibson
+<david@gibson.dropbear.id.au> wrote:
 
-That's strange. Maybe one of the drivers is occasionally hogging
-interrutps. Well, there may also be a bug in the code :-)
+One other thing ...
 
-One thing you can try is to disable DMA in macserial (shouldn't be hard
-to hack) and see if it degrades the same way.
+> --- working-2.6.orig/drivers/char/Makefile      2008-10-22 15:50:59.000000000 +1100
+> +++ working-2.6/drivers/char/Makefile   2008-10-24 14:22:59.000000000 +1100
+> @@ -50,6 +50,7 @@ obj-$(CONFIG_HVC_BEAT)                += hvc_beat.o
+>  obj-$(CONFIG_HVC_DRIVER)       += hvc_console.o
+>  obj-$(CONFIG_HVC_IRQ)          += hvc_irq.o
+>  obj-$(CONFIG_HVC_XEN)          += hvc_xen.o
+> +obj-$(CONFIG_HVC_UDBG)         += hvc_udbg.o
 
-> > Out of curiosity, check that IDE properly unmasks interrupts (hdparm
-> > -u1 /dev/hda).
-> > 
-> This is an 8600. It is SCSI only (the onboard controller is the MESH).
+HVC console drivers must be compiled before hvc_console.o, so the
+above should look like this:
 
-Ah yes.
- 
-> >> So, I'm on board with this approach. Since I don't really know what I am
-> >>doing, how do you recommend I proceed?
-> > 
-> > 
-> > Google for a document called MacTech.pdf which contains various
-> > documentations for bits of the ancestor of the IO chip in your machine,
-> > along with a description of the DBDMA engine :-) Something else you can
-> > do is to look at how it's properly used by other drivers such as bmac
-> > and look at some of the darwin source code for reference on how the HW
-> > works.
-> > 
-> where might one find older Darwin source?
+obj-$(CONFIG_HVC_XEN)          += hvc_xen.o
+obj-$(CONFIG_HVC_UDBG)         += hvc_udbg.o
+obj-$(CONFIG_HVC_DRIVER)       += hvc_console.o
+obj-$(CONFIG_HVC_IRQ)          += hvc_irq.o
 
-Apple still has most of them back to 10.0 and even the recent ones still
-have an SCC serial driver afaik.
+see http://git.kernel.org/?p=linux/kernel/git/paulus/powerpc.git;a=commit;h=938473b24636d77dc5e9c3f41090d071b6cf4389
 
-Ben.
-
-> > Cheers,
-> > Ben.
-> > 
-> > _______________________________________________
-> > 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
