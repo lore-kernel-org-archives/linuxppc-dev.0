@@ -1,22 +1,17 @@
-Return-Path: <paulius.zaleckas@teltonika.lt>
-Received: from teltonika.lt (81-7-68-229.static.zebra.lt [81.7.68.229])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B7D75DDDF6
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 01:39:26 +1100 (EST)
-Received: from 82-135-208-232.static.zebra.lt (HELO
-	Programuotojas.82-135-208-232.ip.zebra.lt)
-	(paulius.zaleckas@[82.135.208.232])
-	(envelope-sender <paulius.zaleckas@teltonika.lt>)
-	by teltonika.lt (qmail-ldap-1.03) with SMTP
-	for <linuxppc-dev@ozlabs.org>; 17 Nov 2008 14:30:16 -0000
-From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-Subject: [PATCH] Documentation: fix mdio-gpio name in booting-without-of.txt
-To: linuxppc-dev@ozlabs.org
-Date: Mon, 17 Nov 2008 16:32:39 +0200
-Message-ID: <20081117143238.8214.68389.stgit@Programuotojas.82-135-208-232.ip.zebra.lt>
+Return-Path: <michael.barkowski@freescale.com>
+Message-ID: <49219BC4.7050803@freescale.com>
+Date: Mon, 17 Nov 2008 11:28:52 -0500
+From: Michael Barkowski <michael.barkowski@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH] mpc832x_rdb: fix swapped ethernet ids
+References: <491C4544.7020707@freescale.com>
+	<20081113234507.GB32024@yookeroo.seuss>
+	<491D9643.4010204@freescale.com>
+	<20081115022637.GC6629@yookeroo.seuss>
+In-Reply-To: <20081115022637.GC6629@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,23 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
----
+David Gibson wrote:
+> On Fri, Nov 14, 2008 at 10:16:19AM -0500, Michael Barkowski wrote:
+>> David Gibson wrote:
+>>> On Thu, Nov 13, 2008 at 10:18:28AM -0500, Michael Barkowski wrote:
+>>>> ethernet0 (called FSL UEC0 in U-Boot) should be enet1 (UCC3/eth1), and
+>>>> ethernet1 should be enet0 (UCC2/eth0), to be consistent with U-Boot so
+>>>> that the interfaces do not swap addresses when control passes from
+>>>> U-Boot to the kernel.
+>>> Um.. why is just swapping the aliases, rather than the enet labels the
+>>> right approach here?
+>> Kim suggested it was better to localize the port ordering as a
+>> property of the board rather than that of the QE, and I agreed.
+> 
+> And the enet0/enet1 names that appear in the labels come from the QE
+> documentation?
+> 
+No.. but don't you think the UCC2, UCC3 names, which *do* come from the QE documentation, should match their labels in numeric ordering?
+Aren't the aliases just machine-specific shortcuts for the bootloader?
 
- Documentation/powerpc/booting-without-of.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 0ab0230..8670acc 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1822,7 +1822,7 @@ platforms are moved over to use the flattened-device-tree model.
-    g) MDIO on GPIOs
- 
-    Currently defined compatibles:
--   - virtual,gpio-mdio
-+   - virtual,mdio-gpio
- 
-    MDC and MDIO lines connected to GPIO controllers are listed in the
-    gpios property as described in section VIII.1 in the following order:
+-- 
+Michael
