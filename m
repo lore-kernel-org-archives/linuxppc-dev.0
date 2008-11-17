@@ -4,21 +4,21 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A1AB0DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 08:19:09 +1100 (EST)
-Date: Mon, 17 Nov 2008 13:18:44 -0800 (PST)
+	by ozlabs.org (Postfix) with ESMTPS id 8CFAEDDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 08:24:17 +1100 (EST)
+Date: Mon, 17 Nov 2008 13:23:23 -0800 (PST)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
+To: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Large stack usage in fs code (especially for PPC64)
-In-Reply-To: <alpine.DEB.1.10.0811171557370.26123@gandalf.stny.rr.com>
-Message-ID: <alpine.LFD.2.00.0811171309580.18283@nehalem.linux-foundation.org>
+In-Reply-To: <20081117130856.92e41cd3.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0811171320330.18283@nehalem.linux-foundation.org>
 References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0811171557370.26123@gandalf.stny.rr.com>
+	<20081117130856.92e41cd3.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, mingo@elte.hu, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,39 +30,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 
-On Mon, 17 Nov 2008, Steven Rostedt wrote:
+On Mon, 17 Nov 2008, Andrew Morton wrote:
 > 
-> Here's my stack after boot up with CONFIG_IRQSTACKS set. Seems that 
-> softirqs still use the same stack as the process.
+> Far be it from me to apportion blame, but THIS IS ALL LINUS'S FAULT!!!!! :)
+> 
+> I fixed this six years ago.  See http://lkml.org/lkml/2002/6/17/68
 
-Yes.
+Btw, in that thread I also said:
 
-> This is still 12K. Kind of big even for a 16K stack.
+  "If we have 64kB pages, such architectures will have to have a bigger 
+   kernel stack. Which they will have, simply by virtue of having the very 
+   same bigger page. So that problem kind of solves itself."
 
-And while that 1kB+ stack slot for block_read_full_page still stands out 
-like a sore thumb, I do agree that there's way too many other functions 
-too with big stack frames.
+and that may still be the "right" solution - if somebody is so insane that 
+they want 64kB pages, then they might as well have a 64kB kernel stack as 
+well. 
 
-I do wonder just _what_ it is that causes the stack frames to be so 
-horrid. For example, you have
-
-	 18)     8896     160   .kmem_cache_alloc+0xfc/0x140
-
-and I'm looking at my x86-64 compile, and it has a stack frame of just 8 
-bytes (!) for local variables plus the save/restore area (which looks like 
-three registers plus frame pointer plus return address). IOW, if I'm 
-looking at the code right (so big caveat: I did _not_ do a real stack 
-dump!) the x86-64 stack cost for that same function is on the order of 48 
-bytes. Not 160.
-
-Where does that factor-of-three+ difference come from? From the numbers, I 
-suspect ppc64 has a 32-byte stack alignment, which may be part of it, and 
-I guess the compiler is more eager to use all those extra registers and 
-will happily have many more callee-saved regs that are actually used.
-
-But that still a _lot_ of extra stack.
-
-Of course, you may have things like spinlock debugging etc enabled. Some 
-of our debugging options do tend to blow things up.
+Trust me, the kernel stack isn't where you blow your memory with a 64kB 
+page. You blow all your memory on the memory fragmentation of your page 
+cache. I did the stats for the kernel source tree a long time ago, and I 
+think you wasted something like 4GB of RAM with a 64kB page size.
 
 			Linus
