@@ -1,21 +1,17 @@
-Return-Path: <rpurdie@rpsys.net>
-Received: from tim.rpsys.net (tim.rpsys.net [194.106.48.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 10A03DDDED
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 10:03:46 +1100 (EST)
-Subject: Re: [PATCH 4/4] leds: Let GPIO LEDs keep their current state
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Trent Piepho <tpiepho@freescale.com>
-In-Reply-To: <1224889741-4167-4-git-send-email-tpiepho@freescale.com>
-References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
-	<1224889741-4167-4-git-send-email-tpiepho@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 454CADDDEE
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 10:04:17 +1100 (EST)
+Subject: [PATCH] powerpc: don't export pci dma inlines
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Mon, 17 Nov 2008 14:50:27 +0000
-Message-Id: <1226933427.17109.15.camel@ted>
+Date: Tue, 18 Nov 2008 00:03:32 +0100
+Message-Id: <1226963012.4014.7.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Sean MacLennan <smaclennan@pikatech.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,68 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-10-24 at 16:09 -0700, Trent Piepho wrote:
-> Let GPIO LEDs get their initial value from whatever the current state of
-> the GPIO line is.  On some systems the LEDs are put into some state by the
-> firmware or hardware before Linux boots, and it is desired to have them
-> keep this state which is otherwise unknown to Linux.
-> 
-> This requires that the underlying GPIO driver support reading the value of
-> output GPIOs.  Some drivers support this and some do not.
-> 
-> The platform data for the platform device binding gets a new field
-> 'keep_state' which turns this on.  keep_state overrides default_state.
-> 
-> For the OpenFirmware bindings, the "default-state" property gains a new
-> allowable setting "keep".
-> 
-> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
-> index 0dbad87..bb2a234 100644
-> --- a/drivers/leds/leds-gpio.c
-> +++ b/drivers/leds/leds-gpio.c
-> @@ -92,10 +92,13 @@ static int __devinit create_gpio_led(const struct gpio_led *template,
->  		led_dat->cdev.blink_set = gpio_blink_set;
->  	}
->  	led_dat->cdev.brightness_set = gpio_led_set;
-> -	led_dat->cdev.brightness = template->default_state ? LED_FULL : LED_OFF;
-> +	if (template->keep_state)
-> +		state = !!gpio_get_value(led_dat->gpio) ^ led_dat->active_low;
-> +	else
-> +		state = template->default_state;
-> +	led_dat->cdev.brightness = state ? LED_FULL : LED_OFF;
->  
-> -	gpio_direction_output(led_dat->gpio,
-> -	                      led_dat->active_low ^ template->default_state);
-> +	gpio_direction_output(led_dat->gpio, led_dat->active_low ^ state);
->  
->  	INIT_WORK(&led_dat->work, gpio_led_work);
->  
-> @@ -266,6 +269,7 @@ static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
->  			of_get_property(child, "linux,default-trigger", NULL);
->  		state = of_get_property(child, "default-state", NULL);
->  		led.default_state = state && !strcmp(state, "on");
-> +		led.keep_state = state && !strcmp(state, "keep");
->  
->  		ret = create_gpio_led(&led, &pdata->led_data[pdata->num_leds++],
->  				      &ofdev->dev, NULL);
-> diff --git a/include/linux/leds.h b/include/linux/leds.h
-> index caa3987..c51b625 100644
-> --- a/include/linux/leds.h
-> +++ b/include/linux/leds.h
-> @@ -138,7 +138,8 @@ struct gpio_led {
->  	const char *default_trigger;
->  	unsigned 	gpio;
->  	u8 		active_low;
-> -	u8		default_state;
-> +	u8		default_state;	/* 0 = off, 1 = on */
-> +	u8		keep_state; /* overrides default_state */
->  };
+These are inlines provided by the pci-dma-compat API.
 
-How about something simpler here, just make default state have three
-different values - "keep", "on" and "off"? I'm not keen on having two
-different state variables like this.
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+---
+ arch/powerpc/kernel/ppc_ksyms.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-Regards,
-
-Richard
+--- everything.orig/arch/powerpc/kernel/ppc_ksyms.c	2008-11-17
+23:58:35.000000000 +0100
++++ everything/arch/powerpc/kernel/ppc_ksyms.c	2008-11-18
+00:01:13.000000000 +0100
+@@ -96,8 +96,6 @@ EXPORT_SYMBOL(copy_4K_page);
+ EXPORT_SYMBOL(isa_io_base);
+ EXPORT_SYMBOL(isa_mem_base);
+ EXPORT_SYMBOL(pci_dram_offset);
+-EXPORT_SYMBOL(pci_alloc_consistent);
+-EXPORT_SYMBOL(pci_free_consistent);
+ #endif /* CONFIG_PCI */
+ 
+ EXPORT_SYMBOL(start_thread);
