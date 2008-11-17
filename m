@@ -1,19 +1,26 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Silence timebase sync code
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Trent Piepho <tpiepho@freescale.com>
-In-Reply-To: <Pine.LNX.4.64.0811171421090.11673@t2.domain.actdsltmp>
-References: <1226959111-11221-1-git-send-email-tpiepho@freescale.com>
-	<49889E01-9433-41BE-A6F1-66127856D482@kernel.crashing.org>
-	<Pine.LNX.4.64.0811171421090.11673@t2.domain.actdsltmp>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-wLIBcTf49bjRzraCBDu3"
-Date: Tue, 18 Nov 2008 10:28:21 +1100
-Message-Id: <1226964501.8537.3.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0F92CDDE1F
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 10:29:41 +1100 (EST)
+Date: Mon, 17 Nov 2008 15:28:41 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+In-Reply-To: <1226963596.7178.254.camel@pasglop>
+Message-ID: <alpine.LFD.2.00.0811171522030.18283@nehalem.linux-foundation.org>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
+	<alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
+	<1226963596.7178.254.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,72 +31,62 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-wLIBcTf49bjRzraCBDu3
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2008-11-17 at 14:22 -0800, Trent Piepho wrote:
-> On Mon, 17 Nov 2008, Kumar Gala wrote:
-> > On Nov 17, 2008, at 3:58 PM, Trent Piepho wrote:
-> >
-> >> It's over a dozen lines of output and doesn't appear to provide any us=
-eful
-> >> information.  Even after looking at the code, I'm in the dark about wh=
-at
-> >> "score 299, offset 250" means.
-> >>=20
-> >> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> >> ---
-> >> arch/powerpc/kernel/smp-tbsync.c |   12 ++++--------
-> >> 1 files changed, 4 insertions(+), 8 deletions(-)
-> >>=20
-> >> diff --git a/arch/powerpc/kernel/smp-tbsync.c=20
-> >> b/arch/powerpc/kernel/smp-tbsync.c
-> >> index bc892e6..b590135 100644
-> >> --- a/arch/powerpc/kernel/smp-tbsync.c
-> >> +++ b/arch/powerpc/kernel/smp-tbsync.c
-> >> @@ -113,7 +113,7 @@ void __devinit smp_generic_give_timebase(void)
-> >> {
-> >>  int i, score, score2, old, min=3D0, max=3D5000, offset=3D1000;
-> >>=20
-> >> -	printk("Synchronizing timebase\n");
-> >> +	pr_info("Synchronizing timebase\n");
-> >
-> > I think its useful to leave this as a printk.
->=20
-> #define pr_info(fmt, arg...) \
->          printk(KERN_INFO fmt, ##arg)
->=20
-> Isn't printk with no level tag the same as KERN_INFO?
+On Tue, 18 Nov 2008, Benjamin Herrenschmidt wrote:
+> 
+> Guess who is pushing for larger page sizes nowadays ? Embedded
+> people :-) In fact, we have patches submited on the list to offer the
+> option for ... 256K pages on some 44x embedded CPUs :-)
+> 
+> It makes some sort of sense I suppose on very static embedded workloads
+> with no swap nor demand paging.
 
-Stuff like this should IMHO be printk(KERN_DEBUG ..)
+It makes perfect sense for anything that doesn't use any MMU. 
 
-That way it will show up in the log as long as you boot with 'debug' on
-your command line, it doesn't require a kernel recompile to turn on. And
-at the same time it doesn't spam the boot log for a normal boot.
+The hugepage support seems to cover many of the relevant cases, ie 
+databases and things like big static mappings (frame buffers etc).
 
-cheers
+> > It's made worse by the fact that they 
+> > also have horribly bad TLB fills on their broken CPU's, and years and 
+> > years of telling people that the MMU on ppc's are sh*t has only been 
+> > reacted to with "talk to the hand, we know better".
+> 
+> Who are you talking about here precisely ? I don't think either Paul or
+> I every said something nearly around those lines ... Oh well.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Every single time I've complained about it, somebody from IBM has said ".. 
+but but AIX".
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+This time it was Paul. Sometimes it has been software people who agree, 
+but point to hardware designers who "know better". If it's not some insane 
+database person, it's a Fortran program that runs for days.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+> But there is also pressure to get larger page sizes from small embedded
+> field, where CPUs have even poorer TLB refill (software loaded
+> basically) :-)
 
---=-wLIBcTf49bjRzraCBDu3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Yeah, I agree that you _can_ have even worse MMU's. I'm not saying that 
+PPC64 is absolutely pessimal and cannot be made worse. Software fill is 
+indeed even worse from a performance angle, despite the fact that it's 
+really "nice" from a conceptual angle.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Of course, of thesw fill users that remain, many do seem to be ppc.. It's 
+like the architecture brings out the worst in hardware designers.
 
-iEYEABECAAYFAkkh/hUACgkQdSjSd0sB4dLRxgCffr9tFyH1+FwOr5JE8hFqoa+s
-TgoAn059UtTgrm9WsskYOzfLal/1hLPN
-=AB3V
------END PGP SIGNATURE-----
+> > Quite frankly, 64kB pages are INSANE. But yes, in this case they actually 
+> > cause bugs. With a sane page-size, that *arr[MAX_BUF_PER_PAGE] thing uses 
+> > 64 bytes, not 1kB.
+> 
+> Come on, the code is crap to allocate that on the stack anyway :-)
 
---=-wLIBcTf49bjRzraCBDu3--
+Why? We do actually expect to be able to use stack-space for small 
+structures. We do it for a lot of things, including stuff like select() 
+optimistically using arrays allocated on the stack for the common small 
+case, just because it's, oh, about infinitely faster to do than to use 
+kmalloc().
+
+Many of the page cache functions also have the added twist that they get 
+called from low-memory setups (eg write_whole_page()), and so try to 
+minimize allocations for that reason too.
+
+			Linus
