@@ -1,27 +1,15 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 38BC8DDDF6
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 03:02:13 +1100 (EST)
-Date: Mon, 17 Nov 2008 11:02:11 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 5/7] ftrace, PPC64: handle module trampolines for dyn
-	ftrace
-In-Reply-To: <18720.64083.306981.779763@drongo.ozlabs.ibm.com>
-Message-ID: <alpine.DEB.1.10.0811171053070.2919@gandalf.stny.rr.com>
-References: <20081116212428.938752312@goodmis.org>
-	<20081116212516.000516128@goodmis.org>
-	<18720.64083.306981.779763@drongo.ozlabs.ibm.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org,
+ benh@kernel.crashing.org,
+ paulus@samba.org
+Subject: [PATCH] powerpc/cell/axon-msi: retry on missing interrupt
+Date: Mon, 17 Nov 2008 17:10:23 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>, Paul Mundt <lethal@linux-sh.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200811171710.24521.arnd@arndb.de>
+Cc: cbe-oss-dev@ozlabs.org, GBIRAN@il.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,95 +19,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 17 Nov 2008, Paul Mackerras wrote:
+The MSI capture logic for the axon bridge can sometimes
+lose interrupts in case of high DMA and interrupt load,
+when it signals an MSI interrupt to the MPIC interrupt
+controller while we are already handling another MSI.
 
-> Steven Rostedt writes:
-> 
-> > +	if (!rec->arch.mod) {
-> > +		if (!mod) {
-> > +			printk(KERN_ERR "No module loaded addr=%lx\n",
-> > +			       addr);
-> > +			return -EFAULT;
-> > +		}
-> > +		rec->arch.mod = mod;
-> > +	} else if (mod) {
-> > +		printk(KERN_ERR
-> > +		       "Record mod %p not equal to passed in mod %p\n",
-> > +		       rec->arch.mod, mod);
-> > +		return -EINVAL;
-> 
-> That looks wrong; surely you need an if (mod != rec->arch.mod)
-> somewhere here?
+Each MSI vector gets written into a FIFO buffer in main
+memory using DMA, and that DMA access is normally flushed
+by the actual interrupt packet on the IOIF. An MMIO
+register in the MSIC holds the position of the last
+entry in the FIFO buffer that was written. However,
+reading that position does not flush the DMA, so that
+we can observe stale data in the buffer.
 
-??? How did that happen :-/  Maybe it was because I was working between
-two boxes and I did not refresh quilt before submitting it into my git
-tree? I'm positive I made that fix already.
+In a stress test, we have observed the DMA to arrive
+up to 14 microseconds after reading the register.
 
-Yes, I will fix that.
+This patch works around this problem by retrying the
+access to the FIFO buffer.
 
-> 
-> > +	/* Make sure that that this is still a 24bit jump */
-> > +	if ((*op & 0xff000000) != 0x48000000) {
-> > +		printk(KERN_ERR "Not expected bl: opcode is %x\n", *op);
-> > +		return -EINVAL;
-> > +	}
-> 
-> Needs to be
-> 
-> 	if ((*op & 0xfc000003) != 0x48000001)
-> 
-> since the major opcode is the top 6 bits, and the bottom 2 bits are
-> the link bit and the absolute address bit.
+We can reliably detect the conditioning by writing
+an invalid MSI vector into the FIFO buffer after
+reading from it, assuming that all MSIs we get
+are valid. After detecting an invalid MSI vector,
+we udelay(1) in the interrupt cascade for up to
+100 times before giving up.
 
-Thanks! will fix.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-> 
-> > +	/* lets find where the pointer goes */
-> > +	offset = (*op & 0x03fffffc);
-> > +	/* make it signed */
-> > +	if (offset & 0x02000000)
-> > +		offset |= 0xfe000000;
-> 
-> but you got that right... :)
+---
 
-Heh, I'm not hopeless.
+ axon_msi.c |   36 +++++++++++++++++++++++++++++++-----
+ 1 files changed, 31 insertions(+), 5 deletions(-)
 
-> 
-> > +	/* get the address this jumps too */
-> > +	tramp = mod->arch.toc + offset + 32;
-> 
-> Why + 32?
-
-Good question. This is one of the things that was weird to me too. I got 
-this from the module_64.c code.
-
-static struct ppc64_stub_entry ppc64_stub =
-{ .jump = {
-	0x3d, 0x82, 0x00, 0x00, /* addis   r12,r2, <high> */
-	0x39, 0x8c, 0x00, 0x00, /* addi    r12,r12, <low> */
-	/* Save current r2 value in magic place on the stack. */
-	0xf8, 0x41, 0x00, 0x28, /* std     r2,40(r1) */
-	0xe9, 0x6c, 0x00, 0x20, /* ld      r11,32(r12) */
-
- ld r11,32(r12) is the call.
-
-	0xe8, 0x4c, 0x00, 0x28, /* ld      r2,40(r12) */
-	0x7d, 0x69, 0x03, 0xa6, /* mtctr   r11 */
-	0x4e, 0x80, 0x04, 0x20  /* bctr */
-} };
-
-
-I'm making sure that I will actually jump to the correct spot before 
-changing any code, but to find that correct spot, I need to calculate what 
-is being done.
-
-I see the above code from module_64.c adds r2 (the TOC?) to r12, and then 
-adds the location of the 'bl' offset. Then it adds the contents of 32(r12) 
-to r11. And then the jump is to r11.
-
-I'll comment that better to state that I pulled this code from 
-module_64.c.
-
-Thanks,
-
--- Steve
+Index: linux-2.6/arch/powerpc/platforms/cell/axon_msi.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/axon_msi.c	2008-11-17 10:29:05.000000000 -0500
++++ linux-2.6/arch/powerpc/platforms/cell/axon_msi.c	2008-11-17 10:29:08.000000000 -0500
+@@ -95,6 +95,7 @@
+ 	struct axon_msic *msic = get_irq_data(irq);
+ 	u32 write_offset, msi;
+ 	int idx;
++	int retry = 0;
+ 
+ 	write_offset = dcr_read(msic->dcr_host, MSIC_WRITE_OFFSET_REG);
+ 	pr_debug("axon_msi: original write_offset 0x%x\n", write_offset);
+@@ -102,7 +103,7 @@
+ 	/* write_offset doesn't wrap properly, so we have to mask it */
+ 	write_offset &= MSIC_FIFO_SIZE_MASK;
+ 
+-	while (msic->read_offset != write_offset) {
++	while (msic->read_offset != write_offset && retry < 100) {
+ 		idx  = msic->read_offset / sizeof(__le32);
+ 		msi  = le32_to_cpu(msic->fifo_virt[idx]);
+ 		msi &= 0xFFFF;
+@@ -110,13 +111,37 @@
+ 		pr_debug("axon_msi: woff %x roff %x msi %x\n",
+ 			  write_offset, msic->read_offset, msi);
+ 
++		if (msi < NR_IRQS && irq_map[msi].host == msic->irq_host) {
++			generic_handle_irq(msi);
++			msic->fifo_virt[idx] = cpu_to_le32(0xffffffff);
++		} else {
++			/*
++			 * Reading the MSIC_WRITE_OFFSET_REG does not
++			 * reliably flush the outstanding DMA to the
++			 * FIFO buffer. Here we were reading stale
++			 * data, so we need to retry.
++			 */
++			udelay(1);
++			retry++;
++			pr_debug("axon_msi: invalid irq 0x%x!\n", msi);
++			continue;
++		}
++
++		if (retry) {
++			pr_debug("axon_msi: late irq 0x%x, retry %d\n",
++				 msi, retry);
++			retry = 0;
++		}
++
+ 		msic->read_offset += MSIC_FIFO_ENTRY_SIZE;
+ 		msic->read_offset &= MSIC_FIFO_SIZE_MASK;
++	}
+ 
+-		if (msi < NR_IRQS && irq_map[msi].host == msic->irq_host)
+-			generic_handle_irq(msi);
+-		else
+-			pr_debug("axon_msi: invalid irq 0x%x!\n", msi);
++	if (retry) {
++		printk(KERN_WARNING "axon_msi: irq timed out\n");
++
++		msic->read_offset += MSIC_FIFO_ENTRY_SIZE;
++		msic->read_offset &= MSIC_FIFO_SIZE_MASK;
+ 	}
+ 
+ 	desc->chip->eoi(irq);
+@@ -364,6 +389,7 @@
+ 		       dn->full_name);
+ 		goto out_free_fifo;
+ 	}
++	memset(msic->fifo_virt, 0xff, MSIC_FIFO_SIZE_BYTES);
+ 
+ 	msic->irq_host = irq_alloc_host(dn, IRQ_HOST_MAP_NOMAP,
+ 					NR_IRQS, &msic_host_ops, 0);
