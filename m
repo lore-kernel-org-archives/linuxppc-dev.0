@@ -1,20 +1,20 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 82C48DDE21
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 10:30:57 +1100 (EST)
-Date: Mon, 17 Nov 2008 18:30:53 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 74297474CA
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 10:31:22 +1100 (EST)
 Subject: Re: Large stack usage in fs code (especially for PPC64)
-In-Reply-To: <18721.60712.438025.564030@cargo.ozlabs.ibm.com>
-Message-ID: <alpine.DEB.1.10.0811171829140.26123@gandalf.stny.rr.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
 References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0811171557370.26123@gandalf.stny.rr.com>
-	<18721.60712.438025.564030@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Thomas Gleixner <tglx@linutronix.de>,
+Content-Type: text/plain
+Date: Tue, 18 Nov 2008 10:30:27 +1100
+Message-Id: <1226964627.7178.261.camel@pasglop>
+Mime-Version: 1.0
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	Andrew Morton <akpm@linux-foundation.org>,
 	Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,40 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Tue, 18 Nov 2008, Paul Mackerras wrote:
-
-> Steven Rostedt writes:
+On Mon, 2008-11-17 at 15:34 -0500, Steven Rostedt wrote:
 > 
-> > Here's my stack after boot up with CONFIG_IRQSTACKS set. Seems that 
-> > softirqs still use the same stack as the process.
-> 
-> They shouldn't.  I don't see do_softirq in the trace, though.  Which
-> functions did you think would be run in a softirq?  It looks to me
-> like the deepest 10 or so functions are called at hard irq level,
-> within hrtimer_interrupt called from timer_interrupt.
-> 
-> > root@electra ~> cat /debug/tracing/stack_trace 
-> >         Depth   Size      Location    (59 entries)
-> >         -----   ----      --------
-> >   0)    12384     192   ftrace_call+0x4/0x14
-> >   1)    12192     128   .sched_clock+0x20/0x60
-> >   2)    12064     128   .sched_clock_cpu+0x34/0x50
-> >   3)    11936     144   .cpu_clock+0x3c/0xa0
-> >   4)    11792     144   .get_timestamp+0x2c/0x50
-> >   5)    11648     144   .__touch_softlockup_watchdog+0x3c/0x60
-> >   6)    11504     192   .softlockup_tick+0xe4/0x220
-> >   7)    11312     128   .run_local_timers+0x34/0x50
-> >   8)    11184     160   .update_process_times+0x44/0xb0
-> >   9)    11024     176   .tick_sched_timer+0x8c/0x120
-> >  10)    10848     160   .__run_hrtimer+0xd8/0x130
-> >  11)    10688     240   .hrtimer_interrupt+0x16c/0x220
-> >  12)    10448     160   .timer_interrupt+0xcc/0x110
-> >  13)    10288      96   decrementer_common+0xe0/0x100
+> I've been hitting stack overflows on a PPC64 box, so I ran the ftrace 
+> stack_tracer and part of the problem with that box is that it can nest 
+> interrupts too deep. But what also worries me is that there's some heavy 
+> hitters of stacks in generic code. Namely the fs directory has some.
 
-Ah, you are right. I thought I saw softirq code in there, but must have 
-been seeing things. I need to get my eyesight checked. The other day I 
-totally botch a hand in cards because I thought I had 3 Aces of diamonds 
-when I really only had 2 Aces of diamonds and a Ace of hearts.
+Note that we shouldn't stack interrupts much in practice. The PIC will
+not let same or lower prio interrupts in until we have completed one.
+However timer/decrementer is not going through the PIC, so I think what
+happens is we get a hw IRQ, on the way back, just before returning from
+do_IRQ (so we have completed the IRQ from the PIC standpoint), we go
+into soft-irq's, at which point deep inside SCSI we get another HW IRQ
+and we stack a decrementer interrupt on top of it.
 
--- Steve
+Now, we should do stack switching for both HW IRQs and softirqs with
+CONFIG_IRQSTACKS, which should significantly alleviate the problem.
+
+Your second trace also shows how horrible the stack traces can be when
+the device-model kicks in, ie, register->probe->register sub device ->
+etc... that isnt going to be nice on x86 with 4k stacks neither. 
+
+I wonder if we should generally recommend for drivers of "bus" devices
+not to register sub devices from their own probe() routine, but defer
+that to a kernel thread... Because the stacking can be pretty bad, I
+mean, nobody's done SATA over USB yet but heh :-)
+
+Cheers,
+Ben.
