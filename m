@@ -1,22 +1,17 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A0C7EDDE08
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 09:24:44 +1100 (EST)
-Date: Mon, 17 Nov 2008 14:22:08 -0800 (PST)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Silence timebase sync code
-In-Reply-To: <49889E01-9433-41BE-A6F1-66127856D482@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.64.0811171421090.11673@t2.domain.actdsltmp>
-References: <1226959111-11221-1-git-send-email-tpiepho@freescale.com>
-	<49889E01-9433-41BE-A6F1-66127856D482@kernel.crashing.org>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18721.62958.479215.822513@cargo.ozlabs.ibm.com>
+Date: Tue, 18 Nov 2008 09:53:34 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+In-Reply-To: <alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
+	<alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 17 Nov 2008, Kumar Gala wrote:
-> On Nov 17, 2008, at 3:58 PM, Trent Piepho wrote:
->
->> It's over a dozen lines of output and doesn't appear to provide any useful
->> information.  Even after looking at the code, I'm in the dark about what
->> "score 299, offset 250" means.
->> 
->> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
->> ---
->> arch/powerpc/kernel/smp-tbsync.c |   12 ++++--------
->> 1 files changed, 4 insertions(+), 8 deletions(-)
->> 
->> diff --git a/arch/powerpc/kernel/smp-tbsync.c 
->> b/arch/powerpc/kernel/smp-tbsync.c
->> index bc892e6..b590135 100644
->> --- a/arch/powerpc/kernel/smp-tbsync.c
->> +++ b/arch/powerpc/kernel/smp-tbsync.c
->> @@ -113,7 +113,7 @@ void __devinit smp_generic_give_timebase(void)
->> {
->>  int i, score, score2, old, min=0, max=5000, offset=1000;
->> 
->> -	printk("Synchronizing timebase\n");
->> +	pr_info("Synchronizing timebase\n");
->
-> I think its useful to leave this as a printk.
+Linus Torvalds writes:
 
-#define pr_info(fmt, arg...) \
-         printk(KERN_INFO fmt, ##arg)
+> The ppc people run databases, and they don't care about sane people 
 
-Isn't printk with no level tag the same as KERN_INFO?
+And HPC apps, and all sorts of other things...
+
+> telling them the big pages suck. It's made worse by the fact that they 
+> also have horribly bad TLB fills on their broken CPU's, and years and 
+
+Taking page faults at a 4k granularity also sucks.  A lot of the
+performance improvement from using 64k pages comes just from executing
+the page fault path (and other paths in the mm code) less frequently.
+That's why we see a performance improvement from 64k pages even on
+machines that don't support 64k pages in hardware (like the 21%
+reduction in system time on a kernel compile that I reported earlier).
+That has nothing to do with TLB miss times or anything to do with the
+MMU.
+
+I'd love to be able to use a 4k base page size if I could still get
+the reduction in page faults and the expanded TLB reach that we get
+now with 64k pages.  If we could allocate the page cache for large
+files with order-4 allocations wherever possible that would be a good
+start.  I think Christoph Lameter had some patches in that direction
+but they didn't seem to get very far.
+
+> years of telling people that the MMU on ppc's are sh*t has only been 
+> reacted to with "talk to the hand, we know better".
+
+Well, it's been reacted to with "AIX can use small pages where it
+makes sense, and large pages where that makes sense, so why can't
+Linux?"
+
+> I suspect the PPC people need to figure out some way to handle this in 
+> their broken setups (since I don't really expect them to finally admit 
+> that they were full of sh*t with their big pages), but since I think it's 
+> a ppc bug, I'm not at all interested in a fix that penalizes the _good_ 
+> case.
+
+Looks like we should make the stack a bit larger.
+
+Paul.
