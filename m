@@ -1,17 +1,16 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id BE173DDDF8
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 02:47:36 +1100 (EST)
-Date: Mon, 17 Nov 2008 10:47:34 -0500 (EST)
+	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 011B1DDDEC
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 02:51:27 +1100 (EST)
+Date: Mon, 17 Nov 2008 10:51:25 -0500 (EST)
 From: Steven Rostedt <rostedt@goodmis.org>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 2/7] ftrace, ppc: convert to new dynamic ftrace arch
- API
-In-Reply-To: <18720.60351.611649.125429@drongo.ozlabs.ibm.com>
-Message-ID: <alpine.DEB.1.10.0811171045070.2919@gandalf.stny.rr.com>
+Subject: Re: [PATCH 4/7] ftrace, PPC: use probe_kernel API to modify code
+In-Reply-To: <18720.63178.864933.911090@drongo.ozlabs.ibm.com>
+Message-ID: <alpine.DEB.1.10.0811171047520.2919@gandalf.stny.rr.com>
 References: <20081116212428.938752312@goodmis.org>
-	<20081116212515.331278109@goodmis.org>
-	<18720.60351.611649.125429@drongo.ozlabs.ibm.com>
+	<20081116212515.728019601@goodmis.org>
+	<18720.63178.864933.911090@drongo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -36,41 +35,24 @@ On Mon, 17 Nov 2008, Paul Mackerras wrote:
 
 > Steven Rostedt writes:
 > 
-> > +static int test_24bit_addr(unsigned long ip, unsigned long addr)
-> > +{
-> > +	unsigned long diff;
-> > +
-> > +	/* can we get to addr from ip in 24 bits? */
-> > +	diff = ip > addr ? ip - addr : addr - ip;
-> > +
-> > +	return !(diff & ((unsigned long)-1 << 24));
+> > Impact: use cleaner probe_kernel API over assembly
+> > 
+> > Using probe_kernel_read/write interface is a much cleaner approach
+> > than the current assembly version.
 > 
-> Since a branch instruction can reach +/- 32MB, the 24 needs to be 25.
-> It's 25 not 26 since you have effectively accounted for one bit by
-> taking the absolute value of the offset.  Also, this will say that an
-> offset of -0x2000000 is out of range whereas it is just in range.
-> That probably doesn't matter unless you're relying on this to give
-> exactly the same answer in all cases as tests done elsewhere (e.g. in
-> module_64.c).
+> Possibly naive question: how is it possible for the accesses to the
+> instructions to fault, given that we are called through kstop_machine
+> (according to the comment) and nothing else should be happening?
 
-I'll update this to be correct.
+Actually, only start up and shutdown of the tracer goes through 
+kstop_machine. With the new code, it can happen before SMP starts (in 
+init/main.c) or on the module itself, before the module loads. But that's 
+not why we do the probe_kernel_* calls.
 
-> 
-> Note that the address difference being too large isn't the only reason
-> for a procedure call to go via a trampoline on ppc64.  A trampoline is
-> also needed when the called function uses a different TOC from the
-> caller.  The most obvious example of this is when the caller is in a
-> module and the callee is in the main kernel or another module.
-> 
-> Currently all functions in the main kernel use the same TOC, but the
-> linker is capable of dividing up a large executable into groups of
-> functions and assigning a different TOC to each group, in order to
-> avoid any of the TOCs getting too large (a TOC is limited to 64kB).
-> If the linker does that, it automatically inserts trampolines to
-> handle the TOC change.
-
-OK, I'll deal with that at a another time. If this does happen in core 
-kernel code, it will produce a nice warning and nicely shutdown ftrace, 
-without causing any harm. Then I can deal with the bug report.
+The reason for probe_kernel_ is because ftrace is very intrusive. Ingo and 
+I have been making ftrace very paranoid about anything it does. It does 
+not trust itself to be correct. If anything were to fail, it will warn and 
+shut itself down peacefully.  So far, I have not seen these warnings, but 
+this is part of the robustness features that have been added since 2.6.27.
 
 -- Steve
