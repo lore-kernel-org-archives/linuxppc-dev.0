@@ -1,17 +1,21 @@
-Return-Path: <michael.barkowski@freescale.com>
-Message-ID: <49219BC4.7050803@freescale.com>
-Date: Mon, 17 Nov 2008 11:28:52 -0500
-From: Michael Barkowski <michael.barkowski@freescale.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH] mpc832x_rdb: fix swapped ethernet ids
-References: <491C4544.7020707@freescale.com>
-	<20081113234507.GB32024@yookeroo.seuss>
-	<491D9643.4010204@freescale.com>
-	<20081115022637.GC6629@yookeroo.seuss>
-In-Reply-To: <20081115022637.GC6629@yookeroo.seuss>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 9652ADDDEA
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 06:11:02 +1100 (EST)
+Message-Id: <20081117191059.408002035@goodmis.org>
+References: <20081117190948.619751203@goodmis.org>
+Date: Mon, 17 Nov 2008 14:09:50 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/4] ftrace,ppc: fix test of 24bit jump
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Pekka Paalanen <pq@iki.fi>, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Fri, Nov 14, 2008 at 10:16:19AM -0500, Michael Barkowski wrote:
->> David Gibson wrote:
->>> On Thu, Nov 13, 2008 at 10:18:28AM -0500, Michael Barkowski wrote:
->>>> ethernet0 (called FSL UEC0 in U-Boot) should be enet1 (UCC3/eth1), and
->>>> ethernet1 should be enet0 (UCC2/eth0), to be consistent with U-Boot so
->>>> that the interfaces do not swap addresses when control passes from
->>>> U-Boot to the kernel.
->>> Um.. why is just swapping the aliases, rather than the enet labels the
->>> right approach here?
->> Kim suggested it was better to localize the port ordering as a
->> property of the board rather than that of the QE, and I agreed.
-> 
-> And the enet0/enet1 names that appear in the labels come from the QE
-> documentation?
-> 
-No.. but don't you think the UCC2, UCC3 names, which *do* come from the QE documentation, should match their labels in numeric ordering?
-Aren't the aliases just machine-specific shortcuts for the bootloader?
+Impact: fix of test if an address is 26 bits away or not
+
+Paul Mackerras pointed out that the test of the 24bit offset jump was
+incorrect. For one thing, it is a 26 bit distance since we multiply
+by 4 to account for the alignment. Another is that it may produce an
+incorrect result on a negative jump of exactly the offset size.
+
+Reported-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/powerpc/kernel/ftrace.c |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 9360fd1..918a5d2 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -114,12 +114,19 @@ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+  */
+ static int test_24bit_addr(unsigned long ip, unsigned long addr)
+ {
+-	unsigned long diff;
++	long diff;
+ 
+-	/* can we get to addr from ip in 24 bits? */
+-	diff = ip > addr ? ip - addr : addr - ip;
++	/*
++	 * Can we get to addr from ip in 24 bits?
++	 *  (26 really, since we mulitply by 4 for 4 byte alignment)
++	 */
++	diff = addr - ip;
+ 
+-	return !(diff & ((unsigned long)-1 << 24));
++	/*
++	 * Return true if diff is less than 1 << 25
++	 *  and greater than -1 << 26.
++	 */
++	return (diff < (1 << 25)) && (diff > (-1 << 26));
+ }
+ 
+ static int is_bl_op(unsigned int op)
+-- 
+1.5.6.5
 
 -- 
-Michael
