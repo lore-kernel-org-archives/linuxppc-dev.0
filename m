@@ -4,15 +4,16 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 79BD0DDED4
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 08:09:46 +1100 (EST)
-Date: Mon, 17 Nov 2008 13:09:29 -0800 (PST)
+	by ozlabs.org (Postfix) with ESMTPS id A1AB0DDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 08:19:09 +1100 (EST)
+Date: Mon, 17 Nov 2008 13:18:44 -0800 (PST)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Steven Rostedt <rostedt@goodmis.org>
 Subject: Re: Large stack usage in fs code (especially for PPC64)
-In-Reply-To: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-Message-ID: <alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0811171557370.26123@gandalf.stny.rr.com>
+Message-ID: <alpine.LFD.2.00.0811171309580.18283@nehalem.linux-foundation.org>
 References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
+	<alpine.DEB.1.10.0811171557370.26123@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
@@ -30,63 +31,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 On Mon, 17 Nov 2008, Steven Rostedt wrote:
->
->  45)     4992    1280   .block_read_full_page+0x23c/0x430
->  46)     3712    1280   .do_mpage_readpage+0x43c/0x740
-
-Ouch.
-
-> Notice at line 45 and 46 the stack usage of block_read_full_page and 
-> do_mpage_readpage. They each use 1280 bytes of stack! Looking at the start 
-> of these two:
 > 
-> int block_read_full_page(struct page *page, get_block_t *get_block)
-> {
-> 	struct inode *inode = page->mapping->host;
-> 	sector_t iblock, lblock;
-> 	struct buffer_head *bh, *head, *arr[MAX_BUF_PER_PAGE];
+> Here's my stack after boot up with CONFIG_IRQSTACKS set. Seems that 
+> softirqs still use the same stack as the process.
 
-Yeah, that's unacceptable.
+Yes.
 
-Well, it's not unacceptable on good CPU's with 4kB blocks (just an 8-entry 
-array), but as you say:
+> This is still 12K. Kind of big even for a 16K stack.
 
-> On PPC64 I'm told that the page size is 64K, which makes the above equal 
-> to: 64K / 512 = 128  multiply that by 8 byte words, we have 1024 bytes.
+And while that 1kB+ stack slot for block_read_full_page still stands out 
+like a sore thumb, I do agree that there's way too many other functions 
+too with big stack frames.
 
-Yeah. Not good. I think 64kB pages are insane. In fact, I think 32kB 
-pages are insane, and 16kB pages are borderline. I've told people so.
+I do wonder just _what_ it is that causes the stack frames to be so 
+horrid. For example, you have
 
-The ppc people run databases, and they don't care about sane people 
-telling them the big pages suck. It's made worse by the fact that they 
-also have horribly bad TLB fills on their broken CPU's, and years and 
-years of telling people that the MMU on ppc's are sh*t has only been 
-reacted to with "talk to the hand, we know better".
+	 18)     8896     160   .kmem_cache_alloc+0xfc/0x140
 
-Quite frankly, 64kB pages are INSANE. But yes, in this case they actually 
-cause bugs. With a sane page-size, that *arr[MAX_BUF_PER_PAGE] thing uses 
-64 bytes, not 1kB.
+and I'm looking at my x86-64 compile, and it has a stack frame of just 8 
+bytes (!) for local variables plus the save/restore area (which looks like 
+three registers plus frame pointer plus return address). IOW, if I'm 
+looking at the code right (so big caveat: I did _not_ do a real stack 
+dump!) the x86-64 stack cost for that same function is on the order of 48 
+bytes. Not 160.
 
-I suspect the PPC people need to figure out some way to handle this in 
-their broken setups (since I don't really expect them to finally admit 
-that they were full of sh*t with their big pages), but since I think it's 
-a ppc bug, I'm not at all interested in a fix that penalizes the _good_ 
-case.
+Where does that factor-of-three+ difference come from? From the numbers, I 
+suspect ppc64 has a 32-byte stack alignment, which may be part of it, and 
+I guess the compiler is more eager to use all those extra registers and 
+will happily have many more callee-saved regs that are actually used.
 
-So either make it some kind of (clean) conditional dynamic non-stack 
-allocation, or make it do some outer loop over the whole page that turns 
-into a compile-time no-op when the page is sufficiently small to be done 
-in one go.
+But that still a _lot_ of extra stack.
 
-Or perhaps say "if you have 64kB pages, you're a moron, and to counteract 
-that moronic page size, you cannot do 512-byte granularity IO any more".
-
-Of course, that would likely mean that FAT etc wouldn't work on ppc64, so 
-I don't think that's a valid model either. But if the 64kB page size is 
-just a "database server crazy-people config option", then maybe it's 
-acceptable.
-
-Database people usually don't want to connect their cameras or mp3-players 
-with their FAT12 filesystems.
+Of course, you may have things like spinlock debugging etc enabled. Some 
+of our debugging options do tend to blow things up.
 
 			Linus
