@@ -1,27 +1,22 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 91A21DDDEA
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 03:18:57 +1100 (EST)
-Date: Mon, 17 Nov 2008 11:18:53 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 5/7] ftrace, PPC64: handle module trampolines for dyn
-	ftrace
-In-Reply-To: <18720.64083.306981.779763@drongo.ozlabs.ibm.com>
-Message-ID: <alpine.DEB.1.10.0811171117320.8722@gandalf.stny.rr.com>
-References: <20081116212428.938752312@goodmis.org>
-	<20081116212516.000516128@goodmis.org>
-	<18720.64083.306981.779763@drongo.ozlabs.ibm.com>
+Return-Path: <paulius.zaleckas@teltonika.lt>
+Received: from teltonika.lt (81-7-68-229.static.zebra.lt [81.7.68.229])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B7D75DDDF6
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 01:39:26 +1100 (EST)
+Received: from 82-135-208-232.static.zebra.lt (HELO
+	Programuotojas.82-135-208-232.ip.zebra.lt)
+	(paulius.zaleckas@[82.135.208.232])
+	(envelope-sender <paulius.zaleckas@teltonika.lt>)
+	by teltonika.lt (qmail-ldap-1.03) with SMTP
+	for <linuxppc-dev@ozlabs.org>; 17 Nov 2008 14:30:16 -0000
+From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+Subject: [PATCH] Documentation: fix mdio-gpio name in booting-without-of.txt
+To: linuxppc-dev@ozlabs.org
+Date: Mon, 17 Nov 2008 16:32:39 +0200
+Message-ID: <20081117143238.8214.68389.stgit@Programuotojas.82-135-208-232.ip.zebra.lt>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>, Paul Mundt <lethal@linux-sh.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,30 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Signed-off-by: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+---
 
-On Mon, 17 Nov 2008, Paul Mackerras wrote:
+ Documentation/powerpc/booting-without-of.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> Steven Rostedt writes:
-> 
-> > +	if (!rec->arch.mod) {
-> > +		if (!mod) {
-> > +			printk(KERN_ERR "No module loaded addr=%lx\n",
-> > +			       addr);
-> > +			return -EFAULT;
-> > +		}
-> > +		rec->arch.mod = mod;
-> > +	} else if (mod) {
-> > +		printk(KERN_ERR
-> > +		       "Record mod %p not equal to passed in mod %p\n",
-> > +		       rec->arch.mod, mod);
-> > +		return -EINVAL;
-> 
-> That looks wrong; surely you need an if (mod != rec->arch.mod)
-> somewhere here?
 
-BTW, the reason this still worked was because only the first instance 
-passes in mod (when rec->arch.mod does not exist). After that, mod is 
-NULL, so we never enter this case. But still, I will need to fix this 
-(even though I thought I did).
-
--- Steve
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 0ab0230..8670acc 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1822,7 +1822,7 @@ platforms are moved over to use the flattened-device-tree model.
+    g) MDIO on GPIOs
+ 
+    Currently defined compatibles:
+-   - virtual,gpio-mdio
++   - virtual,mdio-gpio
+ 
+    MDC and MDIO lines connected to GPIO controllers are listed in the
+    gpios property as described in section VIII.1 in the following order:
