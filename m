@@ -1,22 +1,23 @@
-Return-Path: <akpm@linux-foundation.org>
+Return-Path: <torvalds@linux-foundation.org>
 Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D5A73DDE0E
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 08:32:51 +1100 (EST)
-Date: Mon, 17 Nov 2008 13:31:37 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+	by ozlabs.org (Postfix) with ESMTPS id D0012DDDEA
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 08:43:28 +1100 (EST)
+Date: Mon, 17 Nov 2008 13:42:35 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Large stack usage in fs code (especially for PPC64)
-Message-Id: <20081117133137.616cf287.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0811171320330.18283@nehalem.linux-foundation.org>
+In-Reply-To: <20081117133137.616cf287.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0811171337400.18283@nehalem.linux-foundation.org>
 References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
 	<20081117130856.92e41cd3.akpm@linux-foundation.org>
 	<alpine.LFD.2.00.0811171320330.18283@nehalem.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	<20081117133137.616cf287.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
 	linuxppc-dev@ozlabs.org, paulus@samba.org, mingo@elte.hu,
 	tglx@linutronix.de
@@ -29,37 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 17 Nov 2008 13:23:23 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> 
-> 
-> On Mon, 17 Nov 2008, Andrew Morton wrote:
-> > 
-> > Far be it from me to apportion blame, but THIS IS ALL LINUS'S FAULT!!!!! :)
-> > 
-> > I fixed this six years ago.  See http://lkml.org/lkml/2002/6/17/68
-> 
-> Btw, in that thread I also said:
-> 
->   "If we have 64kB pages, such architectures will have to have a bigger 
->    kernel stack. Which they will have, simply by virtue of having the very 
->    same bigger page. So that problem kind of solves itself."
-> 
-> and that may still be the "right" solution - if somebody is so insane that 
-> they want 64kB pages, then they might as well have a 64kB kernel stack as 
-> well. 
 
-I'd have thought so, but I'm sure we're about to hear how important an
-optimisation the smaller stacks are ;)
-
-> Trust me, the kernel stack isn't where you blow your memory with a 64kB 
-> page. You blow all your memory on the memory fragmentation of your page 
-> cache. I did the stats for the kernel source tree a long time ago, and I 
-> think you wasted something like 4GB of RAM with a 64kB page size.
+On Mon, 17 Nov 2008, Andrew Morton wrote:
 > 
+> Yup.  That being said, the younger me did assert that "this is a neater
+> implementation anyway".  If we can implement those loops without
+> needing those on-stack temporary arrays then things probably are better
+> overall.
 
-Yup.  That being said, the younger me did assert that "this is a neater
-implementation anyway".  If we can implement those loops without
-needing those on-stack temporary arrays then things probably are better
-overall.
+Sure, if it actually ends up being nicer, I'll not argue with it. But from 
+an L1 I$ standpoint (and I$ is often very important, especially for kernel 
+loads where loops are fairly rare), it's often _much_ better to do two 
+"tight" loops over two subsystems (filesystem and block layer) than it is 
+to do one bigger loop that contains both. If the L1 can fit both subsystem 
+paths, you're fine - but if not, you may get a lot more misses.
+
+So it's often nice if you can "stage" things so that you do a cluster of 
+calls to one area, followed by a cluster of calls to another, rather than 
+mix it up. 
+
+But numbers talk. And code cleanliness. If somebody has numbers that the 
+code size actually goes down for example, or the code is just more 
+readable, micro-optimizing cache patterns isn't worth it.
+
+			Linus
