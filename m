@@ -1,32 +1,34 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-cn0ut-6.online-age.net (ext-cn0ut-6.online-age.net
-	[63.210.253.235])
+Return-Path: <brueckner@linux.vnet.ibm.com>
+Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-cn0ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 32CE4DDDDF
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 21:54:09 +1100 (EST)
-Received: from int-cn0ut-2.online-age.net (int-cn0ut-2.online-age.net
-	[3.159.252.71])
-	by ext-cn0ut-6.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id mAIAs5lU016852
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 05:54:05 -0500
-Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-2.online-age.net
-	[3.159.252.71])
-	by int-cn0ut-2.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id mAIAs4Q2020724
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 05:54:05 -0500
-From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH] powerpc: Use generic PHY driver for Marvell 88E1111 PHY on GE
-	Fanuc SBC610
-To: linuxppc-dev@ozlabs.org
-Date: Tue, 18 Nov 2008 10:55:45 +0000
-Message-ID: <20081118105451.7835.78476.stgit@ubuntu8041.localdomain>
-In-Reply-To: <20081118102023.7047.94495.stgit@ubuntu8041.localdomain>
-References: <20081118102023.7047.94495.stgit@ubuntu8041.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: paulus@samba.org
+	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4D0CDDDDEF
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 22:38:55 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id mAIBcn1m147582
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 11:38:49 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
+	ESMTP id mAIBcneo4108296
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 12:38:49 +0100
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id mAIBcmit028903
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 12:38:49 +0100
+Message-Id: <20081118112827.927627788@linux.vnet.ibm.com>
+Date: Tue, 18 Nov 2008 12:28:27 +0100
+From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Linux PPC devel <linuxppc-dev@ozlabs.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Rusty Russell <rusty@rustcorp.com.au>, "Ryan S. Arnold" <rsa@us.ibm.com>
+Subject: [patch 0/1] hvc_console: fix: remove duplicate hp->ws winsize check
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Christian Borntraeger <borntraeger@de.ibm.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,30 +38,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The Marvell PHY driver is currently being used for the 88E1111 on the
-SBC610. This driver is causing the link to run in 10/Half mode, the generic
-PHY driver is correctly configuring the PHY as 1000/Full.
+Hello,
 
-Edit default config to use generic PHY driver.
+this patch fixes a hvc terminal resize problem by removing a duplicate
+winsize comparison.
 
-Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
----
+Ben, could you add this patch to your tree for 2.6.28-rc6 bug fixes?
 
-Agh! My mistake - forgot to add "Signed-off", sorry.
+Thanks and regards,
+Hendrik
 
- arch/powerpc/configs/86xx/gef_sbc610_defconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+-- 
+Hendrik Brueckner
+D/3303 Linux on System z Development
+eMail: brueckner@linux.vnet.ibm.com
+IBM Deutschland Research & Development GmbH, Schoenaicher Str. 220, 71032 Boeblingen
 
-diff --git a/arch/powerpc/configs/86xx/gef_sbc610_defconfig b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
-index 2da13e0..07ccaf8 100644
---- a/arch/powerpc/configs/86xx/gef_sbc610_defconfig
-+++ b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
-@@ -838,7 +838,7 @@ CONFIG_PHYLIB=y
- #
- # MII PHY device drivers
- #
--CONFIG_MARVELL_PHY=y
-+# CONFIG_MARVELL_PHY is not set
- # CONFIG_DAVICOM_PHY is not set
- # CONFIG_QSEMI_PHY is not set
- # CONFIG_LXT_PHY is not set
+IBM Deutschland Research & Development GmbH
+Vorsitzender des Aufsichtsrats: Martin Jetter
+Geschaeftsfuehrung: Erich Baier
+Sitz der Gesellschaft: Boeblingen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
