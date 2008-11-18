@@ -1,19 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 78F7BDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 21:29:27 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Silence timebase sync code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Trent Piepho <tpiepho@freescale.com>
-In-Reply-To: <1226959111-11221-1-git-send-email-tpiepho@freescale.com>
-References: <1226959111-11221-1-git-send-email-tpiepho@freescale.com>
-Content-Type: text/plain
-Date: Tue, 18 Nov 2008 21:27:17 +1100
-Message-Id: <1227004037.7178.303.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <nickpiggin@yahoo.com.au>
+Received: from smtp103.mail.mud.yahoo.com (smtp103.mail.mud.yahoo.com
+	[209.191.85.213]) by ozlabs.org (Postfix) with SMTP id 1322DDDE19
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 21:31:28 +1100 (EST)
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+Date: Tue, 18 Nov 2008 21:24:32 +1100
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
+	<18722.2107.970887.768477@cargo.ozlabs.ibm.com>
+	<alpine.LFD.2.00.0811171752450.18283@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0811171752450.18283@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200811182124.33141.nickpiggin@yahoo.com.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,66 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-11-17 at 13:58 -0800, Trent Piepho wrote:
-> It's over a dozen lines of output and doesn't appear to provide any useful
-> information.  Even after looking at the code, I'm in the dark about what
-> "score 299, offset 250" means.
+On Tuesday 18 November 2008 13:08, Linus Torvalds wrote:
+> On Tue, 18 Nov 2008, Paul Mackerras wrote:
+> > Also, you didn't respond to my comments about the purely software
+> > benefits of a larger page size.
+>
+> I realize that there are benefits. It's just that the downsides tend to
+> swamp the upsides.
+>
+> The fact is, Intel (and to a lesser degree, AMD) has shown how hardware
+> can do good TLB's with essentially gang lookups, giving almost effective
+> page sizes of 32kB with hardly any of the downsides. Couple that with
 
-Hah ! I had almost the same patch in my pile for some time :-)
+It's much harder to do this with powerpc I think because they would need
+to calculate 8 hashes and touch 8 cachelines to prefill 8 translations,
+wouldn't they?
 
-> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> low-latency fault handling (for not when you miss in the TLB, but when
+> something really isn't in the page tables), and it seems to be seldom the
+> biggest issue.
+>
+> (Don't get me wrong - TLB's are not unimportant on x86 either. But on x86,
+> things are generally much better).
 
-> ---
->  arch/powerpc/kernel/smp-tbsync.c |   12 ++++--------
->  1 files changed, 4 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/smp-tbsync.c b/arch/powerpc/kernel/smp-tbsync.c
-> index bc892e6..b590135 100644
-> --- a/arch/powerpc/kernel/smp-tbsync.c
-> +++ b/arch/powerpc/kernel/smp-tbsync.c
-> @@ -113,7 +113,7 @@ void __devinit smp_generic_give_timebase(void)
->  {
->  	int i, score, score2, old, min=0, max=5000, offset=1000;
->  
-> -	printk("Synchronizing timebase\n");
-> +	pr_info("Synchronizing timebase\n");
->  
->  	/* if this fails then this kernel won't work anyway... */
->  	tbsync = kzalloc( sizeof(*tbsync), GFP_KERNEL );
-> @@ -123,14 +123,10 @@ void __devinit smp_generic_give_timebase(void)
->  	while (!tbsync->ack)
->  		barrier();
->  
-> -	printk("Got ack\n");
-> -
->  	/* binary search */
->  	for (old = -1; old != offset ; offset = (min+max) / 2) {
->  		score = start_contest(kSetAndTest, offset, NUM_ITER);
->  
-> -		printk("score %d, offset %d\n", score, offset );
-> -
->  		if( score > 0 )
->  			max = offset;
->  		else
-> @@ -140,8 +136,8 @@ void __devinit smp_generic_give_timebase(void)
->  	score = start_contest(kSetAndTest, min, NUM_ITER);
->  	score2 = start_contest(kSetAndTest, max, NUM_ITER);
->  
-> -	printk("Min %d (score %d), Max %d (score %d)\n",
-> -	       min, score, max, score2);
-> +	pr_debug("Min %d (score %d), Max %d (score %d)\n",
-> +		 min, score, max, score2);
->  	score = abs(score);
->  	score2 = abs(score2);
->  	offset = (score < score2) ? min : max;
-> @@ -155,7 +151,7 @@ void __devinit smp_generic_give_timebase(void)
->  		if (score2 <= score || score2 < 20)
->  			break;
->  	}
-> -	printk("Final offset: %d (%d/%d)\n", offset, score2, NUM_ITER );
-> +	pr_debug("Final offset: %d (%d/%d)\n", offset, score2, NUM_ITER);
->  
->  	/* exiting */
->  	tbsync->cmd = kExit;
+The per-page processing costs are interesting too, but IMO there is more
+work that should be done to speed up order-0 pages. The patches I had to
+remove the sync instruction for smp_mb() in unlock_page sped up pagecache
+throughput (populate, write(2), reclaim) on my G5 by something really
+crazy like 50% (most of that's in, but I'm still sitting on that fancy
+unlock_page speedup to remove the final smp_mb).
+
+I suspect some of the costs are also in powerpc specific code to insert
+linux ptes into their hash table. I think some of the synchronisation for
+those could possibly be shared with generic code so you don't need the
+extra layer of locks there.
