@@ -1,19 +1,25 @@
-Return-Path: <michael.barkowski@freescale.com>
-Message-ID: <4922D920.6080205@freescale.com>
-Date: Tue, 18 Nov 2008 10:02:56 -0500
-From: Michael Barkowski <michael.barkowski@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 31EFDDDE08
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 02:06:35 +1100 (EST)
+Message-ID: <4922D9E9.5020204@freescale.com>
+Date: Tue, 18 Nov 2008 09:06:17 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH] mpc832x_rdb: fix swapped ethernet ids
-References: <491C4544.7020707@freescale.com>
-	<20081113234507.GB32024@yookeroo.seuss>
-	<491D9643.4010204@freescale.com>
-	<20081115022637.GC6629@yookeroo.seuss>
-	<49219BC4.7050803@freescale.com>
-	<20081118001740.GA26336@yookeroo.seuss>
-In-Reply-To: <20081118001740.GA26336@yookeroo.seuss>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: Timur Tabi <timur@freescale.com>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: powerpc: udbg based backend for hvc_console
+References: <20081024035434.GF4267@yookeroo.seuss>
+	<ed82fe3e0811171204y4e8de21dy18f5b332b7f05f1f@mail.gmail.com>
+	<20081118004005.GC26336@yookeroo.seuss>
+	<ed82fe3e0811172042r1d4887f8n76682e0b21555372@mail.gmail.com>
+	<20081118051408.GM26336@yookeroo.seuss>
+In-Reply-To: <20081118051408.GM26336@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +30,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 David Gibson wrote:
-> On Mon, Nov 17, 2008 at 11:28:52AM -0500, Michael Barkowski wrote:
->> David Gibson wrote:
->>> On Fri, Nov 14, 2008 at 10:16:19AM -0500, Michael Barkowski wrote:
->>>> David Gibson wrote:
->>>>> On Thu, Nov 13, 2008 at 10:18:28AM -0500, Michael Barkowski wrote:
->>>>>> ethernet0 (called FSL UEC0 in U-Boot) should be enet1 (UCC3/eth1), and
->>>>>> ethernet1 should be enet0 (UCC2/eth0), to be consistent with U-Boot so
->>>>>> that the interfaces do not swap addresses when control passes from
->>>>>> U-Boot to the kernel.
->>>>> Um.. why is just swapping the aliases, rather than the enet labels the
->>>>> right approach here?
->>>> Kim suggested it was better to localize the port ordering as a
->>>> property of the board rather than that of the QE, and I agreed.
->>> And the enet0/enet1 names that appear in the labels come from the QE
->>> documentation?
->>>
->> No.. but don't you think the UCC2, UCC3 names, which *do* come from
->> the QE documentation, should match their labels in numeric ordering?
->> Aren't the aliases just machine-specific shortcuts for the
->> bootloader?
-> 
-> Ok, that's reasonable (although personally I would have thought it
-> would make more sense for the labels to be based on the documentation
-> terms, so UCC2, UCC3 etc., as we do on 4xx).
-> 
 
-Yeah, that would make sense to me too.  Although I guess that's a separate patch/issue, since the enet0/enet1 labelling is pretty common across 85xx/83xx.
+> Given the variety of strange I/O configurations in prototype and
+> embedded platforms, I can't imagine this was a unique situation.  So
+> I've pushed my patch out, so anyone else in a similar situation can
+> immediately turn their little udbg methods for whatever strange I/O
+> they have into a fully-functional console.  Maybe it's not something
+> you'd want to go to release with, but it certainly simplifies life
+> during bringup.
 
-thanks,
+Ok, I understand now.  However, I would like to see two changes:
+
+1) Re-arrange the Makefile as I pointed out in another post.
+
+2) Update the Kconfig help file to be very clear that this feature is only
+meaningful if the platform has a udbg back-end but no other console or TTY driver.
 
 -- 
-Michael
+Timur Tabi
+Linux kernel developer at Freescale
