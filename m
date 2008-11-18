@@ -1,26 +1,32 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-cn0ut-6.online-age.net (ext-cn0ut-6.online-age.net
+	[63.210.253.235])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2984FDDDCA
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 21:37:52 +1100 (EST)
-Date: Tue, 18 Nov 2008 11:37:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: Large stack usage in fs code (especially for PPC64)
-Message-ID: <20081118103726.GB31146@elte.hu>
-References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-	<1226963005.7178.248.camel@pasglop>
-	<20081118095305.GA24119@infradead.org>
+	(Client CN "ext-cn0ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 32CE4DDDDF
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 21:54:09 +1100 (EST)
+Received: from int-cn0ut-2.online-age.net (int-cn0ut-2.online-age.net
+	[3.159.252.71])
+	by ext-cn0ut-6.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id mAIAs5lU016852
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 05:54:05 -0500
+Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-2.online-age.net
+	[3.159.252.71])
+	by int-cn0ut-2.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id mAIAs4Q2020724
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 05:54:05 -0500
+From: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [PATCH] powerpc: Use generic PHY driver for Marvell 88E1111 PHY on GE
+	Fanuc SBC610
+To: linuxppc-dev@ozlabs.org
+Date: Tue, 18 Nov 2008 10:55:45 +0000
+Message-ID: <20081118105451.7835.78476.stgit@ubuntu8041.localdomain>
+In-Reply-To: <20081118102023.7047.94495.stgit@ubuntu8041.localdomain>
+References: <20081118102023.7047.94495.stgit@ubuntu8041.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081118095305.GA24119@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,31 +36,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The Marvell PHY driver is currently being used for the 88E1111 on the
+SBC610. This driver is causing the link to run in 10/Half mode, the generic
+PHY driver is correctly configuring the PHY as 1000/Full.
 
-* Christoph Hellwig <hch@infradead.org> wrote:
+Edit default config to use generic PHY driver.
 
-> On Tue, Nov 18, 2008 at 10:03:25AM +1100, Benjamin Herrenschmidt wrote:
-> > On Mon, 2008-11-17 at 15:34 -0500, Steven Rostedt wrote:
-> > > Note, I was using a default config that had CONFIG_IRQSTACKS off and
-> > > CONFIG_PPC_64K_PAGES on.
-> > 
-> > For one, we definitely need to turn IRQSTACKS on by default ... In fact,
-> > I'm pondering just removing the option.
-> 
-> It shouldn't be a user-visible option.  It shouldn't on x86 either, 
-> but there it always gets into the ideological 4k stacks flameware so 
-> people usually gave up after a while instead of doing the sensibke 
-> 8k + irqstacks by default, 4k as an option..
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+---
 
-yep, i tend to agree that 8k + irqstacks on both 32-bit and 64-bit 
-would be the sane default. There's just too much gcc and other noise 
-for us to have that cushion by default on 32-bit too. 64-bit is 
-already there, on 32-bit we should decouple irqstacks from 4K stacks 
-and just turn irqstacks on by default.
+Agh! My mistake - forgot to add "Signed-off", sorry.
 
-Life's too short to fight kernel stack overflows - and now we've got 
-the stack-tracer that will record and show the frame of the worst-ever 
-kernel stack situation the system was in since bootup. (see Steve's 
-tracer output in this thread)
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	Ingo
+diff --git a/arch/powerpc/configs/86xx/gef_sbc610_defconfig b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
+index 2da13e0..07ccaf8 100644
+--- a/arch/powerpc/configs/86xx/gef_sbc610_defconfig
++++ b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
+@@ -838,7 +838,7 @@ CONFIG_PHYLIB=y
+ #
+ # MII PHY device drivers
+ #
+-CONFIG_MARVELL_PHY=y
++# CONFIG_MARVELL_PHY is not set
+ # CONFIG_DAVICOM_PHY is not set
+ # CONFIG_QSEMI_PHY is not set
+ # CONFIG_LXT_PHY is not set
