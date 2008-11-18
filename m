@@ -1,19 +1,17 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 5936EDDDFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 13:29:22 +1100 (EST)
-Date: Mon, 17 Nov 2008 21:29:20 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18722.10784.719186.434130@cargo.ozlabs.ibm.com>
+Date: Tue, 18 Nov 2008 13:36:16 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Steven Rostedt <rostedt@goodmis.org>
 Subject: Re: Large stack usage in fs code (especially for PPC64)
-In-Reply-To: <alpine.DEB.1.10.0811171557370.26123@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0811172128380.26123@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0811172128380.26123@gandalf.stny.rr.com>
 References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
 	<alpine.DEB.1.10.0811171557370.26123@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
+	<alpine.DEB.1.10.0811172128380.26123@gandalf.stny.rr.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Thomas Gleixner <tglx@linutronix.de>,
 	Andrew Morton <akpm@linux-foundation.org>,
 	Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,19 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Steven Rostedt writes:
 
-On Mon, 17 Nov 2008, Steven Rostedt wrote:
-> 
-> On Mon, 17 Nov 2008, Steven Rostedt wrote:
-> > 
-> > Note, I was using a default config that had CONFIG_IRQSTACKS off and
-> > CONFIG_PPC_64K_PAGES on.
-> 
-> Here's my stack after boot up with CONFIG_IRQSTACKS set. Seems that 
-> softirqs still use the same stack as the process.
-> 
+> By-the-way, my box has been running stable ever since I switched to 
+> CONFIG_IRQSTACKS.
 
-By-the-way, my box has been running stable ever since I switched to 
-CONFIG_IRQSTACKS.
+Great.  We probably should remove the config option and just always
+use irq stacks.
 
--- Steve
+Paul.
