@@ -1,23 +1,24 @@
-Return-Path: <nickpiggin@yahoo.com.au>
-Received: from smtp119.mail.mud.yahoo.com (smtp119.mail.mud.yahoo.com
-	[209.191.84.76]) by ozlabs.org (Postfix) with SMTP id BDF98DDDED
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 21:14:02 +1100 (EST)
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Large stack usage in fs code (especially for PPC64)
-Date: Tue, 18 Nov 2008 21:07:12 +1100
-References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-	<alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
-	<18721.62958.479215.822513@cargo.ozlabs.ibm.com>
-In-Reply-To: <18721.62958.479215.822513@cargo.ozlabs.ibm.com>
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 858EDDDDED
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 21:14:45 +1100 (EST)
+Date: Tue, 18 Nov 2008 02:11:32 -0800 (PST)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Silence timebase sync code
+In-Reply-To: <1226964501.8537.3.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0811180158400.11673@t2.domain.actdsltmp>
+References: <1226959111-11221-1-git-send-email-tpiepho@freescale.com>
+	<49889E01-9433-41BE-A6F1-66127856D482@kernel.crashing.org>
+	<Pine.LNX.4.64.0811171421090.11673@t2.domain.actdsltmp>
+	<1226964501.8537.3.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200811182107.12747.nickpiggin@yahoo.com.au>
-Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
-	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 18 November 2008 09:53, Paul Mackerras wrote:
+On Tue, 18 Nov 2008, Michael Ellerman wrote:
+> On Mon, 2008-11-17 at 14:22 -0800, Trent Piepho wrote:
+>> On Mon, 17 Nov 2008, Kumar Gala wrote:
+>>> On Nov 17, 2008, at 3:58 PM, Trent Piepho wrote:
+>>>
+>>>> It's over a dozen lines of output and doesn't appear to provide any useful
+>>>> information.  Even after looking at the code, I'm in the dark about what
+>>>> "score 299, offset 250" means.
+>>>>
+>>>> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+>>>> ---
+>>>> +++ b/arch/powerpc/kernel/smp-tbsync.c
+>>>> @@ -113,7 +113,7 @@ void __devinit smp_generic_give_timebase(void)
+>>>> {
+>>>>  int i, score, score2, old, min=0, max=5000, offset=1000;
+>>>>
+>>>> -	printk("Synchronizing timebase\n");
+>>>> +	pr_info("Synchronizing timebase\n");
+>>>
+>>> I think its useful to leave this as a printk.
+>>
+>> #define pr_info(fmt, arg...) \
+>>          printk(KERN_INFO fmt, ##arg)
+>>
+>> Isn't printk with no level tag the same as KERN_INFO?
+>
+> Stuff like this should IMHO be printk(KERN_DEBUG ..)
+>
+> That way it will show up in the log as long as you boot with 'debug' on
+> your command line, it doesn't require a kernel recompile to turn on. And
+> at the same time it doesn't spam the boot log for a normal boot.
 
-> I'd love to be able to use a 4k base page size if I could still get
-> the reduction in page faults and the expanded TLB reach that we get
-> now with 64k pages.  If we could allocate the page cache for large
-> files with order-4 allocations wherever possible that would be a good
-> start.
-
-That can still have nasty side-effects like fragmentation and 64k
-granular reclaim. It also adds complexity to mapping the pages to
-userspace.
-
-Christoph's patchset IIRC also only did page cache, wheras I suppose
-your kernbench workload is gaining mainly from anonymous page faults.
+Originally my patched changed it to debug, but Kumar requested I keep it at
+info level.  The timebase sync code might hang or be slow, so it's nice to
+give a status output before doing it.  It seems just as good as most of the
+info printks during boot.
