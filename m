@@ -1,25 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <SRS0+21a6785939882875a925+1913+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A498BDDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 18:25:59 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 0981EDDDED
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 20:53:16 +1100 (EST)
+Date: Tue, 18 Nov 2008 04:53:05 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Large stack usage in fs code (especially for PPC64)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0811171522030.18283@nehalem.linux-foundation.org>
+Message-ID: <20081118095305.GA24119@infradead.org>
 References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-	<alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
-	<1226963596.7178.254.camel@pasglop>
-	<alpine.LFD.2.00.0811171522030.18283@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 18 Nov 2008 18:25:20 +1100
-Message-Id: <1226993120.7178.287.camel@pasglop>
-Mime-Version: 1.0
+	<1226963005.7178.248.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1226963005.7178.248.camel@pasglop>
 Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
 	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> > It makes some sort of sense I suppose on very static embedded workloads
-> > with no swap nor demand paging.
+On Tue, Nov 18, 2008 at 10:03:25AM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2008-11-17 at 15:34 -0500, Steven Rostedt wrote:
+> > Note, I was using a default config that had CONFIG_IRQSTACKS off and
+> > CONFIG_PPC_64K_PAGES on.
 > 
-> It makes perfect sense for anything that doesn't use any MMU. 
+> For one, we definitely need to turn IRQSTACKS on by default ... In fact,
+> I'm pondering just removing the option.
 
-To a certain extent. There's two different aspects to having an MMU and
-in embedded space it's useful to have one and not the other, ie,
-protection & address space isolation vs. paging.
-
-Thus, it does make sense for those embedded devices with few files
-(mostly a statically linked busybox, a few /dev entries and some app
-stuff) to use large page sizes. Of course, as soon as they try to
-populate their ramfs with lots of small files they lose... but mostly,
-the idea is that the entire working set fits in the TLB and thus the
-cost of TLB miss becomes irrelevant.
-
-Now, regarding the shortcomings of the powerpc server MMU, well, we know
-them, we know your opinion and mostly share it, and until we can get the
-HW to change we are stuck with it.
-
-Cheers,
-Ben.
+It shouldn't be a user-visible option.  It shouldn't on x86 either, but
+there it always gets into the ideological 4k stacks flameware so people
+usually gave up after a while instead of doing the sensibke 8k +
+irqstacks by default, 4k as an option..
