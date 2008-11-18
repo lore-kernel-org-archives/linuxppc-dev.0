@@ -1,23 +1,20 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AF34FDDE0F
+Return-Path: <AymanE@tanisys.com>
+Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [206.127.28.197])
+	by ozlabs.org (Postfix) with ESMTP id 73C0BDDE0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Nov 2008 16:49:35 +1100 (EST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Device tree and IRQ for chip on PCI
-Date: Tue, 18 Nov 2008 06:49:28 +0100
-References: <492189ED.6050700@selcomgroup.com>
-In-Reply-To: <492189ED.6050700@selcomgroup.com>
+	Wed, 19 Nov 2008 02:35:53 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200811180649.28792.matthias.fuchs@esd-electronics.com>
-Cc: Matteo Fortini <m.fortini@selcomgroup.com>
+	charset="us-ascii"
+Subject: RE: AMCC 460EX SATA drive on Canyonlands
+Date: Tue, 18 Nov 2008 09:35:50 -0600
+Message-ID: <16691A8B34B5D9458EA3A1C37A11555A0137F885@tanisys-ex2.Tanisys.Local>
+In-Reply-To: <1226969645.808.13.camel@lt-linuxhenry>
+References: <DF6C7BC3780EE44B83430A9F756D43B608581D77@SJEXCH03.ds.jdsu.net><4921A2EE.6050201@freescale.com><DF6C7BC3780EE44B83430A9F756D43B60858239D@SJEXCH03.ds.jdsu.net><4921BA09.1030508@freescale.com>
+	<1226969645.808.13.camel@lt-linuxhenry>
+From: "Ayman El-Khashab" <AymanE@tanisys.com>
+To: "Henry Bausley" <hbausley@deltatau.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,51 +25,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Matteo,
+=20
 
-> I have a chip connected on the PCI bus on an MPC512x, but if I get the
-> IRQ property from the PCI chip, it is not set up by Linux.
-It's not clear to me what you mean by this. 
-Do you see an interrupt assigned to your pci device's PCI_INTERRUPT_LINE 
-register? Check lspci output.
+nlands
+>=20
+> I can't seem to see a SATA drive on my 460EX Canyonlands=20
+> board.  Did I miss something in the kernel configuration. =20
+> The drive is a Seagate Baracuda  750M - ST3750330AS
+>=20
 
-> The IRQ line goes directly from the chip to the MPC512x uc, so I don't
-> know if I should create a separate node just to get the interrupt, or I
-No. The pci node in  the DT should be ok.
-Because you posted to an embedded list, I need to ask this: are you using a 
-custom hardware? Does the DT fit to your board's interrupt / IDSEL routing?
-
-Matthias
-
-> should expect the pci functions to assign it an interrupt based on the
-> PCI bus.
->
-> The description for the PCI bus is like this:
->         pci: pci@80008500 {
->                 interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
->                 interrupt-map = <
->                                 // IDSEL 0x15 - Slot PCI
->                                  0xa800 0x0 0x0 0x1 &ipic 0x0 0x8
->                                  0xa800 0x0 0x0 0x2 &ipic 0x1 0x8
->                                  0xa800 0x0 0x0 0x3 &ipic 0x2 0x8
->                                  0xa800 0x0 0x0 0x4 &ipic 0x3 0x8
->
->                                 >;
->
->                 interrupt-parent = < &ipic >;
->                 interrupts = <17 0x8>;
->                 bus-range = <0 0>;
->                 ranges = <0x42000000 0x0 0xa0000000 0xa0000000 0x0
-> 0x10000000
->                           0x02000000 0x0 0xb0000000 0xb0000000 0x0
-> 0x10000000
->                           0x01000000 0x0 0x00000000 0x84000000 0x0
-> 0x01000000>;
->                 clock-frequency = <66000000>;
->                 #interrupt-cells = <1>;
->                 #size-cells = <2>;
->                 #address-cells = <3>;
->                 reg = <0x80008500 0x100>;
->                 compatible = "fsl,mpc5121-pci";
->                 device_type = "pci";
->         };
+Maybe, but on that board the SATA and PCI-E 1L are shared and there is a
+jumper to pick which one you want.
