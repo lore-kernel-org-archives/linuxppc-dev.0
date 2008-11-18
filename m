@@ -1,22 +1,21 @@
 Return-Path: <david-b@pacbell.net>
 Received: from smtp115.sbc.mail.sp1.yahoo.com (smtp115.sbc.mail.sp1.yahoo.com
-	[69.147.64.88]) by ozlabs.org (Postfix) with SMTP id 30DA6DDE17
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 12:48:28 +1100 (EST)
+	[69.147.64.88]) by ozlabs.org (Postfix) with SMTP id 2C901DDE11
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 12:48:29 +1100 (EST)
 From: David Brownell <david-b@pacbell.net>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH v2] usb/fsl_usb2_udc: Report disconnect before unbinding
-Date: Mon, 17 Nov 2008 17:01:37 -0800
-References: <20081112192953.GA25565@oksana.dev.rtsoft.ru>
-	<20081113120046.GA29942@oksana.dev.rtsoft.ru>
-In-Reply-To: <20081113120046.GA29942@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH 4/6] usb/fsl_qe_udc: Fix disconnects reporting during bus
+	reset
+Date: Mon, 17 Nov 2008 17:48:24 -0800
+References: <20081111160153.GA12783@oksana.dev.rtsoft.ru>
+	<20081111160334.GD24699@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081111160334.GD24699@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200811171701.37950.david-b@pacbell.net>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Alan Stern <stern@rowland.harvard.edu>,
-	Li Yang <leoli@freescale.com>
+Message-Id: <200811171748.24310.david-b@pacbell.net>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Li Yang <leoli@freescale.com>,
+	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org
 Reply-To: dbrownell@users.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,67 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 13 November 2008, Anton Vorontsov wrote:
-> Gadgets disable endpoints in their disconnect callbacks, so
-> we must call disconnect before unbinding.
+On Tuesday 11 November 2008, Anton Vorontsov wrote:
+> Freescale QE UDC controllers can't report the "port change" states,
+> so the only way to handle disconnects is to process bus reset
+> interrupts. The bus reset can take some time, that is, few irqs.
+> Gadgets may print the disconnection events, and this causes few
+> repetitive messages in the kernel log.
 > 
-> The patch fixes following badness:
-> 
-> root@b1:~# insmod fsl_usb2_udc.ko
-> Freescale High-Speed USB SOC Device Controller driver (Apr 20, 2007)
-> root@b1:~# insmod g_ether.ko
-> g_ether gadget: using random self ethernet address
-> g_ether gadget: using random host ethernet address
-> usb0: MAC 26:07:ba:c0:44:33
-> usb0: HOST MAC 96:81:0c:05:4d:e3
-> g_ether gadget: Ethernet Gadget, version: Memorial Day 2008
-> g_ether gadget: g_ether ready
-> fsl-usb2-udc: bind to driver g_ether
-> g_ether gadget: high speed config #1: CDC Ethernet (ECM)
-> root@b1:~# rmmod g_ether.ko
-> ------------[ cut here ]------------
-> Badness at drivers/usb/gadget/composite.c:871
-> [...]
-> NIP [e10c3454] composite_unbind+0x24/0x15c [g_ether]
-> LR [e10aa454] usb_gadget_unregister_driver+0x13c/0x164 [fsl_usb2_udc]
-> Call Trace:
-> [df145e80] [ffffff94] 0xffffff94 (unreliable)
-> [df145eb0] [e10aa454] usb_gadget_unregister_driver+0x13c/0x164 [fsl_usb2_udc]
-> [df145ed0] [e10c4c40] usb_composite_unregister+0x3c/0x4c [g_ether]
-> [df145ee0] [c006bcc0] sys_delete_module+0x130/0x19c
-> [df145f40] [c00142d8] ret_from_syscall+0x0/0x38
-> [...]
-> unregistered gadget driver 'g_ether'
+> This patch fixes the issue by using the usb_state machine, if the
+> usb controller has been already reset, just quit the reset irq
+> early.
 > 
 > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
 Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
+Note that the "port change" you reference is more typically
+packaged as "VBUS detect" ... often handled with a GPIO.
 
 > ---
-> 
-> v2:
-> - Comment update per Alan Stern review.
-> 
->  drivers/usb/gadget/fsl_usb2_udc.c |    3 +++
+>  drivers/usb/gadget/fsl_qe_udc.c |    3 +++
 >  1 files changed, 3 insertions(+), 0 deletions(-)
 > 
-> diff --git a/drivers/usb/gadget/fsl_usb2_udc.c b/drivers/usb/gadget/fsl_usb2_udc.c
-> index 091bb55..f3c6703 100644
-> --- a/drivers/usb/gadget/fsl_usb2_udc.c
-> +++ b/drivers/usb/gadget/fsl_usb2_udc.c
-> @@ -1836,6 +1836,9 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
->  		nuke(loop_ep, -ESHUTDOWN);
->  	spin_unlock_irqrestore(&udc_controller->lock, flags);
+> diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
+> index 1789f65..7bb5f36 100644
+> --- a/drivers/usb/gadget/fsl_qe_udc.c
+> +++ b/drivers/usb/gadget/fsl_qe_udc.c
+> @@ -2161,6 +2161,9 @@ static int reset_irq(struct qe_udc *udc)
+>  {
+>  	unsigned char i;
 >  
-> +	/* report disconnect; the controller is already quiesced */
-> +	driver->disconnect(&udc_controller->gadget);
+> +	if (udc->usb_state == USB_STATE_DEFAULT)
+> +		return 0;
 > +
->  	/* unbind gadget and unhook driver. */
->  	driver->unbind(&udc_controller->gadget);
->  	udc_controller->gadget.dev.driver = NULL;
+>  	qe_usb_disable();
+>  	out_8(&udc->usb_regs->usb_usadr, 0);
+>  
 > -- 
 > 1.5.6.3
+> 
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-usb" in
 > the body of a message to majordomo@vger.kernel.org
