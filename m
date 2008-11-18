@@ -1,19 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E6816DDDD4
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 23:24:43 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Add sync_*_for_* to dma_ops
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Becky Bruce <becky.bruce@freescale.com>
-In-Reply-To: <1226953165-19305-1-git-send-email-becky.bruce@freescale.com>
-References: <1226953165-19305-1-git-send-email-becky.bruce@freescale.com>
-Content-Type: text/plain
-Date: Tue, 18 Nov 2008 23:22:29 +1100
-Message-Id: <1227010949.7178.308.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 9D112DDE04
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 00:17:37 +1100 (EST)
+Date: Tue, 18 Nov 2008 07:17:24 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>
+Subject: [PATCH][for 2.6.27/stable] Remove -mno-spe flags as they dont belong
+Message-ID: <Pine.LNX.4.64.0811180717180.28154@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,63 +21,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+For some unknown reason at Steven Rostedt added in disabling of the SPE
+instruction generation for e500 based PPC cores in commit
+6ec562328fda585be2d7f472cfac99d3b44d362a.
 
->  				dma_addr_t dma_address, size_t size,
->  				enum dma_data_direction direction,
->  				struct dma_attrs *attrs);
-> +	void            (*sync_single_for_cpu)(struct device *hwdev,
-> +				dma_addr_t dma_handle, size_t size,
-> +				enum dma_data_direction direction);
-> +	void            (*sync_single_for_device)(struct device *hwdev,
-> +				dma_addr_t dma_handle, size_t size,
-> +				enum dma_data_direction direction);
-> +	void            (*sync_single_range_for_cpu)(struct device *hwdev,
-> +				dma_addr_t dma_handle, unsigned long offset,
-> +				size_t size,
-> +				enum dma_data_direction direction);
-> +	void            (*sync_single_range_for_device)(struct device *hwdev,
-> +				dma_addr_t dma_handle, unsigned long offset,
-> +				size_t size,
-> +				enum dma_data_direction direction);
+We are removing it because:
 
-Can't we implement the first 2 using the next 2 and passing a 0 offset ?
-I mean, we're going to go through a function pointer, it's not like
-handling the offset was going to cost us something :-)
+1. It generates e500 kernels that don't work
+2. its not the correct set of flags to do this
+3. we handle this in the arch/powerpc/Makefile already
+4. its unknown in talking to Steven why he did this
 
-> +	void            (*sync_sg_for_cpu)(struct device *hwdev,
-> +				struct scatterlist *sg, int nelems,
-> +				enum dma_data_direction direction);
-> +	void            (*sync_sg_for_device)(struct device *hwdev,
-> +				struct scatterlist *sg, int nelems,
-> +				enum dma_data_direction direction);
->  };
->  
->  /*
-> @@ -286,42 +306,75 @@ static inline void dma_sync_single_for_cpu(struct device *dev,
->  		dma_addr_t dma_handle, size_t size,
->  		enum dma_data_direction direction)
->  {
-> -	BUG_ON(direction == DMA_NONE);
-> -	__dma_sync(bus_to_virt(dma_handle), size, direction);
-> +	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
-> +
-> +	BUG_ON(!dma_ops);
-> +	if (dma_ops->sync_single_for_cpu != NULL)
-> +		dma_ops->sync_single_for_cpu(dev, dma_handle, size,
-> +					     direction);
->  }
+(This is backported for commit 65ecc14a30ad21bed9aabdfd6a2ae1a1aaaa6a00)
 
- .../...
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Tested-and-Acked-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
 
-The only objection that comes to mind here is that generally, you know
-that your platform is going to be coherent or not at compile time, and
-you don't want the above at all when it is (or won't need swiotlb).
+Greg,
 
-So maybe we could have a Kconfig trickery so that
-CONFIG_PPC_DMA_NEED_SYNC_OPS is set when either non coherent DMA is
-select'ed or swiotlb support is select'ed by one of the enabled
-platform. So if I enable only powermac, I get neither and don't get the
-bloody inlines :-)
+A straight cherry pick of 65ecc14a30ad21bed9aabdfd6a2ae1a1aaaa6a00 causes
+merge issues with 2.6.27.x, so there here is a version of the commit that
+should apply to 2.6.27.x
 
-Cheers,
-Ben.
+- k
+
+
+ kernel/Makefile |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 4e1d7df..143e8b6 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -11,8 +11,6 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o \
+ 	    hrtimer.o rwsem.o nsproxy.o srcu.o semaphore.o \
+ 	    notifier.o ksysfs.o pm_qos_params.o sched_clock.o
+
+-CFLAGS_REMOVE_sched.o = -mno-spe
+-
+ ifdef CONFIG_FTRACE
+ # Do not trace debug files and internal ftrace files
+ CFLAGS_REMOVE_lockdep.o = -pg
+@@ -21,7 +19,7 @@ CFLAGS_REMOVE_mutex-debug.o = -pg
+ CFLAGS_REMOVE_rtmutex-debug.o = -pg
+ CFLAGS_REMOVE_cgroup-debug.o = -pg
+ CFLAGS_REMOVE_sched_clock.o = -pg
+-CFLAGS_REMOVE_sched.o = -mno-spe -pg
++CFLAGS_REMOVE_sched.o = -pg
+ endif
+
+ obj-$(CONFIG_PROFILING) += profile.o
+-- 
+1.5.6.5
