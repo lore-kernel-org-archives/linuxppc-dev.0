@@ -1,34 +1,20 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-nj2ut-7.online-age.net (ext-nj2ut-7.online-age.net
-	[64.14.54.237])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-nj2ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 8DA08DDDFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 00:52:13 +1100 (EST)
-Received: from int-nj2ut-7.online-age.net (int-nj2ut-7.online-age.net
-	[3.159.237.76])
-	by ext-nj2ut-7.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id mAIDq8nE028616
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 08:52:08 -0500
-Received: from alpmlip01.e2k.ad.ge.com (int-nj2ut-7.online-age.net
-	[3.159.237.76])
-	by int-nj2ut-7.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id mAIDq1KW025665
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 08:52:08 -0500
-Date: Tue, 18 Nov 2008 13:53:42 +0000
-From: Martyn Welch <martyn.welch@gefanuc.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Use generic PHY driver for Marvell 88E1111 PHY
-	on GE Fanuc SBC610
-Message-Id: <20081118135342.3605930c.martyn.welch@gefanuc.com>
-In-Reply-To: <7110514B-F0F1-4650-A3CC-E09178CBC262@kernel.crashing.org>
-References: <20081118102023.7047.94495.stgit@ubuntu8041.localdomain>
-	<20081118105451.7835.78476.stgit@ubuntu8041.localdomain>
-	<7110514B-F0F1-4650-A3CC-E09178CBC262@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 05C87DDE04
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 00:56:40 +1100 (EST)
+Date: Tue, 18 Nov 2008 08:56:38 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 0/7] Porting dynmaic ftrace to PowerPC
+In-Reply-To: <alpine.DEB.1.10.0811171035530.2919@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.1.10.0811180853390.15003@gandalf.stny.rr.com>
+References: <20081116212428.938752312@goodmis.org>
+	<18720.42209.880409.297291@cargo.ozlabs.ibm.com>
+	<alpine.DEB.1.10.0811171035530.2919@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,40 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 18 Nov 2008 07:39:21 -0600
-Kumar Gala <galak@kernel.crashing.org> wrote:
-> 
-> On Nov 18, 2008, at 4:55 AM, Martyn Welch wrote:
-> 
-> > The Marvell PHY driver is currently being used for the 88E1111 on the
-> > SBC610. This driver is causing the link to run in 10/Half mode, the  
-> > generic
-> > PHY driver is correctly configuring the PHY as 1000/Full.
-> >
-> > Edit default config to use generic PHY driver.
-> >
-> > Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
-> > ---
-> >
-> > Agh! My mistake - forgot to add "Signed-off", sorry.
-> >
-> > arch/powerpc/configs/86xx/gef_sbc610_defconfig |    2 +-
-> > 1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> hmm.. why not fix the issue with the 88e1111 driver.
-> 
 
-Two reasons really:
+Paul and Benjamin,
 
-1) We don't use any of the non-generic features of the PHY.
-2) Networking is really _not_ my forte.
+Can I add your Acked-by: to all these patches that I submitted? I'm going 
+to recommit them with a consistent subject (all lower case ppc), but I'm 
+not going to change the patches themselves.
 
-As a result, it's not itching ;-)
+Would you two be fine with that? Or at least one of you?
 
-Martyn
-
--- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
+-- Steve
