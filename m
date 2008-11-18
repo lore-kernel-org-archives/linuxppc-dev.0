@@ -1,22 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 521E5DDE04
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 04:51:30 +1100 (EST)
-Date: Tue, 18 Nov 2008 20:51:27 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: dbrownell@users.sourceforge.net
-Subject: [PATCH 2/6 v2] usb/fsl_qe_udc: Fix recursive locking bug in
-	ch9getstatus()
-Message-ID: <20081118175127.GA29920@oksana.dev.rtsoft.ru>
-References: <20081111160153.GA12783@oksana.dev.rtsoft.ru>
-	<20081111160327.GB24699@oksana.dev.rtsoft.ru>
-	<200811171759.42674.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <200811171759.42674.david-b@pacbell.net>
-Cc: Greg Kroah-Hartman <greg@kroah.com>, Li Yang <leoli@freescale.com>,
-	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <becky.bruce@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AA3A6DDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 06:29:47 +1100 (EST)
+Message-Id: <12AFC562-6204-4626-8559-6F1C05F08BD3@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <B9E49084-CF78-4D98-8A3F-8F1179181DE5@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: Add sync_*_for_* to dma_ops
+Date: Tue, 18 Nov 2008 13:29:32 -0600
+References: <1226953165-19305-1-git-send-email-becky.bruce@freescale.com>
+	<B9E49084-CF78-4D98-8A3F-8F1179181DE5@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,112 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The call chain is this:
 
-qe_udc_irq() <- grabs the udc->lock spinlock
-rx_irq()
-qe_ep0_rx()
-ep0_setup_handle()
-setup_received_handle()
-ch9getstatus()
-qe_ep_queue() <- tries to grab the udc->lock again
+On Nov 18, 2008, at 10:57 AM, Segher Boessenkool wrote:
 
-It seems unsafe to temporarily drop the lock in the ch9getstatus(),
-so to fix that bug the lock-less __qe_ep_queue() function
-implemented and used by the ch9getstatus().
+>> @@ -286,42 +306,75 @@ static inline void  
+>> dma_sync_single_for_cpu(struct device *dev,
+>> 		dma_addr_t dma_handle, size_t size,
+>> 		enum dma_data_direction direction)
+>> {
+>> -	BUG_ON(direction == DMA_NONE);
+>
+> Did you intend to remove this here?  It would be nice to test for it
+> even on platforms where the op is a nop; if there is an equivalent
+> test in every implementation of the ops, remove it there instead
+> (that's more source + binary code to remove, always a good thing ;-) )
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
 
-On Mon, Nov 17, 2008 at 05:59:42PM -0800, David Brownell wrote:
-> On Tuesday 11 November 2008, Anton Vorontsov wrote:
-> > -       spin_lock_irqsave(&udc->lock, flags);
-> > +       if (lock)
-> > +               spin_lock_irqsave(lock, flags);
-> 
-> Ugly ugly ugly.  Conditional locking is error prone ... don't.
-> 
-> Couldn't you just have the usb_ep_queue() method wrap lock calls
-> around a common routine called by that and the status reporting code?
+You're right that we have lost this test in platforms which do not  
+implement the sync ops, and if the test is useful, I can certainly  
+move it.  However, it will actually result in more code on the current  
+ppc kernel, as there are 3x more dma_sync_* instances than there are  
+actual dma_direct_* instances (and nobody else implements  
+dma_sync_* :)  Not that we're talking about a lot of code here, but it  
+definitely won't make the kernel smaller since we just don't need a  
+sync unless we're noncoherent which, thank <insert deity here>, is rare.
 
-Yeah, that's much better approach.
+With the swiotlb case, the check needs to be in the swiotlb code  
+because there are other architectures that use the swiotlb code that  
+do not use a structure to get to their dma_ops like we do.  IA64, for  
+example, sets up its dma_ops using config options and #defines the  
+names of the various dma_ functions.  They don't go through a dma_ops  
+dereference, so the (possibly redundant for us) check in the swiotlb  
+code would need to remain.
 
-> Or just have the status reporting code stuff the two bytes directly
-> into the FIFO?  (Which is what a lot of other drivers do.)
+So, the reason for moving it would be that we think it's still a  
+useful check to have.  I'm happy to move it in that case.
 
-Well, I think that using common code path for data transmission is
-better, and simpler.
-
-Thanks for the review.
-
- drivers/usb/gadget/fsl_qe_udc.c |   27 +++++++++++++++++++--------
- 1 files changed, 19 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
-index 60b9279..165ff76 100644
---- a/drivers/usb/gadget/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/fsl_qe_udc.c
-@@ -1681,14 +1681,12 @@ static void qe_free_request(struct usb_ep *_ep, struct usb_request *_req)
- 		kfree(req);
- }
- 
--/* queues (submits) an I/O request to an endpoint */
--static int qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
--				gfp_t gfp_flags)
-+static int __qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
-+			 gfp_t gfp_flags)
- {
- 	struct qe_ep *ep = container_of(_ep, struct qe_ep, ep);
- 	struct qe_req *req = container_of(_req, struct qe_req, req);
- 	struct qe_udc *udc;
--	unsigned long flags;
- 	int reval;
- 
- 	udc = ep->udc;
-@@ -1732,7 +1730,7 @@ static int qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
- 	list_add_tail(&req->queue, &ep->queue);
- 	dev_vdbg(udc->dev, "gadget have request in %s! %d\n",
- 			ep->name, req->req.length);
--	spin_lock_irqsave(&udc->lock, flags);
-+
- 	/* push the request to device */
- 	if (ep_is_in(ep))
- 		reval = ep_req_send(ep, req);
-@@ -1748,11 +1746,24 @@ static int qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
- 	if (ep->dir == USB_DIR_OUT)
- 		reval = ep_req_receive(ep, req);
- 
--	spin_unlock_irqrestore(&udc->lock, flags);
--
- 	return 0;
- }
- 
-+/* queues (submits) an I/O request to an endpoint */
-+static int qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
-+		       gfp_t gfp_flags)
-+{
-+	struct qe_ep *ep = container_of(_ep, struct qe_ep, ep);
-+	struct qe_udc *udc = ep->udc;
-+	unsigned long flags;
-+	int ret;
-+
-+	spin_lock_irqsave(&udc->lock, flags);
-+	ret = __qe_ep_queue(_ep, _req, gfp_flags);
-+	spin_unlock_irqrestore(&udc->lock, flags);
-+	return ret;
-+}
-+
- /* dequeues (cancels, unlinks) an I/O request from an endpoint */
- static int qe_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
- {
-@@ -2008,7 +2019,7 @@ static void ch9getstatus(struct qe_udc *udc, u8 request_type, u16 value,
- 	udc->ep0_dir = USB_DIR_IN;
- 
- 	/* data phase */
--	status = qe_ep_queue(&ep->ep, &req->req, GFP_ATOMIC);
-+	status = __qe_ep_queue(&ep->ep, &req->req, GFP_ATOMIC);
- 
- 	if (status == 0)
- 		return;
--- 
-1.5.6.3
+Thanks,
+-Becky
