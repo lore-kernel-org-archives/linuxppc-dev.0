@@ -1,23 +1,26 @@
-Return-Path: <nickpiggin@yahoo.com.au>
-Received: from smtp103.mail.mud.yahoo.com (smtp103.mail.mud.yahoo.com
-	[209.191.85.213]) by ozlabs.org (Postfix) with SMTP id 1322DDDE19
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 21:31:28 +1100 (EST)
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2984FDDDCA
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Nov 2008 21:37:52 +1100 (EST)
+Date: Tue, 18 Nov 2008 11:37:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Hellwig <hch@infradead.org>
 Subject: Re: Large stack usage in fs code (especially for PPC64)
-Date: Tue, 18 Nov 2008 21:24:32 +1100
+Message-ID: <20081118103726.GB31146@elte.hu>
 References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-	<18722.2107.970887.768477@cargo.ozlabs.ibm.com>
-	<alpine.LFD.2.00.0811171752450.18283@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0811171752450.18283@nehalem.linux-foundation.org>
+	<1226963005.7178.248.camel@pasglop>
+	<20081118095305.GA24119@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200811182124.33141.nickpiggin@yahoo.com.au>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081118095305.GA24119@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 18 November 2008 13:08, Linus Torvalds wrote:
-> On Tue, 18 Nov 2008, Paul Mackerras wrote:
-> > Also, you didn't respond to my comments about the purely software
-> > benefits of a larger page size.
->
-> I realize that there are benefits. It's just that the downsides tend to
-> swamp the upsides.
->
-> The fact is, Intel (and to a lesser degree, AMD) has shown how hardware
-> can do good TLB's with essentially gang lookups, giving almost effective
-> page sizes of 32kB with hardly any of the downsides. Couple that with
 
-It's much harder to do this with powerpc I think because they would need
-to calculate 8 hashes and touch 8 cachelines to prefill 8 translations,
-wouldn't they?
+* Christoph Hellwig <hch@infradead.org> wrote:
 
+> On Tue, Nov 18, 2008 at 10:03:25AM +1100, Benjamin Herrenschmidt wrote:
+> > On Mon, 2008-11-17 at 15:34 -0500, Steven Rostedt wrote:
+> > > Note, I was using a default config that had CONFIG_IRQSTACKS off and
+> > > CONFIG_PPC_64K_PAGES on.
+> > 
+> > For one, we definitely need to turn IRQSTACKS on by default ... In fact,
+> > I'm pondering just removing the option.
+> 
+> It shouldn't be a user-visible option.  It shouldn't on x86 either, 
+> but there it always gets into the ideological 4k stacks flameware so 
+> people usually gave up after a while instead of doing the sensibke 
+> 8k + irqstacks by default, 4k as an option..
 
-> low-latency fault handling (for not when you miss in the TLB, but when
-> something really isn't in the page tables), and it seems to be seldom the
-> biggest issue.
->
-> (Don't get me wrong - TLB's are not unimportant on x86 either. But on x86,
-> things are generally much better).
+yep, i tend to agree that 8k + irqstacks on both 32-bit and 64-bit 
+would be the sane default. There's just too much gcc and other noise 
+for us to have that cushion by default on 32-bit too. 64-bit is 
+already there, on 32-bit we should decouple irqstacks from 4K stacks 
+and just turn irqstacks on by default.
 
-The per-page processing costs are interesting too, but IMO there is more
-work that should be done to speed up order-0 pages. The patches I had to
-remove the sync instruction for smp_mb() in unlock_page sped up pagecache
-throughput (populate, write(2), reclaim) on my G5 by something really
-crazy like 50% (most of that's in, but I'm still sitting on that fancy
-unlock_page speedup to remove the final smp_mb).
+Life's too short to fight kernel stack overflows - and now we've got 
+the stack-tracer that will record and show the frame of the worst-ever 
+kernel stack situation the system was in since bootup. (see Steve's 
+tracer output in this thread)
 
-I suspect some of the costs are also in powerpc specific code to insert
-linux ptes into their hash table. I think some of the synchronisation for
-those could possibly be shared with generic code so you don't need the
-extra layer of locks there.
+	Ingo
