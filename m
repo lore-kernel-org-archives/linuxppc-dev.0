@@ -1,17 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 18 Nov 2008 11:17:40 +1100
+Date: Tue, 18 Nov 2008 11:28:28 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Michael Barkowski <michael.barkowski@freescale.com>
-Subject: Re: [PATCH] mpc832x_rdb: fix swapped ethernet ids
-Message-ID: <20081118001740.GA26336@yookeroo.seuss>
-References: <491C4544.7020707@freescale.com>
-	<20081113234507.GB32024@yookeroo.seuss>
-	<491D9643.4010204@freescale.com>
-	<20081115022637.GC6629@yookeroo.seuss>
-	<49219BC4.7050803@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: powerpc: udbg based backend for hvc_console
+Message-ID: <20081118002828.GB26336@yookeroo.seuss>
+References: <20081024035434.GF4267@yookeroo.seuss>
+	<ed82fe3e0811171141x1522c2c7i30711f6d69076df@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <49219BC4.7050803@freescale.com>
+In-Reply-To: <ed82fe3e0811171141x1522c2c7i30711f6d69076df@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,31 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 17, 2008 at 11:28:52AM -0500, Michael Barkowski wrote:
-> David Gibson wrote:
->> On Fri, Nov 14, 2008 at 10:16:19AM -0500, Michael Barkowski wrote:
->>> David Gibson wrote:
->>>> On Thu, Nov 13, 2008 at 10:18:28AM -0500, Michael Barkowski wrote:
->>>>> ethernet0 (called FSL UEC0 in U-Boot) should be enet1 (UCC3/eth1), and
->>>>> ethernet1 should be enet0 (UCC2/eth0), to be consistent with U-Boot so
->>>>> that the interfaces do not swap addresses when control passes from
->>>>> U-Boot to the kernel.
->>>> Um.. why is just swapping the aliases, rather than the enet labels the
->>>> right approach here?
->>> Kim suggested it was better to localize the port ordering as a
->>> property of the board rather than that of the QE, and I agreed.
->>
->> And the enet0/enet1 names that appear in the labels come from the QE
->> documentation?
->>
-> No.. but don't you think the UCC2, UCC3 names, which *do* come from
-> the QE documentation, should match their labels in numeric ordering?
-> Aren't the aliases just machine-specific shortcuts for the
-> bootloader?
+On Mon, Nov 17, 2008 at 01:41:24PM -0600, Timur Tabi wrote:
+> On Thu, Oct 23, 2008 at 9:54 PM, David Gibson
+> <david@gibson.dropbear.id.au> wrote:
+> > This patch adds a new backend for the hvc console based on the
+> > low-level udbg callbacks.  This effectively implements a working
+> > runtime console in terms of the simple udbg primitives.  This is kind
+> > of a hack - since udbg isn't something you really want to be using
+> > routinely - but it's really useful during bringup.
+> 
+> David, I have a stupid question.  I already have an HVC console driver
+> that works.  Do I need to do anything, other than enable HVC_UDBG, to
+> get my hvc console drive to use udbg?
 
-Ok, that's reasonable (although personally I would have thought it
-would make more sense for the labels to be based on the documentation
-terms, so UCC2, UCC3 etc., as we do on 4xx).
+Um.. well.. if you have both activated, I think you can select which
+HVC console backend will be used by using console=/dev/hvcNN on the
+commandline, where values of NN correspond to different backends, in
+order depending on link order in some complex fashion.
+
+But if you already have a working HVC console driver, I don't see why
+you'd want to use HVC_UDBG - it's essentially a bringup hack.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
