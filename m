@@ -1,27 +1,22 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <becky.bruce@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A8D16DDDEA
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 03:02:38 +1100 (EST)
-Date: Tue, 18 Nov 2008 08:02:10 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: Large stack usage in fs code (especially for PPC64)
-In-Reply-To: <200811182124.33141.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.2.00.0811180800120.18283@nehalem.linux-foundation.org>
-References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-	<18722.2107.970887.768477@cargo.ozlabs.ibm.com>
-	<alpine.LFD.2.00.0811171752450.18283@nehalem.linux-foundation.org>
-	<200811182124.33141.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EADE9DDDE3
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 03:03:36 +1100 (EST)
+Message-Id: <69A37750-E513-455C-AA61-7F307149832A@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1227010949.7178.308.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: Add sync_*_for_* to dma_ops
+Date: Tue, 18 Nov 2008 10:03:22 -0600
+References: <1226953165-19305-1-git-send-email-becky.bruce@freescale.com>
+	<1227010949.7178.308.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,34 +27,78 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+On Nov 18, 2008, at 6:22 AM, Benjamin Herrenschmidt wrote:
 
-On Tue, 18 Nov 2008, Nick Piggin wrote:
-> >
-> > The fact is, Intel (and to a lesser degree, AMD) has shown how hardware
-> > can do good TLB's with essentially gang lookups, giving almost effective
-> > page sizes of 32kB with hardly any of the downsides. Couple that with
-> 
-> It's much harder to do this with powerpc I think because they would need
-> to calculate 8 hashes and touch 8 cachelines to prefill 8 translations,
-> wouldn't they?
+>
+>> 				dma_addr_t dma_address, size_t size,
+>> 				enum dma_data_direction direction,
+>> 				struct dma_attrs *attrs);
+>> +	void            (*sync_single_for_cpu)(struct device *hwdev,
+>> +				dma_addr_t dma_handle, size_t size,
+>> +				enum dma_data_direction direction);
+>> +	void            (*sync_single_for_device)(struct device *hwdev,
+>> +				dma_addr_t dma_handle, size_t size,
+>> +				enum dma_data_direction direction);
+>> +	void            (*sync_single_range_for_cpu)(struct device *hwdev,
+>> +				dma_addr_t dma_handle, unsigned long offset,
+>> +				size_t size,
+>> +				enum dma_data_direction direction);
+>> +	void            (*sync_single_range_for_device)(struct device  
+>> *hwdev,
+>> +				dma_addr_t dma_handle, unsigned long offset,
+>> +				size_t size,
+>> +				enum dma_data_direction direction);
+>
+> Can't we implement the first 2 using the next 2 and passing a 0  
+> offset ?
+> I mean, we're going to go through a function pointer, it's not like
+> handling the offset was going to cost us something :-)
 
-Oh, absolutely. It's why I despise hashed page tables. It's a broken 
-concept.
+Looking at the swiotlb code; I think that's a reasonable thing to do.   
+Will respin.
 
-> The per-page processing costs are interesting too, but IMO there is more
-> work that should be done to speed up order-0 pages. The patches I had to
-> remove the sync instruction for smp_mb() in unlock_page sped up pagecache
-> throughput (populate, write(2), reclaim) on my G5 by something really
-> crazy like 50% (most of that's in, but I'm still sitting on that fancy
-> unlock_page speedup to remove the final smp_mb).
-> 
-> I suspect some of the costs are also in powerpc specific code to insert
-> linux ptes into their hash table. I think some of the synchronisation for
-> those could possibly be shared with generic code so you don't need the
-> extra layer of locks there.
+>
+>
+>> +	void            (*sync_sg_for_cpu)(struct device *hwdev,
+>> +				struct scatterlist *sg, int nelems,
+>> +				enum dma_data_direction direction);
+>> +	void            (*sync_sg_for_device)(struct device *hwdev,
+>> +				struct scatterlist *sg, int nelems,
+>> +				enum dma_data_direction direction);
+>> };
+>>
+>> /*
+>> @@ -286,42 +306,75 @@ static inline void  
+>> dma_sync_single_for_cpu(struct device *dev,
+>> 		dma_addr_t dma_handle, size_t size,
+>> 		enum dma_data_direction direction)
+>> {
+>> -	BUG_ON(direction == DMA_NONE);
+>> -	__dma_sync(bus_to_virt(dma_handle), size, direction);
+>> +	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+>> +
+>> +	BUG_ON(!dma_ops);
+>> +	if (dma_ops->sync_single_for_cpu != NULL)
+>> +		dma_ops->sync_single_for_cpu(dev, dma_handle, size,
+>> +					     direction);
+>> }
+>
+> .../...
+>
+> The only objection that comes to mind here is that generally, you know
+> that your platform is going to be coherent or not at compile time, and
+> you don't want the above at all when it is (or won't need swiotlb).
+>
+> So maybe we could have a Kconfig trickery so that
+> CONFIG_PPC_DMA_NEED_SYNC_OPS is set when either non coherent DMA is
+> select'ed or swiotlb support is select'ed by one of the enabled
+> platform. So if I enable only powermac, I get neither and don't get  
+> the
+> bloody inlines :-)
 
-Yeah, the hashed page tables get extra costs from the fact that it can't 
-share the software page tables with the hardware ones, and the associated 
-coherency logic. It's even worse at unmap time, I think.
+I thought about doing something like this, but didn't know if it was  
+worth the ifdeffing/CONFIG foo that would ensue; I guess your response  
+answers that question :)
 
-			Linus
+Thanks!
+B
