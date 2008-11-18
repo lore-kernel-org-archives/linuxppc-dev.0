@@ -1,15 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 18 Nov 2008 11:40:05 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: powerpc: udbg based backend for hvc_console
-Message-ID: <20081118004005.GC26336@yookeroo.seuss>
-References: <20081024035434.GF4267@yookeroo.seuss>
-	<ed82fe3e0811171204y4e8de21dy18f5b332b7f05f1f@mail.gmail.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ed82fe3e0811171204y4e8de21dy18f5b332b7f05f1f@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Message-ID: <18722.5316.582974.95373@cargo.ozlabs.ibm.com>
+Date: Tue, 18 Nov 2008 12:05:08 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+In-Reply-To: <alpine.DEB.1.10.0811171936480.26123@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
+	<alpine.DEB.1.10.0811171557370.26123@gandalf.stny.rr.com>
+	<alpine.LFD.2.00.0811171309580.18283@nehalem.linux-foundation.org>
+	<alpine.DEB.1.10.0811171936480.26123@gandalf.stny.rr.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,41 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 17, 2008 at 02:04:38PM -0600, Timur Tabi wrote:
-> On Thu, Oct 23, 2008 at 9:54 PM, David Gibson
-> <david@gibson.dropbear.id.au> wrote:
+Steve,
+
+> On Mon, 17 Nov 2008, Linus Torvalds wrote:
+> > 
+> > I do wonder just _what_ it is that causes the stack frames to be so 
+> > horrid. For example, you have
+> > 
+> > 	 18)     8896     160   .kmem_cache_alloc+0xfc/0x140
+> > 
+> > and I'm looking at my x86-64 compile, and it has a stack frame of just 8 
+> > bytes (!) for local variables plus the save/restore area (which looks like 
+> > three registers plus frame pointer plus return address). IOW, if I'm 
+> > looking at the code right (so big caveat: I did _not_ do a real stack 
+> > dump!) the x86-64 stack cost for that same function is on the order of 48 
+> > bytes. Not 160.
 > 
-> > This can be used to quickly implement a userspace usable console while
-> > you're working on a proper driver for whatever console I/O device the
-> > hardware has.  Or, it can be used to avoid writing a full blown
-> > tty/console driver entirely for quick-and-dirty I/O hardware that will
-> > later be replaced by something else.
+> Out of curiosity, I just ran stack_trace on the latest version of git 
+> (pulled sometime today) and ran it on my x86_64.
 > 
-> Ok, I think I understand this better now.
+> I have SLUB and SLUB debug defined, and here's what I found:
 > 
-> Your approach seems backwards to me.  HVC console client drivers
-> already have simple put/get functions.  You've written an hvc driver
-> that makes udbg calls.  Wouldn't it have been better to make a udbg
-> driver that makes hvc calls?  That way, you effectively give udbg
-> support to all hvc drivers in one shot.
+>  11)     3592      64   kmem_cache_alloc+0x64/0xa3
+> 
+> 64 bytes, still much lower than the 160 of PPC64.
 
-Well, except that hvc calls aren't necessarily safe in the context
-that udbg calls are made.  The idea here is that you want to implement
-udbg during bringup anyway, to get really early debug info.  This
-means that you can then use that udbg support to get a full console.
+The ppc64 ABI has a minimum stack frame of 112 bytes, due to having an
+area for called functions to store their parameters (64 bytes) plus 6
+slots for saving stuff and for the compiler and linker to use if they
+need to.  That's before any local variables are allocated.
 
-> In order to support udbg in my hvc driver, I have to add udbg calls.
-> In fact, now that I've thought about it, I don't understand what your
-> driver does.  You take hvc callbacks and route them through udbg, but
-> this only works on drivers that have udbg callbacks in the first
-> place.  In that case, why would these drivers need an hvc middle-man?
+The ppc32 ABI has a minimum stack frame of 16 bytes, which is much
+nicer, at the expense of a much more complicated va_arg().
 
-Because the udbg console works for kernel messages, but doesn't
-support a full tty interface, so you can't run userspace with only a
-udbg console.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Paul.
