@@ -1,25 +1,18 @@
-Return-Path: <axboe@kernel.dk>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id 01E4BDDE11
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 01:39:25 +1100 (EST)
-Date: Wed, 19 Nov 2008 15:37:37 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: spinlock lockup with next-20081118 on powerpc
-Message-ID: <20081119143736.GJ26308@kernel.dk>
-References: <20081119093023.48895b84.sfr@canb.auug.org.au>
-	<20081119091628.GT26308@kernel.dk>
-	<20081119203922.0412c041.sfr@canb.auug.org.au>
-	<20081119094300.GW26308@kernel.dk>
-	<20081119213304.d2d21042.sfr@canb.auug.org.au>
-	<20081119105833.GZ26308@kernel.dk>
-	<20081120003224.8d0f481c.sfr@canb.auug.org.au>
-	<20081119133408.GE26308@kernel.dk>
-	<20081120013552.587f8928.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081120013552.587f8928.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CE099DDF14
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 01:40:01 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id mAJEdsAa021340
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 08:39:54 -0600
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Add MSR[CE,
+	DE] to the MSR bits we print on show_regs()
+Date: Wed, 19 Nov 2008 08:39:53 -0600
+Message-Id: <1227105593-29462-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,23 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 20 2008, Stephen Rothwell wrote:
-> Hi Jens,
-> 
-> On Wed, 19 Nov 2008 14:34:09 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
-> >
-> > Are you removing devices or modules? We have a bug there it seems, does
-> > this help?
-> 
-> This is early in boot (we are waiting for the root device while running
-> on the initramfs) so there could well be modules being unloaded.
-> 
-> That patch makes the problem go away.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/kernel/process.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Excellent, since it was an apparent but, I already updated the original
-patch with this hunk.
-
-Thanks a lot for your bisection work, Stephen!
-
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 957bded..b038323 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -467,6 +467,8 @@ static struct regbit {
+ 	{MSR_VEC,	"VEC"},
+ 	{MSR_VSX,	"VSX"},
+ 	{MSR_ME,	"ME"},
++	{MSR_CE,	"CE"},
++	{MSR_DE,	"DE"},
+ 	{MSR_IR,	"IR"},
+ 	{MSR_DR,	"DR"},
+ 	{0,		NULL}
 -- 
-Jens Axboe
+1.5.6.5
