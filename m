@@ -2,17 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 868ACDDDED
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 09:22:12 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id BF4D3DDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 09:50:10 +1100 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id mAJMM8xP021362
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 16:22:09 -0600
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id mAJMo4uD022350
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 16:50:05 -0600
 From: Kumar Gala <galak@kernel.crashing.org>
 To: 
 Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Use RCU based pte free mechanism for all powerpc
-Date: Wed, 19 Nov 2008 16:22:08 -0600
-Message-Id: <1227133328-21422-1-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH v2] powerpc: Use RCU based pte free mechanism for all powerpc
+Date: Wed, 19 Nov 2008 16:50:04 -0600
+Message-Id: <1227135004-27607-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,14 +30,18 @@ between ppc32 & ppc64.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+* Only does RCU if CONFIG_SMP
+* Removed hash_page_sync() as its not needed if we do RCU
+
  arch/powerpc/include/asm/pgalloc-32.h |   11 ++-
  arch/powerpc/include/asm/pgalloc-64.h |   34 ----------
- arch/powerpc/include/asm/pgalloc.h    |   46 +++++++++++++
+ arch/powerpc/include/asm/pgalloc.h    |   41 ++++++++++++
  arch/powerpc/mm/Makefile              |    2 +-
+ arch/powerpc/mm/hash_low_32.S         |   30 ---------
  arch/powerpc/mm/pgtable.c             |  117 +++++++++++++++++++++++++++++++++
  arch/powerpc/mm/pgtable_32.c          |   21 ------
  arch/powerpc/mm/tlb_64.c              |   86 ------------------------
- 7 files changed, 172 insertions(+), 145 deletions(-)
+ 8 files changed, 167 insertions(+), 175 deletions(-)
  create mode 100644 arch/powerpc/mm/pgtable.c
 
 diff --git a/arch/powerpc/include/asm/pgalloc-32.h b/arch/powerpc/include/asm/pgalloc-32.h
@@ -130,32 +134,22 @@ index 812a1d8..afda2bd 100644
  	pgtable_free_tlb(tlb, pgtable_free_cache(pmd, \
  		PMD_CACHE_NUM, PMD_TABLE_SIZE-1))
 diff --git a/arch/powerpc/include/asm/pgalloc.h b/arch/powerpc/include/asm/pgalloc.h
-index b4505ed..538b606 100644
+index b4505ed..5d84802 100644
 --- a/arch/powerpc/include/asm/pgalloc.h
 +++ b/arch/powerpc/include/asm/pgalloc.h
-@@ -2,11 +2,57 @@
+@@ -2,11 +2,52 @@
  #define _ASM_POWERPC_PGALLOC_H
  #ifdef __KERNEL__
  
 +#include <linux/mm.h>
 +
-+#if defined(CONFIG_SMP) && defined(CONFIG_PPC_STD_MMU_32)
-+extern void hash_page_sync(void);
-+#endif
-+
 +static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
 +{
-+#if defined(CONFIG_SMP) && defined(CONFIG_PPC_STD_MMU_32)
-+	hash_page_sync();
-+#endif
 +	free_page((unsigned long)pte);
 +}
 +
 +static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
 +{
-+#if defined(CONFIG_SMP) && defined(CONFIG_PPC_STD_MMU_32)
-+	hash_page_sync();
-+#endif
 +	pgtable_page_dtor(ptepage);
 +	__free_page(ptepage);
 +}
@@ -182,12 +176,17 @@ index b4505ed..538b606 100644
  
 +extern void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf);
 +
++#ifdef CONFIG_SMP
 +#define __pte_free_tlb(tlb,ptepage)	\
 +do { \
 +	pgtable_page_dtor(ptepage); \
 +	pgtable_free_tlb(tlb, pgtable_free_cache(page_address(ptepage), \
 +		PTE_NONCACHE_NUM, PTE_TABLE_SIZE-1)); \
 +} while (0)
++#else
++#define __pte_free_tlb(tlb, pte)	pte_free((tlb)->mm, (pte))
++#endif
++
 +
  #endif /* __KERNEL__ */
  #endif /* _ASM_POWERPC_PGALLOC_H */
@@ -204,6 +203,47 @@ index e7392b4..86e657b 100644
  				   init_$(CONFIG_WORD_SIZE).o \
  				   pgtable_$(CONFIG_WORD_SIZE).o \
  				   mmu_context_$(CONFIG_WORD_SIZE).o
+diff --git a/arch/powerpc/mm/hash_low_32.S b/arch/powerpc/mm/hash_low_32.S
+index 7bffb70..c5536b8 100644
+--- a/arch/powerpc/mm/hash_low_32.S
++++ b/arch/powerpc/mm/hash_low_32.S
+@@ -36,36 +36,6 @@ mmu_hash_lock:
+ #endif /* CONFIG_SMP */
+ 
+ /*
+- * Sync CPUs with hash_page taking & releasing the hash
+- * table lock
+- */
+-#ifdef CONFIG_SMP
+-	.text
+-_GLOBAL(hash_page_sync)
+-	mfmsr   r10
+-	rlwinm  r0,r10,0,17,15          /* clear bit 16 (MSR_EE) */
+-	mtmsr   r0
+-	lis	r8,mmu_hash_lock@h
+-	ori	r8,r8,mmu_hash_lock@l
+-	lis	r0,0x0fff
+-	b	10f
+-11:	lwz	r6,0(r8)
+-	cmpwi	0,r6,0
+-	bne	11b
+-10:	lwarx	r6,0,r8
+-	cmpwi	0,r6,0
+-	bne-	11b
+-	stwcx.	r0,0,r8
+-	bne-	10b
+-	isync
+-	eieio
+-	li	r0,0
+-	stw	r0,0(r8)
+-	mtmsr	r10
+-	blr
+-#endif /* CONFIG_SMP */
+-
+-/*
+  * Load a PTE into the hash table, if possible.
+  * The address is in r4, and r3 contains an access flag:
+  * _PAGE_RW (0x400) if a write.
 diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
 new file mode 100644
 index 0000000..6d94116
