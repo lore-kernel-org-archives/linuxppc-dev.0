@@ -1,13 +1,12 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C799CDDDEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 01:36:03 +1100 (EST)
-Date: Thu, 20 Nov 2008 01:35:52 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
+Return-Path: <axboe@kernel.dk>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 01E4BDDE11
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 01:39:25 +1100 (EST)
+Date: Wed, 19 Nov 2008 15:37:37 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: linux-next: spinlock lockup with next-20081118 on powerpc
-Message-Id: <20081120013552.587f8928.sfr@canb.auug.org.au>
-In-Reply-To: <20081119133408.GE26308@kernel.dk>
+Message-ID: <20081119143736.GJ26308@kernel.dk>
 References: <20081119093023.48895b84.sfr@canb.auug.org.au>
 	<20081119091628.GT26308@kernel.dk>
 	<20081119203922.0412c041.sfr@canb.auug.org.au>
@@ -16,10 +15,10 @@ References: <20081119093023.48895b84.sfr@canb.auug.org.au>
 	<20081119105833.GZ26308@kernel.dk>
 	<20081120003224.8d0f481c.sfr@canb.auug.org.au>
 	<20081119133408.GE26308@kernel.dk>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__20_Nov_2008_01_35_52_+1100_6Dxg1y1M91uVj7+5"
+	<20081120013552.587f8928.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081120013552.587f8928.sfr@canb.auug.org.au>
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -30,37 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__20_Nov_2008_01_35_52_+1100_6Dxg1y1M91uVj7+5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Nov 20 2008, Stephen Rothwell wrote:
+> Hi Jens,
+> 
+> On Wed, 19 Nov 2008 14:34:09 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
+> >
+> > Are you removing devices or modules? We have a bug there it seems, does
+> > this help?
+> 
+> This is early in boot (we are waiting for the root device while running
+> on the initramfs) so there could well be modules being unloaded.
+> 
+> That patch makes the problem go away.
 
-Hi Jens,
+Excellent, since it was an apparent but, I already updated the original
+patch with this hunk.
 
-On Wed, 19 Nov 2008 14:34:09 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> Are you removing devices or modules? We have a bug there it seems, does
-> this help?
+Thanks a lot for your bisection work, Stephen!
 
-This is early in boot (we are waiting for the root device while running
-on the initramfs) so there could well be modules being unloaded.
-
-That patch makes the problem go away.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__20_Nov_2008_01_35_52_+1100_6Dxg1y1M91uVj7+5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkkJEgACgkQjjKRsyhoI8yVZQCfZddD/M02ZsImbbXcmjPM6LOj
-KXgAoLrbdQhUX1trmziISZdyr99+IKdo
-=8tMT
------END PGP SIGNATURE-----
-
---Signature=_Thu__20_Nov_2008_01_35_52_+1100_6Dxg1y1M91uVj7+5--
+-- 
+Jens Axboe
