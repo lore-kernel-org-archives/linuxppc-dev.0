@@ -1,16 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18723.37096.243151.673526@cargo.ozlabs.ibm.com>
-Date: Wed, 19 Nov 2008 15:07:04 +1100
+Message-ID: <18723.38125.245930.196074@cargo.ozlabs.ibm.com>
+Date: Wed, 19 Nov 2008 15:24:13 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Sonny Rao <sonnyrao@us.ibm.com>
-Subject: Re: [PATCH] Fix BSR to allow mmap of small BSR on 64k kernel
-In-Reply-To: <20081117072613.GO16240@us.ibm.com>
-References: <20081107003841.GE7533@us.ibm.com>
-	<18707.53757.132643.518167@cargo.ozlabs.ibm.com>
-	<20081117072613.GO16240@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] powerpc: allow configuring max stack dump depth
+In-Reply-To: <1225534317.3560.8.camel@johannes.berg>
+References: <1225534317.3560.8.camel@johannes.berg>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,15 +18,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sonny Rao writes:
+Johannes Berg writes:
 
-> -	if (io_remap_pfn_range(vma, vma->vm_start, dev->bsr_addr >> PAGE_SHIFT,
-> -			       size, vma->vm_page_prot))
-> +	/* check for the case of a small BSR device and map one 4k page for it*/
-> +	if (dev->bsr_len < PAGE_SIZE && size == PAGE_SIZE)
-> +		ret = remap_4k_pfn(vma, vma->vm_start, dev->bsr_addr >> 12,
-> +				   vma->vm_page_prot);
+> On my screen, when something crashes, I only have space for maybe
+> 16 functions of the stack trace before the information above it
+> scrolls off the screen. It's easy to hack the kernel to print out
+> only that much, but it's harder to remember to do it. This patch
+> introduces a config option for it so that I can keep the setting
+> in my config.
 
-I think we should be checking that dev->bsr_len == 4096 here.
+Could you make it depend on DEBUG_KERNEL or ADVANCED or something?
+
+> +	help
+> +	  This option allows you to set the stack depth that the kernel
+> +	  prints out in case your display is too small.
+
+The "in case" is a little ambiguous here.  I suggest:
+
++	  This option allows you to set the maximum depth that the kernel
++	  prints in stack traces.  This can be useful if your display
++	  is too small.
 
 Paul.
