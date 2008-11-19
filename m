@@ -1,20 +1,19 @@
-Return-Path: <AymanE@tanisys.com>
-Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [206.127.28.197])
-	by ozlabs.org (Postfix) with ESMTP id 73C0BDDE0E
+Return-Path: <jay_chen@alphanetworks.com>
+Received: from Sweeper2.alphanetworks.com (sweeper2.alphanetworks.com
+	[210.202.42.140]) by ozlabs.org (Postfix) with ESMTP id 0BA68DDDF0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Nov 2008 02:35:53 +1100 (EST)
+	Wed, 19 Nov 2008 22:14:28 +1100 (EST)
+From: "jay_chen" <jay_chen@alphanetworks.com>
+To: <linuxppc-embedded@ozlabs.org>
+References: <0697112B46494D3DB284F1EBA6F65D4E@alphajay>
+	<4919CC7D.2070101@freescale.com>
+Subject: Re: MPC8349 DMA
+Date: Wed, 19 Nov 2008 19:14:11 +0800
+Message-ID: <6440C70E43EB4F019FF76DFFA4297B2D@alphajay>
 MIME-Version: 1.0
+In-Reply-To: <4919CC7D.2070101@freescale.com>
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: AMCC 460EX SATA drive on Canyonlands
-Date: Tue, 18 Nov 2008 09:35:50 -0600
-Message-ID: <16691A8B34B5D9458EA3A1C37A11555A0137F885@tanisys-ex2.Tanisys.Local>
-In-Reply-To: <1226969645.808.13.camel@lt-linuxhenry>
-References: <DF6C7BC3780EE44B83430A9F756D43B608581D77@SJEXCH03.ds.jdsu.net><4921A2EE.6050201@freescale.com><DF6C7BC3780EE44B83430A9F756D43B60858239D@SJEXCH03.ds.jdsu.net><4921BA09.1030508@freescale.com>
-	<1226969645.808.13.camel@lt-linuxhenry>
-From: "Ayman El-Khashab" <AymanE@tanisys.com>
-To: "Henry Bausley" <hbausley@deltatau.com>,
-	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,14 +24,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
+Thanks for your help.
+Could you give some hints about how to  "map your memory as
+coherence-required"?
 
-nlands
->=20
-> I can't seem to see a SATA drive on my 460EX Canyonlands=20
-> board.  Did I miss something in the kernel configuration. =20
-> The drive is a Seagate Baracuda  750M - ST3750330AS
->=20
+                Jay Chen...
 
-Maybe, but on that board the SATA and PCI-E 1L are shared and there is a
-jumper to pick which one you want.
+-----Original Message-----
+From: linuxppc-embedded-bounces+jay_chen=alphanetworks.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+jay_chen=alphanetworks.com@ozlabs.org] 
+Sent: Wednesday, November 12, 2008 2:19 AM
+To: jay_chen
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [Spam Mail] Re: MPC8349 DMA
+
+jay_chen wrote:
+> I am using 2.6.14.5 and MPC8349.
+> I got some DMA problems with PCI devices.
+> So, I tried to understand the DMA stuff of linux.
+
+That's very old; have you tried the latest kernel?
+
+> I have one question about cache coherency.
+> In dma-mapping.h, I found some functions are defined as NULL.
+> For example:
+> #define dma_cache_inv(_start,_size)  do { } while (0) #define 
+> dma_cache_wback(_start,_size)  do { } while (0) #define 
+> dma_cache_wback_inv(_start,_size) do { } while (0)
+>  
+> #define __dma_alloc_coherent(gfp, size, handle) NULL #define 
+> __dma_free_coherent(size, addr)  do { } while (0) #define 
+> __dma_sync(addr, size, rw)  do { } while (0) #define 
+> __dma_sync_page(pg, off, sz, rw) do { } while (0) Does this mean that 
+> I don't need to take care of cache coherency in MPC83xx platform?
+> So, I could use any range of memory for DMA transferring and the 
+> hardware will take care of the cache coherency for me?
+
+Yes, however it's still a good idea to call the DMA functions in case the
+code gets run on hardware that doesn't have coherent DMA, or that needs
+special DMA mapping for highmem.
+
+Make sure that the PCI bridge is configured to snoop, and that you map your
+memory as coherence-required (normally not necessary on uniprocessor, but
+there's some weirdness in the 82xx/83xx PCI controller that requires it).
+
+-Scott
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
