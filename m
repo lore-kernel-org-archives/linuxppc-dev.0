@@ -2,20 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E4EC3DDE0F
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 07:57:50 +1100 (EST)
-Message-Id: <6417B9A4-1643-481A-B403-FDD3447047B8@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id E3893DDE08
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 08:12:22 +1100 (EST)
+Message-Id: <3C82D21D-6BA0-49C1-A809-D18195FDC0BD@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <20081118105451.7835.78476.stgit@ubuntu8041.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Michael Barkowski <michael.barkowski@freescale.com>
+In-Reply-To: <491C4544.7020707@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc: Use generic PHY driver for Marvell 88E1111 PHY
-	on GE Fanuc SBC610
-Date: Wed, 19 Nov 2008 14:57:44 -0600
-References: <20081118102023.7047.94495.stgit@ubuntu8041.localdomain>
-	<20081118105451.7835.78476.stgit@ubuntu8041.localdomain>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: Re: [PATCH] mpc832x_rdb: fix swapped ethernet ids
+Date: Wed, 19 Nov 2008 15:10:13 -0600
+References: <491C4544.7020707@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +24,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 18, 2008, at 4:55 AM, Martyn Welch wrote:
+On Nov 13, 2008, at 9:18 AM, Michael Barkowski wrote:
 
-> The Marvell PHY driver is currently being used for the 88E1111 on the
-> SBC610. This driver is causing the link to run in 10/Half mode, the  
-> generic
-> PHY driver is correctly configuring the PHY as 1000/Full.
+> ethernet0 (called FSL UEC0 in U-Boot) should be enet1 (UCC3/eth1), and
+> ethernet1 should be enet0 (UCC2/eth0), to be consistent with U-Boot so
+> that the interfaces do not swap addresses when control passes from
+> U-Boot to the kernel.
 >
-> Edit default config to use generic PHY driver.
->
-> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+> Signed-off-by: Michael Barkowski <michael.barkowski@freescale.com>
+> Acked-by: Kim Phillips <kim.phillips@freescale.com>
 > ---
+> Cheat sheet:
+> | *Nickname* | WAN port | LAN switch |
+> | *MAC address* | ethaddr | eth1addr |
+> | *U-Boot name* | FSL UEC0 | FSL UEC1 |
+> | *Linux name* | eth1 | eth0 |
+> | *Phy ID* | 4 | 0 |
+> | *QE Device* | UCC3@2200 | UCC2@3000 |
 >
-> Agh! My mistake - forgot to add "Signed-off", sorry.
->
-> arch/powerpc/configs/86xx/gef_sbc610_defconfig |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
+> arch/powerpc/boot/dts/mpc832x_rdb.dts |    4 ++--
+> 1 files changed, 2 insertions(+), 2 deletions(-)
 
 applied to merge.
-
-(I still think you should fix it to work with the proper driver).
 
 - k
