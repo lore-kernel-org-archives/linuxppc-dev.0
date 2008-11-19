@@ -1,25 +1,17 @@
-Return-Path: <maxk@qualcomm.com>
-Received: from wolverine01.qualcomm.com (wolverine01.qualcomm.com
-	[199.106.114.254]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "wolverine01.qualcomm.com",
-	Issuer "VeriSign Class 3 Secure Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 495B1DDDE0
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 17:56:02 +1100 (EST)
-Message-ID: <4923B597.7090208@qualcomm.com>
-Date: Tue, 18 Nov 2008 22:43:35 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 44275DDDF0
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 18:15:09 +1100 (EST)
+Sender: miltonm@bga.com
+From: "Milton Miller" <miltonm@bga.com>
+To: linuxppc-dev@ozlabs.org,linux-kbuild@vger.kernel.org
+Subject: [BUG] ppc64 relocatable vmlinux builds even with undefined symbols
+Date: Wed, 19 Nov 2008 01:14:49 -0600
+Message-id: <4923bce9.bc.3e34.1353742792@bga.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: default IRQ affinity change in v2.6.27 (breaking several SMP
-	PPC based systems)
-References: <4E3CD4D5-FC1B-40BF-A776-C612B95806B8@kernel.crashing.org>	<4901E6FB.4070200@redhat.com>	<36A821E7-7F37-42AF-9A05-7205FCBF89EE@kernel.crashing.org>
-	<20081024.161818.256978293.davem@davemloft.net>
-In-Reply-To: <20081024.161818.256978293.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"tglx@linutronix.de" <tglx@linutronix.de>,
-	"csnook@redhat.com" <csnook@redhat.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Cc: Paul Mackerras <paulus@samba.org>
+Reply-To: miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,27 +21,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+With the additon of -pie to build CONFIG_RELOCATABLE
+CONFIG_PPC64 kernels, even
+if a function is undefined we still get a vmlinux,
+System.map, and other files
+with no error message.
+ 
+This is with binutils 2.17 as built by debian
+ 
+with 2.6.28-rc5, CONFIG_EMBEDDED=y CONFIG_HOTPLUG=n
+CONFIG_PCI=y, CONFIG_RELOCATABLE=n
+ 
+arch/powerpc/kernel/built-in.o: In function
+`.pcibios_remove_root_bus':
+(.text+0x12dc4): undefined reference to
+`.pcibios_unmap_io_space'
+make[1]: *** [.tmp_vmlinux1] Error 1
+make: *** [sub-make] Error 2
+ 
+ 
+with CONFIG_RELOCATABLE=y
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+  KSYM    .tmp_kallsyms1.S
+  AS      .tmp_kallsyms1.o
+  LD      .tmp_vmlinux2
+  KSYM    .tmp_kallsyms2.S
+  AS      .tmp_kallsyms2.o
+  LD      vmlinux
+  SYSMAP  System.map
+  SYSMAP  .tmp_System.map
 
+Note that we set -pie for this combination.  I tried adding
+seperately both
+--no-undefined and --no-allow-shlib-undefined to
+LDFLAGS_vmilnux,
+but the link still did not error out.
 
-David Miller wrote:
-> From: Kumar Gala <galak@kernel.crashing.org>
-> Date: Fri, 24 Oct 2008 10:39:05 -0500
-> 
->> As for making it ARCH specific, that doesn't really help since not
->> all PPC hw has the limitation I spoke of.  Not even all MPIC (in our
->> cases) have the limitation.
-> 
-> Since the PPC code knows exactly which MPICs have the problem the
-> PPC code is where the constraining can occur.
-> 
-> I agree completely with the suggestion that the arch code has to
-> interpret the cpumask as appropriate for the hardware, since the
-> user can stick "illegal" values there anyways.
+I note that nm -u will detect the U symbol:
 
-Sorry for delay in replying to this. And sorry for causing regression on some
-ppc platforms.
-I totally agree with what Dave said above. ALL_CPUS is a sane default,
-platform code has to sanity check masks passed via set_affinity() calls
-anyway. So I beleive it should be fixed in the platform code.
+$ nm -u /tmp/p-test/vmlinux                  w mach_cell
+                 w mach_iseries
+                 w mach_powermac
+                 U pcibios_unmap_io_space
 
-Max
+but that would either require duplicating cmd_vmlinux and
+adding an additonal
+check or modifing rule_vmlinux. 
+
+milton 
