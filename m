@@ -1,17 +1,26 @@
-Return-Path: <miltonm@bga.com>
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 44275DDDF0
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 18:15:09 +1100 (EST)
-Sender: miltonm@bga.com
-From: "Milton Miller" <miltonm@bga.com>
-To: linuxppc-dev@ozlabs.org,linux-kbuild@vger.kernel.org
-Subject: [BUG] ppc64 relocatable vmlinux builds even with undefined symbols
-Date: Wed, 19 Nov 2008 01:14:49 -0600
-Message-id: <4923bce9.bc.3e34.1353742792@bga.com>
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 84A1CDDDFB
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 20:27:45 +1100 (EST)
+Date: Wed, 19 Nov 2008 10:27:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 0/7] Porting dynmaic ftrace to PowerPC
+Message-ID: <20081119092723.GC22309@elte.hu>
+References: <20081116212428.938752312@goodmis.org>
+	<18720.42209.880409.297291@cargo.ozlabs.ibm.com>
+	<alpine.DEB.1.10.0811171035530.2919@gandalf.stny.rr.com>
+	<alpine.DEB.1.10.0811180853390.15003@gandalf.stny.rr.com>
+	<18723.31762.522696.647294@cargo.ozlabs.ibm.com>
+	<alpine.DEB.1.10.0811182150530.14914@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Cc: Paul Mackerras <paulus@samba.org>
-Reply-To: miltonm@bga.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.1.10.0811182150530.14914@gandalf.stny.rr.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Paul Mackerras <paulus@samba.org>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,52 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With the additon of -pie to build CONFIG_RELOCATABLE
-CONFIG_PPC64 kernels, even
-if a function is undefined we still get a vmlinux,
-System.map, and other files
-with no error message.
- 
-This is with binutils 2.17 as built by debian
- 
-with 2.6.28-rc5, CONFIG_EMBEDDED=y CONFIG_HOTPLUG=n
-CONFIG_PCI=y, CONFIG_RELOCATABLE=n
- 
-arch/powerpc/kernel/built-in.o: In function
-`.pcibios_remove_root_bus':
-(.text+0x12dc4): undefined reference to
-`.pcibios_unmap_io_space'
-make[1]: *** [.tmp_vmlinux1] Error 1
-make: *** [sub-make] Error 2
- 
- 
-with CONFIG_RELOCATABLE=y
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-  KSYM    .tmp_kallsyms1.S
-  AS      .tmp_kallsyms1.o
-  LD      .tmp_vmlinux2
-  KSYM    .tmp_kallsyms2.S
-  AS      .tmp_kallsyms2.o
-  LD      vmlinux
-  SYSMAP  System.map
-  SYSMAP  .tmp_System.map
 
-Note that we set -pie for this combination.  I tried adding
-seperately both
---no-undefined and --no-allow-shlib-undefined to
-LDFLAGS_vmilnux,
-but the link still did not error out.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-I note that nm -u will detect the U symbol:
+> On Wed, 19 Nov 2008, Paul Mackerras wrote:
+> 
+> > Steven Rostedt writes:
+> > 
+> > > Can I add your Acked-by: to all these patches that I submitted? I'm going 
+> > > to recommit them with a consistent subject (all lower case ppc), but I'm 
+> > > not going to change the patches themselves.
+> > > 
+> > > Would you two be fine with that? Or at least one of you?
+> > 
+> > My preference would be for the patches to go through the powerpc tree
+> > unless there is a good reason for them to go via another tree.
+> 
+> I have no problem with that. The only thing is that we have a lot of 
+> pending work still in the linux-tip tree, which you may need to pull 
+> in to get these patches working. Well, there's two or three commits 
+> in the generic code that I know the PPC code is dependent on.
+> 
+> I could give you a list of commits in tip that need to go mainline 
+> first before we can pull in the PPC changes. Then you could wait 
+> till those changes make it into 29 and then you could push the PPC 
+> modifications in from your tree.
 
-$ nm -u /tmp/p-test/vmlinux                  w mach_cell
-                 w mach_iseries
-                 w mach_powermac
-                 U pcibios_unmap_io_space
+note that this inserts a lot of (unnecessary) serialization and a 
+window of non-testing - by all likelyhood this will delay ppc ftrace 
+to v2.6.30 or later kernels.
 
-but that would either require duplicating cmd_vmlinux and
-adding an additonal
-check or modifing rule_vmlinux. 
-
-milton 
+	Ingo
