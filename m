@@ -2,17 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D7AF9DDDED
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 02:53:08 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 87EE9DDED4
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 02:53:28 +1100 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id mAJFr4fh024573
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 09:53:05 -0600
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id mAJFrOvj024598
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 09:53:25 -0600
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: hash_page_sync should only be used on SMP &
-	STD_MMU_32
-Date: Wed, 19 Nov 2008 09:53:04 -0600
-Message-Id: <1227109984-22195-1-git-send-email-galak@kernel.crashing.org>
+To: 
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Add a local_flush_tlb_page to handle kmap_atomic
+	invalidates
+Date: Wed, 19 Nov 2008 09:53:24 -0600
+Message-Id: <1227110004-22219-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,44 +23,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Clean up the ifdefs so we only use hash_page_sync if we are
-CONFIG_SMP && CONFIG_PPC_STD_MMU_32
+The tlb invalidates in kmap_atomic/kunmap_atomic can be called from
+IRQ context, however they are only local invalidates (on the processor
+that the kmap was called on).  In the future we want to use IPIs to
+do tlb invalidates this causes issue since flush_tlb_page() is considered
+a broadcast invalidate.
+
+Add local_flush_tlb_page() as a non-broadcast invalidate and use it in
+kmap_atomic() since we don't have enough information in the
+flush_tlb_page() call to determine its local.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/mm/pgtable_32.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/highmem.h  |    4 ++--
+ arch/powerpc/include/asm/tlbflush.h |   14 ++++++++++++++
+ 2 files changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index c31d6d2..44fbc81 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -48,7 +48,7 @@ EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
- 
- extern char etext[], _stext[];
- 
--#ifdef CONFIG_SMP
-+#if defined(CONFIG_SMP) && defined(CONFIG_PPC_STD_MMU_32)
- extern void hash_page_sync(void);
+diff --git a/arch/powerpc/include/asm/highmem.h b/arch/powerpc/include/asm/highmem.h
+index 91c5895..7dc52ec 100644
+--- a/arch/powerpc/include/asm/highmem.h
++++ b/arch/powerpc/include/asm/highmem.h
+@@ -85,7 +85,7 @@ static inline void *kmap_atomic_prot(struct page *page, enum km_type type, pgpro
+ 	BUG_ON(!pte_none(*(kmap_pte-idx)));
  #endif
+ 	__set_pte_at(&init_mm, vaddr, kmap_pte-idx, mk_pte(page, prot));
+-	flush_tlb_page(NULL, vaddr);
++	local_flush_tlb_page(vaddr);
  
-@@ -127,7 +127,7 @@ pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
+ 	return (void*) vaddr;
+ }
+@@ -113,7 +113,7 @@ static inline void kunmap_atomic(void *kvaddr, enum km_type type)
+ 	 * this pte without first remap it
+ 	 */
+ 	pte_clear(&init_mm, vaddr, kmap_pte-idx);
+-	flush_tlb_page(NULL, vaddr);
++	local_flush_tlb_page(vaddr);
+ #endif
+ 	pagefault_enable();
+ }
+diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
+index a2c6bfd..93716a9 100644
+--- a/arch/powerpc/include/asm/tlbflush.h
++++ b/arch/powerpc/include/asm/tlbflush.h
+@@ -6,6 +6,7 @@
+  *
+  *  - flush_tlb_mm(mm) flushes the specified mm context TLB's
+  *  - flush_tlb_page(vma, vmaddr) flushes one page
++ *  - local_flush_tlb_page(vmaddr) flushes one page on the local processor
+  *  - flush_tlb_page_nohash(vma, vmaddr) flushes one page if SW loaded TLB
+  *  - flush_tlb_range(vma, start, end) flushes a range of pages
+  *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
+@@ -44,6 +45,11 @@ static inline void flush_tlb_mm(struct mm_struct *mm)
+ 	_tlbil_pid(mm->context.id);
+ }
  
- void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++static inline void local_flush_tlb_page(unsigned long vmaddr)
++{
++	_tlbil_va(vmaddr, 0);
++}
++
+ static inline void flush_tlb_page(struct vm_area_struct *vma,
+ 				  unsigned long vmaddr)
  {
--#ifdef CONFIG_SMP
-+#if defined(CONFIG_SMP) && defined(CONFIG_PPC_STD_MMU_32)
- 	hash_page_sync();
- #endif
- 	free_page((unsigned long)pte);
-@@ -135,7 +135,7 @@ void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+@@ -81,6 +87,10 @@ extern void flush_tlb_page_nohash(struct vm_area_struct *vma, unsigned long addr
+ extern void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ 			    unsigned long end);
+ extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
++static inline void local_flush_tlb_page(unsigned long vmaddr)
++{
++	flush_tlb_page(NULL, vmaddr);
++}
  
- void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+ #else
+ /*
+@@ -138,6 +148,10 @@ static inline void flush_tlb_mm(struct mm_struct *mm)
  {
--#ifdef CONFIG_SMP
-+#if defined(CONFIG_SMP) && defined(CONFIG_PPC_STD_MMU_32)
- 	hash_page_sync();
- #endif
- 	pgtable_page_dtor(ptepage);
+ }
+ 
++static inline void local_flush_tlb_page(unsigned long vmaddr)
++{
++}
++
+ static inline void flush_tlb_page(struct vm_area_struct *vma,
+ 				  unsigned long vmaddr)
+ {
 -- 
 1.5.6.5
