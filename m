@@ -1,28 +1,21 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DCB4ADDDEE
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 21:57:45 +1100 (EST)
-Date: Wed, 19 Nov 2008 11:57:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 0/7] Porting dynmaic ftrace to PowerPC
-Message-ID: <20081119105719.GA21533@elte.hu>
-References: <20081116212428.938752312@goodmis.org>
-	<18720.42209.880409.297291@cargo.ozlabs.ibm.com>
-	<alpine.DEB.1.10.0811171035530.2919@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0811180853390.15003@gandalf.stny.rr.com>
-	<18723.31762.522696.647294@cargo.ozlabs.ibm.com>
-	<alpine.DEB.1.10.0811182150530.14914@gandalf.stny.rr.com>
-	<20081119092723.GC22309@elte.hu>
-	<18723.60578.179210.736789@cargo.ozlabs.ibm.com>
+Return-Path: <axboe@kernel.dk>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 10DA2DDDED
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 22:00:22 +1100 (EST)
+Date: Wed, 19 Nov 2008 11:58:33 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: spinlock lockup with next-20081118 on powerpc
+Message-ID: <20081119105833.GZ26308@kernel.dk>
+References: <20081119093023.48895b84.sfr@canb.auug.org.au>
+	<20081119091628.GT26308@kernel.dk>
+	<20081119203922.0412c041.sfr@canb.auug.org.au>
+	<20081119094300.GW26308@kernel.dk>
+	<20081119213304.d2d21042.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18723.60578.179210.736789@cargo.ozlabs.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20081119213304.d2d21042.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,97 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> Ingo Molnar writes:
+On Wed, Nov 19 2008, Stephen Rothwell wrote:
+> Hi Jens,
 > 
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> On Wed, 19 Nov 2008 10:43:00 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
+> >
+> > On Wed, Nov 19 2008, Stephen Rothwell wrote:
+> > > 
+> > > Unable to handle kernel paging request for data at address 0x00000000
+> > > Faulting instruction address: 0xc000000000503030
+> > > cpu 0x0: Vector: 300 (Data Access) at [c00000000ffffa40]
+> > >     pc: c000000000503030: ._spin_lock_irqsave+0x40/0x110
+> > >     lr: c0000000002571f8: .blk_rq_timed_out_timer+0x48/0x190
+> > >     sp: c00000000ffffcc0
+> > >    msr: 8000000000009032
+> > >    dar: 0
+> > >  dsisr: 40000000
+> > >   current = 0xc000000022d31040
+> > >   paca    = 0xc000000000897300
+> > >     pid   = 3399, comm = ckbcomp
+> > > enter ? for help
+> > > [c00000000ffffd50] c0000000002571f8 .blk_rq_timed_out_timer+0x48/0x190
+> > > [c00000000ffffe00] c00000000006c2f4 .run_timer_softirq+0x1c4/0x2a0
+> > > [c00000000ffffed0] c000000000065298 .__do_softirq+0xe8/0x1f0
+> > > [c00000000fffff90] c000000000029224 .call_do_softirq+0x14/0x24
+> > > [c000000022ad3c80] c00000000000d420 .do_softirq+0xf0/0x140
+> > > [c000000022ad3d20] c0000000000654a4 .irq_exit+0x74/0x90
+> > > [c000000022ad3da0] c000000000025844 .timer_interrupt+0x134/0x150
+> > > [c000000022ad3e30] c000000000003700 decrementer_common+0x100/0x180
+> > > --- Exception: 901 (Decrementer) at 000000000ff52440
 > > 
-> > > On Wed, 19 Nov 2008, Paul Mackerras wrote:
-> > > 
-> > > > Steven Rostedt writes:
-> > > > 
-> > > > > Can I add your Acked-by: to all these patches that I submitted? I'm going 
-> > > > > to recommit them with a consistent subject (all lower case ppc), but I'm 
-> > > > > not going to change the patches themselves.
-> > > > > 
-> > > > > Would you two be fine with that? Or at least one of you?
-> > > > 
-> > > > My preference would be for the patches to go through the powerpc tree
-> > > > unless there is a good reason for them to go via another tree.
-> > > 
-> > > I have no problem with that. The only thing is that we have a lot of 
-> > > pending work still in the linux-tip tree, which you may need to pull 
-> > > in to get these patches working. Well, there's two or three commits 
-> > > in the generic code that I know the PPC code is dependent on.
-> > > 
-> > > I could give you a list of commits in tip that need to go mainline 
-> > > first before we can pull in the PPC changes. Then you could wait 
-> > > till those changes make it into 29 and then you could push the PPC 
-> > > modifications in from your tree.
-> > 
-> > note that this inserts a lot of (unnecessary) serialization and a 
-> > window of non-testing - by all likelyhood this will delay ppc ftrace 
-> > to v2.6.30 or later kernels.
+> > That's even more weird, how could 'data' passed in to the timer ever be
+> > 0? It's setup like this:
 > 
-> Well, note that I said "unless there is a good reason".  If it does 
-> need to go via your tree, it can, though I don't see that it will 
-> get much testing on powerpc there, and having it there will make it 
-> harder to manage any conflicts with the other stuff I have queued 
-> up.
+> 'data' above is generic, not a variable name. The 0 is probably the
 
-this is the diffstat:
+;-) I'm aware of that, I meant the 'timer' data argument. But you are
+right, it's probably q->queue_lock being NULL here or we would have
+oopsed earlier. There's no code line.
 
- arch/powerpc/Kconfig              |    2 +
- arch/powerpc/include/asm/ftrace.h |   14 +-
- arch/powerpc/include/asm/module.h |   16 ++-
- arch/powerpc/kernel/ftrace.c      |  460 +++++++++++++++++++++++++++++++++---
- arch/powerpc/kernel/idle.c        |    5 +
- arch/powerpc/kernel/module_32.c   |   10 +
- arch/powerpc/kernel/module_64.c   |   13 +
- scripts/recordmcount.pl           |   18 ++-
- 8 files changed, 495 insertions(+), 43 deletions(-)
+> address of the spinlock (though I need to check more to be sure) as it
+> crashed inside _spin_lock_irqsave.
 
-90% of it creates new code that shouldnt be collision-happy.
+Do you know what device this might be? It still makes no sense, if the
+timer was added, we went through the normal IO paths and we would have
+crashed on NULL ->queue_lock much earlier.
 
-it does not "need" to go via tip/tracing, i just pointed out the 
-effects of the proposed workflow and i'm just trying to find a more 
-efficient workflow for it - while not impacting yours either. I think 
-it can be done - git gives us tons of tools to do this intelligently.
-
-> How much generic stuff that's not upstream do the powerpc ftrace 
-> patches depend on?
-
-a lot:
-
-   66 files changed, 3266 insertions(+), 985 deletions(-)
-
-and it's all in flux (we are in the middle of the development cycle), 
-so i dont think it would be a good idea for you to pull those bits 
-into the powerpc tree.
-
-Maybe Steve could do the following trick: create a Linus -git based 
-branch that uses the new APIs but marks ppc's ftrace as "depends 0" in 
-the powerpc Kconfig. (the new ftrace.c wont build)
-
-You could pull that tree into the powerpc tree and everything should 
-still work fine in PPC - sans ftrace.
-
-In tip/tracing we'd merge it too (these commits will never be 
-rebased), and we'd also remove the depends 0 from the powerpc Kconfig. 
-That sole change wont conflict with anything powerpc.
-
-It would all play out just fine in linux-next: we'd have both the 
-latest powerpc bits and the latest ftrace bits on powerpc. You could 
-test the non-ftrace impact of Steve's changes in the powerpc tree as 
-well and have it all part of your usual workflow.
-
-The 2.6.29 merge window would be trouble-free as well: since the 
-sha1's are the same, any of the trees can be merged upstream without 
-having to wait for the other one and without creating conflicts or 
-other trouble for the other one.
-
-Hm?
-
-	Ingo
+-- 
+Jens Axboe
