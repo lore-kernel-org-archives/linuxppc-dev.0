@@ -1,20 +1,27 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A9EE5DDDFB
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 22:49:20 +1100 (EST)
-Subject: [PATCH v2] powerpc: allow configuring max stack dump depth
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18723.38125.245930.196074@cargo.ozlabs.ibm.com>
-References: <1225534317.3560.8.camel@johannes.berg>
-	<18723.38125.245930.196074@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Wed, 19 Nov 2008 12:48:38 +0100
-Message-Id: <1227095318.26243.17.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id BA2EFDDE1A
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Nov 2008 23:10:05 +1100 (EST)
+Date: Wed, 19 Nov 2008 07:10:02 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0/7] Porting dynmaic ftrace to PowerPC
+In-Reply-To: <20081119105719.GA21533@elte.hu>
+Message-ID: <alpine.DEB.1.10.0811190650460.20272@gandalf.stny.rr.com>
+References: <20081116212428.938752312@goodmis.org>
+	<18720.42209.880409.297291@cargo.ozlabs.ibm.com>
+	<alpine.DEB.1.10.0811171035530.2919@gandalf.stny.rr.com>
+	<alpine.DEB.1.10.0811180853390.15003@gandalf.stny.rr.com>
+	<18723.31762.522696.647294@cargo.ozlabs.ibm.com>
+	<alpine.DEB.1.10.0811182150530.14914@gandalf.stny.rr.com>
+	<20081119092723.GC22309@elte.hu>
+	<18723.60578.179210.736789@cargo.ozlabs.ibm.com>
+	<20081119105719.GA21533@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Paul Mackerras <paulus@samba.org>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,52 +31,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On my screen, when something crashes, I only have space for maybe
-16 functions of the stack trace before the information above it
-scrolls off the screen. It's easy to hack the kernel to print out
-only that much, but it's harder to remember to do it. This patch
-introduces a config option for it so that I can keep the setting
-in my config.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
----
-Sure, here's an updated version. I used DEBUG_KERNEL since the
-ADVANCED_CONFIGURATION help text implies it's for MM and can cause the
-kernel to not boot, not something this config is related to.
+On Wed, 19 Nov 2008, Ingo Molnar wrote:
+> 
+> Maybe Steve could do the following trick: create a Linus -git based 
+> branch that uses the new APIs but marks ppc's ftrace as "depends 0" in 
+> the powerpc Kconfig. (the new ftrace.c wont build)
 
-Thanks for your comments.
+There's only two generic commits that need to be added for the PowerPC 
+code to work.
 
- arch/powerpc/Kconfig.debug    |   10 ++++++++++
- arch/powerpc/kernel/process.c |    2 +-
- 2 files changed, 11 insertions(+), 1 deletion(-)
+  ftrace: pass module struct to arch dynamic ftrace functions
+  ftrace: allow NULL pointers in mcount_loc
 
---- everything.orig/arch/powerpc/Kconfig.debug	2008-11-19 01:13:16.000000000 +0100
-+++ everything/arch/powerpc/Kconfig.debug	2008-11-19 12:47:24.000000000 +0100
-@@ -2,6 +2,16 @@ menu "Kernel hacking"
- 
- source "lib/Kconfig.debug"
- 
-+config PRINT_STACK_DEPTH
-+	int "Stack depth to print"
-+	depends on DEBUG_KERNEL
-+	default 64
-+	help
-+	  This option allows you to set the stack depth that the kernel
-+	  prints in stack traces. This can be useful if your display is
-+	  too small and stack traces cause important information to
-+	  scroll off the screen.
-+
- config DEBUG_STACKOVERFLOW
- 	bool "Check for stack overflows"
- 	depends on DEBUG_KERNEL
---- everything.orig/arch/powerpc/kernel/process.c	2008-11-19 01:13:16.000000000 +0100
-+++ everything/arch/powerpc/kernel/process.c	2008-11-19 12:45:28.000000000 +0100
-@@ -998,7 +998,7 @@ unsigned long get_wchan(struct task_stru
- 	return 0;
- }
- 
--static int kstack_depth_to_print = 64;
-+static int kstack_depth_to_print = CONFIG_PRINT_STACK_DEPTH;
- 
- void show_stack(struct task_struct *tsk, unsigned long *stack)
- {
+I've already ported them to mainline to test PowerPC there.
+Paul could use these two versions and keep ftrace in a separate branch in 
+his tree. This way all the PowerPC code will be there, and actually can be 
+tested. They may still hit the same bugs that we have fixed in tip, but 
+those should all be minor, since any major bug is already in mainline or 
+on its way.
+
+> 
+> You could pull that tree into the powerpc tree and everything should 
+> still work fine in PPC - sans ftrace.
+> 
+> In tip/tracing we'd merge it too (these commits will never be 
+> rebased), and we'd also remove the depends 0 from the powerpc Kconfig. 
+> That sole change wont conflict with anything powerpc.
+> 
+> It would all play out just fine in linux-next: we'd have both the 
+> latest powerpc bits and the latest ftrace bits on powerpc. You could 
+> test the non-ftrace impact of Steve's changes in the powerpc tree as 
+> well and have it all part of your usual workflow.
+> 
+> The 2.6.29 merge window would be trouble-free as well: since the 
+> sha1's are the same, any of the trees can be merged upstream without 
+> having to wait for the other one and without creating conflicts or 
+> other trouble for the other one.
+> 
+> Hm?
+
+If Paul uses the ported two generic commits, then he would need to keep 
+that in a separate branch that will never go upstream. He could pull in 
+the other PowerPC patches and do as you said, keep the depend off.
+
+I can make two branches that Paul could pull from. One would have this 
+code disabled in the config, and just be the PowerPC port. Although, we 
+would need to figure out the best way to keep it disabled. Disable it 
+after the patches? The patches themselve enable it.
+
+And then I could make another branch with the back port of the two commits 
+that Paul would never push upstream. This would allow for the PowerPC guys 
+to test the code in their tree without waiting for it. We just need to 
+trust that Paul will not push those commits ;-)
+
+Actually, I can change the subject of those commits to have at the 
+beginning:
+
+   NOT FOR UPSTREAM ftrace: ....
+
+What do you guys think?
+
+-- Steve
