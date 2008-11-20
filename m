@@ -1,18 +1,24 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mpic: don't reset affinity for secondary MPIC on
-	boot
-Date: Thu, 20 Nov 2008 18:23:24 +0100
-References: <200811191450.59361.arnd@arndb.de>
-	<1227166240.7185.207.camel@pasglop>
-In-Reply-To: <1227166240.7185.207.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200811201823.25263.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, kexec@lists.infradead.org,
-	cbe-oss-dev@ozlabs.org, Max Krasnyansky <maxk@qualcomm.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F24A9DDDEF
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 04:53:10 +1100 (EST)
+Subject: Re: [PATCH v2] powerpc: allow configuring max stack dump depth
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18724.36588.435729.738363@cargo.ozlabs.ibm.com>
+References: <1225534317.3560.8.camel@johannes.berg>
+	<18723.38125.245930.196074@cargo.ozlabs.ibm.com>
+	<1227095318.26243.17.camel@johannes.berg>
+	<18724.36588.435729.738363@cargo.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-gTzkQzX15zdYo7lp/2Ao"
+Date: Thu, 20 Nov 2008 14:20:04 +0100
+Message-Id: <1227187204.14852.14.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,91 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kexec/kdump currently fails on the IBM QS2x blades when the kexec happens
-on a CPU other than the initial boot CPU.  It turns out that this is the
-result of mpic_init trying to set affinity of each interrupt vector to the
-current boot CPU.
 
-As far as I can tell,  the same problem is likely to exist on any
-secondary MPIC, because they have to deliver interrupts to the first
-output all the time. There are two potential solutions for this: either
-not set up affinity at all for secondary MPICs, or assume that a single
-CPU output is connected to the upstream interrupt controller and hardcode
-affinity to that per architecture.
+--=-gTzkQzX15zdYo7lp/2Ao
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This patch implements the second approach, defaulting to the first output.
-An architecture that has a secondary MPIC connected upstream using a
-different output needs to set the mpic default_dest to the correct
-value before calling mpic_init.
+On Thu, 2008-11-20 at 09:10 +1100, Paul Mackerras wrote:
+> Johannes Berg writes:
+>=20
+> > On my screen, when something crashes, I only have space for maybe
+> > 16 functions of the stack trace before the information above it
+> > scrolls off the screen. It's easy to hack the kernel to print out
+> > only that much, but it's harder to remember to do it. This patch
+> > introduces a config option for it so that I can keep the setting
+> > in my config.
+> >=20
+> > Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> > ---
+> > Sure, here's an updated version. I used DEBUG_KERNEL since the
+> > ADVANCED_CONFIGURATION help text implies it's for MM and can cause the
+> > kernel to not boot, not something this config is related to.
+>=20
+> Um, with this I get a compile error when DEBUG_KERNEL=3Dn:
+>=20
+>   CC      arch/powerpc/kernel/process.o
+> /home/paulus/kernel/powerpc/arch/powerpc/kernel/process.c:1001: error: 'C=
+ONFIG_PRINT_STACK_DEPTH' undeclared here (not in a function)
+> make[2]: *** [arch/powerpc/kernel/process.o] Error 1
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Ouch, clearly I haven't been paying attention, my mistake. Sorry about
+that.
 
----
- include/asm/mpic.h |    3 +++
- sysdev/mpic.c      |    9 +++++++--
- 2 files changed, 10 insertions(+), 2 deletions(-)
+> I think it needs to look like this:
+>=20
+> +config PRINT_STACK_DEPTH
+> +	int "Stack depth to print" if DEBUG_KERNEL
 
-On Thursday 20 November 2008, Benjamin Herrenschmidt wrote:
+Yes, that's better, thanks.
 
-> I would rather, for non primary, set it to a cpu provided as
-> either a new argument or an mpic struct member initially set to 1 with
-> an accessor to change it if necessary. 
+johannes
 
-How about this one?
+--=-gTzkQzX15zdYo7lp/2Ao
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-> Or should we define a flag to have it read it at init time from the chip ?
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-I don't understand. This is init time, where we write it to the chip,
-what do you mean with reading from it? If I understand you correctly,
-we can't trust that value to start with.
+iQIcBAABAgAGBQJJJWQBAAoJEKVg1VMiehFYaxEQAK+T0ZYNufSW8Wo5Uqrx3CDp
+HsfF2Hks4Mg7K3cAas0VeSa71uUqAyP0gYO4kd59hdw6pVwdG6OUbGnh7gE+NmnR
+9ke9Ei47MEAzJ8GuHRdIktb/QUX1Sua/xJ47J7YtFxaJNXjlgxiKBoctD03q4WqR
+GZfnHyHyLjCAl3sfg3T951DB7h4bsp3ulUsaPWKjrhCtUdlLvOPlD+bsMY/jw6UX
+FOYKysW5cuWVvNtSQiIxlUseWBYTHjJSg01v7z6WtqDVeKY/SOd2NNhDe26b6PvV
+qAnGzZDqxvR5lOhi9rfKZuZYUMQuc8yQMLxRA4uPv35bRpzu6NLP5BnzJPbZfojX
+OZy3CzDuonpcKu3U/3ohPOojxJ566j95KBdBAJigeOLJ2ZLc/uqX67krgiyQUnic
+4AQ09/+6kB6URaKJ/kzcpV/AnwVGiBywSEPjxi05k3GKdZq5RXQcIYbexyvqwZFQ
+68LvzXSipQ6X1sC5s2gBOlEKJMAI+AZBfiJTcxqqss7X2rWSvV8+Vh+gxy0RjGab
+EBbiRW9M0t36TSRcxfwItVdyY8xNjqUaxClXejLJDlK08Of1gwd3l/hbFWZ6KJPO
+YIz2G02EKXPj0UPS68eWuxjeHt8pfF6dNQLahRZpdFpo5JPrmctaP4Tl/+oCE0N2
+mbPCX4vUyOGTWqCHURUR
+=GwiQ
+-----END PGP SIGNATURE-----
 
-	Arnd <><
-
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index fe566a3..543d51c 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -295,6 +295,9 @@ struct mpic
- 	/* Protected sources */
- 	unsigned long		*protected;
- 
-+	/* destination for non-primary MPICs */
-+	int			default_dest;
-+
- #ifdef CONFIG_MPIC_WEIRD
- 	/* Pointer to HW info array */
- 	u32			*hw_set;
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 8e3478c..cf154c9 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1220,6 +1220,7 @@ void __init mpic_set_default_senses(struct mpic *mpic, u8 *senses, int count)
- void __init mpic_init(struct mpic *mpic)
- {
- 	int i;
-+	int cpu;
- 
- 	BUG_ON(mpic->num_sources == 0);
- 
-@@ -1262,6 +1263,11 @@ void __init mpic_init(struct mpic *mpic)
- 
- 	mpic_pasemi_msi_init(mpic);
- 
-+	if (mpic->flags & MPIC_PRIMARY)
-+		cpu = hard_smp_processor_id();
-+	else
-+		cpu = mpic->default_dest;
-+
- 	for (i = 0; i < mpic->num_sources; i++) {
- 		/* start with vector = source number, and masked */
- 		u32 vecpri = MPIC_VECPRI_MASK | i |
-@@ -1272,8 +1278,7 @@ void __init mpic_init(struct mpic *mpic)
- 			continue;
- 		/* init hw */
- 		mpic_irq_write(i, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
--		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION),
--			       1 << hard_smp_processor_id());
-+		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION), 1 << cpu);
- 	}
- 	
- 	/* Init spurious vector */
+--=-gTzkQzX15zdYo7lp/2Ao--
