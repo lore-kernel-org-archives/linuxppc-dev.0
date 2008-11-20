@@ -1,20 +1,22 @@
 Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2A0BC474E6
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 06:17:23 +1100 (EST)
-Date: Thu, 20 Nov 2008 20:16:50 +0100
+	by ozlabs.org (Postfix) with ESMTPS id 2C483476DD
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 06:20:58 +1100 (EST)
+Date: Thu, 20 Nov 2008 20:20:09 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Rostedt <rostedt@goodmis.org>
 Subject: Re: [PATCH 0/5] powerpc: dynamic ftrace port
-Message-ID: <20081120191650.GD3955@elte.hu>
+Message-ID: <20081120192009.GE3955@elte.hu>
 References: <20081120190948.057007623@goodmis.org>
+	<alpine.DEB.1.10.0811201412230.3378@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081120190948.057007623@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+In-Reply-To: <alpine.DEB.1.10.0811201412230.3378@gandalf.stny.rr.com>
+Cc: Matt Fleming <mjf@gentoo.org>, linux-kernel@vger.kernel.org,
+	Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
+	Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
 	Andrew Morton <akpm@linux-foundation.org>,
 	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -29,56 +31,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 * Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Paul and Ingo,
+> On Thu, 20 Nov 2008, Steven Rostedt wrote:
+> > 
+> >  1) I removed the changes to recordmcount.pl.  This is not a PowerPC
+> >     change, although PowerPC needs it for dynamic ftrace. But
+> >     the changes here can go via linux-tip.
 > 
-> The following are the changes to get dynamic ftrace working on PowerPC.
-> I modified these a little from the last postings.
+> Ingo,
 > 
->  1) I removed the changes to recordmcount.pl.  This is not a PowerPC
->     change, although PowerPC needs it for dynamic ftrace. But
->     the changes here can go via linux-tip.
+> I found that the recordmcount.pl change conflicts with a commit in 
+> linux-next, which is not in tip nor mainline. The commit is:
 > 
->  2) I removed the adding of HAVE_DYNAMIC_FTRACE and HAVE_FTRACE_MCOUNT_RECORD.
->     Without these config options, this code will not be compiled.
->     I have a separate patch that adds them in when the time is right.
+>    11ebca4a3f8337de2f4d1300bd307851d1191d53
+>    sh: dynamic ftrace support.
 > 
-> Paul, these patches should not harm anything if you decide to pull them
-> in. As I stated above, without the above config options, they are
-> not enabled.
+> Seems that this change came in through the sh repo. I have already 
+> resolved the conflicts with my updates for PowerPC with this commit. 
+> I can put this in a separate branch against linux-next if you like.
 > 
-> There is one exception and that is for the first patch. The first patch
-> is actually a fix for the irqsoff latency tracer which is already
-> in mainline for PowerPC.
-> 
-> These patches only touch PowerPC code.
-> 
-> The following patches are in:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> 
->     branch: ppc/ftrace
-> 
-> 
-> Steven Rostedt (5):
->       powerpc: ftrace, do not latency trace idle
->       powerpc: ftrace, convert to new dynamic ftrace arch API
->       powerpc: ftrace, use probe_kernel API to modify code
->       powerpc/ppc64: ftrace, handle module trampolines for dyn ftrace
->       powerpc/ppc32: ftrace, dynamic ftrace to handle modules
-> 
-> ----
->  arch/powerpc/include/asm/ftrace.h |   14 +-
->  arch/powerpc/include/asm/module.h |   16 ++-
->  arch/powerpc/kernel/ftrace.c      |  473 +++++++++++++++++++++++++++++++++---
->  arch/powerpc/kernel/idle.c        |    5 +
->  arch/powerpc/kernel/module_32.c   |   10 +
->  arch/powerpc/kernel/module_64.c   |   13 +
->  6 files changed, 489 insertions(+), 42 deletions(-)
+> I would like to get the changes to recordmcount.pl for PowerPC in 
+> linux-next soon, so I can also add a small clean up of this code. 
+> Jim Radfort has some updates as well for his port to arm.
 
-looks perfect to me! Thanks Steve for going through this - this was 
-really a logistical worst-case-scenario.
+Could you please extract the sh bits from 11ebca4a so that we can 
+apply it to tip/tracing/* standalone? It makes sense to carry it 
+without having the other bits of the SH changes.
 
-Now lets hope it looks good to Paul too and we can get his Acked-by
-:-)
+It will collide in linux-next but it will be a same-content collision 
+with an easy enough (perhaps even automatic) resolution.
 
 	Ingo
