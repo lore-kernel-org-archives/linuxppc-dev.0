@@ -1,29 +1,21 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-cn0ut-5.online-age.net (ext-cn0ut-5.online-age.net
-	[63.210.253.234])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-cn0ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D1EE2DDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 19:52:20 +1100 (EST)
-Received: from int-cn0ut-7.online-age.net (int-cn0ut-7.online-age.net
-	[3.159.252.76])
-	by ext-cn0ut-5.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id mAK8qGSw013979
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 03:52:16 -0500
-Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-7.online-age.net
-	[3.159.252.76])
-	by int-cn0ut-7.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id mAK8qEh1027186
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 03:52:16 -0500
-From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH] powerpc: Add use of Epson RTX-8581 RTC to GE Fanuc SBC610 dts
-To: linuxppc-dev@ozlabs.org
-Date: Thu, 20 Nov 2008 08:52:09 +0000
-Message-ID: <20081120085207.6545.48588.stgit@ubuntu8041>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 7CFC1DDE08
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 22:58:47 +1100 (EST)
+Date: Thu, 20 Nov 2008 06:58:44 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0/9] powerpc: port of dynamic ftrace
+In-Reply-To: <20081120081307.GD21785@elte.hu>
+Message-ID: <alpine.DEB.1.10.0811200645510.17538@gandalf.stny.rr.com>
+References: <20081119212204.318400312@goodmis.org>
+	<20081120081307.GD21785@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: paulus@samba.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,55 +25,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adding use of newly added Epson RTX-8581 real-time clock driver to GE
-Fanuc SBC610's dts file and adding driver to default config.
 
-Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
----
+On Thu, 20 Nov 2008, Ingo Molnar wrote:
+> 
+> Hm, something like this shouldnt be pulled into the powerpc tree: it 
+> touches the core kernel, x86 code and ftrace code as well.
+> 
+> Please do the suggestion i outlined and which Paul agreed with: 
+> prepare a branch that touches _only_ powerpc files and gets these 
+> changes there, without actually breaking the build on powerpc. And 
+> please do not name the branch as "hack" - we dont want Paul to pull 
+> such a branch name - it will show up in the upstream git logs.
+> 
+> Those changes should only touch powerpc files. Do not try to shoe-horn 
+> already applied ftrace commits into a separate branch with different 
+> sha1's. Yes, ftrace wont be enable-able on powerpc when that is 
+> pulled, but it will only be for a brief period shortly before the 
+> merge window. (and it will all just work fine when integrated 
+> together)
 
- arch/powerpc/boot/dts/gef_sbc610.dts           |    5 +++++
- arch/powerpc/configs/86xx/gef_sbc610_defconfig |    8 ++++++--
- 2 files changed, 11 insertions(+), 2 deletions(-)
+As stated in the original post, I also had a separate branch called
+ppc/ftrace-disable. Here's the generate posting if I were to send it:
 
-diff --git a/arch/powerpc/boot/dts/gef_sbc610.dts b/arch/powerpc/boot/dts/gef_sbc610.dts
-index c046190..ed230bf 100644
---- a/arch/powerpc/boot/dts/gef_sbc610.dts
-+++ b/arch/powerpc/boot/dts/gef_sbc610.dts
-@@ -146,6 +146,11 @@
- 			interrupt-parent = <&mpic>;
- 			dfsrr;
- 
-+			rtc@51 {
-+				compatible = "epson,rx8581";
-+				reg = <0x00000051>;
-+			};
-+
- 			eti@6b {
- 				compatible = "dallas,ds1682";
- 				reg = <0x6b>;
-diff --git a/arch/powerpc/configs/86xx/gef_sbc610_defconfig b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
-index 771b671..2e78ff4 100644
---- a/arch/powerpc/configs/86xx/gef_sbc610_defconfig
-+++ b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
-@@ -1398,8 +1398,11 @@ CONFIG_USB_STORAGE=y
- # CONFIG_ACCESSIBILITY is not set
- # CONFIG_INFINIBAND is not set
- # CONFIG_EDAC is not set
--CONFIG_RTC_LIB=m
--CONFIG_RTC_CLASS=m
-+CONFIG_RTC_LIB=y
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_HCTOSYS=y
-+CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
-+# CONFIG_RTC_DEBUG is not set
- 
- #
- # RTC interfaces
-@@ -1425,6 +1428,7 @@ CONFIG_RTC_INTF_DEV=y
- # CONFIG_RTC_DRV_M41T80 is not set
- # CONFIG_RTC_DRV_S35390A is not set
- # CONFIG_RTC_DRV_FM3130 is not set
-+CONFIG_RTC_DRV_RX8581=y
- 
- #
- # SPI RTC drivers
+The following patches are in:
+
+  
+git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: ppc/ftrace-disable
+
+
+Matt Fleming (1):
+      ftrace: align __mcount_loc sections
+
+Steven Rostedt (8):
+      ftrace: disable dynamic ftrace from PowerPC
+      powerpc: ftrace, do not latency trace idle
+      powerpc: ftrace, convert to new dynamic ftrace arch API
+      powerpc/ppc64: ftrace, mcount record powerpc port
+      powerpc: ftrace, use probe_kernel API to modify code
+      powerpc/ppc64: ftrace, handle module trampolines for dyn ftrace
+      powerpc/ppc32: ftrace, enabled dynamic ftrace
+      powerpc/ppc32: ftrace, dynamic ftrace to handle modules
+
+----
+ arch/powerpc/Kconfig              |    2 +
+ arch/powerpc/include/asm/ftrace.h |   14 +-
+ arch/powerpc/include/asm/module.h |   16 ++-
+ arch/powerpc/kernel/ftrace.c      |  473 +++++++++++++++++++++++++++++++++---
+ arch/powerpc/kernel/idle.c        |    5 +
+ arch/powerpc/kernel/module_32.c   |   10 +
+ arch/powerpc/kernel/module_64.c   |   13 +
+ kernel/trace/Kconfig              |    1 +
+ scripts/recordmcount.pl           |   20 ++-
+ 9 files changed, 511 insertions(+), 43 deletions(-)
+
+There is a dependency on Matt's commit for one of the PPC commits to 
+apply.  I could hack that commit to work without Matt's patch, but then 
+that just postpones conflicts later on.
+
+Matt's change is this:
+
+ scripts/recordmcount.pl           |   20 ++-
+
+
+The commit to disable PPC is this:
+
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 33dbefd..d9127f4 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -162,6 +162,7 @@ config DYNAMIC_FTRACE
+        depends on FUNCTION_TRACER
+        depends on HAVE_DYNAMIC_FTRACE
+        depends on DEBUG_KERNEL
++       depends on !PPC
+        default y
+        help
+          This option will modify all the calls to ftrace dynamically
+
+
+This does touch generic code, but this is to handle the chicken and the 
+egg problem.  I would like the disabling of PowerPC code in a separate 
+commit (one easy to revert). But I can not disable the PowerPC code before 
+the code is there. If I disable it after the code is there, then there 
+exists a time that PowerPC will not compile due to this not being 
+disabled.
+
+
+
+> 
+> Once this branch is done, and once Paul agrees that it looks OK-ish to 
+> him, we can put it into ftrace-next straight away [but still keep it 
+> in a separate topic tree in tip/tracing/powerpc - so it can all be 
+> reconsidered reversibly if it causes too much merge trouble]. Paul 
+> will then be able to pull it in a few weeks, in the runup to the 
+> v2.6.29 merge window.
+
+I guess the question comes down to, do I work around Matt's patch?
+
+> 
+> The other option is to go the slow route of 2-3 kernel releases to 
+> pull this all off.
+
+2 or 3 kernel releases seems a bit extreme. But this is Paul's call.
+
+Paul, any suggestions?
+
+-- Steve
+
+> 
+> ok?
+> 
+> 	Ingo
+> 
+> 
