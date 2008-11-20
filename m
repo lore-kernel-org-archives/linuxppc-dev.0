@@ -1,13 +1,13 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id C9DDDDDE1E
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 06:11:51 +1100 (EST)
-Message-Id: <20081120191149.285359258@goodmis.org>
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 63ED2474C2
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 06:11:52 +1100 (EST)
+Message-Id: <20081120191149.959614508@goodmis.org>
 References: <20081120190948.057007623@goodmis.org>
-Date: Thu, 20 Nov 2008 14:09:50 -0500
+Date: Thu, 20 Nov 2008 14:09:53 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/5] powerpc: ftrace, convert to new dynamic ftrace arch API
+Subject: [PATCH 5/5] powerpc/ppc32: ftrace, dynamic ftrace to handle modules
 Cc: Thomas Gleixner <tglx@linutronix.de>, Milton Miller <miltonm@bga.com>,
 	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
 	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
@@ -23,146 +23,217 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: update to PowerPC ftrace arch API
+Impact: add ability to trace modules on 32 bit PowerPC
 
-This patch converts PowerPC to use the new dynamic ftrace arch API.
-
-Thanks to Paul Mackennas for pointing out the mistakes of my original
-test_24bit_addr function.
+This patch performs the necessary trampoline calls to handle
+modules with dynamic ftrace on 32 bit PowerPC.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/powerpc/include/asm/ftrace.h |   14 +++++++-
- arch/powerpc/kernel/ftrace.c      |   67 ++++++++++++++++++++++++++++++++++---
- 2 files changed, 75 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/module.h |    5 ++-
+ arch/powerpc/kernel/ftrace.c      |  101 ++++++++++++++++++++++++++++++++++--
+ arch/powerpc/kernel/module_32.c   |   10 ++++
+ 3 files changed, 109 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-index b298f7a..17efecc 100644
---- a/arch/powerpc/include/asm/ftrace.h
-+++ b/arch/powerpc/include/asm/ftrace.h
-@@ -7,7 +7,19 @@
- 
- #ifndef __ASSEMBLY__
- extern void _mcount(void);
--#endif
-+
-+#ifdef CONFIG_DYNAMIC_FTRACE
-+static inline unsigned long ftrace_call_adjust(unsigned long addr)
-+{
-+       /* reloction of mcount call site is the same as the address */
-+       return addr;
-+}
-+
-+struct dyn_arch_ftrace {
-+	/* nothing yet */
-+};
-+#endif /*  CONFIG_DYNAMIC_FTRACE */
-+#endif /* __ASSEMBLY__ */
- 
+diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+index 340bc69..0845488 100644
+--- a/arch/powerpc/include/asm/module.h
++++ b/arch/powerpc/include/asm/module.h
+@@ -39,11 +39,14 @@ struct mod_arch_specific {
+ 	unsigned long tramp;
  #endif
  
+-#else
++#else /* powerpc64 */
+ 	/* Indices of PLT sections within module. */
+ 	unsigned int core_plt_section;
+ 	unsigned int init_plt_section;
++#ifdef CONFIG_DYNAMIC_FTRACE
++	unsigned long tramp;
+ #endif
++#endif /* powerpc64 */
+ 
+ 	/* List of BUG addresses, source line numbers and filenames */
+ 	struct list_head bug_list;
 diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index f4b006e..24c023a 100644
+index 1aec559..3271cd6 100644
 --- a/arch/powerpc/kernel/ftrace.c
 +++ b/arch/powerpc/kernel/ftrace.c
-@@ -33,12 +33,12 @@ static unsigned int ftrace_calc_offset(long ip, long addr)
- 	return (int)(addr - ip);
- }
- 
--unsigned char *ftrace_nop_replace(void)
-+static unsigned char *ftrace_nop_replace(void)
+@@ -274,7 +274,63 @@ static int
+ __ftrace_make_nop(struct module *mod,
+ 		  struct dyn_ftrace *rec, unsigned long addr)
  {
- 	return (char *)&ftrace_nop;
- }
- 
--unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
-+static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
- {
- 	static unsigned int op;
- 
-@@ -68,7 +68,7 @@ unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
- # define _ASM_PTR	" .long "
- #endif
- 
--int
-+static int
- ftrace_modify_code(unsigned long ip, unsigned char *old_code,
- 		   unsigned char *new_code)
- {
-@@ -113,6 +113,62 @@ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
- 	return faulted;
- }
- 
-+static int test_24bit_addr(unsigned long ip, unsigned long addr)
-+{
-+	long diff;
+-	/* Ignore modules for PPC32 (for now) */
++	unsigned char replaced[MCOUNT_INSN_SIZE];
++	unsigned int *op = (unsigned *)&replaced;
++	unsigned char jmp[8];
++	unsigned int *ptr = (unsigned int *)&jmp;
++	unsigned long ip = rec->ip;
++	unsigned long tramp;
++	int offset;
 +
-+	/*
-+	 * Can we get to addr from ip in 24 bits?
-+	 *  (26 really, since we mulitply by 4 for 4 byte alignment)
-+	 */
-+	diff = addr - ip;
++	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
++		return -EFAULT;
 +
-+	/*
-+	 * Return true if diff is less than 1 << 25
-+	 *  and greater than -1 << 26.
-+	 */
-+	return (diff < (1 << 25)) && (diff > (-1 << 26));
-+}
-+
-+int ftrace_make_nop(struct module *mod,
-+		    struct dyn_ftrace *rec, unsigned long addr)
-+{
-+	unsigned char *old, *new;
-+
-+	/*
-+	 * If the calling address is more that 24 bits away,
-+	 * then we had to use a trampoline to make the call.
-+	 * Otherwise just update the call site.
-+	 */
-+	if (test_24bit_addr(rec->ip, addr)) {
-+		/* within range */
-+		old = ftrace_call_replace(rec->ip, addr);
-+		new = ftrace_nop_replace();
-+		return ftrace_modify_code(rec->ip, old, new);
++	/* Make sure that that this is still a 24bit jump */
++	if (!is_bl_op(*op)) {
++		printk(KERN_ERR "Not expected bl: opcode is %x\n", *op);
++		return -EINVAL;
 +	}
 +
-+	return 0;
-+}
-+
-+int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+{
-+	unsigned char *old, *new;
++	/* lets find where the pointer goes */
++	tramp = find_bl_target(ip, *op);
 +
 +	/*
-+	 * If the calling address is more that 24 bits away,
-+	 * then we had to use a trampoline to make the call.
-+	 * Otherwise just update the call site.
++	 * On PPC32 the trampoline looks like:
++	 * lis r11,sym@ha
++	 * addi r11,r11,sym@l
++	 * mtctr r11
++	 * bctr
 +	 */
-+	if (test_24bit_addr(rec->ip, addr)) {
-+		/* within range */
-+		old = ftrace_nop_replace();
-+		new = ftrace_call_replace(rec->ip, addr);
-+		return ftrace_modify_code(rec->ip, old, new);
++
++	DEBUGP("ip:%lx jumps to %lx", ip, tramp);
++
++	/* Find where the trampoline jumps to */
++	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
++		printk(KERN_ERR "Failed to read %lx\n", tramp);
++		return -EFAULT;
 +	}
 +
-+	return 0;
-+}
++	DEBUGP(" %08x %08x ", ptr[0], ptr[1]);
 +
- int ftrace_update_ftrace_func(ftrace_func_t func)
++	tramp = (ptr[1] & 0xffff) |
++		((ptr[0] & 0xffff) << 16);
++	if (tramp & 0x8000)
++		tramp -= 0x10000;
++
++	DEBUGP(" %x ", tramp);
++
++	if (tramp != addr) {
++		printk(KERN_ERR
++		       "Trampoline location %08lx does not match addr\n",
++		       tramp);
++		return -EINVAL;
++	}
++
++	op[0] = PPC_NOP_INSTR;
++
++	if (probe_kernel_write((void *)ip, replaced, MCOUNT_INSN_SIZE))
++		return -EPERM;
++
+ 	return 0;
+ }
+ #endif /* PPC64 */
+@@ -297,7 +353,6 @@ int ftrace_make_nop(struct module *mod,
+ 		return ftrace_modify_code(ip, old, new);
+ 	}
+ 
+-#ifdef CONFIG_PPC64
+ 	/*
+ 	 * Out of range jumps are called from modules.
+ 	 * We should either already have a pointer to the module
+@@ -320,7 +375,6 @@ int ftrace_make_nop(struct module *mod,
+ 		/* nothing to do if mod == rec->arch.mod */
+ 	} else
+ 		mod = rec->arch.mod;
+-#endif /* CONFIG_PPC64 */
+ 
+ 	return __ftrace_make_nop(mod, rec, addr);
+ 
+@@ -380,7 +434,44 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ static int
+ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
  {
- 	unsigned long ip = (unsigned long)(&ftrace_call);
-@@ -128,9 +184,10 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
+-	/* PPC32 ignores modules for now */
++	unsigned char replaced[MCOUNT_INSN_SIZE];
++	unsigned int *op = (unsigned *)&replaced;
++	unsigned long ip = rec->ip;
++	unsigned long offset;
++
++	/* read where this goes */
++	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
++		return -EFAULT;
++
++	/* It should be pointing to a nop */
++	if (op[0] != PPC_NOP_INSTR) {
++		printk(KERN_ERR "Expected NOP but have %x\n", op[0]);
++		return -EINVAL;
++	}
++
++	/* If we never set up a trampoline to ftrace_caller, then bail */
++	if (!rec->arch.mod->arch.tramp) {
++		printk(KERN_ERR "No ftrace trampoline\n");
++		return -EINVAL;
++	}
++
++	/* now calculate a jump to the ftrace caller trampoline */
++	offset = rec->arch.mod->arch.tramp - ip;
++
++	if (test_offset(offset)) {
++		printk(KERN_ERR "REL24 %li out of range!\n",
++		       (long int)offset);
++		return -EINVAL;
++	}
++
++	/* Set to "bl addr" */
++	op[0] = branch_offset(offset);
++
++	DEBUGP("write to %lx\n", rec->ip);
++
++	if (probe_kernel_write((void *)ip, replaced, MCOUNT_INSN_SIZE))
++		return -EPERM;
++
+ 	return 0;
+ }
+ #endif /* CONFIG_PPC64 */
+@@ -402,7 +493,6 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 		return ftrace_modify_code(ip, old, new);
+ 	}
  
- int __init ftrace_dyn_arch_init(void *data)
- {
--	/* This is running in kstop_machine */
-+	/* caller expects data to be zero */
-+	unsigned long *p = data;
+-#ifdef CONFIG_PPC64
+ 	/*
+ 	 * Out of range jumps are called from modules.
+ 	 * Being that we are converting from nop, it had better
+@@ -412,7 +502,6 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 		printk(KERN_ERR "No module loaded\n");
+ 		return -EINVAL;
+ 	}
+-#endif
  
--	ftrace_mcount_set(data);
-+	*p = 0;
+ 	return __ftrace_make_call(rec, addr);
+ }
+diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
+index 2df91a0..f832773 100644
+--- a/arch/powerpc/kernel/module_32.c
++++ b/arch/powerpc/kernel/module_32.c
+@@ -22,6 +22,7 @@
+ #include <linux/fs.h>
+ #include <linux/string.h>
+ #include <linux/kernel.h>
++#include <linux/ftrace.h>
+ #include <linux/cache.h>
+ #include <linux/bug.h>
+ #include <linux/sort.h>
+@@ -53,6 +54,9 @@ static unsigned int count_relocs(const Elf32_Rela *rela, unsigned int num)
+ 			r_addend = rela[i].r_addend;
+ 		}
  
++#ifdef CONFIG_DYNAMIC_FTRACE
++	_count_relocs++;	/* add one for ftrace_caller */
++#endif
+ 	return _count_relocs;
+ }
+ 
+@@ -306,5 +310,11 @@ int apply_relocate_add(Elf32_Shdr *sechdrs,
+ 			return -ENOEXEC;
+ 		}
+ 	}
++#ifdef CONFIG_DYNAMIC_FTRACE
++	module->arch.tramp =
++		do_plt_call(module->module_core,
++			    (unsigned long)ftrace_caller,
++			    sechdrs, module);
++#endif
  	return 0;
  }
 -- 
