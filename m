@@ -1,21 +1,20 @@
-Return-Path: <ben@codiert.org>
-Received: from cursor.subgra.de (cursor.subgra.de [78.46.252.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "cursor.subgra.de", Issuer "cursor.subgra.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id AD09FDDDEC
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 02:42:48 +1100 (EST)
-Date: Thu, 20 Nov 2008 16:20:54 +0100
-From: Benjamin Krill <ben@codiert.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Add support for the nwp serial device
-Message-ID: <20081120152054.GO24487@codiert.org>
-References: <200811201501.24000.arnd@arndb.de>
-	<20081120141345.GA2410@yoda.jdub.homelinux.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.187])
+	by ozlabs.org (Postfix) with ESMTP id E8115DDDEC
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 02:49:16 +1100 (EST)
+Received: by rn-out-0910.google.com with SMTP id j40so455858rnf.16
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 07:49:15 -0800 (PST)
+Message-ID: <fa686aa40811200749xd9f8701ud6ee9b77b4c21001@mail.gmail.com>
+Date: Thu, 20 Nov 2008 08:49:15 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: gianfranco.casanova@alice.it, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: R: USB on lite5200 does not work.
+In-Reply-To: <47602D18F269934AB73B7E550804A1E00213796F@FBCMST09V03.fbc.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20081120141345.GA2410@yoda.jdub.homelinux.org>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-serial@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47602D18F269934AB73B7E550804A1E00213796C@FBCMST09V03.fbc.local>
+	<fa686aa40811200656g783947f5l609650b707c6c883@mail.gmail.com>
+	<47602D18F269934AB73B7E550804A1E00213796F@FBCMST09V03.fbc.local>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Josh,
-
->What does 'NWP' stand for, and how is it different from a regular serial
->port?  Also, what platforms can this device be found on currently?
+On Thu, Nov 20, 2008 at 8:33 AM,  <gianfranco.casanova@alice.it> wrote:
+> I Grant
+> I would but I cannot move up to an other kernel, project constraints.
 >
->Some of that should be included in the changelog, but I'm curious as well
->too.
+> Complement of INFO:
+> using a lite5200EVB USB works. using our board (kernel modified for our
+> board), USB does not work.
+>
+> Have you got some ideas? I can send you what file have been modified (a
+> couple).
 
-NWP stands for network processor and it is part of the QPACE - Quantum
-Chromodynamics Parallel Computing on the Cell Broadband Engine
-project [1]. The implementation is a lightweight uart implementation
-with the focus to consume as little resources as possible and it is
-connected to a DCR bus.
+Check your settings in the port config register.
 
- Ben
+Also, please remember to CC: the mailing list when replying to questions.
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
