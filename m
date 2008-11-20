@@ -1,30 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 38C34DDE11
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 06:53:55 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	mAKJrn0J022966
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 12:53:50 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id mAKJrmmY000443
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 13:53:48 -0600 (CST)
-Date: Thu, 20 Nov 2008 13:53:48 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH] cpm2: Round the baud-rate clock divider to the nearest
-	integer.
-Message-ID: <20081120195347.GA29459@ld0162-tx32.am.freescale.net>
-References: <200811201332.24061.laurentp@cse-semaphore.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200811201332.24061.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com, vbordug@ru.mvista.com
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 23AE0DDE0A
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 07:35:53 +1100 (EST)
+Message-Id: <20081120203551.873831232@goodmis.org>
+References: <20081120203415.251344054@goodmis.org>
+Date: Thu, 20 Nov 2008 15:34:17 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/3] ftrace: add support for powerpc to recordmcount.pl script
+Cc: Matt Fleming <mjf@gentoo.org>, Jim Radford <radford@galvanix.net>,
+	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,21 +21,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 20, 2008 at 01:32:23PM +0100, Laurent Pinchart wrote:
-> Instead of rounding the divider down, improve the baud-rate generators
-> accuracy by rounding to the nearest integer.
-> 
-> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+From: Steven Rostedt <srostedt@redhat.com>
 
-This makes things worse on mpc8272ads -- the result of the division is
-13.56, but I only get error-free serial output when rounding down.  I
-don't think the remote end has timing problems, as I don't see this with
-any other board.
+Impact: Add PowerPC port to recordmcount.pl script
 
-Possibly the crystal is a little off, or maybe it's just better to be a
-little too fast than a little too slow for some reason?
+This patch updates the recordmcount.pl script to process
+PowerPC.
 
-Maybe we should change CPM_CLK to be MAIN_CLK/4 rather than MAIN_CLK/16
-when the BRG clock is below a certain frequency.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ scripts/recordmcount.pl |   19 +++++++++++++++++--
+ 1 files changed, 17 insertions(+), 2 deletions(-)
 
--Scott
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index 9f75438..7ec032e 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -130,6 +130,7 @@ my %weak;		# List of weak functions
+ my %convert;		# List of local functions used that needs conversion
+ 
+ my $type;
++my $nm_regex;		# Find the local functions (return function)
+ my $section_regex;	# Find the start of a section
+ my $function_regex;	# Find the name of a function
+ 			#    (return offset and func name)
+@@ -145,6 +146,7 @@ if ($arch eq "x86") {
+ }
+ 
+ if ($arch eq "x86_64") {
++    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
+     $section_regex = "Disassembly of section\\s+(\\S+):";
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount([+-]0x[0-9a-zA-Z]+)?\$";
+@@ -158,6 +160,7 @@ if ($arch eq "x86_64") {
+     $cc .= " -m64";
+ 
+ } elsif ($arch eq "i386") {
++    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
+     $section_regex = "Disassembly of section\\s+(\\S+):";
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
+@@ -171,6 +174,7 @@ if ($arch eq "x86_64") {
+     $cc .= " -m32";
+ 
+ } elsif ($arch eq "sh") {
++    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
+     $section_regex = "Disassembly of section\\s+(\\S+):";
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
+@@ -181,6 +185,17 @@ if ($arch eq "x86_64") {
+     $objcopy .= " -O elf32-sh-linux";
+     $cc .= " -m32";
+ 
++} elsif ($arch eq "powerpc") {
++    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
++    $section_regex = "Disassembly of section\\s+(\\S+):";
++    $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?.*?)>:";
++    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s\\.?_mcount\$";
++    if ($bits == 64) {
++	$type = ".quad";
++    } else {
++	$type = ".long";
++    }
++
+ } else {
+     die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
+ }
+@@ -250,7 +265,7 @@ if (!$found_version) {
+ #
+ open (IN, "$nm $inputfile|") || die "error running $nm";
+ while (<IN>) {
+-    if (/^[0-9a-fA-F]+\s+t\s+(\S+)/) {
++    if (/$nm_regex/) {
+ 	$locals{$1} = 1;
+     } elsif (/^[0-9a-fA-F]+\s+([wW])\s+(\S+)/) {
+ 	$weak{$2} = $1;
+@@ -302,7 +317,7 @@ sub update_funcs
+ 	    open(FILE, ">$mcount_s") || die "can't create $mcount_s\n";
+ 	    $opened = 1;
+ 	    print FILE "\t.section $mcount_section,\"a\",\@progbits\n";
+-	    print FILE "\t.align $alignment\n";
++	    print FILE "\t.align $alignment\n" if (defined($alignment));
+ 	}
+ 	printf FILE "\t%s %s + %d\n", $type, $ref_func, $offsets[$i] - $offset;
+     }
+-- 
+1.5.6.5
+
+-- 
