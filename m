@@ -1,16 +1,21 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from mail.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id A4B15DDDED
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 02:19:30 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: times(2) sys call bug?
-Date: Thu, 20 Nov 2008 16:09:16 +0100
-Message-ID: <1227193640.5224.90.camel@gentoo-jocke.transmode.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "linuxppc-dev Development" <linuxppc-dev@ozlabs.org>
-Reply-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E6109DDDED
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 02:31:17 +1100 (EST)
+Message-Id: <12547B5E-C4A6-4A4D-97FB-32A85453D301@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1227156402.7185.200.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: Add MSR[CE,
+	DE] to the MSR bits we print on show_regs()
+Date: Thu, 20 Nov 2008 09:31:09 -0600
+References: <1227105593-29462-1-git-send-email-galak@kernel.crashing.org>
+	<1227156402.7185.200.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,45 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Why does the below program end up reporting -1
-multiple seconds when times() wrap:
 
-#include <sys/times.h>
-#include <stdio.h>
+On Nov 19, 2008, at 10:46 PM, Benjamin Herrenschmidt wrote:
 
-main()
-{
-        unsigned long t1;
-        clock_t t2;
-        while(1){
-                t1 =3D times(NULL);
-                t2 =3D times(NULL);
-                sleep(1);
-                printf("unsigned t1:%u, clock_t t2:%d\n", t1, t2);
-                if (t2 > 1000)
-                        break;
-        }
-}
-and got:
+> On Wed, 2008-11-19 at 08:39 -0600, Kumar Gala wrote:
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>
+> Shouldn't this be protected by some ifdef ?
+>
+> Ben.
+>
+>> arch/powerpc/kernel/process.c |    2 ++
+>> 1 files changed, 2 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/ 
+>> process.c
+>> index 957bded..b038323 100644
+>> --- a/arch/powerpc/kernel/process.c
+>> +++ b/arch/powerpc/kernel/process.c
+>> @@ -467,6 +467,8 @@ static struct regbit {
+>> 	{MSR_VEC,	"VEC"},
+>> 	{MSR_VSX,	"VSX"},
+>> 	{MSR_ME,	"ME"},
+>> +	{MSR_CE,	"CE"},
+>> +	{MSR_DE,	"DE"},
+>> 	{MSR_IR,	"IR"},
+>> 	{MSR_DR,	"DR"},
+>> 	{0,		NULL}
 
-unsigned t1:4294966339, clock_t t2:-957
-unsigned t1:4294966439, clock_t t2:-857
-unsigned t1:4294966539, clock_t t2:-757
-unsigned t1:4294966639, clock_t t2:-657
-unsigned t1:4294966739, clock_t t2:-557
-unsigned t1:4294967295, clock_t t2:-1
-unsigned t1:4294967295, clock_t t2:-1
-unsigned t1:4294967295, clock_t t2:-1
-unsigned t1:4294967295, clock_t t2:-1
-unsigned t1:4294967295, clock_t t2:-1
-unsigned t1:43, clock_t t2:43
-unsigned t1:143, clock_t t2:143
-unsigned t1:243, clock_t t2:243
-unsigned t1:343, clock_t t2:343
-unsigned t1:443, clock_t t2:443
-unsigned t1:543, clock_t t2:543
-unsigned t1:643, clock_t t2:643
-unsigned t1:743, clock_t t2:743
-unsigned t1:843, clock_t t2:843
-unsigned t1:943, clock_t t2:943
-unsigned t1:1043, clock_t t2:1043
+Why?  The bits are always defined and don't seem to be reused (and we  
+don't ifdef VEC, VSX, etc..) so why bother?
+
+- k
