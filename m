@@ -1,17 +1,15 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 52B9CDDE17
+	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 51D27DDE11
 	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 06:11:50 +1100 (EST)
-Message-Id: <20081120191149.086287646@goodmis.org>
-References: <20081120190948.057007623@goodmis.org>
-Date: Thu, 20 Nov 2008 14:09:49 -0500
+Message-Id: <20081120190948.057007623@goodmis.org>
+Date: Thu, 20 Nov 2008 14:09:48 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/5] powerpc: ftrace, do not latency trace idle
+Subject: [PATCH 0/5] powerpc: dynamic ftrace port
 Cc: Thomas Gleixner <tglx@linutronix.de>, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,42 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Steven Rostedt <srostedt@redhat.com>
+Paul and Ingo,
 
-Impact: fix for irq off latency tracer
+The following are the changes to get dynamic ftrace working on PowerPC.
+I modified these a little from the last postings.
 
-When idle is called, interrupts are disabled, but the idle function
-will still wake up on an interrupt. The problem is that the interrupt
-disabled latency tracer will take this call to idle as a latency.
+ 1) I removed the changes to recordmcount.pl.  This is not a PowerPC
+    change, although PowerPC needs it for dynamic ftrace. But
+    the changes here can go via linux-tip.
 
-This patch disables the latency tracing when going into idle.
+ 2) I removed the adding of HAVE_DYNAMIC_FTRACE and HAVE_FTRACE_MCOUNT_RECORD.
+    Without these config options, this code will not be compiled.
+    I have a separate patch that adds them in when the time is right.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- arch/powerpc/kernel/idle.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+Paul, these patches should not harm anything if you decide to pull them
+in. As I stated above, without the above config options, they are
+not enabled.
 
-diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
-index 31982d0..88d9c1d 100644
---- a/arch/powerpc/kernel/idle.c
-+++ b/arch/powerpc/kernel/idle.c
-@@ -69,10 +69,15 @@ void cpu_idle(void)
- 				smp_mb();
- 				local_irq_disable();
- 
-+				/* Don't trace irqs off for idle */
-+				stop_critical_timings();
-+
- 				/* check again after disabling irqs */
- 				if (!need_resched() && !cpu_should_die())
- 					ppc_md.power_save();
- 
-+				start_critical_timings();
-+
- 				local_irq_enable();
- 				set_thread_flag(TIF_POLLING_NRFLAG);
- 
--- 
-1.5.6.5
+There is one exception and that is for the first patch. The first patch
+is actually a fix for the irqsoff latency tracer which is already
+in mainline for PowerPC.
 
--- 
+These patches only touch PowerPC code.
+
+The following patches are in:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: ppc/ftrace
+
+
+Steven Rostedt (5):
+      powerpc: ftrace, do not latency trace idle
+      powerpc: ftrace, convert to new dynamic ftrace arch API
+      powerpc: ftrace, use probe_kernel API to modify code
+      powerpc/ppc64: ftrace, handle module trampolines for dyn ftrace
+      powerpc/ppc32: ftrace, dynamic ftrace to handle modules
+
+----
+ arch/powerpc/include/asm/ftrace.h |   14 +-
+ arch/powerpc/include/asm/module.h |   16 ++-
+ arch/powerpc/kernel/ftrace.c      |  473 +++++++++++++++++++++++++++++++++---
+ arch/powerpc/kernel/idle.c        |    5 +
+ arch/powerpc/kernel/module_32.c   |   10 +
+ arch/powerpc/kernel/module_64.c   |   13 +
+ 6 files changed, 489 insertions(+), 42 deletions(-)
