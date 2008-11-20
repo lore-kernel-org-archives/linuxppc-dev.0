@@ -1,20 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CA174DDE17
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 15:49:07 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Add a local_flush_tlb_page to handle
-	kmap_atomic invalidates
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1227110004-22219-1-git-send-email-galak@kernel.crashing.org>
-References: <1227110004-22219-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 20 Nov 2008 15:48:32 +1100
-Message-Id: <1227156512.7185.203.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <david-b@pacbell.net>
+Received: from smtp125.sbc.mail.sp1.yahoo.com (smtp125.sbc.mail.sp1.yahoo.com
+	[69.147.65.184]) by ozlabs.org (Postfix) with SMTP id F2311DDE08
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 16:41:40 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 2/6 v3] usb/fsl_qe_udc: Fix recursive locking bug in
+	ch9getstatus()
+Date: Wed, 19 Nov 2008 21:41:36 -0800
+References: <20081111160153.GA12783@oksana.dev.rtsoft.ru>
+	<200811181413.30552.david-b@pacbell.net>
+	<20081119002006.GA18975@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081119002006.GA18975@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200811192141.37235.david-b@pacbell.net>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Li Yang <leoli@freescale.com>,
+	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,91 +26,124 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-11-19 at 09:53 -0600, Kumar Gala wrote:
-> The tlb invalidates in kmap_atomic/kunmap_atomic can be called from
-> IRQ context, however they are only local invalidates (on the processor
-> that the kmap was called on).  In the future we want to use IPIs to
-> do tlb invalidates this causes issue since flush_tlb_page() is considered
-> a broadcast invalidate.
+On Tuesday 18 November 2008, Anton Vorontsov wrote:
+> The call chain is this:
 > 
-> Add local_flush_tlb_page() as a non-broadcast invalidate and use it in
-> kmap_atomic() since we don't have enough information in the
-> flush_tlb_page() call to determine its local.
+> qe_udc_irq() <- grabs the udc->lock spinlock
+> rx_irq()
+> qe_ep0_rx()
+> ep0_setup_handle()
+> setup_received_handle()
+> ch9getstatus()
+> qe_ep_queue() <- tries to grab the udc->lock again
 > 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> It seems unsafe to temporarily drop the lock in the ch9getstatus(),
+> so to fix that bug the lock-less __qe_ep_queue() function
+> implemented and used by the ch9getstatus().
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+
+
+... noting that this *also* fixes a locking bug in qe_ep_queue(),
+where it modified the queue head without holding the spinlock.
+
+(So for example an IRQ in the middle of that update could end
+up updating the incompletely updated list head ... oopsie!)
+
+And I'd have made the __qe_ep_queue() routine take a qe_ep
+and qe_req, but that's just a minor issue.
+
 
 > ---
->  arch/powerpc/include/asm/highmem.h  |    4 ++--
->  arch/powerpc/include/asm/tlbflush.h |   14 ++++++++++++++
->  2 files changed, 16 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/highmem.h b/arch/powerpc/include/asm/highmem.h
-> index 91c5895..7dc52ec 100644
-> --- a/arch/powerpc/include/asm/highmem.h
-> +++ b/arch/powerpc/include/asm/highmem.h
-> @@ -85,7 +85,7 @@ static inline void *kmap_atomic_prot(struct page *page, enum km_type type, pgpro
->  	BUG_ON(!pte_none(*(kmap_pte-idx)));
->  #endif
->  	__set_pte_at(&init_mm, vaddr, kmap_pte-idx, mk_pte(page, prot));
-> -	flush_tlb_page(NULL, vaddr);
-> +	local_flush_tlb_page(vaddr);
->  
->  	return (void*) vaddr;
->  }
-> @@ -113,7 +113,7 @@ static inline void kunmap_atomic(void *kvaddr, enum km_type type)
->  	 * this pte without first remap it
->  	 */
->  	pte_clear(&init_mm, vaddr, kmap_pte-idx);
-> -	flush_tlb_page(NULL, vaddr);
-> +	local_flush_tlb_page(vaddr);
->  #endif
->  	pagefault_enable();
->  }
-> diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
-> index a2c6bfd..93716a9 100644
-> --- a/arch/powerpc/include/asm/tlbflush.h
-> +++ b/arch/powerpc/include/asm/tlbflush.h
-> @@ -6,6 +6,7 @@
->   *
->   *  - flush_tlb_mm(mm) flushes the specified mm context TLB's
->   *  - flush_tlb_page(vma, vmaddr) flushes one page
-> + *  - local_flush_tlb_page(vmaddr) flushes one page on the local processor
->   *  - flush_tlb_page_nohash(vma, vmaddr) flushes one page if SW loaded TLB
->   *  - flush_tlb_range(vma, start, end) flushes a range of pages
->   *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
-> @@ -44,6 +45,11 @@ static inline void flush_tlb_mm(struct mm_struct *mm)
->  	_tlbil_pid(mm->context.id);
+> On Tue, Nov 18, 2008 at 02:13:30PM -0800, David Brownell wrote:
+> > On Tuesday 18 November 2008, Anton Vorontsov wrote:
+> > > +       spin_lock_irqsave(&udc->lock, flags);
+> > > +       ret = __qe_ep_queue(_ep, _req, gfp_flags);
+> > > +       spin_unlock_irqrestore(&udc->lock, flags);
+> > 
+> > Why are you passing "gfp_flags"?  Especially without
+> > checking ... GFP_KERNEL will be illegal, for example.
+> 
+> Ugh, the gfp_flags aren't used at all. How about that
+> patch?
+> 
+>  drivers/usb/gadget/fsl_qe_udc.c |   26 ++++++++++++++++++--------
+>  1 files changed, 18 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
+> index 60b9279..3587970 100644
+> --- a/drivers/usb/gadget/fsl_qe_udc.c
+> +++ b/drivers/usb/gadget/fsl_qe_udc.c
+> @@ -1681,14 +1681,11 @@ static void qe_free_request(struct usb_ep *_ep, struct usb_request *_req)
+>  		kfree(req);
 >  }
 >  
-> +static inline void local_flush_tlb_page(unsigned long vmaddr)
+> -/* queues (submits) an I/O request to an endpoint */
+> -static int qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
+> -				gfp_t gfp_flags)
+> +static int __qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req)
+>  {
+>  	struct qe_ep *ep = container_of(_ep, struct qe_ep, ep);
+>  	struct qe_req *req = container_of(_req, struct qe_req, req);
+>  	struct qe_udc *udc;
+> -	unsigned long flags;
+>  	int reval;
+>  
+>  	udc = ep->udc;
+> @@ -1732,7 +1729,7 @@ static int qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
+>  	list_add_tail(&req->queue, &ep->queue);
+>  	dev_vdbg(udc->dev, "gadget have request in %s! %d\n",
+>  			ep->name, req->req.length);
+> -	spin_lock_irqsave(&udc->lock, flags);
+> +
+>  	/* push the request to device */
+>  	if (ep_is_in(ep))
+>  		reval = ep_req_send(ep, req);
+> @@ -1748,11 +1745,24 @@ static int qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
+>  	if (ep->dir == USB_DIR_OUT)
+>  		reval = ep_req_receive(ep, req);
+>  
+> -	spin_unlock_irqrestore(&udc->lock, flags);
+> -
+>  	return 0;
+>  }
+>  
+> +/* queues (submits) an I/O request to an endpoint */
+> +static int qe_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
+> +		       gfp_t gfp_flags)
 > +{
-> +	_tlbil_va(vmaddr, 0);
+> +	struct qe_ep *ep = container_of(_ep, struct qe_ep, ep);
+> +	struct qe_udc *udc = ep->udc;
+> +	unsigned long flags;
+> +	int ret;
+> +
+> +	spin_lock_irqsave(&udc->lock, flags);
+> +	ret = __qe_ep_queue(_ep, _req);
+> +	spin_unlock_irqrestore(&udc->lock, flags);
+> +	return ret;
 > +}
 > +
->  static inline void flush_tlb_page(struct vm_area_struct *vma,
->  				  unsigned long vmaddr)
+>  /* dequeues (cancels, unlinks) an I/O request from an endpoint */
+>  static int qe_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
 >  {
-> @@ -81,6 +87,10 @@ extern void flush_tlb_page_nohash(struct vm_area_struct *vma, unsigned long addr
->  extern void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
->  			    unsigned long end);
->  extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
-> +static inline void local_flush_tlb_page(unsigned long vmaddr)
-> +{
-> +	flush_tlb_page(NULL, vmaddr);
-> +}
+> @@ -2008,7 +2018,7 @@ static void ch9getstatus(struct qe_udc *udc, u8 request_type, u16 value,
+>  	udc->ep0_dir = USB_DIR_IN;
 >  
->  #else
->  /*
-> @@ -138,6 +148,10 @@ static inline void flush_tlb_mm(struct mm_struct *mm)
->  {
->  }
+>  	/* data phase */
+> -	status = qe_ep_queue(&ep->ep, &req->req, GFP_ATOMIC);
+> +	status = __qe_ep_queue(&ep->ep, &req->req);
 >  
-> +static inline void local_flush_tlb_page(unsigned long vmaddr)
-> +{
-> +}
-> +
->  static inline void flush_tlb_page(struct vm_area_struct *vma,
->  				  unsigned long vmaddr)
->  {
+>  	if (status == 0)
+>  		return;
+> -- 
+> 1.5.6.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
