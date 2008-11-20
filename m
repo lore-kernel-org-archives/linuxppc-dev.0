@@ -1,24 +1,36 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+Return-Path: <sonny@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2C483476DD
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 06:20:58 +1100 (EST)
-Date: Thu, 20 Nov 2008 20:20:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/5] powerpc: dynamic ftrace port
-Message-ID: <20081120192009.GE3955@elte.hu>
-References: <20081120190948.057007623@goodmis.org>
-	<alpine.DEB.1.10.0811201412230.3378@gandalf.stny.rr.com>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 50AD64770B
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 06:21:04 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mAKJK8Ym013130
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 12:20:08 -0700
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mAKJKw1s127818
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 12:20:58 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mAKJKv9G029309
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Nov 2008 12:20:58 -0700
+Date: Thu, 20 Nov 2008 13:20:57 -0600
+From: Sonny Rao <sonnyrao@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Fix BSR to allow mmap of small BSR on 64k kernel
+Message-ID: <20081120192057.GC16240@us.ibm.com>
+References: <20081107003841.GE7533@us.ibm.com>
+	<18707.53757.132643.518167@cargo.ozlabs.ibm.com>
+	<20081117072613.GO16240@us.ibm.com>
+	<18723.37096.243151.673526@cargo.ozlabs.ibm.com>
+	<20081119170438.GA16240@us.ibm.com>
+	<18724.39197.32453.148515@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.1.10.0811201412230.3378@gandalf.stny.rr.com>
-Cc: Matt Fleming <mjf@gentoo.org>, linux-kernel@vger.kernel.org,
-	Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
-	Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <18724.39197.32453.148515@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,36 +40,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> On Thu, 20 Nov 2008, Steven Rostedt wrote:
+On Thu, Nov 20, 2008 at 09:54:21AM +1100, Paul Mackerras wrote:
+> Sonny Rao writes:
+> 
+> > On Wed, Nov 19, 2008 at 03:07:04PM +1100, Paul Mackerras wrote:
+> > > I think we should be checking that dev->bsr_len == 4096 here.
+> > > 
+> > > Paul.
 > > 
-> >  1) I removed the changes to recordmcount.pl.  This is not a PowerPC
-> >     change, although PowerPC needs it for dynamic ftrace. But
-> >     the changes here can go via linux-tip.
+> > Well, dev->bsr_len could be 4096 or 8192
 > 
-> Ingo,
-> 
-> I found that the recordmcount.pl change conflicts with a commit in 
-> linux-next, which is not in tip nor mainline. The commit is:
-> 
->    11ebca4a3f8337de2f4d1300bd307851d1191d53
->    sh: dynamic ftrace support.
-> 
-> Seems that this change came in through the sh repo. I have already 
-> resolved the conflicts with my updates for PowerPC with this commit. 
-> I can put this in a separate branch against linux-next if you like.
-> 
-> I would like to get the changes to recordmcount.pl for PowerPC in 
-> linux-next soon, so I can also add a small clean up of this code. 
-> Jim Radfort has some updates as well for his port to arm.
+> Isn't the dev->bsr_len == 8192 case the one where we'll only map 4096
+> bytes and therefore not do what the user expected?  Sounds to me like
+> we want to return an error for that case.
 
-Could you please extract the sh bits from 11ebca4a so that we can 
-apply it to tip/tracing/* standalone? It makes sense to carry it 
-without having the other bits of the SH changes.
+Well, the problem is that we can't tell if the user asked for 4k or
+8k (since we only know the size of the VMA).  
 
-It will collide in linux-next but it will be a same-content collision 
-with an easy enough (perhaps even automatic) resolution.
+If we fail whenever dev->bsr_len is 8k then the user could never
+map that device on a 64k page kernel. Is that what we want?
 
-	Ingo
+
+-- 
+Sonny Rao, LTC OzLabs, BML team
