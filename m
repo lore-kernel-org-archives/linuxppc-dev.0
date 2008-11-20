@@ -1,19 +1,17 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 97963474C6
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 06:15:47 +1100 (EST)
-Date: Thu, 20 Nov 2008 14:15:45 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] powerpc: dynamic ftrace port
-In-Reply-To: <20081120190948.057007623@goodmis.org>
-Message-ID: <alpine.DEB.1.10.0811201412230.3378@gandalf.stny.rr.com>
-References: <20081120190948.057007623@goodmis.org>
+Return-Path: <timur@freescale.com>
+Message-ID: <4925B78B.2040709@freescale.com>
+Date: Thu, 20 Nov 2008 13:16:27 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Thomas Gleixner <tglx@linutronix.de>, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: powerpc: udbg based backend for hvc_console
+References: <20081024035434.GF4267@yookeroo.seuss>
+	<20081119004220.GE29577@yookeroo.seuss>
+	<4569571e317d43f1b26b087fcdebcba3@bga.com>
+In-Reply-To: <4569571e317d43f1b26b087fcdebcba3@bga.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Milton Miller wrote:
 
-On Thu, 20 Nov 2008, Steven Rostedt wrote:
-> 
->  1) I removed the changes to recordmcount.pl.  This is not a PowerPC
->     change, although PowerPC needs it for dynamic ftrace. But
->     the changes here can go via linux-tip.
+> Stated differently, if your routine (1) fundamently works one character  
+> at a time and (2) is not interrupt driven, and (3) only supports one  
+> channel, what avantage is there to an explicit hvc driver?
 
-Ingo,
+I think it's because HVC has the ability to use HVC client drivers for console
+and TTY, but udbg does not.  So if you have a udbg-only driver, it will cease to
+function when the kernel switches to the normal console.
 
-I found that the recordmcount.pl change conflicts with a commit
-in linux-next, which is not in tip nor mainline. The commit is:
+Perhaps it would make more sense to have the kernel continue to use udbg if
+there is no normal console driver, instead of relying on David's driver.
 
-   11ebca4a3f8337de2f4d1300bd307851d1191d53
-   sh: dynamic ftrace support.
+> I too challanged the necessity of that change.  I carefully designed  
+> the hvc_console layer to find the selected console weither it was  
+> registered before or after the console_initcall of hvc_console.
 
-Seems that this change came in through the sh repo. I have already
-resolved the conflicts with my updates for PowerPC with this commit.
-I can put this in a separate branch against linux-next if you like.
+I'm just pointing out the patch that was committed in 2006 to address this
+issue.  I discovered the same bug that the patch mentioned, and only after a
+long time searching did I find this patch.  And sure enough, re-arranging the
+Makefile made the problem I was seeing go away.
 
-I would like to get the changes to recordmcount.pl for PowerPC
-in linux-next soon, so I can also add a small clean up of this code.
-Jim Radfort has some updates as well for his port to arm.
+Now, it's possible that this bug in hvc_console no longer exists.  However, I
+have seen nothing to indicate it.  Unfortunately, I don't remember enough of the
+details to reproduce the problem, so I can't verify it.
 
--- Steve
+> However, I think the bottom line was that add_preferred_console is  
+> suppsoed to be called by architecture setup code.   Doing it the  
+> console_initcall is almost abuse.  But if the console_initcall is going  
+> to call add_preferred_console, then it must link before the hvc_console  
+> driver.   I would have to go back and find the discussion to remember  
+> the exact details.  (maybe it only needed to call  
+> add_preferreed_console before registering itself if its the only hvc  
+> backend).
+
+Well, I can't comment on your theory, but I do know that the
+add_preferred_console() call should be made from the HVC client driver, or at
+least HVC itself.  It should not be in the platform code, because then we have a
+dependency between the driver and the platform code.  I prefer my drivers to
+initialize everything on their own, without the help of the platform code.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
