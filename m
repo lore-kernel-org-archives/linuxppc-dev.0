@@ -1,16 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 21 Nov 2008 11:23:14 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: powerpc: udbg based backend for hvc_console
+Message-ID: <20081121002314.GA13049@yookeroo.seuss>
+References: <20081024035434.GF4267@yookeroo.seuss>
+	<20081119004220.GE29577@yookeroo.seuss>
+	<4569571e317d43f1b26b087fcdebcba3@bga.com>
+	<4925B78B.2040709@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18725.63534.3316.841949@cargo.ozlabs.ibm.com>
-Date: Fri, 21 Nov 2008 10:52:14 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: joakim.tjernlund@transmode.se
-Subject: Re: times(2) sys call bug?
-In-Reply-To: <1227199742.5224.99.camel@gentoo-jocke.transmode.se>
-References: <1227193640.5224.90.camel@gentoo-jocke.transmode.se>
-	<20081120103733.6f347180@zod.rchland.ibm.com>
-	<1227199742.5224.99.camel@gentoo-jocke.transmode.se>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+In-Reply-To: <4925B78B.2040709@freescale.com>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,34 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund writes:
+On Thu, Nov 20, 2008 at 01:16:27PM -0600, Timur Tabi wrote:
+> Milton Miller wrote:
+> 
+> > Stated differently, if your routine (1) fundamently works one character  
+> > at a time and (2) is not interrupt driven, and (3) only supports one  
+> > channel, what avantage is there to an explicit hvc driver?
+> 
+> I think it's because HVC has the ability to use HVC client drivers
+> for console and TTY, but udbg does not.  So if you have a udbg-only
+> driver, it will cease to function when the kernel switches to the
+> normal console.
+> 
+> Perhaps it would make more sense to have the kernel continue to use udbg if
+> there is no normal console driver, instead of relying on David's
+> driver.
 
-> This little hack changes the kernel sys call handling in an crude
-> way and then it works. Apperently the kernel thinks is an error if the
-> syscall returns a value between -_LAST_ERRNO and -1.
+This doesn't work - the udbg console can't support a full tty driver
+which is needed by userspace.  Originally, I was going to extend the
+udbg console so that it supported a tty backended onto the udbg
+methods.  Then I realised that the code I'd need to do this would be
+essentially identical to hvconsole, so why duplicate it.
 
-Try this patch and let me if it fixes it.  If it does I'll push it
-upstream.
-
-Paul.
-
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 31deba8..1bf8c5c 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -33,6 +33,7 @@
- #include <linux/task_io_accounting_ops.h>
- #include <linux/seccomp.h>
- #include <linux/cpu.h>
-+#include <linux/ptrace.h>
- 
- #include <linux/compat.h>
- #include <linux/syscalls.h>
-@@ -878,6 +879,7 @@ asmlinkage long sys_times(struct tms __user * tbuf)
- 		if (copy_to_user(tbuf, &tmp, sizeof(struct tms)))
- 			return -EFAULT;
- 	}
-+	force_successful_syscall_return();
- 	return (long) jiffies_64_to_clock_t(get_jiffies_64());
- }
- 
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
