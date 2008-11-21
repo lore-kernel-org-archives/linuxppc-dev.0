@@ -1,18 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/cell/axon-msi: retry on missing interrupt
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200811171710.24521.arnd@arndb.de>
-References: <200811171710.24521.arnd@arndb.de>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-8myRpQs4Ho7kCaDzfRe1"
-Date: Fri, 21 Nov 2008 11:50:36 +1100
-Message-Id: <1227228636.7948.15.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, cbe-oss-dev@ozlabs.org,
-	GBIRAN@il.ibm.com
-Reply-To: michael@ellerman.id.au
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9DE7EDDE20
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 12:11:05 +1100 (EST)
+Date: Thu, 20 Nov 2008 17:05:56 -0800 (PST)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH 4/4] leds: Let GPIO LEDs keep their current state
+In-Reply-To: <1226933427.17109.15.camel@ted>
+Message-ID: <Pine.LNX.4.64.0811201640570.11673@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
+	<1224889741-4167-4-git-send-email-tpiepho@freescale.com>
+	<1226933427.17109.15.camel@ted>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,114 +28,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 17 Nov 2008, Richard Purdie wrote:
+> On Fri, 2008-10-24 at 16:09 -0700, Trent Piepho wrote:
+>> +	if (template->keep_state)
+>> +		state = !!gpio_get_value(led_dat->gpio) ^ led_dat->active_low;
+>> +	else
+>> +		state = template->default_state;
+>>
+>>  		state = of_get_property(child, "default-state", NULL);
+>>  		led.default_state = state && !strcmp(state, "on");
+>> +		led.keep_state = state && !strcmp(state, "keep");
+>>
+>> +++ b/include/linux/leds.h
+>> @@ -138,7 +138,8 @@ struct gpio_led {
+>>  	const char *default_trigger;
+>>  	unsigned 	gpio;
+>>  	u8 		active_low;
+>> -	u8		default_state;
+>> +	u8		default_state;	/* 0 = off, 1 = on */
+>> +	u8		keep_state; /* overrides default_state */
+>>  };
+>
+> How about something simpler here, just make default state have three
+> different values - "keep", "on" and "off"? I'm not keen on having two
+> different state variables like this.
 
---=-8myRpQs4Ho7kCaDzfRe1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I thought of that, but it ends up being more complex.  Instead of just
+using:
+static const struct gpio_led myled = {
+ 	.name = "something",
+ 	.keep_state = 1,
+}
 
-On Mon, 2008-11-17 at 17:10 +0100, Arnd Bergmann wrote:
-> The MSI capture logic for the axon bridge can sometimes
-> lose interrupts in case of high DMA and interrupt load,
-> when it signals an MSI interrupt to the MPIC interrupt
-> controller while we are already handling another MSI.
->=20
-8< 8< 8<
+You'd do something like this:
+ 	.default_state = LEDS_GPIO_DEFSTATE_KEEP,
 
-> Index: linux-2.6/arch/powerpc/platforms/cell/axon_msi.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.orig/arch/powerpc/platforms/cell/axon_msi.c	2008-11-17 10:2=
-9:05.000000000 -0500
-> +++ linux-2.6/arch/powerpc/platforms/cell/axon_msi.c	2008-11-17 10:29:08.=
-000000000 -0500
-> @@ -95,6 +95,7 @@
->  	struct axon_msic *msic =3D get_irq_data(irq);
->  	u32 write_offset, msi;
->  	int idx;
-> +	int retry =3D 0;
-> =20
->  	write_offset =3D dcr_read(msic->dcr_host, MSIC_WRITE_OFFSET_REG);
->  	pr_debug("axon_msi: original write_offset 0x%x\n", write_offset);
-> @@ -102,7 +103,7 @@
->  	/* write_offset doesn't wrap properly, so we have to mask it */
->  	write_offset &=3D MSIC_FIFO_SIZE_MASK;
-> =20
-> -	while (msic->read_offset !=3D write_offset) {
-> +	while (msic->read_offset !=3D write_offset && retry < 100) {
->  		idx  =3D msic->read_offset / sizeof(__le32);
->  		msi  =3D le32_to_cpu(msic->fifo_virt[idx]);
->  		msi &=3D 0xFFFF;
-> @@ -110,13 +111,37 @@
->  		pr_debug("axon_msi: woff %x roff %x msi %x\n",
->  			  write_offset, msic->read_offset, msi);
-> =20
-> +		if (msi < NR_IRQS && irq_map[msi].host =3D=3D msic->irq_host) {
-> +			generic_handle_irq(msi);
-> +			msic->fifo_virt[idx] =3D cpu_to_le32(0xffffffff);
-> +		} else {
-> +			/*
-> +			 * Reading the MSIC_WRITE_OFFSET_REG does not
-> +			 * reliably flush the outstanding DMA to the
-> +			 * FIFO buffer. Here we were reading stale
-> +			 * data, so we need to retry.
-> +			 */
-> +			udelay(1);
-> +			retry++;
-> +			pr_debug("axon_msi: invalid irq 0x%x!\n", msi);
-> +			continue;
-> +		}
-> +
-> +		if (retry) {
-> +			pr_debug("axon_msi: late irq 0x%x, retry %d\n",
-> +				 msi, retry);
-> +			retry =3D 0;
-> +		}
-> +
->  		msic->read_offset +=3D MSIC_FIFO_ENTRY_SIZE;
->  		msic->read_offset &=3D MSIC_FIFO_SIZE_MASK;
-> +	}
-> =20
-> -		if (msi < NR_IRQS && irq_map[msi].host =3D=3D msic->irq_host)
-> -			generic_handle_irq(msi);
-> -		else
-> -			pr_debug("axon_msi: invalid irq 0x%x!\n", msi);
-> +	if (retry) {
-> +		printk(KERN_WARNING "axon_msi: irq timed out\n");
-> +
-> +		msic->read_offset +=3D MSIC_FIFO_ENTRY_SIZE;
-> +		msic->read_offset &=3D MSIC_FIFO_SIZE_MASK;
->  	}
+Is that better?  The constants for on/off/keep are one more thing you have
+to look-up and remember when defining leds.  The code in the leds-gpio
+driver ends up getting more complex to deal with one tristate vs two
+booleans.
 
-By incrementing the offset we're dropping the irq. Would it be better to
-just return, and hope that the next time we come in the MSI will have
-landed in the fifo and then we can deliver it? It might be late, really
-late I guess, but that might be better then dropping it altogether.
+This is a patch to change to a tristate.  I don't think it's an
+improvement.  More symbols defined, more code, extra stuff to remember
+when defining leds, and removing the field from struct gpio_led doesn't
+make it smaller due to padding.
 
-We'd still need an ultimate fallback case, where we drop it altogether.
+diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
+index bb2a234..8a7303c 100644
+--- a/drivers/leds/leds-gpio.c
++++ b/drivers/leds/leds-gpio.c
+@@ -92,10 +92,10 @@ static int __devinit create_gpio_led(const struct gpio_led *template,
+  		led_dat->cdev.blink_set = gpio_blink_set;
+  	}
+  	led_dat->cdev.brightness_set = gpio_led_set;
+-	if (template->keep_state)
++	if (template->default_state == LEDS_GPIO_DEFSTATE_KEEP)
+  		state = !!gpio_get_value(led_dat->gpio) ^ led_dat->active_low;
+  	else
+-		state = template->default_state;
++		state = (template->default_state == LEDS_GPIO_DEFSTATE_ON);
+  	led_dat->cdev.brightness = state ? LED_FULL : LED_OFF;
 
-cheers
+  	gpio_direction_output(led_dat->gpio, led_dat->active_low ^ state);
+@@ -268,8 +268,15 @@ static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
+  		led.default_trigger =
+  			of_get_property(child, "linux,default-trigger", NULL);
+  		state = of_get_property(child, "default-state", NULL);
+-		led.default_state = state && !strcmp(state, "on");
+-		led.keep_state = state && !strcmp(state, "keep");
++		if (state) {
++			if (!strcmp(state, "keep")) {
++				led.default_state = LEDS_GPIO_DEFSTATE_KEEP;
++			} else if(!strcmp(state, "on")) {
++				led.default_state = LEDS_GPIO_DEFSTATE_ON;
++			} else {
++				led.default_state = LEDS_GPIO_DEFSTATE_OFF;
++			}
++		}
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+  		ret = create_gpio_led(&led, &pdata->led_data[pdata->num_leds++],
+  				      &ofdev->dev, NULL);
+diff --git a/include/linux/leds.h b/include/linux/leds.h
+index c51b625..f4a125c 100644
+--- a/include/linux/leds.h
++++ b/include/linux/leds.h
+@@ -138,9 +138,12 @@ struct gpio_led {
+  	const char *default_trigger;
+  	unsigned 	gpio;
+  	u8 		active_low;
+-	u8		default_state;	/* 0 = off, 1 = on */
+-	u8		keep_state; /* overrides default_state */
++	u8		default_state;
++	/* default_state should be one of LEDS_GPIO_DEFSTATE_(ON|OFF|KEEP) */
+  };
++#define LEDS_GPIO_DEFSTATE_OFF	0
++#define LEDS_GPIO_DEFSTATE_ON	1
++#define LEDS_GPIO_DEFSTATE_KEEP	2
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-8myRpQs4Ho7kCaDzfRe1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkkmBdsACgkQdSjSd0sB4dIU2wCffDJwJmjP75ejXQHk7WMGDzlw
-YD0An1pfn0tRKPrwqBtErWM9st/7F7tg
-=VXYy
------END PGP SIGNATURE-----
-
---=-8myRpQs4Ho7kCaDzfRe1--
+  struct gpio_led_platform_data {
+  	int 		num_leds;
