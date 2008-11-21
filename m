@@ -1,19 +1,24 @@
-Return-Path: <jbe@pengutronix.de>
-Received: from metis.extern.pengutronix.de (port-92-198-50-35.dynamic.qsc.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 7635EDDDED
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2008 03:38:21 +1100 (EST)
-From: Juergen Beisert <jbe@pengutronix.de>
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>
-Date: Fri, 21 Nov 2008 17:38:09 +0100
-References: <200811211336.41159.jbe@pengutronix.de>
-	<4926DA98.4060401@matrix-vision.de>
-In-Reply-To: <4926DA98.4060401@matrix-vision.de>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C93CBDDE04
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2008 04:02:23 +1100 (EST)
+Message-ID: <4926E932.8080105@freescale.com>
+Date: Fri, 21 Nov 2008 11:00:34 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200811211738.11049.jbe@pengutronix.de>
-Subject: Re: MPC5200B: Trouble with config pins
-Cc: linuxppc-dev@ozlabs.org, u-boot@lists.denx.de
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCH] cpm2: Round the baud-rate clock divider to the nearest
+	integer.
+References: <200811201332.24061.laurentp@cse-semaphore.com>
+	<20081120195347.GA29459@ld0162-tx32.am.freescale.net>
+	<200811211704.56808.laurentp@cse-semaphore.com>
+In-Reply-To: <200811211704.56808.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com, vbordug@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Andre,
+Laurent Pinchart wrote:
+> On Thursday 20 November 2008, Scott Wood wrote:
+>> This makes things worse on mpc8272ads -- the result of the division is
+>> 13.56, but I only get error-free serial output when rounding down.  I
+>> don't think the remote end has timing problems, as I don't see this with
+>> any other board.
+> 
+> I get exactly the opposite here with an mpc8248 base board. Rounding down 
+> makes 115200bds completely unreliable :-/
 
-On Freitag, 21. November 2008, Andre Schwarz wrote:
-> Have a look at the manual chapter 4 (=3DReset + Config).
-> SRESET (issued by gpt0 - watchdog) isn't supposed to do a full hardware
-> reset.
-> Looks like you should make use of the SRESET and trigger HRESET
-> accordingly.
->
-> I could solve this with _not_ using the internal watchdog but an
-> external one (TPS3828),
-> i.e. watchdog timeouts and reboots are always issued by PORESET.
+Hmm...  In that case, I'm OK with the patch as it's technically more 
+correct, and clearly what we want if the quotient comes out to something 
+like 13.95.  Maybe mpc8272ads board code could apply some sort of tweak 
+to the brg frequency.
 
-We are using an external watchdog now. But same behaviour. It hurts less,=20
-because we increase the length of the active reset signal to add more time =
-to=20
-let the pin "find" its low level. But I'm not really happy about this=20
-solution...
+The right answer is probably that if you want reliable standard baud 
+rates, the board designer should ensure a suitable clock is available, 
+rather than picking some random clock and hoping it divides nicely.
 
-Regards,
-Juergen
+> Could you measure the serial baudrate with and without the patch using an 
+> oscilloscope ?
 
-=2D-=20
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
-=A0Pengutronix - Linux Solutions for Science and Industry
-=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
-=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+Not easily; I'm a software person and would have to track down someone 
+to lend me one and show me how to use it.  I may try using ntpdate to 
+measure timebase drift, as it should be off by the same percentage.
+
+>> Maybe we should change CPM_CLK to be MAIN_CLK/4 rather than MAIN_CLK/16
+>> when the BRG clock is below a certain frequency.
+> 
+> Isn't that the job of the boot loader ?
+
+Sure, I didn't necessarily mean "linux" by "we". :-)
+
+> Accuracy would be improved, but power 
+> consumption will raise as well :-/
+
+Granted... though it's actually BRG_CLK and not CPM_CLK that I meant, so 
+hopefully it wouldn't make too much of a difference in power.
+
+-Scott
