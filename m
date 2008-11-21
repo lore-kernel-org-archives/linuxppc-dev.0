@@ -1,24 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C93CBDDE04
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2008 04:02:23 +1100 (EST)
-Message-ID: <4926E932.8080105@freescale.com>
-Date: Fri, 21 Nov 2008 11:00:34 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <sr@denx.de>
+Received: from mout-bounce.kundenserver.de (mout-bounce.kundenserver.de
+	[212.227.17.3]) by ozlabs.org (Postfix) with ESMTP id 4B41EDDDCA
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2008 05:06:58 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [spi-devel-general] [PATCH v4] spi: Add PPC4xx SPI driver
+Date: Fri, 21 Nov 2008 19:01:45 +0100
+References: <1225451266-23740-1-git-send-email-sr@denx.de>
+	<200811201941.08468.david-b@pacbell.net>
+In-Reply-To: <200811201941.08468.david-b@pacbell.net>
 MIME-Version: 1.0
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH] cpm2: Round the baud-rate clock divider to the nearest
-	integer.
-References: <200811201332.24061.laurentp@cse-semaphore.com>
-	<20081120195347.GA29459@ld0162-tx32.am.freescale.net>
-	<200811211704.56808.laurentp@cse-semaphore.com>
-In-Reply-To: <200811211704.56808.laurentp@cse-semaphore.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com, vbordug@ru.mvista.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200811211901.45371.sr@denx.de>
+Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,43 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Laurent Pinchart wrote:
-> On Thursday 20 November 2008, Scott Wood wrote:
->> This makes things worse on mpc8272ads -- the result of the division is
->> 13.56, but I only get error-free serial output when rounding down.  I
->> don't think the remote end has timing problems, as I don't see this with
->> any other board.
-> 
-> I get exactly the opposite here with an mpc8248 base board. Rounding down 
-> makes 115200bds completely unreliable :-/
+Dave,
 
-Hmm...  In that case, I'm OK with the patch as it's technically more 
-correct, and clearly what we want if the quotient comes out to something 
-like 13.95.  Maybe mpc8272ads board code could apply some sort of tweak 
-to the brg frequency.
+On Friday 21 November 2008, David Brownell wrote:
+> On Friday 31 October 2008, Stefan Roese wrote:
+> > +=A0=A0=A0=A0=A0=A0=A0dev_dbg(&spi->dev, "%s: mode %d, %u bpw, %d hz\n",
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0__FUNCTION__, spi->mode, =
+spi->bits_per_word,
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0spi->max_speed_hz);
+>
+> Oh, and checkpatch.pl would warn about __FUNCTION__ vs __func__ ...
 
-The right answer is probably that if you want reliable standard baud 
-rates, the board designer should ensure a suitable clock is available, 
-rather than picking some random clock and hoping it divides nicely.
+Thanks for the review. I'll address the issues in an updated patch next wee=
+k.
 
-> Could you measure the serial baudrate with and without the patch using an 
-> oscilloscope ?
-
-Not easily; I'm a software person and would have to track down someone 
-to lend me one and show me how to use it.  I may try using ntpdate to 
-measure timebase drift, as it should be off by the same percentage.
-
->> Maybe we should change CPM_CLK to be MAIN_CLK/4 rather than MAIN_CLK/16
->> when the BRG clock is below a certain frequency.
-> 
-> Isn't that the job of the boot loader ?
-
-Sure, I didn't necessarily mean "linux" by "we". :-)
-
-> Accuracy would be improved, but power 
-> consumption will raise as well :-/
-
-Granted... though it's actually BRG_CLK and not CPM_CLK that I meant, so 
-hopefully it wouldn't make too much of a difference in power.
-
--Scott
+Best regards,
+Stefan
