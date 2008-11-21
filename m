@@ -1,37 +1,21 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.17.161])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E1866DDDEF
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2008 02:37:21 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.1/8.13.1) with ESMTP id mALFbGvn004377
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 15:37:16 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id mALFbGoG3420292
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 16:37:16 +0100
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id mALFbFQg016315
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 16:37:16 +0100
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	OF-General <general@lists.openfabrics.org>,
-	Roland Dreier <rolandd@cisco.com>, OF-EWG <ewg@lists.openfabrics.org>
-Subject: [PATCH] IB/ehca: Fix lockdep failures for shca_list_lock
-References: <200806061835.43802.fenkes@de.ibm.com> <48499C11.7030504@gmail.com>
-In-Reply-To: <48499C11.7030504@gmail.com>
-MIME-Version: 1.0
-Date: Fri, 21 Nov 2008 16:37:14 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200811211637.15300.fenkes@de.ibm.com>
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id F1612DDE04
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2008 02:56:10 +1100 (EST)
+In-Reply-To: <4925B78B.2040709@freescale.com>
+References: <20081024035434.GF4267@yookeroo.seuss>
+	<20081119004220.GE29577@yookeroo.seuss>
+	<4569571e317d43f1b26b087fcdebcba3@bga.com>
+	<4925B78B.2040709@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <22538ec7f241b37d1dfcb94188d414e8@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: powerpc: udbg based backend for hvc_console
+Date: Fri, 21 Nov 2008 09:57:45 -0600
+To: Timur Tabi <timur@freescale.com>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,84 +25,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Michael Ellerman <michael@ellerman.id.au>
 
-shca_list_lock is taken from softirq context in ehca_poll_eqs, so we need to
-lock IRQ safe elsewhere.
+On Nov 20, 2008, at 1:16 PM, Timur Tabi wrote:
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-Acked-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_main.c |   17 ++++++++++-------
- 1 files changed, 10 insertions(+), 7 deletions(-)
+> Milton Miller wrote:
+>
+>> Stated differently, if your routine (1) fundamently works one 
+>> character
+>> at a time and (2) is not interrupt driven, and (3) only supports one
+>> channel, what avantage is there to an explicit hvc driver?
+>
+> I think it's because HVC has the ability to use HVC client drivers for 
+> console
+> and TTY, but udbg does not.  So if you have a udbg-only driver, it 
+> will cease to
+> function when the kernel switches to the normal console.
+>
+> Perhaps it would make more sense to have the kernel continue to use 
+> udbg if
+> there is no normal console driver, instead of relying on David's 
+> driver.
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
-index bb02a86..021c454 100644
---- a/drivers/infiniband/hw/ehca/ehca_main.c
-+++ b/drivers/infiniband/hw/ehca/ehca_main.c
-@@ -717,6 +717,7 @@ static int __devinit ehca_probe(struct of_device *dev,
- 	const u64 *handle;
- 	struct ib_pd *ibpd;
- 	int ret, i, eq_size;
-+	u64 flags;
- 
- 	handle = of_get_property(dev->node, "ibm,hca-handle", NULL);
- 	if (!handle) {
-@@ -830,9 +831,9 @@ static int __devinit ehca_probe(struct of_device *dev,
- 		ehca_err(&shca->ib_device,
- 			 "Cannot create device attributes  ret=%d", ret);
- 
--	spin_lock(&shca_list_lock);
-+	spin_lock_irqsave(&shca_list_lock, flags);
- 	list_add(&shca->shca_list, &shca_list);
--	spin_unlock(&shca_list_lock);
-+	spin_unlock_irqrestore(&shca_list_lock, flags);
- 
- 	return 0;
- 
-@@ -878,6 +879,7 @@ probe1:
- static int __devexit ehca_remove(struct of_device *dev)
- {
- 	struct ehca_shca *shca = dev->dev.driver_data;
-+	u64 flags;
- 	int ret;
- 
- 	sysfs_remove_group(&dev->dev.kobj, &ehca_dev_attr_grp);
-@@ -915,9 +917,9 @@ static int __devexit ehca_remove(struct of_device *dev)
- 
- 	ib_dealloc_device(&shca->ib_device);
- 
--	spin_lock(&shca_list_lock);
-+	spin_lock_irqsave(&shca_list_lock, flags);
- 	list_del(&shca->shca_list);
--	spin_unlock(&shca_list_lock);
-+	spin_unlock_irqrestore(&shca_list_lock, flags);
- 
- 	return ret;
- }
-@@ -975,6 +977,7 @@ static int ehca_mem_notifier(struct notifier_block *nb,
- 			     unsigned long action, void *data)
- {
- 	static unsigned long ehca_dmem_warn_time;
-+	unsigned long flags;
- 
- 	switch (action) {
- 	case MEM_CANCEL_OFFLINE:
-@@ -985,12 +988,12 @@ static int ehca_mem_notifier(struct notifier_block *nb,
- 	case MEM_GOING_ONLINE:
- 	case MEM_GOING_OFFLINE:
- 		/* only ok if no hca is attached to the lpar */
--		spin_lock(&shca_list_lock);
-+		spin_lock_irqsave(&shca_list_lock, flags);
- 		if (list_empty(&shca_list)) {
--			spin_unlock(&shca_list_lock);
-+			spin_unlock_irqrestore(&shca_list_lock, flags);
- 			return NOTIFY_OK;
- 		} else {
--			spin_unlock(&shca_list_lock);
-+			spin_unlock_irqrestore(&shca_list_lock, flags);
- 			if (printk_timed_ratelimit(&ehca_dmem_warn_time,
- 						   30 * 1000))
- 				ehca_gen_err("DMEM operations are not allowed"
--- 
-1.5.5
+First, we have that option: just specify udbg-imortal on the command 
+line, and the udbg console driver removes CON_BOOT from its flags.
+
+Second, as David said in his reply, that doesn't let your userspace 
+have a tty, which means no job control.
+
+>> I too challanged the necessity of that change.  I carefully designed
+>> the hvc_console layer to find the selected console weither it was
+>> registered before or after the console_initcall of hvc_console.
+>
+> I'm just pointing out the patch that was committed in 2006 to address 
+> this
+> issue.  I discovered the same bug that the patch mentioned, and only 
+> after a
+> long time searching did I find this patch.  And sure enough, 
+> re-arranging the
+> Makefile made the problem I was seeing go away.
+>
+> Now, it's possible that this bug in hvc_console no longer exists.  
+> However, I
+> have seen nothing to indicate it.  Unfortunately, I don't remember 
+> enough of the
+> details to reproduce the problem, so I can't verify it.
+
+As I said, I conceeded then the patch was required the way things 
+worked.  There was another propsed patch a few months ago (3-9) that I 
+pointed out they needed to be fixing the common console code; I don't 
+remember seeing anything related after that but I could have missed it.
+
+>> However, I think the bottom line was that add_preferred_console is
+>> suppsoed to be called by architecture setup code.   Doing it the
+>> console_initcall is almost abuse.  But if the console_initcall is 
+>> going
+>> to call add_preferred_console, then it must link before the 
+>> hvc_console
+>> driver.   I would have to go back and find the discussion to remember
+>> the exact details.  (maybe it only needed to call
+>> add_preferreed_console before registering itself if its the only hvc
+>> backend).
+>
+> Well, I can't comment on your theory, but I do know that the
+> add_preferred_console() call should be made from the HVC client 
+> driver, or at
+> least HVC itself.  It should not be in the platform code, because then 
+> we have a
+> dependency between the driver and the platform code.  I prefer my 
+> drivers to
+> initialize everything on their own, without the help of the platform 
+> code.
+
+Think about this for a second.
+
+If every console driver said "prefer me", what point is there in having 
+add_preferred_console?
+
+The second reason is its too late.  We have already started scanning 
+for drivers.  We are asking the console layer to adjust its choices 
+after it has started scanning.
+
+We want the last console= parameter on the command line to win.  So if 
+that implys the last call to add_preferred_console wins, then you have 
+code overriding the command line.
+
+
+We have code that searches the device tree for the stdout that firmware 
+used.  That code then tells the console layer which driver to choose 
+when it recognises it.   The pSeries platform also has code that says 
+when it finds vterm channels under lpar, then it should choose it.
+
+I think we should have the code that sets the udbg method indicate that 
+the console should be preferred.  While its not really arch code, it is 
+architecture code in that its hooked from early discovrey based not 
+cosole_initcall based (which runs before arch_initcall).  This is also 
+the point where we know if the udbg method is sharing hardware with a 
+full driver and therefore udbg_hvc should not be used.
+
+milton
