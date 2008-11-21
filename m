@@ -1,19 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 65013DDED8
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 20:18:03 +1100 (EST)
-Subject: Re: Kernel completely crashes after accessing an unmapped area.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ricardo <ricardo.ribalda@gmail.com>
-In-Reply-To: <aa76a2be0811190459x461128a5m82eb5d8d8d6da5fe@mail.gmail.com>
-References: <aa76a2be0811190459x461128a5m82eb5d8d8d6da5fe@mail.gmail.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from mail.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 2035CDDED8
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 20:31:10 +1100 (EST)
+Subject: Re: times(2) sys call bug?
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18725.63534.3316.841949@cargo.ozlabs.ibm.com>
+References: <1227193640.5224.90.camel@gentoo-jocke.transmode.se>
+	<20081120103733.6f347180@zod.rchland.ibm.com>
+	<1227199742.5224.99.camel@gentoo-jocke.transmode.se>
+	<18725.63534.3316.841949@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Fri, 21 Nov 2008 20:17:53 +1100
-Message-Id: <1227259073.7185.228.camel@pasglop>
+Date: Fri, 21 Nov 2008 10:31:09 +0100
+Message-Id: <1227259869.5224.123.camel@gentoo-jocke.transmode.se>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,49 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-11-19 at 13:59 +0100, Ricardo wrote:
-> Hello All:
+On Fri, 2008-11-21 at 10:52 +1100, Paul Mackerras wrote:
+> Joakim Tjernlund writes:
 > 
->   I am using the paulus tree popwerpc linux kernel for a ppc440 cpu
-> located in a Virtex5 FPGA.
+> > This little hack changes the kernel sys call handling in an crude
+> > way and then it works. Apperently the kernel thinks is an error if the
+> > syscall returns a value between -_LAST_ERRNO and -1.
 > 
->   While developing some drivers (a simple gpio device) I have notice
-> that if I try to access an unmapped area (an address without any
-> register/device attached), the system completely crashes... I remember
-> that doing the same with a ppc400 cpu the system showed a
-> "Instruction/Data bus error" and continue working.
+> Try this patch and let me if it fixes it.  If it does I'll push it
+> upstream.
 > 
->   My question: The ppc440 cannot recover from this types of errors or
-> is a kernel missing feature/bug?
+> Paul.
+[SNIP]
+> +	force_successful_syscall_return();
+>  	return (long) jiffies_64_to_clock_t(get_jiffies_64());
 
-You may want to look at the patch I posted recently:
+Why is 64 bits ops used here when you only use 32 bits? 
 
-powerpc: Fix 460EX/460GT machine check handling
+BTW, I think time(2) needs this:
 
->From the look of your log, we aren't using the right type of machine
-check handler for your core and it may need a similar treatement as the
-above processors.
-
-There are two kind of 440 cores vs. machine checks. On the old kind,
-machine checks used to be critical interrupts (and thus used CSRR0 and
-CSRR1 to save the context) while on the new kind, machine checks are
-their own type of exception with a dedicated pair of context save
-registers MCSRR0 and MCSRR1.
-
-It -looks- like the problem might be that the kernel isn't using the
-right set for your core. It uses by default the old style unless
-you change the machine check IVOR to point to MachineCheckA
-which is done by calling __fixup_440A_mcheck() in your CPU init routine
-for example, as we do for other 440 cores.
-
-So you would have to hook up a setup_cpu routine in cputable for
-those guys (I can see the virtex cores seem to not have any at
-this stage) and also change their machine check pointer to 
-use machine_check_440A instead of machine_check_4xx so the machine
-check details are properly decoded.
-
-Of course check your Virtex user manual to make sure that's indeed
-what is happening :-)
-
-Cheers,
-Ben.
+diff --git a/kernel/time.c b/kernel/time.c
+index 6a08660..1627910 100644
+--- a/kernel/time.c
++++ b/kernel/time.c
+@@ -37,6 +37,7 @@
+ #include <linux/fs.h>
+ #include <linux/slab.h>
+ #include <linux/math64.h>
++#include <linux/ptrace.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -65,8 +66,9 @@ asmlinkage long sys_time(time_t __user * tloc)
+ 
+ 	if (tloc) {
+ 		if (put_user(i,tloc))
+-			i = -EFAULT;
++			return -EFAULT;
+ 	}
++	force_successful_syscall_return();
+ 	return i;
+ }
+ 
