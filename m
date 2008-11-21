@@ -1,14 +1,19 @@
-Return-Path: <jdl@freescale.com>
-Message-ID: <4926C8C2.60802@freescale.com>
-Date: Fri, 21 Nov 2008 08:42:10 -0600
-From: Jon Loeliger <jdl@freescale.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mpic: don't reset affinity for secondary MPIC on
+	boot
+Date: Fri, 21 Nov 2008 15:40:02 +0100
+References: <200811191450.59361.arnd@arndb.de>
+	<200811201823.25263.arnd@arndb.de>
+	<1227235450.7185.214.camel@pasglop>
+In-Reply-To: <1227235450.7185.214.camel@pasglop>
 MIME-Version: 1.0
-To: nanda <nanda74pg@rediffmail.com>
-Subject: Re: Re :Re: [Ltib] ltib error -linux2.6.20.6 with MPC8360E MDS
-References: <DFTSgh6rR4.old.1227276970.57828@webmail.rediffmail.com>
-In-Reply-To: <DFTSgh6rR4.old.1227276970.57828@webmail.rediffmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-dev@ozlabs.org, Ltib@nongnu.org, seh@zee2.com
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200811211540.03281.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, kexec@lists.infradead.org,
+	cbe-oss-dev@ozlabs.org, Max Krasnyansky <maxk@qualcomm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,30 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-nanda wrote:
-> Hi Stuart,
->    Thanks for the information.   gpp access was resolved.
->    I was successful in building the linux 2.6.11 using the ltib and able 
-> to bring up the MPC8360 EMDS.
-> But, I still face the problem for linux kernel 2.6.19 and 2.6.20.   When 
-> I tried using ltib in the bringing up the board. 
->   The MPC 8360 board keeps rebooting after downloading the image Power 
-> PC Kernel Image(uImage) and Power PC RAMDisk 
-> Image(rootfs.ext2.gz.uboot)  build by the "ltib" 
->     Please clarrify on the same.
-> 
+On Friday 21 November 2008, Benjamin Herrenschmidt wrote:
+> Oh just that for powermac for example, I know I'm resetting the thing,
+> so can't rely on init values, and on some BML embedded boxes too, while
+> on things like cell I don't off hand know what the right CPU number is
+> to hit the right C3PO interrupt, so I'm better off reading what SLOF
+> did :-)
 
-I'm not a kernel expert and don't know what failure you
-are seeing here, but I might observe that 2.6.19 and .20
-are two years old, and 2.6.11 is more than 3 years old.
+The current code will always use destination 0 for any MPIC, because
+mpic_init is run befew smp_init and it currently uses the local CPU.
 
-If you think we, collectively, haven't improved things in
-that time period, please, complain about 2.6.11, .19, and .20.
+If an SMP powermac requires a specific destination setting in the
+secondary MPIC, either the current mpic_init code is broken there
+in the same way as on cell, or more broken if it requires something
+other than destination 0.
 
-If on the off chance you think things *might* have gotten
-better due to a *bit* of development effort over the past
-three years, you might try installing a modern U-Boot and
-a modern Kernel.
+> But if you think on Cell we can just hard wire in the platform code,
+> then I'm ok.
 
-Thanks,
-jdl
+On cell, I know that destination 0 is always correct because of the wiring
+inside of Axon.
+
+	Arnd <><
