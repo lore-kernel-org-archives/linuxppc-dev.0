@@ -1,19 +1,23 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mpic: don't reset affinity for secondary MPIC on
-	boot
-Date: Fri, 21 Nov 2008 15:40:02 +0100
-References: <200811191450.59361.arnd@arndb.de>
-	<200811201823.25263.arnd@arndb.de>
-	<1227235450.7185.214.camel@pasglop>
-In-Reply-To: <1227235450.7185.214.camel@pasglop>
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 5EB6FDDDE3
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2008 01:59:17 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so401662yxg.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 06:59:16 -0800 (PST)
+Message-ID: <fa686aa40811210659l3b9a4eefwf6eb59f66386d379@mail.gmail.com>
+Date: Fri, 21 Nov 2008 07:59:14 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: gianfranco.casanova@alice.it
+Subject: Re: R: R: USB on lite5200 does not work.
+In-Reply-To: <47602D18F269934AB73B7E550804A1E002137973@FBCMST09V03.fbc.local>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200811211540.03281.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, kexec@lists.infradead.org,
-	cbe-oss-dev@ozlabs.org, Max Krasnyansky <maxk@qualcomm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47602D18F269934AB73B7E550804A1E00213796C@FBCMST09V03.fbc.local>
+	<fa686aa40811200656g783947f5l609650b707c6c883@mail.gmail.com>
+	<47602D18F269934AB73B7E550804A1E00213796F@FBCMST09V03.fbc.local>
+	<fa686aa40811200749xd9f8701ud6ee9b77b4c21001@mail.gmail.com>
+	<47602D18F269934AB73B7E550804A1E002137973@FBCMST09V03.fbc.local>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,25 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 21 November 2008, Benjamin Herrenschmidt wrote:
-> Oh just that for powermac for example, I know I'm resetting the thing,
-> so can't rely on init values, and on some BML embedded boxes too, while
-> on things like cell I don't off hand know what the right CPU number is
-> to hit the right C3PO interrupt, so I'm better off reading what SLOF
-> did :-)
+On Fri, Nov 21, 2008 at 1:36 AM,  <gianfranco.casanova@alice.it> wrote:
+> Hi Grant&Wolfgang
+>
+> thanks for yours posts. You are right about WR. For lite5200 only few patchs
+> have been used. Most of the job is for support other boards or to introduce
+> some patchs for its debug system.
+>
+> The main HW difference between our board and lite5200 is:
+> console on PSC3 and
+[...]
+> on our HW defined as:
+>         /* Radionav configuration */
+>         port_config =  0x0C712E66;
+>
 
-The current code will always use destination 0 for any MPIC, because
-mpic_init is run befew smp_init and it currently uses the local CPU.
+You've got quite a bit of difference than just console on PSC3.  USB
+is on the Ethernet pin group instead of on the USB pin group.  Does
+the kernel change the value of port_config when it boots, or does it
+leave the value setup by U-Boot intact?
 
-If an SMP powermac requires a specific destination setting in the
-secondary MPIC, either the current mpic_init code is broken there
-in the same way as on cell, or more broken if it requires something
-other than destination 0.
+> I still do not understand our bug with USB.
+> Have you got some suggestions or some test to be performed in order to find
+> out a solutions?
 
-> But if you think on Cell we can just hard wire in the platform code,
-> then I'm ok.
+Not over a quick exchange via email.  Your kernel is too old and USB
+debugging can be complex.  I'd need to be working with your hardware
+to figure out what is going on.
 
-On cell, I know that destination 0 is always correct because of the wiring
-inside of Axon.
+g.
 
-	Arnd <><
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
