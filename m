@@ -1,18 +1,20 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp127.sbc.mail.sp1.yahoo.com (smtp127.sbc.mail.sp1.yahoo.com
-	[69.147.65.186]) by ozlabs.org (Postfix) with SMTP id 157EADDF04
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 14:41:10 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [spi-devel-general] [PATCH v4] spi: Add PPC4xx SPI driver
-Date: Thu, 20 Nov 2008 19:41:08 -0800
-References: <1225451266-23740-1-git-send-email-sr@denx.de>
-In-Reply-To: <1225451266-23740-1-git-send-email-sr@denx.de>
+Return-Path: <ben@codiert.org>
+Received: from cursor.subgra.de (cursor.subgra.de [78.46.252.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "cursor.subgra.de", Issuer "cursor.subgra.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 1821ADDE41
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 18:21:12 +1100 (EST)
+Date: Fri, 21 Nov 2008 08:21:02 +0100
+From: Benjamin Krill <ben@codiert.org>
+To: Arnd Bergmann <arnd@arndb.de>, linux-serial@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add support for the nwp serial device
+Message-ID: <20081121072101.GP24487@codiert.org>
+References: <200811201501.24000.arnd@arndb.de>
+	<20081121003545.GC13049@yookeroo.seuss>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200811201941.08468.david-b@pacbell.net>
-Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20081121003545.GC13049@yookeroo.seuss>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,9 +24,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 31 October 2008, Stefan Roese wrote:
-> +       dev_dbg(&spi->dev, "%s: mode %d, %u bpw, %d hz\n",
-> +               __FUNCTION__, spi->mode, spi->bits_per_word,
-> +               spi->max_speed_hz);
+* David Gibson | 2008-11-21 11:35:45 [+1100]:
 
-Oh, and checkpatch.pl would warn about __FUNCTION__ vs __func__ ...
+>
+>Uh.. registers as port number 84??  What's this random number about?
+>
+It's just the next free number in serial_core.h.
+
+ Ben
