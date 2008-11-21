@@ -1,25 +1,24 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from mail.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 06353DDE1F
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 21:13:10 +1100 (EST)
-Subject: Re: times(2) sys call bug?
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Gabriel Paubert <paubert@iram.es>
-In-Reply-To: <20081121095059.GA29260@iram.es>
-References: <1227193640.5224.90.camel@gentoo-jocke.transmode.se>
-	<20081120103733.6f347180@zod.rchland.ibm.com>
-	<1227199742.5224.99.camel@gentoo-jocke.transmode.se>
-	<18725.63534.3316.841949@cargo.ozlabs.ibm.com>
-	<20081121084118.GA27809@iram.es>
-	<18726.31050.149408.815256@cargo.ozlabs.ibm.com>
-	<20081121095059.GA29260@iram.es>
-Content-Type: text/plain
-Date: Fri, 21 Nov 2008 11:13:08 +0100
-Message-Id: <1227262388.5224.141.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <mattjfleming@googlemail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 7645ADDED2
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 20:00:57 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id 17so46153ugm.14
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 01:00:47 -0800 (PST)
+Date: Fri, 21 Nov 2008 09:00:45 +0000
+From: Matt Fleming <mjf@gentoo.org>
+To: Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>,
+	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+	Jim Radford <radford@galvanix.net>, Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/3] sh: dynamic ftrace support.
+Message-ID: <20081121090044.GA635@console-pimps.org>
+References: <20081120203415.251344054@goodmis.org>
+	<20081120203551.633484431@goodmis.org>
+	<20081121074428.GC28447@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081121074428.GC28447@linux-sh.org>
+Sender: Matt Fleming <mattjfleming@googlemail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,34 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-11-21 at 10:50 +0100, Gabriel Paubert wrote:
-> On Fri, Nov 21, 2008 at 08:03:06PM +1100, Paul Mackerras wrote:
-> > Gabriel Paubert writes:
-> > 
-> > > On Fri, Nov 21, 2008 at 10:52:14AM +1100, Paul Mackerras wrote:
-> > > > Joakim Tjernlund writes:
-> > > > 
-> > > > > This little hack changes the kernel sys call handling in an crude
-> > > > > way and then it works. Apperently the kernel thinks is an error if the
-> > > > > syscall returns a value between -_LAST_ERRNO and -1.
-> > > > 
-> > > > Try this patch and let me if it fixes it.  If it does I'll push it
-> > > > upstream.
-> > > 
-> > > With your patch, you won't get EFAULT if you pass a bad
-> > > address, but a constant, time independent value, unless
-> > > I miss something. 
-> > 
-> > I think you are missing something, namely that I put the call to
-> > force_successful_syscall_return() AFTER the return -EFAULT.
-> > 
+On Fri, Nov 21, 2008 at 04:44:29PM +0900, Paul Mundt wrote:
+> On Thu, Nov 20, 2008 at 03:34:16PM -0500, Steven Rostedt wrote:
+> > +} elsif ($arch eq "sh") {
+> > +    $section_regex = "Disassembly of section\\s+(\\S+):";
+> > +    $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+> > +    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
+> > +    $type = ".long";
+> > +
+> > +    # force flags for this arch
+> > +    $ld .= " -m shlelf_linux";
+> > +    $objcopy .= " -O elf32-sh-linux";
+> > +    $cc .= " -m32";
+> > +
 > 
-> Indeed, it may be time to update the syscall documentation, saying
-> that you need to clear errno before the syscall and check errno
-> and not the return value since -1 is valid. 
+> Note that if the $alignment changes are in this version, you will also
+> need to add an $alignment = 2; for sh. That was in Matt's original patch,
+> but I stripped the alignment line out in the commit given that it was not
+> yet present in the mainline version of the script.
 
-And perhaps mention that times(NULL) never returns an error.
-And that times() is broken in 2.6.27 and earlier and needs the
-workaround posted earlier.
-
- Jocke
+I've sent a patch to steven for his tip/devel branch that adds this line.
