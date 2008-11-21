@@ -1,17 +1,14 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] powerpc/cell/axon-msi: retry on missing interrupt
-Date: Fri, 21 Nov 2008 15:35:42 +0100
-References: <200811171710.24521.arnd@arndb.de>
-	<1227228636.7948.15.camel@localhost>
-In-Reply-To: <1227228636.7948.15.camel@localhost>
+Return-Path: <jdl@freescale.com>
+Message-ID: <4926C8C2.60802@freescale.com>
+Date: Fri, 21 Nov 2008 08:42:10 -0600
+From: Jon Loeliger <jdl@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200811211535.42987.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, cbe-oss-dev@ozlabs.org,
-	GBIRAN@il.ibm.com
+To: nanda <nanda74pg@rediffmail.com>
+Subject: Re: Re :Re: [Ltib] ltib error -linux2.6.20.6 with MPC8360E MDS
+References: <DFTSgh6rR4.old.1227276970.57828@webmail.rediffmail.com>
+In-Reply-To: <DFTSgh6rR4.old.1227276970.57828@webmail.rediffmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-dev@ozlabs.org, Ltib@nongnu.org, seh@zee2.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +18,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 21 November 2008, Michael Ellerman wrote:
-> By incrementing the offset we're dropping the irq. Would it be better to
-> just return, and hope that the next time we come in the MSI will have
-> landed in the fifo and then we can deliver it? It might be late, really
-> late I guess, but that might be better then dropping it altogether.
+nanda wrote:
+> Hi Stuart,
+>    Thanks for the information.   gpp access was resolved.
+>    I was successful in building the linux 2.6.11 using the ltib and able 
+> to bring up the MPC8360 EMDS.
+> But, I still face the problem for linux kernel 2.6.19 and 2.6.20.   When 
+> I tried using ltib in the bringing up the board. 
+>   The MPC 8360 board keeps rebooting after downloading the image Power 
+> PC Kernel Image(uImage) and Power PC RAMDisk 
+> Image(rootfs.ext2.gz.uboot)  build by the "ltib" 
+>     Please clarrify on the same.
+> 
 
-If this happens, I'd rather treat it as an obvious failure case and make
-the device driver hang rather than trying to fix up in case another MSI
-comes in. The 100 microseconds should cover any case of really really
-late, and if we don't get a valid interrupt here (e.g. because a card
-still sends an interrupt after the device driver has unmapped the virq)
-looking again at the same position would mean we don't move on to the
-next valid one (or have to make the error case more complex).
+I'm not a kernel expert and don't know what failure you
+are seeing here, but I might observe that 2.6.19 and .20
+are two years old, and 2.6.11 is more than 3 years old.
 
-Also, skipping an invalid interrupt is consistent with what we do right
-now. Remember that we can't reliably tell the difference between
-'invalid interrupt' and 'no interrupt at all'.
+If you think we, collectively, haven't improved things in
+that time period, please, complain about 2.6.11, .19, and .20.
 
-	Arnd <><
+If on the off chance you think things *might* have gotten
+better due to a *bit* of development effort over the past
+three years, you might try installing a modern U-Boot and
+a modern Kernel.
+
+Thanks,
+jdl
