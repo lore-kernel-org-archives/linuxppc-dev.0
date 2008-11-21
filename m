@@ -1,14 +1,17 @@
-Return-Path: <seh@zee2.com>
-Subject: Re: Re :Re: [Ltib] ltib error -linux2.6.20.6 with MPC8360E MDS
-From: Stuart Hughes <seh@zee2.com>
-To: nanda <nanda74pg@rediffmail.com>
-In-Reply-To: <DFTSgh6rR4.old.1227276970.57828@webmail.rediffmail.com>
-References: <DFTSgh6rR4.old.1227276970.57828@webmail.rediffmail.com>
-Content-Type: text/plain
-Date: Fri, 21 Nov 2008 14:19:10 +0000
-Message-Id: <1227277150.28157.416.camel@m20>
-Mime-Version: 1.0
-Cc: Linuxppc-dev@ozlabs.org, Ltib@nongnu.org
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] powerpc/cell/axon-msi: retry on missing interrupt
+Date: Fri, 21 Nov 2008 15:35:42 +0100
+References: <200811171710.24521.arnd@arndb.de>
+	<1227228636.7948.15.camel@localhost>
+In-Reply-To: <1227228636.7948.15.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200811211535.42987.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, cbe-oss-dev@ozlabs.org,
+	GBIRAN@il.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,139 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Nanda,
+On Friday 21 November 2008, Michael Ellerman wrote:
+> By incrementing the offset we're dropping the irq. Would it be better to
+> just return, and hope that the next time we come in the MSI will have
+> landed in the fifo and then we can deliver it? It might be late, really
+> late I guess, but that might be better then dropping it altogether.
 
-You'll need to get help from the kernel experts with this issue.
+If this happens, I'd rather treat it as an obvious failure case and make
+the device driver hang rather than trying to fix up in case another MSI
+comes in. The 100 microseconds should cover any case of really really
+late, and if we don't get a valid interrupt here (e.g. because a card
+still sends an interrupt after the device driver has unmapped the virq)
+looking again at the same position would mean we don't move on to the
+next valid one (or have to make the error case more complex).
 
-Regards, Stuart
+Also, skipping an invalid interrupt is consistent with what we do right
+now. Remember that we can't reliably tell the difference between
+'invalid interrupt' and 'no interrupt at all'.
 
-On Fri, 2008-11-21 at 14:16 +0000, nanda wrote:
-> Hi Stuart,
->    Thanks for the information.   gpp access was resolved. 
->    I was successful in building the linux 2.6.11 using the ltib and
-> able to bring up the MPC8360 EMDS.
-> But, I still face the problem for linux kernel 2.6.19 and
-> 2.6.20.   When I tried using ltib in the bringing up the board. 
->   The MPC 8360 board keeps rebooting after downloading the image Power
-> PC Kernel Image(uImage) and Power PC RAMDisk
-> Image(rootfs.ext2.gz.uboot)  build by the "ltib" 
->     Please clarrify on the same.
-> 
-> Thanks in advance.
-> 
-> Regards,
-> Nanda
-> 
->  
-> 
->  
-> On Thu, 20 Nov 2008 18:40:36 0000 Stuart Hughes wrote
-> Hi Nanda,
-> 
-> This is happening because you don't have access to
-> http://www.bitshrine.org/gpp for some reason.
-> 
-> If LTIB needs to download sources to build a package, it will get them
-> from bitshrine.org. Can you check that you are able to access this URL
-> from the command line with wget.
-> 
-> Regards, Stuart
-> 
-> On Thu, 2008-11-20 at 18:30 0000, nanda wrote:
-> > Hi All,
-> > Iam forwarding the mail which I have posted to powerpc linux list
-> > Linuxppc-dev@ozlabs.org
-> > ===================================================
-> > 
-> > Iam getting the below error during the generation of
-> > rootfs.ext2.gz.uboot (Power PC Linux RAM Disk Image) and uImage
-> (Power
-> > PC Linux Kernel Image) for linux-2.6.20.6 kernel on the power PC MPC
-> > 8360E MDS using ltib tool.
-> > 
-> > "Testing ppp_url connectivity: FAIL, disabling 
-> > 
-> > Testing gpp_url connectivity: FAIL, disabling 
-> > 
-> > No network download connection available"
-> > 
-> > I did the following steps, but Iam unable to generate the
-> > rootfs.ext2.gz.uboot 
-> > 
-> > - In the ltib directory 
-> > 
-> > ./ltib --configure
-> > 
-> > In the configure menu, I specified the following, before saving the
-> > configs
-> > 
-> > - Tool chain as (gcc-3.4.3/glibc-2.3.3)
-> > 
-> > - uboot 1.1.3
-> > 
-> > - "Kernel (local linux directory build)" which refers to the local
-> > directory where linux-2.6.20.6 is placed
-> > 
-> > - "Kernel config file"specified as mpc8360emds_defconfig, which is
-> the
-> > file copied
-> >
-> from /home/nanda/linux2.6.20.6/arch/powerpc/configs/mpc8360emds_defconfig to the ltib/config/platform/mpc8360epb directory) 
-> > 
-> > - Linux Target Architecture as "powerpc"
-> > 
-> > After the above process by saving the configuration (it started
-> > building kernel and generated uImage) and failed in the below place
-> > (Refer also the attached build.txt file)
-> > 
-> > ================================
-> > 
-> > Processing: skell 
-> > 
-> > =================== 
-> > 
-> > Testing ppp_url connectivity: FAIL, disabling 
-> > 
-> > Testing gpp_url connectivity: FAIL, disabling 
-> > 
-> > No network download connection available
-> > 
-> > Started: Thu Nov 20 14:44:45 2008 
-> > 
-> > Ended: Thu Nov 20 14:57:32 2008 
-> > 
-> > Elapsed: 767 seconds 
-> > 
-> > Build Failed
-> > 
-> > =====================================
-> > 
-> > I have attached the below files for boot and build logs with this
-> > mail, 
-> > 
-> > 1) defconfig.dev - default config generated for "./ltib configure"
-> > from config/platform/mpc8360epb 
-> > 
-> > 2) build.txt - Error build during "./ltib configure" output
-> > 
-> > 3) mpc8360emds_defconfig - Default config file
-> > from /home/nanda/linux2.6.20.6/arch/powerpc/configs/ 
-> > 
-> > The end result was I could only see the uImage generated without
-> > rootfs.ext2.gz.uboot. Please clarify on the same 
-> > 
-> > Thanks in advance,
-> > 
-> > Regards,
-> > 
-> > Nanda
-> > 
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
-> Rediff Shopping
+	Arnd <><
