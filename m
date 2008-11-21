@@ -1,21 +1,20 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from mail.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 0FCBFDDE1E
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 19:31:28 +1100 (EST)
-Subject: Re: times(2) sys call bug?
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id DAC32DDDDF
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 19:41:32 +1100 (EST)
+Date: Fri, 21 Nov 2008 09:41:18 +0100
+From: Gabriel Paubert <paubert@iram.es>
 To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18725.63534.3316.841949@cargo.ozlabs.ibm.com>
+Subject: Re: times(2) sys call bug?
+Message-ID: <20081121084118.GA27809@iram.es>
 References: <1227193640.5224.90.camel@gentoo-jocke.transmode.se>
 	<20081120103733.6f347180@zod.rchland.ibm.com>
 	<1227199742.5224.99.camel@gentoo-jocke.transmode.se>
 	<18725.63534.3316.841949@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Fri, 21 Nov 2008 09:31:25 +0100
-Message-Id: <1227256285.5224.112.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18725.63534.3316.841949@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
-Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,7 +24,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-11-21 at 10:52 +1100, Paul Mackerras wrote:
+On Fri, Nov 21, 2008 at 10:52:14AM +1100, Paul Mackerras wrote:
 > Joakim Tjernlund writes:
 > 
 > > This little hack changes the kernel sys call handling in an crude
@@ -34,21 +33,20 @@ On Fri, 2008-11-21 at 10:52 +1100, Paul Mackerras wrote:
 > 
 > Try this patch and let me if it fixes it.  If it does I'll push it
 > upstream.
-> 
 
-It does fix the problem, thanks. You might want to do the same
-to time(2)?
-This workaround lets you get around the times(2) problem. Perhaps
-you want to mention it in the commit msg:
+With your patch, you won't get EFAULT if you pass a bad
+address, but a constant, time independent value, unless
+I miss something. 
 
-static clock_t
-our_times(void)        /* Make times(2) behave rationally on Linux */
-{
-	clock_t ret;
+Of course there are peoaple who claim that EFAULT is a
+bad idea to start with and that you should send a SIGSEGV
+instead, and I can see their point. 
 
-	errno   = 0;
-	ret     = times(NULL);
-	if (errno != 0)
-		ret = (clock_t) (-errno);
-	return ret;
-}
+But with the current implementation, it is a game that 
+you can't win: any syscall that wants to return an
+arbitrary integer multiplexed with an error value is
+broken beyond repair, by design.
+
+Oh, well. 
+
+	Gabriel
