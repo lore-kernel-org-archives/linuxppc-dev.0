@@ -1,21 +1,18 @@
 Return-Path: <david-b@pacbell.net>
-Received: from smtp125.sbc.mail.sp1.yahoo.com (smtp125.sbc.mail.sp1.yahoo.com
-	[69.147.65.184]) by ozlabs.org (Postfix) with SMTP id 96564DDE3A
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 14:17:41 +1100 (EST)
+Received: from smtp119.sbc.mail.sp1.yahoo.com (smtp119.sbc.mail.sp1.yahoo.com
+	[69.147.64.92]) by ozlabs.org (Postfix) with SMTP id 75377DDE3A
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 14:40:05 +1100 (EST)
 From: David Brownell <david-b@pacbell.net>
-To: "Jason Hanna" <jason.m.hanna.at.coincident@gmail.com>
-Subject: Re: [spi-devel-general] [PATCH v3] spi: Add PPC4xx SPI driver
-Date: Thu, 20 Nov 2008 19:17:37 -0800
-References: <1225000124-29366-1-git-send-email-sr@denx.de>
-	<20081029145305.GA3676@yoda.jdub.homelinux.org>
-	<8f9e78f00810301624k5925a52ah924960f869388233@mail.gmail.com>
-In-Reply-To: <8f9e78f00810301624k5925a52ah924960f869388233@mail.gmail.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [spi-devel-general] [PATCH v4] spi: Add PPC4xx SPI driver
+Date: Thu, 20 Nov 2008 19:40:01 -0800
+References: <1225451266-23740-1-git-send-email-sr@denx.de>
+In-Reply-To: <1225451266-23740-1-git-send-email-sr@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200811201917.38148.david-b@pacbell.net>
-Cc: spi-devel-general@lists.sourceforge.net, Stefan Roese <sr@denx.de>,
-	linuxppc-dev@ozlabs.org
+  charset="iso-8859-1"
+Message-Id: <200811201940.02277.david-b@pacbell.net>
+Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +22,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 30 October 2008, Jason Hanna wrote:
-> Also, any pointers to sample/test code incorporating a spi protocol
-> driver would be incredibly helpful.
+On Friday 31 October 2008, Stefan Roese wrote:
+> +static int spi_ppc4xx_setupxfer(struct spi_device *spi, struct spi_transfer *t)
+> +{
+> 		...
+>
+> +       if (in_8(&hw->regs->cdm) != cdm)
+> +               out_8(&hw->regs->cdm, cdm);
 
-Look at Documentation/spi/*.c ... for user mode code
-hooking up through "spidev".
+... writes to hardware, updating SPI the clock rate ...
 
 
-> I'm very new to device driver 
-> programming and don't really know what I'm doing yet. I seem to be
-> getting the spi_ppc4xx and spi_bitbang modules loaded, but am unsure
-> how to verify proper initialization and what next steps I need to
-> follow in order to develop and associate a protocol driver.
+> +static int spi_ppc4xx_setup(struct spi_device *spi)
+> +{
+> 	...
+> +
+> +       ret = spi_ppc4xx_setupxfer(spi, NULL);
 
-Documentation/spi/spi-summary should help.
-And sticking a 'scope on the outputs (as you
-said you plan) is a decent place to start,
-if you don't have something to talk to yet.
+... hence this also writes to the hardware.
 
-- dave
+Except ... the setup() method may be called for one SPI device
+in the middle of a transfer for another device.  This might for
+example cause the clock rate to speed up so it's too fast, thus
+corrupting a transfer for that other device.  So you should NOT
+be calling setupxfer() here.
+
+
+
+> +       /* write new configration */
+> +       out_8(&hw->regs->mode, mode);
+
+Or here:  changing from a device using MSB-first mode 3 to
+one using LSB-first mode 1.  This could also corrupt a transfer.
+
+
+It might be better to have the setup() validate its inputs
+and store them in the spi->controller_state, and then have
+the setup_transfer() pull values from there ... but not make
+setup() call setupxfer().  The best model would be that each
+chipselect has its own set of speed/mode registers; if the
+hardware doesn't work that way, then it can be emulated.
+
+
+> +static int __init spi_ppc4xx_init(void)
+> +{
+> +       return of_register_platform_driver(&spi_ppc4xx_of_driver);
+> +}
+> +
+> +static void __exit spi_ppc4xx_exit(void)
+> +{
+> +       of_unregister_platform_driver(&spi_ppc4xx_of_driver);
+> +}
+> +
+> +module_init(spi_ppc4xx_init);
+> +module_exit(spi_ppc4xx_exit);
+
+I prefer to see module_{init,exit} annotations snugged up next
+to the functions to which they apply ... just like EXPORT_SYMBOL
+annotations, and for the same reasons.
+
+- Dave
