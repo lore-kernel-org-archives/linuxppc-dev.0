@@ -1,21 +1,17 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 2904ADDE0E
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Nov 2008 20:51:10 +1100 (EST)
-Date: Fri, 21 Nov 2008 10:50:59 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18726.33949.586733.530967@cargo.ozlabs.ibm.com>
+Date: Fri, 21 Nov 2008 20:51:25 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: joakim.tjernlund@transmode.se
 Subject: Re: times(2) sys call bug?
-Message-ID: <20081121095059.GA29260@iram.es>
+In-Reply-To: <1227259869.5224.123.camel@gentoo-jocke.transmode.se>
 References: <1227193640.5224.90.camel@gentoo-jocke.transmode.se>
 	<20081120103733.6f347180@zod.rchland.ibm.com>
 	<1227199742.5224.99.camel@gentoo-jocke.transmode.se>
 	<18725.63534.3316.841949@cargo.ozlabs.ibm.com>
-	<20081121084118.GA27809@iram.es>
-	<18726.31050.149408.815256@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18726.31050.149408.815256@cargo.ozlabs.ibm.com>
+	<1227259869.5224.123.camel@gentoo-jocke.transmode.se>
 Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,34 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 21, 2008 at 08:03:06PM +1100, Paul Mackerras wrote:
-> Gabriel Paubert writes:
-> 
-> > On Fri, Nov 21, 2008 at 10:52:14AM +1100, Paul Mackerras wrote:
-> > > Joakim Tjernlund writes:
-> > > 
-> > > > This little hack changes the kernel sys call handling in an crude
-> > > > way and then it works. Apperently the kernel thinks is an error if the
-> > > > syscall returns a value between -_LAST_ERRNO and -1.
-> > > 
-> > > Try this patch and let me if it fixes it.  If it does I'll push it
-> > > upstream.
-> > 
-> > With your patch, you won't get EFAULT if you pass a bad
-> > address, but a constant, time independent value, unless
-> > I miss something. 
-> 
-> I think you are missing something, namely that I put the call to
-> force_successful_syscall_return() AFTER the return -EFAULT.
-> 
+Joakim Tjernlund writes:
 
-Indeed, it may be time to update the syscall documentation, saying
-that you need to clear errno before the syscall and check errno
-and not the return value since -1 is valid. 
+> > +	force_successful_syscall_return();
+> >  	return (long) jiffies_64_to_clock_t(get_jiffies_64());
+> 
+> Why is 64 bits ops used here when you only use 32 bits? 
 
-Who does this? I have spotted some errors in other places on 
-my man pages too, especially in the networking area (they were
-correct once upon a time, but have not been updated).
+If HZ is 1000, jiffies_64_to_clock_t is going to divide jiffies by 10,
+so we need to start with 64 bits in order to get the top few bits
+of a 32-bit result correct.
 
-	Regards,
-	Gabriel
+> BTW, I think time(2) needs this:
+
+In principle you are correct, but it's only going to matter for a
+little over an hour some time in the year 2106. :)
+
+Paul.
