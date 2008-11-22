@@ -1,16 +1,15 @@
-Return-Path: <miltonm@bga.com>
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 5F08EDDE19
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Nov 2008 03:25:45 +1100 (EST)
-Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <20081122030653.GU6830@localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f35ce64a4d02ccbf84d3288dad3dc0f8@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: badness in xics_set_cpu_giq on JS20 blade
-Date: Sat, 22 Nov 2008 10:30:38 -0600
-To: Nathan Lynch <ntl@pobox.com>
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 26360DDE19
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Nov 2008 04:35:28 +1100 (EST)
+To: torvalds@linux-foundation.org
+Subject: [PATCH 13/32] rackmeter section fixes
+Message-Id: <E1L3wOC-0006T5-Ji@ZenIV.linux.org.uk>
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Sat, 22 Nov 2008 17:35:24 +0000
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,50 +19,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat Nov 22 at 14:06:53 EST in 2008, Nathan Lynch wrote:
-> With 2.6.28-rc5 the WARN_ON in xics_set_cpu_giq is triggering on a
-> JS20.  I changed it to a WARN to get the actual status returned:
->
-> [boot]0020 XICS Init
-> set-indicator returned -22
-> ------------[ cut here ]------------
-> Badness at arch/powerpc/platforms/pseries/xics.c:733
-...
-> Call Trace:
-> [c0000000006b3ca0] [c000000000047450] .xics_set_cpu_giq+0x50/0x68 
-> (unreliable)
-> [c0000000006b3d10] [c0000000005927b8] .xics_init_IRQ+0x2f4/0x338
-> [c0000000006b3de0] [c000000000591bcc] .pseries_xics_init_IRQ+0x14/0x2c
-> [c0000000006b3e60] [c000000000580488] .init_IRQ+0x40/0x5c
-> [c0000000006b3ee0] [c0000000005787d8] .start_kernel+0x250/0x478
-> [c0000000006b3f90] [c0000000000083b8] .start_here_common+0x1c/0x64
-...
-> -22 is -EINVAL, which maps to a -3 return code from RTAS (see
-> rtas_error_rc).
->
-> The system appears to boot and function normally after this, though.
-> FWIW, it looks like its firmware is up to date (FW08401160 from March
-> 2008).
 
-b4963255ad5a426f04a0bb15c4315fa4bb40cde9 "Factor out cpu 
-joining/unjoining the GIQ" consolidated the join and remove call sites. 
-  Looking closer it also added warn if rtas-indicator returned an error 
-on join in addition to leave.
+* rackmeter_remove() reference needs devexit_p
+* rackmeter_setup() is calls devinit and is called only from devinit
 
-I don't have my PAPR here, but from rtas_error_rc (rtas.c) -3 is /* Bad 
-indicator/domain/etc */.  This indicator was added to support cpu add 
-and remove.  I'm guessing js20 doesn't support that from rtas (ie 
-doesn't support cpu hotadd), and the indicator is not available.  (I 
-know js21 has it because I had a bit of time to see its broken 
-emulation of this call once).
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ drivers/macintosh/rack-meter.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-When we get control of a cpu from OF it is already in the joined state. 
-  We join on all threads because we need to do so on secondary threads 
-and because we did a remove on (previously all, but now secondary) 
-threads during kexec.
-
-If memory serves, there is a property in the rtas node to indicate each 
-sensor that is present.  If so, we should search for that property 
-before calling set-indicator.
-
-milton
+diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
+--- a/drivers/macintosh/rack-meter.c
++++ b/drivers/macintosh/rack-meter.c
+@@ -288,7 +288,7 @@ static void __devexit rackmeter_stop_cpu_sniffer(struct rackmeter *rm)
+ 	cancel_rearming_delayed_work(&rm->cpu[1].sniffer);
+ }
+ 
+-static int rackmeter_setup(struct rackmeter *rm)
++static int __devinit rackmeter_setup(struct rackmeter *rm)
+ {
+ 	pr_debug("rackmeter: setting up i2s..\n");
+ 	rackmeter_setup_i2s(rm);
+@@ -582,12 +582,12 @@ static struct of_device_id rackmeter_match[] = {
+ 	{ }
+ };
+ 
+-static struct macio_driver rackmeter_drv = {
++static struct macio_driver rackmeter_driver = {
+ 	.name = "rackmeter",
+ 	.owner = THIS_MODULE,
+ 	.match_table = rackmeter_match,
+ 	.probe = rackmeter_probe,
+-	.remove = rackmeter_remove,
++	.remove = __devexit_p(rackmeter_remove),
+ 	.shutdown = rackmeter_shutdown,
+ };
+ 
+@@ -596,14 +596,14 @@ static int __init rackmeter_init(void)
+ {
+ 	pr_debug("rackmeter_init()\n");
+ 
+-	return macio_register_driver(&rackmeter_drv);
++	return macio_register_driver(&rackmeter_driver);
+ }
+ 
+ static void __exit rackmeter_exit(void)
+ {
+ 	pr_debug("rackmeter_exit()\n");
+ 
+-	macio_unregister_driver(&rackmeter_drv);
++	macio_unregister_driver(&rackmeter_driver);
+ }
+ 
+ module_init(rackmeter_init);
