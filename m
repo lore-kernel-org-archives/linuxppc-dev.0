@@ -1,25 +1,16 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
-	by ozlabs.org (Postfix) with ESMTP id 58418DDDF0
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Nov 2008 02:41:39 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so251138qwb.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Nov 2008 07:41:37 -0800 (PST)
-Message-ID: <9e4733910811220735o378f785arfa3b577b2420f213@mail.gmail.com>
-Date: Sat, 22 Nov 2008 10:35:31 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Gianfranco Casanova" <gianfranco.casanova@alice.it>
-Subject: Re: R: R: USB on lite5200 does not work.
-In-Reply-To: <4927F7DF.6070605@alice.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <47602D18F269934AB73B7E550804A1E00213796C@FBCMST09V03.fbc.local>
-	<fa686aa40811200656g783947f5l609650b707c6c883@mail.gmail.com>
-	<47602D18F269934AB73B7E550804A1E00213796F@FBCMST09V03.fbc.local>
-	<fa686aa40811200749xd9f8701ud6ee9b77b4c21001@mail.gmail.com>
-	<47602D18F269934AB73B7E550804A1E002137973@FBCMST09V03.fbc.local>
-	<fa686aa40811210659l3b9a4eefwf6eb59f66386d379@mail.gmail.com>
-	<4927F7DF.6070605@alice.it>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 5F08EDDE19
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Nov 2008 03:25:45 +1100 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <20081122030653.GU6830@localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f35ce64a4d02ccbf84d3288dad3dc0f8@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: badness in xics_set_cpu_giq on JS20 blade
+Date: Sat, 22 Nov 2008 10:30:38 -0600
+To: Nathan Lynch <ntl@pobox.com>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,77 +20,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If you are using a 33.333Mz crystal it is not possible to generate
-exactly 48Mhz for USB. Best you can do is 48.11Mz. With a 33Mhz
-crystal you can make 48Mhz exactly. But that's probably not your
-problem, that just results in errors on the USB bus. Some USB devices
-don't care and others will get errors.
+On Sat Nov 22 at 14:06:53 EST in 2008, Nathan Lynch wrote:
+> With 2.6.28-rc5 the WARN_ON in xics_set_cpu_giq is triggering on a
+> JS20.  I changed it to a WARN to get the actual status returned:
+>
+> [boot]0020 XICS Init
+> set-indicator returned -22
+> ------------[ cut here ]------------
+> Badness at arch/powerpc/platforms/pseries/xics.c:733
+...
+> Call Trace:
+> [c0000000006b3ca0] [c000000000047450] .xics_set_cpu_giq+0x50/0x68 
+> (unreliable)
+> [c0000000006b3d10] [c0000000005927b8] .xics_init_IRQ+0x2f4/0x338
+> [c0000000006b3de0] [c000000000591bcc] .pseries_xics_init_IRQ+0x14/0x2c
+> [c0000000006b3e60] [c000000000580488] .init_IRQ+0x40/0x5c
+> [c0000000006b3ee0] [c0000000005787d8] .start_kernel+0x250/0x478
+> [c0000000006b3f90] [c0000000000083b8] .start_here_common+0x1c/0x64
+...
+> -22 is -EINVAL, which maps to a -3 return code from RTAS (see
+> rtas_error_rc).
+>
+> The system appears to boot and function normally after this, though.
+> FWIW, it looks like its firmware is up to date (FW08401160 from March
+> 2008).
 
-On Sat, Nov 22, 2008 at 7:15 AM, Gianfranco Casanova
-<gianfranco.casanova@alice.it> wrote:
-> Grant Likely ha scritto:
->>
->> On Fri, Nov 21, 2008 at 1:36 AM,  <gianfranco.casanova@alice.it> wrote:
->>>
->>> The main HW difference between our board and lite5200 is:
->>> console on PSC3 and
->>
->> [...]
->>>
->>> on our HW defined as:
->>>        /* Radionav configuration */
->>>        port_config =  0x0C712E66;
->>>
->>
->> You've got quite a bit of difference than just console on PSC3.  USB
->> is on the Ethernet pin group instead of on the USB pin group.  Does
->> the kernel change the value of port_config when it boots, or does it
->> leave the value setup by U-Boot intact?
->
-> As far as I sow from debugger no.
->
-> We are able to boot with a mini operating system (see previous post).
-> Plugging USB the system get frozen.
->
-> We have got the same version of kernel compiled on PPC ARCH and USB, in this
-> case, works.
->
-> Between PPC and PowerPC from debugger there is only one difference the label
-> for USB interrupt, in PPC is 50 in PowerPC is 134.
->
-> I've already checked CDM register and GPIO register and all are the same.
->
-> From USB register only one difference on HDDC values (not important from my
-> point of view).
->
-> Our processor frequency is different from lite5200. We are thinking that
-> scaling frequency processor to determine frequency of USB bus is different
-> in PPC and PowerPC. Other street we are looking for is some WR  patchs from
-> lite5200 on PowerPC that are not accepted from our HW.
->
->>> I still do not understand our bug with USB.
->>> Have you got some suggestions or some test to be performed in order to
->>> find
->>> out a solutions?
->>
->> Not over a quick exchange via email.
->
-> Yes of course :)
->
->> Your kernel is too old and USB
->> debugging can be complex.  I'd need to be working with your hardware
->> to figure out what is going on.
->
-> I see. We also wont debug USB.
-> Thaks J
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+b4963255ad5a426f04a0bb15c4315fa4bb40cde9 "Factor out cpu 
+joining/unjoining the GIQ" consolidated the join and remove call sites. 
+  Looking closer it also added warn if rtas-indicator returned an error 
+on join in addition to leave.
 
+I don't have my PAPR here, but from rtas_error_rc (rtas.c) -3 is /* Bad 
+indicator/domain/etc */.  This indicator was added to support cpu add 
+and remove.  I'm guessing js20 doesn't support that from rtas (ie 
+doesn't support cpu hotadd), and the indicator is not available.  (I 
+know js21 has it because I had a bit of time to see its broken 
+emulation of this call once).
 
+When we get control of a cpu from OF it is already in the joined state. 
+  We join on all threads because we need to do so on secondary threads 
+and because we did a remove on (previously all, but now secondary) 
+threads during kexec.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+If memory serves, there is a property in the rtas node to indicate each 
+sensor that is present.  If so, we should search for that property 
+before calling set-indicator.
+
+milton
