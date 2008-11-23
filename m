@@ -1,17 +1,20 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 127FEDDDFA
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Nov 2008 11:26:30 +1100 (EST)
-Date: Sat, 22 Nov 2008 18:26:15 -0600
-From: Nathan Lynch <ntl@pobox.com>
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EE55BDDDE7
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Nov 2008 15:08:44 +1100 (EST)
+Date: Sat, 22 Nov 2008 20:01:51 -0800 (PST)
+From: Trent Piepho <tpiepho@freescale.com>
 To: Milton Miller <miltonm@bga.com>
-Subject: Re: badness in xics_set_cpu_giq on JS20 blade
-Message-ID: <20081123002615.GW6830@localdomain>
-References: <20081122030653.GU6830@localdomain>
-	<f35ce64a4d02ccbf84d3288dad3dc0f8@bga.com>
+Subject: Re: [PATCH] powerpc: Better setup of boot page TLB entry
+In-Reply-To: <00e4dc93772a5517c4ac98d974d166ed@bga.com>
+Message-ID: <Pine.LNX.4.64.0811221242150.18022@t2.domain.actdsltmp>
+References: <00e4dc93772a5517c4ac98d974d166ed@bga.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f35ce64a4d02ccbf84d3288dad3dc0f8@bga.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux-ppc <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,137 +25,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Milton Miller wrote:
-> On Sat Nov 22 at 14:06:53 EST in 2008, Nathan Lynch wrote:
->> With 2.6.28-rc5 the WARN_ON in xics_set_cpu_giq is triggering on a
->> JS20.  I changed it to a WARN to get the actual status returned:
->>
->> [boot]0020 XICS Init
->> set-indicator returned -22
->> ------------[ cut here ]------------
->> Badness at arch/powerpc/platforms/pseries/xics.c:733
-> ...
->> Call Trace:
->> [c0000000006b3ca0] [c000000000047450] .xics_set_cpu_giq+0x50/0x68  
->> (unreliable)
->> [c0000000006b3d10] [c0000000005927b8] .xics_init_IRQ+0x2f4/0x338
->> [c0000000006b3de0] [c000000000591bcc] .pseries_xics_init_IRQ+0x14/0x2c
->> [c0000000006b3e60] [c000000000580488] .init_IRQ+0x40/0x5c
->> [c0000000006b3ee0] [c0000000005787d8] .start_kernel+0x250/0x478
->> [c0000000006b3f90] [c0000000000083b8] .start_here_common+0x1c/0x64
-> ...
->> -22 is -EINVAL, which maps to a -3 return code from RTAS (see
->> rtas_error_rc).
->>
->> The system appears to boot and function normally after this, though.
->> FWIW, it looks like its firmware is up to date (FW08401160 from March
->> 2008).
+On Sat, 22 Nov 2008, Milton Miller wrote:
+> On Thu Nov 20 at 06:14:30 EST in 2008, Trent Piepho wrote:
+>>  -       li      r7,0
+>>  -       lis     r6,PAGE_OFFSET at h
+>>  -       ori     r6,r6,PAGE_OFFSET at l
+>>  -       rlwimi  r6,r7,0,20,31
+>>  +       lis     r6,MAS2_VAL(PAGE_OFFSET, BOOKE_PAGESZ_64M, M_IF_SMP)@h
+>>  +       ori     r6,r6,MAS2_VAL(PAGE_OFFSET, BOOKE_PAGESZ_64M, M_IF_SMP)@l
 >
-> b4963255ad5a426f04a0bb15c4315fa4bb40cde9 "Factor out cpu  
-> joining/unjoining the GIQ" consolidated the join and remove call sites.  
-> Looking closer it also added warn if rtas-indicator returned an error on 
-> join in addition to leave.
+> I'm fine with this part, even if the expression is a bit long.  You might 
+> consider using LOAD_REG_IMMEDIATE from asm/ppc_asm.h to avoid duplicating the 
+> expression.
 
-Thanks, that makes it clear why we didn't see the warning before.
+LOAD_REG_IMMEDIATE isn't used at all in that file, while lis/ori is used
+many times.  In fact, there only one call of LOAD_REG_IMMEDIATE in all of
+arch/powerpc/kernel/*.S.  So I think lis/ori is more easily recognized. 
+And to be honest, I find switching syntax from assembly language
+instructions to C style macros that generate instructions to be
+aesthetically ugly.
 
+It would be nice if the assembler provided a "liw" macro instruction that
+would load an immediate.  When the assembler knows the immediate value, it
+could even generate shorter sequences in some cases, like when the upper
+16 bits are all zero.
 
-> I don't have my PAPR here, but from rtas_error_rc (rtas.c) -3 is /* Bad  
-> indicator/domain/etc */.  This indicator was added to support cpu add  
-> and remove.  I'm guessing js20 doesn't support that from rtas (ie  
-> doesn't support cpu hotadd), and the indicator is not available.  (I  
-> know js21 has it because I had a bit of time to see its broken emulation 
-> of this call once).
-
-Right, JS20 doesn't support cpu offline so it makes sense that the
-indicator isn't valid.
-
-
-> When we get control of a cpu from OF it is already in the joined state.  
-> We join on all threads because we need to do so on secondary threads and 
-> because we did a remove on (previously all, but now secondary) threads 
-> during kexec.
+>>  /* 7. Jump to KERNELBASE mapping */
+>>  -       lis     r6,KERNELBASE at h
+>>  -       ori     r6,r6,KERNELBASE at l
+>>  -       rlwimi  r6,r7,0,20,31
+>>  +       lis     r6,(KERNELBASE & ~0xfff)@h
+>>  +       ori     r6,r6,(KERNELBASE & ~0xfff)@l
 >
-> If memory serves, there is a property in the rtas node to indicate each  
-> sensor that is present.  If so, we should search for that property  
-> before calling set-indicator.
+> Why do you need to mask off the bottom bits of KERNEL_BASE?  Just trying to 
+> keep the instruction effect identical?
 
-I checked PAPR; it looks like we should be looking for an
-rtas-indicators property, which doesn't exist on this system.  It does
-exist on Power5 and Power6 systems I've checked, and it has the
-expected entry for GIQ (9005).
+Yes, so it was clear I wasn't changing what the code did here.  And to
+make it clear we only wanted the page number from KERNEL_BASE.  It's an
+obvious expression and a compile time constant, merely saving a few
+characters in the source doesn't seem worth much.  I realize it's
+unnecessary since those bits get masked off in the wlwimi a few
+instructions later.
 
-Something like this?  I've booted it on the problem JS20 as well as
-Power5 and 6.
+Really all I wanted to fix the was memory coherency on SMP bug.  But the
+code for MAS2 was stupid, so I had to change that to fix the bug in a
+non-ugly way.  But then r7 didn't need to be zeroed and the (unnecessary)
+"rlwimi r6,r7,0,20,31" would no longer be doing what's it's supposed to,
+so I fixed that too.
 
- arch/powerpc/include/asm/rtas.h       |    1 +
- arch/powerpc/kernel/rtas.c            |   22 ++++++++++++++++++++++
- arch/powerpc/platforms/pseries/xics.c |   11 ++++++++---
- 3 files changed, 31 insertions(+), 3 deletions(-)
+> First of all, if its not aligned, then its likely other parts of the kernel 
+> will break.  We could put a BUILD_BUG_ON somewhere (in c) if that check is 
+> required.
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index 8eaa7b2..4846f1f 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -168,6 +168,7 @@ extern void rtas_os_term(char *str);
- extern int rtas_get_sensor(int sensor, int index, int *state);
- extern int rtas_get_power_level(int powerdomain, int *level);
- extern int rtas_set_power_level(int powerdomain, int level, int *setlevel);
-+extern bool rtas_indicator_present(int indicator);
- extern int rtas_set_indicator(int indicator, int index, int new_value);
- extern int rtas_set_indicator_fast(int indicator, int index, int new_value);
- extern void rtas_progress(char *s, unsigned short hex);
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 1f8505c..6cd2434 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -566,6 +566,28 @@ int rtas_get_sensor(int sensor, int index, int *state)
- }
- EXPORT_SYMBOL(rtas_get_sensor);
- 
-+bool rtas_indicator_present(int indicator)
-+{
-+	int proplen, count, i;
-+	const struct indicator_elem {
-+		u32 token;
-+		u32 maxindex;
-+	} *indicators;
-+
-+	indicators = of_get_property(rtas.dev, "rtas-indicators", &proplen);
-+	if (!indicators)
-+		return false;
-+
-+	count = proplen / sizeof(struct indicator_elem);
-+
-+	for (i = 0; i < count; i++)
-+		if (indicators[i].token == indicator)
-+			return true;
-+
-+	return false;
-+}
-+EXPORT_SYMBOL(rtas_indicator_present);
-+
- int rtas_set_indicator(int indicator, int index, int new_value)
- {
- 	int token = rtas_token("set-indicator");
-diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
-index e190477..7f8fa33 100644
---- a/arch/powerpc/platforms/pseries/xics.c
-+++ b/arch/powerpc/platforms/pseries/xics.c
-@@ -728,9 +728,14 @@ static void xics_set_cpu_priority(unsigned char cppr)
- /* Have the calling processor join or leave the specified global queue */
- static void xics_set_cpu_giq(unsigned int gserver, unsigned int join)
- {
--	int status = rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
--		(1UL << interrupt_server_size) - 1 - gserver, join);
--	WARN_ON(status < 0);
-+	int status;
-+
-+	if (!rtas_indicator_present(GLOBAL_INTERRUPT_QUEUE))
-+		return;
-+
-+	status = rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
-+			(1UL << interrupt_server_size) - 1 - gserver, join);
-+	WARN(status < 0, "set-indicator returned %d\n", status);
- }
- 
- void xics_setup_cpu(void)
+I seems like "Require KERNEL_BASE to be page aligned and modify code to
+depend on said requirement" belongs in another patch.
+
+>>  -       addi    r6,r6,24
+>>  +       addi    r6,r6,(2f - 1b)
+>
+> and while doing assembler math is better than the hand computed 24, how about 
+> doing li r9,2f@l and just inserting that into r6?  Unless you expect step 8 
+> to cross a page from the 1b label above.  But if you are that close to a page 
+> boundary than assuming 1b is in the page at KERNEL_BASE would seem to be 
+> suspect.
+>
+> For that matter, just do LOAD_ADDR(2f) or LOAD_REG_IMMEDIATE(2f), which would 
+> give the same result, as KERNEL_BASE should be reflected the linked address 
+> of the kernel (I assume that you are not doing dynamic runtime relocation 
+> like ppc64 on the code up to here, otherwise the previous suggestion still 
+> works).
+
+I'm not sure if this code can be relocated or not.  If it isn't now, using
+non-position independent code won't make it any easier to make it
+relocatable.  It looks like the "bl 1f ; 1: mflr" sequence is used 13
+times in arch/powerpc/kernel/*.S, I wonder if all of them are unnecessary?
