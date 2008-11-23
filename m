@@ -1,22 +1,22 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from mail.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 690AADDDE6
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 22:45:47 +1100 (EST)
-Subject: Re: Erratic MPC8248 CPM2 I2C behaviour
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-In-Reply-To: <200812021150.26233.laurentp@cse-semaphore.com>
-References: <mailman.569.1227903153.29923.linuxppc-dev@ozlabs.org>
-	<49347317.5080600@consentry.com>
-	<1228207199.9867.69.camel@gentoo-jocke.transmode.se>
-	<200812021150.26233.laurentp@cse-semaphore.com>
-Content-Type: text/plain
-Date: Tue, 02 Dec 2008 12:45:44 +0100
-Message-Id: <1228218344.9867.87.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
-	Mike Ditto <mditto@consentry.com>
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <pavel@ucw.cz>
+Received: from UNKNOWN (gprs189-60.eurotel.cz [160.218.189.60])
+	by ozlabs.org (Postfix) with ESMTP id 4AE3CDDDEC
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 01:48:13 +1100 (EST)
+Date: Sun, 23 Nov 2008 13:31:54 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH 4/4] leds: Let GPIO LEDs keep their current state
+Message-ID: <20081123123154.GB7310@ucw.cz>
+References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
+	<1224889741-4167-4-git-send-email-tpiepho@freescale.com>
+	<1226933427.17109.15.camel@ted>
+	<Pine.LNX.4.64.0811201640570.11673@t2.domain.actdsltmp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0811201640570.11673@t2.domain.actdsltmp>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Richard Purdie <rpurdie@rpsys.net>,
+	Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,67 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-12-02 at 11:50 +0100, Laurent Pinchart wrote:
-> Hi Joakim,
-> 
-> On Tuesday 02 December 2008 09:39:59 Joakim Tjernlund wrote:
-> > On Mon, 2008-12-01 at 15:28 -0800, Mike Ditto wrote:
-> > > Laurent Pinchart <laurentp@cse-semaphore.com> wrote:
-> > > > Transmission timeout after one second. The first TX buffer descriptor
-> > > > status hasn't been modified by the CPM. The CPM state dump shows that
-> > > > processing of
-> > >
-> > > ...
-> > >
-> > > This sounds very similar to a problem I have seen on MPC8247 and
-> > > MPC8248.
-> > >
-> > > It could be a variation of the CPM bug documented by Freescale as
-> > > erratum CPM98.  But the key difference is that we see a persistent
-> > > failure, while the erratum only mentions a problem with "the next
-> > > transaction".  What we see is that once the I2C engine gets confused
-> > > by some anomaly on the SCL signal, it stops processing buffer
-> > > descriptors entirely until it is turned off and back on.  You can
-> > > observe this bug by momentarily grounding the SCL line (it's an
-> > > open-collector bus) with a jumper while you attempt an I/O.
-> > >
-> > > Our production equipment is using Linux 2.6 with the out-of-tree
-> > > i2c-algo-8260.c by Dan Malek and Brad Parker.  I modified this
-> > > driver to shut off the I2C controller and turn it back on when it
-> > > hits this problem, and now it can recover from this condition.
-> > >
-> > > However, this does not explain how the controller gets into the
-> > > frozen state in the first place.  We see it very rarely in production
-> > > units and have not been able to identify the cause.  If it is
-> > > similar to erratum CPM98 then it could be noise on the SCL signal or
-> > > perhaps an I2C device that doesn't conform to the protocol perfectly.
-> > > Also beware, if you are using some kind of multiplexer, that you don't
-> > > direct the multiplexer to switch to a different bus (segment) while a
-> > > transaction is in progress.
-> > >
-> > > In testing with the current (2.6.27) i2c-cpm.c driver, I found that
-> > > it is sufficient to #define I2C_CHIP_ERRATA to allow it to recover
-> > > from the CPM I2C freeze.  However, I don't know if I like this
-> > > approach because it turns off the I2C engine after every transfer,
-> > > even successful ones, and I don't know if this will affect reliability
-> > > or performance.  And I don't know if this will actually prevent the
-> > > freeze from happening, although I presume that it would protect the
-> > > I2C engine from getting confused by a glitch that happens while no
-> > > transfer is in progress.
-> > >
-> > > I am not aware of any documentation for what exactly the I2C_CHIP_ERRATA
-> > > conditional code in i2c-cpm.c is meant to work around.
+On Thu 2008-11-20 17:05:56, Trent Piepho wrote:
+> On Mon, 17 Nov 2008, Richard Purdie wrote:
+> > On Fri, 2008-10-24 at 16:09 -0700, Trent Piepho wrote:
+> >> +	if (template->keep_state)
+> >> +		state = !!gpio_get_value(led_dat->gpio) ^ led_dat->active_low;
+> >> +	else
+> >> +		state = template->default_state;
+> >>
+> >>  		state = of_get_property(child, "default-state", NULL);
+> >>  		led.default_state = state && !strcmp(state, "on");
+> >> +		led.keep_state = state && !strcmp(state, "keep");
+> >>
+> >> +++ b/include/linux/leds.h
+> >> @@ -138,7 +138,8 @@ struct gpio_led {
+> >>  	const char *default_trigger;
+> >>  	unsigned 	gpio;
+> >>  	u8 		active_low;
+> >> -	u8		default_state;
+> >> +	u8		default_state;	/* 0 = off, 1 = on */
+> >> +	u8		keep_state; /* overrides default_state */
+> >>  };
 > >
-> > The I2C_CHIP_ERRATA is mine and refers to mpc8xx, mpc860 in my case. The
-> > driver was adapted by me some years ago in 2.4 and now someone has
-> > ported it to 2.6 it seems. From memory, you should check that mrblr is
-> > one byte bigger than your max transfer size.
+> > How about something simpler here, just make default state have three
+> > different values - "keep", "on" and "off"? I'm not keen on having two
+> > different state variables like this.
 > 
-> I've checked that, there's no problem there. The transfer that fails doesn't 
-> involve any rx buffer anyway, so mrblr is irrelevant here.
+> I thought of that, but it ends up being more complex.  Instead of just
+> using:
+> static const struct gpio_led myled = {
+>  	.name = "something",
+>  	.keep_state = 1,
+> }
+> 
+> You'd do something like this:
+>  	.default_state = LEDS_GPIO_DEFSTATE_KEEP,
+> 
+> Is that better?
 
-hmm, as I recall that doesn't matter. Mrblr should always be > transfer
-size. This was for 8xx though so maybe it doesn't matter for you.
-Try setting mrblr = transfer size, see if that trigger any problems.
+Yes.
 
- Jocke
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
