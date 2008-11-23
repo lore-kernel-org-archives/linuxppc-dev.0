@@ -1,21 +1,21 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
+Return-Path: <ben@codiert.org>
+Received: from cursor.subgra.de (cursor.subgra.de [78.46.252.50])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 44F44DDDF8
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Nov 2008 23:50:26 +1100 (EST)
-Date: Sun, 23 Nov 2008 13:49:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/1] powerpc: make mcount a stub for dynamic ftrace
-Message-ID: <20081123124958.GM29663@elte.hu>
-References: <20081120215541.489725873@goodmis.org>
+	(Client CN "cursor.subgra.de", Issuer "cursor.subgra.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id EB5C1DDDF0
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Nov 2008 08:46:18 +1100 (EST)
+Date: Sun, 23 Nov 2008 22:46:11 +0100
+From: Benjamin Krill <ben@codiert.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add support for the nwp serial device
+Message-ID: <20081123214611.GS24487@codiert.org>
+References: <200811201501.24000.arnd@arndb.de>
+	<20081121132244.e9e9fd74.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081120215541.489725873@goodmis.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20081121132244.e9e9fd74.akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+* Andrew Morton | 2008-11-21 13:22:44 [-0800]:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+>(does a powerpc allmodconfig)
+>
+>drivers/serial/nwpserial.c:443: warning: data definition has no type or storage class
+>drivers/serial/nwpserial.c:443: warning: type defaults to 'int' in declaration of 'console_initcall'
+>drivers/serial/nwpserial.c:443: warning: parameter names (without types) in function declaration
+>drivers/serial/nwpserial.c:400: warning: 'nwpserial_console_init' defined but not used
+>
+>The file fails to include linux/init.h.  It should do so, but that
+>doesn't fix the above.
+>
+>Apparently it hasn't been tested as a kernel module...
 
-> Paul,
-> 
-> I have one more patch. I added it to the end of the ppc/ftrace 
-> branch. The new way of handling the finding of mcounts means we do 
-> not need to do anything in the mcount call itself. It should just be 
-> a stub and when ftrace is enabled, it will change the caller sites 
-> to call something other than mcount.
-> 
-> The following patches are in:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> 
->     branch: ppc/ftrace
-
-i've also pulled the ppc/ftrace branch into tip/tracing/powerpc, and 
-added it to ftrace-next's linux-next integration rules.
-
-So if Paul gives the green light that the commits have the right 
-structure, we can freeze down the branch and the SHA1's and integrate 
-it into ftrace-next. (which is integrated in linux-next after the 
-powerpc tree so should be all fine in terms of merge ordering)
-
-	Ingo
+Console support doesn't work when the driver is build as module, all
+other serial drivers did this with a further configuration option. Will
+send an updated patch which fixes this and the other issues.
