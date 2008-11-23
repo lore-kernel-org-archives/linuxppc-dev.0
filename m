@@ -1,22 +1,16 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from mail-qy0-f21.google.com (mail-qy0-f21.google.com
-	[209.85.221.21]) by ozlabs.org (Postfix) with ESMTP id 572E4DDDFB
+Return-Path: <TMJohnson@fyldemicro.com>
+Received: from fyldemicro.co.uk (www.fyldemicro.co.uk [213.48.132.32])
+	by ozlabs.org (Postfix) with ESMTP id E99BDDDDE6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Nov 2008 06:45:08 +1100 (EST)
-Received: by qyk14 with SMTP id 14so782057qyk.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Nov 2008 11:45:07 -0800 (PST)
-Message-ID: <4925BD0A.3030307@genesi-usa.com>
-Date: Thu, 20 Nov 2008 13:39:54 -0600
-From: Matt Sealey <matt@genesi-usa.com>
+	Mon, 24 Nov 2008 05:49:52 +1100 (EST)
 MIME-Version: 1.0
-To: Matteo Fortini <m.fortini@selcomgroup.com>
-Subject: Re: MPC512x SPI very high cpu load
-References: <49243010.9070106@selcomgroup.com>
-In-Reply-To: <49243010.9070106@selcomgroup.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C94D9A.8EB11095"
+Subject: SRAM
+Date: Sun, 23 Nov 2008 18:37:31 -0000
+Message-ID: <02296E583CC11C4D9365985B761F1DDE73613B@www.fyldemicro.co.uk>
+From: "Thomas Johnson" <TMJohnson@fyldemicro.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,21 +21,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
+------_=_NextPart_001_01C94D9A.8EB11095
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Matteo Fortini wrote:
-> Hi,
-> we're using the latest denx tree on an mpc512x, and we have a 
-> touchscreen on the spi which is talking at 100kHz.
-> 
-> The polling frequency is 5ms and we transmit around 20 bytes per poll.
-> 
-> If we keep the touchscreen pressed, cpu utilization goes to 70% for the 
-> spi task. This is quite strange, since I thought the mpc512x would be 
-> using DMA to feed the PSC FIFOs.
+We have a new PPC based board which includes some SRAM (actually
+Everspin MRAM).
+=20
+I can't work out the best way to mount this device or what filing system
+to run on it, any advice ?
+=20
+Thanks=20
+=20
+TJ
 
-If the SPI driver isn't using DMA then, it's not using DMA.
+------_=_NextPart_001_01C94D9A.8EB11095
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.6000.16735" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D809303318-23112008><FONT face=3DArial size=3D2>We =
+have a new PPC=20
+based board which includes&nbsp;some SRAM (actually Everspin=20
+MRAM).</FONT></SPAN></DIV>
+<DIV><SPAN class=3D809303318-23112008><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D809303318-23112008><FONT face=3DArial size=3D2>I =
+can't work out the=20
+best way to mount this&nbsp;device or what filing system to run on it, =
+any=20
+advice ?</FONT></SPAN></DIV>
+<DIV><SPAN class=3D809303318-23112008><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D809303318-23112008><FONT face=3DArial size=3D2>Thanks =
+
+</FONT></SPAN></DIV>
+<DIV><SPAN class=3D809303318-23112008><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D809303318-23112008><FONT face=3DArial=20
+size=3D2>TJ</FONT></SPAN></DIV></BODY></HTML>
+
+------_=_NextPart_001_01C94D9A.8EB11095--
