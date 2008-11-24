@@ -1,23 +1,14 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id BE34ADDDD4
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 05:00:38 +1100 (EST)
-Date: Mon, 24 Nov 2008 13:00:36 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 2/5] powerpc: ftrace, convert to new dynamic ftrace arch
-	API
-In-Reply-To: <18730.1723.708467.812600@drongo.ozlabs.ibm.com>
-Message-ID: <alpine.DEB.1.10.0811241256370.32561@gandalf.stny.rr.com>
-References: <20081120190948.057007623@goodmis.org>
-	<20081120191149.285359258@goodmis.org>
-	<18730.1723.708467.812600@drongo.ozlabs.ibm.com>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
+	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id E1CC5DDDD4
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 06:25:11 +1100 (EST)
+Message-ID: <492AFB92.8090100@harris.com>
+Date: Mon, 24 Nov 2008 14:08:02 -0500
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-	Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: How to partition a PCI device within OF?
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,59 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I have an FPGA that will be on the PCI bus of a PPC440 processor.
+The FPGA unfortunately can only have one "PCI function" (thus one
+vendor/device code).  The unfortunate part is that the FPGA has
+several logical functions, that should have separate drivers.
 
-On Mon, 24 Nov 2008, Paul Mackerras wrote:
+Is there a way that I can break out the single PCI device into
+several different sub-functions, with separate "sub-function
+drivers" using the OF infrastructure?
 
-> Steven Rostedt writes:
-> 
-> > Thanks to Paul Mackennas for pointing out the mistakes of my original
-> 
-> Mackerras
+What I'd like to do is pci_register_driver() once for the whole
+device, and when probed by the PCI subsystem, create several OF
+viewable sub-devices.  Then, I could have separate OF drivers bind
+to the newly created OF sub-devices.
 
-Heh, I have two reasons for that typo.
+If there are any examples of this, I'd appreciate a pointer.  Or
+if I'm completely wedged, and there is a better way to handle the
+situation, please say so.
 
- 1) I reference Paul McKenney a lot, and my fingers are programmed.
- 2) I type with the dvorak layout, and the 'r' is just above the 'n'.
-    qwerty 'o' == dvorak 'r'
-    qwerty 'l' == dvorak 'n'
-
-;-)
-
-> 
-> > +static int test_24bit_addr(unsigned long ip, unsigned long addr)
-> > +{
-> > +	long diff;
-> > +
-> > +	/*
-> > +	 * Can we get to addr from ip in 24 bits?
-> > +	 *  (26 really, since we mulitply by 4 for 4 byte alignment)
-> > +	 */
-> > +	diff = addr - ip;
-> > +
-> > +	/*
-> > +	 * Return true if diff is less than 1 << 25
-> > +	 *  and greater than -1 << 26.
-> > +	 */
-> > +	return (diff < (1 << 25)) && (diff > (-1 << 26));
-> 
-> I think this still isn't right, and the comment is one of those ones
-> that is only useful to people who can't read C, as it's just a
-> transliteration of the code.
-
-Argh!!! That must be a misfold.  I fixed that code.  The final version 
-ad the same shift for both.
-
-> 
-> The comment should say something like "Return true if diff can be
-> represented as a 26-bit twos-complement binary number" and the second
-> part of the test should be (diff >= (-1 << 25)).  However, since you
-> define a test_offset() function in patch 4/5 that does the same test
-> but using only one comparison instead of two, why don't you just say:
-> 
-> 	return !test_offset(diff);
-> 
-> (having first moved test_offset() before test_24bit_addr)?
-
-OK, will fix. Thanks. Hmm, maybe I ment to do that, and miss the patch :-/
-
--- Steve
+	Steve
