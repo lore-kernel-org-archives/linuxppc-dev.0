@@ -1,23 +1,17 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 11744DDDFB
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 07:59:07 +1100 (EST)
-Date: Mon, 24 Nov 2008 15:59:05 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 4/5] powerpc/ppc64: ftrace, handle module trampolines
-	for dyn ftrace
-In-Reply-To: <18730.4326.745599.500581@drongo.ozlabs.ibm.com>
-Message-ID: <alpine.DEB.1.10.0811241558040.907@gandalf.stny.rr.com>
-References: <20081120190948.057007623@goodmis.org>
-	<20081120191149.759009300@goodmis.org>
-	<18730.4326.745599.500581@drongo.ozlabs.ibm.com>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id A3407DDE0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 08:28:23 +1100 (EST)
+Date: Mon, 24 Nov 2008 15:19:54 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] hide attr_smt_snooze_delay reference with CONFIG_PPC64
+Message-ID: <20081124211954.GE6830@localdomain>
+References: <3122687188274b0dc514.424238335.miltonm@bga.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-	Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <3122687188274b0dc514.424238335.miltonm@bga.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,87 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Milton Miller wrote:
+> attr_smt_snooze_delay is defined for CONFIG_PPC64, so protect the attribute
+> removal with the same condition.
+> 
+> /data/home/miltonm/next.git/arch/powerpc/kernel/sysfs.c: In function ‘unregister_cpu_online’:
+> /data/home/miltonm/next.git/arch/powerpc/kernel/sysfs.c:722: error: ‘attr_smt_snooze_delay’ undeclared (first use in this function)
+> /data/home/miltonm/next.git/arch/powerpc/kernel/sysfs.c:722: error: (Each undeclared identifier is reported only once
+> /data/home/miltonm/next.git/arch/powerpc/kernel/sysfs.c:722: error: for each function it appears in.)
 
-Paul and Ingo,
-
-Would it be best for me to just refold these changes into the original 
-patch series, and update the git repo? Or should I apply these changes 
-on top of this series?
-
-Thanks,
-
--- Steve
-
-
-On Mon, 24 Nov 2008, Paul Mackerras wrote:
-
-> Steven Rostedt writes:
-> 
-> > +#ifdef CONFIG_PPC64
-> > +static int
-> > +__ftrace_make_nop(struct module *mod,
-> > +		  struct dyn_ftrace *rec, unsigned long addr)
-> > +{
-> > +	unsigned char replaced[MCOUNT_INSN_SIZE * 2];
-> > +	unsigned int *op = (unsigned *)&replaced;
-> 
-> This makes me a little nervous, since it looks to me to be breaking
-> aliasing rules.  I know we use -fno-strict-aliasing, but still it
-> would be better to avoid doing these casts if possible - and we should
-> be able to avoid most of them by using unsigned int for instructions
-> consistently, instead of a mix of unsigned int and unsigned char.
-> 
-> > +	DEBUGP("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
-> > +
-> > +	/* Find where the trampoline jumps to */
-> > +	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
-> > +		printk(KERN_ERR "Failed to read %lx\n", tramp);
-> > +		return -EFAULT;
-> > +	}
-> > +
-> > +	DEBUGP(" %08x %08x",
-> > +	       (unsigned)(*ptr >> 32),
-> > +	       (unsigned)*ptr);
-> > +
-> > +	offset = (unsigned)jmp[2] << 24 |
-> > +		(unsigned)jmp[3] << 16 |
-> > +		(unsigned)jmp[6] << 8 |
-> > +		(unsigned)jmp[7];
-> 
-> We don't seem to be checking that these instructions look like the
-> start of a trampoline created by module_64.c, which makes me a little
-> nervous.
-> 
-> If the kernel text goes over 32MB, the linker will insert trampolines
-> automatically.  Those trampolines either look like a direct branch to
-> the target, or else they look like this:
-> 
-> 	addis	r12,r2,xxxx
-> 	ld	r11,yyyy(r12)
-> 	mtctr	r11
-> 	bctr
-> 
-> where xxxx/yyyy gives the offset from the kernel TOC to the procedure
-> descriptor for the target.
-> 
-> Now, a kernel with > 32MB of text probably won't work for other
-> reasons at the moment (like the linker putting trampolines before the
-> interrupt vectors), so in a sense it doesn't matter.  It also doesn't
-> matter since we only get here for calls in modules (something that
-> could stand to be mentioned in a comment at the top of the function).
-> Nevertheless, I think it would be worthwhile to check that the first
-> two instructions look like the addis and addi that we are expecting.
-> 
-> > +	if (probe_kernel_write((void *)ip, replaced, MCOUNT_INSN_SIZE))
-> > +		return -EPERM;
-> > +
-> > +	return 0;
-> > +}
-> 
-> We don't seem to do anything to ensure I-cache consistency.  I think
-> we probably need a flush_icache_range call here.  Similarly in
-> __ftrace_make_call.
-> 
-> Paul.
-> 
-> 
+Is this one going in?  The build is also broken for powermac 32-bit
+SMP with HOTPLUG_CPU=y (which I can't figure out how to turn off,
+grr).  And this isn't confined to -next; mainline is broken too.
