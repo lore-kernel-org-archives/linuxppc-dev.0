@@ -1,21 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CB9B3DDDE6
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EDF10DDDF0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Nov 2008 06:47:36 +1100 (EST)
-Message-ID: <492B04BD.5060402@freescale.com>
-Date: Mon, 24 Nov 2008 13:47:09 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Bruce_Leonard@selinc.com
+	Tue, 25 Nov 2008 07:11:20 +1100 (EST)
+In-Reply-To: <492B04BD.5060402@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
 Subject: Re: Async DMA question regarding dma_async_memcpy_buf_to_buf
-References: <OFDD6E2111.A0808007-ON8825750B.0067D813-8825750B.0067EC1C@selinc.com>
-In-Reply-To: <OFDD6E2111.A0808007-ON8825750B.0067D813-8825750B.0067EC1C@selinc.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+MIME-Version: 1.0
+Message-ID: <OFDA95F0F0.C47AEAA0-ON8825750B.006E5AC8-8825750B.006EC783@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Mon, 24 Nov 2008 12:10:10 -0800
+Content-Type: text/plain; charset="US-ASCII"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,18 +25,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Bruce_Leonard@selinc.com wrote:
-> The hardware doesn't care (I'm using an MPC8347E), as far as the DMA 
-> engine is concerned these are just addresses.  All of this goes to cache 
-> coherency.  The map/unmap functions are supposed to ensure that data is 
-> copied and caches flushed at the right times to ensure cache coherency. So 
+Hi Scott,
+
+Thanks for the reply.
+
+> > 
+> > the question is this; is the dma_async_memcpy_buf_to_buf() function 
+> > intended to be bi-directional and is it safe to pass it a 'src' 
+pointer 
+> > that's actually coming from the device, or does there need to be a 
+second 
+> > function for doing a copy from the device to the CPU?
 > 
-> the question is this; is the dma_async_memcpy_buf_to_buf() function 
-> intended to be bi-directional and is it safe to pass it a 'src' pointer 
-> that's actually coming from the device, or does there need to be a second 
-> function for doing a copy from the device to the CPU?
+> The "device" is the DMA engine, thus src is inherently going to the 
+> device and dest is inherently coming from the device.
+>
 
-The "device" is the DMA engine, thus src is inherently going to the 
-device and dest is inherently coming from the device.
+Yes, I understand the directions and what they apply to, that's obvious 
+from the macros themselves.  What I don't understand is if it's safe, from 
+a kernel/cache standpoint, to pass to the function a src pointer coming 
+_from_ the device and a dest pointer that's going _to_ the device?  In 
+other words, can I use this function to _write_ to a DMA slave?  If not, 
+there's a functionality missing from the async DMA engine.
 
--Scott
+Thanks.
+
+Bruce
