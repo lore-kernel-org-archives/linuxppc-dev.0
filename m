@@ -1,14 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18730.8642.411162.434102@drongo.ozlabs.ibm.com>
-Date: Mon, 24 Nov 2008 14:38:42 +1100
+Message-ID: <18730.8645.259037.395678@drongo.ozlabs.ibm.com>
+Date: Mon, 24 Nov 2008 14:38:45 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull from 'merge' branch (for 2.6.28)
-In-Reply-To: <Pine.LNX.4.64.0811191512490.15955@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0811191512490.15955@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+To: Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: [GIT PULL] Please pull spufs.git merge branch
+In-Reply-To: <200811211022.48669.jk@ozlabs.org>
+References: <200811211022.48669.jk@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,11 +18,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+Jeremy Kerr writes:
 
-> Please pull from 'merge' branch of
+> Please do a:
 > 
-> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
+> git pull \
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jk/spufs.git merge
+> 
+> For a spufs bugfix
 
 Pulled and pushed out, but I will wait until Linus is back from
 vacation before asking him to pull.
