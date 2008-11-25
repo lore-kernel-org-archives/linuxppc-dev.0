@@ -1,24 +1,38 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
-	by ozlabs.org (Postfix) with ESMTP id 4EA17DDE0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 08:14:43 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id d11so93303and.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 13:14:42 -0800 (PST)
-Message-ID: <b5e2fc790811251314g78547a25hb52158244c1e539@mail.gmail.com>
-Date: Tue, 25 Nov 2008 15:14:41 -0600
-From: "Matt Sealey" <matt@genesi-usa.com>
-To: "Wolfgang Denk" <wd@denx.de>
-Subject: Re: [PATCH/RFC] Add Alternative Log Buffer Support for printk Messages
-In-Reply-To: <20081125210502.92402834B020@gemini.denx.de>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_17422_1227311.1227647681876"
-References: <20081125135519.038abf23@zod.rchland.ibm.com>
-	<C5518C2F.13137%gerickson@nuovations.com>
-	<b5e2fc790811251131g63ea9444x57ec0829ca0b069e@mail.gmail.com>
-	<20081125210502.92402834B020@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	Grant Erickson <gerickson@nuovations.com>
+Return-Path: <hollisb@us.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CF764DDE24
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 08:17:41 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e38.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mAPLGYRw030882
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 14:16:34 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mAPLHXtx115046
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 14:17:33 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mAPLHVrl027899
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 14:17:32 -0700
+Subject: Re: [PATCH] [v3] powerpc/4xx: work around CHIP11 errata in a more
+	PAGE_SIZE-friendly way
+From: Hollis Blanchard <hollisb@us.ibm.com>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <e46a947625709d642a08e101e70b1e24@bga.com>
+References: <4b6790c7a989dce8c200000687275224@bga.com>
+	<84e16946c1ed4b782568f6492931512a@bga.com>
+	<200811141609.44161.hollisb@us.ibm.com>
+	<1227557235.17746.25.camel@localhost.localdomain>
+	<1227571828.20022.5.camel@localhost>
+	<e46a947625709d642a08e101e70b1e24@bga.com>
+Content-Type: text/plain
+Date: Tue, 25 Nov 2008 15:17:30 -0600
+Message-Id: <1227647850.7434.31.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>, Wolfgang Denk <wd@denx.de>,
+	Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,56 +42,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_17422_1227311.1227647681876
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Tue, Nov 25, 2008 at 3:05 PM, Wolfgang Denk <wd@denx.de> wrote:
-
-> Dear Matt,
->
-> In message <b5e2fc790811251131g63ea9444x57ec0829ca0b069e@mail.gmail.com>
-> you wrote:
+On Tue, 2008-11-25 at 11:10 -0600, Milton Miller wrote:
+> On Nov 24, 2008, at 6:10 PM, Michael Ellerman wrote:
+> > On Mon, 2008-11-24 at 14:07 -0600, Hollis Blanchard wrote:
+> >> On Fri, 2008-11-14 at 16:09 -0600, Hollis Blanchard wrote:
+> >>>
+> >>> If this is all too much, then I'm close to giving up and burning a
+> >>> 64KB page, which requires only ALIGN_DOWN() in the kernel.
+> >>
+> >> ppc: force memory size to be a multiple of PAGE_SIZE
+> >>
+> >> Ensure that total memory size is page-aligned, because otherwise
+> >> bootmem.c gets upset.
+> >>
+> >> This error case was triggered by using 64 KiB pages in the kernel 
+> >> while
+> >> arch/powerpc/boot/4xx.c arbitrarily reduced the amount of memory by 
+> >> 4096 (to
+> >> work around the "CHIP11" errata which affects the last 256 bytes of 
+> >> physical memory).
+> >>
+> >> Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+> >> ---
+> >> This is on a common code path, and lmb_enforce_memory_limit() will now
+> >> always take action, so wider testing would be good.
+> >>
+> >> This patch supercedes http://patchwork.ozlabs.org/patch/8211/ .
+> >>
+> >> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> >> --- a/arch/powerpc/kernel/prom.c
+> >> +++ b/arch/powerpc/kernel/prom.c
+> >> @@ -1200,6 +1200,11 @@ void __init early_init_devtree(void *par
+> >>  	early_reserve_mem();
+> >>  	phyp_dump_reserve_mem();
+> >>
+> >> +	/* Ensure that total memory size is page-aligned, because otherwise
+> >> +	 * bootmem.c gets upset. */
+> >> +	lmb_analyze();
+> >> +	memory_limit = lmb_phys_mem_size() & PAGE_MASK;
 > >
-> > There is also no reason you can't hard-code the locations into the device
-> > tree, to support older U-Boots that don't know about
-> > /chosen/linux,log-metadata and /chosen/linux,log-buffer*.
->
-> Actually there is such reason - U-Boot traditionally allocates the log
-> buffer close to the upper end of system memory, so the start address
-> depends on the memory size on the board, which may vary.
->
+> > All of the current code using memory_limit looks like it'll be safe 
+> > with
+> > this change, although there are several cases of this we could remove:
+> >
+> > if (memory_limit && <some other condition>)
+> >
+> > Because memory_limit will now always be true.
+> 
+> memory_limit was the result of parsing mem= from the command line.   
+> Does this break that?
 
+If you're asking me, no, the patch doesn't break that. early_parse_mem()
+already aligns memory_limit, so the additional mask does nothing.
 
-I think I covered that in "I can think of a bunch of reasons why it's a good
-idea.. " - but the current implementation is hardcoded in the kernel so
-there is no problem with *certain* boards having it done this way, and that
-information being moved from the kernel into a static entry in a device
-tree.
+> > Still, I think it would be better to only set memory_limit when the mem
+> > size is not a multiple of the PAGE_SIZE - so that memory_limit retains
+> > it's function as both the value of the limit and a boolean.
+> 
+> I would have expected this trimming to occur where we actually transfer 
+> the memory from lmb to bootmem, since it is bootmem that has the 
+> aligned size requirement.
+
+No good; since LMB knows the memory exists, it allocates space for the
+unflattened device tree in the last page, and then uses
+reserve_bootmem() for that space and again, bootmem BUG()s.
+
+Anyways, the LMB interface is wide, with lots of users directly
+accessing LMB data structures. There are enough permutations of highmem,
+crashdump kernels, et al that I don't feel comfortable trying to audit
+and test all the LMB users.
 
 -- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
-
-------=_Part_17422_1227311.1227647681876
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<br><br><div class="gmail_quote">On Tue, Nov 25, 2008 at 3:05 PM, Wolfgang Denk <span dir="ltr">&lt;<a href="mailto:wd@denx.de">wd@denx.de</a>&gt;</span> wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Dear Matt,<br>
-<div class="Ih2E3d"><br>
-In message &lt;<a href="mailto:b5e2fc790811251131g63ea9444x57ec0829ca0b069e@mail.gmail.com">b5e2fc790811251131g63ea9444x57ec0829ca0b069e@mail.gmail.com</a>&gt; you wrote:<br>
-&gt;<br>
-&gt; There is also no reason you can&#39;t hard-code the locations into the device<br>
-&gt; tree, to support older U-Boots that don&#39;t know about<br>
-&gt; /chosen/linux,log-metadata and /chosen/linux,log-buffer*.<br>
-<br>
-</div>Actually there is such reason - U-Boot traditionally allocates the log<br>
-buffer close to the upper end of system memory, so the start address<br>
-depends on the memory size on the board, which may vary.<br>
-</blockquote><div><br><br>I think I covered that in &quot;I can think of a bunch of reasons why it&#39;s a good idea.. &quot; - but the current implementation is hardcoded in the kernel so there is no problem with *certain* boards having it done this way, and that information being moved from the kernel into a static entry in a device tree.<br>
-&nbsp;</div></div>-- <br>Matt Sealey &lt;<a href="mailto:matt@genesi-usa.com">matt@genesi-usa.com</a>&gt;<br>Genesi, Manager, Developer Relations<br>
-
-------=_Part_17422_1227311.1227647681876--
+Hollis Blanchard
+IBM Linux Technology Center
