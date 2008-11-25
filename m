@@ -1,19 +1,23 @@
 Return-Path: <miltonm@bga.com>
 Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 47303DDE0A
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 04:04:58 +1100 (EST)
-In-Reply-To: <6E1FF753-110E-4DCF-966C-C73FC454368C@kernel.crashing.org>
-References: <00e4dc93772a5517c4ac98d974d166ed@bga.com>
-	<Pine.LNX.4.64.0811221242150.18022@t2.domain.actdsltmp>
-	<6E1FF753-110E-4DCF-966C-C73FC454368C@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id D1061DDE19
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 04:05:35 +1100 (EST)
+In-Reply-To: <1227571828.20022.5.camel@localhost>
+References: <4b6790c7a989dce8c200000687275224@bga.com>
+	<84e16946c1ed4b782568f6492931512a@bga.com>
+	<200811141609.44161.hollisb@us.ibm.com>
+	<1227557235.17746.25.camel@localhost.localdomain>
+	<1227571828.20022.5.camel@localhost>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9621091c6370601dbe24c741ce8be54a@bga.com>
+Message-Id: <e46a947625709d642a08e101e70b1e24@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] powerpc: Better setup of boot page TLB entry
-Date: Tue, 25 Nov 2008 11:03:35 -0600
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>, Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH] [v3] powerpc/4xx: work around CHIP11 errata in a more
+	PAGE_SIZE-friendly way
+Date: Tue, 25 Nov 2008 11:10:38 -0600
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>, Wolfgang Denk <wd@denx.de>,
+	Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,157 +27,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Nov 23, 2008, at 11:01 PM, Kumar Gala wrote:
-> On Nov 22, 2008, at 10:01 PM, Trent Piepho wrote:
->> On Sat, 22 Nov 2008, Milton Miller wrote:
->>> On Thu Nov 20 at 06:14:30 EST in 2008, Trent Piepho wrote:
->>>> -       li      r7,0
->>>> -       lis     r6,PAGE_OFFSET at h
->>>> -       ori     r6,r6,PAGE_OFFSET at l
->>>> -       rlwimi  r6,r7,0,20,31
->>>> +       lis     r6,MAS2_VAL(PAGE_OFFSET, BOOKE_PAGESZ_64M, 
->>>> M_IF_SMP)@h
->>>> +       ori     r6,r6,MAS2_VAL(PAGE_OFFSET, BOOKE_PAGESZ_64M, 
->>>> M_IF_SMP)@l
+On Nov 24, 2008, at 6:10 PM, Michael Ellerman wrote:
+> On Mon, 2008-11-24 at 14:07 -0600, Hollis Blanchard wrote:
+>> On Fri, 2008-11-14 at 16:09 -0600, Hollis Blanchard wrote:
 >>>
->>> I'm fine with this part, even if the expression is a bit long.  You 
->>> might
->>> consider using LOAD_REG_IMMEDIATE from asm/ppc_asm.h to avoid 
->>> duplicating the
->>> expression.
+>>> If this is all too much, then I'm close to giving up and burning a
+>>> 64KB page, which requires only ALIGN_DOWN() in the kernel.
 >>
->> LOAD_REG_IMMEDIATE isn't used at all in that file, while lis/ori is 
->> used
->> many times.  In fact, there only one call of LOAD_REG_IMMEDIATE in 
->> all of
->> arch/powerpc/kernel/*.S.  So I think lis/ori is more easily 
->> recognized.
->> And to be honest, I find switching syntax from assembly language
->> instructions to C style macros that generate instructions to be
->> aesthetically ugly.
+>> ppc: force memory size to be a multiple of PAGE_SIZE
+>>
+>> Ensure that total memory size is page-aligned, because otherwise
+>> bootmem.c gets upset.
+>>
+>> This error case was triggered by using 64 KiB pages in the kernel 
+>> while
+>> arch/powerpc/boot/4xx.c arbitrarily reduced the amount of memory by 
+>> 4096 (to
+>> work around the "CHIP11" errata which affects the last 256 bytes of 
+>> physical memory).
+>>
+>> Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+>> ---
+>> This is on a common code path, and lmb_enforce_memory_limit() will now
+>> always take action, so wider testing would be good.
+>>
+>> This patch supercedes http://patchwork.ozlabs.org/patch/8211/ .
+>>
+>> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+>> --- a/arch/powerpc/kernel/prom.c
+>> +++ b/arch/powerpc/kernel/prom.c
+>> @@ -1200,6 +1200,11 @@ void __init early_init_devtree(void *par
+>>  	early_reserve_mem();
+>>  	phyp_dump_reserve_mem();
+>>
+>> +	/* Ensure that total memory size is page-aligned, because otherwise
+>> +	 * bootmem.c gets upset. */
+>> +	lmb_analyze();
+>> +	memory_limit = lmb_phys_mem_size() & PAGE_MASK;
+>
+> All of the current code using memory_limit looks like it'll be safe 
+> with
+> this change, although there are several cases of this we could remove:
+>
+> if (memory_limit && <some other condition>)
+>
+> Because memory_limit will now always be true.
 
-The macro is more useful for the 64 bit case where it uses its arguemnt 
-4 times.  The usage was severely reduced with the 64 bit relocatable 
-patch, where *IMMEDIATE was not relocated but LOAD_ADDR was.
-
->> It would be nice if the assembler provided a "liw" macro instruction 
->> that
->> would load an immediate.  When the assembler knows the immediate 
->> value, it
->> could even generate shorter sequences in some cases, like when the 
->> upper
->> 16 bits are all zero.
-
-One thing that is nice about powerpc assembly is that all instructions 
-and macros are fixed length.  That means we don't need to do multiple 
-passes to figure out how many bytes we need for that source line.  In 
-fact, I think all the standard macros are just alias formatting of one 
-instruction.   At a minimum, you would only want the zero detection 
-when it was a constant.
-
-
-> I agree lis/ori is what should be used in this file and am not 
-> interested in changing it at this point.
-
-It was only a light consider comment and would not have prompted the 
-email.
-
+memory_limit was the result of parsing mem= from the command line.   
+Does this break that?
 
 >
->>>> /* 7. Jump to KERNELBASE mapping */
->>>> -       lis     r6,KERNELBASE at h
->>>> -       ori     r6,r6,KERNELBASE at l
->>>> -       rlwimi  r6,r7,0,20,31
->>>> +       lis     r6,(KERNELBASE & ~0xfff)@h
->>>> +       ori     r6,r6,(KERNELBASE & ~0xfff)@l
->>>
->>> Why do you need to mask off the bottom bits of KERNEL_BASE?  Just 
->>> trying to
->>> keep the instruction effect identical?
->>
->> Yes, so it was clear I wasn't changing what the code did here.  And to
->> make it clear we only wanted the page number from KERNEL_BASE.  It's 
->> an
->> obvious expression and a compile time constant, merely saving a few
->> characters in the source doesn't seem worth much.  I realize it's
->> unnecessary since those bits get masked off in the wlwimi a few
->> instructions later.
+> Still, I think it would be better to only set memory_limit when the mem
+> size is not a multiple of the PAGE_SIZE - so that memory_limit retains
+> it's function as both the value of the limit and a boolean.
 
-You realize it after studying the code, but the next person reading may 
-not.   My take is putting this longer expression makes the code harder 
-to read and a changelog comment pointing out that the lower bits are 
-overwritten would have eliminated the need for this ugly expression.
-
->> Really all I wanted to fix the was memory coherency on SMP bug.  But 
->> the
->> code for MAS2 was stupid, so I had to change that to fix the bug in a
->> non-ugly way.  But then r7 didn't need to be zeroed and the 
->> (unnecessary)
->> "rlwimi r6,r7,0,20,31" would no longer be doing what's it's supposed 
->> to,
->> so I fixed that too.
->>
->>> First of all, if its not aligned, then its likely other parts of the 
->>> kernel
->>> will break.  We could put a BUILD_BUG_ON somewhere (in c) if that 
->>> check is
->>> required.
->>
->> I seems like "Require KERNEL_BASE to be page aligned and modify code 
->> to
->> depend on said requirement" belongs in another patch.
-
-Well, I could write one, but I don't have any hardware to test.
-
-And the above code depends on the alignement, by the fact that it 
-inserts the 4k offset into kernel base.
-
->>>> -       addi    r6,r6,24
->>>> +       addi    r6,r6,(2f - 1b)
->>>
->>> and while doing assembler math is better than the hand computed 24, 
->>> how about
->>> doing li r9,2f@l and just inserting that into r6?  Unless you expect 
->>> step 8
->>> to cross a page from the 1b label above.  But if you are that close 
->>> to a page
->>> boundary than assuming 1b is in the page at KERNEL_BASE would seem 
->>> to be
->>> suspect.
->>>
->>> For that matter, just do LOAD_ADDR(2f) or LOAD_REG_IMMEDIATE(2f), 
->>> which would
->>> give the same result, as KERNEL_BASE should be reflected the linked 
->>> address
->>> of the kernel (I assume that you are not doing dynamic runtime 
->>> relocation
->>> like ppc64 on the code up to here, otherwise the previous suggestion 
->>> still
->>> works).
->>
->> I'm not sure if this code can be relocated or not.  If it isn't now, 
->> using
->> non-position independent code won't make it any easier to make it
->> relocatable.  It looks like the "bl 1f ; 1: mflr" sequence is used 13
->> times in arch/powerpc/kernel/*.S, I wonder if all of them are 
->> unnecessary?
->
-> We support relocation of this kernel so any changes need to be tried 
-> out w/CONFIG_RELOCATABLE enabled.
-
-The question was not does the kernel support CONFIG_RELOCATABLE, the 
-question was 'will some agent relocate the kernel to be running at its 
-loaded location before this code (which appears to be very early) is 
-run', or does the RELOCATABLE code for this flavor work by adjusting 
-the linear mapping offset (which is what I thought it did).
-
->
-> I'm fine with the patch as is and any other changes should be follow 
-> on patches.
->
-> - k
-
-I don't have any booke hardware, so I'm less likely to look at this 
-code.  Any changes from me would only be compile changes.
+I would have expected this trimming to occur where we actually transfer 
+the memory from lmb to bootmem, since it is bootmem that has the 
+aligned size requirement.
 
 milton
