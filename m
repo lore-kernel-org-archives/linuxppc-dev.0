@@ -1,19 +1,18 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 108ADDDE22
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id B0EEFDDDEE
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Nov 2008 08:36:17 +1100 (EST)
-In-Reply-To: <492B1C74.9070700@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Async DMA question regarding dma_async_memcpy_buf_to_buf
+	Tue, 25 Nov 2008 23:40:52 +1100 (EST)
+Message-ID: <492BD099.9000903@windriver.com>
+Date: Tue, 25 Nov 2008 18:16:57 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Message-ID: <OF02253237.E6F76439-ON8825750B.00763582-8825750B.00768F99@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Mon, 24 Nov 2008 13:35:10 -0800
-Content-Type: text/plain; charset="US-ASCII"
+To: Benjamin Walsh <walsh.benj@gmail.com>
+Subject: Re: NMI and AMD8131/8111 on Maple board
+References: <DF6C7BC3780EE44B83430A9F756D43B6086F5441@SJEXCH03.ds.jdsu.net>	<113760FDF39C3E40AAB8DE6E6C64D0A781B747@zch01exm26.fsl.freescale.net>
+	<012201c94e74$3dbb55b0$e693e080@corp.ad.wrs.com>
+In-Reply-To: <012201c94e74$3dbb55b0$e693e080@corp.ad.wrs.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,27 +24,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 11/24/2008 01:28:20 PM:
-
-> Bruce_Leonard@selinc.com wrote:
-> > Maybe (with you clarification) this is starting to make sense.  It 
-doesn't 
-> > matter if the "src" is host memory or PCI space.  What the "src" and 
-it's 
-> > DMA_TO_DEVICE mapping is saying to the kernel is "this data needs to 
-be 
-> > moved into the DMA engine", while the "dest" and it's DMA_FROM_DEIVCE 
-> > mapping is telling the kernel "this data needs to be moved from the 
-DMA 
-> > engine".
+Benjamin Walsh wrote:
+> Hi all,
 > 
-> Right.
+> I've written EDAC support for the AMD8131/8111 chips that are present on a
+> Maple board (PPC970FX with IBM CPC925 memory controller/bridge), currently
+> running in poll mode. I am now trying to get this to work in interrupt mode.
+> These two chipsets have a feature that enables triggering an NMI when an
+> error is detected (PERR and SERR). How can this be hooked into the interrupt
+> system on a PPC board ?
 > 
-> -Scott
+>>From what I understand from the doc for these chipsets, the NMI will
+> delivered as a HT message to the CPC925 on this board. What I don't get is
+> how will this be delivered to the CPU, and on what interrupt line ? The HT
+> message sent to the CPC925 is the following:
+> 
+> MT = NMI
+> TM = edge
+> DM = physical
+> INTRDEST = 'hFF (all)
+> VECTOR = 'h00 (does not matter)
+> 
 
-Thank you sooooo much.  Now it makes sense.  I guess I was getting bogged 
-down in the hardware sense of "src" and "dest"
+The AMD8131/8130 can generate an NMI to the CPC925. There is an interrupt
+controller resided in the CPC925. And you know the CPC925 is attached the
+PowerPC PPC970FX. The interrupt controller collects and distributes system
+interrupts from the PCI Express and HyperTransport blocks. So you should get the
+map connection based on the system in detail. Often these information should be
+defined in the corresponding dtc.
 
-Thanks again.
+Best Regards
+Tiejun
 
-Bruce
+> Any help appreciated.
+> 
+> Thanks,
+> Ben
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
