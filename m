@@ -1,22 +1,23 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id 7D6B3DDD0B
+Return-Path: <walsh.benj@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id 29106DDDE3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 26 Nov 2008 06:45:03 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so70883ywh.39
+	Wed, 26 Nov 2008 09:22:38 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so107143yxg.39
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Nov 2008 11:45:02 -0800 (PST)
-Message-ID: <b5e2fc790811251145r396d4528m23e5743e2fef9142@mail.gmail.com>
-Date: Tue, 25 Nov 2008 13:45:01 -0600
-From: "Matt Sealey" <matt@genesi-usa.com>
-To: "Thomas Johnson" <TMJohnson@fyldemicro.com>
-Subject: Re: SRAM
-In-Reply-To: <02296E583CC11C4D9365985B761F1DDE73613B@www.fyldemicro.co.uk>
+	Tue, 25 Nov 2008 14:22:37 -0800 (PST)
+From: "Benjamin Walsh" <walsh.benj@gmail.com>
+To: "Chen, Tiejun" <Tiejun.Chen@windriver.com>
+References: <DF6C7BC3780EE44B83430A9F756D43B6086F5441@SJEXCH03.ds.jdsu.net>	<113760FDF39C3E40AAB8DE6E6C64D0A781B747@zch01exm26.fsl.freescale.net>
+	<012201c94e74$3dbb55b0$e693e080@corp.ad.wrs.com>
+	<492BD099.9000903@windriver.com>
+Subject: RE: NMI and AMD8131/8111 on Maple board
+Date: Tue, 25 Nov 2008 17:22:25 -0500
+Message-ID: <013801c94f4c$51d25f20$e693e080@corp.ad.wrs.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_15641_30668592.1227642301818"
-References: <AclNmotrM/DrqMJlQRiP+5XNFUf3TA==>
-	<02296E583CC11C4D9365985B761F1DDE73613B@www.fyldemicro.co.uk>
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <492BD099.9000903@windriver.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,71 +29,104 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_15641_30668592.1227642301818
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Is it memory mapped somewhere? If it is you can emulate an MTD using the
-"slram" driver.
+> The AMD8131/8130 can generate an NMI to the CPC925. There is 
+> an interrupt
+> controller resided in the CPC925. And you know the CPC925 is 
+> attached the
+> PowerPC PPC970FX. The interrupt controller collects and 
+> distributes system
+> interrupts from the PCI Express and HyperTransport blocks. So 
+> you should get the
+> map connection based on the system in detail. Often these 
+> information should be
+> defined in the corresponding dtc.
 
-Then you can just use whatever you like on top - JFFS2 or something that
-thinks it's going to be on flash or something, ext2 if you're nuts. But,
-seriously, with slram you *can* go nuts.
+The only DTS I have is the one I extracted from a running target. This is
+part of the entry for the 8111:
 
-On Sun, Nov 23, 2008 at 12:37 PM, Thomas Johnson
-<TMJohnson@fyldemicro.com>wrote:
+        ht@0 {  
+                ranges = <0x81000000 0x0 0x0 0x0 0xf4000000 0x0 0x400000
+0x82000000 0x0 0x80000000 0x0 0x80000000 0x0 0x70000000>;
+                reg = <0x0 0xf2000000 0x3000000>;
+                device_type = "ht";
+                bus-range = <0x0 0x5>;
+                compatible = "u3-ht";
+                interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+                interrupt-map = <
+                        0x0900 0x0 0x0 0x0 0x6103fa00 0x00 0x1
+                        0x1100 0x0 0x0 0x0 0x6103fa00 0x00 0x1
+                        0x1900 0x0 0x0 0x0 0x6103fa00 0x00 0x1
+                        0x2100 0x0 0x0 0x0 0x6103fa00 0x00 0x1
+                        0x3000 0x0 0x0 0x0 0x6103fa00 0x00 0x1
+                        0x3200 0x0 0x0 0x4 0x6103fa00 0x19 0x1
+                        0x3300 0x0 0x0 0x0 0x6103fa00 0x00 0x1
+                        0x3400 0x0 0x0 0x3 0x6103fa00 0xff 0x1
+                        0x3500 0x0 0x0 0x2 0x6103fa00 0x17 0x1
+                        0x3600 0x0 0x0 0x2 0x6103fa00 0x17 0x1
+                        0x3700 0x0 0x0 0x0 0x6103fa00 0x00 0x1>;
+                #address-cells = <0x3>;
+                linux,phandle = <0x61043600>;
+                name = "ht";
+                #interrupt-cells = <0x1>;
+                #size-cells = <0x2>; 
 
->  We have a new PPC based board which includes some SRAM (actually Everspin
-> MRAM).
->
-> I can't work out the best way to mount this device or what filing system to
-> run on it, any advice ?
->
-> Thanks
->
-> TJ
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+And this is the CPC925, with its interrupt controller:
 
+        hostbridge@f8000000 {
+                reg = <0xf8000000 0x1000000>;
+                device_type = "memory-controller";
+                compatible = "u3";
+                #address-cells = <0x1>;
+                linux,phandle = <0x61044000>;
+                name = "hostbridge";
+                #size-cells = <0x1>;
 
+                dart@f8033000 {
+                        reg = <0xf8033000 0x7000>;
+                        device_type = "dart";
+                        compatible = "u3-dart", "dart";
+                        linux,phandle = <0x61045e00>;
+                        name = "dart";
+                };
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+                interrupt-controller@f8040000 {
+                        reg = <0xf8040000 0x40000>;
+                        device_type = "open-pic";
+                        interrupt-controller;
+                        compatible = "open-pic";
+                        big-endian;
+                        built-in;
+                        #address-cells = <0x0>;
+                        linux,phandle = <0x6103fa00>;
+                        name = "interrupt-controller";
+                        clock-frequency = <0x0>;
+                        #interrupt-cells = <0x2>;
+                };
 
-------=_Part_15641_30668592.1227642301818
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+And I think this is the part of the LPC bridge entry:
 
-Is it memory mapped somewhere? If it is you can emulate an MTD using the &quot;slram&quot; driver.<br><br>Then you can just use whatever you like on top - JFFS2 or something that thinks it&#39;s going to be on flash or something, ext2 if you&#39;re nuts. But, seriously, with slram you *can* go nuts.<br>
-<br><div class="gmail_quote">On Sun, Nov 23, 2008 at 12:37 PM, Thomas Johnson <span dir="ltr">&lt;<a href="mailto:TMJohnson@fyldemicro.com">TMJohnson@fyldemicro.com</a>&gt;</span> wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+                isa@6 { 
+                        min-grant = <0x0>;
+                        ranges = <0x1 0x0 0x1003000 0x0 0x0 0x10000>;
+                        reg = <0x3000 0x0 0x0 0x0 0x0>;
+                        device_type = "isa";
+                        revision-id = <0x5>;
+                        66mhz-capable;
+                        max-latency = <0x0>;
+                        class-code = <0x60100>;
+                        vendor-id = <0x1022>;
+                        linux,phandle = <0x610dfa00>;
+                        name = "isa";
+                        device-id = <0x7468>;
 
+The LPC bridge is supposed to be able to generate an NMI on error. Am I
+right in saying that the 0x3000 entry in the ht@0 interrupt-map corresponds
+to the LPC bridge ? If so, the mapping I can read from there is 0->0. 0 is
+an internal interrupt of the CPC925, so this does not make sense. Or I am
+reading this wrong.
 
+Any insights ?
 
-
-<div>
-<div><span><font face="Arial" size="2">We have a new PPC 
-based board which includes&nbsp;some SRAM (actually Everspin 
-MRAM).</font></span></div>
-<div><span><font face="Arial" size="2"></font></span>&nbsp;</div>
-<div><span><font face="Arial" size="2">I can&#39;t work out the 
-best way to mount this&nbsp;device or what filing system to run on it, any 
-advice ?</font></span></div>
-<div><span><font face="Arial" size="2"></font></span>&nbsp;</div>
-<div><span><font face="Arial" size="2">Thanks 
-</font></span></div>
-<div><span><font face="Arial" size="2"></font></span>&nbsp;</div><font color="#888888">
-<div><span><font face="Arial" size="2">TJ</font></span></div></font></div>
-<br>_______________________________________________<br>
-Linuxppc-embedded mailing list<br>
-<a href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a><br>
-<a href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded" target="_blank">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br></blockquote></div><br><br clear="all"><br>-- <br>Matt Sealey &lt;<a href="mailto:matt@genesi-usa.com">matt@genesi-usa.com</a>&gt;<br>
-Genesi, Manager, Developer Relations<br>
-
-------=_Part_15641_30668592.1227642301818--
+Thanks,
+Ben
