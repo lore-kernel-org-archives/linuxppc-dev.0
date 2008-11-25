@@ -1,18 +1,24 @@
-Return-Path: <cel@us.ibm.com>
-Subject: Re: [Patch 3/3] OProfile SPU event profiling support for IBM Cell
-	processor
-From: Carl Love <cel@us.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200811251658.32327.arnd@arndb.de>
-References: <1227569215.6509.216.camel@carll-linux-desktop>
-	<200811251658.32327.arnd@arndb.de>
-Content-Type: text/plain
-Date: Tue, 25 Nov 2008 15:13:25 -0800
-Message-Id: <1227654805.6509.263.camel@carll-linux-desktop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] [v3] powerpc/4xx: work around CHIP11 errata in a more
+	PAGE_SIZE-friendly way
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+In-Reply-To: <1227650039.7434.33.camel@localhost.localdomain>
+References: <4b6790c7a989dce8c200000687275224@bga.com>
+	<84e16946c1ed4b782568f6492931512a@bga.com>
+	<200811141609.44161.hollisb@us.ibm.com>
+	<1227557235.17746.25.camel@localhost.localdomain>
+	<1227571828.20022.5.camel@localhost>
+	<1227650039.7434.33.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-5hM8IVVniPYXfVqhGecf"
+Date: Wed, 26 Nov 2008 10:43:51 +1100
+Message-Id: <1227656631.8016.4.camel@localhost>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cel <cel@linux.vnet.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	oprofile-list@lists.sourceforge.net, cbe-oss-dev@ozlabs.org
+Cc: Milton Miller <miltonm@bga.com>, Wolfgang Denk <wd@denx.de>,
+	Ilya Yanok <yanok@emcraft.com>, linux-ppc <linuxppc-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,64 +29,89 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Tue, 2008-11-25 at 16:58 +0100, Arnd Bergmann wrote:
+--=-5hM8IVVniPYXfVqhGecf
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-<snip>
+On Tue, 2008-11-25 at 15:53 -0600, Hollis Blanchard wrote:
+> On Tue, 2008-11-25 at 11:10 +1100, Michael Ellerman wrote:
+> >=20
+> > Still, I think it would be better to only set memory_limit when the mem
+> > size is not a multiple of the PAGE_SIZE - so that memory_limit retains
+> > it's function as both the value of the limit and a boolean.
+>=20
+> OK, how's this?
+>=20
+> ppc: force memory size to be a multiple of PAGE_SIZE
+>=20
+> Ensure that total memory size is page-aligned, because otherwise
+> mark_bootmem() gets upset.
+>=20
+> This error case was triggered by using 64 KiB pages in the kernel while
+> arch/powerpc/boot/4xx.c arbitrarily reduced the amount of memory by 4096 =
+(to
+> work around a chip bug that affects the last 256 bytes of physical memory=
+).
+>=20
+> Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+>=20
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -1160,6 +1160,8 @@ static inline void __init phyp_dump_rese
+> =20
+>  void __init early_init_devtree(void *params)
+>  {
+> +	unsigned long limit, memsize;
+> +
+>  	DBG(" -> early_init_devtree(%p)\n", params);
+> =20
+>  	/* Setup flat device-tree pointer */
+> @@ -1200,7 +1202,15 @@ void __init early_init_devtree(void *par
+>  	early_reserve_mem();
+>  	phyp_dump_reserve_mem();
 
-> >  struct pmc_cntrl_data {
-> >  	unsigned long vcntr;
-> > @@ -111,6 +126,8 @@ struct pm_cntrl {
-> >  	u16 trace_mode;
-> >  	u16 freeze;
-> >  	u16 count_mode;
-> > +	u16 spu_addr_trace;
-> > +	u8  trace_buf_ovflw;
-> >  };
-> >  
-> >  static struct {
-> > @@ -128,7 +145,7 @@ static struct {
-> >  #define GET_INPUT_CONTROL(x) ((x & 0x00000004) >> 2)
-> >  
-> >  static DEFINE_PER_CPU(unsigned long[NR_PHYS_CTRS], pmc_values);
-> > -
-> > +static unsigned long spu_pm_cnt[MAX_NUMNODES * NUM_SPUS_PER_NODE];
-> >  static struct pmc_cntrl_data pmc_cntrl[NUM_THREADS][NR_PHYS_CTRS];
-> 
-> Can't you add this data to an existing data structure, e.g. struct spu,
-> rather than adding a new global?
+I was thinking more like the following:
 
-The data structure above holds flags for how the performance counters
-are to be setup on each node.  This is not per SPU data.  It is per
-system data.  The flags are setup once and then used when configuring
-the various performance counter control registers on each node via one
-of the PPU threads on each node.
+> =20
+> -	lmb_enforce_memory_limit(memory_limit);
+> +	limit =3D memory_limit;
+> +	if (! limit) {
+> +		/* Ensure that total memory size is page-aligned, because
+> +		 * otherwise mark_bootmem() gets upset. */
+> +		lmb_analyze();
+                  memsize =3D lmb_phys_mem_size();
+		  if(memsize & PAGE_MASK !=3D memsize)
+		        limit =3D memsize & PAGE_MASK;
+> +	}
+> +	lmb_enforce_memory_limit(limit);
+> +
 
-<snip>
+So that we never needlessly run through the enforce code with limit =3D
+memsize. But maybe it's a bit pedantic.
 
-> > +
-> > +void stop_spu_profiling_events(void)
-> > +{
-> > +	spu_prof_running = 0;
-> >  }
-> 
-> Is this atomic? What if two CPUs access the spu_prof_running variable at
-> the same time?
-> 
-> 	Arnd <><
+cheers
 
-When the user issues the command opcontrol --start then a series of
-functions gets called by one CPU in the system that eventually gets down
-to making the assignment spu_prof_running = 1.  Similarly, the variable
-is set to 0 when the user executes the command opcontrol --stop.  In
-each case, only one CPU in the system is executing the code to change
-the value of the flag.  Once OProfile is started, you can't change the
-event being profiled until after oprofile is stopped.  Hence, you can't
-get the situation where spu_prof_running is set by the start and not
-reset by the next stop command.  Now, as for multiple users issuing
-opcontrol --start and/or opcontrol --stop at the same time, there is no
-protection at the user level to prevent this.  If this occurs, then what
-happens will depend on the order the OProfile file system serializes the
-writes file for start/stop.  It is up to the users to not step on each
-other.  If they do, the chances are they both will get bad data.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-The other things you noted for this patch were easily fixed up.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-5hM8IVVniPYXfVqhGecf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkksjbcACgkQdSjSd0sB4dKRFgCguX0dpz3m2ArYPvWJJtNhw3B7
+ys4An3xFJLI+hi9Mg36nxcrdB6mMP6TN
+=lTzk
+-----END PGP SIGNATURE-----
+
+--=-5hM8IVVniPYXfVqhGecf--
