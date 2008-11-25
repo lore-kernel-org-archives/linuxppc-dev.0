@@ -1,19 +1,24 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedexfe.empirix.com (empbedex1.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id 0BFE5DDDFA
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 01:08:56 +1100 (EST)
+Return-Path: <hans.lehmann@ritter-elektronik.de>
+Received: from mail5.oerlikon.com (mail5.oerlikon.com [193.158.88.212])
+	by ozlabs.org (Postfix) with ESMTP id 9D95CDDDE7
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 01:45:23 +1100 (EST)
+Received: from anetcsgv210.dom03.net (localhost.localdomain [127.0.0.1])
+	by anetcsgv210.dom03.net (Postfix) with ESMTP id 99C5C2E97BC
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 15:45:18 +0100 (CET)
+Received: from anetcsgv202.dom03.net (anetcsgv202.dom03.net [193.158.88.254])
+	by anetcsgv210.dom03.net (Postfix) with ESMTP id 8CEB62E97B2
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 15:45:18 +0100 (CET)
+Received: from SRVWWP01.sts.saurer.vpn (unknown [10.33.20.167])
+	by anetcsgv202.dom03.net (postfix-1) with ESMTP id 697C892
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 15:45:18 +0100 (CET)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: 8572E - machine check pin (MCP0)
-Date: Tue, 25 Nov 2008 09:10:29 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010F1B2332@EMPBEDEX.empirix.com>
-In-Reply-To: <Pine.LNX.4.64.0811241545040.21311@t2.domain.actdsltmp>
-References: <mailman.176.1227568041.29923.linuxppc-dev@ozlabs.org>
-	<BD261180E6D35F4D9D32F3E44FD3D9010F1B21F8@EMPBEDEX.empirix.com>
-	<Pine.LNX.4.64.0811241545040.21311@t2.domain.actdsltmp>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "Trent Piepho" <tpiepho@freescale.com>
+	charset="iso-8859-1"
+Subject: AW: [PATCH]: [MPC5200] Add ATA DMA support
+Date: Tue, 25 Nov 2008 15:45:18 +0100
+Message-ID: <633A55242A59C7488FAAF5A6850929984B814A@SRVEXC01.sts.saurer.vpn>
+From: "Lehmann, Hans (Ritter Elektronik)" <hans.lehmann@ritter-elektronik.de>
+To: "Tim Yamin" <plasm@roo.me.uk>, "Grant Likely" <grant.likely@secretlab.ca>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,51 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I wrote:
-<snip some things>
->> I have an external watchdog timer that is going off - and pulsing
-into
->> the MCP0 of the 8572E. I get the printk indicating that the MCP0 went
->> off - the problem is - how do I clear the condition that caused this
->> because my hardware engineer swears that the pulse is ONLY 250ms -
-and
->> after resetting several status registers (mcpsumr & rst
->> (because my hardware engineer swears that the pulse is ONLY 250ms
-long
->> (and I have a delay after my printk of 250ms)) - so I am pretty sure
->>
->> I am resetting the conditions mcpsumr (also, extra: the rstsr),
->> but after writing mcpsumr - and reading back - it still has
->> the mcp0 bit set?
+Tim, Grant,
 
+just an info.
 
-<snip more>
+Very often the Bestcomm-FEC crashed without any error logs if I initiate =
+a transaction over FEC and save the file to disk (I rememeber I have =
+read something like that). A restart of FEC don't work.  =20
+But no I figured out, if I connect to the other ethernet port of our =
+board (natsemi) the FEC will awake to life again, if I initiate a new =
+transaction over natsemi. This seems a little oddly to me.
 
+Cheers =20
 
-Trent wrote:
+Mit freundlichen Gr=FC=DFen
 
+Hans Lehmann
+Softwareentwicklung
 
->SRESET# also sets MCP0 and MCP1, maybe that is on?
->I'd also check the EMCP bit in SPRN_HID0 (on core 0 for MCP0).
+Telefon	+49 (0)2191-67-2520
+Fax 	+49 (0)2191-67-703408
+e-mail 	hans.lehmann@ritter-elektronik.de
 
-I think SRESET is a separate signal - and even if it was ON
-(which it shouldn't be) - it should show up in the MCPSUMR=20
-Register (and I am clearing that condition)...
+=20
 
-I am getting the first machine check (with an indication that=20
-the MCP0 is pulled) - I don't think you can get a Machine check without=20
-SPRN_HID0's EMCP being set?=20
+Ritter Elektronik GmbH
+Leverkuser Stra=DFe 65
+D-42897 Remscheid
+www.ritter-elektronik.de <http://www.ritter-elektronik.de/start.html>=20
 
-The only thing that I am thinking is that I have two edges, and
-after returning from the machine check (first time) the ME bit is
-NOT enabled, so when the falling edge of that pulse occurs, it=20
-causes another machine check - which because ME bit is NOT set
-it causes a checkstop - and it goes away...
-
-That explains why it hangs for the second machine check - although
-it still 'starts' into the machine check handler before dying=20
-very early in its execution (before it does a full dump of registers)...
-
-very strange stuff here...
-
-Tom
+Gesch=E4ftsf=FChrer: Manfred A. Wagner, Dr. Uwe Baader
+Sitz der Gesellschaft: Oberhausen
+HRB 17168 Duisburg  /  USt-ID DE 814009849
