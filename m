@@ -1,38 +1,20 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C47C8DDDEE
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 23:58:15 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id mAPCw81s209652
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 12:58:08 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id mAPCw7dn4259846
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 13:58:07 +0100
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id mAPCw7Rv017685
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 13:58:07 +0100
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	OF-General <general@lists.openfabrics.org>,
-	Roland Dreier <rolandd@cisco.com>, OF-EWG <ewg@lists.openfabrics.org>
-Subject: [PATCH] IB/ehca: Change misleading error message
-References: <200806061835.43802.fenkes@de.ibm.com> <48499C11.7030504@gmail.com>
-In-Reply-To: <48499C11.7030504@gmail.com>
+Return-Path: <tmorrison@empirix.com>
+Received: from empbedexfe.empirix.com (empbedex1.empirix.com [12.38.203.54])
+	by ozlabs.org (Postfix) with ESMTP id 0BFE5DDDFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 01:08:56 +1100 (EST)
 MIME-Version: 1.0
-Date: Tue, 25 Nov 2008 13:58:06 +0100
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200811251358.06729.fenkes@de.ibm.com>
-Cc: Alexander Schmidt <alexschm@de.ibm.com>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+	charset="us-ascii"
+Subject: RE: 8572E - machine check pin (MCP0)
+Date: Tue, 25 Nov 2008 09:10:29 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010F1B2332@EMPBEDEX.empirix.com>
+In-Reply-To: <Pine.LNX.4.64.0811241545040.21311@t2.domain.actdsltmp>
+References: <mailman.176.1227568041.29923.linuxppc-dev@ozlabs.org>
+	<BD261180E6D35F4D9D32F3E44FD3D9010F1B21F8@EMPBEDEX.empirix.com>
+	<Pine.LNX.4.64.0811241545040.21311@t2.domain.actdsltmp>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: "Trent Piepho" <tpiepho@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,28 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The error message printed when the eHCA driver prevents memory hotplug is
-misleading -- the user might think that hot-removing the lhca, hotplugging
-memory, then hot-adding the lhca again will work, but it doesn't.
+I wrote:
+<snip some things>
+>> I have an external watchdog timer that is going off - and pulsing
+into
+>> the MCP0 of the 8572E. I get the printk indicating that the MCP0 went
+>> off - the problem is - how do I clear the condition that caused this
+>> because my hardware engineer swears that the pulse is ONLY 250ms -
+and
+>> after resetting several status registers (mcpsumr & rst
+>> (because my hardware engineer swears that the pulse is ONLY 250ms
+long
+>> (and I have a delay after my printk of 250ms)) - so I am pretty sure
+>>
+>> I am resetting the conditions mcpsumr (also, extra: the rstsr),
+>> but after writing mcpsumr - and reading back - it still has
+>> the mcp0 bit set?
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_main.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
-index bb02a86..bec7e02 100644
---- a/drivers/infiniband/hw/ehca/ehca_main.c
-+++ b/drivers/infiniband/hw/ehca/ehca_main.c
-@@ -994,8 +994,7 @@ static int ehca_mem_notifier(struct notifier_block *nb,
- 			if (printk_timed_ratelimit(&ehca_dmem_warn_time,
- 						   30 * 1000))
- 				ehca_gen_err("DMEM operations are not allowed"
--					     "as long as an ehca adapter is"
--					     "attached to the LPAR");
-+					     "in conjunction with eHCA");
- 			return NOTIFY_BAD;
- 		}
- 	}
--- 
-1.5.5
+<snip more>
+
+
+Trent wrote:
+
+
+>SRESET# also sets MCP0 and MCP1, maybe that is on?
+>I'd also check the EMCP bit in SPRN_HID0 (on core 0 for MCP0).
+
+I think SRESET is a separate signal - and even if it was ON
+(which it shouldn't be) - it should show up in the MCPSUMR=20
+Register (and I am clearing that condition)...
+
+I am getting the first machine check (with an indication that=20
+the MCP0 is pulled) - I don't think you can get a Machine check without=20
+SPRN_HID0's EMCP being set?=20
+
+The only thing that I am thinking is that I have two edges, and
+after returning from the machine check (first time) the ME bit is
+NOT enabled, so when the falling edge of that pulse occurs, it=20
+causes another machine check - which because ME bit is NOT set
+it causes a checkstop - and it goes away...
+
+That explains why it hangs for the second machine check - although
+it still 'starts' into the machine check handler before dying=20
+very early in its execution (before it does a full dump of registers)...
+
+very strange stuff here...
+
+Tom
