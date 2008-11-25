@@ -1,24 +1,23 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from venus.billgatliff.com (venus.billgatliff.com [209.251.101.201])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1A22CDDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 07:18:47 +1100 (EST)
-Message-ID: <492C5DC2.9040402@billgatliff.com>
-Date: Tue, 25 Nov 2008 14:19:14 -0600
-From: Bill Gatliff <bgat@billgatliff.com>
-MIME-Version: 1.0
-To: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id DC05DDDD04
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 07:23:19 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so80887yxg.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Nov 2008 12:23:18 -0800 (PST)
+Message-ID: <fa686aa40811251214w55cb8e60r66702a87f6413a46@mail.gmail.com>
+Date: Tue, 25 Nov 2008 13:14:32 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Bill Gatliff" <bgat@billgatliff.com>
 Subject: Re: [PATCH/RFC] Add Alternative Log Buffer Support for printk Messages
-References: <20081125135519.038abf23@zod.rchland.ibm.com>	
-	<C5518C2F.13137%gerickson@nuovations.com>	
-	<b5e2fc790811251131g63ea9444x57ec0829ca0b069e@mail.gmail.com>	
+In-Reply-To: <492C573E.9030309@billgatliff.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20081125135519.038abf23@zod.rchland.ibm.com>
+	<C5518C2F.13137%gerickson@nuovations.com>
+	<b5e2fc790811251131g63ea9444x57ec0829ca0b069e@mail.gmail.com>
 	<492C573E.9030309@billgatliff.com>
-	<b5e2fc790811251207g38d429f3q4eb698b92162d6@mail.gmail.com>
-In-Reply-To: <b5e2fc790811251207g38d429f3q4eb698b92162d6@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-embedded@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Stefan Roese <sr@denx.de>, Wolfgang Denx <wd@denx.de>,
+Cc: Wolfgang Denx <wd@denx.de>, linux-embedded@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
 	Grant Erickson <gerickson@nuovations.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,34 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Matt Sealey wrote:
-> Yes, there's FirmWorks, CodeGen SmartFirmware, IBM SLOF and OpenBIOS..
-> they're all linked from the OpenBIOS website (along with a bunch of the
-> documentation from http://www.openfirmware.org in more-readable formats
-> like PDF)
-> 
-> http://www.openbios.org/
-> 
-> 
-> But here's the real question; why do you need an opensource
-> implementation? Curiosity?
+.  F
 
-That, and I prefer Free *ware whenever that's an option.  :)
+On Tue, Nov 25, 2008 at 12:51 PM, Bill Gatliff <bgat@billgatliff.com> wrote:
+> Matt Sealey wrote:
+>
+>> I can think of a bunch of reasons why it's a good idea..
+>
+> Can you point to a GPL/LGPL/BSD/etc. source code for an OpenFirmware
+> implementation?
 
-Nothing against the commercial alternatives, of course.  But I'm
-already doing my own heavy lifting, because my platforms are all
-full-custom with very limited production runs.  Since I'm into the
-guts of all my code anyway, I'm not inclined to outsource a bootloader
-development effort.
+In powerpc land using the Open Firmware device tree does not depend on
+also using Open Firmware.  From that perspective the availability of
+an open sourced Open Firmware is irrelevant.
 
-Just trying to figure out where the walls of this "sandbox" are.  I've
-been aware of the concept of Open Firmware for a while, but haven't
-really looked into it before now--- mostly because my impression until
-now was that the available implementations were both closed-source,
-and not supporting embedded, non-PPC targets like ARM.
+But, both OpenFirmware and SmartFirmware have been open sourced:
 
+http://www.openfirmware.info/Open_Firmware
+http://www.openfirmware.info/SmartFirmware
 
-b.g.
+Cheers,
+g.
+
 -- 
-Bill Gatliff
-bgat@billgatliff.com
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
