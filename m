@@ -1,28 +1,15 @@
-Return-Path: <david.goodenough@linkchoose.co.uk>
-Received: from apollo.linkchoose.co.uk (ip-217-204-115-127.easynet.co.uk
-	[217.204.115.127]) by ozlabs.org (Postfix) with ESMTP id BBC70DDE0F
+Return-Path: <spamreceptor@yahoo.com>
+Received: from web30102.mail.mud.yahoo.com (web30102.mail.mud.yahoo.com
+	[209.191.69.34]) by ozlabs.org (Postfix) with SMTP id BF6BEDDDDF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Nov 2008 09:14:16 +1100 (EST)
-Received: from galaxy.linkchoose.co.uk ([10.98.1.127] helo=galaxy.dga.co.uk)
-	by apollo.linkchoose.co.uk with esmtp (Exim 4.60)
-	(envelope-from <david.goodenough@linkchoose.co.uk>)
-	id 1L5RzL-0000cn-9S
-	for linuxppc-embedded@ozlabs.org; Wed, 26 Nov 2008 21:31:59 +0000
-Received: from [10.0.1.66] (helo=stargate.dga.co.uk)
-	by galaxy.dga.co.uk with esmtp (Exim 4.69)
-	(envelope-from <david.goodenough@linkchoose.co.uk>)
-	id 1L5Rxm-00046Q-25
-	for linuxppc-embedded@ozlabs.org; Wed, 26 Nov 2008 21:30:22 +0000
-From: David Goodenough <david.goodenough@linkchoose.co.uk>
+	Thu, 27 Nov 2008 09:20:38 +1100 (EST)
+Date: Wed, 26 Nov 2008 14:20:36 -0800 (PST)
+From: Joe Shmo <spamreceptor@yahoo.com>
+Subject: Re: MPC8313erdb uboot1.3.0 kernel2.6.21 dp83848 NFS problem
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: JVM on e500 core
-Date: Wed, 26 Nov 2008 21:31:34 +0000
-References: <5c9cd53b0811261123g457bd680h2d2df68da373da59@mail.gmail.com>
-In-Reply-To: <5c9cd53b0811261123g457bd680h2d2df68da373da59@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200811262131.35538.david.goodenough@linkchoose.co.uk>
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <160205.63568.qm@web30102.mail.mud.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -33,30 +20,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 26 November 2008, mike zheng wrote:
-> Hi All,
->
-> I am using MPC8568 with e500 core. The cross-compiler I am using from
-> Freescale - GCC 3_3-e500, glibc 2.3.2 and binutils 2.15.
->
-> Any one know if Java Virtual Machine is supported on the e500 core
-> processor? Has e500 support been added to GCJ?
+I was missing a little bit from my log.  Here's the
+NFS failure:
 
-As I understand it, gcj is just a new front end which understands both
-the java language and its byte code.  It then uses either the byte code
-emitter or whatever other architectural emitters already exist for 
-gcc.  So if gcc supports the e500 then so should gcj.  The support 
-library is another storym but that is either Java or C so it should work.
+portmap: server 192.168.1.21 not responding, timed out
+Root-NFS: Unable to get nfsd port number from server,
+using default
+Looking up port of RPC 100005/1 on 192.168.1.21
+portmap: server 192.168.1.21 not responding, timed out
+Root-NFS: Unable to get mountd port number from
+server, using default
+mount: server 192.168.1.21 not responding, timed out
+Root-NFS: Server returned error -5 while mounting
+/home/developer/export
+VFS: Unable to mount root fs via NFS, trying floppy.
+VFS: Cannot open root device "nfs" or
+unknown-block(2,0)
+Please append a correct "root=" boot option
+Kernel panic - not syncing: VFS: Unable to mount root
+fs on unknown-block(2,0)
+Rebooting in 180 seconds..
 
-But then my understanding may be wrong, and the only real way to 
-find out it try it.
 
-David
->
-> Thanks for your help,
->
-> Mike
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+      
