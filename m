@@ -1,17 +1,22 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 05C80DDE1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 09:04:25 +1100 (EST)
-Message-Id: <20081126220423.074915031@goodmis.org>
-References: <20081126215821.263324391@goodmis.org>
-Date: Wed, 26 Nov 2008 16:58:23 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Milton Miller <miltonm@bga.com>, Michael Ellerman <michael@ellerman.id.au>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/5] powerpc: ftrace,
-	fix cast aliasing and add code verification
-Cc: Steven Rostedt <srostedt@redhat.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 6383BDDDFB
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 09:31:53 +1100 (EST)
+Date: Thu, 27 Nov 2008 01:31:51 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v2] of_gpio: Return GPIO flags from of_get_gpio()
+Message-ID: <20081126223151.GA1178@oksana.dev.rtsoft.ru>
+References: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
+	<1225418589-8545-1-git-send-email-tpiepho@freescale.com>
+	<20081126162033.GA13397@oksana.dev.rtsoft.ru>
+	<18733.49643.63081.163437@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <18733.49643.63081.163437@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Trent Piepho <tpiepho@freescale.com>,
+	linux-kernel@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,285 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Thu, Nov 27, 2008 at 08:38:51AM +1100, Paul Mackerras wrote:
+[...]
+> > >  drivers/mtd/nand/fsl_upm.c              |    2 +-
+> > >  drivers/net/fs_enet/fs_enet-main.c      |    2 +-
+> > >  drivers/net/phy/mdio-ofgpio.c           |    4 ++--
+> > >  drivers/of/gpio.c                       |   13 ++++++++++---
+> > >  drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+> > >  include/linux/of_gpio.h                 |   21 +++++++++++++++++----
+> > >  6 files changed, 32 insertions(+), 12 deletions(-)
+> 
+> That would need acks from Jeff Garzik and David Woodhouse.
+> 
+> Alternatively you could add a new function (called, for instance,
+> of_get_gpio_flags) with the extra parameter to eliminate the need to
+> change any drivers at this stage, since they all seem to pass NULL for
+> the flags argument.
 
-Impact: clean up and robustness addition
+:-))
 
-This patch addresses the comments made by Paul Mackerras.
-It removes the type casting between unsigned int and unsigned char
-pointers, and replaces them with a use of all unsigned int.
+This was _exactly_ my initial approach, but Trent and Grant thought
+that changing API would be easy. Hah-ha!
 
-Verification that the jump is indeed made to a trampoline has also
-been added.
+Here is my initial patch implementing of_get_gpio_flags():
+http://lkml.org/lkml/2008/7/25/236
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- arch/powerpc/kernel/ftrace.c |  121 ++++++++++++++++++++++-------------------
- 1 files changed, 65 insertions(+), 56 deletions(-)
+Trent, are you going to push your patch through all the
+maintainers, or should we, after all, revert to my approach
+instead?
 
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 3271cd6..ea454a0 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -162,26 +162,25 @@ static int
- __ftrace_make_nop(struct module *mod,
- 		  struct dyn_ftrace *rec, unsigned long addr)
- {
--	unsigned char replaced[MCOUNT_INSN_SIZE * 2];
--	unsigned int *op = (unsigned *)&replaced;
--	unsigned char jmp[8];
--	unsigned long *ptr = (unsigned long *)&jmp;
-+	unsigned int op;
-+	unsigned int jmp[5];
-+	unsigned long ptr;
- 	unsigned long ip = rec->ip;
- 	unsigned long tramp;
- 	int offset;
- 
- 	/* read where this goes */
--	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
-+	if (probe_kernel_read(&op, (void *)ip, sizeof(int)))
- 		return -EFAULT;
- 
- 	/* Make sure that that this is still a 24bit jump */
--	if (!is_bl_op(*op)) {
--		printk(KERN_ERR "Not expected bl: opcode is %x\n", *op);
-+	if (!is_bl_op(op)) {
-+		printk(KERN_ERR "Not expected bl: opcode is %x\n", op);
- 		return -EINVAL;
- 	}
- 
- 	/* lets find where the pointer goes */
--	tramp = find_bl_target(ip, *op);
-+	tramp = find_bl_target(ip, op);
- 
- 	/*
- 	 * On PPC64 the trampoline looks like:
-@@ -200,19 +199,25 @@ __ftrace_make_nop(struct module *mod,
- 	DEBUGP("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
- 
- 	/* Find where the trampoline jumps to */
--	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
-+	if (probe_kernel_read(jmp, (void *)tramp, sizeof(jmp))) {
- 		printk(KERN_ERR "Failed to read %lx\n", tramp);
- 		return -EFAULT;
- 	}
- 
--	DEBUGP(" %08x %08x",
--	       (unsigned)(*ptr >> 32),
--	       (unsigned)*ptr);
-+	DEBUGP(" %08x %08x", jmp[0], jmp[1]);
-+
-+	/* verify that this is what we expect it to be */
-+	if (((jmp[0] & 0xffff0000) != 0x3d820000) ||
-+	    ((jmp[1] & 0xffff0000) != 0x398c0000) ||
-+	    (jmp[2] != 0xf8410028) ||
-+	    (jmp[3] != 0xe96c0020) ||
-+	    (jmp[4] != 0xe84c0028)) {
-+		printk(KERN_ERR "Not a trampoline\n");
-+		return -EINVAL;
-+	}
- 
--	offset = (unsigned)jmp[2] << 24 |
--		(unsigned)jmp[3] << 16 |
--		(unsigned)jmp[6] << 8 |
--		(unsigned)jmp[7];
-+	offset = (unsigned)((unsigned short)jmp[0]) << 16 |
-+		(unsigned)((unsigned short)jmp[1]);
- 
- 	DEBUGP(" %x ", offset);
- 
-@@ -225,13 +230,13 @@ __ftrace_make_nop(struct module *mod,
- 		return -EFAULT;
- 	}
- 
--	DEBUGP(" %08x %08x\n",
--	       (unsigned)(*ptr >> 32),
--	       (unsigned)*ptr);
-+	DEBUGP(" %08x %08x\n", jmp[0], jmp[1]);
-+
-+	ptr = ((unsigned long)jmp[0] << 32) + jmp[1];
- 
- 	/* This should match what was called */
--	if (*ptr != GET_ADDR(addr)) {
--		printk(KERN_ERR "addr does not match %lx\n", *ptr);
-+	if (ptr != GET_ADDR(addr)) {
-+		printk(KERN_ERR "addr does not match %lx\n", ptr);
- 		return -EINVAL;
- 	}
- 
-@@ -240,11 +245,11 @@ __ftrace_make_nop(struct module *mod,
- 	 *  0xe8, 0x41, 0x00, 0x28   ld r2,40(r1)
- 	 * This needs to be turned to a nop too.
- 	 */
--	if (probe_kernel_read(replaced, (void *)(ip+4), MCOUNT_INSN_SIZE))
-+	if (probe_kernel_read(&op, (void *)(ip+4), MCOUNT_INSN_SIZE))
- 		return -EFAULT;
- 
--	if (*op != 0xe8410028) {
--		printk(KERN_ERR "Next line is not ld! (%08x)\n", *op);
-+	if (op != 0xe8410028) {
-+		printk(KERN_ERR "Next line is not ld! (%08x)\n", op);
- 		return -EINVAL;
- 	}
- 
-@@ -261,9 +266,9 @@ __ftrace_make_nop(struct module *mod,
- 	 *   ld r2,40(r1)
- 	 *  1:
- 	 */
--	op[0] = 0x48000008;	/* b +8 */
-+	op = 0x48000008;	/* b +8 */
- 
--	if (probe_kernel_write((void *)ip, replaced, MCOUNT_INSN_SIZE))
-+	if (probe_kernel_write((void *)ip, &op, MCOUNT_INSN_SIZE))
- 		return -EPERM;
- 
- 	return 0;
-@@ -274,46 +279,52 @@ static int
- __ftrace_make_nop(struct module *mod,
- 		  struct dyn_ftrace *rec, unsigned long addr)
- {
--	unsigned char replaced[MCOUNT_INSN_SIZE];
--	unsigned int *op = (unsigned *)&replaced;
--	unsigned char jmp[8];
--	unsigned int *ptr = (unsigned int *)&jmp;
-+	unsigned int op;
-+	unsigned int jmp[4];
- 	unsigned long ip = rec->ip;
- 	unsigned long tramp;
--	int offset;
- 
--	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
-+	if (probe_kernel_read(&op, (void *)ip, MCOUNT_INSN_SIZE))
- 		return -EFAULT;
- 
- 	/* Make sure that that this is still a 24bit jump */
--	if (!is_bl_op(*op)) {
--		printk(KERN_ERR "Not expected bl: opcode is %x\n", *op);
-+	if (!is_bl_op(op)) {
-+		printk(KERN_ERR "Not expected bl: opcode is %x\n", op);
- 		return -EINVAL;
- 	}
- 
- 	/* lets find where the pointer goes */
--	tramp = find_bl_target(ip, *op);
-+	tramp = find_bl_target(ip, op);
- 
- 	/*
- 	 * On PPC32 the trampoline looks like:
--	 * lis r11,sym@ha
--	 * addi r11,r11,sym@l
--	 * mtctr r11
--	 * bctr
-+	 *  0x3d, 0x60, 0x00, 0x00  lis r11,sym@ha
-+	 *  0x39, 0x6b, 0x00, 0x00  addi r11,r11,sym@l
-+	 *  0x7d, 0x69, 0x03, 0xa6  mtctr r11
-+	 *  0x4e, 0x80, 0x04, 0x20  bctr
- 	 */
- 
- 	DEBUGP("ip:%lx jumps to %lx", ip, tramp);
- 
- 	/* Find where the trampoline jumps to */
--	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
-+	if (probe_kernel_read(jmp, (void *)tramp, sizeof(jmp))) {
- 		printk(KERN_ERR "Failed to read %lx\n", tramp);
- 		return -EFAULT;
- 	}
- 
--	DEBUGP(" %08x %08x ", ptr[0], ptr[1]);
-+	DEBUGP(" %08x %08x ", jmp[0], jmp[1]);
-+
-+	/* verify that this is what we expect it to be */
-+	if (((jmp[0] & 0xffff0000) != 0x3d600000) ||
-+	    ((jmp[1] & 0xffff0000) != 0x396b0000) ||
-+	    (jmp[2] != 0x7d6903a6) ||
-+	    (jmp[3] != 0x4e800420)) {
-+		printk(KERN_ERR "Not a trampoline\n");
-+		return -EINVAL;
-+	}
- 
--	tramp = (ptr[1] & 0xffff) |
--		((ptr[0] & 0xffff) << 16);
-+	tramp = (jmp[1] & 0xffff) |
-+		((jmp[0] & 0xffff) << 16);
- 	if (tramp & 0x8000)
- 		tramp -= 0x10000;
- 
-@@ -326,9 +337,9 @@ __ftrace_make_nop(struct module *mod,
- 		return -EINVAL;
- 	}
- 
--	op[0] = PPC_NOP_INSTR;
-+	op = PPC_NOP_INSTR;
- 
--	if (probe_kernel_write((void *)ip, replaced, MCOUNT_INSN_SIZE))
-+	if (probe_kernel_write((void *)ip, &op, MCOUNT_INSN_SIZE))
- 		return -EPERM;
- 
- 	return 0;
-@@ -384,13 +395,12 @@ int ftrace_make_nop(struct module *mod,
- static int
- __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- {
--	unsigned char replaced[MCOUNT_INSN_SIZE * 2];
--	unsigned int *op = (unsigned *)&replaced;
-+	unsigned int op[2];
- 	unsigned long ip = rec->ip;
- 	unsigned long offset;
- 
- 	/* read where this goes */
--	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE * 2))
-+	if (probe_kernel_read(op, (void *)ip, MCOUNT_INSN_SIZE * 2))
- 		return -EFAULT;
- 
- 	/*
-@@ -425,7 +435,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 
- 	DEBUGP("write to %lx\n", rec->ip);
- 
--	if (probe_kernel_write((void *)ip, replaced, MCOUNT_INSN_SIZE * 2))
-+	if (probe_kernel_write((void *)ip, op, MCOUNT_INSN_SIZE * 2))
- 		return -EPERM;
- 
- 	return 0;
-@@ -434,18 +444,17 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- static int
- __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- {
--	unsigned char replaced[MCOUNT_INSN_SIZE];
--	unsigned int *op = (unsigned *)&replaced;
-+	unsigned int op;
- 	unsigned long ip = rec->ip;
- 	unsigned long offset;
- 
- 	/* read where this goes */
--	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
-+	if (probe_kernel_read(&op, (void *)ip, MCOUNT_INSN_SIZE))
- 		return -EFAULT;
- 
- 	/* It should be pointing to a nop */
--	if (op[0] != PPC_NOP_INSTR) {
--		printk(KERN_ERR "Expected NOP but have %x\n", op[0]);
-+	if (op != PPC_NOP_INSTR) {
-+		printk(KERN_ERR "Expected NOP but have %x\n", op);
- 		return -EINVAL;
- 	}
- 
-@@ -465,11 +474,11 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 	}
- 
- 	/* Set to "bl addr" */
--	op[0] = branch_offset(offset);
-+	op = branch_offset(offset);
- 
- 	DEBUGP("write to %lx\n", rec->ip);
- 
--	if (probe_kernel_write((void *)ip, replaced, MCOUNT_INSN_SIZE))
-+	if (probe_kernel_write((void *)ip, &op, MCOUNT_INSN_SIZE))
- 		return -EPERM;
- 
- 	return 0;
--- 
-1.5.6.5
+Thanks,
 
 -- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
