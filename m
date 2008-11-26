@@ -1,20 +1,21 @@
-Return-Path: <leon.woestenberg@gmail.com>
-Received: from mail-qy0-f21.google.com (mail-qy0-f21.google.com
-	[209.85.221.21]) by ozlabs.org (Postfix) with ESMTP id 5F7EDDDDE6
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 05:34:02 +1100 (EST)
-Received: by qyk14 with SMTP id 14so1132387qyk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 10:34:01 -0800 (PST)
-Message-ID: <c384c5ea0811261026y73679a16tfa29a33f3e780954@mail.gmail.com>
-Date: Wed, 26 Nov 2008 19:26:47 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: AMCC PPC460EX Canyonlands does not see PCIe end point with only
-	non-prefetchable memory (both 2.6.27.7 and -next)
-In-Reply-To: <c384c5ea0811260725x3476fa43o9950123948e99acb@mail.gmail.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 08AC3DDDE0
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 06:54:21 +1100 (EST)
+Date: Wed, 26 Nov 2008 22:54:17 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: [PATCH v2] mmc: Add mmc_vddrange_to_ocrmask() helper function
+Message-ID: <20081126195417.GA26264@oksana.dev.rtsoft.ru>
+References: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
+	<20081030195632.GB13640@oksana.dev.rtsoft.ru>
+	<20081108215537.12cdf5f6@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <c384c5ea0811260632n24e8b536v9a4a16833644976c@mail.gmail.com>
-	<c384c5ea0811260725x3476fa43o9950123948e99acb@mail.gmail.com>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20081108215537.12cdf5f6@mjolnir.drzeus.cx>
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +25,152 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 26, 2008 at 4:25 PM, Leon Woestenberg
-<leon.woestenberg@gmail.com> wrote:
-> The non-detected end point boot:
->
-> pci 0001:80:00.0: scanning behind bridge, config bf8180, pass 0
-> PCI: Scanning bus 0001:81
-> PCI: Fixups for bus 0001:81
->
-Further debugging.
+This function sets the OCR mask bits according to provided voltage
+ranges. Will be used by the mmc_spi OpenFirmware bindings.
 
-drivers/pci/probe.c:
-static struct pci_dev *pci_scan_device(struct pci_bus *bus, int devfn)
-{
-...
-	if (pci_bus_read_config_dword(bus, devfn, PCI_VENDOR_ID, &l))
-		return NULL;
-...
-	/* some broken boards return 0 or ~0 if a slot is empty: */
-	if (l == 0xffffffff || l == 0x00000000 ||
-	    l == 0x0000ffff || l == 0xffff0000) {
-  	printk(KERN_WARNING "--- slot empty?! l == 0x%lx\n", (u32)l);
-		return NULL;
-	}
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
-It ends up here with l == 0xffffffff.
+Hi Pierre,
 
-Note that u-boot finds the end point vendor ID, and Linux on x86 and
-Linux on  mpc8316e powerpc also.
+Sorry for the delay.
 
-Regards,
+On Sat, Nov 08, 2008 at 09:55:37PM +0100, Pierre Ossman wrote:
+> On Thu, 30 Oct 2008 22:56:32 +0300
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > +/**
+> > + * mmc_vddrange_to_ocrmask - Convert a voltage range to the OCR mask
+> > + * @vdd_min:	minimum voltage value (mV)
+> > + * @vdd_max:	maximum voltage value (mV)
+> > + * @mask:	pointer to the mask
+> > + *
+> 
+> Why the pointer? Why not let the caller handle the aggregation? That
+> would be a lot safer.
+
+Yeah, makes sense. Now the function returns OCR mask, or 0 on error.
+
+> > +	/* fill the mask, from max bit to min bit */
+> > +	while (vdd_max >= vdd_min)
+> > +		*mask |= 1 << vdd_max--;
+> > +	return 0;
+> 
+> Many cards get a bit uppity with a single bit set. If possible, try to
+> make this function set two bits when the voltage is right on the
+> boundary (e.g. 3.3V).
+
+Something like this patch (the boundary cases are documented now)?
+
+p.s. If the patch is OK I'll respin the whole patchset.
+
+ drivers/mmc/core/core.c  |   75 ++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/mmc/core.h |    2 +
+ 2 files changed, 77 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index 044d84e..1673765 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -20,6 +20,7 @@
+ #include <linux/err.h>
+ #include <linux/leds.h>
+ #include <linux/scatterlist.h>
++#include <linux/log2.h>
+ 
+ #include <linux/mmc/card.h>
+ #include <linux/mmc/host.h>
+@@ -444,6 +445,80 @@ void mmc_set_bus_width(struct mmc_host *host, unsigned int width)
+ 	mmc_set_ios(host);
+ }
+ 
++/**
++ * mmc_vdd_to_ocrbitnum - Convert a voltage to the OCR bit number
++ * @vdd:	voltage (mV)
++ * @low_bits:	prefer low bits in boundary cases
++ *
++ * This function returns the OCR bit number according to the provided @vdd
++ * value. If conversion is not possible a negative errno value returned.
++ *
++ * Depending on the @low_bits flag the function prefers low or high OCR bits
++ * on boundary voltages. For example,
++ * with @low_bits = true, 3300 mV translates to ilog2(MMC_VDD_32_33);
++ * with @low_bits = false, 3300 mV translates to ilog2(MMC_VDD_33_34);
++ *
++ * Any value in the [1951:1999] range translates to the ilog2(MMC_VDD_20_21).
++ */
++static int mmc_vdd_to_ocrbitnum(int vdd, bool low_bits)
++{
++	const int max_bit = ilog2(MMC_VDD_35_36);
++	int bit;
++
++	if (vdd < 1650 || vdd > 3600)
++		return -EINVAL;
++
++	if (vdd >= 1650 && vdd <= 1950)
++		return ilog2(MMC_VDD_165_195);
++
++	if (low_bits)
++		vdd -= 1;
++
++	/* Base 2000 mV, step 100 mV, bit's base 8. */
++	bit = (vdd - 2000) / 100 + 8;
++	if (bit > max_bit)
++		return max_bit;
++	return bit;
++}
++
++/**
++ * mmc_vddrange_to_ocrmask - Convert a voltage range to the OCR mask
++ * @vdd_min:	minimum voltage value (mV)
++ * @vdd_max:	maximum voltage value (mV)
++ *
++ * This function returns the OCR mask bits according to the provided @vdd_min
++ * and @vdd_max values. If conversion is not possible the function returns 0.
++ *
++ * Notes wrt boundary cases:
++ * This function sets the OCR bits for all boundary voltages, for example
++ * [3300:3400] range is translated to MMC_VDD_32_33 | MMC_VDD_33_34 |
++ * MMC_VDD_34_35 mask.
++ */
++u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max)
++{
++	u32 mask = 0;
++
++	if (vdd_max < vdd_min)
++		return 0;
++
++	/* Prefer high bits for the boundary vdd_max values. */
++	vdd_max = mmc_vdd_to_ocrbitnum(vdd_max, false);
++	if (vdd_max < 0)
++		return 0;
++
++	/* Prefer low bits for the boundary vdd_min values. */
++	vdd_min = mmc_vdd_to_ocrbitnum(vdd_min, true);
++	if (vdd_min < 0)
++		return 0;
++
++	/* Fill the mask, from max bit to min bit. */
++	while (vdd_max >= vdd_min)
++		mask |= 1 << vdd_max--;
++
++	return mask;
++}
++EXPORT_SYMBOL(mmc_vddrange_to_ocrmask);
++
+ /*
+  * Mask off any voltages we don't support and select
+  * the lowest voltage
+diff --git a/include/linux/mmc/core.h b/include/linux/mmc/core.h
+index 143cebf..7ac8b50 100644
+--- a/include/linux/mmc/core.h
++++ b/include/linux/mmc/core.h
+@@ -151,4 +151,6 @@ static inline void mmc_claim_host(struct mmc_host *host)
+ 	__mmc_claim_host(host, NULL);
+ }
+ 
++extern u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max);
++
+ #endif
 -- 
-Leon
+1.5.6.5
