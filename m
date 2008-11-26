@@ -1,29 +1,20 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 71CFADDE21
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 03:19:35 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e8.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mAQGF8ES006094
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 11:15:08 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mAQGJSjc194836
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 11:19:28 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mAQHJbsF002767
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 12:19:37 -0500
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 61A19DDE22
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 03:20:36 +1100 (EST)
+Date: Wed, 26 Nov 2008 19:20:33 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH v2] of_gpio: Return GPIO flags from of_get_gpio()
+Message-ID: <20081126162033.GA13397@oksana.dev.rtsoft.ru>
+References: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
+	<1225418589-8545-1-git-send-email-tpiepho@freescale.com>
 MIME-Version: 1.0
-Subject: [PATCH] [v4] ppc: force memory size to be a multiple of PAGE_SIZE
-Message-Id: <654d47bb9cbd63f515bf.1227716366@localhost.localdomain>
-Date: Wed, 26 Nov 2008 10:19:26 -0600
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: Milton Miller <miltonm@bga.com>, Wolfgang Denk <wd@denx.de>,
-	Ilya Yanok <yanok@emcraft.com>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <1225418589-8545-1-git-send-email-tpiepho@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,48 +24,200 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ensure that total memory size is page-aligned, because otherwise
-mark_bootmem() gets upset.
+On Thu, Oct 30, 2008 at 07:03:09PM -0700, Trent Piepho wrote:
+> The device binding spec for OF GPIOs defines a flags field, but there is
+> currently no way to get it.  This patch adds a parameter to of_get_gpio()
+> where the flags will be returned if non-NULL.  of_get_gpio() in turn passes
+> the parameter to the of_gpio_chip's xlate method, which can extract any
+> flags present from the gpio_spec.
+> 
+> The default (and currently only) of_gpio_chip xlate method,
+> of_gpio_simple_xlate(), is modified to do this.
+> 
+> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> Since this patch changes an API, it would be nice to get it into powerpc-next
+> soon so that people who have new patches that use this API, like Anton, can
+> base off it.
 
-This error case was triggered by using 64 KiB pages in the kernel while
-arch/powerpc/boot/4xx.c arbitrarily reduced the amount of memory by 4096 (to
-work around a chip bug that affects the last 256 bytes of physical memory).
+Can we apply it? Paul, Benjamin?
 
-Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
----
-Changes from v3:
-- No need to call lmb_enforce_memory_limit() with limit=lmb_phys_mem_size().
+The patchwork url for this patch is:
+http://patchwork.ozlabs.org/patch/6650/
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -1160,6 +1160,8 @@ static inline void __init phyp_dump_rese
- 
- void __init early_init_devtree(void *params)
- {
-+	unsigned long limit;
-+
- 	DBG(" -> early_init_devtree(%p)\n", params);
- 
- 	/* Setup flat device-tree pointer */
-@@ -1200,7 +1202,19 @@ void __init early_init_devtree(void *par
- 	early_reserve_mem();
- 	phyp_dump_reserve_mem();
- 
--	lmb_enforce_memory_limit(memory_limit);
-+	limit = memory_limit;
-+	if (! limit) {
-+		unsigned long memsize;
-+
-+		/* Ensure that total memory size is page-aligned, because
-+		 * otherwise mark_bootmem() gets upset. */
-+		lmb_analyze();
-+		memsize = lmb_phys_mem_size();
-+		if ((memsize & PAGE_MASK) != memsize)
-+			limit = memsize & PAGE_MASK;
-+	}
-+	lmb_enforce_memory_limit(limit);
-+
- 	lmb_analyze();
- 
- 	DBG("Phys. mem: %lx\n", lmb_phys_mem_size());
+
+Thanks!
+
+>  drivers/mtd/nand/fsl_upm.c              |    2 +-
+>  drivers/net/fs_enet/fs_enet-main.c      |    2 +-
+>  drivers/net/phy/mdio-ofgpio.c           |    4 ++--
+>  drivers/of/gpio.c                       |   13 ++++++++++---
+>  drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+>  include/linux/of_gpio.h                 |   21 +++++++++++++++++----
+>  6 files changed, 32 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
+> index 024e3ff..a25d962 100644
+> --- a/drivers/mtd/nand/fsl_upm.c
+> +++ b/drivers/mtd/nand/fsl_upm.c
+> @@ -218,7 +218,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
+>  	}
+>  	fun->upm_cmd_offset = *prop;
+>  
+> -	fun->rnb_gpio = of_get_gpio(ofdev->node, 0);
+> +	fun->rnb_gpio = of_get_gpio(ofdev->node, 0, NULL);
+>  	if (fun->rnb_gpio >= 0) {
+>  		ret = gpio_request(fun->rnb_gpio, ofdev->dev.bus_id);
+>  		if (ret) {
+> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+> index cb51c1f..5a3c7ee 100644
+> --- a/drivers/net/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -994,7 +994,7 @@ static int __devinit find_phy(struct device_node *np,
+>  		goto out_put_phy;
+>  	}
+>  
+> -	bus_id = of_get_gpio(mdionode, 0);
+> +	bus_id = of_get_gpio(mdionode, 0, NULL);
+>  	if (bus_id < 0) {
+>  		struct resource res;
+>  		ret = of_address_to_resource(mdionode, 0, &res);
+> diff --git a/drivers/net/phy/mdio-ofgpio.c b/drivers/net/phy/mdio-ofgpio.c
+> index 2ff9775..e3757c6 100644
+> --- a/drivers/net/phy/mdio-ofgpio.c
+> +++ b/drivers/net/phy/mdio-ofgpio.c
+> @@ -78,8 +78,8 @@ static int __devinit mdio_ofgpio_bitbang_init(struct mii_bus *bus,
+>  {
+>  	struct mdio_gpio_info *bitbang = bus->priv;
+>  
+> -	bitbang->mdc = of_get_gpio(np, 0);
+> -	bitbang->mdio = of_get_gpio(np, 1);
+> +	bitbang->mdc = of_get_gpio(np, 0, NULL);
+> +	bitbang->mdio = of_get_gpio(np, 1, NULL);
+>  
+>  	if (bitbang->mdc < 0 || bitbang->mdio < 0)
+>  		return -ENODEV;
+> diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
+> index 7cd7301..ae14215 100644
+> --- a/drivers/of/gpio.c
+> +++ b/drivers/of/gpio.c
+> @@ -22,11 +22,12 @@
+>   * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
+>   * @np:		device node to get GPIO from
+>   * @index:	index of the GPIO
+> + * @flags:	GPIO's flags are returned here if non-NULL
+>   *
+>   * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
+>   * value on the error condition.
+>   */
+> -int of_get_gpio(struct device_node *np, int index)
+> +int of_get_gpio(struct device_node *np, int index, enum of_gpio_flags *flags)
+>  {
+>  	int ret;
+>  	struct device_node *gc;
+> @@ -59,7 +60,9 @@ int of_get_gpio(struct device_node *np, int index)
+>  		goto err1;
+>  	}
+>  
+> -	ret = of_gc->xlate(of_gc, np, gpio_spec);
+> +	if (flags)
+> +		*flags = 0;
+> +	ret = of_gc->xlate(of_gc, np, gpio_spec, flags);
+>  	if (ret < 0)
+>  		goto err1;
+>  
+> @@ -77,19 +80,23 @@ EXPORT_SYMBOL(of_get_gpio);
+>   * @of_gc:	pointer to the of_gpio_chip structure
+>   * @np:		device node of the GPIO chip
+>   * @gpio_spec:	gpio specifier as found in the device tree
+> + * @flags:	if non-NULL flags are returned here
+>   *
+>   * This is simple translation function, suitable for the most 1:1 mapped
+>   * gpio chips. This function performs only one sanity check: whether gpio
+>   * is less than ngpios (that is specified in the gpio_chip).
+>   */
+>  int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
+> -			 const void *gpio_spec)
+> +			 const void *gpio_spec, enum of_gpio_flags *flags)
+>  {
+>  	const u32 *gpio = gpio_spec;
+>  
+>  	if (*gpio > of_gc->gc.ngpio)
+>  		return -EINVAL;
+>  
+> +	if (flags && of_gc->gpio_cells > 1)
+> +		*flags = gpio[1];
+> +
+>  	return *gpio;
+>  }
+>  EXPORT_SYMBOL(of_gpio_simple_xlate);
+> diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+> index bde4b4b..7835cd4 100644
+> --- a/drivers/serial/cpm_uart/cpm_uart_core.c
+> +++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+> @@ -1094,7 +1094,7 @@ static int cpm_uart_init_port(struct device_node *np,
+>  	}
+>  
+>  	for (i = 0; i < NUM_GPIOS; i++)
+> -		pinfo->gpios[i] = of_get_gpio(np, i);
+> +		pinfo->gpios[i] = of_get_gpio(np, i, NULL);
+>  
+>  	return cpm_uart_request_port(&pinfo->port);
+>  
+> diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
+> index 67db101..d611746 100644
+> --- a/include/linux/of_gpio.h
+> +++ b/include/linux/of_gpio.h
+> @@ -20,13 +20,23 @@
+>  #ifdef CONFIG_OF_GPIO
+>  
+>  /*
+> + * Flags as returned by OF GPIO chip's xlate method.
+> + * The GPIO specifier in the OF device tree does not need to use this
+> + * same format for its flags, but it's convenient if it does.  For
+> + * example, the of_mm_gpio_chip driver works this way.
+> + */
+> +enum of_gpio_flags {
+> +	OF_GPIO_ACTIVE_LOW = 1,
+> +};
+> +
+> +/*
+>   * Generic OF GPIO chip
+>   */
+>  struct of_gpio_chip {
+>  	struct gpio_chip gc;
+>  	int gpio_cells;
+>  	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
+> -		     const void *gpio_spec);
+> +		     const void *gpio_spec, enum of_gpio_flags *flags);
+>  };
+>  
+>  static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
+> @@ -50,16 +60,19 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
+>  	return container_of(of_gc, struct of_mm_gpio_chip, of_gc);
+>  }
+>  
+> -extern int of_get_gpio(struct device_node *np, int index);
+> +extern int of_get_gpio(struct device_node *np, int index,
+> +		       enum of_gpio_flags *flags);
+>  extern int of_mm_gpiochip_add(struct device_node *np,
+>  			      struct of_mm_gpio_chip *mm_gc);
+>  extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
+>  				struct device_node *np,
+> -				const void *gpio_spec);
+> +				const void *gpio_spec,
+> +				enum of_gpio_flags *flags);
+>  #else
+>  
+>  /* Drivers may not strictly depend on the GPIO support, so let them link. */
+> -static inline int of_get_gpio(struct device_node *np, int index)
+> +static inline int of_get_gpio(struct device_node *np, int index,
+> +			      enum of_gpio_flags *flags)
+>  {
+>  	return -ENOSYS;
+>  }
+> -- 
+> 1.5.4.3
+> 
