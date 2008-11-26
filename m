@@ -1,17 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18733.49643.63081.163437@cargo.ozlabs.ibm.com>
-Date: Thu, 27 Nov 2008 08:38:51 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v2] of_gpio: Return GPIO flags from of_get_gpio()
-In-Reply-To: <20081126162033.GA13397@oksana.dev.rtsoft.ru>
-References: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
-	<1225418589-8545-1-git-send-email-tpiepho@freescale.com>
-	<20081126162033.GA13397@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Trent Piepho <tpiepho@freescale.com>,
-	linux-kernel@vger.kernel.org
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id E36DBDDE0F
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 09:04:25 +1100 (EST)
+Message-Id: <20081126220423.271975594@goodmis.org>
+References: <20081126215821.263324391@goodmis.org>
+Date: Wed, 26 Nov 2008 16:58:24 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Milton Miller <miltonm@bga.com>, Michael Ellerman <michael@ellerman.id.au>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH 3/5] powerpc: ftrace, added missing icache flush
+Cc: Steven Rostedt <srostedt@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +20,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov writes:
+From: Steven Rostedt <srostedt@redhat.com>
 
-> Can we apply it? Paul, Benjamin?
-> 
-> The patchwork url for this patch is:
-> http://patchwork.ozlabs.org/patch/6650/
-> 
-> 
-> Thanks!
-> 
-> >  drivers/mtd/nand/fsl_upm.c              |    2 +-
-> >  drivers/net/fs_enet/fs_enet-main.c      |    2 +-
-> >  drivers/net/phy/mdio-ofgpio.c           |    4 ++--
-> >  drivers/of/gpio.c                       |   13 ++++++++++---
-> >  drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
-> >  include/linux/of_gpio.h                 |   21 +++++++++++++++++----
-> >  6 files changed, 32 insertions(+), 12 deletions(-)
+Impact: fix to PowerPC code modification
 
-That would need acks from Jeff Garzik and David Woodhouse.
+After modifying code it is essential to flush the icache. This patch
+adds the missing flush.
 
-Alternatively you could add a new function (called, for instance,
-of_get_gpio_flags) with the extra parameter to eliminate the need to
-change any drivers at this stage, since they all seem to pass NULL for
-the flags argument.
+Reported-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/powerpc/kernel/ftrace.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-Paul.
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index ea454a0..a4640e4 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -271,6 +271,9 @@ __ftrace_make_nop(struct module *mod,
+ 	if (probe_kernel_write((void *)ip, &op, MCOUNT_INSN_SIZE))
+ 		return -EPERM;
+ 
++
++	flush_icache_range(ip, ip + 8);
++
+ 	return 0;
+ }
+ 
+@@ -342,6 +345,8 @@ __ftrace_make_nop(struct module *mod,
+ 	if (probe_kernel_write((void *)ip, &op, MCOUNT_INSN_SIZE))
+ 		return -EPERM;
+ 
++	flush_icache_range(ip, ip + 8);
++
+ 	return 0;
+ }
+ #endif /* PPC64 */
+@@ -438,6 +443,8 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 	if (probe_kernel_write((void *)ip, op, MCOUNT_INSN_SIZE * 2))
+ 		return -EPERM;
+ 
++	flush_icache_range(ip, ip + 8);
++
+ 	return 0;
+ }
+ #else
+@@ -481,6 +488,8 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 	if (probe_kernel_write((void *)ip, &op, MCOUNT_INSN_SIZE))
+ 		return -EPERM;
+ 
++	flush_icache_range(ip, ip + 8);
++
+ 	return 0;
+ }
+ #endif /* CONFIG_PPC64 */
+-- 
+1.5.6.5
+
+-- 
