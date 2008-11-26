@@ -1,20 +1,27 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id EE16EDDE11
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 04:05:47 +1100 (EST)
-Date: Wed, 26 Nov 2008 18:05:36 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
-Subject: Re: too few bogoMips on MPC8313E-RDB ?
-Message-ID: <20081126170536.GA16864@iram.es>
-References: <492D1CA5.2090007@aimvalley.nl>
-	<20081126102042.GA11397@mail.gnudd.com>
-	<492D5B38.3080709@aimvalley.nl> <492D7219.8040501@mikroswiat.pl>
-	<492D74C3.9060205@aimvalley.nl>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id A7FC5DDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 04:39:10 +1100 (EST)
+Received: from pandora.intern.matrix-vision.de (g1.matrix-vision.com
+	[217.7.222.190])
+	by p15137414.pureserver.info (Postfix) with ESMTP id 8C0E442007A
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 18:39:06 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 7DA6FE3C09
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 20:39:13 +0100 (CET)
+Received: from hegemone (hegemone.intern.matrix-vision.de [192.168.5.77])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 6C1E8E3C09
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 20:39:13 +0100 (CET)
+Received: from [192.168.65.5] (unknown [192.168.65.5])
+	by hegemone (Postfix) with ESMTP id 675A551E
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 20:35:22 +0100 (CET)
+Message-ID: <492D89B9.1040708@matrix-vision.de>
+Date: Wed, 26 Nov 2008 18:39:05 +0100
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <492D74C3.9060205@aimvalley.nl>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: machine check on mpc8343
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 26, 2008 at 05:09:39PM +0100, Norbert van Bolhuis wrote:
->
-> ok, so it depends on the decrementer frequency
-> (which is 41666666 on my system).
->
-> Btw. the main oscillator on my board is not 83.3 mhz,
-> it's 66 mhz as well.
+All,
 
-66MHz is the crystal frequency, but then clock generators
-use PLL to generate about anything from it. Actually people
-use the abomination called DFS (frequency spreading) to comply
-with requirements on radiated energy; that's a bad joke, it does
-not actually reduce radiated energy, but spreads it over wider
-bandwidth which makes it much harder to detect with standard
-test equipement.
+we're running 2.6.27 on a MPC8343 cpu - nothing special so far.
 
-> Hmmm. so by using the decrementer for the clock tick/irqs
-> (which perfectly makes sense) the bogoMIPS value is
-> nonsense now. That's a pity, but at least now I know/understand.
->
+With heavy system load I get a machine check exception on some boards
+within 1-3 days leading to immediate reset.
 
-As far as I know, there are other architecture on which it is
-as bogus. Besides that it has the advantage of being really constant
-even when CPU frequency changes.
+U-Boot blames "Check Stop" causing the reset - I can also observe the
+check_stop_out signal of the CPU being asserted.
 
-	Regards,
-	Gabriel
+Dumping the kernel's "__log_buf" location within U-Boot shows the kernel
+log buffer without any error.
+
+Is there a reasonable/default way to get more Infos out of the kernel
+before he dies ?
+
+A solution other than "write your own ppc_md.machine_check_exception" is
+preferred ;-)
+
+
+regards,
+Andre
+
+
+
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
