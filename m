@@ -1,17 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id D42DDDDE31
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 03:38:45 +1100 (EST)
-Date: Wed, 26 Nov 2008 19:38:40 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Woodhouse <dwmw2@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH for 2.6.28] NAND: fsl_upm: fix build problem with 2.6.28-rc2
-Message-ID: <20081126163840.GA21669@oksana.dev.rtsoft.ru>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id EE16EDDE11
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 04:05:47 +1100 (EST)
+Date: Wed, 26 Nov 2008 18:05:36 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+Subject: Re: too few bogoMips on MPC8313E-RDB ?
+Message-ID: <20081126170536.GA16864@iram.es>
+References: <492D1CA5.2090007@aimvalley.nl>
+	<20081126102042.GA11397@mail.gnudd.com>
+	<492D5B38.3080709@aimvalley.nl> <492D7219.8040501@mikroswiat.pl>
+	<492D74C3.9060205@aimvalley.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <492D74C3.9060205@aimvalley.nl>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,47 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Wolfgang Grandegger <wg@grandegger.com>
+On Wed, Nov 26, 2008 at 05:09:39PM +0100, Norbert van Bolhuis wrote:
+>
+> ok, so it depends on the decrementer frequency
+> (which is 41666666 on my system).
+>
+> Btw. the main oscillator on my board is not 83.3 mhz,
+> it's 66 mhz as well.
 
-The patch fixes following build error:
+66MHz is the crystal frequency, but then clock generators
+use PLL to generate about anything from it. Actually people
+use the abomination called DFS (frequency spreading) to comply
+with requirements on radiated energy; that's a bad joke, it does
+not actually reduce radiated energy, but spreads it over wider
+bandwidth which makes it much harder to detect with standard
+test equipement.
 
-  CC      drivers/mtd/nand/fsl_upm.o
-drivers/mtd/nand/fsl_upm.c: In function 'fun_chip_init':
-drivers/mtd/nand/fsl_upm.c:168: warning: passing argument 2 of 'of_mtd_parse_partitions' from incompatible pointer type
-drivers/mtd/nand/fsl_upm.c:168: warning: passing argument 3 of 'of_mtd_parse_partitions' from incompatible pointer type
-drivers/mtd/nand/fsl_upm.c:168: error: too many arguments to function 'of_mtd_parse_partitions'
-make[1]: *** [drivers/mtd/nand/fsl_upm.o] Error 1
+> Hmmm. so by using the decrementer for the clock tick/irqs
+> (which perfectly makes sense) the bogoMIPS value is
+> nonsense now. That's a pity, but at least now I know/understand.
+>
 
-The breakage was introduced in 69fd3a8d098faf41a04930afa83757c0555ee360
-("[MTD] remove unused mtd parameter in of_mtd_parse_partitions()").
+As far as I know, there are other architecture on which it is
+as bogus. Besides that it has the advantage of being really constant
+even when CPU frequency changes.
 
-While at it, also add a check for the of_mtd_parse_partitions() return
-value.
-
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/mtd/nand/fsl_upm.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
-index 024e3ff..a83192f 100644
---- a/drivers/mtd/nand/fsl_upm.c
-+++ b/drivers/mtd/nand/fsl_upm.c
-@@ -163,9 +163,11 @@ static int __devinit fun_chip_init(struct fsl_upm_nand *fun,
- 	ret = parse_mtd_partitions(&fun->mtd, part_types, &fun->parts, 0);
- 
- #ifdef CONFIG_MTD_OF_PARTS
--	if (ret == 0)
--		ret = of_mtd_parse_partitions(fun->dev, &fun->mtd,
--					      flash_np, &fun->parts);
-+	if (ret == 0) {
-+		ret = of_mtd_parse_partitions(fun->dev, flash_np, &fun->parts);
-+		if (ret < 0)
-+			goto err;
-+	}
- #endif
- 	if (ret > 0)
- 		ret = add_mtd_partitions(&fun->mtd, fun->parts, ret);
--- 
-1.5.6.5
+	Regards,
+	Gabriel
