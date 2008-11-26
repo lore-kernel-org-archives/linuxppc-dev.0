@@ -1,17 +1,19 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Wed, 26 Nov 2008 15:41:48 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
-Subject: Re: too few bogoMips on MPC8313E-RDB ?
-In-Reply-To: <492D5B38.3080709@aimvalley.nl>
-Message-ID: <Pine.LNX.4.64.0811261538270.9133@vixen.sonytel.be>
-References: <492D1CA5.2090007@aimvalley.nl>
-	<20081126102042.GA11397@mail.gnudd.com>
-	<492D5B38.3080709@aimvalley.nl>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 2396FDDDE6
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 02:11:15 +1100 (EST)
+Date: Wed, 26 Nov 2008 16:11:09 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [U-Boot] MPC5200B: Trouble with config pins
+Message-ID: <20081126151109.GG4356@pengutronix.de>
+References: <200811211336.41159.jbe@pengutronix.de>
+	<fa686aa40811210709x4b8d10a3p568a1a4dbb8c7a8a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Y+xroYBkGM9OatJL"
+In-Reply-To: <fa686aa40811210709x4b8d10a3p568a1a4dbb8c7a8a@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, u-boot@lists.denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,60 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 26 Nov 2008, Norbert van Bolhuis wrote:
-> Thanks for the answer, but that's not it.
-> 
-> I checked the jiffies variable, it increases about 250 times
-> per second.
-> So the (mpc83xx_defconfig) kernel perception (#define CONFIG_HZ 250) is OK.
-> 
-> It must be something else, I still think 83.20 BogoMIPS
-> can't be correct for a MPC8313 running at 333 MHz.
 
-On PPC, BogoMIPS depends on the decrementer frequency, not on the CPU clock.
+--Y+xroYBkGM9OatJL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Check `timebase' in /proc/cpuinfo, which is e.g. 79.8 MHz on a PS3 (while the
-actual Cell processor runs at 3.2 GHz). That's why the PS3 gets only 159
-BogoMIPS.
 
-> Alessandro Rubini wrote:
-> > > This is what a linux-2.6.x reports (for the MPC8313E running at 333 MHz):
-> > > Calibrating delay loop... 83.20 BogoMIPS (lpj=166400)
-> > >
-> > > Which can't be correct.
-> > >
-> > > A MPC870 (running at 133 mhz) has ~ 131.07 BogoMIPS
-> > 
-> > Actaully, one-instruction-per-clock leads to BogoMIPS = MHz.
-> > 
-> > Your "loop per jiffies" value shows you make 332800 instructions per
-> > jiffy (a loop is two instructions: increment and jump).
-> > 
-> > So most liker your timer tick runs at 1000 Hz but Linux is thinking
-> > it's at 250Hz (332800 * 250 = 83.20 millions).
-> > 
-> > > Of course it's only a benchmark figure.
-> > 
-> > No, it's not a benchmark figure. It's the metric by which udelay() is
-> > calculated. So your udelays (and mdelays) will be 4 times shorter than
-> > required, and some hardware may be misbehaving as a result.
-> > 
-> > Hope this help
-> > /alessandro, who however is not runing a powerPC these times
+On Fri, Nov 21, 2008 at 08:09:20AM -0700, Grant Likely wrote:
 
-With kind regards,
+> Juergen, I haven't seen this behaviour.  Have you asked you Freescale FAE?
+>=20
+> Hey John, have you ever seen this sort of issue?
 
-Geert Uytterhoeven
-Software Architect
+To keep you updated: It was the PHY which would drive the lines high if
+the reset signal was "too long". Next revision of the PHY will have this
+fixed. (Yeah, next revision, sigh...)
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+All the best,
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+   Wolfram
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+
+--Y+xroYBkGM9OatJL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkktZw0ACgkQD27XaX1/VRs4KACgh/bUFIZZ+Mc382bz6AGG8I2E
+RUYAn20DwUJac8aew/FgT6ILQ8TNn9fY
+=qmvG
+-----END PGP SIGNATURE-----
+
+--Y+xroYBkGM9OatJL--
