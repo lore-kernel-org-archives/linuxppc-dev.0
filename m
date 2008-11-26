@@ -1,21 +1,25 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 08AC3DDDE0
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 06:54:21 +1100 (EST)
-Date: Wed, 26 Nov 2008 22:54:17 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: [PATCH v2] mmc: Add mmc_vddrange_to_ocrmask() helper function
-Message-ID: <20081126195417.GA26264@oksana.dev.rtsoft.ru>
-References: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
-	<20081030195632.GB13640@oksana.dev.rtsoft.ru>
-	<20081108215537.12cdf5f6@mjolnir.drzeus.cx>
+Return-Path: <neko@genesi-usa.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id 0A57EDDE25
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 07:57:15 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so317626ywh.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Nov 2008 12:57:13 -0800 (PST)
+Message-ID: <b5e2fc790811261257x3309e4b1n242d99c6248775d@mail.gmail.com>
+Date: Wed, 26 Nov 2008 14:57:13 -0600
+From: "Matt Sealey" <matt@genesi-usa.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH/RFC] Add Alternative Log Buffer Support for printk Messages
+In-Reply-To: <200811251345.11350.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20081108215537.12cdf5f6@mjolnir.drzeus.cx>
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=UTF-8
+References: <20081125135519.038abf23@zod.rchland.ibm.com>
+	<492C5DC2.9040402@billgatliff.com>
+	<1227646490.5404.5.camel@cuplxvomd02.corp.sa.net>
+	<200811251345.11350.david-b@pacbell.net>
+Cc: Bill Gatliff <bgat@billgatliff.com>, Wolfgang Denx <wd@denx.de>,
+	linux-embedded@vger.kernel.org, dvomlehn@cisco.com,
+	linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	Grant Erickson <gerickson@nuovations.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,152 +29,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This function sets the OCR mask bits according to provided voltage
-ranges. Will be used by the mmc_spi OpenFirmware bindings.
+On Tue, Nov 25, 2008 at 3:45 PM, David Brownell <david-b@pacbell.net> wrote:
+> No comment from me on $SUBJECT beyond "it seems plausible", but ...
+>
+> On Tuesday 25 November 2008, David VomLehn wrote:
+>> The important point, though, is that device tree is the only
+>> thing approaching a standard on any non-x86-based platform for passing
+>> structured information from the bootloader to the kernel. The command
+>> line is just not sufficient for this.
+>
+> Me, I'll be happier if I don't have to try using that device tree.
+> Having board-specific code in the kernel is a more complete solution,
+> and makes it a lot easier to cope with all the hardware goofage.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
+I disagree.
 
-Hi Pierre,
+> Recall that the *original* notion behind OpenBoot (now "OpenFirmware")
+> was to have tables for the stuff that was table-friendly, and call
+> out to FORTH code (possibly not just at boot time) for the rest.
+> (Given the choice of FORTH vs ACPI bytecodes, I'd go for FORTH; but
+> the better option is "neither".)
 
-Sorry for the delay.
+The problem really is that Linux never really cared to run Forth code or even
+keep the client interface for OF and 99% of the devices with real device
+trees and real client interfaces, have really bad hardware support or methods
+implemented that just don't work - not to mention the evil that happens on the
+difference between Linux ABI and the OF ABI, the client interface context
+switch, real-mode or virtual-mode firmwares.
 
-On Sat, Nov 08, 2008 at 09:55:37PM +0100, Pierre Ossman wrote:
-> On Thu, 30 Oct 2008 22:56:32 +0300
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > +/**
-> > + * mmc_vddrange_to_ocrmask - Convert a voltage range to the OCR mask
-> > + * @vdd_min:	minimum voltage value (mV)
-> > + * @vdd_max:	maximum voltage value (mV)
-> > + * @mask:	pointer to the mask
-> > + *
-> 
-> Why the pointer? Why not let the caller handle the aggregation? That
-> would be a lot safer.
+The most useful thing is the representation of the devices in the device-tree.
 
-Yeah, makes sense. Now the function returns OCR mask, or 0 on error.
+I do however agree that sometimes FAR too much is being put into the
+device trees,
+the massive amount of overly verbose information about devices which do not need
+the information there is just redundant. Reading processor registers out of the
+device tree (such as the system version register on SoCs) is totally dumb, but
+this was suggested at one time.
 
-> > +	/* fill the mask, from max bit to min bit */
-> > +	while (vdd_max >= vdd_min)
-> > +		*mask |= 1 << vdd_max--;
-> > +	return 0;
-> 
-> Many cards get a bit uppity with a single bit set. If possible, try to
-> make this function set two bits when the voltage is right on the
-> boundary (e.g. 3.3V).
+Once you match the driver with a compatible property, you're set; you know which
+driver you're on. You can read out quirks and make inferences from
+other parts of
+the tree (this is something that most drivers do NOT do since people
+think reading
+outside the node just matched is some evil) where these are truly board-level
+problems.
 
-Something like this patch (the boundary cases are documented now)?
+For instance where the ATA DMA lines are not connected on a 5200B board, this
+must be described. Of course whether you decide this from the root
+"model" property
+and make a guess (all boards of fsl,broken5200  might have the bug) or
+specifically
+say in /soc/ata that "dma-is-broken" is the big question. In this
+event, Grant came
+up with a more fun solution which is to specify the maximum modes in
+the device tree
+therefore not bringing ANY board specific properties into it and
+making sure you do not
+clutter the driver with board specifics! This is exactly how device
+trees should be designed.
 
-p.s. If the patch is OK I'll respin the whole patchset.
+Properties such as "fsl5200-clocking" in i2c nodes, is NOT. The
+compatible property
+of the node has fsl,mpc5200b-i2c, this implies 5200 clocking for the
+i2c bus anyway. I
+really don't get why this property even exists. It's not like there is
+some alternative way
+on the chip.. :D
 
- drivers/mmc/core/core.c  |   75 ++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/mmc/core.h |    2 +
- 2 files changed, 77 insertions(+), 0 deletions(-)
+> Right now I see an awful lot of work going into trying to force lots
+> of stuff into table format.  Even when it's the sort of one-off or
+> board-specific quirkery that was an original motivation for having
+> FORTH escapes (tasks that were not table-friendly).
 
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index 044d84e..1673765 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -20,6 +20,7 @@
- #include <linux/err.h>
- #include <linux/leds.h>
- #include <linux/scatterlist.h>
-+#include <linux/log2.h>
- 
- #include <linux/mmc/card.h>
- #include <linux/mmc/host.h>
-@@ -444,6 +445,80 @@ void mmc_set_bus_width(struct mmc_host *host, unsigned int width)
- 	mmc_set_ios(host);
- }
- 
-+/**
-+ * mmc_vdd_to_ocrbitnum - Convert a voltage to the OCR bit number
-+ * @vdd:	voltage (mV)
-+ * @low_bits:	prefer low bits in boundary cases
-+ *
-+ * This function returns the OCR bit number according to the provided @vdd
-+ * value. If conversion is not possible a negative errno value returned.
-+ *
-+ * Depending on the @low_bits flag the function prefers low or high OCR bits
-+ * on boundary voltages. For example,
-+ * with @low_bits = true, 3300 mV translates to ilog2(MMC_VDD_32_33);
-+ * with @low_bits = false, 3300 mV translates to ilog2(MMC_VDD_33_34);
-+ *
-+ * Any value in the [1951:1999] range translates to the ilog2(MMC_VDD_20_21).
-+ */
-+static int mmc_vdd_to_ocrbitnum(int vdd, bool low_bits)
-+{
-+	const int max_bit = ilog2(MMC_VDD_35_36);
-+	int bit;
-+
-+	if (vdd < 1650 || vdd > 3600)
-+		return -EINVAL;
-+
-+	if (vdd >= 1650 && vdd <= 1950)
-+		return ilog2(MMC_VDD_165_195);
-+
-+	if (low_bits)
-+		vdd -= 1;
-+
-+	/* Base 2000 mV, step 100 mV, bit's base 8. */
-+	bit = (vdd - 2000) / 100 + 8;
-+	if (bit > max_bit)
-+		return max_bit;
-+	return bit;
-+}
-+
-+/**
-+ * mmc_vddrange_to_ocrmask - Convert a voltage range to the OCR mask
-+ * @vdd_min:	minimum voltage value (mV)
-+ * @vdd_max:	maximum voltage value (mV)
-+ *
-+ * This function returns the OCR mask bits according to the provided @vdd_min
-+ * and @vdd_max values. If conversion is not possible the function returns 0.
-+ *
-+ * Notes wrt boundary cases:
-+ * This function sets the OCR bits for all boundary voltages, for example
-+ * [3300:3400] range is translated to MMC_VDD_32_33 | MMC_VDD_33_34 |
-+ * MMC_VDD_34_35 mask.
-+ */
-+u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max)
-+{
-+	u32 mask = 0;
-+
-+	if (vdd_max < vdd_min)
-+		return 0;
-+
-+	/* Prefer high bits for the boundary vdd_max values. */
-+	vdd_max = mmc_vdd_to_ocrbitnum(vdd_max, false);
-+	if (vdd_max < 0)
-+		return 0;
-+
-+	/* Prefer low bits for the boundary vdd_min values. */
-+	vdd_min = mmc_vdd_to_ocrbitnum(vdd_min, true);
-+	if (vdd_min < 0)
-+		return 0;
-+
-+	/* Fill the mask, from max bit to min bit. */
-+	while (vdd_max >= vdd_min)
-+		mask |= 1 << vdd_max--;
-+
-+	return mask;
-+}
-+EXPORT_SYMBOL(mmc_vddrange_to_ocrmask);
-+
- /*
-  * Mask off any voltages we don't support and select
-  * the lowest voltage
-diff --git a/include/linux/mmc/core.h b/include/linux/mmc/core.h
-index 143cebf..7ac8b50 100644
---- a/include/linux/mmc/core.h
-+++ b/include/linux/mmc/core.h
-@@ -151,4 +151,6 @@ static inline void mmc_claim_host(struct mmc_host *host)
- 	__mmc_claim_host(host, NULL);
- }
- 
-+extern u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max);
-+
- #endif
+What about drivers where there is no binding for OF or Forth and never was and
+never would/will be? There is no Forth escape for that.
+
+Forth - and the client interface - should be used where necessary to
+bring the system
+up. This be modifying the device tree, implementing methods to boot
+(it makes some
+sense that if the ATA methods in the client interface work, then Linux
+could load it's
+own initrd without the help of Yaboot or GRUB, for example, right in
+the boot wrapper,
+and to the location it sees best to load it, and not what Yaboot
+decides for it, and there
+would be no need to maintain 4 different filesystem codes in 3
+alternative loaders and
+the kernel).
+
+But unfortunately most systems have crap CIF support (ours included)
+which do not
+come up to the task.
+
 -- 
-1.5.6.5
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
