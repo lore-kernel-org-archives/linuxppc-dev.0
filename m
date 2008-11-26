@@ -1,24 +1,20 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2EF60DDDE0
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 09:37:10 +1100 (EST)
-Date: Wed, 26 Nov 2008 14:35:54 -0800 (PST)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2] of_gpio: Return GPIO flags from of_get_gpio()
-In-Reply-To: <18733.49643.63081.163437@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.64.0811261423120.5161@t2.domain.actdsltmp>
-References: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
-	<1225418589-8545-1-git-send-email-tpiepho@freescale.com>
-	<20081126162033.GA13397@oksana.dev.rtsoft.ru>
-	<18733.49643.63081.163437@cargo.ozlabs.ibm.com>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 51525DDE1A
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 09:41:42 +1100 (EST)
+Date: Wed, 26 Nov 2008 17:41:41 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Milton Miller <miltonm@bga.com>,
+	Michael Ellerman <michael@ellerman.id.au>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 5/5] powerpc/ppc32: static ftrace fixes for PPC32
+In-Reply-To: <20081126220423.701125085@goodmis.org>
+Message-ID: <alpine.DEB.1.10.0811261740360.1501@gandalf.stny.rr.com>
+References: <20081126215821.263324391@goodmis.org>
+	<20081126220423.701125085@goodmis.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,31 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 27 Nov 2008, Paul Mackerras wrote:
-> Anton Vorontsov writes:
->
->> Can we apply it? Paul, Benjamin?
->>
->> The patchwork url for this patch is:
->> http://patchwork.ozlabs.org/patch/6650/
->>
->>
->> Thanks!
->>
->>>  drivers/mtd/nand/fsl_upm.c              |    2 +-
->>>  drivers/net/fs_enet/fs_enet-main.c      |    2 +-
->>>  drivers/net/phy/mdio-ofgpio.c           |    4 ++--
->>>  drivers/of/gpio.c                       |   13 ++++++++++---
->>>  drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
->>>  include/linux/of_gpio.h                 |   21 +++++++++++++++++----
->>>  6 files changed, 32 insertions(+), 12 deletions(-)
->
-> That would need acks from Jeff Garzik and David Woodhouse.
->
-> Alternatively you could add a new function (called, for instance,
-> of_get_gpio_flags) with the extra parameter to eliminate the need to
-> change any drivers at this stage, since they all seem to pass NULL for
-> the flags argument.
 
-But if we did this every time any exported function needs to change, think
-how bloated the API would be with cruft.
+On Wed, 26 Nov 2008, Steven Rostedt wrote:
+
+> From: Steven Rostedt <rostedt@gollum.(none)>
+
+Ah, I need to add GIT_AUTHOR on my PowerBook. And yes, it's name
+is gollum ;-)
+
+I'll fix this and push it again.
+
+-- Steve
+
+> 
+> Impact: fix for PowerPC 32 code
+> 
+> There were some early init code that was not safe for static
+> ftrace to boot on my PowerBook. This code must only use relative
+> addressing, and static mcount performs a compare of the
+> ftrace_trace_function pointer, and gets that with an absolute address.
+> In the early init boot up code, this will cause a fault.
+> 
+> This patch removes tracing from the files containing the offending
+> functions.
+> 
+> Signed-off-by: Steven Rostedt <rostedt@gollum.(none)>
+> ---
+>  arch/powerpc/kernel/Makefile |    1 +
+>  arch/powerpc/lib/Makefile    |    3 +++
+>  2 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> index 92673b4..d17edb4 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -17,6 +17,7 @@ ifdef CONFIG_FUNCTION_TRACER
+>  CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog
+>  CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog
+>  CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog
+> +CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog
+>  
+>  ifdef CONFIG_DYNAMIC_FTRACE
+>  # dynamic ftrace setup.
+> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+> index d69912c..8db3527 100644
+> --- a/arch/powerpc/lib/Makefile
+> +++ b/arch/powerpc/lib/Makefile
+> @@ -6,6 +6,9 @@ ifeq ($(CONFIG_PPC64),y)
+>  EXTRA_CFLAGS		+= -mno-minimal-toc
+>  endif
+>  
+> +CFLAGS_REMOVE_code-patching.o = -pg
+> +CFLAGS_REMOVE_feature-fixups.o = -pg
+> +
+>  obj-y			:= string.o alloc.o \
+>  			   checksum_$(CONFIG_WORD_SIZE).o
+>  obj-$(CONFIG_PPC32)	+= div64.o copy_32.o crtsavres.o
+> -- 
+> 1.5.6.5
+> 
+> -- 
+> 
+> 
