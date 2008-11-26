@@ -1,18 +1,17 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 51525DDE1A
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 09:41:42 +1100 (EST)
-Date: Wed, 26 Nov 2008 17:41:41 -0500 (EST)
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id D650BDDDEA
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 09:50:24 +1100 (EST)
+Date: Wed, 26 Nov 2008 17:50:22 -0500 (EST)
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
 	Milton Miller <miltonm@bga.com>,
 	Michael Ellerman <michael@ellerman.id.au>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 5/5] powerpc/ppc32: static ftrace fixes for PPC32
-In-Reply-To: <20081126220423.701125085@goodmis.org>
-Message-ID: <alpine.DEB.1.10.0811261740360.1501@gandalf.stny.rr.com>
+Subject: Re: [PATCH 0/5] powerpc: ftrace updates to previous patch series
+In-Reply-To: <20081126215821.263324391@goodmis.org>
+Message-ID: <alpine.DEB.1.10.0811261749310.1501@gandalf.stny.rr.com>
 References: <20081126215821.263324391@goodmis.org>
-	<20081126220423.701125085@goodmis.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,62 +26,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Wed, 26 Nov 2008, Steven Rostedt wrote:
 
-> From: Steven Rostedt <rostedt@gollum.(none)>
+> Paul,
+> 
+> This patch series addresses the issues you brought up as well as
+> adds some more enhancements and fixes. This series is added on
+> top of the previous patch series.
+> 
+> The new patches are: (and are posted now)
+> 5987225... powerpc/ppc32: static ftrace fixes for PPC32
 
-Ah, I need to add GIT_AUTHOR on my PowerBook. And yes, it's name
-is gollum ;-)
-
-I'll fix this and push it again.
+The new commit id with the fix in Author and SoB is:
+fd90db4bdc1ccf71927365cd634188cec4d7b151
+ powerpc/ppc32: static ftrace fixes for 
 
 -- Steve
 
+> 382d6db... powerpc: ftrace, use create_branch
+> d7d0ab8... powerpc: ftrace, added missing icache flush
+> 10ec622... powerpc: ftrace, fix cast aliasing and add code verification
+> d208ca5... powerpc: ftrace, do nothing in mcount call for dyn ftrace
 > 
-> Impact: fix for PowerPC 32 code
-> 
-> There were some early init code that was not safe for static
-> ftrace to boot on my PowerBook. This code must only use relative
-> addressing, and static mcount performs a compare of the
-> ftrace_trace_function pointer, and gets that with an absolute address.
-> In the early init boot up code, this will cause a fault.
-> 
-> This patch removes tracing from the files containing the offending
-> functions.
-> 
-> Signed-off-by: Steven Rostedt <rostedt@gollum.(none)>
-> ---
->  arch/powerpc/kernel/Makefile |    1 +
->  arch/powerpc/lib/Makefile    |    3 +++
->  2 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index 92673b4..d17edb4 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -17,6 +17,7 @@ ifdef CONFIG_FUNCTION_TRACER
->  CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog
->  CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog
->  CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog
-> +CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog
->  
->  ifdef CONFIG_DYNAMIC_FTRACE
->  # dynamic ftrace setup.
-> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-> index d69912c..8db3527 100644
-> --- a/arch/powerpc/lib/Makefile
-> +++ b/arch/powerpc/lib/Makefile
-> @@ -6,6 +6,9 @@ ifeq ($(CONFIG_PPC64),y)
->  EXTRA_CFLAGS		+= -mno-minimal-toc
->  endif
->  
-> +CFLAGS_REMOVE_code-patching.o = -pg
-> +CFLAGS_REMOVE_feature-fixups.o = -pg
-> +
->  obj-y			:= string.o alloc.o \
->  			   checksum_$(CONFIG_WORD_SIZE).o
->  obj-$(CONFIG_PPC32)	+= div64.o copy_32.o crtsavres.o
-> -- 
-> 1.5.6.5
-> 
-> -- 
-> 
+> The patches you already commented on:
+> 5c4f5d7... powerpc/ppc32: ftrace, dynamic ftrace to handle modules
+> a73af3e... powerpc/ppc64: ftrace, handle module trampolines for dyn ftrace
+> 009104f... powerpc: ftrace, use probe_kernel API to modify code
+> a352036... powerpc: ftrace, convert to new dynamic ftrace arch API
+> 6d07bb4... powerpc: ftrace, do not latency trace idle
 > 
