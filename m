@@ -1,21 +1,18 @@
-Return-Path: <domino@mikroswiat.pl>
-Received: from jupiter.az.pl (jupiter.az.pl [62.146.68.61])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9659FDDDEE
+Return-Path: <mail4mz@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.154])
+	by ozlabs.org (Postfix) with ESMTP id 5BB50DDDFA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Nov 2008 01:54:05 +1100 (EST)
-Message-ID: <492D7219.8040501@mikroswiat.pl>
-Date: Wed, 26 Nov 2008 16:58:17 +0100
-From: Dominik Bozek <domino@mikroswiat.pl>
+	Thu, 27 Nov 2008 06:23:20 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so404503fga.39
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 26 Nov 2008 11:23:18 -0800 (PST)
+Message-ID: <5c9cd53b0811261123g457bd680h2d2df68da373da59@mail.gmail.com>
+Date: Wed, 26 Nov 2008 14:23:18 -0500
+From: "mike zheng" <mail4mz@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: JVM on e500 core
 MIME-Version: 1.0
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
-Subject: Re: too few bogoMips on MPC8313E-RDB ?
-References: <492D1CA5.2090007@aimvalley.nl>	<20081126102042.GA11397@mail.gnudd.com>
-	<492D5B38.3080709@aimvalley.nl>
-In-Reply-To: <492D5B38.3080709@aimvalley.nl>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,31 +23,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Norbert van Bolhuis wrote:
->
-> Thanks for the answer, but that's not it.
->
-> I checked the jiffies variable, it increases about 250 times
-> per second.
-> So the (mpc83xx_defconfig) kernel perception (#define CONFIG_HZ 250)
-> is OK.
->
-> It must be something else, I still think 83.20 BogoMIPS
-> can't be correct for a MPC8313 running at 333 MHz.
->
->
-> Alessandro Rubini wrote:
->>> This is what a linux-2.6.x reports (for the MPC8313E running at 333
->>> MHz):
->>> Calibrating delay loop... 83.20 BogoMIPS (lpj=166400)
+Hi All,
 
+I am using MPC8568 with e500 core. The cross-compiler I am using from
+Freescale - GCC 3_3-e500, glibc 2.3.2 and binutils 2.15.
 
-I never been worried for the BogoMIPS, but actually my board (custom
-one) report:
-Calibrating delay loop... 66.56 BogoMIPS (lpj=133120)
-The core is running at 333MHz also, but what make my focus is the result
-of calibrating: 66.56. The main oscillator on my board is 66MHz!? Is the
-main oscillator on your board 83.3MHz?
-BTW. I'm using older kernel 2.6.20 with patches from freescale.
+Any one know if Java Virtual Machine is supported on the e500 core
+processor? Has e500 support been added to GCJ?
 
-Regards
+Thanks for your help,
+
+Mike
