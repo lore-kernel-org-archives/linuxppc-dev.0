@@ -1,15 +1,15 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id F1C9FDDE19
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 01BBADDE1A
 	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 09:04:25 +1100 (EST)
-Message-Id: <20081126220422.841894491@goodmis.org>
+Message-Id: <20081126220423.514020907@goodmis.org>
 References: <20081126215821.263324391@goodmis.org>
-Date: Wed, 26 Nov 2008 16:58:22 -0500
+Date: Wed, 26 Nov 2008 16:58:25 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
 	Milton Miller <miltonm@bga.com>, Michael Ellerman <michael@ellerman.id.au>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/5] powerpc: ftrace, do nothing in mcount call for dyn ftrace
+Subject: [PATCH 4/5] powerpc: ftrace, use create_branch
 Cc: Steven Rostedt <srostedt@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,122 +22,135 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: quicken mcount calls that are not replaced by dyn ftrace
+Impact: clean up
 
-Dynamic ftrace no longer does on the fly recording of mcount locations.
-The mcount locations are now found at compile time. The mcount
-function no longer needs to store registers and call a stub function.
-It can now just simply return.
+Paul Mackerras pointed out that the code to determine if the branch
+can reach the destination is incorrect. Michael Ellerman suggested
+to pull out the code from create_branch and use that.
 
-Since there are some functions that do not get converted to a nop
-(.init sections and other code that may disappear), this patch should
-help speed up that code.
+Simply using create_branch is probably the best.
 
-Also, the stub for mcount on PowerPC 32 can not be a simple branch
-link register like it is on PowerPC 64. According to the ABI specification:
-
-"The _mcount routine is required to restore the link register from
- the stack so that the profiling code can be inserted transparently,
- whether or not the profiled function saves the link register itself."
-
-This means that we must restore the link register that was used
-to make the call to mcount.  The minimal mcount function for PPC32
-ends up being:
-
- mcount:
-        mflr    r0
-        mtctr   r0
-        lwz     r0, 4(r1)
-        mtlr    r0
-        bctr
-
-Where we move the link register used to call mcount into the
-ctr register, and then restore the link register from the stack.
-Then we use the ctr register to jump back to the mcount caller.
-The r0 register is free for us to use.
-
+Reported-by: Michael Ellerman <michael@ellerman.id.au>
+Reported-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/powerpc/kernel/entry_32.S |   40 +++++++++-------------------------------
- arch/powerpc/kernel/entry_64.S |   12 ------------
- 2 files changed, 9 insertions(+), 43 deletions(-)
+ arch/powerpc/kernel/ftrace.c |   54 +++++++++--------------------------------
+ 1 files changed, 12 insertions(+), 42 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 7ecc0d1..6f7eb7e 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -1162,39 +1162,17 @@ machine_check_in_rtas:
- #ifdef CONFIG_DYNAMIC_FTRACE
- _GLOBAL(mcount)
- _GLOBAL(_mcount)
--	stwu	r1,-48(r1)
--	stw	r3, 12(r1)
--	stw	r4, 16(r1)
--	stw	r5, 20(r1)
--	stw	r6, 24(r1)
--	mflr	r3
--	stw	r7, 28(r1)
--	mfcr	r5
--	stw	r8, 32(r1)
--	stw	r9, 36(r1)
--	stw	r10,40(r1)
--	stw	r3, 44(r1)
--	stw	r5, 8(r1)
--	subi	r3, r3, MCOUNT_INSN_SIZE
--	.globl mcount_call
--mcount_call:
--	bl	ftrace_stub
--	nop
--	lwz	r6, 8(r1)
--	lwz	r0, 44(r1)
--	lwz	r3, 12(r1)
-+	/*
-+	 * It is required that _mcount on PPC32 must preserve the
-+	 * link register. But we have r0 to play with. We use r0
-+	 * to push the return address back to the caller of mcount
-+	 * into the ctr register, restore the link register and
-+	 * then jump back using the ctr register.
-+	 */
-+	mflr	r0
- 	mtctr	r0
--	lwz	r4, 16(r1)
--	mtcr	r6
--	lwz	r5, 20(r1)
--	lwz	r6, 24(r1)
--	lwz	r0, 52(r1)
--	lwz	r7, 28(r1)
--	lwz	r8, 32(r1)
-+	lwz	r0, 4(r1)
- 	mtlr	r0
--	lwz	r9, 36(r1)
--	lwz	r10,40(r1)
--	addi	r1, r1, 48
- 	bctr
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index a4640e4..5355244 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -114,19 +114,9 @@ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+  */
+ static int test_24bit_addr(unsigned long ip, unsigned long addr)
+ {
+-	long diff;
  
- _GLOBAL(ftrace_caller)
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index e6d5284..b00982e 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -888,18 +888,6 @@ _GLOBAL(enter_prom)
- #ifdef CONFIG_DYNAMIC_FTRACE
- _GLOBAL(mcount)
- _GLOBAL(_mcount)
--	/* Taken from output of objdump from lib64/glibc */
--	mflr	r3
--	stdu	r1, -112(r1)
--	std	r3, 128(r1)
--	subi	r3, r3, MCOUNT_INSN_SIZE
--	.globl mcount_call
--mcount_call:
--	bl	ftrace_stub
--	nop
--	ld	r0, 128(r1)
--	mtlr	r0
--	addi	r1, r1, 112
- 	blr
+-	/*
+-	 * Can we get to addr from ip in 24 bits?
+-	 *  (26 really, since we mulitply by 4 for 4 byte alignment)
+-	 */
+-	diff = addr - ip;
+-
+-	/*
+-	 * Return true if diff is less than 1 << 25
+-	 *  and greater than -1 << 26.
+-	 */
+-	return (diff < (1 << 25)) && (diff > (-1 << 26));
++	/* use the create_branch to verify that this offset can be branched */
++	return create_branch((unsigned int *)ip, addr, 0);
+ }
  
- _GLOBAL(ftrace_caller)
+ static int is_bl_op(unsigned int op)
+@@ -134,11 +124,6 @@ static int is_bl_op(unsigned int op)
+ 	return (op & 0xfc000003) == 0x48000001;
+ }
+ 
+-static int test_offset(unsigned long offset)
+-{
+-	return (offset + 0x2000000 > 0x3ffffff) || ((offset & 3) != 0);
+-}
+-
+ static unsigned long find_bl_target(unsigned long ip, unsigned int op)
+ {
+ 	static int offset;
+@@ -151,12 +136,6 @@ static unsigned long find_bl_target(unsigned long ip, unsigned int op)
+ 	return ip + (long)offset;
+ }
+ 
+-static unsigned int branch_offset(unsigned long offset)
+-{
+-	/* return "bl ip+offset" */
+-	return 0x48000001 | (offset & 0x03fffffc);
+-}
+-
+ #ifdef CONFIG_PPC64
+ static int
+ __ftrace_make_nop(struct module *mod,
+@@ -402,7 +381,6 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ {
+ 	unsigned int op[2];
+ 	unsigned long ip = rec->ip;
+-	unsigned long offset;
+ 
+ 	/* read where this goes */
+ 	if (probe_kernel_read(op, (void *)ip, MCOUNT_INSN_SIZE * 2))
+@@ -424,17 +402,14 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 		return -EINVAL;
+ 	}
+ 
+-	/* now calculate a jump to the ftrace caller trampoline */
+-	offset = rec->arch.mod->arch.tramp - ip;
+-
+-	if (test_offset(offset)) {
+-		printk(KERN_ERR "REL24 %li out of range!\n",
+-		       (long int)offset);
++	/* create the branch to the trampoline */
++	op[0] = create_branch((unsigned int *)ip,
++			      rec->arch.mod->arch.tramp, BRANCH_SET_LINK);
++	if (!op[0]) {
++		printk(KERN_ERR "REL24 out of range!\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	/* Set to "bl addr" */
+-	op[0] = branch_offset(offset);
+ 	/* ld r2,40(r1) */
+ 	op[1] = 0xe8410028;
+ 
+@@ -453,7 +428,6 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ {
+ 	unsigned int op;
+ 	unsigned long ip = rec->ip;
+-	unsigned long offset;
+ 
+ 	/* read where this goes */
+ 	if (probe_kernel_read(&op, (void *)ip, MCOUNT_INSN_SIZE))
+@@ -471,18 +445,14 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 		return -EINVAL;
+ 	}
+ 
+-	/* now calculate a jump to the ftrace caller trampoline */
+-	offset = rec->arch.mod->arch.tramp - ip;
+-
+-	if (test_offset(offset)) {
+-		printk(KERN_ERR "REL24 %li out of range!\n",
+-		       (long int)offset);
++	/* create the branch to the trampoline */
++	op = create_branch((unsigned int *)ip,
++			   rec->arch.mod->arch.tramp, BRANCH_SET_LINK);
++	if (!op) {
++		printk(KERN_ERR "REL24 out of range!\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	/* Set to "bl addr" */
+-	op = branch_offset(offset);
+-
+ 	DEBUGP("write to %lx\n", rec->ip);
+ 
+ 	if (probe_kernel_write((void *)ip, &op, MCOUNT_INSN_SIZE))
 -- 
 1.5.6.5
 
