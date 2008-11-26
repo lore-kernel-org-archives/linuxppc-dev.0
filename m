@@ -1,19 +1,23 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id D650BDDDEA
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 09:50:24 +1100 (EST)
-Date: Wed, 26 Nov 2008 17:50:22 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Milton Miller <miltonm@bga.com>,
-	Michael Ellerman <michael@ellerman.id.au>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/5] powerpc: ftrace updates to previous patch series
-In-Reply-To: <20081126215821.263324391@goodmis.org>
-Message-ID: <alpine.DEB.1.10.0811261749310.1501@gandalf.stny.rr.com>
-References: <20081126215821.263324391@goodmis.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 9C253DDDE0
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 09:59:01 +1100 (EST)
+Date: Thu, 27 Nov 2008 01:58:59 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH v2] of_gpio: Return GPIO flags from of_get_gpio()
+Message-ID: <20081126225859.GA7589@oksana.dev.rtsoft.ru>
+References: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
+	<1225418589-8545-1-git-send-email-tpiepho@freescale.com>
+	<20081126162033.GA13397@oksana.dev.rtsoft.ru>
+	<18733.49643.63081.163437@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0811261423120.5161@t2.domain.actdsltmp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <Pine.LNX.4.64.0811261423120.5161@t2.domain.actdsltmp>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Wed, 26 Nov 2008, Steven Rostedt wrote:
-
-> Paul,
+On Wed, Nov 26, 2008 at 02:35:54PM -0800, Trent Piepho wrote:
+> On Thu, 27 Nov 2008, Paul Mackerras wrote:
+> > Anton Vorontsov writes:
+> >
+> >> Can we apply it? Paul, Benjamin?
+> >>
+> >> The patchwork url for this patch is:
+> >> http://patchwork.ozlabs.org/patch/6650/
+> >>
+> >>
+> >> Thanks!
+> >>
+> >>>  drivers/mtd/nand/fsl_upm.c              |    2 +-
+> >>>  drivers/net/fs_enet/fs_enet-main.c      |    2 +-
+> >>>  drivers/net/phy/mdio-ofgpio.c           |    4 ++--
+> >>>  drivers/of/gpio.c                       |   13 ++++++++++---
+> >>>  drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+> >>>  include/linux/of_gpio.h                 |   21 +++++++++++++++++----
+> >>>  6 files changed, 32 insertions(+), 12 deletions(-)
+> >
+> > That would need acks from Jeff Garzik and David Woodhouse.
+> >
+> > Alternatively you could add a new function (called, for instance,
+> > of_get_gpio_flags) with the extra parameter to eliminate the need to
+> > change any drivers at this stage, since they all seem to pass NULL for
+> > the flags argument.
 > 
-> This patch series addresses the issues you brought up as well as
-> adds some more enhancements and fixes. This series is added on
-> top of the previous patch series.
-> 
-> The new patches are: (and are posted now)
-> 5987225... powerpc/ppc32: static ftrace fixes for PPC32
+> But if we did this every time any exported function needs to change, think
+> how bloated the API would be with cruft.
 
-The new commit id with the fix in Author and SoB is:
-fd90db4bdc1ccf71927365cd634188cec4d7b151
- powerpc/ppc32: static ftrace fixes for 
+Stable API is nonsense, yes. But we tend to change the API evolutionary,
+not revolutionary. That is,
 
--- Steve
+1. Implement of_get_gpio_flags();
+2. Now we can start using it (no stall in development, see?);
+3. Then somebody comes with the _cleanup_ patch:
+   "[PATCH] Merge of_get_gpio_flags() and of_get_gpio(), convert users"
 
-> 382d6db... powerpc: ftrace, use create_branch
-> d7d0ab8... powerpc: ftrace, added missing icache flush
-> 10ec622... powerpc: ftrace, fix cast aliasing and add code verification
-> d208ca5... powerpc: ftrace, do nothing in mcount call for dyn ftrace
-> 
-> The patches you already commented on:
-> 5c4f5d7... powerpc/ppc32: ftrace, dynamic ftrace to handle modules
-> a73af3e... powerpc/ppc64: ftrace, handle module trampolines for dyn ftrace
-> 009104f... powerpc: ftrace, use probe_kernel API to modify code
-> a352036... powerpc: ftrace, convert to new dynamic ftrace arch API
-> 6d07bb4... powerpc: ftrace, do not latency trace idle
-> 
+   ^^ That patch is trivial and could be applied at any appropriate
+   moment (i.e. when there are no of_*_gpio*() patches queued in the
+   -next trees). And as time goes by, the patch collects all the needed
+   Acks, no need to hurry -- it's trivial cleanup.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
