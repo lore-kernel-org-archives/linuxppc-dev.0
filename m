@@ -1,20 +1,17 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id C503EDDDDF
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 09:39:20 +1100 (EST)
-Date: Thu, 27 Nov 2008 23:39:14 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: "Lehmann, Hans (Ritter Elektronik)" <hans.lehmann@ritter-elektronik.de>
-Subject: Re: [PATCH v1] RS485 support for MPC5200x_psc_uart
-Message-ID: <20081127223914.GA19060@pengutronix.de>
-References: <633A55242A59C7488FAAF5A6850929984B813E@SRVEXC01.sts.saurer.vpn>
-	<20081113184218.GA11602@pengutronix.de>
-	<633A55242A59C7488FAAF5A6850929984B8143@SRVEXC01.sts.saurer.vpn>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
-In-Reply-To: <633A55242A59C7488FAAF5A6850929984B8143@SRVEXC01.sts.saurer.vpn>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <yanok@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 426D5DDDDF
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 10:45:35 +1100 (EST)
+From: Ilya Yanok <yanok@emcraft.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: add 16K/64K pages support for the 44x PPC32
+	architectures.
+Date: Fri, 28 Nov 2008 02:44:48 +0300
+Message-Id: <1227829488-8260-1-git-send-email-yanok@emcraft.com>
+Cc: Ilya Yanok <yanok@emcraft.com>, Vladimir Panfilov <pvr@emcraft.com>,
+	wd@denx.de, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +21,435 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch adds support for page sizes bigger than 4K (16K/64K) on
+PPC 44x.
+PGDIR table is much smaller than page in case of 16K/64K pages (512
+and 32 bytes resp.) so we allocate PGDIR with kzalloc() instead of
+__get_free_pages().
+PTE table covers rather big memory area in case of 16K/64K pages
+(32MB and 512MB resp.) so we can easily put FIXMAP and PKMAP in
+area covered by one PTE table.
 
---cWoXeonUoKmBZSoM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+Signed-off-by: Vladimir Panfilov <pvr@emcraft.com>
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+---
+ arch/powerpc/Kconfig                   |   54 ++++++++++++++++++++++++-------
+ arch/powerpc/include/asm/highmem.h     |   15 ++++++++-
+ arch/powerpc/include/asm/mmu-44x.h     |   18 ++++++++++
+ arch/powerpc/include/asm/page.h        |   13 +++++---
+ arch/powerpc/include/asm/page_32.h     |    3 +-
+ arch/powerpc/include/asm/pgtable.h     |    2 +
+ arch/powerpc/kernel/asm-offsets.c      |    4 ++
+ arch/powerpc/kernel/head_44x.S         |   22 ++++++++-----
+ arch/powerpc/kernel/misc_32.S          |   12 +++---
+ arch/powerpc/mm/pgtable_32.c           |   13 ++-----
+ arch/powerpc/platforms/Kconfig.cputype |    2 +-
+ 11 files changed, 112 insertions(+), 46 deletions(-)
 
-Hello Hans,
-
-On Mon, Nov 17, 2008 at 04:27:45PM +0100, Lehmann, Hans (Ritter Elektronik)=
- wrote:
-
-> Criticism is welcome
-
-Well, there are still some issues concerning coding-style and design,
-but those can be worked out, I guess. Still, there is one conceptual
-question I'd like to ask:
-
-Have you seen the TxRTS feature in Mode Register 2? It looks to me that
-it does the same (in hardware) what you achieve with the
-*_rts_clear-function and the TX_EMPTY interrupt. Or am I wrong?
-
-Kind regards,
-
-   Wolfram
-
---=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-
---cWoXeonUoKmBZSoM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkvIZIACgkQD27XaX1/VRucPACfZWjB2iH4s8XtSjnGhNZl1n3D
-rWwAnjrOBAlMwoyzugNKy0wxXtsLioHM
-=spzj
------END PGP SIGNATURE-----
-
---cWoXeonUoKmBZSoM--
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 525c13a..aa2eb46 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -401,23 +401,53 @@ config PPC_HAS_HASH_64K
+ 	depends on PPC64
+ 	default n
+ 
+-config PPC_64K_PAGES
+-	bool "64k page size"
+-	depends on PPC64
+-	select PPC_HAS_HASH_64K
++choice
++	prompt "Page size"
++	default PPC_4K_PAGES
+ 	help
+-	  This option changes the kernel logical page size to 64k. On machines
+-	  without processor support for 64k pages, the kernel will simulate
+-	  them by loading each individual 4k page on demand transparently,
+-	  while on hardware with such support, it will be used to map
+-	  normal application pages.
++	  Select the kernel logical page size. Increasing the page size
++	  will reduce software overhead at each page boundary, allow
++	  hardware prefetch mechanisms to be more effective, and allow
++	  larger dma transfers increasing IO efficiency and reducing
++	  overhead. However the utilization of memory will increase.
++	  For example, each cached file will using a multiple of the
++	  page size to hold its contents and the difference between the
++	  end of file and the end of page is wasted.
++
++	  Some dedicated systems, such as software raid serving with
++	  accelerated calculations, have shown significant increases.
++
++	  If you configure a 64 bit kernel for 64k pages but the
++	  processor does not support them, then the kernel will simulate
++	  them with 4k pages, loading them on demand, but with the
++	  reduced software overhead and larger internal fragmentation.
++	  For the 32 bit kernel, a large page option will not be offered
++	  unless it is supported by the configured processor.
++
++	  If unsure, choose 4K_PAGES.
++
++config PPC_4K_PAGES
++	bool "4k page size"
++
++config PPC_16K_PAGES
++	bool "16k page size" if 44x
++
++config PPC_64K_PAGES
++	bool "64k page size" if 44x || PPC64
++	select PPC_HAS_HASH_64K if PPC64
++
++endchoice
+ 
+ config FORCE_MAX_ZONEORDER
+ 	int "Maximum zone order"
+-	range 9 64 if PPC_64K_PAGES
+-	default "9" if PPC_64K_PAGES
++	range 9 64 if PPC64 && PPC_64K_PAGES
++	default "9" if PPC64 && PPC_64K_PAGES
+ 	range 13 64 if PPC64 && !PPC_64K_PAGES
+ 	default "13" if PPC64 && !PPC_64K_PAGES
++	range 9 64 if PPC32 && PPC_16K_PAGES
++	default "9" if PPC32 && PPC_16K_PAGES
++	range 7 64 if PPC32 && PPC_64K_PAGES
++	default "7" if PPC32 && PPC_64K_PAGES
+ 	range 11 64
+ 	default "11"
+ 	help
+@@ -437,7 +467,7 @@ config FORCE_MAX_ZONEORDER
+ 
+ config PPC_SUBPAGE_PROT
+ 	bool "Support setting protections for 4k subpages"
+-	depends on PPC_64K_PAGES
++	depends on PPC64 && PPC_64K_PAGES
+ 	help
+ 	  This option adds support for a system call to allow user programs
+ 	  to set access permissions (read/write, readonly, or no access)
+diff --git a/arch/powerpc/include/asm/highmem.h b/arch/powerpc/include/asm/highmem.h
+index 91c5895..9875540 100644
+--- a/arch/powerpc/include/asm/highmem.h
++++ b/arch/powerpc/include/asm/highmem.h
+@@ -38,9 +38,20 @@ extern pte_t *pkmap_page_table;
+  * easily, subsequent pte tables have to be allocated in one physical
+  * chunk of RAM.
+  */
+-#define LAST_PKMAP 	(1 << PTE_SHIFT)
+-#define LAST_PKMAP_MASK (LAST_PKMAP-1)
++/*
++ * We use one full pte table with 4K pages. And with 16K/64K pages pte
++ * table covers enough memory (32MB and 512MB resp.) that both FIXMAP
++ * and PKMAP can be placed in single pte table. We use 1024 pages for
++ * PKMAP in case of 16K/64K pages.
++ */
++#define PKMAP_ORDER	min(PTE_SHIFT, 10)
++#define LAST_PKMAP	(1 << PKMAP_ORDER)
++#if !defined(CONFIG_PPC_4K_PAGES)
++#define PKMAP_BASE	(FIXADDR_START - PAGE_SIZE*(LAST_PKMAP + 1))
++#else
+ #define PKMAP_BASE	((FIXADDR_START - PAGE_SIZE*(LAST_PKMAP + 1)) & PMD_MASK)
++#endif
++#define LAST_PKMAP_MASK	(LAST_PKMAP-1)
+ #define PKMAP_NR(virt)  ((virt-PKMAP_BASE) >> PAGE_SHIFT)
+ #define PKMAP_ADDR(nr)  (PKMAP_BASE + ((nr) << PAGE_SHIFT))
+ 
+diff --git a/arch/powerpc/include/asm/mmu-44x.h b/arch/powerpc/include/asm/mmu-44x.h
+index a825524..89d285d 100644
+--- a/arch/powerpc/include/asm/mmu-44x.h
++++ b/arch/powerpc/include/asm/mmu-44x.h
+@@ -4,6 +4,8 @@
+  * PPC440 support
+  */
+ 
++#include <asm/page.h>
++
+ #define PPC44x_MMUCR_TID	0x000000ff
+ #define PPC44x_MMUCR_STS	0x00010000
+ 
+@@ -73,4 +75,20 @@ typedef struct {
+ /* Size of the TLBs used for pinning in lowmem */
+ #define PPC_PIN_SIZE	(1 << 28)	/* 256M */
+ 
++#if (PAGE_SHIFT == 12)
++#define PPC44x_TLBE_SIZE	PPC44x_TLB_4K
++#elif (PAGE_SHIFT == 14)
++#define PPC44x_TLBE_SIZE	PPC44x_TLB_16K
++#elif (PAGE_SHIFT == 16)
++#define PPC44x_TLBE_SIZE	PPC44x_TLB_64K
++#else
++#error "Unsupported PAGE_SIZE"
++#endif
++
++#define PPC44x_PGD_OFF_SHIFT	(32 - PGDIR_SHIFT + PGD_T_LOG2)
++#define PPC44x_PGD_OFF_MASK	(PGDIR_SHIFT - PGD_T_LOG2)
++#define PPC44x_PTE_ADD_SHIFT	(32 - PGDIR_SHIFT + PTE_SHIFT + PTE_T_LOG2)
++#define PPC44x_PTE_ADD_MASK	(32 - PTE_T_LOG2 - PTE_SHIFT)
++#define PPC44x_RPN_MASK		(31 - PAGE_SHIFT)
++
+ #endif /* _ASM_POWERPC_MMU_44X_H_ */
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index c0b8d4a..c714881 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -19,12 +19,15 @@
+ #include <asm/kdump.h>
+ 
+ /*
+- * On PPC32 page size is 4K. For PPC64 we support either 4K or 64K software
++ * On regular PPC32 page size is 4K (but we support 4K/16K/64K pages
++ * on PPC44x). For PPC64 we support either 4K or 64K software
+  * page size. When using 64K pages however, whether we are really supporting
+  * 64K pages in HW or not is irrelevant to those definitions.
+  */
+-#ifdef CONFIG_PPC_64K_PAGES
++#if defined(CONFIG_PPC_64K_PAGES)
+ #define PAGE_SHIFT		16
++#elif defined(CONFIG_PPC_16K_PAGES)
++#define PAGE_SHIFT		14
+ #else
+ #define PAGE_SHIFT		12
+ #endif
+@@ -151,7 +154,7 @@ typedef struct { pte_basic_t pte; } pte_t;
+ /* 64k pages additionally define a bigger "real PTE" type that gathers
+  * the "second half" part of the PTE for pseudo 64k pages
+  */
+-#ifdef CONFIG_PPC_64K_PAGES
++#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC64)
+ typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
+ #else
+ typedef struct { pte_t pte; } real_pte_t;
+@@ -191,10 +194,10 @@ typedef pte_basic_t pte_t;
+ #define pte_val(x)	(x)
+ #define __pte(x)	(x)
+ 
+-#ifdef CONFIG_PPC_64K_PAGES
++#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC64)
+ typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
+ #else
+-typedef unsigned long real_pte_t;
++typedef pte_t real_pte_t;
+ #endif
+ 
+ 
+diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
+index d77072a..74b097b 100644
+--- a/arch/powerpc/include/asm/page_32.h
++++ b/arch/powerpc/include/asm/page_32.h
+@@ -19,6 +19,7 @@
+ #define PTE_FLAGS_OFFSET	0
+ #endif
+ 
++#define PTE_SHIFT	(PAGE_SHIFT - PTE_T_LOG2)	/* full page */
+ #ifndef __ASSEMBLY__
+ /*
+  * The basic type of a PTE - 64 bits for those CPUs with > 32 bit
+@@ -26,10 +27,8 @@
+  */
+ #ifdef CONFIG_PTE_64BIT
+ typedef unsigned long long pte_basic_t;
+-#define PTE_SHIFT	(PAGE_SHIFT - 3)	/* 512 ptes per page */
+ #else
+ typedef unsigned long pte_basic_t;
+-#define PTE_SHIFT	(PAGE_SHIFT - 2)	/* 1024 ptes per page */
+ #endif
+ 
+ struct page;
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index dbb8ca1..a202043 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -39,6 +39,8 @@ extern void paging_init(void);
+ 
+ #include <asm-generic/pgtable.h>
+ 
++#define PGD_T_LOG2	(__builtin_ffs(sizeof(pgd_t)) - 1)
++#define PTE_T_LOG2	(__builtin_ffs(sizeof(pte_t)) - 1)
+ 
+ /*
+  * This gets called at the end of handling a page fault, when
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 75c5dd0..0142318 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -378,6 +378,10 @@ int main(void)
+ 	DEFINE(VCPU_FAULT_DEAR, offsetof(struct kvm_vcpu, arch.fault_dear));
+ 	DEFINE(VCPU_FAULT_ESR, offsetof(struct kvm_vcpu, arch.fault_esr));
+ #endif
++#ifdef CONFIG_44x
++	DEFINE(PGD_T_LOG2, PGD_T_LOG2);
++	DEFINE(PTE_T_LOG2, PTE_T_LOG2);
++#endif
+ 
+ 	return 0;
+ }
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index f3a1ea9..6525124 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -391,12 +391,14 @@ interrupt_base:
+ 	rlwimi	r13,r12,10,30,30
+ 
+ 	/* Load the PTE */
+-	rlwinm 	r12, r10, 13, 19, 29	/* Compute pgdir/pmd offset */
++	/* Compute pgdir/pmd offset */
++	rlwinm  r12, r10, PPC44x_PGD_OFF_SHIFT, PPC44x_PGD_OFF_MASK, 29
+ 	lwzx	r11, r12, r11		/* Get pgd/pmd entry */
+ 	rlwinm.	r12, r11, 0, 0, 20	/* Extract pt base address */
+ 	beq	2f			/* Bail if no table */
+ 
+-	rlwimi	r12, r10, 23, 20, 28	/* Compute pte address */
++	/* Compute pte address */
++	rlwimi  r12, r10, PPC44x_PTE_ADD_SHIFT, PPC44x_PTE_ADD_MASK, 28
+ 	lwz	r11, 0(r12)		/* Get high word of pte entry */
+ 	lwz	r12, 4(r12)		/* Get low word of pte entry */
+ 
+@@ -485,12 +487,14 @@ tlb_44x_patch_hwater_D:
+ 	/* Make up the required permissions */
+ 	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_HWEXEC
+ 
+-	rlwinm	r12, r10, 13, 19, 29	/* Compute pgdir/pmd offset */
++	/* Compute pgdir/pmd offset */
++	rlwinm 	r12, r10, PPC44x_PGD_OFF_SHIFT, PPC44x_PGD_OFF_MASK, 29
+ 	lwzx	r11, r12, r11		/* Get pgd/pmd entry */
+ 	rlwinm.	r12, r11, 0, 0, 20	/* Extract pt base address */
+ 	beq	2f			/* Bail if no table */
+ 
+-	rlwimi	r12, r10, 23, 20, 28	/* Compute pte address */
++	/* Compute pte address */
++	rlwimi	r12, r10, PPC44x_PTE_ADD_SHIFT, PPC44x_PTE_ADD_MASK, 28
+ 	lwz	r11, 0(r12)		/* Get high word of pte entry */
+ 	lwz	r12, 4(r12)		/* Get low word of pte entry */
+ 
+@@ -554,15 +558,15 @@ tlb_44x_patch_hwater_I:
+  */
+ finish_tlb_load:
+ 	/* Combine RPN & ERPN an write WS 0 */
+-	rlwimi	r11,r12,0,0,19
++	rlwimi	r11,r12,0,0,PPC44x_RPN_MASK
+ 	tlbwe	r11,r13,PPC44x_TLB_XLAT
+ 
+ 	/*
+ 	 * Create WS1. This is the faulting address (EPN),
+ 	 * page size, and valid flag.
+ 	 */
+-	li	r11,PPC44x_TLB_VALID | PPC44x_TLB_4K
+-	rlwimi	r10,r11,0,20,31			/* Insert valid and page size*/
++	li	r11,PPC44x_TLB_VALID | PPC44x_TLBE_SIZE
++	rlwimi	r10,r11,0,PPC44x_PTE_ADD_MASK,31/* Insert valid and page size*/
+ 	tlbwe	r10,r13,PPC44x_TLB_PAGEID	/* Write PAGEID */
+ 
+ 	/* And WS 2 */
+@@ -634,12 +638,12 @@ _GLOBAL(set_context)
+  * goes at the beginning of the data segment, which is page-aligned.
+  */
+ 	.data
+-	.align	12
++	.align	PAGE_SHIFT
+ 	.globl	sdata
+ sdata:
+ 	.globl	empty_zero_page
+ empty_zero_page:
+-	.space	4096
++	.space	PAGE_SIZE
+ 
+ /*
+  * To support >32-bit physical addresses, we use an 8KB pgdir.
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index bdc8b0e..42f99d2 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -647,8 +647,8 @@ _GLOBAL(__flush_dcache_icache)
+ BEGIN_FTR_SECTION
+ 	blr
+ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+-	rlwinm	r3,r3,0,0,19			/* Get page base address */
+-	li	r4,4096/L1_CACHE_BYTES	/* Number of lines in a page */
++	rlwinm	r3,r3,0,0,PPC44x_RPN_MASK	/* Get page base address */
++	li	r4,PAGE_SIZE/L1_CACHE_BYTES	/* Number of lines in a page */
+ 	mtctr	r4
+ 	mr	r6,r3
+ 0:	dcbst	0,r3				/* Write line to ram */
+@@ -688,8 +688,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	rlwinm	r0,r10,0,28,26			/* clear DR */
+ 	mtmsr	r0
+ 	isync
+-	rlwinm	r3,r3,0,0,19			/* Get page base address */
+-	li	r4,4096/L1_CACHE_BYTES	/* Number of lines in a page */
++	rlwinm	r3,r3,0,0,PPC44x_RPN_MASK	/* Get page base address */
++	li	r4,PAGE_SIZE/L1_CACHE_BYTES	/* Number of lines in a page */
+ 	mtctr	r4
+ 	mr	r6,r3
+ 0:	dcbst	0,r3				/* Write line to ram */
+@@ -713,7 +713,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+  * void clear_pages(void *page, int order) ;
+  */
+ _GLOBAL(clear_pages)
+-	li	r0,4096/L1_CACHE_BYTES
++	li	r0,PAGE_SIZE/L1_CACHE_BYTES
+ 	slw	r0,r0,r4
+ 	mtctr	r0
+ #ifdef CONFIG_8xx
+@@ -771,7 +771,7 @@ _GLOBAL(copy_page)
+ 	dcbt	r5,r4
+ 	li	r11,L1_CACHE_BYTES+4
+ #endif /* MAX_COPY_PREFETCH */
+-	li	r0,4096/L1_CACHE_BYTES - MAX_COPY_PREFETCH
++	li	r0,PAGE_SIZE/L1_CACHE_BYTES - MAX_COPY_PREFETCH
+ 	crclr	4*cr0+eq
+ 2:
+ 	mtctr	r0
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index c31d6d2..10d21c3 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -72,24 +72,19 @@ extern unsigned long p_mapped_by_tlbcam(unsigned long pa);
+ #define p_mapped_by_tlbcam(x)	(0UL)
+ #endif /* HAVE_TLBCAM */
+ 
+-#ifdef CONFIG_PTE_64BIT
+-/* Some processors use an 8kB pgdir because they have 8-byte Linux PTEs. */
+-#define PGDIR_ORDER	1
+-#else
+-#define PGDIR_ORDER	0
+-#endif
++#define PGDIR_ORDER	(32 + PGD_T_LOG2 - PGDIR_SHIFT)
+ 
+ pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
+ 	pgd_t *ret;
+ 
+-	ret = (pgd_t *)__get_free_pages(GFP_KERNEL|__GFP_ZERO, PGDIR_ORDER);
++	ret = (pgd_t *)kzalloc(1 << PGDIR_ORDER, GFP_KERNEL);
+ 	return ret;
+ }
+ 
+ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+ {
+-	free_pages((unsigned long)pgd, PGDIR_ORDER);
++	kfree((void *)pgd);
+ }
+ 
+ __init_refok pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
+@@ -400,7 +395,7 @@ void kernel_map_pages(struct page *page, int numpages, int enable)
+ #endif /* CONFIG_DEBUG_PAGEALLOC */
+ 
+ static int fixmaps;
+-unsigned long FIXADDR_TOP = 0xfffff000;
++unsigned long FIXADDR_TOP = (-PAGE_SIZE);
+ EXPORT_SYMBOL(FIXADDR_TOP);
+ 
+ void __set_fixmap (enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags)
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 548efa5..73a5aa9 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -204,7 +204,7 @@ config PPC_STD_MMU_32
+ 
+ config PPC_MM_SLICES
+ 	bool
+-	default y if HUGETLB_PAGE || PPC_64K_PAGES
++	default y if HUGETLB_PAGE || (PPC64 && PPC_64K_PAGES)
+ 	default n
+ 
+ config VIRT_CPU_ACCOUNTING
+-- 
+1.5.6.1
