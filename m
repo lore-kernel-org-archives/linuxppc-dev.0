@@ -1,19 +1,12 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 5656EDDDD8
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 02:25:01 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so428120ywh.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 07:24:59 -0800 (PST)
-Message-ID: <ed82fe3e0811270724t26d2a8e2v233143722eb8587f@mail.gmail.com>
-Date: Thu, 27 Nov 2008 09:24:59 -0600
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
-To: "Andre Schwarz" <andre.schwarz@matrix-vision.de>
-Subject: Re: i2c-mpc clocking scheme
-In-Reply-To: <492EB606.9020703@matrix-vision.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <492EB606.9020703@matrix-vision.de>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 4A46DDDDF5
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 02:34:02 +1100 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: grant.likely@secretlab.ca
+Subject: [PATCH] mpc52xx/serial: fix error paths in probe function
+Date: Thu, 27 Nov 2008 16:33:56 +0100
+Message-Id: <1227800036-30109-1-git-send-email-w.sang@pengutronix.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,21 +17,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 27, 2008 at 9:00 AM, Andre Schwarz
-<andre.schwarz@matrix-vision.de> wrote:
-> All,
->
-> is anybody working on some improvements regarding configurable I2C
-> frequency inside the i2c-mpc driver ?
->
-> If not - would anybody be intersted in getting this done, i.e.
-> configurable via device tree ?
+- error cases for mapbase and irq were unbundled
+- mapped irq now gets disposed on error
+- errors return ENODEV instead of EINVAL as they are not dependant on
+  arguments
 
-Maybe I'm missing something, but U-Boot configures the I2C bus speed.
-It does this because the algorithm is specific to the SOC itself.  For
-example, the 8544 is different from the 8548.  It would be a mess to
-duplicate this code in the kernel.
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+---
+ drivers/serial/mpc52xx_uart.c |   27 +++++++++++++++++----------
+ 1 files changed, 17 insertions(+), 10 deletions(-)
 
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index 3234100..93e8893 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -1113,14 +1113,14 @@ mpc52xx_uart_of_probe(struct of_device *op, const struct of_device_id *match)
+ 		if (mpc52xx_uart_nodes[idx] == op->node)
+ 			break;
+ 	if (idx >= MPC52xx_PSC_MAXNUM)
+-		return -EINVAL;
++		return -ENODEV;
+ 	pr_debug("Found %s assigned to ttyPSC%x\n",
+ 		 mpc52xx_uart_nodes[idx]->full_name, idx);
+ 
+ 	uartclk = psc_ops->getuartclk(op->node);
+ 	if (uartclk == 0) {
+ 		dev_dbg(&op->dev, "Could not find uart clock frequency!\n");
+-		return -EINVAL;
++		return -ENODEV;
+ 	}
+ 
+ 	/* Init the port structure */
+@@ -1142,22 +1142,29 @@ mpc52xx_uart_of_probe(struct of_device *op, const struct of_device_id *match)
+ 		return ret;
+ 
+ 	port->mapbase = res.start;
++	if (!port->mapbase) {
++		dev_err(&op->dev, "Could not allocate resources for PSC\n");
++		return -ENODEV;
++	}
++
+ 	port->irq = irq_of_parse_and_map(op->node, 0);
++	if (port->irq == NO_IRQ) {
++		dev_err(&op->dev, "Could not get irq\n");
++		return -ENODEV;
++	}
+ 
+ 	dev_dbg(&op->dev, "mpc52xx-psc uart at %p, irq=%x, freq=%i\n",
+ 		(void *)port->mapbase, port->irq, port->uartclk);
+ 
+-	if ((port->irq == NO_IRQ) || !port->mapbase) {
+-		printk(KERN_ERR "Could not allocate resources for PSC\n");
+-		return -EINVAL;
+-	}
+-
+ 	/* Add the port to the uart sub-system */
+ 	ret = uart_add_one_port(&mpc52xx_uart_driver, port);
+-	if (!ret)
+-		dev_set_drvdata(&op->dev, (void *)port);
++	if (ret) {
++		irq_dispose_mapping(port->irq);
++		return -ENODEV;
++	}
+ 
+-	return ret;
++	dev_set_drvdata(&op->dev, (void *)port);
++	return 0;
+ }
+ 
+ static int
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.5.6.5
