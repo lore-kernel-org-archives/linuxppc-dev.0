@@ -1,15 +1,19 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id CC968DDDCA
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 07:44:55 +1100 (EST)
-Date: Thu, 27 Nov 2008 23:44:53 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] of/gpio: Implement of_get_gpio_flags()
-Message-ID: <20081127204453.GA21901@oksana.dev.rtsoft.ru>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id A4A33DDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 07:50:13 +1100 (EST)
+Date: Thu, 27 Nov 2008 21:30:48 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH] mpc52xx/serial: fix error paths in probe function
+Message-ID: <20081127203048.GA18994@pengutronix.de>
+References: <1227800036-30109-1-git-send-email-w.sang@pengutronix.de>
+	<9e4733910811270840w23214c91o4f8a141c245cb663@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
+In-Reply-To: <9e4733910811270840w23214c91o4f8a141c245cb663@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,177 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This function is alike to the simple of_get_gpio(), but accepts new
-argument: flags. This new function will be used by the drivers that
-need to retrieve additional GPIO information, such as active-low flag.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/of/gpio.c       |   36 +++++++++++++++++++++++++++++-------
- include/linux/of_gpio.h |   38 ++++++++++++++++++++++++++++++++++----
- 2 files changed, 63 insertions(+), 11 deletions(-)
+--FCuugMFkClbJLl1L
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
-index 7cd7301..a4ba217 100644
---- a/drivers/of/gpio.c
-+++ b/drivers/of/gpio.c
-@@ -19,14 +19,17 @@
- #include <asm/prom.h>
- 
- /**
-- * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
-+ * of_get_gpio_flags - Get a GPIO number and flags to use with GPIO API
-  * @np:		device node to get GPIO from
-  * @index:	index of the GPIO
-+ * @flags:	a flags pointer to fill in
-  *
-  * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
-- * value on the error condition.
-+ * value on the error condition. If @flags is not NULL the function also fills
-+ * in flags for the GPIO.
-  */
--int of_get_gpio(struct device_node *np, int index)
-+int of_get_gpio_flags(struct device_node *np, int index,
-+		      enum of_gpio_flags *flags)
- {
- 	int ret;
- 	struct device_node *gc;
-@@ -59,7 +62,11 @@ int of_get_gpio(struct device_node *np, int index)
- 		goto err1;
- 	}
- 
--	ret = of_gc->xlate(of_gc, np, gpio_spec);
-+	/* .xlate might decide to not fill in the flags, so clear it. */
-+	if (flags)
-+		*flags = 0;
-+
-+	ret = of_gc->xlate(of_gc, np, gpio_spec, flags);
- 	if (ret < 0)
- 		goto err1;
- 
-@@ -70,26 +77,41 @@ err0:
- 	pr_debug("%s exited with status %d\n", __func__, ret);
- 	return ret;
- }
--EXPORT_SYMBOL(of_get_gpio);
-+EXPORT_SYMBOL(of_get_gpio_flags);
- 
- /**
-- * of_gpio_simple_xlate - translate gpio_spec to the GPIO number
-+ * of_gpio_simple_xlate - translate gpio_spec to the GPIO number and flags
-  * @of_gc:	pointer to the of_gpio_chip structure
-  * @np:		device node of the GPIO chip
-  * @gpio_spec:	gpio specifier as found in the device tree
-+ * @flags:	a flags pointer to fill in
-  *
-  * This is simple translation function, suitable for the most 1:1 mapped
-  * gpio chips. This function performs only one sanity check: whether gpio
-  * is less than ngpios (that is specified in the gpio_chip).
-  */
- int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
--			 const void *gpio_spec)
-+			 const void *gpio_spec, enum of_gpio_flags *flags)
- {
- 	const u32 *gpio = gpio_spec;
- 
-+	/*
-+	 * We're discouraging gpio_cells < 2, since that way you'll have to
-+	 * write your own xlate function (that will have to retrive the GPIO
-+	 * number and the flags from a single gpio cell -- this is possible,
-+	 * but not recommended).
-+	 */
-+	if (of_gc->gpio_cells < 2) {
-+		WARN_ON(1);
-+		return -EINVAL;
-+	}
-+
- 	if (*gpio > of_gc->gc.ngpio)
- 		return -EINVAL;
- 
-+	if (flags)
-+		*flags = gpio[1];
-+
- 	return *gpio;
- }
- EXPORT_SYMBOL(of_gpio_simple_xlate);
-diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
-index 67db101..8dc9bcb 100644
---- a/include/linux/of_gpio.h
-+++ b/include/linux/of_gpio.h
-@@ -14,19 +14,32 @@
- #ifndef __LINUX_OF_GPIO_H
- #define __LINUX_OF_GPIO_H
- 
-+#include <linux/compiler.h>
-+#include <linux/kernel.h>
- #include <linux/errno.h>
- #include <linux/gpio.h>
- 
-+struct device_node;
-+
- #ifdef CONFIG_OF_GPIO
- 
- /*
-+ * This is Linux-specific flags. By default controllers' and Linux' mapping
-+ * match, but GPIO controllers are free to translate their own flags to
-+ * Linux-specific in their .xlate callback. Though, 1:1 mapping is recommended.
-+ */
-+enum of_gpio_flags {
-+	OF_GPIO_ACTIVE_LOW = 0x1,
-+};
-+
-+/*
-  * Generic OF GPIO chip
-  */
- struct of_gpio_chip {
- 	struct gpio_chip gc;
- 	int gpio_cells;
- 	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
--		     const void *gpio_spec);
-+		     const void *gpio_spec, enum of_gpio_flags *flags);
- };
- 
- static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
-@@ -50,20 +63,37 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
- 	return container_of(of_gc, struct of_mm_gpio_chip, of_gc);
- }
- 
--extern int of_get_gpio(struct device_node *np, int index);
-+extern int of_get_gpio_flags(struct device_node *np, int index,
-+			     enum of_gpio_flags *flags);
-+
- extern int of_mm_gpiochip_add(struct device_node *np,
- 			      struct of_mm_gpio_chip *mm_gc);
- extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
- 				struct device_node *np,
--				const void *gpio_spec);
-+				const void *gpio_spec,
-+				enum of_gpio_flags *flags);
- #else
- 
- /* Drivers may not strictly depend on the GPIO support, so let them link. */
--static inline int of_get_gpio(struct device_node *np, int index)
-+static inline int of_get_gpio_flags(struct device_node *np, int index,
-+				    enum of_gpio_flags *flags)
- {
- 	return -ENOSYS;
- }
- 
- #endif /* CONFIG_OF_GPIO */
- 
-+/**
-+ * of_get_gpio - Get a GPIO number to use with GPIO API
-+ * @np:		device node to get GPIO from
-+ * @index:	index of the GPIO
-+ *
-+ * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
-+ * value on the error condition.
-+ */
-+static inline int of_get_gpio(struct device_node *np, int index)
-+{
-+	return of_get_gpio_flags(np, index, NULL);
-+}
-+
- #endif /* __LINUX_OF_GPIO_H */
--- 
-1.5.6.5
+
+On Thu, Nov 27, 2008 at 11:40:55AM -0500, Jon Smirl wrote:
+
+> > +       if (port->irq =3D=3D NO_IRQ) {
+> > +               dev_err(&op->dev, "Could not get irq\n");
+> > +               return -ENODEV;
+> > +       }
+>=20
+> Doesn't NO_IRQ imply polling, not an error?
+
+See below, I just copied the original behaviour. Having another look at
+mpc52xx_uart_setup, I don't see any polling option there, so I think it
+is correct to do this.
+
+>=20
+> >
+> >        dev_dbg(&op->dev, "mpc52xx-psc uart at %p, irq=3D%x, freq=3D%i\n=
+",
+> >                (void *)port->mapbase, port->irq, port->uartclk);
+> >
+> > -       if ((port->irq =3D=3D NO_IRQ) || !port->mapbase) {
+> > -               printk(KERN_ERR "Could not allocate resources for PSC\n=
+");
+> > -               return -EINVAL;
+> > -       }
+
+(Originaly dropout for NO_IRQ)
+
+Regards,
+
+   Wolfram
+
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+
+--FCuugMFkClbJLl1L
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkvA3gACgkQD27XaX1/VRvqqgCfQ2YIJ74UAB5jY3L5VZ3xZWUP
+so4AnitdcnmvFnoYKFbvHZ3US+d4uVXl
+=yzDp
+-----END PGP SIGNATURE-----
+
+--FCuugMFkClbJLl1L--
