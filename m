@@ -1,18 +1,21 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id D3C3FDDDFB
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 02:43:46 +1100 (EST)
-Message-ID: <492EC031.9000802@matrix-vision.de>
-Date: Thu, 27 Nov 2008 16:43:45 +0100
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <lagrange@fr.oleane.com>
+Received: from smtp03.msg.oleane.net (smtp03.msg.oleane.net [62.161.4.3])
+	by ozlabs.org (Postfix) with ESMTP id 19D1ADDDE6
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 02:54:20 +1100 (EST)
+Received: from smtp03.msg.oleane.net (localhost [127.0.0.1])
+	by smtp03.msg.oleane.net (MTA-AS) with ESMTP id mARFYC32010075
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 16:34:12 +0100
+Received: from GEGE6600V ([194.3.133.184]) (authenticated)
+	by smtp03.msg.oleane.net (MTA) with ESMTP id mARFYCvl010004
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 16:34:12 +0100
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: TR: Async DMA completion
+Date: Thu, 27 Nov 2008 16:33:53 +0100
+Message-ID: <000001c950a5$9854ccd0$a501a8c0@GEGE6600V>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: i2c-mpc clocking scheme
-References: <492EB606.9020703@matrix-vision.de>
-	<ed82fe3e0811270724t26d2a8e2v233143722eb8587f@mail.gmail.com>
-In-Reply-To: <ed82fe3e0811270724t26d2a8e2v233143722eb8587f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,33 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi schrieb:
-> On Thu, Nov 27, 2008 at 9:00 AM, Andre Schwarz
-> <andre.schwarz@matrix-vision.de> wrote:
->   
->> All,
->>
->> is anybody working on some improvements regarding configurable I2C
->> frequency inside the i2c-mpc driver ?
->>
->> If not - would anybody be intersted in getting this done, i.e.
->> configurable via device tree ?
->>     
->
-> Maybe I'm missing something, but U-Boot configures the I2C bus speed.
-> It does this because the algorithm is specific to the SOC itself.  For
-> example, the 8544 is different from the 8548.  It would be a mess to
-> duplicate this code in the kernel.
->
->   
-You're right regarding U-Boot, but the i2c-mpc driver overwrites the
-"frequency divider register" on all chips.
 
-I'm not happy with a fixed 0x3f @ MPC5200 which results in 65kHz ... :-(
+Hello,
 
-Have a look at line 163 in drivers/i2c/busses/i2c-mpc.c
+I would like to use async DMA driver to transfer data. I find no function to
+wait for the end of the DMA transfer in blocking mode:
+the only way to get the end of the transfer is the polling by the function
+"dma_async_is_tx_complete".
 
+To wait the end of the transfer, must I poll the transfer status by the
+function "dma_async_is_tx_complete" or is there a function
+that waits for a DMA channel interrupt ?
 
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+Thanks for any tips.
+Laurent
