@@ -1,21 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.184])
-	by ozlabs.org (Postfix) with ESMTP id 46CE0DDDE3
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 01:11:17 +1100 (EST)
-Received: by rn-out-0910.google.com with SMTP id j40so891616rnf.16
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 06:11:14 -0800 (PST)
-Message-ID: <fa686aa40811270611j58ceb6e5lffc37fc3f83d00e7@mail.gmail.com>
-Date: Thu, 27 Nov 2008 07:11:13 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Yuri Tikhonov" <yur@emcraft.com>
-Subject: Re: [PATCH][v2] xsysace: use resource_size_t instead of unsigned long
-In-Reply-To: <200811271521.27642.yur@emcraft.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200811271521.27642.yur@emcraft.com>
-Cc: linuxppc-dev@ozlabs.org, Ilya Yanok <yanok@emcraft.com>,
-	linux-kernel@vger.kernel.org, Detlev Zundel <dzu@denx.de>,
-	Wolfgang Denk <wd@denx.de>
+Return-Path: <sebastien.dugue@bull.net>
+Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
+	by ozlabs.org (Postfix) with ESMTP id AAAF8DDDEA
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 01:52:10 +1100 (EST)
+Date: Thu, 27 Nov 2008 15:52:03 +0100
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: linux-ppc <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/pseries: fix idle sleep early exit state
+Message-ID: <20081127155203.2a1d6af9@bull.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Will Schmidt <will_schmidt@vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Jean Pierre Dion <jean-pierre.dion@bull.net>,
+	Gilles Carry <Gilles.Carry@ext.bull.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 27, 2008 at 5:21 AM, Yuri Tikhonov <yur@emcraft.com> wrote:
-> Use resource_size_t for physical address of SystemACE
-> chip. This fixes the driver brokeness for 32 bit systems
-> with 64 bit resources (e.g. PPC440SPe).
 
-Hey Yuri,
+  In pseries_dedicated_idle_sleep(), if we need to exit idle during the
+snooze period (i.e. need_resched or cpu has been offlined), then we should
+re-disable the interrupts and clear TIF_POLLING_NRFLAG before leaving.
 
-I actually already picked up the last version of your patch after
-fixing it up myself.  It's currently sitting in Paul's powerpc tree
-and it will be merged into mainline when Linus gets back from
-vacation.
+Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/platforms/pseries/setup.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-Can you please spin a new version with just the addition of the
-compatible value and base it on Paul's tree.
-
-Thanks,
-g.
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index ec34170..8270f04 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -504,8 +504,13 @@ static void pseries_dedicated_idle_sleep(void)
+ 		set_thread_flag(TIF_POLLING_NRFLAG);
+ 
+ 		while (get_tb() < start_snooze) {
+-			if (need_resched() || cpu_is_offline(cpu))
+-				goto out;
++			if (need_resched() || cpu_is_offline(cpu)) {
++				HMT_medium();
++				clear_thread_flag(TIF_POLLING_NRFLAG);
++				smp_mb();
++				local_irq_disable();
++				goto out2;
++			}
+ 			ppc64_runlatch_off();
+ 			HMT_low();
+ 			HMT_very_low();
+@@ -523,6 +528,7 @@ static void pseries_dedicated_idle_sleep(void)
+ 
+ out:
+ 	HMT_medium();
++out2:
+ 	out_purr = mfspr(SPRN_PURR);
+ 	get_lppaca()->wait_state_cycles += out_purr - in_purr;
+ 	get_lppaca()->donate_dedicated_cpu = 0;
+-- 
+1.6.0.1.308.gede4c
