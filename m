@@ -1,20 +1,18 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 931DBDDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 02:58:50 +1100 (EST)
-From: Yuri Tikhonov <yur@emcraft.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] xsysace: add compatible string
-Date: Thu, 27 Nov 2008 18:49:58 +0300
+Return-Path: <l.fu@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 2619DDDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 03:07:20 +1100 (EST)
+Message-ID: <492EC197.1060503@pengutronix.de>
+Date: Thu, 27 Nov 2008 16:49:43 +0100
+From: Luotao Fu <l.fu@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200811271849.58535.yur@emcraft.com>
-Cc: Detlev Zundel <dzu@denx.de>, Ilya Yanok <yanok@emcraft.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Wolfgang Denk <wd@denx.de>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: i2c-mpc clocking scheme
+References: <492EB606.9020703@matrix-vision.de>
+	<ed82fe3e0811270724t26d2a8e2v233143722eb8587f@mail.gmail.com>
+In-Reply-To: <ed82fe3e0811270724t26d2a8e2v233143722eb8587f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Andre Schwarz <andre.schwarz@matrix-vision.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add one more compatible string to the table for
-of_platform binding, so that the platforms, which
-have the SysACE chip on board (e.g. Katmai), could
-describe it in their device trees correctly.
+Timur Tabi wrote:
+> On Thu, Nov 27, 2008 at 9:00 AM, Andre Schwarz
+> <andre.schwarz@matrix-vision.de> wrote:
+>> All,
+>>
+>> is anybody working on some improvements regarding configurable I2C
+>> frequency inside the i2c-mpc driver ?
+>>
+>> If not - would anybody be intersted in getting this done, i.e.
+>> configurable via device tree ?
+> 
+> Maybe I'm missing something, but U-Boot configures the I2C bus speed.
 
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
----
- drivers/block/xsysace.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+i2c-mpc sets the bus clock in kernel with mpc_i2c_setclock. The bus
+speed in kernel is indepedent from u-boot.
 
-diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
-index 29e1dfa..381d686 100644
---- a/drivers/block/xsysace.c
-+++ b/drivers/block/xsysace.c
-@@ -1206,6 +1206,7 @@ static struct of_device_id ace_of_match[] __devinitdata = {
- 	{ .compatible = "xlnx,opb-sysace-1.00.b", },
- 	{ .compatible = "xlnx,opb-sysace-1.00.c", },
- 	{ .compatible = "xlnx,xps-sysace-1.00.a", },
-+	{ .compatible = "xlnx,sysace", },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, ace_of_match);
+> It does this because the algorithm is specific to the SOC itself.  For
+> example, the 8544 is different from the 8548.  It would be a mess to
+> duplicate this code in the kernel.
+> 
+
+I did try to write some mechanismen to make the i2c bus speed
+configurable for  mpc5200. I found it quite hard to find some algorithm
+to calculate the right values in the Timing table of the I2C bus
+controller. Anyhow I gave it up after starring at the datasheet for some
+time. ;-) I can't speak for other platforms, which are supported by
+i2c-mpc. Anyway, I do think it might be interesting to have configurable
+i2c bus speed.
+
+cheers
+Luotao Fu
 -- 
-1.5.6.1
+   Dipl.-Ing. Luotao Fu | Phone: +49-5121-206917-5004
+Pengutronix - Linux Solutions for Science and Industry
+Entwicklungszentrum Nord     http://www.pengutronix.de
