@@ -1,27 +1,20 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id EEF9EDDDD8
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 02:00:27 +1100 (EST)
-Received: from pandora.intern.matrix-vision.de (g1.matrix-vision.com
-	[217.7.222.190])
-	by p15137414.pureserver.info (Postfix) with ESMTP id EAACD3CC068
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 16:00:25 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 7EA20E3C09
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 18:00:27 +0100 (CET)
-Received: from hegemone (hegemone.intern.matrix-vision.de [192.168.5.77])
-	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 0D259E3C09
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 18:00:24 +0100 (CET)
-Received: from [192.168.65.5] (unknown [192.168.65.5])
-	by hegemone (Postfix) with ESMTP id 106E651E
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 17:56:34 +0100 (CET)
-Message-ID: <492EB606.9020703@matrix-vision.de>
-Date: Thu, 27 Nov 2008 16:00:22 +0100
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <timur.tabi@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id 5656EDDDD8
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 02:25:01 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so428120ywh.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 07:24:59 -0800 (PST)
+Message-ID: <ed82fe3e0811270724t26d2a8e2v233143722eb8587f@mail.gmail.com>
+Date: Thu, 27 Nov 2008 09:24:59 -0600
+From: "Timur Tabi" <timur@freescale.com>
+Sender: timur.tabi@gmail.com
+To: "Andre Schwarz" <andre.schwarz@matrix-vision.de>
+Subject: Re: i2c-mpc clocking scheme
+In-Reply-To: <492EB606.9020703@matrix-vision.de>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: i2c-mpc clocking scheme 
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
+References: <492EB606.9020703@matrix-vision.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,18 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All,
+On Thu, Nov 27, 2008 at 9:00 AM, Andre Schwarz
+<andre.schwarz@matrix-vision.de> wrote:
+> All,
+>
+> is anybody working on some improvements regarding configurable I2C
+> frequency inside the i2c-mpc driver ?
+>
+> If not - would anybody be intersted in getting this done, i.e.
+> configurable via device tree ?
 
-is anybody working on some improvements regarding configurable I2C
-frequency inside the i2c-mpc driver ?
+Maybe I'm missing something, but U-Boot configures the I2C bus speed.
+It does this because the algorithm is specific to the SOC itself.  For
+example, the 8544 is different from the 8548.  It would be a mess to
+duplicate this code in the kernel.
 
-If not - would anybody be intersted in getting this done, i.e.
-configurable via device tree ?
-
-
-
-regards,
-Andre
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
