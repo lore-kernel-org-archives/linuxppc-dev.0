@@ -2,16 +2,18 @@ Return-Path: <yur@emcraft.com>
 Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 64BB3DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 23:30:14 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 30CD0DDDE7
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 23:42:54 +1100 (EST)
 From: Yuri Tikhonov <yur@emcraft.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH][v2] xsysace: use resource_size_t instead of unsigned long
-Date: Thu, 27 Nov 2008 15:21:27 +0300
+Subject: Re: [PATCH][v2] xsysace: use resource_size_t instead of unsigned long
+Date: Thu, 27 Nov 2008 15:34:05 +0300
+References: <200811271521.27642.yur@emcraft.com>
+In-Reply-To: <200811271521.27642.yur@emcraft.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200811271521.27642.yur@emcraft.com>
+  charset="iso-8859-1"
+Message-Id: <200811271534.05408.yur@emcraft.com>
 Cc: Ilya Yanok <yanok@emcraft.com>, Wolfgang Denk <wd@denx.de>,
 	Detlev Zundel <dzu@denx.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,6 +25,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I'm sorry, but the patch I've just posted turn out to be corrupted. The
+correct one is below.
+
+---
 Use resource_size_t for physical address of SystemACE
 chip. This fixes the driver brokeness for 32 bit systems
 with 64 bit resources (e.g. PPC440SPe).
@@ -93,8 +99,7 @@ index ecab9e6..9efd3d7 100644
  	return -ENOMEM;
  }
  
-@@ -1059,7 +1060,7 @@ static void __devexit ace_teardown(struct ace_device 
-*ace)
+@@ -1059,7 +1060,7 @@ static void __devexit ace_teardown(struct ace_device *ace)
  }
  
  static int __devinit
@@ -121,8 +126,7 @@ index ecab9e6..9efd3d7 100644
  	const u32 *id;
  	int irq, bus_width, rc;
  
-@@ -1205,6 +1206,7 @@ static struct of_device_id ace_of_match[] __devinitdata 
-= {
+@@ -1205,6 +1206,7 @@ static struct of_device_id ace_of_match[] __devinitdata = {
  	{ .compatible = "xlnx,opb-sysace-1.00.b", },
  	{ .compatible = "xlnx,opb-sysace-1.00.c", },
  	{ .compatible = "xlnx,xps-sysace-1.00.a", },
