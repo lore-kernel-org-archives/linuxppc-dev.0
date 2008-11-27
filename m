@@ -1,21 +1,21 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 30CD0DDDE7
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 23:42:54 +1100 (EST)
-From: Yuri Tikhonov <yur@emcraft.com>
-To: linux-kernel@vger.kernel.org
+Return-Path: <glikely@secretlab.ca>
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.184])
+	by ozlabs.org (Postfix) with ESMTP id 46CE0DDDE3
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 01:11:17 +1100 (EST)
+Received: by rn-out-0910.google.com with SMTP id j40so891616rnf.16
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 06:11:14 -0800 (PST)
+Message-ID: <fa686aa40811270611j58ceb6e5lffc37fc3f83d00e7@mail.gmail.com>
+Date: Thu, 27 Nov 2008 07:11:13 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Yuri Tikhonov" <yur@emcraft.com>
 Subject: Re: [PATCH][v2] xsysace: use resource_size_t instead of unsigned long
-Date: Thu, 27 Nov 2008 15:34:05 +0300
-References: <200811271521.27642.yur@emcraft.com>
 In-Reply-To: <200811271521.27642.yur@emcraft.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200811271534.05408.yur@emcraft.com>
-Cc: Ilya Yanok <yanok@emcraft.com>, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200811271521.27642.yur@emcraft.com>
+Cc: linuxppc-dev@ozlabs.org, Ilya Yanok <yanok@emcraft.com>,
+	linux-kernel@vger.kernel.org, Detlev Zundel <dzu@denx.de>,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,114 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm sorry, but the patch I've just posted turn out to be corrupted. The
-correct one is below.
+On Thu, Nov 27, 2008 at 5:21 AM, Yuri Tikhonov <yur@emcraft.com> wrote:
+> Use resource_size_t for physical address of SystemACE
+> chip. This fixes the driver brokeness for 32 bit systems
+> with 64 bit resources (e.g. PPC440SPe).
 
----
-Use resource_size_t for physical address of SystemACE
-chip. This fixes the driver brokeness for 32 bit systems
-with 64 bit resources (e.g. PPC440SPe).
+Hey Yuri,
 
-Also this patch adds one more compatible string for more
-clean description of the hardware, and fixes a sector_t-
-related compilation warning.
+I actually already picked up the last version of your patch after
+fixing it up myself.  It's currently sitting in Paul's powerpc tree
+and it will be merged into mainline when Linus gets back from
+vacation.
 
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
----
- drivers/block/xsysace.c |   24 +++++++++++++-----------
- 1 files changed, 13 insertions(+), 11 deletions(-)
+Can you please spin a new version with just the addition of the
+compatible value and base it on Paul's tree.
 
-diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
-index ecab9e6..9efd3d7 100644
---- a/drivers/block/xsysace.c
-+++ b/drivers/block/xsysace.c
-@@ -194,7 +194,7 @@ struct ace_device {
- 	int in_irq;
- 
- 	/* Details of hardware device */
--	unsigned long physaddr;
-+	resource_size_t physaddr;
- 	void __iomem *baseaddr;
- 	int irq;
- 	int bus_width;		/* 0 := 8 bit; 1 := 16 bit */
-@@ -628,8 +628,8 @@ static void ace_fsm_dostate(struct ace_device *ace)
- 
- 		/* Okay, it's a data request, set it up for transfer */
- 		dev_dbg(ace->dev,
--			"request: sec=%lx hcnt=%lx, ccnt=%x, dir=%i\n",
--			req->sector, req->hard_nr_sectors,
-+			"request: sec=%llx hcnt=%lx, ccnt=%x, dir=%i\n",
-+			(unsigned long long)req->sector, req->hard_nr_sectors,
- 			req->current_nr_sectors, rq_data_dir(req));
- 
- 		ace->req = req;
-@@ -935,7 +935,8 @@ static int __devinit ace_setup(struct ace_device *ace)
- 	int rc;
- 
- 	dev_dbg(ace->dev, "ace_setup(ace=0x%p)\n", ace);
--	dev_dbg(ace->dev, "physaddr=0x%lx irq=%i\n", ace->physaddr, ace->irq);
-+	dev_dbg(ace->dev, "physaddr=0x%llx irq=%i\n",
-+		(unsigned long long)ace->physaddr, ace->irq);
- 
- 	spin_lock_init(&ace->lock);
- 	init_completion(&ace->id_completion);
-@@ -1017,8 +1018,8 @@ static int __devinit ace_setup(struct ace_device *ace)
- 	/* Print the identification */
- 	dev_info(ace->dev, "Xilinx SystemACE revision %i.%i.%i\n",
- 		 (version >> 12) & 0xf, (version >> 8) & 0x0f, version & 0xff);
--	dev_dbg(ace->dev, "physaddr 0x%lx, mapped to 0x%p, irq=%i\n",
--		ace->physaddr, ace->baseaddr, ace->irq);
-+	dev_dbg(ace->dev, "physaddr 0x%llx, mapped to 0x%p, irq=%i\n",
-+		(unsigned long long)ace->physaddr, ace->baseaddr, ace->irq);
- 
- 	ace->media_change = 1;
- 	ace_revalidate_disk(ace->gd);
-@@ -1035,8 +1036,8 @@ err_alloc_disk:
- err_blk_initq:
- 	iounmap(ace->baseaddr);
- err_ioremap:
--	dev_info(ace->dev, "xsysace: error initializing device at 0x%lx\n",
--	       ace->physaddr);
-+	dev_info(ace->dev, "xsysace: error initializing device at 0x%llx\n",
-+		 (unsigned long long)ace->physaddr);
- 	return -ENOMEM;
- }
- 
-@@ -1059,7 +1060,7 @@ static void __devexit ace_teardown(struct ace_device *ace)
- }
- 
- static int __devinit
--ace_alloc(struct device *dev, int id, unsigned long physaddr,
-+ace_alloc(struct device *dev, int id, resource_size_t physaddr,
- 	  int irq, int bus_width)
- {
- 	struct ace_device *ace;
-@@ -1119,7 +1120,7 @@ static void __devexit ace_free(struct device *dev)
- 
- static int __devinit ace_probe(struct platform_device *dev)
- {
--	unsigned long physaddr = 0;
-+	resource_size_t physaddr = 0;
- 	int bus_width = ACE_BUS_WIDTH_16; /* FIXME: should not be hard coded */
- 	int id = dev->id;
- 	int irq = NO_IRQ;
-@@ -1165,7 +1166,7 @@ static int __devinit
- ace_of_probe(struct of_device *op, const struct of_device_id *match)
- {
- 	struct resource res;
--	unsigned long physaddr;
-+	resource_size_t physaddr;
- 	const u32 *id;
- 	int irq, bus_width, rc;
- 
-@@ -1205,6 +1206,7 @@ static struct of_device_id ace_of_match[] __devinitdata = {
- 	{ .compatible = "xlnx,opb-sysace-1.00.b", },
- 	{ .compatible = "xlnx,opb-sysace-1.00.c", },
- 	{ .compatible = "xlnx,xps-sysace-1.00.a", },
-+	{ .compatible = "xlnx,sysace", },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, ace_of_match);
--- 
-1.5.6.1
+Thanks,
+g.
