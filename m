@@ -1,19 +1,20 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id A4A33DDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 07:50:13 +1100 (EST)
-Date: Thu, 27 Nov 2008 21:30:48 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH] mpc52xx/serial: fix error paths in probe function
-Message-ID: <20081127203048.GA18994@pengutronix.de>
-References: <1227800036-30109-1-git-send-email-w.sang@pengutronix.de>
-	<9e4733910811270840w23214c91o4f8a141c245cb663@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
-In-Reply-To: <9e4733910811270840w23214c91o4f8a141c245cb663@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 4/5] powerpc: ftrace, use create_branch
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <20081126220423.514020907@goodmis.org>
+References: <20081126215821.263324391@goodmis.org>
+	<20081126220423.514020907@goodmis.org>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-L32+WZgIi6eKd1ws7hX9"
+Date: Fri, 28 Nov 2008 09:06:43 +1100
+Message-Id: <1227823603.7852.3.camel@localhost>
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,58 +25,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---FCuugMFkClbJLl1L
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-L32+WZgIi6eKd1ws7hX9
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-
-On Thu, Nov 27, 2008 at 11:40:55AM -0500, Jon Smirl wrote:
-
-> > +       if (port->irq =3D=3D NO_IRQ) {
-> > +               dev_err(&op->dev, "Could not get irq\n");
-> > +               return -ENODEV;
-> > +       }
+On Wed, 2008-11-26 at 16:58 -0500, Steven Rostedt wrote:
+> plain text document attachment
+> (0004-powerpc-ftrace-use-create_branch.patch)
+> From: Steven Rostedt <srostedt@redhat.com>
 >=20
-> Doesn't NO_IRQ imply polling, not an error?
-
-See below, I just copied the original behaviour. Having another look at
-mpc52xx_uart_setup, I don't see any polling option there, so I think it
-is correct to do this.
-
+> Impact: clean up
 >=20
-> >
-> >        dev_dbg(&op->dev, "mpc52xx-psc uart at %p, irq=3D%x, freq=3D%i\n=
-",
-> >                (void *)port->mapbase, port->irq, port->uartclk);
-> >
-> > -       if ((port->irq =3D=3D NO_IRQ) || !port->mapbase) {
-> > -               printk(KERN_ERR "Could not allocate resources for PSC\n=
-");
-> > -               return -EINVAL;
-> > -       }
+> Paul Mackerras pointed out that the code to determine if the branch
+> can reach the destination is incorrect. Michael Ellerman suggested
+> to pull out the code from create_branch and use that.
+>=20
+> Simply using create_branch is probably the best.
 
-(Originaly dropout for NO_IRQ)
+You're right, that's a lot simpler :)
 
-Regards,
+Acked-by: Michael Ellerman <michael@ellerman.id.au>
 
-   Wolfram
+cheers
 
 --=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
---FCuugMFkClbJLl1L
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-L32+WZgIi6eKd1ws7hX9
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkkvA3gACgkQD27XaX1/VRvqqgCfQ2YIJ74UAB5jY3L5VZ3xZWUP
-so4AnitdcnmvFnoYKFbvHZ3US+d4uVXl
-=yzDp
+iEYEABECAAYFAkkvGfMACgkQdSjSd0sB4dKb6ACfYZggO3wwd6mhUrzNcncgV1K+
+uRwAnRxz5RsGZ8R5iNn4zsQr1gcjq8Ie
+=kpKD
 -----END PGP SIGNATURE-----
 
---FCuugMFkClbJLl1L--
+--=-L32+WZgIi6eKd1ws7hX9--
