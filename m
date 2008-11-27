@@ -2,26 +2,22 @@ Return-Path: <yur@emcraft.com>
 Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A81BEDDDDF
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 11:59:53 +1100 (EST)
-Date: Thu, 27 Nov 2008 03:59:49 +0300
+	by ozlabs.org (Postfix) with ESMTPS id 1B759DDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 12:26:31 +1100 (EST)
+Date: Thu, 27 Nov 2008 04:26:29 +0300
 From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <8310162146.20081127035949@emcraft.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re[6]: [PATCH] katmai.dts: extend DMA ranges; add dma/sysace nodes
-In-Reply-To: <1227746559.7356.1.camel@pasglop>
-References: <200811131149.14715.yur@emcraft.com>
-	<1226568352.7178.44.camel@pasglop>
-	<1102187680.20081114074513@emcraft.com>
-	<1226641289.7178.117.camel@pasglop>
-	<1767195957.20081127032002@emcraft.com>
-	<1351427808.20081127032633@emcraft.com>
-	<1227746559.7356.1.camel@pasglop>
+Message-ID: <1115054880.20081127042629@emcraft.com>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Subject: Re[2]: [PATCH 02/11] async_tx: add support for asynchronous GF
+	multiplication
+In-Reply-To: <e9c3a7c20811141728m3fee8a00jb1be0f36fb852fdd@mail.gmail.com>
+References: <1226589364-5619-1-git-send-email-yanok@emcraft.com>
+	<1226589364-5619-3-git-send-email-yanok@emcraft.com>
+	<e9c3a7c20811141728m3fee8a00jb1be0f36fb852fdd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Cc: sathya.prakash@lsi.com, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>, linuxppc-dev@ozlabs.org,
-	Ilya Yanok <yanok@emcraft.com>, Eric.Moore@lsi.com
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, dzu@denx.de,
+	wd@denx.de, Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,100 +27,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday, November 27, 2008 you wrote:
+=0D=0A Hello Dan,
 
->>  I've implemented (2) (the code is below), and it works. But,=20
->> admittedly, this (working) looks strange to me because of the=20
->> following:
->>  To be able to use 64-bit PCI mapping on PPC32 I had to replace the
->> 'unsigned long' type of pci_dram_offset with 'resource_size_t', which=20
->> on ppc440spe is 'u64'. So, in dma_alloc_coherent() I put the 64-bit=20
->> value into the 'dma_addr_t' handle. I use 2.6.27 kernel for testing,=20
->> which has sizeof(dma_addr_t) =3D=3D sizeof(u32). Thus,=20
->> dma_alloc_coherent() cuts the upper 32 bits of PCI address, and returns=
-=20
->> only low 32-bit part of PCI address to its caller. And, regardless of=20
->> this fact, the PCI device does operate somehow (this is the PCI-E LSI=20
->> disk controller served by the drivers/message/fusion/mptbase.c +=20
->> mptsas.c drivers).
->>=20
->>  I've verified that ppc440spe PCI-E bridge's BARs (PECFGn_BAR0L,H) are=
-=20
->> configured with the new, 1TB, address value:
+On Saturday, November 15, 2008 you wrote:
 
-> Strange... when I look at pci4xx_parse_dma_ranges() I see it
-> specifically avoiding PCI addresses above 4G ... That needs fixing.
+> A few comments
 
- Right, it avoid. I guess you haven't read my e-mail to its end,=20
-because my work-around patch, which I referenced there, fixes this :)
+ Thanks.
 
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_=
-pci.c
-index afbdd48..f748c5b 100644
---- a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@ -126,10 +126,8 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_c=
-ontroller *hose,
-                if ((pci_space & 0x03000000) !=3D 0x02000000)
-                        continue;
+> 1/ I don't see code for handling cases where the src_cnt exceeds the
+> hardware maximum.
 
--               /* We currently only support memory at 0, and pci_addr
--                * within 32 bits space
--                */
--               if (cpu_addr !=3D 0 || pci_addr > 0xffffffff) {
-+               /* We currently only support memory at 0 */
-+               if (cpu_addr !=3D 0) {
-                        printk(KERN_WARNING "%s: Ignored unsupported dma ra=
-nge"
-                               " 0x%016llx...0x%016llx -> 0x%016llx\n",
-                               hose->dn->full_name,
-@@ -179,18 +177,12 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_=
-controller *hose,
-                return -ENXIO;
-        }
+ Right, actually the ADMA devices we used (ppc440spe DMA engines) has=20
+no limitations on the src_cnt (well, actually there is the limit - the=20
+size of descriptors FIFO, but it's more than the number of drives=20
+which may be handled with the current RAID-6 driver, i.e. > 256), but=20
+I agree - the ASYNC_TX functions should not assume that any ADMA=20
+device will have such a feature. So we'll implement this, and then=20
+re-post the patches.
 
--       /* Check that we are fully contained within 32 bits space */
--       if (res->end > 0xffffffff) {
--               printk(KERN_ERR "%s: dma-ranges outside of 32 bits space\n",
--                      hose->dn->full_name);
--               return -ENXIO;
--       }
-  out:
-        dma_offset_set =3D 1;
-        pci_dram_offset =3D res->start;
+> 2/ dmaengine.h defines DMA_PQ_XOR but these patches should really
+> change that to DMA_PQ and do s/pqxor/pq/ across the rest of the code
+> base.
 
--       printk(KERN_INFO "4xx PCI DMA offset set to 0x%08lx\n",
--              pci_dram_offset);
-+       printk(KERN_INFO "4xx PCI DMA offset set to 0x%016llx\n",
-+              (unsigned long long)pci_dram_offset);
-        return 0;
- }
+ OK.
 
-> To implement that trick you definitely need to make dma_addr_t 64 bits.
+> 3/ In my implementation (unfinished) of async_pq I decided to make the
+> prototype:
 
- Sure. The problem here is that the LSI (the PCI device I want to DMA=20
-to/from 1TB PCI addresses) driver doesn't work with this (i.e. it's=20
-broken in, e.g., 2.6.28-rc6) on ppc440spe-based platform. It looks=20
-like there is no support for 32-bit CPUs with 64-bit physical=20
-addresses in the LSI driver. E.g. the following mix in the=20
-drivers/message/fusion/mptbase.h code points to the fact that the=20
-driver supposes 64-bit dma_addr_t on 64-bit CPUs only:
-
-#ifdef CONFIG_64BIT
-#define CAST_U32_TO_PTR(x)      ((void *)(u64)x)
-#define CAST_PTR_TO_U32(x)      ((u32)(u64)x)
-#else
-#define CAST_U32_TO_PTR(x)      ((void *)x)
-#define CAST_PTR_TO_U32(x)      ((u32)x)
-#endif
+ May I ask do you have in plans to finish and release your=20
+implementation?
 
 
-#define mpt_addr_size() \
-        ((sizeof(dma_addr_t) =3D=3D sizeof(u64)) ? MPI_SGE_FLAGS_64_BIT_ADD=
-RESSING : \
-                MPI_SGE_FLAGS_32_BIT_ADDRESSING)
+> +/**
+> + * async_pq - attempt to generate p (xor) and q (Reed-Solomon code) with=
+ a
+> + *     dma engine for a given set of blocks.  This routine assumes a fie=
+ld of
+> + *     GF(2^8) with a primitive polynomial of 0x11d and a generator of {=
+02}.
+> + *     In the synchronous case the p and q blocks are used as temporary
+> + *     storage whereas dma engines have their own internal buffers.  The
+> + *     ASYNC_TX_PQ_ZERO_P and ASYNC_TX_PQ_ZERO_Q flags clear the
+> + *     destination(s) before they are used.
+> + * @blocks: source block array ordered from 0..src_cnt with the p destin=
+ation
+> + *     at blocks[src_cnt] and q at blocks[src_cnt + 1]
+> + *     NOTE: client code must assume the contents of this array are dest=
+royed
+> + * @offset: offset in pages to start transaction
+> + * @src_cnt: number of source pages: 2 < src_cnt <=3D 255
+> + * @len: length in bytes
+> + * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
+> + * @depend_tx: p+q operation depends on the result of this transaction.
+> + * @cb_fn: function to call when p+q generation completes
+> + * @cb_param: parameter to pass to the callback routine
+> + */
+> +struct dma_async_tx_descriptor *
+> +async_pq(struct page **blocks, unsigned int offset, int src_cnt, size_t =
+len,
+> +        enum async_tx_flags flags, struct dma_async_tx_descriptor *depen=
+d_tx,
+> +        dma_async_tx_callback cb_fn, void *cb_param)
 
+> Where p and q are not specified separately.  This matches more closely
+> how the current gen_syndrome is specified with the goal of not
+> requiring any changes to existing software raid6 interface.
+> Thoughts?
 
+ Understood. Our goal was to be more close to the ASYNC_TX interfaces,=20
+so we specified the destinations separately. Though I'm fine with your=20
+prototype, since doubling the same address is no good, so, we'll=20
+change this.=20
+
+ Any comments regarding the drivers/md/raid5.c part ?
 
  Regards, Yuri
 
