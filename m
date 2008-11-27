@@ -1,17 +1,27 @@
-Return-Path: <sebastien.dugue@bull.net>
-Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id AAAF8DDDEA
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 01:52:10 +1100 (EST)
-Date: Thu, 27 Nov 2008 15:52:03 +0100
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: linux-ppc <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/pseries: fix idle sleep early exit state
-Message-ID: <20081127155203.2a1d6af9@bull.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Will Schmidt <will_schmidt@vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	Jean Pierre Dion <jean-pierre.dion@bull.net>,
-	Gilles Carry <Gilles.Carry@ext.bull.net>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id EEF9EDDDD8
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 02:00:27 +1100 (EST)
+Received: from pandora.intern.matrix-vision.de (g1.matrix-vision.com
+	[217.7.222.190])
+	by p15137414.pureserver.info (Postfix) with ESMTP id EAACD3CC068
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 16:00:25 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 7EA20E3C09
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 18:00:27 +0100 (CET)
+Received: from hegemone (hegemone.intern.matrix-vision.de [192.168.5.77])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 0D259E3C09
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 18:00:24 +0100 (CET)
+Received: from [192.168.65.5] (unknown [192.168.65.5])
+	by hegemone (Postfix) with ESMTP id 106E651E
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 17:56:34 +0100 (CET)
+Message-ID: <492EB606.9020703@matrix-vision.de>
+Date: Thu, 27 Nov 2008 16:00:22 +0100
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: i2c-mpc clocking scheme 
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,44 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+All,
 
-  In pseries_dedicated_idle_sleep(), if we need to exit idle during the
-snooze period (i.e. need_resched or cpu has been offlined), then we should
-re-disable the interrupts and clear TIF_POLLING_NRFLAG before leaving.
+is anybody working on some improvements regarding configurable I2C
+frequency inside the i2c-mpc driver ?
 
-Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
-Cc: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/platforms/pseries/setup.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+If not - would anybody be intersted in getting this done, i.e.
+configurable via device tree ?
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index ec34170..8270f04 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -504,8 +504,13 @@ static void pseries_dedicated_idle_sleep(void)
- 		set_thread_flag(TIF_POLLING_NRFLAG);
- 
- 		while (get_tb() < start_snooze) {
--			if (need_resched() || cpu_is_offline(cpu))
--				goto out;
-+			if (need_resched() || cpu_is_offline(cpu)) {
-+				HMT_medium();
-+				clear_thread_flag(TIF_POLLING_NRFLAG);
-+				smp_mb();
-+				local_irq_disable();
-+				goto out2;
-+			}
- 			ppc64_runlatch_off();
- 			HMT_low();
- 			HMT_very_low();
-@@ -523,6 +528,7 @@ static void pseries_dedicated_idle_sleep(void)
- 
- out:
- 	HMT_medium();
-+out2:
- 	out_purr = mfspr(SPRN_PURR);
- 	get_lppaca()->wait_state_cycles += out_purr - in_purr;
- 	get_lppaca()->donate_dedicated_cpu = 0;
--- 
-1.6.0.1.308.gede4c
+
+
+regards,
+Andre
+
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
