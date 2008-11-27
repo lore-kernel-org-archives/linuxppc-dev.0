@@ -1,20 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 4/5] powerpc: ftrace, use create_branch
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <20081126220423.514020907@goodmis.org>
-References: <20081126215821.263324391@goodmis.org>
-	<20081126220423.514020907@goodmis.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-L32+WZgIi6eKd1ws7hX9"
-Date: Fri, 28 Nov 2008 09:06:43 +1100
-Message-Id: <1227823603.7852.3.camel@localhost>
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id C503EDDDDF
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 09:39:20 +1100 (EST)
+Date: Thu, 27 Nov 2008 23:39:14 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: "Lehmann, Hans (Ritter Elektronik)" <hans.lehmann@ritter-elektronik.de>
+Subject: Re: [PATCH v1] RS485 support for MPC5200x_psc_uart
+Message-ID: <20081127223914.GA19060@pengutronix.de>
+References: <633A55242A59C7488FAAF5A6850929984B813E@SRVEXC01.sts.saurer.vpn>
+	<20081113184218.GA11602@pengutronix.de>
+	<633A55242A59C7488FAAF5A6850929984B8143@SRVEXC01.sts.saurer.vpn>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
+In-Reply-To: <633A55242A59C7488FAAF5A6850929984B8143@SRVEXC01.sts.saurer.vpn>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +25,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-L32+WZgIi6eKd1ws7hX9
-Content-Type: text/plain
+--cWoXeonUoKmBZSoM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2008-11-26 at 16:58 -0500, Steven Rostedt wrote:
-> plain text document attachment
-> (0004-powerpc-ftrace-use-create_branch.patch)
-> From: Steven Rostedt <srostedt@redhat.com>
->=20
-> Impact: clean up
->=20
-> Paul Mackerras pointed out that the code to determine if the branch
-> can reach the destination is incorrect. Michael Ellerman suggested
-> to pull out the code from create_branch and use that.
->=20
-> Simply using create_branch is probably the best.
+Hello Hans,
 
-You're right, that's a lot simpler :)
+On Mon, Nov 17, 2008 at 04:27:45PM +0100, Lehmann, Hans (Ritter Elektronik)=
+ wrote:
 
-Acked-by: Michael Ellerman <michael@ellerman.id.au>
+> Criticism is welcome
 
-cheers
+Well, there are still some issues concerning coding-style and design,
+but those can be worked out, I guess. Still, there is one conceptual
+question I'd like to ask:
+
+Have you seen the TxRTS feature in Mode Register 2? It looks to me that
+it does the same (in hardware) what you achieve with the
+*_rts_clear-function and the TX_EMPTY interrupt. Or am I wrong?
+
+Kind regards,
+
+   Wolfram
 
 --=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-L32+WZgIi6eKd1ws7hX9
+--cWoXeonUoKmBZSoM
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkkvGfMACgkQdSjSd0sB4dKb6ACfYZggO3wwd6mhUrzNcncgV1K+
-uRwAnRxz5RsGZ8R5iNn4zsQr1gcjq8Ie
-=kpKD
+iEYEARECAAYFAkkvIZIACgkQD27XaX1/VRucPACfZWjB2iH4s8XtSjnGhNZl1n3D
+rWwAnjrOBAlMwoyzugNKy0wxXtsLioHM
+=spzj
 -----END PGP SIGNATURE-----
 
---=-L32+WZgIi6eKd1ws7hX9--
+--cWoXeonUoKmBZSoM--
