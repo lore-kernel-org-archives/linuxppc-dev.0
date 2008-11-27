@@ -1,21 +1,23 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from smtp03.msg.oleane.net (smtp03.msg.oleane.net [62.161.4.3])
-	by ozlabs.org (Postfix) with ESMTP id 19D1ADDDE6
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 02:54:20 +1100 (EST)
-Received: from smtp03.msg.oleane.net (localhost [127.0.0.1])
-	by smtp03.msg.oleane.net (MTA-AS) with ESMTP id mARFYC32010075
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 16:34:12 +0100
-Received: from GEGE6600V ([194.3.133.184]) (authenticated)
-	by smtp03.msg.oleane.net (MTA) with ESMTP id mARFYCvl010004
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 16:34:12 +0100
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: TR: Async DMA completion
-Date: Thu, 27 Nov 2008 16:33:53 +0100
-Message-ID: <000001c950a5$9854ccd0$a501a8c0@GEGE6600V>
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D442CDDED4
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 02:57:19 +1100 (EST)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH][v2] xsysace: use resource_size_t instead of unsigned long
+Date: Thu, 27 Nov 2008 18:48:26 +0300
+References: <200811271521.27642.yur@emcraft.com>
+	<fa686aa40811270611j58ceb6e5lffc37fc3f83d00e7@mail.gmail.com>
+In-Reply-To: <fa686aa40811270611j58ceb6e5lffc37fc3f83d00e7@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+  charset="iso-8859-1"
+Message-Id: <200811271848.26520.yur@emcraft.com>
+Cc: Detlev Zundel <dzu@denx.de>, Ilya Yanok <yanok@emcraft.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +28,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Hello,
+ Hello Grant,
 
-I would like to use async DMA driver to transfer data. I find no function to
-wait for the end of the DMA transfer in blocking mode:
-the only way to get the end of the transfer is the polling by the function
-"dma_async_is_tx_complete".
+On Thursday 27 November 2008 17:11, Grant Likely wrote:
+> On Thu, Nov 27, 2008 at 5:21 AM, Yuri Tikhonov <yur@emcraft.com> wrote:
+> > Use resource_size_t for physical address of SystemACE
+> > chip. This fixes the driver brokeness for 32 bit systems
+> > with 64 bit resources (e.g. PPC440SPe).
+> 
+> Hey Yuri,
+> 
+> I actually already picked up the last version of your patch after
+> fixing it up myself.  It's currently sitting in Paul's powerpc tree
+> and it will be merged into mainline when Linus gets back from
+> vacation.
 
-To wait the end of the transfer, must I poll the transfer status by the
-function "dma_async_is_tx_complete" or is there a function
-that waits for a DMA channel interrupt ?
+ Oops. Indeed. Thanks.
 
-Thanks for any tips.
-Laurent
+> 
+> Can you please spin a new version with just the addition of the
+> compatible value and base it on Paul's tree.
+
+ Sure. I've generated the patch against the origin/merge branch of Paul's 
+tree, and posting it as separate "[PATCH] xsysace: add compatible string
+".
+
+ Regards, Yuri
