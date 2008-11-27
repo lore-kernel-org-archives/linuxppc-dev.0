@@ -1,17 +1,19 @@
 Return-Path: <sebastien.dugue@bull.net>
 Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
-	by ozlabs.org (Postfix) with ESMTP id A6A10DDE08
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 21:59:58 +1100 (EST)
-Date: Thu, 27 Nov 2008 11:59:52 +0100
+	by ozlabs.org (Postfix) with ESMTP id 73699DDDEA
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Nov 2008 22:19:22 +1100 (EST)
+Date: Thu, 27 Nov 2008 12:19:18 +0100
 From: Sebastien Dugue <sebastien.dugue@bull.net>
 To: linux-ppc <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/pseries: Fix cpu hotplug
-Message-ID: <20081127115952.1f7db89d@bull.net>
+Subject: [PATCH] powerpc/ibmebus: Get rid of the IRQ mapping in
+	ibmebus_free_irq()
+Message-ID: <20081127121918.2cfa881e@bull.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Will Schmidt <will_schmidt@vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+Cc: Paul Mackerras <paulus@samba.org>,
 	Jean Pierre Dion <jean-pierre.dion@bull.net>,
-	Gilles Carry <Gilles.Carry@ext.bull.net>
+	Gilles Carry <Gilles.Carry@ext.bull.net>,
+	Will Schmidt <will_schmidt@vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,40 +24,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-  Currently, pseries_cpu_die() calls msleep() while polling RTAS for
-the status of the dying cpu.
+  ibmebus_free_irq() frees the IRQ but does not remove its mapping which
+results in stale entries in the map.
 
-  However if the cpu that is going down also happens to be the one doing
-the tick then we're hosed as the tick_do_timer_cpu 'baton' is only passed
-later on in tick_shutdown() when _cpu_down() does the CPU_DEAD notification.
-Therefore jiffies won't be updated anymore.
-
-  This patch replaces that msleep() with a cpu_relax() to make sure we're
-not going to schedule at that point.
-
-  With this patch my test box survives a 100k iterations hotplug stress
-test on _all_ cpus, whereas without it, it quickly dies after ~50 iterations.
-
+  Fix this by adding a call to irq_dispose_mapping() in ibmebus_free_irq().
 
 Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/hotplug-cpu.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/ibmebus.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 1f03248..a20ead8 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -116,7 +116,7 @@ static void pseries_cpu_die(unsigned int cpu)
- 		cpu_status = query_cpu_stopped(pcpu);
- 		if (cpu_status == 0 || cpu_status == -1)
- 			break;
--		msleep(200);
-+		cpu_relax();
- 	}
- 	if (cpu_status != 0) {
- 		printk("Querying DEAD? cpu %i (%i) shows %i\n",
+diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+index 64299d2..7c65377 100644
+--- a/arch/powerpc/kernel/ibmebus.c
++++ b/arch/powerpc/kernel/ibmebus.c
+@@ -231,6 +231,7 @@ void ibmebus_free_irq(u32 ist, void *dev_id)
+ 	unsigned int irq = irq_find_mapping(NULL, ist);
+ 
+ 	free_irq(irq, dev_id);
++	irq_dispose_mapping(irq);
+ }
+ EXPORT_SYMBOL(ibmebus_free_irq);
+ 
 -- 
 1.6.0.1.308.gede4c
