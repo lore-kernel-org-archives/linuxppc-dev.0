@@ -1,19 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 31EA1DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 21:07:50 +1100 (EST)
-Date: Fri, 28 Nov 2008 13:07:47 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Trent Piepho <tpiepho@freescale.com>
-Subject: Re: [PATCH] of/gpio: Implement of_get_gpio_flags()
-Message-ID: <20081128100747.GA16515@oksana.dev.rtsoft.ru>
-References: <20081127204453.GA21901@oksana.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0811280107380.5161@t2.domain.actdsltmp>
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
+	by ozlabs.org (Postfix) with ESMTP id 06997DDDE3
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 21:54:20 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so294347qwb.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 02:54:18 -0800 (PST)
+Message-ID: <c384c5ea0811280254y428299a4yd92c1c244bd2482@mail.gmail.com>
+Date: Fri, 28 Nov 2008 11:54:18 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: AMCC PPC460EX Canyonlands does not see PCIe end point with only
+	non-prefetchable memory (both 2.6.27.7 and -next)
+In-Reply-To: <c384c5ea0811261026y73679a16tfa29a33f3e780954@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <Pine.LNX.4.64.0811280107380.5161@t2.domain.actdsltmp>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=ISO-8859-1
+References: <c384c5ea0811260632n24e8b536v9a4a16833644976c@mail.gmail.com>
+	<c384c5ea0811260725x3476fa43o9950123948e99acb@mail.gmail.com>
+	<c384c5ea0811261026y73679a16tfa29a33f3e780954@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,47 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 28, 2008 at 01:11:38AM -0800, Trent Piepho wrote:
-> On Thu, 27 Nov 2008, Anton Vorontsov wrote:
-> > This function is alike to the simple of_get_gpio(), but accepts new
-> > argument: flags. This new function will be used by the drivers that
-> > need to retrieve additional GPIO information, such as active-low flag.
-> >
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> 
-> So you want to do the clean up patch later?
+Hello all,
 
-Yup, some day in 2.6.30, I think.
+On Wed, Nov 26, 2008 at 7:26 PM, Leon Woestenberg
+<leon.woestenberg@gmail.com> wrote:
+> On Wed, Nov 26, 2008 at 4:25 PM, Leon Woestenberg
+> <leon.woestenberg@gmail.com> wrote:
+>> The non-detected end point boot:
+>>
+>> pci 0001:80:00.0: scanning behind bridge, config bf8180, pass 0
+>> PCI: Scanning bus 0001:81
+>> PCI: Fixups for bus 0001:81
+>>
 
-> > +	/*
-> > +	 * We're discouraging gpio_cells < 2, since that way you'll have to
-> > +	 * write your own xlate function (that will have to retrive the GPIO
-> > +	 * number and the flags from a single gpio cell -- this is possible,
-> > +	 * but not recommended).
-> > +	 */
-> > +	if (of_gc->gpio_cells < 2) {
-> > +		WARN_ON(1);
-> > +		return -EINVAL;
-> > +	}
-> 
-> If you're not going to allow 1 cell anymore (which should perhaps be
-> mentioned in the changelog),
+Progress on this issue:
 
-It wasn't allowed from the start, I just had to catch the bogus users
-on the mailing list.
+I found out that re-programming the end point FPGA again *just* after
+*uboot* read it, and before Linux kernel has started, makes the end
+point appear properly.
 
-> you could just check that when the of_gpio
-> chip is registered. There's no need to see if of_gc->gpio_cells has
-> changed each time a driver maps a GPIO.
+Either u-boot leaves the end point in bad state, or the root complex
+reset also requires an end point reset. (or a third option I could not
+think of yet).
 
-There is no single OF GPIO registration function, yet. So the only
-way we can check for correct gpio_cells for all "simple" gpio chips
-is .xlate(). Soon there will be of_gpio_{,un}register_simple() thus
-we can move that check there.
+I'll pick this up on ppc and u-boot mailing list with new info,
+especially with the ppc4xx maintainers.
 
-Thanks,
+Consider this thread closed.
 
+Thanks for ignoring my ranting :-)
+
+Regards,
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Leon
