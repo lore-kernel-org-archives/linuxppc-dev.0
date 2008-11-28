@@ -1,22 +1,15 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from smtp03.msg.oleane.net (smtp03.msg.oleane.net [62.161.4.3])
-	by ozlabs.org (Postfix) with ESMTP id 85106DDD0B
+Return-Path: <carlos.moratelli@digitel.com.br>
+Received: from ares.digitel.com.br (cosmos.digitel.com.br [200.198.105.42])
+	by ozlabs.org (Postfix) with ESMTP id DC59CDDDE0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Nov 2008 02:57:09 +1100 (EST)
-Received: from smtp03.msg.oleane.net (localhost [127.0.0.1])
-	by smtp03.msg.oleane.net (MTA-AS) with ESMTP id mARFYDiT010179
-	for <linuxppc-embedded@ozlabs.org>; Thu, 27 Nov 2008 16:34:13 +0100
-Received: from GEGE6600V ([194.3.133.184]) (authenticated)
-	by smtp03.msg.oleane.net (MTA) with ESMTP id mARFYD1P010095
-	for <linuxppc-embedded@ozlabs.org>; Thu, 27 Nov 2008 16:34:13 +0100
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: TR: Async DMA completion
-Date: Thu, 27 Nov 2008 16:33:56 +0100
-Message-ID: <000101c950a5$9904e2f0$a501a8c0@GEGE6600V>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Fri, 28 Nov 2008 23:16:52 +1100 (EST)
+Subject: MPC8313 and Marvell PHY 88e1112
+From: Carlos Roberto Moratelli <carlos.moratelli@digitel.com.br>
+To: Linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Fri, 28 Nov 2008 10:06:34 -0200
+Message-Id: <1227873994.3812.21.camel@parana>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,18 +20,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
+I am working in a custom board based on a mpc8313erdb and my Kernel
+version is 2.6.24. This board has a Marvell PHY 88E1112 on TSEC2
+processor port. 
 
-Hello,
+The problem is that the PHY is detected and configured, but no data can
+be send or received. I am sure that dtb is fine. In another custom board
+I have a 88e3015 on TSEC2 and it is working fine.
 
-I would like to use async DMA driver to transfer data. I find no function to
-wait for the end of the DMA transfer in blocking mode:
-the only way to get the end of the transfer is the polling by the function
-"dma_async_is_tx_complete".
+Did someone work with this PHY? Does Compiling gianfar and Marvell
+support on Kernel is enough? 
 
-To wait the end of the transfer, must I poll the transfer status by the
-function "dma_async_is_tx_complete" or is there a function
-that waits for a DMA channel interrupt ?
+Thanks,
 
-Thanks for any tips.
-Laurent
+Carlos R. Moratelli
