@@ -1,20 +1,10 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 00AAADDDE0
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 11:15:07 +1100 (EST)
-Date: Thu, 27 Nov 2008 18:14:33 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [PATCH] powerpc/pseries: Fix cpu hotplug
-Message-ID: <20081128001433.GI6830@localdomain>
-References: <20081127115952.1f7db89d@bull.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081127115952.1f7db89d@bull.net>
-Cc: Dion <jean-pierre.dion@bull.net>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Will Schmidt <will_schmidt@vnet.ibm.com>,
-	Gilles Carry <Gilles.Carry@ext.bull.net>,
-	Paul Mackerras <paulus@samba.org>, Jean
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 28 Nov 2008 17:05:05 +1100
+Subject: [PATCH] powerpc: Fix ppc32 mm_struct CPU tracking in SMP
+Message-Id: <20081128060533.BA31ADDDDB@ozlabs.org>
+Cc: Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +14,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, I have some questions about this patch.
+The 32-bit hash code didn't need it so far so we don't update
+mm->cpu_vm_mask on context switch. This however breaks the
+merge of the RCU based page table freeing and other upcoming
+32-bit embedded SMP work.
 
-Sebastien Dugue wrote:
-> 
->   Currently, pseries_cpu_die() calls msleep() while polling RTAS for
-> the status of the dying cpu.
-> 
->   However if the cpu that is going down also happens to be the one doing
-> the tick then we're hosed as the tick_do_timer_cpu 'baton' is only passed
-> later on in tick_shutdown() when _cpu_down() does the CPU_DEAD notification.
-> Therefore jiffies won't be updated anymore.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-I confess unfamiliarity with the tick/timer code, but this sounds like
-something that should be addressed earlier in the process of taking
-down a CPU.
+ arch/powerpc/include/asm/mmu_context.h |    3 +++
+ 1 file changed, 3 insertions(+)
 
-
->   This patch replaces that msleep() with a cpu_relax() to make sure we're
-> not going to schedule at that point.
-
-This is a significant change in behavior.  With the msleep(), we poll
-for at least five seconds before giving up; with the cpu_relax(), the
-period will almost certainly be much shorter and we're likely to give
-up too soon in some circumstances.  Could be addressed by using
-mdelay(), but...
-
-It's just not clear to me how busy-waiting in the __cpu_die() path is
-a legitimate fix.  Is sleeping in this path forbidden now?  (I notice
-at least native_cpu_die() in x86 does msleep(), btw.)
-
-As it can take several milliseconds for RTAS to report a CPU
-offline, and the maximum latency of the operation is unspecified, it
-seems inappropriate to tie up the waiting CPU this way.
-
-
->   With this patch my test box survives a 100k iterations hotplug stress
-> test on _all_ cpus, whereas without it, it quickly dies after ~50 iterations.
-
-What is the failure (e.g. stack trace, kernel messages)?
+--- linux-476.orig/arch/powerpc/include/asm/mmu_context.h	2008-11-28 15:46:39.000000000 +1100
++++ linux-476/arch/powerpc/include/asm/mmu_context.h	2008-11-28 16:59:06.000000000 +1100
+@@ -186,6 +186,9 @@ static inline void switch_mm(struct mm_s
+ 
+ 	tsk->thread.pgdir = next->pgd;
+ 
++	if (!cpu_isset(smp_processor_id(), next->cpu_vm_mask))
++		cpu_set(smp_processor_id(), next->cpu_vm_mask);
++
+ 	/* No need to flush userspace segments if the mm doesnt change */
+ 	if (prev == next)
+ 		return;
