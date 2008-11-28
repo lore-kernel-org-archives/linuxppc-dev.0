@@ -1,11 +1,10 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <200811282112.23612.arnd@arndb.de>
+Message-Id: <20081128200325.240671747@arndb.de>
 References: <20081128195120.869318403@arndb.de>
-Date: Fri, 28 Nov 2008 21:12:23 +0100
+Date: Fri, 28 Nov 2008 20:51:24 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 1/4] powerpc: Fix system calls on Cell entered with XER.SO=1
-MIME-Version: 1.0
+Subject: [patch 4/4] powerpc/cell: fix GDB watchpoints, again
 Cc: paulus@samba.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -16,48 +15,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It turns out that on Cell, on a kernel with CONFIG_VIRT_CPU_ACCOUNTING
-= y, if a program sets the SO (summary overflow) bit in the XER and
-then does a system call, the SO bit in CR0 will be set on return
-regardless of whether the system call detected an error.  Since CR0.SO
-is used as the error indication from the system call, this means that
-all system calls appear to fail.
+An earlier patch from Jens Osterkamp attempted to fix GDB
+watchpoints by enabling the DABRX register at boot time.
+Unfortunately, this did not work on SMP setups, where
+secondary CPUs were still using the power-on DABRX value.
 
-The reason is that the workaround for the timebase bug on Cell uses a
-compare instruction.  With CONFIG_VIRT_CPU_ACCOUNTING = y, the
-ACCOUNT_CPU_USER_ENTRY macro reads the timebase, so we end up doing a
-compare instruction, which copies XER.SO to CR0.SO.  Since we were
-doing this in the system call entry patch after clearing CR0.SO but
-before saving the CR, this meant that the saved CR image had CR0.SO
-set if XER.SO was set on entry.
+This introduces the same change for secondary CPUs on cell
+as well.
 
-This fixes it by moving the clearing of CR0.SO to after the
-ACCOUNT_CPU_USER_ENTRY call in the system call entry path.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+Reported-by: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
+Tested-by: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/kernel/entry_64.S |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/cell/smp.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index e6d5284..9d80f55 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -57,12 +57,12 @@ system_call_common:
- 	beq-	1f
- 	ld	r1,PACAKSAVE(r13)
- 1:	std	r10,0(r1)
--	crclr	so
- 	std	r11,_NIP(r1)
- 	std	r12,_MSR(r1)
- 	std	r0,GPR0(r1)
- 	std	r10,GPR1(r1)
- 	ACCOUNT_CPU_USER_ENTRY(r10, r11)
-+	crclr	so
- 	std	r2,GPR2(r1)
- 	std	r3,GPR3(r1)
- 	std	r4,GPR4(r1)
+diff --git a/arch/powerpc/platforms/cell/smp.c b/arch/powerpc/platforms/cell/smp.c
+index c0d86e1..9046803 100644
+--- a/arch/powerpc/platforms/cell/smp.c
++++ b/arch/powerpc/platforms/cell/smp.c
+@@ -129,10 +129,15 @@ static int __init smp_iic_probe(void)
+ 	return cpus_weight(cpu_possible_map);
+ }
+ 
+-static void __devinit smp_iic_setup_cpu(int cpu)
++static void __devinit smp_cell_setup_cpu(int cpu)
+ {
+ 	if (cpu != boot_cpuid)
+ 		iic_setup_cpu();
++
++	/*
++	 * change default DABRX to allow user watchpoints
++	 */
++	mtspr(SPRN_DABRX, DABRX_KERNEL | DABRX_USER);
+ }
+ 
+ static DEFINE_SPINLOCK(timebase_lock);
+@@ -192,7 +197,7 @@ static struct smp_ops_t bpa_iic_smp_ops = {
+ 	.message_pass	= smp_iic_message_pass,
+ 	.probe		= smp_iic_probe,
+ 	.kick_cpu	= smp_cell_kick_cpu,
+-	.setup_cpu	= smp_iic_setup_cpu,
++	.setup_cpu	= smp_cell_setup_cpu,
+ 	.cpu_bootable	= smp_cell_cpu_bootable,
+ };
+ 
 -- 
 1.5.6.3
 
