@@ -1,10 +1,11 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20081128200324.905934038@arndb.de>
+Message-Id: <20081128200325.075254354@arndb.de>
 References: <20081128195120.869318403@arndb.de>
-Date: Fri, 28 Nov 2008 20:51:22 +0100
+Date: Fri, 28 Nov 2008 20:51:23 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 2/4] powerpc/cell/axon-msi: retry on missing interrupt
+Subject: [patch 3/4] powerpc/mpic: dont reset affinity for secondary MPIC on
+	boot
 Cc: paulus@samba.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -15,108 +16,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The MSI capture logic for the axon bridge can sometimes
-lose interrupts in case of high DMA and interrupt load,
-when it signals an MSI interrupt to the MPIC interrupt
-controller while we are already handling another MSI.
+Kexec/kdump currently fails on the IBM QS2x blades when the kexec happens
+on a CPU other than the initial boot CPU.  It turns out that this is the
+result of mpic_init trying to set affinity of each interrupt vector to the
+current boot CPU.
 
-Each MSI vector gets written into a FIFO buffer in main
-memory using DMA, and that DMA access is normally flushed
-by the actual interrupt packet on the IOIF. An MMIO
-register in the MSIC holds the position of the last
-entry in the FIFO buffer that was written. However,
-reading that position does not flush the DMA, so that
-we can observe stale data in the buffer.
+As far as I can tell,  the same problem is likely to exist on any
+secondary MPIC, because they have to deliver interrupts to the first
+output all the time. There are two potential solutions for this: either
+not set up affinity at all for secondary MPICs, or assume that a single
+CPU output is connected to the upstream interrupt controller and hardcode
+affinity to that per architecture.
 
-In a stress test, we have observed the DMA to arrive
-up to 14 microseconds after reading the register.
-
-This patch works around this problem by retrying the
-access to the FIFO buffer.
-
-We can reliably detect the conditioning by writing
-an invalid MSI vector into the FIFO buffer after
-reading from it, assuming that all MSIs we get
-are valid. After detecting an invalid MSI vector,
-we udelay(1) in the interrupt cascade for up to
-100 times before giving up.
+This patch implements the second approach, defaulting to the first output.
+Currently, all known secondary MPICs are routed to their upstream port
+using the first destination, so we hardcode that.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/platforms/cell/axon_msi.c |   36 +++++++++++++++++++++++++++----
- 1 files changed, 31 insertions(+), 5 deletions(-)
+ arch/powerpc/sysdev/mpic.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-index 896548b..442cf36 100644
---- a/arch/powerpc/platforms/cell/axon_msi.c
-+++ b/arch/powerpc/platforms/cell/axon_msi.c
-@@ -95,6 +95,7 @@ static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
- 	struct axon_msic *msic = get_irq_data(irq);
- 	u32 write_offset, msi;
- 	int idx;
-+	int retry = 0;
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index f6299cc..b24e1d0 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1271,6 +1271,7 @@ void __init mpic_set_default_senses(struct mpic *mpic, u8 *senses, int count)
+ void __init mpic_init(struct mpic *mpic)
+ {
+ 	int i;
++	int cpu;
  
- 	write_offset = dcr_read(msic->dcr_host, MSIC_WRITE_OFFSET_REG);
- 	pr_debug("axon_msi: original write_offset 0x%x\n", write_offset);
-@@ -102,7 +103,7 @@ static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
- 	/* write_offset doesn't wrap properly, so we have to mask it */
- 	write_offset &= MSIC_FIFO_SIZE_MASK;
+ 	BUG_ON(mpic->num_sources == 0);
  
--	while (msic->read_offset != write_offset) {
-+	while (msic->read_offset != write_offset && retry < 100) {
- 		idx  = msic->read_offset / sizeof(__le32);
- 		msi  = le32_to_cpu(msic->fifo_virt[idx]);
- 		msi &= 0xFFFF;
-@@ -110,13 +111,37 @@ static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
- 		pr_debug("axon_msi: woff %x roff %x msi %x\n",
- 			  write_offset, msic->read_offset, msi);
+@@ -1313,6 +1314,11 @@ void __init mpic_init(struct mpic *mpic)
  
-+		if (msi < NR_IRQS && irq_map[msi].host == msic->irq_host) {
-+			generic_handle_irq(msi);
-+			msic->fifo_virt[idx] = cpu_to_le32(0xffffffff);
-+		} else {
-+			/*
-+			 * Reading the MSIC_WRITE_OFFSET_REG does not
-+			 * reliably flush the outstanding DMA to the
-+			 * FIFO buffer. Here we were reading stale
-+			 * data, so we need to retry.
-+			 */
-+			udelay(1);
-+			retry++;
-+			pr_debug("axon_msi: invalid irq 0x%x!\n", msi);
-+			continue;
-+		}
+ 	mpic_pasemi_msi_init(mpic);
+ 
++	if (mpic->flags & MPIC_PRIMARY)
++		cpu = hard_smp_processor_id();
++	else
++		cpu = 0;
 +
-+		if (retry) {
-+			pr_debug("axon_msi: late irq 0x%x, retry %d\n",
-+				 msi, retry);
-+			retry = 0;
-+		}
-+
- 		msic->read_offset += MSIC_FIFO_ENTRY_SIZE;
- 		msic->read_offset &= MSIC_FIFO_SIZE_MASK;
-+	}
- 
--		if (msi < NR_IRQS && irq_map[msi].host == msic->irq_host)
--			generic_handle_irq(msi);
--		else
--			pr_debug("axon_msi: invalid irq 0x%x!\n", msi);
-+	if (retry) {
-+		printk(KERN_WARNING "axon_msi: irq timed out\n");
-+
-+		msic->read_offset += MSIC_FIFO_ENTRY_SIZE;
-+		msic->read_offset &= MSIC_FIFO_SIZE_MASK;
+ 	for (i = 0; i < mpic->num_sources; i++) {
+ 		/* start with vector = source number, and masked */
+ 		u32 vecpri = MPIC_VECPRI_MASK | i |
+@@ -1323,8 +1329,7 @@ void __init mpic_init(struct mpic *mpic)
+ 			continue;
+ 		/* init hw */
+ 		mpic_irq_write(i, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
+-		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION),
+-			       1 << hard_smp_processor_id());
++		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION), 1 << cpu);
  	}
- 
- 	desc->chip->eoi(irq);
-@@ -364,6 +389,7 @@ static int axon_msi_probe(struct of_device *device,
- 		       dn->full_name);
- 		goto out_free_fifo;
- 	}
-+	memset(msic->fifo_virt, 0xff, MSIC_FIFO_SIZE_BYTES);
- 
- 	msic->irq_host = irq_alloc_host(dn, IRQ_HOST_MAP_NOMAP,
- 					NR_IRQS, &msic_host_ops, 0);
+ 	
+ 	/* Init spurious vector */
 -- 
 1.5.6.3
 
