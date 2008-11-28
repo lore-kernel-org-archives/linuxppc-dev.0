@@ -1,15 +1,11 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8B077DDDED
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Nov 2008 06:13:46 +1100 (EST)
-Date: Fri, 28 Nov 2008 22:13:45 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/2] of/i2c: Fill the archdata for I2C devices
-Message-ID: <20081128191345.GB27260@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Message-Id: <20081128200324.905934038@arndb.de>
+References: <20081128195120.869318403@arndb.de>
+Date: Fri, 28 Nov 2008 20:51:22 +0100
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [patch 2/4] powerpc/cell/axon-msi: retry on missing interrupt
+Cc: paulus@samba.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,50 +15,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For I2C devices we just setting the node pointer in the archdata. This
-is needed so that the I2C devices could find their OF tree nodes.
+The MSI capture logic for the axon bridge can sometimes
+lose interrupts in case of high DMA and interrupt load,
+when it signals an MSI interrupt to the MPIC interrupt
+controller while we are already handling another MSI.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Each MSI vector gets written into a FIFO buffer in main
+memory using DMA, and that DMA access is normally flushed
+by the actual interrupt packet on the IOIF. An MMIO
+register in the MSIC holds the position of the last
+entry in the FIFO buffer that was written. However,
+reading that position does not flush the DMA, so that
+we can observe stale data in the buffer.
+
+In a stress test, we have observed the DMA to arrive
+up to 14 microseconds after reading the register.
+
+This patch works around this problem by retrying the
+access to the FIFO buffer.
+
+We can reliably detect the conditioning by writing
+an invalid MSI vector into the FIFO buffer after
+reading from it, assuming that all MSIs we get
+are valid. After detecting an invalid MSI vector,
+we udelay(1) in the interrupt cascade for up to
+100 times before giving up.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/of/of_i2c.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/cell/axon_msi.c |   36 +++++++++++++++++++++++++++----
+ 1 files changed, 31 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
-index 24bbef7..e1b0ad6 100644
---- a/drivers/of/of_i2c.c
-+++ b/drivers/of/of_i2c.c
-@@ -24,6 +24,7 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+index 896548b..442cf36 100644
+--- a/arch/powerpc/platforms/cell/axon_msi.c
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -95,6 +95,7 @@ static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ 	struct axon_msic *msic = get_irq_data(irq);
+ 	u32 write_offset, msi;
+ 	int idx;
++	int retry = 0;
  
- 	for_each_child_of_node(adap_node, node) {
- 		struct i2c_board_info info = {};
-+		struct dev_archdata dev_ad = {};
- 		const u32 *addr;
- 		int len;
+ 	write_offset = dcr_read(msic->dcr_host, MSIC_WRITE_OFFSET_REG);
+ 	pr_debug("axon_msi: original write_offset 0x%x\n", write_offset);
+@@ -102,7 +103,7 @@ static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ 	/* write_offset doesn't wrap properly, so we have to mask it */
+ 	write_offset &= MSIC_FIFO_SIZE_MASK;
  
-@@ -41,6 +42,9 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+-	while (msic->read_offset != write_offset) {
++	while (msic->read_offset != write_offset && retry < 100) {
+ 		idx  = msic->read_offset / sizeof(__le32);
+ 		msi  = le32_to_cpu(msic->fifo_virt[idx]);
+ 		msi &= 0xFFFF;
+@@ -110,13 +111,37 @@ static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ 		pr_debug("axon_msi: woff %x roff %x msi %x\n",
+ 			  write_offset, msic->read_offset, msi);
  
- 		info.addr = *addr;
- 
-+		dev_archdata_set_node(&dev_ad, node);
-+		info.archdata = &dev_ad;
++		if (msi < NR_IRQS && irq_map[msi].host == msic->irq_host) {
++			generic_handle_irq(msi);
++			msic->fifo_virt[idx] = cpu_to_le32(0xffffffff);
++		} else {
++			/*
++			 * Reading the MSIC_WRITE_OFFSET_REG does not
++			 * reliably flush the outstanding DMA to the
++			 * FIFO buffer. Here we were reading stale
++			 * data, so we need to retry.
++			 */
++			udelay(1);
++			retry++;
++			pr_debug("axon_msi: invalid irq 0x%x!\n", msi);
++			continue;
++		}
 +
- 		request_module("%s", info.type);
- 
- 		result = i2c_new_device(adap, &info);
-@@ -51,6 +55,13 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
- 			irq_dispose_mapping(info.irq);
- 			continue;
- 		}
++		if (retry) {
++			pr_debug("axon_msi: late irq 0x%x, retry %d\n",
++				 msi, retry);
++			retry = 0;
++		}
 +
-+		/*
-+		 * Get the node to not lose the dev_archdata->of_node.
-+		 * Currently there is no way to put it back, as well as no
-+		 * of_unregister_i2c_devices() call.
-+		 */
-+		of_node_get(node);
+ 		msic->read_offset += MSIC_FIFO_ENTRY_SIZE;
+ 		msic->read_offset &= MSIC_FIFO_SIZE_MASK;
++	}
+ 
+-		if (msi < NR_IRQS && irq_map[msi].host == msic->irq_host)
+-			generic_handle_irq(msi);
+-		else
+-			pr_debug("axon_msi: invalid irq 0x%x!\n", msi);
++	if (retry) {
++		printk(KERN_WARNING "axon_msi: irq timed out\n");
++
++		msic->read_offset += MSIC_FIFO_ENTRY_SIZE;
++		msic->read_offset &= MSIC_FIFO_SIZE_MASK;
  	}
- }
- EXPORT_SYMBOL(of_register_i2c_devices);
+ 
+ 	desc->chip->eoi(irq);
+@@ -364,6 +389,7 @@ static int axon_msi_probe(struct of_device *device,
+ 		       dn->full_name);
+ 		goto out_free_fifo;
+ 	}
++	memset(msic->fifo_virt, 0xff, MSIC_FIFO_SIZE_BYTES);
+ 
+ 	msic->irq_host = irq_alloc_host(dn, IRQ_HOST_MAP_NOMAP,
+ 					NR_IRQS, &msic_host_ops, 0);
 -- 
-1.5.6.5
+1.5.6.3
+
+-- 
