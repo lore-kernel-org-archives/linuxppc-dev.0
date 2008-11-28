@@ -1,16 +1,15 @@
-Return-Path: <mail4mz@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
-	by ozlabs.org (Postfix) with ESMTP id 01CD1DDDE3
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Nov 2008 03:58:47 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so1057024fga.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 08:58:44 -0800 (PST)
-Message-ID: <5c9cd53b0811280858y30924403n23a71578b4669b64@mail.gmail.com>
-Date: Fri, 28 Nov 2008 11:58:44 -0500
-From: "mike zheng" <mail4mz@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: JVM on e500 core
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 8D37CDDDDF
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Nov 2008 06:13:27 +1100 (EST)
+Date: Fri, 28 Nov 2008 22:13:23 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/2] powerpc and sparc: Introduce dev_archdata node accessors
+Message-ID: <20081128191323.GA27260@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf8
+Cc: David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,12 +19,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+The name of the device_node field differ across the platforms, so we
+have to implement inlined accessors. This is needed to avoid ugly
+#ifdef in the generic code.
 
-I am using MPC8568 with e500 core. The cross-compiler I am using from
-Freescale - GCC 3_3-e500, glibc 2.3.2 and binutils 2.15.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Acked-by: David S. Miller <davem@davemloft.net>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+---
+ arch/powerpc/include/asm/device.h |   12 ++++++++++++
+ arch/sparc/include/asm/device.h   |   12 ++++++++++++
+ 2 files changed, 24 insertions(+), 0 deletions(-)
 
-Any one know if Java Virtual Machine is supported on the e500 core
-processor? Has e500 support been added to GCJ?
-
-Thanks for your help,
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index dfd504c..7d2277c 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -18,4 +18,16 @@ struct dev_archdata {
+ 	void			*dma_data;
+ };
+ 
++static inline void dev_archdata_set_node(struct dev_archdata *ad,
++					 struct device_node *np)
++{
++	ad->of_node = np;
++}
++
++static inline struct device_node *
++dev_archdata_get_node(const struct dev_archdata *ad)
++{
++	return ad->of_node;
++}
++
+ #endif /* _ASM_POWERPC_DEVICE_H */
+diff --git a/arch/sparc/include/asm/device.h b/arch/sparc/include/asm/device.h
+index 19790eb..3702e08 100644
+--- a/arch/sparc/include/asm/device.h
++++ b/arch/sparc/include/asm/device.h
+@@ -20,4 +20,16 @@ struct dev_archdata {
+ 	int			numa_node;
+ };
+ 
++static inline void dev_archdata_set_node(struct dev_archdata *ad,
++					 struct device_node *np)
++{
++	ad->prom_node = np;
++}
++
++static inline struct device_node *
++dev_archdata_get_node(const struct dev_archdata *ad)
++{
++	return ad->prom_node;
++}
++
+ #endif /* _ASM_SPARC_DEVICE_H */
+-- 
+1.5.6.5
