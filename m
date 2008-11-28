@@ -1,10 +1,21 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 28 Nov 2008 17:05:05 +1100
-Subject: [PATCH] powerpc: Fix ppc32 mm_struct CPU tracking in SMP
-Message-Id: <20081128060533.BA31ADDDDB@ozlabs.org>
-Cc: Kumar Gala <kumar.gala@freescale.com>
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 64E7FDDDDB
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Nov 2008 20:13:57 +1100 (EST)
+Date: Fri, 28 Nov 2008 01:11:38 -0800 (PST)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] of/gpio: Implement of_get_gpio_flags()
+In-Reply-To: <20081127204453.GA21901@oksana.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.64.0811280107380.5161@t2.domain.actdsltmp>
+References: <20081127204453.GA21901@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,26 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 32-bit hash code didn't need it so far so we don't update
-mm->cpu_vm_mask on context switch. This however breaks the
-merge of the RCU based page table freeing and other upcoming
-32-bit embedded SMP work.
+On Thu, 27 Nov 2008, Anton Vorontsov wrote:
+> This function is alike to the simple of_get_gpio(), but accepts new
+> argument: flags. This new function will be used by the drivers that
+> need to retrieve additional GPIO information, such as active-low flag.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+So you want to do the clean up patch later?
 
- arch/powerpc/include/asm/mmu_context.h |    3 +++
- 1 file changed, 3 insertions(+)
+> +	/*
+> +	 * We're discouraging gpio_cells < 2, since that way you'll have to
+> +	 * write your own xlate function (that will have to retrive the GPIO
+> +	 * number and the flags from a single gpio cell -- this is possible,
+> +	 * but not recommended).
+> +	 */
+> +	if (of_gc->gpio_cells < 2) {
+> +		WARN_ON(1);
+> +		return -EINVAL;
+> +	}
 
---- linux-476.orig/arch/powerpc/include/asm/mmu_context.h	2008-11-28 15:46:39.000000000 +1100
-+++ linux-476/arch/powerpc/include/asm/mmu_context.h	2008-11-28 16:59:06.000000000 +1100
-@@ -186,6 +186,9 @@ static inline void switch_mm(struct mm_s
- 
- 	tsk->thread.pgdir = next->pgd;
- 
-+	if (!cpu_isset(smp_processor_id(), next->cpu_vm_mask))
-+		cpu_set(smp_processor_id(), next->cpu_vm_mask);
-+
- 	/* No need to flush userspace segments if the mm doesnt change */
- 	if (prev == next)
- 		return;
+If you're not going to allow 1 cell anymore (which should perhaps be
+mentioned in the changelog), you could just check that when the of_gpio
+chip is registered.  There's no need to see if of_gc->gpio_cells has
+changed each time a driver maps a GPIO.
