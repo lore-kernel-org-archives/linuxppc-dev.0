@@ -1,16 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [patch 3/4] powerpc/mpic: dont reset affinity for secondary
-	MPIC on boot
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <20081128200325.075254354@arndb.de>
-References: <20081128195120.869318403@arndb.de>
-	<20081128200325.075254354@arndb.de>
-Content-Type: text/plain
-Date: Sat, 29 Nov 2008 13:22:00 +1100
-Message-Id: <1227925320.7356.66.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, cbe-oss-dev@ozlabs.org
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 473B5DDDFA
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Nov 2008 16:42:00 +1100 (EST)
+Date: Sat, 29 Nov 2008 06:41:53 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: Erratic MPC8248 CPM2 I2C behaviour
+Message-ID: <20081129054153.GA22692@pengutronix.de>
+References: <200811281724.49620.laurentp@cse-semaphore.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="VbJkn9YxBvnuCH5J"
+In-Reply-To: <200811281724.49620.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,25 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-11-28 at 20:51 +0100, Arnd Bergmann wrote:
-> plain text document attachment
-> (0003-powerpc-mpic-don-t-reset-affinity-for-secondary-MPI.patch)
-> Kexec/kdump currently fails on the IBM QS2x blades when the kexec happens
-> on a CPU other than the initial boot CPU.  It turns out that this is the
-> result of mpic_init trying to set affinity of each interrupt vector to the
-> current boot CPU.
-> 
-> As far as I can tell,  the same problem is likely to exist on any
-> secondary MPIC, because they have to deliver interrupts to the first
-> output all the time. There are two potential solutions for this: either
-> not set up affinity at all for secondary MPICs, or assume that a single
-> CPU output is connected to the upstream interrupt controller and hardcode
-> affinity to that per architecture.
-> 
-> This patch implements the second approach, defaulting to the first output.
-> Currently, all known secondary MPICs are routed to their upstream port
-> using the first destination, so we hardcode that.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+--VbJkn9YxBvnuCH5J
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hello Laurent,
+
+> After switching to the powerpc architecture and Jochen Friedrich's driver=
+,=20
+> I've experienced erratic transfer timeouts. Quite frequent at first (2.6.=
+26),=20
+> the problems disappeared on the road to 2.6.27 and have now resurfaced.
+
+Now =3D=3D current linus.git?
+
+Kind regards,
+
+   Wolfram
+
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+
+--VbJkn9YxBvnuCH5J
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkw1iEACgkQD27XaX1/VRsqagCfZp7rGKUpc0KEEMhHb18cxUwT
+FCEAoIgcP2CUxzlgQpNaTzivX25trizw
+=F0iV
+-----END PGP SIGNATURE-----
+
+--VbJkn9YxBvnuCH5J--
