@@ -1,17 +1,22 @@
-Return-Path: <roel.kluin@gmail.com>
-Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.24])
-	by ozlabs.org (Postfix) with ESMTP id 0BEDBDDDF5
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Nov 2008 23:41:51 +1100 (EST)
-Received: by ey-out-2122.google.com with SMTP id 6so703857eyi.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Nov 2008 04:41:49 -0800 (PST)
-Message-ID: <4931387C.4000001@gmail.com>
-Date: Sat, 29 Nov 2008 07:41:32 -0500
-From: roel kluin <roel.kluin@gmail.com>
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6F637DDDED
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Nov 2008 23:54:40 +1100 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: roel kluin <roel.kluin@gmail.com>
+Subject: Re: powerpc: hv{cs,
+	si}_close() both unsigned hp->count and hvcsd->open_count cannot be
+	negative
+References: <4931201D.7060701@gmail.com>
+Date: Sat, 29 Nov 2008 13:54:31 +0100
+In-Reply-To: <4931201D.7060701@gmail.com> (roel kluin's message of "Sat, 29
+	Nov 2008 05:57:33 -0500")
+Message-ID: <jey6z24rqw.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: hvc_close() unsigned hp->count cannot be negative
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-unsigned hp->count cannot be negative
+roel kluin <roel.kluin@gmail.com> writes:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Similar to the previous patch but with lock. For hvc_struct, see
-vi drivers/char/hvc_console.h +47
+> -	if (--hvcsd->open_count == 0) {
+> +	if (hvcsd->open_count == 1) {
+> +		hvcsd->open_count--;
 
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index 5b819b1..337f6c6 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -366,7 +366,8 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
- 	hp = tty->driver_data;
- 	spin_lock_irqsave(&hp->lock, flags);
- 
--	if (--hp->count == 0) {
-+	if (hp->count == 1) {
-+		hp->count--;
- 		/* We are done with the tty pointer now. */
- 		hp->tty = NULL;
- 		spin_unlock_irqrestore(&hp->lock, flags);
-@@ -384,7 +385,9 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
- 		 */
- 		tty_wait_until_sent(tty, HVC_CLOSE_WAIT);
- 	} else {
--		if (hp->count < 0)
-+		if (hp->count > 1)
-+			hp->count--;
-+		else
- 			printk(KERN_ERR "hvc_close %X: oops, count is %d\n",
- 				hp->vtermno, hp->count);
- 		spin_unlock_irqrestore(&hp->lock, flags);
+This is not the same.
+
+> -	if (--hp->count == 0) {
+> +	if (hp->count == 1) {
+> +		hp->count--;
+
+Likewise.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
