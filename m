@@ -1,14 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix system calls on Cell entered with XER.SO=1
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18739.2681.351794.669476@cargo.ozlabs.ibm.com>
-References: <18739.2681.351794.669476@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Mon, 01 Dec 2008 08:59:42 +1100
-Message-Id: <1228082382.7356.110.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/2] powerpc and sparc: Introduce dev_archdata node
+	accessors
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20081128191323.GA27260@oksana.dev.rtsoft.ru>
+References: <20081128191323.GA27260@oksana.dev.rtsoft.ru>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-0bOttrQ0Jzcv3BMzATT6"
+Date: Mon, 01 Dec 2008 09:23:42 +1100
+Message-Id: <1228083822.11316.9.camel@localhost>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	David Miller <davem@davemloft.net>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,27 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-12-01 at 08:49 +1100, Paul Mackerras wrote:
-> It turns out that on Cell, on a kernel with CONFIG_VIRT_CPU_ACCOUNTING
-> = y, if a program sets the SO (summary overflow) bit in the XER and
-> then does a system call, the SO bit in CR0 will be set on return
-> regardless of whether the system call detected an error.  Since CR0.SO
-> is used as the error indication from the system call, this means that
-> all system calls appear to fail.
-> 
-> The reason is that the workaround for the timebase bug on Cell uses a
-> compare instruction.  With CONFIG_VIRT_CPU_ACCOUNTING = y, the
-> ACCOUNT_CPU_USER_ENTRY macro reads the timebase, so we end up doing a
-> compare instruction, which copies XER.SO to CR0.SO.  Since we were
-> doing this in the system call entry patch after clearing CR0.SO but
-> before saving the CR, this meant that the saved CR image had CR0.SO
-> set if XER.SO was set on entry.
-> 
-> This fixes it by moving the clearing of CR0.SO to after the
-> ACCOUNT_CPU_USER_ENTRY call in the system call entry path.
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+--=-0bOttrQ0Jzcv3BMzATT6
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, 2008-11-28 at 22:13 +0300, Anton Vorontsov wrote:
+> The name of the device_node field differ across the platforms, so we
+> have to implement inlined accessors. This is needed to avoid ugly
+> #ifdef in the generic code.
+
+
+My grep skills may not be 1337 enough, but I only see maybe three uses
+of arch_data.prom_node in arch/sparc:
+
+# git grep "\.prom_node" arch/sparc/=20
+arch/sparc/include/asm/fb.h:    node =3D dev->archdata.prom_node;
+arch/sparc/kernel/smp.c:        cpu_data(id).prom_node =3D cpu_node;
+arch/sparc/kernel/of_device.c:  sd->prom_node =3D dp;
+
+
+And about 15 in arch/powerpc.
+
+Would it be simpler to have sparc use "of_node"? DaveM?
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-0bOttrQ0Jzcv3BMzATT6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkkzEm4ACgkQdSjSd0sB4dLHLgCgtbUxlfFNTpMLNgSgqQsC6XUw
+3+sAoLjRw0lq5NAO8NanZkt6xAYNznxo
+=O/Qr
+-----END PGP SIGNATURE-----
+
+--=-0bOttrQ0Jzcv3BMzATT6--
