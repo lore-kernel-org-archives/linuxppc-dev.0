@@ -1,38 +1,56 @@
-Return-Path: <carlos.moratelli@digitel.com.br>
-Received: from ares.digitel.com.br (cosmos.digitel.com.br [200.198.105.42])
-	by ozlabs.org (Postfix) with ESMTP id DC59CDDDE0
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Nov 2008 23:16:52 +1100 (EST)
-Subject: MPC8313 and Marvell PHY 88e1112
-From: Carlos Roberto Moratelli <carlos.moratelli@digitel.com.br>
-To: Linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Fri, 28 Nov 2008 10:06:34 -0200
-Message-Id: <1227873994.3812.21.camel@parana>
+Return-Path: <drzeus-mmc@drzeus.cx>
+Received: from smtp.drzeus.cx (server.drzeus.cx [85.8.24.28])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C14D1DDD04
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Dec 2008 07:06:56 +1100 (EST)
+Date: Sun, 30 Nov 2008 21:06:48 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH v2] mmc: Add mmc_vddrange_to_ocrmask() helper function
+Message-ID: <20081130210648.77b8843a@mjolnir.drzeus.cx>
+In-Reply-To: <20081126195417.GA26264@oksana.dev.rtsoft.ru>
+References: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
+	<20081030195632.GB13640@oksana.dev.rtsoft.ru>
+	<20081108215537.12cdf5f6@mjolnir.drzeus.cx>
+	<20081126195417.GA26264@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Wed, 26 Nov 2008 22:54:17 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-I am working in a custom board based on a mpc8313erdb and my Kernel
-version is 2.6.24. This board has a Marvell PHY 88E1112 on TSEC2
-processor port. 
+> This function sets the OCR mask bits according to provided voltage
+> ranges. Will be used by the mmc_spi OpenFirmware bindings.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> 
+> Hi Pierre,
+> 
+> Sorry for the delay.
+> 
 
-The problem is that the PHY is detected and configured, but no data can
-be send or received. I am sure that dtb is fine. In another custom board
-I have a 88e3015 on TSEC2 and it is working fine.
+This looks perfect. Just tell me when you want me to queue it up.
 
-Did someone work with this PHY? Does Compiling gianfar and Marvell
-support on Kernel is enough? 
+Rgds
+-- 
+     -- Pierre Ossman
 
-Thanks,
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-Carlos R. Moratelli
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
