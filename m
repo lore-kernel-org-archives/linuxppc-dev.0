@@ -1,19 +1,13 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/2] powerpc and sparc: Introduce dev_archdata node
-	accessors
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20081128191323.GA27260@oksana.dev.rtsoft.ru>
-References: <20081128191323.GA27260@oksana.dev.rtsoft.ru>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-0bOttrQ0Jzcv3BMzATT6"
-Date: Mon, 01 Dec 2008 09:23:42 +1100
-Message-Id: <1228083822.11316.9.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	David Miller <davem@davemloft.net>
-Reply-To: michael@ellerman.id.au
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18739.9807.62269.140353@cargo.ozlabs.ibm.com>
+Date: Mon, 1 Dec 2008 10:48:31 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,52 +17,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
---=-0bOttrQ0Jzcv3BMzATT6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Please pull from the 'merge' branch of
 
-On Fri, 2008-11-28 at 22:13 +0300, Anton Vorontsov wrote:
-> The name of the device_node field differ across the platforms, so we
-> have to implement inlined accessors. This is needed to avoid ugly
-> #ifdef in the generic code.
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
+to get a set of fixes for various powerpc regressions, build failures
+and serious bugs that have accumulated since my last pull request,
+plus some defconfig updates.
 
-My grep skills may not be 1337 enough, but I only see maybe three uses
-of arch_data.prom_node in arch/sparc:
+This includes commits pulled from the submaintainers for embedded
+powerpc platforms.  In one case there was a fix that I thought was
+marginal (making a printk print correct numbers rather than garbage)
+but I let it through since it is in platform-specific code and
+therefore can't hurt other platforms.  If you disagree, let me know
+and I'll redo the branch.
 
-# git grep "\.prom_node" arch/sparc/=20
-arch/sparc/include/asm/fb.h:    node =3D dev->archdata.prom_node;
-arch/sparc/kernel/smp.c:        cpu_data(id).prom_node =3D cpu_node;
-arch/sparc/kernel/of_device.c:  sd->prom_node =3D dp;
+Thanks,
+Paul.
 
+ arch/powerpc/boot/dts/mpc832x_rdb.dts          |    4 
+ arch/powerpc/boot/dts/mpc8572ds.dts            |    2 
+ arch/powerpc/configs/40x/virtex_defconfig      | 1176 ++++++++++++++++++++++++
+ arch/powerpc/configs/44x/virtex5_defconfig     |  234 +++--
+ arch/powerpc/configs/52xx/cm5200_defconfig     |  169 +++
+ arch/powerpc/configs/52xx/lite5200b_defconfig  |  206 +++-
+ arch/powerpc/configs/52xx/motionpro_defconfig  |  168 +++
+ arch/powerpc/configs/52xx/pcm030_defconfig     |  182 +++-
+ arch/powerpc/configs/52xx/tqm5200_defconfig    |  180 +++-
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig |    2 
+ arch/powerpc/configs/mpc5200_defconfig         |  573 +++++++++---
+ arch/powerpc/configs/ppc40x_defconfig          |   92 ++
+ arch/powerpc/configs/ppc44x_defconfig          |   92 ++
+ arch/powerpc/kernel/cpu_setup_44x.S            |    7 
+ arch/powerpc/kernel/entry_64.S                 |    8 
+ arch/powerpc/kernel/prom_parse.c               |    7 
+ arch/powerpc/mm/40x_mmu.c                      |   16 
+ arch/powerpc/mm/numa.c                         |  122 ++
+ arch/powerpc/platforms/cell/axon_msi.c         |   36 +
+ arch/powerpc/platforms/cell/smp.c              |    9 
+ arch/powerpc/platforms/cell/spufs/file.c       |    3 
+ arch/powerpc/sysdev/bestcomm/Kconfig           |    9 
+ arch/powerpc/sysdev/mpic.c                     |    9 
+ arch/powerpc/sysdev/xilinx_intc.c              |    4 
+ drivers/block/xsysace.c                        |   23 
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c     |    9 
+ drivers/net/Kconfig                            |    3 
+ drivers/serial/uartlite.c                      |    4 
+ drivers/video/xilinxfb.c                       |    5 
+ sound/soc/fsl/Kconfig                          |    3 
+ 30 files changed, 2776 insertions(+), 581 deletions(-)
+ create mode 100644 arch/powerpc/configs/40x/virtex_defconfig
 
-And about 15 in arch/powerpc.
+Adhemerval Zanella (1):
+      powerpc: Fix IRQ assignment for some PCIe devices
 
-Would it be simpler to have sparc use "of_node"? DaveM?
+Arnd Bergmann (3):
+      powerpc/cell/axon-msi: Retry on missing interrupt
+      powerpc/mpic: Don't reset affinity for secondary MPIC on boot
+      powerpc/cell: Fix GDB watchpoints, again
 
-cheers
+Benjamin Herrenschmidt (1):
+      powerpc/44x: Fix 460EX/460GT machine check handling
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Dave Hansen (1):
+      powerpc: Fix boot freeze on machine with empty memory node
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Grant Erickson (1):
+      powerpc/40x: Limit allocable DRAM during early mapping
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Grant Likely (4):
+      powerpc/mpc5200: fix bestcomm Kconfig dependencies
+      powerpc/virtex: fix various format/casting printk mismatches
+      powerpc/52xx: update defconfigs
+      powerpc/virtex: Update defconfigs
 
---=-0bOttrQ0Jzcv3BMzATT6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Jeremy Kerr (1):
+      powerpc/spufs: Fix spinning in spufs_ps_fault on signal
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Martyn Welch (1):
+      powerpc: Use generic PHY driver for Marvell 88E1111 PHY on GE Fanuc SBC610
 
-iEYEABECAAYFAkkzEm4ACgkQdSjSd0sB4dLHLgCgtbUxlfFNTpMLNgSgqQsC6XUw
-3+sAoLjRw0lq5NAO8NanZkt6xAYNznxo
-=O/Qr
------END PGP SIGNATURE-----
+Michael Barkowski (1):
+      powerpc/mpc832x_rdb: fix swapped ethernet ids
 
---=-0bOttrQ0Jzcv3BMzATT6--
+Paul Mackerras (1):
+      powerpc: Fix system calls on Cell entered with XER.SO=1
+
+Trent Piepho (1):
+      powerpc/85xx: L2 cache size wrong in 8572DS dts
+
+Yuri Tikhonov (1):
+      xsysace: Fix driver to use resource_size_t instead of unsigned long
