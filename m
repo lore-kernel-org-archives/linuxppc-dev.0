@@ -1,14 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Mon, 1 Dec 2008 19:19:11 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linuxppc-embedded@ozlabs.org
-Subject: Consolidating the lists
-Message-Id: <20081201191911.b3307d07.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__1_Dec_2008_19_19_11_+1100_Gf2IPHbaqwyrmeWT"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linuxppc-embedded-owner@ozlabs.org
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id A19D4DDD04
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Dec 2008 20:56:52 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: Erratic MPC8248 CPM2 I2C behaviour
+Date: Mon, 1 Dec 2008 10:56:49 +0100
+References: <200811281724.49620.laurentp@cse-semaphore.com>
+	<20081129054153.GA22692@pengutronix.de>
+In-Reply-To: <20081129054153.GA22692@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200812011056.49303.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,40 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__1_Dec_2008_19_19_11_+1100_Gf2IPHbaqwyrmeWT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Saturday 29 November 2008 06:41:53 Wolfram Sang wrote:
+> Hello Laurent,
+>
+> > After switching to the powerpc architecture and Jochen Friedrich's
+> > driver, I've experienced erratic transfer timeouts. Quite frequent at
+> > first (2.6.26), the problems disappeared on the road to 2.6.27 and have
+> > now resurfaced.
+>
+> Now == current linus.git?
 
-Hi all,
+Now = both 2.6.27 and 2.6.28-rc8.
 
-I am told that after some discussion it has been decided that there is
-really no longer any need for a separate linuxppc-embedded mailing list.
-So I will do the following shortly:
+Best regards,
 
-	remove the linuxppc-embedded@ozlabs.org mailinglist (the archives
-will still be available).=20
-	redirect linuxppc-embedded@ozlabs.org to linuxppc-dev@ozlabs.org
-(this will cease after some random amount of time).
+-- 
+Laurent Pinchart
+CSE Semaphore Belgium
 
-Does this sound like a sensible plan?  Would it be better to just have
-email to linuxppc-embedded@ozlabs.org bounce with an error pointing to
-linuxppc-dev?
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__1_Dec_2008_19_19_11_+1100_Gf2IPHbaqwyrmeWT
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkznf8ACgkQjjKRsyhoI8zSDQCgvVsU4kKlhc6J9ibiSPj39Qcj
-0NkAoLjRdwFLI0Oec2NyxGqAj02nZzcu
-=1A0y
------END PGP SIGNATURE-----
-
---Signature=_Mon__1_Dec_2008_19_19_11_+1100_Gf2IPHbaqwyrmeWT--
+T +32 (2) 387 42 59
+F +32 (2) 387 42 75
