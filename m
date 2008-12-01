@@ -1,18 +1,20 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id B598DDDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 04:04:58 +1100 (EST)
-Date: Mon, 1 Dec 2008 09:04:55 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: "Hommel, Thomas (GE EntSol,
-	Intelligent Platforms)" <Thomas.Hommel@gefanuc.com>
-Subject: Re: DMA from memory to local bus
-Message-ID: <20081201170455.GB32299@ovro.caltech.edu>
-References: <62DDBB9E5E23CC4A929EE46F9427CEAF01654DD8@BUDMLVEM04.e2k.ad.ge.com>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 340A3DDDDF
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 05:15:49 +1100 (EST)
+Date: Mon, 1 Dec 2008 13:15:47 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0/5] powerpc: ftrace updates to previous patch series
+In-Reply-To: <20081128131014.GC26793@elte.hu>
+Message-ID: <alpine.DEB.1.10.0812011315020.7645@gandalf.stny.rr.com>
+References: <20081126215821.263324391@goodmis.org>
+	<alpine.DEB.1.10.0811261749310.1501@gandalf.stny.rr.com>
+	<20081128131014.GC26793@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <62DDBB9E5E23CC4A929EE46F9427CEAF01654DD8@BUDMLVEM04.e2k.ad.ge.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 28, 2008 at 03:04:04PM +0100, Hommel, Thomas (GE EntSol, Intelligent Platforms) wrote:
+
+On Fri, 28 Nov 2008, Ingo Molnar wrote:
+
 > 
-> Hi all,
-> I'm currently developing a driver and want to make use of the DMA
-> offload engine. Data has to be transferred from memory to a device on
-> the local bus and vice versa.
-> At a first look, the function dma_async_memcpy_buf_to_buf() seemed to be
-> suitable, but it does not translate addresses correctly. Both addresses
-> are treated as if they were in memory.
-> In my configuration, the buffer is located in memory, but the device's
-> I/O space is mapped into vmalloc space via ioremap(). How can I access
-> the I/O space corectly from the DMA controller? I also checked the
-> return of virt_to_phys() and this does not deliver the correct physical
-> address.
-> The board is based on MPC8641D and I'm using the on-chip DMA engine.
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
+> > On Wed, 26 Nov 2008, Steven Rostedt wrote:
+> > 
+> > > Paul,
+> > > 
+> > > This patch series addresses the issues you brought up as well as
+> > > adds some more enhancements and fixes. This series is added on
+> > > top of the previous patch series.
+> > > 
+> > > The new patches are: (and are posted now)
+> > > 5987225... powerpc/ppc32: static ftrace fixes for PPC32
+> > 
+> > The new commit id with the fix in Author and SoB is:
+> > fd90db4bdc1ccf71927365cd634188cec4d7b151
+> >  powerpc/ppc32: static ftrace fixes for 
+> 
+> Steve, you rebased the previous commits, and that's a no-no. I sorted it 
+> all out, find below the stable URI for stuff that we'd like Paul to pull 
+> shortly before the merge window.
 
-Check out my PCINet driver, posted here previously. It does something
-similar.
+Sorry, I rebased to edit the change log where I mispelled Paul's name.
 
-It uses the PowerPC DMA controller to transfer all of the data around.
-You probably need to use dma_map_single() to get the physical address of
-your memory to give it to the DMA controller.
-
-Ira
+-- Steve
