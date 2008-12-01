@@ -1,23 +1,18 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-qy0-f21.google.com (mail-qy0-f21.google.com
-	[209.85.221.21]) by ozlabs.org (Postfix) with ESMTP id 3BE0BDDDF5
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 10:22:52 +1100 (EST)
-Received: by qyk14 with SMTP id 14so4515825qyk.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 01 Dec 2008 15:22:51 -0800 (PST)
-Date: Mon, 1 Dec 2008 18:22:48 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Hollis Blanchard <hollis@penguinppc.org>
-Subject: Re: [PATCH] powerpc: add 16K/64K pages support for the 44x PPC32
-	architectures.
-Message-ID: <20081201232248.GB15923@zod.rchland.ibm.com>
-References: <1227829488-8260-1-git-send-email-yanok@emcraft.com>
-	<fb412d760812011506x37339fddue100a144e585782e@mail.gmail.com>
+Return-Path: <mditto@consentry.com>
+Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
+	by ozlabs.org (Postfix) with ESMTP id 92754DDDFA
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 10:28:31 +1100 (EST)
+Message-ID: <49347317.5080600@consentry.com>
+Date: Mon, 01 Dec 2008 15:28:23 -0800
+From: Mike Ditto <mditto@consentry.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fb412d760812011506x37339fddue100a144e585782e@mail.gmail.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: wd@denx.de, Ilya Yanok <yanok@emcraft.com>, linuxppc-dev@ozlabs.org,
-	Vladimir Panfilov <pvr@emcraft.com>, dzu@denx.de
+To: linuxppc-dev@ozlabs.org,
+ Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: Erratic MPC8248 CPM2 I2C behaviour
+References: <mailman.569.1227903153.29923.linuxppc-dev@ozlabs.org>
+In-Reply-To: <mailman.569.1227903153.29923.linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 01, 2008 at 05:06:03PM -0600, Hollis Blanchard wrote:
->On Thu, Nov 27, 2008 at 5:44 PM, Ilya Yanok <yanok@emcraft.com> wrote:
->> This patch adds support for page sizes bigger than 4K (16K/64K) on
->> PPC 44x.
->> PGDIR table is much smaller than page in case of 16K/64K pages (512
->> and 32 bytes resp.) so we allocate PGDIR with kzalloc() instead of
->> __get_free_pages().
->> PTE table covers rather big memory area in case of 16K/64K pages
->> (32MB and 512MB resp.) so we can easily put FIXMAP and PKMAP in
->> area covered by one PTE table.
->
->Ben, you had some comments on the previous version of this patch. Have
->those been addressed to your satisfaction? If so, could you please
->queue this for 2.6.29?
+Laurent Pinchart <laurentp@cse-semaphore.com> wrote:
+> Transmission timeout after one second. The first TX buffer descriptor status 
+> hasn't been modified by the CPM. The CPM state dump shows that processing of 
+...
 
-Milton had some comments too.  And I'd also like to review it and add
-and Acked-by since I'll be the one getting bug reports if it's broken :).
+This sounds very similar to a problem I have seen on MPC8247 and
+MPC8248.
 
-I've been sick for the past few days, but this is the first thing to
-review on my list tomorrow.
+It could be a variation of the CPM bug documented by Freescale as
+erratum CPM98.  But the key difference is that we see a persistent
+failure, while the erratum only mentions a problem with "the next
+transaction".  What we see is that once the I2C engine gets confused
+by some anomaly on the SCL signal, it stops processing buffer
+descriptors entirely until it is turned off and back on.  You can
+observe this bug by momentarily grounding the SCL line (it's an
+open-collector bus) with a jumper while you attempt an I/O.
 
-josh
+Our production equipment is using Linux 2.6 with the out-of-tree
+i2c-algo-8260.c by Dan Malek and Brad Parker.  I modified this
+driver to shut off the I2C controller and turn it back on when it
+hits this problem, and now it can recover from this condition.
+
+However, this does not explain how the controller gets into the
+frozen state in the first place.  We see it very rarely in production
+units and have not been able to identify the cause.  If it is
+similar to erratum CPM98 then it could be noise on the SCL signal or
+perhaps an I2C device that doesn't conform to the protocol perfectly.
+Also beware, if you are using some kind of multiplexer, that you don't
+direct the multiplexer to switch to a different bus (segment) while a
+transaction is in progress.
+
+In testing with the current (2.6.27) i2c-cpm.c driver, I found that
+it is sufficient to #define I2C_CHIP_ERRATA to allow it to recover
+from the CPM I2C freeze.  However, I don't know if I like this
+approach because it turns off the I2C engine after every transfer,
+even successful ones, and I don't know if this will affect reliability
+or performance.  And I don't know if this will actually prevent the
+freeze from happening, although I presume that it would protect the
+I2C engine from getting confused by a glitch that happens while no
+transfer is in progress.
+
+I am not aware of any documentation for what exactly the I2C_CHIP_ERRATA
+conditional code in i2c-cpm.c is meant to work around.  The comment
+mentions "earlier than rev D4" but I'm not aware of any such rev for
+8260 or 8272 chip families, and if it is related to erratum CPM98,
+Freescale seems to say that this erratum is in all revs of these chips
+and has no plan to fix it, so it seems that the workaround should be
+enabled by default.
+
+					-=] Mike [=-
