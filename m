@@ -1,17 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CF6A5DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 07:54:22 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id mB1KsIeG006608
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 Dec 2008 14:54:18 -0600
-From: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 89CA8DDD01
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 08:30:41 +1100 (EST)
+Received: from localhost.localdomain (unknown [127.0.0.1])
+	by a-sasl-fastnet.sasl.smtp.pobox.com (Postfix) with ESMTP id
+	CD23D83395
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Dec 2008 16:30:37 -0500 (EST)
+Received: from thinkcentre (unknown [67.9.156.46]) by
+	a-sasl-fastnet.sasl.smtp.pobox.com (Postfix) with ESMTPA id 5DCF583394
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Dec 2008 16:30:17 -0500 (EST)
+Date: Mon, 1 Dec 2008 15:30:16 -0600
+From: Nathan Lynch <ntl@pobox.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/85xx: minor head_fsl_booke.S cleanup
-Date: Mon,  1 Dec 2008 14:54:18 -0600
-Message-Id: <1228164858-7492-1-git-send-email-galak@kernel.crashing.org>
+Subject: __cpu_up vs. start_secondary race?
+Message-ID: <20081201213016.GC6829@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +25,114 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Removed unused branch labels
+Hi,
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/kernel/head_fsl_booke.S |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+I think there may be a plausible issue here.  If not, maybe I'll get
+an education :)
 
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 8942d7a..2b57605 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -751,7 +751,7 @@ finish_tlb_load:
- 	iseleq	r12, r12, r10
- 	
- #ifdef CONFIG_PTE_64BIT
--2:	rlwimi	r12, r13, 24, 0, 7	/* grab RPN[32:39] */
-+	rlwimi	r12, r13, 24, 0, 7	/* grab RPN[32:39] */
- 	rlwimi	r12, r11, 24, 8, 19	/* grab RPN[40:51] */
- 	mtspr	SPRN_MAS3, r12
- BEGIN_FTR_SECTION
-@@ -759,7 +759,7 @@ BEGIN_FTR_SECTION
- 	mtspr	SPRN_MAS7, r10
- END_FTR_SECTION_IFSET(CPU_FTR_BIG_PHYS)
- #else
--2:	rlwimi	r11, r12, 0, 20, 31	/* Extract RPN from PTE and merge with perms */
-+	rlwimi	r11, r12, 0, 20, 31	/* Extract RPN from PTE and merge with perms */
- 	mtspr	SPRN_MAS3, r11
- #endif
- #ifdef CONFIG_E200
--- 
-1.5.6.5
+cpu_callin_map is used during secondary CPU bootstrap to notify the
+waiting CPU that the new CPU is coming up.  __cpu_up clears
+cpu_callin_map[cpu] and then polls the same location, waiting for
+start_secondary to set it to 1.  But I'm wondering how safe the
+current implementation is -- start_secondary doesn't have an explicit
+sync following cpu_callin_map[cpu] = 1, and __cpu_up has no
+synchronization instructions in its polling loop, so how can we be
+sure that the waiting cpu will see the update to that location in
+time?
+
+Compare with the prom_hold_cpus/__secondary_hold_acknowledge code,
+which is doing a very similar task, but it has the mb and sync (in
+head_64.S at least) that seem to be missing from the case above.
+
+Since we're not buried in "Processor X is stuck" bug reports, I must
+be missing something, or there's some incidental factor that makes it
+okay in practice...
+
+Relevant code from arch/powerpc/kernel/smp.c:
+
+static volatile unsigned int cpu_callin_map[NR_CPUS];
+
+....
+
+int __cpuinit __cpu_up(unsigned int cpu)
+{
+        int c;
+
+        secondary_ti = current_set[cpu];
+        if (!cpu_enable(cpu))
+                return 0;
+
+        if (smp_ops == NULL ||
+            (smp_ops->cpu_bootable && !smp_ops->cpu_bootable(cpu)))
+                return -EINVAL;
+
+        /* Make sure callin-map entry is 0 (can be leftover a CPU
+         * hotplug
+         */
+        cpu_callin_map[cpu] = 0;
+
+        /* The information for processor bringup must
+         * be written out to main store before we release
+         * the processor.
+         */
+        smp_mb();
+
+        /* wake up cpus */
+        DBG("smp: kicking cpu %d\n", cpu);
+        smp_ops->kick_cpu(cpu);
+
+        /*
+         * wait to see if the cpu made a callin (is actually up).
+         * use this value that I found through experimentation.
+         * -- Cort
+         */
+        if (system_state < SYSTEM_RUNNING)
+                for (c = 50000; c && !cpu_callin_map[cpu]; c--)
+                        udelay(100);
+#ifdef CONFIG_HOTPLUG_CPU
+        else
+                /*
+                 * CPUs can take much longer to come up in the
+                 * hotplug case.  Wait five seconds.
+                 */
+                for (c = 25; c && !cpu_callin_map[cpu]; c--) {
+                        msleep(200);
+                }
+#endif
+
+        if (!cpu_callin_map[cpu]) {
+                printk("Processor %u is stuck.\n", cpu);
+                return -ENOENT;
+        }
+
+        printk("Processor %u found.\n", cpu);
+
+        if (smp_ops->give_timebase)
+                smp_ops->give_timebase();
+
+        /* Wait until cpu puts itself in the online map */
+        while (!cpu_online(cpu))
+                cpu_relax();
+
+        return 0;
+}
+....
+
+int __devinit start_secondary(void *unused)
+{
+        unsigned int cpu = smp_processor_id();
+        struct device_node *l2_cache;
+        int i, base;
+
+        atomic_inc(&init_mm.mm_count);
+        current->active_mm = &init_mm;
+
+        smp_store_cpu_info(cpu);
+        set_dec(tb_ticks_per_jiffy);
+        preempt_disable();
+        cpu_callin_map[cpu] = 1;
+
+        smp_ops->setup_cpu(cpu);
+        if (smp_ops->take_timebase)
+                smp_ops->take_timebase();
+....
