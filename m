@@ -1,25 +1,17 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 43834DDDDF
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 06:48:23 +1100 (EST)
-Message-ID: <49343F76.3060802@freescale.com>
-Date: Mon, 01 Dec 2008 13:48:06 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Andr=E9_Schwarz?= <Andre.Schwarz@matrix-vision.de>
-Subject: Re: i2c-mpc clocking scheme
-References: <492EB606.9020703@matrix-vision.de>
-	<ed82fe3e0811270724t26d2a8e2v233143722eb8587f@mail.gmail.com>
-	<492EC031.9000802@matrix-vision.de>
-	<Pine.LNX.4.64.0811281255001.12483@t2.domain.actdsltmp>
-	<4933FBC6.50100@freescale.com> <49343DC2.3070601@matrix-vision.de>
-In-Reply-To: <49343DC2.3070601@matrix-vision.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Trent Piepho <tpiepho@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CF6A5DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 07:54:22 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id mB1KsIeG006608
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Dec 2008 14:54:18 -0600
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/85xx: minor head_fsl_booke.S cleanup
+Date: Mon,  1 Dec 2008 14:54:18 -0600
+Message-Id: <1228164858-7492-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,23 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-André Schwarz wrote:
+Removed unused branch labels
 
-> Wouldn't it be easier to omit frequency re-programming at all ?
-> Maybe configurable for non U-Boot users ...
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/kernel/head_fsl_booke.S |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Well, the real problem is that Linux is ignoring what the boot loader has done.
- This is bad, regardless as to which boot loader you're using.
-
-The question is, do we give Linux the capability to program the I2C bus speed,
-or is this something that the boot loader should do?  Unfortunately, the current
-Linux code means that this issue is not properly architected.
-
-You mentioned people who don't use U-Boot.  Do they use some other boot loader?
- Or no boot loader at all?  Do other boot loaders program the I2C bus speed?
-The reason I ask is that I want to know whether it's okay for Linux to ignore
-the FDR and DFSRR registers.
-
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 8942d7a..2b57605 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -751,7 +751,7 @@ finish_tlb_load:
+ 	iseleq	r12, r12, r10
+ 	
+ #ifdef CONFIG_PTE_64BIT
+-2:	rlwimi	r12, r13, 24, 0, 7	/* grab RPN[32:39] */
++	rlwimi	r12, r13, 24, 0, 7	/* grab RPN[32:39] */
+ 	rlwimi	r12, r11, 24, 8, 19	/* grab RPN[40:51] */
+ 	mtspr	SPRN_MAS3, r12
+ BEGIN_FTR_SECTION
+@@ -759,7 +759,7 @@ BEGIN_FTR_SECTION
+ 	mtspr	SPRN_MAS7, r10
+ END_FTR_SECTION_IFSET(CPU_FTR_BIG_PHYS)
+ #else
+-2:	rlwimi	r11, r12, 0, 20, 31	/* Extract RPN from PTE and merge with perms */
++	rlwimi	r11, r12, 0, 20, 31	/* Extract RPN from PTE and merge with perms */
+ 	mtspr	SPRN_MAS3, r11
+ #endif
+ #ifdef CONFIG_E200
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.5.6.5
