@@ -1,10 +1,23 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4CE11DDD0B
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Dec 2008 19:11:40 +1100 (EST)
+Subject: Re: AMCC PPC460EX Canyonlands does not see PCIe end point with
+	only non-prefetchable memory (both 2.6.27.7 and -next)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 01 Dec 2008 17:01:18 +1100
-Subject: [PATCH] powerpc: Fix bogus cache flushing on all 40x and BookE
-	processors
-Message-Id: <20081201060152.00DCCDDDE3@ozlabs.org>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+In-Reply-To: <c384c5ea0811280254y428299a4yd92c1c244bd2482@mail.gmail.com>
+References: <c384c5ea0811260632n24e8b536v9a4a16833644976c@mail.gmail.com>
+	<c384c5ea0811260725x3476fa43o9950123948e99acb@mail.gmail.com>
+	<c384c5ea0811261026y73679a16tfa29a33f3e780954@mail.gmail.com>
+	<c384c5ea0811280254y428299a4yd92c1c244bd2482@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 01 Dec 2008 19:11:32 +1100
+Message-Id: <1228119092.7356.117.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,46 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We were missing the CPU_FTR_NOEXECUTE bit in our cputable for all
-these processors. The result is that update_mmu_cache() would flush
-the cache for all pages mapped to userspace which is totally
-unnecessary on those processors since we already handle flushing
-on execute in the page fault path.
+On Fri, 2008-11-28 at 11:54 +0100, Leon Woestenberg wrote:
+> 
+> I found out that re-programming the end point FPGA again *just* after
+> *uboot* read it, and before Linux kernel has started, makes the end
+> point appear properly.
+> 
+> Either u-boot leaves the end point in bad state, or the root complex
+> reset also requires an end point reset. (or a third option I could not
+> think of yet).
 
-This should provide a nice speed up ;-)
+I think you are getting a reset yes, maybe your FPGA loses its
+programming or something similar ?
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+> I'll pick this up on ppc and u-boot mailing list with new info,
+> especially with the ppc4xx maintainers.
+> 
+CC me,
 
- arch/powerpc/include/asm/cputable.h |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
-
---- linux-work.orig/arch/powerpc/include/asm/cputable.h	2008-12-01 16:55:53.000000000 +1100
-+++ linux-work/arch/powerpc/include/asm/cputable.h	2008-12-01 16:56:32.000000000 +1100
-@@ -366,19 +366,20 @@ extern const char *powerpc_base_platform
- #define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON | \
- 	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE)
- #define CPU_FTRS_8XX	(CPU_FTR_USE_TB)
--#define CPU_FTRS_40X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN)
--#define CPU_FTRS_44X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN)
-+#define CPU_FTRS_40X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
-+#define CPU_FTRS_44X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
- #define CPU_FTRS_E200	(CPU_FTR_USE_TB | CPU_FTR_SPE_COMP | \
- 	    CPU_FTR_NODSISRALIGN | CPU_FTR_COHERENT_ICACHE | \
--	    CPU_FTR_UNIFIED_ID_CACHE)
-+	    CPU_FTR_UNIFIED_ID_CACHE | CPU_FTR_NOEXECUTE)
- #define CPU_FTRS_E500	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
--	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN)
-+	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN \
-+	    CPU_FTR_NOEXECUTE)
- #define CPU_FTRS_E500_2	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
- 	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_BIG_PHYS | \
--	    CPU_FTR_NODSISRALIGN)
-+	    CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
- #define CPU_FTRS_E500MC	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_BIG_PHYS | CPU_FTR_NODSISRALIGN | \
--	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC)
-+	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE)
- #define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
- 
- /* 64-bit CPUs */
+Ben.
