@@ -1,22 +1,20 @@
-Return-Path: <Andre.Schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id 724BBDDDCA
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 06:39:13 +1100 (EST)
-Message-ID: <49343DC2.3070601@matrix-vision.de>
-Date: Mon, 01 Dec 2008 20:40:50 +0100
-From: =?ISO-8859-1?Q?Andr=E9_Schwarz?= <Andre.Schwarz@matrix-vision.de>
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 2AC32DDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 06:46:31 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: u-boot@lists.denx.de
+Subject: Re: [U-Boot] ppc4xx: u-boot sees PCIe endpoint, linux does not.
+Date: Mon, 1 Dec 2008 20:46:22 +0100
+References: <c384c5ea0811280450t3e199da6s1fcdf903f63f9622@mail.gmail.com>
+	<1228119152.7356.118.camel@pasglop>
+	<c384c5ea0812011119o97adf68l1546c96d5a6696a8@mail.gmail.com>
+In-Reply-To: <c384c5ea0812011119o97adf68l1546c96d5a6696a8@mail.gmail.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: i2c-mpc clocking scheme
-References: <492EB606.9020703@matrix-vision.de>
-	<ed82fe3e0811270724t26d2a8e2v233143722eb8587f@mail.gmail.com>
-	<492EC031.9000802@matrix-vision.de>
-	<Pine.LNX.4.64.0811281255001.12483@t2.domain.actdsltmp>
-	<4933FBC6.50100@freescale.com>
-In-Reply-To: <4933FBC6.50100@freescale.com>
-Content-Type: multipart/alternative;
-	boundary="------------010802070302050105080903"
-Cc: linuxppc-dev@ozlabs.org, Trent Piepho <tpiepho@freescale.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200812012046.22247.sr@denx.de>
+Cc: Linux PPC <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,63 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010802070302050105080903
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Timur Tabi wrote:
-> Trent Piepho wrote:
+On Monday 01 December 2008, Leon Woestenberg wrote:
+> >> Now, if I re-program the end-point FPGA during the u-boot boot
+> >> time-out, Linux will recognize the end-point.
+> >
+> > It's possible that either the reset in between goes bonkers or something
+> > else causes your FPGA to stop responding. It looks like a programming
+> > problem with the FPGA to me.
 >
->   
->> Seems like it should keep the clock registers at what u-boot set them too.
->>     
+> I have verified that the end point does not receive any kind of reset.
 >
-> Or we could have U-Boot put the i2c clock frequency into the I2C node, and let
-> the driver program the hardware again.  That would keep the ugliness in U-Boot.
->
->   
-Wouldn't it be easier to omit frequency re-programming at all ?
-Maybe configurable for non U-Boot users ...
+> Also, this problem only happens on the Canyonlands board; on x86 and
+> powerpc MPC8315E it remains properly working after soft/hard resets,
+> u-boot init etc.
 
+This could be because only the 4xx Linux PCI(e) driver really resets the 
+endpoint (PHY reset). But you seem to have analyzed this already.
 
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+> Could it be u-boot overwrites a too large payload into the config
+> space or something similar, which makes subsequent accesses fail?
 
---------------010802070302050105080903
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Not sure. I suggest that you disable the PCI(e) support in U-Boot to see if 
+Linux behaves differently on a non-pre-initialized endpoint.
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-  <title></title>
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Timur Tabi wrote:
-<blockquote cite="mid:4933FBC6.50100@freescale.com" type="cite">
-  <pre wrap="">Trent Piepho wrote:
+Best regards,
+Stefan
 
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">Seems like it should keep the clock registers at what u-boot set them too.
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Or we could have U-Boot put the i2c clock frequency into the I2C node, and let
-the driver program the hardware again.  That would keep the ugliness in U-Boot.
-
-  </pre>
-</blockquote>
-Wouldn't it be easier to omit frequency re-programming at all ?<br>
-Maybe configurable for non U-Boot users ...<br>
-<BR>
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
-<BR>
-</body>
-</html>
-
---------------010802070302050105080903--
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
