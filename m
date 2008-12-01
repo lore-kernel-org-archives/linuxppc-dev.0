@@ -1,24 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 96E78DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 01:59:38 +1100 (EST)
-Message-ID: <4933FBC6.50100@freescale.com>
-Date: Mon, 01 Dec 2008 08:59:18 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Trent Piepho <tpiepho@freescale.com>
-Subject: Re: i2c-mpc clocking scheme
-References: <492EB606.9020703@matrix-vision.de>
-	<ed82fe3e0811270724t26d2a8e2v233143722eb8587f@mail.gmail.com>
-	<492EC031.9000802@matrix-vision.de>
-	<Pine.LNX.4.64.0811281255001.12483@t2.domain.actdsltmp>
-In-Reply-To: <Pine.LNX.4.64.0811281255001.12483@t2.domain.actdsltmp>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Andre Schwarz <andre.schwarz@matrix-vision.de>, linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8199BDDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 03:23:37 +1100 (EST)
+Message-Id: <A1C24C7B-B995-4062-9D81-86F1CD2FD514@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20081201045413.1E539DDD0C@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: Fix dma_map_sg() cache flushing on non coherent
+	platforms
+Date: Mon, 1 Dec 2008 10:23:26 -0600
+References: <20081201045413.1E539DDD0C@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,13 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Trent Piepho wrote:
 
-> Seems like it should keep the clock registers at what u-boot set them too.
+On Nov 30, 2008, at 10:53 PM, Benjamin Herrenschmidt wrote:
 
-Or we could have U-Boot put the i2c clock frequency into the I2C node, and let
-the driver program the hardware again.  That would keep the ugliness in U-Boot.
+> On PowerPC 4xx or other non cache coherent platforms, we lost the
+> appropriate cache flushing in dma_map_sg() when merging the 32
+> and 64-bit DMA code.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Acked-by: Becky Bruce <beckyb@kernel.crashing.org>
+
+Sins of omission are always the hardest to catch.....  My apologies,  
+and thanks!
+
+-B
+
+>
+> ---
+>
+> Oops .. nobody spotted that when Becky patches went in !
+>
+> Paul: This is a 2.6.28 regression and should be merged asap
+>
+> arch/powerpc/kernel/dma.c |    1 +
+> 1 file changed, 1 insertion(+)
+>
+> --- linux-work.orig/arch/powerpc/kernel/dma.c	2008-12-01  
+> 15:44:55.000000000 +1100
+> +++ linux-work/arch/powerpc/kernel/dma.c	2008-12-01  
+> 15:45:13.000000000 +1100
+> @@ -75,6 +75,7 @@ static int dma_direct_map_sg(struct devi
+> 	for_each_sg(sgl, sg, nents, i) {
+> 		sg->dma_address = sg_phys(sg) + get_dma_direct_offset(dev);
+> 		sg->dma_length = sg->length;
+> +		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+> 	}
+>
+> 	return nents;
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
