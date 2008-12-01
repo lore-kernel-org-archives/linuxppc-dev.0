@@ -1,11 +1,11 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18739.9807.62269.140353@cargo.ozlabs.ibm.com>
-Date: Mon, 1 Dec 2008 10:48:31 +1100
+Message-ID: <18739.19567.116894.316340@cargo.ozlabs.ibm.com>
+Date: Mon, 1 Dec 2008 13:31:11 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
+Subject: [git pull] Please pull powerpc.git merge branch again
 Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,94 +19,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Linus,
 
-Please pull from the 'merge' branch of
+Please do another pull from the 'merge' branch of
 
 git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-to get a set of fixes for various powerpc regressions, build failures
-and serious bugs that have accumulated since my last pull request,
-plus some defconfig updates.
-
-This includes commits pulled from the submaintainers for embedded
-powerpc platforms.  In one case there was a fix that I thought was
-marginal (making a printk print correct numbers rather than garbage)
-but I let it through since it is in platform-specific code and
-therefore can't hurt other platforms.  If you disagree, let me know
-and I'll redo the branch.
+Sorry for a second request so soon after the previous one, but I
+realized that I had missed one commit that I intended to include, and
+without it our 32-bit SMP configs won't compile.
 
 Thanks,
 Paul.
 
- arch/powerpc/boot/dts/mpc832x_rdb.dts          |    4 
- arch/powerpc/boot/dts/mpc8572ds.dts            |    2 
- arch/powerpc/configs/40x/virtex_defconfig      | 1176 ++++++++++++++++++++++++
- arch/powerpc/configs/44x/virtex5_defconfig     |  234 +++--
- arch/powerpc/configs/52xx/cm5200_defconfig     |  169 +++
- arch/powerpc/configs/52xx/lite5200b_defconfig  |  206 +++-
- arch/powerpc/configs/52xx/motionpro_defconfig  |  168 +++
- arch/powerpc/configs/52xx/pcm030_defconfig     |  182 +++-
- arch/powerpc/configs/52xx/tqm5200_defconfig    |  180 +++-
- arch/powerpc/configs/86xx/gef_sbc610_defconfig |    2 
- arch/powerpc/configs/mpc5200_defconfig         |  573 +++++++++---
- arch/powerpc/configs/ppc40x_defconfig          |   92 ++
- arch/powerpc/configs/ppc44x_defconfig          |   92 ++
- arch/powerpc/kernel/cpu_setup_44x.S            |    7 
- arch/powerpc/kernel/entry_64.S                 |    8 
- arch/powerpc/kernel/prom_parse.c               |    7 
- arch/powerpc/mm/40x_mmu.c                      |   16 
- arch/powerpc/mm/numa.c                         |  122 ++
- arch/powerpc/platforms/cell/axon_msi.c         |   36 +
- arch/powerpc/platforms/cell/smp.c              |    9 
- arch/powerpc/platforms/cell/spufs/file.c       |    3 
- arch/powerpc/sysdev/bestcomm/Kconfig           |    9 
- arch/powerpc/sysdev/mpic.c                     |    9 
- arch/powerpc/sysdev/xilinx_intc.c              |    4 
- drivers/block/xsysace.c                        |   23 
- drivers/char/xilinx_hwicap/xilinx_hwicap.c     |    9 
- drivers/net/Kconfig                            |    3 
- drivers/serial/uartlite.c                      |    4 
- drivers/video/xilinxfb.c                       |    5 
- sound/soc/fsl/Kconfig                          |    3 
- 30 files changed, 2776 insertions(+), 581 deletions(-)
- create mode 100644 arch/powerpc/configs/40x/virtex_defconfig
+ arch/powerpc/kernel/sysfs.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Adhemerval Zanella (1):
-      powerpc: Fix IRQ assignment for some PCIe devices
-
-Arnd Bergmann (3):
-      powerpc/cell/axon-msi: Retry on missing interrupt
-      powerpc/mpic: Don't reset affinity for secondary MPIC on boot
-      powerpc/cell: Fix GDB watchpoints, again
-
-Benjamin Herrenschmidt (1):
-      powerpc/44x: Fix 460EX/460GT machine check handling
-
-Dave Hansen (1):
-      powerpc: Fix boot freeze on machine with empty memory node
-
-Grant Erickson (1):
-      powerpc/40x: Limit allocable DRAM during early mapping
-
-Grant Likely (4):
-      powerpc/mpc5200: fix bestcomm Kconfig dependencies
-      powerpc/virtex: fix various format/casting printk mismatches
-      powerpc/52xx: update defconfigs
-      powerpc/virtex: Update defconfigs
-
-Jeremy Kerr (1):
-      powerpc/spufs: Fix spinning in spufs_ps_fault on signal
-
-Martyn Welch (1):
-      powerpc: Use generic PHY driver for Marvell 88E1111 PHY on GE Fanuc SBC610
-
-Michael Barkowski (1):
-      powerpc/mpc832x_rdb: fix swapped ethernet ids
-
-Paul Mackerras (1):
-      powerpc: Fix system calls on Cell entered with XER.SO=1
-
-Trent Piepho (1):
-      powerpc/85xx: L2 cache size wrong in 8572DS dts
-
-Yuri Tikhonov (1):
-      xsysace: Fix driver to use resource_size_t instead of unsigned long
+Milton Miller (1):
+      powerpc: Fix build for 32-bit SMP configs
