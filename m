@@ -1,20 +1,25 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 2AC32DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 06:46:31 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: u-boot@lists.denx.de
-Subject: Re: [U-Boot] ppc4xx: u-boot sees PCIe endpoint, linux does not.
-Date: Mon, 1 Dec 2008 20:46:22 +0100
-References: <c384c5ea0811280450t3e199da6s1fcdf903f63f9622@mail.gmail.com>
-	<1228119152.7356.118.camel@pasglop>
-	<c384c5ea0812011119o97adf68l1546c96d5a6696a8@mail.gmail.com>
-In-Reply-To: <c384c5ea0812011119o97adf68l1546c96d5a6696a8@mail.gmail.com>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 43834DDDDF
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 06:48:23 +1100 (EST)
+Message-ID: <49343F76.3060802@freescale.com>
+Date: Mon, 01 Dec 2008 13:48:06 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200812012046.22247.sr@denx.de>
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>
+To: =?ISO-8859-1?Q?Andr=E9_Schwarz?= <Andre.Schwarz@matrix-vision.de>
+Subject: Re: i2c-mpc clocking scheme
+References: <492EB606.9020703@matrix-vision.de>
+	<ed82fe3e0811270724t26d2a8e2v233143722eb8587f@mail.gmail.com>
+	<492EC031.9000802@matrix-vision.de>
+	<Pine.LNX.4.64.0811281255001.12483@t2.domain.actdsltmp>
+	<4933FBC6.50100@freescale.com> <49343DC2.3070601@matrix-vision.de>
+In-Reply-To: <49343DC2.3070601@matrix-vision.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Trent Piepho <tpiepho@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 01 December 2008, Leon Woestenberg wrote:
-> >> Now, if I re-program the end-point FPGA during the u-boot boot
-> >> time-out, Linux will recognize the end-point.
-> >
-> > It's possible that either the reset in between goes bonkers or something
-> > else causes your FPGA to stop responding. It looks like a programming
-> > problem with the FPGA to me.
->
-> I have verified that the end point does not receive any kind of reset.
->
-> Also, this problem only happens on the Canyonlands board; on x86 and
-> powerpc MPC8315E it remains properly working after soft/hard resets,
-> u-boot init etc.
+André Schwarz wrote:
 
-This could be because only the 4xx Linux PCI(e) driver really resets the 
-endpoint (PHY reset). But you seem to have analyzed this already.
+> Wouldn't it be easier to omit frequency re-programming at all ?
+> Maybe configurable for non U-Boot users ...
 
-> Could it be u-boot overwrites a too large payload into the config
-> space or something similar, which makes subsequent accesses fail?
+Well, the real problem is that Linux is ignoring what the boot loader has done.
+ This is bad, regardless as to which boot loader you're using.
 
-Not sure. I suggest that you disable the PCI(e) support in U-Boot to see if 
-Linux behaves differently on a non-pre-initialized endpoint.
+The question is, do we give Linux the capability to program the I2C bus speed,
+or is this something that the boot loader should do?  Unfortunately, the current
+Linux code means that this issue is not properly architected.
 
-Best regards,
-Stefan
+You mentioned people who don't use U-Boot.  Do they use some other boot loader?
+ Or no boot loader at all?  Do other boot loaders program the I2C bus speed?
+The reason I ask is that I want to know whether it's okay for Linux to ignore
+the FDR and DFSRR registers.
 
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
