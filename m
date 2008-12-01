@@ -1,20 +1,20 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 340A3DDDDF
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 05:15:49 +1100 (EST)
-Date: Mon, 1 Dec 2008 13:15:47 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/5] powerpc: ftrace updates to previous patch series
-In-Reply-To: <20081128131014.GC26793@elte.hu>
-Message-ID: <alpine.DEB.1.10.0812011315020.7645@gandalf.stny.rr.com>
-References: <20081126215821.263324391@goodmis.org>
-	<alpine.DEB.1.10.0811261749310.1501@gandalf.stny.rr.com>
-	<20081128131014.GC26793@elte.hu>
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from mail-qy0-f21.google.com (mail-qy0-f21.google.com
+	[209.85.221.21]) by ozlabs.org (Postfix) with ESMTP id 8D8EADDD01
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 06:19:41 +1100 (EST)
+Received: by qyk14 with SMTP id 14so4344078qyk.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 01 Dec 2008 11:19:38 -0800 (PST)
+Message-ID: <c384c5ea0812011119o97adf68l1546c96d5a6696a8@mail.gmail.com>
+Date: Mon, 1 Dec 2008 20:19:38 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Subject: Re: ppc4xx: u-boot sees PCIe endpoint, linux does not.
+In-Reply-To: <1228119152.7356.118.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <c384c5ea0811280450t3e199da6s1fcdf903f63f9622@mail.gmail.com>
+	<1228119152.7356.118.camel@pasglop>
+Cc: u-boot@lists.denx.de, Linux PPC <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello all,
 
-On Fri, 28 Nov 2008, Ingo Molnar wrote:
+On Mon, Dec 1, 2008 at 9:12 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Fri, 2008-11-28 at 13:50 +0100, Leon Woestenberg wrote:
+>>
+>> AMCC PPC460EX canyonlands board with an FPGA PCIe end point:
+>>
+>> u-boot sees the end point, but Linux does not:
+>>
+>> U-Boot 1.3.3-00249-ga524e11 (Jun 30 2008 - 16:05:51)
+>> CPU:   AMCC PowerPC 460EX Rev. A at 800 MHz (PLB=200, OPB=100, EBC=100 MHz)
+>> <...>
+>> Board: Canyonlands - AMCC PPC460EX Evaluation Board, 2*PCIe, Rev. 16
+>> <...>
+>> PCIE1: successfully set as root-complex
+>>         02  00  2071  2071  00ff  00
+>>
+>> Now, if I re-program the end-point FPGA during the u-boot boot
+>> time-out, Linux will recognize the end-point.
+>>
+> It's possible that either the reset in between goes bonkers or something
+> else causes your FPGA to stop responding. It looks like a programming
+> problem with the FPGA to me.
+>
+I have verified that the end point does not receive any kind of reset.
 
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > On Wed, 26 Nov 2008, Steven Rostedt wrote:
-> > 
-> > > Paul,
-> > > 
-> > > This patch series addresses the issues you brought up as well as
-> > > adds some more enhancements and fixes. This series is added on
-> > > top of the previous patch series.
-> > > 
-> > > The new patches are: (and are posted now)
-> > > 5987225... powerpc/ppc32: static ftrace fixes for PPC32
-> > 
-> > The new commit id with the fix in Author and SoB is:
-> > fd90db4bdc1ccf71927365cd634188cec4d7b151
-> >  powerpc/ppc32: static ftrace fixes for 
-> 
-> Steve, you rebased the previous commits, and that's a no-no. I sorted it 
-> all out, find below the stable URI for stuff that we'd like Paul to pull 
-> shortly before the merge window.
+Also, this problem only happens on the Canyonlands board; on x86 and
+powerpc MPC8315E it remains properly working after soft/hard resets,
+u-boot init etc.
 
-Sorry, I rebased to edit the change log where I mispelled Paul's name.
+Could it be u-boot overwrites a too large payload into the config
+space or something similar, which makes subsequent accesses fail?
 
--- Steve
+Regards,
+-- 
+Leon
