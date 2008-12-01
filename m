@@ -1,18 +1,24 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E9D86DDDE0
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 09:17:47 +1100 (EST)
-Message-Id: <200812012216.mB1MGoor010592@imap1.linux-foundation.org>
-Subject: [patch 1/1] arch/powerpc: eliminate NULL test and memset after
-	alloc_bootmem
-To: paulus@samba.org
-From: akpm@linux-foundation.org
-Date: Mon, 01 Dec 2008 14:16:50 -0800
-Cc: akpm@linux-foundation.org, julia@diku.dk, linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 95813DDDE7
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 09:28:32 +1100 (EST)
+Message-ID: <49346497.8050701@freescale.com>
+Date: Mon, 01 Dec 2008 16:26:31 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: i2c-mpc clocking scheme
+References: <492EB606.9020703@matrix-vision.de>	<ed82fe3e0811270724t26d2a8e2v233143722eb8587f@mail.gmail.com>	<492EC031.9000802@matrix-vision.de>	<Pine.LNX.4.64.0811281255001.12483@t2.domain.actdsltmp>	<4933FBC6.50100@freescale.com>
+	<49343DC2.3070601@matrix-vision.de>
+	<Pine.LNX.4.64.0812011347450.10176@t2.domain.actdsltmp>
+In-Reply-To: <Pine.LNX.4.64.0812011347450.10176@t2.domain.actdsltmp>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: =?UTF-8?B?QW5kcsOpIFNjaHdhcno=?= <Andre.Schwarz@matrix-vision.de>,
+	Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,58 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
+Trent Piepho wrote:
+> U-boot could pass in "bus-frequency" to let software know the speed of the
+> I2C bus from Linux.  Seems like a standard property for bus nodes.
 
-As noted by Akinobu Mita in patch b1fceac2b9e04d278316b2faddf276015fc06e3b,
-alloc_bootmem and related functions never return NULL and always return a
-zeroed region of memory.  Thus a NULL test or memset after calls to these
-functions is unnecessary.
+clock-frequency is standard, though it should probably be the input 
+frequency rather than the bus frequency, in case the OS really does want 
+to change it (maybe making the bus run faster when accessing faster 
+devices).
 
-This was fixed using the following semantic patch.
-(http://www.emn.fr/x-info/coccinelle/)
+> There could be a "current-speed" property that tells linux to keep the
+> registers the same,
 
-// <smpl>
-@@
-expression E;
-statement S;
-@@
+That would be a bit different from the way it's used in serial nodes, 
+where current-speed is simply a description of the baud rate that 
+corresponds to the current divider setting.  I'm not sure that it makes 
+as much sense for i2c, as you don't have the shared state on the other 
+end that depends on maintaining the exact same speed.
 
-E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_pages\|alloc_bootmem_node\|alloc_bootmem_low_pages_node\|alloc_bootmem_pages_node\)(...)
-... when != E
-(
-- BUG_ON (E == NULL);
-|
-- if (E == NULL) S
-)
+When does the guest really care what the specific i2c bus frequency is, 
+if it's not going to change it?
 
-@@
-expression E,E1;
-@@
-
-E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_pages\|alloc_bootmem_node\|alloc_bootmem_low_pages_node\|alloc_bootmem_pages_node\)(...)
-... when != E
-- memset(E,0,E1);
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/powerpc/kernel/setup_64.c |    2 --
- 1 file changed, 2 deletions(-)
-
-diff -puN arch/powerpc/kernel/setup_64.c~arch-powerpc-eliminate-null-test-and-memset-after-alloc_bootmem arch/powerpc/kernel/setup_64.c
---- a/arch/powerpc/kernel/setup_64.c~arch-powerpc-eliminate-null-test-and-memset-after-alloc_bootmem
-+++ a/arch/powerpc/kernel/setup_64.c
-@@ -606,8 +606,6 @@ void __init setup_per_cpu_areas(void)
- 
- 	for_each_possible_cpu(i) {
- 		ptr = alloc_bootmem_pages_node(NODE_DATA(cpu_to_node(i)), size);
--		if (!ptr)
--			panic("Cannot allocate cpu data for CPU %d\n", i);
- 
- 		paca[i].data_offset = ptr - __per_cpu_start;
- 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
-_
+-Scott
