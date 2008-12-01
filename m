@@ -1,22 +1,22 @@
 Return-Path: <slightlyunconventional@gmail.com>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.189])
-	by ozlabs.org (Postfix) with ESMTP id 05C1EDDDEA
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 10:03:37 +1100 (EST)
-Received: by rn-out-0910.google.com with SMTP id j40so2202857rnf.16
-	for <linuxppc-dev@ozlabs.org>; Mon, 01 Dec 2008 15:03:35 -0800 (PST)
-Message-ID: <fb412d760812011503h7453d4dbt8e748c065ba364b6@mail.gmail.com>
-Date: Mon, 1 Dec 2008 17:03:34 -0600
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id BA7E3DDDDF
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Dec 2008 10:06:05 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so1023934ywh.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 01 Dec 2008 15:06:04 -0800 (PST)
+Message-ID: <fb412d760812011506x37339fddue100a144e585782e@mail.gmail.com>
+Date: Mon, 1 Dec 2008 17:06:03 -0600
 From: "Hollis Blanchard" <hollis@penguinppc.org>
 Sender: slightlyunconventional@gmail.com
-To: "Paul Mackerras" <paulus@samba.org>,
-	"Ben Herrenschmidt" <benh@kernel.crashing.org>
-Subject: Re: [PATCH] [v4] ppc: force memory size to be a multiple of PAGE_SIZE
-In-Reply-To: <654d47bb9cbd63f515bf.1227716366@localhost.localdomain>
+To: "Ben Herrenschmidt" <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: add 16K/64K pages support for the 44x PPC32
+	architectures.
+In-Reply-To: <1227829488-8260-1-git-send-email-yanok@emcraft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <654d47bb9cbd63f515bf.1227716366@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
-	Milton Miller <miltonm@bga.com>, Ilya Yanok <yanok@emcraft.com>
+References: <1227829488-8260-1-git-send-email-yanok@emcraft.com>
+Cc: linuxppc-dev@ozlabs.org, dzu@denx.de, wd@denx.de,
+	Vladimir Panfilov <pvr@emcraft.com>, Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,54 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 26, 2008 at 10:19 AM, Hollis Blanchard <hollisb@us.ibm.com> wrote:
-> Ensure that total memory size is page-aligned, because otherwise
-> mark_bootmem() gets upset.
->
-> This error case was triggered by using 64 KiB pages in the kernel while
-> arch/powerpc/boot/4xx.c arbitrarily reduced the amount of memory by 4096 (to
-> work around a chip bug that affects the last 256 bytes of physical memory).
->
-> Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
-> ---
-> Changes from v3:
-> - No need to call lmb_enforce_memory_limit() with limit=lmb_phys_mem_size().
->
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -1160,6 +1160,8 @@ static inline void __init phyp_dump_rese
->
->  void __init early_init_devtree(void *params)
->  {
-> +       unsigned long limit;
-> +
->        DBG(" -> early_init_devtree(%p)\n", params);
->
->        /* Setup flat device-tree pointer */
-> @@ -1200,7 +1202,19 @@ void __init early_init_devtree(void *par
->        early_reserve_mem();
->        phyp_dump_reserve_mem();
->
-> -       lmb_enforce_memory_limit(memory_limit);
-> +       limit = memory_limit;
-> +       if (! limit) {
-> +               unsigned long memsize;
-> +
-> +               /* Ensure that total memory size is page-aligned, because
-> +                * otherwise mark_bootmem() gets upset. */
-> +               lmb_analyze();
-> +               memsize = lmb_phys_mem_size();
-> +               if ((memsize & PAGE_MASK) != memsize)
-> +                       limit = memsize & PAGE_MASK;
-> +       }
-> +       lmb_enforce_memory_limit(limit);
-> +
->        lmb_analyze();
->
->        DBG("Phys. mem: %lx\n", lmb_phys_mem_size());
+On Thu, Nov 27, 2008 at 5:44 PM, Ilya Yanok <yanok@emcraft.com> wrote:
+> This patch adds support for page sizes bigger than 4K (16K/64K) on
+> PPC 44x.
+> PGDIR table is much smaller than page in case of 16K/64K pages (512
+> and 32 bytes resp.) so we allocate PGDIR with kzalloc() instead of
+> __get_free_pages().
+> PTE table covers rather big memory area in case of 16K/64K pages
+> (32MB and 512MB resp.) so we can easily put FIXMAP and PKMAP in
+> area covered by one PTE table.
 
-Paul or Ben: since there have been no further comments on this, would
-you queue it up for 2.6.29? Thanks.
+Ben, you had some comments on the previous version of this patch. Have
+those been addressed to your satisfaction? If so, could you please
+queue this for 2.6.29?
 
 -Hollis
