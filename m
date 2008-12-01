@@ -1,21 +1,14 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 66826DDD0B
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  1 Dec 2008 22:08:45 +1100 (EST)
-Message-ID: <4933C5AF.5040406@embedded-sol.com>
-Date: Mon, 01 Dec 2008 13:08:31 +0200
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <martyn.welch@gefanuc.com>
+Message-ID: <4933D6F3.6050807@gefanuc.com>
+Date: Mon, 01 Dec 2008 12:22:11 +0000
+From: Martyn Welch <martyn.welch@gefanuc.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Accessing PCI-E resources on 460EX
-References: <490F6882.6050101@embedded-sol.com>
-	<1228118085.7356.115.camel@pasglop>
-In-Reply-To: <1228118085.7356.115.camel@pasglop>
+To: Carlos Roberto Moratelli <carlos.moratelli@digitel.com.br>
+Subject: Re: MPC8313 and Marvell PHY 88e1112
+References: <1227873994.3812.21.camel@parana>
+In-Reply-To: <1227873994.3812.21.camel@parana>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,38 +19,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2008-11-03 at 23:09 +0200, Felix Radensky wrote:
->   
->> Hi,
->>
->> I'm currently struggling with some application
->> that tries to access PCI-E memory by mmaping
->> address found in /sys/bus/pci/devices/<device>/resource
->>
->> mmap() fails with "invalid argument" error, apparently
->> because on 460EX PCI addresses are 36-bit.
->>
->> What is the correct way of accessing PCI-E from
->> userspace on this platform.
->>     
->
-> I fixed a lot of these problems recently. Can you try again with
-> 2.6.28-latest-rc ?
->   
+Carlos Roberto Moratelli wrote:
+> Hi,
+> 
 
-Thanks a lot for this input.
-The problem is that I have a custom board with quite a few kernel 
-modifications,
-and I'm afraid it can take me some time to move from 2.6.26 to 2.6.28.
-Any chance I can backport you modifications to 2.6.26 ? Have you modified
-other files except arch/powerpc/sysdev/ppc4xx_pci.c to fix these problems ?
+Hi Carlos,
 
-> Cheers,
-> Ben.
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->   
+> I am working in a custom board based on a mpc8313erdb and my Kernel
+> version is 2.6.24. This board has a Marvell PHY 88E1112 on TSEC2
+> processor port. 
+> 
+> The problem is that the PHY is detected and configured, but no data can
+> be send or received. I am sure that dtb is fine. In another custom board
+> I have a 88e3015 on TSEC2 and it is working fine.
+> 
+> Did someone work with this PHY? Does Compiling gianfar and Marvell
+> support on Kernel is enough? 
+
+We have a board using a 8641d and Marvel 88E1111 PHY. I had problems getting the PHY to work correctly when using the Marvell PHY driver, however we were using the PHY as a standard PHY and found that the generic PHY driver worked just fine. Have you tried it without enabling the Marvell PHY driver so it uses the generic one?
+
+Martyn
+
+-- 
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
