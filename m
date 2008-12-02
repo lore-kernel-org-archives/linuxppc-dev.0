@@ -1,22 +1,18 @@
-Return-Path: <npalix@diku.dk>
-Received: from mgw1.diku.dk (mgw1.diku.dk [130.225.96.91])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw1.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 47B12DDDE7
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 01:09:16 +1100 (EST)
-From: Nicolas Palix <npalix@diku.dk>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH linux-next] drivers/hvc: Add missing of_node_put
-Date: Tue, 2 Dec 2008 14:38:55 +0100
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Message-ID: <4935B533.7060504@am.sony.com>
+Date: Tue, 2 Dec 2008 14:22:43 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200812021438.56071.npalix@diku.dk>
-Cc: linuxppc-dev@ozlabs.org, Julia Lawall <julia@diku.dk>,
-	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Nicolas Palix <npalix@diku.dk>
+To: Marvin <marvin24@gmx.de>
+Subject: Re: RTC problem in PS3
+References: <1226875490.6597.11.camel@lottar>
+	<200811172102.12286.marvin24@gmx.de>
+In-Reply-To: <200811172102.12286.marvin24@gmx.de>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-kernel@vger.kernel.org,
+	Fabiano Manoel de Andrade <fabianoma@gmail.com>, linuxppc-dev@ozlabs.org,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	David Woodhouse <dwmw2@infradead.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,90 +22,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-of_node_put is needed before discarding a value received from
-of_find_node_by_name, eg in error handling code or when the device
-node is no longer used.
+Marvin wrote:
+> forward to a better place...
+> 
+> On Sunday 16 November 2008 23:44:50 Fabiano Manoel de Andrade wrote:
+>> 	Hi I've compiled the latest version of linux kernel (2.6.27.6) in my
+>> PS3 running debian and get a warning message listed here
+>>
+>> 	Setting the system clock.
+>>   	Cannot access the Hardware Clock via any known method.
+>>   	Use the --debug option to see the details of our search for an access
+>> method. * Unable to set System Clock to: Sun Nov 16 20:33:06 UTC 2008
+>>
+>>
+>> 	The problem can be reproduced with the commands
+>>
+>> 	# hwclock --debug
+>>  	hwclock from util-linux-ng 2.13.1.1
+>>   	hwclock: Open of /dev/rtc failed, errno=2: No such file or directory.
+>>   	No usable clock interface found.
+>>   	Cannot access the Hardware Clock via any known method.
+>>   	# ls -l /dev/rtc*
+>>   	ls: cannot access /dev/rtc*: No such file or directory
+>>
+>> 	Loading the rtc-ppc module solve the problem, but after restart
+>> the system I still have the problem. Looking at kernel config I change the
+>> rtc-ppc to be build into kernel and this solve totally the problem. So the
+>> ps3_defconfig must set the rtc-ppc to be build into kernel.
 
-The semantic match that catches the bug is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+This is do to a bug in the rtc-ppc driver.  It is not PS3 specific, but
+will affect all powerpc machines that use the rtc-ppc driver and have it
+built as a loadable module.
 
-// <smpl>
-@r exists@
-local idexpression struct device_node *n;
-position p1, p2;
-statement S1,S2;
-expression E,E1;
-expression *ptr != NULL;
-@@
+Normally, udev will automatically load drivers for the devices present in the
+system.  The info udev uses to autoload the driver is not provided by the
+rtc-ppc driver, so when it is build as a loadable module udev can't figure
+out which driver to load.
 
-(
-if (!(n@p1 = of_find_node_by_name(...))) S1
-|
-n@p1 = of_find_node_by_name(...)
-)
-<... when != of_node_put(n)
-    when != if (...) { <+... of_node_put(n) ...+> }
-    when != true !n  || ...
-    when != n = E
-    when != E = n
-if (!n || ...) S2
-...>
-(
-  return \(0\|<+...n...+>\|ptr\);
-|
-return@p2 ...;
-|
-n = E1
-|
-E1 = n
-)
-@script:python@
-p1 << r.p1;
-p2 << r.p2;
-@@
+Here is some discussion Geert and I had:
 
-print "* file: %s of_find_node_by_name %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-// </smpl>
+-------- Original Message --------
+On Tue, 2 Dec 2008, Geert Uytterhoeven wrote:
+> On Mon, 1 Dec 2008, Geoff Levand wrote:
+> > There is a similar problem when the new generic ppc-rtc driver is
+> > built as a module and the startup scripts try to access the RTC.
+> 
+> Add it to /etc/modules? But then it'll be loaded on all platforms. But as it
+> uses the ppc_md infrastructure, that may actually be the right thing to do on
+> all PPC platforms.
+> 
+> However, ppc-rtc looks like a strange driver: it creates a platform_device, but
+> doesn't contain the corresponding platform_driver.
+> Ah, it creates the platform_device just to be able to pass a struct device to
+> rtc_device_register().
+> 
+> But as all of this is done from module_init(), there's no opportunity for
+> autoloading....
 
-Signed-off-by: Nicolas Palix <npalix@diku.dk>
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
- drivers/char/hvc_iseries.c |    4 +++-
- drivers/char/hvc_vio.c     |    4 +++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+It can be solved...
 
-diff --git a/drivers/char/hvc_iseries.c b/drivers/char/hvc_iseries.c
-index b74a2f8..449727b 100644
---- a/drivers/char/hvc_iseries.c
-+++ b/drivers/char/hvc_iseries.c
-@@ -575,8 +575,10 @@ static int __init hvc_find_vtys(void)
- 		 * of console adapters.
- 		 */
- 		if ((num_found >= MAX_NR_HVC_CONSOLES) ||
--				(num_found >= VTTY_PORTS))
-+				(num_found >= VTTY_PORTS)) {
-+			of_node_put(vty);
- 			break;
-+		}
- 
- 		vtermno = of_get_property(vty, "reg", NULL);
- 		if (!vtermno)
-diff --git a/drivers/char/hvc_vio.c b/drivers/char/hvc_vio.c
-index 019e0b5..bd62dc8 100644
---- a/drivers/char/hvc_vio.c
-+++ b/drivers/char/hvc_vio.c
-@@ -153,8 +153,10 @@ static int hvc_find_vtys(void)
- 		/* We have statically defined space for only a certain number
- 		 * of console adapters.
- 		 */
--		if (num_found >= MAX_NR_HVC_CONSOLES)
-+		if (num_found >= MAX_NR_HVC_CONSOLES) {
-+			of_node_put(vty);
- 			break;
-+		}
- 
- 		vtermno = of_get_property(vty, "reg", NULL);
- 		if (!vtermno)
--- 
-Nicolas Palix
+If the creation of the "ppc-rtc" platform device would be moved to builtin
+core code (e.g. arch/powerpc/kernel/setup-common.c?), and drivers/rtc/rtc-ppc.c
+would become a real platform driver that binds to the "ppc-rtc" platform
+device, then it would be autoloaded by udev.
+
+-Geoff
