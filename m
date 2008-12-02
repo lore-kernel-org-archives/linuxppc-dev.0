@@ -1,23 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F2A79DDDE7
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 10:06:08 +1100 (EST)
-Message-Id: <EAAB7B1A-49DC-4D61-A76F-F87C777566D8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1228253423.7356.195.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH][for 2.6.28] powerpc: Use physical cpu id when setting the
-	processor affinity
-Date: Tue, 2 Dec 2008 17:05:25 -0600
-References: <1228246621-25622-1-git-send-email-galak@kernel.crashing.org>
-	<1228253423.7356.195.camel@pasglop>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Linus Torvalds <torvalds@osdl.org>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 62461DDDCA
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 10:12:19 +1100 (EST)
+Date: Wed, 3 Dec 2008 10:12:10 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nicolas Palix <npalix@diku.dk>
+Subject: Re: [PATCH linux-next] drivers/hvc: Add missing of_node_put
+Message-Id: <20081203101210.01e5afab.sfr@canb.auug.org.au>
+In-Reply-To: <200812021438.56071.npalix@diku.dk>
+References: <200812021438.56071.npalix@diku.dk>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__3_Dec_2008_10_12_10_+1100_gFO3uuU0vpljGhti"
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Julia Lawall <julia@diku.dk>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__3_Dec_2008_10_12_10_+1100_gFO3uuU0vpljGhti
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Dec 2, 2008, at 3:30 PM, Benjamin Herrenschmidt wrote:
-
-> On Tue, 2008-12-02 at 13:37 -0600, Kumar Gala wrote:
->> In the CONFIG_SMP case the irq_choose_cpu() code was returning back
->> a logical cpu id not the physical id.  We were writing that directly
->> into the HW register.
->>
->> We need to be calling get_hard_smp_processor_id() so irq_choose_cpu()
->> always returns a physical cpu id.
+On Tue, 2 Dec 2008 14:38:55 +0100 Nicolas Palix <npalix@diku.dk> wrote:
 >
-> That will probably do for now but if we ever move that routine to
-> generic code, I'd rather have the caller do the conversion.
+> of_node_put is needed before discarding a value received from
+> of_find_node_by_name, eg in error handling code or when the device
+> node is no longer used.
+>=20
+> Signed-off-by: Nicolas Palix <npalix@diku.dk>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Fair.. I felt at this point matching what the !CONFIG_SMP case of  
-irq_choose_cpu() is doing was the best choice.
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-- k
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__3_Dec_2008_10_12_10_+1100_gFO3uuU0vpljGhti
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkk1wMoACgkQjjKRsyhoI8wocgCbBRRR++quM8rPQ8ALskadujgI
+c3gAnjUNkQRwlDZ/aAbsdpdGCnaEslfQ
+=8UdU
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Dec_2008_10_12_10_+1100_gFO3uuU0vpljGhti--
