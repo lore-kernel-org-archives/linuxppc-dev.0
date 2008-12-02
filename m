@@ -3,17 +3,17 @@ Received: from mgw1.diku.dk (mgw1.diku.dk [130.225.96.91])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mgw1.diku.dk",
 	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C03E3DDDE6
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 00:52:36 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 47B12DDDE7
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 01:09:16 +1100 (EST)
 From: Nicolas Palix <npalix@diku.dk>
-To: Paul Mackerras <paulus@samba.org>,
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH linux-next] powerpc/chrp: Add missing of_node_put in pci.c
-Date: Tue, 2 Dec 2008 14:34:46 +0100
+Subject: [PATCH linux-next] drivers/hvc: Add missing of_node_put
+Date: Tue, 2 Dec 2008 14:38:55 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200812021434.47010.npalix@diku.dk>
+Message-Id: <200812021438.56071.npalix@diku.dk>
 Cc: linuxppc-dev@ozlabs.org, Julia Lawall <julia@diku.dk>,
 	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
 	Nicolas Palix <npalix@diku.dk>
@@ -75,20 +75,41 @@ print "* file: %s of_find_node_by_name %s return %s" % (p1[0].file,p1[0].line,p2
 Signed-off-by: Nicolas Palix <npalix@diku.dk>
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- arch/powerpc/platforms/chrp/pci.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/char/hvc_iseries.c |    4 +++-
+ drivers/char/hvc_vio.c     |    4 +++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/chrp/pci.c b/arch/powerpc/platforms/chrp/pci.c
-index d3cde6b..5a72ee5 100644
---- a/arch/powerpc/platforms/chrp/pci.c
-+++ b/arch/powerpc/platforms/chrp/pci.c
-@@ -141,6 +141,7 @@ hydra_init(void)
- 		of_node_put(np);
- 		return 0;
- 	}
-+	of_node_put(np);
- 	Hydra = ioremap(r.start, r.end-r.start);
- 	printk("Hydra Mac I/O at %llx\n", (unsigned long long)r.start);
- 	printk("Hydra Feature_Control was %x",
+diff --git a/drivers/char/hvc_iseries.c b/drivers/char/hvc_iseries.c
+index b74a2f8..449727b 100644
+--- a/drivers/char/hvc_iseries.c
++++ b/drivers/char/hvc_iseries.c
+@@ -575,8 +575,10 @@ static int __init hvc_find_vtys(void)
+ 		 * of console adapters.
+ 		 */
+ 		if ((num_found >= MAX_NR_HVC_CONSOLES) ||
+-				(num_found >= VTTY_PORTS))
++				(num_found >= VTTY_PORTS)) {
++			of_node_put(vty);
+ 			break;
++		}
+ 
+ 		vtermno = of_get_property(vty, "reg", NULL);
+ 		if (!vtermno)
+diff --git a/drivers/char/hvc_vio.c b/drivers/char/hvc_vio.c
+index 019e0b5..bd62dc8 100644
+--- a/drivers/char/hvc_vio.c
++++ b/drivers/char/hvc_vio.c
+@@ -153,8 +153,10 @@ static int hvc_find_vtys(void)
+ 		/* We have statically defined space for only a certain number
+ 		 * of console adapters.
+ 		 */
+-		if (num_found >= MAX_NR_HVC_CONSOLES)
++		if (num_found >= MAX_NR_HVC_CONSOLES) {
++			of_node_put(vty);
+ 			break;
++		}
+ 
+ 		vtermno = of_get_property(vty, "reg", NULL);
+ 		if (!vtermno)
 -- 
 Nicolas Palix
