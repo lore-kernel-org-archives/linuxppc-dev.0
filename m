@@ -1,18 +1,21 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <4935B533.7060504@am.sony.com>
-Date: Tue, 2 Dec 2008 14:22:43 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Marvin <marvin24@gmx.de>
-Subject: Re: RTC problem in PS3
-References: <1226875490.6597.11.camel@lottar>
-	<200811172102.12286.marvin24@gmx.de>
-In-Reply-To: <200811172102.12286.marvin24@gmx.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-kernel@vger.kernel.org,
-	Fabiano Manoel de Andrade <fabianoma@gmail.com>, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	David Woodhouse <dwmw2@infradead.org>, cbe-oss-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 3557DDDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 09:58:22 +1100 (EST)
+Date: Wed, 3 Dec 2008 09:58:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nicolas Palix <npalix@diku.dk>
+Subject: Re: [PATCH linux-next] powerpc/chrp: Add missing of_node_put in pci.c
+Message-Id: <20081203095805.7d868849.sfr@canb.auug.org.au>
+In-Reply-To: <200812021434.47010.npalix@diku.dk>
+References: <200812021434.47010.npalix@diku.dk>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__3_Dec_2008_09_58_05_+1100_K4GmTslo0ueuSKAi"
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Julia Lawall <julia@diku.dk>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,70 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+--Signature=_Wed__3_Dec_2008_09_58_05_+1100_K4GmTslo0ueuSKAi
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Marvin wrote:
-> forward to a better place...
-> 
-> On Sunday 16 November 2008 23:44:50 Fabiano Manoel de Andrade wrote:
->> 	Hi I've compiled the latest version of linux kernel (2.6.27.6) in my
->> PS3 running debian and get a warning message listed here
->>
->> 	Setting the system clock.
->>   	Cannot access the Hardware Clock via any known method.
->>   	Use the --debug option to see the details of our search for an access
->> method. * Unable to set System Clock to: Sun Nov 16 20:33:06 UTC 2008
->>
->>
->> 	The problem can be reproduced with the commands
->>
->> 	# hwclock --debug
->>  	hwclock from util-linux-ng 2.13.1.1
->>   	hwclock: Open of /dev/rtc failed, errno=2: No such file or directory.
->>   	No usable clock interface found.
->>   	Cannot access the Hardware Clock via any known method.
->>   	# ls -l /dev/rtc*
->>   	ls: cannot access /dev/rtc*: No such file or directory
->>
->> 	Loading the rtc-ppc module solve the problem, but after restart
->> the system I still have the problem. Looking at kernel config I change the
->> rtc-ppc to be build into kernel and this solve totally the problem. So the
->> ps3_defconfig must set the rtc-ppc to be build into kernel.
+On Tue, 2 Dec 2008 14:34:46 +0100 Nicolas Palix <npalix@diku.dk> wrote:
+>
+> of_node_put is needed before discarding a value received from
+> of_find_node_by_name, eg in error handling code or when the device
+> node is no longer used.
+>=20
+> Signed-off-by: Nicolas Palix <npalix@diku.dk>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-This is do to a bug in the rtc-ppc driver.  It is not PS3 specific, but
-will affect all powerpc machines that use the rtc-ppc driver and have it
-built as a loadable module.
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Normally, udev will automatically load drivers for the devices present in the
-system.  The info udev uses to autoload the driver is not provided by the
-rtc-ppc driver, so when it is build as a loadable module udev can't figure
-out which driver to load.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Here is some discussion Geert and I had:
+--Signature=_Wed__3_Dec_2008_09_58_05_+1100_K4GmTslo0ueuSKAi
+Content-Type: application/pgp-signature
 
--------- Original Message --------
-On Tue, 2 Dec 2008, Geert Uytterhoeven wrote:
-> On Mon, 1 Dec 2008, Geoff Levand wrote:
-> > There is a similar problem when the new generic ppc-rtc driver is
-> > built as a module and the startup scripts try to access the RTC.
-> 
-> Add it to /etc/modules? But then it'll be loaded on all platforms. But as it
-> uses the ppc_md infrastructure, that may actually be the right thing to do on
-> all PPC platforms.
-> 
-> However, ppc-rtc looks like a strange driver: it creates a platform_device, but
-> doesn't contain the corresponding platform_driver.
-> Ah, it creates the platform_device just to be able to pass a struct device to
-> rtc_device_register().
-> 
-> But as all of this is done from module_init(), there's no opportunity for
-> autoloading....
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-It can be solved...
+iEYEARECAAYFAkk1vX0ACgkQjjKRsyhoI8yhbwCfYgYc3JfXqy2v7+AwOz5eJ7Ao
+ZucAnR/MiEicPcKWMzgAChoROL9BjRvl
+=6bJ4
+-----END PGP SIGNATURE-----
 
-If the creation of the "ppc-rtc" platform device would be moved to builtin
-core code (e.g. arch/powerpc/kernel/setup-common.c?), and drivers/rtc/rtc-ppc.c
-would become a real platform driver that binds to the "ppc-rtc" platform
-device, then it would be autoloaded by udev.
-
--Geoff
+--Signature=_Wed__3_Dec_2008_09_58_05_+1100_K4GmTslo0ueuSKAi--
