@@ -1,19 +1,18 @@
-Return-Path: <mditto@consentry.com>
-Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
-	by ozlabs.org (Postfix) with ESMTP id BD1B4DDDDF
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 12:44:53 +1100 (EST)
-Message-ID: <4935E493.9050402@consentry.com>
-Date: Tue, 02 Dec 2008 17:44:51 -0800
-From: Mike Ditto <mditto@consentry.com>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 8C334DDDEF
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 13:16:33 +1100 (EST)
+Date: Tue, 2 Dec 2008 20:16:24 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: __cpu_up vs. start_secondary race?
+Message-ID: <20081203021624.GE6829@localdomain>
+References: <20081201213016.GC6829@localdomain>
+	<1228169318.7356.146.camel@pasglop>
 MIME-Version: 1.0
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: Erratic MPC8248 CPM2 I2C behaviour
-References: <mailman.569.1227903153.29923.linuxppc-dev@ozlabs.org>
-	<49347317.5080600@consentry.com>
-	<200812021207.06140.laurentp@cse-semaphore.com>
-In-Reply-To: <200812021207.06140.laurentp@cse-semaphore.com>
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1228169318.7356.146.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Laurent,
+Benjamin Herrenschmidt wrote:
+> On Mon, 2008-12-01 at 15:30 -0600, Nathan Lynch wrote:
+> > 
+> > cpu_callin_map is used during secondary CPU bootstrap to notify the
+> > waiting CPU that the new CPU is coming up.  __cpu_up clears
+> > cpu_callin_map[cpu] and then polls the same location, waiting for
+> > start_secondary to set it to 1.  But I'm wondering how safe the
+> > current implementation is -- start_secondary doesn't have an explicit
+> > sync following cpu_callin_map[cpu] = 1, and __cpu_up has no
+> > synchronization instructions in its polling loop, so how can we be
+> > sure that the waiting cpu will see the update to that location in
+> > time?
+> 
+> I think it works because there's no big ordering problem (though we
+> should still probably stick a few barriers here for safety) so it's
+> really just a problem of how long it takes for the store to be visible,
+> and the duration of the waiting loop is such that in practice, it will
+> end up being visible wayyyyy before we timeout.
 
-> While the problem seems to be similar to CPM98, I don't understand how it 
-> could happen on the first character of the first I2C transfer.
+At least on "real" hardware, yes.  Various 64-bit systems I've tested
+see the update after two iterations at most (during boot, didn't check
+the hotplug case).
 
-I agree, that is hard to explain given that i2c-cpm keeps the controller
-shut off until the very moment of the first transfer.  Can you check that
-the bus is really idle (SCL is high) when the timeout happens?  If one of
-the slave devices is in a bad state and pulling SCL low, I think the
-behavior you see is expected (CPM will wait forever for the bus to be
-idle).  The same is probably true if a GPIO pin is mis-configured.
+> IE. It's not like stores get buffered for ever due to absence of
+> barriers. They ultimately get out to the bus.
 
-> As explained in my previous mail to Joakim, I spent some more time last Friday 
-> investigating the problem, and it seems the baud rate generator configuration 
-> plays an important role. The default configuration (60kHz nominal => 65.104kHz 
-> using a 25MHz brg clock and a /32 predivider) leads to timeouts, while I 
-> haven't been able to reproduce the problem with the i2c-mpc8260.c 
-> configuration (100kHz nominal => 104.167kHz using a 25MHz brg clock and a /8 
-> predivider).
+Hrm, "ultimately" :)  Okay, thanks.
 
-It would be interesting to try each driver with the other's clock settings.
-
-					-=] Mike [=-
+Apart from barriers (or lack thereof), the fact that __cpu_up gives up
+after a more-or-less arbitrary period seems... well, arbitrary.  If we
+get to "Processor X is stuck" then something is seriously wrong:
+there's either a kernel bug or a platform issue, and the CPU just
+kicked is in an unknown state.  Polling indefinitely seems safer, no?
+Especially since some hypervisors allow overcommitting processors and
+memory, which can introduce latencies in unexpected places.
