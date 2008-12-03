@@ -1,20 +1,23 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.186])
-	by ozlabs.org (Postfix) with ESMTP id 8ED5EDDDDF
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 10:10:33 +1100 (EST)
-Received: by rn-out-0910.google.com with SMTP id j40so3287525rnf.16
-	for <linuxppc-dev@ozlabs.org>; Wed, 03 Dec 2008 15:10:31 -0800 (PST)
-Message-ID: <ed82fe3e0812031510i5bb0745axb0c515c3d62e38d8@mail.gmail.com>
-Date: Wed, 3 Dec 2008 17:10:30 -0600
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] powerpc/83xx: add support for MCU on 8349emitx,
-	837xrdb and 8315erdb boards
-In-Reply-To: <20081017185709.GB30008@oksana.dev.rtsoft.ru>
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CD86CDDEEE
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 10:11:13 +1100 (EST)
+Date: Wed, 3 Dec 2008 15:09:22 -0800 (PST)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix bogus cache flushing on all 40x and BookE
+	processors
+In-Reply-To: <1228209641.7356.176.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0812031451450.7648@t2.domain.actdsltmp>
+References: <20081201060152.00DCCDDDE3@ozlabs.org>
+	<BD75FAE9-7D10-488B-9906-23B2D93F1FB6@kernel.crashing.org>
+	<1228209641.7356.176.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20081017185709.GB30008@oksana.dev.rtsoft.ru>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,36 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 17, 2008 at 12:57 PM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> MCU is an external Freescale MC9S08QG8 microcontroller, mainly used to
-> provide soft power-off function, but also exports two GPIOs (wired to
-> the LEDs and also available from the external headers).
+On Tue, 2 Dec 2008, Benjamin Herrenschmidt wrote:
+> On Tue, 2008-12-02 at 01:36 -0600, Kumar Gala wrote:
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>> #define CPU_FTRS_E200	(CPU_FTR_USE_TB | CPU_FTR_SPE_COMP | \
+>>> 	    CPU_FTR_NODSISRALIGN | CPU_FTR_COHERENT_ICACHE | \
+>>> -	    CPU_FTR_UNIFIED_ID_CACHE)
+>>> +	    CPU_FTR_UNIFIED_ID_CACHE | CPU_FTR_NOEXECUTE)
+>>> #define CPU_FTRS_E500	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
+>>> -	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN)
+>>> +	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP |
+>>> CPU_FTR_NODSISRALIGN \
+>>
+>> Added a '|' at the end of the line before the escape
+>
+> Right. Will send a new patch tomorrow. Appart from that, have you
+> verified it doesn't have any adverse effects for you ? I did some quick
+> tests on 440 and things seem to be fine.
 
-Kumar, I think you merged this patch incorrectly ...
 
-> diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-> index 7fc5414..4bdbaf4 100644
-> --- a/arch/powerpc/boot/dts/mpc8349emitx.dts
-> +++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-> @@ -91,6 +91,14 @@
->                                interrupts = <18 0x8>;
->                                interrupt-parent = <&ipic>;
->                        };
-> +
-> +                       mcu_pio: mcu@a {
-> +                               #gpio-cells = <2>;
-> +                               compatible = "fsl,mc9s08qg8-mpc8349emitx",
-> +                                            "fsl,mcu-mpc8349emitx";
-> +                               reg = <0x0a>;
-> +                               gpio-controller;
-> +                       };
+#ifdef __powerpc64__
+#define LONG_ASM_CONST(x)               ASM_CONST(x)
+#else
+#define LONG_ASM_CONST(x)               0
+#endif
 
-This node is supposed to go under the I2C node, but you put it under
-the DMA node.
+#define CPU_FTR_NOEXECUTE               LONG_ASM_CONST(0x0000000800000000)
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Am I not looking at the right code?  Since e200 and e500 aren't powerpc64,
+doesn't adding CPU_FTR_NOEXECUTE have no effect at all?
