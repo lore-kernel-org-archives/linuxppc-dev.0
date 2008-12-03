@@ -2,21 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EC414DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 02:36:16 +1100 (EST)
-Message-Id: <9DE57422-83C5-4561-9D94-4C74865E5994@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 041DDDDDEE
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 02:38:51 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id mB3FcmuK019806
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Dec 2008 09:38:48 -0600
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <75DC3D14-4019-4C55-A553-C54063790DD8@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] crypto: talitos - Fix modpost warning
-Date: Wed, 3 Dec 2008 09:36:05 -0600
-References: <1228278556-1056-1-git-send-email-galak@kernel.crashing.org>
-	<20081203120640.GB9818@gondor.apana.org.au>
-	<75DC3D14-4019-4C55-A553-C54063790DD8@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Herbert Xu <herbert@gondor.apana.org.au>,
-	linux-crypto@vger.kernel.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/85xx: Fix compile warnings in mpc85xx_mds.c
+Date: Wed,  3 Dec 2008 09:38:47 -0600
+Message-Id: <1228318727-29863-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+arch/powerpc/platforms/85xx/mpc85xx_mds.c: In function 'board_fixups':
+arch/powerpc/platforms/85xx/mpc85xx_mds.c:244: warning: format '%x' expects type 'unsigned int', but argument 4 has type 'resource_size_t'
+arch/powerpc/platforms/85xx/mpc85xx_mds.c:250: warning: format '%x' expects type 'unsigned int', but argument 4 has type 'resource_size_t'
 
-On Dec 3, 2008, at 8:52 AM, Kumar Gala wrote:
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
->
-> On Dec 3, 2008, at 6:06 AM, Herbert Xu wrote:
->
->> On Tue, Dec 02, 2008 at 10:29:16PM -0600, Kumar Gala wrote:
->>> Removed __devexit from talitos_remove() since its also called from
->>> talitos_probe().
->>>
->>> WARNING: vmlinux.o(.text+0x28a008): Section mismatch in reference  
->>> from the function talitos_probe() to the  
->>> function .devexit.text:talitos_remove()
->>> The function talitos_probe() references a function in an exit  
->>> section.
->>> Often the function talitos_remove() has valid usage outside the  
->>> exit section
->>> and the fix is to remove the __devexit annotation of talitos_remove.
->>>
->>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->>
->> OK, but what about the __devexit_p reference on talitos_remove?
->> We should remove that too.
->
-> missed that one.  will fix up and post a new patch.
-
-Nevermind.  Al bet me to this fix :)
-
-- k
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 2494c51..915e8d3 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -241,13 +241,13 @@ static int __init board_fixups(void)
+ 		mdio = of_find_compatible_node(NULL, NULL, compstrs[i]);
+ 
+ 		of_address_to_resource(mdio, 0, &res);
+-		snprintf(phy_id, BUS_ID_SIZE, "%x:%02x", res.start, 1);
++		snprintf(phy_id, BUS_ID_SIZE, "%llx:%02x", (u64)res.start, 1);
+ 
+ 		phy_register_fixup_for_id(phy_id, mpc8568_fixup_125_clock);
+ 		phy_register_fixup_for_id(phy_id, mpc8568_mds_phy_fixups);
+ 
+ 		/* Register a workaround for errata */
+-		snprintf(phy_id, BUS_ID_SIZE, "%x:%02x", res.start, 7);
++		snprintf(phy_id, BUS_ID_SIZE, "%llx:%02x", (u64)res.start, 7);
+ 		phy_register_fixup_for_id(phy_id, mpc8568_mds_phy_fixups);
+ 
+ 		of_node_put(mdio);
+-- 
+1.5.6.5
