@@ -1,25 +1,20 @@
-Return-Path: <leon.woestenberg@gmail.com>
-Received: from mail-qy0-f21.google.com (mail-qy0-f21.google.com
-	[209.85.221.21]) by ozlabs.org (Postfix) with ESMTP id 101BADDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 00:57:26 +1100 (EST)
-Received: by qyk14 with SMTP id 14so5915709qyk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 03 Dec 2008 05:57:24 -0800 (PST)
-Message-ID: <c384c5ea0812030557q1293a2beo3a306e176c306e0a@mail.gmail.com>
-Date: Wed, 3 Dec 2008 14:57:24 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "Trent Piepho" <tpiepho@freescale.com>
-Subject: Re: [U-Boot] NAND only (no NOR)
-In-Reply-To: <Pine.LNX.4.64.0812022339030.10176@t2.domain.actdsltmp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4934F7FC.2030105@aimvalley.nl>
-	<20081202215033.501f3403@lappy.seanm.ca>
-	<200812030648.57618.sr@denx.de>
-	<20081203013818.016619b6@lappy.seanm.ca>
-	<Pine.LNX.4.64.0812022339030.10176@t2.domain.actdsltmp>
-Cc: linuxppc-dev@ozlabs.org, u-boot@lists.denx.de, Stefan Roese <sr@denx.de>,
-	Norbert van Bolhuis <nvbolhuis@aimvalley.nl>,
-	Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8D635DDE06
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 01:48:27 +1100 (EST)
+Message-Id: <234C3BEB-1747-493E-B903-A564959A8671@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20081203053118.GH6829@localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: Remove modpost warning with start_secondary
+Date: Wed, 3 Dec 2008 08:48:20 -0600
+References: <1228278723-1153-1-git-send-email-galak@kernel.crashing.org>
+	<20081203053118.GH6829@localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,23 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-On Wed, Dec 3, 2008 at 8:40 AM, Trent Piepho <tpiepho@freescale.com> wrote:
-> On Wed, 3 Dec 2008, Sean MacLennan wrote:
->>> Yes, I would recommend to do it this way if possible. A small NOR for
->>> U-Boot and environment and everything else in NAND. This makes things
->>> much easier. But I understand that this is sometimes a problem with
->>> space (2 FLASH chips) and costs.
+On Dec 2, 2008, at 11:31 PM, Nathan Lynch wrote:
+
+> Kumar Gala wrote:
+>> WARNING: vmlinux.o(.text+0x2aa): Section mismatch in reference from  
+>> the variable __secondary_start to the  
+>> function .devinit.text:start_secondary()
+>> The function __secondary_start() references
+>> the function __devinit start_secondary().
 >>
->> Mainly cost. We didn't want to pay for a second chip.
+>> start_secondary gets called by __secondary_start which is in asm  
+>> code so its
+>> not marked as __devinit.  Its easier to just remove the __devinit  
+>> from
+>> start_secondary than try and deal with __secondary_start.
 >
-> I think for NAND the latches necessary to de-multiplex the localbus aren't
-> necessary like they are for NOR?  On our board the latches might even take
-> more space than the flash chip.
+> Which just gets another mismatch warning here:
+>
+> WARNING: arch/powerpc/kernel/built-in.o(.text+0x23cc4): Section  
+> mismatch in reference from the function .start_secondary() to the  
+> function .devinit.text:.smp_store_cpu_info()
+> The function .start_secondary() references
+> the function __devinit .smp_store_cpu_info().
+> This is often because .start_secondary lacks a __devinit
+> annotation or the annotation of .smp_store_cpu_info is wrong.
+>
+> Isn't there a better way to address this?  It doesn't seem right to
+> increase the kernel's memory usage to get rid of a modpost warning.
 
-The local bus can be configured to run non-multiplexed.
+Fair.. what defconfig did you build?
 
-Regards,
--- 
-Leon
+- k
