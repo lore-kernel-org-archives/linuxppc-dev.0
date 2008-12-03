@@ -1,22 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4D7CBDDDED
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 02:40:13 +1100 (EST)
-Message-Id: <D17FC693-44E1-48EF-99F4-FBBD285E1746@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18742.28336.976502.607807@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8BEFBDDDEE
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 02:46:30 +1100 (EST)
+Message-Id: <09694720-0DE4-43EA-A4C9-D22376C41E41@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+In-Reply-To: <20081120085207.6545.48588.stgit@ubuntu8041>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: next branch update
-Date: Wed, 3 Dec 2008 09:39:58 -0600
-References: <811774E0-919D-48F9-A023-76273DE0AF5B@freescale.com>
-	<18742.28336.976502.607807@cargo.ozlabs.ibm.com>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: Add use of Epson RTX-8581 RTC to GE Fanuc SBC610
+	dts
+Date: Wed, 3 Dec 2008 09:46:22 -0600
+References: <20081120085207.6545.48588.stgit@ubuntu8041>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +25,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 3, 2008, at 5:34 AM, Paul Mackerras wrote:
+On Nov 20, 2008, at 2:52 AM, Martyn Welch wrote:
 
-> Kumar Gala writes:
+> Adding use of newly added Epson RTX-8581 real-time clock driver to GE
+> Fanuc SBC610's dts file and adding driver to default config.
 >
->> Can you update to -rc7 or greater.  Also can we look at picking up
->> outstanding patches.
+> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+> ---
 >
-> Done.  I notice there are quite a few on patchwork that are delegated
-> to you.  Are you going to send me a pull request shortly?
+> arch/powerpc/boot/dts/gef_sbc610.dts           |    5 +++++
+> arch/powerpc/configs/86xx/gef_sbc610_defconfig |    8 ++++++--
+> 2 files changed, 11 insertions(+), 2 deletions(-)
 
-Yeah.. I bulk of these are just track USB driver patches that should  
-go via those subsystem maintainers.
+applied to next
 
 - k
