@@ -1,19 +1,16 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 0FEF9DDDF5
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 04:43:49 +1100 (EST)
-Date: Wed, 3 Dec 2008 11:43:40 -0600
-From: Nathan Lynch <ntl@pobox.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 17E6EDDDE7
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 06:26:46 +1100 (EST)
+Date: Wed, 3 Dec 2008 22:26:44 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Remove modpost warning with start_secondary
-Message-ID: <20081203174340.GA6958@localdomain>
-References: <1228278723-1153-1-git-send-email-galak@kernel.crashing.org>
-	<20081203053118.GH6829@localdomain>
-	<234C3BEB-1747-493E-B903-A564959A8671@kernel.crashing.org>
+Subject: [PATCH 0/5] Few patches for galak/powerpc.git next
+Message-ID: <20081203192644.GA6145@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <234C3BEB-1747-493E-B903-A564959A8671@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->
-> On Dec 2, 2008, at 11:31 PM, Nathan Lynch wrote:
->
->> Kumar Gala wrote:
->>> WARNING: vmlinux.o(.text+0x2aa): Section mismatch in reference from  
->>> the variable __secondary_start to the function 
->>> .devinit.text:start_secondary()
->>> The function __secondary_start() references
->>> the function __devinit start_secondary().
->>>
->>> start_secondary gets called by __secondary_start which is in asm  
->>> code so its
->>> not marked as __devinit.  Its easier to just remove the __devinit  
->>> from
->>> start_secondary than try and deal with __secondary_start.
->>
->> Which just gets another mismatch warning here:
->>
->> WARNING: arch/powerpc/kernel/built-in.o(.text+0x23cc4): Section  
->> mismatch in reference from the function .start_secondary() to the  
->> function .devinit.text:.smp_store_cpu_info()
->> The function .start_secondary() references
->> the function __devinit .smp_store_cpu_info().
->> This is often because .start_secondary lacks a __devinit
->> annotation or the annotation of .smp_store_cpu_info is wrong.
->>
->> Isn't there a better way to address this?  It doesn't seem right to
->> increase the kernel's memory usage to get rid of a modpost warning.
->
-> Fair.. what defconfig did you build?
+Hi Kumar,
 
-Try ppc64_defconfig with HOTPLUG_CPU=n.
+Here are few patches queued for the next branch. The patches are
+mostly USB related. Plus a trivial patch that fixes some sparse
+warnings.
+
+[PATCH 1/5] powerpc/qe: Implement QE Pin Multiplexing API
+[PATCH 2/5] powerpc: Implement GPIO driver for simple memory-mapped banks
+[PATCH 3/5] powerpc/83xx: Add USB Host/Gadget support for MPC8360E-MDS boards
+[PATCH 4/5] powerpc/83xx: Add USB Host support for MPC8360E-RDK boards
+[PATCH 5/5] powerpc/83xx: Fix sparse warnings in mpc836x_mds.c
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
