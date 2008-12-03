@@ -1,17 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A20D9474CB
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 08:13:46 +1100 (EST)
-Date: Wed, 3 Dec 2008 15:13:41 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'next' branch (updated)
-Message-ID: <Pine.LNX.4.64.0812031513120.13298@blarg.am.freescale.net>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id A6F05DDDF5
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 09:28:18 +1100 (EST)
+Date: Thu, 4 Dec 2008 01:28:15 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 0/5] Few patches for galak/powerpc.git next
+Message-ID: <20081203222815.GA14386@oksana.dev.rtsoft.ru>
+References: <20081203192644.GA6145@oksana.dev.rtsoft.ru>
+	<AB8A3D8C-2AA7-497B-B4ED-D2192CC358AC@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <AB8A3D8C-2AA7-497B-B4ED-D2192CC358AC@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,77 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'next' branch of
+On Wed, Dec 03, 2008 at 01:53:26PM -0600, Kumar Gala wrote:
+>
+> On Dec 3, 2008, at 1:26 PM, Anton Vorontsov wrote:
+>
+>> Hi Kumar,
+>>
+>> Here are few patches queued for the next branch. The patches are
+>> mostly USB related. Plus a trivial patch that fixes some sparse
+>> warnings.
+>>
+>> [PATCH 1/5] powerpc/qe: Implement QE Pin Multiplexing API
+>> [PATCH 2/5] powerpc: Implement GPIO driver for simple memory-mapped  
+>> banks
+>> [PATCH 3/5] powerpc/83xx: Add USB Host/Gadget support for MPC8360E-MDS 
+>> boards
+>> [PATCH 4/5] powerpc/83xx: Add USB Host support for MPC8360E-RDK boards
+>> [PATCH 5/5] powerpc/83xx: Fix sparse warnings in mpc836x_mds.c
+>>
+>> Thanks,
+>
+> Thanks.. Do you mind doing me a favor and updating the status of any  
+> patches that are superceded on http://patchwork.ozlabs.org/
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git next
+Wow, I can change status of my own patches.. super.
 
-to receive the following updates:
+Done, plus I also set 'accepted' state for some patches that
+were already merged in powerpc or other trees. Hope this is ok.
 
- arch/powerpc/Makefile                          |    1
- arch/powerpc/boot/dts/gef_sbc610.dts           |   11
- arch/powerpc/boot/dts/mpc8572ds.dts            |  113 +++
- arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts |  483 ++++++++++++++++
- arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts |  234 ++++++++
- arch/powerpc/configs/86xx/gef_sbc610_defconfig |    8
- arch/powerpc/include/asm/mmu-fsl-booke.h       |    2
- arch/powerpc/include/asm/processor.h           |    6
- arch/powerpc/include/asm/sfp-machine.h         |   58 +-
- arch/powerpc/kernel/head_fsl_booke.S           |  103 +++
- arch/powerpc/kernel/traps.c                    |   62 +-
- arch/powerpc/math-emu/Makefile                 |    2
- arch/powerpc/math-emu/fadd.c                   |    1
- arch/powerpc/math-emu/fcmpo.c                  |    5
- arch/powerpc/math-emu/fdiv.c                   |    9
- arch/powerpc/math-emu/fdivs.c                  |    9
- arch/powerpc/math-emu/fmadd.c                  |    5
- arch/powerpc/math-emu/fmadds.c                 |    5
- arch/powerpc/math-emu/fmsub.c                  |    5
- arch/powerpc/math-emu/fmsubs.c                 |    5
- arch/powerpc/math-emu/fmul.c                   |    3
- arch/powerpc/math-emu/fmuls.c                  |    3
- arch/powerpc/math-emu/fnmadd.c                 |    5
- arch/powerpc/math-emu/fnmadds.c                |    5
- arch/powerpc/math-emu/fnmsub.c                 |    5
- arch/powerpc/math-emu/fnmsubs.c                |    5
- arch/powerpc/math-emu/fsqrt.c                  |    5
- arch/powerpc/math-emu/fsqrts.c                 |    5
- arch/powerpc/math-emu/fsub.c                   |    3
- arch/powerpc/math-emu/fsubs.c                  |    3
- arch/powerpc/math-emu/math_efp.c               |  720 +++++++++++++++++++++++++
- arch/powerpc/platforms/85xx/Makefile           |    2
- arch/powerpc/platforms/85xx/mpc85xx_ds.c       |   11
- arch/powerpc/platforms/85xx/mpc85xx_mds.c      |    6
- arch/powerpc/platforms/85xx/smp.c              |  104 +++
- arch/powerpc/platforms/86xx/Kconfig            |    2
- arch/powerpc/platforms/86xx/Makefile           |    3
- arch/powerpc/platforms/86xx/gef_gpio.c         |  143 ++++
- arch/powerpc/sysdev/qe_lib/qe.c                |    3
- arch/powerpc/sysdev/qe_lib/ucc.c               |    4
- 40 files changed, 2067 insertions(+), 100 deletions(-)
-
-Anton Vorontsov (1):
-      powerpc/qe: Move cmxgcr_lock definition from the ucc.c into the qe.c
-
-Haiying Wang (3):
-      powerpc/85xx: Add localbus node in mpc8572ds dts file
-      powerpc/85xx: Don't reset the MPIC for CAMP mode on MPC8572DS
-      powerpc/85xx: Create dts for each core in CAMP mode for MPC8572DS
-
-Kumar Gala (4):
-      powerpc: Remove unncessary SPE related compiler flag
-      powerpc/85xx: minor head_fsl_booke.S cleanup
-      powerpc/85xx: Add support for SMP initialization
-      powerpc/85xx: Fix compile warnings in mpc85xx_mds.c
-
-Liu Yu (4):
-      powerpc/math-emu: Fix single float point division bug
-      powerpc/math-emu: Adopt new version of _FP_CHOOSENAN
-      powerpc/math-emu: Remove redundant 'ret'
-      powerpc: Add SPE/EFP math emulation for E500v1/v2 processors.
-
-Martyn Welch (2):
-      powerpc/86xx: Add use of Epson RTX-8581 RTC to GE Fanuc SBC610 dts
-      powerpc/86xx: Basic GPIO support for GE Fanuc SBC610
-
-Trent Piepho (1):
-      powerpc: Better setup of boot page TLB entry
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
