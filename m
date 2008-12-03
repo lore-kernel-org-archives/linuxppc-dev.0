@@ -1,17 +1,15 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from exprod7og106.obsmtp.com (exprod7og106.obsmtp.com [64.18.2.165])
-	by ozlabs.org (Postfix) with SMTP id 782C3DDDF0
+Return-Path: <spamreceptor@yahoo.com>
+Received: from web30107.mail.mud.yahoo.com (web30107.mail.mud.yahoo.com
+	[209.191.69.39]) by ozlabs.org (Postfix) with SMTP id 56DE0DDDED
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 Dec 2008 22:30:05 +1100 (EST)
+	Thu,  4 Dec 2008 04:27:55 +1100 (EST)
+Date: Wed, 3 Dec 2008 09:27:54 -0800 (PST)
+From: Joe Shmo <spamreceptor@yahoo.com>
+Subject: Help with DTS file on MPC8313e-rdb board
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: virtex4 RTOS with hw FPU.
-Date: Wed, 3 Dec 2008 11:57:47 +0100
-Message-ID: <0B45E93C5FF65740AEAE690BF3848B7AD38475@rennsmail04.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: "vadik" <vadikml@gmail.com>,
-	<linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <193995.57491.qm@web30107.mail.mud.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -22,36 +20,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-vadik wrote:
-> I have implementation of Virtex4 with hw FPU trough APU .
->
->Is there any Real Time OS that directly supports this implementation
-without
->relying on sw floating point emulation.
+Hello,
+I need some help interpreting the DTS file for this
+board such that I can change it to support our new
+Phy.  Here is what the DTS file shows unmodified:
 
-This is a matter of tool chain and setup of your kernel?
+		mdio@24520 {
+			device_type = "mdio";
+			compatible = "gianfar";
+			reg = <24520 20>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			phy1: ethernet-phy@1 {
+				interrupt-parent = < &ipic >;
+				interrupts = <13 8>;
+				reg = <1>;
+				device_type = "ethernet-phy";
+			};
+			phy4: ethernet-phy@4 {
+				interrupt-parent = < &ipic >;
+				interrupts = <14 8>;
+				reg = <4>;
+				device_type = "ethernet-phy";
+			};
+		};
 
->Xilinx Relesed GCC build of their own that is patched to support the
-apu fpu
->implementation , but this helps me on the application level but if the
->kernel doesn't support this implemntation i have a problem .
+		ethernet@24000 {
+			device_type = "network";
+			model = "eTSEC";
+			compatible = "gianfar";
+			reg = <24000 1000>;
+			local-mac-address = [ 00 00 00 00 00 00 ];
+			interrupts = <25 8 24 8 23 8>;
+			interrupt-parent = < &ipic >;
+			phy-handle = < &phy1 >;
+		};
 
-Indeed, the kernel has to save and restore FPU registers upon task
-switch.
+		ethernet@25000 {
+			device_type = "network";
+			model = "eTSEC";
+			compatible = "gianfar";
+			reg = <25000 1000>;
+			local-mac-address = [ 00 00 00 00 00 00 ];
+			interrupts = <22 8 21 8 20 8>;
+			interrupt-parent = < &ipic >;
+			phy-handle = < &phy4 >;
+		};
 
-You should look for CONFIG_PPC_FPU in the Kconfig of Linux.
-I can't help you more, because I'm not used to the ppc in Virtex4.
-However, there must be some appropriate forums on Xilinx site.
+What I don't know is what reg = <4> means.  Is that
+the phy address or the interrupt?  For this board that
+phy uses IRQ4 and has its address wired to 4.  I would
+guess it is the IRQ since there is also a phy address
+of 0x1c but that does not appear in this DTS file
+anywhere.  
 
->linux is not RT enough , does the linuxwoks supports this kind of
->implementation ?
+My phy is the National semi dp83848.  It does not use
+an IRQ.  Should I replace this with zero?  Should I
+take that line out of the DTS file?
 
-Have you considered Xenomai[1], the F/OSS hard real-time extension to
-Linux?
-It works great on all range of powerpc's, and it is rock solid.
+Thanks.
 
-[1] http://xenomai.org
 
-Regards
---=20
-Stephane
+      
