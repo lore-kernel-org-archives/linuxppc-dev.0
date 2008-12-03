@@ -1,16 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 83C40DDDF6
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 10:44:25 +1100 (EST)
-Date: Thu, 4 Dec 2008 10:44:18 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Subject: linux-next: manual merge of the driver-core tree
-Message-Id: <20081204104418.97f848b4.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Kumar, Kay Sievers <kay.sievers@vrfy.org>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 83E1BDDD01
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 10:44:55 +1100 (EST)
+Date: Thu, 4 Dec 2008 02:44:53 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 2/2] powerpc/83xx: add support for MCU on 8349emitx,
+	837xrdb and 8315erdb boards
+Message-ID: <20081203234453.GA30813@oksana.dev.rtsoft.ru>
+References: <20081017185709.GB30008@oksana.dev.rtsoft.ru>
+	<ed82fe3e0812031510i5bb0745axb0c515c3d62e38d8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <ed82fe3e0812031510i5bb0745axb0c515c3d62e38d8@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,46 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Greg,
+On Wed, Dec 03, 2008 at 05:10:30PM -0600, Timur Tabi wrote:
+> On Fri, Oct 17, 2008 at 12:57 PM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > MCU is an external Freescale MC9S08QG8 microcontroller, mainly used to
+> > provide soft power-off function, but also exports two GPIOs (wired to
+> > the LEDs and also available from the external headers).
+> >
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> 
+> Kumar, I think you merged this patch incorrectly ...
+[...]
+> This node is supposed to go under the I2C node, but you put it under
+> the DMA node.
 
-Today's linux-next merge of the driver-core tree got a conflict in
-arch/powerpc/platforms/85xx/mpc85xx_mds.c between commit
-24a99596f7465274a8e65ddd29a7d9028969b9f9 ("powerpc/85xx: Fix compile
-warnings in mpc85xx_mds.c") from the galak tree and commit
-f58f23751464d095f9942304bc5f6072b79a2cc3 ("powerpc: struct device -
-replace bus_id with dev_name(), dev_set_name()") from the driver-core
-tree.
+I've noticed this on the other 'stg pull', when it told me that the
+patch isn't empty (stg patch becomes empty if merged).
 
-I fixed it up (see below) and can carry the fix as necessary.
+This should be fixed already:
 
-Paul, maybe you should apply the patch from the driver-core tree as it
-was cc'd to you and all its prerequisites are upstream.
+http://ozlabs.org/pipermail/linuxppc-dev/2008-November/065666.html
+
+Anyway, thanks for heads up!
+
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
-diff --cc arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index b915bf5,80c55a5..0000000
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@@ -241,15 -241,13 +241,15 @@@ static int __init board_fixups(void
-  		mdio = of_find_compatible_node(NULL, NULL, compstrs[i]);
-  
-  		of_address_to_resource(mdio, 0, &res);
-- 		snprintf(phy_id, BUS_ID_SIZE, "%llx:%02x",
- -		snprintf(phy_id, sizeof(phy_id), "%x:%02x", res.start, 1);
-++		snprintf(phy_id, sizeof(phy_id), "%llx:%02x",
- +			(unsigned long long)res.start, 1);
-  
-  		phy_register_fixup_for_id(phy_id, mpc8568_fixup_125_clock);
-  		phy_register_fixup_for_id(phy_id, mpc8568_mds_phy_fixups);
-  
-  		/* Register a workaround for errata */
-- 		snprintf(phy_id, BUS_ID_SIZE, "%llx:%02x",
- -		snprintf(phy_id, sizeof(phy_id), "%x:%02x", res.start, 7);
-++		snprintf(phy_id, sizeof(phy_id), "%llx:%02x",
- +			(unsigned long long)res.start, 7);
-  		phy_register_fixup_for_id(phy_id, mpc8568_mds_phy_fixups);
-  
-  		of_node_put(mdio);
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
