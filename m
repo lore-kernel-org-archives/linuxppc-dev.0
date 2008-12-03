@@ -1,20 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1CC35DDDEF
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 03:21:29 +1100 (EST)
-Message-Id: <18E479E7-5841-4F91-98FC-E61DAB3D62DF@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <Pine.LNX.4.64.0812031716330.30629@vixen.sonytel.be>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc/85xx: Fix compile warnings in mpc85xx_mds.c
-Date: Wed, 3 Dec 2008 10:21:23 -0600
-References: <1228318727-29863-1-git-send-email-galak@kernel.crashing.org>
-	<Pine.LNX.4.64.0812031716330.30629@vixen.sonytel.be>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 71EB9DDDEF
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 03:27:27 +1100 (EST)
+Date: Wed, 3 Dec 2008 19:27:23 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH for 2.6.28] NAND: fsl_upm: fix build problem with
+	2.6.28-rc2
+Message-ID: <20081203162723.GA32301@oksana.dev.rtsoft.ru>
+References: <20081126163840.GA21669@oksana.dev.rtsoft.ru>
+	<4A183575-1142-4EC2-83C4-145E721E6E8D@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <4A183575-1142-4EC2-83C4-145E721E6E8D@kernel.crashing.org>
+Cc: linux-kernel Kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc list <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Dec 3, 2008, at 10:17 AM, Geert Uytterhoeven wrote:
-
-> On Wed, 3 Dec 2008, Kumar Gala wrote:
->> arch/powerpc/platforms/85xx/mpc85xx_mds.c: In function  
->> 'board_fixups':
->> arch/powerpc/platforms/85xx/mpc85xx_mds.c:244: warning: format '%x'  
->> expects type 'unsigned int', but argument 4 has type  
->> 'resource_size_t'
->> arch/powerpc/platforms/85xx/mpc85xx_mds.c:250: warning: format '%x'  
->> expects type 'unsigned int', but argument 4 has type  
->> 'resource_size_t'
+On Wed, Dec 03, 2008 at 09:47:53AM -0600, Kumar Gala wrote:
+[...]
+>> The patch fixes following build error:
 >>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->> arch/powerpc/platforms/85xx/mpc85xx_mds.c |    4 ++--
->> 1 files changed, 2 insertions(+), 2 deletions(-)
+>>  CC      drivers/mtd/nand/fsl_upm.o
+>> drivers/mtd/nand/fsl_upm.c: In function 'fun_chip_init':
+>> drivers/mtd/nand/fsl_upm.c:168: warning: passing argument 2 of  
+>> 'of_mtd_parse_partitions' from incompatible pointer type
+>> drivers/mtd/nand/fsl_upm.c:168: warning: passing argument 3 of  
+>> 'of_mtd_parse_partitions' from incompatible pointer type
+>> drivers/mtd/nand/fsl_upm.c:168: error: too many arguments to function 
+>> 'of_mtd_parse_partitions'
+>> make[1]: *** [drivers/mtd/nand/fsl_upm.o] Error 1
 >>
->> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/ 
->> powerpc/platforms/85xx/mpc85xx_mds.c
->> index 2494c51..915e8d3 100644
->> --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
->> +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
->> @@ -241,13 +241,13 @@ static int __init board_fixups(void)
->> 		mdio = of_find_compatible_node(NULL, NULL, compstrs[i]);
+>> The breakage was introduced in  
+>> 69fd3a8d098faf41a04930afa83757c0555ee360
+>> ("[MTD] remove unused mtd parameter in of_mtd_parse_partitions()").
 >>
->> 		of_address_to_resource(mdio, 0, &res);
->> -		snprintf(phy_id, BUS_ID_SIZE, "%x:%02x", res.start, 1);
->> +		snprintf(phy_id, BUS_ID_SIZE, "%llx:%02x", (u64)res.start, 1);
->                                                            ^^^
-> unsigned long? u64 differs for 32-bit and 64-bit.
+>> While at it, also add a check for the of_mtd_parse_partitions() return
+>> value.
+>>
+>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+[...]
+> David,
+>
+> what's going on with this patch?
 
-This is proper.  This is a 32-bit only platform (and the format is  
-long long).
+Recently I got email from Andrew's patch tracking system that
+the patch was merged into subsystem tree. Here it is:
 
-> Doh, if you would put the whole resource range there, you could use  
-> %pR ;-)
+http://git.infradead.org/mtd-2.6.git?a=commitdiff;h=29b65861fbece04cfdf3fee352d5247369131850
 
-and if we had a %R ... :)
-
-- k
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
