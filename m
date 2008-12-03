@@ -2,18 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C8485DDEEE
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 02:58:08 +1100 (EST)
-Message-Id: <5A5F3139-F5AC-41B3-9B09-0416B9BB4BE9@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 94847DDF15
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 02:58:36 +1100 (EST)
+Date: Wed, 3 Dec 2008 09:57:35 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <20081107141414.8523.68990.stgit@ubuntu8041.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v4] powerpc: Basic GPIO support for GE Fanuc SBC610
-Date: Wed, 3 Dec 2008 09:58:00 -0600
-References: <20081107141414.8523.68990.stgit@ubuntu8041.localdomain>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'merge'
+Message-ID: <Pine.LNX.4.64.0812030956370.31085@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Please pull from 'merge' branch of
 
-On Nov 7, 2008, at 8:15 AM, Martyn Welch wrote:
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-> Basic support for the GPIO available on the SBC610 VPX Single Board  
-> Computer
-> from GE Fanuc (PowerPC MPC8641D).
->
-> This patch adds basic support for the GPIO in the devices I/O FPGA,  
-> the GPIO
-> functionality is exposed through the AFIX pins on the backplane,  
-> unless used
-> by an AFIX card.
->
-> This code currently does not support switching between totem-pole and
-> open-drain outputs (when used as outputs, GPIOs default to totem- 
-> pole).
-> The interrupt capabilites of the GPIO lines is also not currently  
-> supported.
->
-> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
-> ---
->
-> Anton: Thank you for your fast response.
->
-> Changes since version 3:
-> * Removed repetitive and obvious comments
-> * Removed stray empty line
->
-> arch/powerpc/boot/dts/gef_sbc610.dts   |    6 +
-> arch/powerpc/platforms/86xx/Kconfig    |    2
-> arch/powerpc/platforms/86xx/Makefile   |    3 -
-> arch/powerpc/platforms/86xx/gef_gpio.c |  143 +++++++++++++++++++++++ 
-> +++++++++
-> 4 files changed, 153 insertions(+), 1 deletions(-)
+to receive the following updates:
 
-applied to next
+(This is to fix a patch merge issue, the tree is based on paul's merge
+tree)
 
-- k
+ arch/powerpc/boot/dts/mpc8349emitx.dts |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+Anton Vorontsov (1):
+      powerpc/83xx: Fix MCU support merge issue in mpc8349emitx.dts
