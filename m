@@ -1,18 +1,16 @@
 Return-Path: <ntl@pobox.com>
 Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
-	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id D5F17DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 16:20:30 +1100 (EST)
-Date: Tue, 2 Dec 2008 23:20:20 -0600
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id BF00BDDD01
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 16:31:25 +1100 (EST)
+Date: Tue, 2 Dec 2008 23:31:18 -0600
 From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: __cpu_up vs. start_secondary race?
-Message-ID: <20081203052020.GG6829@localdomain>
-References: <20081201213016.GC6829@localdomain>
-	<1228169318.7356.146.camel@pasglop> <20081203021624.GE6829@localdomain>
-	<1228279963.7356.238.camel@pasglop>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Remove modpost warning with start_secondary
+Message-ID: <20081203053118.GH6829@localdomain>
+References: <1228278723-1153-1-git-send-email-galak@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1228279963.7356.238.camel@pasglop>
+In-Reply-To: <1228278723-1153-1-git-send-email-galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,19 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Tue, 2008-12-02 at 20:16 -0600, Nathan Lynch wrote:
-> > Apart from barriers (or lack thereof), the fact that __cpu_up gives up
-> > after a more-or-less arbitrary period seems... well, arbitrary.  If we
-> > get to "Processor X is stuck" then something is seriously wrong:
-> > there's either a kernel bug or a platform issue, and the CPU just
-> > kicked is in an unknown state.  Polling indefinitely seems safer, no?
-> > Especially since some hypervisors allow overcommitting processors and
-> > memory, which can introduce latencies in unexpected places.
+Kumar Gala wrote:
+> WARNING: vmlinux.o(.text+0x2aa): Section mismatch in reference from the variable __secondary_start to the function .devinit.text:start_secondary()
+> The function __secondary_start() references
+> the function __devinit start_secondary().
 > 
-> I'm pretty happy to keep the timeout :-) Proved useful in many cases
-> where we actually fail to bring it up or crash it at bringup. From my
-> experience, most of the time, the stuck CPU isn't getting in the way and
-> it gets us a chance to move forward.
+> start_secondary gets called by __secondary_start which is in asm code so its
+> not marked as __devinit.  Its easier to just remove the __devinit from
+> start_secondary than try and deal with __secondary_start.
 
-Fair enough -- thanks.
+Which just gets another mismatch warning here:
+
+WARNING: arch/powerpc/kernel/built-in.o(.text+0x23cc4): Section mismatch in reference from the function .start_secondary() to the function .devinit.text:.smp_store_cpu_info()
+The function .start_secondary() references
+the function __devinit .smp_store_cpu_info().
+This is often because .start_secondary lacks a __devinit 
+annotation or the annotation of .smp_store_cpu_info is wrong.
+
+Isn't there a better way to address this?  It doesn't seem right to
+increase the kernel's memory usage to get rid of a modpost warning.
