@@ -1,18 +1,19 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 8C334DDDEF
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 13:16:33 +1100 (EST)
-Date: Tue, 2 Dec 2008 20:16:24 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: __cpu_up vs. start_secondary race?
-Message-ID: <20081203021624.GE6829@localdomain>
-References: <20081201213016.GC6829@localdomain>
-	<1228169318.7356.146.camel@pasglop>
+Return-Path: <mditto@consentry.com>
+Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
+	by ozlabs.org (Postfix) with ESMTP id 2FCB6DDDED
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Dec 2008 13:27:25 +1100 (EST)
+Message-ID: <4935EE8B.80708@consentry.com>
+Date: Tue, 02 Dec 2008 18:27:23 -0800
+From: Mike Ditto <mditto@consentry.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1228169318.7356.146.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+To: joakim.tjernlund@transmode.se
+Subject: Re: Erratic MPC8248 CPM2 I2C behaviour
+References: <mailman.569.1227903153.29923.linuxppc-dev@ozlabs.org>	
+	<49347317.5080600@consentry.com>
+	<1228207199.9867.69.camel@gentoo-jocke.transmode.se>
+In-Reply-To: <1228207199.9867.69.camel@gentoo-jocke.transmode.se>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,38 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2008-12-01 at 15:30 -0600, Nathan Lynch wrote:
-> > 
-> > cpu_callin_map is used during secondary CPU bootstrap to notify the
-> > waiting CPU that the new CPU is coming up.  __cpu_up clears
-> > cpu_callin_map[cpu] and then polls the same location, waiting for
-> > start_secondary to set it to 1.  But I'm wondering how safe the
-> > current implementation is -- start_secondary doesn't have an explicit
-> > sync following cpu_callin_map[cpu] = 1, and __cpu_up has no
-> > synchronization instructions in its polling loop, so how can we be
-> > sure that the waiting cpu will see the update to that location in
-> > time?
-> 
-> I think it works because there's no big ordering problem (though we
-> should still probably stick a few barriers here for safety) so it's
-> really just a problem of how long it takes for the store to be visible,
-> and the duration of the waiting loop is such that in practice, it will
-> end up being visible wayyyyy before we timeout.
+Jocke,
 
-At least on "real" hardware, yes.  Various 64-bit systems I've tested
-see the update after two iterations at most (during boot, didn't check
-the hotplug case).
+> The I2C_CHIP_ERRATA is mine and refers to mpc8xx, mpc860 in my case. The
+> driver was adapted by me some years ago in 2.4 and now someone has
+> ported it to 2.6 it seems.
 
-> IE. It's not like stores get buffered for ever due to absence of
-> barriers. They ultimately get out to the bus.
+Thanks for the background info.  Any idea which particular errata it
+was meant to fix?  I took a quick look at MPC860 errata document and it
+seems that CPM5 and CPM6 both suggest this workaround.
 
-Hrm, "ultimately" :)  Okay, thanks.
+I don't think any of the 8xx CPM errata are present on 82xx, but it
+would be good to enable the same or similar workaround on CPM2 for
+82xx erratum CPM98, probably even when I2C_CHIP_ERRATA is not defined.
 
-Apart from barriers (or lack thereof), the fact that __cpu_up gives up
-after a more-or-less arbitrary period seems... well, arbitrary.  If we
-get to "Processor X is stuck" then something is seriously wrong:
-there's either a kernel bug or a platform issue, and the CPU just
-kicked is in an unknown state.  Polling indefinitely seems safer, no?
-Especially since some hypervisors allow overcommitting processors and
-memory, which can introduce latencies in unexpected places.
+					-=] Mike [=-
