@@ -1,19 +1,20 @@
-Return-Path: <SHorton@kodiaknetworks.com>
-Received: from planomail.kodiaknetworks.com (planomail.kodiaknetworks.com
-	[76.203.108.6]) by ozlabs.org (Postfix) with ESMTP id 30022474C3
+Return-Path: <chris@microtronix.com>
+Received: from mercedes.microtronix.com (LONDON14-1168104083.sdsl.bell.ca
+	[69.159.218.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 59FABDDDED
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Dec 2008 08:06:25 +1100 (EST)
+	Thu,  4 Dec 2008 09:08:16 +1100 (EST)
+Message-ID: <4936FC3D.8080607@microtronix.com>
+Date: Wed, 03 Dec 2008 16:38:05 -0500
+From: Chris Craig <chris@microtronix.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Marvell mv64462 + mpc744x PCI Interrupt Cause Error Handling
-Date: Wed, 3 Dec 2008 15:06:23 -0600
-Message-ID: <295C5089A56CE143B316E5F67CA99CB001F4398C@cowboy.inovate.inovate.com>
-In-Reply-To: <4935E65B.30305@windriver.com>
-References: <295C5089A56CE143B316E5F67CA99CB001F4389F@cowboy.inovate.inovate.com>
-	<4935E65B.30305@windriver.com>
-From: "Stephen Horton" <SHorton@kodiaknetworks.com>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
+To: mike zheng <mail4mz@gmail.com>
+Subject: Re: Boot with NFS on MIPS32
+References: <5c9cd53b0812031306r7dc848ccy1baecea50191f84b@mail.gmail.com>
+In-Reply-To: <5c9cd53b0812031306r7dc848ccy1baecea50191f84b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,80 +26,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Tiejun,
-Thanks. That is very helpful; I had not thought to look inside the
-drivers directory.
-Regards,
-stephen
+I believe you need to enable "Kernel level autoconfiguration" which is 
+under Networking->Networking support->Networking options->TCP/IP 
+networking (IP_PNP), and then you'll have a "Root file system on NFS" 
+option (ROOT_NFS) available under Network File Systems.
 
------Original Message-----
-From: tiejun.chen [mailto:tiejun.chen@windriver.com]=20
-Sent: Tuesday, December 02, 2008 7:52 PM
-To: Stephen Horton
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Marvell mv64462 + mpc744x PCI Interrupt Cause Error
-Handling
+-- 
+Chris Craig
+Microtronix Datacom Ltd.
+9-1510 Woodcock Street
+London ON  N6H 5S1
+Canada
+Toll-Free: (888) 690-0091 x253 (NA only)
+Phone:     (519) 690-0091 x253
+http://microtronix.com
 
-Stephen Horton wrote:
-> Hi folks,
->=20
-> =20
->=20
-> I'm really hoping Mark Greer or Dale Farnsworth sees this email. In my
-> current project, we are in the process of updating a board that has a
-> Marvell mv64462 system controller and a Freescale mpc7447A processor
-on
-> it. The board was originally developed with Gentoo Linux 2.6.9, but we
-> have ported Linux 2.6.24 kernel onto it. The new kernel is working
-well
-> thanks to help from people on this list. However, in examining the
-> differences between the 2 kernels, I can see that the 2.6.24 kernel
-> registers no interrupt error handling routines (see PCI Error Report
-> Register Map in the Marvell documentation). The error handlers for
-cpu,
-> sram, and specifically for the PCI bus that were previously in:
->=20
->             /arch/ppc/syslib/mv64460_pic.c
->=20
-> are absent from:
->=20
->             /arch/powerpc/sysdev/mv64x60_pic.c
->=20
-> =20
->=20
-> Can someone who is familiar with the history of the ppc->powerpc
-> migration for this architecture help me figure out why the error
-> handling wasn't ported over? Is there some reason for this, such as it
-> didn't work properly or had some disadvantages? Is this error handling
-> done in 2.6.24 in some more generic manner that I have not yet found?
-Is
-> this an exercise left for me to implement?
->=20
-> =20
 
-Untill v2.6.27 you can find corresponding dts content such as cpu-error,
-sram-ctrl, pci-error and mem-ctrl, in file, prpmc2800.dts. All events
-are
-handled on EDAC, error detection and reporting, as an unified mode. So
-you can
-track the directory drivers/edac/ for more information. I think these
-are not
-upgraded completely for v2.6.24.
 
-Best Regards
-Tiejun
-
->=20
-> Thanks,
->=20
-> Stephen
->=20
->=20
->=20
->=20
->
-------------------------------------------------------------------------
->=20
+mike zheng wrote:
+> Hi All,
+> 
+> I have one MIPS32 embedded system with Linux Kernel 2.6.23.17. Right
+> now, I have problem to boot from NFS. The NFS server works fine. I am
+> able to mount the directory from anther Linux work station. I attach
+> the .config file, there maybe some config flags I forget to open.
+> 
+> Thanks for your help,
+> 
+> Mike
+> 
+> 
+> Here is the kernel command line:
+> ===========================
+> Kernel command line: root=/dev/nfs rw
+> nfsroot=47.1.1.108:/localdisk/rootfs/
+> ip=47.1.1.2:47.1.1.1:255.255.255.0:Min-MIPS:eth0:off
+> 
+> Here is the error:
+> ===========================
+> TCP cubic registered
+> NET: Registered protocol family 1
+> NET: Registered protocol family 10
+> lo: Disabled Privacy Extensions
+> IPv6 over IPv4 tunneling driver
+> sit0: Disabled Privacy Extensions
+> NET: Registered protocol family 17
+> 802.1Q VLAN Support v1.8 Ben Greear <greearb@candelatech.com>
+> All bugs added by David S. Miller <davem@redhat.com>
+> VFS: Cannot open root device "nfs" or unknown-block(0,255)
+> Please append a correct "root=" boot option; here are the available partitions:
+> Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,255)
+> 
+> 
+> ------------------------------------------------------------------------
+> 
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
