@@ -1,13 +1,13 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from VA3EHSOBE003.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id B9474DDDF8
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 10:54:22 +1100 (EST)
-Message-ID: <49371BA5.8000006@am.sony.com>
-Date: Wed, 3 Dec 2008 15:52:05 -0800
+Received: from IE1EHSOBE001.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id 7152CDDE11
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 10:54:24 +1100 (EST)
+Message-ID: <49371BAF.7010400@am.sony.com>
+Date: Wed, 3 Dec 2008 15:52:15 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 1/3] powerpc: Fix typo in pgtable-ppc64.h
+Subject: [patch 2/3] powerpc/ps3: Quiet dmesg output
 References: <49371ACA.9040800@am.sony.com>
 In-Reply-To: <49371ACA.9040800@am.sony.com>
 Content-Type: text/plain; charset="ISO-8859-1"
@@ -21,23 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix a minor comment typo in pgtable-ppc64.h.
+Change the debug message in dma_sb_region_create() from
+pr_info() to DBG() to quiet the dmesg output.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/include/asm/pgtable-ppc64.h |    2 +-
+ arch/powerpc/platforms/ps3/mm.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -100,7 +100,7 @@
+--- a/arch/powerpc/platforms/ps3/mm.c
++++ b/arch/powerpc/platforms/ps3/mm.c
+@@ -649,7 +649,7 @@ static int dma_sb_region_create(struct p
+ {
+ 	int result;
  
- #define _PAGE_WRENABLE	(_PAGE_RW | _PAGE_DIRTY)
+-	pr_info(" -> %s:%d:\n", __func__, __LINE__);
++	DBG(" -> %s:%d:\n", __func__, __LINE__);
  
--/* __pgprot defined in arch/powerpc/incliude/asm/page.h */
-+/* __pgprot defined in arch/powerpc/include/asm/page.h */
- #define PAGE_NONE	__pgprot(_PAGE_PRESENT | _PAGE_ACCESSED)
+ 	BUG_ON(!r);
  
- #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW | _PAGE_USER)
 
 -- 
