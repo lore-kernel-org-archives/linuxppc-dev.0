@@ -1,31 +1,31 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5413EDDDEF
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 23:33:22 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mB4CWmQd028446
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2008 07:32:48 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mB4CXID9196564
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2008 07:33:18 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mB4CXIxu018354
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2008 07:33:18 -0500
-Date: Thu, 4 Dec 2008 07:33:14 -0500
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AC65ADDDE3
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 23:47:02 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mB4CkKnG006532
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2008 05:46:20 -0700
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mB4CkvZ4226166
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2008 05:46:57 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mB4CkusP030608
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2008 05:46:56 -0700
+Date: Thu, 4 Dec 2008 07:46:53 -0500
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix bogus cache flushing on all 40x and BookE
-	processors v2
-Message-ID: <20081204073314.2ee5d809@zod.rchland.ibm.com>
-In-Reply-To: <20081204061341.C45CBDDDF6@ozlabs.org>
-References: <20081204061341.C45CBDDDF6@ozlabs.org>
+Subject: Re: [PATCH 2/3] powerpc: Split mmu_context handling
+Message-ID: <20081204074653.0a8edf2d@zod.rchland.ibm.com>
+In-Reply-To: <20081204054228.E8FE6DDE0F@ozlabs.org>
+References: <20081204054228.E8FE6DDE0F@ozlabs.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,17 +35,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 04 Dec 2008 17:12:59 +1100
+On Thu, 04 Dec 2008 16:41:48 +1100
 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> We were missing the CPU_FTR_NOEXECUTE bit in our cputable for all
-> these processors. The result is that update_mmu_cache() would flush
-> the cache for all pages mapped to userspace which is totally
-> unnecessary on those processors since we already handle flushing
-> on execute in the page fault path.
-> 
-> This should provide a nice speed up ;-)
+Stephen had a bunch of comments as well, so I'll spare you those
+again...
 
-Did you test it this time?  If so, how and what were the results?
+> Index: linux-work/arch/powerpc/mm/mmu_context_nohash.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-work/arch/powerpc/mm/mmu_context_nohash.c	2008-12-03 13:50:18.000000000 +1100
+> @@ -0,0 +1,168 @@
+> +/*
+> + * This file contains the routines for handling the MMU on those
+> + * PowerPC implementations where the MMU substantially follows the
+> + * architecture specification.  This includes the 6xx, 7xx, 7xxx,
+> + * 8260, and POWER3 implementations but excludes the 8xx and 4xx.
+> + *  -- paulus
+
+..but I couldn't let this one go.  Totally incorrect comments here given
+that the file is _for_ 8xx and 4xx. I suspect an errant copy/paste :).
 
 josh
