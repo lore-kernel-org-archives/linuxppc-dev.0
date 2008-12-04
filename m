@@ -1,16 +1,23 @@
-Return-Path: <peerlessdeepaks@gmail.com>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.186])
-	by ozlabs.org (Postfix) with ESMTP id 0A955DDDFF
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 05:36:50 +1100 (EST)
-Received: by rn-out-0910.google.com with SMTP id j40so3694385rnf.16
-	for <linuxppc-dev@ozlabs.org>; Thu, 04 Dec 2008 10:36:49 -0800 (PST)
-Message-ID: <cbaa36330812041036u751ea939qc0aea60002655d07@mail.gmail.com>
-Date: Fri, 5 Dec 2008 00:06:48 +0530
-From: "Deepak Pandian" <peerlessdeepaks@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: PCI Resource allocation
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 81143DDE08
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 06:18:49 +1100 (EST)
+Message-ID: <49382CFF.2050602@freescale.com>
+Date: Thu, 04 Dec 2008 13:18:23 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] powerpc/83xx: Enable FIXED_PHY in mpc834x_itx and mpc83xx
+	defconfigs
+References: <ed82fe3e0812040915i696e99bep75a37b0e38154415@mail.gmail.com>
+	<20081204175231.GA28554@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081204175231.GA28554@oksana.dev.rtsoft.ru>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,21 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Anton Vorontsov wrote:
 
-In ppc4xx_pci i see the pci size to be declared as
- u32 lah, lal, pciah, pcial, sa;
+> The FIXED_PHY driver isn't enabled in the defconfig. Following
+> patch should fix the issue.
+> 
+>  arch/powerpc/configs/83xx/mpc834x_itx_defconfig |    2 +-
+>  arch/powerpc/configs/mpc83xx_defconfig          |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-Also at many other places I see the pci region is not capable of
-handling resources > 4GB. I am planning to work on this arch specific
-code to make it handle pci resource of width greater than 4 GB.
+Acked-by: Timur Tabi <timur@freescale.com>
 
-But before that i wanted to clarify whether the core kernel will be
-able to handle pci regions with width greater than  4GB.
+Kumar, please apply.
 
 -- 
-With Regards,
-Deepak Pandian
-"Time is precious,One day we will find that we have less than what we
-think" -RandyPausch
-www.peerlessdeepak.wordpress.com
+Timur Tabi
+Linux kernel developer at Freescale
