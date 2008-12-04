@@ -1,21 +1,13 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8BDB0DDD0B
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Dec 2008 20:22:29 +1100 (EST)
-Message-ID: <4937A143.2020100@embedded-sol.com>
-Date: Thu, 04 Dec 2008 11:22:11 +0200
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <arieswar24b@yahoo.de>
+Date: Thu, 4 Dec 2008 10:01:31 +0000 (GMT)
+From: Dave Best <arieswar24b@yahoo.de>
+Subject: Re: Using Bestcomm API (DMA) on MPC5200b with Linux?
+To: Linuxppc-embedded@ozlabs.org
+In-Reply-To: <4900FA72.1040201@genesi-usa.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Accessing PCI-E resources on 460EX
-References: <490F6882.6050101@embedded-sol.com>	<1228118085.7356.115.camel@pasglop>	<4933C5AF.5040406@embedded-sol.com>	<1228165452.7356.123.camel@pasglop>
-	<4935B900.5020405@embedded-sol.com>
-In-Reply-To: <4935B900.5020405@embedded-sol.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Message-ID: <99808.65832.qm@web25808.mail.ukl.yahoo.com>
+Reply-To: arieswar24b@yahoo.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,83 +18,74 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, Ben
+I tried to use GenBD.
+I looked at "mpc52xx_ac97.c" which seems to be a sound driver which apparen=
+tly uses the GenBD tasks, if only the tx ones and the buffers.
 
-Sorry for confusion. With 2.6.28-rc6 mmap() of resource0  works fine.
-The application still doesn't work, but that's because it's not reading what
-it expects from resource file. I guess it's no longer a kernel problem.
+As i connected my FPGA/FiFo to the LocalPlus i called bcom_gen_bd_rx_init w=
+ith LP as initiator and the LP FiFo address. I called  bcom_prepare_next_bu=
+ffer and then bcom_submit_next_buffer and enabled my task.
+In advance i prepared the LP registers to my intended transfers and to use =
+CS1. But the task doesn't seem to call any chip select to fill its buffers.=
+=20
 
-Thanks a lot for your help.
+Frankly, i'm really at a loss on how to proceed.
 
-Felix.
+Dave
 
-Felix Radensky wrote:
-> Benjamin Herrenschmidt wrote:
->> On Mon, 2008-12-01 at 13:08 +0200, Felix Radensky wrote:
->>  
->>> and I'm afraid it can take me some time to move from 2.6.26 to 2.6.28.
->>> Any chance I can backport you modifications to 2.6.26 ? Have you
->>> modified
->>> other files except arch/powerpc/sysdev/ppc4xx_pci.c to fix these
->>> problems ?
->>>
->>>     
->>
->> Yes, quite a few changes in the PCI layer etc...
->>
->> Board support changes shouldn't be too hard to port over tho, it depends
->> how you did them.
->>   
->
-> I've managed to run 2.6.28-rc6 on this platform, it was not that 
-> difficult after all.
-> I only had to remove PCIX and PCIE0 from Canyonlands DTS, as they are not
-> used on this board. However this did not solve my problem. Below are 
-> relevant
-> bits from dmesg
->
-> PCIE1: Checking link...
-> PCIE1: Device detected, waiting for link...
-> PCIE1: link is up !
-> PCI host bridge /plb/pciex@d20000000 (primary) ranges:
-> MEM 0x0000000e80000000..0x0000000effffffff -> 0x0000000080000000
->  IO 0x0000000f80010000..0x0000000f8001ffff -> 0x0000000000000000
-> 4xx PCI DMA offset set to 0x00000000
-> PCIE1: successfully set as root-complex
-> PCI: Probing PCI hardware
-> PCI: Hiding 4xx host bridge resources 0000:80:00.0
-> pci 0000:81:00.0: disabling ASPM on pre-1.1 PCIe device.  You can 
-> enable it with 'pcie_aspm=force'
-> pci 0000:80:00.0: PCI bridge, secondary bus 0000:81
-> pci 0000:80:00.0:   IO window: disabled
-> pci 0000:80:00.0:   MEM window: 0x80000000-0x800fffff
-> pci 0000:80:00.0:   PREFETCH window: disabled
-> bus: 80 index 0 io port: [0x00-0xffff]
-> bus: 80 index 1 mmio: [0xe80000000-0xeffffffff]
-> bus: 81 index 0 mmio: [0x0-0xfff]
-> bus: 81 index 1 mmio: [0xe80000000-0xe800fffff]
-> bus: 81 index 2 mmio: [0x0-0x0]
-> bus: 81 index 3 mmio: [0x0-0x0]
->
-> The application code that mmaps PCI memory is attached.
-> The attempt to access /sys/bus/pci/devices/0000:81:00.0/resource0
-> results in I/O error. The device in question is Mellanox Infiniband
-> switch. I will gladly test any other ideas you may have.
->
-> Felix.
->> Cheers,
->> Ben.
->>
->>
->> _______________________________________________
->> Linuxppc-embedded mailing list
->> Linuxppc-embedded@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>   
->
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+--- Matt Sealey <matt@genesi-usa.com> schrieb am Fr, 24.10.2008:
+
+> Von: Matt Sealey <matt@genesi-usa.com>
+> Betreff: Re: Using Bestcomm API (DMA) on MPC5200b with Linux?
+> An: linuxppc-embedded@ozlabs.org
+> CC: arieswar24b@yahoo.de
+> Datum: Freitag, 24. Oktober 2008, 0:28
+> You need to write a task that does the DMA operation you
+> want; GenBD is actually pretty generic and lets you just
+> copy from one place to another.
+>=20
+> The API is pretty simple; make sure genbd is compiled in,
+> get the task structure using bcom_gen_bd_[tr]x_init, and
+> then.. uhh.. this is where I always forget.
+>=20
+> There is a way to submit a buffer descriptor and have the
+> engine basically perform that transfer. I think it's
+> bcom_prepare_next_buffer and then bcom_submit_next_buffer.
+>=20
+> Actually I can't even FIND those functions in the Linux
+> tree right now, but they have to be in there because the FEC
+> driver uses them..
+>=20
+> -- Matt Sealey <matt@genesi-usa.com>
+> Genesi, Manager, Developer Relations
+>=20
+> Dave Best wrote:
+> > I am trying to connect a FPGA/FIFO with my MPC5200b on
+> a phytec PCM 030 board  while running a 2.6.23.1 Linux.
+> >=20
+> > The Linux Kernel source contains an implementation for
+> the Bestcomm API in the form of a driver for ethernet (fec)
+> and ATA.(situated in the arch-powerpc/sysdev/bestcomm path)
+> I tried to make use of it but i've run into some
+> problems.
+> >=20
+> > So i tried to include the API in a module to utilize
+> its functionality but no luck till now.
+> >=20
+> > Freescale supports the Bestcomm DMA API not on an OS
+> level. So the problem is adopting this API into a Linux
+> environment, which distinguishes between kernel space and
+> user space while writing to the appropriate registers.
+> >=20
+> > Further information is very hard to find for such a
+> common task as starting a DMA transfer.
+> >=20
+> > Dave
+> >=20
+> >=20
+> >=20
+> >       _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded=0A=0A=0A      
