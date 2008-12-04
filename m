@@ -1,20 +1,18 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de",
-	Issuer "StartCom Class 1 Primary Intermediate Server CA" (not
-	verified)) by ozlabs.org (Postfix) with ESMTPS id 2A038DDDF5
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 02:37:59 +1100 (EST)
-Message-ID: <4937F92B.6050701@scram.de>
-Date: Thu, 04 Dec 2008 16:37:15 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.233])
+	by ozlabs.org (Postfix) with ESMTP id 036F2DDDF6
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 02:39:59 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so4167185rvb.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 04 Dec 2008 07:39:58 -0800 (PST)
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] powerpc/virtex5: Fix Virtex5 machine check handling
+To: john.linn@xilinx.com, jwboyer@linux.vnet.ibm.com, benh@kernel.crashing.org,
+	linuxppc-dev@ozlabs.org
+Date: Thu, 04 Dec 2008 08:39:55 -0700
+Message-ID: <20081204153955.16903.55398.stgit@localhost.localdomain>
 MIME-Version: 1.0
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: Erratic MPC8248 CPM2 I2C behaviour
-References: <200811281724.49620.laurentp@cse-semaphore.com>
-In-Reply-To: <200811281724.49620.laurentp@cse-semaphore.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Sender: Grant Likely <glikely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,58 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Laurent,
+From: Grant Likely <grant.likely@secretlab.ca>
 
-> The two messages making up the transaction are parsed. The driver fills a TX 
-> buffer descriptor for the first one, and a TX and an RX buffer descriptor for 
-> the second one.
-> 
->> rbase 0x01e0 tbase 0x01c0 rfcr 0x30 tfcr 0x30 mrblr 0x0201
->> rstate 0x00000000 rptr 0x00000000 rbptr 0x01e0 rcount 0x0000 rtmp 0x00000000
->> tstate 0x00000000 tptr 0x00000000 tbptr 0x01c0 tcount 0x0000 ttmp 0x00000000
->> i2mod 0x00, i2add 0xfe i2brg 0x03 i2com 0x01 i2cer 0x00 i2cmr 0x00
->> rx 0 sc 0x9000 tx 0 sc 0x9400
->> rx 1 sc 0x7da4 tx 1 sc 0xac00
->> rx 2 sc 0xefef tx 2 sc 0x743b
->> rx 3 sc 0xf264 tx 3 sc 0x10e6
+The 440x5 core in the Virtex5 uses the 440A type machine check
+(ie, they have MCSRR0/MCSRR1). They thus need to call the
+appropriate fixup function to hook the right variant of the
+exception.
 
-Just to rule out some possible issues with the rx queue,
-could you check if this patch improves anything?
+Without this, all machine checks become fatal due to loss
+of context when entering the exception handler.
 
-Thanks,
-Jochen
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
-index 228f757..b83b733 100644
---- a/drivers/i2c/busses/i2c-cpm.c
-+++ b/drivers/i2c/busses/i2c-cpm.c
-@@ -231,12 +231,6 @@ static void cpm_i2c_parse_message(struct i2c_adapter *adap,
+ arch/powerpc/kernel/cpu_setup_44x.S |    1 +
+ arch/powerpc/kernel/cputable.c      |    3 +++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
- 		dev_dbg(&adap->dev, "cpm_i2c_read(abyte=0x%x)\n", addr);
 
--		out_be16(&rbdf->cbd_datlen, 0);
--		out_be16(&rbdf->cbd_sc, BD_SC_EMPTY | BD_SC_INTRPT);
--
--		if (rx + 1 == CPM_MAXBD)
--			setbits16(&rbdf->cbd_sc, BD_SC_WRAP);
--
- 		eieio();
- 		setbits16(&tbdf->cbd_sc, BD_SC_READY);
- 	} else {
-@@ -328,6 +322,16 @@ static int cpm_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- 			return -EINVAL;
- 	}
-
-+	/* Initialize rx queue */
-+	for (i = 0; i < CPM_MAXBD; i++) {
-+		rbdf = cpm->rbase + i;
-+		out_be16(&rbdf->cbd_datlen, 0);
-+		out_be16(&rbdf->cbd_sc, BD_SC_EMPTY | BD_SC_INTRPT);
-+
-+		if (i + 1 == CPM_MAXBD)
-+			setbits16(&rbdf->cbd_sc, BD_SC_WRAP);
-+	}
-+
- 	/* Reset to use first buffer */
- 	out_be16(&i2c_ram->rbptr, in_be16(&i2c_ram->rbase));
- 	out_be16(&i2c_ram->tbptr, in_be16(&i2c_ram->tbase));
+diff --git a/arch/powerpc/kernel/cpu_setup_44x.S b/arch/powerpc/kernel/cpu_setup_44x.S
+index 31c18b5..10b4ab1 100644
+--- a/arch/powerpc/kernel/cpu_setup_44x.S
++++ b/arch/powerpc/kernel/cpu_setup_44x.S
+@@ -40,6 +40,7 @@ _GLOBAL(__setup_cpu_460gt)
+ 	mtlr	r4
+ 	blr
+ 
++_GLOBAL(__setup_cpu_440x5)
+ _GLOBAL(__setup_cpu_440gx)
+ _GLOBAL(__setup_cpu_440spe)
+ 	b	__fixup_440A_mcheck
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index b1eb834..7e87195 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -39,6 +39,7 @@ extern void __setup_cpu_440epx(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_440gx(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_440grx(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_440spe(unsigned long offset, struct cpu_spec* spec);
++extern void __setup_cpu_440x5(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_460ex(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_460gt(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_603(unsigned long offset, struct cpu_spec* spec);
+@@ -1500,6 +1501,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.cpu_user_features	= COMMON_USER_BOOKE,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
++		.cpu_setup		= __setup_cpu_440x5,
++		.machine_check		= machine_check_440A,
+ 		.platform		= "ppc440",
+ 	},
+ 	{ /* 460EX */
