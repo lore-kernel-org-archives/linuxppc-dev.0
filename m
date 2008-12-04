@@ -1,15 +1,20 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 65813DDE00
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 12:29:56 +1100 (EST)
-Date: Wed, 3 Dec 2008 20:29:53 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linux-usb@vger.kernel.org
-Subject: USB reset errors in 2.6.28*
-Message-ID: <20081203202953.1f9f3065@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 92F2BDDE08
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 15:47:12 +1100 (EST)
+Date: Wed, 3 Dec 2008 20:21:54 -0800
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: manual merge of the driver-core tree
+Message-ID: <20081204042154.GA18027@kroah.com>
+References: <20081204104418.97f848b4.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081204104418.97f848b4.sfr@canb.auug.org.au>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,38 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a repost of a message sent to linuxppc-dev. It was recommended
-a send it here.
+On Thu, Dec 04, 2008 at 10:44:18AM +1100, Stephen Rothwell wrote:
+> Hi Greg,
+> 
+> Today's linux-next merge of the driver-core tree got a conflict in
+> arch/powerpc/platforms/85xx/mpc85xx_mds.c between commit
+> 24a99596f7465274a8e65ddd29a7d9028969b9f9 ("powerpc/85xx: Fix compile
+> warnings in mpc85xx_mds.c") from the galak tree and commit
+> f58f23751464d095f9942304bc5f6072b79a2cc3 ("powerpc: struct device -
+> replace bus_id with dev_name(), dev_set_name()") from the driver-core
+> tree.
+> 
+> I fixed it up (see below) and can carry the fix as necessary.
+> 
+> Paul, maybe you should apply the patch from the driver-core tree as it
+> was cc'd to you and all its prerequisites are upstream.
 
-The warp is a PPC based telephony appliance. You can get details from
-the Pika website:
-http://www.pikatechnologies.com/english/View.asp?x=608
+Yes, Paul, please apply the patch, and let me know.  It will make things
+much easier in the end for everyone involved.
 
-Cheers,
-   Sean MacLennan
+thanks,
 
-Anybody else seeing USB problems in the 2.6.28 kernels? The warp has a
-USB 1.1 port off the PPC 440EP processor. 
-
-In 2.6.26 we had some problems with certain USB keys, but 2.6.27 fixed
-it. However, the 2.6.28 stream broke it again before rc1. We get this
-when you try to use a usb key:
-
-sd 0:0:0:0: [sda] 990865 512-byte hardware sectors: (507 MB/483 MiB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Assuming drive cache: write through
- sda: sda1
-sd 0:0:0:0: [sda] Attached SCSI removable disk
-usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
-usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
-usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
-usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
-usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
-usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
-usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
-usb 1-1: reset full speed USB device using ppc-of-ohci and address 2
-sd 0:0:0:0: timing out command, waited 60s
-
-It then seems to work, but I see corruption on the usb key. I haven't
-looked into it too much since we aren't switching to 2.6.28 anytime
-soon (it breaks our Secure Digital card driver).
+greg k-h
