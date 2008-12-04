@@ -1,15 +1,20 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id 5AF23DDDF8
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 04:41:58 +1100 (EST)
-Message-ID: <49381662.2020302@matrix-vision.de>
-Date: Thu, 04 Dec 2008 18:41:54 +0100
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5E275DDE07
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 04:48:11 +1100 (EST)
+Message-ID: <493817AE.1070303@freescale.com>
+Date: Thu, 04 Dec 2008 11:47:26 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
+To: Andre Schwarz <andre.schwarz@matrix-vision.de>
 Subject: Re: "eth1: Could not attach to PHY" on MPC8349e-MITX
 References: <ed82fe3e0812040915i696e99bep75a37b0e38154415@mail.gmail.com>
-In-Reply-To: <ed82fe3e0812040915i696e99bep75a37b0e38154415@mail.gmail.com>
+	<49381662.2020302@matrix-vision.de>
+In-Reply-To: <49381662.2020302@matrix-vision.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,45 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur,
+Andre Schwarz wrote:
+> Timur,
+> 
+> is it possible that the PHY adress doesn't match the one specified in
+> the dts ?
 
-is it possible that the PHY adress doesn't match the one specified in
-the dts ?
+What part of the DTS contains the PHY address?  I have this:
 
-regards,
-Andre
+	mdio@24520 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "fsl,gianfar-mdio";
+		reg = <0x24520 0x20>;
 
-Timur Tabi schrieb:
-> The Freescale MPC8349e-MITX reference board has two TSECs, the second
-> of which (eth1) is attached to a Vitesse 7385 5-port switch.
->
-> Using the latest U-Boot, Kernel, and device tree, I cannot bring up
-> eth1.  When I try, I get this message:
->
-> [root@tintin root]# ifconfig eth1 up
-> 0:01 not found
-> eth1: Could not attach to PHY
-> SIOCSIFFLAGS: No such device
->
-> Unfortunately, I don't even know what this means.
->
-> I believe my network configuration is correct.  Here's what ifconfig
-> says about eth1:
->
-> eth1      Link encap:Ethernet  HWaddr 00:E0:0C:00:8C:02
->           inet addr:192.168.2.141  Bcast:192.168.255.255  Mask:255.255.0.0
->           BROADCAST MULTICAST  MTU:1500  Metric:1
->           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
->           TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
->           collisions:0 txqueuelen:1000
->           RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
->           Base address:0x4000
->
-> eth1 does work in U-boot, so I know it can be made to work (and I know
-> the 7385's firmware is uploaded), I just don't know what needs to be
-> done in Linux.
->   
+		/* Vitesse 8201 */
+		phy1c: ethernet-phy@1c {
+			interrupt-parent = <&ipic>;
+			interrupts = <18 0x8>;
+			reg = <0x1c>;
+			device_type = "ethernet-phy";
+		};
+	};
 
+	enet1: ethernet@25000 {
+		cell-index = <1>;
+		device_type = "network";
+		model = "TSEC";
+		compatible = "gianfar";
+		reg = <0x25000 0x1000>;
+		local-mac-address = [ 00 00 00 00 00 00 ];
+		interrupts = <35 0x8 36 0x8 37 0x8>;
+		phy-connection-type = "mii";
+		interrupt-parent = <&ipic>;
+		/* Vitesse 7385 isn't on the MDIO bus */
+		fixed-link = <1 1 1000 0 0>;
+		linux,network-index = <1>;
+	};
 
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
