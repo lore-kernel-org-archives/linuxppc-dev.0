@@ -1,22 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5E275DDE07
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 04:48:11 +1100 (EST)
-Message-ID: <493817AE.1070303@freescale.com>
-Date: Thu, 04 Dec 2008 11:47:26 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>
-Subject: Re: "eth1: Could not attach to PHY" on MPC8349e-MITX
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id C93CFDDD01
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 04:52:34 +1100 (EST)
+Date: Thu, 4 Dec 2008 20:52:31 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>,
+	Timur Tabi <timur@freescale.com>
+Subject: [PATCH] powerpc/83xx: Enable FIXED_PHY in mpc834x_itx and mpc83xx
+	defconfigs
+Message-ID: <20081204175231.GA28554@oksana.dev.rtsoft.ru>
 References: <ed82fe3e0812040915i696e99bep75a37b0e38154415@mail.gmail.com>
-	<49381662.2020302@matrix-vision.de>
-In-Reply-To: <49381662.2020302@matrix-vision.de>
-Content-Type: text/plain; charset=ISO-8859-1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <ed82fe3e0812040915i696e99bep75a37b0e38154415@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,44 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andre Schwarz wrote:
-> Timur,
+This is needed so that Vitesse 7385 5-port switch could work on
+MPC8349E-mITX boards.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+
+On Thu, Dec 04, 2008 at 11:15:32AM -0600, Timur Tabi wrote:
+> The Freescale MPC8349e-MITX reference board has two TSECs, the second
+> of which (eth1) is attached to a Vitesse 7385 5-port switch.
 > 
-> is it possible that the PHY adress doesn't match the one specified in
-> the dts ?
+> Using the latest U-Boot, Kernel, and device tree, I cannot bring up
+> eth1.  When I try, I get this message:
+> 
+> [root@tintin root]# ifconfig eth1 up
+> 0:01 not found
+> eth1: Could not attach to PHY
+> SIOCSIFFLAGS: No such device
+> 
+> Unfortunately, I don't even know what this means.
 
-What part of the DTS contains the PHY address?  I have this:
+The FIXED_PHY driver isn't enabled in the defconfig. Following
+patch should fix the issue.
 
-	mdio@24520 {
-		#address-cells = <1>;
-		#size-cells = <0>;
-		compatible = "fsl,gianfar-mdio";
-		reg = <0x24520 0x20>;
+ arch/powerpc/configs/83xx/mpc834x_itx_defconfig |    2 +-
+ arch/powerpc/configs/mpc83xx_defconfig          |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-		/* Vitesse 8201 */
-		phy1c: ethernet-phy@1c {
-			interrupt-parent = <&ipic>;
-			interrupts = <18 0x8>;
-			reg = <0x1c>;
-			device_type = "ethernet-phy";
-		};
-	};
-
-	enet1: ethernet@25000 {
-		cell-index = <1>;
-		device_type = "network";
-		model = "TSEC";
-		compatible = "gianfar";
-		reg = <0x25000 0x1000>;
-		local-mac-address = [ 00 00 00 00 00 00 ];
-		interrupts = <35 0x8 36 0x8 37 0x8>;
-		phy-connection-type = "mii";
-		interrupt-parent = <&ipic>;
-		/* Vitesse 7385 isn't on the MDIO bus */
-		fixed-link = <1 1 1000 0 0>;
-		linux,network-index = <1>;
-	};
-
+diff --git a/arch/powerpc/configs/83xx/mpc834x_itx_defconfig b/arch/powerpc/configs/83xx/mpc834x_itx_defconfig
+index e55ff7c..07a674f 100644
+--- a/arch/powerpc/configs/83xx/mpc834x_itx_defconfig
++++ b/arch/powerpc/configs/83xx/mpc834x_itx_defconfig
+@@ -723,7 +723,7 @@ CONFIG_CICADA_PHY=y
+ # CONFIG_BROADCOM_PHY is not set
+ # CONFIG_ICPLUS_PHY is not set
+ # CONFIG_REALTEK_PHY is not set
+-# CONFIG_FIXED_PHY is not set
++CONFIG_FIXED_PHY=y
+ # CONFIG_MDIO_BITBANG is not set
+ # CONFIG_NET_ETHERNET is not set
+ CONFIG_NETDEV_1000=y
+diff --git a/arch/powerpc/configs/mpc83xx_defconfig b/arch/powerpc/configs/mpc83xx_defconfig
+index 15eb30c..d582014 100644
+--- a/arch/powerpc/configs/mpc83xx_defconfig
++++ b/arch/powerpc/configs/mpc83xx_defconfig
+@@ -682,7 +682,7 @@ CONFIG_VITESSE_PHY=y
+ # CONFIG_BROADCOM_PHY is not set
+ CONFIG_ICPLUS_PHY=y
+ # CONFIG_REALTEK_PHY is not set
+-# CONFIG_FIXED_PHY is not set
++CONFIG_FIXED_PHY=y
+ # CONFIG_MDIO_BITBANG is not set
+ CONFIG_NET_ETHERNET=y
+ CONFIG_MII=y
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.5.6.5
