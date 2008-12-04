@@ -1,18 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.233])
-	by ozlabs.org (Postfix) with ESMTP id 036F2DDDF6
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 02:39:59 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so4167185rvb.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 04 Dec 2008 07:39:58 -0800 (PST)
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] powerpc/virtex5: Fix Virtex5 machine check handling
-To: john.linn@xilinx.com, jwboyer@linux.vnet.ibm.com, benh@kernel.crashing.org,
-	linuxppc-dev@ozlabs.org
-Date: Thu, 04 Dec 2008 08:39:55 -0700
-Message-ID: <20081204153955.16903.55398.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Sender: Grant Likely <glikely@secretlab.ca>
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 67495DDDEC
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 04:11:26 +1100 (EST)
+In-Reply-To: <20081203174340.GA6958@localdomain>
+References: <20081203174340.GA6958@localdomain>
+	<1228278723-1153-1-git-send-email-galak@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <0ff42e9c3d9aabbda3102f25bc7bfa2c@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] powerpc: Remove modpost warning with start_secondary
+	(Modified by Milton Miller)
+Date: Thu, 4 Dec 2008 11:16:22 -0600
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>, Nathan Lynch <ntl@pobox.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,54 +24,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+[oops forgot to cc the list]
 
-The 440x5 core in the Virtex5 uses the 440A type machine check
-(ie, they have MCSRR0/MCSRR1). They thus need to call the
-appropriate fixup function to hook the right variant of the
-exception.
+Nathan Lynch wrote at 2008-12-03 17:43:40:
+> Kumar Gala wrote:
+>> On Dec 2, 2008, at 11:31 PM, Nathan Lynch wrote:
+>>> Kumar Gala wrote:
+>>>> WARNING: vmlinux.o(.text+0x2aa): Section mismatch in reference from
+>>>> the variable __secondary_start to the function
+>>>> .devinit.text:start_secondary()
+>>>> The function __secondary_start() references
+>>>> the function __devinit start_secondary().
+>>>>
+>>>> start_secondary gets called by __secondary_start which is in asm
+>>>> code so its
+>>>> not marked as __devinit.  Its easier to just remove the __devinit
+>>>> from
+>>>> start_secondary than try and deal with __secondary_start.
+>>>
+>>> Which just gets another mismatch warning here:
+>>>
+>>> WARNING: arch/powerpc/kernel/built-in.o(.text+0x23cc4): Section
+>>> mismatch in reference from the function .start_secondary() to the
+>>> function .devinit.text:.smp_store_cpu_info()
+>>> The function .start_secondary() references
+>>> the function __devinit .smp_store_cpu_info().
+>>> This is often because .start_secondary lacks a __devinit
+>>> annotation or the annotation of .smp_store_cpu_info is wrong.
 
-Without this, all machine checks become fatal due to loss
-of context when entering the exception handler.
+And other architectures want this to be cpuinit, the patch is held up 
+because of powerpc:
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
-
- arch/powerpc/kernel/cpu_setup_44x.S |    1 +
- arch/powerpc/kernel/cputable.c      |    3 +++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+http://ozlabs.org/pipermail/linuxppc-dev/2008-November/064897.html
 
 
-diff --git a/arch/powerpc/kernel/cpu_setup_44x.S b/arch/powerpc/kernel/cpu_setup_44x.S
-index 31c18b5..10b4ab1 100644
---- a/arch/powerpc/kernel/cpu_setup_44x.S
-+++ b/arch/powerpc/kernel/cpu_setup_44x.S
-@@ -40,6 +40,7 @@ _GLOBAL(__setup_cpu_460gt)
- 	mtlr	r4
- 	blr
- 
-+_GLOBAL(__setup_cpu_440x5)
- _GLOBAL(__setup_cpu_440gx)
- _GLOBAL(__setup_cpu_440spe)
- 	b	__fixup_440A_mcheck
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index b1eb834..7e87195 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -39,6 +39,7 @@ extern void __setup_cpu_440epx(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_440gx(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_440grx(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_440spe(unsigned long offset, struct cpu_spec* spec);
-+extern void __setup_cpu_440x5(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_460ex(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_460gt(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_603(unsigned long offset, struct cpu_spec* spec);
-@@ -1500,6 +1501,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_user_features	= COMMON_USER_BOOKE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
-+		.cpu_setup		= __setup_cpu_440x5,
-+		.machine_check		= machine_check_440A,
- 		.platform		= "ppc440",
- 	},
- 	{ /* 460EX */
+>>> Isn't there a better way to address this?  It doesn't seem right to
+>>> increase the kernel's memory usage to get rid of a modpost warning.
+
+I agree.  And its easy: move the asm code to the right section with the 
+nifty macros in linux/init.h.
+
+We can use the whitelist of .text.head and also use use cpuinit.
+
+I had a patch last July that went in this direction, but it was tangled 
+with the relocatable kernel patches and badly timed.
+
+http://ozlabs.org/pipermail/linuxppc-dev/2008-July/059717.html
+
+hmm, I don't see 1/3 that cleaned up the function entry macro repition.
+
+I'll try to revive them and bring them up to the current tree.
+
+>>
+>> Fair.. what defconfig did you build?
+>
+> Try ppc64_defconfig with HOTPLUG_CPU=n.
+
+milton
