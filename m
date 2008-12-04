@@ -1,22 +1,17 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
+Return-Path: <bgill@blarg.am.freescale.net>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C515FDDE08
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 05:03:36 +1100 (EST)
-Date: Thu, 4 Dec 2008 10:00:44 -0800
-From: Greg KH <greg@kroah.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: linux-next: manual merge of the driver-core tree
-Message-ID: <20081204180044.GB29869@kroah.com>
-References: <20081204104418.97f848b4.sfr@canb.auug.org.au>
-	<20081204042154.GA18027@kroah.com>
-	<18743.46086.609709.557371@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18743.46086.609709.557371@cargo.ozlabs.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Kay Sievers <kay.sievers@vrfy.org>,
-	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1B575DDDED
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 05:13:00 +1100 (EST)
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Fix !CONFIG_PPC_NEED_DMA_SYNC_OPS build warning
+Date: Thu,  4 Dec 2008 12:12:40 -0600
+Message-Id: <1228414360-9699-1-git-send-email-beckyb@kernel.crashing.org>
+Cc: sfr@canb.auug.org.au, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +21,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 04, 2008 at 09:42:14PM +1100, Paul Mackerras wrote:
-> Greg KH writes:
-> 
-> > Yes, Paul, please apply the patch, and let me know.  It will make things
-> > much easier in the end for everyone involved.
-> 
-> Hmmm, I don't have it in my inbox, all I can find is an email from Kay
-> saying it had a problem.  Care to forward it to me?
+Change #define stubs of dma_sync ops to be empty static inlines
+to avoid build warning.
 
-I'll resend them now.
+Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/dma-mapping.h |   41 +++++++++++++++++++++++++++----
+ 1 files changed, 35 insertions(+), 6 deletions(-)
 
-thanks,
-
-greg k-h
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 9063184..86cef7d 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -363,12 +363,41 @@ static inline void dma_sync_single_range_for_device(struct device *dev,
+ 					      size, direction);
+ }
+ #else /* CONFIG_PPC_NEED_DMA_SYNC_OPS */
+-#define dma_sync_single_for_cpu(d, h, s, dir) ((void)0)
+-#define dma_sync_single_for_device(d, h, s, dir) ((void)0)
+-#define dma_sync_single_range_for_cpu(d, h, o, s, dir) ((void)0)
+-#define dma_sync_single_range_for_device(d, h, o, s, dir) ((void)0)
+-#define dma_sync_sg_for_cpu(d, s, n, dir) ((void)0)
+-#define dma_sync_sg_for_device(d, s, n, dir) ((void)0)
++static inline void dma_sync_single_for_cpu(struct device *dev,
++		dma_addr_t dma_handle, size_t size,
++		enum dma_data_direction direction)
++{
++}
++
++static inline void dma_sync_single_for_device(struct device *dev,
++		dma_addr_t dma_handle, size_t size,
++		enum dma_data_direction direction)
++{
++}
++
++static inline void dma_sync_sg_for_cpu(struct device *dev,
++		struct scatterlist *sgl, int nents,
++		enum dma_data_direction direction)
++{
++}
++
++static inline void dma_sync_sg_for_device(struct device *dev,
++		struct scatterlist *sgl, int nents,
++		enum dma_data_direction direction)
++{
++}
++
++static inline void dma_sync_single_range_for_cpu(struct device *dev,
++		dma_addr_t dma_handle, unsigned long offset, size_t size,
++		enum dma_data_direction direction)
++{
++}
++
++static inline void dma_sync_single_range_for_device(struct device *dev,
++		dma_addr_t dma_handle, unsigned long offset, size_t size,
++		enum dma_data_direction direction)
++{
++}
+ #endif
+ 
+ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+-- 
+1.5.6.5
