@@ -1,17 +1,17 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 9E55CDDE0A
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 04:34:54 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Cliff Wickman <cpw@sgi.com>, Mijo Safradin <safradin@de.ibm.com>,
-	Christoph Lameter <clameter@sgi.com>,
-	Lee Schermerhorn <lee.schermerhorn@hp.com>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] numactl: fix libnuma on big-endian 64-bit systems
-Date: Thu, 4 Dec 2008 18:34:45 +0100
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id 5AF23DDDF8
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 04:41:58 +1100 (EST)
+Message-ID: <49381662.2020302@matrix-vision.de>
+Date: Thu, 04 Dec 2008 18:41:54 +0100
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200812041834.45931.arnd@arndb.de>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: "eth1: Could not attach to PHY" on MPC8349e-MITX
+References: <ed82fe3e0812040915i696e99bep75a37b0e38154415@mail.gmail.com>
+In-Reply-To: <ed82fe3e0812040915i696e99bep75a37b0e38154415@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,50 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The read-mask function assumes that it is running in 32-bit mode,
-by addressing the bitmask as a series of int values, instead of
-longs. This is broken as can easily be reproduced by running numademo
-on a bit-endian 64-bit system.
+Timur,
 
-Changing the addressing to use 'long' values fixes the problem.
+is it possible that the PHY adress doesn't match the one specified in
+the dts ?
 
-Reported-by: Mijo Safradin <safradin@de.ibm.com>
+regards,
+Andre
 
----
+Timur Tabi schrieb:
+> The Freescale MPC8349e-MITX reference board has two TSECs, the second
+> of which (eth1) is attached to a Vitesse 7385 5-port switch.
+>
+> Using the latest U-Boot, Kernel, and device tree, I cannot bring up
+> eth1.  When I try, I get this message:
+>
+> [root@tintin root]# ifconfig eth1 up
+> 0:01 not found
+> eth1: Could not attach to PHY
+> SIOCSIFFLAGS: No such device
+>
+> Unfortunately, I don't even know what this means.
+>
+> I believe my network configuration is correct.  Here's what ifconfig
+> says about eth1:
+>
+> eth1      Link encap:Ethernet  HWaddr 00:E0:0C:00:8C:02
+>           inet addr:192.168.2.141  Bcast:192.168.255.255  Mask:255.255.0.0
+>           BROADCAST MULTICAST  MTU:1500  Metric:1
+>           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:1000
+>           RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+>           Base address:0x4000
+>
+> eth1 does work in U-boot, so I know it can be made to work (and I know
+> the 7385's firmware is uploaded), I just don't know what needs to be
+> done in Linux.
+>   
 
-Note: the set_nodemask_size() function is broken as well, it seems
-to always set the nodemask size to "17" with the s2nbits implementation.
-The fallback path in there looks correct.
 
---- a/libnuma.c	2008-12-04 14:25:30.000000000 +0100
-+++ b/libnuma.c	2008-11-20 13:40:29.000000000 +0100
-@@ -392,9 +372,9 @@ read_mask(char *s, struct bitmask *bmp)
- {
- 	char *end = s;
- 	char *prevend;
--	unsigned long *start = bmp->maskp;
--	unsigned long *p = start;
--	unsigned long *q;
-+	unsigned int *start = (unsigned int *)bmp->maskp;
-+	unsigned int *p = start;
-+	unsigned int *q;
- 	unsigned int i;
- 	unsigned int n = 0;
- 
-@@ -431,14 +411,14 @@
- 	}
- 
- 	/* Poor mans fls() */
--	for(i = sizeof(long) * 8 - 1; i >= 0; i--)
-+	for(i = 31; i >= 0; i--)
- 		if (test_bit(i, start + n))
- 			break;
- 
- 	/*
- 	 * Return the last bit set
- 	 */
--	return ((sizeof(unsigned long)*8) * n) + i;
-+	return ((sizeof(unsigned int)*8) * n) + i;
- }
- 
- /*
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
