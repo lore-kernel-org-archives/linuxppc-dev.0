@@ -1,19 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 51D1DDDE07
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 17:38:29 +1100 (EST)
-Date: Thu, 4 Dec 2008 17:38:13 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] powerpc: Rework context management for CPUs with no
-	hash table
-Message-Id: <20081204173813.fa04b41b.sfr@canb.auug.org.au>
-In-Reply-To: <20081204054232.2554CDDE2A@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A048ADDE07
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Dec 2008 17:48:48 +1100 (EST)
+Subject: Re: [PATCH 3/3] powerpc: Rework context management for CPUs with
+	no hash table
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20081204173813.fa04b41b.sfr@canb.auug.org.au>
 References: <20081204054232.2554CDDE2A@ozlabs.org>
+	<20081204173813.fa04b41b.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Thu, 04 Dec 2008 17:46:32 +1100
+Message-Id: <1228373192.7356.278.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__4_Dec_2008_17_38_13_+1100_n.1oFL/rV+G.A8wV"
 Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,38 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__4_Dec_2008_17_38_13_+1100_n.1oFL/rV+G.A8wV
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2008-12-04 at 17:38 +1100, Stephen Rothwell wrote:
+> Hi Ben,
+> 
+> On Thu, 04 Dec 2008 16:41:53 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> >
+> > +++ linux-work/arch/powerpc/mm/mmu_context_nohash.c	2008-12-04 15:18:46.000000000 +1100
+> > +	/* No more free contexts, let's try to steal one */
+> > +	if (nr_free_contexts == 0) {
+> > +#ifdef CONFIF_SMP
+>                ^
+> typo
 
-Hi Ben,
+Bah, leave me some surprises for Kumar for when he tests on actual SMP
+hardware :-)
 
-On Thu, 04 Dec 2008 16:41:53 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> +++ linux-work/arch/powerpc/mm/mmu_context_nohash.c	2008-12-04 15:18:46.0=
-00000000 +1100
-> +	/* No more free contexts, let's try to steal one */
-> +	if (nr_free_contexts =3D=3D 0) {
-> +#ifdef CONFIF_SMP
-               ^
-typo
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__4_Dec_2008_17_38_13_+1100_n.1oFL/rV+G.A8wV
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkk3etUACgkQjjKRsyhoI8wxTACdEEvb+ZznniztoIRgTiMjZYU2
-hXYAni35gZ1hF8jFv7JmxZJeTAAs5ery
-=B3wr
------END PGP SIGNATURE-----
-
---Signature=_Thu__4_Dec_2008_17_38_13_+1100_n.1oFL/rV+G.A8wV--
+Ben.
