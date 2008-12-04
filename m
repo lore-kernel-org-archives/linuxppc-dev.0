@@ -1,14 +1,31 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [204.133.123.27])
-	by ozlabs.org (Postfix) with ESMTP id 90A2CDDDEF
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 00:51:16 +1100 (EST)
-Message-ID: <4937E048.90206@mlbassoc.com>
-Date: Thu, 04 Dec 2008 06:51:04 -0700
-From: Gary Thomas <gary@mlbassoc.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: MPC5200 VIRQ question
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 12A6BDDDF0
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 01:01:35 +1100 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e35.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mB4E0CgP002524
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2008 07:00:12 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mB4E1GC3063886
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2008 07:01:17 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mB4E1Fbo021133
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Dec 2008 07:01:15 -0700
+Date: Thu, 4 Dec 2008 09:01:07 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] ndfc driver
+Message-ID: <20081204090107.20269571@zod.rchland.ibm.com>
+In-Reply-To: <20081203222832.3fc77d28@lappy.seanm.ca>
+References: <20081203222832.3fc77d28@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,61 +35,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have a MPC5200 based board which has an FPGA for external
-I/O, etc.  This FPGA also funnels interrupts from the various
-external devices through to the CPU.
+On Wed, 3 Dec 2008 22:28:32 -0500
+Sean MacLennan <smaclennan@pikatech.com> wrote:
 
-I've defined this structure in my DTS:
+Hi Sean,
 
-	fpga@f8000000 {
-		device_type = "board-control";
-		#address-cells = <1>;
-		#size-cells = <1>;
-		// Note: includes sub-devices like CAN, A/D, etc
-		reg = <0xf8000000 0x100000>;
+A couple of comments/requests below.
 
-		fpga_ic: fpga_ic@f8000000 {
-			device_type = "fpga-int-ctlr";
-			interrupt-controller;
-			#address-cells = <0>;
-			#interrupt-cells = <2>;
-			interrupts = <2 26 3>; // IRQ2
-			interrupt-parent = <&mpc5200_pic>;
-		};
-		can@f8010000 {
-			compatible = "am,can";
-			device_type = "can";
-			interrupts = <0 0>;
-			interrupt_parent = <&fpga_ic>;
-			reg = <0xf8010000 0x200>;
-		};
-	};
+> The current ndfc driver only compiles under arch/ppc. This arch was
+> removed from the kernel. I notice the event entry for the ndfc in
+> Kconfig has been removed in 2.6.28.
+> 
+> This patch converts the ndfc to a proper OF (OpenFirmware) driver. I
+> can give a working example of the DTS if needed.
 
-Of course, there will be more devices and interrupts later on,
-this is just the first of many.
+In addition to an example DTS patch (probably to warp itself), could
+you briefly write up a binding and put it in
+Documentation/powerpc/dts-bindings/amcc (or similar)?  Also please CC
+the devicetree-discuss list on that part.
 
-Now the questions:
- * How do I choose the VIRQ range supported by my FPGA?
-   I'm interested in this in particular for the MPC5200, but
-   also for other chips (I have many such board configurations).
- * How do I pass this information along to my drivers?  I would
-   think that the interrupts value for the can interface above
-   would use a [logical] IRQ (an offset from the base VIRQ),
-   so how does the driver get the actual number (VIRQ+offset)
-   when probing the tree?
- * I know how to define the interrupt controller using irq_alloc_host()
-   (once I have the VIRQ range) but it's not clear to me where to stick
-   this initialization when bringing up my platform.
+> The patch has been in production use on the PIKA Warp Appliance and is
+> in use by others. The Warp basically boots from NAND, so the ndfc driver
+> is very important to us.
 
-Thanks for any pointers/ideas
+Looking over the patch it seems pretty straight-forward and I don't see
+anything immediately wrong with it.  You do have a number of
+semi-unrelated changes to the actual port to of_platform though, like
+the s/__raw_writel/out_be32 stuff, the addition of partition parsing,
+etc.  I'm wondering if you could do those fixups separately from the
+actual port.
 
-n.b. I've read all the arguments about not using "device_type"
-and this will be resolved.  At the moment, I'm basing my
-code on a slightly older kernel codebase (2.6.26), so those
-entries remain.
+Also, could you document why the data structures changed as they did in
+the changelog or perhaps in a summary email.
 
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+You also seem to only support a single NAND chip, however the NDFC can
+support multiple chips.  Have you looked at how the the fsl_elbc_nand
+driver does multiple chip support?  If not, could you at least document
+the limitation in the patch?
+
+> This is a bi-monthly posting ;)
+
+Keep at it Sean.  Your work is appreciated, even if the rest of us are
+slow to review.
+
+josh
