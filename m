@@ -1,17 +1,18 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.176])
-	by ozlabs.org (Postfix) with ESMTP id 57B73DDDF0
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 04:15:35 +1100 (EST)
-Received: by el-out-1112.google.com with SMTP id y26so1193175ele.19
-	for <linuxppc-dev@ozlabs.org>; Thu, 04 Dec 2008 09:15:32 -0800 (PST)
-Message-ID: <ed82fe3e0812040915i696e99bep75a37b0e38154415@mail.gmail.com>
-Date: Thu, 4 Dec 2008 11:15:32 -0600
-From: "Timur Tabi" <timur@freescale.com>
-Sender: timur.tabi@gmail.com
-To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, afleming@freescale.com
-Subject: "eth1: Could not attach to PHY" on MPC8349e-MITX
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id E3DCEDDE0E
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 04:17:06 +1100 (EST)
+Date: Thu, 4 Dec 2008 12:17:01 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
+	<linux-mtd@lists.infradead.org>, <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] ndfc driver
+Message-ID: <20081204121701.5ef90226@lappy.seanm.ca>
+In-Reply-To: <20081204090107.20269571@zod.rchland.ibm.com>
+References: <20081203222832.3fc77d28@lappy.seanm.ca>
+	<20081204090107.20269571@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The Freescale MPC8349e-MITX reference board has two TSECs, the second
-of which (eth1) is attached to a Vitesse 7385 5-port switch.
+On Thu, 4 Dec 2008 09:01:07 -0500
+"Josh Boyer" <jwboyer@linux.vnet.ibm.com> wrote:
 
-Using the latest U-Boot, Kernel, and device tree, I cannot bring up
-eth1.  When I try, I get this message:
+> On Wed, 3 Dec 2008 22:28:32 -0500
+> Sean MacLennan <smaclennan@pikatech.com> wrote:
+> 
+> Hi Sean,
+> 
+> A couple of comments/requests below.
+> 
+> In addition to an example DTS patch (probably to warp itself), could
+> you briefly write up a binding and put it in
+> Documentation/powerpc/dts-bindings/amcc (or similar)?  Also please CC
+> the devicetree-discuss list on that part.
 
-[root@tintin root]# ifconfig eth1 up
-0:01 not found
-eth1: Could not attach to PHY
-SIOCSIFFLAGS: No such device
+The DTS patch was a separate email to the linuxppc-dev list. I'll try to
+find it.
 
-Unfortunately, I don't even know what this means.
+I will look into writing up the binding.
 
-I believe my network configuration is correct.  Here's what ifconfig
-says about eth1:
+> Looking over the patch it seems pretty straight-forward and I don't
+> see anything immediately wrong with it.  You do have a number of
+> semi-unrelated changes to the actual port to of_platform though, like
+> the s/__raw_writel/out_be32 stuff, the addition of partition parsing,
+> etc.  I'm wondering if you could do those fixups separately from the
+> actual port.
+> 
+> Also, could you document why the data structures changed as they did
+> in the changelog or perhaps in a summary email.
 
-eth1      Link encap:Ethernet  HWaddr 00:E0:0C:00:8C:02
-          inet addr:192.168.2.141  Bcast:192.168.255.255  Mask:255.255.0.0
-          BROADCAST MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
-          Base address:0x4000
+The __raw_writel changes where from feedback from this list. I will try
+to find the email.
 
-eth1 does work in U-boot, so I know it can be made to work (and I know
-the 7385's firmware is uploaded), I just don't know what needs to be
-done in Linux.
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+This patch originally goes back to January... so I have problems
+remembering why all the changes where made ;) Believe it or not, we
+have gone through 3 or 4 repositories since then. Finding history is
+basically impossible :( So I have to try to rely on an email trail.
+
+> You also seem to only support a single NAND chip, however the NDFC can
+> support multiple chips.  Have you looked at how the the fsl_elbc_nand
+> driver does multiple chip support?  If not, could you at least
+> document the limitation in the patch?
+
+I will document the limitation. I do not have access to a board with
+multiple chips and I don't like submitting something I can't test.
+
+Cheers,
+   Sean
