@@ -1,19 +1,12 @@
 Return-Path: <sr@denx.de>
-Received: from mout-bounce.kundenserver.de (mout-bounce.kundenserver.de
-	[212.227.17.3]) by ozlabs.org (Postfix) with ESMTP id 86D47DDDE7
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 16:41:56 +1100 (EST)
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id BC828DDDCA
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 17:09:10 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v4]
-Date: Fri, 5 Dec 2008 06:41:13 +0100
-References: <1228256232.4770.47.camel@jhsiao-usb>
-	<20081204193256.12dbc306.kim.phillips@freescale.com>
-In-Reply-To: <20081204193256.12dbc306.kim.phillips@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200812050641.13753.sr@denx.de>
-Cc: jhsiao@amcc.com, herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org
+Subject: [PATCH] powerpc/4xx: Add L2 cache node to AMCC Canyonlands dts file
+Date: Fri,  5 Dec 2008 07:08:52 +0100
+Message-Id: <1228457332-523-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +16,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 05 December 2008, Kim Phillips wrote:
-> > diff --git a/arch/powerpc/boot/dts/canyonlands.dts
-> > b/arch/powerpc/boot/dts/canyonlands.dts index 79fe412..b0f0096 100644
-> > --- a/arch/powerpc/boot/dts/canyonlands.dts
-> > +++ b/arch/powerpc/boot/dts/canyonlands.dts
-> > @@ -116,6 +116,13 @@
-> >  			dcr-reg = <0x010 0x002>;
-> >  		};
-> >
-> > +		CRYPTO: crypto@180000 {
-> > +			compatible = "amcc,ppc460ex-crypto", "amcc,ppc4xx-crypto";
-> > +			reg = <4 0x00180000 0x80400>;
-> > +			interrupt-parent = <&UIC0>;
-> > +			interrupts = <0x1d 0x4>;
->
-> that's odd, according to the current canyonlands.dts, irq 0x1d is
-> already assigned to UART2 (and the request_irq this driver makes
-> doesn't specify a shared flag).
+With this patch the L2 cache is enabled on Canyonlands to increase the
+overall performance. There is a known cache coherency issue with the L2
+cache, but this is related to the high bandwidth (HB) PLB segment where
+the memory address is 0x8.xxxx.xxxx (low bandwidth PLB segment is mapped
+to 0x0.xxxx.xxxx). Since this HB address is currently unused it is safe
+to enable the L2 cache.
 
-UART2 is using irq 0x1d from UIC1. Using 0x1d/UIC0 is correct for Security 
-EIP-94 according to the latest users manual. No sharing needed.
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+ arch/powerpc/boot/dts/canyonlands.dts |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-Best regards,
-Stefan
+diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
+index 79fe412..0d77482 100644
+--- a/arch/powerpc/boot/dts/canyonlands.dts
++++ b/arch/powerpc/boot/dts/canyonlands.dts
+@@ -104,6 +104,16 @@
+ 		dcr-reg = <0x00c 0x002>;
+ 	};
+ 
++	L2C0: l2c {
++		compatible = "ibm,l2-cache-460ex", "ibm,l2-cache";
++		dcr-reg = <0x020 0x008		/* Internal SRAM DCR's */
++			   0x030 0x008>;	/* L2 cache DCR's */
++		cache-line-size = <32>;		/* 32 bytes */
++		cache-size = <262144>;		/* L2, 256K */
++		interrupt-parent = <&UIC1>;
++		interrupts = <11 1>;
++	};
++
+ 	plb {
+ 		compatible = "ibm,plb-460ex", "ibm,plb4";
+ 		#address-cells = <2>;
+-- 
+1.6.0.4
