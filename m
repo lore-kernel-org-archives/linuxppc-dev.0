@@ -1,13 +1,14 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 9BFC9DDDF0
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 07:10:42 +1100 (EST)
-Date: Fri, 5 Dec 2008 23:10:41 +0300
+	by ozlabs.org (Postfix) with ESMTP id EAC4BDDF17
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 07:10:44 +1100 (EST)
+Date: Fri, 5 Dec 2008 23:10:43 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>,
 	David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH 6/7] powerpc: Add mmc-spi-slot bindings
-Message-ID: <20081205201041.GF19758@oksana.dev.rtsoft.ru>
+Subject: [PATCH 7/7] powerpc/83xx: Add mmc-spi support via the device tree
+	for MPC8323E-RDB
+Message-ID: <20081205201043.GG19758@oksana.dev.rtsoft.ru>
 References: <20081205200936.GA19137@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -22,59 +23,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The bindings describes a case where MMC/SD/SDIO slot directly connected
-to a SPI bus. Such setups are widely used on embedded PowerPC boards.
-
-The patch also adds the mmc-spi-slot entry to the OpenFirmware modalias
-table.
+- Add gpio-controller node to manage QE GPIO Bank D;
+- Add mmc-spi node;
+- Modify board file so that it won't use legacy SPI support with the new
+  device trees.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- .../powerpc/dts-bindings/mmc-spi-slot.txt          |   23 ++++++++++++++++++++
- drivers/of/base.c                                  |    1 +
- 2 files changed, 24 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/mmc-spi-slot.txt
+ arch/powerpc/boot/dts/mpc832x_rdb.dts     |   24 ++++++++++++++++++++++++
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c |    6 ++++++
+ 2 files changed, 30 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/powerpc/dts-bindings/mmc-spi-slot.txt b/Documentation/powerpc/dts-bindings/mmc-spi-slot.txt
-new file mode 100644
-index 0000000..c39ac28
---- /dev/null
-+++ b/Documentation/powerpc/dts-bindings/mmc-spi-slot.txt
-@@ -0,0 +1,23 @@
-+MMC/SD/SDIO slot directly connected to a SPI bus
-+
-+Required properties:
-+- compatible : should be "mmc-spi-slot".
-+- reg : should specify SPI address (chip-select number).
-+- spi-max-frequency : maximum frequency for this device (Hz).
-+- voltage-ranges : two cells are required, first cell specifies minimum
-+  slot voltage (mV), second cell specifies maximum slot voltage (mV).
-+  Several ranges could be specified.
-+- gpios : (optional) may specify GPIOs in this order: Card-Detect GPIO,
-+  Write-Protect GPIO.
-+
-+Example:
-+
-+	mmc-slot@0 {
-+		compatible = "fsl,mpc8323rdb-mmc-slot",
-+			     "mmc-spi-slot";
-+		reg = <0>;
-+		gpios = <&qe_pio_d 14 1
-+			 &qe_pio_d 15 0>;
-+		voltage-ranges = <3300 3300>;
-+		spi-max-frequency = <50000000>;
-+	};
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index cd17092..41c5dfd 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -446,6 +446,7 @@ struct of_modalias_table {
- };
- static struct of_modalias_table of_modalias_table[] = {
- 	{ "fsl,mcu-mpc8349emitx", "mcu-mpc8349emitx" },
-+	{ "mmc-spi-slot", "mmc_spi" },
- };
+diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+index dea3091..4319bd7 100644
+--- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+@@ -152,10 +152,21 @@
+ 		};
  
- /**
+ 		par_io@1400 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			reg = <0x1400 0x100>;
++			ranges = <3 0x1448 0x18>;
++			compatible = "fsl,mpc8323-qe-pario";
+ 			device_type = "par_io";
+ 			num-ports = <7>;
+ 
++			qe_pio_d: gpio-controller@1448 {
++				#gpio-cells = <2>;
++				compatible = "fsl,mpc8323-qe-pario-bank";
++				reg = <3 0x18>;
++				gpio-controller;
++			};
++
+ 			ucc2pio:ucc_pin@02 {
+ 				pio-map = <
+ 			/* port  pin  dir  open_drain  assignment  has_irq */
+@@ -225,12 +236,25 @@
+ 		};
+ 
+ 		spi@4c0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
+ 			cell-index = <0>;
+ 			compatible = "fsl,spi";
+ 			reg = <0x4c0 0x40>;
+ 			interrupts = <2>;
+ 			interrupt-parent = <&qeic>;
++			gpios = <&qe_pio_d 13 0>;
+ 			mode = "cpu-qe";
++
++			mmc-slot@0 {
++				compatible = "fsl,mpc8323rdb-mmc-slot",
++					     "mmc-spi-slot";
++				reg = <0>;
++				gpios = <&qe_pio_d 14 1
++					 &qe_pio_d 15 0>;
++				voltage-ranges = <3300 3300>;
++				spi-max-frequency = <50000000>;
++			};
+ 		};
+ 
+ 		spi@500 {
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+index 17abbd2..567ded7 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+@@ -175,6 +175,12 @@ static int __init mpc832x_spi_init(void)
+ 	par_io_config_pin(3, 14, 2, 0, 0, 0); /* SD_INSERT, I */
+ 	par_io_config_pin(3, 15, 2, 0, 0, 0); /* SD_PROTECT,I */
+ 
++	/*
++	 * Don't bother with legacy stuff when device tree contains
++	 * mmc-spi-slot node.
++	 */
++	if (of_find_compatible_node(NULL, NULL, "mmc-spi-slot"))
++		return 0;
+ 	return fsl_spi_init(&mpc832x_spi_boardinfo, 1, mpc83xx_spi_cs_control);
+ }
+ machine_device_initcall(mpc832x_rdb, mpc832x_spi_init);
 -- 
 1.5.6.5
