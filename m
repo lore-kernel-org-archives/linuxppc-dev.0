@@ -1,13 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 1EA80474CC
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 05:15:40 +1100 (EST)
-Date: Fri, 5 Dec 2008 21:15:39 +0300
+	by ozlabs.org (Postfix) with ESMTP id CCE4FDDDF0
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 05:15:47 +1100 (EST)
+Date: Fri, 5 Dec 2008 21:15:46 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/3] of: Minor simplification for the
-	of_parse_phandles_with_args()
-Message-ID: <20081205181539.GA23666@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/3] of: of_parse_phandles_with_args() learns to
+	differentiate 'hole' cells
+Message-ID: <20081205181546.GB23666@oksana.dev.rtsoft.ru>
 References: <20081205181503.GA9855@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -22,46 +22,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-By using 'list++' in the beginning we can simplify the code a
-little bit.
+Given this list (contains three gpio specifiers, one of which is a hole):
 
-Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+gpios = <&phandle1 1 2 3
+         0 /* a hole */
+         &phandle2 4 5 6>;
+
+of_parse_phandles_with_args() would report -ENOENT for the `hole'
+specifier item, the same error value is used to report the end of the
+list, for example.
+
+Sometimes we want to differentiate holes from real errors -- for
+example when we want to count all the [syntax correct] specifiers.
+
+With this patch of_parse_phandles_with_args() will report -EEXITS when
+somebody requested to parse a hole.
+
+Also, make the out_{node,args} arguments optional, when counting we
+don't really need the out values.
+
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/of/base.c |   11 ++++-------
- 1 files changed, 4 insertions(+), 7 deletions(-)
+ drivers/of/base.c |   22 ++++++++++++++++------
+ 1 files changed, 16 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 4f884a3..cf04d4d 100644
+index cf04d4d..cd17092 100644
 --- a/drivers/of/base.c
 +++ b/drivers/of/base.c
-@@ -547,14 +547,12 @@ int of_parse_phandles_with_args(struct device_node *np, const char *list_name,
- 		const u32 *cells;
- 		const phandle *phandle;
+@@ -499,8 +499,8 @@ EXPORT_SYMBOL_GPL(of_modalias_node);
+  * @list_name:	property name that contains a list
+  * @cells_name:	property name that specifies phandles' arguments count
+  * @index:	index of a phandle to parse out
+- * @out_node:	pointer to device_node struct pointer (will be filled)
+- * @out_args:	pointer to arguments pointer (will be filled)
++ * @out_node:	optional pointer to device_node struct pointer (will be filled)
++ * @out_args:	optional pointer to arguments pointer (will be filled)
+  *
+  * This function is useful to parse lists of phandles and their arguments.
+  * Returns 0 on success and fills out_node and out_args, on error returns
+@@ -534,7 +534,7 @@ int of_parse_phandles_with_args(struct device_node *np, const char *list_name,
+ 	int size;
+ 	int cur_index = 0;
+ 	struct device_node *node = NULL;
+-	const void *args;
++	const void *args = NULL;
  
--		phandle = list;
--		args = list + 1;
-+		phandle = list++;
-+		args = list;
+ 	list = of_get_property(np, list_name, &size);
+ 	if (!list) {
+@@ -580,16 +580,26 @@ next:
  
- 		/* one cell hole in the list = <>; */
--		if (!*phandle) {
--			list++;
-+		if (!*phandle)
- 			goto next;
--		}
+ 		of_node_put(node);
+ 		node = NULL;
++		args = NULL;
+ 		cur_index++;
+ 	}
  
- 		node = of_find_node_by_phandle(*phandle);
- 		if (!node) {
-@@ -570,8 +568,7 @@ int of_parse_phandles_with_args(struct device_node *np, const char *list_name,
- 			goto err1;
- 		}
+ 	if (!node) {
+-		ret = -ENOENT;
++		/*
++		 * args w/o node indicates that the loop above has stopped at
++		 * the 'hole' cell. Report this differently.
++		 */
++		if (args)
++			ret = -EEXIST;
++		else
++			ret = -ENOENT;
+ 		goto err0;
+ 	}
  
--		/* Next phandle is at offset of one phandle cell + #cells */
--		list += 1 + *cells;
-+		list += *cells;
- 		if (list > list_end) {
- 			pr_debug("%s: insufficient arguments length\n",
- 				 np->full_name);
+-	*out_node = node;
+-	*out_args = args;
++	if (out_node)
++		*out_node = node;
++	if (out_args)
++		*out_args = args;
+ 
+ 	return 0;
+ err1:
 -- 
 1.5.6.5
