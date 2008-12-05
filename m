@@ -1,13 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id CCE4FDDDF0
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 05:15:47 +1100 (EST)
-Date: Fri, 5 Dec 2008 21:15:46 +0300
+	by ozlabs.org (Postfix) with ESMTP id 9F15DDDDFA
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 05:15:56 +1100 (EST)
+Date: Fri, 5 Dec 2008 21:15:54 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/3] of: of_parse_phandles_with_args() learns to
-	differentiate 'hole' cells
-Message-ID: <20081205181546.GB23666@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/3] of/gpio: Implement of_gpio_count()
+Message-ID: <20081205181554.GC23666@oksana.dev.rtsoft.ru>
 References: <20081205181503.GA9855@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -22,83 +21,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Given this list (contains three gpio specifiers, one of which is a hole):
-
-gpios = <&phandle1 1 2 3
-         0 /* a hole */
-         &phandle2 4 5 6>;
-
-of_parse_phandles_with_args() would report -ENOENT for the `hole'
-specifier item, the same error value is used to report the end of the
-list, for example.
-
-Sometimes we want to differentiate holes from real errors -- for
-example when we want to count all the [syntax correct] specifiers.
-
-With this patch of_parse_phandles_with_args() will report -EEXITS when
-somebody requested to parse a hole.
-
-Also, make the out_{node,args} arguments optional, when counting we
-don't really need the out values.
+This function is used to count how many GPIOs are specified for
+a device node.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/of/base.c |   22 ++++++++++++++++------
- 1 files changed, 16 insertions(+), 6 deletions(-)
+ drivers/of/gpio.c       |   34 ++++++++++++++++++++++++++++++++++
+ include/linux/of_gpio.h |    6 ++++++
+ 2 files changed, 40 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index cf04d4d..cd17092 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -499,8 +499,8 @@ EXPORT_SYMBOL_GPL(of_modalias_node);
-  * @list_name:	property name that contains a list
-  * @cells_name:	property name that specifies phandles' arguments count
-  * @index:	index of a phandle to parse out
-- * @out_node:	pointer to device_node struct pointer (will be filled)
-- * @out_args:	pointer to arguments pointer (will be filled)
-+ * @out_node:	optional pointer to device_node struct pointer (will be filled)
-+ * @out_args:	optional pointer to arguments pointer (will be filled)
-  *
-  * This function is useful to parse lists of phandles and their arguments.
-  * Returns 0 on success and fills out_node and out_args, on error returns
-@@ -534,7 +534,7 @@ int of_parse_phandles_with_args(struct device_node *np, const char *list_name,
- 	int size;
- 	int cur_index = 0;
- 	struct device_node *node = NULL;
--	const void *args;
-+	const void *args = NULL;
+diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
+index a4ba217..6eea601 100644
+--- a/drivers/of/gpio.c
++++ b/drivers/of/gpio.c
+@@ -80,6 +80,40 @@ err0:
+ EXPORT_SYMBOL(of_get_gpio_flags);
  
- 	list = of_get_property(np, list_name, &size);
- 	if (!list) {
-@@ -580,16 +580,26 @@ next:
+ /**
++ * of_gpio_count - Count GPIOs for a device
++ * @np:		device node to count GPIOs for
++ *
++ * The function returns the count of GPIOs specified for a node.
++ *
++ * Note that the empty GPIO specifiers counts too. For example,
++ *
++ * gpios = <0
++ *          &pio1 1 2
++ *          0
++ *          &pio2 3 4>;
++ *
++ * defines four GPIOs (so this function will return 4), two of which
++ * are not specified.
++ */
++unsigned int of_gpio_count(struct device_node *np)
++{
++	unsigned int cnt = 0;
++
++	do {
++		int ret;
++
++		ret = of_parse_phandles_with_args(np, "gpios", "#gpio-cells",
++						  cnt, NULL, NULL);
++		/* A hole in the gpios = <> counts anyway. */
++		if (ret < 0 && ret != -EEXIST)
++			break;
++	} while (++cnt);
++
++	return cnt;
++}
++EXPORT_SYMBOL(of_gpio_count);
++
++/**
+  * of_gpio_simple_xlate - translate gpio_spec to the GPIO number and flags
+  * @of_gc:	pointer to the of_gpio_chip structure
+  * @np:		device node of the GPIO chip
+diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
+index e25abf6..fc2472c 100644
+--- a/include/linux/of_gpio.h
++++ b/include/linux/of_gpio.h
+@@ -65,6 +65,7 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
  
- 		of_node_put(node);
- 		node = NULL;
-+		args = NULL;
- 		cur_index++;
- 	}
+ extern int of_get_gpio_flags(struct device_node *np, int index,
+ 			     enum of_gpio_flags *flags);
++extern unsigned int of_gpio_count(struct device_node *np);
  
- 	if (!node) {
--		ret = -ENOENT;
-+		/*
-+		 * args w/o node indicates that the loop above has stopped at
-+		 * the 'hole' cell. Report this differently.
-+		 */
-+		if (args)
-+			ret = -EEXIST;
-+		else
-+			ret = -ENOENT;
- 		goto err0;
- 	}
+ extern int of_mm_gpiochip_add(struct device_node *np,
+ 			      struct of_mm_gpio_chip *mm_gc);
+@@ -81,6 +82,11 @@ static inline int of_get_gpio_flags(struct device_node *np, int index,
+ 	return -ENOSYS;
+ }
  
--	*out_node = node;
--	*out_args = args;
-+	if (out_node)
-+		*out_node = node;
-+	if (out_args)
-+		*out_args = args;
++static inline unsigned int of_gpio_count(struct device_node *np)
++{
++	return 0;
++}
++
+ #endif /* CONFIG_OF_GPIO */
  
- 	return 0;
- err1:
+ /**
 -- 
 1.5.6.5
