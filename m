@@ -1,17 +1,17 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.184])
-	by ozlabs.org (Postfix) with ESMTP id C11EE474C2
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 06:42:15 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id e27so94802nfd.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 05 Dec 2008 11:42:12 -0800 (PST)
-Date: Fri, 5 Dec 2008 14:42:06 -0500
-From: Josh Boyer <jwboyer@gmail.com>
-To: paulus@samba.org
-Subject: Please pull 'merge' branch of 4xx tree
-Message-ID: <20081205194206.GD32621@yoda.jdub.homelinux.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B52EFDDD04
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 07:09:38 +1100 (EST)
+Date: Fri, 5 Dec 2008 23:09:36 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>,
+	David Brownell <dbrownell@users.sourceforge.net>
+Subject: [PATCH 0/7] OpenFirmware support for the spi_mpc83xx driver
+Message-ID: <20081205200936.GA19137@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+Hi all,
 
-Please pull the 'merge' branch of the 4xx tree to pick up the fix below.
-Once it's in Linus' tree, I'll submit it to -stable as we need the same
-fix in .27.
+The patch series are used to support SPI via the OF SPI subsystem
+(driver/of/of_spi.c). Now the driver is able to manage its own
+chip selects, and doesn't need any auxiliary support from the
+board files or fsl_soc constructors.
 
-josh
+The series also contains PowerPC portions of the MMC SPI support.
 
-The following changes since commit feaf3848a813a106f163013af6fcf6c4bfec92d9:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.dk/linux-2.6-block
+Since the series touches spi and powerpc trees, I think it would
+be most convenient to pass it via one of these trees. The patches
+doesn't touch any SPI functionality, only some probe routines, so
+I believe powerpc.git is the best candidate...
 
-are available in the git repository at:
+The other reason for powerpc tree is that the patches depends on
+other patches as found in paulus/powerpc.git + of_gpio_count()
+as found here:
+http://ozlabs.org/pipermail/linuxppc-dev/2008-December/065917.html
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git merge
+David, if you're OK with the patches, may I ask you to sign off on
+the ones that touch drivers/spi so that we could pass it via Kumar's
+powerpc.git?
 
-Grant Likely (1):
-      powerpc/virtex5: Fix Virtex5 machine check handling
+The queue:
 
- arch/powerpc/kernel/cpu_setup_44x.S |    1 +
- arch/powerpc/kernel/cputable.c      |    3 +++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+[1/7] powerpc: Implement get_brgfreq() and get_baudrate() stubs
+[2/7] spi_mpc83xx: Fix sparse warnings
+[3/7] spi_mpc83xx: Rework chip selects handling
+[4/7] spi_mpc83xx: Add OF platform driver bindings
+[5/7] powerpc/fsl_soc: Isolate legacy fsl_spi support to mpc832x_rdb boards
+[6/7] powerpc: Add mmc-spi-slot bindings
+[7/7] powerpc/83xx: Add mmc-spi support via the device tree for MPC8323E-RDB
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
