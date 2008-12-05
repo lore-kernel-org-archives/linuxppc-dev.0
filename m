@@ -1,21 +1,12 @@
 Return-Path: <sr@denx.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 04D71DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 22:17:26 +1100 (EST)
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id B4B37DDDDF
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Dec 2008 22:59:02 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/4xx: Add L2 cache node to AMCC Canyonlands dts
-	file
-Date: Fri, 5 Dec 2008 12:17:11 +0100
-References: <1228457332-523-1-git-send-email-sr@denx.de>
-	<20081205060835.46c6df7a@zod.rchland.ibm.com>
-	<1228475481.10722.12.camel@pasglop>
-In-Reply-To: <1228475481.10722.12.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200812051217.12187.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc/4xx: Add L2 cache node to AMCC Canyonlands dts file
+Date: Fri,  5 Dec 2008 12:58:49 +0100
+Message-Id: <1228478329-30151-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +16,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 05 December 2008, Benjamin Herrenschmidt wrote:
-> On Fri, 2008-12-05 at 06:08 -0500, Josh Boyer wrote:
-> > Shouldn't there also be a next-level-cache property added to the cpu
-> > node that references this?
->
-> It would be nice indeed, it would allow the kernel to expose the cache
-> info in sysfs
+With this patch the L2 cache is enabled on Canyonlands to increase the
+overall performance. There is a known cache coherency issue with the L2
+cache, but this is related to the high bandwidth (HB) PLB segment where
+the memory address is 0x8.xxxx.xxxx (low bandwidth PLB segment is mapped
+to 0x0.xxxx.xxxx). Since this HB address is currently unused it is safe
+to enable the L2 cache.
 
-OK, I'll send an updated version in a short while (lunch time first :)).
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+v2:
+- Add next-level-cache property to the cpu node as suggested by Josh and Ben
 
-Best regards,
-Stefan
+ arch/powerpc/boot/dts/canyonlands.dts |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
+index 79fe412..36ebdf3 100644
+--- a/arch/powerpc/boot/dts/canyonlands.dts
++++ b/arch/powerpc/boot/dts/canyonlands.dts
+@@ -40,6 +40,7 @@
+ 			d-cache-size = <32768>;
+ 			dcr-controller;
+ 			dcr-access-method = "native";
++			next-level-cache = <&L2C0>;
+ 		};
+ 	};
+ 
+@@ -104,6 +105,16 @@
+ 		dcr-reg = <0x00c 0x002>;
+ 	};
+ 
++	L2C0: l2c {
++		compatible = "ibm,l2-cache-460ex", "ibm,l2-cache";
++		dcr-reg = <0x020 0x008		/* Internal SRAM DCR's */
++			   0x030 0x008>;	/* L2 cache DCR's */
++		cache-line-size = <32>;		/* 32 bytes */
++		cache-size = <262144>;		/* L2, 256K */
++		interrupt-parent = <&UIC1>;
++		interrupts = <11 1>;
++	};
++
+ 	plb {
+ 		compatible = "ibm,plb-460ex", "ibm,plb4";
+ 		#address-cells = <2>;
+-- 
+1.6.0.4
