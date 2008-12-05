@@ -1,13 +1,23 @@
-Return-Path: <cpw@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
-	by ozlabs.org (Postfix) with ESMTP id C3DD5DDDEE
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 04:51:05 +1100 (EST)
-To: arnd@arndb.de
-Subject: [Re: PATCH] numactl: fix libnuma on big-endian 64-bit systems
-Message-Id: <E1L8ejM-0003Ln-VN@eag09.americas.sgi.com>
-From: Cliff Wickman <cpw@sgi.com>
-Date: Fri, 05 Dec 2008 11:44:44 -0600
-Cc: Lee.Schermerhorn@hp.com, safradin@de.ibm.com, linuxppc-dev@ozlabs.org
+Return-Path: <jhsiao@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 0A59EDDD01
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 10:24:12 +1100 (EST)
+Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v4]
+From: James Hsiao <jhsiao@amcc.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+In-Reply-To: <20081204193256.12dbc306.kim.phillips@freescale.com>
+References: <1228256232.4770.47.camel@jhsiao-usb>
+	<20081204193256.12dbc306.kim.phillips@freescale.com>
+Content-Type: text/plain
+Date: Fri, 05 Dec 2008 15:24:11 -0800
+Message-Id: <1228519451.5444.59.camel@jhsiao-usb>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, herbert@gondor.apana.org.au,
+	linux-crypto@vger.kernel.org
+Reply-To: jhsiao@amcc.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,122 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-linux-numa@vger.kernel.org
-
-Arnd Bergmann and Mijo Safradin called my attention to problems with
-libnuma's read_mask() on a big-endian 64-bit machine.
-
-In testing that function I found it to be buggy on little-endian and 32-bit
-systems as well.
-
-I propose a function that looks like the below.  The patch is farther below.
-(Arnd, I did not switch to longs, as that proved problematic.  The ascii hex
- strings being scanned are 32-bit values.)
-
-I tested on a 64-bit MIPS system.  Could you test on your platform?
-
-/*
- * Read a mask consisting of a sequence of hexadecimal longs separated by
- * commas. Order them correctly and return the number of the last bit
- * set.
- */
-static int
-read_mask(char *s, struct bitmask *bmp)
-{
-	char *end = s;
-	unsigned int *start = (unsigned int *)bmp->maskp;
-	unsigned int *p = start;
-	unsigned int *q;
-	unsigned int i;
-	unsigned int n = 0;
-
-	i = strtoul(s, &end, 16);
-
-	/* Skip leading zeros */
-	while (!i && *end++ == ',') {
-		i = strtoul(end, &end, 16);
-	}
-	end++; /* past the , */
-
-	if (!i)
-		/* End of string. No mask */
-		return -1;
-
-	start[n++] = i;
-	/* Read sequence of ints */
-	do {
-		i = strtoul(end, &end, 16);
-		if (i)
-			start[n++] = i;
-	} while (*end++ == ',');
-	n--;
-
-	/*
-	 * Invert sequence of ints if necessary since the first int
-	 * is the highest and we put it first because we read it first.
-	 */
-	for (q = start + n, p = start; p < q; q--, p++) {
-		unsigned int x = *q;
-
-		*q = *p;
-		*p = x;
-	}
-
-	/* Poor mans fls() */
-	for(i = 31; i >= 0; i--)
-		if (test_bit(i, start + n))
-			break;
-
-	/*
-	 * Return the last bit set
-	 */
-	return ((sizeof(unsigned int)*8) * n) + i;
-}
+Hi Kim,
 
 
+I try to address some of the comments. I am not mentioning things that I
+agree with you.
 
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
----
- libnuma.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
 
-Index: numactl-dev/libnuma.c
-===================================================================
---- numactl-dev.orig/libnuma.c
-+++ numactl-dev/libnuma.c
-@@ -371,7 +371,6 @@ static int
- read_mask(char *s, struct bitmask *bmp)
- {
- 	char *end = s;
--	char *prevend;
- 	unsigned int *start = (unsigned int *)bmp->maskp;
- 	unsigned int *p = start;
- 	unsigned int *q;
-@@ -380,22 +379,22 @@ read_mask(char *s, struct bitmask *bmp)
- 
- 	i = strtoul(s, &end, 16);
- 
--	prevend = end;
- 	/* Skip leading zeros */
- 	while (!i && *end++ == ',') {
--		prevend = end;
- 		i = strtoul(end, &end, 16);
- 	}
--	end = prevend;
-+	end++; /* past the , */
- 
- 	if (!i)
- 		/* End of string. No mask */
- 		return -1;
- 
-+	start[n++] = i;
- 	/* Read sequence of ints */
- 	do {
--		start[n++] = i;
- 		i = strtoul(end, &end, 16);
-+		if (i)
-+			start[n++] = i;
- 	} while (*end++ == ',');
- 	n--;
- 
+> + */
+> +static int get_sg_count(struct scatterlist *sg_list, int nbytes)
+> +{
+> +     struct scatterlist *sg = sg_list;
+> +     int sg_nents = 0;
+> +
+> +     while (nbytes) {
+> +             sg_nents++;
+> +             if (sg->length > nbytes)
+> +                     break;
+
+this is slightly different - this condition shouldn't need checking
+here - see [1] below..
+
+> +             nbytes -= sg->length;
+> +             sg = sg_next(sg);
+> +     }
+> +
+> +     return sg_nents;
+> +}
+
+Without the check, nbytes could become negative. The aead test case
+with .np will crash(ie. gcm tests), those test  have sg->length >
+nbytes.
+
+
+About aad_len, we didn't release code that use aad yet. We did test this
+function with aad_len none zero(the gcm tests).
+
+About the irq_disable or spin_lock. 
+The driver could be used by a kernel thread and esp4 at same time. As I
+know process is preemptable. When the driver is used by a process it is
+possible to be preempted. The hardware require scatter/gather descriptor
+to be consecutive. So, if the process get a gather descriptor and then
+it is preempted by another process or esp4 which get a gather descriptor
+and return to the original process, the origianl process could get a non
+consecutive gather descriptor.   
+So, if spin_lock is recommended then I have to use spin_lock_irq_save,
+which use irq_disable too. Do you think that is acceptable? 
+
+Thanks and regards
+
+James
