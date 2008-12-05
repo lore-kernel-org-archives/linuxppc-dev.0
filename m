@@ -1,24 +1,17 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-4.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id AF6F0474C2
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 06:35:37 +1100 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-Subject: Re: [PATCH] IB/ehca: replace modulus operations in flush error
-	completion path
-References: <200812021631.58810.ossrosch@linux.vnet.ibm.com>
-Date: Fri, 05 Dec 2008 11:25:49 -0800
-In-Reply-To: <200812021631.58810.ossrosch@linux.vnet.ibm.com> (Stefan
-	Roscher's message of "Tue, 2 Dec 2008 16:31:56 +0100")
-Message-ID: <adaabba77b6.fsf@cisco.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.184])
+	by ozlabs.org (Postfix) with ESMTP id C11EE474C2
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 06:42:15 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id e27so94802nfd.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 05 Dec 2008 11:42:12 -0800 (PST)
+Date: Fri, 5 Dec 2008 14:42:06 -0500
+From: Josh Boyer <jwboyer@gmail.com>
+To: paulus@samba.org
+Subject: Please pull 'merge' branch of 4xx tree
+Message-ID: <20081205194206.GD32621@yoda.jdub.homelinux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: fenkes@de.ibm.com, OF-EWG <ewg@lists.openfabrics.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
-	alexschm@de.ibm.com, stefan.roscher@de.ibm.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,4 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, applied
+Hi Paul,
+
+Please pull the 'merge' branch of the 4xx tree to pick up the fix below.
+Once it's in Linus' tree, I'll submit it to -stable as we need the same
+fix in .27.
+
+josh
+
+The following changes since commit feaf3848a813a106f163013af6fcf6c4bfec92d9:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.dk/linux-2.6-block
+
+are available in the git repository at:
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git merge
+
+Grant Likely (1):
+      powerpc/virtex5: Fix Virtex5 machine check handling
+
+ arch/powerpc/kernel/cpu_setup_44x.S |    1 +
+ arch/powerpc/kernel/cputable.c      |    3 +++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
