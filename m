@@ -1,21 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6ABC8DDDED
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Dec 2008 10:00:41 +1100 (EST)
-Subject: RE: PCI Resource allocation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Flores, Raul" <raul.flores@lmco.com>
-In-Reply-To: <28CF047BB51A9C40A89E308370E2DA1117A4AB34@emss07m13.us.lmco.com>
-References: <cbaa36330812041036u751ea939qc0aea60002655d07@mail.gmail.com>
-	<1228431244.10722.4.camel@pasglop>
-	<28CF047BB51A9C40A89E308370E2DA1117A4AB34@emss07m13.us.lmco.com>
-Content-Type: text/plain
-Date: Mon, 08 Dec 2008 10:00:30 +1100
-Message-Id: <1228690830.7101.25.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH linux-next] powerpc/powermac: Add missing of_node_put
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20081207164333.78b69d16.sfr@canb.auug.org.au>
+References: <200812021445.18670.npalix@diku.dk>
+	<20081206163449.60757c4a.akpm@linux-foundation.org>
+	<18747.13668.304923.709761@cargo.ozlabs.ibm.com>
+	<20081207164333.78b69d16.sfr@canb.auug.org.au>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-sShMn4szOhljCE+rqAJ6"
+Date: Mon, 08 Dec 2008 10:58:18 +1100
+Message-Id: <1228694298.21407.4.camel@localhost>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Deepak Pandian <peerlessdeepaks@gmail.com>
+Cc: Nicolas Palix <npalix@diku.dk>, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Julia Lawall <julia@diku.dk>, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-12-04 at 18:12 -0600, Flores, Raul wrote:
-> A bit off topic, but since the subject is pci resource allocation:
-> 
-> As entered here:
-> http://bugs.gentoo.org/show_bug.cgi?id=249832
-> 
-> the 2.6.24-gentoo-r3 kernel; iomem tree for my video display works, but
-> has not worked in the following kernels:
-> 2.6.26-gentoo-r2
-> 2.6.27-gentoo-r2
-> 2.6.28-rc4 (perfmon2 git)
-> 
-> Using g5_defconfig on an iMac G5 iSight PowerMac 12,1 ppc64 (cross 32
-> userspace) PPC970FX
-> 
-> Had to hack to arch/powerpc/kernel/pci-common.c in alloc_resource() so
-> that I could run the 2.6.28 kernel with perfmon2.
 
-That's strange... looks like something fishy with the PCI-E root
-complex, can you enable DEBUG in pci-common.c and pci_64.c and send me
-the resulting dmesg output ?
+--=-sShMn4szOhljCE+rqAJ6
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Ben.
+On Sun, 2008-12-07 at 16:43 +1100, Stephen Rothwell wrote:
+> Hi Paul,
+>=20
+> On Sun, 7 Dec 2008 13:31:00 +1100 Paul Mackerras <paulus@samba.org> wrote=
+:
+> >
+> > I'm really in two minds about applying any of the of_node_put patches
+> > that only affect powermacs.  The reference counts only matter on
+> > platforms where we update the OF device tree at runtime, which is
+> > currently only IBM pSeries machines.  Since we don't have any hotplug
+> > on powermacs, and never will have, the OF device tree is completely
+> > static and we don't actually need refcounts on the nodes at all, so
+> > who cares if they're a bit higher than they might be?
+> >=20
+> > In particular, the VIA whose node we're looking for here is built-in
+> > on the motherboard, and there can never be more than one, and it can
+> > never be removed.
+>=20
+> I my mind it is about consistent use of the API and good examples for
+> people to copy.  Also, in about a year you will be presented with the
+> same set of patches when a new pair of eyes looks at the same code and
+> notices the discrepancy ...
+
+what-he-said++
+
+Allowing the ref counting to be broken in one part of the code is just
+asking for it to be broken everywhere.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-sShMn4szOhljCE+rqAJ6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkk8YxoACgkQdSjSd0sB4dLZNQCgyF3wpfe6bGtBVSwpMA+aeuHZ
+fPYAoIcOJVfxjbYD+Y2o+zFlXfymVLTz
+=g47Z
+-----END PGP SIGNATURE-----
+
+--=-sShMn4szOhljCE+rqAJ6--
