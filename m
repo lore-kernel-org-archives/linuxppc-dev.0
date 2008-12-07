@@ -1,23 +1,22 @@
-Return-Path: <jhsiao@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0A59EDDD01
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Dec 2008 10:24:12 +1100 (EST)
-Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v4]
-From: James Hsiao <jhsiao@amcc.com>
-To: Kim Phillips <kim.phillips@freescale.com>
-In-Reply-To: <20081204193256.12dbc306.kim.phillips@freescale.com>
-References: <1228256232.4770.47.camel@jhsiao-usb>
-	<20081204193256.12dbc306.kim.phillips@freescale.com>
-Content-Type: text/plain
-Date: Fri, 05 Dec 2008 15:24:11 -0800
-Message-Id: <1228519451.5444.59.camel@jhsiao-usb>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 60CB2DDD01
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Dec 2008 11:35:00 +1100 (EST)
+Date: Sat, 6 Dec 2008 16:34:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nicolas Palix <npalix@diku.dk>
+Subject: Re: [PATCH linux-next] powerpc/powermac: Add missing of_node_put
+Message-Id: <20081206163449.60757c4a.akpm@linux-foundation.org>
+In-Reply-To: <200812021445.18670.npalix@diku.dk>
+References: <200812021445.18670.npalix@diku.dk>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, herbert@gondor.apana.org.au,
-	linux-crypto@vger.kernel.org
-Reply-To: jhsiao@amcc.com
+Content-Type: text/plain; charset=US-ASCII
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Julia Lawall <julia@diku.dk>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,53 +26,139 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kim,
+On Tue, 2 Dec 2008 14:45:18 +0100 Nicolas Palix <npalix@diku.dk> wrote:
 
-
-I try to address some of the comments. I am not mentioning things that I
-agree with you.
-
-
-> + */
-> +static int get_sg_count(struct scatterlist *sg_list, int nbytes)
-> +{
-> +     struct scatterlist *sg = sg_list;
-> +     int sg_nents = 0;
+> --- a/arch/powerpc/platforms/powermac/time.c
+> +++ b/arch/powerpc/platforms/powermac/time.c
+> @@ -265,12 +265,14 @@ int __init via_calibrate_decr(void)
+>  	struct resource rsrc;
+>  
+>  	vias = of_find_node_by_name(NULL, "via-cuda");
+>  	if (vias == 0)
+>  		vias = of_find_node_by_name(NULL, "via-pmu");
+>  	if (vias == 0)
+>  		vias = of_find_node_by_name(NULL, "via");
+>  	if (vias == 0 || of_address_to_resource(vias, 0, &rsrc))
+>  		return 0;
+> +	of_node_put(vias);
 > +
-> +     while (nbytes) {
-> +             sg_nents++;
-> +             if (sg->length > nbytes)
-> +                     break;
 
-this is slightly different - this condition shouldn't need checking
-here - see [1] below..
+This still misses a path - if that `return 0' is taken, we still leak
+the reference.
 
-> +             nbytes -= sg->length;
-> +             sg = sg_next(sg);
-> +     }
-> +
-> +     return sg_nents;
-> +}
+This is reason #345 why sprinkling return statements all over your code
+is bad.
 
-Without the check, nbytes could become negative. The aead test case
-with .np will crash(ie. gcm tests), those test  have sg->length >
-nbytes.
+I fixed it up thusly.  Please check.
 
 
-About aad_len, we didn't release code that use aad yet. We did test this
-function with aad_len none zero(the gcm tests).
 
-About the irq_disable or spin_lock. 
-The driver could be used by a kernel thread and esp4 at same time. As I
-know process is preemptable. When the driver is used by a process it is
-possible to be preempted. The hardware require scatter/gather descriptor
-to be consecutive. So, if the process get a gather descriptor and then
-it is preempted by another process or esp4 which get a gather descriptor
-and return to the original process, the origianl process could get a non
-consecutive gather descriptor.   
-So, if spin_lock is recommended then I have to use spin_lock_irq_save,
-which use irq_disable too. Do you think that is acceptable? 
 
-Thanks and regards
+of_node_put is needed before discarding a value received from
+of_find_node_by_name, eg in error handling code or when the device
+node is no longer used.
 
-James
+The semantic match that catches the bug is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@r exists@
+local idexpression struct device_node *n;
+position p1, p2;
+struct device_node *n1;
+statement S;
+identifier f;
+expression E;
+expression *ptr != NULL;
+@@
+
+n@p1 = of_find_node_by_name(...)
+...
+if (!n) S
+... when != of_node_put(n)
+    when != n1 = f(n,...)
+    when != E = n
+    when any
+    when strict
+(
+  return \(0\|<+...n...+>\|ptr\);
+|
+return@p2 ...;
+|
+  of_node_put(n);
+|
+  n1 = f(n,...)
+|
+  E = n
+)
+
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+@@
+
+print "* file: %s of_find_node_by_name %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+// </smpl>
+
+Signed-off-by: Nicolas Palix <npalix@diku.dk>
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+
+index bcf50d7..800fcce 100644
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/powerpc/platforms/powermac/pci.c  |    2 ++
+ arch/powerpc/platforms/powermac/time.c |    9 ++++++---
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+diff -puN arch/powerpc/platforms/powermac/pci.c~powerpc-powermac-add-missing-of_node_put arch/powerpc/platforms/powermac/pci.c
+--- a/arch/powerpc/platforms/powermac/pci.c~powerpc-powermac-add-missing-of_node_put
++++ a/arch/powerpc/platforms/powermac/pci.c
+@@ -661,6 +661,7 @@ static void __init init_second_ohare(voi
+ 			pci_find_hose_for_OF_device(np);
+ 		if (!hose) {
+ 			printk(KERN_ERR "Can't find PCI hose for OHare2 !\n");
++			of_node_put(np);
+ 			return;
+ 		}
+ 		early_read_config_word(hose, bus, devfn, PCI_COMMAND, &cmd);
+@@ -669,6 +670,7 @@ static void __init init_second_ohare(voi
+ 		early_write_config_word(hose, bus, devfn, PCI_COMMAND, cmd);
+ 	}
+ 	has_second_ohare = 1;
++	of_node_put(np);
+ }
+ 
+ /*
+diff -puN arch/powerpc/platforms/powermac/time.c~powerpc-powermac-add-missing-of_node_put arch/powerpc/platforms/powermac/time.c
+--- a/arch/powerpc/platforms/powermac/time.c~powerpc-powermac-add-missing-of_node_put
++++ a/arch/powerpc/platforms/powermac/time.c
+@@ -270,11 +270,11 @@ int __init via_calibrate_decr(void)
+ 	if (vias == 0)
+ 		vias = of_find_node_by_name(NULL, "via");
+ 	if (vias == 0 || of_address_to_resource(vias, 0, &rsrc))
+-		return 0;
++		goto fail;
+ 	via = ioremap(rsrc.start, rsrc.end - rsrc.start + 1);
+ 	if (via == NULL) {
+ 		printk(KERN_ERR "Failed to map VIA for timer calibration !\n");
+-		return 0;
++		goto fail;
+ 	}
+ 
+ 	/* set timer 1 for continuous interrupts */
+@@ -297,8 +297,11 @@ int __init via_calibrate_decr(void)
+ 	ppc_tb_freq = (dstart - dend) * 100 / 6;
+ 
+ 	iounmap(via);
+-	
++
+ 	return 1;
++fail:
++	of_node_put(vias);
++	return 0;
+ }
+ #endif
+ 
+_
