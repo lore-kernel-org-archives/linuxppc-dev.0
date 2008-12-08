@@ -2,16 +2,17 @@ Return-Path: <yur@emcraft.com>
 Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 020DBDE57A
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 09:07:38 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id F1D10DE4C3
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 09:07:37 +1100 (EST)
 From: Yuri Tikhonov <yur@emcraft.com>
 To: linux-raid@vger.kernel.org
-Subject: [PATCH 07/11] md: rewrite handle_stripe_dirtying6 in asynchronous way
-Date: Tue, 9 Dec 2008 00:57:33 +0300
+Subject: [PATCH 06/11] md: change handle_stripe_fill6 to work in asynchronous
+	way
+Date: Tue, 9 Dec 2008 00:57:21 +0300
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200812090057.33890.yur@emcraft.com>
+Message-Id: <200812090057.21711.yur@emcraft.com>
 Cc: linuxppc-dev@ozlabs.org, dan.j.williams@intel.com, wd@denx.de, dzu@denx.de,
 	yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,146 +24,185 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rewrite handle_stripe_dirtying6 function to work asynchronously.
+Change handle_stripe_fill6 to work asynchronously and introduce helper
+fetch_block6 function for this.
 
 Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
 Signed-off-by: Ilya Yanok <yanok@emcraft.com>
 ---
- drivers/md/raid5.c |  113 ++++++++++++++--------------------------------------
- 1 files changed, 30 insertions(+), 83 deletions(-)
+ drivers/md/raid5.c |  154 ++++++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 106 insertions(+), 48 deletions(-)
 
 diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index e08ed4f..f0b47bd 100644
+index e31f38b..e08ed4f 100644
 --- a/drivers/md/raid5.c
 +++ b/drivers/md/raid5.c
-@@ -2485,99 +2485,46 @@ static void handle_stripe_dirtying6(raid5_conf_t *conf,
- 		struct stripe_head *sh,	struct stripe_head_state *s,
- 		struct r6_state *r6s, int disks)
+@@ -2224,61 +2224,119 @@ static void handle_stripe_fill5(struct stripe_head *sh,
+ 	set_bit(STRIPE_HANDLE, &sh->state);
+ }
+ 
+-static void handle_stripe_fill6(struct stripe_head *sh,
+-			struct stripe_head_state *s, struct r6_state *r6s,
+-			int disks)
++/* fetch_block6 - checks the given member device to see if its data needs
++ * to be read or computed to satisfy a request.
++ *
++ * Returns 1 when no more member devices need to be checked, otherwise returns
++ * 0 to tell the loop in handle_stripe_fill6 to continue
++ */
++static int fetch_block6(struct stripe_head *sh, struct stripe_head_state *s,
++			 struct r6_state *r6s, int disk_idx, int disks)
  {
--	int rcw = 0, must_compute = 0, pd_idx = sh->pd_idx, i;
-+	int rcw = 0, pd_idx = sh->pd_idx, i;
- 	int qd_idx = r6s->qd_idx;
+-	int i;
+-	for (i = disks; i--; ) {
+-		struct r5dev *dev = &sh->dev[i];
+-		if (!test_bit(R5_LOCKED, &dev->flags) &&
+-		    !test_bit(R5_UPTODATE, &dev->flags) &&
+-		    (dev->toread || (dev->towrite &&
+-		     !test_bit(R5_OVERWRITE, &dev->flags)) ||
+-		     s->syncing || s->expanding ||
+-		     (s->failed >= 1 &&
+-		      (sh->dev[r6s->failed_num[0]].toread ||
+-		       s->to_write)) ||
+-		     (s->failed >= 2 &&
+-		      (sh->dev[r6s->failed_num[1]].toread ||
+-		       s->to_write)))) {
+-			/* we would like to get this block, possibly
+-			 * by computing it, but we might not be able to
++	struct r5dev *dev = &sh->dev[disk_idx];
++	struct r5dev *fdev[2] = { &sh->dev[r6s->failed_num[0]],
++				  &sh->dev[r6s->failed_num[1]] };
 +
-+	set_bit(STRIPE_HANDLE, &sh->state);
- 	for (i = disks; i--; ) {
- 		struct r5dev *dev = &sh->dev[i];
--		/* Would I have to read this buffer for reconstruct_write */
--		if (!test_bit(R5_OVERWRITE, &dev->flags)
--		    && i != pd_idx && i != qd_idx
--		    && (!test_bit(R5_LOCKED, &dev->flags)
--			    ) &&
--		    !test_bit(R5_UPTODATE, &dev->flags)) {
--			if (test_bit(R5_Insync, &dev->flags)) rcw++;
--			else {
--				pr_debug("raid6: must_compute: "
--					"disk %d flags=%#lx\n", i, dev->flags);
--				must_compute++;
-+		/* check if we haven't enough data */
-+		if (!test_bit(R5_OVERWRITE, &dev->flags) &&
-+		    i != pd_idx && i != qd_idx &&
-+		    !test_bit(R5_LOCKED, &dev->flags) &&
-+		    !(test_bit(R5_UPTODATE, &dev->flags) ||
-+		      test_bit(R5_Wantcompute, &dev->flags))) {
-+			rcw++;
-+			if (!test_bit(R5_Insync, &dev->flags))
-+				continue; /* it's a failed drive */
-+
-+			if (
-+			  test_bit(STRIPE_PREREAD_ACTIVE, &sh->state)) {
-+				pr_debug("Read_old stripe %llu "
-+					"block %d for Reconstruct\n",
-+				     (unsigned long long)sh->sector, i);
-+				set_bit(R5_LOCKED, &dev->flags);
-+				set_bit(R5_Wantread, &dev->flags);
-+				s->locked++;
++	if (!test_bit(R5_LOCKED, &dev->flags) &&
++	    !test_bit(R5_UPTODATE, &dev->flags) &&
++	    (dev->toread ||
++	     (dev->towrite && !test_bit(R5_OVERWRITE, &dev->flags)) ||
++	     s->syncing || s->expanding ||
++	     (s->failed >= 1 &&
++	      (fdev[0]->toread || s->to_write)) ||
++	     (s->failed >= 2 &&
++	      (fdev[1]->toread || s->to_write)))) {
++		/* we would like to get this block, possibly by computing it,
++		 * otherwise read it if the backing disk is insync
++		 */
++		BUG_ON(test_bit(R5_Wantcompute, &dev->flags));
++		BUG_ON(test_bit(R5_Wantread, &dev->flags));
++		if ((s->uptodate == disks - 1) &&
++		    (s->failed && (disk_idx == r6s->failed_num[0] ||
++				   disk_idx == r6s->failed_num[1]))) {
++			/* have disk failed, and we're requested to fetch it;
++			 * do compute it
+ 			 */
+-			if ((s->uptodate == disks - 1) &&
+-			    (s->failed && (i == r6s->failed_num[0] ||
+-					   i == r6s->failed_num[1]))) {
+-				pr_debug("Computing stripe %llu block %d\n",
+-				       (unsigned long long)sh->sector, i);
+-				compute_block_1(sh, i, 0);
+-				s->uptodate++;
+-			} else if ( s->uptodate == disks-2 && s->failed >= 2 ) {
+-				/* Computing 2-failure is *very* expensive; only
+-				 * do it if failed >= 2
++			pr_debug("Computing stripe %llu block %d\n",
++			       (unsigned long long)sh->sector, disk_idx);
++			set_bit(STRIPE_COMPUTE_RUN, &sh->state);
++			set_bit(STRIPE_OP_COMPUTE_BLK, &s->ops_request);
++			set_bit(R5_Wantcompute, &dev->flags);
++			sh->ops.target = disk_idx;
++			sh->ops.target2 = -1; /* no 2nd target */
++			s->req_compute = 1;
++			s->uptodate++;
++			return 1;
++		} else if ( s->uptodate == disks-2 && s->failed >= 2 ) {
++			/* Computing 2-failure is *very* expensive; only
++			 * do it if failed >= 2
++			 */
++			int other;
++			for (other = disks; other--; ) {
++				if (other == disk_idx)
++					continue;
++				if (!test_bit(R5_UPTODATE,
++				      &sh->dev[other].flags))
++					break;
++			}
++			BUG_ON(other < 0);
++			pr_debug("Computing stripe %llu blocks %d,%d\n",
++			       (unsigned long long)sh->sector,
++			       disk_idx, other);
++			set_bit(STRIPE_COMPUTE_RUN, &sh->state);
++			set_bit(STRIPE_OP_COMPUTE_BLK, &s->ops_request);
++			if (other == r6s->qd_idx || disk_idx == r6s->qd_idx) {
++				/* a D+Q failure: compute D from P,
++				 * and recompute Q then
+ 				 */
+-				int other;
+-				for (other = disks; other--; ) {
+-					if (other == i)
+-						continue;
+-					if (!test_bit(R5_UPTODATE,
+-					      &sh->dev[other].flags))
+-						break;
+-				}
+-				BUG_ON(other < 0);
+-				pr_debug("Computing stripe %llu blocks %d,%d\n",
+-				       (unsigned long long)sh->sector,
+-				       i, other);
+-				compute_block_2(sh, i, other);
++				disk_idx = (other == r6s->qd_idx) ? disk_idx :
++					   other;
++				set_bit(R5_Wantcompute,
++					&sh->dev[disk_idx].flags);
++				sh->ops.target = disk_idx;
++				sh->ops.target2 = -1; /* no 2nd target */
++				s->uptodate++;
 +			} else {
-+				pr_debug("Request delayed stripe %llu "
-+					"block %d for Reconstruct\n",
-+				     (unsigned long long)sh->sector, i);
-+				set_bit(STRIPE_DELAYED, &sh->state);
-+				set_bit(STRIPE_HANDLE, &sh->state);
++				/* compute both */
++				set_bit(R5_Wantcompute,
++					&sh->dev[disk_idx].flags);
++				set_bit(R5_Wantcompute, &sh->dev[other].flags);
++				sh->ops.target = disk_idx;
++				sh->ops.target2 = other;
+ 				s->uptodate += 2;
+-			} else if (test_bit(R5_Insync, &dev->flags)) {
+-				set_bit(R5_LOCKED, &dev->flags);
+-				set_bit(R5_Wantread, &dev->flags);
+-				s->locked++;
+-				pr_debug("Reading block %d (sync=%d)\n",
+-					i, s->syncing);
  			}
++			s->req_compute = 1;
++			return 1;
++		} else if (test_bit(R5_Insync, &dev->flags)) {
++			set_bit(R5_LOCKED, &dev->flags);
++			set_bit(R5_Wantread, &dev->flags);
++			s->locked++;
++			pr_debug("Reading block %d (sync=%d)\n",
++				disk_idx, s->syncing);
  		}
  	}
--	pr_debug("for sector %llu, rcw=%d, must_compute=%d\n",
--	       (unsigned long long)sh->sector, rcw, must_compute);
--	set_bit(STRIPE_HANDLE, &sh->state);
--
--	if (rcw > 0)
--		/* want reconstruct write, but need to get some data */
--		for (i = disks; i--; ) {
--			struct r5dev *dev = &sh->dev[i];
--			if (!test_bit(R5_OVERWRITE, &dev->flags)
--			    && !(s->failed == 0 && (i == pd_idx || i == qd_idx))
--			    && !test_bit(R5_LOCKED, &dev->flags) &&
--			    !test_bit(R5_UPTODATE, &dev->flags) &&
--			    test_bit(R5_Insync, &dev->flags)) {
--				if (
--				  test_bit(STRIPE_PREREAD_ACTIVE, &sh->state)) {
--					pr_debug("Read_old stripe %llu "
--						"block %d for Reconstruct\n",
--					     (unsigned long long)sh->sector, i);
--					set_bit(R5_LOCKED, &dev->flags);
--					set_bit(R5_Wantread, &dev->flags);
--					s->locked++;
--				} else {
--					pr_debug("Request delayed stripe %llu "
--						"block %d for Reconstruct\n",
--					     (unsigned long long)sh->sector, i);
--					set_bit(STRIPE_DELAYED, &sh->state);
--					set_bit(STRIPE_HANDLE, &sh->state);
--				}
--			}
--		}
- 	/* now if nothing is locked, and if we have enough data, we can start a
- 	 * write request
- 	 */
--	if (s->locked == 0 && rcw == 0 &&
-+	if ((s->req_compute || !test_bit(STRIPE_COMPUTE_RUN, &sh->state)) &&
-+	    s->locked == 0 && rcw == 0 &&
- 	    !test_bit(STRIPE_BIT_DELAY, &sh->state)) {
--		if (must_compute > 0) {
--			/* We have failed blocks and need to compute them */
--			switch (s->failed) {
--			case 0:
--				BUG();
--			case 1:
--				compute_block_1(sh, r6s->failed_num[0], 0);
--				break;
--			case 2:
--				compute_block_2(sh, r6s->failed_num[0],
--						r6s->failed_num[1]);
--				break;
--			default: /* This request should have been failed? */
--				BUG();
--			}
--		}
--
--		pr_debug("Computing parity for stripe %llu\n",
--			(unsigned long long)sh->sector);
--		compute_parity6(sh, RECONSTRUCT_WRITE);
--		/* now every locked buffer is ready to be written */
--		for (i = disks; i--; )
--			if (test_bit(R5_LOCKED, &sh->dev[i].flags)) {
--				pr_debug("Writing stripe %llu block %d\n",
--				       (unsigned long long)sh->sector, i);
--				s->locked++;
--				set_bit(R5_Wantwrite, &sh->dev[i].flags);
--			}
--		if (s->locked == disks)
--			if (!test_and_set_bit(STRIPE_FULL_WRITE, &sh->state))
--				atomic_inc(&conf->pending_full_writes);
--		/* after a RECONSTRUCT_WRITE, the stripe MUST be in-sync */
--		set_bit(STRIPE_INSYNC, &sh->state);
--
--		if (test_and_clear_bit(STRIPE_PREREAD_ACTIVE, &sh->state)) {
--			atomic_dec(&conf->preread_active_stripes);
--			if (atomic_read(&conf->preread_active_stripes) <
--			    IO_THRESHOLD)
--				md_wakeup_thread(conf->mddev->thread);
--		}
-+		schedule_reconstruction(sh, s, 1, 0);
- 	}
++
++	return 0;
++}
++
++/**
++ * handle_stripe_fill6 - read or compute data to satisfy pending requests.
++ */
++static void handle_stripe_fill6(struct stripe_head *sh,
++			struct stripe_head_state *s, struct r6_state *r6s,
++			int disks)
++{
++	int i;
++
++	/* look for blocks to read/compute, skip this if a compute
++	 * is already in flight, or if the stripe contents are in the
++	 * midst of changing due to a write
++	 */
++	if (!test_bit(STRIPE_COMPUTE_RUN, &sh->state) && !sh->check_state &&
++	    !sh->reconstruct_state)
++		for (i = disks; i--; )
++			if (fetch_block6(sh, s, r6s, i, disks))
++				break;
+ 	set_bit(STRIPE_HANDLE, &sh->state);
  }
  
 -- 
