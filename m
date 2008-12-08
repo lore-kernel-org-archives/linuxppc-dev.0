@@ -1,26 +1,10 @@
-Return-Path: <Jason.Jin@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E4B89DDDEE
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Dec 2008 14:44:57 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	mB83il4v028834
-	for <linuxppc-dev@ozlabs.org>; Sun, 7 Dec 2008 20:44:53 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id mB83ijtg010660
-	for <linuxppc-dev@ozlabs.org>; Sun, 7 Dec 2008 21:44:46 -0600 (CST)
-From: Jason Jin <Jason.jin@freescale.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH] Set the fsl elbc ECCM according the settings in bootloader.
-Date: Mon,  8 Dec 2008 11:41:03 +0800
-Message-Id: <1228707663-26995-1-git-send-email-Jason.jin@freescale.com>
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-	Jason Jin <Jason.jin@freescale.com>
+Return-Path: <benh@ozlabs.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 08 Dec 2008 15:32:26 +1100
+Subject: [PATCH] powerpc: Fix mismerge of iss4xx platform support
+Message-Id: <20081208043311.5CB96DDE07@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,32 +14,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The ECCM maybe set in bootloader, Get ECCM settings from the bootloader,
-can avoid the image written by bootloader cannot read out by kernel.
+The Makefile missed the necessary bit for treeboot-iss4xx.o to be built
+thus breaking builds of this platform
 
-But the limitation of doing it this way is that, it could break large page
-NAND if it is written with NAND disabled in u-boot and read with NAND
-enabled, or vice versa.
-
-Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/mtd/nand/fsl_elbc_nand.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-index 4aa5bd6..65929db 100644
---- a/drivers/mtd/nand/fsl_elbc_nand.c
-+++ b/drivers/mtd/nand/fsl_elbc_nand.c
-@@ -777,7 +777,9 @@ static int fsl_elbc_chip_init(struct fsl_elbc_mtd *priv)
- 	/* Fill in fsl_elbc_mtd structure */
- 	priv->mtd.priv = chip;
- 	priv->mtd.owner = THIS_MODULE;
--	priv->fmr = 0; /* rest filled in later */
-+
-+	/* Set the ECCM according to the settings in bootloader.*/
-+	priv->fmr = in_be32(&lbc->fmr) & FMR_ECCM;
+ arch/powerpc/boot/Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-work.orig/arch/powerpc/boot/Makefile	2008-12-08 15:30:38.000000000 +1100
++++ linux-work/arch/powerpc/boot/Makefile	2008-12-08 15:30:56.000000000 +1100
+@@ -70,7 +70,7 @@ src-plat := of.c cuboot-52xx.c cuboot-82
+ 		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
+ 		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
+ 		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
+-		cuboot-acadia.c
++		cuboot-acadia.c treeboot-iss4xx.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
  
- 	/* fill in nand_chip structure */
- 	/* set up function call table */
--- 
-1.5.4
+ src-boot := $(addprefix $(obj)/, $(src-boot))
