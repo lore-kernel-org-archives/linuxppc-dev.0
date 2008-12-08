@@ -1,23 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH linux-next] powerpc/powermac: Add missing of_node_put
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20081207164333.78b69d16.sfr@canb.auug.org.au>
-References: <200812021445.18670.npalix@diku.dk>
-	<20081206163449.60757c4a.akpm@linux-foundation.org>
-	<18747.13668.304923.709761@cargo.ozlabs.ibm.com>
-	<20081207164333.78b69d16.sfr@canb.auug.org.au>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-sShMn4szOhljCE+rqAJ6"
-Date: Mon, 08 Dec 2008 10:58:18 +1100
-Message-Id: <1228694298.21407.4.camel@localhost>
-Mime-Version: 1.0
-Cc: Nicolas Palix <npalix@diku.dk>, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Julia Lawall <julia@diku.dk>, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 42C0CDDDEF
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Dec 2008 12:29:22 +1100 (EST)
+From: Trent Piepho <tpiepho@freescale.com>
+To: linux-mtd@lists.infradead.org
+Subject: [PATCH] POWERPC: Add cached region support to physmap_of MTD driver
+Date: Sun,  7 Dec 2008 17:28:50 -0800
+Message-Id: <1228699730-16398-1-git-send-email-tpiepho@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Trent Piepho <tpiepho@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,61 +21,143 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The MTD system supports operation where a direct mapped flash chip is
+mapped twice.  The normal mapping is a standard ioremap(), which is
+non-cached and guarded on powerpc.  The second mapping is used only for
+reads and can be cached and non-guarded.  Currently, only the pxa2xx
+mapping driver makes use of this feature.  This patch adds support to the
+physmap_of driver on PPC32 platforms for this cached mapping mode.
 
---=-sShMn4szOhljCE+rqAJ6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Because the flash chip doesn't participate in the cache coherency protocol,
+it's necessary to invalidate the cache for parts of flash that are modified
+with a program or erase operation.  This is platform specific, for instance
+the pxa2xx driver uses an ARM specific function.  This patch adds
+invalidate_dcache_icache_range() for PPC32 and uses it.  Because of XIP,
+it's entirely possible that the flash might be in the icache(*), so the
+existing invalidate_dcache_range() function isn't enough.
 
-On Sun, 2008-12-07 at 16:43 +1100, Stephen Rothwell wrote:
-> Hi Paul,
->=20
-> On Sun, 7 Dec 2008 13:31:00 +1100 Paul Mackerras <paulus@samba.org> wrote=
-:
-> >
-> > I'm really in two minds about applying any of the of_node_put patches
-> > that only affect powermacs.  The reference counts only matter on
-> > platforms where we update the OF device tree at runtime, which is
-> > currently only IBM pSeries machines.  Since we don't have any hotplug
-> > on powermacs, and never will have, the OF device tree is completely
-> > static and we don't actually need refcounts on the nodes at all, so
-> > who cares if they're a bit higher than they might be?
-> >=20
-> > In particular, the VIA whose node we're looking for here is built-in
-> > on the motherboard, and there can never be more than one, and it can
-> > never be removed.
->=20
-> I my mind it is about consistent use of the API and good examples for
-> people to copy.  Also, in about a year you will be presented with the
-> same set of patches when a new pair of eyes looks at the same code and
-> notices the discrepancy ...
+Of course, a cached mapping can increase performance if the data is read
+from cache instead of flash.  But less obvious is that it can provide a
+significant performance increase for cold-cache reads that still come from
+flash.  It allows efficient back-to-back reads and if the flash chip &
+controller support page burst mode, it allows that to be used as well.
 
-what-he-said++
+The figures are for *cold-cache* read performance, measured on a Freescale
+MPC8572 controlling a Spansion S29GL064N NOR flash chip.  With and without
+the flash being mapped cached and with and without the localbus controller
+being programmed to use page burst mode:
 
-Allowing the ref counting to be broken in one part of the code is just
-asking for it to be broken everywhere.
+Non-cached, w/o bursts: 13.61 MB/s
+Non-cached, w/ bursts:  13.61 MB/s
+Cached, w/o bursts:     16.75 MB/s 23% increase
+Cached, w/ bursts:      44.79 MB/s 229% increase!
 
-cheers
+Even without any cache hits, the cached mapping provides a significant
+increase in performance via improved bus utilization.  Enabling burst
+transfers is even more significant.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+(*) The MTD device's ->point() method, which is the mechanism for
+supporting mmap and XIP, only allows for mmapping the uncached region.  So
+you can't actually XIP anything in the cache.  But this could be fixed.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+---
+Should this go in via powerpc tree or mtd?
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+ arch/powerpc/include/asm/cacheflush.h |    2 ++
+ arch/powerpc/kernel/misc_32.S         |   21 +++++++++++++++++++++
+ drivers/mtd/maps/physmap_of.c         |   20 ++++++++++++++++++++
+ 3 files changed, 43 insertions(+), 0 deletions(-)
 
---=-sShMn4szOhljCE+rqAJ6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkk8YxoACgkQdSjSd0sB4dLZNQCgyF3wpfe6bGtBVSwpMA+aeuHZ
-fPYAoIcOJVfxjbYD+Y2o+zFlXfymVLTz
-=g47Z
------END PGP SIGNATURE-----
-
---=-sShMn4szOhljCE+rqAJ6--
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index ba667a3..385c26c 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -49,6 +49,8 @@ extern void flush_dcache_range(unsigned long start, unsigned long stop);
+ #ifdef CONFIG_PPC32
+ extern void clean_dcache_range(unsigned long start, unsigned long stop);
+ extern void invalidate_dcache_range(unsigned long start, unsigned long stop);
++extern void invalidate_dcache_icache_range(unsigned long start,
++					   unsigned long stop);
+ #endif /* CONFIG_PPC32 */
+ #ifdef CONFIG_PPC64
+ extern void flush_inval_dcache_range(unsigned long start, unsigned long stop);
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index bdc8b0e..ad12c9a 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -636,6 +636,27 @@ _GLOBAL(invalidate_dcache_range)
+ 	blr
+ 
+ /*
++ * Like above, but invalidate both the D-cache and I-cache.  Used when a cached
++ * region has been modified from a source that does not participate in the cache
++ * coherency protocol.
++ *
++ * invalidate_dcache_icache_range(unsigned long start, unsigned long stop)
++ */
++_GLOBAL(invalidate_dcache_icache_range)
++	clrrwi	r3, r3, L1_CACHE_SHIFT	/* start &= ~((1<<SHIFT)-1) */
++	subf	r4,r3,r4
++	addi	r4,r4,L1_CACHE_BYTES-1
++	srwi.	r4,r4,L1_CACHE_SHIFT	/* count = (start-stop+BYTES-1)/BYTES */
++	beqlr				/* if (!count) return */
++	mtctr	r4
++1:	dcbi	0,r3
++	icbi	0,r3
++	addi	r3,r3,L1_CACHE_BYTES
++	bdnz	1b
++	sync				/* wait for [id]cbi's to get to ram */
++	blr
++
++/*
+  * Flush a particular page from the data cache to RAM.
+  * Note: this is necessary because the instruction cache does *not*
+  * snoop from the data cache.
+diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
+index 5fcfec0..e834298 100644
+--- a/drivers/mtd/maps/physmap_of.c
++++ b/drivers/mtd/maps/physmap_of.c
+@@ -32,6 +32,16 @@ struct of_flash {
+ #endif
+ };
+ 
++#ifdef CONFIG_PPC32
++#include <asm/cacheflush.h>
++static void ppc32_inval_cache(struct map_info *map, unsigned long from,
++			      ssize_t len)
++{
++	invalidate_dcache_icache_range((unsigned long)map->cached + from,
++	                               (unsigned long)map->cached + from + len);
++}
++#endif
++
+ #ifdef CONFIG_MTD_PARTITIONS
+ #define OF_FLASH_PARTS(info)	((info)->parts)
+ 
+@@ -106,6 +116,8 @@ static int of_flash_remove(struct of_device *dev)
+ 
+ 	if (info->map.virt)
+ 		iounmap(info->map.virt);
++	if (info->map.cached)
++		iounmap(info->map.cached);
+ 
+ 	if (info->res) {
+ 		release_resource(info->res);
+@@ -205,6 +217,14 @@ static int __devinit of_flash_probe(struct of_device *dev,
+ 		dev_err(&dev->dev, "Failed to ioremap() flash region\n");
+ 		goto err_out;
+ 	}
++#ifdef CONFIG_PPC32
++	/* Don't use no-cache or guarded flags */
++	info->map.cached = ioremap_flags(info->map.phys, info->map.size, 0);
++	if (!info->map.cached)
++		dev_warn(&dev->dev, "Failed to ioremap() cached flash region\n");
++	else
++		info->map.inval_cache = ppc32_inval_cache;
++#endif
+ 
+ 	simple_map_init(&info->map);
+ 
+-- 
+1.5.4.1
