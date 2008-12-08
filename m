@@ -1,21 +1,21 @@
 Return-Path: <jwboyer@gmail.com>
-Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.27])
-	by ozlabs.org (Postfix) with ESMTP id 7425EDDE11
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 07:22:14 +1100 (EST)
-Received: by ey-out-2122.google.com with SMTP id 6so595360eyi.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 08 Dec 2008 12:22:07 -0800 (PST)
-Date: Mon, 8 Dec 2008 15:21:52 -0500
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
+	by ozlabs.org (Postfix) with ESMTP id 61958DDE17
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 07:30:25 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id 17so711144ugm.14
+	for <linuxppc-dev@ozlabs.org>; Mon, 08 Dec 2008 12:30:23 -0800 (PST)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Mon, 8 Dec 2008 15:30:11 -0500
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Grant Erickson <gerickson@nuovations.com>
-Subject: Re: PPC4xx ECC Configs, Defines and Source
-Message-ID: <20081208202152.GA10929@yoda.jdub.homelinux.org>
-References: <C562B54F.1351E%gerickson@nuovations.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/9] powerpc/4xx: Extended DCR support
+Message-ID: <20081208203011.GB10929@yoda.jdub.homelinux.org>
+References: <1228714789.103940.266501677728.qpush@grosgo>
+	<20081208054057.34A5FDDD04@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <C562B54F.1351E%gerickson@nuovations.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Stefan Roese <sr@denx.de>
+In-Reply-To: <20081208054057.34A5FDDD04@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,84 +25,119 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 08, 2008 at 11:28:15AM -0800, Grant Erickson wrote:
->Does anyone have any strong preferences on where configurations, definitions
->and sources for a PPC4xx ECC monitoring and reporting driver should go?
+On Mon, Dec 08, 2008 at 04:40:03PM +1100, Benjamin Herrenschmidt wrote:
+>This adds supports to the "extended" DCR addressing via
+>the indirect mfdcrx/mtdcrx instructions supported by some
+>4xx cores (440H6 and later)
 >
->Specifically, this concerns ECC handling code for the IBM DDR2 ECC
->controller found in the 405EX[r], 440SP, 440SPe, 460EX and 460GT. However,
->I'd like to do this in a way that other ECC contributors and maintainers can
->build on.
+>I enabled the feature for now only on AMCC 460 chips
 >
->Static Configs
->--------------
+>Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>---
 >
->I thought I might leverage the definitions Stefan Roese came up with for
->u-boot for the base memory controller:
+> arch/powerpc/include/asm/cputable.h   |    7 ++-
+> arch/powerpc/include/asm/dcr-native.h |   63 +++++++++++++++++++++++++++-------
+> arch/powerpc/kernel/cputable.c        |    4 +-
+> arch/powerpc/sysdev/dcr-low.S         |    8 +++-
+> 4 files changed, 65 insertions(+), 17 deletions(-)
 >
->    CONFIG_PPC4xx_IBM_SDRAM:   Applicable to 405GP, 405CR, 405EP, AP1000,
->                               and ML2
->    CONFIG_PPC4xx_IBM_DDR:     Applicable to 440GP, 440GX, 440EP, and 440GR
->    CONFIG_PPC4xx_DENALI_DDR2: Applicable to 440EPX and 440GRX
->    CONFIG_PPC4xx_IBM_DDR2:    Applicable to 405EX[r], 440SP, 440SPe, 460EX
->                               and 460GT.
+>--- linux-work.orig/arch/powerpc/include/asm/cputable.h	2008-12-08 15:43:12.000000000 +1100
+>+++ linux-work/arch/powerpc/include/asm/cputable.h	2008-12-08 15:43:41.000000000 +1100
+>@@ -164,6 +164,7 @@ extern const char *powerpc_base_platform
+> #define CPU_FTR_NEED_PAIRED_STWCX	ASM_CONST(0x0000000004000000)
+> #define CPU_FTR_LWSYNC			ASM_CONST(0x0000000008000000)
+> #define CPU_FTR_NOEXECUTE		ASM_CONST(0x0000000010000000)
+>+#define CPU_FTR_INDEXED_DCR		ASM_CONST(0x0000000020000000)
+> 
+> /*
+>  * Add the 64-bit processor unique features in the top half of the word;
+>@@ -369,6 +370,8 @@ extern const char *powerpc_base_platform
+> #define CPU_FTRS_8XX	(CPU_FTR_USE_TB)
+> #define CPU_FTRS_40X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
+> #define CPU_FTRS_44X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
+>+#define CPU_FTRS_440H6	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE | \
+>+	    CPU_FTR_INDEXED_DCR)
 
-Config options for what?  Enabling certain function?  Not sure that's needed
-if we can get away with it by just binding to the appropriate controller.
+Can we call this CPU_FTRS_440x6 please?  The H really has no relevance
+here from what I understand as both the hard and synthysized x6 cores
+would do the indexed instructions.
 
->Controlling whether ECC monitoring and reporting support should be compiled
->in or a module:
->
->    CONFIG_PPC_ECC or CONFIG_ECC
+Also, I have some plans in mind for consolidating the mcheck
+organization (which has nothing to do with this exactly) and I was
+going to use 440x5 to map all the various SoCs that share that core
+revision.
 
-That's a bit too generic, unless you are trying to make a menu list under
-that which would be used to allow people to enable things like:
-CONFIG_4XX_ECC, CONFIG_FSL_ECC, etc.
+Probably a nit, but maybe worth changing.
 
->Dynamic Configs
->---------------
->Though, it appears that rainier.dts and sequioia.dts are already evolving in
->this direction with:
->
->    compatible = "ibm,sdram-440grx", "ibm,sdram-44x-ddr2denali";
->    compatible = "ibm,sdram-440epx", "ibm,sdram-44x-ddr2denali";
->
->In light of that, perhaps then:
->
->    compatible = "...", "ibm,sdram-4xx";
->    compatible = "...", "ibm,sdram-4xx-ddr";
->    compatible = "...", "ibm,sdram-4xx-ddr2";
->    compatible = "...", "ibm,sdram-4xx-ddr2denali";
+>Index: linux-work/arch/powerpc/include/asm/dcr-native.h
+>===================================================================
+>--- linux-work.orig/arch/powerpc/include/asm/dcr-native.h	2008-09-29 14:21:37.000000000 +1000
+>+++ linux-work/arch/powerpc/include/asm/dcr-native.h	2008-12-08 15:43:41.000000000 +1100
+>@@ -23,6 +23,7 @@
+> #ifndef __ASSEMBLY__
+> 
+> #include <linux/spinlock.h>
+>+#include <asm/cputable.h>
+> 
+> typedef struct {
+> 	unsigned int base;
+>@@ -39,23 +40,45 @@ static inline bool dcr_map_ok_native(dcr
+> #define dcr_read_native(host, dcr_n)		mfdcr(dcr_n + host.base)
+> #define dcr_write_native(host, dcr_n, value)	mtdcr(dcr_n + host.base, value)
+> 
+>-/* Device Control Registers */
+>-void __mtdcr(int reg, unsigned int val);
+>-unsigned int __mfdcr(int reg);
+>+/* Table based DCR accessors */
+>+extern void __mtdcr(unsigned int reg, unsigned int val);
+>+extern unsigned int __mfdcr(unsigned int reg);
+>+
+>+/* mfdcrx/mtdcrx instruction based accessors. We hand code
+>+ * the opcodes in order not to depend on newer binutils
+>+ */
+>+static inline unsigned int mfdcrx(unsigned int reg)
+>+{
+>+	unsigned int ret;
+>+	asm volatile(".long 0x7c000206 | (%0 << 21) | (%1 << 16)"
+>+		     : "=r" (ret) : "r" (reg));
+>+	return ret;
+>+}
+>+
+>+static inline void mtdcrx(unsigned int reg, unsigned int val)
+>+{
+>+	asm volatile(".long 0x7c000306 | (%0 << 21) | (%1 << 16)"
+>+		     : : "r" (val), "r" (reg));
+>+}
+>+
+> #define mfdcr(rn)						\
+> 	({unsigned int rval;					\
+>-	if (__builtin_constant_p(rn))				\
+>+	if (__builtin_constant_p(rn) && rn < 1024)		\
+> 		asm volatile("mfdcr %0," __stringify(rn)	\
+> 		              : "=r" (rval));			\
+>+	else if (likely(cpu_has_feature(CPU_FTR_INDEXED_DCR)))	\
+>+		rval = mfdcrx(rn);				\
+> 	else							\
+> 		rval = __mfdcr(rn);				\
+> 	rval;})
+> 
+> #define mtdcr(rn, v)						\
+> do {								\
+>-	if (__builtin_constant_p(rn))				\
+>+	if (__builtin_constant_p(rn) && rn < 1024)		\
+> 		asm volatile("mtdcr " __stringify(rn) ",%0"	\
+> 			      : : "r" (v)); 			\
+>+	else if (likely(cpu_has_feature(CPU_FTR_INDEXED_DCR)))	\
+>+		mtdcrx(rn, v);					\
+> 	else							\
+> 		__mtdcr(rn, v);					\
 
-These look better than the first list.  We'll probably have to redefine
-some of the existing dts file mappings.
+I'm wondering how much that is worth it.  Aren't you adding a
+runtime if here (and in the *dcri functions), which might
+impact performance for anything not implementing m*dcrx?
 
->Source
->------
->
->    arch/powerpc/sysdev/
->        ppc4xx_ibm_sdram_ecc.c [future]
->        ppc4xx_ibm_ddr_ecc.c [future]
->        ppc4xx_ibm_ddr2_ecc.c
->        ppc4xx_ibm_ddr2denali_ecc.c [future]
-
-Why is there a need to have so many files?  I would think you could
-have a single file with all the ECC monitoring implementations in it
-called ppc4xx_ecc.c (or such).  Surely they would share some amount
-of code?
-
->Headers and Defines
->-------------------
->
->    arch/powerpc/include/asm/ppc4xx_ibm_ddr2.h
->
->    OR
->
->    arch/powerpc/sysdev/ppc4xx_ibm_ddr2.h
-
-That depends on the contents of the file.  If it's DCR defines, etc
-it should be in the dcr-regs.h file.  Otherwise, I would think having
-the header in sysdev should be sufficient unless there is some other
-facility that would need whatever the contents there are.
+Does anyone know how much impact this has either way, and if
+it's significant could it be patched out after the CPU
+features are set?
 
 josh
