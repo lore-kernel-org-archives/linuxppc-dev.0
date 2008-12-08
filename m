@@ -1,28 +1,23 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id EE4B3DDDF6
+Return-Path: <jacmet@gmail.com>
+Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.25])
+	by ozlabs.org (Postfix) with ESMTP id C08A5DDDED
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  8 Dec 2008 10:31:49 +1100 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1L9T6F-0006vJ-7H
-	for linuxppc-embedded@ozlabs.org; Sun, 07 Dec 2008 23:31:44 +0000
-Received: from CPE-124-190-96-129.vic.bigpond.net.au ([124.190.96.129])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Sun, 07 Dec 2008 23:31:43 +0000
-Received: from daniel_ng11 by CPE-124-190-96-129.vic.bigpond.net.au with local
-	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Sun, 07 Dec 2008 23:31:43 +0000
-To: linuxppc-embedded@ozlabs.org
-From: Daniel Ng <daniel_ng11@lycos.com>
-Subject: Re: i2c support for MPC 8247
-Date: Sun, 7 Dec 2008 23:31:35 +0000 (UTC)
-Message-ID: <loom.20081207T233039-159@post.gmane.org>
-References: <loom.20081204T014044-850@post.gmane.org>
-	<200812040958.28687.laurentp@cse-semaphore.com>
-Mime-Version: 1.0
+	Mon,  8 Dec 2008 20:14:05 +1100 (EST)
+Received: by ey-out-2122.google.com with SMTP id 6so473398eyi.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 08 Dec 2008 01:13:59 -0800 (PST)
+To: dhlii@dlasys.net
+Subject: Re: Is anyone using the C67x00 USB Host ?
+References: <49394978.10905@dlasys.net>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Mon, 08 Dec 2008 10:13:56 +0100
+In-Reply-To: <49394978.10905@dlasys.net> (David H. Lynch,
+	Jr.'s message of "Fri\, 05 Dec 2008 10\:32\:08 -0500")
+Message-ID: <87r64j112j.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -33,16 +28,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Laurent Pinchart <laurentp <at> cse-semaphore.com> writes:
-> The MPC8247 I2C controller is supported by the i2c-cpm driver, introduced in 
-> 2.6.27. It shouldn't be difficult to backport the driver to 2.6.24. Please 
-> note that the driver only supports the powerpc architecture and won't work 
-on 
-> ppc kernels.
-> 
-> Alternatively, you could port the i2c-mpc8260 driver to 2.6.24.
-> 
+>>>>> "David" == David H Lynch <dhlii@dlasys.net> writes:
 
-Great! Thanks for the info Laurent.
+Hi,
 
-Daniel
+ David> 	I am having two problems with it.
+ David> 	I can not get it working with interrupts,
+
+No activity on the interrupt pin or is it always active?
+
+ David> 	I can not get the 2nd USB port working.
+
+Strange.
+
+ David> 	If someone has it working I would appreciate knowing.
+
+I obviously had it working when I wrote the driver, but I don't have
+access to any hardware with the c67x00 at the moment.
+
+-- 
+Bye, Peter Korsgaard
