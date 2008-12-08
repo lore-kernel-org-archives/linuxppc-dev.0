@@ -1,18 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4EE02DDDF0
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Dec 2008 16:38:26 +1100 (EST)
 Subject: Re: [PATCH] powerpc: Fix build of 4xx simple platforms without
 	CONFIG_PCI
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20081208045411.0CE03DDE0E@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1228714329.23242.52.camel@localhost>
 References: <20081208045411.0CE03DDE0E@ozlabs.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-HsckF6/UBVrnt8TWidJ1"
-Date: Mon, 08 Dec 2008 16:32:09 +1100
-Message-Id: <1228714329.23242.52.camel@localhost>
+	<1228714329.23242.52.camel@localhost>
+Content-Type: text/plain
+Date: Mon, 08 Dec 2008 16:38:14 +1100
+Message-Id: <1228714694.7101.27.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,62 +26,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-HsckF6/UBVrnt8TWidJ1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > --- linux-work.orig/arch/powerpc/platforms/40x/ppc40x_simple.c	2008-12-08 15:51:49.000000000 +1100
+> > +++ linux-work/arch/powerpc/platforms/40x/ppc40x_simple.c	2008-12-08 15:51:52.000000000 +1100
+> > @@ -61,7 +61,9 @@ static int __init ppc40x_probe(void)
+> >  
+> >  	for (i = 0; i < ARRAY_SIZE(board); i++) {
+> >  		if (of_flat_dt_is_compatible(root, board[i])) {
+> > +#ifdef CONFIG_PCI
+> >  			ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
+> > +#endif
+> 
+> No! #ifdefs! in C code!
+> 
+> To the tune of you-know-what.
+> 
+> Looks like we need an accessor we can replace with an empty version in
+> the !PCI case.
 
-On Mon, 2008-12-08 at 15:53 +1100, Benjamin Herrenschmidt wrote:
-> The global ppc_pci_flags is not defined when CONFIG_PCI is not
-> set, causing a link error
->=20
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->=20
->  arch/powerpc/platforms/40x/ppc40x_simple.c |    2 ++
->  arch/powerpc/platforms/44x/ppc44x_simple.c |    2 ++
->  2 files changed, 4 insertions(+)
->=20
-> --- linux-work.orig/arch/powerpc/platforms/40x/ppc40x_simple.c	2008-12-08=
- 15:51:49.000000000 +1100
-> +++ linux-work/arch/powerpc/platforms/40x/ppc40x_simple.c	2008-12-08 15:5=
-1:52.000000000 +1100
-> @@ -61,7 +61,9 @@ static int __init ppc40x_probe(void)
-> =20
->  	for (i =3D 0; i < ARRAY_SIZE(board); i++) {
->  		if (of_flat_dt_is_compatible(root, board[i])) {
-> +#ifdef CONFIG_PCI
->  			ppc_pci_flags =3D PPC_PCI_REASSIGN_ALL_RSRC;
-> +#endif
+If you have plenty of time on your hands :-) In the meantime, this is a
+build fix.
 
-No! #ifdefs! in C code!
-
-To the tune of you-know-what.
-
-Looks like we need an accessor we can replace with an empty version in
-the !PCI case.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-HsckF6/UBVrnt8TWidJ1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkk8sVkACgkQdSjSd0sB4dIDlwCgkPnjoZ1T/j9gAKsO2rtKpmwP
-P8YAn06427BrI7EimT7IMib3ie9QpJsy
-=EYxn
------END PGP SIGNATURE-----
-
---=-HsckF6/UBVrnt8TWidJ1--
+Cheers,
+Ben.
