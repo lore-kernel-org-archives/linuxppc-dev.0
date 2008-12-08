@@ -1,12 +1,12 @@
 Return-Path: <pochini@shiny.it>
-Received: from smtp-OUT05A.alice.it (smtp-OUT05A.alice.it [85.33.3.5])
-	by ozlabs.org (Postfix) with ESMTP id 8586347794
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 09:11:01 +1100 (EST)
-Date: Mon, 8 Dec 2008 23:00:39 +0100
+Received: from smtp-out26.alice.it (smtp-out26.alice.it [85.33.2.26])
+	by ozlabs.org (Postfix) with ESMTP id 9D4EEDDE08
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 09:18:22 +1100 (EST)
+Date: Mon, 8 Dec 2008 23:07:45 +0100
 From: Giuliano Pochini <pochini@shiny.it>
 To: linuxppc-dev@ozlabs.org
 Subject: odd dxfer_len == crash
-Message-Id: <20081208230039.d186da5e.pochini@shiny.it>
+Message-Id: <20081208230745.cb0bec11.pochini@shiny.it>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
