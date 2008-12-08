@@ -2,17 +2,17 @@ Return-Path: <yur@emcraft.com>
 Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0764BDDE1F
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 09:04:54 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id F195ADDE1F
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 09:05:24 +1100 (EST)
 From: Yuri Tikhonov <yur@emcraft.com>
 To: linux-raid@vger.kernel.org
-Subject: [RFC PATCH 00/11][v2] md: support for asynchronous execution of RAID6
-	operations
-Date: Tue, 9 Dec 2008 00:55:04 +0300
+Subject: [PATCH 01/11] async_tx: don't use src_list argument of async_xor()
+	for dma addresses
+Date: Tue, 9 Dec 2008 00:55:26 +0300
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200812090055.04265.yur@emcraft.com>
+Message-Id: <200812090055.26721.yur@emcraft.com>
 Cc: linuxppc-dev@ozlabs.org, dan.j.williams@intel.com, wd@denx.de, dzu@denx.de,
 	yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,30 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- Hello,
+Using src_list argument of async_xor() as a storage for dma addresses
+implies sizeof(dma_addr_t) <= sizeof(struct page *) restriction which is
+not always true (e.g. ppc440spe).
 
- This is the next attempt on asynchronous RAID-6 support. This patch-set
-has the Dan Williams' comments (Nov, 15) addressed. These were mainly
-about the ASYNC_TX part of the code.
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+---
+ crypto/async_tx/async_xor.c |   14 ++------------
+ 1 files changed, 2 insertions(+), 12 deletions(-)
 
- The following patch-set includes enhancements to the async_tx api and
-modifications to md-raid6 to issue memory copies and parity calculations
-asynchronously. Thus we may process copy operations and RAID-6 calculations
-on the dedicated DMA engines accessible with ASYNC_TX API, and, as a result
-off-load CPU, and improve the performance.
-
- To reduce the code duplication in the raid driver this patch-set modifies
-some raid-5 functions to make them possible to use in the raid-6 case.
-
- The patch-set can be broken down into thee following main categories: 
-
-1) Additions to ASYNC_TX API (patches 1-3; without the patch 1 the ASYNC_TX
-can't be compiled for 44x in 2.6.27-rc6 or later);
-
-2) RAID-6 implementation (patches 4-10)
-
-3) ppc440spe ADMA driver (patch 11) (provided as a reference here)
-
+diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
+index c029d3e..00c74c5 100644
+--- a/crypto/async_tx/async_xor.c
++++ b/crypto/async_tx/async_xor.c
+@@ -42,7 +42,7 @@ do_async_xor(struct dma_chan *chan, struct page *dest, struct page **src_list,
+ 	     dma_async_tx_callback cb_fn, void *cb_param)
+ {
+ 	struct dma_device *dma = chan->device;
+-	dma_addr_t *dma_src = (dma_addr_t *) src_list;
++	dma_addr_t dma_src[src_cnt];
+ 	struct dma_async_tx_descriptor *tx = NULL;
+ 	int src_off = 0;
+ 	int i;
+@@ -247,7 +247,7 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
+ 	BUG_ON(src_cnt <= 1);
+ 
+ 	if (device && src_cnt <= device->max_xor) {
+-		dma_addr_t *dma_src = (dma_addr_t *) src_list;
++		dma_addr_t dma_src[src_cnt];
+ 		unsigned long dma_prep_flags = cb_fn ? DMA_PREP_INTERRUPT : 0;
+ 		int i;
+ 
+@@ -296,16 +296,6 @@ EXPORT_SYMBOL_GPL(async_xor_zero_sum);
+ 
+ static int __init async_xor_init(void)
+ {
+-	#ifdef CONFIG_DMA_ENGINE
+-	/* To conserve stack space the input src_list (array of page pointers)
+-	 * is reused to hold the array of dma addresses passed to the driver.
+-	 * This conversion is only possible when dma_addr_t is less than the
+-	 * the size of a pointer.  HIGHMEM64G is known to violate this
+-	 * assumption.
+-	 */
+-	BUILD_BUG_ON(sizeof(dma_addr_t) > sizeof(struct page *));
+-	#endif
+-
+ 	return 0;
+ }
+ 
 -- 
-Yuri Tikhonov, Senior Software Engineer
-Emcraft Systems, www.emcraft.com
+1.5.6.1
