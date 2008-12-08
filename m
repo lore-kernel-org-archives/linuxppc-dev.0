@@ -2,16 +2,16 @@ Return-Path: <yur@emcraft.com>
 Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 582E84754D
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 09:06:18 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 020DBDE57A
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 09:07:38 +1100 (EST)
 From: Yuri Tikhonov <yur@emcraft.com>
 To: linux-raid@vger.kernel.org
-Subject: [PATCH 05/11] md: common schedule_reconstruction for raid5/6
-Date: Tue, 9 Dec 2008 00:56:28 +0300
+Subject: [PATCH 07/11] md: rewrite handle_stripe_dirtying6 in asynchronous way
+Date: Tue, 9 Dec 2008 00:57:33 +0300
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200812090056.28236.yur@emcraft.com>
+Message-Id: <200812090057.33890.yur@emcraft.com>
 Cc: linuxppc-dev@ozlabs.org, dan.j.williams@intel.com, wd@denx.de, dzu@denx.de,
 	yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,78 +23,147 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-To be able to re-use the schedule_reconstruction5() code in RAID-6
-case, this should handle Q-parity strip appropriately. This patch
-introduces this.
+Rewrite handle_stripe_dirtying6 function to work asynchronously.
 
 Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
 Signed-off-by: Ilya Yanok <yanok@emcraft.com>
 ---
- drivers/md/raid5.c |   18 ++++++++++++++----
- 1 files changed, 14 insertions(+), 4 deletions(-)
+ drivers/md/raid5.c |  113 ++++++++++++++--------------------------------------
+ 1 files changed, 30 insertions(+), 83 deletions(-)
 
 diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index aeec3e5..e31f38b 100644
+index e08ed4f..f0b47bd 100644
 --- a/drivers/md/raid5.c
 +++ b/drivers/md/raid5.c
-@@ -1885,10 +1885,11 @@ static void compute_block_2(struct stripe_head *sh, int dd_idx1, int dd_idx2)
- }
- 
- static void
--schedule_reconstruction5(struct stripe_head *sh, struct stripe_head_state *s,
-+schedule_reconstruction(struct stripe_head *sh, struct stripe_head_state *s,
- 			 int rcw, int expand)
+@@ -2485,99 +2485,46 @@ static void handle_stripe_dirtying6(raid5_conf_t *conf,
+ 		struct stripe_head *sh,	struct stripe_head_state *s,
+ 		struct r6_state *r6s, int disks)
  {
- 	int i, pd_idx = sh->pd_idx, disks = sh->disks;
-+	int level = sh->raid_conf->level;
- 
- 	if (rcw) {
- 		/* if we are not expanding this is a proper write request, and
-@@ -1914,10 +1915,12 @@ schedule_reconstruction5(struct stripe_head *sh, struct stripe_head_state *s,
- 				s->locked++;
+-	int rcw = 0, must_compute = 0, pd_idx = sh->pd_idx, i;
++	int rcw = 0, pd_idx = sh->pd_idx, i;
+ 	int qd_idx = r6s->qd_idx;
++
++	set_bit(STRIPE_HANDLE, &sh->state);
+ 	for (i = disks; i--; ) {
+ 		struct r5dev *dev = &sh->dev[i];
+-		/* Would I have to read this buffer for reconstruct_write */
+-		if (!test_bit(R5_OVERWRITE, &dev->flags)
+-		    && i != pd_idx && i != qd_idx
+-		    && (!test_bit(R5_LOCKED, &dev->flags)
+-			    ) &&
+-		    !test_bit(R5_UPTODATE, &dev->flags)) {
+-			if (test_bit(R5_Insync, &dev->flags)) rcw++;
+-			else {
+-				pr_debug("raid6: must_compute: "
+-					"disk %d flags=%#lx\n", i, dev->flags);
+-				must_compute++;
++		/* check if we haven't enough data */
++		if (!test_bit(R5_OVERWRITE, &dev->flags) &&
++		    i != pd_idx && i != qd_idx &&
++		    !test_bit(R5_LOCKED, &dev->flags) &&
++		    !(test_bit(R5_UPTODATE, &dev->flags) ||
++		      test_bit(R5_Wantcompute, &dev->flags))) {
++			rcw++;
++			if (!test_bit(R5_Insync, &dev->flags))
++				continue; /* it's a failed drive */
++
++			if (
++			  test_bit(STRIPE_PREREAD_ACTIVE, &sh->state)) {
++				pr_debug("Read_old stripe %llu "
++					"block %d for Reconstruct\n",
++				     (unsigned long long)sh->sector, i);
++				set_bit(R5_LOCKED, &dev->flags);
++				set_bit(R5_Wantread, &dev->flags);
++				s->locked++;
++			} else {
++				pr_debug("Request delayed stripe %llu "
++					"block %d for Reconstruct\n",
++				     (unsigned long long)sh->sector, i);
++				set_bit(STRIPE_DELAYED, &sh->state);
++				set_bit(STRIPE_HANDLE, &sh->state);
  			}
  		}
--		if (s->locked + 1 == disks)
-+		if ((level == 5 && s->locked + 1 == disks) ||
-+		    (level == 6 && s->locked + 2 == disks))
- 			if (!test_and_set_bit(STRIPE_FULL_WRITE, &sh->state))
- 				atomic_inc(&sh->raid_conf->pending_full_writes);
- 	} else {
-+		BUG_ON(level == 6);
- 		BUG_ON(!(test_bit(R5_UPTODATE, &sh->dev[pd_idx].flags) ||
- 			test_bit(R5_Wantcompute, &sh->dev[pd_idx].flags)));
- 
-@@ -1949,6 +1952,13 @@ schedule_reconstruction5(struct stripe_head *sh, struct stripe_head_state *s,
- 	clear_bit(R5_UPTODATE, &sh->dev[pd_idx].flags);
- 	s->locked++;
- 
-+	if (level == 6) {
-+		int qd_idx = raid6_next_disk(pd_idx, disks);
-+		set_bit(R5_LOCKED, &sh->dev[qd_idx].flags);
-+		clear_bit(R5_UPTODATE, &sh->dev[qd_idx].flags);
-+		s->locked++;
-+	}
-+
- 	pr_debug("%s: stripe %llu locked: %d ops_request: %lx\n",
- 		__func__, (unsigned long long)sh->sector,
- 		s->locked, s->ops_request);
-@@ -2410,7 +2420,7 @@ static void handle_stripe_dirtying5(raid5_conf_t *conf,
- 	if ((s->req_compute || !test_bit(STRIPE_COMPUTE_RUN, &sh->state)) &&
- 	    (s->locked == 0 && (rcw == 0 || rmw == 0) &&
- 	    !test_bit(STRIPE_BIT_DELAY, &sh->state)))
--		schedule_reconstruction5(sh, s, rcw == 0, 0);
-+		schedule_reconstruction(sh, s, rcw == 0, 0);
+ 	}
+-	pr_debug("for sector %llu, rcw=%d, must_compute=%d\n",
+-	       (unsigned long long)sh->sector, rcw, must_compute);
+-	set_bit(STRIPE_HANDLE, &sh->state);
+-
+-	if (rcw > 0)
+-		/* want reconstruct write, but need to get some data */
+-		for (i = disks; i--; ) {
+-			struct r5dev *dev = &sh->dev[i];
+-			if (!test_bit(R5_OVERWRITE, &dev->flags)
+-			    && !(s->failed == 0 && (i == pd_idx || i == qd_idx))
+-			    && !test_bit(R5_LOCKED, &dev->flags) &&
+-			    !test_bit(R5_UPTODATE, &dev->flags) &&
+-			    test_bit(R5_Insync, &dev->flags)) {
+-				if (
+-				  test_bit(STRIPE_PREREAD_ACTIVE, &sh->state)) {
+-					pr_debug("Read_old stripe %llu "
+-						"block %d for Reconstruct\n",
+-					     (unsigned long long)sh->sector, i);
+-					set_bit(R5_LOCKED, &dev->flags);
+-					set_bit(R5_Wantread, &dev->flags);
+-					s->locked++;
+-				} else {
+-					pr_debug("Request delayed stripe %llu "
+-						"block %d for Reconstruct\n",
+-					     (unsigned long long)sh->sector, i);
+-					set_bit(STRIPE_DELAYED, &sh->state);
+-					set_bit(STRIPE_HANDLE, &sh->state);
+-				}
+-			}
+-		}
+ 	/* now if nothing is locked, and if we have enough data, we can start a
+ 	 * write request
+ 	 */
+-	if (s->locked == 0 && rcw == 0 &&
++	if ((s->req_compute || !test_bit(STRIPE_COMPUTE_RUN, &sh->state)) &&
++	    s->locked == 0 && rcw == 0 &&
+ 	    !test_bit(STRIPE_BIT_DELAY, &sh->state)) {
+-		if (must_compute > 0) {
+-			/* We have failed blocks and need to compute them */
+-			switch (s->failed) {
+-			case 0:
+-				BUG();
+-			case 1:
+-				compute_block_1(sh, r6s->failed_num[0], 0);
+-				break;
+-			case 2:
+-				compute_block_2(sh, r6s->failed_num[0],
+-						r6s->failed_num[1]);
+-				break;
+-			default: /* This request should have been failed? */
+-				BUG();
+-			}
+-		}
+-
+-		pr_debug("Computing parity for stripe %llu\n",
+-			(unsigned long long)sh->sector);
+-		compute_parity6(sh, RECONSTRUCT_WRITE);
+-		/* now every locked buffer is ready to be written */
+-		for (i = disks; i--; )
+-			if (test_bit(R5_LOCKED, &sh->dev[i].flags)) {
+-				pr_debug("Writing stripe %llu block %d\n",
+-				       (unsigned long long)sh->sector, i);
+-				s->locked++;
+-				set_bit(R5_Wantwrite, &sh->dev[i].flags);
+-			}
+-		if (s->locked == disks)
+-			if (!test_and_set_bit(STRIPE_FULL_WRITE, &sh->state))
+-				atomic_inc(&conf->pending_full_writes);
+-		/* after a RECONSTRUCT_WRITE, the stripe MUST be in-sync */
+-		set_bit(STRIPE_INSYNC, &sh->state);
+-
+-		if (test_and_clear_bit(STRIPE_PREREAD_ACTIVE, &sh->state)) {
+-			atomic_dec(&conf->preread_active_stripes);
+-			if (atomic_read(&conf->preread_active_stripes) <
+-			    IO_THRESHOLD)
+-				md_wakeup_thread(conf->mddev->thread);
+-		}
++		schedule_reconstruction(sh, s, 1, 0);
+ 	}
  }
  
- static void handle_stripe_dirtying6(raid5_conf_t *conf,
-@@ -3003,7 +3013,7 @@ static bool handle_stripe5(struct stripe_head *sh)
- 		sh->disks = conf->raid_disks;
- 		sh->pd_idx = stripe_to_pdidx(sh->sector, conf,
- 			conf->raid_disks);
--		schedule_reconstruction5(sh, &s, 1, 1);
-+		schedule_reconstruction(sh, &s, 1, 1);
- 	} else if (s.expanded && !sh->reconstruct_state && s.locked == 0) {
- 		clear_bit(STRIPE_EXPAND_READY, &sh->state);
- 		atomic_dec(&conf->reshape_stripes);
 -- 
 1.5.6.1
