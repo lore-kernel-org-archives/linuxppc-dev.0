@@ -1,18 +1,9 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 008BADDDE3
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Dec 2008 15:37:26 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Fix mismerge of iss4xx platform support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <benh@ozlabs.org>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20081208043311.5CB96DDE07@ozlabs.org>
-References: <20081208043311.5CB96DDE07@ozlabs.org>
-Content-Type: text/plain
-Date: Mon, 08 Dec 2008 15:37:17 +1100
-Message-Id: <1228711037.7101.26.camel@pasglop>
-Mime-Version: 1.0
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 08 Dec 2008 15:53:25 +1100
+Subject: [PATCH] powerpc: Fix build of 4xx simple platforms without CONFIG_PCI
+Message-Id: <20081208045411.0CE03DDE0E@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,33 +14,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-12-08 at 15:32 +1100, Benjamin Herrenschmidt wrote:
-> The Makefile missed the necessary bit for treeboot-iss4xx.o to be built
-> thus breaking builds of this platform
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
+The global ppc_pci_flags is not defined when CONFIG_PCI is not
+set, causing a link error
 
-Ignore patch, my mistake :-)
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Cheers,
-Ben.
+ arch/powerpc/platforms/40x/ppc40x_simple.c |    2 ++
+ arch/powerpc/platforms/44x/ppc44x_simple.c |    2 ++
+ 2 files changed, 4 insertions(+)
 
->  arch/powerpc/boot/Makefile |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-work.orig/arch/powerpc/boot/Makefile	2008-12-08 15:30:38.000000000 +1100
-> +++ linux-work/arch/powerpc/boot/Makefile	2008-12-08 15:30:56.000000000 +1100
-> @@ -70,7 +70,7 @@ src-plat := of.c cuboot-52xx.c cuboot-82
->  		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
->  		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
->  		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
-> -		cuboot-acadia.c
-> +		cuboot-acadia.c treeboot-iss4xx.c
->  src-boot := $(src-wlib) $(src-plat) empty.c
->  
->  src-boot := $(addprefix $(obj)/, $(src-boot))
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--- linux-work.orig/arch/powerpc/platforms/40x/ppc40x_simple.c	2008-12-08 15:51:49.000000000 +1100
++++ linux-work/arch/powerpc/platforms/40x/ppc40x_simple.c	2008-12-08 15:51:52.000000000 +1100
+@@ -61,7 +61,9 @@ static int __init ppc40x_probe(void)
+ 
+ 	for (i = 0; i < ARRAY_SIZE(board); i++) {
+ 		if (of_flat_dt_is_compatible(root, board[i])) {
++#ifdef CONFIG_PCI
+ 			ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
++#endif
+ 			return 1;
+ 		}
+ 	}
+Index: linux-work/arch/powerpc/platforms/44x/ppc44x_simple.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/44x/ppc44x_simple.c	2008-12-08 15:51:31.000000000 +1100
++++ linux-work/arch/powerpc/platforms/44x/ppc44x_simple.c	2008-12-08 15:51:39.000000000 +1100
+@@ -70,7 +70,9 @@ static int __init ppc44x_probe(void)
+ 
+ 	for (i = 0; i < ARRAY_SIZE(board); i++) {
+ 		if (of_flat_dt_is_compatible(root, board[i])) {
++#ifdef CONFIG_PCI
+ 			ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
++#endif
+ 			return 1;
+ 		}
+ 	}
