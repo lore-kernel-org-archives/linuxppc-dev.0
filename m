@@ -1,21 +1,20 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id 61958DDE17
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 07:30:25 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id 17so711144ugm.14
-	for <linuxppc-dev@ozlabs.org>; Mon, 08 Dec 2008 12:30:23 -0800 (PST)
-Sender: Josh Boyer <jwboyer@gmail.com>
-Date: Mon, 8 Dec 2008 15:30:11 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/9] powerpc/4xx: Extended DCR support
-Message-ID: <20081208203011.GB10929@yoda.jdub.homelinux.org>
-References: <1228714789.103940.266501677728.qpush@grosgo>
-	<20081208054057.34A5FDDD04@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081208054057.34A5FDDD04@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
+Return-Path: <dan.j.williams@intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+	by ozlabs.org (Postfix) with ESMTP id 04E95DDE1E
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 08:08:19 +1100 (EST)
+Subject: Re: [PATCH] ASYNC_TX: async_xor mapping fix
+From: Dan Williams <dan.j.williams@intel.com>
+To: Yuri Tikhonov <yur@emcraft.com>
+In-Reply-To: <200812082214.26811.yur@emcraft.com>
+References: <200812082214.26811.yur@emcraft.com>
+Content-Type: text/plain
+Date: Mon, 08 Dec 2008 14:08:16 -0700
+Message-Id: <1228770496.26373.3.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+Cc: "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"wd@denx.de" <wd@denx.de>, "dzu@denx.de" <dzu@denx.de>,
+	Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,119 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 08, 2008 at 04:40:03PM +1100, Benjamin Herrenschmidt wrote:
->This adds supports to the "extended" DCR addressing via
->the indirect mfdcrx/mtdcrx instructions supported by some
->4xx cores (440H6 and later)
->
->I enabled the feature for now only on AMCC 460 chips
->
->Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->---
->
-> arch/powerpc/include/asm/cputable.h   |    7 ++-
-> arch/powerpc/include/asm/dcr-native.h |   63 +++++++++++++++++++++++++++-------
-> arch/powerpc/kernel/cputable.c        |    4 +-
-> arch/powerpc/sysdev/dcr-low.S         |    8 +++-
-> 4 files changed, 65 insertions(+), 17 deletions(-)
->
->--- linux-work.orig/arch/powerpc/include/asm/cputable.h	2008-12-08 15:43:12.000000000 +1100
->+++ linux-work/arch/powerpc/include/asm/cputable.h	2008-12-08 15:43:41.000000000 +1100
->@@ -164,6 +164,7 @@ extern const char *powerpc_base_platform
-> #define CPU_FTR_NEED_PAIRED_STWCX	ASM_CONST(0x0000000004000000)
-> #define CPU_FTR_LWSYNC			ASM_CONST(0x0000000008000000)
-> #define CPU_FTR_NOEXECUTE		ASM_CONST(0x0000000010000000)
->+#define CPU_FTR_INDEXED_DCR		ASM_CONST(0x0000000020000000)
+On Mon, 2008-12-08 at 12:14 -0700, Yuri Tikhonov wrote:
+> The destination address may be present in the source list, so we should
+> map the addresses from the source list first.
+>  Otherwise, if page corresponding to destination is not marked as write-
+> through (with regards to CPU cache), then mapping it with DMA_FROM_DEVICE
+> may lead to data loss, and finally to an incorrect result of calculations.
 > 
-> /*
->  * Add the 64-bit processor unique features in the top half of the word;
->@@ -369,6 +370,8 @@ extern const char *powerpc_base_platform
-> #define CPU_FTRS_8XX	(CPU_FTR_USE_TB)
-> #define CPU_FTRS_40X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
-> #define CPU_FTRS_44X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
->+#define CPU_FTRS_440H6	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE | \
->+	    CPU_FTR_INDEXED_DCR)
 
-Can we call this CPU_FTRS_440x6 please?  The H really has no relevance
-here from what I understand as both the hard and synthysized x6 cores
-would do the indexed instructions.
+Thanks Yuri.  I think we should avoid mapping the destination twice
+altogether, and for simplicity just always map it bidirectionally.
+Something like this (untested):
 
-Also, I have some plans in mind for consolidating the mcheck
-organization (which has nothing to do with this exactly) and I was
-going to use 440x5 to map all the various SoCs that share that core
-revision.
-
-Probably a nit, but maybe worth changing.
-
->Index: linux-work/arch/powerpc/include/asm/dcr-native.h
->===================================================================
->--- linux-work.orig/arch/powerpc/include/asm/dcr-native.h	2008-09-29 14:21:37.000000000 +1000
->+++ linux-work/arch/powerpc/include/asm/dcr-native.h	2008-12-08 15:43:41.000000000 +1100
->@@ -23,6 +23,7 @@
-> #ifndef __ASSEMBLY__
-> 
-> #include <linux/spinlock.h>
->+#include <asm/cputable.h>
-> 
-> typedef struct {
-> 	unsigned int base;
->@@ -39,23 +40,45 @@ static inline bool dcr_map_ok_native(dcr
-> #define dcr_read_native(host, dcr_n)		mfdcr(dcr_n + host.base)
-> #define dcr_write_native(host, dcr_n, value)	mtdcr(dcr_n + host.base, value)
-> 
->-/* Device Control Registers */
->-void __mtdcr(int reg, unsigned int val);
->-unsigned int __mfdcr(int reg);
->+/* Table based DCR accessors */
->+extern void __mtdcr(unsigned int reg, unsigned int val);
->+extern unsigned int __mfdcr(unsigned int reg);
->+
->+/* mfdcrx/mtdcrx instruction based accessors. We hand code
->+ * the opcodes in order not to depend on newer binutils
->+ */
->+static inline unsigned int mfdcrx(unsigned int reg)
->+{
->+	unsigned int ret;
->+	asm volatile(".long 0x7c000206 | (%0 << 21) | (%1 << 16)"
->+		     : "=r" (ret) : "r" (reg));
->+	return ret;
->+}
->+
->+static inline void mtdcrx(unsigned int reg, unsigned int val)
->+{
->+	asm volatile(".long 0x7c000306 | (%0 << 21) | (%1 << 16)"
->+		     : : "r" (val), "r" (reg));
->+}
->+
-> #define mfdcr(rn)						\
-> 	({unsigned int rval;					\
->-	if (__builtin_constant_p(rn))				\
->+	if (__builtin_constant_p(rn) && rn < 1024)		\
-> 		asm volatile("mfdcr %0," __stringify(rn)	\
-> 		              : "=r" (rval));			\
->+	else if (likely(cpu_has_feature(CPU_FTR_INDEXED_DCR)))	\
->+		rval = mfdcrx(rn);				\
-> 	else							\
-> 		rval = __mfdcr(rn);				\
-> 	rval;})
-> 
-> #define mtdcr(rn, v)						\
-> do {								\
->-	if (__builtin_constant_p(rn))				\
->+	if (__builtin_constant_p(rn) && rn < 1024)		\
-> 		asm volatile("mtdcr " __stringify(rn) ",%0"	\
-> 			      : : "r" (v)); 			\
->+	else if (likely(cpu_has_feature(CPU_FTR_INDEXED_DCR)))	\
->+		mtdcrx(rn, v);					\
-> 	else							\
-> 		__mtdcr(rn, v);					\
-
-I'm wondering how much that is worth it.  Aren't you adding a
-runtime if here (and in the *dcri functions), which might
-impact performance for anything not implementing m*dcrx?
-
-Does anyone know how much impact this has either way, and if
-it's significant could it be patched out after the CPU
-features are set?
-
-josh
+diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
+index c029d3e..a6faa90 100644
+--- a/crypto/async_tx/async_xor.c
++++ b/crypto/async_tx/async_xor.c
+@@ -53,10 +53,17 @@ do_async_xor(struct dma_chan *chan, struct page *dest, struct page **src_list,
+ 	int xor_src_cnt;
+ 	dma_addr_t dma_dest;
+ 
+-	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_FROM_DEVICE);
+-	for (i = 0; i < src_cnt; i++)
++	/* map the dest bidrectional in case it is re-used as a source */
++	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_BIDIRECTIONAL);
++	for (i = 0; i < src_cnt; i++) {
++		/* only map the dest once */
++		if (src_list[i] == dest) {
++			dma_src[i] = dma_dest;
++			continue;
++		}
+ 		dma_src[i] = dma_map_page(dma->dev, src_list[i], offset,
+ 					  len, DMA_TO_DEVICE);
++	}
+ 
+ 	while (src_cnt) {
+ 		async_flags = flags;
+diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
+index c7a9306..7bf4a2e 100644
+--- a/drivers/dma/iop-adma.c
++++ b/drivers/dma/iop-adma.c
+@@ -86,13 +86,20 @@ iop_adma_run_tx_complete_actions(struct iop_adma_desc_slot *desc,
+ 			u32 src_cnt;
+ 			dma_addr_t addr;
+ 
++			src_cnt = unmap->unmap_src_cnt;
+ 			if (!(flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
++				enum dma_data_direction dir;
++
+ 				addr = iop_desc_get_dest_addr(unmap, iop_chan);
+-				dma_unmap_page(dev, addr, len, DMA_FROM_DEVICE);
++				if (src_cnt > 1)
++					dir = DMA_BIDIRECTIONAL;
++				else
++					dir = DMA_FROM_DEVICE;
++
++				dma_unmap_page(dev, addr, len, dir);
+ 			}
+ 
+ 			if (!(flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
+-				src_cnt = unmap->unmap_src_cnt;
+ 				while (src_cnt--) {
+ 					addr = iop_desc_get_src_addr(unmap,
+ 								     iop_chan,
+diff --git a/drivers/dma/mv_xor.c b/drivers/dma/mv_xor.c
+index 0328da0..888fbe9 100644
+--- a/drivers/dma/mv_xor.c
++++ b/drivers/dma/mv_xor.c
+@@ -312,13 +312,19 @@ mv_xor_run_tx_complete_actions(struct mv_xor_desc_slot *desc,
+ 			u32 src_cnt;
+ 			dma_addr_t addr;
+ 
++			src_cnt = unmap->unmap_src_cnt;
+ 			if (!(flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
++				enum dma_data_direction dir;
++
+ 				addr = mv_desc_get_dest_addr(unmap);
+-				dma_unmap_page(dev, addr, len, DMA_FROM_DEVICE);
++				if (src_cnt > 1)
++					dir = DMA_BIDIRECTIONAL;
++				else
++					dir = DMA_FROM_DEVICE;
++				dma_unmap_page(dev, addr, len, dir);
+ 			}
+ 
+ 			if (!(flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
+-				src_cnt = unmap->unmap_src_cnt;
+ 				while (src_cnt--) {
+ 					addr = mv_desc_get_src_addr(unmap,
+ 								    src_cnt);
