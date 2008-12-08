@@ -1,24 +1,19 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 36D05DDED4
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 05:09:30 +1100 (EST)
-Date: Mon, 8 Dec 2008 12:12:39 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v4]
-Message-Id: <20081208121239.756f3e38.kim.phillips@freescale.com>
-In-Reply-To: <200812050641.13753.sr@denx.de>
-References: <1228256232.4770.47.camel@jhsiao-usb>
-	<20081204193256.12dbc306.kim.phillips@freescale.com>
-	<200812050641.13753.sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, jhsiao@amcc.com, herbert@gondor.apana.org.au,
-	linux-crypto@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7C720DDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 06:24:15 +1100 (EST)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: linux-raid@vger.kernel.org
+Subject: [PATCH] ASYNC_TX: async_xor mapping fix
+Date: Mon, 8 Dec 2008 22:14:26 +0300
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200812082214.26811.yur@emcraft.com>
+Cc: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
+	wd@denx.de, dzu@denx.de, Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,32 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 5 Dec 2008 06:41:13 +0100
-Stefan Roese <sr@denx.de> wrote:
+ The destination address may be present in the source list, so we should
+map the addresses from the source list first.
+ Otherwise, if page corresponding to destination is not marked as write-
+through (with regards to CPU cache), then mapping it with DMA_FROM_DEVICE
+may lead to data loss, and finally to an incorrect result of calculations.
 
-> On Friday 05 December 2008, Kim Phillips wrote:
-> > > diff --git a/arch/powerpc/boot/dts/canyonlands.dts
-> > > b/arch/powerpc/boot/dts/canyonlands.dts index 79fe412..b0f0096 100644
-> > > --- a/arch/powerpc/boot/dts/canyonlands.dts
-> > > +++ b/arch/powerpc/boot/dts/canyonlands.dts
-> > > @@ -116,6 +116,13 @@
-> > >  			dcr-reg = <0x010 0x002>;
-> > >  		};
-> > >
-> > > +		CRYPTO: crypto@180000 {
-> > > +			compatible = "amcc,ppc460ex-crypto", "amcc,ppc4xx-crypto";
-> > > +			reg = <4 0x00180000 0x80400>;
-> > > +			interrupt-parent = <&UIC0>;
-> > > +			interrupts = <0x1d 0x4>;
-> >
-> > that's odd, according to the current canyonlands.dts, irq 0x1d is
-> > already assigned to UART2 (and the request_irq this driver makes
-> > doesn't specify a shared flag).
-> 
-> UART2 is using irq 0x1d from UIC1. Using 0x1d/UIC0 is correct for Security 
-> EIP-94 according to the latest users manual. No sharing needed.
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+---
+ crypto/async_tx/async_xor.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-ok, I didn't notice the machine had four interrupt controllers (!),
-thanks.
+diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
+index 91dbf07..291f517 100644
+--- a/crypto/async_tx/async_xor.c
++++ b/crypto/async_tx/async_xor.c
+@@ -53,10 +53,10 @@ do_async_xor(struct dma_chan *chan, struct page *dest, struct page **src_list,
+ 	int xor_src_cnt;
+ 	dma_addr_t dma_dest;
+ 
+-	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_FROM_DEVICE);
+ 	for (i = 0; i < src_cnt; i++)
+ 		dma_src[i] = dma_map_page(dma->dev, src_list[i], offset,
+ 					  len, DMA_TO_DEVICE);
++	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_FROM_DEVICE);
+ 
+ 	while (src_cnt) {
+ 		async_flags = flags;
+-- 
+1.5.6.1
 
-Kim
+-- 
+Yuri Tikhonov, Senior Software Engineer
+Emcraft Systems, www.emcraft.com
