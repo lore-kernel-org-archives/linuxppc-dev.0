@@ -1,20 +1,23 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-	by ozlabs.org (Postfix) with ESMTP id 04E95DDE1E
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 08:08:19 +1100 (EST)
-Subject: Re: [PATCH] ASYNC_TX: async_xor mapping fix
-From: Dan Williams <dan.j.williams@intel.com>
-To: Yuri Tikhonov <yur@emcraft.com>
-In-Reply-To: <200812082214.26811.yur@emcraft.com>
-References: <200812082214.26811.yur@emcraft.com>
+Return-Path: <jhsiao@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 5D0CBDDE0E
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 08:54:51 +1100 (EST)
+Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v4]
+From: James Hsiao <jhsiao@amcc.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+In-Reply-To: <20081204193256.12dbc306.kim.phillips@freescale.com>
+References: <1228256232.4770.47.camel@jhsiao-usb>
+	<20081204193256.12dbc306.kim.phillips@freescale.com>
 Content-Type: text/plain
-Date: Mon, 08 Dec 2008 14:08:16 -0700
-Message-Id: <1228770496.26373.3.camel@dwillia2-linux.ch.intel.com>
+Date: Mon, 08 Dec 2008 13:55:07 -0800
+Message-Id: <1228773307.4906.14.camel@jhsiao-usb>
 Mime-Version: 1.0
-Cc: "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"wd@denx.de" <wd@denx.de>, "dzu@denx.de" <dzu@denx.de>,
-	Ilya Yanok <yanok@emcraft.com>
+Cc: linuxppc-dev@ozlabs.org, herbert@gondor.apana.org.au,
+	linux-crypto@vger.kernel.org
+Reply-To: jhsiao@amcc.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,92 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-12-08 at 12:14 -0700, Yuri Tikhonov wrote:
-> The destination address may be present in the source list, so we should
-> map the addresses from the source list first.
->  Otherwise, if page corresponding to destination is not marked as write-
-> through (with regards to CPU cache), then mapping it with DMA_FROM_DEVICE
-> may lead to data loss, and finally to an incorrect result of calculations.
-> 
+Hi Kim,
 
-Thanks Yuri.  I think we should avoid mapping the destination twice
-altogether, and for simplicity just always map it bidirectionally.
-Something like this (untested):
 
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index c029d3e..a6faa90 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -53,10 +53,17 @@ do_async_xor(struct dma_chan *chan, struct page *dest, struct page **src_list,
- 	int xor_src_cnt;
- 	dma_addr_t dma_dest;
- 
--	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_FROM_DEVICE);
--	for (i = 0; i < src_cnt; i++)
-+	/* map the dest bidrectional in case it is re-used as a source */
-+	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_BIDIRECTIONAL);
-+	for (i = 0; i < src_cnt; i++) {
-+		/* only map the dest once */
-+		if (src_list[i] == dest) {
-+			dma_src[i] = dma_dest;
-+			continue;
-+		}
- 		dma_src[i] = dma_map_page(dma->dev, src_list[i], offset,
- 					  len, DMA_TO_DEVICE);
-+	}
- 
- 	while (src_cnt) {
- 		async_flags = flags;
-diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
-index c7a9306..7bf4a2e 100644
---- a/drivers/dma/iop-adma.c
-+++ b/drivers/dma/iop-adma.c
-@@ -86,13 +86,20 @@ iop_adma_run_tx_complete_actions(struct iop_adma_desc_slot *desc,
- 			u32 src_cnt;
- 			dma_addr_t addr;
- 
-+			src_cnt = unmap->unmap_src_cnt;
- 			if (!(flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
-+				enum dma_data_direction dir;
-+
- 				addr = iop_desc_get_dest_addr(unmap, iop_chan);
--				dma_unmap_page(dev, addr, len, DMA_FROM_DEVICE);
-+				if (src_cnt > 1)
-+					dir = DMA_BIDIRECTIONAL;
-+				else
-+					dir = DMA_FROM_DEVICE;
-+
-+				dma_unmap_page(dev, addr, len, dir);
- 			}
- 
- 			if (!(flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
--				src_cnt = unmap->unmap_src_cnt;
- 				while (src_cnt--) {
- 					addr = iop_desc_get_src_addr(unmap,
- 								     iop_chan,
-diff --git a/drivers/dma/mv_xor.c b/drivers/dma/mv_xor.c
-index 0328da0..888fbe9 100644
---- a/drivers/dma/mv_xor.c
-+++ b/drivers/dma/mv_xor.c
-@@ -312,13 +312,19 @@ mv_xor_run_tx_complete_actions(struct mv_xor_desc_slot *desc,
- 			u32 src_cnt;
- 			dma_addr_t addr;
- 
-+			src_cnt = unmap->unmap_src_cnt;
- 			if (!(flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
-+				enum dma_data_direction dir;
-+
- 				addr = mv_desc_get_dest_addr(unmap);
--				dma_unmap_page(dev, addr, len, DMA_FROM_DEVICE);
-+				if (src_cnt > 1)
-+					dir = DMA_BIDIRECTIONAL;
-+				else
-+					dir = DMA_FROM_DEVICE;
-+				dma_unmap_page(dev, addr, len, dir);
- 			}
- 
- 			if (!(flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
--				src_cnt = unmap->unmap_src_cnt;
- 				while (src_cnt--) {
- 					addr = mv_desc_get_src_addr(unmap,
- 								    src_cnt);
+>> +     /* figure how many gd is needed */
+>> +     if (aad_len) {
+>> +             num_gd = get_sg_count(assoc, aad_len) +
+>> +                     get_sg_count(src, datalen);
+
+> this is dead code - aad_len is never non-zero - is there some code
+> missing from crypto4xx_alg.c?  Also, IIRC, assoc is a superset of src,
+> so I believe something like num_gd = get_sg_count(assoc, aad_len +
+> datalen) would work better - this should also permit removal of the
+> nbytes reached check in [1] in get_sg_count.
+
+For the get num_gd, assoc and src are two different scatter_lists. One
+for the packet and one for the aad, so, it makes more sense to me to
+count them seperately. Yes?
+
+The way to driver pass aad and aad_len is from crypto4xx_build_pd. 
+This aad support will be used in the future. Do you want me to remover
+from the current release?  The reason I have it in, is to avoid too much
+code change for the future release.
+
+
+Thanks
+
+James
