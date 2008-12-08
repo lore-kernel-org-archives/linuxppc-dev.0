@@ -1,19 +1,16 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7C720DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 06:24:15 +1100 (EST)
-From: Yuri Tikhonov <yur@emcraft.com>
-To: linux-raid@vger.kernel.org
-Subject: [PATCH] ASYNC_TX: async_xor mapping fix
-Date: Mon, 8 Dec 2008 22:14:26 +0300
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200812082214.26811.yur@emcraft.com>
-Cc: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
-	wd@denx.de, dzu@denx.de, Ilya Yanok <yanok@emcraft.com>
+Return-Path: <gerickson@nuovations.com>
+Received: from relay02.pair.com (relay02.pair.com [209.68.5.16])
+	by ozlabs.org (Postfix) with SMTP id 5BD97474C1
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 06:28:25 +1100 (EST)
+Date: Mon, 08 Dec 2008 11:28:15 -0800
+Subject: PPC4xx ECC Configs, Defines and Source
+From: Grant Erickson <gerickson@nuovations.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Message-ID: <C562B54F.1351E%gerickson@nuovations.com>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Cc: Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +20,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- The destination address may be present in the source list, so we should
-map the addresses from the source list first.
- Otherwise, if page corresponding to destination is not marked as write-
-through (with regards to CPU cache), then mapping it with DMA_FROM_DEVICE
-may lead to data loss, and finally to an incorrect result of calculations.
+Does anyone have any strong preferences on where configurations, definitions
+and sources for a PPC4xx ECC monitoring and reporting driver should go?
 
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
----
- crypto/async_tx/async_xor.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Specifically, this concerns ECC handling code for the IBM DDR2 ECC
+controller found in the 405EX[r], 440SP, 440SPe, 460EX and 460GT. However,
+I'd like to do this in a way that other ECC contributors and maintainers can
+build on.
 
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index 91dbf07..291f517 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -53,10 +53,10 @@ do_async_xor(struct dma_chan *chan, struct page *dest, struct page **src_list,
- 	int xor_src_cnt;
- 	dma_addr_t dma_dest;
- 
--	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_FROM_DEVICE);
- 	for (i = 0; i < src_cnt; i++)
- 		dma_src[i] = dma_map_page(dma->dev, src_list[i], offset,
- 					  len, DMA_TO_DEVICE);
-+	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_FROM_DEVICE);
- 
- 	while (src_cnt) {
- 		async_flags = flags;
--- 
-1.5.6.1
+Static Configs
+--------------
 
--- 
-Yuri Tikhonov, Senior Software Engineer
-Emcraft Systems, www.emcraft.com
+I thought I might leverage the definitions Stefan Roese came up with for
+u-boot for the base memory controller:
+
+    CONFIG_PPC4xx_IBM_SDRAM:   Applicable to 405GP, 405CR, 405EP, AP1000,
+                               and ML2
+    CONFIG_PPC4xx_IBM_DDR:     Applicable to 440GP, 440GX, 440EP, and 440GR
+    CONFIG_PPC4xx_DENALI_DDR2: Applicable to 440EPX and 440GRX
+    CONFIG_PPC4xx_IBM_DDR2:    Applicable to 405EX[r], 440SP, 440SPe, 460EX
+                               and 460GT.
+
+Controlling whether ECC monitoring and reporting support should be compiled
+in or a module:
+
+    CONFIG_PPC_ECC or CONFIG_ECC
+
+Dynamic Configs
+---------------
+
+It seems as though the DTS entries for SDRAM0: sdram { compatible = "..." }
+would need to be expanded to include the above information as well were any
+such ECC driver going to attempt to bind to the runtime DTS information.
+
+Perhaps:
+
+    compatible = "...", "ibm,sdram-4xx-sdram";
+    compatible = "...", "ibm,sdram-4xx-ddr";
+    compatible = "...", "ibm,sdram-4xx-ddr2";
+    compatible = "...", "denali,sdram-4xx-ddr2";
+
+Though, it appears that rainier.dts and sequioia.dts are already evolving in
+this direction with:
+
+    compatible = "ibm,sdram-440grx", "ibm,sdram-44x-ddr2denali";
+    compatible = "ibm,sdram-440epx", "ibm,sdram-44x-ddr2denali";
+
+In light of that, perhaps then:
+
+    compatible = "...", "ibm,sdram-4xx";
+    compatible = "...", "ibm,sdram-4xx-ddr";
+    compatible = "...", "ibm,sdram-4xx-ddr2";
+    compatible = "...", "ibm,sdram-4xx-ddr2denali";
+
+Source
+------
+
+    arch/powerpc/sysdev/
+        ppc4xx_ibm_sdram_ecc.c [future]
+        ppc4xx_ibm_ddr_ecc.c [future]
+        ppc4xx_ibm_ddr2_ecc.c
+        ppc4xx_ibm_ddr2denali_ecc.c [future]
+
+Headers and Defines
+-------------------
+
+    arch/powerpc/include/asm/ppc4xx_ibm_ddr2.h
+
+    OR
+
+    arch/powerpc/sysdev/ppc4xx_ibm_ddr2.h
+
+Thoughts? Comments?
+
+Regards,
+
+Grant
