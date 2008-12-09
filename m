@@ -1,27 +1,28 @@
 Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4C5ACDDF77
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 05:21:45 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mB9ILFdq031901
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 13:21:15 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mB9ILdwM189702
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 13:21:39 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mB9ILdwC032431
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 13:21:39 -0500
-Subject: [PATCH 5/8] cleanup careful_allocation(): consolidate memset()
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A086CDDF33
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 05:21:47 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mB9IKFT0024034
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 11:20:15 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mB9ILYde117938
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 11:21:34 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mB9ILXxw007030
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 11:21:33 -0700
+Subject: [PATCH 1/8] fix bootmem reservation on uninitialized node
 To: paulus@samba.org
 From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Tue, 09 Dec 2008 10:21:36 -0800
+Date: Tue, 09 Dec 2008 10:21:30 -0800
 References: <20081209182130.DB2150A2@kernel>
 In-Reply-To: <20081209182130.DB2150A2@kernel>
-Message-Id: <20081209182136.0D1397F7@kernel>
+Message-Id: <20081209182130.1E4C1438@kernel>
 Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
 	Dave Hansen <dave@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
 	"Serge E. Hallyn" <serue@us.ibm.com>
@@ -35,69 +36,60 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Both users of careful_allocation() immediately memset() the
-result.  So, just do it in one place.
+careful_allocation() was calling into the bootemem allocator for
+nodes which had not been fully initialized and caused a previous
+bug.  http://patchwork.ozlabs.org/patch/10528/  So, I merged a
+few broken out loops in do_init_bootmem() to fix it.  That changed
+the code ordering.
 
-Also give careful_allocation() a 'z' prefix to bring it in
-line with kzmalloc() and friends.
+I think this bug is triggered by having reserved areas for a node
+which are spanned by another node's contents.  In the
+mark_reserved_regions_for_nid() code, we attempt to reserve the
+area for a node before we have allocated the NODE_DATA() for that
+nid.  We do this since I reordered that loop.  I suck.
+
+This may only present on some systems that have 16GB pages
+reserved.  But, it can probably happen on any system that is
+trying to reserve large swaths of memory that happen to span other
+nodes' contents.
+
+This patch ensures that we do not touch bootmem for any node which
+has not been initialized.
 
 Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 ---
 
- linux-2.6.git-dave/arch/powerpc/mm/numa.c |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ linux-2.6.git-dave/arch/powerpc/mm/numa.c |   13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
-diff -puN arch/powerpc/mm/numa.c~cleanup-careful_allocation2 arch/powerpc/mm/numa.c
---- linux-2.6.git/arch/powerpc/mm/numa.c~cleanup-careful_allocation2	2008-12-09 10:16:06.000000000 -0800
-+++ linux-2.6.git-dave/arch/powerpc/mm/numa.c	2008-12-09 10:16:06.000000000 -0800
-@@ -824,7 +824,7 @@ static void __init dump_numa_memory_topo
-  *
-  * Returns the virtual address of the memory.
-  */
--static void __init *careful_allocation(int nid, unsigned long size,
-+static void __init *careful_zallocation(int nid, unsigned long size,
- 				       unsigned long align,
- 				       unsigned long end_pfn)
- {
-@@ -864,6 +864,7 @@ static void __init *careful_allocation(i
- 		dbg("alloc_bootmem %p %lx\n", ret, size);
- 	}
+diff -puN arch/powerpc/mm/numa.c~fix-bad-node-reserve arch/powerpc/mm/numa.c
+--- linux-2.6.git/arch/powerpc/mm/numa.c~fix-bad-node-reserve	2008-12-09 10:16:04.000000000 -0800
++++ linux-2.6.git-dave/arch/powerpc/mm/numa.c	2008-12-09 10:16:04.000000000 -0800
+@@ -870,6 +870,7 @@ static void mark_reserved_regions_for_ni
+ 	struct pglist_data *node = NODE_DATA(nid);
+ 	int i;
  
-+	memset(ret, 0, size);
- 	return ret;
- }
- 
-@@ -970,10 +971,9 @@ void __init do_init_bootmem(void)
- 		 * previous nodes' bootmem to be initialized and have
- 		 * all reserved areas marked.
- 		 */
--		NODE_DATA(nid) = careful_allocation(nid,
-+		NODE_DATA(nid) = careful_zallocation(nid,
- 					sizeof(struct pglist_data),
- 					SMP_CACHE_BYTES, end_pfn);
--		memset(NODE_DATA(nid), 0, sizeof(struct pglist_data));
- 
-   		dbg("node %d\n", nid);
- 		dbg("NODE_DATA() = %p\n", NODE_DATA(nid));
-@@ -989,10 +989,9 @@ void __init do_init_bootmem(void)
-   		dbg("end_paddr = %lx\n", end_pfn << PAGE_SHIFT);
- 
- 		bootmap_pages = bootmem_bootmap_pages(end_pfn - start_pfn);
--		bootmem_vaddr = careful_allocation(nid,
-+		bootmem_vaddr = careful_zallocation(nid,
- 					bootmap_pages << PAGE_SHIFT,
- 					PAGE_SIZE, end_pfn);
--		memset(bootmem_vaddr, 0, bootmap_pages << PAGE_SHIFT);
- 
- 		dbg("bootmap_vaddr = %p\n", bootmem_vaddr);
- 
-@@ -1003,7 +1002,7 @@ void __init do_init_bootmem(void)
- 		free_bootmem_with_active_regions(nid, end_pfn);
- 		/*
- 		 * Be very careful about moving this around.  Future
--		 * calls to careful_allocation() depend on this getting
-+		 * calls to careful_zallocation() depend on this getting
- 		 * done correctly.
- 		 */
- 		mark_reserved_regions_for_nid(nid);
++	dbg("mark_reserved_regions_for_nid(%d) NODE_DATA: %p\n", nid, node);
+ 	for (i = 0; i < lmb.reserved.cnt; i++) {
+ 		unsigned long physbase = lmb.reserved.region[i].base;
+ 		unsigned long size = lmb.reserved.region[i].size;
+@@ -901,10 +902,14 @@ static void mark_reserved_regions_for_ni
+ 			if (end_pfn > node_ar.end_pfn)
+ 				reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
+ 					- (start_pfn << PAGE_SHIFT);
+-			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase,
+-				reserve_size, node_ar.nid);
+-			reserve_bootmem_node(NODE_DATA(node_ar.nid), physbase,
+-						reserve_size, BOOTMEM_DEFAULT);
++			/*
++			 * Only worry about *this* node, others may not
++			 * yet have valid NODE_DATA().
++			 */
++			if (node_ar.nid == nid)
++				reserve_bootmem_node(NODE_DATA(node_ar.nid),
++						physbase, reserve_size,
++						BOOTMEM_DEFAULT);
+ 			/*
+ 			 * if reserved region is contained in the active region
+ 			 * then done.
 _
