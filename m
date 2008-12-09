@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F3FA1DDED9
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 14:05:34 +1100 (EST)
-Subject: Re: [PATCH 3/9] powerpc/4xx: Extended DCR support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20081208203011.GB10929@yoda.jdub.homelinux.org>
-References: <1228714789.103940.266501677728.qpush@grosgo>
-	<20081208054057.34A5FDDD04@ozlabs.org>
-	<20081208203011.GB10929@yoda.jdub.homelinux.org>
-Content-Type: text/plain
-Date: Tue, 09 Dec 2008 14:03:23 +1100
-Message-Id: <1228791803.7101.51.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4D0FEDDEFF
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 14:14:39 +1100 (EST)
+Date: Mon, 8 Dec 2008 19:14:26 -0800 (PST)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/85xx: Add support for SMP initialization
+In-Reply-To: <1228204546-1506-1-git-send-email-galak@kernel.crashing.org>
+Message-ID: <Pine.LNX.4.64.0812081855330.4837@t2.domain.actdsltmp>
+References: <1228204546-1506-1-git-send-email-galak@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Fleming Andy <afleming@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,46 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-12-08 at 15:30 -0500, Josh Boyer wrote:
+On Tue, 2 Dec 2008, Kumar Gala wrote:
+> Added 85xx specifc smp_ops structure.  We use ePAPR style boot release
+> and the MPIC for IPIs at this point.
+>
+> Additionally added routines for secondary cpu entry and initializtion.
+>
+> @@ -740,6 +750,9 @@ finish_tlb_load:
+> #else
+> 	rlwimi	r12, r11, 26, 27, 31	/* extract WIMGE from pte */
+> #endif
+> +#ifdef CONFIG_SMP
+> +	ori	r12, r12, MAS2_M
+> +#endif
+> 	mtspr	SPRN_MAS2, r12
 
-> Can we call this CPU_FTRS_440x6 please?  The H really has no relevance
-> here from what I understand as both the hard and synthysized x6 cores
-> would do the indexed instructions.
+Wouldn't it be more efficient to set _PAGE_COHERENT when the pte is created
+vs setting MAS2_M each time it's loaded?
 
-I'll change that.
+Is it correct to set MAS2_M for all pages, even uncached ones?
 
-> I'm wondering how much that is worth it.  Aren't you adding a
-> runtime if here (and in the *dcri functions), which might
-> impact performance for anything not implementing m*dcrx?
-> 
-> Does anyone know how much impact this has either way, and if
-> it's significant could it be patched out after the CPU
-> features are set?
+The code for ioremap() has this:
 
-So whatever the construct, gcc generates something quite horrible, on
-the other hand, written like this is probably the less horrible I've
-seen. The performance penalty shouldn't be huge, DCR accesses are slow.
+         /* Non-cacheable page cannot be coherent */
+         if (flags & _PAGE_NO_CACHE)
+                 flags &= ~_PAGE_COHERENT;
 
-Now, what we can/should do, but I'd rather do that from a separate patch
-after you also cleanup that 440x5 stuff for machine check, is to be more
-pro-active in cputable,h, at defining which 440 variants are effectively
-enabled in Kconfig, and reflecting that in CPU_FTRS_POSSIBLE and
-CPU_FTRS_ALWAYS.
-
-That way, the cpu_has_feature() statement would be resolved at compile
-time (either way) for all cases where only one variant of 440 is
-compiled in (most cases). Only the case where support for multiple
-variants is compiled in would result in the actual condition being in
-the final code.
-
-A way to do this is to define CONFIG_PPC_440x0, x5 and x6 and have those
-be select'ed by the various SoC types which are themselves selected by
-the platforms (I use x0 as "anything < x5" here). Then we can use these
-to selectively or/and in thse various CPU features in cputable.h
-"possible" and "always" masks.
-
-So I'll resend the patch with just the 440H6->440x6 change and we'll do
-those feature improvements in a separate patch.
- 
-Cheers,
-Ben.
+It seems odd that ioremap would explictly unset _PAGE_COHERENT when the
+code that sets the tlb will just force it back on.
