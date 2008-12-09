@@ -1,24 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6EA72DDEFB
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 02:17:01 +1100 (EST)
-Message-ID: <493E8BE2.809@freescale.com>
-Date: Tue, 09 Dec 2008 09:16:50 -0600
-From: Timur Tabi <timur@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5343DDDEFF
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 04:54:37 +1100 (EST)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] fork_init: fix division by zero
+Date: Tue, 9 Dec 2008 20:44:40 +0300
 MIME-Version: 1.0
-To: Guillaume Knispel <gknispel@proformatique.com>
-Subject: Re: [PATCH] Fix corruption error in rh_alloc_fixed()
-References: <20081209152834.1d6ff291@xilun.lan.proformatique.com>	<493E88B7.5020702@freescale.com>
-	<20081209161422.5e289e6c@xilun.lan.proformatique.com>
-In-Reply-To: <20081209161422.5e289e6c@xilun.lan.proformatique.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Pantelis Antoniou <pantelis@embeddedalley.com>,
-	Li Yang <leoli@freescale.com>,
-	Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200812092044.40649.yur@emcraft.com>
+Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>,
+	Wolfgang Denk <wd@denx.de>, Milton Miller <miltonm@bga.com>,
+	Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,19 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Guillaume Knispel wrote:
 
-> blk = NULL; at the end of the loop is what is done in the more used
-> rh_alloc_align(), so for consistency either we change both or we use
-> the same construction here.
-> I also think that testing for &info->free_list is harder to understand
-> because you must have the linked list implementation in your head
-> (which a kernel developer should anyway so this is not so important)
+The following patch fixes divide-by-zero error for the
+cases of really big PAGE_SIZEs (e.g. 256KB on ppc44x).
+Support for such big page sizes on 44x is not present in the
+current kernel yet, but coming soon.
 
-Fair enough.
+Also this patch fixes the comment for the max_threads
+settings, as this didn't match the things actually done
+in the code.
 
-Acked-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+---
+ kernel/fork.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 2a372a0..b0ac2fb 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -181,10 +181,14 @@ void __init fork_init(unsigned long mempages)
+ 
+ 	/*
+ 	 * The default maximum number of threads is set to a safe
+-	 * value: the thread structures can take up at most half
+-	 * of memory.
++	 * value: the thread structures can take up at most
++	 * (1/8) part of memory.
+ 	 */
++#if (8 * THREAD_SIZE) > PAGE_SIZE
+ 	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
++#else
++	max_threads = mempages * PAGE_SIZE / (8 * THREAD_SIZE);
++#endif
+ 
+ 	/*
+ 	 * we need to allow at least 20 threads to boot a system
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.5.6.1
