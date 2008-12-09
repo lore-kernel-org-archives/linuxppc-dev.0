@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6AD54DDF06
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 09:07:29 +1100 (EST)
-Subject: Re: [RFC/PATCH] powerpc: consistent memory mapping.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ilya Yanok <yanok@emcraft.com>
-In-Reply-To: <1228847026-5857-1-git-send-email-yanok@emcraft.com>
-References: <1228847026-5857-1-git-send-email-yanok@emcraft.com>
-Content-Type: text/plain
-Date: Wed, 10 Dec 2008 09:07:07 +1100
-Message-Id: <1228860427.22413.29.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, wd@denx.de, dzu@denx.de
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 0F240DDE0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 09:14:25 +1100 (EST)
+Message-ID: <493EEDB4.8070003@harris.com>
+Date: Tue, 09 Dec 2008 17:14:12 -0500
+From: "Steven A. Falco" <sfalco@harris.com>
+MIME-Version: 1.0
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: [PATCH v5] spi: Add PPC4xx SPI driver
+References: <1227628088-10849-1-git-send-email-sr@denx.de>
+	<493EE79C.9000405@harris.com>
+In-Reply-To: <493EE79C.9000405@harris.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-12-09 at 21:23 +0300, Ilya Yanok wrote:
-> Defining the start virtual address of the consistent memory
-> in configs leads to overlapping of the consistent area with
-> the other virtual regions (fixmap, pkmap, vmalloc). Defaults from
-> current kernel just set consistent memory area to be somewhere
-> high in the vmalloc area and then you need to pray there will be
-> not enough vmalloc allocations to overlap.
+Steven A. Falco wrote:
+> Stefan Roese wrote:
+>> This adds a SPI driver for the SPI controller found in the IBM/AMCC
+>> 4xx PowerPC's.
+>>
+>> Signed-off-by: Stefan Roese <sr@denx.de>
+>> Signed-off-by: Wolfgang Ocker <weo@reccoware.de>
+>> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+>> ---
+>
+> How is this intended to work?  An example .dts would be greatly
+> appreciated.
 
- .../...
+Answered my own question.  The gpios must be directly under the spi
+node rather than elsewhere in the tree.  This works:
 
-What about just ripping that consistent memory implementation out
-completely and using the normal vmalloc/ioremap allocator instead ?
+			SPI0: spi@ef600900 {
+				compatible = "ibm,ppc4xx-spi";
+				reg = <ef600900 7>;
+				interrupts = <8 4>;
+				interrupt-parent = <&UIC0>;
 
-Any reason not to ?
-
-Cheers,
-Ben.
+				gpios = <&GPIO1 14 0>;
+			};
