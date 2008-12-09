@@ -1,17 +1,17 @@
 Return-Path: <dhlii@dlasys.net>
-Received: from outbound-mail-124.bluehost.com (outbound-mail-124.bluehost.com
-	[67.222.38.24]) by ozlabs.org (Postfix) with SMTP id 4E5C4DDF58
+Received: from outbound-mail-152.bluehost.com (outbound-mail-152.bluehost.com
+	[67.222.39.32]) by ozlabs.org (Postfix) with SMTP id 538E1474C1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Dec 2008 07:29:17 +1100 (EST)
-Message-ID: <493ED385.7070601@dlasys.net>
-Date: Tue, 09 Dec 2008 15:22:29 -0500
+	Wed, 10 Dec 2008 07:34:18 +1100 (EST)
+Message-ID: <493ED4B6.7010605@dlasys.net>
+Date: Tue, 09 Dec 2008 15:27:34 -0500
 From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-To: Peter Korsgaard <jacmet@sunsite.dk>
+To: monstr@seznam.cz
 Subject: Re: Is anyone using the C67x00 USB Host ?
-References: <49394978.10905@dlasys.net> <87r64j112j.fsf@macbook.be.48ers.dk>
-In-Reply-To: <87r64j112j.fsf@macbook.be.48ers.dk>
-Content-Type: text/plain; charset=us-ascii
+References: <49394978.10905@dlasys.net> <493D2B22.4000601@seznam.cz>
+In-Reply-To: <493D2B22.4000601@seznam.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 Reply-To: dhlii@dlasys.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,37 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Peter Korsgaard wrote:
->>>>>> "David" == David H Lynch <dhlii@dlasys.net> writes:
->>>>>>             
+Michal Simek wrote:
+> Hi David,
 >
-> Hi,
+> currently I am working on backport this driver to 2.6.20 to Microblaze but
+> a lot of things are the same.
 >
->  David> 	I am having two problems with it.
->  David> 	I can not get it working with interrupts,
+> From HW site. Interrupt goes outside of IP directly to interrupt controller.
+> And you need to call platform_device_register with proper structure.
 >
-> No activity on the interrupt pin or is it always active?
+> Could you send your kernel log?
 >   
-Neither:
-The USB system does not function with interrupts, and the kernel reports
-lots of unhandled IRQ's.
+    I can post a log, but:
+       Interrupts are occuring, and being trapped.
+    The following code in the driver just seems to always return
+IRQ_NONE when called from an interrupt.
+   
+        int_status = c67x00_ll_hpi_status(c67x00);
+        if (!int_status)
+            return IRQ_NONE;
 
-I beleive that
-int_status = c67x00_ll_hpi_status(c67x00);
-if (!int_status)
-return IRQ_NONE;
-
-is always exiting IRQ_NONE;
-
-
-If I replace the request_irq() call with installation of a timer service
-routine that basically periodically calls the interrupt handler,
-everything works fine - albeit slowly.
+    However, if I add a timer that just polls the interrupt handler, I
+have the driver working (on the first port) but slowly.
 
 
 
 
 
+> Thanks,
+> Michal
+>
+>
+>
+>   
+>
 
 
 -- 
