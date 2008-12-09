@@ -1,21 +1,21 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id C98ADDDEF5
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 13:45:15 +1100 (EST)
-Date: Mon, 8 Dec 2008 21:45:12 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] ndfc driver
-Message-ID: <20081208214512.461276d2@lappy.seanm.ca>
-In-Reply-To: <20081209021115.GA13948@oksana.dev.rtsoft.ru>
-References: <20081203222832.3fc77d28@lappy.seanm.ca>
-	<20081204090107.20269571@zod.rchland.ibm.com>
-	<20081208193446.37e27e26@lappy.seanm.ca>
-	<20081209021115.GA13948@oksana.dev.rtsoft.ru>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F3FA1DDED9
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 14:05:34 +1100 (EST)
+Subject: Re: [PATCH 3/9] powerpc/4xx: Extended DCR support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20081208203011.GB10929@yoda.jdub.homelinux.org>
+References: <1228714789.103940.266501677728.qpush@grosgo>
+	<20081208054057.34A5FDDD04@ozlabs.org>
+	<20081208203011.GB10929@yoda.jdub.homelinux.org>
+Content-Type: text/plain
+Date: Tue, 09 Dec 2008 14:03:23 +1100
+Message-Id: <1228791803.7101.51.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	linux-mtd@lists.infradead.org
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,76 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 9 Dec 2008 05:11:15 +0300
-"Anton Vorontsov" <avorontsov@ru.mvista.com> wrote:
+On Mon, 2008-12-08 at 15:30 -0500, Josh Boyer wrote:
 
-> So this is a controller with partitions? ;-)
+> Can we call this CPU_FTRS_440x6 please?  The H really has no relevance
+> here from what I understand as both the hard and synthysized x6 cores
+> would do the indexed instructions.
 
-Actually, I did it this way to mimic the look of the NOR. Really, we
-shouldn't care about the NAND chip.
+I'll change that.
 
-Here is the complete NOR and NAND DTS:
+> I'm wondering how much that is worth it.  Aren't you adding a
+> runtime if here (and in the *dcri functions), which might
+> impact performance for anything not implementing m*dcrx?
+> 
+> Does anyone know how much impact this has either way, and if
+> it's significant could it be patched out after the CPU
+> features are set?
 
-nor@0,0 {
-	compatible = "amd,s29gl032a", "cfi-flash";
-	bank-width = <2>;
-	reg = <0x00000000 0x00000000 0x00400000>;
-	#address-cells = <1>;
-	#size-cells = <1>;
+So whatever the construct, gcc generates something quite horrible, on
+the other hand, written like this is probably the less horrible I've
+seen. The performance penalty shouldn't be huge, DCR accesses are slow.
 
-	partition@0 {
-		label = "splash";
-		reg = <0x00000000 0x00020000>;
-	};
-	partition@300000 {
-		label = "fpga";
-		reg = <0x0300000 0x00040000>;
-	};
-	partition@340000 {
-		label = "env";
-		reg = <0x0340000 0x00040000>;
-	};
-	partition@380000 {
-		label = "u-boot";
-		reg = <0x0380000 0x00080000>;
-	};
-};
+Now, what we can/should do, but I'd rather do that from a separate patch
+after you also cleanup that 440x5 stuff for machine check, is to be more
+pro-active in cputable,h, at defining which 440 variants are effectively
+enabled in Kconfig, and reflecting that in CPU_FTRS_POSSIBLE and
+CPU_FTRS_ALWAYS.
 
-nand@1,0 {
-	compatible = "amcc,ndfc";
-	reg = <0x00000001 0x00000000 0x00002000>;
-	ccr = <0x00001000>;
-	bank-settings = <0x80002222>;
-	#address-cells = <1>;
-	#size-cells = <1>;
+That way, the cpu_has_feature() statement would be resolved at compile
+time (either way) for all cases where only one variant of 440 is
+compiled in (most cases). Only the case where support for multiple
+variants is compiled in would result in the actual condition being in
+the final code.
 
-	partition@0 {
-		label = "kernel";
-		reg = <0x00000000 0x00200000>;
-	};
-	partition@200000 {
-		label = "root";
-		reg = <0x00200000 0x03E00000>;
-	};
-	partition@40000000 {
-		label = "persistent";
-		reg = <0x04000000 0x04000000>;
-	};
-	partition@80000000 {
-		label = "persistent1";
-		reg = <0x08000000 0x04000000>;
-	};
-	partition@C0000000 {
-		label = "persistent2";
-		reg = <0x0C000000 0x04000000>;
-	};
-};
+A way to do this is to define CONFIG_PPC_440x0, x5 and x6 and have those
+be select'ed by the various SoC types which are themselves selected by
+the platforms (I use x0 as "anything < x5" here). Then we can use these
+to selectively or/and in thse various CPU features in cputable.h
+"possible" and "always" masks.
 
-Now I know I am cheating a bit.... but it does make it *look*
-consistent.
-
-But comments are welcome. I also could remove the partitions for now. A
-partially supported NDFC is better than none at all.
-
+So I'll resend the patch with just the 440H6->440x6 change and we'll do
+those feature improvements in a separate patch.
+ 
 Cheers,
-   Sean
+Ben.
