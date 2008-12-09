@@ -1,19 +1,24 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from outbound-mail-152.bluehost.com (outbound-mail-152.bluehost.com
-	[67.222.39.32]) by ozlabs.org (Postfix) with SMTP id 538E1474C1
+Return-Path: <jacmet@gmail.com>
+Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.27])
+	by ozlabs.org (Postfix) with ESMTP id 8E292DDEEE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Dec 2008 07:34:18 +1100 (EST)
-Message-ID: <493ED4B6.7010605@dlasys.net>
-Date: Tue, 09 Dec 2008 15:27:34 -0500
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
-MIME-Version: 1.0
-To: monstr@seznam.cz
+	Wed, 10 Dec 2008 08:18:47 +1100 (EST)
+Received: by ey-out-2122.google.com with SMTP id 6so34315eyi.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 09 Dec 2008 13:18:44 -0800 (PST)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+To: dhlii@dlasys.net
 Subject: Re: Is anyone using the C67x00 USB Host ?
-References: <49394978.10905@dlasys.net> <493D2B22.4000601@seznam.cz>
-In-Reply-To: <493D2B22.4000601@seznam.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+References: <49394978.10905@dlasys.net> <87r64j112j.fsf@macbook.be.48ers.dk>
+	<493ED385.7070601@dlasys.net>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Tue, 09 Dec 2008 22:11:44 +0100
+In-Reply-To: <493ED385.7070601@dlasys.net> (David H. Lynch,
+	Jr.'s message of "Tue\, 09 Dec 2008 15\:22\:29 -0500")
+Message-ID: <87wse9m4tr.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Reply-To: dhlii@dlasys.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,48 +29,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Michal Simek wrote:
-> Hi David,
->
-> currently I am working on backport this driver to 2.6.20 to Microblaze but
-> a lot of things are the same.
->
-> From HW site. Interrupt goes outside of IP directly to interrupt controller.
-> And you need to call platform_device_register with proper structure.
->
-> Could you send your kernel log?
->   
-    I can post a log, but:
-       Interrupts are occuring, and being trapped.
-    The following code in the driver just seems to always return
-IRQ_NONE when called from an interrupt.
-   
-        int_status = c67x00_ll_hpi_status(c67x00);
-        if (!int_status)
-            return IRQ_NONE;
+>>>>> "David" == David H Lynch <dhlii@dlasys.net> writes:
 
-    However, if I add a timer that just polls the interrupt handler, I
-have the driver working (on the first port) but slowly.
+Hi,
 
+ >> No activity on the interrupt pin or is it always active?
+ >> 
+ David> Neither:
 
+ David> The USB system does not function with interrupts, and the
+ David> kernel reports lots of unhandled IRQ's.
 
+Of the correct IRQ number?
 
+ David> I beleive that
+ David> int_status = c67x00_ll_hpi_status(c67x00);
+ David> if (!int_status)
+ David> return IRQ_NONE;
 
-> Thanks,
-> Michal
->
->
->
->   
->
+ David> is always exiting IRQ_NONE;
 
+That would be suprising if the c67x00 is triggering the interrupt.
+
+ David> If I replace the request_irq() call with installation of a
+ David> timer service routine that basically periodically calls the
+ David> interrupt handler, everything works fine - albeit slowly.
+
+And what does c67x00_ll_hpi_status() return in your timer routing?
 
 -- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+Bye, Peter Korsgaard
